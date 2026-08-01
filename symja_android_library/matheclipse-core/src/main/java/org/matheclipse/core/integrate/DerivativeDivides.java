@@ -6,12 +6,12 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -21,8 +21,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * Tries to write the integrand as <code>c * f(u(x)) * u'(x)</code> for some inner function
  * <code>u(x)</code> taken from the subexpressions of the integrand. If
- * <code>integrand / u'(x)</code> can be completely rewritten in terms of <code>u</code> (i.e. it
- * is free of <code>x</code> after substituting <code>u -&gt; t</code>), the integral reduces to
+ * <code>integrand / u'(x)</code> can be completely rewritten in terms of <code>u</code> (i.e. it is
+ * free of <code>x</code> after substituting <code>u -&gt; t</code>), the integral reduces to
  * <code>c * Integrate(f(t), t)</code> with the back-substitution <code>t -&gt; u(x)</code>.
  *
  * <p>
@@ -46,6 +46,13 @@ public class DerivativeDivides {
    */
   public static IExpr integrate(IExpr integrand, IExpr x, EvalEngine engine) {
     if (!Config.INTEGRATE_ALGORITHM_DERIVATIVE_DIVIDES) {
+      return F.NIL;
+    }
+    // Generated arbitrary constants C(n) (constants of integration from DSolve/Solve/...) make the
+    // frozen Together/Cancel step in integrateRecursive expand into a huge polynomial; this
+    // u-substitution heuristic has no business running on them, so skip it (see DSolveTest
+    // testDSolveSystem001).
+    if (!integrand.isFree(S.C)) {
       return F.NIL;
     }
     int depth = RECURSION_DEPTH.get();

@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class RootTests extends ExprEvaluatorTestCase {
+public class RootTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testRoot() {
@@ -69,13 +69,13 @@ public class RootTests extends ExprEvaluatorTestCase {
     check("Roots(x^2-2*x-3==0,x)", //
         "x==-1||x==3");
     check("Roots(a*x^2+b*x+c==0, x)", //
-        "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
+        "x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)");
     check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
         "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
     check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //
-        "x==2/3||x==1/2*(1-I*Sqrt(3))||x==1/2*(1+I*Sqrt(3))");
+        "x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)");
     check("Roots(x^3 - 5*x + 4==0,x)", //
-        "x==1||x==1/2*(-1-Sqrt(17))||x==1/2*(-1+Sqrt(17))");
+        "x==1||x==-1/2-Sqrt(17)/2||x==-1/2+Sqrt(17)/2");
   }
 
 
@@ -223,6 +223,99 @@ public class RootTests extends ExprEvaluatorTestCase {
         "True");
     check("ToRadicals[Root[Function[#^2 - 2], 2] > 3] ", // "
         "False");
+  }
+
+  /**
+   * {@code N[Root[f, k]]} determines the k-th root of the polynomial numerically. This is the only
+   * option for polynomials which are not solvable in radicals at all.
+   */
+  @Test
+  public void testRootNumeric() {
+    // The root index k and the ordering flag n are positions in the list of roots, not numbers to
+    // approximate. Without NHoldRest N[] would rewrite Root[f, 1, 0] to Root[f, 1.0, 0.0].
+    check("Attributes(Root)", //
+        "{NHoldRest,Protected}");
+    check("N(Root(1+2*#1+#1^5&,1,0)) // InputForm", //
+        "-0.4863890359345431`");
+
+    // The quintic 1 + 2*x + x^5 is not solvable in radicals, so ToRadicals leaves it alone ...
+    check("ToRadicals(Root(1+2*#1+#1^5&,1,0))", //
+        "Root(1+2*#1+#1^5&,1,0)");
+    // ... but N() can still evaluate it.
+    check("{{x->Root(1+2*#1+#1^5&,1,0)},{x->Root(1+2*#1+#1^5&,2,0)}} // N", //
+        "{{x->-0.486389},{x->-0.701874+I*(-0.879697)}}");
+
+    // k-indexing: the real root comes first, then the complex roots by ascending real part and
+    // ascending imaginary part.
+    check("Table(N(Root(1+2*#1+#1^5&,k,0)), {k,1,5})", //
+        "{-0.486389,-0.701874+I*(-0.879697),-0.701874+I*0.879697,0.945068+I*(-0.854518),0.945068+I*0.854518}");
+
+    // Degree 3 and 4 are not auto-expanded to radicals either, but N() resolves them and agrees
+    // with the radical form.
+    check("N(Root(#1^3-2&,1))", //
+        "1.25992");
+    check("N(2^(1/3))", //
+        "1.25992");
+    check("N(Root(#1^5-2&,3))", //
+        "-0.929316+I*0.675188");
+    check("N(ToRadicals(Root(#1^5-2&,3)))", //
+        "-0.929316+I*0.675188");
+
+    // A repeated root is returned once per multiplicity, matching the degree-many k-indexing:
+    // #1^3-#1^2-#1+1 == (#1-1)^2*(#1+1)
+    check("Table(N(Root(#1^3-#1^2-#1+1&,k)), {k,1,3})", //
+        "{-1.0,1.0,1.0}");
+  }
+
+  /**
+   * {@code N[Root[f, k], precision]} refines the machine-precision root with Newton's method in
+   * arbitrary precision arithmetic.
+   */
+  @Test
+  public void testRootNumericPrecision() {
+    check("N(Root(1+2*#1+#1^5&,1,0), 30)", //
+        "-0.486389035934543000016557253698");
+    check("N(Root(1+2*#1+#1^5&,2,0), 30)", //
+        "-0.701873568855861886306687517912+I*(-0.879697197929824022870267273817)");
+    check("N({{x->Root(1+2*#1+#1^5&,1,0)},{x->Root(1+2*#1+#1^5&,2,0)}}, 25)", //
+        "{{x->-0.4863890359345430000165572},{x->-0.7018735688558618863066875+I*(-0.8796971979298240228702672)}}");
+
+    // cross check against the radical form of the same root
+    check("N(Root(#1^3-2&,1), 30)", //
+        "1.25992104989487316476721060727");
+    check("N(2^(1/3), 30)", //
+        "1.25992104989487316476721060727");
+
+    // irrational coefficients are evaluated to the working precision as well
+    check("N(Root(#1^3-Sqrt(2)&,1), 30)", //
+        "1.12246204830937298143353304967");
+    check("N(2^(1/6), 30)", //
+        "1.12246204830937298143353304967");
+
+    // Laguerre's method alone is only accurate to about 13 digits here; the Newton refinement
+    // corrects the machine-precision approximation -0.8525507144946649 from the 14th digit on.
+    check("N(Root(#1^12-#1-1&,1), 40)", //
+        "-0.8525507144946671096505146748317735145462");
+  }
+
+  /**
+   * {@code Root[f, k]} stays unevaluated when the k-th root cannot be determined numerically.
+   */
+  @Test
+  public void testRootNumericUnevaluated() {
+    // symbolic coefficient
+    check("N(Root(#1^7-#1^2-#1+a&,1))", //
+        "Root(-#1-#1^2+#1^7+a&,1)");
+    // f is not a polynomial
+    check("N(Root(Sin(#1)-#1/2&,1))", //
+        "Root(Sin(#1)-#1/2&,1)");
+    check("N(Root(EvenQ(#1)&,1009))", //
+        "Root(EvenQ(#1)&,1009)");
+    // k out of range: the quintic has 5 roots
+    check("N(Root(#1^5-2&,7))", //
+        "Root(-2+#1^5&,7)");
+    check("N(Root(#1^5-2&,0))", //
+        "Root(-2+#1^5&,0)");
   }
 
   /**

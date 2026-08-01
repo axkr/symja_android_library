@@ -143,7 +143,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   public void testIntegratePrimitiveTower() {
     check("Integrate((2*Log(x)^2-Log(x)-x^2)/(Log(x)^3-x^2*Log(x)), x)", //
         "-Log(-x+Log(x))/2+Log(x+Log(x))/2+LogIntegral(x)");
-    check("Integrate((Log(x)^2+2*x*Log(x)+x^2+(x+1)*Sqrt(x+Log(x)))/(x*Log(x)^2+2*x^2*Log(x)+x^3), x)", //
+    check(
+        "Integrate((Log(x)^2+2*x*Log(x)+x^2+(x+1)*Sqrt(x+Log(x)))/(x*Log(x)^2+2*x^2*Log(x)+x^3), x)", //
         "Log(x)-2/Sqrt(x+Log(x))");
     // flatter Log integrands stay with the rules
     check("Integrate(1/(x*Log(x)^2), x)", //
@@ -155,10 +156,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   /**
    * Hermite reduction in the primitive monomial: a repeated pole {@code (x-Log(x))^k} in the tower
    * variable {@code t=Log(x)} is not a simple pole and was ground on by the rules; the reduction
-   * peels off its rational part. {@code (1-Log(x))/(x-Log(x))^2} is elementary ({@code x/(x-Log(x))}
-   * up to a constant), and {@code Log(x)/(1+Log(x))^3} reduces to a rational part plus an
-   * {@code ExpIntegralEi} tail. The forms are written over the roots, so they are verified by
-   * differentiating back rather than by pinning them.
+   * peels off its rational part. {@code (1-Log(x))/(x-Log(x))^2} is elementary
+   * ({@code x/(x-Log(x))} up to a constant), and {@code Log(x)/(1+Log(x))^3} reduces to a rational
+   * part plus an {@code ExpIntegralEi} tail. The forms are written over the roots, so they are
+   * verified by differentiating back rather than by pinning them.
    */
   /**
    * The structure-theorem step for rationally dependent logarithms: {@code Log(x^2) = 2*Log(x)}, so
@@ -177,11 +178,13 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   public void testIntegratePrimitiveTowerHermite() {
     check("FreeQ(Integrate((1-Log(x))/(x-Log(x))^2, x), Integrate)", //
         "True");
-    check("Abs(N((D(Integrate((1-Log(x))/(x-Log(x))^2, x), x) - (1-Log(x))/(x-Log(x))^2) /. x->1.7)) < 10^(-10)", //
+    check(
+        "Abs(N((D(Integrate((1-Log(x))/(x-Log(x))^2, x), x) - (1-Log(x))/(x-Log(x))^2) /. x->1.7)) < 10^(-10)", //
         "True");
     check("FreeQ(Integrate(Log(x)/(1+Log(x))^3, x), Integrate)", //
         "True");
-    check("Abs(N((D(Integrate(Log(x)/(1+Log(x))^3, x), x) - Log(x)/(1+Log(x))^3) /. x->1.7)) < 10^(-10)", //
+    check(
+        "Abs(N((D(Integrate(Log(x)/(1+Log(x))^3, x), x) - Log(x)/(1+Log(x))^3) /. x->1.7)) < 10^(-10)", //
         "True");
   }
 
@@ -197,12 +200,14 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // x^6+1 = (x^2+1)(x^4-x^2+1): an irreducible degree-4 factor
     check("FreeQ(Integrate(1/(1+x^6), x, Method->\"Rational\"), Integrate)", //
         "True");
-    check("Abs(N((D(Integrate(1/(1+x^6), x, Method->\"Rational\"), x) - 1/(1+x^6)) /. x->0.6)) < 10^(-10)", //
+    check(
+        "Abs(N((D(Integrate(1/(1+x^6), x, Method->\"Rational\"), x) - 1/(1+x^6)) /. x->0.6)) < 10^(-10)", //
         "True");
     // x^4+1: irreducible degree-4 factor alone
     check("FreeQ(Integrate(1/(1+x^4), x, Method->\"Rational\"), Integrate)", //
         "True");
-    check("Abs(N((D(Integrate(1/(1+x^4), x, Method->\"Rational\"), x) - 1/(1+x^4)) /. x->0.6)) < 10^(-10)", //
+    check(
+        "Abs(N((D(Integrate(1/(1+x^4), x, Method->\"Rational\"), x) - 1/(1+x^4)) /. x->0.6)) < 10^(-10)", //
         "True");
   }
 
@@ -691,7 +696,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "Log(x)+x^2*Log(x)");
 
     check("Apart(2*x^2/(x^3+1))", //
-        "2/3*1/(1+x)+2/3*(-1+2*x)/(1-x+x^2)");
+        "2/(3*(1+x))+2/3*(-1+2*x)/(1-x+x^2)");
 
     check("Integrate(2*x^2/(x^3+1),x)", //
         "2/3*Log(1+x^3)");
@@ -799,6 +804,17 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus#First_part
     check("D(Integrate(f(t)+g(t), {t, a, x}),x)", //
         "f(x)+g(x)");
+
+    // The definite integral of the derivative of an unknown function stays unevaluated, which shows
+    // up as Integrate(Derivative(1)[f][x], {x,a,b}; Symja prints the
+    // Derivative(1)[f][x] in prime form f'(x)): f(b)-f(a) would assume f' is integrable on [a,b].
+    // The indefinite integral and known derivatives still evaluate.
+    check("Integrate(f'(x), {x, a, b})", //
+        "Integrate(f'(x),{x,a,b})");
+    check("Integrate(f'(x), x)", //
+        "f(x)");
+    check("Integrate(Sin'(x), {x, a, b})", //
+        "-Sin(a)+Sin(b)");
   }
 
   @Test
@@ -928,7 +944,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(E^(3*x)/x^2, x)", //
         "-E^(3*x)/x+3*ExpIntegralEi(3*x)");
     check("Integrate(E^(-5*x)/x^3, x)", //
-        "-1/(2*E^(5*x)*x^2)+5/2*1/(E^(5*x)*x)+25/2*ExpIntegralEi(-5*x)");
+        "-1/(2*E^(5*x)*x^2)+5/(2*E^(5*x)*x)+25/2*ExpIntegralEi(-5*x)");
 
     // Constants inside integral
     check("Integrate(5*E^(2*x)/x, x)", //

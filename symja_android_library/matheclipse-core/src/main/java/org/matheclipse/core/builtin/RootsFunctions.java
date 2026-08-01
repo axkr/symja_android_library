@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -454,6 +455,62 @@ public class RootsFunctions {
    * @param variables
    * @return the roots of the polynomial or {@link F#NIL} if an exception occurs
    */
+  /**
+   * Represent the roots of a polynomial which has no closed radical form as inert {@link S#Root}
+   * objects <code>Root(f&amp;, k, 0)</code> for <code>k = 1, ..., degree</code>.
+   *
+   * <p>
+   * By Abel-Ruffini a general polynomial of degree five or higher cannot be solved in radicals, so
+   * the only alternatives are an exact but inert symbolic representation or a numerical
+   * approximation. Return the exact <code>Root</code> objects, which stay usable in further exact
+   * computations and can be evaluated to any precision on demand with <code>N(...)</code>;
+   * returning floating point numbers instead silently turns an exact computation into an
+   * approximate one.
+   *
+   * <p>
+   * This is only applied to a factor which the radical solvers already declined: binomials such as
+   * <code>x^5-2</code> are resolved earlier by
+   * {@link #unitPolynomial(int, org.matheclipse.core.polynomials.longexponent.ExprPolynomial)} and
+   * everything of degree <code>&lt;= 4</code> by {@link QuarticSolver}, so those keep their radical
+   * form. Since the caller iterates over the irreducible factors, the <code>Root</code> objects
+   * refer to the factor rather than to the original polynomial - e.g. <code>x^6+2*x+1</code>
+   * factorizes into <code>(1+x)*(1+x-x^2+x^3-x^4+x^5)</code> and yields the exact root
+   * <code>-1</code> plus five <code>Root</code> objects of the quintic factor.
+   *
+   * @param polynomial an irreducible polynomial factor in <code>variable</code>
+   * @param variable the polynomial variable
+   * @param numericSolutions if <code>true</code> the caller (e.g. {@link S#NSolve}) asked for
+   *        numerical solutions, so no inert objects may be returned
+   * @param engine the evaluation engine
+   * @return the list of <code>Root(f&amp;, k, 0)</code> objects, or {@link F#NIL} if
+   *         <code>polynomial</code> isn't an exact polynomial of degree <code>&gt;= 5</code>
+   */
+  private static IAST rootObjects(IExpr polynomial, IExpr variable, boolean numericSolutions,
+      EvalEngine engine) {
+    if (numericSolutions || !variable.isSymbol() || polynomial.isNumericMode()) {
+      return F.NIL;
+    }
+    if (((ISymbol) variable).getContext() == Context.DUMMY) {
+      // An internal variable introduced by Decompose() (Solve#solveViaDecomposition) or by
+      // PolynomialHomogenization, which will be substituted away again. A Root object names the
+      // polynomial of *its own* variable, so an inner-layer Root would end up wrapped in the
+      // radicals of the back-substitution - technically exact, but an unusable answer. Leave those
+      // layers to the numerical solver.
+      return F.NIL;
+    }
+    if (!polynomial.isPolynomial(F.list(variable))) {
+      return F.NIL;
+    }
+    int degree = S.Exponent.of(engine, polynomial, variable).toIntDefault();
+    // degree <= 4 is always solvable in radicals and is handled by QuarticSolver
+    if (degree < 5 || degree > Config.MAX_POLYNOMIAL_DEGREE) {
+      return F.NIL;
+    }
+    // the Root object identifies the polynomial by a pure function of Slot1
+    IAST function = F.Function(F.subst(polynomial, variable, F.Slot1));
+    return F.mapRange(1, degree + 1, k -> F.ternaryAST3(S.Root, function, F.ZZ(k), F.C0));
+  }
+
   public static IAST findRoots(IExpr polynomialExpr, final IAST variables) {
     double[] coefficients = coefficients(polynomialExpr, (ISymbol) variables.arg1());
     if (coefficients == null) {
@@ -580,22 +637,30 @@ public class RootsFunctions {
   }
 
   /**
-   * Solve polynomials of the form <code>a * x^varDegree + b == 0</code>
+   * Solve polynomials of the form <code>a * x^n + b * x^m == 0</code>, i.e. a binomial optionally
+   * multiplied by a common <code>x^m</code> monomial factor.
    *
-   * @param varDegree
+   * <p>
+   * If the lowest-degree term has exponent <code>m &gt; 0</code>, the common factor
+   * <code>x^m</code> is peeled off (contributing the root <code>0</code>) and the remaining
+   * binomial <code>a * x^(n-m) + b</code> is solved in roots-of-unity form.
+   *
+   * @param varDegree the degree <code>n</code> of the leading term
    * @param polynomial
-   * @return
+   * @return {@link F#NIL} if the polynomial is not of the required shape
    */
   private static IASTAppendable unitPolynomial(int varDegree, ExprPolynomial polynomial) {
     IExpr a = C0;
     IExpr b = C0;
+    int lowExp = -1;
     for (ExprMonomial monomial : polynomial) {
       IExpr coeff = monomial.coefficient();
       long lExp = monomial.exponent().getVal(0);
       if (lExp == varDegree) {
         a = coeff;
-      } else if (lExp == 0) {
+      } else if (lowExp < 0) {
         b = coeff;
+        lowExp = (int) lExp;
       } else {
         return F.NIL;
       }
@@ -603,17 +668,25 @@ public class RootsFunctions {
     if (a.isZero() || b.isZero()) {
       return F.NIL;
     }
+    // a*x^varDegree + b*x^lowExp = x^lowExp * (a*x^reducedDegree + b): peel the common x^lowExp
+    // monomial factor (which contributes the root 0) and solve the reduced binomial.
+    final int reducedDegree = varDegree - lowExp;
+    if (lowExp > 0 && reducedDegree < 3) {
+      // leave linear/quadratic reductions to the existing (quartic) solvers
+      return F.NIL;
+    }
 
     boolean isNegative = false;
     final EvalEngine engine = EvalEngine.get();
     IExpr rhsNumerator = engine.evaluate(b.negate());
     IExpr rhsDenominator = a;
-    if ((varDegree & 0x0001) == 0x0001) {
+    IASTAppendable result;
+    if ((reducedDegree & 0x0001) == 0x0001) {
       // odd
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
         IASTMutable temp =
-            rhsNumerator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(1, varDegree)), 1);
+            rhsNumerator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(1, reducedDegree)), 1);
         if (rhsNumerator.first().isNegative()) {
           isNegative = true;
           temp.set(1, rhsNumerator.first().negate());
@@ -624,7 +697,7 @@ public class RootsFunctions {
           isNegative = true;
           rhsNumerator = rhsNumerator.negate();
         }
-        zNumerator = engine.evaluate(F.Power(rhsNumerator, F.QQ(1, varDegree)));
+        zNumerator = engine.evaluate(F.Power(rhsNumerator, F.QQ(1, reducedDegree)));
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
@@ -633,51 +706,55 @@ public class RootsFunctions {
           rhsDenominator = ((IAST) rhsDenominator).setAtCopy(1, rhsDenominator.first().negate());
         }
         IASTMutable temp =
-            rhsDenominator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(-1, varDegree)), 1);
+            rhsDenominator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(-1, reducedDegree)), 1);
         zDenominator = engine.evaluate(temp);
       } else {
         if (rhsDenominator.isNegative()) {
           isNegative = !isNegative;
           rhsDenominator = rhsDenominator.negate();
         }
-        zDenominator = engine.evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
+        zDenominator = engine.evaluate(F.Power(rhsDenominator, F.QQ(-1, reducedDegree)));
       }
       final int increment = isNegative ? 1 : 0;
-      return F.mapRange(0, varDegree, i -> //
-      F.Times(F.Power(F.CN1, i + increment), F.Power(-1, F.QQ(i, varDegree)), zNumerator,
+      result = F.mapRange(0, reducedDegree, i -> //
+      F.Times(F.Power(F.CN1, i + increment), F.Power(-1, F.QQ(i, reducedDegree)), zNumerator,
           zDenominator));
     } else {
       // even
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IExpr temp = ((IAST) rhsNumerator).map(x -> powerOrExprMapper(x, 1, varDegree));
+        IExpr temp = ((IAST) rhsNumerator).map(x -> powerOrExprMapper(x, 1, reducedDegree));
         zNumerator = engine.evaluate(temp);
       } else {
-        IExpr temp = powerOrExprMapper(rhsNumerator, 1, varDegree);
+        IExpr temp = powerOrExprMapper(rhsNumerator, 1, reducedDegree);
         zNumerator = engine.evaluate(temp);
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
-        IExpr temp = ((IAST) rhsDenominator).map(x -> powerOrExprMapper(x, -1, varDegree));
+        IExpr temp = ((IAST) rhsDenominator).map(x -> powerOrExprMapper(x, -1, reducedDegree));
         zDenominator = engine.evaluate(temp);
       } else {
-        IExpr temp = powerOrExprMapper(rhsDenominator, -1, varDegree);
+        IExpr temp = powerOrExprMapper(rhsDenominator, -1, reducedDegree);
         zDenominator = engine.evaluate(temp);
       }
 
-      IASTAppendable result = F.ListAlloc(varDegree);
-      long size = varDegree / 2;
+      result = F.ListAlloc(reducedDegree);
+      long size = reducedDegree / 2;
       int k = 0; // isNegative?1:0;
       for (int i = 1; i <= size; i++) {
-        IExpr power = engine.evaluate(F.Power(-1, F.QQ(k, varDegree)));
+        IExpr power = engine.evaluate(F.Power(-1, F.QQ(k, reducedDegree)));
         IAST times1 = F.Times(F.CN1, power, zNumerator, zDenominator);
         IAST times2 = F.Times(power, zNumerator, zDenominator);
         result.append(engine.evaluate(times1));
         result.append(engine.evaluate(times2));
         k += 2;
       }
-      return result;
     }
+    if (lowExp > 0) {
+      // the peeled x^lowExp factor contributes the root 0
+      result.append(C0);
+    }
+    return result;
   }
 
   /**
@@ -766,7 +843,20 @@ public class RootsFunctions {
    */
   public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
       final IAST variables, boolean numericSolutions, EvalEngine engine) {
-    return rootsOfVariable(expr, denominator, variables, numericSolutions, true, true, engine);
+    return rootsOfVariable(expr, denominator, variables, numericSolutions, true, engine);
+  }
+
+  /**
+   * @param allowRootObjects if <code>false</code>, a polynomial which cannot be solved in radicals
+   *        is approximated numerically instead of being represented by inert {@link S#Root}
+   *        objects. {@link S#NSolve} passes <code>false</code>: it is asked for numbers, and
+   *        evaluating one <code>Root</code> object per root would run the numerical root finder
+   *        once per root instead of once for the whole polynomial.
+   */
+  public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
+      final IAST variables, boolean numericSolutions, boolean allowRootObjects, EvalEngine engine) {
+    return rootsOfVariable(expr, denominator, variables, numericSolutions, true, true,
+        allowRootObjects, engine);
   }
 
   /**
@@ -780,6 +870,18 @@ public class RootsFunctions {
   public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
       final IAST variables, boolean numericSolutions, boolean createSet, boolean sort,
       EvalEngine engine) {
+    return rootsOfVariable(expr, denominator, variables, numericSolutions, createSet, sort, true,
+        engine);
+  }
+
+  /**
+   * @param allowRootObjects if <code>false</code>, a polynomial which cannot be solved in radicals
+   *        is approximated numerically instead of being represented by inert {@link S#Root} objects
+   * @see #rootsOfVariable(IExpr, IExpr, IAST, boolean, boolean, EvalEngine)
+   */
+  public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
+      final IAST variables, boolean numericSolutions, boolean createSet, boolean sort,
+      boolean allowRootObjects, EvalEngine engine) {
     IASTMutable result = F.NIL;
     // List<IExpr> varList = variables.copyTo();
     try {
@@ -849,9 +951,16 @@ public class RootsFunctions {
                 }
               }
             } else {
-              IAST resultList = findRoots(temp, variables);
-              if (resultList.size() > 0) {
-                newResult.appendArgs(resultList);
+              IAST rootObjects = allowRootObjects //
+                  ? rootObjects(temp, variables.arg1(), numericSolutions, engine)
+                  : F.NIL;
+              if (rootObjects.isPresent()) {
+                newResult.appendArgs(rootObjects);
+              } else {
+                IAST resultList = findRoots(temp, variables);
+                if (resultList.size() > 0) {
+                  newResult.appendArgs(resultList);
+                }
               }
             }
           }
@@ -910,7 +1019,7 @@ public class RootsFunctions {
    * @return the points at which the function value is zero or <code>null</code> if the solver
    *         couldn't find a solution.
    */
-  private static org.hipparchus.complex.Complex[] allComplexRootsLaguerre(
+  public static org.hipparchus.complex.Complex[] allComplexRootsLaguerre(
       @Nonnull double[] coefficients) {
 
     if (coefficients.length > Config.MAX_POLYNOMIAL_DEGREE_LAGUERRE_SOLVER) {

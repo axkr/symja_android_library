@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
@@ -86,21 +85,23 @@ public class RootSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  @Disabled
   public void testInertForms() {
     // A non-polynomial (Log) form is left unevaluated; this is the shape produced by
     // Integrate for an irreducible high-degree denominator.
     check("RootSum(1 + #1 + #1^2 + #1^3 + #1^4 & , Log(x + #1) & )", //
         "RootSum(1+#1+#1^2+#1^3+#1^4&,Log(x+#1)&)");
+    // ... and it stays inert for a solvable quartic too, even though the roots could be written
+    // as radicals: the closed RootSum form is the point.
+    check("RootSum(#^4+1 &, Log(x-#1)/(4*#1^3) &)", //
+        "RootSum(#1^4+1&,Log(x-#1)/(4*#1^3)&)");
   }
 
   @Test
   public void testDerivativeIsRationalFunction() {
-    // D(RootSum(p&, Log(x-#1)/p'(#1) &), x) telescopes back to the integrand 1/p(x).
-    // TODO simplify result
+    // D(RootSum(p&, Log(x-#1)/p'(#1) &), x) telescopes back to the integrand 1/p(x). Now that the
+    // cubic is no longer expanded into radicals first, this collapses just like the quintic below.
     check("D(RootSum(#1^3 - 2 &, Log(x - #1)/(3*#1^2) &), x)", //
-        "1/6*(-(-2)^(1/3)/((-2)^(1/3)+x)+2^(1/3)/(-2^(1/3)+x)+((-1)^(2/3)*2^(1/3))/(-(-1)^(\n"
-            + "2/3)*2^(1/3)+x))");
+        "1/(-2+x^3)");
     check("D(RootSum(#1^5 + #1 - 7 &, Log(x - #1)/(5*#1^4 + 1) &), x)", //
         "1/(-7+x+x^5)");
     // The Integrate-produced antiderivative of x^7/(1+x^8) differentiates back to it.
@@ -112,10 +113,13 @@ public class RootSumTest extends ExprEvaluatorTestCase {
    * Regression: a Log summand over the solvable quartic {@code x^4+1} is expanded over its four
    * {@code (-1)^(1/4)} roots and then {@code FullSimplify}'d; that FullSimplify recursed until the
    * Java stack overflowed. The explicit sum is now returned even when the cosmetic simplify fails.
+   *
+   * <p>
+   * The expansion is no longer automatic - it has to be requested with {@code Normal}.
    */
   @Test
   public void testSolvableQuarticLogSummand() {
-    check("RootSum(#^4+1 &, Log(x-#1)/(4*#1^3) &)", //
+    check("Normal(RootSum(#^4+1 &, Log(x-#1)/(4*#1^3) &))", //
         "-1/4*(-1)^(1/4)*Log(-(-1)^(1/4)+x)+1/4*(-1)^(1/4)*Log((-1)^(1/4)+x)-1/4*(-1)^(3/\n"
             + "4)*Log(-(-1)^(3/4)+x)+1/4*(-1)^(3/4)*Log((-1)^(3/4)+x)");
   }
@@ -124,8 +128,10 @@ public class RootSumTest extends ExprEvaluatorTestCase {
   public void testRootSumNumeric() {
     check("N(RootSum(#^5 - 3 # - 7 &, Sin))", //
         "0.292188+I*(-4.44089*10^-16)");
+    // A Sin summand is not a rational function, but the roots of a quadratic are plain radicals, so
+    // the sum is written out over them.
     check("RootSum(#^2 - # + a &, Sin(#) &)", //
-        "2*Cos(Sqrt(1-4*a)/2)*Sin(1/2)");
+        "Sin(1/2-Sqrt(1-4*a)/2)+Sin(1/2+Sqrt(1-4*a)/2)");
     // TODO
     check("RootSum(#^5 - a # + b &, (#^2 - 1)/(#^3 - 2 # + c) &)", //
         "RootSum(-a*#1+#1^5+b&,(-1+#1^2)/(-2*#1+#1^3+c)&)");

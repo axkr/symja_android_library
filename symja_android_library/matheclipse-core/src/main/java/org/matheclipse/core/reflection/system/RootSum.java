@@ -80,34 +80,23 @@ public class RootSum extends AbstractFunctionEvaluator {
       bx = F.C1;
     }
     if (!ax.isPolynomial(F.list(r)) || !bx.isPolynomial(F.list(r))) {
-      // Fallback for non-rational summands: explicitly sum over roots if degree <= 4
-      if (degree > 0 && degree <= 4) {
-        IASTMutable rootsAST = org.matheclipse.core.builtin.RootsFunctions.rootsOfExprPolynomial(px,
-            F.List(r), false, true);
-        if (rootsAST != null && rootsAST.isPresent() && rootsAST.isList()) {
-          IASTAppendable sum = F.PlusAlloc(rootsAST.size());
-          for (int i = 1; i < rootsAST.size(); i++) {
-            sum.append(engine.evaluate(F.unaryAST1(form, rootsAST.get(i))));
-          }
-          IExpr summed = engine.evaluate(sum);
-          // FullSimplify is only cosmetic here - `summed` is already the complete explicit sum over
-          // the roots. On a sum of solvable radicals (e.g. the four (-1)^(1/4) roots of x^4+1) it
-          // can recurse until the Java stack overflows, so treat any failure as "leave it
-          // unsimplified" rather than letting it abort the whole evaluation.
-          try {
-            IExpr simplified = engine.evaluate(F.FullSimplify(summed));
-            if (simplified.isPresent()) {
-              return simplified;
-            }
-          } catch (StackOverflowError soe) {
-            // fall through to the un-simplified sum
-          } catch (RuntimeException rex) {
-            org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-          }
-          return summed;
+      if (degree <= 2) {
+        // The roots of a linear or quadratic polynomial are plain radicals - and Root(f, k) itself
+        // auto-expands exactly up to degree 2 (see Root#evaluate) - so the sum is written out.
+        // RootSum(#^2-#+a&, Sin(#)&) evaluates to Sin(1/2*(1-Sqrt(1-4*a))) +
+        // Sin(1/2*(1+Sqrt(1-4*a))). Note it returns that plain sum over
+        // the roots, not a Simplify'd product form, so no simplification is applied here.
+        IExpr expanded = expandOverRoots(ast, false, engine);
+        if (expanded.isPresent()) {
+          return expanded;
         }
       }
-      // Cannot reduce to a rational function and degree is too high for exact radicals
+      // A non-rational summand such as Log(x + #) cannot be reduced to a rational function of the
+      // coefficients of f, so the expression stays inert - RootSum is exactly the canonical closed
+      // form for the integral of a rational function (Rothstein-Trager), and expanding it into the
+      // explicit roots defeats its purpose: the radicals only exist for degree <= 4, they are far
+      // larger than the RootSum, and Sum_i Log(x + r_i) is not equal to Log(Product_i (x + r_i)) on
+      // the principal branch anyway. Use Normal(RootSum(...)) to expand over the roots on demand.
       return F.NIL;
     }
 
@@ -151,6 +140,74 @@ public class RootSum extends AbstractFunctionEvaluator {
 
     // Keep the expression inert for forms we cannot reduce to a rational function;
     return F.NIL;
+  }
+
+  /**
+   * Expand <code>RootSum(f, form)</code> into the explicit sum <code>Sum_i form(r_i)</code> over
+   * the roots <code>r_i</code> of <code>f</code>.
+   *
+   * <p>
+   * This is what <code>Normal(RootSum(f, form))</code> does. It is deliberately <em>not</em> part
+   * of the automatic evaluation: a summand which reduces to a rational function is handled exactly
+   * by {@link #evaluate(IAST, EvalEngine)}, and for every other summand the explicit form only
+   * exists when the roots are expressible in radicals - i.e. for degree <code>&lt;= 4</code>.
+   *
+   * @param rootSumAST a <code>RootSum(f, form)</code> expression
+   * @param engine the evaluation engine
+   * @return the expanded sum, or {@link F#NIL} if the roots cannot be written explicitly
+   */
+  public static IExpr expandOverRoots(IAST rootSumAST, EvalEngine engine) {
+    return expandOverRoots(rootSumAST, true, engine);
+  }
+
+  /**
+   * @param simplify if <code>true</code> try to condense the explicit sum with
+   *        {@link S#FullSimplify}. The automatic degree <code>&lt;= 2</code> expansion passes
+   *        <code>false</code>, because the expected answer there is the plain sum over the roots.
+   * @see #expandOverRoots(IAST, EvalEngine)
+   */
+  public static IExpr expandOverRoots(IAST rootSumAST, boolean simplify, EvalEngine engine) {
+    if (rootSumAST.argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr f = rootSumAST.arg1();
+    IExpr form = rootSumAST.arg2();
+    ISymbol r = F.Dummy("r");
+    IExpr px = engine.evaluate(F.ExpandAll(engine.evaluate(F.unaryAST1(f, r))));
+    if (!px.isPolynomial(F.list(r))) {
+      return F.NIL;
+    }
+    IExpr degreeExpr = engine.evaluate(F.Exponent(px, r));
+    if (!degreeExpr.isInteger() || degreeExpr.toIntDefault() <= 0) {
+      return F.NIL;
+    }
+    IASTMutable rootsAST = RootsFunctions.rootsOfExprPolynomial(px, F.List(r), false, true);
+    if (rootsAST == null || !rootsAST.isPresent() || !rootsAST.isList()) {
+      return F.NIL;
+    }
+    IASTAppendable sum = F.PlusAlloc(rootsAST.size());
+    for (int i = 1; i < rootsAST.size(); i++) {
+      sum.append(engine.evaluate(F.unaryAST1(form, rootsAST.get(i))));
+    }
+    IExpr summed = engine.evaluate(sum);
+    if (!simplify) {
+      return summed;
+    }
+    // FullSimplify is only cosmetic here - `summed` is already the complete explicit sum over the
+    // roots. On a sum of solvable radicals (e.g. the four (-1)^(1/4) roots of x^4+1) it can recurse
+    // until the Java stack overflows, so treat any failure as "leave it unsimplified" rather than
+    // letting it abort the whole evaluation.
+    try {
+      IExpr simplified = engine.evaluate(F.FullSimplify(summed));
+      if (simplified.isPresent()) {
+        return simplified;
+      }
+    } catch (StackOverflowError soe) {
+      // fall through to the un-simplified sum
+    } catch (RuntimeException rex) {
+      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+    }
+    return summed;
   }
 
   @Override
