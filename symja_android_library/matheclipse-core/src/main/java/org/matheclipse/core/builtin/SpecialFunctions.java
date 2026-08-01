@@ -1803,6 +1803,29 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
+    /**
+     * True if <code>z</code> is syntactically the negation of another expression, so that negating
+     * it is a normalization and not merely a re-ordering.
+     * <p>
+     * {@link AbstractFunctionEvaluator#getNormalizedNegativeExpression(IExpr)} answers the weaker
+     * question whether <code>z</code> is <em>canonically</em> negative, and for a {@link S#Plus} it
+     * decides that on the leading summand's sign alone. That is too weak to gate the reflection
+     * formula <code>psi(z) = psi(-z) + 1/(-z) + Pi*Cot(Pi*(-z))</code>: it rewrites
+     * <code>x - 1</code> onto <code>1 - x</code> while leaving <code>1 - x</code> alone - the same
+     * shape, opposite behavior, decided by term ordering - and it reflects
+     * <code>Log(x) - 1/(2*x)</code>, stored as <code>-1/(2*x) + Log(x)</code>, onto an argument
+     * diverging to <code>-Infinity</code> plus a <code>Cot(Pi*divergent)</code> that is strictly
+     * worse than the input. A <code>Plus</code> therefore only counts when EVERY summand is
+     * negative (<code>-1-x</code>), not just the first.
+     */
+    private static boolean isWhollyNegated(IExpr z) {
+      if (z.isPlus()) {
+        return ((IAST) z).forAll(
+            term -> AbstractFunctionEvaluator.getNormalizedNegativeExpression(term).isPresent());
+      }
+      return true;
+    }
+
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
@@ -1853,11 +1876,13 @@ public class SpecialFunctions {
                 }
               }
 
-              IExpr zNegated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
-              if (zNegated.isPresent()) {
-                // https://functions.wolfram.com/GammaBetaErf/PolyGamma/17/02/01/0001/
-                return F.Plus(F.PolyGamma(0, zNegated), F.Divide(1, zNegated),
-                    F.Times(S.Pi, F.Cot(F.Times(S.Pi, zNegated))));
+              if (isWhollyNegated(z)) {
+                IExpr zNegated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+                if (zNegated.isPresent()) {
+                  // https://functions.wolfram.com/GammaBetaErf/PolyGamma/17/02/01/0001/
+                  return F.Plus(F.PolyGamma(0, zNegated), F.Divide(1, zNegated),
+                      F.Times(S.Pi, F.Cot(F.Times(S.Pi, zNegated))));
+                }
               }
             }
           }

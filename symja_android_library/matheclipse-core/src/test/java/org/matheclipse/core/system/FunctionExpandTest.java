@@ -438,6 +438,20 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "Log(Glaisher)+1/4*(Log(2)+Log(Pi))");
     check("FunctionExpand(PolyGamma(-z))", //
         "1/z+Pi*Cot(Pi*z)+PolyGamma(0,z)");
+    // the reflection formula needs a wholly negated argument - every summand negative
+    check("FunctionExpand(PolyGamma(0,-1-x))", //
+        "1/(1+x)+Pi*Cot(Pi*(1+x))+PolyGamma(0,1+x)");
+    check("FunctionExpand(PolyGamma(0,-2*x))", //
+        "1/(2*x)+Pi*Cot(2*Pi*x)+PolyGamma(0,2*x)");
+    // ...not merely a leading summand that sorts negative: x-1 was reflected onto 1-x while
+    // 1-x was left alone, and Log(x)-1/(2*x) - stored as -1/(2*x)+Log(x) - onto a divergent
+    // argument plus Cot(Pi*divergent), which broke Limit(E^PolyGamma(0,Log(x)-1/(2*x))/Log(x))
+    check("FunctionExpand(PolyGamma(0,x-1))", //
+        "PolyGamma(0,-1+x)");
+    check("FunctionExpand(PolyGamma(0,1-x))", //
+        "PolyGamma(0,1-x)");
+    check("FunctionExpand(PolyGamma(0,Log(x)-1/(2*x)))", //
+        "PolyGamma(0,-1/(2*x)+Log(x))");
     check("FunctionExpand(PolyGamma(0,1/2))", //
         "-EulerGamma-Log(4)");
     check("FunctionExpand(PolyGamma(0,1/3))", //
