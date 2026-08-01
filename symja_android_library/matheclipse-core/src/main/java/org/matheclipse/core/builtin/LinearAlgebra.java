@@ -3349,10 +3349,15 @@ public final class LinearAlgebra {
    */
   private static class LinearSolve extends AbstractFunctionOptionEvaluator {
 
-    private static IExpr createLinearSolveFunction(final IAST ast, final int[] matrixDims,
-        Predicate<IExpr> zeroChecker, EvalEngine engine) {
+    private static IExpr createLinearSolveFunction(final IAST ast, final int argSize,
+        final int[] matrixDims, Predicate<IExpr> zeroChecker, EvalEngine engine) {
       if (matrixDims[0] > matrixDims[1]) {
-        return Errors.printMessage(ast.topHead(), "nodim", F.List(ast), engine);
+        if (argSize == 1) {
+          // no LinearSolveFunction can be created for a matrix with more rows than columns
+          return Errors.printMessage(ast.topHead(), "nodim", F.List(ast), engine);
+        }
+        // an overdetermined system is solved by row reducing the augmented matrix
+        return F.NIL;
       }
       final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1(), false);
       if (matrix != null) {
@@ -3529,7 +3534,7 @@ public final class LinearAlgebra {
         engine.setTogetherMode(true);
         try {
           LinearSolveFunctionExpr<IExpr> lsf = null;
-          IExpr temp = createLinearSolveFunction(ast, matrixDims, zeroChecker, engine);
+          IExpr temp = createLinearSolveFunction(ast, argSize, matrixDims, zeroChecker, engine);
           if (temp instanceof LinearSolveFunctionExpr) {
             lsf = (LinearSolveFunctionExpr<IExpr>) temp;
           }
@@ -3550,8 +3555,8 @@ public final class LinearAlgebra {
             final FieldVector<IExpr> vector = Convert.list2Vector(ast.arg2());
             if (matrix != null && vector != null) {
               if (matrixDims[0] > matrixDims[1]) {
-                if (vector.getDimension() == matrix.getRowDimension()
-                    && vector.getDimension() <= matrix.getColumnDimension()) {
+                // overdetermined system; the number of equations must match the number of rows
+                if (vector.getDimension() == matrix.getRowDimension()) {
                   return underdeterminedSystem(matrix, vector, engine);
                 }
                 return Errors.printMessage(ast.topHead(), "matsq", F.List(ast.arg1(), F.C1),
@@ -7161,6 +7166,18 @@ public final class LinearAlgebra {
   }
 
   /**
+   * Test if an entry of a row reduced matrix is 0. Uses the same zero test as
+   * {@link FieldReducedRowEchelonForm} did when it selected the pivots, because an entry which is
+   * only &quot;possibly zero&quot; isn't necessarily reduced to a structural <code>0</code>.
+   *
+   * @param entry an entry of a row reduced matrix
+   * @return <code>true</code> if the entry is 0
+   */
+  private static boolean isZeroEntry(IExpr entry) {
+    return entry.isZero() || AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST.test(entry);
+  }
+
+  /**
    * Return the solution of the given (augmented-)matrix interpreted as a system of linear
    * equations.
    *
@@ -7187,17 +7204,30 @@ public final class LinearAlgebra {
     FieldReducedRowEchelonForm ref =
         new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
-    IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
-    if (lastVarCoefficient.isZero()) {
-      if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
-        return Errors.printMessage(S.RowReduce, "Row reduced linear equations have no solution.");
+    // the last column of the augmented matrix contains the right hand side of the equations
+    final int variables = cols - 1;
+    // free variables are set to 0, so a pivot row `x[pivot] + ... == b` simply solves to `b`
+    final IExpr[] solution = new IExpr[variables];
+    Arrays.fill(solution, F.C0);
+    for (int i = 0; i < rows; i++) {
+      int pivot = -1;
+      for (int j = 0; j < variables; j++) {
+        if (!isZeroEntry(rowReduced.getEntry(i, j))) {
+          pivot = j;
+          break;
+        }
+      }
+      if (pivot < 0) {
+        // an overdetermined system has rows without a pivot; they are only solvable if `0 == 0`
+        if (!isZeroEntry(rowReduced.getEntry(i, variables))) {
+          return Errors.printMessage(S.RowReduce, "Row reduced linear equations have no solution.");
+        }
+      } else {
+        solution[pivot] = S.Together.of(engine, rowReduced.getEntry(i, variables));
       }
     }
-    IASTAppendable list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
-    list.appendArgs(0, rows, j -> S.Together.of(engine, rowReduced.getEntry(j, cols - 1)));
-    if (rows < cols - 1) {
-      list.appendArgs(rows, cols - 1, i -> F.C0);
-    }
+    IASTAppendable list = F.ListAlloc(variables);
+    list.appendArgs(0, variables, i -> solution[i]);
     return list;
   }
 
