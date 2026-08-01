@@ -909,14 +909,24 @@ public class OutputFormFactory {
       convertTimesOperator(buf, timesAST, oper, precedence, caller);
       return;
     }
-    final IExpr numerator = parts.get()[0];
-    final IExpr denominator = parts.get()[1];
+    IExpr numerator = parts.get()[0];
+    IExpr denominator = parts.get()[1];
+    IExpr fraction = parts.get()[2];
+    if (fraction != null && numerator.isOne() && !denominator.isOne()) {
+      // Fold a rational coefficient into the printed fraction rather than emitting it as its own
+      // factor: 6/5 * x^(-1) prints as 6/(5*x), not as 6/5*1/x.
+      // fractionalPartsTimesPower() only folds the coefficient in on its own when its numerator is
+      // 1 or -1, which is why 1/(5*x) always printed correctly but 2/(5*x) did not.
+      final IRational rational = (IRational) fraction;
+      numerator = rational.numerator();
+      denominator = F.Times(rational.denominator(), denominator);
+      fraction = null;
+    }
     if (!denominator.isOne()) {
       int currPrecedence = oper.getPrecedence();
       if (currPrecedence < precedence) {
         append(buf, "(");
       }
-      final IExpr fraction = parts.get()[2];
       if (fraction != null) {
         convertNumber(buf, (IReal) fraction, Precedence.PLUS, caller);
         append(buf, "*");

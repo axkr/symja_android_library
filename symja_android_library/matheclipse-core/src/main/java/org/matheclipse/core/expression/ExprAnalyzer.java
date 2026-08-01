@@ -503,10 +503,17 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     IAST ast = (IAST) plusAST.get(position);
     IExpr plus = plusAST.splice(position).oneIdentity0();
     if (ast.isAbs() || ast.isAST(S.RealAbs, 2)) {
-      if (plus.isNegative() || plus.isZero()) {
-        if (plus.isFree(Predicates.in(fListOfVariables), true)) {
-          return rewriteInverseFunction(ast, F.Negate(plus));
+      // the equation is Abs(u) + plus == 0, i.e. Abs(u) == rhs with rhs == -plus
+      if (plus.isFree(Predicates.in(fListOfVariables), true)) {
+        if (plus.isPositiveResult()) {
+          // rhs is negative, but Abs(...) never is: the equation has no solution. Return a
+          // non-zero constant so the caller reports it as an equation without variables which
+          // cannot be satisfied, yielding the empty solution set.
+          return F.C1;
         }
+        // rhs is non-negative, or its sign is unknown (e.g. a symbolic parameter a in
+        // Abs(x) == a): rewrite to (u - rhs)*(u + rhs) == 0, giving u == -rhs and u == rhs
+        return rewriteInverseFunction(ast, F.Negate(plus));
       }
       return F.NIL;
     }

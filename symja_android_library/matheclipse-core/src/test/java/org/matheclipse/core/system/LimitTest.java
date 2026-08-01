@@ -479,22 +479,48 @@ public class LimitTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLimitPiecewise002() {
+    // a non-strict condition (x >= -1) is True AT the limit point but False everywhere strictly
+    // below it, so it must not contribute to the limit from below
+    check("f(x_) := Piecewise({{x, x < -1}, {x^2, x >= -1}}); Limit(f(x), x -> -1, Direction -> 1)", //
+        "-1");
+    check(
+        "f(x_) := Piecewise({{x, x < -1}, {x^2, x >= -1}}); Limit(f(x), x -> -1, Direction -> -1)", //
+        "1");
+    check("f(x_) := Piecewise({{x, x < -1}, {x^2, x >= -1}}); Limit(f(x), x -> -1)", //
+        "Indeterminate");
+    check("g(x_) := Piecewise({{x^2, x < 0}, {x, x >= 0}}); Limit(g(x), x -> 0)", //
+        "0");
+
+    // the mirrored case: x <= -1 must not contribute to the limit from above
+    check("Limit(Piecewise({{x, x <= -1}, {x^2, x > -1}}), x -> -1, Direction -> -1)", //
+        "1");
+    check("Limit(Piecewise({{x, x <= -1}, {x^2, x > -1}}), x -> -1, Direction -> 1)", //
+        "-1");
+
+    // a compound condition -1 <= x < 2 is an Inequality(...), not a plain comparison
+    check("Limit(Piecewise({{x, x < -1}, {x^2, -1 <= x < 2}}), x -> -1, Direction -> 1)", //
+        "-1");
+    check("Limit(Piecewise({{x, x < -1}, {x^2, -1 <= x < 2}}), x -> -1, Direction -> -1)", //
+        "1");
+  }
+
+  @Test
   public void testLimitIssue175() {
-    // TODO github #175
-    // check("Limit(((a^(1/x)+b^(1/x))/2)^x, x->Infinity)", //
-    // "Sqr(a)*Sqrt(b)");
+    // github #175
+    check("Limit(((a^(1/x)+b^(1/x))/2)^x, x->Infinity)", //
+        "Sqrt(a)*Sqrt(b)");
   }
 
   @Test
   public void testLimitIssue536() {
     // avoid endless recursion:
-    // check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
-    // "Indeterminate");
-    // // TODO get -4*Pi
-    // check(
-    // "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)),
-    // x->4)", //
-    // "Indeterminate");
+    check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
+        "Indeterminate");
+    // TODO get 4*Pi
+    check(
+        "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)),x->4)", //
+        "4*Pi");
 
     // Issue 536
     check("Integrate(Sqrt((4+x)/(4-x)), x)", //
@@ -534,17 +560,14 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "1");
 
     // Extreme growth races (Exp vs Polynomial)
-    // TODO
-    // check("Limit(Exp(x) / x^100, x -> Infinity)", //
-    // "Infinity");
-    // TODO
-    // check("Limit(x^100 / Exp(x), x -> Infinity)", //
-    // "0");
+    check("Limit(Exp(x) / x^100, x -> Infinity)", //
+        "Infinity");
+    check("Limit(x^100 / Exp(x), x -> Infinity)", //
+        "0");
 
-    // // Nested exponentials
-    // TODO
-    // check("Limit(Exp(Exp(x)) / Exp(Exp(x-1)), x -> Infinity)", //
-    // "Infinity");
+    // Nested exponentials
+    check("Limit(Exp(Exp(x)) / Exp(Exp(x-1)), x -> Infinity)", //
+        "Infinity");
     check("Limit(Exp(Exp(x)) / Exp(Exp(x) + Exp(x)), x -> Infinity)", //
         "0");
     check("Limit(Exp(Exp(x) + x) / Exp(Exp(x)), x -> Infinity)", //
@@ -555,9 +578,8 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "1");
     check("Limit(Log(Log(x)) / Log(x), x -> Infinity)", //
         "0");
-    // TODO
-    // check("Limit(Log(x)^100 / x, x -> Infinity)", //
-    // "0");
+    check("Limit(Log(x)^100 / x, x -> Infinity)", //
+        "0");
 
     // // Mixed growth classes
     check("Limit((Log(x) + Exp(x)) / (x + Exp(x)), x -> Infinity)", //
@@ -566,9 +588,8 @@ public class LimitTest extends ExprEvaluatorTestCase {
     // // Sub-exponential growth
     check("Limit(Exp(Sqrt(x)) / x, x -> Infinity)", //
         "Infinity");
-    // TODO
-    // check("Limit(Exp(Log(x)^2) / x, x -> Infinity)", //
-    // "Infinity");
+    check("Limit(Exp(Log(x)^2) / x, x -> Infinity)", //
+        "Infinity");
   }
 
   @Test
@@ -576,7 +597,6 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(Gamma(1/t),t->-Infinity)", //
         "-Infinity");
 
-    // TODO
     check("Limit(x/Abs(x), x->0)", //
         "Indeterminate");
     // --- ID.Factorial ---
@@ -690,23 +710,219 @@ public class LimitTest extends ExprEvaluatorTestCase {
      * 
      * TODO the shape should be left unevaluated.
      */
-    check("Limit[(2 Sin(1/x))^(1/x^2), x -> 0]", //
+    check("Limit((2 Sin(1/x))^(1/x^2), x -> 0)", //
         "Indeterminate");
     /*
      * Negative divergent exponent: the bound inequality flips and a vanishing base blows up.
      * 
      * TODO this too should be left unevaluated.
      */
-    check("Limit[(Sin(1/x)/2)^(-1/x^2), x -> 0]", //
+    check("Limit((Sin(1/x)/2)^(-1/x^2), x -> 0)", //
         "Indeterminate");
   }
 
 
   @Test
   public void testLimitIssue1420() {
+    // Two-sided limit does not exist: the one-sided limits disagree (from below Pi/8, from above
+    // -Pi/8), so with no Direction the result is Indeterminate (Wolfram Alpha: "limit only from
+    // the left"). The radical retry must NOT adopt the from-below value here because the opposite
+    // side resolves to a different real value - contrast testLimitIssue536 where the opposite side
+    // stays unresolved.
     check(
         "Limit(1/4*x^2*(Pi-2*ArcSin(x))+1/4*(-1+x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(1-x^2)))/(1-x^2)), x -> 1)", //
         "Indeterminate");
+  }
+
+  @Test
+  public void testLimitStepFunctionsDirected() {
+    check("Limit(Floor(x), x -> 2, Direction -> \"FromAbove\")", //
+        "2");
+    check("Limit(Floor(x), x -> 2, Direction -> \"FromBelow\")", //
+        "1");
+    check("Limit(Ceiling(x), x -> 2, Direction -> \"FromAbove\")", //
+        "3");
+    check("Limit(Sign(x), x -> 0, Direction -> \"FromAbove\")", //
+        "1");
+    check("Limit(Sign(x), x -> 0, Direction -> \"FromBelow\")", //
+        "-1");
+    check("Limit(UnitStep(x), x -> 0, Direction -> \"FromBelow\")", //
+        "0");
+    check("Limit(Abs(x) / x, x -> 0, Direction -> \"FromBelow\")", //
+        "-1");
+    check("Limit(Floor(x) + Pi, x -> 5 / 2, Direction -> \"FromBelow\")", //
+        "2+Pi");
+  }
+
+  @Test
+  public void testLimitStepFunctionsTwoSided() {
+    // the two one-sided limits disagree at a jump
+    check("Limit(Floor(x), x -> 2)", //
+        "Indeterminate");
+    check("Limit(Ceiling(x), x -> 2)", //
+        "Indeterminate");
+    check("Limit(Sign(x), x -> 0)", //
+        "Indeterminate");
+    check("Limit(UnitStep(x), x -> 0)", //
+        "Indeterminate");
+    check("Limit(FractionalPart(x), x -> 2)", //
+        "Indeterminate");
+    check("Limit(Round(x), x -> 5 / 2)", //
+        "Indeterminate");
+    check("Limit(Mod(x, 3), x -> 3)", //
+        "Indeterminate");
+
+    // continuous at the limit point - no jump there
+    check("Limit(Floor(x), x -> 5 / 2)", //
+        "2");
+    check("Limit(Round(x), x -> 2)", //
+        "2");
+    // x^2+1 approaches 1 from above for both directions of x
+    check("Limit(Floor(x^2 + 1), x -> 0)", //
+        "1");
+  }
+
+  @Test
+  public void testLimitHarmonicNumber() {
+    // HarmonicNumber(n) = EulerGamma + PolyGamma(0, n+1); the asymptotic expansion is
+    // Log(n) + EulerGamma + 1/(2*n) - 1/(12*n^2) + O(n^-4)
+    check("Limit(HarmonicNumber(n) - Log(n), n -> Infinity)", //
+        "EulerGamma");
+    check("Limit(n * (HarmonicNumber(n) - Log(n) - EulerGamma), n -> Infinity)", //
+        "1/2");
+    check("Limit(n^2 * (HarmonicNumber(n) - Log(n) - EulerGamma - 1 / (2 * n)), n -> Infinity)", //
+        "-1/12");
+    check("Limit(HarmonicNumber(n), n -> Infinity)", //
+        "Infinity");
+    check("Limit(1 / HarmonicNumber(n), n -> Infinity)", //
+        "0");
+  }
+
+  @Test
+  public void testDiscreteLimit() {
+    // an unresolvable sequence stays unevaluated. Clear(f) because testLimitPiecewise002 defines a
+    // downvalue f(x_):=Piecewise(...) that outlives its test method - without it f(n) is already
+    // substituted before DiscreteLimit sees its argument, depending on the test execution order.
+    check("Clear(f); DiscreteLimit(f(n), n -> Infinity)", //
+        "DiscreteLimit(f(n),n->Infinity)");
+    check("DiscreteLimit(n / (n + 1), n -> Infinity)", //
+        "1");
+    check("DiscreteLimit((n / (n + 2)) * E^(-m / (m + 1)), {m -> Infinity, n -> Infinity})", //
+        "1/E");
+
+    // examples from the Wolfram reference page
+    check("DiscreteLimit((3 * n^2) / (n^2 + 5), n -> Infinity)", //
+        "3");
+    check("DiscreteLimit(E^n, n -> -Infinity)", //
+        "0");
+    check("DiscreteLimit((-1)^n / n, n -> Infinity)", //
+        "0");
+    check("DiscreteLimit((1 + 1/n)^n, n -> Infinity)", //
+        "E");
+    check("DiscreteLimit(Fibonacci(n) / 2^n, n -> Infinity)", //
+        "0");
+  }
+
+  @Test
+  public void testDiscreteLimitInteger() {
+    // integer-periodic arguments - the continuous Limit has to answer Indeterminate here
+    check("DiscreteLimit(Sin(Pi*n), n -> Infinity)", //
+        "0");
+    check("DiscreteLimit(Cos(2*Pi*n), n -> Infinity)", //
+        "1");
+    // bounded oscillating sequences don't converge
+    check("DiscreteLimit((-1)^n, n -> Infinity)", //
+        "Indeterminate");
+    check("DiscreteLimit((-1)^n * n, n -> Infinity)", //
+        "Indeterminate");
+  }
+
+  @Test
+  public void testDiscreteLimitMultivariate() {
+    // {k1, ..., kn} -> {p1, ..., pn} form
+    check("DiscreteLimit((n / (n + 2)) * E^(-m / (m + 1)), {m, n} -> {Infinity, Infinity})", //
+        "1/E");
+    // the limit variable doesn't occur in the sequence
+    check("DiscreteLimit(a, n -> Infinity)", //
+        "a");
+  }
+
+  @Test
+  public void testDiscreteLimitErrors() {
+    // only Infinity and -Infinity are valid limit points
+    check("DiscreteLimit(n / (n + 1), n -> 2)", //
+        "DiscreteLimit(n/(1+n),n->2)");
+    check("DiscreteLimit(n / (n + 1), n)", //
+        "DiscreteLimit(n/(1+n),n)");
+    check("DiscreteLimit(n / (n + 1), 2 -> Infinity)", //
+        "DiscreteLimit(n/(1+n),2->Infinity)");
+  }
+
+  @Test
+  public void testLimitOscillatingSum() {
+    // asymptotically independent phases: the sum reaches the whole interval-arithmetic sum of
+    // the summand ranges
+    check("Limit(Sin(x) + Sin(x^2), x -> Infinity)", //
+        "Interval({-2,2})");
+    check("Limit(Cos(x) + Cos(x^2), x -> Infinity)", //
+        "Interval({-2,2})");
+    check("Limit(Sin(x) + Cos(x^2), x -> Infinity)", //
+        "Interval({-2,2})");
+    check("Limit(Sin(x) + Sin(x^2) + Sin(x^3), x -> Infinity)", //
+        "Interval({-3,3})");
+    check("Limit(Sin(x) + Cos(x) + Sin(x^2), x -> Infinity)", //
+        "Interval({-3,3})");
+    check("Limit(2 * Sin(x) + Sin(x^2), x -> Infinity)", //
+        "Interval({-3,3})");
+    check("Limit(3 * Sin(x) + Sin(x^2), x -> Infinity)", //
+        "Interval({-4,4})");
+
+    // same oscillation rate - the summands stay phase-locked, so no range is reported
+    check("Limit(Sin(x) + Cos(x), x -> Infinity)", //
+        "Indeterminate");
+    check("Limit(Sin(x) + Sin(2 * x), x -> Infinity)", //
+        "Indeterminate");
+
+    check("Limit(-((Pi - z) / Sin(z)), z -> Pi)", //
+        "-1");
+  }
+
+  @Test
+  public void testLimitPole() {
+    // at a simple pole the one-sided limits are -Infinity and Infinity, so the two-sided limit
+    // does not exist - substituting the limit point only reports ComplexInfinity, i.e. that a
+    // pole is there, not a limit value
+    check("Limit(Zeta(z), z -> 1)", //
+        "Indeterminate");
+    check("Limit(Gamma(z), z -> 0)", //
+        "Indeterminate");
+    check("Limit(Gamma(z), z -> -1)", //
+        "Indeterminate");
+    check("Limit(Csc(z), z -> 0)", //
+        "Indeterminate");
+
+    check("Limit(Zeta(z), z -> 1, Direction -> 1)", //
+        "-Infinity");
+    check("Limit(Zeta(z), z -> 1, Direction -> -1)", //
+        "Infinity");
+    check("Limit(Gamma(z), z -> 0, Direction -> 1)", //
+        "-Infinity");
+    check("Limit(Gamma(z), z -> 0, Direction -> -1)", //
+        "Infinity");
+
+    // an even-order pole approaches Infinity from both sides and keeps its limit
+    check("Limit(1/z^2, z -> 0)", //
+        "Infinity");
+    check("Limit(1/(z-1)^2, z -> 1)", //
+        "Infinity");
+
+    // no pole at the limit point - direct substitution stays valid
+    check("Limit(Gamma(z), z -> 1)", //
+        "1");
+    check("Limit(Zeta(z), z -> 2)", //
+        "Pi^2/6");
+    check("Limit(z*Gamma(z), z -> 0)", //
+        "1");
   }
 
   /** The JUnit setup method */

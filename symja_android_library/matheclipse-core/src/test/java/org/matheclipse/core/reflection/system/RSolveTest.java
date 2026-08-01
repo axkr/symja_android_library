@@ -110,8 +110,10 @@ public class RSolveTest {
 
   @Test
   public void testSqrt() {
+    // the sum is left unfactored on purpose: Simplify only pulls a symbolic common factor out of a
+    // Plus when the sum is a polynomial, and Log(Log(n)) makes this one non-polynomial.
     check("RSolve(a(n)==Sqrt(n)*a(Sqrt(n))+n, a, n)", //
-        "{{a->Function({n},n*(C(1)/E^2+Log(Log(n))/Log(2)))}}");
+        "{{a->Function({n},(n*C(1))/E^2+(n*Log(Log(n)))/Log(2))}}");
   }
 
   // Trigonometric Canonicalization
@@ -200,7 +202,7 @@ public class RSolveTest {
     // Verifies the n = E^(b^m) double-exponential substitution and global Product exponent
     // summation
     check("RSolve(a(n) == Sqrt(n)*a(Sqrt(n)) + n, a, n)", //
-        "{{a->Function({n},n*(C(1)/E^2+Log(Log(n))/Log(2)))}}");
+        "{{a->Function({n},(n*C(1))/E^2+(n*Log(Log(n)))/Log(2))}}");
 
     // Tests a different fractional power: a(n) = n^(1/3) * a(n^(1/3)) + n
     check("RSolve(a(n) == n^(1/3)*a(n^(1/3)) + n, a, n)", //

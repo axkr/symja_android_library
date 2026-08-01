@@ -972,7 +972,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "Piecewise({{a^#1/(E^a*#1!),#1>=0}},0)&");
     //
     check("1/(2!*E) + 1/(3!*E)+ 1/(4!*E)+ 1/(5!*E)+ 1/(6!*E) ", //
-        "517/720*1/E");
+        "517/(720*E)");
     check("Probability(x<=3, Distributed(x, GeometricDistribution(1/5)))", //
         "369/625");
     check("Probability(x<=3, Distributed(x, PoissonDistribution(m)))", //
@@ -980,11 +980,11 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Probability(3 == x, Distributed(x, PoissonDistribution(1)))", //
         "1/(6*E)");
     check("Probability(1.1 <= x <= 6.9, Distributed(x, PoissonDistribution(1)))", //
-        "517/720*1/E");
+        "517/(720*E)");
     check("Probability(1.1 < x < 6.9, Distributed(x, PoissonDistribution(1)))", //
-        "517/720*1/E");
+        "517/(720*E)");
     check("Probability(1 < x < 7, Distributed(x, PoissonDistribution(1)))", //
-        "517/720*1/E");
+        "517/(720*E)");
     check("Probability(E^x<3, Distributed(x,PoissonDistribution(1)))", //
         "2/E");
   }

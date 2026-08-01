@@ -337,7 +337,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
       // 2. Fallback to standard linear/polynomial or numeric root finding
       if (exprAnalyzer.isLinearOrPolynomial()) {
-        listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
+        listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, numericFlag, engine);
         if (listOfRules.isPresent()) {
           listOfRules =
               exprAnalyzer.mapOnOriginal(exprAnalyzer.getPowerRewrittenExpr(), listOfRules);
@@ -612,12 +612,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param engine
      * @return
      */
-    private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
+    private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, boolean numericFlag,
+        EvalEngine engine) {
       IExpr numerator = exprAnalyzer.getNumerator();
       IExpr denominator = exprAnalyzer.getDenominator();
       // try to solve the expr for one of the variables in the symbol set
       for (IExpr variable : exprAnalyzer.getVariableSet()) {
-        IAST temp = rootsOfUnivariatePolynomial(numerator, denominator, variable, engine);
+        IAST temp =
+            rootsOfUnivariatePolynomial(numerator, denominator, variable, numericFlag, engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -750,6 +752,20 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
     public static IAST rootsOfUnivariatePolynomial(IExpr numerator, IExpr denominator,
         IExpr variable, EvalEngine engine) {
+      return rootsOfUnivariatePolynomial(numerator, denominator, variable, false, engine);
+    }
+
+    /**
+     * @param numericFlag if <code>true</code> the caller ({@link S#NSolve}) asked for a numerical
+     *        solution. Note that this is not the same as
+     *        {@link IExpr#isNumericMode()} of <code>numerator</code>: <code>NSolve</code> is
+     *        regularly handed an <em>exact</em> polynomial like <code>x^5+2*x^3+x-7</code>, and
+     *        without this flag the polynomial would be answered with inert {@link S#Root} objects
+     *        which are only evaluated to numbers afterwards - in a different order, and running the
+     *        numerical root finder once per root.
+     */
+    public static IAST rootsOfUnivariatePolynomial(IExpr numerator, IExpr denominator,
+        IExpr variable, boolean numericFlag, EvalEngine engine) {
       IExpr temp = F.NIL;
 
       if (numerator.isNumericMode() && denominator.isOne()) {
@@ -757,7 +773,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
       if (temp.isNIL()) {
         temp = RootsFunctions.rootsOfVariable(numerator, denominator, F.list(variable),
-            numerator.isNumericMode(), engine);
+            numerator.isNumericMode(), !numericFlag, engine);
       }
       if (temp.isPresent()) {
         if (temp.isSameHeadSizeGE(S.List, 2)) {
@@ -814,6 +830,60 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    /**
+     * Solve an underdetermined system, i.e. a system with fewer equations than variables. Such a
+     * system has no isolated solutions; the variables that cannot be determined stay free
+     * parameters and the remaining ones are expressed in terms of them, e.g.
+     * <code>Solve(x^2 - y^3 == 1, {x, y})</code> gives
+     * <code>{{x -> -Sqrt(1 + y^3)}, {x -> Sqrt(1 + y^3)}}</code> with <code>y</code> free.
+     *
+     * <p>
+     * Currently restricted to a single equation: the variable of lowest (positive) polynomial
+     * degree is solved for - it yields the algebraically simplest radical - and every other
+     * variable is left as a parameter. Ties are broken by the order in the variable list.
+     *
+     * @param termsEqualZeroList the equations as expressions which should be <code>== 0</code>
+     * @param inequationsList inequality constraints; underdetermined solving is only attempted when
+     *        this is empty
+     * @param numericFlag if <code>true</code> evaluate the solutions numerically
+     * @param variables the variables to solve for
+     * @param engine the evaluation engine
+     * @return a "list of solution lists", or {@link F#NIL} if the system isn't underdetermined or
+     *         no solve variable could be determined
+     */
+    private IExpr solveUnderdetermined(IASTMutable termsEqualZeroList, IAST inequationsList,
+        boolean numericFlag, IAST variables, EvalEngine engine) {
+      if (termsEqualZeroList.argSize() != 1 || variables.argSize() < 2
+          || !inequationsList.isEmpty()) {
+        return F.NIL;
+      }
+      IExpr equation = termsEqualZeroList.arg1();
+      // choose the variable with the lowest positive degree in the (polynomial) equation
+      IExpr solveVariable = F.NIL;
+      long minDegree = Long.MAX_VALUE;
+      for (int i = 1; i < variables.size(); i++) {
+        IExpr variable = variables.get(i);
+        if (!variable.isSymbol() || equation.isFree(variable)
+            || !equation.isPolynomial(F.list(variable))) {
+          // a variable the equation isn't polynomial in (e.g. x in Sin(x) + y == 1) can't be
+          // ranked by degree; leave it as a free parameter and try the remaining ones
+          continue;
+        }
+        long degree = S.Exponent.of(engine, equation, variable).toLongDefault();
+        // "<=" so that on equal degree the LAST such variable wins: the earlier variables stay
+        // the free parameters, e.g. Solve({x*y == 1}, {x, y}) -> {{y -> 1/x}}
+        if (degree > 0 && degree <= minDegree) {
+          minDegree = degree;
+          solveVariable = variable;
+        }
+      }
+      if (solveVariable.isNIL()) {
+        return F.NIL;
+      }
+      return solveRecursive(termsEqualZeroList, inequationsList, numericFlag,
+          F.list(solveVariable), engine);
+    }
+
     private IExpr solveMultiVariableSystem(IASTMutable termsEqualZeroList, IAST inequationsList,
         boolean numericFlag, final IAST vars, EvalEngine engine) {
       // expensive recursion try
@@ -826,10 +896,21 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
             variable, true, false, engine);
         if (reduced != null) {
-          final IAST variables = vars.splice(i);
-          reducedEqualZeroList = reducedEqualZeroList.removeAtCopy(1);
           // oneVariableRule = ( firstVariable -> reducedExpression )
           final IAST oneVariableRule = reduced[1];
+          // Eliminate.eliminateOneVariable() returns a *list* of rules when the variable has
+          // several branches (e.g. x -> +/-Sqrt(y) from x^2 - y == 0). Substituting such a
+          // multi-branch elimination as if it were a single ( variable -> value ) rule both drops
+          // solution branches and builds a malformed nested rule ( variable -> ( variable ->
+          // value ) ), so skip it (before removing the first equation) and prefer a different
+          // variable whose elimination yields a single rule (e.g. y -> x^2 from the same
+          // equation). A pure polynomial system always has such a variable; anything else is left
+          // to the fall-through strategies (solveViaKernelHomogenization, ...).
+          if (oneVariableRule != null && oneVariableRule.isListOfRules(false)) {
+            continue;
+          }
+          final IAST variables = vars.splice(i);
+          reducedEqualZeroList = reducedEqualZeroList.removeAtCopy(1);
           IExpr replaced = reducedEqualZeroList.replaceAll(oneVariableRule);
           if (replaced.isList()) {
             IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
@@ -1802,15 +1883,22 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               return BooleanFunctions.solveInstances(ast.arg1(), variables, maxRoots);
             }
             if (domain == S.Integers || domain == S.Primes) {
-              IExpr integersResult =
-                  solveIntegers(ast, equationVariables, variables, maxRoots, domain, engine);
+              // An infinite solution family may only be answered in closed form when the caller
+              // didn't ask for a specific finite number of individual solutions: MaxRoots->10 is a
+              // request to enumerate ten of them. S#Primes is always enumerated - the parametric
+              // family is over the integers and its members aren't generally prime.
+              boolean allowParametricSolution = domain == S.Integers //
+                  && (options[1].isAutomatic() || options[1].isInfinity()
+                      || options[1].equals(F.C1000));
+              IExpr integersResult = solveIntegers(ast, equationVariables, variables, maxRoots,
+                  domain, allowParametricSolution, engine);
               if (domain == S.Primes) {
                 return checkDomain(integersResult, domain, maxRoots);
               }
               return integersResult;
             }
 
-            if (domain != S.Reals && domain != S.Complexes) {
+            if (domain != S.Reals && domain != S.Complexes && domain != S.Rationals) {
               // Warning: `1` is not a valid domain specification.
               Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
             }
@@ -1876,6 +1964,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IExpr result =
               solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
           if (result.isNIL()) {
+            result = solveUnderdetermined(termsEqualZeroList, lists[1], numericFlag, variables,
+                engine);
+          }
+          if (result.isNIL()) {
             // The system cannot be solved with the methods available to Solve.
             return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
           }
@@ -1923,10 +2015,25 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return false;
   }
 
+  /**
+   * Check if some rule in the list has a value which isn't a rational number, i.e. whether the
+   * solution has to be rejected for the {@link S#Rationals} domain. Integers and fractions are
+   * rational; radicals like <code>Sqrt(2)</code> and complex values like <code>I</code> are not.
+   *
+   * @param listOfRules a list of rules <code>Rule(variable, value)</code>
+   * @return <code>true</code> if the solution contains a non-rational value
+   */
+  private static boolean isNotRational(IExpr listOfRules) {
+    if (listOfRules.isListOfRules(false)) {
+      return listOfRules.exists(x -> !x.second().isRational());
+    }
+    return false;
+  }
+
 
   /**
-   * Check if all solutions are in the given domain (currently only {@link S#Reals} and
-   * {@link S#Primes} are checked).
+   * Check if all solutions are in the given domain (currently {@link S#Reals}, {@link S#Rationals}
+   * and {@link S#Primes} are checked).
    *
    * @param expr
    * @param domain
@@ -1943,6 +2050,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         result = checkDomain(list, result, Solve::isComplex);
       } else if (domain.equals(S.Primes)) {
         result = checkDomain(list, result, Solve::isPrime);
+      } else if (domain.equals(S.Rationals)) {
+        result = checkDomain(list, result, Solve::isNotRational);
       }
     }
     if (result.isListOfLists() && maxRoots < result.argSize()) {
@@ -1990,14 +2099,256 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    * @param engine
    * @return
    */
+  /**
+   * Solve a single univariate polynomial equation over the integers <em>exactly</em>.
+   *
+   * <p>
+   * Every integer root of a polynomial with integer coefficients divides its constant term
+   * (rational root theorem), so the candidates can be enumerated exactly and the result is
+   * complete. A finite-domain constraint solver, by contrast, is only complete inside the box it
+   * happens to search: outside that box it can neither find a root nor prove that none exists, so
+   * it may report the empty set for a system that does have integer solutions - which is what
+   * <code>Solve(-4-4*x+x^4+x^5==0, x, Integers)</code> used to do even though <code>x == -1</code>
+   * is a root.
+   *
+   * <p>
+   * A zero constant term is handled by treating the factored-out <code>x^k</code> separately, which
+   * contributes the root <code>0</code>. Additional inequality constraints are applied as a filter
+   * afterwards.
+   *
+   * @param equationsAndInequations the equations and inequality constraints
+   * @param equationVariables the variables occurring in the equations
+   * @param userDefinedVariables the variables the user asked to solve for
+   * @param maximumNumberOfResults the maximum number of results to return
+   * @param engine the evaluation engine
+   * @return the (possibly empty) list of solution lists, or {@link F#NIL} if this isn't a single
+   *         univariate polynomial equation with rational coefficients
+   */
+  private static IExpr solveIntegersPolynomial(IAST equationsAndInequations, IAST equationVariables,
+      IAST userDefinedVariables, int maximumNumberOfResults, EvalEngine engine) {
+    if (userDefinedVariables.argSize() != 1 || equationVariables.argSize() != 1
+        || !equationVariables.arg1().isSymbol()
+        || !userDefinedVariables.arg1().equals(equationVariables.arg1())) {
+      return F.NIL;
+    }
+    final IExpr variable = equationVariables.arg1();
+    IExpr equation = F.NIL;
+    IASTAppendable constraints = F.ListAlloc();
+    for (int i = 1; i < equationsAndInequations.size(); i++) {
+      IExpr expr = equationsAndInequations.get(i);
+      if (expr.isEqual() && expr.isAST2()) {
+        if (equation.isPresent()) {
+          return F.NIL; // more than one equation is not handled here
+        }
+        equation = F.Subtract(expr.first(), expr.second());
+      } else if (expr.isRelationalBinary()) {
+        constraints.append(expr);
+      } else {
+        return F.NIL;
+      }
+    }
+    if (equation.isNIL()) {
+      return F.NIL;
+    }
+    // a rational equation is zero exactly where its numerator is zero; Together() also clears the
+    // denominators of rational coefficients, so the numerator has integer coefficients
+    IExpr numerator = S.Numerator.of(engine, S.Together.of(engine, equation));
+    if (numerator.isZero() || !numerator.isPolynomial(F.list(variable))) {
+      return F.NIL;
+    }
+    IExpr coefficients = S.CoefficientList.of(engine, numerator, variable);
+    if (!coefficients.isList() || coefficients.argSize() < 2) {
+      return F.NIL;
+    }
+    IAST coefficientList = (IAST) coefficients;
+    // index of the lowest non-zero coefficient: everything below it is a factored-out power of the
+    // variable, and the coefficient at that index is the constant term of the reduced polynomial
+    int lowest = -1;
+    for (int i = 1; i < coefficientList.size(); i++) {
+      IExpr coefficient = coefficientList.get(i);
+      if (!coefficient.isInteger()) {
+        return F.NIL;
+      }
+      if (lowest < 0 && !coefficient.isZero()) {
+        lowest = i;
+      }
+    }
+    if (lowest < 0) {
+      return F.NIL; // identically zero: solved by every integer
+    }
+    IInteger constantTerm = ((IInteger) coefficientList.get(lowest)).abs();
+    if (constantTerm.toLongDefault() == Long.MIN_VALUE
+        || constantTerm.toLongDefault() > 1000000000L) {
+      // factoring a huge constant term would cost more than it saves
+      return F.NIL;
+    }
+    IExpr divisors = S.Divisors.of(engine, constantTerm);
+    if (!divisors.isList()) {
+      return F.NIL;
+    }
+    Set<IExpr> roots = new TreeSet<IExpr>();
+    if (lowest > 1) {
+      roots.add(F.C0); // the factored-out power of the variable contributes the root 0
+    }
+    IAST divisorList = (IAST) divisors;
+    for (int i = 1; i < divisorList.size(); i++) {
+      IExpr divisor = divisorList.get(i);
+      if (!divisor.isInteger()) {
+        continue;
+      }
+      for (int sign = 0; sign < 2; sign++) {
+        IExpr candidate = sign == 0 ? divisor : divisor.negate();
+        if (engine.evaluate(F.subst(numerator, variable, candidate)).isZero()) {
+          roots.add(candidate);
+        }
+      }
+    }
+
+    IASTAppendable result = F.ListAlloc(roots.size());
+    for (IExpr root : roots) {
+      boolean satisfiesConstraints = true;
+      for (int i = 1; i < constraints.size(); i++) {
+        if (!engine.evaluate(F.subst(constraints.get(i), variable, root)).isTrue()) {
+          satisfiesConstraints = false;
+          break;
+        }
+      }
+      if (satisfiesConstraints) {
+        result.append(F.list(F.Rule(variable, root)));
+        if (maximumNumberOfResults > 0 && result.argSize() >= maximumNumberOfResults) {
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Solve a single linear Diophantine equation whose variables aren't bounded by any inequality.
+   *
+   * <p>
+   * Such a system has infinitely many integer solutions, so there is nothing for a finite-domain
+   * constraint solver to enumerate: it would silently fall back on a default search box and return
+   * an arbitrary truncated prefix of the solution family (for <code>x + y == 5</code> that used to
+   * be a thousand tuples starting at <code>x == -499</code>). Instead the family is returned in
+   * closed form, parametrized by <code>C(1)</code>, e.g.
+   * <code>{{x -> ConditionalExpression(C(1), C(1) &isin; Integers), y -> ConditionalExpression(5 -
+   * C(1), C(1) &isin; Integers)}}</code>.
+   *
+   * <p>
+   * {@link S#Reduce} already solves linear Diophantine equations with the extended Euclidean
+   * algorithm and reports <code>False</code> when the gcd of the coefficients doesn't divide the
+   * right hand side; this method only rewrites its <code>And(...)</code> answer into the "list of
+   * solution rules" shape that {@link S#Solve} returns.
+   *
+   * @return the parametrized solution, {@link F#CEmptyList} if no integer solution exists, or
+   *         {@link F#NIL} if this isn't an unbounded single linear equation
+   */
+  private static IExpr solveIntegersLinearParametric(IAST equationsAndInequations,
+      IAST userDefinedVariables, EvalEngine engine) {
+    // argSize() == 1 also guarantees there are no inequality constraints: with bounds the
+    // constraint solver can enumerate the finite solution set, which is more informative
+    if (equationsAndInequations.argSize() != 1 || userDefinedVariables.argSize() < 2) {
+      return F.NIL;
+    }
+    IExpr equation = equationsAndInequations.arg1();
+    if (!equation.isEqual() || !equation.isAST2()) {
+      return F.NIL;
+    }
+    IExpr difference = F.Subtract(equation.first(), equation.second());
+    for (int i = 1; i < userDefinedVariables.size(); i++) {
+      IExpr variable = userDefinedVariables.get(i);
+      if (!variable.isSymbol() || !S.Exponent.of(engine, difference, variable).isOne()) {
+        // every solve variable has to occur, and occur linearly
+        return F.NIL;
+      }
+    }
+
+    IExpr reduced = engine.evaluate(F.Reduce(equation, userDefinedVariables, S.Integers));
+    if (reduced.isFalse()) {
+      return F.CEmptyList;
+    }
+    if (!reduced.isAnd()) {
+      return F.NIL;
+    }
+    IAST and = (IAST) reduced;
+    IExpr condition = F.NIL;
+    IASTAppendable equations = F.ListAlloc(and.argSize());
+    for (int i = 1; i < and.size(); i++) {
+      IExpr arg = and.get(i);
+      if (arg.isAST(S.Element, 3)) {
+        condition = condition.isNIL() ? arg : F.And(condition, arg);
+      } else if (arg.isEqual() && arg.isAST2() && arg.first().isSymbol()
+          && userDefinedVariables.indexOf(arg.first()) > 0) {
+        equations.append(arg);
+      } else {
+        return F.NIL;
+      }
+    }
+    if (condition.isNIL() || equations.argSize() != userDefinedVariables.argSize()) {
+      return F.NIL;
+    }
+
+    IASTAppendable rules = F.ListAlloc(equations.argSize());
+    for (int i = 1; i < userDefinedVariables.size(); i++) {
+      IExpr variable = userDefinedVariables.get(i);
+      IExpr value = F.NIL;
+      for (int j = 1; j < equations.size(); j++) {
+        if (equations.get(j).first().equals(variable)) {
+          value = equations.get(j).second();
+          break;
+        }
+      }
+      if (value.isNIL()) {
+        return F.NIL;
+      }
+      rules.append(F.Rule(variable, F.ConditionalExpression(value, condition)));
+    }
+    return F.list(rules);
+  }
+
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
       IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain, EvalEngine engine) {
+    return solveIntegers(ast, equationVariables, userDefinedVariables, maximumNumberOfResults,
+        domain, false, engine);
+  }
+
+  /**
+   * @param allowParametricSolution if <code>true</code>, an unbounded linear Diophantine equation
+   *        may be answered with its closed-form solution family instead of enumerated solutions.
+   *        Callers that need concrete instances - {@link S#FindInstance}, or a {@link S#Solve} call
+   *        which asked for a specific finite number of results via {@link S#MaxRoots} - pass
+   *        <code>false</code> and get the enumeration.
+   */
+  public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
+      IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain,
+      boolean allowParametricSolution, EvalEngine engine) {
     if (!userDefinedVariables.isEmpty()) {
       IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
       if (equationsAndInequations.isEmpty()) {
         return F.NIL;
       }
       try {
+        // Exact path first: a single univariate polynomial equation has a finite, exactly
+        // computable set of integer roots, so it never needs a (necessarily bounded, and therefore
+        // incomplete) constraint-solver search.
+        IExpr exactResult = solveIntegersPolynomial(equationsAndInequations, equationVariables,
+            userDefinedVariables, maximumNumberOfResults, engine);
+        if (exactResult.isPresent()) {
+          return exactResult;
+        }
+
+        // Unbounded single linear equation: the solution family is infinite, so return it in
+        // closed form. This runs before the Diophantine / constraint-solver paths below, which
+        // would otherwise enumerate an arbitrary prefix out of a default search box.
+        if (allowParametricSolution) {
+          IExpr parametricResult =
+              solveIntegersLinearParametric(equationsAndInequations, userDefinedVariables, engine);
+          if (parametricResult.isPresent()) {
+            return parametricResult;
+          }
+        }
+
         // for model#table() method
         HybridTuples hybridTuples = null;
         IExpr[] hybridVars = null;

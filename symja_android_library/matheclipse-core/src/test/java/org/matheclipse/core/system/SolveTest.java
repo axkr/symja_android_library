@@ -272,6 +272,190 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveIntegersExactPolynomial() {
+    // A single univariate polynomial equation has a finite, exactly computable set of integer
+    // roots (they divide the constant term), so it is solved exactly instead of by a bounded
+    // constraint-solver search. x^5+x^4-4*x-4 == (1+x)*(x^2-2)*(x^2+2), and the constraint solver
+    // used to miss the root -1 entirely and answer {}.
+    check("Solve(-4 - 4*x + x^4 + x^5 == 0, x, Integers)", //
+        "{{x->-1}}");
+    check("Solve(x^4 == 4, x, Integers)", //
+        "{}");
+    check("Solve(x^3 == 8, x, Integers)", //
+        "{{x->2}}");
+    check("Solve(x^2 - 2 == 0, x, Integers)", //
+        "{}");
+    // a zero constant term means the variable was factored out, contributing the root 0
+    check("Solve(x^5 - x^2 == 0, x, Integers)", //
+        "{{x->0},{x->1}}");
+    // rational coefficients are cleared before the divisor enumeration
+    check("Solve(1 - (i*1)/10 == 0, i, Integers)", //
+        "{{i->10}}");
+    // inequality constraints are applied as a filter afterwards
+    check("Solve({x^2 == 4, x > 0}, x, Integers)", //
+        "{{x->2}}");
+  }
+
+  @Test
+  public void testSolveIntegersParametric() {
+    // An unbounded linear Diophantine equation has infinitely many solutions, so the family is
+    // returned in closed form. Previously a default search box was enumerated instead, yielding
+    // an arbitrary 1000-tuple prefix starting at x == -499.
+    check("Solve({x + y == 5}, {x, y}, Integers)", //
+        "{{x->ConditionalExpression(C(1),C(1)∈Integers),y->ConditionalExpression(5-C(1),C(\n"
+            + "1)∈Integers)}}");
+    // the same system written as expr == 0 must give the same answer
+    check("Solve(x + y - 5 == 0, {x, y}, Integers)", //
+        "{{x->ConditionalExpression(C(1),C(1)∈Integers),y->ConditionalExpression(5-C(1),C(\n"
+            + "1)∈Integers)}}");
+    check("Solve({15*n + 17*m == 200}, {n, m}, Integers)", //
+        "{{n->ConditionalExpression(1600+17*C(1),C(1)∈Integers),m->ConditionalExpression(-\n"
+            + "1400-15*C(1),C(1)∈Integers)}}");
+    // gcd(2, 4) does not divide 5, so there is no integer solution
+    check("Solve({2*x + 4*y == 5}, {x, y}, Integers)", //
+        "{}");
+  }
+
+  @Test
+  public void testSolveRootObjects() {
+    // A quintic which is irreducible over the rationals cannot be solved in radicals
+    // (Abel-Ruffini), so its roots are represented exactly by inert Root(f&, k, 0) objects
+    // instead of being silently approximated by floating point numbers.
+    check("Solve(x^5 + 2*x + 1 == 0, x)", //
+        "{{x->Root(1+2*#1+#1^5&,1,0)},{x->Root(1+2*#1+#1^5&,2,0)},{x->Root(1+2*#1+#1^5&,3,\n"
+            + "0)},{x->Root(1+2*#1+#1^5&,4,0)},{x->Root(1+2*#1+#1^5&,5,0)}}");
+    // x^6+2*x+1 factorizes into (1+x)*(1+x-x^2+x^3-x^4+x^5): the linear factor keeps its exact
+    // root and only the unsolvable quintic factor becomes Root objects
+    check("Solve(x^6 + 2*x + 1 == 0, x)", //
+        "{{x->-1},{x->Root(1+#1-#1^2+#1^3-#1^4+#1^5&,1,0)},{x->Root(1+#1-#1^2+#1^3-#1^4+#1^\n"
+            + "5&,2,0)},{x->Root(1+#1-#1^2+#1^3-#1^4+#1^5&,3,0)},{x->Root(1+#1-#1^2+#1^3-#1^4+#1^\n"
+            + "5&,4,0)},{x->Root(1+#1-#1^2+#1^3-#1^4+#1^5&,5,0)}}");
+    // NSolve explicitly asks for numbers, so it never builds Root objects at all and keeps the
+    // ordering of the numerical root finder
+    check("NSolve(x^5 + 2*x + 1 == 0, x)", //
+        "{{x->-0.701874+I*(-0.879697)},{x->-0.701874+I*0.879697},{x->-0.486389},{x->0.945068+I*(-0.854518)},{x->0.945068+I*0.854518}}");
+    // N(...) instead resolves the Root objects one by one, so the values come out in the Root
+    // k-ordering (real roots first)
+    check("N(Solve(x^5 + 2*x + 1 == 0, x))", //
+        "{{x->-0.486389},{x->-0.701874+I*(-0.879697)},{x->-0.701874+I*0.879697},{x->0.945068+I*(-0.854518)},{x->0.945068+I*0.854518}}");
+    // polynomials which DO have a radical form must keep it
+    check("Solve(x^5 - 1 == 0, x)", //
+        "{{x->1},{x->-(-1)^(1/5)},{x->(-1)^(2/5)},{x->-(-1)^(3/5)},{x->(-1)^(4/5)}}");
+    check("Solve(x^5 - x^2 == 0, x)", //
+        "{{x->0},{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
+  }
+
+  @Test
+  public void testSolveRationals() {
+    // Sqrt(2) is irrational, so there is no rational solution
+    check("Solve(x^2 == 2, x, Rationals)", //
+        "{}");
+    // +/-I is not real, let alone rational
+    check("Solve(x^2 == -1, x, Rationals)", //
+        "{}");
+    check("Solve(x^2 == 4, x, Rationals)", //
+        "{{x->-2},{x->2}}");
+    check("Solve(2*x == 3, x, Rationals)", //
+        "{{x->3/2}}");
+  }
+
+  @Test
+  public void testSolveIntegersBounded() {
+    // The inequality constraints bound every variable, so the constraint solver can enumerate the
+    // finite solution set. The rules follow the order in which the variables were listed - the
+    // TreeMap inside ChocoConvert would order them alphabetically ({m->10,n->2}) instead.
+    check("Solve({15*n + 17*m == 200, n >= 0, m >= 0}, {n, m}, Integers)", //
+        "{{n->2,m->10}}");
+    check("Solve({x + y == 5, x >= 0, y >= 0}, {x, y}, Integers)", //
+        "{{x->0,y->5},{x->1,y->4},{x->2,y->3},{x->3,y->2},{x->4,y->1},{x->5,y->0}}");
+    check("Solve({x + y == 10, x >= 0, y >= 0, x <= 5, y <= 5}, {x, y}, Integers)", //
+        "{{x->5,y->5}}");
+    check("Solve({x + y == 5, x > 0, y > 0}, {x, y}, Integers)", //
+        "{{x->1,y->4},{x->2,y->3},{x->3,y->2},{x->4,y->1}}");
+  }
+
+  @Test
+  public void testSolveAbs() {
+    // Abs(...) is never negative -> no solution. Previously the backward substitution handed the
+    // boolean S.True back as if it were a value, yielding the bogus rule {{x->True}}.
+    check("Solve(Abs(x) == -1, x)", //
+        "{}");
+    check("Solve(Abs(x - 2) == 5, x)", //
+        "{{x->-3},{x->7}}");
+    check("Solve(Abs(2*x) == 4, x)", //
+        "{{x->-2},{x->2}}");
+    check("Solve(3*Abs(x) == 12, x)", //
+        "{{x->-4},{x->4}}");
+    // a right hand side of unknown sign is inverted like a non-negative one
+    check("Solve(Abs(x) == a, x)", //
+        "{{x->-a},{x->a}}");
+    check("Solve(Abs(x) == 0, x)", //
+        "{{x->0}}");
+  }
+
+  @Test
+  public void testSolveUnderdetermined() {
+    // fewer equations than variables: the variable of lowest degree is solved for and the other
+    // stays a free parameter. x has degree 2, y degree 3 -> solve for x.
+    check("Solve(x^2 - y^3 == 1, {x, y})", //
+        "{{x->-Sqrt(1+y^3)},{x->Sqrt(1+y^3)}}");
+    // here y has the lower degree (2 vs 5) -> solve for y
+    check("Solve(x^5 - y^2 == 1, {x, y})", //
+        "{{y->-I*Sqrt(1-x^5)},{y->I*Sqrt(1-x^5)}}");
+    check("Solve(x + y == 1, {x, y})", //
+        "{{x->1-y}}");
+    // on equal degree the later variable is solved for, keeping x as the free parameter
+    check("Solve(x*y == 1, {x, y})", //
+        "{{y->1/x}}");
+    // a variable the equation isn't polynomial in is left as a free parameter
+    check("Solve(Sin(x) + y == 1, {x, y})", //
+        "{{y->1-Sin(x)}}");
+  }
+
+  @Test
+  public void testSolveCubicSymbolicParameter() {
+    // the three cube roots of a symbolic parameter, in roots-of-unity form. Note Symja's
+    // OutputForm prints Times(-1, (-1)^(1/3), a^(1/3)) as -(-1)^(1/3)*a^(1/3);
+    check("Solve(y^3 == a, y)", //
+        "{{y->a^(1/3)},{y->-(-1)^(1/3)*a^(1/3)},{y->(-1)^(2/3)*a^(1/3)}}");
+  }
+
+  @Test
+  public void testSolveMonomialTimesBinomial() {
+    // x^4 - x == x*(x^3 - 1): peel the common x monomial factor (root 0) and solve the reduced
+    // x^3 - 1 binomial in roots-of-unity form instead of factoring the
+    // reduced polynomial over the rationals into a Cartesian complex-root form.
+    check("Solve(x^4 - x == 0, x)", //
+        "{{x->0},{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
+    check("Solve(x^4 + x == 0, x)", //
+        "{{x->-1},{x->0},{x->(-1)^(1/3)},{x->-(-1)^(2/3)}}");
+    // x^5 - x^2 == x^2*(x^3 - 1): degree 5, previously not handled by the quartic solver
+    check("Solve(x^5 - x^2 == 0, x)", //
+        "{{x->0},{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
+  }
+
+  @Test
+  public void testSolveSymmetricQuadraticSystem() {
+    // {y == x^2, x == y^2}: substituting y == x^2 into x == y^2 gives x^4 - x == 0, whose four
+    // roots (0, 1 and the two primitive cube roots of unity) each pair with y == x^2. Regression
+    // for a bug where eliminating the first variable produced the multi-branch radical rule
+    // x -> +/-Sqrt(y): it was substituted as a single rule, which both dropped the complex roots
+    // and emitted a malformed nested rule x -> (x -> value). The fix skips a multi-branch
+    // elimination and instead eliminates y (the single polynomial rule y -> x^2).
+    check("Solve({3*x^2 - 3*y == 0, 3*y^2 - 3*x == 0}, {x, y})", //
+        "{{x->0,y->0},{x->1,y->1},{x->-(-1)^(1/3),y->(-1)^(2/3)},{x->(-1)^(2/3),y->-(-1)^(\n"
+            + "1/3)}}");
+    // the plain form must give the same four solutions
+    check("Solve({x^2 - y == 0, y^2 - x == 0}, {x, y})", //
+        "{{x->0,y->0},{x->1,y->1},{x->-(-1)^(1/3),y->(-1)^(2/3)},{x->(-1)^(2/3),y->-(-1)^(\n"
+            + "1/3)}}");
+    // solving order must not change the solution set
+    check("Solve({3*x^2 - 3*y == 0, 3*y^2 - 3*x == 0}, {y, x})", //
+        "{{x->0,y->0},{x->1,y->1},{x->-(-1)^(1/3),y->(-1)^(2/3)},{x->(-1)^(2/3),y->-(-1)^(\n"
+            + "1/3)}}");
+  }
+
+  @Test
   public void testSolveX7_15001() {
     check("Solve(x^7 + 15 == 0, x)", //
         "{{x->(-15)^(1/7)},{x->-15^(1/7)},{x->-(-1)^(2/7)*15^(1/7)},{x->(-1)^(3/7)*15^(1/\n"
@@ -573,8 +757,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-1}}");
     // TODO simplify result
     check("Solve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
-        "{{x->-5/2*1/Sqrt(1162)+(-I*1/28*Sqrt(-350+560*Sqrt(83)))/Sqrt(83)},{x->-5/2*1/Sqrt(\n"
-            + "1162)+(I*1/28*Sqrt(-350+560*Sqrt(83)))/Sqrt(83)}}");
+        "{{x->-5/(2*Sqrt(1162))+(-I*1/28*Sqrt(-350+560*Sqrt(83)))/Sqrt(83)},{x->-5/(2*Sqrt(\n"
+            + "1162))+(I*1/28*Sqrt(-350+560*Sqrt(83)))/Sqrt(83)}}");
 
     check("Solve(8*x^3-26x^2+3x+9==0,x)", //
         "{{x->-1/2},{x->3/4},{x->3}}");
@@ -1610,8 +1794,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // TODO issue 538
     check("Solve(-3+x^(1/3)+x^2==0,x)", //
         "{{x->-1.56443+I*(-0.310515)},{x->-1.56443+I*0.310515},{x->1.37413}}");
+    // irreducible sextic: not solvable in radicals, so the roots are represented exactly as
+    // inert Root objects instead of floating point approximations
     check("Solve(-3+x+x^6==0,x)", //
-        "{{x->-1.27391},{x->-0.567906+I*1.10869},{x->-0.567906+I*(-1.10869)},{x->0.648981+I*(-0.971557)},{x->0.648981+I*0.971557},{x->1.11176}}");
+        "{{x->Root(-3+#1+#1^6&,1,0)},{x->Root(-3+#1+#1^6&,2,0)},{x->Root(-3+#1+#1^6&,3,0)},{x->Root(-\n"
+            + "3+#1+#1^6&,4,0)},{x->Root(-3+#1+#1^6&,5,0)},{x->Root(-3+#1+#1^6&,6,0)}}");
 
   }
 
@@ -1707,8 +1894,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     checkNumeric("Solve(2.5*x^2+1650==0,x)", //
         "{{x->I*(-25.69046515733026)},{x->I*25.69046515733026}}");
-    checkNumeric("Solve(x*(x^2+1)^2==7,x)",
-        "{{x->-0.9784917834108959+I*(-1.0389327358561464)},{x->-0.9784917834108952+I*1.0389327358561464},{x->0.3821305839254209+I*1.6538990550344326},{x->0.38213058392542093+I*(-1.6538990550344328)},{x->1.1927223989709492}}");
+    // x*(x^2+1)^2-7 expands to the irreducible quintic x^5+2*x^3+x-7, which has no radical form:
+    // Solve answers with exact Root objects, NSolve (below) with numbers
+    check("Solve(x*(x^2+1)^2==7,x)",
+        "{{x->Root(-7+#1+2*#1^3+#1^5&,1,0)},{x->Root(-7+#1+2*#1^3+#1^5&,2,0)},{x->Root(-7+#1+\n"
+            + "2*#1^3+#1^5&,3,0)},{x->Root(-7+#1+2*#1^3+#1^5&,4,0)},{x->Root(-7+#1+2*#1^3+#1^5&,\n"
+            + "5,0)}}");
+    // NSolve bypasses the Root objects entirely and keeps its own numerical ordering
     checkNumeric("NSolve(x*(x^2+1)^2==7,x)",
         "{{x->-0.9784917834108959+I*(-1.0389327358561464)},{x->-0.9784917834108952+I*1.0389327358561464},{x->0.3821305839254209+I*1.6538990550344326},{x->0.38213058392542093+I*(-1.6538990550344328)},{x->1.1927223989709492}}");
     check("Solve(x^2==a^2,x)", "{{x->-a},{x->a}}");
@@ -2165,14 +2357,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Sqrt(59049*Pi^4)", //
         "243*Pi^2");
     check("Solve({9==x/y, x==pi*y^4},{x,y})", //
-        "{{y->(-3^(2/3)*(-Pi^2)^(1/3))/Pi,x->(-9*3^(2/3)*(-Pi^2)^(1/3))/Pi},{y->((1-I*Sqrt(\n"
-            + "3))*3^(2/3)*(-Pi^2)^(1/3))/(2*Pi),x->9/2*((1-I*Sqrt(3))*3^(2/3)*(-Pi^2)^(1/3))/Pi},{y->((\n"
-            + "1+I*Sqrt(3))*3^(2/3)*(-Pi^2)^(1/3))/(2*Pi),x->9/2*((1+I*Sqrt(3))*3^(2/3)*(-Pi^2)^(\n"
-            + "1/3))/Pi}}");
+        "{{y->(-3)^(2/3)/Pi^(1/3),x->(9*(-3)^(2/3))/Pi^(1/3)},{y->3^(2/3)/Pi^(1/3),x->(9*\n"
+            + "3^(2/3))/Pi^(1/3)},{y->(-(-1)^(1/3)*3^(2/3))/Pi^(1/3),x->(-9*(-1)^(1/3)*3^(2/3))/Pi^(\n"
+            + "1/3)}}");
     check("Solve({9==x/y, x==pi*y^4},{x,y}) //N", //
-        "{{y->-0.710124+I*(-1.22997),x->-6.39112+I*(-11.06974)}," //
-            + "{y->1.42025,x->12.78223+I*(-1.45177*10^-15)}," //
-            + "{y->-0.710124+I*1.22997,x->-6.39112+I*11.06974}}");
+        "{{y->-0.710124+I*1.22997,x->-6.39112+I*11.06974}," //
+            + "{y->1.42025,x->12.78223}," //
+            + "{y->-0.710124+I*(-1.22997),x->-6.39112+I*(-11.06974)}}");
     check("Solve({x==Pi*y^2, 5==x/y}, {x,y})", //
         "{{y->5/Pi,x->25/Pi}}");
   }
@@ -2440,8 +2631,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testIssue1298() {
     // see testIssue918
     check("Solve(9*y-Pi*y^4==0,y)", //
-        "{{y->0},{y->(-3^(2/3)*(-Pi^2)^(1/3))/Pi},{y->((1-I*Sqrt(3))*3^(2/3)*(-Pi^2)^(1/3))/(\n"
-            + "2*Pi)},{y->((1+I*Sqrt(3))*3^(2/3)*(-Pi^2)^(1/3))/(2*Pi)}}");
+        "{{y->0},{y->(-3)^(2/3)/Pi^(1/3)},{y->3^(2/3)/Pi^(1/3)},{y->(-(-1)^(1/3)*3^(2/3))/Pi^(\n"
+            + "1/3)}}");
     check("Solve({x==Pi*y^2,5==x/y},{x,y})", //
         "{{y->5/Pi,x->25/Pi}}");
   }

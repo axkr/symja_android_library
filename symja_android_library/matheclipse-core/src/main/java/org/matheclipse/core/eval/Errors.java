@@ -153,6 +153,9 @@ public class Errors {
       "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
       "fpct", "To many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
+      "geoell", "`1` is not a known reference ellipsoid.", //
+      "geoprop", "`1` is not a known property of the reference ellipsoid `2`.", //
+      "juliantype", "`1` is not a known Julian date type.", //
       "hdiv", "`1` does not exist. Arguments  are not consistent.", //
       "heads", "Heads `1` and `2` are expected to be the same.", //
       "heads2", "Heads `1` and `2` at positions `3` and `4` are expected to be the same.", //
@@ -328,6 +331,7 @@ public class Errors {
       "opttf", "Value of option `1` -> `2` should be True or False.", //
       "opttfa", "Value of option `1` -> `2` should be True, False or Automatic.", //
       "optx", "Unknown option `1` in `2`.", //
+      "orekitdata", "The external Orekit data files are not available: `1`", //
       "overdet", "The system is overdetermined .", //
       "ovfl", "Overflow occurred in computation.", //
       "ovls", "Value of option `1` must be True, False or All.", //
@@ -443,6 +447,7 @@ public class Errors {
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
       "tllen", "Lists of unequal length in `1` cannot be added.", //
+      "timesys", "`1` is not a known time system.", //
       "toggle", "ToggleFeature `1` is disabled.", //
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //
       "tri", "`1` is not triangular.", //

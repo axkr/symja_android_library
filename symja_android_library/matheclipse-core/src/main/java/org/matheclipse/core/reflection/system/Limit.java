@@ -3032,6 +3032,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             // producing Cot(divergent) -> a false Indeterminate (psi(psi(psi(x)))).
             if (stirlingResult.isPresent() && stirlingResult.isFree(S.Limit)
                 && stirlingResult.isIndeterminateFree()) {
+              // A constant (limit-variable-free) Stirling result can be an uncollapsed additive
+              // log-sum that is actually a simpler closed form - e.g.
+              // LogGamma(x+1)-LogGamma(x)-Log(x) resolves to Log(1/(2*Pi))/2+Log(2*Pi)/2, which
+              // is 0. Collapse a constant result to its closed form (cheap: it is x-free).
+              if (stirlingResult.isFree(symbol)) {
+                IExpr simplified = engine.evaluate(F.Simplify(stirlingResult));
+                if (simplified.isPresent() && simplified.isIndeterminateFree()) {
+                  return simplified;
+                }
+              }
               return stirlingResult;
             }
             // otherwise continue below with the ORIGINAL function
@@ -5073,6 +5083,153 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of
    * Limits</a>
    */
+  /**
+   * Retry a finite-point limit that came back Indeterminate/unevaluated for a body containing a
+   * radical (a fractional power such as Sqrt). Symja keeps e.g. {@code Sqrt((2-t)^4*(4+t))} as a
+   * single radical, so a perfect-square factor never cancels against the denominator, and it
+   * mishandles 0*Infinity products such as {@code (x-4)*Sqrt((4+x)/(4-x))} on the side where the
+   * radicand turns negative. {@code PowerExpand} (optionally followed by {@code Together}) exposes
+   * the reduction, but PowerExpand is unsound in general (it drops {@code Abs} / picks a branch),
+   * so a candidate is adopted only when a small numeric probe of the ORIGINAL body confirms it.
+   * For a one-sided candidate the opposite side must be non-real (the two-sided limit legitimately
+   * leaves the reals, e.g. {@code Sqrt((4+x)/(4-x))} for {@code x>4}), so an ordinary real jump
+   * discontinuity stays Indeterminate.
+   */
+  private static IExpr finiteRadicalLimitRetry(IExpr body, IAST rule, ISymbol x, IExpr x0,
+      Direction requested, EvalEngine engine) {
+    if (body.leafCount() > 200) {
+      return F.NIL;
+    }
+    double x0d;
+    try {
+      x0d = x0.evalDouble();
+    } catch (RuntimeException rex) {
+      return F.NIL; // a real finite point is required for the numeric confirmation
+    }
+    if (!Double.isFinite(x0d)) {
+      return F.NIL;
+    }
+    IExpr pe;
+    try {
+      pe = engine.evaluate(F.PowerExpand(body));
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
+    IExpr result = F.NIL;
+    if (!pe.equals(body)) {
+      result = tryRadicalForm(pe, body, rule, x, x0d, requested, engine);
+    }
+    if (result.isNIL()) {
+      try {
+        IExpr tpe = engine.evaluate(F.Together(pe));
+        if (!tpe.equals(pe) && !tpe.equals(body)) {
+          result = tryRadicalForm(tpe, body, rule, x, x0d, requested, engine);
+        }
+      } catch (RuntimeException rex) {
+        // no Together reduction available - fall through
+      }
+    }
+    return result;
+  }
+
+  private static IExpr tryRadicalForm(IExpr form, IExpr origBody, IAST rule, ISymbol x, double x0d,
+      Direction requested, EvalEngine engine) {
+    Direction[] dirs = (requested == Direction.TWO_SIDED)
+        ? new Direction[] {Direction.TWO_SIDED, Direction.FROM_BELOW, Direction.FROM_ABOVE}
+        : new Direction[] {requested};
+    for (Direction dir : dirs) {
+      IExpr cand = evaluateLimit(form, rule, dir, engine);
+      if (cand.isNIL() || cand.isAST(S.Limit) || !cand.isFree(S.Limit)
+          || !cand.isIndeterminateFree() || cand.isComplexInfinity()
+          || cand.isDirectedInfinity()) {
+        continue;
+      }
+      double candD;
+      try {
+        candD = cand.evalDouble();
+      } catch (RuntimeException rex) {
+        continue; // a real finite candidate is required for the numeric confirmation
+      }
+      if (!Double.isFinite(candD)) {
+        continue;
+      }
+      if (!numericLimitConfirms(origBody, x, x0d, dir, candD, engine)) {
+        continue;
+      }
+      // A one-sided value is adopted for a two-sided request only when the other side does not
+      // resolve to a different real value. testLimitIssue536 (from-above unresolved) -> 4*Pi;
+      // testLimitIssue1420 (from-above -Pi/8 vs from-below Pi/8) -> stays Indeterminate.
+      if (requested == Direction.TWO_SIDED && dir != Direction.TWO_SIDED
+          && oppositeSideDisagrees(origBody, rule, dir, candD, engine)) {
+        continue;
+      }
+      return cand;
+    }
+    return F.NIL;
+  }
+
+  private static boolean numericLimitConfirms(IExpr body, ISymbol x, double x0, Direction dir,
+      double candidate, EvalEngine engine) {
+    switch (dir) {
+      case FROM_BELOW:
+        return radicalSideConverges(body, x, x0, -1.0, candidate, engine);
+      case FROM_ABOVE:
+        return radicalSideConverges(body, x, x0, +1.0, candidate, engine);
+      default: // TWO_SIDED - both real sides must approach the candidate
+        return radicalSideConverges(body, x, x0, -1.0, candidate, engine)
+            && radicalSideConverges(body, x, x0, +1.0, candidate, engine);
+    }
+  }
+
+  /**
+   * True if, for a two-sided request, adopting the one-sided {@code candidate} (direction
+   * {@code dir}) would be wrong because the OPPOSITE side resolves to a different finite real value
+   * - a genuine two-sided disagreement so the limit does not exist. When the opposite side stays
+   * unresolved (Indeterminate / a Limit shell) or is non-real there is no contradiction and the
+   * real-domain one-sided value may be returned.
+   */
+  private static boolean oppositeSideDisagrees(IExpr origBody, IAST rule, Direction dir,
+      double candidate, EvalEngine engine) {
+    Direction opposite =
+        (dir == Direction.FROM_BELOW) ? Direction.FROM_ABOVE : Direction.FROM_BELOW;
+    IExpr other = evaluateLimit(origBody, rule, opposite, engine);
+    if (other.isNIL() || other.isAST(S.Limit) || !other.isFree(S.Limit)
+        || !other.isIndeterminateFree()) {
+      return false; // unresolved opposite side - no contradiction
+    }
+    try {
+      double otherD = other.evalDouble();
+      return Double.isFinite(otherD)
+          && Math.abs(otherD - candidate) > 1.0e-6 * (1.0 + Math.abs(candidate));
+    } catch (RuntimeException rex) {
+      return false; // opposite side is not a real number - no contradiction
+    }
+  }
+
+  /** True if body(x0 + sign*delta) approaches {@code candidate} as delta shrinks (real samples). */
+  private static boolean radicalSideConverges(IExpr body, ISymbol x, double x0, double sign,
+      double candidate, EvalEngine engine) {
+    IExpr coarse = numericLimitSample(body, x, x0 + sign * 1.0e-3, engine);
+    IExpr fine = numericLimitSample(body, x, x0 + sign * 1.0e-7, engine);
+    if (!coarse.isReal() || !fine.isReal()) {
+      return false;
+    }
+    double coarseErr = Math.abs(coarse.evalDouble() - candidate);
+    double fineErr = Math.abs(fine.evalDouble() - candidate);
+    double tol = 0.05 * (1.0 + Math.abs(candidate));
+    return fineErr <= tol && fineErr <= coarseErr + 1.0e-9;
+  }
+
+  private static IExpr numericLimitSample(IExpr body, ISymbol x, double pt, EvalEngine engine) {
+    try {
+      IExpr sub = body.replaceAll(F.Rule(x, F.num(pt))).orElse(body);
+      IExpr n = engine.evaluate(F.N(sub));
+      return n.isNumber() ? n : F.NIL;
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
@@ -5191,6 +5348,18 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
 
       IExpr temp = evaluateLimit(arg1, rule, direction, engine);
+      if ((temp.isNIL() || temp.isIndeterminate()) && limitPoint.isFree(S.DirectedInfinity)
+          && !limitPoint.isInfinity() && !limitPoint.isNegativeInfinity()
+          && arg1.has(p -> p.isPower() && p.exponent().isFraction(), true)) {
+        // A finite-point limit of a radical expression that the machinery could not reduce
+        // (Sqrt of a perfect-square product, or a 0*Infinity Sqrt product): retry via
+        // PowerExpand(+Together), numerically confirmed against the original body.
+        IExpr radical =
+            finiteRadicalLimitRetry(arg1, rule, limitVar, limitPoint, direction, engine);
+        if (radical.isPresent()) {
+          return radical;
+        }
+      }
       if (temp.isPresent()) {
         // A RESOLVED limit must not surface machinery-internal symbols: series/Taylor
         // helpers substitute Dummy("y")-style variables and a partially aborted evaluation
