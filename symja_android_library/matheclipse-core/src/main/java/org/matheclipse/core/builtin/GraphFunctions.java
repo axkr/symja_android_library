@@ -6,10 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import org.gavaghan.geodesy.Ellipsoid;
-import org.gavaghan.geodesy.GeodeticCalculator;
-import org.gavaghan.geodesy.GeodeticMeasurement;
-import org.gavaghan.geodesy.GlobalPosition;
 import org.hipparchus.util.MathArrays;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
@@ -69,6 +65,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.geodesy.GeodesicSolver;
+import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import com.google.common.collect.Sets;
 
 /** Functions for graph theory algorithms. */
@@ -1024,16 +1022,13 @@ public class GraphFunctions {
                 g.addVertex(F.ZZ(i));
               }
 
-              GeodeticCalculator geoCalc = new GeodeticCalculator();
-              Ellipsoid reference = Ellipsoid.WGS84;
               // create all possible edges between the given vertices
               for (int i = 0; i < rowDim - 1; i++) {
-                GlobalPosition p1 = ((GeoPositionExpr) list.get(i + 1)).toData();
+                GeoPositionExpr p1 = (GeoPositionExpr) list.get(i + 1);
                 for (int j = i + 1; j < rowDim; j++) {
-                  GlobalPosition p2 = ((GeoPositionExpr) list.get(j + 1)).toData();
-                  GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
-                  g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // GeoDistance
-                      gm.getPointToPointDistance());
+                  GeoPositionExpr p2 = (GeoPositionExpr) list.get(j + 1);
+                  g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)),
+                      geodesicMeters(p1, p2));
                 }
               }
               GraphPath<IInteger, ExprWeightedEdge> tour =
@@ -1049,10 +1044,16 @@ public class GraphFunctions {
               for (int i = tourPositions.size() - 2; i >= 0; i--) {
                 IInteger position = tourPositions.get(i);
                 shortestTourList.append(position);
-                sum.append(F.GeoDistance(list.get(lastPosition), list.get(position)));
+                // The leg lengths are emitted as quantities rather than as GeoDistance calls:
+                // GeoDistance lives in the matheclipse-orekit module and measures a rhumb line,
+                // which would not agree with the geodesic edge weights the tour was optimized on.
+                sum.append(F.Quantity(
+                    F.num(geodesicMeters((GeoPositionExpr) list.get(lastPosition),
+                        (GeoPositionExpr) list.get(position))),
+                    F.stringx("m")));
                 lastPosition = position;
               }
-              return F.list(sum, shortestTourList);
+              return F.list(F.UnitConvert(sum, F.stringx("mi")), shortestTourList);
             }
             // } else {
             // GraphExpr<ExprEdge> gex = createGraph(ast.arg1());
@@ -1094,6 +1095,20 @@ public class GraphFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+
+    /**
+     * The length of the geodesic between two positions, in meters.
+     *
+     * <p>
+     * A tour is optimized for the <em>shortest</em> route, so the metric has to be the geodesic.
+     * Note that this is not what <code>GeoDistance</code> reports: that is implemented in the
+     * matheclipse-orekit module and measures a rhumb line, which is always at least as long.
+     */
+    private static double geodesicMeters(GeoPositionExpr p1, GeoPositionExpr p2) {
+      return GeodesicSolver.pointToPointDistance(ReferenceEllipsoid.WGS84, //
+          p1.latitude(), p1.longitude(), p1.altitude(), //
+          p2.latitude(), p2.longitude(), p2.altitude());
     }
   }
 
