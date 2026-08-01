@@ -542,4 +542,57 @@ public class ZetaJS extends JS {
     }
     return t;
   }
+
+  /**
+   * Machine-precision Riemann-Siegel theta function via its asymptotic expansion
+   * <code>theta(t) = (t/2) log(t/(2 Pi)) - t/2 - Pi/8 + 1/(48 t) + 7/(5760 t^3) + ...</code>.
+   * Accurate to roughly machine epsilon for {@code t} above the first zero ({@code t >= ~14}), where
+   * it is used to locate zeta zeros cheaply.
+   *
+   * @param t a real argument (assumed {@code >= ~14})
+   * @return the (real) value of the Riemann-Siegel theta function
+   */
+  public static double riemannSiegelThetaDouble(double t) {
+    double tInv = 1.0 / t;
+    double tInv2 = tInv * tInv;
+    return 0.5 * t * Math.log(t / (2.0 * Math.PI)) - 0.5 * t - Math.PI / 8.0
+        + tInv * (1.0 / 48.0
+            + tInv2 * (7.0 / 5760.0
+                + tInv2 * (31.0 / 80640.0
+                    + tInv2 * (127.0 / 430080.0))));
+  }
+
+  /**
+   * Machine-precision Riemann-Siegel {@code Z(t)} function: the main sum
+   * <code>2 * sum_{n=1}^{N} cos(theta(t) - t log n)/sqrt(n)</code> with {@code N = floor(sqrt(t/(2
+   * Pi)))} plus the leading remainder term. This costs {@code O(sqrt(t))} cheap real operations
+   * versus the {@code O(t)} complex powers of a full arbitrary-precision zeta evaluation, so it is
+   * used to bracket a zeta zero before a high-precision polish refines it.
+   *
+   * <p>Only the leading remainder coefficient {@code C0} is included, giving an absolute accuracy of
+   * roughly {@code t^(-3/4)} &mdash; ample to bracket a zero (whose neighbours are spaced
+   * {@code ~2 Pi/log(t/(2 Pi))} apart) and to seed the polish. Higher-order coefficients
+   * {@code C1..C4} could be added later to tighten the seed further.
+   *
+   * @param t a real argument (assumed {@code >= ~14})
+   * @return the (real) value of the Riemann-Siegel Z function
+   */
+  public static double riemannSiegelZDouble(double t) {
+    double theta = riemannSiegelThetaDouble(t);
+    double a = Math.sqrt(t / (2.0 * Math.PI));
+    long n = (long) Math.floor(a);
+    double sum = 0.0;
+    for (long k = 1; k <= n; k++) {
+      sum += Math.cos(theta - t * Math.log((double) k)) / Math.sqrt((double) k);
+    }
+    sum *= 2.0;
+    // leading Riemann-Siegel remainder term C0(p) = cos(2 Pi (p^2 - p - 1/16)) / cos(2 Pi p)
+    double p = a - n;
+    double cosDenominator = Math.cos(2.0 * Math.PI * p);
+    // C0 has a removable singularity at p == 1/4 and p == 3/4 where the limiting value is 1/2
+    double c0 = (Math.abs(cosDenominator) < 1e-10) ? 0.5
+        : Math.cos(2.0 * Math.PI * (p * p - p - 1.0 / 16.0)) / cosDenominator;
+    double remainder = (((n - 1) & 1L) == 0 ? 1.0 : -1.0) * c0 / Math.sqrt(a);
+    return sum + remainder;
+  }
 }
