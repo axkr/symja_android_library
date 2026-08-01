@@ -715,7 +715,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         if (factors != null) {
             return factors;
         }
-        logger.warn("factorsSquarefreeHensel not applicable or failed, reverting to Kronecker for: {}", P);
+        logger.debug("factorsSquarefreeHensel not applicable or failed, reverting to Kronecker for: {}", P);
         factors = super.factorsSquarefree(P);
         return factors;
     }
@@ -740,7 +740,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             if (! pfac.tord.equals(TermOrderByName.INVLEX)) {
                 pfac = new GenPolynomialRing<BigInteger>(pfac,TermOrderByName.INVLEX);
                 Pp = pfac.copy(Pp);
-                logger.warn("invlexed polynomial: {}, from ring {}", Pp, P.ring);
+                logger.debug("invlexed polynomial: {}, from ring {}", Pp, P.ring);
             } else {
                 tlex = false;
             }
@@ -756,7 +756,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                 iperm = TermOrderOptimization.inversePermutation(opt.perm);
                 Pp = opt.list.get(0);
                 logger.info("optimized polynomial: {}", Pp);
-                logger.warn("optimized ring: {}, original ring: {}", opt.ring, pfac);
+                logger.debug("optimized ring: {}, original ring: {}", opt.ring, pfac);
             }
         }
         ExpVector degv = Pp.degreeVector();
@@ -796,11 +796,11 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         }
         if (USE_OPT && iperm != null) {
             facs = TermOrderOptimization.<BigInteger> permutation(iperm, pfac, facs);
-            logger.warn("de-optimized polynomials: {}", facs);
+            logger.debug("de-optimized polynomials: {}", facs);
         }
         if (tlex) {
             facs = P.ring.copy(facs);
-            logger.warn("de-invlexed polynomials: {}", facs);
+            logger.debug("de-invlexed polynomials: {}", facs);
         }
         facs = normalizeFactorization(facs);
         return facs;
@@ -912,12 +912,12 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         boolean notLucky = true;
         while (notLucky) { // for Wang's test
             if (Math.abs(evStart) > 371L) {
-                logger.warn("found         points   : V = {}, dei = {}", V, dei);
+                logger.debug("found         points   : V = {}, dei = {}", V, dei);
                 //if (tParts != null && tParts.size() > 0) { // at least one successful eval point 
                 //    logger.warn("some evaluation points found after {} iterations, tParts = {}", Math.abs(evStart), tParts);
                 //    break;
                 //}
-                logger.warn("no evaluation point for: P = {}, prr = {}, lprr = {}, lfacs = {}", P, prr, lprr, lfacs);
+                logger.debug("no evaluation point for: P = {}, prr = {}, lprr = {}, lfacs = {}", P, prr, lprr, lfacs);
                 throw new RuntimeException(
                                            "no evaluation point found after " + Math.abs(evStart) + " iterations");
             }
@@ -1255,7 +1255,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                 }
             }
         } // end notLucky loop
-        logger.warn("end notLucky loop, trial parts = {}", tParts.size());
+        logger.debug("end notLucky loop, trial parts = {}", tParts.size());
 
         // search TrialParts with shortest factorization of univariate polynomial
         int min = Integer.MAX_VALUE;

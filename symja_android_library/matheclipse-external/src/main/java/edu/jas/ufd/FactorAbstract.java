@@ -198,7 +198,7 @@ public abstract class FactorAbstract<C extends GcdRingElem<C>> implements Factor
     @Override
     public List<GenPolynomial<C>> factorsSquarefree(GenPolynomial<C> P) {
         if (P != null && P.ring.nvar > 1) {
-           logger.warn("no multivariate factorization for {}: falling back to Kronecker algorithm in {}", P, P.ring.toScript());
+           logger.debug("no multivariate factorization for {}: falling back to Kronecker algorithm in {}", P, P.ring.toScript());
            //if (P.ring.characteristic().signum() == 0) {
            //    throw new IllegalArgumentException("P.ring.characteristic().signum() == 0");
            //}
