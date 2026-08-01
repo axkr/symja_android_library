@@ -187,7 +187,11 @@ public class RootSum extends AbstractFunctionEvaluator {
     }
     IASTAppendable sum = F.PlusAlloc(rootsAST.size());
     for (int i = 1; i < rootsAST.size(); i++) {
-      sum.append(engine.evaluate(F.unaryAST1(form, rootsAST.get(i))));
+      // Together condenses a root like 1/2-Sqrt(1-4*a)/2 into 1/2*(1-Sqrt(1-4*a)). The root is
+      // printed inside the summand, so this is what makes RootSum(#^2-#+a&, Sin(#)&) come out as
+      // Sin(1/2*(1-Sqrt(1-4*a)))+Sin(1/2*(1+Sqrt(1-4*a))).
+      IExpr root = engine.evaluate(F.Together(rootsAST.get(i)));
+      sum.append(engine.evaluate(F.unaryAST1(form, root)));
     }
     IExpr summed = engine.evaluate(sum);
     if (!simplify) {
@@ -287,11 +291,25 @@ public class RootSum extends AbstractFunctionEvaluator {
   private static IExpr traceOverRoots(IExpr h, IExpr pMonic, ISymbol r, IExpr[] powerSums,
       int degree, EvalEngine engine) {
     IExpr reduced = engine.evaluate(F.PolynomialRemainder(h, pMonic, r));
+    IExpr[] coefficients = new IExpr[degree];
+    for (int k = 0; k < degree; k++) {
+      coefficients[k] = engine.evaluate(F.Coefficient(reduced, r, F.ZZ(k)));
+    }
+    return trace(coefficients, powerSums, degree, engine);
+  }
+
+  /**
+   * <code>Sum_k coefficient_k*p_k</code> for a polynomial <code>Sum_k coefficient_k*r^k</code> of
+   * degree less than <code>degree</code> which is already reduced modulo the root polynomial.
+   *
+   * @see #traceOverRoots(IExpr, IExpr, ISymbol, IExpr[], int, EvalEngine)
+   */
+  private static IExpr trace(IExpr[] coefficients, IExpr[] powerSums, int degree,
+      EvalEngine engine) {
     IASTAppendable sum = F.PlusAlloc(degree);
     for (int k = 0; k < degree; k++) {
-      IExpr coefficient = engine.evaluate(F.Coefficient(reduced, r, F.ZZ(k)));
-      if (!coefficient.isZero()) {
-        sum.append(F.Times(coefficient, powerSums[k]));
+      if (!coefficients[k].isZero()) {
+        sum.append(F.Times(coefficients[k], powerSums[k]));
       }
     }
     return engine.evaluate(sum);
@@ -322,6 +340,84 @@ public class RootSum extends AbstractFunctionEvaluator {
   }
 
   /**
+   * <code>true</code> if <code>expr</code> contains a symbol other than the bound root variable
+   * <code>r</code>, i.e. if its coefficients carry free parameters.
+   */
+  private static boolean hasParameters(IExpr expr, ISymbol r, EvalEngine engine) {
+    IExpr variables = engine.evaluate(F.Variables(expr));
+    if (variables.isList()) {
+      IAST variableList = (IAST) variables;
+      for (int i = 1; i < variableList.size(); i++) {
+        if (!variableList.get(i).equals(r)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The coefficients <code>h_0, ..., h_(degree-1)</code> of the polynomial <code>h(r)</code> with
+   * <code>h(r)*b(r) == a(r) (mod pMonic(r))</code>, i.e. of the summand <code>a/b</code> rewritten
+   * as a polynomial in the root variable.
+   *
+   * <p>
+   * They are found by solving a linear system in the basis <code>1, r, ..., r^(degree-1)</code>
+   * instead of by running the extended Euclidean algorithm: {@link S#PolynomialExtendedGCD} does not
+   * evaluate as soon as the coefficients contain free symbols -
+   * <code>PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r)</code> stays unevaluated - while the
+   * multiplication matrix of <code>b</code> modulo <code>pMonic</code> needs nothing but polynomial
+   * arithmetic and one solve over the field of rational functions in the parameters.
+   *
+   * <p>
+   * The coefficients are returned instead of the assembled polynomial <code>h</code> because for a
+   * parametrized polynomial each of them is already a large quotient of multivariate polynomials;
+   * reading them back off <code>h</code> with {@link S#Coefficient} would put them over a common
+   * denominator first and blow past {@code Config.MAX_AST_SIZE}.
+   *
+   * @return <code>null</code> if the system has no unique solution, which is exactly the case where
+   *         <code>b</code> and <code>pMonic</code> are not coprime
+   */
+  private static IExpr[] modularQuotientCoefficients(IExpr ax, IExpr bx, IExpr pMonic, ISymbol r,
+      int degree, EvalEngine engine) {
+    // matrix[k][j] is the coefficient of r^k in b(r)*r^j reduced modulo pMonic, so that column j
+    // is the image of the basis element r^j under multiplication by b.
+    IExpr[][] matrix = new IExpr[degree][degree];
+    for (int j = 0; j < degree; j++) {
+      IExpr reduced = engine.evaluate(
+          F.PolynomialRemainder(F.Expand(F.Times(bx, F.Power(r, F.ZZ(j)))), pMonic, r));
+      for (int k = 0; k < degree; k++) {
+        matrix[k][j] = engine.evaluate(F.Coefficient(reduced, r, F.ZZ(k)));
+      }
+    }
+    IASTAppendable rows = F.ListAlloc(degree);
+    for (int k = 0; k < degree; k++) {
+      IASTAppendable row = F.ListAlloc(degree);
+      for (int j = 0; j < degree; j++) {
+        row.append(matrix[k][j]);
+      }
+      rows.append(row);
+    }
+
+    IExpr aReduced = engine.evaluate(F.PolynomialRemainder(ax, pMonic, r));
+    IASTAppendable rightHandSide = F.ListAlloc(degree);
+    for (int k = 0; k < degree; k++) {
+      rightHandSide.append(engine.evaluate(F.Coefficient(aReduced, r, F.ZZ(k))));
+    }
+
+    IExpr solution = engine.evaluate(F.LinearSolve(rows, rightHandSide));
+    if (!solution.isList() || solution.size() != degree + 1) {
+      return null;
+    }
+    IAST solutionList = (IAST) solution;
+    IExpr[] coefficients = new IExpr[degree];
+    for (int j = 0; j < degree; j++) {
+      coefficients[j] = solutionList.get(j + 1);
+    }
+    return coefficients;
+  }
+
+  /**
    * Evaluate <code>Sum_i A(r_i)/B(r_i)</code> for a summand whose coefficients are free of any
    * external variable. The result is a rational number.
    */
@@ -334,6 +430,17 @@ public class RootSum extends AbstractFunctionEvaluator {
       }
       h = engine.evaluate(F.Divide(ax, bx));
     } else {
+      if (hasParameters(pMonic, r, engine) || hasParameters(ax, r, engine)
+          || hasParameters(bx, r, engine)) {
+        // Over a parametrized coefficient domain B^-1 mod pMonic is a quotient of multivariate
+        // polynomials; multiplying it by A and reducing the product modulo pMonic again exceeds
+        // Config.MAX_AST_SIZE long before anything cancels. Solve for the coefficients of
+        // A*B^-1 mod pMonic in one step instead.
+        IExpr[] coefficients = modularQuotientCoefficients(ax, bx, pMonic, r, degree, engine);
+        if (coefficients != null) {
+          return engine.evaluate(F.Together(trace(coefficients, powerSums, degree, engine)));
+        }
+      }
       IExpr inverse = modularInverse(bx, pMonic, r, engine);
       if (inverse.isNIL()) {
         // PolynomialExtendedGCD failed to evaluate symbolically.

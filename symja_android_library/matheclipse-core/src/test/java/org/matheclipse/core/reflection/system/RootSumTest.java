@@ -131,9 +131,25 @@ public class RootSumTest extends ExprEvaluatorTestCase {
     // A Sin summand is not a rational function, but the roots of a quadratic are plain radicals, so
     // the sum is written out over them.
     check("RootSum(#^2 - # + a &, Sin(#) &)", //
-        "Sin(1/2-Sqrt(1-4*a)/2)+Sin(1/2+Sqrt(1-4*a)/2)");
-    // TODO
-    check("RootSum(#^5 - a # + b &, (#^2 - 1)/(#^3 - 2 # + c) &)", //
-        "RootSum(-a*#1+#1^5+b&,(-1+#1^2)/(-2*#1+#1^3+c)&)");
+        "Sin(1/2*(1-Sqrt(1-4*a)))+Sin(1/2*(1+Sqrt(1-4*a)))");
+  }
+
+  /**
+   * A rational summand over a polynomial whose coefficients are symbolic. Both the root polynomial
+   * and the summand carry free parameters here, so the modular inverse of the denominator has to be
+   * computed over the field of rational functions in <code>a</code>, <code>b</code> and
+   * <code>c</code>.
+   */
+  @Test
+  public void testParametrizedPolynomialAndSummand() {
+    // numerator and denominator are the negatives of the reference result
+    // (-16*a+8*a^2-a^3-10*b^2+a*b^2+8*a*b*c+8*a*c^2-4*a^2*c^2-5*b*c^3+5*c^4) /
+    // (-32*b+16*a*b-2*a^2*b+b^3+16*a*c-8*a^2*c+a^3*c-10*b^2*c+20*b*c^2+3*a*b*c^2-8*a*c^3-c^5)
+    check("RootSum(#^5-a*#+b & ,(#^2- 1)/(#^3-2*#+c) &)", //
+        "(16*a-8*a^2+a^3+10*b^2-a*b^2-8*a*b*c-8*a*c^2+4*a^2*c^2+5*b*c^3-5*c^4)/(32*b-16*a*b+\n"
+            + "2*a^2*b-b^3-16*a*c+8*a^2*c-a^3*c+10*b^2*c-20*b*c^2-3*a*b*c^2+8*a*c^3+c^5)");
+    // the sum of (r^2-1)/(r^3-2*r+5) over the five roots of r^5-2*r+3
+    check("RootSum(#^5-a*#+b & ,(#^2- 1)/(#^3-2*#+c) &) /. {a->2,b->3,c->5}", //
+        "-235/597");
   }
 }
