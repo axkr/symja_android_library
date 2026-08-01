@@ -420,8 +420,8 @@ public class UtilityFunctionCtors {
       if (ast.argSize() == 2) {
         // TODO implement Refine
         // Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))
-        IExpr arg1 = ast.arg1();
-        IExpr arg2 = ast.arg2();
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr arg2 = engine.evaluate(ast.arg2());
         if (arg1.equals(arg2)) {
           return S.True;
         }
@@ -437,8 +437,8 @@ public class UtilityFunctionCtors {
       if (ast.argSize() == 2) {
         // TODO implement Refine
         // Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))
-        IExpr arg1 = ast.arg1();
-        IExpr arg2 = ast.arg2();
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr arg2 = engine.evaluate(ast.arg2());
         if (arg1.equals(arg2)) {
           return S.False;
         }
