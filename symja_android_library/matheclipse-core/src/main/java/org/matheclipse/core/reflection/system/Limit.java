@@ -1555,7 +1555,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (!divergesAtInfinity(arg, x) || !arg.isFree(t -> t.isAST(S.PolyGamma), true)) {
             return F.PolyGamma(F.C0, arg);
           }
-          return engine.evaluate(F.Plus(F.Log(arg),
+          return engine.evaluate(F.Plus(F.Log(digammaPrincipalArg(arg, ast.arg2(), x, engine)),
               F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
         }
 
@@ -3026,10 +3026,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             stirlingFunction = GruntzLimit.logCombine(stirlingFunction, true, symbol);
             LimitData stirlingData = new LimitData(symbol, limit, rule, direction);
             IExpr stirlingResult = evalLimit(stirlingFunction, stirlingData, engine);
-            // Adopt only clean resolutions: the substituted asymptotics can strand the
-            // evaluation somewhere WORSE than the original - the digamma -1/(2z) tail
-            // makes PolyGamma's reflection formula fire on the re-evaluated argument,
-            // producing Cot(divergent) -> a false Indeterminate (psi(psi(psi(x)))).
+            // Adopt only clean resolutions: a truncated asymptotic series can strand the
+            // evaluation somewhere WORSE than the original, so an unresolved or Indeterminate
+            // result must fall through to the ORIGINAL function rather than be adopted.
+            // (This guard once also caught PolyGamma's reflection formula firing on the
+            // re-evaluated digamma tail and producing Cot(divergent) -> a false Indeterminate
+            // on psi(psi(psi(x))). That rewrite is now gated on a wholly negated argument in
+            // SpecialFunctions.PolyGamma.functionExpand, so it can no longer reach here.)
             if (stirlingResult.isPresent() && stirlingResult.isFree(S.Limit)
                 && stirlingResult.isIndeterminateFree()) {
               // A constant (limit-variable-free) Stirling result can be an uncollapsed additive
@@ -4388,7 +4391,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * <code>1/(2*Log(x))</code> tail resolves. Sound because <code>1/(2z) -> 0</code> is already a
    * correction and z's dropped part is negligible relative to its divergent leading term - it can
    * never change a correctly-computed limit. The principal <code>Log(z)</code> term keeps the full
-   * <code>z</code>; it tolerates the messy argument.
+   * <code>z</code> except on a psi-in-psi tower - see {@link #digammaPrincipalArg}.
    */
   private static IExpr digammaTailArg(IExpr z, ISymbol x, EvalEngine engine) {
     if (!z.isPlus()) {
@@ -4404,6 +4407,34 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
     }
     return kept.argSize() == 0 ? z : engine.evaluate(kept);
+  }
+
+  /**
+   * The argument for the principal <code>Log(z)</code> term of
+   * <code>PolyGamma(0,z) ~ Log(z) - 1/(2z) - 1/(12z^2)</code>. Normally the full <code>z</code>:
+   * unlike in the <code>1/(2z)</code> tail, z's vanishing summands still contribute there -
+   * <code>Log(x + 1/x) = Log(x) + 1/x^2 - ...</code> carries the <code>1/x^2</code> that makes
+   * <code>x^2*(psi(x+1/x) - Log(x) + 1/(2x)) -> 11/12</code>.
+   * <p>
+   * The exception is a psi-in-psi tower, where <code>rawArg</code> was itself a
+   * <code>PolyGamma</code> and the recursion already replaced it by a truncated digamma expansion
+   * (<code>psi(psi(x))</code> arrives here with <code>z = Log(x) - 1/(2x) - 1/(12x^2)</code>).
+   * Carrying that noise into <code>Log(z)</code> leaves a factor
+   * <code>Log(x) - 1/(2x) - 1/(12x^2)</code> where a clean <code>Log(x)</code> belongs, and the mrv
+   * rewrite of the surrounding <code>E^E^</code> tower never converges - the heuristic fallback
+   * then burns in L'Hopital recursion until it overflows the stack
+   * (<code>E^(E^psi(psi(x)))/x -> 1/Sqrt(E)</code>). Expanding around z's leading part instead
+   * drops a correction of order <code>1/(x*Log(x))</code>, strictly below the
+   * <code>1/(2*Log(x))</code> tail the expansion still carries, so the truncation stays consistent
+   * to its own order - and the limit resolves. Only a leading part that still diverges is
+   * substituted; anything else keeps the full <code>z</code>.
+   */
+  private static IExpr digammaPrincipalArg(IExpr z, IExpr rawArg, ISymbol x, EvalEngine engine) {
+    if (rawArg.isFree(t -> t.isAST(S.PolyGamma), true)) {
+      return z;
+    }
+    IExpr lead = digammaTailArg(z, x, engine);
+    return !lead.equals(z) && divergesAtInfinity(lead, x) ? lead : z;
   }
 
   /**
@@ -4754,7 +4785,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               return F.PolyGamma(F.C0, arg);
             }
             IExpr tail = digammaTailArg(arg, x, engine);
-            return engine.evaluate(F.Plus(F.Log(arg), //
+            return engine.evaluate(F.Plus(F.Log(digammaPrincipalArg(arg, ast.arg2(), x, engine)), //
                 F.Negate(F.Divide(F.C1, F.Times(F.C2, tail))), //
                 F.Negate(F.Divide(F.C1, F.Times(F.ZZ(12), F.Sqr(tail))))));
           }

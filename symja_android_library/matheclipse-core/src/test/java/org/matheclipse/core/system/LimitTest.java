@@ -643,6 +643,32 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(Pochhammer(x, 1/2) / Sqrt(x), x -> Infinity)", //
         "1");
 
+    // --- ID.PolyGamma ---
+    // psi(x) ~ Log(x) - 1/(2x), so E^psi(x) ~ x
+    check("Limit(E^(PolyGamma(0, x))/x, x->Infinity)", //
+        "1");
+    // psi-in-psi tower: psi(psi(x)) ~ Log(Log(x)) - 1/(2*Log(x)), so
+    // E^psi(psi(x)) ~ Log(x) - 1/2 and E^(E^psi(psi(x))) ~ x/Sqrt(E). The vanishing
+    // -1/(2x) of the inner expansion must NOT survive into the outer principal Log -
+    // it strands the mrv rewrite and the heuristic fallback then overflows the stack.
+    check("Limit(E^(E^(PolyGamma(0, PolyGamma(0, x))))/x, x->Infinity)", //
+        "1/Sqrt(E)");
+    // The 1/z^2 order still has to survive for a non-nested argument
+    check("Limit(n^2*(PolyGamma(0, n+1) - Log(n) - 1/(2*n)), n->Infinity)", //
+        "-1/12");
+    // Log(x + 1/x) = Log(x) + 1/x^2 - ...: a vanishing summand of a non-nested argument
+    // does contribute to the principal Log and must be kept
+    check("Limit(x^2*(PolyGamma(0, x + 1/x) - Log(x) + 1/(2*x)), x->Infinity)", //
+        "11/12");
+    // FunctionExpand's reflection formula keys off the argument's CANONICAL sign, so
+    // psi(Log(x) - 1/(2x)) - stored as psi(-1/(2x) + Log(x)) - was reflected onto the
+    // divergent -Log(x) + 1/(2x) plus a Cot(Pi*divergent) no series can rank, and collapsed
+    // to a false 0. A divergent digamma argument must reach Stirling unreflected.
+    check("Limit(E^(PolyGamma(0, Log(x) - 1/(2*x)))/Log(x), x->Infinity)", //
+        "1");
+    check("Limit(E^(E^(PolyGamma(0, Log(x) - 1/(2*x))))/x, x->Infinity)", //
+        "1/Sqrt(E)");
+
     // --- ID.LogGamma ---
     // LogGamma dominant growth term
     check("Limit(LogGamma(x) / (x * Log(x)), x -> Infinity)", //
