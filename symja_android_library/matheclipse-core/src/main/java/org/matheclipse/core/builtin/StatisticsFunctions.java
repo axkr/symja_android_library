@@ -2704,7 +2704,7 @@ public class StatisticsFunctions {
                     return createTensorRecursive(dimension, 1, list,
                         () -> variate.randomVariate(random, dist, sampleSize));
                   } else {
-                    int n = arg2.toIntDefault();
+                    int n = arg2.toMachineInt();
                     if (n >= 0) {
                       if (n >= Config.MAX_AST_SIZE) {
                         ASTElementLimitExceeded.throwIt(n);

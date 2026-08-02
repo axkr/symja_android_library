@@ -96,7 +96,7 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
         double[][] doubleMatrix = matrix.toDoubleMatrix(true);
         if (doubleMatrix != null) {
           if (ast.argSize() > 2) {
-            maxParameters = ast.arg3().toIntDefault();
+            maxParameters = ast.arg3().toMachineInt();
             if (maxParameters < 0) {
               // Positive machine-sized integer expected at position `2` in `1`.
               return Errors.printMessage(S.FindFormula, "intpm", F.List(F.C3, ast), engine);

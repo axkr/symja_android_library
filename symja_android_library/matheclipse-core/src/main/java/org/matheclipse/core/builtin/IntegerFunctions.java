@@ -360,7 +360,7 @@ public class IntegerFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toIntDefault();
+        int power2_K = ast.arg2().toMachineInt();
         if (power2_K >= 0) {
           if ((Config.MAX_BIT_LENGTH) <= power2_K) {
             BigIntegerLimitExceeded.throwIt(power2_K);
@@ -394,7 +394,7 @@ public class IntegerFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toIntDefault();
+        int power2_K = ast.arg2().toMachineInt();
         if (F.isNotPresent(power2_K)) {
           return F.NIL;
         }
@@ -428,7 +428,7 @@ public class IntegerFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toIntDefault();
+        int power2_K = ast.arg2().toMachineInt();
         if (F.isNotPresent(power2_K)) {
           return F.NIL;
         }
@@ -474,7 +474,7 @@ public class IntegerFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toIntDefault();
+        int power2_K = ast.arg2().toMachineInt();
         if (F.isNotPresent(power2_K)) {
           return F.NIL;
         }
@@ -675,7 +675,7 @@ public class IntegerFunctions {
           return ast.arg3().mapThread(ast, 3);
         }
 
-        radix = ast.arg2().toIntDefault();
+        radix = ast.arg2().toMachineInt();
         if (radix <= 0) {
           return F.NIL;
         }
@@ -689,7 +689,7 @@ public class IntegerFunctions {
           map.addTo(list.get(i), 1);
         }
         if (ast.isAST3()) {
-          int index = ast.arg3().toIntDefault();
+          int index = ast.arg3().toMachineInt();
           if (index > 0 && index < radix) {
             int count = map.getInt(F.ZZ(index));
             return F.ZZ(count);
@@ -777,7 +777,7 @@ public class IntegerFunctions {
       int base = 10;
       int padLeftZeros = 0;
       if (ast.argSize() >= 2) {
-        base = ast.arg2().toIntDefault();
+        base = ast.arg2().toMachineInt();
         if (base < 2) {
           // Base `1` is not an integer greater than `2`.
           return Errors.printMessage(S.IntegerDigits, "ibase", F.List(ast.arg2(), F.C1), engine);
@@ -789,7 +789,7 @@ public class IntegerFunctions {
         }
       }
       if (ast.isAST3()) {
-        padLeftZeros = ast.arg3().toIntDefault();
+        padLeftZeros = ast.arg3().toMachineInt();
         if (padLeftZeros < 0) {
           return F.NIL;
         }
@@ -1596,7 +1596,7 @@ public class IntegerFunctions {
         IExpr x = ast.arg1();
         int base = 10;
         if (ast.isAST3()) {
-          base = ast.arg3().toIntDefault();
+          base = ast.arg3().toMachineInt();
           if (base < 2) {
             // Base `1` is not an integer greater than `2`.
             return Errors.printMessage(S.NumberDigit, "ibase", F.List(ast.arg3(), F.C1), engine);
@@ -2191,7 +2191,7 @@ public class IntegerFunctions {
         long length = Long.MIN_VALUE;
         long startDigit = Long.MIN_VALUE;
         if (ast.argSize() >= 2) {
-          base = ast.arg2().toIntDefault();
+          base = ast.arg2().toMachineInt();
           if (base < 2) {
             // Base `1` is not an integer greater than `2`.
             return Errors.printMessage(S.RealDigits, "ibase", F.List(ast.arg2(), F.C1), engine);

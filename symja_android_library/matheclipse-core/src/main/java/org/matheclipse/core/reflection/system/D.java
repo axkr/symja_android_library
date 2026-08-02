@@ -462,7 +462,7 @@ public class D extends AbstractFunctionOptionEvaluator {
             }
           }
           IExpr arg2 = xListN;
-          int n = arg2.toIntDefault();
+          int n = arg2.toMachineInt();
           if (n >= 0) {
             if (fx.isTimes() && fx.argSize() >= 2 && x.isVariable()) {
               IAST timesAST = (IAST) fx;

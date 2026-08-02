@@ -243,7 +243,7 @@ public final class RandomFunctions {
                 return items.get(sampler.sample(1)[0] + 1);
               }, dimension);
             }
-            int n = arg2.toIntDefault();
+            int n = arg2.toMachineInt();
             if (n > 0) {
 
               int[] chosen = sampler.sample(n);
@@ -277,7 +277,7 @@ public final class RandomFunctions {
               return list.get(randomValue[0] + 1);
             }, dimension);
           }
-          int n = arg2.toIntDefault();
+          int n = arg2.toMachineInt();
           if (n > 0) {
             IASTAppendable result = F.ListAlloc(n);
             for (int i = 0; i < n; i++) {
@@ -430,7 +430,7 @@ public final class RandomFunctions {
               final int max2 = max;
               return Tensors.build(() -> F.ZZ(tlr.nextInt((max2 - min2) + 1) + min2), dimension);
             }
-            int size = arg2.toIntDefault();
+            int size = arg2.toMachineInt();
             if (size >= 0) {
               final int minimum = min;
               final int randomBound = (max - minimum) + 1;
@@ -465,7 +465,7 @@ public final class RandomFunctions {
             final boolean negative2 = negative;
             return Tensors.build(() -> randomBigInteger(upperLimit2, negative2, tlr), dimension);
           }
-          int size = arg2.toIntDefault();
+          int size = arg2.toMachineInt();
           if (size >= 0) {
             BigInteger limit = upperLimit;
             return F.mapRange(0, size, i -> randomBigInteger(limit, negative, tlr));
@@ -499,7 +499,7 @@ public final class RandomFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      int d = ast.arg1().toIntDefault();
+      int d = ast.arg1().toMachineInt();
 
       if (d > 0) {
         IAST randomVariate = F.RandomVariate(F.UniformDistribution(F.list(F.C0, F.C1)), F.ZZ(d));
@@ -508,7 +508,7 @@ public final class RandomFunctions {
           // one permutation
           return F.Cycles(F.list(ordering));
         } else {
-          int n = ast.arg2().toIntDefault();
+          int n = ast.arg2().toMachineInt();
           if (n > 0) {
             // a list of n permutations
             return F.mapRange(0, n, i -> F.Cycles(F.list(ordering)));
@@ -688,7 +688,7 @@ public final class RandomFunctions {
         } else if (ast.isAST2()) {
           if (ast.arg2().isList()) {
             if (ast.arg2().argSize() == 1) {
-              int n = ast.arg2().first().toIntDefault();
+              int n = ast.arg2().first().toMachineInt();
               if (n <= 0) {
                 return F.NIL;
               }
@@ -701,7 +701,7 @@ public final class RandomFunctions {
             }
             return Tensors.build(() -> randomReal(arg1, engine), dimension);
           }
-          int n = ast.arg2().toIntDefault();
+          int n = ast.arg2().toMachineInt();
           if (n > 0) {
             return randomASTRealVector(arg1, n, engine);
           }
@@ -853,7 +853,7 @@ public final class RandomFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
-        int n = ast.isAST2() ? ast.arg2().toIntDefault() : Integer.MAX_VALUE;
+        int n = ast.isAST2() ? ast.arg2().toMachineInt() : Integer.MAX_VALUE;
         if (n >= 0) {
           return shuffle((IAST) ast.arg1(), n);
         }

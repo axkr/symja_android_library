@@ -946,7 +946,7 @@ public final class OutputFunctions {
       if (ast.isAST2()) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         IExpr arg2 = engine.evaluate(ast.arg2());
-        int n = arg2.toIntDefault();
+        int n = arg2.toMachineInt();
         if (n > 0) {
 
         }

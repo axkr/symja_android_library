@@ -630,7 +630,7 @@ public final class Combinatoric {
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final int k = ast.arg2().toIntDefault();
+      final int k = ast.arg2().toMachineInt();
       if (ast.arg1().isAST() && ast.arg1().size() > 1 && k > 0) {
         final IAST listArg0 = (IAST) ast.arg1();
         if (k == 1) {
@@ -681,7 +681,7 @@ public final class Combinatoric {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isAST() && ast.arg2().isInteger()) {
         final IAST listArg0 = (IAST) ast.arg1();
-        final int k = ast.get(2).toIntDefault();
+        final int k = ast.get(2).toMachineInt();
         if (k > 0 && k <= listArg0.argSize()) {
           final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(S.List), 1);
           final IASTAppendable result = F.ListAlloc(16);
@@ -950,7 +950,7 @@ public final class Combinatoric {
             return F.NIL;
           }
           if (ast.isAST2()) {
-            int arg2 = ast.arg2().toIntDefault();
+            int arg2 = ast.arg2().toMachineInt();
             if (arg2 < 1) {
               return F.NIL;
             }
@@ -1656,7 +1656,7 @@ public final class Combinatoric {
         return result;
 
       } else if (ast.isAST2() && arg1.isAST()) {
-        int k = ast.arg2().toIntDefault();
+        int k = ast.arg2().toMachineInt();
         if (k >= 0) {
           IASTAppendable result = F.ListAlloc(16);
           IAST temp = F.ast(arg1.head());

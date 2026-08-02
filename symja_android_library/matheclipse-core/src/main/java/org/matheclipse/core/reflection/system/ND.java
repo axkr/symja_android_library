@@ -68,7 +68,7 @@ public class ND extends AbstractFunctionEvaluator {
     IExpr arg3 = ast.arg3();
     try {
       if (arg2.isList2()) {
-        int order = arg2.second().toIntDefault();
+        int order = arg2.second().toMachineInt();
         if (order <= 0) {
           // Positive integer expected at position `2` in `1`.
           Errors.printMessage(S.ND, "intp", F.List(arg2, F.C2), engine);

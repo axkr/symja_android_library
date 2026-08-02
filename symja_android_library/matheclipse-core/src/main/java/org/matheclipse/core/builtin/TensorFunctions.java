@@ -156,7 +156,7 @@ public class TensorFunctions {
           }
           return arrayReduce(f, tensor, ni, engine);
         }
-        int n = arg3.toIntDefault();
+        int n = arg3.toMachineInt();
         if (n > 0) {
           if (n == 1 && dims.size() == 1) {
             return tensor;
@@ -334,7 +334,7 @@ public class TensorFunctions {
 
       } else if (ast.isAST2()) {
         // HodgeDual[tensor, dim] — dualize all slots with dimension == dim
-        int dim = ast.arg2().toIntDefault();
+        int dim = ast.arg2().toMachineInt();
         if (dim <= 0) {
           return F.NIL;
         }
@@ -348,7 +348,7 @@ public class TensorFunctions {
 
       } else { // isAST3
         // HodgeDual[tensor, dim, slots] — dualize only the given slots
-        int dim = ast.arg2().toIntDefault();
+        int dim = ast.arg2().toMachineInt();
         if (dim <= 0) {
           return F.NIL;
         }
@@ -361,7 +361,7 @@ public class TensorFunctions {
         int[] contractedSlots = new int[r];
         boolean[] isContracted = new boolean[totalRank];
         for (int i = 0; i < r; i++) {
-          int s = slotsList.get(i + 1).toIntDefault() - 1; // convert to 0-based
+          int s = slotsList.get(i + 1).toMachineInt() - 1; // convert to 0-based
           if (s < 0 || s >= totalRank || dims.getInt(s) != dim) {
             return F.NIL;
           }
@@ -659,7 +659,7 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      int n = arg1.toIntDefault();
+      int n = arg1.toMachineInt();
       if (n <= 0) {
         if (!arg1.isInteger()) {
           return F.NIL;

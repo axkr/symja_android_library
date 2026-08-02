@@ -58,9 +58,9 @@ public class InverseFunction extends AbstractFunctionEvaluator {
           return temp;
         }
       } else if (ast.isAST3()) {
-        int argSize = ast.arg3().toIntDefault();
+        int argSize = ast.arg3().toMachineInt();
         if (argSize == 1) {
-          int argPosition = ast.arg2().toIntDefault();
+          int argPosition = ast.arg2().toMachineInt();
           if (argPosition == 1) {
             IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
             if (temp != null) {
@@ -68,7 +68,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
             }
           }
         } else if (argSize == 2) {
-          int argPosition = ast.arg2().toIntDefault();
+          int argPosition = ast.arg2().toMachineInt();
           if (argPosition == 1 || argPosition == 2) {
             IExpr temp = getBinaryInverseFunction((ISymbol) arg1, argPosition, argSize);
             if (temp != null) {

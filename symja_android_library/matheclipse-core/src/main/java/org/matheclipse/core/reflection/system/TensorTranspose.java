@@ -175,7 +175,7 @@ public class TensorTranspose extends AbstractEvaluator {
 
         // Let's identify which indices are moved.
         for (int i = 1; i <= rank; i++) {
-          int target = permList.get(i).toIntDefault(); // The index that ends up at position i
+          int target = permList.get(i).toMachineInt(); // The index that ends up at position i
           // Wait, permList definition in TensorTranspose:
           // {p1, p2} means the new 1st dim is the old p1-th dim.
           // effectively this maps index position k to position where p_k is?
@@ -247,8 +247,8 @@ public class TensorTranspose extends AbstractEvaluator {
 
       Map<Integer, Integer> map = new HashMap<>(size);
       for (int k = 1; k <= size; k++) {
-        int from = cycle.get(k).toIntDefault();
-        int to = (k == size) ? cycle.get(1).toIntDefault() : cycle.get(k + 1).toIntDefault();
+        int from = cycle.get(k).toMachineInt();
+        int to = (k == size) ? cycle.get(1).toMachineInt() : cycle.get(k + 1).toMachineInt();
 
         if (from < 1 || from > rank || to < 1 || to > rank) {
           return F.NIL;
@@ -273,7 +273,7 @@ public class TensorTranspose extends AbstractEvaluator {
 
     IASTAppendable result = F.ListAlloc(rank);
     for (int i = 1; i <= rank; i++) {
-      int outerIdx = outer.get(i).toIntDefault();
+      int outerIdx = outer.get(i).toMachineInt();
       if (outerIdx < 1 || outerIdx > rank)
         return F.NIL;
       result.append(inner.get(outerIdx));
@@ -283,7 +283,7 @@ public class TensorTranspose extends AbstractEvaluator {
 
   private boolean isIdentityPermutation(IAST perm) {
     for (int i = 1; i <= perm.argSize(); i++) {
-      if (perm.get(i).toIntDefault() != i) {
+      if (perm.get(i).toMachineInt() != i) {
         return false;
       }
     }
@@ -313,7 +313,7 @@ public class TensorTranspose extends AbstractEvaluator {
 
     int permIdx = 1;
     while (permIdx <= totalRank) {
-      int sourceIdx = perm.get(permIdx).toIntDefault();
+      int sourceIdx = perm.get(permIdx).toMachineInt();
 
       int factorIdx = -1;
       int localIdx = -1;
@@ -338,7 +338,7 @@ public class TensorTranspose extends AbstractEvaluator {
         if (permIdx > totalRank)
           return F.NIL;
 
-        int nextSourceIdx = perm.get(permIdx).toIntDefault();
+        int nextSourceIdx = perm.get(permIdx).toMachineInt();
 
         if (nextSourceIdx <= offsets[factorIdx]
             || nextSourceIdx > offsets[factorIdx] + ranks[factorIdx]) {

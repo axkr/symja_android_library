@@ -1176,7 +1176,7 @@ public final class Arithmetic {
 
       // Parse the second argument if it exists
       if (ast.isAST2()) {
-        int n = ast.arg2().toIntDefault();
+        int n = ast.arg2().toMachineInt();
         if (n == Config.INVALID_INT) {
           return F.NIL;
         }

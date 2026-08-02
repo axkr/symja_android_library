@@ -1006,7 +1006,7 @@ public final class BooleanFunctions {
                 return lf.factorSimplifyDNF(booleanOrFormula);
               }
             } else {
-              int n = arg2.toIntDefault();
+              int n = arg2.toMachineInt();
               if (n > 0 && n <= 64) {
                 Formula booleanOrFormula = null;
                 Variable[] variables = new Variable[n];
@@ -1080,7 +1080,7 @@ public final class BooleanFunctions {
         n = variableList.argSize();
       } else {
         slotForm = true;
-        n = arg2.toIntDefault();
+        n = arg2.toMachineInt();
         IASTAppendable slots = F.ListAlloc(n > 0 ? n : 1);
         for (int i = 1; i <= n; i++) {
           slots.append(F.Slot(i));
@@ -1104,12 +1104,12 @@ public final class BooleanFunctions {
         IAST list = (IAST) spec;
         if (list.argSize() == 1) {
           kind = SPEC_EXACT;
-          kValue = list.arg1().toIntDefault();
+          kValue = list.arg1().toMachineInt();
         } else if (list.argSize() == 2 || list.argSize() == 3) {
           kind = SPEC_MULTI;
-          int kmin = list.arg1().toIntDefault();
-          int kmax = list.arg2().toIntDefault();
-          int step = list.argSize() == 3 ? list.arg3().toIntDefault() : 1;
+          int kmin = list.arg1().toMachineInt();
+          int kmax = list.arg2().toMachineInt();
+          int step = list.argSize() == 3 ? list.arg3().toMachineInt() : 1;
           if (kmin == Integer.MIN_VALUE || kmax == Integer.MIN_VALUE || step == Integer.MIN_VALUE
               || step <= 0) {
             return F.NIL;

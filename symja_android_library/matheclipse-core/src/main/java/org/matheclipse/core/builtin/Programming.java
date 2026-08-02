@@ -1634,7 +1634,7 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int n = ast.arg3().toIntDefault();
+      int n = ast.arg3().toMachineInt();
       if (n < 0) {
         // Positive integer (less equal 2147483647) expected at position `2` in `1`.
         return Errors.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
@@ -1833,7 +1833,7 @@ public final class Programming {
         if (ast.arg4().equals(S.All)) {
           m = -1;
         } else {
-          int tmpInt = ast.arg4().toIntDefault();
+          int tmpInt = ast.arg4().toMachineInt();
           if (tmpInt < 0) {
             // Argument `2` in `1` is not of the form i, {i,j}, {i,Infinity}, or All, where i and j
             // are non-negative machine-sized integer
@@ -1847,7 +1847,7 @@ public final class Programming {
         if (ast.arg5().isInfinity()) {
           max = -1;
         } else {
-          int tmpInt = ast.arg5().toIntDefault();
+          int tmpInt = ast.arg5().toMachineInt();
           if (tmpInt < 0) {
             // Machine-sized integer expected at position `2` in `1`.
             return Errors.printMessage(ast.topHead(), "intm", F.List(ast, F.C5), engine);
@@ -1857,7 +1857,7 @@ public final class Programming {
       }
       int n = 0;
       if (ast.argSize() == 6) {
-        int tmpInt = ast.get(6).toIntDefault();
+        int tmpInt = ast.get(6).toMachineInt();
         if (F.isNotPresent(tmpInt)) {
           return F.NIL;
         }

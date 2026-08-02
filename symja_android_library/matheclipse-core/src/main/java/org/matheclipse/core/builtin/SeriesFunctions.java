@@ -81,8 +81,8 @@ public class SeriesFunctions {
         int n = -1;
 
         if (orderArg.isList2()) {
-          m = ((IAST) orderArg).arg1().toIntDefault();
-          n = ((IAST) orderArg).arg2().toIntDefault();
+          m = ((IAST) orderArg).arg1().toMachineInt();
+          n = ((IAST) orderArg).arg2().toMachineInt();
         } else if (orderArg.isInteger()) {
           // If only a single order `m` is given, default to {m, m}
           m = orderArg.toIntDefault();
@@ -740,7 +740,7 @@ public class SeriesFunctions {
             if (!x.isVariable()) {
               return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
             }
-            final int n = list.arg3().toIntDefault();
+            final int n = list.arg3().toMachineInt();
             if (F.isNotPresent(n)) {
               return F.NIL;
             }
@@ -1966,16 +1966,16 @@ public class SeriesFunctions {
           return F.NIL;
         }
         IAST coefficients = (IAST) ast.arg3();
-        final int nMin = ast.arg4().toIntDefault();
+        final int nMin = ast.arg4().toMachineInt();
         if (F.isNotPresent(nMin)) {
           return F.NIL;
         }
-        final int truncate = ast.arg5().toIntDefault();
+        final int truncate = ast.arg5().toMachineInt();
         if (F.isNotPresent(truncate)) {
           return F.NIL;
         }
         if (ast.size() == 7) {
-          denominator = ast.get(6).toIntDefault();
+          denominator = ast.get(6).toMachineInt();
         }
         return new ASTSeriesData(x, x0, coefficients, nMin, truncate, denominator);
       }

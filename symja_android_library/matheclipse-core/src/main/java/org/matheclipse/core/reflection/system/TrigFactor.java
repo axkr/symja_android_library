@@ -164,6 +164,9 @@ public class TrigFactor extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  // ==========================================
+  // Angle Changing Identities
+  // ==========================================
 
   /**
    * Rewrite <code>expr</code> with one of the identities which contract a sum into a product by
@@ -448,6 +451,9 @@ public class TrigFactor extends AbstractFunctionEvaluator {
     }
   }
 
+  // ==========================================
+  // Pipeline Loop Engines
+  // ==========================================
 
   private IExpr applyIdentities(IExpr expr, EvalEngine engine) {
     IExpr current = expr;
@@ -701,7 +707,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
                 IExpr arg2 = times.get(j);
                 if (arg2.isPower() && arg2.base().isCos()
                     && arg2.base().first().equals(base.first())) {
-                  if (arg2.exponent().isInteger() && arg2.exponent().toIntDefault() == -exp) {
+                  if (arg2.exponent().toMachineInt() == -exp) {
                     newTimes.append(F.Power(F.Tan(base.first()), F.ZZ(exp)));
                     used[i] = true;
                     used[j] = true;
@@ -717,7 +723,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
                 IExpr arg2 = times.get(j);
                 if (arg2.isPower() && arg2.base().isSin()
                     && arg2.base().first().equals(base.first())) {
-                  if (arg2.exponent().isInteger() && arg2.exponent().toIntDefault() == -exp) {
+                  if (arg2.exponent().toMachineInt() == -exp) {
                     newTimes.append(F.Power(F.Cot(base.first()), F.ZZ(exp)));
                     used[i] = true;
                     used[j] = true;
@@ -811,7 +817,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       boolean evaled = false;
 
       // Selectively reduce isolated degree-2 Sine/Cosine bases
-      if (ast.isPower() && ast.arg2().isInteger() && ast.arg2().toIntDefault() == 2) {
+      if (ast.isPower() && ast.arg2().toMachineInt() == 2) {
         IExpr base = ast.arg1();
         if (base.isAST1()) {
           if (base.isCos()) {
@@ -843,6 +849,10 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       return evaled ? temp : F.NIL;
     }
   }
+
+  // ==========================================
+  // Rule Definitions
+  // ==========================================
 
   @Override
   public int[] expectedArgSize(IAST ast) {

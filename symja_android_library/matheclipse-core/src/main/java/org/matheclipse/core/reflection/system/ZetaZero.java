@@ -21,7 +21,7 @@ public class ZetaZero extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    final int k = ast.arg1().toIntDefault();
+    final int k = ast.arg1().toMachineInt();
     if (k <= 0) {
       if (ast.arg1().isNumber()) {
         // Nonzero integer expected at position `1` in `2`.

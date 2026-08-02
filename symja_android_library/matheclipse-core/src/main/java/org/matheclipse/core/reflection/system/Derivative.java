@@ -291,7 +291,7 @@ public class Derivative extends AbstractFunctionEvaluator {
       IBuiltInSymbol builtin = (IBuiltInSymbol) headDerivative.arg1();
       if (builtin.hasNumericFunctionAttribute()) {
         if (head.isAST1()) {
-          int n = head.first().toIntDefault();
+          int n = head.first().toMachineInt();
           if (n > 0) {
             IExpr dResult = S.Derivative.evalDownRule(engine,
                 (n == 1) ? headDerivative : headDerivative.setAtCopy(0, head.setAtCopy(1, F.C1)));

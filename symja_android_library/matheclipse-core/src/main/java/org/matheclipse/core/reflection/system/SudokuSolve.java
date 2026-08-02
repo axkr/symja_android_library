@@ -119,7 +119,7 @@ public class SudokuSolve extends AbstractEvaluator {
       for (int i = 0; i < 9; i++) {
         IAST row = matrix.getAST(i + 1);
         for (int j = 0; j < 9; j++) {
-          int value = row.get(j + 1).toIntDefault();
+          int value = row.get(j + 1).toMachineInt();
           if (value < 1 || value > 9) {
             board[i][j] = 0;
           } else {

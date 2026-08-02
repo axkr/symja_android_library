@@ -475,7 +475,7 @@ public final class PatternMatching {
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
         if (ast.size() > 2) {
-          int pos = ast.arg2().toIntDefault();
+          int pos = ast.arg2().toMachineInt();
           if (pos > 0) {
             return symbol.getDefaultValue(pos);
           }
@@ -503,7 +503,7 @@ public final class PatternMatching {
           symbol.setDefaultValue(rightHandSide);
           return rightHandSide;
         } else if (leftHandSide.size() == 3 && leftHandSide.first().isSymbol()) {
-          int pos = leftHandSide.second().toIntDefault();
+          int pos = leftHandSide.second().toMachineInt();
           if (pos > 0) {
             symbol.setDefaultValue(pos, rightHandSide);
             return rightHandSide;
@@ -1718,7 +1718,7 @@ public final class PatternMatching {
         } else if (arg2.isInfinity()) {
           max = Integer.MAX_VALUE;
         } else {
-          max = arg2.toIntDefault();
+          max = arg2.toMachineInt();
         }
         if (F.isNotPresent(max)) {
           return F.NIL;

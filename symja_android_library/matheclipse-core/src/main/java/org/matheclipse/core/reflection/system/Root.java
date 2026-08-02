@@ -194,7 +194,7 @@ public class Root extends AbstractFunctionEvaluator {
     if (!function.isFunction()) {
       return F.NIL;
     }
-    final int k = ast.arg2().toIntDefault();
+    final int k = ast.arg2().toMachineInt();
     if (k < 1) {
       return F.NIL;
     }

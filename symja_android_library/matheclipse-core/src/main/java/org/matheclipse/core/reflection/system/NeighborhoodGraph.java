@@ -45,10 +45,7 @@ public class NeighborhoodGraph extends AbstractFunctionEvaluator {
 
     int d = 1;
     if (ast.argSize() == 3) {
-      if (!ast.arg3().isInteger()) {
-        return F.NIL;
-      }
-      d = ast.arg3().toIntDefault();
+      d = ast.arg3().toMachineInt();
       if (d < 0) {
         return F.NIL;
       }

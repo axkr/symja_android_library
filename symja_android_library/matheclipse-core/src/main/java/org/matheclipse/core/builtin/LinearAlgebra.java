@@ -227,7 +227,7 @@ public final class LinearAlgebra {
       IExpr arg1 = ast.arg1();
       int rank = 2;
       if (ast.isAST2()) {
-        int r = ast.arg2().toIntDefault();
+        int r = ast.arg2().toMachineInt();
         if (r <= 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
           return Errors.printMessage(S.ArrayFlatten, "intnm", ast, engine);
@@ -619,8 +619,8 @@ public final class LinearAlgebra {
           arg1 = arg1.normal(false);
         }
         IAST matrix = (IAST) arg1;
-        int i = arg2.first().toIntDefault();
-        int j = arg2.second().toIntDefault();
+        int i = arg2.first().toMachineInt();
+        int j = arg2.second().toMachineInt();
         if (i <= 0 || j <= 0) {
           // TODO error message
           return F.NIL;
@@ -876,7 +876,7 @@ public final class LinearAlgebra {
       if (arg1.isList() || arg1.isSparseArray()) {
         final int diff;
         if (ast.size() > 2) {
-          diff = ast.arg2().toIntDefault();
+          diff = ast.arg2().toMachineInt();
           if (F.isNotPresent(diff)) {
             return F.NIL;
           }
@@ -1140,7 +1140,7 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int maximumLevel = Integer.MAX_VALUE;
       if (ast.isAST2()) {
-        maximumLevel = ast.arg2().toIntDefault();
+        maximumLevel = ast.arg2().toMachineInt();
         if (maximumLevel < 0) {
           if (ast.arg2().isNumber()) {
             // Positive integer (less equal 2147483647) expected at position `2` in `1`.
@@ -2570,7 +2570,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      final int m = arg1.toIntDefault();
+      final int m = arg1.toMachineInt();
       if (m <= 0) {
         if (arg1.isNumber()) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
@@ -2791,7 +2791,7 @@ public final class LinearAlgebra {
         }
       } else {
         if (ast.isAST1()) {
-          int n = arg1.toIntDefault();
+          int n = arg1.toMachineInt();
           if (n > 0) {
             return F.matrix((i, j) -> (i + j + 1) <= n ? F.ZZ(i + j + 1) : F.C0, n, n);
           }
@@ -4038,7 +4038,7 @@ public final class LinearAlgebra {
             return F.NIL;
           }
 
-          int p = arg2.toIntDefault();
+          int p = arg2.toMachineInt();
           if (F.isNotPresent(p)) {
             return F.NIL;
           }
@@ -4207,7 +4207,7 @@ public final class LinearAlgebra {
                 dims[1];
         int minorSize = minimumSize;
         if (ast.argSize() >= 2) {
-          int intValue = ast.arg2().toIntDefault();
+          int intValue = ast.arg2().toMachineInt();
           if (intValue < 0) {
             return F.NIL;
           }
@@ -4842,7 +4842,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      int m = ast.arg1().toIntDefault();
+      int m = ast.arg1().toMachineInt();
       if (m < 0) {
         return F.NIL;
       }
@@ -5847,7 +5847,7 @@ public final class LinearAlgebra {
               ((IAST) singularValueList).filter(x -> keepSingularValue(x, engine))[0];
           int n = singularValueList.argSize();
           if (ast.isAST2()) {
-            n = ast.arg2().toIntDefault();
+            n = ast.arg2().toMachineInt();
             if (n <= 0) {
               // Positive integer (less equal 2147483647) expected at position `2` in `1`.
               return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
@@ -5906,7 +5906,7 @@ public final class LinearAlgebra {
       }
 
 
-      int m = ast.arg1().toIntDefault();
+      int m = ast.arg1().toMachineInt();
       if (m < 0) {
         if (ast.arg1().isNumber()) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
@@ -6089,7 +6089,7 @@ public final class LinearAlgebra {
 
         int traceDepth = dimsSize;
         if (ast.isAST3()) {
-          level = ast.arg3().toIntDefault();
+          level = ast.arg3().toMachineInt();
           if (F.isNotPresent(level) || level <= 0) {
             return F.NIL;
           }
@@ -6378,7 +6378,7 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
-        int n = arg1.toIntDefault();
+        int n = arg1.toMachineInt();
         if (n <= 0) {
           if (F.isNotPresent(n) && !arg1.isNumber()) {
             return F.NIL;
@@ -6386,7 +6386,7 @@ public final class LinearAlgebra {
           // Positive machine-sized integer expected at position `2` in `1`.
           return Errors.printMessage(S.UnitVector, "intpm", F.list(ast, F.C1), engine);
         }
-        int k = ast.arg2().toIntDefault();
+        int k = ast.arg2().toMachineInt();
         if (k <= 0) {
           if (F.isNotPresent(k)) {
             return F.NIL;
@@ -6403,7 +6403,7 @@ public final class LinearAlgebra {
         return F.NIL;
       }
 
-      int k = arg1.toIntDefault();
+      int k = arg1.toMachineInt();
       if (k <= 0) {
         if (arg1.isNumber()) {
           // Positive machine-sized integer expected at position `2` in `1`.

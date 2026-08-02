@@ -29,7 +29,7 @@ public class DeBruijnSequence extends AbstractEvaluator {
     IExpr arg1 = ast.arg1();
     IExpr arg2 = ast.arg2();
 
-    int n = arg2.toIntDefault();
+    int n = arg2.toMachineInt();
     if (!arg2.isInteger() || n < 1) {
       // Positive machine-sized integer expected at position `2` in `1`.
       return Errors.printMessage(S.DeBruijnSequence, "intpm", F.List(ast, F.C2), engine);

@@ -46,7 +46,7 @@ public class CompleteKaryTree extends AbstractFunctionOptionEvaluator {
     int k = 2;
     if (argSize >= 2) {
       IExpr arg2 = ast.arg2();
-      k = arg2.toIntDefault();
+      k = arg2.toMachineInt();
       if (k < 0) {
         return F.NIL;
       }

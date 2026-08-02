@@ -66,12 +66,12 @@ public class FindInstance extends Solve {
         ast = ast.copyUntil(argSize + 1);
       }
       if (argSize >= 4) {
-        maxChoices = ast.arg4().toIntDefault();
+        maxChoices = ast.arg4().toMachineInt();
         if (maxChoices < 0) {
           maxChoices = 1;
         }
       } else if (argSize >= 3) {
-        maxChoices = ast.arg3().toIntDefault();
+        maxChoices = ast.arg3().toMachineInt();
         if (maxChoices < 0) {
           maxChoices = 1;
         }

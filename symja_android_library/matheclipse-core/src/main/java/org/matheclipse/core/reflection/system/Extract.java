@@ -139,7 +139,7 @@ public final class Extract extends AbstractFunctionEvaluator {
       if (arg == S.All || arg.isAST(S.Span) || arg.isList()) {
         continue;
       }
-      int intValue = arg.toIntDefault();
+      int intValue = arg.toMachineInt();
       if (F.isNotPresent(intValue)) {
         // Position specification `1` in `2` is not applicable.
         Errors.printMessage(ast.topHead(), "psl1", F.list(ast.arg2(), ast), engine);

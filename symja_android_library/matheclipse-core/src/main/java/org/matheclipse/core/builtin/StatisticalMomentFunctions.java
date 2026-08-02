@@ -260,14 +260,14 @@ public class StatisticalMomentFunctions {
         m = rList.argSize();
         R = new int[m];
         for (int i = 1; i <= m; i++) {
-          int r = rList.get(i).toIntDefault();
+          int r = rList.get(i).toMachineInt();
           if (r < 0) {
             return F.NIL;
           }
           R[i - 1] = r;
         }
       } else {
-        int r = arg2.toIntDefault();
+        int r = arg2.toMachineInt();
         if (r < 0) {
           return F.NIL;
         }

@@ -50,10 +50,10 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
     IExpr x0 = xSpec.arg2();
     IExpr orderExpr = xSpec.arg3();
 
-    if (!orderExpr.isInteger()) {
+    int order = orderExpr.toMachineInt();
+    if (F.isNotPresent(order)) {
       return F.NIL;
     }
-    int order = orderExpr.toIntDefault();
 
     // ==============================================================================
     // STRATEGY 1: ATTEMPT EXACT SOLUTION FIRST

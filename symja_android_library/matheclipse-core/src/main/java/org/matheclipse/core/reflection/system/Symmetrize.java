@@ -101,7 +101,7 @@ public class Symmetrize extends AbstractFunctionEvaluator {
 
               // Replace the targeted indices with the active permutation mapping
               for (int j = 1; j <= numIndices; j++) {
-                int originalIndex = indicesList.get(j).toIntDefault();
+                int originalIndex = indicesList.get(j).toMachineInt();
                 if (originalIndex < 1 || originalIndex > rank) {
                   return F.NIL;
                 }

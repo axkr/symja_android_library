@@ -220,10 +220,10 @@ public class TensorContract extends AbstractEvaluator {
     IAST slotList = (IAST) slots;
     if (slotList.argSize() == 1 && slotList.arg1().isList()) {
       IAST inner = (IAST) slotList.arg1();
-      return inner.argSize() == 2 && inner.arg1().isOne() && inner.arg2().toIntDefault() == 2;
+      return inner.argSize() == 2 && inner.arg1().isOne() && inner.arg2().toMachineInt() == 2;
     }
     if (slotList.argSize() == 2) {
-      return slotList.arg1().isOne() && slotList.arg2().toIntDefault() == 2;
+      return slotList.arg1().isOne() && slotList.arg2().toMachineInt() == 2;
     }
     return false;
   }
