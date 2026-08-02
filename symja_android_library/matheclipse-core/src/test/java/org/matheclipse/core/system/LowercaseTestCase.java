@@ -25234,8 +25234,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testTrigFactor() {
-    // TODO TrigFactor is experimental and working very slow at the moment
+  public void testTrigFactor() { 
     check("TrigFactor(Cos(x)^3 + Sin(x)^3)", //
         "(Cos(x)+Sin(x))*(1-Cos(x)*Sin(x))");
     check("TrigFactor(Sin(x)^2 + Tan(x)^2)", //
