@@ -25,7 +25,7 @@ public class SymmetricPolynomial extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     IExpr arg1 = ast.arg1();
-    int k = arg1.toIntDefault();
+    int k = arg1.toMachineInt();
     if (!F.isPresent(k)) {
       return F.NIL;
     }

@@ -538,7 +538,7 @@ public class ClusteringFunctions {
             }
 
             if ("KMeans".equals(method) || "".equals(method)) {
-              k = ast.arg2().toIntDefault();
+              k = ast.arg2().toMachineInt();
               if (F.isNotPresent(k)) {
                 k = 3;
               }
@@ -549,7 +549,7 @@ public class ClusteringFunctions {
               return F.NIL;
             }
             eps = engine.evalDouble(ast.arg2());
-            minPts = ast.arg3().toIntDefault();
+            minPts = ast.arg3().toMachineInt();
             if (minPts <= 0) {
               return F.NIL;
             }

@@ -252,10 +252,10 @@ public class InverseFourier extends AbstractFunctionOptionEvaluator {
     double basePhase = 2.0 * Math.PI * b / n;
 
     for (IExpr p : positions) {
-      if (!p.isInteger())
+      int pInt = p.toMachineInt();
+      if (F.isNotPresent(pInt))
         return F.NIL;
 
-      int pInt = p.toIntDefault();
       if (Math.abs(pInt) > list.argSize()) {
         // Position specification `1` in `2` is not applicable.
         return Errors.printMessage(S.InverseFourier, "psl1", F.List(positions, originalAST));

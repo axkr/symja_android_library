@@ -142,7 +142,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       if (expr.isFunction()) {
         expr = expr.first();
         try {
-          int k = ast.arg2().toIntDefault();
+          int k = ast.arg2().toMachineInt();
           if (k < 1) {
             return F.NIL;
           }

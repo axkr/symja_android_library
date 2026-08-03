@@ -38,7 +38,7 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
         if (list.size() >= 2 && list.arg1().isSymbol()) {
           variable = (ISymbol) list.arg1();
           if (list.size() >= 3) {
-            order = list.arg2().toIntDefault();
+            order = list.arg2().toMachineInt();
           }
           if (list.size() >= 4) {
             step = list.arg3();

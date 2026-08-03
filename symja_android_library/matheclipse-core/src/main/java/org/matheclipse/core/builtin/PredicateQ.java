@@ -367,7 +367,7 @@ public class PredicateQ {
 
       int diagonal = 0;
       if (ast.isAST2()) {
-        int k = ast.arg2().toIntDefault();
+        int k = ast.arg2().toMachineInt();
         if (F.isNotPresent(k)) {
           return F.NIL;
         }
@@ -618,7 +618,7 @@ public class PredicateQ {
 
       int diagonal = 0;
       if (ast.isAST2()) {
-        int k = ast.arg2().toIntDefault();
+        int k = ast.arg2().toMachineInt();
         if (F.isNotPresent(k)) {
           return F.NIL;
         }

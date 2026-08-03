@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 
@@ -37,8 +38,15 @@ public class TrigFactor extends AbstractFunctionEvaluator {
     }
 
     IExpr arg = ast.arg1();
-    if (arg.isFree(v -> v.isTrigFunction(), false)) {
+    if (arg.isFree(v -> v.isTrigFunction() || v.isHyperbolicFunction(), false)) {
       return arg;
+    }
+
+    // Strict trigonometric identities on the argument itself. Factor() works on the polynomial
+    // structure only and cannot reach any of them, because they all change the angle.
+    IExpr identity = trigFactorIdentity(arg);
+    if (identity.isPresent()) {
+      return engine.evaluate(identity);
     }
 
     // PATH A: Run pipeline on argument directly (preserves angle-sums)
@@ -154,6 +162,293 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  // ==========================================
+  // Angle Changing Identities
+  // ==========================================
+
+  /**
+   * Rewrite <code>expr</code> with one of the identities which contract a sum into a product by
+   * changing the angle. <code>Factor()</code> works on the polynomial structure of the
+   * <code>Sin(x)</code>, <code>Cos(x)</code>,... atoms alone and cannot reach any of them.
+   *
+   * @param expr the argument of <code>TrigFactor()</code>
+   * @return {@link F#NIL} if no identity matches
+   */
+  private static IExpr trigFactorIdentity(IExpr expr) {
+    if (expr.isPlus() && expr.size() == 3) {
+      IAST plus = (IAST) expr;
+      IExpr result = pythagoreanDifference(plus);
+      if (result.isPresent()) {
+        return result;
+      }
+      result = constantPlusTrig(plus);
+      if (result.isPresent()) {
+        return result;
+      }
+      return sumOfTwoTrigs(plus);
+    }
+    return doubleAngle(expr);
+  }
+
+  /**
+   * <code>Sin(x)+Cos(x)</code> becomes <code>Sqrt(2)*Sin(x+Pi/4)</code> and the sum-to-product
+   * identities like <code>Sin(x)+Sin(y)</code> become
+   * <code>2*Cos(x/2-y/2)*Sin(x/2+y/2)</code>.
+   *
+   * @param plus a sum of exactly two terms
+   * @return {@link F#NIL} if the two terms aren't <code>+-Sin(u)</code>, <code>+-Cos(u)</code>,
+   *         <code>+-Sinh(u)</code> or <code>+-Cosh(u)</code>
+   */
+  private static IExpr sumOfTwoTrigs(IAST plus) {
+    SignedTrig first = signedTrig(plus.arg1());
+    if (first == null) {
+      return F.NIL;
+    }
+    SignedTrig second = signedTrig(plus.arg2());
+    if (second == null) {
+      return F.NIL;
+    }
+
+    SignedTrig sin = first.headID() == ID.Sin ? first : //
+        (second.headID() == ID.Sin ? second : null);
+    SignedTrig cos = first.headID() == ID.Cos ? first : //
+        (second.headID() == ID.Cos ? second : null);
+    if (sin != null && cos != null && sin.angle().equals(cos.angle())) {
+      // sinSign*Sqrt(2)*Sin(angle+sinSign*cosSign*Pi/4)
+      IExpr quarter = sin.negative == cos.negative ? F.CPiQuarter : F.Times(F.CN1, F.CPiQuarter);
+      IExpr result = F.Times(F.CSqrt2, F.Sin(F.Plus(sin.angle(), quarter)));
+      return sin.negative ? F.Negate(result) : result;
+    }
+
+    if (first.headID() != second.headID()) {
+      return F.NIL;
+    }
+    IExpr u = first.angle();
+    IExpr v = second.angle();
+    if (!u.isSymbol() || !v.isSymbol() || u.equals(v)) {
+      // Restricted to plain symbols on purpose. For multiple angles the polynomial pipeline finds
+      // the better factorization: Sin(2*x)+Sin(4*x) becomes 2*Cos(x)*(1+2*Cos(2*x))*Sin(x) and not
+      // 2*Cos(x)*Sin(3*x).
+      return F.NIL;
+    }
+    // the sign of the first term is pulled out of the product, so only the relative sign of the
+    // second term decides between the sum and the difference identity
+    boolean difference = first.negative != second.negative;
+    // kept distributed, so that the angles print as x/2+y/2 and not as 1/2*(x+y)
+    IExpr half = F.Plus(F.Times(F.C1D2, u), F.Times(F.C1D2, v));
+    IExpr halfDifference = F.Plus(F.Times(F.C1D2, u), F.Times(F.CN1D2, v));
+    IExpr result;
+    switch (first.headID()) {
+      case ID.Sin:
+        result = difference //
+            ? F.Times(F.C2, F.Cos(half), F.Sin(halfDifference)) //
+            : F.Times(F.C2, F.Sin(half), F.Cos(halfDifference));
+        break;
+      case ID.Cos:
+        result = difference //
+            ? F.Times(F.CN2, F.Sin(half), F.Sin(halfDifference)) //
+            : F.Times(F.C2, F.Cos(half), F.Cos(halfDifference));
+        break;
+      case ID.Sinh:
+        result = difference //
+            ? F.Times(F.C2, F.Cosh(half), F.Sinh(halfDifference)) //
+            : F.Times(F.C2, F.Sinh(half), F.Cosh(halfDifference));
+        break;
+      default: // ID.Cosh
+        result = difference //
+            ? F.Times(F.C2, F.Sinh(half), F.Sinh(halfDifference)) //
+            : F.Times(F.C2, F.Cosh(half), F.Cosh(halfDifference));
+        break;
+    }
+    return first.negative ? F.Negate(result) : result;
+  }
+
+  /**
+   * The half angle identities <code>1+Cos(x)</code> becomes <code>2*Cos(x/2)^2</code>,
+   * <code>1-Sin(x)</code> becomes <code>2*Sin(x/2-Pi/4)^2</code>, <code>Cosh(x)-1</code> becomes
+   * <code>2*Sinh(x/2)^2</code>,...
+   *
+   * @param plus a sum of exactly two terms
+   * @return {@link F#NIL} if the sum isn't <code>+-1+-Cos(x)</code>, <code>+-1+-Sin(x)</code> or
+   *         <code>+-1+-Cosh(x)</code>. <code>Sinh()</code> has no such identity.
+   */
+  private static IExpr constantPlusTrig(IAST plus) {
+    IExpr constant = plus.arg1();
+    SignedTrig trig = signedTrig(plus.arg2());
+    if (trig == null) {
+      constant = plus.arg2();
+      trig = signedTrig(plus.arg1());
+    }
+    if (trig == null || !(constant.isOne() || constant.isMinusOne())) {
+      return F.NIL;
+    }
+    // true if the constant and the trigonometric function carry the same sign
+    boolean sameSign = constant.isOne() != trig.negative;
+    IExpr halfAngle = F.Times(F.C1D2, trig.angle());
+    IExpr result;
+    switch (trig.headID()) {
+      case ID.Cos:
+        result = sameSign //
+            ? F.Times(F.C2, F.Sqr(F.Cos(halfAngle))) //
+            : F.Times(F.C2, F.Sqr(F.Sin(halfAngle)));
+        return constant.isOne() ? result : F.Negate(result);
+      case ID.Sin:
+        IExpr quarter = sameSign ? F.CPiQuarter : F.Times(F.CN1, F.CPiQuarter);
+        result = F.Times(F.C2, F.Sqr(F.Sin(F.Plus(halfAngle, quarter))));
+        return constant.isOne() ? result : F.Negate(result);
+      case ID.Cosh:
+        result = sameSign //
+            ? F.Times(F.C2, F.Sqr(F.Cosh(halfAngle))) //
+            : F.Times(F.C2, F.Sqr(F.Sinh(halfAngle)));
+        return trig.negative ? F.Negate(result) : result;
+      default: // ID.Sinh
+        return F.NIL;
+    }
+  }
+
+  /**
+   * <code>Cos(x)^2-Sin(x)^2</code> is <code>Cos(2*x)</code> and <code>Sin(x)^2-Cos(x)^2</code> is
+   * <code>-Cos(2*x)</code>, which {@link #cosineDoubleAngle(IExpr)} contracts into a product.
+   *
+   * @param plus a sum of exactly two terms
+   * @return {@link F#NIL} if the sum isn't a difference of <code>Sin(x)^2</code> and
+   *         <code>Cos(x)^2</code> with the same angle
+   */
+  private static IExpr pythagoreanDifference(IAST plus) {
+    SignedTrig first = squaredTrig(plus.arg1());
+    if (first == null) {
+      return F.NIL;
+    }
+    SignedTrig second = squaredTrig(plus.arg2());
+    if (second == null || first.negative == second.negative) {
+      return F.NIL;
+    }
+    SignedTrig sin = first.headID() == ID.Sin ? first : //
+        (second.headID() == ID.Sin ? second : null);
+    SignedTrig cos = first.headID() == ID.Cos ? first : //
+        (second.headID() == ID.Cos ? second : null);
+    if (sin == null || cos == null || !sin.angle().equals(cos.angle())) {
+      return F.NIL;
+    }
+    IExpr result = cosineDoubleAngle(sin.angle());
+    return sin.negative ? result : F.Negate(result);
+  }
+
+  /**
+   * <code>Sin(2*x)</code> becomes <code>2*Cos(x)*Sin(x)</code>, <code>Sinh(2*x)</code> becomes
+   * <code>2*Cosh(x)*Sinh(x)</code> and <code>Cos(2*x)</code> becomes
+   * <code>2*Sin(Pi/4-x)*Sin(Pi/4+x)</code>.
+   *
+   * <p>Only used for a single trigonometric function, never for the terms of a sum:
+   * <code>Sin(2*x)+Sin(4*x)</code> is left to the polynomial pipeline.
+   *
+   * @param expr the argument of <code>TrigFactor()</code>
+   * @return {@link F#NIL} if <code>expr</code> isn't a sine or cosine of an even multiple of an
+   *         angle
+   */
+  private static IExpr doubleAngle(IExpr expr) {
+    if (!isBasicTrig(expr)) {
+      return F.NIL;
+    }
+    IAST function = (IAST) expr;
+    IExpr angle = function.arg1();
+    if (!angle.isTimes()) {
+      return F.NIL;
+    }
+    IExpr multiple = ((IAST) angle).arg1();
+    if (!multiple.isInteger() || !((IInteger) multiple).isEven()) {
+      return F.NIL;
+    }
+    IExpr half = F.Times(F.C1D2, angle);
+    switch (function.headID()) {
+      case ID.Sin:
+        return F.Times(F.C2, F.Cos(half), F.Sin(half));
+      case ID.Sinh:
+        return F.Times(F.C2, F.Cosh(half), F.Sinh(half));
+      case ID.Cos:
+        return cosineDoubleAngle(half);
+      default: // ID.Cosh has no product form with a real angle
+        return F.NIL;
+    }
+  }
+
+  /**
+   * <code>Cos(2*x) == 2*Sin(Pi/4-x)*Sin(Pi/4+x)</code>
+   *
+   * @param angle the half angle <code>x</code> of <code>Cos(2*x)</code>
+   */
+  private static IExpr cosineDoubleAngle(IExpr angle) {
+    return F.Times(F.C2, F.Sin(F.Subtract(F.CPiQuarter, angle)),
+        F.Sin(F.Plus(F.CPiQuarter, angle)));
+  }
+
+  /**
+   * Split <code>+-f(u)</code> into its sign and <code>f(u)</code>.
+   *
+   * @param term a term of a sum
+   * @return <code>null</code> if <code>term</code> isn't a basic trigonometric function with an
+   *         optional minus sign
+   */
+  private static SignedTrig signedTrig(IExpr term) {
+    if (isBasicTrig(term)) {
+      return new SignedTrig(false, (IAST) term);
+    }
+    if (term.isTimes() && term.size() == 3 && term.first().isMinusOne()) {
+      IExpr rest = ((IAST) term).arg2();
+      if (isBasicTrig(rest)) {
+        return new SignedTrig(true, (IAST) rest);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Split <code>+-f(u)^2</code> into its sign and <code>f(u)</code>.
+   *
+   * @param term a term of a sum
+   * @return <code>null</code> if <code>term</code> isn't the square of a basic trigonometric
+   *         function with an optional minus sign
+   */
+  private static SignedTrig squaredTrig(IExpr term) {
+    boolean negative = false;
+    IExpr rest = term;
+    if (rest.isTimes() && rest.size() == 3 && rest.first().isMinusOne()) {
+      negative = true;
+      rest = ((IAST) rest).arg2();
+    }
+    if (rest.isPower() && rest.exponent().equals(F.C2) && isBasicTrig(rest.base())) {
+      return new SignedTrig(negative, (IAST) rest.base());
+    }
+    return null;
+  }
+
+  static boolean isBasicTrig(IExpr expr) {
+    if (expr.isAST1()) {
+      int headID = expr.headID();
+      return headID == ID.Sin || headID == ID.Cos || headID == ID.Sinh || headID == ID.Cosh;
+    }
+    return false;
+  }
+
+  /** One term <code>+-f(u)</code> of a sum, with <code>f</code> in Sin, Cos, Sinh, Cosh. */
+  private static final class SignedTrig {
+    final boolean negative;
+    final IAST function;
+
+    SignedTrig(boolean negative, IAST function) {
+      this.negative = negative;
+      this.function = function;
+    }
+
+    IExpr angle() {
+      return function.arg1();
+    }
+
+    int headID() {
+      return function.headID();
+    }
   }
 
   // ==========================================
@@ -412,7 +707,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
                 IExpr arg2 = times.get(j);
                 if (arg2.isPower() && arg2.base().isCos()
                     && arg2.base().first().equals(base.first())) {
-                  if (arg2.exponent().isInteger() && arg2.exponent().toIntDefault() == -exp) {
+                  if (arg2.exponent().toMachineInt() == -exp) {
                     newTimes.append(F.Power(F.Tan(base.first()), F.ZZ(exp)));
                     used[i] = true;
                     used[j] = true;
@@ -428,7 +723,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
                 IExpr arg2 = times.get(j);
                 if (arg2.isPower() && arg2.base().isSin()
                     && arg2.base().first().equals(base.first())) {
-                  if (arg2.exponent().isInteger() && arg2.exponent().toIntDefault() == -exp) {
+                  if (arg2.exponent().toMachineInt() == -exp) {
                     newTimes.append(F.Power(F.Cot(base.first()), F.ZZ(exp)));
                     used[i] = true;
                     used[j] = true;
@@ -522,7 +817,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       boolean evaled = false;
 
       // Selectively reduce isolated degree-2 Sine/Cosine bases
-      if (ast.isPower() && ast.arg2().isInteger() && ast.arg2().toIntDefault() == 2) {
+      if (ast.isPower() && ast.arg2().toMachineInt() == 2) {
         IExpr base = ast.arg1();
         if (base.isAST1()) {
           if (base.isCos()) {

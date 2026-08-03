@@ -296,25 +296,23 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
           if (isPlus && expr.isTimes()) {
             IAST exprTimes = (IAST) expr;
             IExpr firstArg = exprTimes.first();
-            if (firstArg.isInteger()) {
-              int coeff = firstArg.toIntDefault(Integer.MIN_VALUE);
-              if (coeff != Integer.MIN_VALUE && (coeff > 1 || coeff < -1)) {
-                // Extract the non-coefficient base: Times(coeff, a, b, ...) → base
-                IExpr base = exprTimes.argSize() == 2 ? //
-                    exprTimes.second() : //
-                    engine.evaluate(exprTimes.rest());
-                IASTAppendable decomposed = F.PlusAlloc(3);
-                if (coeff > 0) {
-                  // coeff*base → Plus(base, (coeff-1)*base)
-                  decomposed.append(base);
-                  decomposed.append(engine.evaluate(F.Times(F.ZZ(coeff - 1), base)));
-                } else {
-                  // coeff*base → Plus(-base, (coeff+1)*base)
-                  decomposed.append(engine.evaluate(F.Negate(base)));
-                  decomposed.append(engine.evaluate(F.Times(F.ZZ(coeff + 1), base)));
-                }
-                return matchCommutative(patAST, decomposed, replDict, engine, allowPartialExponent);
+            int coeff = firstArg.toMachineInt();
+            if (F.isPresent(coeff) && (coeff > 1 || coeff < -1)) {
+              // Extract the non-coefficient base: Times(coeff, a, b, ...) → base
+              IExpr base = exprTimes.argSize() == 2 ? //
+                  exprTimes.second() : //
+                  engine.evaluate(exprTimes.rest());
+              IASTAppendable decomposed = F.PlusAlloc(3);
+              if (coeff > 0) {
+                // coeff*base → Plus(base, (coeff-1)*base)
+                decomposed.append(base);
+                decomposed.append(engine.evaluate(F.Times(F.ZZ(coeff - 1), base)));
+              } else {
+                // coeff*base → Plus(-base, (coeff+1)*base)
+                decomposed.append(engine.evaluate(F.Negate(base)));
+                decomposed.append(engine.evaluate(F.Times(F.ZZ(coeff + 1), base)));
               }
+              return matchCommutative(patAST, decomposed, replDict, engine, allowPartialExponent);
             }
           }
 

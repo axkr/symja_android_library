@@ -7305,6 +7305,18 @@ public interface IExpr
   }
 
   /**
+   * Converts this number to an <code>int</code> value; unlike {@link #toIntDefault} this method
+   * returns <code>Config.INVALID_INT</code> if the value of this integer isn't in the range <code>
+   * Integer.MIN_VALUE+1</code> to <code>Integer.MAX_VALUE</code> or the expression is not of type
+   * IInteger.
+   * 
+   * @return the numeric value represented by this integer after conversion to type <code>int</code>
+   */
+  default int toMachineInt() {
+    return isInteger() ? toIntDefault() : Config.INVALID_INT;
+  }
+
+  /**
    * Convert this object into a <code>byte[][]</code> matrix.
    *
    * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>

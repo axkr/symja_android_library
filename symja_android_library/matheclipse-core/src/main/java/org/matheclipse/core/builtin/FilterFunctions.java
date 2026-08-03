@@ -50,7 +50,7 @@ public class FilterFunctions {
                 F.List(F.stringx("\"with dimension other than 1\"")), engine);
           }
           if (isValid(list)) {
-            final int radius = ast.arg2().toIntDefault();
+            final int radius = ast.arg2().toMachineInt();
             if (radius >= 0) {
               return filterHead(list, radius, filterHead(), engine);
             }

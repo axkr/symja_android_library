@@ -43,7 +43,7 @@ public class Ratios extends AbstractFunctionEvaluator {
     }
 
 
-    int n = arg2.toIntDefault();
+    int n = arg2.toMachineInt();
     if (n != Integer.MIN_VALUE) {
       // Repeated usage Ratios(list, n)
       return calculateRepeatedRatios(list, n);
@@ -62,7 +62,7 @@ public class Ratios extends AbstractFunctionEvaluator {
     int maxDim = dimOrders.argSize();
 
     for (int i = 1; i <= maxDim; i++) {
-      int order = dimOrders.get(i).toIntDefault();
+      int order = dimOrders.get(i).toMachineInt();
 
       if (!F.isPresent(order)) {
         return F.NIL;

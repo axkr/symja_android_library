@@ -19,14 +19,14 @@ public class FourierDCTMatrix extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    int n = ast.arg1().toIntDefault();
+    int n = ast.arg1().toMachineInt();
     if (n <= 0) {
       // Positive integer argument expected in `1`.
       return Errors.printMessage(ast.topHead(), "intpp", F.List(ast.arg1()), engine);
     }
     int method = 2;
     if (ast.isAST2()) {
-      method = ast.arg2().toIntDefault();
+      method = ast.arg2().toMachineInt();
       if (method < 1 || method > 4) {
         // The transform type `1` should be 1, 2, 3 or 4.
         return Errors.printMessage(ast.topHead(), "fttype", F.List(ast.arg1()), engine);

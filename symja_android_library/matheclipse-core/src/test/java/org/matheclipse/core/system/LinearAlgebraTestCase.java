@@ -681,26 +681,35 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{1}}");
 
     check("DiskMatrix(1)", //
-        "{{0,1,0},{1,1,1},{0,1,0}}");
+        "{{1,1,1},{1,1,1},{1,1,1}}");
 
     check("DiskMatrix(2)", //
-        "{{0,0,1,0,0},{0,1,1,1,0},{1,1,1,1,1},{0,1,1,1,0},{0,0,1,0,0}}");
+        "{{0,1,1,1,0},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{0,1,1,1,0}}");
 
     check("DiskMatrix(3)", //
-        "{{0,0,0,1,0,0,0},{0,1,1,1,1,1,0},{0,1,1,1,1,1,0},{1,1,1,1,1,1,1},{0,1,1,1,1,1,0},{\n"
-            + "0,1,1,1,1,1,0},{0,0,0,1,0,0,0}}");
+        "{{0,0,1,1,1,0,0},{0,1,1,1,1,1,0},{1,1,1,1,1,1,1},{1,1,1,1,1,1,1},{1,1,1,1,1,1,1},{\n"
+            + "0,1,1,1,1,1,0},{0,0,1,1,1,0,0}}");
 
     // Signature 2: DiskMatrix(r, w) - scalar radius and scalar width
     check("DiskMatrix(1, 5)", //
-        "{{0,0,0,0,0},{0,0,1,0,0},{0,1,1,1,0},{0,0,1,0,0},{0,0,0,0,0}}");
+        "{{0,0,0,0,0},{0,1,1,1,0},{0,1,1,1,0},{0,1,1,1,0},{0,0,0,0,0}}");
 
     check("DiskMatrix(All, 3)", //
-        "{{0,1,0},{1,1,1},{0,1,0}}");
+        "{{1,1,1},{1,1,1},{1,1,1}}");
 
     // The L2 Euclidean norm naturally accounts for fraction-filled regions
     // unlike L1 bounds:
     check("DiskMatrix(1.5, 3)", //
         "{{1,1,1},{1,1,1},{1,1,1}}");
+
+    // the width of a non-integer radius is 2*Round(r)+1, where Round() rounds half to even
+    check("DiskMatrix(1.5)", //
+        "{{0,0,1,0,0},{0,1,1,1,0},{1,1,1,1,1},{0,1,1,1,0},{0,0,1,0,0}}");
+    check("DiskMatrix(2.5)", //
+        "{{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1}}");
+    check("DiskMatrix(2.6)", //
+        "{{0,0,0,1,0,0,0},{0,1,1,1,1,1,0},{0,1,1,1,1,1,0},{1,1,1,1,1,1,1},{0,1,1,1,1,1,0},{\n"
+            + "0,1,1,1,1,1,0},{0,0,0,1,0,0,0}}");
 
     // Signature 3: DiskMatrix({r1, r2, ...}, ...) - lists for radii and widths
     // 1D Array
@@ -717,15 +726,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     // Ellipsoid constraints with x radius 1, y radius 2
     check("DiskMatrix({1, 2})", //
-        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+        "{{0,1,1,1,0},{1,1,1,1,1},{0,1,1,1,0}}");
 
     // 2D Array with explicit All constraints (inherits from matrix constraints resolving to {1, 2})
     check("DiskMatrix({1, All}, {3, 5})", //
-        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+        "{{0,1,1,1,0},{1,1,1,1,1},{0,1,1,1,0}}");
 
     // 3D Array volume creation
     check("DiskMatrix({1, 1, 1})", //
-        "{{{0,0,0},{0,1,0},{0,0,0}},{{0,1,0},{1,1,1},{0,1,0}},{{0,0,0},{0,1,0},{0,0,0}}}");
+        "{{{0,1,0},{1,1,1},{0,1,0}},{{1,1,1},{1,1,1},{1,1,1}},{{0,1,0},{1,1,1},{0,1,0}}}");
 
     // Edge cases and error handling validation
     check("DiskMatrix(-1)", // Negative radius
@@ -2085,15 +2094,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // TODO improve Zero tests
     // see https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html#zero-testing
     check("NullSpace({{-2*Cosh(q/3),Exp(-q),1},{Exp(q),-2*Cosh(q/3),1},{1,1,-2*Cosh(q/3)}})", //
-        "{{-(-40*E^q-16*E^(2*q)-8*E^(3*q)+16*E^q*Cosh(q/3)-64*E^(2*q)*Cosh(q/3)+32*E^q*Cosh(q/\n"
-            + "3)^2+32*E^(2*q)*Cosh(q/3)^2+64*E^(2*q)*Cosh(q/3)^3-4*Sech(q/3)-8*E^q*Sech(q/3)+8*E^(\n"
-            + "2*q)*Sech(q/3)+8*E^q*Sech(q/3)^2+2*E^(2*q)*Sech(q/3)^2+2*E^(3*q)*Sech(q/3)^2+Sech(q/\n"
-            + "3)^3+E^q*Sech(q/3)^3+E^(2*q)*Sech(q/3)^3)/(E^(2*q)*(-16*Cosh(q)+4/(3*Cosh(q/3)+Cosh(q))-\n"
-            + "12*Sech(q/3))),-(-8-16*E^q-40*E^(2*q)-64*E^q*Cosh(q/3)+16*E^(2*q)*Cosh(q/3)+32*E^q*Cosh(q/\n"
-            + "3)^2+32*E^(2*q)*Cosh(q/3)^2+64*E^q*Cosh(q/3)^3+8*E^q*Sech(q/3)-8*E^(2*q)*Sech(q/\n"
-            + "3)-4*E^(3*q)*Sech(q/3)+2*Sech(q/3)^2+2*E^q*Sech(q/3)^2+8*E^(2*q)*Sech(q/3)^2+E^q*Sech(q/\n"
-            + "3)^3+E^(2*q)*Sech(q/3)^3+E^(3*q)*Sech(q/3)^3)/(E^q*(-4*Cosh(q/3)+Sech(q/3))*(8*Cosh(\n"
-            + "2/3*q)+Sech(q/3)^2)),1}}");
+        "{{(-1+3*E^q+E^(2*q)-2*E^q*Cosh(q/3)+10*E^(2*q)*Cosh(q/3)-4*E^(3*q)*Cosh(q/3)-2*Cosh(\n"//
+        + "2/3*q)+4*E^q*Cosh(2/3*q)+2*E^(2*q)*Cosh(2/3*q)+6*E^(2*q)*Cosh(q)-2*E^(3*q)*Cosh(q)+\n"//
+        + "2*E^q*Cosh(4/3*q)+4*E^(2*q)*Cosh(4/3*q)+2*E^q*Cosh(5/3*q)+2*E^(2*q)*Cosh(5/3*q)+\n"//
+        + "2*E^(2*q)*Cosh(2*q))/(E^(2*q)*(7+12*Cosh(2/3*q)+6*Cosh(4/3*q)+2*Cosh(2*q))),(E^q+\n"//
+        + "3*E^(2*q)-E^(3*q)-4*Cosh(q/3)+10*E^q*Cosh(q/3)-2*E^(2*q)*Cosh(q/3)+2*E^q*Cosh(2/\n"//
+        + "3*q)+4*E^(2*q)*Cosh(2/3*q)-2*E^(3*q)*Cosh(2/3*q)-2*Cosh(q)+6*E^q*Cosh(q)+4*E^q*Cosh(\n"//
+        + "4/3*q)+2*E^(2*q)*Cosh(4/3*q)+2*E^q*Cosh(5/3*q)+2*E^(2*q)*Cosh(5/3*q)+2*E^q*Cosh(\n"//
+        + "2*q))/(E^q*(7+12*Cosh(2/3*q)+6*Cosh(4/3*q)+2*Cosh(2*q))),1}}");
 
     check("NullSpace({{10, 4, -6, -4}, {4, 10, -15, -4}, {0, 0, 0, 0}, {4, 4, -6, 2}} )", //
         "{{0,3,2,0}}");

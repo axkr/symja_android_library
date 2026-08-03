@@ -187,7 +187,7 @@ public class SparseArrayFunctions {
           // List of Java int numbers expected in `1`.
           dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
         } else {
-          defaultDimension = arg2.toIntDefault();
+          defaultDimension = arg2.toMachineInt();
           if (defaultDimension < 0) {
             return F.NIL; //
           }
@@ -198,7 +198,7 @@ public class SparseArrayFunctions {
           if (dimension != null && arg1.equals(S.Automatic)) {
             if (ast.arg4().isList3()) {
               IAST list = (IAST) ast.arg4();
-              int version = list.arg1().toIntDefault();
+              int version = list.arg1().toMachineInt();
 
               if (version == 1 && list.arg2().isList2()) {
                 IAST second = (IAST) list.arg2();

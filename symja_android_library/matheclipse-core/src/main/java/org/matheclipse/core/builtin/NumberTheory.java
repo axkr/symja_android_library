@@ -194,7 +194,7 @@ public final class NumberTheory {
           // Non-negative machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(S.BellB, "intnm", F.list(ast, F.C1), engine);
         }
-        int n = arg1.toIntDefault();
+        int n = arg1.toMachineInt();
         if (n < 0) {
           if (arg1.isNumber()) {
             // Non-negative machine-sized integer expected at position `2` in `1`
@@ -1228,7 +1228,7 @@ public final class NumberTheory {
       int maxNTerms = Integer.MAX_VALUE;
       if (ast.isAST2()) {
         if (ast.arg2().isNumber()) {
-          maxNTerms = ast.arg2().toIntDefault();
+          maxNTerms = ast.arg2().toMachineInt();
           if (maxNTerms <= 0) {
             // Positive integer (less equal 2147483647) expected at position `2` in `1`.
             return Errors.printMessage(S.ContinuedFraction, "intpm", F.list(ast, F.C2), engine);
@@ -1910,7 +1910,7 @@ public final class NumberTheory {
           return F.Times(F.EulerE(arg1), F.Power(F.C2, F.Negate(arg1)));
         }
         if (arg1.isMathematicalIntegerNonNegative()) {
-          int nMax = arg1.toIntDefault();
+          int nMax = arg1.toMachineInt();
           if (F.isPresent(nMax)) {
             try {
               IExpr n = arg1;
@@ -3416,7 +3416,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int maxPairs = Integer.MAX_VALUE;
       if (ast.isAST2()) {
-        maxPairs = ast.arg2().toIntDefault();
+        maxPairs = ast.arg2().toMachineInt();
         if (maxPairs <= 0) {
           return F.NIL;
         }
@@ -3695,7 +3695,7 @@ public final class NumberTheory {
           return linearRecurrence(list1, list2, n, ast, engine);
         }
         if (arg3.isList1() && arg3.first().isReal()) {
-          int n = arg3.first().toIntDefault();
+          int n = arg3.first().toMachineInt();
           if (F.isPresent(n)) {
             if (n < 0) {
               // Positive integer expected at position `2` in `1`.
@@ -3710,13 +3710,13 @@ public final class NumberTheory {
           return F.NIL;
         }
         if (arg3.isList2() && arg3.first().isReal() && arg3.second().isReal()) {
-          int nmin = arg3.first().toIntDefault();
+          int nmin = arg3.first().toMachineInt();
           if (F.isPresent(nmin)) {
             if (nmin < 0) {
               // Positive integer expected at position `2` in `1`.
               return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
             }
-            int nmax = arg3.second().toIntDefault();
+            int nmax = arg3.second().toMachineInt();
             if (F.isPresent(nmax)) {
               if (nmax < 0) {
                 // Positive integer expected at position `2` in `1`.
@@ -4739,7 +4739,7 @@ public final class NumberTheory {
           // Non-negative integer expected.
           return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
         }
-        final int n = ast.arg2().toIntDefault();
+        final int n = ast.arg2().toMachineInt();
 
         // Safely calculate the absolute value of n to check the iteration limit
         int absN = Math.abs(n);
@@ -5743,8 +5743,8 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int r = ast.arg1().toIntDefault();
-      int s = ast.arg2().toIntDefault();
+      int r = ast.arg1().toMachineInt();
+      int s = ast.arg2().toMachineInt();
       if (r <= 0 || s <= 0) {
         return F.NIL;
       }
@@ -6173,7 +6173,7 @@ public final class NumberTheory {
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int d = ast.arg1().toIntDefault();
+      int d = ast.arg1().toMachineInt();
       if (d <= 0) {
         // The value `1` in position `2` must be a non-negative machine sized integer
         return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg1(), F.C1), engine);
@@ -6212,7 +6212,7 @@ public final class NumberTheory {
         }
 
       }
-      int n = ast.arg2().toIntDefault();
+      int n = ast.arg2().toMachineInt();
       if (F.isNotPresent(n)) {
         // Machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg2(), F.C2), engine);
@@ -6334,13 +6334,13 @@ public final class NumberTheory {
         return Errors.printMessage(S.PowersRepresentations, "pint", F.List(ast.arg1(), F.C1),
             engine);
       }
-      int k = ast.arg2().toIntDefault();
+      int k = ast.arg2().toMachineInt();
       if (k < 0) {
         // The value `1` in position `2` must be a non-negative machine sized integer
         return Errors.printMessage(S.PowersRepresentations, "pint", F.List(ast.arg2(), F.C2),
             engine);
       }
-      int p = ast.arg3().toIntDefault();
+      int p = ast.arg3().toMachineInt();
       if (p <= 0) {
         // The value `1` of argument `2` must be a positive integer
         return Errors.printMessage(S.PowersRepresentations, "ppnt", F.List(ast.arg3(), F.C3),

@@ -27,7 +27,7 @@ public class Groupings extends AbstractFunctionEvaluator {
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     IExpr arg2 = ast.arg2();
-    int k = arg2.toIntDefault();
+    int k = arg2.toMachineInt();
     IExpr head = (ast.size() > 3) ? ast.arg3() : F.List;
 
     if (k < 2) {

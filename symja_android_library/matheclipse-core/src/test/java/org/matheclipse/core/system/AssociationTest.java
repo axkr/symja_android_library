@@ -239,6 +239,17 @@ public class AssociationTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAssociationMap() {
+    check("AssociationMap(Reverse,<|a->1,b->2|>)", //
+        "<|1->a,2->b|>");
+    check("AssociationMap(f,<|x->10,y->20|>)", //
+        "Association(f(x->10),f(y->20))");
+    check("AssociationMap(StringLength,{\"cat\",\"horse\",\"ox\"})", //
+        "<|cat->3,horse->5,ox->2|>");
+    check("AssociationMap(f)[{1,2,3}]", //
+        "<|1->f(1),2->f(2),3->f(3)|>");
+    check("AssociationMap(f)", //
+        "AssociationMap(f)");
+
     check("i = 0;AssociationMap({#, i++} &, {a, b, b})", //
         "<|a->{a,0},b->{b,2}|>");
     check("AssociationMap(Reverse,<|U->1,V->2|>)", //

@@ -55,10 +55,7 @@ public class RootSum extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     IExpr degreeExpr = engine.evaluate(F.Exponent(px, r));
-    if (!degreeExpr.isInteger()) {
-      return F.NIL;
-    }
-    int degree = degreeExpr.toIntDefault();
+    int degree = degreeExpr.toMachineInt();
     if (degree < 0) {
       return F.NIL;
     }
@@ -178,7 +175,7 @@ public class RootSum extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     IExpr degreeExpr = engine.evaluate(F.Exponent(px, r));
-    if (!degreeExpr.isInteger() || degreeExpr.toIntDefault() <= 0) {
+    if (degreeExpr.toMachineInt() <= 0) {
       return F.NIL;
     }
     IASTMutable rootsAST = RootsFunctions.rootsOfExprPolynomial(px, F.List(r), false, true);

@@ -140,8 +140,8 @@ public class GraphDataFunctions {
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         if (arg1.isList2()) {
-          int partitionA = list.arg1().toIntDefault();
-          int partitionB = list.arg2().toIntDefault();
+          int partitionA = list.arg1().toMachineInt();
+          int partitionB = list.arg2().toMachineInt();
           if (partitionA <= 0 || partitionB <= 0) {
             // Positive machine-sized integer expected at position `2` in `1`
             return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -156,7 +156,7 @@ public class GraphDataFunctions {
         arg1 = list.arg1();
       }
 
-      int partition = arg1.toIntDefault();
+      int partition = arg1.toMachineInt();
       if (partition <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -220,7 +220,7 @@ public class GraphDataFunctions {
         final EvalEngine engine, IAST originalAST) {
 
 
-      int order = ast.arg1().toIntDefault();
+      int order = ast.arg1().toMachineInt();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -271,12 +271,12 @@ public class GraphDataFunctions {
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
       IExpr list = ast.arg1();
       if (list.isList2()) {
-        int m = list.first().toIntDefault();
+        int m = list.first().toMachineInt();
         if (m <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
         }
-        int n = list.second().toIntDefault();
+        int n = list.second().toMachineInt();
         if (n <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -315,7 +315,7 @@ public class GraphDataFunctions {
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
-      int order = ast.arg1().toIntDefault();
+      int order = ast.arg1().toMachineInt();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -410,7 +410,7 @@ public class GraphDataFunctions {
         return petersenGraphNoArg();
       }
       if (ast.isAST2()) {
-        int order = ast.arg1().toIntDefault();
+        int order = ast.arg1().toMachineInt();
         if (order <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -418,7 +418,7 @@ public class GraphDataFunctions {
         if (order > Config.MAX_AST_SIZE / 2) {
           ASTElementLimitExceeded.throwIt(order);
         }
-        int k = ast.arg2().toIntDefault();
+        int k = ast.arg2().toMachineInt();
         if (k <= 0 || k > order) {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
@@ -466,7 +466,7 @@ public class GraphDataFunctions {
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList2()) {
-        int vertices = ast.arg1().first().toIntDefault();
+        int vertices = ast.arg1().first().toMachineInt();
         if (vertices <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast.arg1(), F.C1), engine);
@@ -475,7 +475,7 @@ public class GraphDataFunctions {
           ASTElementLimitExceeded.throwIt(vertices);
         }
 
-        int edges = ast.arg1().second().toIntDefault();
+        int edges = ast.arg1().second().toMachineInt();
         if (edges <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast.arg1(), F.C2), engine);
@@ -491,7 +491,7 @@ public class GraphDataFunctions {
 
     private static IExpr randomGraph(int vertices, int edges, final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        int k = ast.arg2().toIntDefault();
+        int k = ast.arg2().toMachineInt();
         if (k <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
@@ -533,7 +533,7 @@ public class GraphDataFunctions {
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
-      int order = ast.arg1().toIntDefault();
+      int order = ast.arg1().toMachineInt();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -582,7 +582,7 @@ public class GraphDataFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
 
-      int order = ast.arg1().toIntDefault();
+      int order = ast.arg1().toMachineInt();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);

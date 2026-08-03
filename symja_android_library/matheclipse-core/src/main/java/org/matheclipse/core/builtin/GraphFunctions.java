@@ -369,11 +369,8 @@ public class GraphFunctions {
 
         int newIndex = 1;
         if (ast.isAST2()) {
-          if (!ast.arg2().isInteger()) {
-            return F.NIL;
-          }
-          int intIndex = ast.arg2().toIntDefault();
-          if (intIndex == Integer.MAX_VALUE) {
+          int intIndex = ast.arg2().toMachineInt();
+          if (F.isNotPresent(intIndex) || intIndex == Integer.MAX_VALUE) {
             return F.NIL;
           }
           newIndex = intIndex;
@@ -747,7 +744,7 @@ public class GraphFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int n = ast.arg2().toIntDefault();
+      int n = ast.arg2().toMachineInt();
       if (n >= 0) {
         try {
           GraphExpr<? extends IExprEdge> gex =
@@ -1788,18 +1785,18 @@ public class GraphFunctions {
         if (arg2.isInfinity()) {
           // fall through
         } else {
-          int vertexes = arg2.toIntDefault();
+          int vertexes = arg2.toMachineInt();
           if (vertexes > 0) {
             minCycleLength = vertexes;
             maxCycleLength = vertexes;
           } else if (arg2.isList2()) {
-            vertexes = arg2.first().toIntDefault();
+            vertexes = arg2.first().toMachineInt();
             if (vertexes <= 0) {
               // The argument `2` in `1` is not a valid parameter.
               return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
             }
             minCycleLength = vertexes;
-            vertexes = arg2.second().toIntDefault();
+            vertexes = arg2.second().toMachineInt();
             if (vertexes <= 0) {
               // The argument `2` in `1` is not a valid parameter.
               return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
@@ -1816,7 +1813,7 @@ public class GraphFunctions {
         if (arg3.equals(S.All)) {
           atMostCycles = Integer.MAX_VALUE;
         } else {
-          atMostCycles = arg3.toIntDefault();
+          atMostCycles = arg3.toMachineInt();
           if (atMostCycles <= 0) {
             // The argument `2` in `1` is not a valid parameter.
             return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg3), engine);

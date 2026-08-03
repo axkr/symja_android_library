@@ -705,7 +705,7 @@ public class StructureFunctions {
     private static int[] toLevelArray(IAST list) {
       int[] result = new int[list.argSize()];
       for (int i = 1; i < list.size(); i++) {
-        int value = list.get(i).toIntDefault();
+        int value = list.get(i).toMachineInt();
         if (F.isNotPresent(value) || value <= 0) {
           return null;
         }
@@ -1666,6 +1666,9 @@ public class StructureFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, ast.arg1(), 1, engine);
       if (arg1AST.isPresent()) {
+        if (arg1AST.isEmpty()) {
+          return S.True;
+        }
         if (ast.isAST2()) {
           return F.booleSymbol(test(arg1AST, ast.arg2(), engine));
         }
@@ -1946,7 +1949,7 @@ public class StructureFunctions {
       }
       EvalEngine.setReset(newEngine);
       if (ast.isAST1()) {
-        int value = ast.arg1().toIntDefault();
+        int value = ast.arg1().toMachineInt();
         if (value < 0) {
           return Errors.printMessage(ast.topHead(), "intnn", F.CEmptyList, newEngine);
         }

@@ -293,7 +293,7 @@ public class SequenceFunctions {
           if (argSize == 3) {
             final IExpr arg3 = engine.evaluate(ast.arg3());
             if (!arg3.isInfinity()) {
-              int maxN = arg3.toIntDefault();
+              int maxN = arg3.toMachineInt();
               if (maxN < 0 || !arg3.isInteger()) {
                 // Non-negative integer or Infinity expected at position `3` in `ast`.
                 return Errors.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
@@ -365,7 +365,7 @@ public class SequenceFunctions {
           if (ast.isAST3()) {
             final IExpr arg3 = engine.evaluate(ast.arg3());
             if (!arg3.isInfinity()) {
-              int maxN = arg3.toIntDefault();
+              int maxN = arg3.toMachineInt();
               if (maxN < 0) {
                 // Non-negative integer or Infinity expected at position `1` in `2`.
                 return Errors.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
@@ -474,7 +474,7 @@ public class SequenceFunctions {
           if (ast.isAST3()) {
             final IExpr arg3 = engine.evaluate(ast.arg3());
             if (!arg3.isInfinity()) {
-              int maxParts = arg3.toIntDefault();
+              int maxParts = arg3.toMachineInt();
               if (maxParts <= 0) {
                 // Positive integer or Infinity expected at position `1` in `2`.
                 return Errors.printMessage(ast.topHead(), "ipnf", F.List(F.C3, ast), engine);
@@ -599,22 +599,22 @@ public class SequenceFunctions {
             if (arg2.isList()) {
               IAST list2 = (IAST) arg2;
               if (list2.argSize() == 1) {
-                int val = list2.arg1().toIntDefault();
+                int val = list2.arg1().toMachineInt();
                 if (val < 0)
                   return F.NIL;
                 min = val;
                 max = val;
               } else if (list2.argSize() == 2) {
-                int val1 = list2.arg1().toIntDefault();
-                int val2 = list2.arg2().toIntDefault();
+                int val1 = list2.arg1().toMachineInt();
+                int val2 = list2.arg2().toMachineInt();
                 if (val1 < 0 || val2 < 0)
                   return F.NIL;
                 min = val1;
                 max = val2;
               } else if (list2.argSize() == 3) {
-                int val1 = list2.arg1().toIntDefault();
-                int val2 = list2.arg2().toIntDefault();
-                int val3 = list2.arg3().toIntDefault();
+                int val1 = list2.arg1().toMachineInt();
+                int val2 = list2.arg2().toMachineInt();
+                int val3 = list2.arg3().toMachineInt();
                 if (val1 < 0 || val2 < 0 || val3 < 1)
                   return F.NIL;
                 min = val1;

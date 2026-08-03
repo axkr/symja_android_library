@@ -273,7 +273,9 @@ public class AssociationFunctions {
           IAssociation assoc = F.assoc();
           for (int i = 1; i < assocList.size(); i++) {
             final IExpr arg = assocList.get(i);
-            if (arg.isASTOrAssociation()) {
+            // only a rule, a list of rules or an association defines the rules of the result; an
+            // arbitrary head like `f(a->1)` isn't a valid element of an association
+            if (arg.isRuleAST() || arg.isList() || arg.isAssociation()) {
               assoc.appendRules((IAST) arg);
             } else {
               return evaled ? assocList : F.NIL;

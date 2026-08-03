@@ -15344,6 +15344,48 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNearest() {
+    check("Nearest({1, 3, 5, 7, 9}, 6)", //
+        "{5,7}");
+    check("Nearest({1, 3, 5, 7, 9}, 6, 3)", //
+        "{5,7,3}");
+    // All elements, ordered by increasing distance
+    check("Nearest({1, 3, 5, 7, 9}, 6, All)", //
+        "{5,7,3,9,1}");
+    // up to 3 elements within radius 2
+    check("Nearest({1, 3, 5, 7, 9}, 6, {3, 2})", //
+        "{5,7}");
+    // all elements within radius 3
+    check("Nearest({1, 3, 5, 7, 9}, 6, {All, 3})", //
+        "{5,7,3,9}");
+    check("Nearest({1, 3, 5, 7, 9}, 6, {2, Infinity})", //
+        "{5,7}");
+    check("Nearest({1, 3, 5, 7, 9}, 6, {3, 0})", //
+        "{}");
+    // {elem1 -> v1,...} - the nearest elem is determined, but the corresponding v is returned
+    check("Nearest({1 -> a, 3 -> b, 5 -> c, 7 -> d, 9 -> e}, 6)", //
+        "{c,d}");
+    check("Nearest({1 -> a, 3 -> b, 5 -> c, 7 -> d, 9 -> e}, 6, 3)", //
+        "{c,d,b}");
+    check("Nearest({1 -> a, 3 -> b, 5 -> c, 7 -> d, 9 -> e}, 6, {All, 3})", //
+        "{c,d,b,e}");
+    // {elem1,...} -> {v1,...} - the values are given as a parallel list
+    check("Nearest({1, 3, 5, 7, 9} -> {a, b, c, d, e}, 6)", //
+        "{c,d}");
+    check("Nearest({1, 3, 5, 7, 9} -> {a, b, c, d, e}, 6, {All, 3})", //
+        "{c,d,b,e}");
+    // different lengths of elements and values
+    check("Nearest({1, 3, 5} -> {a, b}, 6)", //
+        "Nearest({1,3,5}->{a,b},6)");
+    // list -> Automatic - return the positions of the nearest elements
+    check("Nearest({1, 3, 5, 7, 9} -> Automatic, 6)", //
+        "{3,4}");
+    check("Nearest({1, 3, 5, 7, 9} -> Automatic, 6, 3)", //
+        "{3,4,2}");
+    check("Nearest({1.0, 2.5, 4.3, 7.1}, 3.0)", //
+        "{2.5}");
+    check("Nearest({1, 3, 5, 7, 9}, 5)", //
+        "{5}");
+
     check("Nearest({1, 2, 3, 5, 7, 11, 13, 17, 19}, 9)", //
         "{7,11}");
     check("Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, " //
@@ -15382,9 +15424,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("NearestTo(20)[{1, 2, 4, 8, 16, 32}]", //
         "{16}");
-    // TODO improve Nearest
+    // 8 and 32 both have distance 12, so they are returned in the order of the input list
     check("NearestTo(20,3)[{1, 2, 4, 8, 16, 32}]", //
-        "Nearest({1,2,4,8,16,32},20,3,DistanceFunction->Automatic)");
+        "{16,8,32}");
   }
 
   @Test
@@ -21483,6 +21525,41 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRiffle() {
+    check("Riffle({a, b, c, d, e, f}, {x, y, z})", //
+        "{a,x,b,y,c,z,d,x,e,y,f}");
+    // both lists have the same length, so the last element of the second list is appended too
+    check("Riffle({a, b, c}, {x, y, z})", //
+        "{a,x,b,y,c,z}");
+    check("Riffle({a, b}, {x, y})", //
+        "{a,x,b,y}");
+    check("Riffle({1, 2, 3}, 0)", //
+        "{1,0,2,0,3}");
+    check("Riffle({1, 2}, 0)", //
+        "{1,0,2}");
+    check("Riffle({1}, 0)", //
+        "{1}");
+    check("Riffle({}, 0)", //
+        "{}");
+    check("Riffle({a, b, c}, x)", //
+        "{a,x,b,x,c}");
+    check("Riffle({a, b, c, d}, {x, y})", //
+        "{a,x,b,y,c,x,d}");
+    check("Riffle({1, 2, 3}, {x})", //
+        "{1,x,2,x,3}");
+    check("Riffle({a}, {x, y})", //
+        "{a}");
+    check("Riffle({1, 2, 3}, {0, 0})", //
+        "{1,0,2,0,3}");
+    check("Riffle({a, b}, {})", //
+        "{a,b}");
+    check("Riffle({}, {x, y})", //
+        "{}");
+    check("Riffle({a, b, c}, {x, y, z, w})", //
+        "{a,x,b,y,c}");
+    // the head of the first argument is preserved
+    check("Riffle(f(a, b), x)", //
+        "f(a,x,b)");
+
     check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, x)", //
         "{1,x,2,x,3,x,4,x,5,x,6,x,7,x,8,x,9}");
     check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, {x, y})", //
@@ -21519,6 +21596,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRotateLeft() {
+    check("RotateLeft({{a, b, c}, {d, e, f}, {g, h, i}}, {1, 2})", //
+        "{{f,d,e},{i,g,h},{c,a,b}}");
+    // RotateLeft: Rotation specification 2.0 should be a machine-sized integer or list of
+    // machine-sized integers.
+    check("RotateLeft({a,b,c}, 2.0)", //
+        "RotateLeft({a,b,c},2.0)");
+
     check("RotateLeft({1,2,3,4,5},-2)", //
         "{4,5,1,2,3}");
     check("RotateLeft(Range(Length({5,2})),-2+1)", //
@@ -21549,6 +21633,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRotateRight() {
+    check("RotateRight({{a, b, c}, {d, e, f}, {g, h, i}}, {1, 2})", //
+        "{{h,i,g},{b,c,a},{e,f,d}}");
+
     check("RotateRight({1,2,3,4},-2)", //
         "{3,4,1,2}");
 
@@ -25234,8 +25321,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testTrigFactor() {
-    // TODO TrigFactor is experimental and working very slow at the moment
+  public void testTrigFactor() { 
     check("TrigFactor(Cos(x)^3 + Sin(x)^3)", //
         "(Cos(x)+Sin(x))*(1-Cos(x)*Sin(x))");
     check("TrigFactor(Sin(x)^2 + Tan(x)^2)", //

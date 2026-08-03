@@ -802,7 +802,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    if (!n.isInteger() || n.toIntDefault() >= 0) {
+    int nInt = n.toMachineInt();
+    if (F.isNotPresent(nInt) || nInt >= 0) {
       return F.NIL;
     }
     if (k.isZero()) {
@@ -811,7 +812,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
     IExpr b = bTimes.argSize() == 0 ? F.C1
         : (bTimes.argSize() == 1 ? bTimes.arg1() : engine.evaluate(bTimes));
-    int m = -n.toIntDefault();
+    int m = -nInt;
 
     if (m == 1) {
       return engine.evaluate(F.Times(b, F.ExpIntegralEi(F.Times(k, xVar))));

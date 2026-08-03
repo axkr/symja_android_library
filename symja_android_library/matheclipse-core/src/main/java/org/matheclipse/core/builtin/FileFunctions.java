@@ -588,7 +588,7 @@ public class FileFunctions {
             String line;
             int numberOfLines = Integer.MAX_VALUE;
             if (ast.isAST2()) {
-              numberOfLines = ast.arg2().toIntDefault();
+              numberOfLines = ast.arg2().toMachineInt();
               if (F.isNotPresent(numberOfLines)) {
                 return F.NIL;
               }
@@ -652,7 +652,7 @@ public class FileFunctions {
           if (reader != null) {
             int n = Integer.MAX_VALUE;
             if (ast.isAST3()) {
-              n = ast.arg3().toIntDefault();
+              n = ast.arg3().toMachineInt();
               if (n <= 0) {
                 // Non-negative machine-sized integer expected at position `2` in `1`
                 return Errors.printMessage(S.FindList, "intnm", F.List(F.C3, ast), engine);
@@ -1337,7 +1337,7 @@ public class FileFunctions {
             }
             int n = Integer.MAX_VALUE;
             if (ast.isAST3()) {
-              n = ast.arg3().toIntDefault();
+              n = ast.arg3().toMachineInt();
               if (n <= 0) {
                 // Non-negative machine-sized integer expected at position `2` in `1`
                 return Errors.printMessage(S.ReadList, "intnm", F.List(F.C3, ast), engine);

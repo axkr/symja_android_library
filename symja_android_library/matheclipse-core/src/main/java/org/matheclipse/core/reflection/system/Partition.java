@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.PerLevelIntSpec;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
@@ -25,7 +26,6 @@ public class Partition extends AbstractFunctionEvaluator {
 
     // Parse 'n' (Partition Sizes) ---
     IExpr nExpr = ast.arg2();
-    IAST nList = null;
     boolean isUpTo = false;
 
     // Handle UpTo[n]
@@ -34,38 +34,19 @@ public class Partition extends AbstractFunctionEvaluator {
       isUpTo = true;
     }
 
-    if (nExpr.isList()) {
-      nList = (IAST) nExpr;
-    } else if (nExpr.isInteger()) {
-      nList = F.List(nExpr);
-    } else {
+    // one partition size for each level; validate n > 0
+    PerLevelIntSpec nSpec = PerLevelIntSpec.create(nExpr);
+    if (nSpec == null || !nSpec.allMatch(n -> n >= 1)) {
       return F.NIL;
     }
 
-    // Validate n > 0
-    for (IExpr nVal : nList) {
-      if (nVal.toIntDefault() < 1) {
-        return F.NIL;
-      }
-    }
-
     // Parse 'd' (Offsets) ---
-    IAST dList = null;
+    PerLevelIntSpec dSpec = null;
     if (ast.argSize() >= 3) {
-      IExpr dExpr = ast.arg3();
-      if (dExpr.isList()) {
-        dList = (IAST) dExpr;
-      } else if (dExpr.isInteger()) {
-        dList = F.List(dExpr);
-      } else {
-        return F.NIL; // Invalid d
-      }
-
-      // Validate d > 0
-      for (IExpr dVal : dList) {
-        if (dVal.toIntDefault() < 1) {
-          return F.NIL;
-        }
+      // one offset for each level; validate d > 0
+      dSpec = PerLevelIntSpec.create(ast.arg3());
+      if (dSpec == null || !dSpec.allMatch(d -> d >= 1)) {
+        return F.NIL;
       }
     }
 
@@ -101,7 +82,7 @@ public class Partition extends AbstractFunctionEvaluator {
     }
 
     try {
-      return partitionRec(list, nList, 1, dList, kList, pad, engine);
+      return partitionRec(list, nSpec, 1, dSpec, kList, pad, engine);
     } catch (RuntimeException e) {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
@@ -114,29 +95,25 @@ public class Partition extends AbstractFunctionEvaluator {
    * Recursive partition implementation for multi-dimensional support. * @param list The current
    * level list.
    * 
-   * @param nList The full list of partition sizes {n1, n2...}.
+   * @param nSpec The partition size for each level {n1, n2...}.
    * @param level The current depth level (1-based).
-   * @param dList The full specification of offsets.
+   * @param dSpec The offset for each level.
    * @param kList The full specification of alignments.
    * @param pad The padding specification.
    */
-  private IExpr partitionRec(IAST list, IAST nList, int level, IAST dList, IAST kList, IExpr pad,
-      EvalEngine engine) {
-    if (level > nList.argSize()) {
+  private IExpr partitionRec(IAST list, PerLevelIntSpec nSpec, int level, PerLevelIntSpec dSpec,
+      IAST kList, IExpr pad, EvalEngine engine) {
+    if (level > nSpec.levels()) {
       return list;
     }
 
     // Get parameters for this level
-    int n = nList.get(level).toIntDefault(); // The partition size for this level
+    int n = nSpec.get(level); // The partition size for this level
 
-    // Resolve d (Offset)
+    // Resolve d (Offset); a single offset is used for every level
     int d = n; // Default
-    if (dList != null) {
-      if (dList.argSize() >= level) {
-        d = dList.get(level).toIntDefault();
-      } else if (dList.argSize() == 1) {
-        d = dList.get(1).toIntDefault();
-      }
+    if (dSpec != null) {
+      d = dSpec.levels() == 1 ? dSpec.get(1) : dSpec.get(level, n);
     }
 
     // Resolve k (Alignment {kL, kR})
@@ -144,20 +121,20 @@ public class Partition extends AbstractFunctionEvaluator {
     int kR = -1;
 
     if (kList != null) {
-      if (nList.argSize() == 1) {
+      if (nSpec.levels() == 1) {
         // Simple 1D Case
         if (kList.isAST() && kList.arg1().isList()) {
           // Handle {{kL, kR}}
           IAST sub = (IAST) kList.arg1();
           if (sub.argSize() >= 1)
-            kL = sub.get(1).toIntDefault();
+            kL = sub.get(1).toMachineInt();
           if (sub.argSize() >= 2)
-            kR = sub.get(2).toIntDefault();
+            kR = sub.get(2).toMachineInt();
           else
             kR = kL;
         } else if (kList.size() > 1 && kList.arg1().isInteger()) {
-          kL = kList.get(1).toIntDefault();
-          kR = (kList.size() > 2) ? kList.get(2).toIntDefault() : kL;
+          kL = kList.get(1).toMachineInt();
+          kR = (kList.size() > 2) ? kList.get(2).toMachineInt() : kL;
         }
       }
     }
@@ -166,7 +143,7 @@ public class Partition extends AbstractFunctionEvaluator {
     IAST partitions = partition1D(list, n, d, kL, kR, pad);
 
     // Recursion for Nested Dimensions
-    if (level < nList.argSize()) {
+    if (level < nSpec.levels()) {
       // Use F.ast(list.head()) to maintain the head (e.g., List or f)
       IASTAppendable nextLevelResult = F.ast(list.head(), partitions.size());
       for (IExpr sub : partitions) {
@@ -179,7 +156,7 @@ public class Partition extends AbstractFunctionEvaluator {
             IExpr row = subAST.get(i);
             if (row.isAST()) {
               mappedSub
-                  .append(partitionRec((IAST) row, nList, level + 1, dList, kList, pad, engine));
+                  .append(partitionRec((IAST) row, nSpec, level + 1, dSpec, kList, pad, engine));
             } else {
               mappedSub.append(row);
             }
@@ -191,7 +168,7 @@ public class Partition extends AbstractFunctionEvaluator {
       }
 
       try {
-        if (level == 1 && nList.argSize() == 2) {
+        if (level == 1 && nSpec.levels() == 2) {
           return engine.evaluate(F.Transpose(nextLevelResult, F.List(F.C1, F.C3, F.C2, F.C4)));
         }
       } catch (Exception e) {

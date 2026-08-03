@@ -226,8 +226,8 @@ public final class StringFunctions {
           return Errors.printMessage(ast.topHead(), "argtype",
               F.list(ast.arg1(), ast.arg2(), ast.topHead()), engine);
         } else {
-          int from = ast.arg1().toIntDefault();
-          int to = ast.arg2().toIntDefault();
+          int from = ast.arg1().toMachineInt();
+          int to = ast.arg2().toMachineInt();
           if (from < 0 || to < 0) {
             // Arguments `1` and `2` of `3` should be either non-negative integers or one-character
             // strings.
@@ -462,7 +462,7 @@ public final class StringFunctions {
         return arg1.mapThread(F.FileNameDrop(F.Slot1, arg2), 1);
       }
       // TODO add implementation for sequence specs at arg2
-      int n = arg2.toIntDefault();
+      int n = arg2.toMachineInt();
       if (F.isPresent(n)) {
         String fileName = null;
         if (arg1.isString()) {
@@ -676,7 +676,7 @@ public final class StringFunctions {
       if (ast.arg1().isList()) {
         return ((IAST) ast.arg1()).mapThread(ast, 1);
       }
-      int number = ast.arg1().toIntDefault();
+      int number = ast.arg1().toMachineInt();
       if (F.isPresent(number)) {
         String alphabet = LATIN_ALPHABET;
         if (ast.isAST2()) {
@@ -1588,7 +1588,7 @@ public final class StringFunctions {
         listOfInts = Validate.checkListOfInts(ast, ast.arg3(), -str1.length() - 1,
             str1.length() + 1, engine);
       } else {
-        int pos = ast.arg3().toIntDefault();
+        int pos = ast.arg3().toMachineInt();
         if (Math.abs(pos) > str1.length() + 1) {
           return Errors.printMessage(ast.topHead(), "ins", F.list(ast.arg3(), arg1), engine);
         }
@@ -1890,7 +1890,7 @@ public final class StringFunctions {
         return arg2.mapThread(ast, 2);
       }
       String str = ast.arg1().toString();
-      int part = arg2.toIntDefault();
+      int part = arg2.toMachineInt();
       if (part > 0) {
         if (part > str.length()) {
           // Part `1` of `2` does not exist.
@@ -1942,7 +1942,7 @@ public final class StringFunctions {
         int maxOccurences = Integer.MAX_VALUE;
         boolean ignoreCase = option[0].isTrue();
         if (argSize > 2) {
-          maxOccurences = ast.arg3().toIntDefault();
+          maxOccurences = ast.arg3().toMachineInt();
           if (maxOccurences < 0) {
             maxOccurences = Integer.MAX_VALUE;
           }
@@ -1999,14 +1999,14 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isString()) {
         String str = ast.arg1().toString();
-        int n = ast.arg2().toIntDefault();
+        int n = ast.arg2().toMachineInt();
         if (n < 0) {
           // Positive integer expected at position `2` in `1`.
           return Errors.printMessage(ast.topHead(), "intp", F.List(ast, F.C2), engine);
         }
         int max = Integer.MAX_VALUE;
         if (ast.isAST3()) {
-          max = ast.arg3().toIntDefault();
+          max = ast.arg3().toMachineInt();
           if (max < 0) {
             // Positive integer expected at position `2` in `1`.
             return Errors.printMessage(ast.topHead(), "intp", F.List(ast, F.C3), engine);
