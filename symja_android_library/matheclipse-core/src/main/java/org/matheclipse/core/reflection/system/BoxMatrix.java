@@ -12,13 +12,14 @@ public class BoxMatrix extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-    IExpr arg2 = ast.argSize() == 2 ? ast.arg2() : null;
+    final IExpr arg1 = ast.arg1();
+    final IExpr arg2 = ast.argSize() == 2 ? ast.arg2() : null;
 
     int dimension = 2;
     IAST listR = null;
     IAST listW = null;
     boolean rIsAll = arg1 == S.All;
+    double arg1Double = Double.NaN;
 
     // Determine dimensions from r
     if (arg1.isList()) {
@@ -27,7 +28,7 @@ public class BoxMatrix extends AbstractFunctionEvaluator {
     } else if (!rIsAll) {
       // Validate that it evaluates to a number
       try {
-        arg1.evalf();
+        arg1Double = arg1.evalf();
       } catch (Exception e) {
         return F.NIL;
       }
@@ -70,11 +71,7 @@ public class BoxMatrix extends AbstractFunctionEvaluator {
           }
         }
       } else {
-        try {
-          r[i] = arg1.evalf();
-        } catch (Exception e) {
-          return F.NIL;
-        }
+        r[i] = arg1Double;
       }
     }
 
@@ -86,7 +83,7 @@ public class BoxMatrix extends AbstractFunctionEvaluator {
         }
         int maxDist = (int) Math.floor(Math.abs(r[i] + 0.5));
         w[i] = 2 * maxDist + 1;
-        } else {
+      } else {
         // Check for All in the list element
         boolean wIsAll = false;
         if (listW != null) {
@@ -114,7 +111,7 @@ public class BoxMatrix extends AbstractFunctionEvaluator {
           }
           w[i] = wVal;
         }
-        }
+      }
     }
 
 
