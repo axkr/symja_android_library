@@ -132,8 +132,9 @@ public class DiskMatrix extends AbstractFunctionEvaluator {
 
       // Infer missing dimensions
       if (wArr[i] == -1) {
-        // Automatically choose an odd width to fit the disk exactly
-        wArr[i] = (int) (2 * Math.floor(rArr[i]) + 1);
+        // Automatically choose an odd width to fit the disk exactly. Math#rint() rounds half to
+        // even, like the Round() function does.
+        wArr[i] = (int) (2 * Math.rint(rArr[i]) + 1);
       }
 
       if (rIsAll[i]) {
@@ -167,15 +168,13 @@ public class DiskMatrix extends AbstractFunctionEvaluator {
       indices[currentDim] = i;
 
       if (currentDim == wArr.length - 1) {
-        // Evaluate the scaled Euclidean (L2) distance condition for the current coordinate
+        // Evaluate the scaled Euclidean (L2) distance condition for the current coordinate. An
+        // element belongs to the disk if its center lies within the radius r+1/2, so that the disk
+        // extends exactly r index positions to each side.
         double sum = 0.0;
         for (int d = 0; d < wArr.length; d++) {
-          if (rArr[d] > 0) {
-            double diff = (indices[d] - cArr[d]) / rArr[d];
-            sum += diff * diff;
-          } else if (Math.abs(indices[d] - cArr[d]) > 0) {
-            sum += 10000.0; // Acts as infinity for zero radius constraints
-          }
+          double diff = (indices[d] - cArr[d]) / (rArr[d] + 0.5);
+          sum += diff * diff;
         }
 
         // Include a small epsilon tolerance for floating-point inaccuracies
