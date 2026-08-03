@@ -1666,6 +1666,9 @@ public class StructureFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, ast.arg1(), 1, engine);
       if (arg1AST.isPresent()) {
+        if (arg1AST.isEmpty()) {
+          return S.True;
+        }
         if (ast.isAST2()) {
           return F.booleSymbol(test(arg1AST, ast.arg2(), engine));
         }
