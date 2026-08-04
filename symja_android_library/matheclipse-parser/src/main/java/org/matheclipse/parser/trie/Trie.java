@@ -386,9 +386,8 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
   @Override
   public boolean containsValue(Object value) {
     Iterable<T> values = new ValueIterator(root);
-
     for (T v : values) {
-      if (v == value || (v != null && value != null && v.equals(values))) {
+      if (v == value || (v != null && value != null && v.equals(value))) {
         return true;
       }
     }
