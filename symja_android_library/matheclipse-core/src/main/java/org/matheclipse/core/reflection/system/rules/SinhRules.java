@@ -89,9 +89,9 @@ public class SinhRules {
     // Sinh(ArcCoth(x_)):=1/(Sqrt(1-1/x^2)*x)
     ISetDelayed(Sinh(ArcCoth(x_)),
       Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),x),CN1)),
-    // Sinh(ArcSech(x_)):=((1+x)*Sqrt((1-x)/(1+x)))/x
+    // Sinh(ArcSech(x_)):=(Sqrt((1-x)/(1+x))*(1+x))/x
     ISetDelayed(Sinh(ArcSech(x_)),
-      Times(Power(x,CN1),Plus(C1,x),Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))))),
+      Times(Power(x,CN1),Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))),Plus(C1,x))),
     // Sinh(ArcCsch(x_)):=1/x
     ISetDelayed(Sinh(ArcCsch(x_)),
       Power(x,CN1)),

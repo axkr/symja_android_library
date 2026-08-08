@@ -615,6 +615,11 @@ public final class RulesData implements Serializable {
                 } finally {
                   engine.setQuietMode(quietMode);
                 }
+                // The rule rewrote the integral to itself. Returning the unevaluated integral stops
+                // the search here. Trying the remaining rules instead lets the expression cycle
+                // through the evaluation loop until $IterationLimit is reached, which costs the
+                // same result but a multiple of the time.
+                return expr;
               } else {
                 return result;
               }
@@ -833,6 +838,62 @@ public final class RulesData implements Serializable {
     fPatternDownRules.add(pmEvaluator);
     fPriorityDownRules.add(priority);
     return pmEvaluator;
+  }
+
+  /**
+   * Restore the <code>transient</code> state of all contained pattern matchers after binary
+   * deserialization (for example Kryo). {@link PatternMatcher#fPatternMap},
+   * {@link PatternMatcher#fLHSPriority} and {@link PatternMatcher#fPatterHash} are declared
+   * <code>transient</code> and are therefore not written by a field based serializer.
+   *
+   * <p>
+   * The priority is taken from {@link #fPriorityDownRules}, which is serialized and is exactly
+   * aligned with {@link #fPatternDownRules}. The pattern hash is <i>recomputed</i> from the
+   * left-hand-side with the same rules used in {@link #putDownRule(int, boolean, IExpr, IExpr,
+   * int)}, because a serialized hash would become stale as soon as the <code>ID</code> ordinals of
+   * the built-in symbols change.
+   *
+   * <p>
+   * This method is idempotent.
+   */
+  public void initTransientState() {
+    if (fPatternDownRules != null) {
+      final int prioritySize = fPriorityDownRules == null ? 0 : fPriorityDownRules.size();
+      for (int i = 0; i < fPatternDownRules.size(); i++) {
+        IPatternMatcher matcher = fPatternDownRules.get(i);
+        if (matcher instanceof PatternMatcher) {
+          int patternHash = recomputePatternHash(matcher.getLHS());
+          if (i < prioritySize) {
+            ((PatternMatcher) matcher).initTransientState(fPriorityDownRules.getInt(i), patternHash);
+          } else {
+            ((PatternMatcher) matcher).initTransientState(patternHash);
+          }
+        }
+      }
+    }
+    if (fSimplePatternUpRules != null) {
+      for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
+        IPatternMatcher matcher = fSimplePatternUpRules.get(i);
+        if (matcher instanceof PatternMatcher) {
+          ((PatternMatcher) matcher).initTransientState(recomputePatternHash(matcher.getLHS()));
+        }
+      }
+    }
+  }
+
+  /**
+   * Recompute the pattern hash of a rule's left-hand-side. Returns <code>0</code> if this rule must
+   * not be pre-filtered by its hash value.
+   *
+   * @param leftHandSide the left-hand-side of a pattern matching definition
+   */
+  private static int recomputePatternHash(final IExpr leftHandSide) {
+    if (leftHandSide != null && leftHandSide.isAST() //
+        && !isComplicatedPatternRule(leftHandSide) //
+        && !leftHandSide.isCondition()) {
+      return ((IAST) leftHandSide).patternHashCode();
+    }
+    return 0;
   }
 
   public final boolean isDefinitionsPresent() {

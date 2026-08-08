@@ -28,9 +28,14 @@
  ArcTan(I*Infinity)=Pi/2,
  ArcTan(-I*Infinity)=-Pi/2,
  ArcTan(ComplexInfinity)=Indeterminate,
- ArcTan(x_?RealValuedNumberQ, y_?RealValuedNumberQ) :=  
-   If(x == 0, If(y == 0, Indeterminate, If(y > 0, Pi/2, -Pi/2)), If(x > 0,
-        ArcTan(y/x), If(y >= 0, ArcTan(y/x) + Pi, ArcTan(y/x) - Pi))),
- ArcTan(x_?NumberQ, y_?NumberQ) := (Pi*(2*Sqrt(x^2) - x))/(4*y) 
+ (* Positive/Negative are exact for inexact numbers, Equal is not: `3.*10^-20 == 0` is True, so
+    testing the quadrant with `x == 0` and `x > 0` collapsed an ordinary point close to the origin
+    such as ArcTan(3.0*10^-20, 4.0*10^-20) onto the origin and answered Indeterminate. A number
+    which is neither Positive nor Negative is the zero of the third branch. *)
+ ArcTan(x_?RealValuedNumberQ, y_?RealValuedNumberQ) :=
+   If(Positive(x), ArcTan(y/x),
+      If(Negative(x), If(Negative(y), ArcTan(y/x) - Pi, ArcTan(y/x) + Pi),
+         If(Positive(y), Pi/2, If(Negative(y), -Pi/2, Indeterminate)))),
+ ArcTan(x_?NumberQ, y_?NumberQ) := (Pi*(2*Sqrt(x^2) - x))/(4*y)
    /; (x^2 == y^2)
  }

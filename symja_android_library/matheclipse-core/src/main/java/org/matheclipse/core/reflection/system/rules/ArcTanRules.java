@@ -95,9 +95,9 @@ public class ArcTanRules {
     // ArcTan(ComplexInfinity)=Indeterminate
     ISet(ArcTan(CComplexInfinity),
       Indeterminate, true),
-    // ArcTan(x_?RealValuedNumberQ,y_?RealValuedNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
+    // ArcTan(x_?RealValuedNumberQ,y_?RealValuedNumberQ):=If(Positive(x),ArcTan(y/x),If(Negative(x),If(Negative(y),-Pi+ArcTan(y/x),ArcTan(y/x)+Pi),If(Positive(y),Pi/2,If(Negative(y),(-1)*1/2*Pi,Indeterminate))))
     ISetDelayed(ArcTan(PatternTest(x_,RealValuedNumberQ),PatternTest(y_,RealValuedNumberQ)),
-      If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),CPiHalf,Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,CN1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,CN1),y)),Pi),Plus(CNPi,ArcTan(Times(Power(x,CN1),y))))))),
+      If(Positive(x),ArcTan(Times(Power(x,CN1),y)),If(Negative(x),If(Negative(y),Plus(CNPi,ArcTan(Times(Power(x,CN1),y))),Plus(ArcTan(Times(Power(x,CN1),y)),Pi)),If(Positive(y),CPiHalf,If(Negative(y),Times(CN1,C1D2,Pi),Indeterminate))))),
     // ArcTan(x_?NumberQ,y_?NumberQ):=(Pi*(-x+2*Sqrt(x^2)))/(4*y)/;x^2==y^2
     ISetDelayed(ArcTan(PatternTest(x_,NumberQ),PatternTest(y_,NumberQ)),
       Condition(Times(Pi,Plus(Negate(x),Times(C2,Sqrt(Sqr(x)))),Power(Times(C4,y),CN1)),Equal(Sqr(x),Sqr(y))))

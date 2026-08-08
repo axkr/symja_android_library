@@ -36,6 +36,8 @@
  FactorialPower(x_,n_Integer) := Product(x-+k,{k,0,n-1})
    /; n>0, 
  FactorialPower(x_,n_) := Gamma(1+x)/Gamma(1-n+x),
+ FactorialPower(x_,n_Integer,h_) := Product(x-k*h,{k,0,n-1})
+   /; n>0 && UnsameQ(h,0),
  FactorialPower(x_,n_,h_) := (x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))
    /; UnsameQ(h,0),
   

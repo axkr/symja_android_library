@@ -166,7 +166,7 @@ public class DRules {
       Times(C2,x,Power(Subtract(C1,Sqr(x)),CN2))),
     // D(ArcCsc(x_),{x_,2}):=(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))
     ISetDelayed(D(ArcCsc(x_),list(x_,C2)),
-      Times(Plus(CN1,Times(C2,Sqr(x))),Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),Power(x,C3),Plus(CN1,Sqr(x))),CN1))),
+      Times(Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),Power(x,C3),Plus(CN1,Sqr(x))),CN1),Plus(CN1,Times(C2,Sqr(x))))),
     // D(ArcSec(x_),{x_,2}):=(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))
     ISetDelayed(D(ArcSec(x_),list(x_,C2)),
       Times(Plus(C1,Times(CN2,Sqr(x))),Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),Power(x,C3),Plus(CN1,Sqr(x))),CN1))),

@@ -106,13 +106,13 @@ public class CotRules {
       Power(x,CN1)),
     // Cot(2*ArcTan(x_)):=(1-x^2)/(2*x)
     ISetDelayed(Cot(Times(C2,ArcTan(x_))),
-      Times(Subtract(C1,Sqr(x)),Power(Times(C2,x),CN1))),
+      Times(Power(Times(C2,x),CN1),Subtract(C1,Sqr(x)))),
     // Cot(ArcCot(x_)):=x
     ISetDelayed(Cot(ArcCot(x_)),
       x),
     // Cot(2*ArcCot(x_)):=(-1+x^2)/(2*x)
     ISetDelayed(Cot(Times(C2,ArcCot(x_))),
-      Times(Plus(CN1,Sqr(x)),Power(Times(C2,x),CN1))),
+      Times(Power(Times(C2,x),CN1),Plus(CN1,Sqr(x)))),
     // Cot(ArcCsc(x_)):=Sqrt(1-1/x^2)*x
     ISetDelayed(Cot(ArcCsc(x_)),
       Times(Sqrt(Subtract(C1,Power(x,CN2))),x)),

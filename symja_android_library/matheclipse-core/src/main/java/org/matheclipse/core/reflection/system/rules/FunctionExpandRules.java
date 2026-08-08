@@ -87,6 +87,9 @@ public class FunctionExpandRules {
     // FactorialPower(x_,n_):=Gamma(1+x)/Gamma(1-n+x)
     SetDelayed(FactorialPower(x_,n_),
       Times(Gamma(Plus(C1,x)),Power(Gamma(Plus(C1,Negate(n),x)),CN1))),
+    // FactorialPower(x_,n_Integer,h_):=Product(-h*k+x,{k,0,-1+n})/;n>0&&h=!=0
+    SetDelayed(FactorialPower(x_,$p(n, Integer),h_),
+      Condition(Product(Plus(Times(CN1,h,k),x),list(k,C0,Plus(CN1,n))),And(Greater(n,C0),UnsameQ(h,C0)))),
     // FactorialPower(x_,n_,h_):=(x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))/;h=!=0
     SetDelayed(FactorialPower(x_,n_,h_),
       Condition(Times(Power(x,n),Gamma(Plus(C1,Times(Power(h,CN1),x))),Power(Times(Power(Times(Power(h,CN1),x),n),Gamma(Plus(C1,Negate(n),Times(Power(h,CN1),x)))),CN1)),UnsameQ(h,C0))),
@@ -224,7 +227,7 @@ public class FunctionExpandRules {
       Subtract(Times(QQ(1L,10L),Sqr(Pi)),Sqr(ArcCsch(C2)))),
     // PolyLog(2,1/2*(1-Sqrt(5)))=(-1)*1/10*Pi^2+ArcCsch(2)^2+1/2*(Pi^2/15-ArcCsch(2)^2)
     Set(PolyLog(C2,Times(C1D2,Subtract(C1,CSqrt5))),
-      Plus(Times(QQ(-1L,10L),Sqr(Pi)),Times(C1D2,Subtract(Times(QQ(1L,15L),Sqr(Pi)),Sqr(ArcCsch(C2)))),Sqr(ArcCsch(C2)))),
+      Plus(Times(QQ(-1L,10L),Sqr(Pi)),Sqr(ArcCsch(C2)),Times(C1D2,Subtract(Times(QQ(1L,15L),Sqr(Pi)),Sqr(ArcCsch(C2)))))),
     // PolyLog(2,1/2*(-1-Sqrt(5)))=(-1)*1/10*Pi^2-ArcCsch(2)^2
     Set(PolyLog(C2,Times(C1D2,Subtract(CN1,CSqrt5))),
       Subtract(Times(QQ(-1L,10L),Sqr(Pi)),Sqr(ArcCsch(C2)))),

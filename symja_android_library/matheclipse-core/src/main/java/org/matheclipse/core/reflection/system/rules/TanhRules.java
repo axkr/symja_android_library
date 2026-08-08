@@ -47,9 +47,9 @@ public class TanhRules {
     // Tanh(ArcSinh(x_)):=x/Sqrt(1+x^2)
     ISetDelayed(Tanh(ArcSinh(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
-    // Tanh(ArcCosh(x_)):=((1+x)*Sqrt((-1+x)/(1+x)))/x
+    // Tanh(ArcCosh(x_)):=(Sqrt((-1+x)/(1+x))*(1+x))/x
     ISetDelayed(Tanh(ArcCosh(x_)),
-      Times(Power(x,CN1),Plus(C1,x),Sqrt(Times(Plus(CN1,x),Power(Plus(C1,x),CN1))))),
+      Times(Power(x,CN1),Sqrt(Times(Plus(CN1,x),Power(Plus(C1,x),CN1))),Plus(C1,x))),
     // Tanh(ArcTanh(x_)):=x
     ISetDelayed(Tanh(ArcTanh(x_)),
       x),

@@ -17,8 +17,8 @@ public class StandardDeviationRules {
 
   final public static IAST RULES = List(
     IInit(StandardDeviation, SIZES),
-    // StandardDeviation(NormalDistribution())=1
-    ISet(StandardDeviation(NormalDistribution()),
+    // StandardDeviation(NormalDistribution(0,1))=1
+    ISet(StandardDeviation(NormalDistribution(C0,C1)),
       C1, true),
     // StandardDeviation(NormalDistribution(m_,s_)):=s
     ISetDelayed(StandardDeviation(NormalDistribution(m_,s_)),

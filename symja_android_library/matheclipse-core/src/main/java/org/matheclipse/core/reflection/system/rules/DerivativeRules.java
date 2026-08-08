@@ -298,7 +298,7 @@ public class DerivativeRules {
       Function(Piecewise(list(list(Times(Plus(Negate(CarlsonRC(Slot1,Slot2)),Power(Slot1,CN1D2)),Power(Times(C2,Subtract(Slot1,Slot2)),CN1)),Unequal(Slot1,Slot2)),list(Negate(Power(Times(C6,Power(Slot1,QQ(3L,2L))),CN1)),And(Equal(Slot1,Slot2),Or(Unequal(Im(Slot2),C0),Greater(Re(Slot2),C0))))),CComplexInfinity)), true),
     // Derivative(0,1)[CarlsonRC]=Piecewise({{(CarlsonRC(#1,#2)-Sqrt(#1)/#2)/(2*(#1-#2)),#1!=#2},{-1/(3*#1^(3/2)),#1==#2&&(Im(#2)!=0||Re(#2)>0)}},ComplexInfinity)&
     ISet($(Derivative(C0,C1),CarlsonRC),
-      Function(Piecewise(list(list(Times(Power(Times(C2,Subtract(Slot1,Slot2)),CN1),Plus(CarlsonRC(Slot1,Slot2),Times(CN1,Sqrt(Slot1),Power(Slot2,CN1)))),Unequal(Slot1,Slot2)),list(Negate(Power(Times(C3,Power(Slot1,QQ(3L,2L))),CN1)),And(Equal(Slot1,Slot2),Or(Unequal(Im(Slot2),C0),Greater(Re(Slot2),C0))))),CComplexInfinity)), true),
+      Function(Piecewise(list(list(Times(Plus(CarlsonRC(Slot1,Slot2),Times(CN1,Sqrt(Slot1),Power(Slot2,CN1))),Power(Times(C2,Subtract(Slot1,Slot2)),CN1)),Unequal(Slot1,Slot2)),list(Negate(Power(Times(C3,Power(Slot1,QQ(3L,2L))),CN1)),And(Equal(Slot1,Slot2),Or(Unequal(Im(Slot2),C0),Greater(Re(Slot2),C0))))),CComplexInfinity)), true),
     // Derivative(1,0,0)[CarlsonRF]=-CarlsonRD(#2,#3,#1)/6&
     ISet($(Derivative(C1,C0,C0),CarlsonRF),
       Function(Times(QQ(-1L,6L),CarlsonRD(Slot2,Slot(C3),Slot1))), true),
@@ -331,10 +331,10 @@ public class DerivativeRules {
       Function(Plus(Times(CN1,EllipticF(Slot1,Slot2),Power(Times(C2,Slot2),CN1)),Times(CN1,EllipticE(Slot1,Slot2),Power(Times(C2,Plus(CN1,Slot2),Slot2),CN1)),Times(Sin(Times(C2,Slot1)),Power(Times(C4,Plus(CN1,Slot2),Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot1)),Slot2)))),CN1)))), true),
     // Derivative(1,0)[EllipticPi]=(EllipticE(#2)+(EllipticPi(#1,#2)*(#1^2-#2))/#1+(EllipticK(#2)*(-#1+#2))/#1)/(2*(-1+#1)*(-#1+#2))&
     ISet($(Derivative(C1,C0),EllipticPi),
-      Function(Times(Plus(EllipticE(Slot2),Times(EllipticPi(Slot1,Slot2),Power(Slot1,CN1),Subtract(Sqr(Slot1),Slot2)),Times(EllipticK(Slot2),Power(Slot1,CN1),Plus(Negate(Slot1),Slot2))),Power(Times(C2,Plus(CN1,Slot1),Plus(Negate(Slot1),Slot2)),CN1))), true),
+      Function(Times(Power(Times(C2,Plus(CN1,Slot1),Plus(Negate(Slot1),Slot2)),CN1),Plus(EllipticE(Slot2),Times(EllipticPi(Slot1,Slot2),Power(Slot1,CN1),Subtract(Sqr(Slot1),Slot2)),Times(EllipticK(Slot2),Power(Slot1,CN1),Plus(Negate(Slot1),Slot2))))), true),
     // Derivative(0,1)[EllipticPi]=(EllipticPi(#1,#2)+EllipticE(#2)/(-1+#2))/(2*(#1-#2))&
     ISet($(Derivative(C0,C1),EllipticPi),
-      Function(Times(Power(Times(C2,Subtract(Slot1,Slot2)),CN1),Plus(EllipticPi(Slot1,Slot2),Times(EllipticE(Slot2),Power(Plus(CN1,Slot2),CN1))))), true),
+      Function(Times(Plus(EllipticPi(Slot1,Slot2),Times(EllipticE(Slot2),Power(Plus(CN1,Slot2),CN1))),Power(Times(C2,Subtract(Slot1,Slot2)),CN1))), true),
     // Derivative(1,0,0)[EllipticPi]=(EllipticE(#2,#3)+(EllipticPi(#1,#2,#3)*(#1^2-#3))/#1+(EllipticF(#2,#3)*(-#1+#3))/#1+(-Sin(2*#2)*#1*Sqrt(1-Sin(#2)^2*#3))/(2*(1-Sin(#2)^2*#1)))/(2*(-1+#1)*(-#1+#3))&
     ISet($(Derivative(C1,C0,C0),EllipticPi),
       Function(Times(Power(Times(C2,Plus(CN1,Slot1),Plus(Negate(Slot1),Slot(C3))),CN1),Plus(EllipticE(Slot2,Slot(C3)),Times(EllipticPi(Slot1,Slot2,Slot(C3)),Power(Slot1,CN1),Subtract(Sqr(Slot1),Slot(C3))),Times(EllipticF(Slot2,Slot(C3)),Power(Slot1,CN1),Plus(Negate(Slot1),Slot(C3))),Times(CN1,Sin(Times(C2,Slot2)),Slot1,Power(Times(C2,Plus(C1,Times(CN1,Sqr(Sin(Slot2)),Slot1))),CN1),Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot2)),Slot(C3)))))))), true),
