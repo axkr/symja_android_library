@@ -274,16 +274,15 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
             x = PolyUtil.<C> baseDensePseudoRemainder(q, r);
             //System.out.println("x  = " + x);
             q = r;
-            if (x.degree(0) > 0) {
-                z = g.multiply(h.power(delta)); //power(cofac, h, delta));
-                //System.out.println("z  = " + z);
-                r = x.divide(z);
-                g = q.leadingBaseCoefficient();
-                z = g.power(delta); //power(cofac, g, delta);
-                h = z.divide(h.power(delta - 1));
-            } else {
-                r = x;
-            }
+            // every element of the subresultant PRS has to be divided by g*h^delta, the last one -
+            // where x is a constant and the loop terminates - included. Skipping the division there
+            // left the returned resultant multiplied by that factor.
+            z = g.multiply(h.power(delta)); //power(cofac, h, delta));
+            //System.out.println("z  = " + z);
+            r = x.divide(z);
+            g = q.leadingBaseCoefficient();
+            z = g.power(delta); //power(cofac, g, delta);
+            h = z.divide(h.power(delta - 1));
         }
         z = r.leadingBaseCoefficient().power(q.degree(0)); //power(cofac, r.leadingBaseCoefficient(), q.degree(0));
         h = z.divide(h.power(q.degree() - 1)); //power(cofac, h, q.degree(0) - 1));

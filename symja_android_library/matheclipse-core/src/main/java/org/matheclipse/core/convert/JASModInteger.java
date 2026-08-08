@@ -12,7 +12,6 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.ExpVector;
@@ -186,17 +185,32 @@ public class JASModInteger {
     } else if (exprPoly instanceof IInteger) {
       return fPolyFactory
           .fromInteger((java.math.BigInteger) exprPoly.asType(java.math.BigInteger.class));
+    } else if (exprPoly instanceof IFraction) {
+      // GF(p) is a field, so a rational coefficient has a value here as well
+      return fraction2Poly((IFraction) exprPoly);
     }
     throw new ClassCastException(exprPoly.toString());
   }
 
+  /**
+   * Convert a rational number into the constant polynomial holding its value in
+   * <code>GF(p)</code>: the numerator times the modular inverse of the denominator.
+   *
+   * @param exprPoly the rational number
+   * @return the constant polynomial
+   * @throws ArithmeticException if the denominator is a multiple of the modulus and therefore not
+   *         invertible
+   */
   private GenPolynomial<ModLong> fraction2Poly(final IFraction exprPoly) {
-    BigInteger n = exprPoly.toBigNumerator(); // .toJavaBigInteger();
-    BigInteger d = exprPoly.toBigDenominator(); // .toJavaBigInteger();
-    BigRational nr = new BigRational(n);
-    BigRational dr = new BigRational(d);
-    BigRational r = nr.divide(dr);
-    return new GenPolynomial(fPolyFactory, r);
+    BigInteger n = exprPoly.toBigNumerator();
+    BigInteger d = exprPoly.toBigDenominator();
+    ModLong numerator = fRingFactory.fromInteger(n);
+    ModLong denominator = fRingFactory.fromInteger(d);
+    if (denominator.isZERO()) {
+      throw new ArithmeticException(
+          "JASModInteger:fraction2Poly - denominator is a multiple of the modulus: " + exprPoly);
+    }
+    return new GenPolynomial<ModLong>(fPolyFactory, numerator.divide(denominator));
   }
 
   private GenPolynomial<ModLong> expr2IExprPoly(final IExpr exprPoly)

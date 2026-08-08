@@ -196,7 +196,11 @@ public class AssumptionFunctions {
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Integers:
             truthValue = AbstractAssumptions.assumeInteger(expr);
-            return (truthValue != null) ? truthValue : F.NIL;
+            if (truthValue != null) {
+              return truthValue;
+            }
+            // structural test for a compound expression, e.g. 2*k^3 is an integer if k is one
+            return expr.isIntegerResult() ? S.True : F.NIL;
           case ID.Primes:
             return AbstractAssumptions.assumePrime(expr);
           case ID.Rationals:
@@ -204,7 +208,11 @@ public class AssumptionFunctions {
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Reals:
             truthValue = AbstractAssumptions.assumeReal(expr);
-            return (truthValue != null) ? truthValue : F.NIL;
+            if (truthValue != null) {
+              return truthValue;
+            }
+            // structural test for a compound expression, e.g. x+Gamma(x) is real if x is real
+            return expr.isRealResult() ? S.True : F.NIL;
           default:
             break;
         }
@@ -324,7 +332,10 @@ public class AssumptionFunctions {
       } else {
         assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance();
       }
-      return refineAssumptions(F.Simplify(ast.arg1()), assumptions, engine);
+      // Don't wrap the expression in Simplify(): Refine() only applies the assumption driven
+      // rewrites of a normal evaluation, it isn't supposed to reshape the users expression.
+      // Simplify() itself calls refineAssumptions(), so wrapping would evaluate twice.
+      return refineAssumptions(ast.arg1(), assumptions, engine);
     }
 
     @Override

@@ -59,6 +59,7 @@ import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
+import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
@@ -69,6 +70,11 @@ import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.ExpVector;
+import edu.jas.poly.GenPolynomialRing;
+import edu.jas.poly.Monomial;
+import edu.jas.ufd.Quotient;
+import edu.jas.ufd.QuotientRing;
 import edu.jas.ps.PolynomialTaylorFunction;
 import edu.jas.ps.TaylorFunction;
 import edu.jas.ps.UnivPowerSeries;
@@ -163,7 +169,12 @@ public class Algebra {
 
       VariablesSet eVar = new VariablesSet(arg1);
       if (eVar.isSize(0)) {
-        if (arg1.isTimes() && arg1.isNumericFunction()
+        // A variable-free product has no partial fraction decomposition, so this simplifies it
+        // instead — as a convenience for a direct Apart(...) call. Not while the simplifier is
+        // already running: Simplify() offers Apart() as one rewrite candidate per node and per
+        // fixpoint pass, and each of those calls would start a whole nested FullSimplify over an
+        // expression the surrounding pipeline is simplifying anyway.
+        if (engine.getSimplifyDepth() == 0 && arg1.isTimes() && arg1.isNumericFunction()
             && arg1.leafCount() < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
           return SimplifyUtil.simplifyStep(arg1, arg1, true, true, engine);
         }
@@ -1074,10 +1085,13 @@ public class Algebra {
       if (ast.size() > 2 && !ast.arg2().isRule()) {
         matcher = Predicates.toFreeQ(ast.arg2());
       }
+      IExpr modulus = options[1];
+      final boolean useModulus = modulus.isInteger() && !modulus.isZero();
       IExpr result;
       if (arg1.isAST()) {
-        result =
-            AlgebraUtil.expandAll((IAST) arg1, matcher, true, true, false, engine).orElse(arg1);
+        result = useModulus //
+            ? expandAllQuotient((IAST) arg1, matcher, engine)
+            : expandAllOrSelf(arg1, matcher, engine);
       } else {
         result = arg1;
       }
@@ -1086,14 +1100,45 @@ public class Algebra {
         result = TrigExpand.trigExpand(result, engine);
       }
       // Apply modular reduction if Modulus->p (p != 0)
-      IExpr modulus = options[1];
-      if (modulus.isInteger() && !modulus.isZero()) {
+      if (useModulus) {
         result = expandModReduce(result, (IInteger) modulus, engine);
       }
       return result;
 
     }
 
+    /**
+     * Expand numerator and denominator separately, if the denominator is a sum which
+     * <code>ExpandDenominator</code> would expand. Distributing the numerator over such a
+     * denominator would hide the expanded denominator again, e.g.
+     * <code>ExpandAll((1+a)^6/(x+y)^3, Modulus->3)</code> is
+     * <code>(1+2*a^3+a^6)/(x^3+y^3)</code> and not a sum of three fractions. For a denominator
+     * which isn't a sum the numerator is distributed as before, so that
+     * <code>ExpandAll((a+b)/c, Modulus->3)</code> stays <code>a/c+b/c</code>.
+     * <p>
+     * Only used for the <code>Modulus</code> option. Returning a quotient instead of a sum of
+     * fractions from the general <code>ExpandAll()</code> sends <code>Factor()</code> and
+     * <code>Together()</code> into a non-terminating recursion.
+     */
+    private static IExpr expandAllQuotient(IAST ast, Predicate<IExpr> matcher, EvalEngine engine) {
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(ast, false);
+      if (parts.isPresent()) {
+        IExpr denominator = parts.get()[1];
+        if (denominator.isAST() && !denominator.isFree(x -> x.isPlus(), true)) {
+          IExpr numerator = parts.get()[0];
+          return F.Divide(expandAllOrSelf(numerator, matcher, engine),
+              expandAllOrSelf(denominator, matcher, engine));
+        }
+      }
+      return expandAllOrSelf(ast, matcher, engine);
+    }
+
+    private static IExpr expandAllOrSelf(IExpr expr, Predicate<IExpr> matcher, EvalEngine engine) {
+      if (expr.isAST()) {
+        return AlgebraUtil.expandAll((IAST) expr, matcher, true, true, false, engine).orElse(expr);
+      }
+      return expr;
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -2503,6 +2548,38 @@ public class Algebra {
    * </code> modulus the <code>prime</code> integer.
    *
    * </blockquote>
+   *
+   * <p>
+   * The result is the last argument times the cofactor which completes it to the least common
+   * multiple, so that the divisibility of the arguments stays visible. Use <code>Expand</code> to
+   * get the multiplied out polynomial.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6)
+   * (6+x)*(-6-5*x+x^2)
+   *
+   * &gt;&gt; Expand(PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6))
+   * -36-36*x+x^2+x^3
+   * </pre>
+   *
+   * <p>
+   * An argument which already divides all the others has the cofactor <code>1</code>:
+   *
+   * <pre>
+   * &gt;&gt; PolynomialLCM(x - 1, x^2 - 1)
+   * -1+x^2
+   * </pre>
+   *
+   * <p>
+   * Modulo a prime the arguments keep their leading coefficients, the result is not normalized to
+   * a monic polynomial:
+   *
+   * <pre>
+   * &gt;&gt; PolynomialLCM(2*x^2 + 2, x + 1, Modulus -&gt; 5)
+   * (1+x)*(2+2*x^2)
+   * </pre>
    */
   private static class PolynomialLCM extends AbstractFunctionOptionEvaluator {
 
@@ -2568,6 +2645,12 @@ public class Algebra {
             if (!evaled) {
               return ast.setAtCopy(0, S.Times, argSize + 1);
             }
+            IExpr lastFactored =
+                timesLastArgument(polyExpr, F.evalExpandAll(ast.get(argSize), engine),
+                    eVar.getVarList());
+            if (lastFactored.isPresent()) {
+              return lastFactored;
+            }
             return polyExpr;
           }
           exprList.append(polyExpr);
@@ -2589,6 +2672,45 @@ public class Algebra {
       return ast.setAtCopy(0, S.Times, argSize + 1);
     }
 
+    /**
+     * Present the least common multiple as the product of the last polynomial argument and the
+     * cofactor which completes it, rather than as a single expanded polynomial.
+     *
+     * <p>
+     * <code>PolynomialLCM(x^2-1, x-1)</code> returns <code>(-1+x)*(1+x)</code> instead of
+     * <code>-1+x^2</code>, which keeps visible how much the last argument had to be extended by.
+     * Arguments which already divide the others contribute a cofactor of <code>1</code>, so
+     * <code>PolynomialLCM(x-1, x^2-1)</code> stays the plain <code>-1+x^2</code>.
+     *
+     * @param lcmExpr the expanded least common multiple
+     * @param lastArg the last polynomial argument
+     * @param varList the variables of the polynomials
+     * @return <code>Times(lcmExpr/lastArg, lastArg)</code>, or {@link F#NIL} if the quotient is
+     *         <code>1</code> or cannot be determined
+     */
+    private static IExpr timesLastArgument(IExpr lcmExpr, IExpr lastArg, IAST varList) {
+      if (varList.argSize() == 0 || lastArg.isNumber()) {
+        // a numeric last argument would only distribute back into the polynomial
+        return F.NIL;
+      }
+      try {
+        JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+        GenPolynomial<BigRational> lcmPoly = jas.expr2JAS(lcmExpr, false);
+        GenPolynomial<BigRational> lastPoly = jas.expr2JAS(lastArg, false);
+        if (lcmPoly == null || lastPoly == null || lastPoly.isZERO()) {
+          return F.NIL;
+        }
+        GenPolynomial<BigRational>[] quotientRemainder = lcmPoly.quotientRemainder(lastPoly);
+        if (quotientRemainder == null || !quotientRemainder[1].isZERO()
+            || quotientRemainder[0].isONE()) {
+          return F.NIL;
+        }
+        return F.Times(jas.rationalPoly2Expr(quotientRemainder[0], false), lastArg);
+      } catch (ClassCastException | JASConversionException e) {
+        return F.NIL;
+      }
+    }
+
     private static IExpr polynomialLCMExpr(final IAST ast, int argSize) {
       IAST list = ast.setAtCopy(0, S.List);
       Optional<IExpr[]> result = AlgebraUtil.findCommonFactors(list, true);
@@ -2606,15 +2728,26 @@ public class Algebra {
           ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) modulus);
           JASModInteger jas = new JASModInteger(varList, modIntegerRing);
           GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-          GenPolynomial<ModLong> temp;
+          GenPolynomial<ModLong> temp = poly;
           GreatestCommonDivisorAbstract<ModLong> factory =
               GCDFactory.getImplementation(modIntegerRing);
-          for (int i = 2; i < ast.argSize(); i++) {
+          // Fold with lcm(a, b) == (a / gcd(a, b)) * b and keep the last two factors apart. The
+          // cofactor is computed rather than taken from factory.lcm(), because that normalizes the
+          // result to a monic polynomial and would drop a leading coefficient the arguments carry.
+          GenPolynomial<ModLong> cofactor = poly;
+          for (int i = 2; i <= argSize; i++) {
             expr = F.evalExpandAll(ast.get(i));
             temp = jas.expr2JAS(expr);
-            poly = factory.lcm(poly, temp);
+            cofactor = poly.divide(factory.gcd(poly, temp));
+            poly = cofactor.multiply(temp);
           }
-          return Algebra.factorModulus(jas, modIntegerRing, poly.monic(), false);
+          if (poly.isZERO()) {
+            return F.C0;
+          }
+          if (cofactor.isONE()) {
+            return jas.modLongPoly2Expr(poly);
+          }
+          return F.Times(jas.modLongPoly2Expr(cofactor), jas.modLongPoly2Expr(temp));
         } catch (ArithmeticException aex) {
           Errors.printMessage(S.PolynomialLCM, aex);
           return F.NIL;
@@ -3290,11 +3423,17 @@ public class Algebra {
             new JASConvert<BigRational>(variable.makeList(), BigRational.ZERO);
         GenPolynomial<BigRational> poly1 = jas.expr2JAS(arg1, false);
         if (poly1 == null) {
-          return polynomialQuotientRemainderExpr(arg1, arg2, variable);
+          Optional<IExpr[]> rationalFunctionResult =
+              quotientRemainderRationalFunction(arg1, arg2, variable);
+          return rationalFunctionResult.isPresent() ? rationalFunctionResult
+              : polynomialQuotientRemainderExpr(arg1, arg2, variable);
         } else {
           GenPolynomial<BigRational> poly2 = jas.expr2JAS(arg2, false);
           if (poly2 == null) {
-            return polynomialQuotientRemainderExpr(arg1, arg2, variable);
+            Optional<IExpr[]> rationalFunctionResult =
+                quotientRemainderRationalFunction(arg1, arg2, variable);
+            return rationalFunctionResult.isPresent() ? rationalFunctionResult
+                : polynomialQuotientRemainderExpr(arg1, arg2, variable);
           } else {
             GenPolynomial<BigRational>[] divRem = poly1.quotientRemainder(poly2);
             return Optional.of(new IExpr[] { //
@@ -3303,8 +3442,133 @@ public class Algebra {
           }
         }
       } catch (JASConversionException e1) {
-        return polynomialQuotientRemainderExpr(arg1, arg2, variable);
+        Optional<IExpr[]> rationalFunctionResult =
+            quotientRemainderRationalFunction(arg1, arg2, variable);
+        return rationalFunctionResult.isPresent() ? rationalFunctionResult
+            : polynomialQuotientRemainderExpr(arg1, arg2, variable);
       }
+    }
+
+    /**
+     * Divide two polynomials in <code>variable</code> whose coefficients contain other symbols, by
+     * computing in <code>Q(parameters)[variable]</code> with JAS: the coefficients are elements of
+     * the field of rational functions in the remaining symbols.
+     *
+     * <p>
+     * The alternative {@link #polynomialQuotientRemainderExpr(IExpr, IExpr, IExpr)} divides with
+     * {@link IExpr} coefficients, so every coefficient operation is a full evaluation and the
+     * intermediate coefficients are never normalized. They grow as nested unsimplified fractions
+     * (&quot;intermediate expression swell&quot;), which makes that method unusable from about
+     * degree 9 on, while the same division with numeric coefficients takes milliseconds. A
+     * {@link Quotient} keeps every coefficient as a normalized numerator/denominator pair instead.
+     *
+     * @return the quotient and the remainder, or {@link Optional#empty()} if the expressions are no
+     *         polynomials in <code>variable</code> with rational function coefficients
+     */
+    private static Optional<IExpr[]> quotientRemainderRationalFunction(final IExpr arg1,
+        final IExpr arg2, final IExpr variable) {
+      try {
+        VariablesSet eVar = new VariablesSet();
+        eVar.addVarList(arg1);
+        eVar.addVarList(arg2);
+        IASTAppendable parameters = F.ListAlloc(eVar.size());
+        for (IExpr symbol : eVar.getArrayList()) {
+          if (!symbol.equals(variable)) {
+            parameters.append(symbol);
+          }
+        }
+        if (parameters.isEmpty()) {
+          // no parameters: the caller already tried the faster BigRational coefficients
+          return Optional.empty();
+        }
+
+        ExprPolynomialRing ring = new ExprPolynomialRing(F.list(variable));
+        ExprPolynomial poly1 = ring.create(arg1);
+        ExprPolynomial poly2 = ring.create(arg2);
+
+        JASConvert<BigRational> parameterJAS =
+            new JASConvert<BigRational>(parameters, BigRational.ZERO);
+        QuotientRing<BigRational> coefficientRing =
+            new QuotientRing<BigRational>(parameterJAS.getPolynomialRingFactory());
+        GenPolynomialRing<Quotient<BigRational>> polyRing =
+            new GenPolynomialRing<Quotient<BigRational>>(coefficientRing, 1,
+                new String[] {variable.toString()});
+
+        GenPolynomial<Quotient<BigRational>> q1 =
+            expr2QuotientPoly(poly1, parameterJAS, coefficientRing, polyRing);
+        GenPolynomial<Quotient<BigRational>> q2 =
+            expr2QuotientPoly(poly2, parameterJAS, coefficientRing, polyRing);
+        if (q1 == null || q2 == null || q2.isZERO()) {
+          return Optional.empty();
+        }
+
+        GenPolynomial<Quotient<BigRational>>[] divRem = q1.quotientRemainder(q2);
+        return Optional.of(new IExpr[] { //
+            quotientPoly2Expr(divRem[0], parameterJAS, variable), //
+            quotientPoly2Expr(divRem[1], parameterJAS, variable)});
+      } catch (LimitException le) {
+        throw le;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+      return Optional.empty();
+    }
+
+    /**
+     * Convert a polynomial in one variable with {@link IExpr} coefficients into a polynomial with
+     * rational function coefficients.
+     *
+     * @return <code>null</code> if a coefficient isn't a rational function of the parameters
+     */
+    private static GenPolynomial<Quotient<BigRational>> expr2QuotientPoly(ExprPolynomial poly,
+        JASConvert<BigRational> parameterJAS, QuotientRing<BigRational> coefficientRing,
+        GenPolynomialRing<Quotient<BigRational>> polyRing) {
+      EvalEngine engine = EvalEngine.get();
+      GenPolynomial<Quotient<BigRational>> result = polyRing.getZERO();
+      long degree = poly.degree();
+      for (long i = 0; i <= degree; i++) {
+        IExpr coefficient = poly.coefficient(new ExpVectorLong(1, 0, i));
+        if (coefficient.isZero()) {
+          continue;
+        }
+        IExpr together = engine.evaluate(F.Together(coefficient));
+        GenPolynomial<BigRational> numerator =
+            parameterJAS.expr2JAS(engine.evaluate(F.Numerator(together)), false);
+        GenPolynomial<BigRational> denominator =
+            parameterJAS.expr2JAS(engine.evaluate(F.Denominator(together)), false);
+        if (numerator == null || denominator == null || denominator.isZERO()) {
+          return null;
+        }
+        result = result.sum(new Quotient<BigRational>(coefficientRing, numerator, denominator),
+            ExpVector.create(1, 0, i));
+      }
+      return result;
+    }
+
+    /** Convert a polynomial with rational function coefficients back into an {@link IExpr}. */
+    private static IExpr quotientPoly2Expr(GenPolynomial<Quotient<BigRational>> poly,
+        JASConvert<BigRational> parameterJAS, IExpr variable) {
+      if (poly.isZERO()) {
+        return F.C0;
+      }
+      IASTAppendable sum = F.PlusAlloc(poly.length());
+      for (Monomial<Quotient<BigRational>> monomial : poly) {
+        Quotient<BigRational> coefficient = monomial.coefficient();
+        IExpr coeff = parameterJAS.rationalPoly2Expr(coefficient.num, false);
+        if (!coefficient.den.isONE()) {
+          coeff = F.Divide(coeff, parameterJAS.rationalPoly2Expr(coefficient.den, false));
+          if (coefficient.den.length() == 1) {
+            // A single denominator term divides every summand of the numerator without combining
+            // them, so expanding keeps the shape the IExpr coefficient division produced:
+            // `-1/a^2+b/a` instead of `(-1+a*b)/a^2`. For a denominator with more than one term
+            // expanding would only distribute the same denominator over all summands.
+            coeff = EvalEngine.get().evaluate(F.Expand(coeff));
+          }
+        }
+        long exponent = monomial.exponent().getVal(0);
+        sum.append(exponent == 0L ? coeff : F.Times(coeff, F.Power(variable, F.ZZ(exponent))));
+      }
+      return EvalEngine.get().evaluate(sum);
     }
 
     @Override
@@ -3898,7 +4162,7 @@ public class Algebra {
    * @param engine the evaluation engine used for simplification
    * @return the expression with all integer coefficients reduced modulo {@code modulus}
    */
-  private static IExpr expandModReduce(IExpr expr, IInteger modulus, EvalEngine engine) {
+  public static IExpr expandModReduce(IExpr expr, IInteger modulus, EvalEngine engine) {
     VariablesSet varSet = new VariablesSet(expr);
     IAST varList = varSet.getVarList();
     if (varList.argSize() > 0) {

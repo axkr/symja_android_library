@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -437,6 +438,43 @@ public class Assumptions extends AbstractAssumptions {
     return assumptions;
   }
 
+  /**
+   * Add a chained relation with mixed operators.
+   *
+   * <p>
+   * An <code>Inequality(e1, op1, e2, op2, e3, ...)</code> expression is equivalent to the
+   * conjunction <code>op1(e1,e2) && op2(e2,e3) && ...</code> and is added as such. A chain with a
+   * single operator like <code>-1 &lt; b &lt; 1</code> is parsed as <code>Less(-1, b, 1)</code> and
+   * doesn't reach this method, but a chain with mixed operators like <code>2 &lt; x &lt;= 3</code>
+   * does.
+   *
+   * @param inequality an <code>Inequality(e1, op1, e2, op2, e3, ...)</code> expression
+   * @param intersection if <code>true</code> the assumptions are added as intersection to the
+   *        existing interval set, if <code>false</code> as union
+   * @param assumptions
+   * @return <code>true</code> if the assumption was added successfully, otherwise
+   *         <code>false</code>
+   */
+  private static boolean addInequality(IAST inequality, boolean intersection,
+      Assumptions assumptions) {
+    final int size = inequality.size();
+    if (size < 4 || (size & 0x01) == 1) {
+      // an Inequality() always has an odd number of arguments, i.e. an even size
+      return false;
+    }
+    for (int i = 2; i < size; i += 2) {
+      final IExpr operator = inequality.get(i);
+      if (!operator.isBuiltInSymbol()) {
+        return false;
+      }
+      IAST binary = F.binaryAST2(operator, inequality.get(i - 1), inequality.get(i + 1));
+      if (!addSingleRelation(binary, intersection, assumptions)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private static boolean addSingleRelation(IAST temp, boolean intersection,
       Assumptions assumptions) {
     if (temp.isAST(S.Element, 3)) {
@@ -467,6 +505,14 @@ public class Assumptions extends AbstractAssumptions {
       if (!addUnequal(temp, assumptions)) {
         return false;
       }
+    } else if (temp.isAST(S.Inequality)) {
+      return addInequality(temp, intersection, assumptions);
+    } else if (temp.isSameHeadSizeGE(S.And, 2) || temp.isSameHeadSizeGE(S.List, 2)) {
+      // a nested conjunction, e.g. Assuming(x>=0 && y<0, ...) assigns the
+      // {And(x>=0, y<0)} list to $Assumptions
+      return addList(temp, true, assumptions) != null;
+    } else if (temp.isSameHeadSizeGE(S.Or, 2)) {
+      return addList(temp, false, assumptions) != null;
     }
     return true;
   }
@@ -538,7 +584,45 @@ public class Assumptions extends AbstractAssumptions {
       assumptions.realRelationsMap.put(key, relations);
       return true;
     }
-    return false;
+
+    // Neither side is a number, so there is no symbol the relation could be attached to.
+    // Normalize the relation to its difference instead: a>b is recorded as a-b>0.
+    IExpr difference =
+        engine.evaluate(F.Subtract(relationalAST.arg1(), relationalAST.arg2()));
+    if (difference.isNumericFunction(false) || difference.isZero()) {
+      return false;
+    }
+    // Record the negated difference too, so that a>b and b<a both answer a lookup of a-b
+    addDifference(difference, F.C0, operator, true, intersection, assumptions);
+    addDifference(engine.evaluate(F.Negate(difference)), F.C0, operator, false, intersection,
+        assumptions);
+    return true;
+  }
+
+  /**
+   * Record a relation of the <code>key</code> expression against <code>num</code>.
+   *
+   * @param key the expression the relation is attached to
+   * @param num the bound
+   * @param operator the relational operator
+   * @param direct if <code>true</code> apply the operator as is, if <code>false</code> apply the
+   *        mirrored operator, i.e. record <code>num operator key</code>
+   * @param intersection if <code>true</code> intersect with the existing interval set, otherwise
+   *        build the union
+   * @param assumptions
+   */
+  private static void addDifference(IExpr key, IExpr num, RelationalOperator operator,
+      boolean direct, boolean intersection, Assumptions assumptions) {
+    RealRelations relations = assumptions.realRelationsMap.get(key);
+    if (relations == null) {
+      relations = new RealRelations();
+    }
+    if (direct) {
+      operator.applyDirect(relations, num, intersection);
+    } else {
+      operator.applySwapped(relations, num, intersection);
+    }
+    assumptions.realRelationsMap.put(key, relations);
   }
 
   private static boolean addUnequal(IAST equalsAST, Assumptions assumptions) {
@@ -611,6 +695,15 @@ public class Assumptions extends AbstractAssumptions {
    */
   public static IAssumptions getInstance(IExpr expr, EvalEngine engine) {
     if (expr.isAST()) {
+      // Refine() and Assuming() hold their arguments, so the assumption can still be unevaluated
+      // here. Evaluate it first, so that the recorded keys and interval bounds are in the same
+      // canonical form as the expressions they are compared against later on. Without this the
+      // bound of -Pi/2 < Re(x) < Pi/2 would be recorded as the unevaluated (-1)*1/2*Pi and no
+      // lookup with the canonical -Pi/2 would match it.
+      IExpr evaled = engine.evaluate(expr);
+      if (evaled.isAST()) {
+        expr = evaled;
+      }
       Assumptions assumptions = new Assumptions();
       // assumptions.$assumptions = expr;
       if (expr.isAnd() || expr.isSameHeadSizeGE(S.List, 2)) {
@@ -674,6 +767,10 @@ public class Assumptions extends AbstractAssumptions {
           if (addUnequal(ast, this)) {
             return this;
           }
+        } else if (ast.isAST(S.Inequality)) {
+          if (addInequality(ast, true, this)) {
+            return this;
+          }
         } else if (ast.isSameHeadSizeGE(S.And, 2) || ast.isSameHeadSizeGE(S.List, 2)) {
           return addList(ast, true, this);
         } else if (ast.isSameHeadSizeGE(S.Or, 2)) {
@@ -722,6 +819,39 @@ public class Assumptions extends AbstractAssumptions {
       return relations.getInterval();
     }
     return F.NIL;
+  }
+
+  @Override
+  public IAST relationalKeys() {
+    IASTAppendable result = F.ListAlloc(realRelationsMap.size());
+    for (IExpr key : realRelationsMap.keySet()) {
+      result.append(key);
+    }
+    return result;
+  }
+
+  @Override
+  public IAST domainElements(ISymbol domain) {
+    IASTAppendable result = F.ListAlloc(elementsMap.size());
+    for (Map.Entry<IExpr, ISymbol> entry : elementsMap.entrySet()) {
+      if (domain.equals(entry.getValue())) {
+        result.append(entry.getKey());
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public IAST zeroPolynomials() {
+    IASTAppendable result = F.ListAlloc(realRelationsMap.size());
+    for (Map.Entry<IExpr, RealRelations> entry : realRelationsMap.entrySet()) {
+      IExpr point = IntervalDataSym.toSinglePoint(entry.getValue().getInterval());
+      if (point.isPresent()) {
+        // key == point, so key-point is forced to vanish
+        result.append(point.isZero() ? entry.getKey() : F.Subtract(entry.getKey(), point));
+      }
+    }
+    return result;
   }
 
   @Override
@@ -831,6 +961,11 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isNonNegativeReal(IExpr expr) {
     return isDomain(expr, S.NonNegativeReals);
+  }
+
+  @Override
+  public boolean isNonPositive(IExpr expr) {
+    return isLessEqual(expr, F.C0);
   }
 
   @Override

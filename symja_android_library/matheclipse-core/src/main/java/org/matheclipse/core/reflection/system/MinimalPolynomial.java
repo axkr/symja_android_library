@@ -54,6 +54,16 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
 
 
   private IExpr computeMinimalPolynomial(IExpr s, ISymbol x, EvalEngine engine) {
+    return computeMinimalPolynomial(s, x, engine, true);
+  }
+
+  /**
+   * @param allowFunctionExpand if <code>true</code> a symbolic constant which
+   *        {@link #extractRadicals(IExpr, IASTAppendable, IASTAppendable, EvalEngine, Map, int[])}
+   *        cannot decompose is rewritten with <code>FunctionExpand</code> and retried once
+   */
+  private IExpr computeMinimalPolynomial(IExpr s, ISymbol x, EvalEngine engine,
+      boolean allowFunctionExpand) {
     if (s.isRational()) {
       return normalizePolynomial(F.Subtract(x, s), x, engine);
     }
@@ -66,6 +76,18 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
     IExpr modifiedS = extractRadicals(s, equations, variables, engine, radicalCache, counter);
 
     if (variables.argSize() == 0) {
+      // no radical could be extracted. Symbolic constants like GoldenRatio are opaque here and
+      // would degenerate to the linear polynomial x-GoldenRatio, so rewrite them into their radical
+      // form and retry once.
+      if (allowFunctionExpand && !modifiedS.isNumber()) {
+        IExpr expanded = engine.evaluate(F.FunctionExpand(s));
+        if (!expanded.equals(s)) {
+          IExpr poly = computeMinimalPolynomial(expanded, x, engine, false);
+          if (poly.isPresent()) {
+            return poly;
+          }
+        }
+      }
       return normalizePolynomial(F.Subtract(x, modifiedS), x, engine);
     }
 

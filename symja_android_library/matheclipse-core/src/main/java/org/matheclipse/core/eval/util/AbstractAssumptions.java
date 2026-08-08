@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
@@ -14,6 +15,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -22,6 +24,84 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class AbstractAssumptions implements IAssumptions {
+
+  /** Maximum number of variables for which {@link #quadraticFormSign(IAST)} is attempted. */
+  private static final int MAX_QUADRATIC_FORM_VARIABLES = 4;
+
+  /** Maximum number of summands for which {@link #quadraticFormSign(IAST)} is attempted. */
+  private static final int MAX_QUADRATIC_FORM_TERMS = 12;
+
+  /**
+   * Test if <code>expr</code> contains a squared factor, used as a cheap pre-filter before the
+   * quadratic form of a {@link S#Plus} is built.
+   */
+  private static boolean isSquared(IExpr expr) {
+    if (expr.isPower()) {
+      return expr.exponent().isNumEqualInteger(F.C2);
+    }
+    if (expr.isTimes()) {
+      return ((IAST) expr).exists(x -> x.isPower() && x.exponent().isNumEqualInteger(F.C2));
+    }
+    return false;
+  }
+
+  /**
+   * Determine the sign of a real quadratic polynomial.
+   *
+   * <p>
+   * A quadratic polynomial <code>q(x) = x^T*Q*x + c^T*x + d</code> can be written as
+   * <code>q(x) == {x,1}^T*M*{x,1}</code> for the bordered matrix
+   * <code>M = {{Q, c/2}, {c^T/2, d}}</code>. It is therefore greater equal <code>0</code> for all
+   * real <code>x</code> exactly if <code>M</code> is positive semidefinite and greater
+   * <code>0</code> for all real <code>x</code> exactly if <code>M</code> is positive definite.
+   *
+   * <p>
+   * <code>Q</code> is read off the second derivatives, <code>c</code> off the first derivatives at
+   * the origin and <code>d</code> is the value at the origin. If any of them isn't a number the
+   * expression isn't a polynomial of total degree <code>2</code> and nothing is determined.
+   *
+   * @param ast a {@link S#Plus} expression
+   * @return <code>1</code> if <code>ast</code> is positive for all real values of its variables,
+   *         <code>0</code> if it is non negative for all of them, <code>-1</code> if nothing could
+   *         be determined
+   */
+  private static int quadraticFormSign(IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    if (engine.getAssumptions() == null) {
+      // the variables can only become known to be real through the assumptions
+      return QuadraticForm.UNDETERMINED;
+    }
+    if (ast.argSize() > MAX_QUADRATIC_FORM_TERMS || !ast.exists(x -> isSquared(x))) {
+      return QuadraticForm.UNDETERMINED;
+    }
+    IAST variables = new VariablesSet(ast).getVarList();
+    if (variables.argSize() < 1 || variables.argSize() > MAX_QUADRATIC_FORM_VARIABLES) {
+      return QuadraticForm.UNDETERMINED;
+    }
+    for (int i = 1; i < variables.size(); i++) {
+      if (!variables.get(i).isRealResult()) {
+        return QuadraticForm.UNDETERMINED;
+      }
+    }
+    QuadraticForm form = QuadraticForm.of(ast, variables, engine);
+    return form == null ? QuadraticForm.UNDETERMINED : form.sign(engine);
+  }
+
+  /**
+   * Determine the sign of <code>ast</code> over the region which the assumptions describe.
+   *
+   * @param ast a {@link S#Plus} expression
+   * @return an {@link S#IntervalData} enclosure or {@link F#NIL}
+   */
+  private static IAST assumedRange(IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    if (engine.getAssumptions() == null //
+        || ast.argSize() > MAX_QUADRATIC_FORM_TERMS //
+        || !ast.exists(x -> isSquared(x))) {
+      return F.NIL;
+    }
+    return AssumedRegion.rangeOf(ast, engine);
+  }
 
   /**
    * TODO implement algebraic number conditions.
@@ -184,8 +264,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return expr.equals(number);
     }
     if (expr.isRealConstant()) {
-      return F.isFuzzyEquals(((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal(),
-          number.evalf(), Config.MACHINE_EPSILON);
+      double numberDouble = number.evalfNaN();
+      return !Double.isNaN(numberDouble)
+          && F.isFuzzyEquals(((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal(),
+              numberDouble, Config.MACHINE_EPSILON);
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -247,7 +329,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number.evalf();
+      double numberDouble = number.evalfNaN();
+      return !Double.isNaN(numberDouble)
+          && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= numberDouble;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -270,7 +354,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number.evalf();
+      double numberDouble = number.evalfNaN();
+      return !Double.isNaN(numberDouble)
+          && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > numberDouble;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -347,7 +433,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() <= number.evalf();
+      double numberDouble = number.evalfNaN();
+      return !Double.isNaN(numberDouble)
+          && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() <= numberDouble;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -370,7 +458,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < number.evalf();
+      double numberDouble = number.evalfNaN();
+      return !Double.isNaN(numberDouble)
+          && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < numberDouble;
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -438,6 +528,50 @@ public abstract class AbstractAssumptions implements IAssumptions {
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isNonNegative(expr)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Test if <code>expr</code> is assumed to be a real value in the open interval
+   * <code>(-1, 1)</code>.
+   *
+   * <p>
+   * The identities <code>(a^b)^c == a^(b*c)</code> and <code>Log(a^b) == b*Log(a)</code> hold if
+   * <code>-Pi &lt; Im(b*Log(a)) &lt;= Pi</code>. For a real <code>b</code> that imaginary part is
+   * <code>b*Arg(a)</code> with <code>Arg(a)</code> in <code>(-Pi, Pi]</code>, so
+   * <code>-1 &lt; b &lt; 1</code> is sufficient for every complex <code>a</code>.
+   *
+   * @param expr
+   * @return <code>true</code> if <code>expr</code> is assumed to be greater than <code>-1</code>
+   *         and less than <code>1</code>. Return <code>false</code> in all other cases.
+   */
+  public static boolean assumeAbsLessThanOne(final IExpr expr) {
+    return assumeGreaterThan(expr, F.CN1) && assumeLessThan(expr, F.C1);
+  }
+
+  /**
+   * Test if <code>expr</code> is assumed to be a non positive number.
+   *
+   * @param expr
+   * @return <code>true</code> if <code>expr</code> is assumed to be a non positive number. Return
+   *         <code>false</code> in all other cases.
+   */
+  public static boolean assumeNonPositive(final IExpr expr) {
+    if (expr.isReal()) {
+      return !((IReal) expr).isPositive();
+    }
+    if (expr.isNumber()) {
+      return false;
+    }
+    if (expr.isRealConstant()) {
+      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() <= 0.0;
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      if (assumptions.isNonPositive(expr)) {
         return true;
       }
     }
@@ -701,6 +835,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
       }
       return false;
     }
+    IAssumptions wholeExpr = EvalEngine.get().getAssumptions();
+    if (wholeExpr != null && wholeExpr.isNegative(ast)) {
+      // the complete expression is the key of a relational assumption, e.g. the assumption
+      // a>b is recorded for the key a-b
+      return true;
+    }
 
     if (ast.isBuiltInFunction()) {
       IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
@@ -714,14 +854,27 @@ public abstract class AbstractAssumptions implements IAssumptions {
           }
         }
         if (ast.isPlus()) {
+          // a sum is negative if every summand is non positive and at least one of them is
+          // strictly negative, e.g. y-x is negative for the assumptions x>=0 && y<0
+          boolean strict = false;
+          boolean summandsDecided = true;
           for (int i = 1; i < size; i++) {
             IExpr x = ast.get(i);
             if (x.isNegativeResult() || assumeNegative(x)) {
+              strict = true;
               continue;
             }
-            return false;
+            if (x.isNonPositiveResult() || assumeNonPositive(x)) {
+              continue;
+            }
+            summandsDecided = false;
+            break;
           }
-          return true;
+          if (summandsDecided && strict) {
+            return true;
+          }
+          IAST negativeRange = assumedRange(ast);
+          return negativeRange.isPresent() && IntervalDataSym.isNegativeResult(negativeRange);
         }
         if (ast.isTimes()) {
           boolean flag = false;
@@ -771,6 +924,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
       }
       return false;
     }
+    IAssumptions wholeExpr = EvalEngine.get().getAssumptions();
+    if (wholeExpr != null && wholeExpr.isNonNegative(ast)) {
+      // the complete expression is the key of a relational assumption, e.g. the assumption
+      // a>b is recorded for the key a-b
+      return true;
+    }
     IExpr head = ast.head();
     if (head.isSymbol()) {
       ISymbol symbol = (ISymbol) head;
@@ -785,14 +944,25 @@ public abstract class AbstractAssumptions implements IAssumptions {
         }
       }
       if (ast.isPlus()) {
+        boolean summandsDecided = true;
         for (int i = 1; i < size; i++) {
           IExpr x = ast.get(i);
           if (x.isNonNegativeResult() || assumeNonNegative(x)) {
             continue;
           }
-          return false;
+          summandsDecided = false;
+          break;
         }
-        return true;
+        if (summandsDecided) {
+          return true;
+        }
+        // e.g. a^2-a*b+b^2 is non negative for all real a and b
+        if (quadraticFormSign(ast) >= QuadraticForm.POSITIVE_SEMIDEFINITE) {
+          return true;
+        }
+        IAST nonNegativeRange = assumedRange(ast);
+        return nonNegativeRange.isPresent()
+            && IntervalDataSym.isNonNegativeResult(nonNegativeRange);
       }
       if (ast.isTimes()) {
         boolean flag = true;
@@ -836,6 +1006,84 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
+  /**
+   * Test if the <code>ast</code> is assumed to have a value less equal <code>0</code>.
+   *
+   * <p>
+   * This is the mirror image of {@link #isNonNegativeResult(IAST)}: a {@link S#Plus} is non
+   * positive if all summands are non positive and a {@link S#Times} is non positive if the sign of
+   * every factor is known and an odd number of them is non positive.
+   *
+   * @param ast
+   * @return <code>true</code> if <code>ast</code> is assumed to be non positive. Return
+   *         <code>false</code> in all other cases.
+   */
+  public static boolean isNonPositiveResult(IAST ast) {
+    // evalReal "chops" imaginary parts to 0
+    INumber e = ast.evalNumber();
+    if (e != null) {
+      if (e.isReal()) {
+        return !((IReal) e).isPositive();
+      }
+      return false;
+    }
+    IAssumptions wholeExpr = EvalEngine.get().getAssumptions();
+    if (wholeExpr != null && wholeExpr.isNonPositive(ast)) {
+      // the complete expression is the key of a relational assumption, e.g. the assumption
+      // a>b is recorded for the key a-b
+      return true;
+    }
+    if (ast.isPlus()) {
+      boolean summandsDecided = true;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr x = ast.get(i);
+        if (x.isNonPositiveResult() || assumeNonPositive(x)) {
+          continue;
+        }
+        summandsDecided = false;
+        break;
+      }
+      if (summandsDecided) {
+        return true;
+      }
+      IAST range = assumedRange(ast);
+      return range.isPresent() && IntervalDataSym.isNonPositiveResult(range);
+    }
+    if (ast.isTimes()) {
+      // parity of the factors which are known to be less equal 0
+      boolean nonNegative = true;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr x = ast.get(i);
+        if (x.isNonNegativeResult() || assumeNonNegative(x)) {
+          continue;
+        }
+        if (x.isNonPositiveResult() || assumeNonPositive(x)) {
+          nonNegative = !nonNegative;
+          continue;
+        }
+        return false;
+      }
+      return !nonNegative;
+    }
+    if (ast.isPower()) {
+      IExpr base = ast.base();
+      IExpr exponent = ast.exponent();
+      if (exponent.isInteger() && ((IInteger) exponent).isOdd()) {
+        if (base.isNonPositiveResult() || assumeNonPositive(base)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    IExpr value = assumeFunctionValue(ast, false);
+    if (value.isIntervalData()) {
+      if (IntervalDataSym.isNonPositiveResult((IAST) value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean isPositiveResult(IAST ast) {
     INumber e = ast.evalNumber();
     // IReal e = ast.evalReal();
@@ -844,6 +1092,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
         return e.isPositive();
       }
       return false;
+    }
+    IAssumptions wholeExpr = EvalEngine.get().getAssumptions();
+    if (wholeExpr != null && wholeExpr.isPositive(ast)) {
+      // the complete expression is the key of a relational assumption, e.g. the assumption
+      // a>b is recorded for the key a-b
+      return true;
     }
     IExpr head = ast.head();
     if (head.isSymbol()) {
@@ -860,14 +1114,32 @@ public abstract class AbstractAssumptions implements IAssumptions {
         }
       }
       if (ast.isPlus()) {
+        // a sum is positive if every summand is non negative and at least one of them is
+        // strictly positive, e.g. x-y is positive for the assumptions x>=0 && y<0
+        boolean strict = false;
+        boolean summandsDecided = true;
         for (int i = 1; i < size; i++) {
           IExpr x = ast.get(i);
           if (x.isPositiveResult() || assumePositive(x)) {
+            strict = true;
             continue;
           }
-          return false;
+          if (x.isNonNegativeResult() || assumeNonNegative(x)) {
+            continue;
+          }
+          summandsDecided = false;
+          break;
         }
-        return true;
+        if (summandsDecided && strict) {
+          return true;
+        }
+        // the summands alone don't decide it, e.g. x^2-x*y+y^2+1 has the indefinite summand
+        // -x*y although the sum is positive for all real x and y
+        if (quadraticFormSign(ast) == QuadraticForm.POSITIVE_DEFINITE) {
+          return true;
+        }
+        IAST positiveRange = assumedRange(ast);
+        return positiveRange.isPresent() && IntervalDataSym.isPositiveResult(positiveRange);
       }
       if (ast.isTimes()) {
         boolean flag = true;
@@ -942,6 +1214,21 @@ public abstract class AbstractAssumptions implements IAssumptions {
   @Override
   public IAST intervalData(IExpr expr) {
     return F.NIL;
+  }
+
+  @Override
+  public IAST domainElements(ISymbol domain) {
+    return F.CEmptyList;
+  }
+
+  @Override
+  public IAST zeroPolynomials() {
+    return F.CEmptyList;
+  }
+
+  @Override
+  public IAST relationalKeys() {
+    return F.CEmptyList;
   }
 
   @Override
@@ -1022,6 +1309,11 @@ public abstract class AbstractAssumptions implements IAssumptions {
 
   @Override
   public boolean isNonNegativeReal(IExpr expr) {
+    return false;
+  }
+
+  @Override
+  public boolean isNonPositive(IExpr expr) {
     return false;
   }
 

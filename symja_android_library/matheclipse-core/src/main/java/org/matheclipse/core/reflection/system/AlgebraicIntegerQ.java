@@ -43,14 +43,36 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
     }
 
     // If it's not a numeric function (e.g., a standalone variable or symbol),
-    // we cannot determine if it's an algebraic integer, so return unevaluated.
+    // it cannot be an algebraic integer.
     if (!arg1.isNumericFunction()) {
-      return F.NIL;
+      return S.False;
     }
 
+    IExpr result = minimalPolynomialTest(arg1, engine);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    // Symbolic constants like GoldenRatio are opaque to MinimalPolynomial. Rewrite them into their
+    // radical form and retry once.
+    IExpr expanded = engine.evaluate(F.FunctionExpand(arg1));
+    if (!expanded.equals(arg1)) {
+      return minimalPolynomialTest(expanded, engine);
+    }
+
+    return F.NIL;
+  }
+
+  /**
+   * Determine from the minimal polynomial of <code>expr</code> if <code>expr</code> is an algebraic
+   * integer.
+   *
+   * @return {@link S#True} or {@link S#False} if it could be decided, {@link F#NIL} otherwise
+   */
+  private IExpr minimalPolynomialTest(IExpr expr, EvalEngine engine) {
     // Compute the minimal polynomial of the expression
     ISymbol x = F.$s("$mpVar"); // internal dummy variable
-    IExpr poly = engine.evaluate(F.binaryAST2(S.MinimalPolynomial, arg1, x));
+    IExpr poly = engine.evaluate(F.binaryAST2(S.MinimalPolynomial, expr, x));
 
     // If the MinimalPolynomial cannot be determined
     if (poly.isAST(S.MinimalPolynomial) || poly.isNIL()) {
@@ -70,7 +92,7 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
         if (!list.get(i).isRational()) {
           // If we know the original expression is a strict transcendental, we confidently return
           // False.
-          if (isKnownTranscendental(arg1)) {
+          if (isKnownTranscendental(expr)) {
             return S.False;
           }
           return F.NIL;

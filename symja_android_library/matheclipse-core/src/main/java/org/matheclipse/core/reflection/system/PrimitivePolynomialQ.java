@@ -22,13 +22,14 @@ public class PrimitivePolynomialQ extends AbstractFunctionEvaluator {
     IExpr poly = ast.arg1();
     IExpr pArg = ast.arg2();
 
-    // The modulus p must be a (positive) prime integer.
+    // The modulus p must be a (positive) prime integer. Primitivity isn't defined for anything
+    // else, so those stay unevaluated rather than answering False to a question that wasn't asked.
     if (!pArg.isInteger()) {
-      return S.False;
+      return F.NIL;
     }
     IInteger p = (IInteger) pArg;
     if (!p.isProbablePrime()) {
-      return S.False;
+      return F.NIL;
     }
     if (p.isNegative()) {
       // switch to positive modulus if a negative one is given
@@ -112,6 +113,18 @@ public class PrimitivePolynomialQ extends AbstractFunctionEvaluator {
       return S.True;
     }
 
+    // The order of x has to be m exactly, which takes both of the following checks: x^m == 1
+    // establishes that x has a multiplicative order at all - the root of a polynomial like `x` is
+    // 0, which generates nothing - and the loop below rules out an order which is a proper
+    // divisor of m.
+    IExpr xPowM = modPolyPower(var, mBig, monicPoly, var, p, engine);
+    if (!xPowM.isPresent()) {
+      return F.NIL;
+    }
+    if (!xPowM.isOne()) {
+      return S.False;
+    }
+
     IInteger m = F.ZZ(mBig);
     IExpr factored = engine.evaluate(F.FactorInteger(m));
     if (!factored.isList()) {
@@ -129,6 +142,11 @@ public class PrimitivePolynomialQ extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       IInteger q = (IInteger) first;
+      if (!q.isProbablePrime()) {
+        // FactorInteger(1) reports the trivial factor {1, 1}: 1 is not a prime divisor of m, and
+        // dividing by it would re-test x^m, which the check above already settled.
+        continue;
+      }
       BigInteger eBig = mBig.divide(q.toBigNumerator());
       IExpr xPow = modPolyPower(var, eBig, monicPoly, var, p, engine);
       if (!xPow.isPresent()) {

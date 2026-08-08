@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISymbol;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public interface IAssumptions {
@@ -39,6 +40,34 @@ public interface IAssumptions {
   public IAssumptions copy();
 
   public IAST intervalData(IExpr x);
+
+  /**
+   * Get the expressions which are assumed to be an element of the given <code>domain</code>.
+   *
+   * @param domain one of the domains for which {@link S#isDomain(ISymbol)} is <code>true</code>
+   * @return an empty {@link S#List} if no expression is assumed to be in the <code>domain</code>
+   */
+  public IAST domainElements(ISymbol domain);
+
+  /**
+   * Get the expressions which are assumed to be equal <code>0</code>.
+   *
+   * <p>
+   * An assumption which pins an expression to a single value, e.g. <code>a+b == 0</code> or
+   * <code>x == 5</code>, is returned as the expression <code>a+b</code> resp. <code>x-5</code>
+   * which the assumption forces to vanish.
+   *
+   * @return an empty {@link S#List} if no expression is assumed to be <code>0</code>
+   */
+  public IAST zeroPolynomials();
+
+  /**
+   * Get the expressions for which a relation against a bound is assumed, i.e. the keys for which
+   * {@link #intervalData(IExpr)} returns an interval.
+   *
+   * @return an empty {@link S#List} if no relational assumption was made
+   */
+  public IAST relationalKeys();
 
   // public IExpr get$Assumptions();
 
@@ -201,6 +230,15 @@ public interface IAssumptions {
    * @return
    */
   public boolean isNonNegativeReal(IExpr expr);
+
+  /**
+   * Gives <code>true</code>, if the expression is assumed to be a non positive value, <code>false
+   * </code> in all other cases.
+   *
+   * @param expr
+   * @return
+   */
+  public boolean isNonPositive(IExpr expr);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be a positive value, <code>false
