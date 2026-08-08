@@ -2335,6 +2335,37 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return true;
   }
 
+  /**
+   * Get the leading (lowest order) non-zero term of this series, i.e.
+   * <code>coefficient * (x - x0) ^ p</code> for the smallest exponent <code>p</code> with a
+   * non-zero coefficient.
+   *
+   * <p>
+   * For the expansion points <code>Infinity</code> and <code>-Infinity</code> the exponents count
+   * the powers of <code>1 / x</code>, therefore the resulting term is
+   * <code>coefficient * x ^ (-p)</code> in that case.
+   *
+   * @return {@link F#NIL} if all computed coefficients of this series are zero
+   */
+  public IExpr leadingTerm() {
+    int n = minExponent;
+    while (n < exponentBound && coefficient(n).isZero()) {
+      n++;
+    }
+    if (n >= exponentBound) {
+      return F.NIL;
+    }
+    IExpr coefficient = coefficient(n);
+    IExpr power = (puiseuxDenominator == 1) ? F.ZZ(n) : F.QQ(n, puiseuxDenominator).normalize();
+    EvalEngine engine = EvalEngine.get();
+    if (expansionPoint.isInfinity() || expansionPoint.isNegativeInfinity()) {
+      return engine.evaluate(F.Times(coefficient, F.Power(expansionVariable, power.negate())));
+    }
+    IExpr variablePart = expansionPoint.isZero() ? expansionVariable
+        : F.Subtract(expansionVariable, expansionPoint);
+    return engine.evaluate(F.Times(coefficient, F.Power(variablePart, power)));
+  }
+
   public int minExponent() {
     return minExponent;
   }
@@ -2511,6 +2542,19 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
     if (actualNMin >= truncateOrder) {
       if (p.isPositive()) {
+        // all known coefficients vanish - the series is the pure order term O(x^t) with
+        // t == truncateOrder/puiseuxDenominator, and (O(x^t))^p == O(x^(t*p))
+        int numer = p.numerator().toIntDefault();
+        int denom = p.denominator().toIntDefault();
+        if (F.isPresent(numer) && F.isPresent(denom)) {
+          long scaledTruncate = (long) truncateOrder * numer;
+          long scaledDenominator = (long) puiseuxDenominator * denom;
+          if (Math.abs(scaledTruncate) <= Integer.MAX_VALUE
+              && scaledDenominator <= Integer.MAX_VALUE) {
+            return new ASTSeriesData(expansionVariable, expansionPoint, (int) scaledTruncate,
+                (int) scaledTruncate, (int) scaledDenominator).reducePuiseuxDenominator();
+          }
+        }
         return new ASTSeriesData(expansionVariable, expansionPoint, 0, truncateOrder,
             puiseuxDenominator);
       } else {
@@ -2568,6 +2612,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       result.setCoeff(newIndex, engine.evaluate(F.Expand(F.Times(cMinPower, c[k]))));
     }
 
+    if (b > 1) {
+      // f(x)^(a/b) stays on the integer lattice whenever the leading exponent is a multiple of b -
+      // e.g. Sqrt(x) at x==1 - so drop the denominator which isn't needed
+      return result.reducePuiseuxDenominator();
+    }
     return result;
   }
 
@@ -2582,6 +2631,70 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   public int puiseuxDenominator() {
     return puiseuxDenominator;
+  }
+
+  /**
+   * Reduce a Puiseux denominator which is finer than the exponent lattice actually occupied by this
+   * series.
+   *
+   * <p>
+   * Operations like <code>Power</code> multiply the denominator <code>d</code> by the denominator of
+   * the exponent even if the result stays on a coarser lattice - e.g. <code>Sqrt(x)</code> expanded
+   * at <code>x==1</code> is analytic and yields <code>SeriesData(x,1,{1,0,1/2,0,-1/8,0,1/16},0,8,2)
+   * </code>, a Taylor series padded with zeros. Dividing all exponent indices and the denominator by
+   * their greatest common divisor <code>g</code> restores the canonical form
+   * <code>SeriesData(x,1,{1,1/2,-1/8,1/16},0,4,1)</code>.
+   *
+   * <p>
+   * The truncation order is rounded up, because <code>O(x^(t/d))</code> on the reduced lattice
+   * becomes the next representable exponent <code>O(x^ceiling(t/g)/(d/g))</code>.
+   *
+   * @return a series with the smallest possible Puiseux denominator, or <code>this</code> if the
+   *         denominator is already minimal
+   */
+  public ASTSeriesData reducePuiseuxDenominator() {
+    if (puiseuxDenominator <= 1) {
+      return this;
+    }
+    int gcd = puiseuxDenominator;
+    int firstNonZero = Config.INVALID_INT;
+    for (int i = minExponent; i < truncateOrder; i++) {
+      IExpr coefficient = coefficient(i);
+      if (coefficient != null && !coefficient.isZero()) {
+        if (F.isNotPresent(firstNonZero)) {
+          firstNonZero = i;
+        }
+        // gcd(g, 0) == g, so an exponent index of 0 imposes no restriction
+        gcd = ArithmeticUtils.gcd(gcd, Math.abs(i));
+        if (gcd == 1) {
+          return this;
+        }
+      }
+    }
+    if (F.isNotPresent(firstNonZero)) {
+      // pure O(...) term: only the two lattice bounds have to stay representable
+      gcd = ArithmeticUtils.gcd(gcd, Math.abs(minExponent));
+      gcd = ArithmeticUtils.gcd(gcd, Math.abs(truncateOrder));
+      if (gcd <= 1) {
+        return this;
+      }
+      return new ASTSeriesData(expansionVariable, expansionPoint, minExponent / gcd,
+          truncateOrder / gcd, puiseuxDenominator / gcd);
+    }
+    if (gcd <= 1) {
+      return this;
+    }
+    // ceiling division, also correct for the negative indices of a Laurent series
+    final int newTruncate = -Math.floorDiv(-truncateOrder, gcd);
+    ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint,
+        firstNonZero / gcd, newTruncate, puiseuxDenominator / gcd);
+    for (int i = firstNonZero; i < truncateOrder; i += gcd) {
+      IExpr coefficient = coefficient(i);
+      if (coefficient != null && !coefficient.isZero()) {
+        result.setCoeff(i / gcd, coefficient);
+      }
+    }
+    return result;
   }
 
   @Override
@@ -2646,9 +2759,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       ASTSeriesData gPower = (ASTSeriesData) gExpr;
 
+      // h(x)^(1/k) has integer exponents again, but it may still be stored on a finer lattice -
+      // the coefficient of x^i sits at index i*denominator, which is i*k only if nothing was
+      // reduced
+      final int gDenominator = gPower.puiseuxDenominator();
       gSeries = new ASTSeriesData(expansionVariable, F.C0, 1, gTruncate, 1);
       for (int i = 1; i < gTruncate; i++) {
-        IExpr c = gPower.coefficient(i * k);
+        IExpr c = gPower.coefficient(i * gDenominator);
         gSeries.setCoeff(i, c == null ? F.C0 : c);
       }
     }

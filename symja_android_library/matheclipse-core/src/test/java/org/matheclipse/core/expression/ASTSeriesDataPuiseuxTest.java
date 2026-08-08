@@ -156,10 +156,14 @@ class ASTSeriesDataPuiseuxTest {
     IExpr result = s.powerSeries(F.QQ(1, 2), engine());
     assertInstanceOf(ASTSeriesData.class, result);
     ASTSeriesData ps = (ASTSeriesData) result;
-    // denominator should be 1*2 = 2
-    assertEquals(2, ps.puiseuxDenominator());
+    // (1+x)^(1/2) is analytic - only even indices of the 1/2 lattice are occupied, so the
+    // denominator reduces back to 1 instead of staying at 1*2 = 2
+    assertEquals(1, ps.puiseuxDenominator());
     // Leading coefficient (constant) should be 1
     assertEquals(F.C1, ps.coefficient(0));
+    // 1 + x/2 - x^2/8 + ... on the integer lattice
+    assertEquals(F.QQ(1, 2), ps.coefficient(1));
+    assertEquals(F.QQ(-1, 8), ps.coefficient(2));
   }
 
   @Test
