@@ -497,33 +497,43 @@ public class SimplifyUtil extends VisitorExpr {
   public static IExpr simplifyStep(IExpr arg1, IExpr defaultResult,
       Function<IExpr, Long> complexityFunction, long minCounter, boolean fullSimplify,
       boolean noApart, EvalEngine engine) {
-    // A cache of tryTransformations() results, shared by every pass of this loop, was measured and
-    // made no difference: hashing an IExpr walks its whole structure, which costs about what the
-    // recomputation saves. Reordering the pipeline so the expanding steps run last is the change
-    // worth making here, and it needs a benchmark that can actually resolve it — repeated runs of
-    // this corpus vary by a factor of three on an otherwise idle machine.
     long count;
     IExpr temp;
-    temp = arg1.accept(new SimplifyUtil(complexityFunction, fullSimplify, engine, noApart));
-    while (temp.isPresent()) {
-      // No early exit on an atom: leafCountSimplify() charges an integer by its number of digits,
-      // so an atom is not automatically the cheapest result. Returning one unconditionally made
-      // Integrate(Sin(x)^3,x) come back unevaluated, where the loop used to keep defaultResult
-      // because the atom weighed more.
-      count = complexityFunction.apply(temp);
-      if (count == minCounter) {
-        return temp;
+    // One cache for the whole fixpoint loop below. Every pass walks the expression again, and most
+    // of its subexpressions are the ones the previous pass already saw, so the pipeline is asked
+    // the same question over and over. Everything tryTransformations() depends on — the complexity
+    // function, the two mode flags, the engine's assumptions — is fixed for this call, so a hit is
+    // the same answer and not merely a similar one.
+    Map<IExpr, IExpr> transformationCache = new HashMap<>();
+    // Every entry into the simplifier passes through here, so this is where the reentrancy depth is
+    // maintained. Builtins that the pipeline calls as a rewrite candidate — Apart, PossibleZeroQ —
+    // consult it to skip their own internal simplification while we are already running.
+    engine.incSimplifyDepth();
+    try {
+      temp = arg1.accept(
+          new SimplifyUtil(complexityFunction, fullSimplify, engine, noApart, transformationCache));
+      while (temp.isPresent()) {
+        // No early exit on an atom: leafCountSimplify() charges an integer by its number of digits,
+        // so an atom is not automatically the cheapest result. Returning one unconditionally made
+        // Integrate(Sin(x)^3,x) come back unevaluated, where the loop used to keep defaultResult
+        // because the atom weighed more.
+        count = complexityFunction.apply(temp);
+        if (count == minCounter) {
+          return temp;
+        }
+        if (count < minCounter) {
+          minCounter = count;
+          defaultResult = temp;
+          temp = defaultResult.accept(new SimplifyUtil(complexityFunction, fullSimplify, engine,
+              noApart, transformationCache));
+        } else {
+          return defaultResult;
+        }
       }
-      if (count < minCounter) {
-        minCounter = count;
-        defaultResult = temp;
-        temp = defaultResult
-            .accept(new SimplifyUtil(complexityFunction, fullSimplify, engine, noApart));
-      } else {
-        return defaultResult;
-      }
+      return defaultResult;
+    } finally {
+      engine.decSimplifyDepth();
     }
-    return defaultResult;
   }
 
   /**
@@ -993,13 +1003,25 @@ public class SimplifyUtil extends VisitorExpr {
   /** The current evlaution engine */
   final EvalEngine fEngine;
 
+  /**
+   * Memoizes {@link #tryTransformations(IExpr)}, shared with the visitors of the other passes of
+   * the {@link #simplifyStep} fixpoint loop. See {@link #MAX_TRANSFORMATION_CACHE_SIZE}.
+   */
+  final Map<IExpr, IExpr> fTransformationCache;
+
   public SimplifyUtil(Function<IExpr, Long> complexityFunction, boolean fullSimplify,
       EvalEngine engine, boolean noApart) {
+    this(complexityFunction, fullSimplify, engine, noApart, new HashMap<>());
+  }
+
+  public SimplifyUtil(Function<IExpr, Long> complexityFunction, boolean fullSimplify,
+      EvalEngine engine, boolean noApart, Map<IExpr, IExpr> transformationCache) {
     super();
     fEngine = engine;
     fComplexityFunction = complexityFunction;
     fFullSimplify = fullSimplify;
     fNoApart = noApart;
+    fTransformationCache = transformationCache;
   }
 
   private IExpr eval(IExpr a) {
@@ -1719,7 +1741,13 @@ public class SimplifyUtil extends VisitorExpr {
       new Step("TrigToExp", CatchPolicy.VALIDATE, ctx -> {
         if (ctx.ast().hasTrigonometricFunction()) {
           IExpr temp = ctx.util.eval(F.TrigToExp(ctx.expr));
-          if (!ctx.result.checkLessPlusTimesPower(temp) && ctx.util.fFullSimplify) {
+          if (!ctx.result.checkLessPlusTimesPower(temp) && ctx.util.fFullSimplify
+              // Same bound the Factorization step below applies, and for the same reason: nested
+              // trigonometry explodes when it is rewritten to exponentials — TrigToExp turns the
+              // 28 leaves of 2*Cos(Pi/180*(60+3*Tan(Pi/180*(45-2*Sin(Pi/60))))) into 405 — and
+              // factoring something that big costs far more than the chance of it collapsing is
+              // worth. The cases this does pay for stay well inside the bound.
+              && ctx.util.fComplexityFunction.apply(temp) < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
             ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Factor(temp)));
           }
         }
@@ -1868,20 +1896,36 @@ public class SimplifyUtil extends VisitorExpr {
       }) //
   };
 
+  /**
+   * Upper bound on {@link #fTransformationCache}. The cache only has to hold the subexpressions of
+   * one expression, so this is a runaway guard, not a tuning knob.
+   */
+  private static final int MAX_TRANSFORMATION_CACHE_SIZE = 4096;
+
   private IExpr tryTransformations(IExpr expr) {
     if (!expr.isAST()) {
       return F.NIL;
     }
+    IExpr cached = fTransformationCache.get(expr);
+    if (cached != null) {
+      return cached;
+    }
+    IExpr result;
     try {
       RewriteContext ctx = new RewriteContext(this, expr);
       for (int i = 0; i < TRANSFORMATION_STEPS.length; i++) {
         TRANSFORMATION_STEPS[i].run(ctx);
       }
-      return ctx.result.result;
+      result = ctx.result.result;
     } catch (LimitException aele) {
-      //
+      // Not cached: whether a limit is hit depends on how deep the evaluation already was when we
+      // got here, so this says nothing about the expression itself.
+      return F.NIL;
     }
-    return F.NIL;
+    if (fTransformationCache.size() < MAX_TRANSFORMATION_CACHE_SIZE) {
+      fTransformationCache.put(expr, result);
+    }
+    return result;
   }
 
   @Override
