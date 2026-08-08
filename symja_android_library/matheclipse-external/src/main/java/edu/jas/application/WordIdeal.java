@@ -147,11 +147,8 @@ public class WordIdeal<C extends GcdRingElem<C>> implements Comparable<WordIdeal
      */
     public WordIdeal(GenWordPolynomialRing<C> ring, List<GenWordPolynomial<C>> list, boolean gb,
                     WordGroebnerBaseAbstract<C> bb, WordReduction<C> red) {
-        if (ring == null) {
-            throw new IllegalArgumentException("ring may not be null");
-        }
-        if (list == null) {
-            throw new IllegalArgumentException("list may not be null");
+        if (ring == null || list == null) {
+            throw new IllegalArgumentException("Neither ring nor list may be null");
         }
         this.ring = ring;
         this.list = list;
@@ -197,7 +194,7 @@ public class WordIdeal<C extends GcdRingElem<C>> implements Comparable<WordIdeal
      * @return ideal(0)
      */
     public WordIdeal<C> getZERO() {
-        List<GenWordPolynomial<C>> z = new ArrayList<GenWordPolynomial<C>>(0);
+        List<GenWordPolynomial<C>> z = Collections.emptyList();
         return new WordIdeal<C>(ring, z, true, bb, red);
     }
 
@@ -207,7 +204,7 @@ public class WordIdeal<C extends GcdRingElem<C>> implements Comparable<WordIdeal
      * @return ideal(1)
      */
     public WordIdeal<C> getONE() {
-        List<GenWordPolynomial<C>> one = new ArrayList<GenWordPolynomial<C>>(1);
+        List<GenWordPolynomial<C>> one = Collections.singletonList(ring.getONE());
         one.add(getRing().getONE());
         return new WordIdeal<C>(ring, one, true, bb, red);
     }
