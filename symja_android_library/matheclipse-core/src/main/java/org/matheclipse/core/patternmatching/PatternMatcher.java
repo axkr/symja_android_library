@@ -610,6 +610,50 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return fPatternMap;
   }
 
+  /**
+   * Restore the <code>transient</code> fields which binary deserialization (for example Kryo)
+   * cannot restore: {@link #fPatternMap}, {@link #fLHSPriority} and {@link #fPatterHash}. The
+   * left-hand-side priority is derived from the left-hand-side pattern expression.
+   *
+   * <p>
+   * <b>Note:</b> the pattern hash must be <i>recomputed</i> and never restored from a serialized
+   * value, because {@link org.matheclipse.core.interfaces.IAST#patternHashCode()} is derived from
+   * {@link org.matheclipse.core.expression.BuiltInSymbol#hashCode()}, which returns the symbol's
+   * ordinal in <code>ID</code>. A stale hash would silently prevent a rule from ever matching.
+   *
+   * @param patternHash the recomputed pattern hash of this rule or <code>0</code> if no hash
+   *        pre-filtering is allowed for this rule
+   * @see #initTransientState(int, int)
+   */
+  public void initTransientState(int patternHash) {
+    int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
+    fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
+    fLHSPriority = priority[0];
+    fPatterHash = patternHash;
+  }
+
+  /**
+   * Restore the <code>transient</code> fields which binary deserialization (for example Kryo)
+   * cannot restore: {@link #fPatternMap}, {@link #fLHSPriority} and {@link #fPatterHash}.
+   *
+   * <p>
+   * Without this step the pattern map is only rebuilt lazily in {@link #createPatternMap()}, the
+   * priority stays <code>0</code> and the pattern hash stays <code>0</code>. A zero pattern hash
+   * silently disables the hash pre-filter in {@link IPatternMatcher#isPatternHashAllowed(int)},
+   * which keeps the rules correct but forces every rule to be tried on every evaluation.
+   *
+   * @param lhsPriority the authoritative priority of this rule
+   * @param patternHash the recomputed pattern hash of this rule or <code>0</code> if no hash
+   *        pre-filtering is allowed for this rule
+   * @see #initTransientState(int)
+   */
+  public void initTransientState(int lhsPriority, int patternHash) {
+    int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
+    fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
+    fLHSPriority = lhsPriority;
+    fPatterHash = patternHash;
+  }
+
   public IPatternMap determinePatterns(int[] priority) {
     return IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
   }
