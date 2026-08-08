@@ -100,6 +100,17 @@ import it.unimi.dsi.fastutil.ints.IntList;
 
 public abstract class AbstractAST implements IASTMutable, Cloneable {
 
+  /**
+   * The number of elements - the head and the leading arguments - which contribute to
+   * {@link #hashCode()}.
+   *
+   * <p>
+   * Eight covers the arguments of a product or a sum of the size which actually turns up as a key
+   * in a hash map, for example the monomial <code>c*a^i*b^j*x^k*y^l*z^m</code> of a multivariate
+   * expansion, while bounding the cost of hashing a long list.
+   */
+  protected static final int HASH_ELEMENTS = 8;
+
   protected static final class ASTIterator implements ListIterator<IExpr> {
 
     private int _currentIndex;
@@ -813,6 +824,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     /** {@inheritDoc} */
     @Override
     public boolean isNonNegativeResult() {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isNonPositiveResult() {
       return false;
     }
 
@@ -2346,8 +2363,21 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           }
         }
       }
-    } else if (head.isAssociation() && argSize() == 1) {
-      return ((IAssociation) head).getValue(engine.evaluate(arg1()));
+    } else if (head.isAssociation() && argSize() >= 1) {
+      // an association applied to keys looks up the keys one after another:
+      // assoc(key1, key2,...) is the value of assoc(key1)(key2)...
+      IExpr value = head;
+      for (int i = 1; i < size(); i++) {
+        if (!value.isAssociation()) {
+          // the association isn't nested deeply enough - return the expression unevaluated
+          value = F.NIL;
+          break;
+        }
+        value = ((IAssociation) value).getValue(engine.evaluate(get(i)));
+      }
+      if (value.isPresent()) {
+        return value;
+      }
     }
 
     final ISymbol symbol = topHead();
@@ -2927,6 +2957,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean has(IExpr pattern, boolean heads) {
+    final int unequalMask = UniformFlags.unequalMask(pattern);
+    if (unequalMask != UniformFlags.NONE && isUniformAny(unequalMask)) {
+      // the arguments are atoms of a type which can never be equal to pattern and which can't
+      // contain a nested expression, so only this expression and the header element are tested
+      return equals(pattern) || (heads && head().has(x -> x.equals(pattern), heads));
+    }
+    return IASTMutable.super.has(pattern, heads);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final boolean has(Predicate<IExpr> predicate, boolean heads) {
     if (predicate.test(this)) {
       return true;
@@ -2957,6 +2999,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    * FNV-1 hash code of this <code>IAST</code>.
    *
    * <p>
+   * The head and at most the first {@link #HASH_ELEMENTS} arguments contribute, each with its full
+   * 32 bit hash code. The bound keeps this method O(1): {@code hashValue} is reset on every
+   * mutation of an appendable AST, so an unbounded loop would make hashing a list which is built up
+   * element by element quadratic in its length.
+   *
+   * <p>
+   * All {@code IAST} implementations have to agree on this function - the same expression is
+   * represented by an {@link AST2} in one place and by an {@link AST}/{@link HMArrayList} of the
+   * same length in another, and {@link #equals(Object)} rejects a candidate whose hash code
+   * differs.
+   *
+   * <p>
    * See: <a href=
    * "https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash">
    * Wikipedia: Fowler–Noll–Vo hash function</a>
@@ -2964,20 +3018,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public int hashCode() {
     if (hashValue == 0) {
-      int size = size();
-      if (size <= 3) {
-        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
-        for (int i = 0; i < size; i++) {
-          hashValue = (hashValue * 16777619) ^ (get(i).hashCode() & 0xff);
-        }
-      } else {
-        size = 4;
-        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
-        hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg1().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg2().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg3().hashCode() & 0xff);
+      final int size = size();
+      int hash = (0x811c9dc5 * 16777619) ^ size; // decimal 2166136261;
+      final int end = size < HASH_ELEMENTS ? size : HASH_ELEMENTS;
+      for (int i = 0; i < end; i++) {
+        hash = (hash * 16777619) ^ get(i).hashCode();
       }
+      hashValue = hash;
     }
     return hashValue;
 
@@ -3799,6 +3846,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isFree(IExpr pattern, boolean heads) {
+    final Predicate<IExpr> matcher = Predicates.toFreeQ(pattern);
+    final int unequalMask = UniformFlags.unequalMask(pattern);
+    if (unequalMask != UniformFlags.NONE && isUniformAny(unequalMask)) {
+      // the arguments are atoms of a type which can never be equal to pattern and which can't
+      // contain a nested expression, so only this expression and the header element are tested
+      return !matcher.test(this) && (!heads || head().isFree(matcher, heads));
+    }
+    return isFree(matcher, heads);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final boolean isFree(IPatternMatcher predicate, boolean heads) {
     return !has(predicate, heads);
   }
@@ -3854,7 +3914,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     boolean isFreeOfPatterns = true;
     int defaultOrOptionalCounter = 0;
-    for (int i = 0; i < size(); i++) {
+    // if the arguments have a uniform type they are atoms, so none of them is an IPatternObject and
+    // none of them can contain a nested pattern; only the header element has to be tested
+    final int end = isUniform() ? 1 : size();
+    for (int i = 0; i < end; i++) {
       // all elements including head element
       IExpr temp = getRule(i);
       if (temp.isASTOrAssociation() && !temp.isFreeOfPatterns()) {
@@ -3994,11 +4057,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isFunctionID(ID.Ceiling, ID.Floor, ID.IntegerPart)) {
       return true;
     }
-    if (isPowerInteger() && base().isPositive()) {
-      if (base().isIntegerResult()) {
-        return true;
-      }
-      return false;
+    if (isPower()) {
+      // base^exponent is an integer if the base is an integer and the exponent is a non negative
+      // integer. A negative exponent gives a fraction instead, e.g. 2^(-1)
+      final IExpr exponent = exponent();
+      return base().isIntegerResult() && exponent.isIntegerResult()
+          && exponent.isNonNegativeResult();
     }
     IExpr head = head();
     if (isPlus() || isTimes() || head == S.Binomial || head == S.Factorial) {
@@ -4427,6 +4491,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (visitor != null) {
       return IASTMutable.super.isMember(pattern, heads, visitor);
     }
+    final int unequalMask = UniformFlags.unequalMask(pattern);
+    if (unequalMask != UniformFlags.NONE && isUniformAny(unequalMask)) {
+      // none of the arguments can be equal to pattern and isMember() doesn't test nested
+      // expressions, so only the header element is left
+      return heads && head().equals(pattern);
+    }
     Predicate<IExpr> predicate;
     if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
       predicate = x -> x.equals(pattern);
@@ -4502,6 +4572,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return IntervalDataSym.isNonNegativeResult(this);
     }
     return AbstractAssumptions.isNonNegativeResult(this);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonPositiveResult() {
+    if (isDirectedInfinity()) {
+      return isNegativeInfinity();
+    }
+    if (isIntervalData() && size() > 1) {
+      return IntervalDataSym.isNonPositiveResult(this);
+    }
+    return AbstractAssumptions.isNonPositiveResult(this);
   }
 
   /** {@inheritDoc} */
@@ -4681,7 +4763,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isNumericMode() {
     ISymbol symbol = topHead();
     if (isList() || symbol.hasNumericFunctionAttribute()) {
-      if (isUniform(UniformFlags.DOUBLE) || isUniform(UniformFlags.DOUBLECOMPLEX)) {
+      if (isUniformAny(UniformFlags.DOUBLE | UniformFlags.DOUBLECOMPLEX)) {
         return true;
       }
       // check if one of the arguments is &quot;numeric&quot;
@@ -6313,7 +6395,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       return result;
     }
-    if (isUniform(UniformFlags.NUMBER | UniformFlags.STRING)) {
+    if (isUniformAny(UniformFlags.NUMBER | UniformFlags.STRING)) {
       return result;
     }
     for (int i = 1; i < size(); i++) {
@@ -6365,7 +6447,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       return result;
     }
-    if (isUniform(UniformFlags.NUMBER | UniformFlags.STRING)) {
+    if (isUniformAny(UniformFlags.NUMBER | UniformFlags.STRING)) {
       return result;
     }
     for (int i = 1; i < size(); i++) {
@@ -6809,31 +6891,25 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (dim == null) {
       return null;
     }
-    try {
-      double[][] result = new double[dim[0]][dim[1]];
-      IReal realNumber;
-      for (int i = 1; i <= dim[0]; i++) {
-        IAST row = (IAST) get(i);
-        if (row.isUniform(UniformFlags.REAL)) {
-          for (int j = 1; j <= dim[1]; j++) {
-            result[i - 1][j - 1] = ((INum) row.get(j)).doubleValue();
+    double[][] result = new double[dim[0]][dim[1]];
+    IReal realNumber;
+    for (int i = 1; i <= dim[0]; i++) {
+      IAST row = (IAST) get(i);
+      if (row.isUniform(UniformFlags.REAL)) {
+        for (int j = 1; j <= dim[1]; j++) {
+          result[i - 1][j - 1] = ((INum) row.get(j)).doubleValue();
+        }
+      } else {
+        for (int j = 1; j <= dim[1]; j++) {
+          realNumber = row.get(j).evalReal();
+          if (realNumber == null) {
+            return null;
           }
-        } else {
-          for (int j = 1; j <= dim[1]; j++) {
-            realNumber = row.get(j).evalReal();
-            if (realNumber != null) {
-              result[i - 1][j - 1] = realNumber.evalf();
-            } else {
-              return null;
-            }
-          }
+          result[i - 1][j - 1] = realNumber.evalfNaN();
         }
       }
-      return result;
-    } catch (ArgumentTypeException rex) {
-      //
     }
-    return null;
+    return result;
   }
 
   /** {@inheritDoc} */
@@ -6873,22 +6949,23 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public double[] toDoubleVector() {
-    try {
-      double[] result = new double[argSize()];
-      if (isUniform(UniformFlags.REAL)) {
-        for (int i = 1; i < size(); i++) {
-          result[i - 1] = ((INum) get(i)).doubleValue();
-        }
-      } else {
-        for (int i = 1; i < size(); i++) {
-          result[i - 1] = get(i).evalf();
-        }
+    double[] result = new double[argSize()];
+    if (isUniform(UniformFlags.REAL)) {
+      for (int i = 1; i < size(); i++) {
+        result[i - 1] = ((INum) get(i)).doubleValue();
       }
-      return result;
-    } catch (ArgumentTypeException rex) {
-
+    } else {
+      for (int i = 1; i < size(); i++) {
+        IExpr arg = get(i);
+        double d = arg.evalfNaN();
+        if (Double.isNaN(d) && !arg.isReal()) {
+          // no machine-sized double representation; a real NaN is a legal value
+          return null;
+        }
+        result[i - 1] = d;
+      }
     }
-    return null;
+    return result;
   }
 
   /** {@inheritDoc} */
@@ -6898,11 +6975,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     int j = 1;
     double[] temp = new double[argSize()];
     while (j < size()) {
-      try {
-        temp[i] = get(j).evalf();
+      IExpr arg = get(j);
+      double d = arg.evalfNaN();
+      if (!Double.isNaN(d) || arg.isReal()) {
+        temp[i] = d;
         i++;
-      } catch (ArgumentTypeException rex) {
-
       }
       j++;
     }

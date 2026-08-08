@@ -509,10 +509,10 @@ public final class AST3 extends AST2 {
   public int hashCode() {
     if (hashValue == 0 && arg3 != null) {
       hashValue = (0x811c9dc5 * 16777619) ^ (SIZE & 0xff); // decimal 2166136261;
-      hashValue = (hashValue * 16777619) ^ (arg0.hashCode() & 0xff);
-      hashValue = (hashValue * 16777619) ^ (arg1.hashCode() & 0xff);
-      hashValue = (hashValue * 16777619) ^ (arg2.hashCode() & 0xff);
-      hashValue = (hashValue * 16777619) ^ (arg3.hashCode() & 0xff);
+      hashValue = (hashValue * 16777619) ^ arg0.hashCode();
+      hashValue = (hashValue * 16777619) ^ arg1.hashCode();
+      hashValue = (hashValue * 16777619) ^ arg2.hashCode();
+      hashValue = (hashValue * 16777619) ^ arg3.hashCode();
     }
     return hashValue;
   }

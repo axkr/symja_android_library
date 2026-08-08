@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.CollationKey;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -130,10 +131,59 @@ public class Symbol implements ISymbol, Serializable {
   protected transient RulesData fRulesData;
 
   /**
+   * Hook which allows sub-classes to install rules into {@link #fRulesData} on demand. It is called
+   * before every read or write access to {@link #fRulesData}, so that a symbol with deferred rules
+   * is indistinguishable from a symbol whose rules were installed eagerly.
+   *
+   * <p>
+   * The default implementation does nothing. See
+   * {@link BuiltInSymbol#setDeferredRules(String)} for the implementation which loads the generated
+   * <code>*Rules</code> classes lazily.
+   */
+  protected void ensureRulesLoaded() {
+    // no deferred rules for a user defined symbol
+  }
+
+  /**
    * The name of this symbol. The characters may be all lower-cases if the system doesn't
    * distinguish between lower- and upper-case function names.
    */
   protected String fSymbolName;
+
+  /**
+   * The collation key of {@link #fSymbolName}, computed on the first comparison of this symbol
+   * against another one. See {@link #collationKey()}.
+   */
+  private transient volatile CollationKey fCollationKey;
+
+  /**
+   * The collation key of {@link #fSymbolName}, which orders two symbols exactly as
+   * {@link IStringX#US_COLLATOR} orders their names, but without walking the two strings through
+   * the collator on every comparison.
+   *
+   * <p>
+   * Sorting a {@link S#Plus} or a {@link S#Times} into canonical order is comparison bound, and the
+   * canonical order is what every printed result depends on, so this comparison is on the hot path
+   * of every expansion. Deriving the order from the name rather than from the identity of the
+   * symbol object is what makes a printed result reproducible across runs: symbols are unique
+   * objects, but their allocation order depends on which of them the parser interned first.
+   *
+   * <p>
+   * A symbol is uniquely named within its context and its name never changes, so the key stays
+   * valid once computed. Two threads racing here compute equal keys, hence the unsynchronized lazy
+   * initialization.
+   */
+  private CollationKey collationKey() {
+    CollationKey collationKey = fCollationKey;
+    if (collationKey == null) {
+      // java.text.Collator is not thread safe, and US_COLLATOR is shared
+      synchronized (IStringX.US_COLLATOR) {
+        collationKey = IStringX.US_COLLATOR.getCollationKey(fSymbolName);
+      }
+      fCollationKey = collationKey;
+    }
+    return collationKey;
+  }
 
   /** constructor for serialization */
   private Symbol() {}
@@ -196,6 +246,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr assignedValue() {
+    ensureRulesLoaded();
     if (this instanceof IBuiltInSymbol) {
       return fValue;
     }
@@ -227,6 +278,7 @@ public class Symbol implements ISymbol, Serializable {
     if (!engine.isPackageMode() && isLocked()) {
       throw new RuleCreationError(this);
     }
+    ensureRulesLoaded();
     clearValue(null);
     if (fRulesData != null) {
       fRulesData.clear();
@@ -239,6 +291,7 @@ public class Symbol implements ISymbol, Serializable {
     if (!engine.isPackageMode() && isLocked()) {
       throw new RuleCreationError(this);
     }
+    ensureRulesLoaded();
     fAttributes = NOATTRIBUTE;
     clearValue(null);
     fRulesData = null;
@@ -284,6 +337,9 @@ public class Symbol implements ISymbol, Serializable {
         return 0;
       }
       // sort lexicographically
+      if (expr instanceof Symbol) {
+        return collationKey().compareTo(((Symbol) expr).collationKey());
+      }
       return IStringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
     }
     if (expr.isAST()) {
@@ -312,6 +368,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean containsRules() {
+    ensureRulesLoaded();
     return fRulesData != null;
   }
 
@@ -323,6 +380,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public RulesData createRulesData(int[] sizes) {
+    ensureRulesLoaded();
     if (fRulesData == null) {
       fRulesData = new RulesData(sizes);
     }
@@ -420,6 +478,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final synchronized IExpr evalDownRule(EvalEngine engine, IExpr expression) {
+    ensureRulesLoaded();
     if (fRulesData == null) {
       return F.NIL;
     }
@@ -428,6 +487,7 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public IExpr evalMessage(String messageName) {
+    ensureRulesLoaded();
     if (fRulesData != null) {
       IExpr temp = fRulesData.getMessages().get(messageName);
       if (temp != null) {
@@ -489,6 +549,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final IExpr evalUpRules(IExpr expression, EvalEngine engine) {
+    ensureRulesLoaded();
     if (fRulesData == null) {
       return F.NIL;
     }
@@ -536,6 +597,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr getDefaultValue() {
+    ensureRulesLoaded();
     // special case for a general default value
     IExpr value =
         fRulesData != null ? fRulesData.getDefaultValue(RulesData.DEFAULT_VALUE_INDEX) : null;
@@ -545,6 +607,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr getDefaultValue(int pos) {
+    ensureRulesLoaded();
     // default value at this position
     IExpr value = fRulesData != null ? fRulesData.getDefaultValue(pos) : null;
     if (value == null) {
@@ -560,6 +623,7 @@ public class Symbol implements ISymbol, Serializable {
    */
   @Override
   public final RulesData getRulesData() {
+    ensureRulesLoaded();
     return fRulesData;
   }
 
@@ -572,6 +636,8 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final boolean hasAssignedSymbolValue() {
+    // some generated rule classes assign own values, e.g. RGBColorRules defines `Black`, `Red`, ...
+    ensureRulesLoaded();
     return fValue != null;
   }
 
@@ -597,6 +663,7 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   private boolean hasNoValue() {
+    ensureRulesLoaded();
     return fValue == null && fRulesData == null;
   }
 
@@ -880,6 +947,7 @@ public class Symbol implements ISymbol, Serializable {
       }
     }
     if ((method & ISymbol.SYMBOL_DEFINITION_PRESENT) == ISymbol.SYMBOL_DEFINITION_PRESENT) {
+      ensureRulesLoaded();
       if ((fRulesData != null && fRulesData.isDefinitionsPresent())) {
         return true;
       }
@@ -963,6 +1031,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule, IAST leftHandSide,
       IExpr rightHandSide, int priority, boolean packageMode) {
+    ensureRulesLoaded();
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -980,6 +1049,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule,
       IPatternObject leftHandSide, IExpr rightHandSide, int priority, boolean packageMode) {
+    ensureRulesLoaded();
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -996,6 +1066,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void putDownRule(PatternMatcherAndInvoker pmEvaluator) {
+    ensureRulesLoaded();
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
@@ -1005,6 +1076,7 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public void putMessage(int setSymbol, String messageName, IStringX message) {
+    ensureRulesLoaded();
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
@@ -1024,6 +1096,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final IPatternMatcher putUpRule(int setSymbol, boolean equalRule, IAST leftHandSide,
       IExpr rightHandSide, int priority) {
+    ensureRulesLoaded();
     EvalEngine engine = EvalEngine.get();
     if (!engine.isPackageMode()) {
       if (isLocked(false)) {
@@ -1149,6 +1222,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final boolean removeRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
       boolean packageMode) {
+    ensureRulesLoaded();
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -1189,6 +1263,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void setDefaultValue(int pos, IExpr expr) {
+    ensureRulesLoaded();
     // default value at this position
     if (fRulesData == null) {
       fRulesData = new RulesData();
@@ -1198,6 +1273,8 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public void setRulesData(RulesData rd) {
+    // load first, so that deferred built-in rules cannot overwrite `rd` later on
+    ensureRulesLoaded();
     fRulesData = rd;
     EvalEngine.incEpoch();
   }
@@ -1240,6 +1317,7 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
+    ensureRulesLoaded();
     stream.writeUTF(fSymbolName);
     stream.write(fAttributes);
     stream.writeObject(fValue);
@@ -1270,6 +1348,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
+    ensureRulesLoaded();
     stream.writeUTF(fSymbolName);
     stream.write(fAttributes);
     // if (!containsRules()) {

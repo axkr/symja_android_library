@@ -146,6 +146,25 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   private transient int fOrdinal;
 
+  /**
+   * The name of the generated <code>*Rules</code> class which defines the built-in rules of this
+   * symbol, or <code>null</code> if the rules are already installed (or if this symbol has no
+   * generated rules at all).
+   *
+   * <p>
+   * The field is <code>volatile</code> and is reset to <code>null</code> only after the rules were
+   * installed, so that a thread which reads <code>null</code> also sees the installed rules.
+   *
+   * @see #setDeferredRules(String)
+   */
+  private transient volatile String fDeferredRulesClass;
+
+  /**
+   * The thread which currently initializes the class named by {@link #fDeferredRulesClass}. Only
+   * read and written while the monitor of this symbol is held.
+   */
+  private transient Thread fDeferredRulesLoader;
+
   public BuiltInSymbol(final String symbolName, int ordinal) {
     super(symbolName, Context.SYSTEM);
     fEvaluator = DUMMY_EVALUATOR;
@@ -212,7 +231,55 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final RulesData createRulesData(int[] sizes) {
+    ensureRulesLoaded();
     return (fRulesData == null) ? (fRulesData = new RulesData(sizes, this)) : fRulesData;
+  }
+
+  /**
+   * Install the built-in rules of this symbol, if they were deferred by
+   * {@link #setDeferredRules(String)} and are not loaded yet.
+   *
+   * <p>
+   * This method is called before every access to the rules of a symbol, so the common case - nothing
+   * to load - must not take a lock. Only the first access to one of the few symbols with deferred
+   * rules enters {@link #loadDeferredRules()}.
+   */
+  @Override
+  protected final void ensureRulesLoaded() {
+    if (fDeferredRulesClass == null) {
+      return;
+    }
+    loadDeferredRules();
+  }
+
+  /**
+   * Initialize the generated <code>*Rules</code> class of this symbol. The generated classes install
+   * their rules as a side effect of their class initializer (see <code>F.IInit()</code> and
+   * <code>F.ISet()</code>), so initializing the class <i>is</i> installing the rules.
+   *
+   * <p>
+   * The class initializer calls back into <code>putDownRule()</code> of this symbol, which enters
+   * this method again on the same thread. {@link #fDeferredRulesLoader} ends that recursion without
+   * publishing the half-installed rules to other threads.
+   */
+  private synchronized void loadDeferredRules() {
+    final String className = fDeferredRulesClass;
+    if (className == null || fDeferredRulesLoader == Thread.currentThread()) {
+      // another thread installed the rules already, or this is a re-entrant call from the class
+      // initializer running on this thread
+      return;
+    }
+    fDeferredRulesLoader = Thread.currentThread();
+    try {
+      Class.forName(className, true, BuiltInSymbol.class.getClassLoader());
+    } catch (ClassNotFoundException | LinkageError e) {
+      throw new IllegalStateException(
+          "Cannot load the built-in rules " + className + " of symbol " + fSymbolName, e);
+    } finally {
+      fDeferredRulesLoader = null;
+      // publish last: a thread which reads null in ensureRulesLoaded() sees the installed rules
+      fDeferredRulesClass = null;
+    }
   }
 
   /** {@inheritDoc} */
@@ -539,6 +606,21 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final void setAttributes(final int attributes) {
     super.setAttributes(attributes | Config.BUILTIN_PROTECTED);
+  }
+
+  /**
+   * Defer the built-in rules of this symbol to the class initializer of <code>className</code>. The
+   * class is initialized on the first access to the rules of this symbol.
+   *
+   * <p>
+   * Loading all generated <code>*Rules</code> classes eagerly costs about 50 milliseconds during
+   * start-up, although a typical session only needs the rules of a handful of symbols.
+   *
+   * @param className the fully qualified name of the generated <code>*Rules</code> class
+   * @see org.matheclipse.core.reflection.system.rules.AutomaticRules#initialize()
+   */
+  public final void setDeferredRules(final String className) {
+    fDeferredRulesClass = className;
   }
 
   /** {@inheritDoc} */

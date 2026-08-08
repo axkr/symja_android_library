@@ -53,7 +53,7 @@ public abstract class HMArrayList extends AbstractAST
 
   private static final long serialVersionUID = 8683452581122892189L;
 
-  protected int uniformTypeFlags = UniformFlags.NONE;
+  protected int uniformTypeFlags = UniformFlags.UNKNOWN;
 
   protected transient IExpr[] array;
 
@@ -172,10 +172,11 @@ public abstract class HMArrayList extends AbstractAST
       if (size() == 1) {
         // first argument
         uniformTypeFlags = expr.uniformFlags();
-      } else {
+      } else if (uniformTypeFlags != UniformFlags.UNKNOWN) {
         // example: (Integer | Rational) & (Fraction | Rational) = Rational
         uniformTypeFlags &= expr.uniformFlags();
       }
+      // else: stay UNKNOWN, the flags are computed in uniformTypeFlags()
     }
     if (lastIndex == array.length) {
       growAtEnd(2);
@@ -196,8 +197,19 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public final void append(int location, IExpr expr) {
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
     int size = lastIndex - firstIndex;
+    if (location == 0) {
+      if (size == 0) {
+        // expr becomes the header element, the list contains no arguments
+        uniformTypeFlags = UniformFlags.NONE;
+      } else {
+        // expr becomes the header element, the old header element becomes the first argument
+        mergeUniformTypeFlags(array[firstIndex].uniformFlags(), size);
+      }
+    } else if (location > 0 && location <= size) {
+      // expr becomes an argument
+      mergeUniformTypeFlags(expr.uniformFlags(), size);
+    }
     if (0 < location && location < size) {
       if (firstIndex == 0 && lastIndex == array.length) {
         growForInsert(location, 1);
@@ -233,12 +245,12 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public boolean appendAll(Collection<? extends IExpr> collection) {
-    hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
     Object[] dumpArray = collection.toArray();
     if (dumpArray.length == 0) {
       return false;
     }
+    hashValue = 0;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     if (dumpArray.length > array.length - lastIndex) {
       growAtEnd(dumpArray.length);
     }
@@ -249,7 +261,7 @@ public abstract class HMArrayList extends AbstractAST
 
   @Override
   public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
-    uniformTypeFlags = UniformFlags.NONE;
+    // append() maintains uniformTypeFlags, an empty map must not reset them
     for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
       append(F.Rule(entry.getKey(), entry.getValue()));
     }
@@ -261,12 +273,12 @@ public abstract class HMArrayList extends AbstractAST
   public boolean appendAll(IAST ast, int startPosition, int endPosition) {
     if (ast.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
-      if (ast instanceof HMArrayList) {
-        if (size() == 1) {
-          uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
-        } else if (size() > 1) {
-          uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
-        }
+      if (startPosition >= 1) {
+        // a subset of the arguments of a uniform list is uniform as well
+        mergeUniformTypeFlags(argumentTypeFlags(ast), size());
+      } else {
+        // the header element of ast is appended as an argument
+        uniformTypeFlags = UniformFlags.UNKNOWN;
       }
 
       int length = endPosition - startPosition;
@@ -300,7 +312,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public boolean appendAll(int location, Collection<? extends IExpr> collection) {
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     int size = lastIndex - firstIndex;
     if (location < 0 || location > size) {
       throw new IndexOutOfBoundsException(
@@ -349,7 +361,7 @@ public abstract class HMArrayList extends AbstractAST
   public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
     if (list.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
-      uniformTypeFlags = UniformFlags.NONE;
+      uniformTypeFlags = UniformFlags.UNKNOWN;
       int length = endPosition - startPosition;
       if (length > array.length - lastIndex) {
         growAtEnd(length);
@@ -373,7 +385,7 @@ public abstract class HMArrayList extends AbstractAST
   public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
     if (args.length > 0 && startPosition < endPosition) {
       hashValue = 0;
-      uniformTypeFlags = UniformFlags.NONE;
+      uniformTypeFlags = UniformFlags.UNKNOWN;
       int length = endPosition - startPosition;
       if (length > array.length - lastIndex) {
         growAtEnd(length);
@@ -419,29 +431,9 @@ public abstract class HMArrayList extends AbstractAST
   public final boolean appendArgs(IAST ast, int untilPosition) {
     if (untilPosition > 1) {
       hashValue = 0;
-      if (untilPosition == ast.size()) {
-        if (ast instanceof HMArrayList) {
-          if (size() == 1) {
-            uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
-          } else if (size() > 1) {
-            uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
-          } else {
-            uniformTypeFlags = UniformFlags.NONE;
-          }
-        } else if (ast instanceof ASTRRBTree) {
-          if (size() == 1) {
-            uniformTypeFlags = ((ASTRRBTree) ast).uniformTypeFlags;
-          } else if (size() > 1) {
-            uniformTypeFlags &= ((ASTRRBTree) ast).uniformTypeFlags;
-          } else {
-            uniformTypeFlags = UniformFlags.NONE;
-          }
-        } else {
-          uniformTypeFlags = UniformFlags.NONE;
-        }
-      } else {
-        uniformTypeFlags = UniformFlags.NONE;
-      }
+      // only arguments of ast are appended here; a subset of the arguments of a uniform list is
+      // uniform as well
+      mergeUniformTypeFlags(argumentTypeFlags(ast), size());
       int length = untilPosition - 1;
       if (length > array.length - lastIndex) {
         growAtEnd(length);
@@ -461,7 +453,7 @@ public abstract class HMArrayList extends AbstractAST
       return this;
     }
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     int length = end - start;
     if (length > array.length - lastIndex) {
       growAtEnd(length);
@@ -788,7 +780,7 @@ public abstract class HMArrayList extends AbstractAST
       }
       return result;
     }
-    if (isUniform(UniformFlags.NUMBER | UniformFlags.STRING)) {
+    if (isUniformAny(UniformFlags.NUMBER | UniformFlags.STRING)) {
       return result;
     }
     int i = firstIndex + 1;
@@ -834,12 +826,87 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public boolean isUniform(int typeMask) {
     // check if the bit (ex: INTEGER) is set in the flags
-    return uniformTypeFlags != UniformFlags.NONE && (uniformTypeFlags & typeMask) == typeMask;
+    final int flags = uniformTypeFlags();
+    return flags != UniformFlags.NONE && (flags & typeMask) == typeMask;
+  }
+
+  @Override
+  public boolean isUniformAny(int typeMask) {
+    // check if at least one of the bits (ex: NUMBER, STRING) is set in the flags
+    return (uniformTypeFlags() & typeMask) != UniformFlags.NONE;
   }
 
   @Override
   public boolean isUniform() {
-    return uniformTypeFlags != UniformFlags.NONE;
+    return uniformTypeFlags() != UniformFlags.NONE;
+  }
+
+  /**
+   * Get the accumulated type flags of the arguments of this list. If they were not determined yet
+   * ({@link UniformFlags#UNKNOWN}) they are computed by iterating over the arguments and cached.
+   * <p>
+   * The iteration stops at the first argument which has no type flags (for example a nested
+   * {@link IAST}), so the common non-uniform case costs a single step.
+   *
+   * @return {@link UniformFlags#NONE} if the arguments have no uniform type
+   */
+  int uniformTypeFlags() {
+    int flags = uniformTypeFlags;
+    if (flags == UniformFlags.UNKNOWN) {
+      int i = firstIndex + 1;
+      if (i >= lastIndex) {
+        // this list contains no arguments
+        flags = UniformFlags.NONE;
+      } else {
+        flags = UniformFlags.ALL;
+        do {
+          IExpr arg = array[i++];
+          if (arg == null) {
+            // this list is still under construction, don't cache an intermediate result
+            return UniformFlags.NONE;
+          }
+          // example: (Integer | Rational) & (Fraction | Rational) = Rational
+          flags &= arg.uniformFlags();
+        } while (i < lastIndex && flags != UniformFlags.NONE);
+      }
+      uniformTypeFlags = flags;
+    }
+    return flags;
+  }
+
+  /**
+   * Merge the accumulated type flags of appended arguments into {@link #uniformTypeFlags}.
+   *
+   * @param argFlags the accumulated type flags of the appended arguments or
+   *        {@link UniformFlags#UNKNOWN} if they were not determined
+   * @param sizeBefore the {@link #size()} of this list before the arguments were appended
+   */
+  private void mergeUniformTypeFlags(int argFlags, int sizeBefore) {
+    if (sizeBefore == 1) {
+      // the appended expressions are the first arguments
+      uniformTypeFlags = argFlags;
+    } else if (sizeBefore > 1 && uniformTypeFlags != UniformFlags.UNKNOWN
+        && argFlags != UniformFlags.UNKNOWN) {
+      // example: (Integer | Rational) & (Fraction | Rational) = Rational
+      uniformTypeFlags &= argFlags;
+    } else {
+      uniformTypeFlags = UniformFlags.UNKNOWN;
+    }
+  }
+
+  /**
+   * Get the accumulated type flags of the arguments of <code>ast</code>.
+   *
+   * @return {@link UniformFlags#UNKNOWN} if <code>ast</code> doesn't cache type flags
+   */
+  static int argumentTypeFlags(IAST ast) {
+    if (ast instanceof HMArrayList) {
+      return ((HMArrayList) ast).uniformTypeFlags();
+    }
+    if (ast instanceof ASTRRBTree) {
+      return ((ASTRRBTree) ast).uniformTypeFlags();
+    }
+    return UniformFlags.UNKNOWN;
   }
 
   /** {@inheritDoc} */
@@ -952,23 +1019,22 @@ public abstract class HMArrayList extends AbstractAST
     array = newArray;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>
+   * Same function as {@link AbstractAST#hashCode()}, reading the backing array directly.
+   */
   @Override
   public int hashCode() {
     if (hashValue == 0) {
-      int size = size();
-      if (size <= 3) {
-        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
-        for (int i = firstIndex; i < lastIndex; i++) {
-          hashValue = (hashValue * 16777619) ^ (array[i].hashCode() & 0xff);
-        }
-      } else {
-        size = 4;
-        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
-        hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg1().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg2().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg3().hashCode() & 0xff);
+      final int size = size();
+      int hash = (0x811c9dc5 * 16777619) ^ size; // decimal 2166136261;
+      final int end = size < HASH_ELEMENTS ? lastIndex : firstIndex + HASH_ELEMENTS;
+      for (int i = firstIndex; i < end; i++) {
+        hash = (hash * 16777619) ^ array[i].hashCode();
       }
+      hashValue = hash;
     }
     return hashValue;
   }
@@ -1183,7 +1249,7 @@ public abstract class HMArrayList extends AbstractAST
       throw new NullPointerException("Index: " + location + ", Size: " + (lastIndex - firstIndex));
     }
     hashValue = 0;
-    if (location != 0) {
+    if (location != 0 && uniformTypeFlags != UniformFlags.UNKNOWN) {
       uniformTypeFlags &= expr.uniformFlags();
     }
     // if (0 <= location && location < (lastIndex - firstIndex)) {

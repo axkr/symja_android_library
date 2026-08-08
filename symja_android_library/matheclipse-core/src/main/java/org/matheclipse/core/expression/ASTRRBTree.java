@@ -65,7 +65,7 @@ public class ASTRRBTree extends AbstractAST
   /** The underlying RRB Tree */
   protected MutRrbt<IExpr> rrbTree;
 
-  protected int uniformTypeFlags = UniformFlags.NONE;
+  protected int uniformTypeFlags = UniformFlags.UNKNOWN;
 
   public ASTRRBTree() {
     super();
@@ -445,12 +445,73 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean isUniform(int typeMask) {
     // check if the bit (ex: INTEGER) is set in the flags
-    return uniformTypeFlags != UniformFlags.NONE && (uniformTypeFlags & typeMask) == typeMask;
+    final int flags = uniformTypeFlags();
+    return flags != UniformFlags.NONE && (flags & typeMask) == typeMask;
+  }
+
+  @Override
+  public boolean isUniformAny(int typeMask) {
+    // check if at least one of the bits (ex: NUMBER, STRING) is set in the flags
+    return (uniformTypeFlags() & typeMask) != UniformFlags.NONE;
   }
 
   @Override
   public boolean isUniform() {
-    return uniformTypeFlags != UniformFlags.NONE;
+    return uniformTypeFlags() != UniformFlags.NONE;
+  }
+
+  /**
+   * Get the accumulated type flags of the arguments of this list. If they were not determined yet
+   * ({@link UniformFlags#UNKNOWN}) they are computed by iterating over the arguments and cached.
+   * <p>
+   * The iteration stops at the first argument which has no type flags (for example a nested
+   * {@link IAST}), so the common non-uniform case costs a single step.
+   *
+   * @return {@link UniformFlags#NONE} if the arguments have no uniform type
+   */
+  int uniformTypeFlags() {
+    int flags = uniformTypeFlags;
+    if (flags == UniformFlags.UNKNOWN) {
+      final int size = rrbTree.size();
+      if (size <= 1) {
+        // this list contains no arguments
+        flags = UniformFlags.NONE;
+      } else {
+        flags = UniformFlags.ALL;
+        int i = 1;
+        do {
+          IExpr arg = rrbTree.get(i++);
+          if (arg == null) {
+            // this list is still under construction, don't cache an intermediate result
+            return UniformFlags.NONE;
+          }
+          // example: (Integer | Rational) & (Fraction | Rational) = Rational
+          flags &= arg.uniformFlags();
+        } while (i < size && flags != UniformFlags.NONE);
+      }
+      uniformTypeFlags = flags;
+    }
+    return flags;
+  }
+
+  /**
+   * Merge the accumulated type flags of appended arguments into {@link #uniformTypeFlags}.
+   *
+   * @param argFlags the accumulated type flags of the appended arguments or
+   *        {@link UniformFlags#UNKNOWN} if they were not determined
+   * @param sizeBefore the {@link #size()} of this list before the arguments were appended
+   */
+  private void mergeUniformTypeFlags(int argFlags, int sizeBefore) {
+    if (sizeBefore == 1) {
+      // the appended expressions are the first arguments
+      uniformTypeFlags = argFlags;
+    } else if (sizeBefore > 1 && uniformTypeFlags != UniformFlags.UNKNOWN
+        && argFlags != UniformFlags.UNKNOWN) {
+      // example: (Integer | Rational) & (Fraction | Rational) = Rational
+      uniformTypeFlags &= argFlags;
+    } else {
+      uniformTypeFlags = UniformFlags.UNKNOWN;
+    }
   }
 
   @Override
@@ -472,7 +533,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public IExpr set(int location, IExpr expr) {
     hashValue = 0;
-    if (location != 0) {
+    if (location != 0 && uniformTypeFlags != UniformFlags.UNKNOWN) {
       uniformTypeFlags &= expr.uniformFlags();
     }
     if (location < rrbTree.size()) {
@@ -531,10 +592,11 @@ public class ASTRRBTree extends AbstractAST
       if (size() == 1) {
         // first argument
         uniformTypeFlags = expr.uniformFlags();
-      } else {
+      } else if (uniformTypeFlags != UniformFlags.UNKNOWN) {
         // example: (Integer | Rational) & (Fraction | Rational) = Rational
         uniformTypeFlags &= expr.uniformFlags();
       }
+      // else: stay UNKNOWN, the flags are computed in uniformTypeFlags()
     }
     rrbTree = rrbTree.append(expr);
     return true;
@@ -543,7 +605,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void append(int location, IExpr expr) {
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     if (location >= 0 && location <= size()) {
       if (location == size()) {
         append(expr);
@@ -559,7 +621,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(Collection<? extends IExpr> collection) {
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     rrbTree.addAll(collection);
     return true;
   }
@@ -567,7 +629,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
       rrbTree.append(F.Rule(entry.getKey(), entry.getValue()));
     }
@@ -578,18 +640,12 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(IAST ast, int startPosition, int endPosition) {
     if (ast.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
-      if (ast instanceof ASTRRBTree) {
-        if (size() == 1) {
-          uniformTypeFlags = ((ASTRRBTree) ast).uniformTypeFlags;
-        } else if (size() > 1) {
-          uniformTypeFlags &= ((ASTRRBTree) ast).uniformTypeFlags;
-        }
-      } else if (ast instanceof HMArrayList) {
-        if (size() == 1) {
-          uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
-        } else if (size() > 1) {
-          uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
-        }
+      if (startPosition >= 1) {
+        // a subset of the arguments of a uniform list is uniform as well
+        mergeUniformTypeFlags(HMArrayList.argumentTypeFlags(ast), size());
+      } else {
+        // the header element of ast is appended as an argument
+        uniformTypeFlags = UniformFlags.UNKNOWN;
       }
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(ast.get(i));
@@ -602,7 +658,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(int location, Collection<? extends IExpr> collection) {
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     final int size = rrbTree.size();
     if (location < 0 || location > size) {
       throw new IndexOutOfBoundsException(
@@ -628,7 +684,7 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
     if (list.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
-      uniformTypeFlags = UniformFlags.NONE;
+      uniformTypeFlags = UniformFlags.UNKNOWN;
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(list.get(i));
       }
@@ -641,7 +697,7 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
     if (args.length > 0 && startPosition < endPosition) {
       hashValue = 0;
-      uniformTypeFlags = UniformFlags.NONE;
+      uniformTypeFlags = UniformFlags.UNKNOWN;
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(args[i]);
       }
@@ -659,29 +715,9 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendArgs(IAST ast, int untilPosition) {
     if (untilPosition > 1) {
       hashValue = 0;
-      if (untilPosition == ast.size()) {
-        if (ast instanceof ASTRRBTree) {
-          if (size() == 1) {
-            uniformTypeFlags = ((ASTRRBTree) ast).uniformTypeFlags;
-          } else if (size() > 1) {
-            uniformTypeFlags &= ((ASTRRBTree) ast).uniformTypeFlags;
-          } else {
-            uniformTypeFlags = UniformFlags.NONE;
-          }
-        } else if (ast instanceof HMArrayList) {
-          if (size() == 1) {
-            uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
-          } else if (size() > 1) {
-            uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
-          } else {
-            uniformTypeFlags = UniformFlags.NONE;
-          }
-        } else {
-          uniformTypeFlags = UniformFlags.NONE;
-        }
-      } else {
-        uniformTypeFlags = UniformFlags.NONE;
-      }
+      // only arguments of ast are appended here; a subset of the arguments of a uniform list is
+      // uniform as well
+      mergeUniformTypeFlags(HMArrayList.argumentTypeFlags(ast), size());
       for (int i = 1; i < untilPosition; i++) {
         rrbTree = rrbTree.append(ast.get(i));
       }
@@ -697,7 +733,7 @@ public class ASTRRBTree extends AbstractAST
       return this;
     }
     hashValue = 0;
-    uniformTypeFlags = UniformFlags.NONE;
+    uniformTypeFlags = UniformFlags.UNKNOWN;
     for (int i = start; i < end; i++) {
       IExpr temp = function.apply(i);
       if (temp.isPresent()) {

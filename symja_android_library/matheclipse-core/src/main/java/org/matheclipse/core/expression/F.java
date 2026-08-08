@@ -193,9 +193,30 @@ import edu.jas.kern.PreemptStatus;
 public class F extends S {
 
   /**
-   * <b>Attention:</b> special initialization of LOGGER for Android app
+   * Holder for the lazily created LOGGER of this class.
+   *
+   * <p>
+   * Creating the first log4j2 logger bootstraps the whole log4j2 {@code LoggerContext} (plugin scan,
+   * configuration factory probing, ...), which costs about 85 milliseconds and loads about 900
+   * additional classes. Because the {@link F} class initializer only logs in error cases, that work
+   * is deferred until a message is really written.
+   *
+   * <p>
+   * <b>Attention:</b> the LOGGER must not be created before {@link AndroidLoggerFix#fix()} was
+   * called in the {@link F} class initializer. Deferring the creation preserves that order.
    */
-  private static Logger LOGGER;
+  private static final class LogHolder {
+    private static final Logger LOGGER = LogManager.getLogger(F.class);
+  }
+
+  /**
+   * Get the LOGGER of this class. The log4j2 subsystem is initialized on the first call.
+   *
+   * @return the LOGGER of this class
+   */
+  private static Logger logger() {
+    return LogHolder.LOGGER;
+  }
 
   /**
    * In computing, memoization or memoisation is an optimization technique used primarily to speed
@@ -872,8 +893,8 @@ public class F extends S {
       if (!Config.CHEEPRJ) {
         AndroidLoggerFix.fix();
       }
-      // initialize LOGGER after AndroidLoggerFix !!!
-      LOGGER = LogManager.getLogger(F.class);
+      // the LOGGER is created lazily in LogHolder, which keeps it initialized after
+      // AndroidLoggerFix !!! and keeps the log4j2 bootstrap off the start-up path
       AST2Expr.initialize();
       ExprParserFactory.initialize();
 
@@ -1028,7 +1049,7 @@ public class F extends S {
       COUNT_DOWN_LATCH.countDown();
       Errors.initGeneralMessages();
     } catch (RuntimeException th) {
-      LOGGER.error("F-class initialization failed", th);
+      logger().error("F-class initialization failed", th);
       throw th;
     }
   }
@@ -4650,6 +4671,12 @@ public class F extends S {
     }
 
     final boolean isList = list.isList();
+    // uniform arguments are atoms, so none of them is a Sequence(...). A list additionally has to
+    // rule out the symbol S.Nothing, which requires a type that can't be a symbol.
+    if (isList ? list.isUniformAny(UniformFlags.NUMBER | UniformFlags.STRING) : list.isUniform()) {
+      list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+      return NIL;
+    }
     final int indx = list.indexOf(x -> x.isSequence() || (isList && x == S.Nothing));
     if (indx > 0) {
       final int extraSize = list.get(indx).size();
@@ -5605,7 +5632,7 @@ public class F extends S {
           // LOGGER.warn("Cannot read packages in autoload folder:", acex);
         } catch (Exception ex) {
           Errors.rethrowsInterruptException(ex);
-          LOGGER.error(ex);
+          logger().error(ex);
         }
 
         systemInitialized = true;
@@ -6586,6 +6613,29 @@ public class F extends S {
   }
 
   /**
+   * Test if <code>expr</code> is <i>exactly</i> zero, without the numeric tolerance which
+   * {@link IExpr#isZero()} applies to inexact numbers.
+   *
+   * <p>
+   * {@link IExpr#isZero()} accepts every inexact number up to {@link Config#DOUBLE_TOLERANCE}
+   * (about <code>1.11*10^-15</code>). That fuzziness is the right semantics for a numeric equality
+   * heuristic, but not for deciding that a reciprocal or a negative power is an infinite
+   * expression: a small but non-zero number has a perfectly finite reciprocal, so
+   * <code>1/(3.0*10^-20)</code> has to be <code>3.33*10^19</code> and not
+   * <code>ComplexInfinity</code>.
+   *
+   * @param expr the expression to test
+   * @return <code>true</code> if <code>expr</code> is zero; for inexact numbers only if it is
+   *         exactly zero
+   */
+  public static boolean isExactZero(IExpr expr) {
+    if (expr.isInexactNumber()) {
+      return ((INumber) expr).isZero(0.0);
+    }
+    return expr.isZero();
+  }
+
+  /**
    * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
    *
    * @param value
@@ -7011,9 +7061,7 @@ public class F extends S {
       a[i] = num(numbers[i]);
     }
     if (numbers.length > 3) {
-      AST ast = new AST(List, a);
-      ast.uniformTypeFlags = a[0].uniformFlags();
-      return ast;
+      return new AST(List, a);
     }
     return function(List, a);
   }
@@ -7076,9 +7124,7 @@ public class F extends S {
       a[i] = ZZ(numbers[i]);
     }
     if (numbers.length > 3) {
-      AST ast = new AST(List, a);
-      ast.uniformTypeFlags = a[0].uniformFlags();
-      return ast;
+      return new AST(List, a);
     }
     return function(List, a);
   }
@@ -7089,9 +7135,7 @@ public class F extends S {
       a[i] = ZZ(numbers[i]);
     }
     if (numbers.length > 3) {
-      AST ast = new AST(List, a);
-      ast.uniformTypeFlags = a[0].uniformFlags();
-      return ast;
+      return new AST(List, a);
     }
     return List(a);
   }
@@ -7102,9 +7146,7 @@ public class F extends S {
       a[i] = stringx(strs[i]);
     }
     if (strs.length > 3) {
-      AST ast = new AST(List, a);
-      ast.uniformTypeFlags = a[0].uniformFlags();
-      return ast;
+      return new AST(List, a);
     }
     return function(List, a);
   }
@@ -9159,7 +9201,7 @@ public class F extends S {
         return base.power(exponent);
       }
       if (exponent == -1L) {
-        if (base.isZero()) {
+        if (isExactZero(base)) {
           // Infinite expression `1` encountered.
           Errors.printMessage(S.Power, "infy", F.list(new B2.Power(base, F.ZZ(exponent))),
               EvalEngine.get());
@@ -9167,7 +9209,7 @@ public class F extends S {
         }
         return base.inverse();
       }
-      if (exponent == 0L && !base.isZero()) {
+      if (exponent == 0L && !isExactZero(base)) {
         return C1;
       }
     }
@@ -10180,7 +10222,7 @@ public class F extends S {
     } catch (Exception ex) {
       Errors.rethrowsInterruptException(ex);
 
-      LOGGER.debug("F.show() failed", ex);
+      logger().debug("F.show() failed", ex);
     }
     return null;
   }
@@ -10222,7 +10264,7 @@ public class F extends S {
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
             Errors.rethrowsInterruptException(ex);
-            LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
+            logger().debug("JSBuilder.buildGraphics3D() failed", ex);
           }
         }
       } else if (expr instanceof DataExpr) {

@@ -28,6 +28,7 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 public class KryoUtil {
+
   /** The list of all the WXF tokens. */
   private static class WXF_CONSTANTS {
     static final byte Function = 'f';
@@ -375,6 +376,10 @@ public class KryoUtil {
       } catch (Exception e) {
         throw new RuntimeException("Failed to deserialize RulesData collections", e);
       }
+      // fPatternMap, fLHSPriority and fPatterHash are transient and are not written by Kryo's
+      // FieldSerializer. Without this pass every rule keeps a pattern hash of 0, which disables
+      // the hash pre-filter and makes pattern matching noticeably slower.
+      rulesData.initTransientState();
       return rulesData;
     }
   }

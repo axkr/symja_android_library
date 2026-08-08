@@ -6936,6 +6936,36 @@ public class S {
    */
   public final static IBuiltInSymbol KeyTake = S.initFinalSymbol("KeyTake", ID.KeyTake);
 
+  /**
+   * KeyComplement({assoc1, assoc2, ...}) - returns an association with the rules of `assoc1` whose
+   * keys do not appear in any of `assoc2, ...`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeyComplement.md">KeyComplement
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KeyComplement =
+      S.initFinalSymbol("KeyComplement", ID.KeyComplement);
+
+  /**
+   * KeyIntersection({assoc1, assoc2, ...}) - returns a list of associations, in which every
+   * association is restricted to the keys which are common to all `assoc1, assoc2, ...`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeyIntersection.md">KeyIntersection
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KeyIntersection =
+      S.initFinalSymbol("KeyIntersection", ID.KeyIntersection);
+
+  /**
+   * KeyUnion({assoc1, assoc2, ...}) - returns a list of associations, in which every association is
+   * padded to the union of all keys of `assoc1, assoc2, ...`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeyUnion.md">KeyUnion
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol KeyUnion = S.initFinalSymbol("KeyUnion", ID.KeyUnion);
 
   /**
@@ -8443,6 +8473,19 @@ public class S {
   public final static IBuiltInSymbol NDSolve = S.initFinalSymbol("NDSolve", ID.NDSolve);
 
   /**
+   * NDSolveValue({equation-list}, functions, t) - attempts to solve the differential
+   * `equation-list` for the `functions` and the time-dependent-variable `t`, and returns the
+   * `InterpolatingFunction` function object itself.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NDSolveValue.md">NDSolveValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NDSolveValue =
+      S.initFinalSymbol("NDSolveValue", ID.NDSolveValue);
+
+
+  /**
    * Nearest(list-of-values, x-value) - returns the value from the `list-of-values` which is nearest
    * to `x-value`. By default the `EuclideanDistance` is used. With the `DistanceFunction` option
    * you can specify your own distance function.
@@ -8795,6 +8838,16 @@ public class S {
    */
   public final static IBuiltInSymbol NSolve = S.initFinalSymbol("NSolve", ID.NSolve);
 
+  /**
+   * NSolveValues(equations, vars) - attempts to solve `equations` for the variables `vars`
+   * numerically and returns a list of the values of the variables.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NSolveValues.md">NSolveValues
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NSolveValues =
+      S.initFinalSymbol("NSolveValues", ID.NSolveValues);
   /**
    * NSum(expr, {i, imin, imax}) - evaluates the numerical approximated sum of `expr` with `i`
    * ranging from `imin` to `imax`.
@@ -10193,6 +10246,9 @@ public class S {
    */
   public final static IBuiltInSymbol Quartiles = S.initFinalSymbol("Quartiles", ID.Quartiles);
 
+
+  public final static IBuiltInSymbol Query = S.initFinalSymbol("Query", ID.Query);
+
   /**
    * Quiet(expr) - evaluates `expr` in "quiet" mode (i.e. no warning messages are shown during
    * evaluation).
@@ -10716,6 +10772,14 @@ public class S {
 
   public final static IBuiltInSymbol Residue = S.initFinalSymbol("Residue", ID.Residue);
 
+  /**
+   * Resolve(expr) - attempts to resolve `expr` into a form that eliminates the `ForAll` and
+   * `Exists` quantifiers.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Resolve.md">Resolve
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Resolve = S.initFinalSymbol("Resolve", ID.Resolve);
 
   /**
@@ -11569,6 +11633,16 @@ public class S {
   public final static IBuiltInSymbol Solve = S.initFinalSymbol("Solve", ID.Solve);
 
   public final static IBuiltInSymbol SolveAlways = S.initFinalSymbol("SolveAlways", ID.SolveAlways);
+
+  /**
+   * SolveValues(equations, vars) - attempts to solve `equations` for the variables `vars` and
+   * returns a list of the values of the variables.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SolveValues.md">SolveValues
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SolveValues = S.initFinalSymbol("SolveValues", ID.SolveValues);
 
   /**
    * Sort(list) - sorts `list` (or the leaves of any other expression) according to canonical
