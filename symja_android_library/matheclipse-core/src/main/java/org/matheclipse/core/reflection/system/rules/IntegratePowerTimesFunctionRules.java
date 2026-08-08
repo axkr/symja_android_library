@@ -14,13 +14,13 @@ public class IntegratePowerTimesFunctionRules {
       Condition(Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcCos(Times(m,x))),Times(m,x,Hypergeometric2F1(C1D2,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(Sqr(m),Sqr(x)))))),And(Unequal(n,CN1),Unequal(n,CN2)))),
     // f3(ArcCos,x_,n_,m_,p_):=(x^(1+n)*((1+n+p)*ArcCos(m*x^p)+m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+3*p)/(2*p),m^2*x^(2*p))))/((1+n)*(1+n+p))/;n!=-1&&n+p!=-1
     SetDelayed($(f3,ArcCos,x_,n_,m_,p_),
-      Condition(Times(Power(Times(Plus(C1,n),Plus(C1,n,p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C1,n,p),ArcCos(Times(m,Power(x,p)))),Times(m,p,Power(x,p),Hypergeometric2F1(C1D2,Times(Plus(C1,n,p),Power(Times(C2,p),CN1)),Times(Plus(C1,n,Times(C3,p)),Power(Times(C2,p),CN1)),Times(Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
+      Condition(Times(Power(Times(Plus(C1,n),Plus(C1,n,p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C1,n,p),ArcCos(Times(m,Power(x,p)))),Times(m,p,Power(x,p),Hypergeometric2F1(C1D2,Times(Power(Times(C2,p),CN1),Plus(C1,n,p)),Times(Power(Times(C2,p),CN1),Plus(C1,n,Times(C3,p))),Times(Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
     // f2(ArcCosh,x_,n_,m_):=(x^(1+n)*(ArcCosh(m*x)+(-m*x*Sqrt(1-m^2*x^2)*Hypergeometric2F1(1/2,1+n/2,2+n/2,m^2*x^2))/((2+n)*Sqrt(-1+m*x)*Sqrt(1+m*x))))/(1+n)/;n!=-1&&n!=-2
     SetDelayed($(f2,ArcCosh,x_,n_,m_),
       Condition(Times(Power(Plus(C1,n),CN1),Power(x,Plus(C1,n)),Plus(ArcCosh(Times(m,x)),Times(CN1,m,x,Power(Times(Plus(C2,n),Sqrt(Plus(CN1,Times(m,x))),Sqrt(Plus(C1,Times(m,x)))),CN1),Sqrt(Plus(C1,Times(CN1,Sqr(m),Sqr(x)))),Hypergeometric2F1(C1D2,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(Sqr(m),Sqr(x)))))),And(Unequal(n,CN1),Unequal(n,CN2)))),
     // f3(ArcCosh,x_,n_,m_,p_):=(x^(1+n)*(ArcCosh(m*x^p)+(-m*p*x^p*Sqrt(1-m^2*x^(2*p))*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+3*p)/(2*p),m^2*x^(2*p)))/((1+n+p)*Sqrt(-1+m*x^p)*Sqrt(1+m*x^p))))/(1+n)/;n!=-1&&n+p!=-1
     SetDelayed($(f3,ArcCosh,x_,n_,m_,p_),
-      Condition(Times(Power(Plus(C1,n),CN1),Power(x,Plus(C1,n)),Plus(ArcCosh(Times(m,Power(x,p))),Times(CN1,m,p,Power(x,p),Power(Times(Plus(C1,n,p),Sqrt(Plus(CN1,Times(m,Power(x,p)))),Sqrt(Plus(C1,Times(m,Power(x,p))))),CN1),Sqrt(Plus(C1,Times(CN1,Sqr(m),Power(x,Times(C2,p))))),Hypergeometric2F1(C1D2,Times(Plus(C1,n,p),Power(Times(C2,p),CN1)),Times(Plus(C1,n,Times(C3,p)),Power(Times(C2,p),CN1)),Times(Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
+      Condition(Times(Power(Plus(C1,n),CN1),Power(x,Plus(C1,n)),Plus(ArcCosh(Times(m,Power(x,p))),Times(CN1,m,p,Power(x,p),Power(Times(Plus(C1,n,p),Sqrt(Plus(CN1,Times(m,Power(x,p)))),Sqrt(Plus(C1,Times(m,Power(x,p))))),CN1),Sqrt(Plus(C1,Times(CN1,Sqr(m),Power(x,Times(C2,p))))),Hypergeometric2F1(C1D2,Times(Power(Times(C2,p),CN1),Plus(C1,n,p)),Times(Power(Times(C2,p),CN1),Plus(C1,n,Times(C3,p))),Times(Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
     // f2(ArcCot,x_,n_,m_):=(x^(1+n)*((2+n)*ArcCot(m*x)+m*x*Hypergeometric2F1(1,1+n/2,2+n/2,-m^2*x^2)))/((1+n)*(2+n))/;n!=-1&&n!=-2
     SetDelayed($(f2,ArcCot,x_,n_,m_),
       Condition(Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcCot(Times(m,x))),Times(m,x,Hypergeometric2F1(C1,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(CN1,Sqr(m),Sqr(x)))))),And(Unequal(n,CN1),Unequal(n,CN2)))),
@@ -32,13 +32,13 @@ public class IntegratePowerTimesFunctionRules {
       Condition(Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcSin(Times(m,x))),Times(CN1,m,x,Hypergeometric2F1(C1D2,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(Sqr(m),Sqr(x)))))),And(Unequal(n,CN1),Unequal(n,CN2)))),
     // f3(ArcSin,x_,n_,m_,p_):=(x^(1+n)*((1+n+p)*ArcSin(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+3*p)/(2*p),m^2*x^(2*p))))/((1+n)*(1+n+p))/;n!=-1&&n+p!=-1
     SetDelayed($(f3,ArcSin,x_,n_,m_,p_),
-      Condition(Times(Power(Times(Plus(C1,n),Plus(C1,n,p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C1,n,p),ArcSin(Times(m,Power(x,p)))),Times(CN1,m,p,Power(x,p),Hypergeometric2F1(C1D2,Times(Plus(C1,n,p),Power(Times(C2,p),CN1)),Times(Plus(C1,n,Times(C3,p)),Power(Times(C2,p),CN1)),Times(Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
+      Condition(Times(Power(Times(Plus(C1,n),Plus(C1,n,p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C1,n,p),ArcSin(Times(m,Power(x,p)))),Times(CN1,m,p,Power(x,p),Hypergeometric2F1(C1D2,Times(Power(Times(C2,p),CN1),Plus(C1,n,p)),Times(Power(Times(C2,p),CN1),Plus(C1,n,Times(C3,p))),Times(Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
     // f2(ArcSinh,x_,n_,m_):=(x^(1+n)*((2+n)*ArcSinh(m*x)-m*x*Hypergeometric2F1(1/2,1+n/2,2+n/2,-m^2*x^2)))/((1+n)*(2+n))/;n!=-1&&n!=-2
     SetDelayed($(f2,ArcSinh,x_,n_,m_),
       Condition(Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcSinh(Times(m,x))),Times(CN1,m,x,Hypergeometric2F1(C1D2,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(CN1,Sqr(m),Sqr(x)))))),And(Unequal(n,CN1),Unequal(n,CN2)))),
     // f3(ArcSinh,x_,n_,m_,p_):=(x^(1+n)*((1+n+p)*ArcSinh(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+3*p)/(2*p),-m^2*x^(2*p))))/((1+n)*(1+n+p))/;n!=-1&&n+p!=-1
     SetDelayed($(f3,ArcSinh,x_,n_,m_,p_),
-      Condition(Times(Power(Times(Plus(C1,n),Plus(C1,n,p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C1,n,p),ArcSinh(Times(m,Power(x,p)))),Times(CN1,m,p,Power(x,p),Hypergeometric2F1(C1D2,Times(Plus(C1,n,p),Power(Times(C2,p),CN1)),Times(Plus(C1,n,Times(C3,p)),Power(Times(C2,p),CN1)),Times(CN1,Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
+      Condition(Times(Power(Times(Plus(C1,n),Plus(C1,n,p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C1,n,p),ArcSinh(Times(m,Power(x,p)))),Times(CN1,m,p,Power(x,p),Hypergeometric2F1(C1D2,Times(Power(Times(C2,p),CN1),Plus(C1,n,p)),Times(Power(Times(C2,p),CN1),Plus(C1,n,Times(C3,p))),Times(CN1,Sqr(m),Power(x,Times(C2,p))))))),And(Unequal(n,CN1),Unequal(Plus(n,p),CN1)))),
     // f2(ArcTan,x_,n_,m_):=x^(1+n)/((1+n)*(2+n))*((2+n)*ArcTan(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,-m^2*x^2))/;n!=-1&&n!=-2
     SetDelayed($(f2,ArcTan,x_,n_,m_),
       Condition(Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcTan(Times(m,x))),Times(CN1,m,x,Hypergeometric2F1(C1,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(CN1,Sqr(m),Sqr(x)))))),And(Unequal(n,CN1),Unequal(n,CN2)))),
@@ -83,7 +83,7 @@ public class IntegratePowerTimesFunctionRules {
       Times(C2,Power(Times(Plus(C1,n),Plus(C3,Times(C2,n))),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C3,Times(C2,n)),ArcSin(Sqrt(Times(m,x)))),Times(CN1,Sqrt(Times(m,x)),Hypergeometric2F1(C1D2,Plus(QQ(3L,2L),n),Plus(QQ(5L,2L),n),Times(m,x)))))),
     // f3(InverseHaversine,x_,n_,m_,p_):=(2*x^(1+n)*((2+2*n+p)*ArcSin(Sqrt(m*x^p))-p*Sqrt(m*x^p)*Hypergeometric2F1(1/2,(2+2*n+p)/(2*p),3/2+(1+n)/p,m*x^p)))/((1+n)*(2+2*n+p))
     SetDelayed($(f3,InverseHaversine,x_,n_,m_,p_),
-      Times(C2,Power(Times(Plus(C1,n),Plus(C2,Times(C2,n),p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,Times(C2,n),p),ArcSin(Sqrt(Times(m,Power(x,p))))),Times(CN1,p,Sqrt(Times(m,Power(x,p))),Hypergeometric2F1(C1D2,Times(Plus(C2,Times(C2,n),p),Power(Times(C2,p),CN1)),Plus(QQ(3L,2L),Times(Plus(C1,n),Power(p,CN1))),Times(m,Power(x,p))))))),
+      Times(C2,Power(Times(Plus(C1,n),Plus(C2,Times(C2,n),p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,Times(C2,n),p),ArcSin(Sqrt(Times(m,Power(x,p))))),Times(CN1,p,Sqrt(Times(m,Power(x,p))),Hypergeometric2F1(C1D2,Times(Power(Times(C2,p),CN1),Plus(C2,Times(C2,n),p)),Plus(QQ(3L,2L),Times(Plus(C1,n),Power(p,CN1))),Times(m,Power(x,p))))))),
     // f1(InverseErf,x_,m_):=-1/(E^InverseErf(m*x)^2*m*Sqrt(Pi))
     SetDelayed($(f1,InverseErf,x_,m_),
       Negate(Power(Times(Exp(Sqr(InverseErf(Times(m,x)))),m,CSqrtPi),CN1))),

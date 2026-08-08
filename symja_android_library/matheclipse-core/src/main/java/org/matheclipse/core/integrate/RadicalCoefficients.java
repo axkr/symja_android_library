@@ -189,7 +189,7 @@ public class RadicalCoefficients {
   private static double numericValue(IExpr expr, EvalEngine engine) {
     try {
       IExpr number = engine.evalN(expr);
-      return number.isReal() ? number.evalf() : Double.NaN;
+      return number.isReal() ? number.evalfNaN() : Double.NaN;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Double.NaN;

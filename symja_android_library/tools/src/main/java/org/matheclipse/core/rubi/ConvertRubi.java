@@ -1,12 +1,11 @@
 package org.matheclipse.core.rubi;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -43,11 +42,16 @@ public class ConvertRubi {
   private static final String FOOTER = "}\n";
   private static int NUMBER_OF_RULES_PER_FILE = 20;
 
-  public static List<ASTNode> parseFileToList(String fileName) {
-    try {
-      File file = new File(fileName);
-      final BufferedReader f = new BufferedReader(new FileReader(file));
-      final StringBuffer buff = new StringBuffer(1024);
+  /** Default Rubi input file inside the {@code Rubi} directory. */
+  // private static final String DEFAULT_INPUT_FILE_NAME = "RubiRules_4.17.3.0_FullLHS.m";
+  private static final String DEFAULT_INPUT_FILE_NAME = "RubiRules4.16.0_FullLHS.m";
+
+  /** The generated files which are deleted before a new conversion is started. */
+  private static final Pattern GENERATED_FILE_PATTERN = Pattern.compile("IntRules\\d+\\.java");
+
+  public static List<ASTNode> parseFileToList(Path file) throws IOException {
+    final StringBuffer buff = new StringBuffer(1024);
+    try (BufferedReader f = RubiConverterIO.newReader(file)) {
       String line;
       while ((line = f.readLine()) != null) {
         buff.append(line);
@@ -56,31 +60,14 @@ public class ConvertRubi {
         buff.append('\n');
         buff.append('\n');
       }
-      f.close();
-      String inputString = buff.toString();
-      Parser p = new Parser(RubiASTNodeFactory.RUBI_STYLE_FACTORY, false, true);
-      return p.parsePackage(inputString);
-      // return p.parsePackage(inputString);
-
-      // assertEquals(obj.toString(),
-      // "Plus[Plus[Times[-1, a], Times[-1, Times[b, Factorial2[c]]]], d]");
-    } catch (Exception e) {
-      e.printStackTrace();
-      // assertEquals("", e.getMessage());
     }
-    return null;
+    String inputString = buff.toString();
+    Parser p = new Parser(RubiASTNodeFactory.RUBI_STYLE_FACTORY, false, true);
+    return p.parsePackage(inputString);
   }
 
-  public static void writeFile(String fileName, StringBuffer buffer) {
-    try {
-      File file = new File(fileName);
-      final BufferedWriter f = new BufferedWriter(new FileWriter(file));
-      f.append(buffer);
-      f.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-      // assertEquals("", e.getMessage());
-    }
+  public static void writeFile(Path file, StringBuffer buffer) throws IOException {
+    RubiConverterIO.writeFile(file, buffer);
   }
 
   public static void convert(ASTNode node, StringBuffer buffer, boolean last,
@@ -760,7 +747,22 @@ public class ConvertRubi {
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("Dist", Context.RUBI_STR + "Dist");
   }
 
+  /**
+   * Convert the Rubi integration rules into the {@code IntRules*.java} sources.
+   *
+   * @param args optional {@code <input-file> [<output-directory>]}, see {@link RubiConverterIO}
+   */
   public static void main(String[] args) {
+    try {
+      generate(args);
+    } catch (IOException | RuntimeException e) {
+      System.err.println(">>>>> Rubi conversion FAILED: " + e.getMessage());
+      e.printStackTrace();
+      System.exit(1);
+    }
+  }
+
+  private static void generate(String[] args) throws IOException {
     Config.SERVER_MODE = false;
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     Config.RUBI_CONVERT_SYMBOLS = true;
@@ -769,60 +771,61 @@ public class ConvertRubi {
     // engine.beginPackage(org.matheclipse.core.expression.Context.RUBI_STR);
     EvalEngine.set(engine);
     addPredefinedSymbols();
+
     // use same order as in Rubi.m
-    String userHome = System.getProperty("user.home");
-    String[] fileNames = { //
-        userHome
-            + "/git/symja_android_library/symja_android_library/Rubi/RubiRules4.16.0_FullLHS.m",};
-    // String[] fileNames = { //
-    // userHome
-    // + "/git/symja_android_library/symja_android_library/Rubi/RubiRules_4.17.3.0_FullLHS.m",};
+    Path inputFile = RubiConverterIO.resolveInputFile(args, DEFAULT_INPUT_FILE_NAME);
+    Path outputDirectory = RubiConverterIO.resolveOutputDirectory(args);
+
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>> File name:        " + inputFile);
+    System.out.println(">>>>> Output directory: " + outputDirectory);
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
+
+    // delete the previously generated files, so that a run which creates fewer files doesn't leave
+    // stale rules behind
+    RubiConverterIO.deleteGeneratedFiles(outputDirectory, GENERATED_FILE_PATTERN);
 
     IASTAppendable listOfRules = F.ListAlloc(10000);
     int fcnt = 0;
 
-    for (int i = 0; i < fileNames.length; i++) {
-
-      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
-      System.out.println(">>>>> File name: " + fileNames[i]);
-      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
-
+    List<ASTNode> list = parseFileToList(inputFile);
+    if (list != null) {
       StringBuffer buffer = new StringBuffer(100000);
-      List<ASTNode> list = parseFileToList(fileNames[i]);
-      // String currentFilename = fileNames[i].substring(fileNames[i].lastIndexOf('/'),
-      // fileNames[i].length() -
-      // 2);
-      if (list != null) {
-        int cnt = 0;
-        for (int j = 0; j < list.size(); j++) {
-          if (cnt == 0) {
-            buffer = new StringBuffer(100000);
-            buffer.append(HEADER + fcnt + " { \n  public static IAST RULES = List( \n");
-          }
-          ASTNode astNode = list.get(j);
-          cnt++;
-          convert(astNode, buffer, cnt == NUMBER_OF_RULES_PER_FILE || j == list.size() - 1,
-              listOfRules);
-
-          if (cnt == NUMBER_OF_RULES_PER_FILE) {
-            buffer.append("  );\n" + FOOTER);
-            writeFile("C:/temp/rubi/IntRules" + fcnt + ".java", buffer);
-            fcnt++;
-            cnt = 0;
-          }
+      int cnt = 0;
+      for (int j = 0; j < list.size(); j++) {
+        if (cnt == 0) {
+          buffer = new StringBuffer(100000);
+          buffer.append(HEADER + fcnt + " { \n  public static IAST RULES = List( \n");
         }
-        if (cnt != 0) {
-          // System.out.println(");");
+        ASTNode astNode = list.get(j);
+        cnt++;
+        convert(astNode, buffer, cnt == NUMBER_OF_RULES_PER_FILE || j == list.size() - 1,
+            listOfRules);
+
+        if (cnt == NUMBER_OF_RULES_PER_FILE) {
+          RubiConverterIO.stripTrailingRuleSeparator(buffer);
           buffer.append("  );\n" + FOOTER);
-          writeFile("C:/temp/rubi/IntRules" + fcnt + ".java", buffer);
+          writeFile(outputDirectory.resolve("IntRules" + fcnt + ".java"), buffer);
           fcnt++;
           cnt = 0;
         }
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">>>>> Number of entries: " + list.size());
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
       }
+      if (cnt != 0) {
+        // System.out.println(");");
+        RubiConverterIO.stripTrailingRuleSeparator(buffer);
+        buffer.append("  );\n" + FOOTER);
+        writeFile(outputDirectory.resolve("IntRules" + fcnt + ".java"), buffer);
+        fcnt++;
+        cnt = 0;
+      }
+      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
+      System.out.println(">>>>> Number of entries: " + list.size());
+      System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
     }
+
+    RubiConverterIO.reportRegisteredClasses(outputDirectory, "IntRules", fcnt, "getRuleASTRubi45",
+        "IAST init", "init");
+
     // which built-in symbols are used how often?
     for (Map.Entry<String, Integer> entry : AST2Expr.RUBI_STATISTICS_MAP.entrySet()) {
       System.out.println(entry.getKey() + "  >>>  " + entry.getValue());

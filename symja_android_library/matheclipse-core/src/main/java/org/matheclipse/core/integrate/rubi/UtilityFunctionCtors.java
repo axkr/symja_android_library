@@ -6,6 +6,7 @@ import static org.matheclipse.core.expression.F.quaternary;
 import static org.matheclipse.core.expression.F.quinary;
 import static org.matheclipse.core.expression.F.senary;
 import static org.matheclipse.core.expression.S.initFinalHiddenSymbol;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.B1;
@@ -75,7 +76,6 @@ public class UtilityFunctionCtors {
   public static ISymbol FracPart = F.$rubi("FracPart");
   public static ISymbol IntPart = F.$rubi("IntPart");
   public static ISymbol Simp = F.$rubi("Simp");
-  public static ISymbol Star = F.$rubi("Star");
   public static ISymbol Unintegrable = F.$rubi("Unintegrable");
 
   public static ISymbol NormalizeIntegrand = F.$rubi("NormalizeIntegrand");
@@ -224,6 +224,17 @@ public class UtilityFunctionCtors {
 
   public static IAST H(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(H, a0, a1, a2, a3);
+  }
+
+  /**
+   * {@code Int[expr,x,flag]} - Rubi's deprecated three argument form of {@code Int[]}, which only
+   * exists to report the obsolete flag argument. This is a stub: it prints a message and returns
+   * the unevaluated expression, the flag itself is ignored.
+   */
+  public static IAST Int(final IExpr a0, final IExpr a1, final IExpr a2) {
+    Errors.printMessage(S.Integrate,
+        "Int(expr,x,flag): the obsolete flag argument isn't supported, flag=" + a2.toString());
+    return F.ternaryAST3(F.$rubi("Int"), a0, a1, a2);
   }
 
   public static IAST IntBinomialQ(final IExpr... a) {
@@ -410,6 +421,14 @@ public class UtilityFunctionCtors {
     return F.ternaryAST3(F.$rubi("Divides"), a0, a1, a2);
   }
 
+  /**
+   * {@code DownValues[symbol]} - Rubi uses the built-in symbol to read and reassign the integration
+   * rules in {@code FixIntRules[]}.
+   */
+  public static IAST DownValues(final IExpr a0) {
+    return F.unaryAST1(S.DownValues, a0);
+  }
+
   public static IAST EasyDQ(final IExpr a0, final IExpr a1) {
     return F.binaryAST2(F.$rubi("EasyDQ"), a0, a1);
   }
@@ -466,6 +485,14 @@ public class UtilityFunctionCtors {
     public IASTMutable copy() {
       return new EqQ(arg1, arg2);
     }
+  }
+
+  /**
+   * {@code EqQ[u]} - a few rules omit the second argument of {@code EqQ[u,v]}, which tests
+   * {@code u-v} for zero. {@code EqQ[u]} therefore tests {@code u} itself for zero.
+   */
+  public static IAST EqQ(final IExpr a0) {
+    return new EqQ(a0, F.C0);
   }
 
   public static IAST EqQ(final IExpr a0, final IExpr a1) {
@@ -628,13 +655,13 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("FixIntRule"), a0, a1);
   }
 
-  // public static IAST FixIntRules() {
-  // return F.headAST0(F.$rubi("FixIntRules"));
-  // }
+  public static IAST FixIntRules() {
+    return F.headAST0(F.$rubi("FixIntRules"));
+  }
 
-  // public static IAST FixIntRules(final IExpr a0) {
-  // return F.unaryAST1(F.$rubi("FixIntRules"), a0);
-  // }
+  public static IAST FixIntRules(final IExpr a0) {
+    return F.unaryAST1(F.$rubi("FixIntRules"), a0);
+  }
 
   public static IAST FixRhsIntRule(final IExpr a0, final IExpr a1) {
     return F.binaryAST2(F.$rubi("FixRhsIntRule"), a0, a1);
@@ -1281,6 +1308,13 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("MapOr"), a0, a1);
   }
 
+  /**
+   * {@code Message[name,arg]} - Rubi reports its obsolete rules through the built-in symbol.
+   */
+  public static IAST Message(final IExpr a0, final IExpr a1) {
+    return F.binaryAST2(S.Message, a0, a1);
+  }
+
   public static IAST MergeFactor(final IExpr a0, final IExpr a1, final IExpr a2) {
     return F.ternaryAST3(F.$rubi("MergeFactor"), a0, a1, a2);
   }
@@ -1371,6 +1405,14 @@ public class UtilityFunctionCtors {
     public IASTMutable copy() {
       return new NeQ(arg1, arg2);
     }
+  }
+
+  /**
+   * {@code NeQ[u]} - a few rules omit the second argument of {@code NeQ[u,v]}, which tests
+   * {@code u-v} for zero. {@code NeQ[u]} therefore tests {@code u} itself for zero.
+   */
+  public static IAST NeQ(final IExpr a0) {
+    return new NeQ(a0, F.C0);
   }
 
   public static IAST NeQ(final IExpr a0, final IExpr a1) {
@@ -1879,7 +1921,9 @@ public class UtilityFunctionCtors {
 
     @Override
     public final ISymbol head() {
-      return Star;
+      // the built-in symbol the parser creates for the infix operator U+22C6, which Rubi uses in
+      // the right-hand side of its rules
+      return S.Star;
     }
 
     @Override

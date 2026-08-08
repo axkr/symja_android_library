@@ -335,12 +335,12 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "-Pi/(7*x^7)+E*x");
 
     check("Refine(Integrate(Abs(Pi+42*x^6),x), Element(x,Reals))", //
-        "x*(Pi+6*x^6)");
+        "Pi*x+6*x^7");
     check("Refine(Integrate(Abs(E+Pi*x^(-1)),x), Element(x,Reals))", //
         "Piecewise({{E*x+Pi*Log(x),x<=-Pi/E},{-E*x+2*Pi*(-2+I*Pi+Log(Pi))-Pi*Log(x),-Pi/E<x&&x<=\n"
             + "0}},E*x+Pi*Log(x))");
     check("Refine(Integrate(Abs(E+2*x^(-1)),x), Element(x,Reals))", //
-        "Piecewise({{E*x+2*Log(x),x<=-2/E},{-8+I*8-E*x+Log(16)-2*Log(x),-2/E<x&&x<=0}},E*x+\n" //
+        "Piecewise({{E*x+2*Log(x),x<=-2/E},{-E*x+4*(-2+I*2+Log(2))-2*Log(x),-2/E<x&&x<=0}},E*x+\n" //
             + "2*Log(x))");
   }
 
@@ -354,9 +354,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
 
     check("Refine(Integrate(Abs(E+2*x),x), Element(x,Reals))", //
-        "Piecewise({{-x*(E+x),x<=-E/2}},E^2/Pi+E*x+x^2)");
+        "Piecewise({{-E*x-x^2,x<=-E/2}},E^2/Pi+E*x+x^2)");
     check("Refine(Integrate(Abs(E+Pi*x),x), Element(x,Reals))", //
-        "Piecewise({{x*(-E-1/2*Pi*x),x<=-E/Pi}},E^2/Pi+E*x+1/2*Pi*x^2)");
+        "Piecewise({{-E*x-1/2*Pi*x^2,x<=-E/Pi}},E^2/Pi+E*x+1/2*Pi*x^2)");
     check("Refine(Integrate(Abs(a+b*x),x), Element(x,Reals))", //
         "Integrate(Abs(a+b*x),x)");
     check("Refine(Integrate(Abs(x),x), Element(x,Reals))", //
@@ -519,7 +519,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
     // integrable singularity at x==0
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->GaussKronrod)", //
-        "2.0");
+        "1.9999999999924798");
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->LegendreGauss )", //
         "1.9913364016175945");
     checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)", //

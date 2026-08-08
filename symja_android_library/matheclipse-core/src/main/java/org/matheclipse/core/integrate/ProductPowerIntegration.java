@@ -25,14 +25,15 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  *
  * a polynomial identity linear in the unknown polynomial {@code poly} (bounded degree
- * {@code deg(S) - deg(prod) + 1}), solved by a linear system in its coefficients. Only power factors
- * with a <em>non-integer / symbolic</em> exponent are treated this way (integer powers are rational
- * and handled by the rational-integration / Rubi stages). The result is diff-back self-verified.
+ * {@code deg(S) - deg(prod) + 1}), solved by a linear system in its coefficients. Only power
+ * factors with a <em>non-integer / symbolic</em> exponent are treated this way (integer powers are
+ * rational and handled by the rational-integration / Rubi stages). The result is diff-back
+ * self-verified.
  *
  * <p>
  * This recovers integrals such as {@code Integrate((a+b*x)^m, x) = (a+b*x)^(m+1)/(b*(m+1))} and the
- * multi-factor {@code Integrate(P^m*Q^n*S, x) = x*P^(m+1)*Q^(n+1)} that Rubi leaves unevaluated (its
- * linearity split over {@code S} destroys the structure). See {@code CLEANROOM.md}.
+ * multi-factor {@code Integrate(P^m*Q^n*S, x) = x*P^(m+1)*Q^(n+1)} that Rubi leaves unevaluated
+ * (its linearity split over {@code S} destroys the structure).
  */
 public class ProductPowerIntegration {
 
@@ -110,8 +111,8 @@ public class ProductPowerIntegration {
           others = F.Times(others, bases.get(i));
         }
       }
-      logDerivativeSum.append(
-          F.Times(F.Plus(exponents.get(j), F.C1), F.D(bases.get(j), x), others));
+      logDerivativeSum
+          .append(F.Times(F.Plus(exponents.get(j), F.C1), F.D(bases.get(j), x), others));
     }
     IExpr logDerivativeTerm = engine.evaluate(F.ExpandAll(logDerivativeSum));
 
@@ -133,8 +134,10 @@ public class ProductPowerIntegration {
     IExpr poly = trial;
     // poly' * prod + poly * logDerivativeTerm must equal S identically in x. Matching the
     // coefficient of each power of x yields a linear system in the unknown coefficients c_i. It is
-    // solved with LinearSolve on the top (highest-degree) square block, which is triangular for this
-    // ansatz -- deliberately *not* Solve/SolveAlways, whose general (nonlinear-capable) machinery is
+    // solved with LinearSolve on the top (highest-degree) square block, which is triangular for
+    // this
+    // ansatz -- deliberately *not* Solve/SolveAlways, whose general (nonlinear-capable) machinery
+    // is
     // far too slow, or non-terminating, on coefficients carrying the symbolic exponents/parameters.
     IExpr residual = engine.evaluate(F.ExpandAll(
         F.Subtract(F.Plus(F.Times(F.D(poly, x), prod), F.Times(poly, logDerivativeTerm)), s)));

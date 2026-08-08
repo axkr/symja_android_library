@@ -33,7 +33,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <p>
  * Clean-room: implemented from the standard degree-bound/coefficient-comparison method (Bronstein,
- * <i>Symbolic Integration I</i>, ch. 6), not transliterated. See {@code CLEANROOM.md}.
+ * <i>Symbolic Integration I</i>, ch. 6), not transliterated.
  */
 public class RischDifferentialEquation {
 

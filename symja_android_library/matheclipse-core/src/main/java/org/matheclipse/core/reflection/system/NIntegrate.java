@@ -303,9 +303,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
             method = "GaussKronrod";
           }
         }
-        try {
-          double min = list.arg2().evalf();
-          double max = list.arg3().evalf();
+        double minDouble = list.arg2().evalfNaN();
+        double maxDouble = list.arg3().evalfNaN();
+        if (!Double.isNaN(minDouble) && !Double.isNaN(maxDouble)) {
           try {
             if (!function.isFreeAST(h -> h == S.Boole)) {
               IExpr temp = Integrate.integrateBooleTimesFxRegion(function, list, true, engine);
@@ -313,8 +313,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
                 return temp;
               }
             }
-            double result = integrateDouble(function, x, min, max, method, maxPoints, maxIterations,
-                list.rest(), engine);
+            double result = integrateDouble(function, x, minDouble, maxDouble, method, maxPoints,
+                maxIterations, list.rest(), engine);
             result = Precision.round(result, precisionGoal);
             return Num.valueOf(result);
           } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
@@ -322,8 +322,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
             // Retry with GaussKronrod for integrals with endpoint singularities
             if (option[0].isAutomatic() && !method.equals("GaussKronrod")) {
               try {
-                double result = integrateDouble(function, x, min, max, "GaussKronrod", maxPoints,
-                    maxIterations, list.rest(), engine);
+                double result = integrateDouble(function, x, minDouble, maxDouble,
+                    "GaussKronrod", maxPoints, maxIterations, list.rest(), engine);
                 result = Precision.round(result, precisionGoal);
                 return Num.valueOf(result);
               } catch (MathIllegalArgumentException | MathIllegalStateException miae2) {
@@ -339,9 +339,11 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
             if (symbolic.isPresent() && symbolic.isFree(S.Integrate)) {
               IExpr numeric = engine.evaluate(F.N(symbolic));
               if (numeric.isNumber()) {
-                double val = numeric.evalf();
-                val = Precision.round(val, precisionGoal);
-                return Num.valueOf(val);
+                double val = numeric.evalfNaN();
+                if (!Double.isNaN(val)) {
+                  val = Precision.round(val, precisionGoal);
+                  return Num.valueOf(val);
+                }
               }
             }
             return Errors.printMessage(ast.topHead(), miae, engine);
@@ -351,8 +353,6 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
             Errors.rethrowsInterruptException(e);
             return Errors.printMessage(ast.topHead(), e, engine);
           }
-        } catch (ArgumentTypeException ate) {
-          //
         }
         try {
           Complex min = list.arg2().evalfc();

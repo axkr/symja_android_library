@@ -7,10 +7,6 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Integrate;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -20,6 +16,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -39,7 +36,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
-import org.matheclipse.core.expression.KryoUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
 import org.matheclipse.core.integrate.ChebyshevIntegration;
@@ -65,9 +61,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.rules.IntegratePowerTimesFunctionRules;
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.google.common.cache.CacheBuilder;
 import edu.jas.kern.PreemptingException;
 
@@ -153,80 +146,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   public static class IntegrateInitializer implements Runnable {
-    /**
-     * Attempts to deserialize the Rubi rules from a classpath resource. * @param resourcePath The
-     * path to the resource (e.g., "/symja_rubi_rules.bin")
-     * 
-     * @return true if successful, false if the resource is missing, corrupted, or if the ID numbers
-     *         have changed.
-     */
-    public static boolean deserializeRubiRulesFromResource(String resourcePath) {
-      // Use the classloader to find the resource stream
-      try (InputStream stream = Integrate.class.getResourceAsStream(resourcePath)) {
-        if (stream == null) {
-          System.out.println("Rubi rules resource not found at: " + resourcePath);
-          return false;
-        }
-
-        try (Input input = new Input(stream)) {
-          Kryo kryo = KryoUtil.initKryo();
-
-          // 1. Verify the fingerprint
-          String savedFingerprint = input.readString();
-          if (!getSystemIdFingerprint().equals(savedFingerprint)) {
-            System.out.println("Symja ID numbers changed. Packaged Rubi resource cache is stale.");
-            return false;
-          }
-
-          // 2. Load the rules if the fingerprint matches
-          RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
-          if (rulesData != null) {
-            S.Integrate.setRulesData(rulesData);
-            return true;
-          }
-        }
-      } catch (Exception e) {
-        System.err
-            .println("Failed to load or deserialize Rubi rules from resource: " + e.getMessage());
-      }
-      return false;
-    }
-
-    /**
-     * Orchestrator method to load rules. It tries the fast Kryo cache first. If the cache fails
-     * (due to an ID shift or missing file), it builds from a fresh system and immediately
-     * serializes the new state.
-     */
-    private static void loadOrRebuildRubiRules(File localCacheFile) {
-      UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
-
-      // Try to load from the JAR resource first (Fastest, read-only)
-      // Note: The leading "/" indicates the root of the classpath
-      // if (deserializeRubiRulesFromResource("/bin/symja_rubi_rules.bin")) {
-      // System.out.println("Successfully loaded Rubi rules from classpath resource.");
-      // return;
-      // }
-      //
-      // // If resource is missing or stale, try the local temp file cache
-      // if (deserializeRubiRules(localCacheFile)) {
-      // System.out.println("Successfully loaded Rubi rules from local cache file.");
-      // return;
-      // }
-
-      // If both fail, build from scratch and cache locally
-      // System.out.println("Initializing Rubi rules from a fresh system...");
-      try {
-        // Load the actual integration rules (via pre-compiled Java classes or parsing .m files)
-        // UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
-        getRuleASTStatic();
-      } catch (Exception e) {
-        System.err.println("Error during raw Rubi initialization: " + e.getMessage());
-      }
-
-      // Save to the local file system cache for the next run
-      // serializeRubiRules(localCacheFile);
-    }
-
     @Override
     public void run() {
       if (!INTEGRATE_RULES_READ.get()) {
@@ -236,47 +155,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         try {
           engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
 
-          // Define the cache file location.
-          // Using the system temp directory is usually safe, or you can specify a local cache
-          // folder.
-          File cacheFile = new File(System.getProperty("java.io.tmpdir"), "symja_rubi_rules.bin");
-
-          // Call the Kryo orchestrator
-          loadOrRebuildRubiRules(cacheFile);
+          UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
+          getRuleASTStatic();
 
           ISymbol[] rubiSymbols = {S.Derivative, S.D};
           for (int i = 0; i < rubiSymbols.length; i++) {
             INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
           }
-
-          // /* Kryo DEL start */
-          // UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
-          // getRuleASTStatic();
-          // /* Kryo DEL end */
-          // /* Kryo INS start */
-          // // Kryo kryo = KryoUtil.initKryo();
-          // // try (
-          // // InputStream resourceAsStream =
-          // // Integrate.getClass().getResourceAsStream("/rubi_context.bin");
-          // // Input input = new Input(resourceAsStream)) {
-          // // // kryo sets Context.RUBI internally
-          // // kryo.readClassAndObject(input);
-          // // } catch (IOException e) {
-          // // e.printStackTrace();
-          // // }
-          // // try (
-          // // InputStream resourceAsStream =
-          // // Integrate.getClass().getResourceAsStream("/integrate.bin");
-          // // Input input = new Input(resourceAsStream)) {
-          // // RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
-          // // S.Integrate.setRulesData(rulesData);
-          // // } catch (IOException e) {
-          // // e.printStackTrace();
-          // // }
-          // // } catch (ClassNotFoundException cnfex) {
-          // // cnfex.printStackTrace();
-          // /* Kryo INS end */
-
         } finally {
           engine.setContextPath(path);
         }
@@ -327,6 +212,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   public static RulesData INTEGRATE_RULES_DATA;
+
   /** Constructor for the singleton */
   public static final Integrate CONST = new Integrate();
 
@@ -502,7 +388,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       if (arg1 instanceof ASTSeriesData) {
         ASTSeriesData series = ((ASTSeriesData) arg1);
-        // if (series.expansionVariable().equals(x)) {
         final ASTSeriesData temp = series.integrate(x);
         if (temp != null) {
           return temp;
@@ -580,18 +465,18 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // integrand to the Rubi rules (which often have a far simpler closed form) and re-emit
           // the RootSum only as a post-Rubi fallback (see below). Closed-form results, including a
           // mixed Log(..)+RootSum(..), are still produced here.
-          result =
-              RationalIntegration.integrate(fx, x, engine, RationalIntegration.RootSumMode.DEFER);
+          result = quietStage(engine, () -> RationalIntegration.integrate(fx, x, engine,
+              RationalIntegration.RootSumMode.DEFER));
           if (result.isPresent()) {
             return result;
           }
           // Stage: substitution t = (a+b*x)^(1/n) for radicals of a linear function
-          result = RadicalSubstitution.integrate(fx, x, engine);
+          result = quietStage(engine, () -> RadicalSubstitution.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
           // Stage: Chebyshev binomial differentials x^m (a+b*x^n)^p (correct-by-construction).
-          result = ChebyshevIntegration.integrate(fx, x, engine);
+          result = quietStage(engine, () -> ChebyshevIntegration.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -601,7 +486,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // unresolved pieces), and its own 40s grind on them would otherwise exhaust the test
           // timeout, so this runs before the rules. Restricted to >= 2 power factors to avoid the
           // single-power integrals Rubi already renders canonically. Diff-back self-verified.
-          result = ProductPowerIntegration.integrate(fx, x, engine, 2);
+          result = quietStage(engine, () -> ProductPowerIntegration.integrate(fx, x, engine, 2));
           if (result.isPresent()) {
             return result;
           }
@@ -611,7 +496,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // rules have nothing for this shape and grind until the deadline, while partial
           // fractions in the monomial plus the logarithmic-derivative test settle it. The stage
           // gates on that shape itself and diff-back verifies.
-          result = PrimitiveTowerIntegration.integrate(fx, x, engine);
+          result = quietStage(engine, () -> PrimitiveTowerIntegration.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -622,14 +507,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // these by substituting the inner function, runs before them instead of after. Only for
           // this shape, so no integral the rules can render more canonically is intercepted; the
           // stage diff-back verifies its result as always.
-          result = DerivativeDivides.integrate(fx, x, engine);
+          result = quietStage(engine, () -> DerivativeDivides.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
         }
         result = integrateByRubiRulesWithBudget(fx, x, ast, engine);
         if (result.isPresent()) {
-          return F.subst(result, f -> {
+          IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
               IAST integrate = F.Integrate(f.first(), f.second());
               // integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
@@ -641,6 +526,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             }
             return F.NIL;
           });
+          // Rubi reports "no rule for this integrand" as Unintegrable[] or CannotIntegrate[], which
+          // the substitution above maps back to the unevaluated Integrate(). That isn't an
+          // antiderivative, so it must not end the cascade here: the native fallback stages below
+          // can still solve the integral, for example with a RootSum() antiderivative.
+          if (!rubiResult.equals(ast)) {
+            return rubiResult;
+          }
         }
 
         result = callRestIntegrate(fx, x, engine);
@@ -659,8 +551,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // only now that Rubi left the integral unevaluated, so Rubi's simpler closed form (when
           // it
           // has one) always wins. Correct-by-construction (Trager), reuses the full general logic.
-          result =
-              RationalIntegration.integrate(fx, x, engine, RationalIntegration.RootSumMode.EMIT);
+          result = quietStage(engine, () -> RationalIntegration.integrate(fx, x, engine,
+              RationalIntegration.RootSumMode.EMIT));
           if (result.isPresent()) {
             return result;
           }
@@ -668,7 +560,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // x^2/(x^2+Sqrt(1-x^2)) -> x^2*(x^2-Sqrt(1-x^2))/(x^4+x^2-1). Post-Rubi because it only
           // rewrites the integrand and re-enters Integrate: whenever Rubi has an answer for the
           // original form, that (more canonical) form wins.
-          result = SurdRationalization.integrate(fx, x, engine);
+          result = quietStage(engine, () -> SurdRationalization.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -678,7 +570,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // return result;
           // }
           // Derivative-divides (Geddes) u-substitution heuristic.
-          result = DerivativeDivides.integrate(fx, x, engine);
+          result = quietStage(engine, () -> DerivativeDivides.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -700,6 +592,40 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(oldNumericMode);
     }
+  }
+
+  /**
+   * Runs one stage of the native integration cascade with messages suppressed.
+   *
+   * <p>
+   * The cascade is a speculative search: a stage rewrites the integrand, evaluates the rewritten
+   * form - often by re-entering {@link S#Integrate} - and returns {@link F#NIL} when that leads
+   * nowhere, in which case the next stage or the Rubi rules take over. Messages emitted while such
+   * an attempt is being explored describe an intermediate expression the caller never sees, so
+   * printing them only produces noise.
+   *
+   * <p>
+   * For example {@code Probability(x>1, Distributed(x, ExponentialDistribution(2/3)))} integrates
+   * {@code Boole(x>1)*Piecewise({{2/(3*E^(2*x/3)),x>=0}},0)}. The derivative-divides stage
+   * substitutes a dummy for the exponential and re-enters {@code Integrate}, whose Rubi utility
+   * function {@code TrigSimplifyRecur} maps itself over the arguments of the {@code Piecewise} -
+   * briefly making its first argument a function call instead of a list of pairs. That printed
+   * about a dozen "not a list of pairs" messages per call, while the returned probability was
+   * correct all along.
+   *
+   * <p>
+   * <b>Note:</b> this deliberately hides genuine messages from these stages too. That is the right
+   * trade for an attempt whose result is either discarded or verified by differentiating it back,
+   * but it means a stage must never rely on a message to report a real problem. An explicitly
+   * requested stage ({@code Integrate[f, x, Method -> "..."]}) is not run through here and stays
+   * verbose.
+   *
+   * @param engine the evaluation engine, whose quiet mode is restored before returning
+   * @param stage the stage to run
+   * @see EvalEngine#withQuietMode(Supplier)
+   */
+  private static IExpr quietStage(final EvalEngine engine, final Supplier<IExpr> stage) {
+    return engine.withQuietMode(stage);
   }
 
   /**
@@ -1722,66 +1648,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       restTimes.append(temp);
     }
   }
-
-  /**
-   * Generates a fingerprint based on the current number of built-in symbols. This ensures that if
-   * the ID class changes (shifting ordinals), we can dynamically detect it and invalidate the stale
-   * cache.
-   */
-  private static String getSystemIdFingerprint() {
-    return "RUBI_V1_ID_COUNT:" + ID.class.getDeclaredFields().length;
-  }
-
-  /**
-   * Serializes the current S.Integrate rules to a binary Kryo file.
-   */
-  public static void serializeRubiRules(File cacheFile) {
-    try (Output output = new Output(new FileOutputStream(cacheFile))) {
-      Kryo kryo = KryoUtil.initKryo();
-
-      // 1. Write the protective fingerprint first
-      output.writeString(getSystemIdFingerprint());
-
-      // 2. Serialize the current RulesData for Integrate
-      kryo.writeClassAndObject(output, S.Integrate.getRulesData());
-
-      System.out.println("Successfully serialized Rubi rules to: " + cacheFile.getAbsolutePath());
-    } catch (Exception e) {
-      System.err.println("Failed to serialize Rubi rules: " + e.getMessage());
-    }
-  }
-
-  /**
-   * Attempts to deserialize the Rubi rules from a binary file. * @return true if successful, false
-   * if the file is missing, corrupted, or if the ID numbers have changed.
-   */
-  public static boolean deserializeRubiRules(File cacheFile) {
-    if (!cacheFile.exists()) {
-      return false;
-    }
-
-    try (Input input = new Input(new FileInputStream(cacheFile))) {
-      Kryo kryo = KryoUtil.initKryo();
-
-      // 1. Verify the fingerprint
-      String savedFingerprint = input.readString();
-      if (!getSystemIdFingerprint().equals(savedFingerprint)) {
-        System.out.println("Symja ID numbers changed. Invalidating stale Rubi Kryo cache.");
-        return false;
-      }
-
-      // 2. Load the rules if the fingerprint matches
-      RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
-      if (rulesData != null) {
-        S.Integrate.setRulesData(rulesData);
-        return true;
-      }
-    } catch (Exception e) {
-      System.err.println("Corrupted Rubi Kryo cache. Forcing rebuild...");
-    }
-    return false;
-  }
-
 
   @Override
   public int status() {
