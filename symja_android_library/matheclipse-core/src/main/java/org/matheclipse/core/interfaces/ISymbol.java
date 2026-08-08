@@ -295,6 +295,10 @@ public interface ISymbol extends IExpr {
       }
     }
 
+    if ((attributes & READPROTECTED) != NOATTRIBUTE) {
+      result.append(S.ReadProtected);
+    }
+
     if ((attributes & SEQUENCEHOLD) == SEQUENCEHOLD
         && ((attributes & HOLDALLCOMPLETE) != HOLDALLCOMPLETE)) {
       result.append(S.SequenceHold);
