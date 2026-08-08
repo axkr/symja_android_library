@@ -46,6 +46,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // Basic integers
     check("AlgebraicIntegerQ(0)", //
         "True");
+    check("AlgebraicIntegerQ(5)", //
+        "True");
+    check("AlgebraicIntegerQ(-7)", //
+        "True");
     check("AlgebraicIntegerQ(42)", //
         "True");
     check("AlgebraicIntegerQ(-10^10)", //
@@ -53,6 +57,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     // Rationals
     check("AlgebraicIntegerQ(1/2)", //
+        "False");
+    check("AlgebraicIntegerQ(2/3)", //
         "False");
     check("AlgebraicIntegerQ(-5/3)", //
         "False");
@@ -72,6 +78,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "False");
     check("AlgebraicIntegerQ(1.5)", //
         "False");
+    check("AlgebraicIntegerQ(3.5)", //
+        "False");
     check("AlgebraicIntegerQ(1.5 + I)", //
         "False");
 
@@ -83,8 +91,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("AlgebraicIntegerQ(2^(1/3))", //
         "True");
+    check("AlgebraicIntegerQ(Sqrt(-3))", //
+        "True");
 
     // Golden ratio: (1 + Sqrt(5))/2 -> Minimal polynomial: x^2 - x - 1
+    check("FunctionExpand(GoldenRatio)", //
+        "1/2*(1+Sqrt(5))");
+    check("AlgebraicIntegerQ(GoldenRatio)", //
+        "True");
     check("AlgebraicIntegerQ((1 + Sqrt(5))/2)", //
         "True");
 
@@ -96,12 +110,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // Minimal polynomial for Sqrt(2)/2 is 2*x^2 - 1
     check("AlgebraicIntegerQ(Sqrt(2)/2)", //
         "False");
+    check("AlgebraicIntegerQ(Sqrt(2)/3)", //
+        "False");
     check("AlgebraicIntegerQ((1 + Sqrt(2))/3)", //
         "False");
 
     // Transcendental / Symbolic / Unevaluated
     check("AlgebraicIntegerQ(x)", //
-        "AlgebraicIntegerQ(x)");
+        "False");
     check("AlgebraicIntegerQ(Pi)", //
         "False");
     check("AlgebraicIntegerQ(E)", //

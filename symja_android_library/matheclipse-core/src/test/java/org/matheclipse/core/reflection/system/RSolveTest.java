@@ -437,4 +437,17 @@ public class RSolveTest {
         "{{y(n)->(0.19079+I*0.0187006)*(-0.419643+I*(-0.606291))^n+(0.19079+I*(-0.0187006))*(-0.419643+I*0.606291)^n+(0.61842)*1.83929^n}}");
   }
 
+  @Test
+  public void testAndOperatorInsteadOfList() {
+    // the equations and the boundary conditions may be combined with `&&` instead of a list
+    check("RSolve(a(n) == a(n-1) + 1 && a(1) == 1, a(n), n)", //
+        "{{a(n)->n}}");
+    check("RSolve(a(n) == 2*a(n-1) && a(0) == 1, a(n), n)", //
+        "{{a(n)->2^n}}");
+    check("RSolve(a(n) == 4*a(n-1) - 4*a(n-2) && a(1) == 2 && a(2) == 8, a(n), n)", //
+        "{{a(n)->2^n*n}}");
+    check("RSolveValue(a(n) == 2*a(n-1) && a(0) == 1, a(n), n)", //
+        "2^n");
+  }
+
 }

@@ -52,6 +52,54 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveModulus() {
+    // 3^2 == 4^2 == 2 modulo 7
+    check("Solve({x^2 == 2, y == x}, {x, y}, Modulus -> 7)", //
+        "{{x->3,y->3},{x->4,y->4}}");
+    check("Solve(x^2 == 2 && y == x, {x, y}, Modulus -> 7)", //
+        "{{x->3,y->3},{x->4,y->4}}");
+    // 3 isn't a quadratic residue modulo 7
+    check("Solve({x^2 == 3, y == x}, {x, y}, Modulus -> 7)", //
+        "{}");
+
+    check("Solve(x^2 == 2, x, Modulus -> 7)", //
+        "{{x->3},{x->4}}");
+    check("Solve(2*x == 3, x, Modulus -> 7)", //
+        "{{x->5}}");
+    // a non prime modulus is enumerated as well
+    check("Solve(x^2 == 1, x, Modulus -> 8)", //
+        "{{x->1},{x->3},{x->5},{x->7}}");
+    check("Solve(2*x == 3, x, Modulus -> 8)", //
+        "{}");
+    check("Solve({x + y == 3, x - y == 1}, {x, y}, Modulus -> 5)", //
+        "{{x->2,y->1}}");
+    check("Solve(x*y == 1, {x, y}, Modulus -> 3)", //
+        "{{x->1,y->1},{x->2,y->2}}");
+    // a variable which doesn't occur in the equations isn't part of the solution
+    check("Solve(x^2 == 2, {x, y}, Modulus -> 7)", //
+        "{{x->3},{x->4}}");
+    check("Solve({x^2 == 2, y == x}, {x, y}, Modulus -> 7, MaxRoots -> 1)", //
+        "{{x->3,y->3}}");
+    // an equation which is always fulfilled
+    check("Solve(x == x, x, Modulus -> 7)", //
+        "{{}}");
+    // the value of the option isn't a positive integer
+    check("Solve(x^2 == 2, x, Modulus -> -7)", //
+        "Solve(x^2==2,x,Modulus->-7)");
+    // only polynomial systems with rational coefficients are solved modulo an integer
+    check("Solve(Sin(x) == 0, x, Modulus -> 5)", //
+        "Solve(Sin(x)==0,x,Modulus->5)");
+    check("Solve(Pi*x == 1, x, Modulus -> 5)", //
+        "Solve(Pi*x==1,x,Modulus->5)");
+    // the equations contain a symbol which isn't solved for
+    check("Solve(x + a == 2, x, Modulus -> 5)", //
+        "Solve(a+x==2,x,Modulus->5)");
+    // the complete residue system is too large to be enumerated
+    check("Solve(x^2 == 2, x, Modulus -> 1000003)", //
+        "Solve(x^2==2,x,Modulus->1000003)");
+  }
+
+  @Test
   public void testSinX() {
     check("Solve(Sin(x)==b,x)", //
         "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n" //
@@ -1147,10 +1195,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->0.470004/Log(y)}}");
     check("NSolve(x^y+8==a*b,x)", //
         "{{x->(-8.0+a*b)^(1/y)}}");
+    // a root of multiplicity k is returned k times
     check("NSolve(x^2==0,x)", //
-        "{{x->0.0}}");
+        "{{x->0.0},{x->0.0}}");
     check("NSolve(x^3==0,x)", //
-        "{{x->0.0}}");
+        "{{x->0.0},{x->0.0},{x->0.0}}");
     check("NSolve(x+1==0,x)", //
         "{{x->-1.0}}");
     check("NSolve(x^2+1==0,x)", //
@@ -1164,7 +1213,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("NSolve(a*x^2+b==0,x)", //
         "{{x->((I*(-1.0))*Sqrt(b))/Sqrt(a)},{x->((I*1.0)*Sqrt(b))/Sqrt(a)}}");
     check("NSolve(x^2+2*x+1==0,x)", //
-        "{{x->-1.0}}");
+        "{{x->-1.0},{x->-1.0}}");
 
     check("NSolve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
         "{{x->-0.0733393+I*(-0.27023)},{x->-0.0733393+I*0.27023}}");
@@ -1177,7 +1226,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("NSolve(Sqrt(x)-2*x+x^2==0,x)", //
         "{{x->0.0},{x->1.0}}");
     check("NSolve((2*x+x^2)^2-x==0,x)", //
-        "{{x->0.0},{x->0.205569},{x->-2.10278+I*(-0.665457)},{x->-2.10278+I*0.665457}}");
+        "{{x->-2.10278+I*(-0.665457)},{x->-2.10278+I*0.665457},{x->0.0},{x->0.205569}}");
 
     check("NSolve({x^2-11==y, x+y==-9}, {x,y})", //
         "{{x->-2.0,y->-7.0},{x->1.0,y->-10.0}}");
@@ -1454,8 +1503,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1.1060601577062719}}");
     checkNumeric("NSolve(x^3 + 2.0*x^2 - 5*x -3.0 ==0,x)", //
         "{{x->-3.253418039587852},{x->-0.5199693720627907},{x->1.7733874116506425}}");
+    // the exact and the machine number form of the same equation give the same solutions
     checkNumeric("NSolve(x^3 + 2*x^2 - 5*x -3 ==0,x)", //
-        "{{x->1.773387411650643},{x->-0.5199693720627908+I*4.440892098500626E-16},{x->-3.253418039587852+I*(-3.3306690738754696E-16)}}");
+        "{{x->-3.253418039587852},{x->-0.5199693720627907},{x->1.7733874116506425}}");
   }
 
 
@@ -1900,9 +1950,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->Root(-7+#1+2*#1^3+#1^5&,1,0)},{x->Root(-7+#1+2*#1^3+#1^5&,2,0)},{x->Root(-7+#1+\n"
             + "2*#1^3+#1^5&,3,0)},{x->Root(-7+#1+2*#1^3+#1^5&,4,0)},{x->Root(-7+#1+2*#1^3+#1^5&,\n"
             + "5,0)}}");
-    // NSolve bypasses the Root objects entirely and keeps its own numerical ordering
+    // NSolve bypasses the Root objects entirely and orders its solutions by real, then imaginary
+    // part
     checkNumeric("NSolve(x*(x^2+1)^2==7,x)",
-        "{{x->-0.9784917834108959+I*(-1.0389327358561464)},{x->-0.9784917834108952+I*1.0389327358561464},{x->0.3821305839254209+I*1.6538990550344326},{x->0.38213058392542093+I*(-1.6538990550344328)},{x->1.1927223989709492}}");
+        "{{x->-0.9784917834108959+I*(-1.0389327358561464)},{x->-0.9784917834108952+I*1.0389327358561464},{x->0.38213058392542093+I*(-1.6538990550344328)},{x->0.3821305839254209+I*1.6538990550344326},{x->1.1927223989709492}}");
     check("Solve(x^2==a^2,x)", "{{x->-a},{x->a}}");
     check("Solve(4*x^(-2)-1==0,x)", //
         "{{x->-2},{x->2}}");
@@ -2532,9 +2583,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveMessage() {
     check("Solve(-4+3*x+x^2==0)", //
         "{{x->-4},{x->1}}");
-    // print Solve: binary equation or inequation expression expected instead of...
+    // Solve needs the equations to be written down:
+    // Solve: -4+3*x+x^2 is not a quantified system of equations and inequalities.
     check("Solve(-4+3*x+x^2)", //
         "Solve(-4+3*x+x^2)");
+    check("Solve({x+y-3,x-y-1},{x,y})", //
+        "Solve({-3+x+y,-1+x-y},{x,y})");
+    check("Solve(x,x)", //
+        "Solve(x,x)");
   }
 
   @Test

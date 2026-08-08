@@ -112,6 +112,15 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "6");
     check("Coefficient(x*Cos(x + 3) + 6*y, x)", //
         "Cos(3+x)");
+    // Coefficient() only expands with respect to the given variable. If the expression is free of
+    // the variable it's returned unchanged for exponent 0
+    check("Coefficient((x + 2)^3 + (x + 3)^2, y, 0)", //
+        "(2+x)^3+(3+x)^2");
+    check("Coefficient((x + 2)^3 + (x + 3)^2, y, 2)", //
+        "0");
+    check("Coefficient((x + 2)^3 + (x + 3)^2, y)", //
+        "0");
+    // 1/(-3+y)+1/(-2+y) is the OutputForm of (-3+y)^(-1)+(-2+y)^(-1)
     check("Coefficient((x + 2)/(y - 3) + (x + 3)/(y - 2), x)", //
         "1/(-3+y)+1/(-2+y)");
     check("Coefficient(6*x, 2*x)", //

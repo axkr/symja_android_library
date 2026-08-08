@@ -39,6 +39,21 @@ public class SubresultantsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testArgumentOrderSign() {
+    // Sres(j) of the exchanged arguments differs by (-1)^((m-j)*(n-j)), so the resultant - the
+    // first element - changes sign when both degrees are odd
+    check("Subresultants(3*x + 9, 6*x^3 - 3*x + 12, x)", //
+        "{-3807,9}");
+    check("Subresultants(6*x^3 - 3*x + 12, 3*x + 9, x)", //
+        "{3807,9}");
+    // the first element stays the resultant in either order
+    check("Resultant(3*x + 9, 6*x^3 - 3*x + 12, x)", //
+        "-3807");
+    check("Resultant(6*x^3 - 3*x + 12, 3*x + 9, x)", //
+        "3807");
+  }
+
+  @Test
   public void testModulusOption() {
     // {2,1,1} reduced modulo 2 -> {0,1,1}
     check("Subresultants(x^2+1, x^2+x, x, Modulus->2)", //
@@ -87,6 +102,89 @@ public class SubresultantsTest extends ExprEvaluatorTestCase {
         "{0,0,1,1}");
     check("Subresultants((x-1)^2*(x-2)*(x-3), (x-1)*(x-4)^2, x, Modulus->7)", //
         "{0,1,4,1}");
+
+    check("Subresultants((x - 1)^2*(x - 2)*(x - 3), (x - 1)*(x - 4)^2, x, Modulus -> 7)", //
+        "{0,1,4,1}");
+    check("Subresultants(x^5 + 3, 2*x^2 + 1, x, Modulus -> 5)", //
+        "{4,4,3}");
+    check("Subresultants(a*x^2 + b, x + 1, x, Modulus -> 5)", //
+        "{a+b,1}");
+  }
+
+  /**
+   * The degrees have to be read off the polynomials <em>after</em> they were reduced, so that a
+   * coefficient vanishing modulo the modulus shortens the result list.
+   */
+  @Test
+  public void testSubresultantModulusReducesDegree() {
+    // 2*x^2-1 is the constant 1 modulo 2, so Min(2,0)+1 == 1 coefficient is returned
+    check("Subresultants(x^2 + 1, 2*x^2 - 1, x, Modulus -> 2)", //
+        "{1}");
+    // 3*x^3+x is x modulo 3, so Min(1,2)+1 == 2 coefficients are returned
+    check("Subresultants(3*x^3 + x, x^2 + 4, x, Modulus -> 3)", //
+        "{1,1}");
+    check("Subresultants(x^2 + 1, 2*x^2 - 1, x)", //
+        "{9,0,1}");
+    check("Subresultants(3*x^3 + x, x^2 + 4, x)", //
+        "{484,-11,1}");
+  }
+
+  /** A polynomial which vanishes completely modulo the modulus has no subresultants. */
+  @Test
+  public void testSubresultantModulusZeroPolynomial() {
+    check("Subresultants(x^2 + 1, 5, x, Modulus -> 5)", //
+        "{}");
+    check("Subresultants(5*x^2 + 5, x + 3, x, Modulus -> 5)", //
+        "{}");
+    check("Subresultants(x^2 + 1, 0, x)", //
+        "{}");
+    // without the modulus the same inputs are ordinary polynomials
+    check("Subresultants(x^2 + 1, 5, x)", //
+        "{25}");
+    check("Subresultants(5*x^2 + 5, x + 3, x)", //
+        "{50,1}");
+  }
+
+  /**
+   * If the first polynomial has the lower degree the coefficients are reported for the swapped
+   * argument pair, multiplied by the transposition sign <code>(-1)^((m-j)*(n-j))</code> which isn't
+   * reduced again. A coefficient <code>v</code> with a negative sign is printed as
+   * <code>v-modulus</code>.
+   */
+  @Test
+  public void testSubresultantModulusSignedSwap() {
+    // -6 is the residue 1 modulo 7, -4 and -3 are the residues 1 and 2 modulo 5
+    check("Subresultants(x + 1, x^3 + 2, x, Modulus -> 5)", //
+        "{-4,1}");
+    check("Subresultants(x + 1, x^3 + 2, x, Modulus -> 7)", //
+        "{-6,1}");
+    check("Subresultants(x + 2, x^3 + 5, x, Modulus -> 5)", //
+        "{-3,1}");
+    check("Subresultants(x^2 + x + 1, x^4 + 3, x, Modulus -> 5)", //
+        "{2,-4,1}");
+
+    // the swapped argument order needs no sign, so the same coefficients stay in 0...modulus-1
+    check("Subresultants(x^3 + 2, x + 1, x, Modulus -> 5)", //
+        "{4,1}");
+    check("Subresultants(x^3 + 2, x + 1, x, Modulus -> 7)", //
+        "{6,1}");
+    check("Subresultants(x^3 + 5, x + 2, x, Modulus -> 5)", //
+        "{3,1}");
+    check("Subresultants(x^4 + 3, x^2 + x + 1, x, Modulus -> 5)", //
+        "{2,4,1}");
+
+    check("Subresultants(x + 1, x^3 + 6, x, Modulus -> 7)", //
+        "{-2,1}");
+
+    // a zero coefficient has no sign to apply: x==-1 is a common root of x+1 and x^3+1
+    check("Resultant(x + 1, x^3 + 1, x)", //
+        "0");
+    check("Subresultants(x + 1, x^3 + 1, x, Modulus -> 7)", //
+        "{0,1}");
+
+    // an even sign leaves the coefficient in 0...modulus-1 even though the degrees are swapped
+    check("Subresultants(3*x^3 + x, x^2 + 4, x, Modulus -> 3)", //
+        "{1,1}");
   }
 
 }

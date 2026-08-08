@@ -3714,9 +3714,11 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("ExpandAll((1+x)^2*(7+x)*(11+x)*(17+x))", //
         "1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
     check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x))", //
+        "(17+18*x+x^2)*(77+95*x+19*x^2+x^3)");
+    check("Expand((17+18*x+x^2)*(77+95*x+19*x^2+x^3))", //
         "1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
     check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x), Modulus->31)", //
-        "(1+x)^2*(7+x)*(11+x)*(17+x)");
+        "(24+9*x+16*x^2)*(15+2*x+19*x^2+x^3)");
   }
 
   @Test

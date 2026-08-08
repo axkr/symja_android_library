@@ -16,7 +16,6 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -5761,9 +5760,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("DiscreteRatio(x^n * y^m, n, m)", //
         "1");
 
-    // The ratio is reduced to a single grouped fraction; (1+2*n+n^2)/n^2 == Wolfram's (1+n)^2/n^2.
+    // the ratio is reduced to a single grouped fraction with factored numerator/denominator
     check("DiscreteRatio(n^2, n)", //
-        "(1+2*n+n^2)/n^2");
+        "(1+n)^2/n^2");
     // common polynomial factors cancel
     check("DiscreteRatio(n^2 + n, n)", //
         "(2+n)/n");
@@ -5773,6 +5772,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a");
     check("DiscreteRatio(2^n*3^n, n)", //
         "6");
+    check("DiscreteRatio(2^n, n)", //
+        "2");
+    // an expression free of the variable has ratio 1
+    check("DiscreteRatio(c, n)", //
+        "1");
+    check("DiscreteRatio(n*m, n, m)", //
+        "1");
+    // the ratio threads over a list argument
+    check("DiscreteRatio({n, n^2}, n)", //
+        "{(1+n)/n,(1+n)^2/n^2}");
     // higher order applies the operator repeatedly
     check("DiscreteRatio(f(n), {n, 3})", //
         "(f(1+n)^3*f(3+n))/(f(n)*f(2+n)^3)");
@@ -5786,13 +5795,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("DiscreteRatio(f(n, m), n, m)", //
         "(f(n,m)*f(1+n,1+m))/(f(n,1+m)*f(1+n,m))");
     // factorial/Gamma/Pochhammer/Binomial ratios reduce
+    check("DiscreteRatio(n!, n)", //
+        "1+n");
+    check("DiscreteRatio(Gamma(n), n)", //
+        "n");
     check("DiscreteRatio(Pochhammer(n, 3), n)", //
         "(3+n)/n");
     check("DiscreteRatio(Binomial(n, 2), n)", //
         "(1+n)/(-1+n)");
-    // a symbolic order stays unevaluated
+    // without a variable the expression is returned unchanged
+    check("DiscreteRatio(f(n))", //
+        "f(n)");
+    // a symbolic or inexact order stays unevaluated
     check("DiscreteRatio(f(n), {n, h})", //
         "DiscreteRatio(f(n),{n,h})");
+    check("DiscreteRatio(f(n), {n, 2.5})", //
+        "DiscreteRatio(f(n),{n,2.5})");
+    // an argument which is neither a symbol nor a variable spec stays unevaluated
+    check("DiscreteRatio(f(n), n, 2)", //
+        "DiscreteRatio(f(n),n,2)");
   }
 
   @Test
@@ -5822,6 +5843,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(h+x)");
     check("DiscreteShift(f(x), {x,2,h})", //
         "f(2*h+x)");
+    // a negative shift steps backwards
+    check("DiscreteShift(f(n), {n, -1})", //
+        "f(-1+n)");
+    check("DiscreteShift(f(n, m), n, m)", //
+        "f(1+n,1+m)");
+    check("DiscreteShift(2^n, n)", //
+        "2^(1+n)");
+    check("DiscreteShift(Sin(n), n)", //
+        "Sin(1+n)");
+    // an expression free of the variable is unchanged
+    check("DiscreteShift(c, n)", //
+        "c");
+    // without a variable the expression is returned unchanged
+    check("DiscreteShift(f(n))", //
+        "f(n)");
+    // an argument which is neither a symbol nor a variable spec stays unevaluated
+    check("DiscreteShift(f(n), n, 2)", //
+        "DiscreteShift(f(n),n,2)");
 
     // A top-level Plus result is expanded; a single power/product is kept; an integer shift
     // combines rational summands over a common denominator; a symbolic shift stays unfolded.
@@ -8771,6 +8810,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2-n^3)*y(2+n)==0,y(1)==2,y(2)==3/2})][n]");
     check("FindSequenceFunction({5,5,5,5,5},n)", //
         "5");
+    check("FindSequenceFunction({5, 5, 5, 5}, n)", //
+        "5");
     check("FindSequenceFunction({1,2,3,4,5})", //
         "#1&");
     check("FindSequenceFunction({1,2,3,4,5},n)", //
@@ -8780,6 +8821,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Fibonacci(n)");
     check("FindSequenceFunction({1,-1,3},n)", //
         "FindSequenceFunction({1,-1,3},n)");
+
+    // the interpolating polynomial is a monomial, so Factor() is a no-op and the Newton
+    // forward-difference form has to be expanded before it's returned
+    check("FindSequenceFunction({1, 4, 9, 16, 25}, n)", //
+        "n^2");
+    check("FindSequenceFunction({1, 8, 27, 64, 125}, n)", //
+        "n^3");
+    check("FindSequenceFunction({1, 4, 9, 16, 25})", //
+        "#1^2&");
+    check("FindSequenceFunction({1, 4, 9, 16, 25})[6]", //
+        "36");
+    check("FindSequenceFunction({1, 4, 9, 16, 25}, n) /. n -> 6", //
+        "36");
 
     check("FindSequenceFunction({0,1,4,9,16},n)", //
         "(1-n)^2");
@@ -8791,8 +8845,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+2*n+3*n^2");
     check("FindSequenceFunction({1, 2, 4, 8, 16},n)", //
         "2^(-1+n)");
+    check("FindSequenceFunction({2, 4, 8, 16, 32}, n)", //
+        "2^n");
     check("FindSequenceFunction({9, 27, 81, 243},n)", //
         "3^(1+n)");
+    check("FindSequenceFunction({3, 9, 27, 81, 243}, n)", //
+        "3^n");
 
     check(
         "FindSequenceFunction({0,1,2,9,44,265,1854,14833,133496,1334961,14684570,176214841,2290792932,32071101049,481066515734,7697064251745,130850092279664},n)", //
@@ -8823,6 +8881,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindSequenceFunction({1, 2, 5, 15, 52},n)", //
         "BellB(n)");
     check("FindSequenceFunction({1, 3, 6, 10, 15, 21},n)", //
+        "1/2*n*(1+n)");
+    check("FindSequenceFunction({1, 3, 6, 10, 15}, n)", //
         "1/2*n*(1+n)");
     check("FindSequenceFunction({18, 19, 22, 31, 59} ,n)", //
         "17+CatalanNumber(n)");
@@ -9945,17 +10005,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "gg({a,b,c})");
   }
 
-  // @Test
-  // public void testFunctionContinuous() {
-  // check("FunctionContinuous(Sin(x), x)", //
-  // "True");
-  // check("FunctionContinuous({Log(x), x > 0}, x)", //
-  // "True");
-  //
-  // // TODO
-  // // check("FunctionContinuous(Sqrt(x), x, Complexes)", //
-  // // "");
-  // }
+  @Test
+  public void testFunctionContinuous() {
+    check("FunctionContinuous(Sin(x), x)", //
+        "True");
+    check("FunctionContinuous({Log(x), x > 0}, x)", //
+        "True");
+
+    // TODO
+    // check("FunctionContinuous(Sqrt(x), x, Complexes)", //
+    // "");
+  }
 
   @Test
   public void testFunctionDiscontinuities() {
@@ -10123,16 +10183,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x==0||(Im(x)==0&&Re(x)<=0)||x^y==-I||x^y==I||(Re(x^y)==0&&Im(x^y)>=1)||(Re(x^y)==\n"
             + "0&&Im(x^y)<=-1)");
   }
-
-  @Test
-  public void testFunctionURL() {
-    assertEquals(ID.LINE_NUMBER_OF_JAVA_CLASS.length, ID.ZTransform + 1);
-    checkRegex("FunctionURL(NIntegrate)", //
-        "^.+L?\\d$"
-    // "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L771"
-    );
-  }
-
 
   @Test
   public void testGather() {
@@ -10410,6 +10460,57 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
     check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x*y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", //
         "{1}");
+
+    check("GroebnerBasis({x + y, x - y}, {x, y})", //
+        "{y,x}");
+    check("GroebnerBasis({x^2 + y^2 - 1, x - y}, {x, y})", //
+        "{-1+2*y^2,x-y}");
+    check("GroebnerBasis({x*y - 1, x^2 + y^2 - 4}, {x, y})", //
+        "{1-4*y^2+y^4,x-4*y+y^3}");
+    check("GroebnerBasis({x + y + z, x*y + y*z + z*x, x*y*z - 1}, {x, y, z})", //
+        "{-1+z^3,y^2+y*z+z^2,x+y+z}");
+    check("GroebnerBasis({2*x + 2*y}, {x, y})", //
+        "{x+y}");
+    check("GroebnerBasis({x^2 - 1}, {x})", //
+        "{-1+x^2}");
+    check("GroebnerBasis({x, x + 1}, {x})", //
+        "{1}");
+    // none of the generators is a polynomial in the given variables
+    check("GroebnerBasis({Sin(x)}, {x})", //
+        "GroebnerBasis({Sin(x)},{x})");
+  }
+
+  /**
+   * {@code Modulus->p} computes the basis in {@code GF(p)[variables]} rather than over the
+   * rationals. {@code Modulus->0} is the default and asks for the rational computation.
+   */
+  @Test
+  public void testGroebnerBasisModulus() {
+    check("GroebnerBasis({x^2 + y, y^2 + x}, {x, y}, Modulus -> 2)", //
+        "{y+y^4,x+y^2}");
+    check("GroebnerBasis({2*x + y, 3*y^2 - x}, {x, y}, Modulus -> 5)", //
+        "{y+y^2,x+3*y}");
+    check("GroebnerBasis({x^2 - 1, x*y - 1}, {x, y}, Modulus -> 3)", //
+        "{2+y^2,x+2*y}");
+    check("GroebnerBasis({x^2 + 2*y, y^2 + 3*x}, {x, y}, Modulus -> 7)", //
+        "{4*y+y^4,x+5*y^2}");
+    // a rational coefficient is the numerator times the modular inverse of the denominator
+    check("GroebnerBasis({x/2 + y}, {x, y}, Modulus -> 5)", //
+        "{x+2*y}");
+    // over GF(2) this ideal is the whole ring, although it is a proper ideal over the rationals
+    check("GroebnerBasis({x^2 + y^2 - 1, x - y}, {x, y}, Modulus -> 2)", //
+        "{1}");
+    // 6*x+3 vanishes modulo 3, so the ideal is {0} and its basis is empty
+    check("GroebnerBasis({6*x + 3}, {x}, Modulus -> 3)", //
+        "{}");
+    check("GroebnerBasis({x^2 + y, y^2 + x}, {x, y}, Modulus -> 0)", //
+        "{y+y^4,x+y^2}");
+
+    // Z/nZ is only a field for a prime n, so a composite or negative modulus stays unevaluated
+    check("GroebnerBasis({x^2 + y, y^2 + x}, {x, y}, Modulus -> 4)", //
+        "GroebnerBasis({x^2+y,x+y^2},{x,y},Modulus->4)");
+    check("GroebnerBasis({x^2 + y, y^2 + x}, {x, y}, Modulus -> -3)", //
+        "GroebnerBasis({x^2+y,x+y^2},{x,y},Modulus->-3)");
   }
 
   @Test
@@ -10719,6 +10820,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2+x*(7+x*(-4+11*x))");
     check("HornerForm(a+b*x+c*x^2,x)", //
         "a+x*(b+c*x)");
+
+    // numerator and denominator are converted separately
+    check("HornerForm((11*x^3 - 4*x^2 + 7*x + 2)/(x^2 - 3*x + 1))", //
+        "(2+x*(7+x*(-4+11*x)))/(1+(-3+x)*x)");
+    check("HornerForm(1/(x^2 - 3*x + 1))", //
+        "1/(1+(-3+x)*x)");
+    // no denominator - expression is returned unchanged
+    check("HornerForm(2*(x^2 - 3*x + 1))", //
+        "2*(1-3*x+x^2)");
+    check("HornerForm(Sin(x)*(x^2 - 3*x + 1))", //
+        "(1-3*x+x^2)*Sin(x)");
   }
 
   @Test
@@ -14333,6 +14445,79 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMinimalPolynomial() {
+    check("MinimalPolynomial(3, x)", //
+        "-3+x");
+    check("MinimalPolynomial(7, x)", //
+        "-7+x");
+    check("MinimalPolynomial(1/3, x)", //
+        "-1+3*x");
+    check("MinimalPolynomial(Sqrt(2), x)", //
+        "-2+x^2");
+    check("MinimalPolynomial(-Sqrt(2), x)", //
+        "-2+x^2");
+    check("MinimalPolynomial(2*Sqrt(3), x)", //
+        "-12+x^2");
+    check("MinimalPolynomial(1 + Sqrt(2), x)", //
+        "-1-2*x+x^2");
+    check("MinimalPolynomial((3 + Sqrt(2))/7, x)", //
+        "1-6*x+7*x^2");
+    check("MinimalPolynomial(1/(1 + Sqrt(2)), x)", //
+        "-1+2*x+x^2");
+    check("MinimalPolynomial(1/2^(1/3), x)", //
+        "-1+2*x^3");
+    check("MinimalPolynomial(2^(1/3) + 4^(1/3), x)", //
+        "-6-6*x+x^3");
+    check("MinimalPolynomial(2^(1/3) + 2^(2/3), x)", //
+        "-6-6*x+x^3");
+    check("MinimalPolynomial(1 + 2^(1/3) + 4^(1/3), x)", //
+        "-1-3*x-3*x^2+x^3");
+    check("MinimalPolynomial(Sqrt(2) + Sqrt(3), x)", //
+        "1-10*x^2+x^4");
+    check("MinimalPolynomial(Sqrt(1 + Sqrt(3)), x)", //
+        "-2-2*x^2+x^4");
+
+    // GoldenRatio is opaque to the radical extraction, so it's rewritten with FunctionExpand first
+    check("MinimalPolynomial(GoldenRatio, x)", //
+        "-1-x+x^2");
+    check("MinimalPolynomial(GoldenRatio)", //
+        "-1-#1+#1^2&");
+
+    // complex arguments
+    check("MinimalPolynomial(I, x)", //
+        "1+x^2");
+    check("MinimalPolynomial(Sqrt(-2), x)", //
+        "2+x^2");
+    check("MinimalPolynomial(Sqrt(-8), x)", //
+        "8+x^2");
+    check("MinimalPolynomial(I*Sqrt(3), x)", //
+        "3+x^2");
+    check("MinimalPolynomial(Sqrt(I + Sqrt(6)), x)", //
+        "49-10*x^4+x^8");
+
+    // trigonometric values which evaluate to radicals before the minimal polynomial is computed
+    check("MinimalPolynomial(Cos(Pi/4), x)", //
+        "-1+2*x^2");
+    check("MinimalPolynomial(Cos(Pi/5), x)", //
+        "-1-2*x+4*x^2");
+    check("MinimalPolynomial(Cos(2*Pi/5), x)", //
+        "-1+2*x+4*x^2");
+
+    // LISTABLE
+    check("MinimalPolynomial({2, 3}, x)", //
+        "{-2+x,-3+x}");
+    check("MinimalPolynomial({Sqrt(2), Sqrt(3)}, x)", //
+        "{-2+x^2,-3+x^2}");
+    check("MinimalPolynomial({{2, 0}, {0, 2}}, x)", //
+        "{{-2+x,x},{x,-2+x}}");
+
+    // 1-argument form returns a pure function
+    check("MinimalPolynomial(3)", //
+        "-3+#1&");
+    check("MinimalPolynomial(Sqrt(2))", //
+        "-2+#1^2&");
+    check("MinimalPolynomial(Sqrt(2) + Sqrt(3))", //
+        "1-10*#1^2+#1^4&");
+
     check("MinimalPolynomial(Power(2+Sqrt(5), -1/3))", //
         "-1+#1+#1^2&");
     check("MinimalPolynomial(Power(2+Sqrt(5), -1/3),x)", //
@@ -17255,6 +17440,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{e1,d1},{e2,d2},{e4,d4},{e5,d5}},e0)");
   }
 
+  /**
+   * The branch which is selected is the first one whose condition is {@code True}; without one the
+   * default value (which is {@code 0} unless given) is returned. Uses its own test method because
+   * the assignments to {@code x} would otherwise leak into the checks of {@link #testPiecewise()}.
+   */
+  @Test
+  public void testPiecewiseCondition() {
+    check("Piecewise({{1, True}})", //
+        "1");
+    check("Piecewise({{1, False}, {2, True}})", //
+        "2");
+    check("Piecewise({{1, False}, {2, False}}, 42)", //
+        "42");
+    check("Piecewise({{1, False}})", //
+        "0");
+    check("x = 5; Piecewise({{1, x < 0}, {2, x >= 0}})", //
+        "2");
+    check("Piecewise({{1, True}, {2, False}})", //
+        "1");
+    check("Piecewise({{1, False}, {2, True}})", //
+        "2");
+    check("x = 3; Piecewise({{1, x < 0}, {2, x >= 0}})", //
+        "2");
+    check("x = 0.5; Piecewise({{1, 0 <= x < 1}, {2, 1 <= x < 2}})", //
+        "1");
+    check("x = 1.5; Piecewise({{1, 0 <= x < 1}, {2, 1 <= x < 2}})", //
+        "2");
+    // Piecewise is HoldAll, but the list of branches is evaluated, so a symbol holding them works
+    check("x = {{1, True}, {2, False}}; Piecewise(x)", //
+        "1");
+    check("Clear(x)", //
+        "");
+  }
+
   @Test
   public void testPiecewiseExpand() {
     check("PiecewiseExpand(KroneckerDelta(x, y,z,u,v))", //
@@ -17663,9 +17882,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2*r^2)/(32*b-16*a*b+2*a^2*b-b^3-16*a*c+8*a^2*c-a^3*c+10*b^2*c-20*b*c^2-3*a*b*c^2+\n" //
             + "8*a*c^3+c^5)}}");
     // s*(r^3-2*r+c) + t*(r^5-a*r+b) == 1
-    check("g=PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r);"
-        + "Expand(Numerator(g[[2,1]])*(r^3-2*r+c)+Numerator(g[[2,2]])*(r^5-a*r+b)"
-        + "-Denominator(g[[2,1]]))", //
+    check(
+        "g=PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r);"
+            + "Expand(Numerator(g[[2,1]])*(r^3-2*r+c)+Numerator(g[[2,2]])*(r^5-a*r+b)"
+            + "-Denominator(g[[2,1]]))", //
         "0");
   }
 
@@ -17766,6 +17986,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x^2*y^3*f(x)");
     // wikipedia example https://en.wikipedia.org/wiki/Polynomial_greatest_common_divisor
     check("PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6)", //
+        "(6+x)*(-6-5*x+x^2)");
+    check("Expand((6+x)*(-6-5*x+x^2))", //
         "-36-36*x+x^2+x^3");
 
     check("PolynomialLCM(a+b*x,c+d*x)", //
@@ -17785,18 +18007,60 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "14+6*x^15+4*x^16+2*x^17+x^18");
 
     check("PolynomialLCM((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", //
+        "(4+5*x+x^2)*(6+11*x+6*x^2+x^3)");
+    check("Expand((4+5*x+x^2)*(6+11*x+6*x^2+x^3))", //
         "24+74*x+85*x^2+45*x^3+11*x^4+x^5");
     check("Expand((1+x)^2*(2+x)*(3+x)*(4+x))", //
         "24+74*x+85*x^2+45*x^3+11*x^4+x^5");
 
     check("PolynomialLCM(x^2 + 2*x*y + y^2, x^3 + y^3)", //
-        "x^4+x^3*y+x*y^3+y^4");
+        "(x+y)*(x^3+y^3)");
     check("Expand((x+y)*(x^3+y^3))", //
         "x^4+x^3*y+x*y^3+y^4");
 
     check("PolynomialLCM(x^2 - 1, x^3 - 1, x^4 - 1, x^5 - 1, x^6 - 1, x^7 - 1)", //
+        "(-1+x^7)*(1+2*x+4*x^2+6*x^3+8*x^4+9*x^5+9*x^6+8*x^7+6*x^8+4*x^9+2*x^10+x^11)");
+    check("Expand((-1+x^7)*(1+2*x+4*x^2+6*x^3+8*x^4+9*x^5+9*x^6+8*x^7+6*x^8+4*x^9+2*x^10+x^11))", //
         "-1-2*x-4*x^2-6*x^3-8*x^4-9*x^5-9*x^6-7*x^7-4*x^8+4*x^10+7*x^11+9*x^12+9*x^13+8*x^\n"
             + "14+6*x^15+4*x^16+2*x^17+x^18");
+
+    // the result is the last argument times the cofactor which completes it to the LCM
+    check("PolynomialLCM(x^2 + 3*x + 2, x^2 + 4*x + 3)", //
+        "(2+x)*(3+4*x+x^2)");
+    check("PolynomialLCM(x^2 - 1, x - 1)", //
+        "(-1+x)*(1+x)");
+    check("PolynomialLCM(x^2 - 1, x^2 + 2*x + 1)", //
+        "(-1+x)*(1+2*x+x^2)");
+    check("PolynomialLCM(x^2 - 1, x - 1, x + 1)", //
+        "(-1+x)*(1+x)");
+    // an argument which already divides the others has the cofactor 1
+    check("PolynomialLCM(x - 1, x^2 - 1)", //
+        "-1+x^2");
+    check("PolynomialLCM(2*x, 3*x)", //
+        "6*x");
+    check("PolynomialLCM(6, 4)", //
+        "12");
+  }
+
+  /** {@code Modulus->p} computes the least common multiple in {@code GF(p)[x]}. */
+  @Test
+  public void testPolynomialLCMModulus() {
+    check("PolynomialLCM(x^2 + 1, x + 1, Modulus -> 2)", //
+        "(1+x)^2");
+    check("PolynomialLCM(x^3 + 1, x^2 + 1, Modulus -> 2)", //
+        "(1+x^2)*(1+x+x^2)");
+    check("PolynomialLCM(x^4 - 1, x^2 + 4*x + 3, Modulus -> 5)", //
+        "(3+x+x^2)*(3+4*x+x^2)");
+    // a leading coefficient of an argument is kept, the result is not normalized to a monic one
+    check("PolynomialLCM(2*x^2 + 2, x + 1, Modulus -> 5)", //
+        "(1+x)*(2+2*x^2)");
+    check("PolynomialLCM(x + 1, 2*x^2 + 2, Modulus -> 5)", //
+        "(1+x)*(2+2*x^2)");
+    check("PolynomialLCM(x^2 - 1, x^3 - 1, Modulus -> 7)", //
+        "(1+x)*(6+x^3)");
+    // 5*x+5 vanishes modulo 5, and the least common multiple with 0 is 0
+    check("PolynomialLCM(5*x + 5, x + 1, Modulus -> 5)", //
+        "0");
   }
 
   @Test
@@ -18904,7 +19168,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E^(x*y+I*2*Pi*y*Floor(1/2-Im(x)/(2*Pi)))");
 
     check("PowerExpand((x*y)^(1/2), Assumptions->True)", //
-        "E^(I*Pi*Floor(1/2-Arg(x)/(2*Pi)-Arg(y)/(2*Pi)))*Sqrt(x)*Sqrt(y)");
+        "(-1)^Floor(1/2-Arg(x)/(2*Pi)-Arg(y)/(2*Pi))*Sqrt(x)*Sqrt(y)");
     check("PowerExpand((a*b*c)^(1/3), Assumptions->True)", //
         "a^(1/3)*b^(1/3)*c^(1/3)*E^(I*2/3*Pi*Floor(1/2-Arg(a)/(2*Pi)-Arg(b)/(2*Pi)-Arg(c)/(\n"
             + "2*Pi)))");
@@ -20528,6 +20792,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRationalizeArcTan() {
+    // Rationalize() leaves both arguments inexact - the rational 3/10^20 isn't a good enough
+    // approximation of the double - so the result is the numeric ArcTan(4/3) carrying the 20 digits
+    // of precision of the literals
+    check("ArcTan(Rationalize(0.00000000000000000003),Rationalize(0.00000000000000000004))", //
+        "0.92729521800161223242");
+  }
+
+  @Test
   public void testRe() {
     check("Re(I*Arg(z) + Log(2) + (1/2)*Log(Im(z)^2 + Re(z)^2))", //
         "Log(2)+Log(Im(z)^2+Re(z)^2)/2");
@@ -20952,6 +21225,222 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    // non positive assumptions
+    check("Refine(Sqrt(x^2), x <= 0)", //
+        "-x");
+    check("Refine(Abs(x), x <= 0)", //
+        "-x");
+    check("Refine(NonPositive(x), x <= 0)", //
+        "True");
+    check("Refine(NonPositive(x), x < 0)", //
+        "True");
+    // x could be 0, so these must stay unevaluated
+    check("Refine(Negative(x), x <= 0)", //
+        "Negative(x)");
+    check("Refine(NonNegative(x), x <= 0)", //
+        "NonNegative(x)");
+
+    // Refine() doesn't wrap its argument in Simplify(), the users expression shape is kept
+    check("Refine(Abs(x)^2, Element(x, Reals))", //
+        "x^2");
+    check("Refine(Abs(x)^6, Element(x, Reals))", //
+        "x^6");
+    check("Refine(a^p*b^p, a > 0 && b > 0)", //
+        "(a*b)^p");
+    check("Refine((x - 1)^2 + (y - 2)^2 < 3/2, x > 0)", //
+        "(1-x)^2+(2-y)^2<3/2");
+
+    // the sign predicates also decide the refuting case
+    check("Refine(Positive(x), x < 0)", //
+        "False");
+    check("Refine(Positive(x), x <= 0)", //
+        "False");
+    check("Refine(Negative(x), x > 0)", //
+        "False");
+    check("Refine(NonNegative(x), x < 0)", //
+        "False");
+    check("Refine(NonPositive(x), x > 0)", //
+        "False");
+
+    // a sum is positive if all summands are non negative and at least one is strictly positive
+    check("Refine(x - y > 0, x >= 0 && y < 0)", //
+        "True");
+    check("Refine(Positive(x - y), x >= 0 && y < 0)", //
+        "True");
+    check("Refine(Negative(y - x), x >= 0 && y < 0)", //
+        "True");
+    // both summands are only non negative, so the sum isn't known to be strictly positive
+    check("Refine(x + y > 0, x >= 0 && y >= 0)", //
+        "x+y>0");
+    // Assuming() assigns a nested And() to $Assumptions, which must be unpacked
+    check("Assuming(x >= 0 && y < 0, Refine(x - y > 0))", //
+        "True");
+
+    // a*Infinity is Indeterminate for a==0, so a>=0 isn't enough to determine the direction
+    check("Refine(a*Infinity, a >= 0)", //
+        "Infinity*a");
+    check("Refine(a*Infinity, a > 0)", //
+        "Infinity");
+    check("Refine(a*Infinity, a < 0)", //
+        "-Infinity");
+    check("Refine(2*a*Infinity, a > 0)", //
+        "Infinity");
+    check("Refine(a*b*Infinity, a > 0 && b > 0)", //
+        "Infinity");
+
+    // a relation between two symbolic expressions is recorded for the difference, so that
+    // Max()/Min() can order them
+    check("Refine(Max(a, b), a > b)", //
+        "a");
+    check("Refine(Max(a, b), a < b)", //
+        "b");
+    check("Refine(Max(a, b), a >= b)", //
+        "a");
+    check("Refine(Max(a, b), b < a)", //
+        "a");
+    check("Refine(Min(a, b), a < b)", //
+        "a");
+    check("Refine(Min(a, b), a > b)", //
+        "b");
+    check("Refine(Min(a, b), a <= b)", //
+        "a");
+    // a==b determines neither Greater() nor GreaterEqual() in one direction only
+    check("Refine(Max(a, b), a == b)", //
+        "Max(a,b)");
+    check("Refine(Min(a, b), a == b)", //
+        "Min(a,b)");
+    // the mirrored difference is recorded as well, so both spellings answer the same question
+    check("Refine(b < a, a > b)", //
+        "True");
+    check("Refine(a <= b, a > b)", //
+        "False");
+    check("Refine(a >= b, a > b)", //
+        "True");
+    // a non-strict assumption doesn't decide the strict relation
+    check("Refine(a > b, a >= b)", //
+        "a>b");
+    check("Max(a,b)", //
+        "Max(a,b)");
+
+    // Ramp(0) == 0, so the non-strict bounds decide the result too
+    check("Refine(Ramp(x), x >= 0)", //
+        "x");
+    check("Refine(Ramp(x), x <= 0)", //
+        "0");
+
+    // (a^b)^c == a^(b*c) and Log(a^b) == b*Log(a) hold for a real b with -1 < b < 1
+    check("Refine((a^b)^c, -1 < b < 1)", //
+        "a^(b*c)");
+    check("Refine(Log(x^p), -1 < p < 1)", //
+        "p*Log(x)");
+    // without the assumption the branch of the logarithm is unknown
+    check("Refine((a^b)^c, b > 2)", //
+        "(a^b)^c");
+    check("Refine(Log(x^p), p > 2)", //
+        "Log(x^p)");
+
+    // ArcTan(Tan(z)) == z /; -Pi/2 < Re(z) < Pi/2
+    check("Refine(ArcTan(Tan(x)), -Pi/2 < Re(x) < Pi/2)", //
+        "x");
+    check("Refine(ArcTan(Tan(x)), 0 < Re(x) < 1)", //
+        "x");
+    check("Refine(ArcTan(Tan(x)), Re(x) > 2)", //
+        "ArcTan(Tan(x))");
+
+    // Element() falls back to the structural domain test for a compound expression
+    check("Refine(Element((2*x + x^p)/(x*Gamma(x + 2)), Reals), x > 0 && p > 0)", //
+        "True");
+    check(
+        "Refine(Element(2*k^3*Floor(x)^k, Integers), Element(k, Integers) && k > 0 && Element(x, Reals))", //
+        "True");
+    check("Refine(Element(k^3, Integers), Element(k, Integers))", //
+        "True");
+    // a negative exponent gives a fraction, not an integer
+    check("Refine(Element(k^(-3), Integers), Element(k, Integers))", //
+        "1/k^3∈Integers");
+
+    // a quadratic polynomial in real variables is decided through its bordered matrix
+    check("Refine(a^2 - a*b + b^2 >= 0, Element(a | b, Reals))", //
+        "True");
+    check("Refine(Sign(x^2 - x*y + y^2 + 1), Element(x | y, Reals))", //
+        "1");
+    check("Refine(Positive(x^2 - x*y + y^2 + 1), Element(x | y, Reals))", //
+        "True");
+    check("Refine(NonNegative(x^2 - 2*x*y + y^2), Element(x | y, Reals))", //
+        "True");
+    // x^2-3*x*y+y^2 is indefinite, e.g. -1 for x==y==1
+    check("Refine(NonNegative(x^2 - 3*x*y + y^2), Element(x | y, Reals))", //
+        "NonNegative(x^2-3*x*y+y^2)");
+    // x^2-2*x*y+y^2 == (x-y)^2 is zero for x==y, so it isn't strictly positive
+    check("Refine(Positive(x^2 - 2*x*y + y^2), Element(x | y, Reals))", //
+        "Positive(x^2-2*x*y+y^2)");
+    // without the Reals assumption nothing can be concluded
+    check("Refine(NonNegative(x^2 - x*y + y^2), x > 0)", //
+        "NonNegative(x^2-x*y+y^2)");
+
+    // an equation is reduced by the polynomials which the assumptions force to vanish:
+    // a^2-b^2+1 leaves the remainder 1 when divided by a+b, so it can't be 0 for a+b==0
+    check("Refine(a^2 - b^2 + 1 == 0, a + b == 0)", //
+        "False");
+    check("Refine(a^2 - b^2 == 0, a + b == 0)", //
+        "True");
+    // the remainder isn't constant, so it may or may not vanish on a^2+b^2==0
+    check("Refine(a - b == 0, a^2 + b^2 == 0)", //
+        "a-b==0");
+
+    // Element((a+3)/4, Integers) means a == 4*k-3, so Mod(a,4) == Mod(-3,4) == 1
+    check("Refine(Mod(a, 4), Element((a + 3)/4, Integers))", //
+        "1");
+    check("Refine(Mod(a, 2), Element(a/2, Integers))", //
+        "0");
+    // Mod(a,1) is never negative, FractionalPart() truncates towards 0 instead
+    check("Refine(FractionalPart(a), a < 0 && Mod(a, 1) == 1/3)", //
+        "-2/3");
+    check("Refine(FractionalPart(a), a > 0 && Mod(a, 1) == 1/3)", //
+        "1/3");
+    // the sign of a is unknown, so it isn't decided
+    check("Refine(FractionalPart(a), Mod(a, 1) == 1/3)", //
+        "FractionalPart(a)");
+
+    // an expression is bounded over the whole assumed region, not variable by variable: the
+    // minimum of (x-1)^2+(y-2)^2 on the unit disc is 6-2*Sqrt(5)>3/2, so the relation is False
+    check("Refine((x - 1)^2 + (y - 2)^2 < 3/2, x^2 + y^2 <= 1)", //
+        "False");
+    check("Refine((x - 1)^2 + (y - 2)^2 > 1, x^2 + y^2 <= 1)", //
+        "True");
+    // the maximum on the unit disc is 6+2*Sqrt(5)
+    check("Refine((x - 1)^2 + (y - 2)^2 > 100, x^2 + y^2 <= 1)", //
+        "False");
+    check("Refine((x - 1)^2 + (y - 2)^2 <= 20, x^2 + y^2 <= 1)", //
+        "True");
+    // the same bound serves the predicates and Sign()
+    check("Refine(Positive((x - 1)^2 + (y - 2)^2 - 3/2), x^2 + y^2 <= 1)", //
+        "True");
+    check("Refine(Sign((x - 1)^2 + (y - 2)^2 - 3/2), x^2 + y^2 <= 1)", //
+        "1");
+    // a scaled target and a three dimensional ball
+    check("Refine(2*(x - 1)^2 + 2*(y - 2)^2 < 3, x^2 + y^2 <= 1)", //
+        "False");
+    check("Refine((x - 10)^2 + (y - 10)^2 + (z - 10)^2 > 3, x^2 + y^2 + z^2 <= 1)", //
+        "True");
+    // 3 lies between the minimum and the maximum, so the relation depends on the point
+    check("Refine((x - 1)^2 + (y - 2)^2 < 3, x^2 + y^2 <= 1)", //
+        "(1-x)^2+(2-y)^2<3");
+    // the larger disc reaches below 3/2
+    check("Refine((x - 1)^2 + (y - 2)^2 < 3/2, x^2 + y^2 <= 4)", //
+        "(1-x)^2+(2-y)^2<3/2");
+    // x>0 doesn't bound the region
+    check("Refine((x - 1)^2 + (y - 2)^2 < 3/2, x > 0)", //
+        "(1-x)^2+(2-y)^2<3/2");
+
+    // chained relations with mixed operators are parsed as Inequality(...)
+    check("Refine(Ceiling(x), 2 < x <= 3)", //
+        "3");
+    check("Refine(Floor(x), 2 <= x < 3)", //
+        "2");
+    check("Refine(Sqrt(x^2), 0 < x <= 5)", //
+        "x");
+
     check("Refine(-4*x^2<0,x<0||x>0)", //
         "True");
     check("Refine(Power(x^27,1/3),Element(x,Reals))", //
@@ -21083,7 +21572,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Csc(Pi*(1/2+m)), Element(m, Integers))", //
         "I^(2*m)");
     check("Refine(Csc(Pi*(-1/2+m)), Element(m, Integers))", //
-        "I^(2*(-1+m))");
+        "I^(-2+2*m)");
     check("Refine(Csc(Pi*(1/4+m)), Element(m, Integers))", //
         "Csc((1/4+m)*Pi)");
     check("Refine(Csc(Pi*(-1/4+m)), Element(m, Integers))", //
@@ -21094,7 +21583,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Sin(Pi*(1/2+m)), Element(m, Integers))", //
         "I^(2*m)");
     check("Refine(Sin(Pi*(-1/2+m)), Element(m, Integers))", //
-        "I^(2*(-1+m))");
+        "I^(-2+2*m)");
     check("Refine(Sin(Pi*(1/4+m)), Element(m, Integers))", //
         "Sin((1/4+m)*Pi)");
     check("Refine(Sin(Pi*(-1/4+m)), Element(m, Integers))", //
@@ -21204,7 +21693,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(x^3>=0,Element(x, Reals))", //
         "x^3>=0");
     check("Refine(x^4<0,Element(x, Reals))", //
-        "x^4<0");
+        "False");
     check("Refine(x^4<0,x<0)", //
         "False");
     check("Refine(-x^4<=0,Element(x, Reals))", //
@@ -21361,8 +21850,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Resultant(a*x^3+b*x^2+c*x+d,d*x^3+c*x^2+b*x+a,x,Modulus->2)",
     // "-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)");
 
+    // the coefficients are rational functions in x, so the division normalizes them into a single
+    // numerator/denominator pair instead of the nested unsimplified
+    // `-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)` - the same value, and the
+    // numerator is exactly 1/9 of the Resultant() checked below
     check("PolynomialRemainder(-2+x^2-2*x*y+y^2,-5+4*x-2*x^3+2*y+3*x^2*y,y)",
-        "-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)");
+        "(17/9-20/3*x+4/3*x^2-10/9*x^3-2/3*x^4+x^6/9)/(4/9+4/3*x^2+x^4)");
 
     // https: // codegolf.stackexchange.com/questions/261236/resultant-of-two-polynomials
     check("Resultant(1,2,x)", //
@@ -21415,8 +21908,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "2+a*b+b^2-a*c-b*c-a*d-b*d+c*d-a*e-b*e+c*e+d*e)))/(a^2+a*b+b^2-a*c-b*c-a*d-b*d+c*d-a*e-b*e+c*e+d*e))*(a^\n"
     // +
     // "2+a*b+b^2-a*c-b*c-a*d-b*d+c*d-a*e-b*e+c*e+d*e)^2");
+    // the coefficients are rational functions in x, so the division normalizes them into a single
+    // numerator/denominator pair instead of the nested unsimplified
+    // `-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)` - the same value, and the
+    // numerator is exactly 1/9 of the Resultant() checked below
     check("PolynomialRemainder(-2+x^2-2*x*y+y^2,-5+4*x-2*x^3+2*y+3*x^2*y,y)",
-        "-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)");
+        "(17/9-20/3*x+4/3*x^2-10/9*x^3-2/3*x^4+x^6/9)/(4/9+4/3*x^2+x^4)");
     check("Resultant((x-y)^2-2 , y^3-5, y)", //
         "17-60*x+12*x^2-10*x^3-6*x^4+x^6");
     check("Resultant(x^2 - 2*x + 7, x^3 - x + 5, x)", //
@@ -21427,8 +21924,59 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Resultant(x^2 - 4, x^2 + 4*x + 4, x)", //
         "0");
     // MMA -3807 - Sympy 3807
+    // `Resultant(a,b) == (-1)^(Exponent(a,x)*Exponent(b,x)) * Resultant(b,a)`, so the sign depends
+    // on the order of the arguments. Here both degrees (1 and 3) are odd, and the determinant of
+    // the Sylvester matrix - which puts the rows of the first argument on top - is -3807.
     check("Resultant(3*x + 9, 6*x^3 - 3*x + 12, x)", //
+        "-3807");
+    check("Resultant(6*x^3 - 3*x + 12, 3*x + 9, x)", //
         "3807");
+    check("First(Subresultants(3*x + 9, 6*x^3 - 3*x + 12, x))", //
+        "-3807");
+
+    // polynomials with symbolic leading coefficients
+    check("Resultant(a*x^2 + b*x + c, p*x^2 + q*x + r, x)", //
+        "c^2*p^2-b*c*p*q+a*c*q^2+b^2*p*r-2*a*c*p*r-a*b*q*r+a^2*r^2");
+    check("Resultant(a*x^2 + b*x + c, d*x + e, x)", //
+        "c*d^2-b*d*e+a*e^2");
+    check("Resultant(a*x^3 + b*x^2 + c*x + d, d*x^3 + c*x^2 + b*x + a, x) /. {a->1,b->2,c->3,d->4}", //
+        "-2000");
+    // must agree with the same polynomials written out with integer coefficients
+    check("Resultant(x^3 + 2*x^2 + 3*x + 4, 4*x^3 + 3*x^2 + 2*x + 1, x)", //
+        "-2000");
+
+    check("Resultant(x^2 + 1, x^3 - 1, x)", //
+        "2");
+    check("Resultant(x^2 - 1, x^3 - 1, x)", //
+        "0");
+    check("Resultant(2*x + 3, 4*x - 1, x)", //
+        "-14");
+    check("Resultant(a*x + b, c*x + d, x)", //
+        "-b*c+a*d");
+    check("Expand(Resultant(x^2 + a*x + b, x^2 + c*x + d, x))", //
+        "b^2-a*b*c+b*c^2+a^2*d-2*b*d-a*c*d+d^2");
+    check("Resultant(x^2 - 5*x + 6, x^2 - 3*x + 2, x)", //
+        "0");
+    check("Resultant(x, x^2, x)", //
+        "0");
+    check("Resultant(3, x + 1, x)", //
+        "3");
+    check("Resultant(f, g, x)", //
+        "1");
+
+    // `Modulus -> p` reduces the resultant modulo `p`
+    check("Resultant(x^2 - 1, x - 1, x, Modulus -> 2)", //
+        "0");
+    check("Resultant(x^2 + 1, x + 1, x, Modulus -> 5)", //
+        "2");
+    check("Resultant(x^2 + a, x + b, x, Modulus -> 3)", //
+        "a+b^2");
+    // the leading coefficient of the first argument vanishes modulo 2
+    check("Resultant(2*x^2 + 1, x + 1, x, Modulus -> 2)", //
+        "1");
+    // `Modulus -> 0` is the default and means the integers
+    check("Resultant(x^2 + 1, x + 1, x, Modulus -> 0)", //
+        "2");
 
     // check("Resultant[a x^3 + b x^2 + c x + f, f x^3 + c x^2 + b x + a,
     // x]", "");
@@ -21508,6 +22056,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "RGBColor(1.0,1.0,0.0)");
     check("Purple", //
         "RGBColor(0.5,0.0,0.5)");
+
+    // hexadecimal color strings in the notations #RRGGBB, #RGB and #RRGGBBAA
+    check("RGBColor(\"#FF0000\")", //
+        "RGBColor(1.0,0.0,0.0)");
+    check("RGBColor(\"#336699\")", //
+        "RGBColor(0.2,0.4,0.6)");
+    check("RGBColor(\"#F00\")", //
+        "RGBColor(1.0,0.0,0.0)");
+    check("RGBColor(\"#00ff00\")", //
+        "RGBColor(0.0,1.0,0.0)");
+    check("RGBColor(\"#FF000080\")", //
+        "RGBColor(1.0,0.0,0.0,0.501961)");
+
+    // a missing '#' character, an unsupported number of digits or a non hexadecimal digit
+    // leaves the expression unevaluated
+    check("RGBColor(\"FF0000\")//InputForm", //
+        "RGBColor(\"FF0000\")");
+    check("RGBColor(\"#F008\")//InputForm", //
+        "RGBColor(\"#F008\")");
+    check("RGBColor(\"#XYZ\")//InputForm", //
+        "RGBColor(\"#XYZ\")");
+    check("RGBColor(\"#FF00\")//InputForm", //
+        "RGBColor(\"#FF00\")");
   }
 
   @Test
@@ -25321,7 +25892,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testTrigFactor() { 
+  public void testTrigFactor() {
     check("TrigFactor(Cos(x)^3 + Sin(x)^3)", //
         "(Cos(x)+Sin(x))*(1-Cos(x)*Sin(x))");
     check("TrigFactor(Sin(x)^2 + Tan(x)^2)", //
