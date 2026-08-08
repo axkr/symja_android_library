@@ -240,7 +240,10 @@ public class FindSequenceFunction extends AbstractEvaluator {
       }
     }
 
-    IExpr polynomial = engine.evaluate(F.Factor(result.oneIdentity0()));
+    // Expand the Newton form before factoring. Factor() returns its argument unchanged if there's
+    // nothing to factor, so without the Expand() the raw Newton sum would leak into the result for
+    // sequences whose interpolating polynomial is a monomial (e.g. {1,4,9,16,25} -> n^2).
+    IExpr polynomial = engine.evaluate(F.Factor(F.Expand(result.oneIdentity0())));
     if (!validateInSlot1(polynomial, sequence, engine)) {
       return F.NIL;
     }
