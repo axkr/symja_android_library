@@ -7,14 +7,15 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.RootsFunctions;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -74,9 +75,10 @@ public class Root extends AbstractFunctionEvaluator {
         IExpr refinedNumeric = refineNumerically(f, c, engine);
         if (refinedNumeric.isPresent() && refinedNumeric.isNumber() && c.isNumber()) {
           if (!engine.isNumericMode()) {
-            try {
-              double cVal = c.evalf();
-              double rVal = refinedNumeric.evalf();
+            double cVal = c.evalfNaN();
+            double rVal = refinedNumeric.evalfNaN();
+            // if either isn't numeric: fall through – keep numeric refinement result
+            if (!Double.isNaN(cVal) && !Double.isNaN(rVal)) {
               // Tolerance: ~1e-5 relative. Matches behavior on the
               // 4.60421 vs 4.604216 boundary for machine-precision Num inputs.
               double tol = Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, Math.abs(cVal));
@@ -84,8 +86,6 @@ public class Root extends AbstractFunctionEvaluator {
                 // c is not close enough to any root of f → emit Root::invrt, stay inert.
                 return Errors.printMessage(S.Root, "invrt", F.List(c, f), engine);
               }
-            } catch (ArgumentTypeException atex) {
-              // fall through – keep numeric refinement result
             }
           }
           return refinedNumeric;
@@ -104,15 +104,14 @@ public class Root extends AbstractFunctionEvaluator {
       // a new expression when the refined value differs from c.
       IExpr refined = refineNumerically(f, c, engine);
       if (refined.isPresent() && refined.isNumber() && c.isNumber()) {
-        try {
-          double cVal = c.evalf();
-          double rVal = refined.evalf();
+        double cVal = c.evalfNaN();
+        double rVal = refined.evalfNaN();
+        // if either isn't numeric: ignore – keep inert
+        if (!Double.isNaN(cVal) && !Double.isNaN(rVal)) {
           if (Math.abs(rVal - cVal) > Config.SPECIAL_FUNCTIONS_TOLERANCE
               * Math.max(1.0, Math.abs(cVal))) {
             return F.unaryAST1(S.Root, F.list(f, refined));
           }
-        } catch (ArgumentTypeException atex) {
-          // ignore – keep inert
         }
       }
 
@@ -132,6 +131,18 @@ public class Root extends AbstractFunctionEvaluator {
     // Root[f, k, 1] selects an alternate complex ordering. Symja currently only
     // implements the real-first ordering, so both forms are treated equivalently to Root[f, k].
     if ((ast.isAST2() || ast.isAST3()) && ast.arg2().isInteger()) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isFunction() && !arg1.isList()) {
+        // Root[poly, k] with a plain polynomial expression instead of a pure function of Slot1:
+        // rewrite it, so that Root[x^2-2, 1] and Root[#^2-2 &, 1] denote the same object. Only a
+        // single variable identifies the polynomial unambiguously - Root[x^2+y, 1] stays
+        // unevaluated because it doesn't say which of x and y the root belongs to.
+        VariablesSet variables = new VariablesSet(arg1);
+        if (variables.size() == 1) {
+          return ast.setAtCopy(1, F.Function(F.subst(arg1, variables.firstVariable(), F.Slot1)));
+        }
+        return F.NIL;
+      }
       if (ast.isAST3()) {
         IExpr arg3 = ast.arg3();
         if (!arg3.equals(F.C0) && !arg3.equals(F.C1)) {
@@ -154,10 +165,63 @@ public class Root extends AbstractFunctionEvaluator {
           return numericRoot;
         }
       }
+      // The Root object stays inert: normalize it to the canonical input form Root[f, k, 0].
+      IExpr canonical = canonicalRootObject(ast, engine);
+      if (canonical.isPresent()) {
+        return canonical;
+      }
     }
     // Root(f, k) stays unevaluated
     // Use ToRadicals(Root(f, k)) to expand to radical form.
     return F.NIL;
+  }
+
+  /**
+   * Normalize an inert {@code Root[f, k]} object to the canonical input form
+   * {@code Root[f, k, 0]}, with the polynomial body of {@code f} in canonical term order.
+   *
+   * <p>
+   * {@code Function} is {@link ISymbol#HOLDALL}, so the body of {@code f} is never evaluated and
+   * keeps whatever term order the parser happened to produce: {@code Root[#1^5+2*#1+1 &, 2]} and
+   * {@code Root[1+2*#1+#1^5 &, 2]} would otherwise be two structurally different objects for the
+   * same algebraic number.
+   *
+   * @param ast the {@code Root[f, k]} or {@code Root[f, k, n]} expression
+   * @param engine the evaluation engine
+   * @return the canonical {@code Root[f, k, n]} object, or {@link F#NIL} if {@code f} is not a
+   *         polynomial in {@link F#Slot1}, if {@code k} doesn't select one of its roots, or if
+   *         {@code ast} is already canonical
+   */
+  private static IExpr canonicalRootObject(final IAST ast, EvalEngine engine) {
+    IExpr function = ast.arg1();
+    if (!function.isFunction()) {
+      return F.NIL;
+    }
+    IExpr[] coefficients = polynomialCoefficients(function.first());
+    if (coefficients == null) {
+      return F.NIL;
+    }
+    final int degree = coefficients.length - 1;
+    final int k = ast.arg2().toMachineInt();
+    if (k < 1 || k > degree) {
+      // k doesn't name one of the roots: keep the object as the user wrote it, so that the out of
+      // range index stays visible instead of being dressed up as a canonical Root object.
+      return F.NIL;
+    }
+    // Build the polynomial over a dummy variable and evaluate it there: evaluating an expression
+    // which contains Slot1 would substitute the slot if this Root object is nested in the body of
+    // another pure function.
+    ISymbol x = F.Dummy("x");
+    IASTAppendable plus = F.PlusAlloc(degree + 1);
+    for (int i = 0; i <= degree; i++) {
+      if (!coefficients[i].isZero()) {
+        plus.append(i == 0 ? coefficients[i] : F.Times(coefficients[i], F.Power(x, F.ZZ(i))));
+      }
+    }
+    IExpr body = F.subst(engine.evaluate(plus), x, F.Slot1);
+    IExpr n = ast.isAST3() ? ast.arg3() : F.C0;
+    IAST result = F.ternaryAST3(S.Root, F.Function(body), ast.arg2(), n);
+    return result.equals(ast) ? F.NIL : result;
   }
 
   @Override

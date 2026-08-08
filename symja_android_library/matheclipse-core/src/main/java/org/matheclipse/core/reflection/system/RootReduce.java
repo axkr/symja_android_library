@@ -23,9 +23,16 @@ public class RootReduce extends AbstractFunctionEvaluator {
       return list;
     }
 
-    // Fast path: already a Root object – return as-is (accept 2- and 3-arg forms)
-    if (arg1.isAST(S.Root, 3) || arg1.isAST(S.Root, 4)) {
+    // Fast path: already a Root object. The 3-argument form is canonical and returned as-is; the
+    // 2-argument form is normalized to Root[f, k, 0] so that RootReduce always emits the same form
+    // as the general path below. Symja implements only the real-first root ordering, so Root[f, k]
+    // and Root[f, k, 0] denote the same root (see Root#evaluate).
+    if (arg1.isAST(S.Root, 4)) {
       return arg1;
+    }
+    if (arg1.isAST(S.Root, 3)) {
+      IAST root = (IAST) arg1;
+      return F.ternaryAST3(S.Root, root.arg1(), root.arg2(), F.C0);
     }
 
     // Fast path: rational numbers are trivially algebraic
@@ -54,7 +61,8 @@ public class RootReduce extends AbstractFunctionEvaluator {
       // i.e. it's a closed-form algebraic number expression
       VariablesSet vars = new VariablesSet(arg1);
       if (!vars.isEmpty()) {
-        return F.NIL; // has symbolic variables – cannot reduce
+        // has symbolic variables - there's nothing to reduce, so RootReduce is the identity here
+        return arg1;
       }
 
       // Step 1: compute the minimal polynomial as a pure Function of Slot(1)
@@ -100,8 +108,8 @@ public class RootReduce extends AbstractFunctionEvaluator {
       for (int i = 0; i < nRoots; i++) {
         IExpr rootI = rootsList.get(i + 1);
         try {
-          reVals[i] = rootI.re().evalf();
-          imVals[i] = rootI.im().evalf();
+          reVals[i] = rootI.re().evalfNaN();
+          imVals[i] = rootI.im().evalfNaN();
           if (Double.isNaN(reVals[i]) || Double.isNaN(imVals[i])) {
             canSort = false;
             break;
@@ -139,15 +147,21 @@ public class RootReduce extends AbstractFunctionEvaluator {
 
       // Step 6: find the root index k (1-based) whose numeric value is closest to arg1,
       // using the sorted ordering so k matches WMA's Root[f, k, 0] convention.
-      double re1 = numericArg1.re().evalf();
-      double im1 = numericArg1.im().evalf();
+      double re1 = numericArg1.re().evalfNaN();
+      double im1 = numericArg1.im().evalfNaN();
+      if (Double.isNaN(re1) || Double.isNaN(im1)) {
+        return F.NIL;
+      }
       double minDist = Double.MAX_VALUE;
       int bestK = -1;
       for (int idx = 0; idx < nRoots; idx++) {
         int origIndex = canSort ? order[idx] : idx;
         IExpr rootK = rootsList.get(origIndex + 1);
-        double re2 = rootK.re().evalf();
-        double im2 = rootK.im().evalf();
+        double re2 = rootK.re().evalfNaN();
+        double im2 = rootK.im().evalfNaN();
+        if (Double.isNaN(re2) || Double.isNaN(im2)) {
+          return F.NIL;
+        }
         double dist = Math.hypot(re1 - re2, im1 - im2);
         if (dist < minDist) {
           minDist = dist;

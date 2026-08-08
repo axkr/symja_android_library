@@ -1045,6 +1045,149 @@ public class RootsFunctions {
   }
 
   /**
+   * Determine all complex roots of the univariate polynomial <code>polynomial</code> numerically.
+   *
+   * <p>
+   * In contrast to {@link #roots(IExpr, boolean, IAST, EvalEngine)} the roots are
+   * <b>not</b> collected in a set: a root of multiplicity <code>k</code> is returned
+   * <code>k</code> times, as <code>NSolve</code> and <code>Solve</code> do in
+   * <a href="https://reference.wolfram.com/language/ref/NSolve.html">Wolfram Language</a>. The
+   * roots are ordered by their real part and, for equal real parts, by their imaginary part.
+   *
+   * <p>
+   * A root at the origin is split off exactly instead of being approximated: for
+   * <code>x^3-4*x^2</code> Laguerre's method returns <code>1.27*10^-6</code> and
+   * <code>3.999999999999596</code> for the double root at <code>0</code> and the simple root at
+   * <code>4</code>, while dividing out <code>x^2</code> first leaves the exactly solvable linear
+   * factor <code>x-4</code>.
+   *
+   * @param polynomial a univariate polynomial with numeric coefficients
+   * @param variable the polynomial's variable
+   * @param engine the evaluation engine
+   * @return the roots as machine precision numbers or {@link F#NIL} if <code>polynomial</code>
+   *         isn't a univariate polynomial with numeric coefficients or the solver failed
+   */
+  public static IAST allNumericRoots(IExpr polynomial, ISymbol variable, EvalEngine engine) {
+    double[] coefficients;
+    try {
+      coefficients = coefficients(evalExpandAll(polynomial, engine), variable);
+    } catch (JASConversionException jce) {
+      return F.NIL;
+    }
+    if (coefficients == null || coefficients.length < 2) {
+      return F.NIL;
+    }
+    for (int i = 0; i < coefficients.length; i++) {
+      if (!Double.isFinite(coefficients[i])) {
+        return F.NIL;
+      }
+    }
+    // the degree of the polynomial: trailing zero coefficients don't contribute
+    int degree = coefficients.length - 1;
+    while (degree >= 0 && coefficients[degree] == 0.0) {
+      degree--;
+    }
+    if (degree < 1) {
+      return F.NIL;
+    }
+    // x^zeroMultiplicity divides the polynomial: 0 is a root of that multiplicity
+    int zeroMultiplicity = 0;
+    while (coefficients[zeroMultiplicity] == 0.0) {
+      zeroMultiplicity++;
+    }
+    org.hipparchus.complex.Complex[] roots;
+    if (degree - zeroMultiplicity > 0) {
+      double[] deflated = new double[degree - zeroMultiplicity + 1];
+      System.arraycopy(coefficients, zeroMultiplicity, deflated, 0, deflated.length);
+      roots = allComplexRootsLaguerre(deflated);
+      if (roots == null) {
+        return F.NIL;
+      }
+    } else {
+      roots = new org.hipparchus.complex.Complex[0];
+    }
+    org.hipparchus.complex.Complex[] allRoots =
+        new org.hipparchus.complex.Complex[zeroMultiplicity + roots.length];
+    for (int i = 0; i < zeroMultiplicity; i++) {
+      allRoots[i] = org.hipparchus.complex.Complex.ZERO;
+    }
+    for (int i = 0; i < roots.length; i++) {
+      allRoots[zeroMultiplicity + i] = chopRoot(roots[i]);
+    }
+    java.util.Arrays.sort(allRoots, RootsFunctions::compareRoots);
+    return F.mapRange(0, allRoots.length, i -> {
+      org.hipparchus.complex.Complex root = allRoots[i];
+      return root.getImaginary() == 0.0 //
+          ? F.num(root.getReal()) //
+          : F.complexNum(root.getReal(), root.getImaginary());
+    });
+  }
+
+  /**
+   * Set the real or the imaginary part of a numerically determined root to <code>0</code> if it is
+   * negligible against the root's modulus, so that a root which is real or purely imaginary is
+   * recognized as such. The rounding residue of a real root of <code>x^4-1</code> for example is
+   * <code>-8.6*10^-18</code> against a modulus of <code>1</code>.
+   *
+   * @param root a numerically determined root
+   * @return the root with its negligible parts replaced by <code>0</code>
+   */
+  private static org.hipparchus.complex.Complex chopRoot(org.hipparchus.complex.Complex root) {
+    double real = root.getReal();
+    double imaginary = root.getImaginary();
+    double delta = Config.DEFAULT_ROOTS_CHOP_DELTA * Math.max(1.0, root.norm());
+    if (Math.abs(real) <= delta) {
+      real = 0.0;
+    }
+    if (Math.abs(imaginary) <= delta) {
+      imaginary = 0.0;
+    }
+    return new org.hipparchus.complex.Complex(real, imaginary);
+  }
+
+  /**
+   * Order two numerically determined roots by their real part and, for equal real parts, by their
+   * imaginary part.
+   *
+   * <p>
+   * The comparison uses the values rounded to {@link #ROOT_ORDER_PRECISION} significant digits, so
+   * that a conjugate pair whose real parts differ only in their last bits - Laguerre's method
+   * returns <code>0.18123244446987535</code> and <code>0.1812324444698754</code> for
+   * <code>x^5-x-1</code> - is ordered by the imaginary part rather than by that rounding residue.
+   * Rounding to a fixed grid keeps the comparison transitive, which a plain tolerance wouldn't be.
+   */
+  private static int compareRoots(org.hipparchus.complex.Complex root1,
+      org.hipparchus.complex.Complex root2) {
+    int result = Double.compare(significantDigits(root1.getReal()), //
+        significantDigits(root2.getReal()));
+    if (result != 0) {
+      return result;
+    }
+    result = Double.compare(significantDigits(root1.getImaginary()), //
+        significantDigits(root2.getImaginary()));
+    if (result != 0) {
+      return result;
+    }
+    result = Double.compare(root1.getReal(), root2.getReal());
+    if (result != 0) {
+      return result;
+    }
+    return Double.compare(root1.getImaginary(), root2.getImaginary());
+  }
+
+  /** The number of significant digits which {@link #compareRoots} considers reliable. */
+  private static final int ROOT_ORDER_PRECISION = 12;
+
+  private static double significantDigits(double value) {
+    if (value == 0.0 || !Double.isFinite(value)) {
+      // normalize -0.0 to 0.0, so that it doesn't sort before 0.0
+      return value == 0.0 ? 0.0 : value;
+    }
+    return new java.math.BigDecimal(value)
+        .round(new java.math.MathContext(ROOT_ORDER_PRECISION)).doubleValue();
+  }
+
+  /**
    * Get the coefficient list of a univariate polynomial.
    *
    * @param polynomial

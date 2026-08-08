@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.C0;
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.Errors;
@@ -56,10 +58,8 @@ public class ToRadicals extends AbstractFunctionEvaluator {
   }
 
   private static IExpr rootNearFloatNumber(EvalEngine engine, IExpr f, IExpr c) {
-    double targetC = 0.0;
-    try {
-      targetC = c.evalf();
-    } catch (ArgumentTypeException e) {
+    double targetC = c.evalfNaN();
+    if (Double.isNaN(targetC)) {
       // Root approximation `1` is not a number.
       return Errors.printMessage(S.Root, "rapp", F.List(c));
     }
@@ -86,18 +86,17 @@ public class ToRadicals extends AbstractFunctionEvaluator {
           IExpr ruleList = list.get(i);
           if (ruleList.isList1() && ruleList.first().isRuleAST()) {
             IExpr exactVal = ruleList.first().second();
-            try {
-              double val = exactVal.evalf();
-              double diff = Math.abs(val - targetC);
-
-              // Define a reasonable threshold for "near" x = c, e.g., 1e-6
-              if (diff < minDiff && diff < 1e-6) {
-                minDiff = diff;
-                bestExactRoot = exactVal;
-              }
-            } catch (ArgumentTypeException e) {
+            double val = exactVal.evalfNaN();
+            if (Double.isNaN(val)) {
               // Skip if the exact value cannot be evaluated to a double
               continue;
+            }
+            double diff = Math.abs(val - targetC);
+
+            // Define a reasonable threshold for "near" x = c, e.g., 1e-6
+            if (diff < minDiff && diff < 1e-6) {
+              minDiff = diff;
+              bestExactRoot = exactVal;
             }
           }
         }
@@ -154,55 +153,38 @@ public class ToRadicals extends AbstractFunctionEvaluator {
           if (polynomial.isConstant()) {
             return F.CEmptyList;
           }
-          IExpr a, b, c2, d, e;
-          if (varDegree >= 1 && varDegree <= maxDegree) {
-            a = C0;
-            b = C0;
-            c2 = C0;
-            d = C0;
-            e = C0;
-            for (ExprMonomial monomial : polynomial) {
-              final IExpr coeff = monomial.coefficient();
-              long lExp = monomial.exponent().getVal(0);
-              if (lExp == 4) {
-                e = coeff;
-              } else if (lExp == 3) {
-                d = coeff;
-              } else if (lExp == 2) {
-                c2 = coeff;
-              } else if (lExp == 1) {
-                b = coeff;
-              } else if (lExp == 0) {
-                a = coeff;
-              } else {
-                throw new ArithmeticException("Root::Unexpected exponent value: " + lExp);
-              }
-            }
+          // A reducible polynomial is resolved factor by factor: the roots of an irreducible
+          // factor of degree <= maxDegree have a radical form even when the product doesn't -
+          // e.g. #^4-1 factorizes into (-1+#)*(1+#)*(1+#^2) and has the four explicit roots
+          // -1, 1, -I, I, while Ferrari's formula applied to the quartic as a whole returns a
+          // tower of nested radicals.
+          IExpr fromFactors = rootFromFactors(expr, (int) varDegree, k, maxDegree, engine);
+          if (fromFactors.isPresent()) {
+            return fromFactors;
+          }
 
+          if (varDegree >= 1 && varDegree <= maxDegree) {
             // Compute all radical roots (degree many), then sort numerically to
             // align with NRoots / k-indexing (Re ascending, Im ascending).
             int degree = (int) varDegree;
-            IExpr[] radicalRoots = new IExpr[degree];
-            boolean allPresent = true;
-            for (int i = 1; i <= degree; i++) {
-              IAST ri = F.NIL;
-              if (degree == 1) {
-                ri = Algebra.root1(a, b, i);
-              } else if (degree == 2) {
-                ri = Algebra.root2(a, b, c2, i);
-              } else if (degree == 3) {
-                ri = Algebra.root3(a, b, c2, d, i);
-              } else {
-                ri = Algebra.root4(a, b, c2, d, e, i);
-              }
-              if (!ri.isPresent()) {
-                allPresent = false;
-                break;
-              }
-              radicalRoots[i - 1] = engine.evaluate(ri);
+            // Evaluating the closed form is speculative as long as the Solve fallback below can
+            // still take over: a degenerate formula divides by zero on its way to returning
+            // nothing, and that isn't the user's problem.
+            final boolean quietMode = engine.isQuietMode();
+            IExpr[] radicalRoots;
+            try {
+              engine.setQuietMode(quietMode || maxDegree >= 4);
+              radicalRoots = radicalRoots(polynomial, degree, engine);
+            } finally {
+              engine.setQuietMode(quietMode);
             }
-
-            if (!allPresent) {
+            if (radicalRoots == null && maxDegree >= 4) {
+              // The closed formulas degenerate for this polynomial - Ferrari's formula divides by
+              // zero for #^4-2, for instance. Solve knows the special cases (binomials among
+              // them), so fall back to it before giving up.
+              radicalRoots = solveToRadicals(expr, degree, engine);
+            }
+            if (radicalRoots == null) {
               return F.NIL;
             }
 
@@ -238,6 +220,159 @@ public class ToRadicals extends AbstractFunctionEvaluator {
   }
 
   /**
+   * Compute all roots of a polynomial of degree 1..4 in radical form with the Cardano/Ferrari
+   * formulas.
+   *
+   * @param polynomial the polynomial in {@link F#Slot1}
+   * @param degree the degree of {@code polynomial} (1..4)
+   * @param engine the evaluation engine
+   * @return the {@code degree} roots in the natural k-indexing of the formulas (unsorted), or
+   *         <code>null</code> if one of them has no radical form
+   */
+  private static IExpr[] radicalRoots(ExprPolynomial polynomial, int degree, EvalEngine engine) {
+    IExpr a = C0;
+    IExpr b = C0;
+    IExpr c2 = C0;
+    IExpr d = C0;
+    IExpr e = C0;
+    for (ExprMonomial monomial : polynomial) {
+      final IExpr coeff = monomial.coefficient();
+      long lExp = monomial.exponent().getVal(0);
+      if (lExp == 4) {
+        e = coeff;
+      } else if (lExp == 3) {
+        d = coeff;
+      } else if (lExp == 2) {
+        c2 = coeff;
+      } else if (lExp == 1) {
+        b = coeff;
+      } else if (lExp == 0) {
+        a = coeff;
+      } else {
+        throw new ArithmeticException("Root::Unexpected exponent value: " + lExp);
+      }
+    }
+
+    IExpr[] radicalRoots = new IExpr[degree];
+    for (int i = 1; i <= degree; i++) {
+      IAST ri;
+      if (degree == 1) {
+        ri = Algebra.root1(a, b, i);
+      } else if (degree == 2) {
+        ri = Algebra.root2(a, b, c2, i);
+      } else if (degree == 3) {
+        ri = Algebra.root3(a, b, c2, d, i);
+      } else {
+        ri = Algebra.root4(a, b, c2, d, e, i);
+      }
+      if (!ri.isPresent()) {
+        return null;
+      }
+      IExpr root = engine.evaluate(ri);
+      if (!root.isFree(S.Indeterminate) || !root.isFree(S.ComplexInfinity)
+          || !root.isFree(S.DirectedInfinity)) {
+        // A coefficient the formula divides by is zero for this polynomial, so the closed form
+        // collapsed instead of naming the root.
+        return null;
+      }
+      radicalRoots[i - 1] = root;
+    }
+    return radicalRoots;
+  }
+
+  /**
+   * Determine the {@code k}-th root of a <em>reducible</em> polynomial by expanding each of its
+   * irreducible factors separately.
+   *
+   * <p>
+   * {@code Root} indexes the roots of the whole polynomial, so the roots of all factors - each one
+   * repeated as often as the multiplicity of its factor - are merged and sorted together before
+   * {@code k} selects one of them.
+   *
+   * <p>
+   * The method gives up (and leaves the caller with its usual handling) unless <em>every</em>
+   * irreducible factor has degree {@code <= maxDegree}: a factor which has no radical form of its
+   * own can't take part in the merged ordering, because it has no exact value to sort by.
+   *
+   * @param body the polynomial expression in {@link F#Slot1} (the body of the pure function)
+   * @param degree the degree of {@code body} in {@link F#Slot1}
+   * @param k the one-based index of the wanted root
+   * @param maxDegree maximum degree of an irreducible factor which may be expanded
+   * @param engine the evaluation engine
+   * @return the {@code k}-th root in radical form, or {@link F#NIL} if {@code body} is irreducible,
+   *         if one of its factors is too big to expand, or if the factorization is unusable
+   */
+  private static IExpr rootFromFactors(IExpr body, int degree, int k, int maxDegree,
+      EvalEngine engine) {
+    if (degree < 2 || k < 1 || k > degree) {
+      return F.NIL;
+    }
+    ISymbol x = F.Dummy("x");
+    IExpr factorList = engine.evaluate(F.unaryAST1(S.FactorList, F.subst(body, F.Slot1, x)));
+    if (!factorList.isList()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) factorList;
+    // Collect the irreducible factors first. An irreducible polynomial gains nothing here and is
+    // left to the caller - determining that before any root is computed keeps the messages of a
+    // degenerate closed form out of the caller's own attempt.
+    List<IExpr> factors = new ArrayList<IExpr>();
+    List<Integer> multiplicities = new ArrayList<Integer>();
+    int numberOfFactors = 0;
+    for (int i = 1; i <= list.argSize(); i++) {
+      IExpr entry = list.get(i);
+      if (!entry.isList2()) {
+        return F.NIL;
+      }
+      IExpr factor = entry.first();
+      if (factor.isFree(x)) {
+        // the numerical content of the polynomial doesn't contribute a root
+        continue;
+      }
+      int multiplicity = entry.second().toIntDefault();
+      if (multiplicity < 1) {
+        return F.NIL;
+      }
+      factors.add(factor);
+      multiplicities.add(multiplicity);
+      numberOfFactors += multiplicity;
+    }
+    if (numberOfFactors < 2) {
+      return F.NIL;
+    }
+
+    ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, F.list(F.Slot1));
+    List<IExpr> roots = new ArrayList<IExpr>(degree);
+    for (int i = 0; i < factors.size(); i++) {
+      ExprPolynomial factorPolynomial;
+      try {
+        factorPolynomial = ring.create(F.subst(factors.get(i), x, F.Slot1), false, true, false);
+      } catch (JASConversionException jce) {
+        return F.NIL;
+      }
+      final int factorDegree = (int) factorPolynomial.degree(0);
+      if (factorDegree < 1 || factorDegree > maxDegree) {
+        return F.NIL;
+      }
+      IExpr[] factorRoots = radicalRoots(factorPolynomial, factorDegree, engine);
+      if (factorRoots == null) {
+        return F.NIL;
+      }
+      for (int m = 0; m < multiplicities.get(i); m++) {
+        for (int r = 0; r < factorRoots.length; r++) {
+          roots.add(factorRoots[r]);
+        }
+      }
+    }
+    if (roots.size() != degree) {
+      // the factors don't account for every root of the polynomial
+      return F.NIL;
+    }
+    IExpr[] allRoots = sortRootsByMmaOrder(roots.toArray(new IExpr[roots.size()]));
+    return allRoots[k - 1];
+  }
+
+  /**
    * Sort the given radical roots by {@code Root} k-indexing convention:
    * <ol>
    * <li>real roots first, ordered by ascending value</li>
@@ -260,8 +395,8 @@ public class ToRadicals extends AbstractFunctionEvaluator {
     final double[] imVals = new double[n];
     for (int i = 0; i < n; i++) {
       try {
-        reVals[i] = roots[i].re().evalf();
-        imVals[i] = roots[i].im().evalf();
+        reVals[i] = roots[i].re().evalfNaN();
+        imVals[i] = roots[i].im().evalfNaN();
         if (Double.isNaN(reVals[i]) || Double.isNaN(imVals[i])) {
           return roots;
         }
@@ -300,6 +435,11 @@ public class ToRadicals extends AbstractFunctionEvaluator {
    * Fall back to {@code Solve} to obtain the radical solutions of {@code body == 0} for polynomials
    * whose degree exceeds the closed-form Cardano/Ferrari formulas (degree 1..4). This handles
    * solvable polynomials such as binomials (e.g. {@code #^5 - 2}).
+   *
+   * <p>
+   * Also used for degrees the formulas do cover but degenerate on: Ferrari's formula divides by
+   * zero for {@code #^4-2}, while {@code Solve} recognizes the binomial and returns
+   * {@code -2^(1/4)}.
    *
    * @param body the polynomial expression in {@link F#Slot1} (the body of the pure function)
    * @param degree the polynomial degree (expected number of solutions)

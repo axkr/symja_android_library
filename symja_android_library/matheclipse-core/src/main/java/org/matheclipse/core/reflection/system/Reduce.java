@@ -947,7 +947,11 @@ public class Reduce extends AbstractEvaluator {
 
     // handle quantifiers ForAll / Exists
     if (arg1.isAST(S.ForAll) || arg1.isAST(S.Exists)) {
-      IExpr quantified = reduceQuantifier((IAST) arg1, engine);
+      ISymbol quantifierDomain = null;
+      if (ast.isAST3() && ast.arg3().isSymbol()) {
+        quantifierDomain = (ISymbol) ast.arg3();
+      }
+      IExpr quantified = reduceQuantifier((IAST) arg1, quantifierDomain, engine);
       if (quantified.isPresent()) {
         return quantified;
       }
@@ -1110,16 +1114,26 @@ public class Reduce extends AbstractEvaluator {
   private static final int MAX_INTEGER_INTERVAL = 1000;
 
   /**
-   * Reduce a {@link S#ForAll} or {@link S#Exists} quantified expression over the {@link S#Reals}.
+   * Reduce a {@link S#ForAll} or {@link S#Exists} quantified expression.
+   *
+   * <p>
+   * The quantifier elimination itself is implemented in {@link Resolve}; the solution set based
+   * heuristic below is only used if {@link Resolve} cannot decide the quantifier.
    *
    * @param quant the quantifier AST (<code>ForAll</code> or <code>Exists</code>)
+   * @param domain the requested domain or <code>null</code> to determine the domain from the
+   *        quantified condition
    * @param engine the evaluation engine
    * @return {@link S#True}, {@link S#False}, or {@link F#NIL} if the quantifier cannot be decided
    */
-  private static IExpr reduceQuantifier(IAST quant, EvalEngine engine) {
+  private static IExpr reduceQuantifier(IAST quant, ISymbol domain, EvalEngine engine) {
     final boolean forAll = quant.isAST(S.ForAll);
     if (!quant.isAST2() && !quant.isAST3()) {
       return F.NIL;
+    }
+    IExpr resolved = Resolve.resolveQuantifier(quant, domain, engine);
+    if (resolved.isPresent()) {
+      return resolved;
     }
     IAST boundVars = quant.arg1().makeList();
     IExpr condition;

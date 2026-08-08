@@ -55,6 +55,101 @@ public class RootTest extends ExprEvaluatorTestCase {
 
   }
 
+  /**
+   * {@code Root[poly, k]} accepts a plain polynomial expression instead of a pure function of
+   * {@code Slot1}, as long as a single variable identifies the polynomial unambiguously.
+   */
+  @Test
+  public void testRootPolynomialArgument() {
+    check("Root(x^2 - 2, 2)", //
+        "Sqrt(2)");
+    check("Root(x^2 - 2, 1)", //
+        "-Sqrt(2)");
+    check("Root(y^2 - 3, 1)", //
+        "-Sqrt(3)");
+    check("Root(x^3 - 2, 1)", //
+        "Root(-2+#1^3&,1,0)");
+    check("Root(x^4 + x + 1, 2)", //
+        "Root(1+#1+#1^4&,2,0)");
+    // two variables: it isn't determined whose root is meant, so the expression stays unevaluated
+    check("Root(x^2 + y, 1)", //
+        "Root(x^2+y,1)");
+  }
+
+  /**
+   * An inert {@code Root[f, k]} object is normalized to the canonical input form
+   * {@code Root[f, k, 0]}, with the polynomial body in canonical term order. {@code Function} is
+   * {@code HoldAll}, so without this the parser's term order would survive and
+   * {@code Root[#1^5+2*#1+1 &, 2]} and {@code Root[1+2*#1+#1^5 &, 2]} would be two different
+   * objects for the same algebraic number.
+   */
+  @Test
+  public void testRootCanonicalForm() {
+    check("Root(#1^5 + 2*#1 + 1&, 2)", //
+        "Root(1+2*#1+#1^5&,2,0)");
+    check("Root(1 + 2*#1 + #1^5 &, 1, 0)", //
+        "Root(1+2*#1+#1^5&,1,0)");
+    check("Root(1 + 2*#1 + #1^5 &, 3, 0)", //
+        "Root(1+2*#1+#1^5&,3,0)");
+  }
+
+  /**
+   * A reducible polynomial is resolved factor by factor: the roots of an irreducible factor of
+   * degree {@code <= 2} have a radical form even when the product doesn't.
+   */
+  @Test
+  public void testRootReduciblePolynomial() {
+    check("Root(#^2 - 3 &, 1)", //
+        "-Sqrt(3)");
+    check("Root(#^2 - 3 &, 2)", //
+        "Sqrt(3)");
+    check("Root(# &, 1)", //
+        "0");
+    check("Root(#^2 - 3*# + 2 &, 1)", //
+        "1");
+    check("Root(#^2 - 3*# + 2 &, 2)", //
+        "2");
+    check("Root(#^2 + 1 &, 1)", //
+        "-I");
+    check("Root(#^2 + 1 &, 2)", //
+        "I");
+    check("Root(#1^2 - 1&, 1)", //
+        "-1");
+    check("Root(#1^2 - 1&, 2)", //
+        "1");
+    // #^4-1 factorizes into (-1+#)*(1+#)*(1+#^2). k indexes the roots of the whole polynomial:
+    // real roots first in ascending order, then the complex ones by ascending Re, then Im.
+    check("Root(#^4 - 1 &, 1)", //
+        "-1");
+    check("Root(#^4 - 1 &, 2)", //
+        "1");
+    check("Root(#^4 - 1 &, 3)", //
+        "-I");
+    check("Root(#^4 - 1 &, 4)", //
+        "I");
+    // #^3-1 factorizes into (-1+#)*(1+#+#^2)
+    check("Root(#^3 - 1 &, 1)", //
+        "1");
+  }
+
+  /**
+   * {@code N} resolves a {@code Root} object which has no radical form. Full precision output, so
+   * these use {@code checkNumeric}.
+   */
+  @Test
+  public void testRootPolynomialArgumentNumeric() {
+    checkNumeric("N(Root(x^3 - 2, 1))", //
+        "1.2599210498948732");
+    checkNumeric("N(Root(x^2 - 2, 1))", //
+        "-1.4142135623730951");
+    checkNumeric("N(Root(x^2 - 2, 2))", //
+        "1.4142135623730951");
+    checkNumeric("N(Root(x^3 - x - 1, 1))", //
+        "1.324717957244746");
+    checkNumeric("Table(N(Root(#^4 - 5*#^2 + 4 &, k)), {k, 1, 4})", //
+        "{-2.,-1.,1.,2.}");
+  }
+
   @Test
   public void testRoots() {
     check("(-EulerGamma)^(1/3)", //
@@ -142,6 +237,47 @@ public class RootTest extends ExprEvaluatorTestCase {
     // Already a Root expression — quadratic auto-evaluates to its radical form
     check("RootReduce(Root(-2+#1^2&,2))", //
         "Sqrt(2)");
+
+    check("RootReduce(3)", //
+        "3");
+    check("RootReduce(2/3)", //
+        "2/3");
+    check("RootReduce(I)", //
+        "I");
+    check("RootReduce((1 + Sqrt(5))/2)", //
+        "1/2+Sqrt(5)/2");
+    check("RootReduce(Sqrt(2)*Sqrt(3))", //
+        "Sqrt(6)");
+
+    // denesting: Sqrt(3+2*Sqrt(2)) and Sqrt(5+2*Sqrt(6)) are (1+Sqrt(2)) and (Sqrt(2)+Sqrt(3))
+    check("RootReduce(Sqrt(3 + 2*Sqrt(2)))", //
+        "1+Sqrt(2)");
+    check("RootReduce(Sqrt(2) + Sqrt(3))", //
+        "Root(1-10*#1^2+#1^4&,4,0)");
+    check("RootReduce(Sqrt(5 + 2*Sqrt(6)))", //
+        "Root(1-10*#1^2+#1^4&,4,0)");
+    check("RootReduce(2^(1/3) + 2^(2/3))", //
+        "Root(-6-6*#1+#1^3&,1,0)");
+
+    // a 2-argument Root is normalized to the canonical 3-argument form Root[f, k, 0]
+    check("RootReduce(Root(#^3 - 2 &, 1))", //
+        "Root(-2+#1^3&,1,0)");
+    check("RootReduce(Root(#^7-#^2-#+a&, 1))", //
+        "Root(a-#1-#1^2+#1^7&,1,0)");
+
+    // nothing to reduce: RootReduce is the identity on non-algebraic and symbolic expressions
+    check("RootReduce(Pi)", //
+        "Pi");
+    check("RootReduce(Sin(1))", //
+        "Sin(1)");
+    check("RootReduce(x)", //
+        "x");
+    check("RootReduce(x^2)", //
+        "x^2");
+    check("RootReduce(Sin(x))", //
+        "Sin(x)");
+    check("RootReduce(Sqrt(2)+x)", //
+        "Sqrt(2)+x");
   }
 
 
@@ -178,9 +314,26 @@ public class RootTest extends ExprEvaluatorTestCase {
     check("ToRadicals(Root((-3*#-1)&, 1))", //
         "-1/3");
     check("ToRadicals(Sin(Root((#^7-#^2-#+a)&, 1)))", //
-        "Sin(Root(-#1-#1^2+#1^7+a&,1))");
+        "Sin(Root(a-#1-#1^2+#1^7&,1,0))");
     check("ToRadicals(Root((#^7-#^2-#+a)&, 1)+Root((#^6-#^2-#+a)&, 1))", //
-        "Root(-#1-#1^2+#1^6+a&,1)+Root(-#1-#1^2+#1^7+a&,1)");
+        "Root(a-#1-#1^2+#1^6&,1,0)+Root(a-#1-#1^2+#1^7&,1,0)");
+    // binomials #^n - 2 for n = 2..6. Ferrari's formula degenerates into a division by zero for
+    // #^4-2, so that one is resolved by the Solve fallback instead of the closed form.
+    check("ToRadicals(Root(#^2 - 3 &, 1))", //
+        "-Sqrt(3)");
+    check("ToRadicals(Root(#^2 - 3 &, 2))", //
+        "Sqrt(3)");
+    check("ToRadicals(Root(#^2 + 3*# + 1 &, 1))", //
+        "-3/2-Sqrt(5)/2");
+    check("ToRadicals(Root(#^2 + 3*# + 1 &, 2))", //
+        "-3/2+Sqrt(5)/2");
+    check("ToRadicals(Root(#^4 - 2 &, 1))", //
+        "-2^(1/4)");
+    check("ToRadicals(Root(#^4 - 2 &, 2))", //
+        "2^(1/4)");
+    check("ToRadicals(Root(#^6 - 2 &, 1))", //
+        "-2^(1/6)");
+
     check("ToRadicals(Root((#^3-#^2-#+a)&, 1))", //
         "1/3+4/3*2^(1/3)/(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3)+(11+Sqrt(-256+(11-27*a)^2)-\n"
             + "27*a)^(1/3)/(3*2^(1/3))");
@@ -214,7 +367,7 @@ public class RootTest extends ExprEvaluatorTestCase {
 
     // Non-solvable quintic: Solve cannot return explicit radicals, so the Root stays unevaluated.
     check("ToRadicals(Root(#^5 - # - 1 &, 1))", //
-        "Root(-1-#1+#1^5&,1)");
+        "Root(-1-#1+#1^5&,1,0)");
   }
 
   @Test
@@ -305,7 +458,7 @@ public class RootTest extends ExprEvaluatorTestCase {
   public void testRootNumericUnevaluated() {
     // symbolic coefficient
     check("N(Root(#1^7-#1^2-#1+a&,1))", //
-        "Root(-#1-#1^2+#1^7+a&,1)");
+        "Root(a-#1-#1^2+#1^7&,1,0)");
     // f is not a polynomial
     check("N(Root(Sin(#1)-#1/2&,1))", //
         "Root(Sin(#1)-#1/2&,1)");
