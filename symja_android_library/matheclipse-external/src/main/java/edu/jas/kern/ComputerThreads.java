@@ -29,10 +29,22 @@ import org.apache.logging.log4j.Logger;
 public class ComputerThreads {
 
 
-    private static final Logger logger = LogManager.getLogger(ComputerThreads.class);
+    /**
+     * Holder for the lazily created logger. If you touch {@link #NO_THREADS} during start-up,
+     * so creating the logger in the class initializer would bootstrap the whole log4j2 subsystem
+     * there, although this class only logs in {@link #terminate()}.
+     */
+    private static final class LogHolder {
+        static final Logger LOGGER = LogManager.getLogger(ComputerThreads.class);
+    }
 
 
-    // private static final boolean debug = logger.isInfoEnabled();
+    private static Logger logger() {
+        return LogHolder.LOGGER;
+    }
+
+
+    // private static final boolean debug = logger().isInfoEnabled();
 
 
     /**
@@ -136,20 +148,20 @@ public class ComputerThreads {
         if (pool instanceof ThreadPoolExecutor) {
             ThreadPoolExecutor tpe = (ThreadPoolExecutor) pool;
             //logger.info("task queue size         {}", Q_CAPACITY);
-            logger.info("number of CPUs            {}", N_CPUS);
-            logger.info("core number of threads    {}", N_THREADS);
-            logger.info("current number of threads {}", tpe.getPoolSize());
-            logger.info("maximal number of threads {}", tpe.getLargestPoolSize());
+            logger().info("number of CPUs            {}", N_CPUS);
+            logger().info("core number of threads    {}", N_THREADS);
+            logger().info("current number of threads {}", tpe.getPoolSize());
+            logger().info("maximal number of threads {}", tpe.getLargestPoolSize());
             BlockingQueue<Runnable> workpile = tpe.getQueue();
             if (workpile != null) {
-                logger.info("queued tasks              {}", workpile.size());
+                logger().info("queued tasks              {}", workpile.size());
             }
             List<Runnable> r = tpe.shutdownNow();
             if (r.size() != 0) {
-                logger.info("unfinished tasks          {}", r.size());
+                logger().info("unfinished tasks          {}", r.size());
             }
-            logger.info("number of scheduled tasks  {}", tpe.getTaskCount());
-            logger.info("number of completed tasks {}", tpe.getCompletedTaskCount());
+            logger().info("number of scheduled tasks  {}", tpe.getTaskCount());
+            logger().info("number of completed tasks {}", tpe.getCompletedTaskCount());
         }
         pool = null;
         //workpile = null;
