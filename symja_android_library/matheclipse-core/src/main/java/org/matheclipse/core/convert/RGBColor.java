@@ -428,19 +428,18 @@ public final class RGBColor implements Serializable {
    * @return
    */
   public static RGBColor hueToRGB(IAST hueColor) {
-    RGBColor rgb = null;
-    if (hueColor.argSize() == 1) {
-      rgb = getHSBColor((float) hueColor.arg1().evalf(), 1.0f, 1.0f);
-    } else if (hueColor.argSize() == 2) {
-      rgb = getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(), 1.0f);
-    } else if (hueColor.argSize() == 3) {
-      rgb = getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
-          (float) hueColor.arg3().evalf());
-    } else if (hueColor.argSize() == 4) {
-      rgb = getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
-          (float) hueColor.arg3().evalf());
+    final int argSize = hueColor.argSize();
+    if (argSize < 1 || argSize > 4) {
+      return null;
     }
-    return rgb;
+    // a 4th argument is the opacity and isn't part of the HSB conversion
+    double hue = hueColor.arg1().evalfNaN();
+    double saturation = argSize >= 2 ? hueColor.arg2().evalfNaN() : 1.0;
+    double brightness = argSize >= 3 ? hueColor.arg3().evalfNaN() : 1.0;
+    if (Double.isNaN(hue) || Double.isNaN(saturation) || Double.isNaN(brightness)) {
+      return null;
+    }
+    return getHSBColor((float) hue, (float) saturation, (float) brightness);
   }
 
   /**
