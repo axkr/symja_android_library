@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -63,7 +64,20 @@ public class DSolve extends AbstractFunctionEvaluator {
     return false;
   }
 
-  private static IASTAppendable checkDSolveEquations(final IAST listOrAndAST) {
+  /**
+   * Rewrite a list of equations <code>a==b</code> into the list of expanded expressions
+   * <code>a-b</code> which should be equal to <code>0</code>.
+   *
+   * <p>
+   * Also used by {@link NDSolve}, which needs the same normalization: the expansion is what lets a
+   * system such as <code>u''(t)+v''(t)==-(u(t)+v(t))</code> be separated into terms and solved for
+   * its highest derivatives.
+   *
+   * @param listOrAndAST a list of equations
+   * @return the expressions which should be zero, or {@link F#NIL} if an argument is not an
+   *         equation
+   */
+  public static IASTAppendable checkDSolveEquations(final IAST listOrAndAST) {
     IASTAppendable termsEqualNumberList = F.ListAlloc(listOrAndAST.argSize());
     for (int i = 1; i < listOrAndAST.size(); i++) {
       if (!checkDSolveEquation(listOrAndAST, listOrAndAST.get(i), termsEqualNumberList)) {
@@ -105,19 +119,6 @@ public class DSolve extends AbstractFunctionEvaluator {
     return expr;
   }
 
-  public static int derivativeOrder(IAST[] deriveExpr) {
-    // needed in NDSolve
-    if (deriveExpr.length == 3) {
-      if (deriveExpr[0].isAST1() && deriveExpr[0].arg1().isInteger()) {
-        int order = deriveExpr[0].arg1().toIntDefault();
-        if (F.isPresent(order) && order >= 0) {
-          return order;
-        }
-      }
-    }
-    return -1;
-  }
-
   /**
    * Recursively scans an expression to extract all integration constants C(1), C(2), etc. This
    * guarantees constants are found even if standard symbol extractors miss them.
@@ -149,16 +150,17 @@ public class DSolve extends AbstractFunctionEvaluator {
    * @return a {@code List} of extracted RHS values, or an empty {@code List} if the result
    *         structure is unexpected or empty
    */
+  /**
+   * The values a <code>Solve</code> result gives for the single unknown it was asked about, with
+   * the conditions {@link #stripConditionalExpression(IExpr)} removes taken off each of them.
+   *
+   * @param solveResult a result of the shape <code>{{y-&gt;1},{y-&gt;-1}}</code>
+   */
   private static IAST extractSolveResults(IExpr solveResult) {
-    IASTAppendable results = F.ListAlloc();
-    if (solveResult.isList()) {
-      IAST sols = (IAST) solveResult;
-      for (int i = 1; i <= sols.argSize(); i++) {
-        IExpr sol = sols.get(i);
-        if (sol.isList() && ((IAST) sol).argSize() >= 1 && ((IAST) sol).arg1().isRule()) {
-          results.append(stripConditionalExpression(((IAST) sol).arg1().second()));
-        }
-      }
+    IAST values = SolveUtils.firstRuleValues(solveResult);
+    IASTAppendable results = F.ListAlloc(values.argSize());
+    for (int i = 1; i <= values.argSize(); i++) {
+      results.append(stripConditionalExpression(values.get(i)));
     }
     return results;
   }
@@ -609,7 +611,8 @@ public class DSolve extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IAST arg1 = ast.arg1().makeList();
+    // an `And(...)` of equations is equivalent to a `List(...)` of equations
+    IAST arg1 = SolveUtils.toEquationList(ast.arg1()).makeList();
     IExpr arg2 = ast.arg2();
     IExpr arg3 = ast.arg3();
 

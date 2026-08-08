@@ -384,6 +384,18 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     return super.get(position).second();
   }
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * The underlying RRB tree stores <code>Rule(key, value)</code> expressions, while
+   * {@link #get(int)} returns the value of a rule. The arguments of an association therefore never
+   * have a uniform type.
+   */
+  @Override
+  int uniformTypeFlags() {
+    return UniformFlags.NONE;
+  }
+
   @Override
   public IAST getItems(int[] items, int length, int offset) {
     ASTAssociation assoc = new ASTAssociation();
@@ -765,8 +777,6 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
         UnEntry<IExpr, Integer> element = iterator.next();
         IExpr key = element.getKey();
         if (!key.isReal()) {
-          @SuppressWarnings("unused")
-          double d = key.evalf(); // create possible exception
           numericKeys = false;
           break;
         }

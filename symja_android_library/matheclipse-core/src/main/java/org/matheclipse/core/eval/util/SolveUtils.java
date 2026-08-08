@@ -17,6 +17,63 @@ import org.matheclipse.core.reflection.system.Solve;
 public class SolveUtils {
 
   /**
+   * Rewrite an <code>And(...)</code> of equations into the equivalent <code>List(...)</code> of
+   * equations.
+   *
+   * <p>
+   * The solvers accept their equations either as a list or combined with the <code>&amp;&amp;</code>
+   * operator, for example <code>DSolve(y'(x)==y(x) &amp;&amp; y(0)==1, y(x), x)</code>.
+   *
+   * @param expr the equations argument of a solver
+   * @return the list of equations, or <code>expr</code> unchanged if it wasn't an <code>And(...)
+   *     </code> expression
+   */
+  public static IExpr toEquationList(IExpr expr) {
+    if (expr.isAnd()) {
+      return ((IAST) expr).apply(S.List);
+    }
+    return expr;
+  }
+
+  /**
+   * The rules of the first solution of a <code>Solve</code> style result.
+   *
+   * @param solveResult a result of the shape <code>{{x-&gt;1,y-&gt;2},{x-&gt;3,y-&gt;4}}</code>
+   * @return the rules of the first solution, or {@link F#NIL} if there is no solution
+   */
+  public static IAST firstSolutionRules(IExpr solveResult) {
+    if (solveResult.isListOfLists() && solveResult.argSize() >= 1) {
+      return (IAST) solveResult.first();
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The value of the first rule of every solution of a <code>Solve</code> style result.
+   *
+   * <p>
+   * Used where the caller solved for a single unknown and wants the values it can take, so that
+   * <code>{{y-&gt;1},{y-&gt;-1}}</code> becomes <code>{1,-1}</code>.
+   *
+   * @param solveResult a result of the shape <code>{{y-&gt;1},{y-&gt;-1}}</code>
+   * @return the values, which is an empty list if the result had no solution of that shape
+   */
+  public static IAST firstRuleValues(IExpr solveResult) {
+    IASTAppendable results = F.ListAlloc();
+    if (solveResult.isList()) {
+      IAST solutions = (IAST) solveResult;
+      for (int i = 1; i <= solutions.argSize(); i++) {
+        IExpr solution = solutions.get(i);
+        if (solution.isList() && ((IAST) solution).argSize() >= 1
+            && ((IAST) solution).arg1().isRule()) {
+          results.append(((IAST) solution).arg1().second());
+        }
+      }
+    }
+    return results;
+  }
+
+  /**
    * <code>result[0]</code> is the list of expressions <code>== 0</code> . <code>result[1]</code>are
    * the <code>Unequal, Less, LessEqual, Greater, GreaterEqual</code> expressions. If <code>
    * result[2].isPresent()</code> return the entry as solution.

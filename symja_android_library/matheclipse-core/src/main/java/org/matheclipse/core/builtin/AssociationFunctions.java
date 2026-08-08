@@ -52,6 +52,7 @@ public class AssociationFunctions {
       S.LetterCounts.setEvaluator(new LetterCounts());
       S.Lookup.setEvaluator(new Lookup());
       S.Merge.setEvaluator(new Merge());
+      S.Query.setEvaluator(new Query());
       S.Structure.setEvaluator(new Structure());
       S.Summary.setEvaluator(new Summary());
       S.Values.setEvaluator(new Values());
@@ -318,11 +319,17 @@ public class AssociationFunctions {
           try {
             IExpr lhsHead = engine.evaluate(symbol);
             if (lhsHead.isAssociation()) {
-              IAssociation assoc = ((IAssociation) lhsHead);
-              assoc = assoc.copy();
-              IExpr part = engine.evaluate(((IAST) leftHandSide).arg1());
-              assoc.appendRule(F.Rule(part, rightHandSide));
-              symbol.assignValue(assoc, false);
+              if (leftHandSide.isAST0()) {
+                // `1` called with `2` arguments; 1 argument is expected.
+                Errors.printMessage(builtinSymbol, "argx",
+                    F.list(symbol, F.ZZ(leftHandSide.argSize())), engine);
+                return rightHandSide;
+              }
+              IExpr assoc = assignKeys((IAssociation) lhsHead, (IAST) leftHandSide, 1,
+                  rightHandSide, builtinSymbol, engine);
+              if (assoc.isPresent()) {
+                symbol.assignValue(assoc, false);
+              }
               return rightHandSide;
             }
           } catch (ValidateException ve) {
@@ -332,6 +339,54 @@ public class AssociationFunctions {
       }
       Errors.printMessage(builtinSymbol, "setps", F.list(leftHandSide.head()), engine);
       return rightHandSide;
+    }
+
+    /**
+     * Assign the <code>value</code> to the association for the keys which are given by the
+     * arguments of the <code>keys</code> expression, starting at <code>keyPosition</code>.
+     * <code>assoc(key1, key2,...) = value</code>
+     *
+     * <p>
+     * If <code>keyPosition</code> points to the last key, an existing rule will be updated or a new
+     * <code>key->value</code> rule will be appended to the association. Otherwise the key must
+     * already be mapped to a nested association, because an intermediate key can't be created
+     * automatically.
+     *
+     * <p>
+     * The keys are used as they are. A <code>Key(...)</code> expression isn't unwrapped, because an
+     * association which is applied to arguments uses these arguments as the keys. This is different
+     * from the <code>assoc[[key1, key2,...]] = value</code> assignment.
+     *
+     * @param assoc the association in which the value should be assigned
+     * @param keys the left-hand-side of the assignment, whose arguments are the keys
+     * @param keyPosition the position of the current key in <code>keys</code>
+     * @param value
+     * @param builtinSymbol
+     * @param engine the evaluation engine
+     * @return {@link F#NIL} if the assignment couldn't be made
+     */
+    private static IExpr assignKeys(IAssociation assoc, IAST keys, int keyPosition, IExpr value,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      final IExpr key = engine.evaluate(keys.get(keyPosition));
+      if (keyPosition == keys.argSize()) {
+        IAssociation result = assoc.copy();
+        result.appendRule(F.Rule(key, value));
+        return result;
+      }
+      final int index = assoc.getRulePosition(key);
+      final IExpr nested = index == 0 ? F.NIL : assoc.getValue(index);
+      if (!nested.isAssociation()) {
+        // Part `1` of `2` does not exist.
+        return Errors.printMessage(builtinSymbol, "partw", F.list(key, assoc), engine);
+      }
+      IExpr temp = assignKeys((IAssociation) nested, keys, keyPosition + 1, value, builtinSymbol,
+          engine);
+      if (temp.isNIL()) {
+        return F.NIL;
+      }
+      IAssociation result = assoc.copy();
+      result.setValue(index, temp);
+      return result;
     }
   }
 
@@ -1121,6 +1176,204 @@ public class AssociationFunctions {
   }
 
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>Query(levelspec1, levelspec2, ...)[expr]
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * apply the level specifications <code>levelspec1, levelspec2, ...</code> to the successive
+   * levels of the association or list <code>expr</code>.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * A level specification either <i>descends</i> into the parts of the current level or is an
+   * <i>operator</i> which is applied to the result of the deeper levels:
+   *
+   * <ul>
+   * <li><code>All</code> - descend into all parts of the level and preserve the structure of the
+   * level. The keys of an association are preserved.
+   * <li><code>"key"</code>, <code>Key(key)</code>, <code>i</code>, <code>i;;j</code> or a list of
+   * these part specifications - descend into these parts of the level.
+   * <li>any other expression <code>f</code> - descend into the parts of the level with the
+   * remaining level specifications and apply <code>f</code> to the result. Aggregating functions
+   * like <code>Total</code> or <code>Mean</code> can be used here.
+   * </ul>
+   *
+   * <p>
+   * <code>Query()[expr]</code> returns <code>expr</code> unchanged.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Query(All, &quot;a&quot;)[{&lt;|&quot;a&quot; -&gt; 1, &quot;b&quot; -&gt; 2|&gt;, &lt;|&quot;a&quot; -&gt; 3, &quot;b&quot; -&gt; 4|&gt;}]
+   * {1,3}
+   *
+   * &gt;&gt; Query(Total, &quot;a&quot;)[{&lt;|&quot;a&quot; -&gt; 1|&gt;, &lt;|&quot;a&quot; -&gt; 3|&gt;}]
+   * 4
+   *
+   * &gt;&gt; Query(All, Total)[&lt;|&quot;x&quot; -&gt; {1, 2}, &quot;y&quot; -&gt; {3, 4}|&gt;]
+   * &lt;|x-&gt;3,y-&gt;7|&gt;
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p>
+   * <a href="Association.md">Association</a>, <a href="Key.md">Key</a>,
+   * <a href="Lookup.md">Lookup</a>, <a href="Part.md">Part</a>
+   */
+  private static class Query extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1() && ast.head().isAST(S.Query)) {
+        // the operator form Query(levelspec1, levelspec2, ...)[expr]
+        return query((IAST) ast.head(), 1, ast.arg1(), engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Apply the level specifications of a <code>Query(...)</code> operator, starting at
+     * <code>position</code>, to <code>expr</code>.
+     *
+     * @param levelSpecs the <code>Query(...)</code> operator, whose arguments are the level
+     *        specifications
+     * @param position the position of the level specification which should be applied to
+     *        <code>expr</code>
+     * @param expr the current level of the queried expression
+     * @param engine the evaluation engine
+     * @return {@link F#NIL} if the query couldn't be applied
+     */
+    private static IExpr query(IAST levelSpecs, int position, IExpr expr, EvalEngine engine) {
+      if (position >= levelSpecs.size()) {
+        // no more level specifications - the current level is the result
+        return expr;
+      }
+      final IExpr levelSpec = levelSpecs.get(position);
+      if (levelSpec.equals(S.All)) {
+        return queryLevel(levelSpecs, position + 1, expr, engine);
+      }
+      if (isPartSpecification(levelSpec)) {
+        if (!isApplicablePart(levelSpec, expr)) {
+          return F.NIL;
+        }
+        final IAST partAST = F.Part(expr, levelSpec);
+        IExpr part = engine.evaluate(partAST);
+        if (part.equals(partAST)) {
+          // the part couldn't be extracted
+          return F.NIL;
+        }
+        return query(levelSpecs, position + 1, part, engine);
+      }
+      // an operator - descend into the parts of this level first and apply the operator to the
+      // result of the deeper levels
+      IExpr result = expr;
+      if (position + 1 < levelSpecs.size()) {
+        result = queryLevel(levelSpecs, position + 1, expr, engine);
+        if (result.isNIL()) {
+          return F.NIL;
+        }
+      }
+      return engine.evaluate(F.unaryAST1(levelSpec, result));
+    }
+
+    /**
+     * Apply the remaining level specifications to every part of <code>expr</code> and preserve the
+     * structure of <code>expr</code>. The keys of an association are preserved.
+     *
+     * @param levelSpecs the <code>Query(...)</code> operator, whose arguments are the level
+     *        specifications
+     * @param position the position of the level specification for the parts of <code>expr</code>
+     * @param expr the current level of the queried expression
+     * @param engine the evaluation engine
+     * @return {@link F#NIL} if <code>expr</code> has no parts to descend into
+     */
+    private static IExpr queryLevel(IAST levelSpecs, int position, IExpr expr, EvalEngine engine) {
+      if (expr.isAssociation()) {
+        IAssociation assoc = (IAssociation) expr;
+        IAssociation result = assoc.copy();
+        for (int i = 1; i < assoc.size(); i++) {
+          IExpr value = query(levelSpecs, position, assoc.getValue(i), engine);
+          if (value.isNIL()) {
+            return F.NIL;
+          }
+          result.setValue(i, value);
+        }
+        return result;
+      }
+      if (expr.isList()) {
+        IAST list = (IAST) expr;
+        IASTAppendable result = list.copyAppendable();
+        for (int i = 1; i < list.size(); i++) {
+          IExpr value = query(levelSpecs, position, list.get(i), engine);
+          if (value.isNIL()) {
+            return F.NIL;
+          }
+          result.set(i, value);
+        }
+        return result;
+      }
+      // there are no parts to descend into
+      return F.NIL;
+    }
+
+    /**
+     * Test if the level specification descends into the parts of the current level: an association
+     * key given as a string or a <code>Key(...)</code> expression, an integer index, a
+     * <code>Span</code> or a list of these part specifications.
+     *
+     * @param levelSpec
+     * @return <code>false</code> if the level specification is an operator which should be applied
+     *         to the result of the deeper levels
+     */
+    private static boolean isPartSpecification(IExpr levelSpec) {
+      if (levelSpec.isString() || levelSpec.isInteger() || levelSpec.isKey()
+          || levelSpec.isAST(S.Span)) {
+        return true;
+      }
+      if (levelSpec.isList()) {
+        return ((IAST) levelSpec)
+            .forAll(x -> x.isString() || x.isInteger() || x.isKey() || x.isAST(S.Span));
+      }
+      return false;
+    }
+
+    /**
+     * Test if the part specification can be applied to the current level at all. An association key
+     * can only be extracted from an association.
+     *
+     * @param levelSpec a part specification
+     * @param expr the current level of the queried expression
+     * @return <code>false</code> if the part can't be extracted from <code>expr</code>
+     */
+    private static boolean isApplicablePart(IExpr levelSpec, IExpr expr) {
+      if (!expr.isASTOrAssociation()) {
+        return false;
+      }
+      if (levelSpec.isList()) {
+        return ((IAST) levelSpec).forAll(x -> isApplicablePart(x, expr));
+      }
+      return (levelSpec.isString() || levelSpec.isKey()) ? expr.isAssociation() : true;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+
   private static class Structure extends AbstractEvaluator {
 
     @Override
@@ -1347,6 +1600,23 @@ public class AssociationFunctions {
       return ARGS_1_2;
     }
 
+  }
+
+  /**
+   * Convert the given expression into an {@link IAssociation}, if it is an association or a list of
+   * rules <code>{x0-&gt;y0, x1-&gt;y1, ... }</code>.
+   *
+   * @param expr
+   * @return <code>null</code> if the expression is neither an association nor a list of rules
+   */
+  public static IAssociation toAssociation(final IExpr expr) {
+    if (expr.isAssociation()) {
+      return (IAssociation) expr;
+    }
+    if (expr.isListOfRules(false)) {
+      return F.assoc((IAST) expr);
+    }
+    return null;
   }
 
   private static IAST keyDrop(final IAssociation list1, final IAST list2) {

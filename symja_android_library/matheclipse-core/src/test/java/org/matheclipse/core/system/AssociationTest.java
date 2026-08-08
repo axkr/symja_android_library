@@ -631,6 +631,96 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPartAssignment() {
+    // assign to an existing key
+    check("myHash=<|\"A\"->1,\"B\"->2|>;myHash[[\"A\"]]=5;myHash", //
+        "<|A->5,B->2|>");
+    // a not existing key appends a new rule
+    check("myHash=<|\"A\"->1|>;myHash[[\"B\"]]=2;myHash", //
+        "<|A->1,B->2|>");
+    // integer positions assign the value of the rule and preserve the key
+    check("a=<|\"x\"->1,\"y\"->2|>;a[[1]]=9;a", //
+        "<|x->9,y->2|>");
+    check("a=<|\"x\"->1,\"y\"->2|>;a[[-1]]=9;a", //
+        "<|x->1,y->9|>");
+    // nested associations
+    check("a=<|\"x\"-><|\"n\"->5|>|>;a[[\"x\",\"n\"]]=7;a", //
+        "<|x-><|n->7|>|>");
+    // association nested in a list
+    check("a={<|\"k\"->{10,20}|>};a[[1,1,2]]=99;a", //
+        "{<|k->{10,99}|>}");
+
+    // Key(...) part specification
+    check("a=<|\"x\"->1,\"y\"->2|>;a[[Key(\"x\")]]=9;a", //
+        "<|x->9,y->2|>");
+    // a list right-hand-side is assigned as the value of the rule
+    check("a=<|\"A\"->1|>;a[[\"A\"]]={1,2};a", //
+        "<|A->{1,2}|>");
+    // Span assignment preserves the keys
+    check("a=<|\"x\"->1,\"y\"->2|>;a[[1;;2]]={7,8};a", //
+        "<|x->7,y->8|>");
+    // an existing nested association gets replaced by the value
+    check("a=<|\"x\"-><|\"n\"->5|>|>;a[[\"x\"]]=7;a", //
+        "<|x->7|>");
+    // an intermediate key can't be created automatically
+    check("a=<|\"x\"->1|>;a[[\"B\",\"C\"]]=2;a", //
+        "<|x->1|>");
+
+    // an association applied to keys assigns the nested value
+    check("a=<|\"x\"-><|\"n\"->5|>|>;a[\"x\",\"n\"]=7;a", //
+        "<|x-><|n->7|>|>");
+    check("a=<|\"x\"-><|\"n\"->5|>|>;a[\"x\",\"m\"]=7;a", //
+        "<|x-><|n->5,m->7|>|>");
+    check("a=<|\"x\"-><|\"n\"-><|\"d\"->1|>|>|>;a[\"x\",\"n\",\"d\"]=9;a", //
+        "<|x-><|n-><|d->9|>|>|>");
+    // an intermediate key must be mapped to a nested association
+    check("a=<|\"x\"->1|>;a[\"x\",\"n\"]=7;a", //
+        "<|x->1|>");
+    check("a=<|\"x\"->1|>;a[\"zz\",\"n\"]=7;a", //
+        "<|x->1|>");
+    // as a function an association uses its arguments as the keys, Key(...) isn't unwrapped
+    check("a=<|\"x\"->1|>;a[Key(\"x\")]=9;a", //
+        "<|x->1,Key(x)->9|>");
+  }
+
+  @Test
+  public void testAssociationApplication() {
+    // an association applied to keys looks up the keys one after another
+    check("assoc=<|\"outer\"-><|\"inner\"->8|>|>;assoc[[\"outer\",\"inner\"]]", //
+        "8");
+    check("assoc=<|\"outer\"-><|\"inner\"->8|>|>;assoc[\"outer\",\"inner\"]", //
+        "8");
+    check("assoc=<|\"a\"->1|>;assoc[\"a\"]", //
+        "1");
+    check("data=<|\"a\"-><|\"n\"->4,\"x\"->1.|>|>;h=data(\"a\");h[\"n\"]", //
+        "4");
+    check("data=<|\"a\"-><|\"n\"->4,\"x\"->1.|>|>;data(\"a\")[\"x\"]", //
+        "1.0");
+    check("data=<|\"a\"-><|\"list\"->{1,2,3},\"n\"->7|>|>;data[\"a\"][\"n\"]", //
+        "7");
+    check("data=<|\"a\"-><|\"s\"->\"x,y\",\"n\"->2|>|>;data[\"a\"][\"n\"]", //
+        "2");
+    check("data=<|\"a\"-><|\"n\"->4,\"x\"->1.|>|>;data[\"a\"]", //
+        "<|n->4,x->1.0|>");
+
+    // a key which isn't mapped to a nested association returns the expression unevaluated
+    check("<|\"a\"->1|>[\"a\",\"b\"]", //
+        "<|a->1|>[a,b]");
+    check("assoc=<|\"o\"-><|\"i\"->8|>|>;assoc[\"o\",\"i\",\"j\"]", //
+        "<|o-><|i->8|>|>[o,i,j]");
+    check("assoc=<|\"o\"-><|\"i\"->8|>|>;assoc[\"zz\",\"i\"]", //
+        "<|o-><|i->8|>|>[zz,i]");
+    // a missing last key is reported as Missing(KeyAbsent,...)
+    check("assoc=<|\"o\"-><|\"i\"->8|>|>;assoc[\"o\",\"zz\"]", //
+        "Missing(KeyAbsent,zz)");
+    // as a function an association uses its arguments as the keys, Key(...) isn't unwrapped
+    check("<|\"x\"-><|\"n\"->1|>|>[Key(\"x\"),\"n\"]", //
+        "<|x-><|n->1|>|>[Key(x),n]");
+    check("a=<|\"x\"->1|>;a[]", //
+        "<|x->1|>[]");
+  }
+
+  @Test
   public void testPartAll() {
     check(
         "assoc=<|Rule(\"RowNames\", List(\"a\", \"b\", \"c\", \"d\" )),Rule(\"ColumnNames\", List(\"a\", \"b\", \"c\", \"d\", \"e\"))|>", //
@@ -835,6 +925,53 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{<|a->1,b->2,c->3|>,<|a->a^2,b->y,c->c^2|>}");
     check("KeyUnion({<|a -> 1, b -> 2, c -> 3|>, <|b -> y|>},f)", //
         "{<|a->1,b->2,c->3|>,<|a->f(a),b->y,c->f(c)|>}");
+    check("KeyUnion({<|a->1,b->2|>,<|b->3,c->4|>})", //
+        "{<|a->1,b->2,c->Missing(KeyAbsent,c)|>,<|a->Missing(KeyAbsent,a),b->3,c->4|>}");
+    check("KeyUnion({<|a->1|>,<|b->2|>})", //
+        "{<|a->1,b->Missing(KeyAbsent,b)|>,<|a->Missing(KeyAbsent,a),b->2|>}");
+  }
+
+  @Test
+  public void testKeyIntersection() {
+    // KeyIntersection() restricts every association to the keys common to all of them
+    check("KeyIntersection({<|a->1,b->2|>,<|b->3,c->4|>})", //
+        "{<|b->2|>,<|b->3|>}");
+    check("KeyIntersection({<|a->1|>,<|b->2|>})", //
+        "{<||>,<||>}");
+    // the keys of the first association determine the order
+    check("KeyIntersection({<|b->1,a->2,c->3|>,<|a->4,b->5|>})", //
+        "{<|b->1,a->2|>,<|b->5,a->4|>}");
+    // lists of rules are treated like associations
+    check("KeyIntersection({{a->1,b->2},<|b->3,c->4|>})", //
+        "{<|b->2|>,<|b->3|>}");
+    check("KeyIntersection({<|a->1,b->2|>})", //
+        "{<|a->1,b->2|>}");
+    check("KeyIntersection({})", //
+        "{}");
+    // unevaluated if an element isn't an association or a list of rules
+    check("KeyIntersection({<|a->1|>,x})", //
+        "KeyIntersection({<|a->1|>,x})");
+  }
+
+  @Test
+  public void testKeyComplement() {
+    // KeyComplement() keeps the rules of the first association whose keys appear in no other one
+    check("KeyComplement({<|a->1,b->2,c->5|>,<|b->3|>,<|c->4|>})", //
+        "<|a->1|>");
+    check("KeyComplement({<|a->1,b->2|>,<|b->3,c->4|>})", //
+        "<|a->1|>");
+    check("KeyComplement({<|a->1,b->2|>,<|a->3,b->4|>})", //
+        "<||>");
+    // lists of rules are treated like associations
+    check("KeyComplement({{a->1,b->2},{b->3}})", //
+        "<|a->1|>");
+    check("KeyComplement({<|a->1,b->2|>})", //
+        "<|a->1,b->2|>");
+    check("KeyComplement({})", //
+        "<||>");
+    // unevaluated if an element isn't an association or a list of rules
+    check("KeyComplement({<|a->1|>,x})", //
+        "KeyComplement({<|a->1|>,x})");
   }
 
   @Test
@@ -1062,6 +1199,73 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|b->20,c->30|>");
     check("Take(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, 2)", //
         "<|a->1,b->2|>");
+  }
+
+  @Test
+  public void testQuery() {
+    // the Query(...) operator is applied with square brackets, because in relaxed syntax mode
+    // `Query(...)(expr)` is a multiplication and not a function application
+    check("Query(All,\"a\")[{<|\"a\"->1,\"b\"->2|>,<|\"a\"->3,\"b\"->4|>}]", //
+        "{1,3}");
+    check("Query(\"a\")[<|\"a\"->1,\"b\"->2|>]", //
+        "1");
+    check("Query(2)[{10,20,30}]", //
+        "20");
+    check("Query(\"a\",2)[<|\"a\"->{10,20}|>]", //
+        "20");
+    check("Query(All,\"a\",2)[{<|\"a\"->{1,2}|>,<|\"a\"->{3,4}|>}]", //
+        "{2,4}");
+    // an operator is applied to the result of the deeper levels
+    check("Query(Total,\"a\")[{<|\"a\"->1|>,<|\"a\"->3|>}]", //
+        "4");
+    check("Query(Mean,\"a\")[{<|\"a\"->1|>,<|\"a\"->3|>}]", //
+        "2");
+    check("Query(All,Total)[<|\"x\"->{1,2},\"y\"->{3,4}|>]", //
+        "<|x->3,y->7|>");
+    check("Query(All,f)[<|\"x\"->1,\"y\"->2|>]", //
+        "<|x->f(1),y->f(2)|>");
+    check("Query(Total)[<|\"a\"->1,\"b\"->2|>]", //
+        "3");
+
+    // Query() returns the expression unchanged
+    check("Query()[{1,2}]", //
+        "{1,2}");
+    check("Query(All)[{1,2,3}]", //
+        "{1,2,3}");
+    check("Query(All,All)[{{1,2},{3,4}}]", //
+        "{{1,2},{3,4}}");
+    // All preserves the structure of the level, an operator doesn't
+    check("Query(All,Total)[{{1,2},{3,4}}]", //
+        "{3,7}");
+    check("Query(Total,All)[{{1,2},{3,4}}]", //
+        "{4,6}");
+    check("Query(All,\"a\",Mean)[{<|\"a\"->{1,3}|>,<|\"a\"->{5,7}|>}]", //
+        "{2,6}");
+    check("Query(All,\"a\")[<|\"p\"-><|\"a\"->1|>,\"q\"-><|\"a\"->2|>|>]", //
+        "<|p->1,q->2|>");
+    // Key(...), Span and a list of part specifications descend into the level
+    check("Query(Key(\"a\"))[<|\"a\"->1|>]", //
+        "1");
+    check("Query(1;;2)[{10,20,30}]", //
+        "{10,20}");
+    check("Query({1,3})[{10,20,30}]", //
+        "{10,30}");
+    // a pure function can be used as an operator
+    check("Query(#^2&)[3]", //
+        "9");
+    // a missing key is reported as Missing(KeyAbsent,...)
+    check("Query(\"zz\")[<|\"a\"->1|>]", //
+        "Missing(KeyAbsent,zz)");
+    // a query which can't be applied stays unevaluated
+    check("Query(All,\"a\")[5]", //
+        "Query(All,a)[5]");
+    check("Query(\"a\")[{1,2}]", //
+        "Query(a)[{1,2}]");
+    check("Query(Mean,All,\"a\")[{<|\"a\"->{1,3}|>,<|\"a\"->{5,7}|>}]", //
+        "Query(Mean,All,a)[{<|a->{1,3}|>,<|a->{5,7}|>}]");
+    // without an argument Query(...) is an inert operator
+    check("Query(All,\"a\")", //
+        "Query(All,a)");
   }
 
   /** The JUnit setup method */

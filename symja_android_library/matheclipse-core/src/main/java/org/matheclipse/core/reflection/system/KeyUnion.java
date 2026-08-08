@@ -1,9 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
+import org.matheclipse.core.builtin.AssociationFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -24,52 +23,34 @@ public class KeyUnion extends AbstractFunctionEvaluator {
     }
     if (arg1.isList()) {
       IAST list = (IAST) arg1;
-      Set<IExpr> allKeys = new LinkedHashSet<>();
-
-      // 1. Collect all keys across all associations in first-appearance order
+      IAssociation[] associations = new IAssociation[list.argSize()];
       for (int i = 1; i <= list.argSize(); i++) {
-        IExpr item = list.get(i);
-        if (item.isAssociation()) {
-          IAssociation assoc = (IAssociation) item;
-          for (int j = 1; j <= assoc.argSize(); j++) {
-            allKeys.add(assoc.getRule(j).arg1());
-          }
-        } else if (item.isListOfRules(false)) {
-          IAST rules = (IAST) item;
-          for (int j = 1; j <= rules.argSize(); j++) {
-            allKeys.add(((IAST) rules.get(j)).arg1());
-          }
-        } else {
+        IAssociation assoc = AssociationFunctions.toAssociation(list.get(i));
+        if (assoc == null) {
           // All elements must be associations or lists of rules
           return F.NIL;
+        }
+        associations[i - 1] = assoc;
+      }
+
+      // 1. Collect all keys across all associations in first-appearance order
+      Set<IExpr> allKeys = new LinkedHashSet<>();
+      for (int i = 0; i < associations.length; i++) {
+        IAssociation assoc = associations[i];
+        for (int j = 1; j <= assoc.argSize(); j++) {
+          allKeys.add(assoc.getRule(j).arg1());
         }
       }
 
       // 2. Pad each association individually
-      IASTAppendable resultList = F.ListAlloc(list.argSize());
-      for (int i = 1; i <= list.argSize(); i++) {
-        IExpr item = list.get(i);
+      IASTAppendable resultList = F.ListAlloc(associations.length);
+      for (int i = 0; i < associations.length; i++) {
+        IAssociation assoc = associations[i];
         IAssociation newAssoc = F.assoc();
-        Map<IExpr, IExpr> currentMap = new HashMap<>();
-
-        if (item.isAssociation()) {
-          IAssociation assoc = (IAssociation) item;
-          for (int j = 1; j <= assoc.argSize(); j++) {
-            IAST rule = assoc.getRule(j);
-            currentMap.putIfAbsent(rule.arg1(), rule.arg2());
-          }
-        } else if (item.isListOfRules(false)) {
-          IAST rules = (IAST) item;
-          for (int j = 1; j <= rules.argSize(); j++) {
-            IAST rule = (IAST) rules.get(j);
-            currentMap.putIfAbsent(rule.arg1(), rule.arg2());
-          }
-        }
-
         for (IExpr key : allKeys) {
-          IExpr val = currentMap.get(key);
-          if (val != null) {
-            newAssoc.appendRule(F.Rule(key, val));
+          IAST rule = assoc.getRule(key);
+          if (rule.isPresent()) {
+            newAssoc.appendRule(rule);
           } else {
             newAssoc.appendRule(F.Rule(key, F.unaryAST1(missing, key)));
           }

@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -364,11 +365,14 @@ public class RSolve extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-    if (ast.arg1().isList() && ast.arg2().isList()) {
-      return solveSystem((IAST) ast.arg1(), (IAST) ast.arg2(), ast.arg3(), engine);
+    // an `And(...)` of equations is equivalent to a `List(...)` of equations
+    final IExpr equations = SolveUtils.toEquationList(ast.arg1());
+
+    if (equations.isList() && ast.arg2().isList()) {
+      return solveSystem((IAST) equations, (IAST) ast.arg2(), ast.arg3(), engine);
     }
 
-    final IAST arg1 = ast.arg1().makeList();
+    final IAST arg1 = equations.makeList();
     final IExpr arg2 = ast.arg2();
     final IExpr nVar = ast.arg3();
 

@@ -55,6 +55,7 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  *
@@ -154,15 +155,31 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    */
   public static class SolveData {
     final IExpr[] options;
+    final IExpr modulus;
     final Map<IExpr, IAST> intervalDataMap;
     final IASTAppendable intervalInequations;
 
     public SolveData() {
-      this(defaultOptionValues());
+      this(defaultOptionValues(), F.C0);
     }
 
+    /**
+     * Wrap the options of a caller which doesn't define the {@link S#Modulus} option, for example
+     * {@link NSolve} or {@link FindInstance}.
+     */
     public SolveData(IExpr[] options) {
+      this(options, F.C0);
+    }
+
+    /**
+     * @param options the option values of the caller, at least
+     *        <code>{GenerateConditions, MaxRoots}</code>
+     * @param modulus the value of the {@link S#Modulus} option or <code>0</code> if the caller
+     *        doesn't define that option
+     */
+    public SolveData(IExpr[] options, IExpr modulus) {
       this.options = options;
+      this.modulus = modulus;
       this.intervalDataMap = new HashMap<IExpr, IAST>();
       this.intervalInequations = F.ListAlloc();
     }
@@ -176,6 +193,17 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
     public boolean isGenerateConditions() {
       return options[0].isTrue();
+    }
+
+    /**
+     * Get the value for the option {@link S#Modulus}. Callers which don't define the
+     * {@link S#Modulus} option (for example {@link NSolve} or {@link FindInstance}) get the default
+     * value <code>0</code>, i.e. &quot;no modulus&quot;.
+     *
+     * @return the modulus or {@link F#C0} if no {@link S#Modulus} option is defined
+     */
+    protected IExpr modulus() {
+      return modulus;
     }
 
     /**
@@ -1848,6 +1876,23 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param engine
      */
     public IExpr of(final IAST ast, final boolean numeric, EvalEngine engine) {
+      return of(ast, numeric, false, engine);
+    }
+
+    /**
+     * @param ast the <code>Solve(...)</code> ast
+     * @param numeric if true, try to find a numerically solution
+     * @param bareExpressionsAreEquations if <code>true</code> a term which isn't a relation is read
+     *        as the equation <code>expr == 0</code>, as the polynomial solvers {@link S#NSolve} and
+     *        {@link S#NSolveValues} do
+     * @param engine the evaluation engine
+     */
+    public IExpr of(final IAST ast, final boolean numeric,
+        final boolean bareExpressionsAreEquations, EvalEngine engine) {
+      if (!bareExpressionsAreEquations && !isQuantifiedSystem(ast.arg1())) {
+        // `1` is not a quantified system of equations and inequalities.
+        return Errors.printMessage(ast.topHead(), "naqs", F.List(ast.arg1()), engine);
+      }
       boolean[] isNumeric = new boolean[] {numeric};
       int maxRoots = options[1].toIntDefault();
       if (maxRoots < 1) {
@@ -1872,6 +1917,16 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         } else {
           variables = equationVariables;
         }
+
+        IExpr modulus = modulus();
+        if (!modulus.isZero() && variables.isPresent()) {
+          IExpr modulusResult = solveModulus(ast, variables, modulus, engine);
+          if (modulusResult.isListOfLists() && maxRoots < modulusResult.argSize()) {
+            return ((IAST) modulusResult).subList(1, maxRoots + 1);
+          }
+          return modulusResult;
+        }
+
         ISymbol domain = S.Complexes;
         if (ast.isAST3()) {
           if (!ast.arg3().isSymbol()) {
@@ -1912,7 +1967,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           if (assum != null) {
             engine.setAssumptions(assum);
           }
-          IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
+          IAST termsList =
+              Validate.checkEquationsAndInequations(ast, 1, bareExpressionsAreEquations);
           IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
 
           // Early extraction of IntervalData
@@ -1959,6 +2015,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
             }
             return checkDomain(result, domain, maxRoots);
+          }
+
+          if (numericFlag && inequationsList.isEmpty() && intervalDataMap.isEmpty()) {
+            IExpr numericResult = solveNumericPolynomial(termsEqualZeroList, variables, domain,
+                maxRoots, engine);
+            if (numericResult.isPresent()) {
+              return numericResult;
+            }
           }
 
           IExpr result =
@@ -2089,8 +2153,447 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Test if <code>expr</code> is a quantified system of equations and inequalities, i.e. a
+   * relation, a logical combination or a list of those.
+   *
+   * <p>
+   * {@link S#Solve} requires the relations to be written down: <code>Solve(-4+3*x+x^2, x)</code>
+   * reports the message <code>naqs</code> and stays unevaluated, the equation has to be written as
+   * <code>Solve(-4+3*x+x^2==0, x)</code>. Only the polynomial solvers {@link S#NSolve} and
+   * {@link S#NSolveValues} read a bare expression as <code>expr == 0</code>.
+   *
+   * @param expr the first argument of the <code>Solve(...)</code> ast
+   * @return <code>true</code> if <code>expr</code> is built from relations
+   */
+  private static boolean isQuantifiedSystem(IExpr expr) {
+    return isQuantifiedSystem(expr, false);
+  }
+
+  /**
+   * @param expr a term of the system
+   * @param booleanArgument <code>true</code> if <code>expr</code> is an argument of a logical
+   *        operator, where a symbol is a boolean proposition - <code>Xor(a,b,c,d) &amp;&amp; (a ||
+   *        b)</code> is a system for the {@link S#Booleans} domain, a bare <code>x</code> is not
+   */
+  private static boolean isQuantifiedSystem(IExpr expr, boolean booleanArgument) {
+    if (booleanArgument && expr.isSymbol()) {
+      return true;
+    }
+    if (expr.isTrue() || expr.isFalse() || expr.isRelationalBinary() || expr.isEqual()
+        || expr.isAST(S.Unequal) || expr.isAST(S.Inequality) || expr.isAST(S.Element)
+        || expr.isAST(S.Less) || expr.isAST(S.LessEqual) || expr.isAST(S.Greater)
+        || expr.isAST(S.GreaterEqual)) {
+      return true;
+    }
+    if (expr.isAST(S.ForAll) || expr.isAST(S.Exists)) {
+      // the quantified condition is the last argument
+      return expr.isAST() && isQuantifiedSystem(((IAST) expr).last(), booleanArgument);
+    }
+    if (expr.isList()) {
+      return ((IAST) expr).forAll(arg -> isQuantifiedSystem(arg, booleanArgument));
+    }
+    if (expr.isAnd() || expr.isOr() || expr.isNot() || expr.isAST(S.Xor) || expr.isAST(S.Nand)
+        || expr.isAST(S.Nor) || expr.isAST(S.Implies) || expr.isAST(S.Equivalent)) {
+      return ((IAST) expr).forAll(arg -> isQuantifiedSystem(arg, true));
+    }
+    return false;
+  }
+
+  /**
+   * Convert the "list of solution lists" which {@link S#Solve} and {@link S#NSolve} return into the
+   * "list of values" which {@link S#SolveValues} and {@link S#NSolveValues} return.
+   *
+   * <p>
+   * The shape of the result follows the shape of the <code>variables</code> argument the caller
+   * wrote down, not the number of variables: a single variable <code>x</code> gives a flat list of
+   * values, a list <code>{x}</code> gives a list of one-element lists. The values are ordered by
+   * the variables of the <code>variables</code> argument, which is not necessarily the order of the
+   * rules in a solution - <code>Solve({x+y==2,x-y==0},{y,x})</code> returns the rules canonically
+   * sorted as <code>{x-&gt;1,y-&gt;1}</code>.
+   *
+   * @param solveResult the result of {@link SolveData#of(IAST, boolean, EvalEngine)}
+   * @param variables the variables argument of the <code>SolveValues(...)</code> ast
+   * @return the list of solution values or {@link F#NIL} if <code>solveResult</code> isn't a list
+   *         of solutions
+   */
+  public static IExpr solutionValues(IExpr solveResult, IExpr variables) {
+    if (!solveResult.isList()) {
+      return F.NIL;
+    }
+    IAST solutions = (IAST) solveResult;
+    if (solutions.argSize() > 0 && solutions.isListOfRules(false)) {
+      solutions = F.list(solutions);
+    }
+    if (variables.isList()) {
+      IAST variableList = (IAST) variables;
+      return F.mapList(solutions, solution -> solution.isList() //
+          ? F.mapList(variableList, variable -> F.subst(variable, (IAST) solution)) //
+          : F.NIL);
+    }
+    return F.mapList(solutions, solution -> solution.isList() //
+        ? F.subst(variables, (IAST) solution) //
+        : F.NIL);
+  }
+
+  /**
+   * Order the solutions of a single variable by their real part and, for equal real parts, by
+   * their imaginary part, the same way {@link #solveNumericPolynomial} orders the machine precision
+   * solutions.
+   *
+   * @param solutions a "list of solution lists"
+   * @return the ordered solutions or <code>solutions</code> itself if they aren't solutions of a
+   *         single variable with numeric values
+   */
+  public static IExpr sortNumericSolutions(IExpr solutions) {
+    if (!solutions.isListOfLists()) {
+      return solutions;
+    }
+    IAST list = (IAST) solutions;
+    for (int i = 1; i < list.size(); i++) {
+      IAST solution = (IAST) list.get(i);
+      if (solution.argSize() != 1 || !solution.arg1().isRule()
+          || !solution.arg1().second().isNumber()) {
+        return solutions;
+      }
+    }
+    IASTMutable result = list.copy();
+    EvalAttributes.sort(result, (IExpr o1, IExpr o2) -> {
+      INumber value1 = (INumber) o1.first().second();
+      INumber value2 = (INumber) o2.first().second();
+      int comparison = Double.compare(value1.reDoubleValue(), value2.reDoubleValue());
+      return comparison != 0 //
+          ? comparison //
+          : Double.compare(value1.imDoubleValue(), value2.imDoubleValue());
+    });
+    return result;
+  }
+
+  /**
+   * Determine the number of significant digits which {@link S#NSolve} and {@link S#NSolveValues}
+   * should compute with, either from the optional fourth argument
+   * <code>NSolve(equations, vars, domain, precision)</code> or from the {@link S#WorkingPrecision}
+   * option.
+   *
+   * @param ast the <code>NSolve(...)</code> ast
+   * @param option the value of the {@link S#WorkingPrecision} option
+   * @param engine the evaluation engine
+   * @return the number of significant digits, {@link #MACHINE_PRECISION_REQUESTED} for machine
+   *         precision or {@link #INVALID_PRECISION} if the requested precision isn't a positive
+   *         integer
+   */
+  public static long workingPrecision(IAST ast, IExpr option, EvalEngine engine) {
+    IExpr precisionExpr = F.NIL;
+    if (ast.size() == 5) {
+      precisionExpr = ast.arg4();
+    } else if (option.isPresent() && !option.isAutomatic()) {
+      precisionExpr = option;
+    }
+    if (precisionExpr.isNIL() || precisionExpr.isAutomatic()
+        || precisionExpr == S.MachinePrecision) {
+      return MACHINE_PRECISION_REQUESTED;
+    }
+    int precision = precisionExpr.toIntDefault();
+    if (precision < 1) {
+      // Requested precision `1` is smaller than `2`.
+      Errors.printMessage(ast.topHead(), "precsm", F.List(precisionExpr, F.C1), engine);
+      return INVALID_PRECISION;
+    }
+    return precision <= ParserConfig.MACHINE_PRECISION //
+        ? MACHINE_PRECISION_REQUESTED //
+        : precision;
+  }
+
+  /** {@link #workingPrecision(IAST, IExpr, EvalEngine)}: compute with machine numbers. */
+  public static final long MACHINE_PRECISION_REQUESTED = -1L;
+
+  /** {@link #workingPrecision(IAST, IExpr, EvalEngine)}: the requested precision is invalid. */
+  public static final long INVALID_PRECISION = 0L;
+
+  /**
+   * The largest distance between a numerically determined root and a rational number which still
+   * lets the root be tested as a member of the {@link S#Rationals} domain.
+   */
+  private static final double RATIONALIZE_TOLERANCE = 1.0e-10;
+
+  /**
+   * Solve a single univariate polynomial equation numerically.
+   *
+   * <p>
+   * This is the path <code>NSolve</code> takes - and <code>Solve</code> for an equation which
+   * already contains machine numbers. Determining the roots numerically rather than solving
+   * exactly and applying <code>N</code> afterwards is what makes the result a machine number for
+   * every degree (a symbolic solution of degree 5 or higher stays an inert <code>Root</code>
+   * object), keeps a root of multiplicity <code>k</code> present <code>k</code> times, and orders
+   * the solutions by real and then imaginary part.
+   *
+   * @param termsEqualZeroList the equations, as expressions which have to become <code>0</code>
+   * @param variables the variables to solve for
+   * @param domain {@link S#Complexes}, {@link S#Reals} or {@link S#Rationals}
+   * @param maxRoots the maximum number of roots to return
+   * @param engine the evaluation engine
+   * @return the list of solution lists or {@link F#NIL} if this isn't a single univariate
+   *         polynomial equation with numeric coefficients
+   */
+  private static IExpr solveNumericPolynomial(IAST termsEqualZeroList, IAST variables,
+      ISymbol domain, int maxRoots, EvalEngine engine) {
+    if (termsEqualZeroList.argSize() != 1 || variables.argSize() != 1
+        || !variables.arg1().isSymbol()) {
+      return F.NIL;
+    }
+    if (domain != S.Complexes && domain != S.Reals && domain != S.Rationals) {
+      return F.NIL;
+    }
+    if (engine.isArbitraryMode()) {
+      // a working precision beyond machine precision can only be reached by evaluating an exact
+      // solution numerically
+      return F.NIL;
+    }
+    final ISymbol variable = (ISymbol) variables.arg1();
+    final IExpr term = termsEqualZeroList.arg1();
+    // a fraction is zero exactly where its numerator is zero
+    IExpr together = S.Together.of(engine, term);
+    IExpr numerator = S.Numerator.of(engine, together);
+    IExpr denominator = S.Denominator.of(engine, together);
+    if (!numerator.isPolynomial(F.list(variable))) {
+      // an equation like Sin(x)==0 or 3^x==2*x has to be solved symbolically
+      return F.NIL;
+    }
+    IAST roots = RootsFunctions.allNumericRoots(numerator, variable, engine);
+    if (roots.isNIL()) {
+      return F.NIL;
+    }
+    boolean checkDenominator = !denominator.isFree(variable);
+    IASTAppendable result = F.ListAlloc(roots.argSize());
+    for (int i = 1; i < roots.size(); i++) {
+      IExpr root = roots.get(i);
+      if (checkDenominator) {
+        IExpr value = engine.evalN(F.subst(denominator, F.Rule(variable, root)));
+        if (!value.isNumber() || value.isZero()) {
+          // the "root" is a pole of the original equation
+          continue;
+        }
+      }
+      if (domain == S.Reals && !root.isReal()) {
+        continue;
+      }
+      if (domain == S.Rationals && !isRationalRoot(root, term, variable, engine)) {
+        continue;
+      }
+      result.append(F.list(F.Rule(variable, root)));
+      if (result.argSize() >= maxRoots) {
+        break;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Test if a numerically determined root is a rational number, i.e. if the root is a member of
+   * the {@link S#Rationals} domain.
+   *
+   * <p>
+   * The test cannot be made on the machine number itself - every machine number <i>is</i> a
+   * rational number - so the root is rationalized within {@link #RATIONALIZE_TOLERANCE} and the
+   * resulting candidate is substituted into the equation: <code>2.0</code> becomes <code>2</code>,
+   * which solves <code>x^2-4 == 0</code> exactly, while <code>1.4142135623730951</code> becomes a
+   * fraction which doesn't solve <code>x^2-2 == 0</code>.
+   *
+   * @param root a numerically determined root
+   * @param term the expression which has to become <code>0</code>
+   * @param variable the variable of the equation
+   * @param engine the evaluation engine
+   * @return <code>true</code> if the root is a rational number
+   */
+  private static boolean isRationalRoot(IExpr root, IExpr term, ISymbol variable,
+      EvalEngine engine) {
+    if (!root.isReal()) {
+      return false;
+    }
+    IExpr rationalized = engine.evaluate(F.Rationalize(root, F.num(RATIONALIZE_TOLERANCE)));
+    if (!rationalized.isRational()) {
+      return false;
+    }
+    IExpr substituted = engine.evaluate(F.subst(term, F.Rule(variable, rationalized)));
+    return engine.evaluate(F.PossibleZeroQ(substituted)).isTrue();
+  }
+
+  /**
+   * The maximum number of variable assignments which are enumerated for the {@link S#Modulus}
+   * option, i.e. <code>modulus ^ numberOfVariables</code> must not exceed this limit.
+   */
+  private static final long MAX_MODULUS_SEARCH_SPACE = 1_000_000L;
+
+  /**
+   * Solve the equations in the residue class ring <code>Z / modulus Z</code>, i.e. determine all
+   * variable assignments from <code>{0, 1, ..., modulus-1}</code> which fulfill every equation
+   * modulo <code>modulus</code>.
+   *
+   * <p>
+   * The complete residue system is enumerated, so the result is exact for arbitrary (also
+   * non-prime) moduli, as long as the search space <code>modulus ^ numberOfVariables</code> stays
+   * below {@link #MAX_MODULUS_SEARCH_SPACE}. Only polynomial equations with rational coefficients
+   * are solved, all other systems are returned unevaluated.
+   *
+   * @param ast the <code>Solve(...)</code> ast
+   * @param userDefinedVariables the variables the user asked to solve for
+   * @param modulusOption the value of the {@link S#Modulus} option
+   * @param engine the evaluation engine
+   * @return the (possibly empty) list of solution lists or {@link F#NIL} if the system cannot be
+   *         solved this way
+   */
+  private static IExpr solveModulus(IAST ast, IAST userDefinedVariables, IExpr modulusOption,
+      EvalEngine engine) {
+    int modulus = modulusOption.toIntDefault();
+    if (!modulusOption.isInteger() || modulus < 1) {
+      // Value of option `1` should be a prime number or zero.
+      return Errors.printMessage(ast.topHead(), "modp",
+          F.List(F.Rule(S.Modulus, modulusOption)), engine);
+    }
+    IInteger modulusValue = (IInteger) modulusOption;
+
+    IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
+    IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, new boolean[] {false});
+    if (lists[2].isPresent()) {
+      // either no solution possible or no equations at all
+      return lists[2];
+    }
+    if (lists[1].argSize() > 0) {
+      // inequalities aren't defined in a residue class ring
+      return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
+    }
+    IAST termsEqualZeroList = lists[0];
+
+    // only the variables which really occur in the equations are enumerated; the remaining
+    // user defined variables are unconstrained and therefore not part of the solution rules
+    VariablesSet equationVariables = new VariablesSet(termsEqualZeroList);
+    IAST varList = equationVariables.getVarList();
+    for (int i = 1; i < varList.size(); i++) {
+      if (!userDefinedVariables.contains(varList.get(i))) {
+        // the equations contain a symbol which shouldn't be solved for
+        return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
+      }
+    }
+    // A fraction is zero exactly where its numerator is zero. Together() additionally clears the
+    // denominators of rational coefficients, so that an equation like 2*x == 3 - which the
+    // evaluator already normalized to x == 3/2 - is enumerated as the integer polynomial 2*x-3.
+    IASTAppendable numerators = F.ListAlloc(termsEqualZeroList.argSize());
+    IASTAppendable denominators = F.ListAlloc(termsEqualZeroList.argSize());
+    for (int i = 1; i < termsEqualZeroList.size(); i++) {
+      IExpr together = S.Together.of(engine, termsEqualZeroList.get(i));
+      IExpr numerator = S.Numerator.of(engine, together);
+      IExpr denominator = S.Denominator.of(engine, together);
+      if (!isModulusPolynomial(numerator, varList, engine)
+          || !isModulusPolynomial(denominator, varList, engine)) {
+        // only polynomials with rational coefficients have a meaning in a residue class ring
+        return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
+      }
+      numerators.append(numerator);
+      denominators.append(denominator);
+    }
+
+    IASTAppendable searchVariables = F.ListAlloc(userDefinedVariables.argSize());
+    long searchSpace = 1L;
+    for (int i = 1; i < userDefinedVariables.size(); i++) {
+      IExpr variable = userDefinedVariables.get(i);
+      if (equationVariables.contains(variable)) {
+        searchVariables.append(variable);
+        searchSpace *= modulus;
+        if (searchSpace > MAX_MODULUS_SEARCH_SPACE) {
+          // The system cannot be solved with the methods available to Solve.
+          return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
+        }
+      }
+    }
+
+    int numberOfVariables = searchVariables.argSize();
+    int[] residues = new int[numberOfVariables];
+    IASTAppendable result = F.ListAlloc();
+    do {
+      IASTAppendable rules = F.ListAlloc(numberOfVariables);
+      for (int i = 0; i < numberOfVariables; i++) {
+        rules.append(F.Rule(searchVariables.get(i + 1), F.ZZ(residues[i])));
+      }
+      if (isModulusSolution(numerators, denominators, rules, modulusValue, engine)) {
+        result.append(rules);
+      }
+    } while (nextResidues(residues, modulus));
+    return result;
+  }
+
+  /**
+   * Test if <code>expr</code> is a polynomial in the given variables and if all its coefficients
+   * are rational numbers. Only such an expression can be mapped into a residue class ring.
+   *
+   * @param expr the expression to test
+   * @param varList the variables of the polynomial
+   * @param engine the evaluation engine
+   * @return <code>true</code> if <code>expr</code> is a polynomial with rational coefficients
+   */
+  private static boolean isModulusPolynomial(IExpr expr, IAST varList, EvalEngine engine) {
+    if (!expr.isPolynomial(varList)) {
+      return false;
+    }
+    if (varList.isEmpty()) {
+      return expr.isRational();
+    }
+    IExpr coefficientRules = S.CoefficientRules.of(engine, expr, varList);
+    if (!coefficientRules.isList()) {
+      return false;
+    }
+    return ((IAST) coefficientRules).forAll(rule -> rule.isRule() && rule.second().isRational());
+  }
+
+  /**
+   * Test if all numerators are divisible by <code>modulus</code> after substituting the variables
+   * with the values of the given <code>rules</code>. A residue for which a denominator becomes
+   * divisible by <code>modulus</code> isn't a solution, because the corresponding term isn't
+   * defined in the residue class ring.
+   *
+   * @param numerators the numerators of the expressions which should become <code>0</code>
+   * @param denominators the corresponding denominators
+   * @param rules the list of <code>variable -> residue</code> rules
+   * @param modulus the modulus
+   * @param engine the evaluation engine
+   * @return <code>true</code> if every term is <code>0</code> modulo <code>modulus</code>
+   */
+  private static boolean isModulusSolution(IAST numerators, IAST denominators, IAST rules,
+      IInteger modulus, EvalEngine engine) {
+    for (int i = 1; i < numerators.size(); i++) {
+      IExpr denominator = denominators.get(i);
+      if (!denominator.isOne()
+          && engine.evaluate(F.Mod(F.subst(denominator, rules), modulus)).isZero()) {
+        // the term isn't defined for this residue
+        return false;
+      }
+      IExpr numerator = F.subst(numerators.get(i), rules);
+      if (!engine.evaluate(F.Mod(numerator, modulus)).isZero()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Step to the next tuple of the complete residue system in lexicographical order, i.e. increment
+   * the last entry of <code>residues</code> and carry over to the entries on the left.
+   *
+   * @param residues the current tuple; modified in place
+   * @param modulus the modulus
+   * @return <code>false</code> if the last tuple was already reached
+   */
+  private static boolean nextResidues(int[] residues, int modulus) {
+    for (int i = residues.length - 1; i >= 0; i--) {
+      if (++residues[i] < modulus) {
+        return true;
+      }
+      residues[i] = 0;
+    }
+    return false;
+  }
+
+  /**
    * Solve the given equations and inequations for {@link S#Integers} or {@link S#Primes} domains.
-   * 
+   *
    * @param ast
    * @param equationVariables
    * @param userDefinedVariables
@@ -2417,7 +2920,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    SolveData sd = new SolveData(options);
+    SolveData sd = new SolveData(options, options[2]);
     return sd.of(ast, isNumericArgument, engine);
   }
 
@@ -2447,12 +2950,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr[] defaultOptionValues() {
-    return new IExpr[] {S.True, F.C1000};
+    return new IExpr[] {S.True, F.C1000, F.C0};
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.GenerateConditions, S.MaxRoots};
+    IBuiltInSymbol[] optionKeys =
+        new IBuiltInSymbol[] {S.GenerateConditions, S.MaxRoots, S.Modulus};
     IExpr[] optionValues = defaultOptionValues();
     setOptions(newSymbol, optionKeys, optionValues);
   }

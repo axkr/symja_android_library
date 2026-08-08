@@ -177,7 +177,9 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.JordanDecomposition());
 
       S.KaryTree.setEvaluator(new org.matheclipse.core.reflection.system.KaryTree());
+      S.KeyComplement.setEvaluator(new org.matheclipse.core.reflection.system.KeyComplement());
       S.KeyFreeQ.setEvaluator(new org.matheclipse.core.reflection.system.KeyFreeQ());
+      S.KeyIntersection.setEvaluator(new org.matheclipse.core.reflection.system.KeyIntersection());
       S.KeyMap.setEvaluator(new org.matheclipse.core.reflection.system.KeyMap());
       S.KeyMemberQ.setEvaluator(new org.matheclipse.core.reflection.system.KeyMemberQ());
       S.KeySortBy.setEvaluator(new org.matheclipse.core.reflection.system.KeySortBy());
@@ -223,6 +225,7 @@ public final class FunctionDefinitions {
       S.NeighborhoodGraph
           .setEvaluator(new org.matheclipse.core.reflection.system.NeighborhoodGraph());
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
+      S.NDSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.NDSolveValue());
       S.NFourierTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
       S.NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());
@@ -230,6 +233,7 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
       S.Normal.setEvaluator(new org.matheclipse.core.reflection.system.Normal());
       S.NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
+      S.NSolveValues.setEvaluator(new org.matheclipse.core.reflection.system.NSolveValues());
       S.NSum.setEvaluator(new org.matheclipse.core.reflection.system.NSum());
       S.NumberLinePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.NumberLinePlot());
 
@@ -280,6 +284,7 @@ public final class FunctionDefinitions {
       S.RegionNearestFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.RegionNearestFunction());
       S.RegionWithin.setEvaluator(new org.matheclipse.core.reflection.system.RegionWithin());
+      S.Resolve.setEvaluator(new org.matheclipse.core.reflection.system.Resolve());
       S.Root.setEvaluator(new org.matheclipse.core.reflection.system.Root());
       S.RootReduce.setEvaluator(new org.matheclipse.core.reflection.system.RootReduce());
       S.RootSum.setEvaluator(new org.matheclipse.core.reflection.system.RootSum());
@@ -287,6 +292,7 @@ public final class FunctionDefinitions {
       S.RSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.RSolveValue());
 
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
+      S.SolveValues.setEvaluator(new org.matheclipse.core.reflection.system.SolveValues());
       S.SolveAlways.setEvaluator(new org.matheclipse.core.reflection.system.SolveAlways());
       S.SpearmanRho.setEvaluator(new org.matheclipse.core.reflection.system.SpearmanRho());
       S.SpectrogramArray
