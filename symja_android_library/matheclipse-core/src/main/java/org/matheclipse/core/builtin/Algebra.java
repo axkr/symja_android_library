@@ -2656,7 +2656,7 @@ public class Algebra {
           exprList.append(polyExpr);
         }
         if (exprList.argSize() > 1) {
-          IExpr result = polynomialLCMExpr(exprList, exprList.argSize());
+          IExpr result = polynomialLCMExpr(exprList, exprList.argSize(), eVar, engine);
           if (result.isPresent()) {
             return result;
           }
@@ -2664,7 +2664,7 @@ public class Algebra {
         }
       } catch (ClassCastException | JASConversionException e) {
         // LOGGER.debug("PolynomialLCM.evaluate() failed", e);
-        IExpr result = polynomialLCMExpr(ast, argSize);
+        IExpr result = polynomialLCMExpr(ast, argSize, eVar, engine);
         if (result.isPresent()) {
           return result;
         }
@@ -2711,12 +2711,86 @@ public class Algebra {
       }
     }
 
-    private static IExpr polynomialLCMExpr(final IAST ast, int argSize) {
-      IAST list = ast.setAtCopy(0, S.List);
-      Optional<IExpr[]> result = AlgebraUtil.findCommonFactors(list, true);
+    private static IExpr polynomialLCMExpr(final IAST ast, int argSize, VariablesSet eVar,
+        EvalEngine engine) {
+      IExpr result = polynomialLCMExprPoly(ast, argSize, eVar, engine);
       if (result.isPresent()) {
-        return F.Times(result.get()[0],
-            ((IAST) result.get()[1]).setAtCopy(0, S.Times, argSize + 1));
+        return result;
+      }
+      IAST list = ast.setAtCopy(0, S.List);
+      Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(list, true);
+      if (commonFactors.isPresent()) {
+        return F.Times(commonFactors.get()[0],
+            ((IAST) commonFactors.get()[1]).setAtCopy(0, S.Times, argSize + 1));
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Least common multiple over {@link ExprPolynomial}, for arguments whose coefficients the
+     * conversion to a JAS polynomial does not accept - <code>Sqrt(2)</code> or <code>Pi</code> for
+     * example.
+     *
+     * <p>
+     * Folds with <code>lcm(a, b) == (a / gcd(a, b)) * b</code> and keeps the last two factors apart,
+     * exactly as {@link #polynomialLCMModulus(IAST, int, IExpr, IAST)} does.
+     *
+     * <p>
+     * {@link ExprPolynomial#gcd(ExprPolynomial)} normalizes to a leading coefficient of
+     * <code>1</code>, so a coefficient factor which both arguments carry is not part of the greatest
+     * common divisor and the fold would count it twice - <code>PolynomialLCM(Sqrt(2)*x,
+     * Sqrt(2)*x)</code> would become <code>2*x</code>. That is exactly the case of a constant
+     * cofactor, which is handled separately below.
+     *
+     * @return {@link F#NIL} if an argument is not a polynomial over the variables of
+     *         <code>eVar</code>, or if an intermediate division is not exact. The caller then falls
+     *         back to {@link AlgebraUtil#findCommonFactors(IAST, boolean)}.
+     */
+    private static IExpr polynomialLCMExprPoly(final IAST ast, int argSize, VariablesSet eVar,
+        EvalEngine engine) {
+      if (eVar.size() == 0 || argSize < 2) {
+        return F.NIL;
+      }
+      try {
+        ExprPolynomialRing ring = new ExprPolynomialRing(eVar.getVarList());
+        ExprPolynomial lcm = ring.create(F.evalExpandAll(ast.arg1(), engine));
+        ExprPolynomial last = lcm;
+        ExprPolynomial cofactor = ring.getOne();
+        for (int i = 2; i <= argSize; i++) {
+          last = ring.create(F.evalExpandAll(ast.get(i), engine));
+          if (lcm.isZERO() || last.isZERO()) {
+            return F.C0;
+          }
+          if (lcm.isConstant() || last.isConstant()) {
+            // a constant argument is a unit of this coefficient domain, so the least common
+            // multiple would simply drop it. Leave that to findCommonFactors, which keeps it.
+            return F.NIL;
+          }
+          ExprPolynomial[] quotientRemainder = lcm.quotientRemainder(lcm.gcd(last));
+          if (quotientRemainder == null || !quotientRemainder[1].isZERO()) {
+            return F.NIL;
+          }
+          cofactor = quotientRemainder[0];
+          if (cofactor.isConstant()) {
+            // the multiple accumulated so far divides `last` up to a unit, so one of the two
+            // already is the least common multiple. Keep the one which carries the coefficient
+            // factor if both are associates, multiplying the constant cofactor in would square it.
+            lcm = lcm.monic().equals(last.monic()) ? lcm : last;
+            cofactor = ring.getOne();
+          } else {
+            lcm = cofactor.multiply(last);
+          }
+        }
+        if (lcm.isZERO()) {
+          return F.C0;
+        }
+        if (cofactor.isONE()) {
+          return lcm.getExpr();
+        }
+        return F.Times(cofactor.getExpr(), last.getExpr());
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        // not a polynomial over these variables, or no exact division - leave it to the caller
       }
       return F.NIL;
     }
@@ -2755,28 +2829,8 @@ public class Algebra {
           if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
-          // try {
-          // IExpr expr = F.evalExpandAll(ast.arg1());
-          // // IAST vars = eVar.getVarList();
-          // ExprPolynomialRing ring = new ExprPolynomialRing(varList);
-          // ExprPolynomial pol1 = ring.create(expr);
-          // // ASTRange r = new ASTRange(eVar.getVarList(), 1);
-          // JASIExpr jas = new JASIExpr(varList, true);
-          // GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-          // GenPolynomial<IExpr> p2;
-          //
-          // GreatestCommonDivisor<IExpr> factory =
-          // GCDFactory.getImplementation(ExprRingFactory.CONST);
-          // for (int i = 2; i < ast.size(); i++) {
-          // expr = F.evalExpandAll(ast.get(i));
-          // p2 = jas.expr2IExprJAS(expr);
-          // p1 = factory.lcm(p1, p2);
-          // }
-          // return jas.exprPoly2Expr(p1);
-          // } catch (RuntimeException rex) {
-          // Errors.rethrowsInterruptException(rex);
-          // Errors.printMessage(S.PolynomialLCM, rex);
-          // }
+          // no fallback over ExprPolynomial here: its coefficient domain is the symbolic one, so the
+          // result would silently ignore the requested modulus
         }
       }
       return F.NIL;
@@ -2796,6 +2850,15 @@ public class Algebra {
             return arg1.negate();
           }
           return arg1;
+        }
+
+        for (int i = 1; i <= argSize; i++) {
+          if (ast.get(i).isZero()) {
+            // lcm(a, 0) == 0, as for the integer LCM(5, 0). Without this the conversion of the zero
+            // polynomial reports a content of 1 over a denominator lcm of 0, and assembling that
+            // into a rational number ends up as the infinite expression 1/0.
+            return F.C0;
+          }
         }
 
         VariablesSet eVar = new VariablesSet();

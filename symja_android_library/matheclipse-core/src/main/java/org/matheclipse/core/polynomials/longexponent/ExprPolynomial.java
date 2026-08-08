@@ -956,10 +956,19 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
   }
 
   /**
-   * GenPolynomial greatest common divisor. Only for univariate polynomials over fields.
+   * GenPolynomial greatest common divisor.
+   *
+   * <p>
+   * In one variable this is the Euclidean algorithm, which is possible because the coefficient
+   * domain is a field. In more than one variable it is a recursive primitive polynomial remainder
+   * sequence, see {@link ExprPolynomialGcd}. In both cases the result is normalized to a leading
+   * coefficient of <code>1</code>.
    *
    * @param S GenPolynomial.
    * @return gcd(this,S).
+   * @throws ArithmeticException if an intermediate division of the multivariate algorithm is not
+   *         exact, i.e. if the structural arithmetic of the coefficient domain cannot cancel the
+   *         coefficients again
    */
   @Override
   public ExprPolynomial gcd(ExprPolynomial S) {
@@ -969,8 +978,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     if (this.isZERO()) {
       return S;
     }
-    if (ring.nvar != 1) {
-      throw new IllegalArgumentException("not univariate polynomials" + ring);
+    if (ring.nvar > 1) {
+      return ExprPolynomialGcd.gcd(this, S);
     }
     ExprPolynomial x;
     ExprPolynomial q = this;
