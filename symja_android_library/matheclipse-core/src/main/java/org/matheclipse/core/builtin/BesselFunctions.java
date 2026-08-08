@@ -1284,7 +1284,31 @@ public class BesselFunctions {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
-        return F.CComplexInfinity;
+        // SphericalBesselJ(n,z) behaves like z^n for z -> 0
+        if (n.isZero()) {
+          // (0, 0)
+          return F.C1;
+        }
+        if (n.isMathematicalIntegerNonNegative()) {
+          return F.C0;
+        }
+        if (n.isMathematicalIntegerNegative()) {
+          return F.CComplexInfinity;
+        }
+        IExpr re = n.re();
+        if (re.isPositive()) {
+          // Re(arg1) > 0
+          return F.C0;
+        }
+        if (re.isNegative()) {
+          // Re(arg1) < 0
+          return F.CComplexInfinity;
+        }
+        if (re.isZero() && n.isNumber()) {
+          // Re(arg1) == 0 && arg1 != 0
+          return S.Indeterminate;
+        }
+        return F.NIL;
       }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {

@@ -440,6 +440,20 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSphericalBesselJ() {
+    check("SphericalBesselJ(n, 0)", //
+        "SphericalBesselJ(n,0)");
+    check("SphericalBesselJ(I, 0)", //
+        "Indeterminate");
+    check("SphericalBesselJ(-2, 0)", //
+        "ComplexInfinity");
+    check("SphericalBesselJ(-1/2, 0)", //
+        "ComplexInfinity");
+    check("SphericalBesselJ(0, 0)", //
+        "1");
+    check("SphericalBesselJ(2, 0)", //
+        "0");
+    check("SphericalBesselJ(5/2, 0)", //
+        "0");
     check("SphericalBesselJ(2.5,-5)", //
         "I*0.204488");
     checkNumeric("SphericalBesselJ(1,5.2)", //
