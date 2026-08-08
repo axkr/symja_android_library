@@ -90,9 +90,13 @@ public final class N extends AbstractCoreFunctionEvaluator {
         return Errors.printMessage(S.N, "precsm", F.list(arg2, F.C1), engine);
       }
       if (nDigitPrecision > Config.MAX_PRECISION_APFLOAT) {
-        // Requested precision `1` is greater than `2`.
-        return Errors.printMessage(S.N, "precgt", F.list(arg2, F.ZZ(Config.MAX_PRECISION_APFLOAT)),
-            engine);
+        if (!Config.TRUNCATE_PRECISION_IN_N) {
+          // Requested precision `1` is greater than `2`.
+          return Errors.printMessage(S.N, "precgt",
+              F.list(arg2, F.ZZ(Config.MAX_PRECISION_APFLOAT)), engine);
+        }
+        // truncate the requested precision to the maximum precision Symja supports
+        nDigitPrecision = Config.MAX_PRECISION_APFLOAT;
       }
       return org.matheclipse.core.reflection.system.N.evalN2(arg1, nDigitPrecision, engine);
     } finally {
