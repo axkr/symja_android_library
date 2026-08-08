@@ -206,6 +206,7 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
             logger.info("wdegv = {}, in {}", wdegv, fac.toScript());
         }
         for (java.math.BigInteger p : primes) {
+            checkInterrupted();
             //System.out.println("next run ++++++++++++++++++++++++++++++++++");
             if (p.longValue() == 2L) { // skip 2
                 continue;
@@ -454,6 +455,7 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
             //logger.info("qdegv = {}", qdegv.toString(fac.getVars()));
         }
         for (java.math.BigInteger p : primes) {
+            checkInterrupted();
             //System.out.println("next run ++++++++++++++++++++++++++++++++++");
             if (p.longValue() == 2L) { // skip 2
                 continue;

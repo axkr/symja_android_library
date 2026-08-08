@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager; 
 
+import edu.jas.kern.PreemptingException;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
@@ -31,6 +32,30 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>>
 
 
     private static final boolean debug = logger.isDebugEnabled();
+
+
+    /**
+     * Cooperative cancellation checkpoint for the polynomial remainder sequences below.
+     * <p>
+     * {@link GCDProxy} races several gcd implementations through
+     * <code>ExecutorService.invokeAny</code>, which cancels the losers with
+     * <code>mayInterruptIfRunning = true</code> as soon as one of them wins. Without a place that
+     * observes the interrupt flag the losers just kept running: on inputs where the subresultant
+     * PRS explodes they never finish at all, so they saturate every core and hold their (multi
+     * gigabyte) coefficient workspace for the rest of the JVM's life, while the caller has long
+     * since moved on with the winner's result.
+     * <p>
+     * Calling this once per PRS iteration is far too coarse to be measurable next to the pseudo
+     * division that dominates each round, and {@link PreemptingException} is exactly the runtime
+     * exception JAS documents for "a thread is interrupted". Note that the interrupt flag is left
+     * set, so callers further up can see it too.
+     * @throws PreemptingException if the current thread has been interrupted.
+     */
+    protected static final void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new PreemptingException("gcd computation interrupted");
+        }
+    }
 
 
     /**
@@ -804,6 +829,7 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>>
         GenPolynomial<C> c1 = P.ring.getONE().copy();
         GenPolynomial<C> d1 = P.ring.getZERO().copy();
         while (!r.isZERO()) {
+            checkInterrupted();
             GenPolynomial<C>[] qr = PolyUtil.<C> basePseudoQuotientRemainder(q, r);
             //q.divideAndRemainder(r);
             q = qr[0];

@@ -120,6 +120,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
         GenPolynomial<C> x;
         C z;
         while (!r.isZERO()) {
+            checkInterrupted();
             long delta = q.degree(0) - r.degree(0);
             //System.out.println("delta    = " + delta);
             x = PolyUtil.<C> baseDensePseudoRemainder(q, r);
@@ -198,6 +199,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
         GenPolynomial<GenPolynomial<C>> x;
         GenPolynomial<C> z = null;
         while (!r.isZERO()) {
+            checkInterrupted();
             long delta = q.degree(0) - r.degree(0);
             //System.out.println("rgcd delta = " + delta);
             x = PolyUtil.<C> recursiveDensePseudoRemainder(q, r);
@@ -266,6 +268,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
         GenPolynomial<C> x;
         C z;
         while (r.degree(0) > 0) {
+            checkInterrupted();
             long delta = q.degree(0) - r.degree(0);
             //System.out.println("delta    = " + delta);
             if ((q.degree(0) % 2 != 0) && (r.degree(0) % 2 != 0)) {
@@ -351,6 +354,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
         long s = 1;
         GenPolynomial<C> z;
         while (r.degree(0) > 0) {
+            checkInterrupted();
             long delta = q.degree(0) - r.degree(0);
             //System.out.println("delta    = " + delta);
             if ((q.degree(0) % 2 != 0) && (r.degree(0) % 2 != 0)) {
@@ -441,6 +445,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
         myList.add(P); // adding R0
         myList.add(S); // adding R1
         while (r.degree(0) > 0) {
+            checkInterrupted();
             long delta = q.degree(0) - r.degree(0);
             if ((q.degree(0) % 2 != 0) && (r.degree(0) % 2 != 0)) {
                 s = -s;

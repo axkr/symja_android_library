@@ -90,6 +90,7 @@ public class GreatestCommonDivisorSimple<C extends GcdRingElem<C>> extends Great
         //System.out.println("q = " + q);
         //System.out.println("r = " + r);
         while (!r.isZERO()) {
+            checkInterrupted();
             x = PolyUtil.<C> baseSparsePseudoRemainder(q, r);
             q = r;
             if (field) {
@@ -164,6 +165,7 @@ public class GreatestCommonDivisorSimple<C extends GcdRingElem<C>> extends Great
         }
         GenPolynomial<GenPolynomial<C>> x;
         while (!r.isZERO()) {
+            checkInterrupted();
             x = PolyUtil.<C> recursiveSparsePseudoRemainder(q, r);
             if (logger.isDebugEnabled()) {
                 logger.info("recursiveSparsePseudoRemainder.bits = {}", x.bitLength());

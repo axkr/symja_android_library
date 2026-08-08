@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -126,7 +127,22 @@ public class ComputerThreads {
      */
     public static synchronized ExecutorService getPool() {
         if (pool == null) {
-            pool = Executors.newCachedThreadPool();
+            // DAEMON threads. The pool is only ever used for speculative parallelism (racing
+            // several algorithms through invokeAny and keeping the winner), so a still-running
+            // worker never carries a result anybody waits for. As non-daemon threads they kept
+            // the JVM alive after main() had finished whenever a loser did not stop - see the
+            // interruption handling in GCDProxy and GreatestCommonDivisorAbstract.
+            pool = Executors.newCachedThreadPool(new ThreadFactory() {
+
+                private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
+
+
+                public Thread newThread(Runnable r) {
+                    Thread t = defaultFactory.newThread(r);
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
         }
         //System.out.println("pool_init = " + pool);
         return pool;

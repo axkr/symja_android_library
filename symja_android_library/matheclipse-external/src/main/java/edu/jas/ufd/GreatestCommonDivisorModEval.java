@@ -190,6 +190,7 @@ public class GreatestCommonDivisorModEval<MOD extends GcdRingElem<MOD> & Modular
             logger.info("wdegv = {}", wdegv + ", in {}", rfac.toScript());
         }
         for (MOD d = cofac.getZERO(); d.compareTo(end) <= 0; d = d.sum(inc)) {
+            checkInterrupted();
             if (++i >= en) {
                 logger.warn("elements of Z_p exhausted, en = {}", en);
                 return mufd.gcd(P, S);
@@ -435,6 +436,7 @@ public class GreatestCommonDivisorModEval<MOD extends GcdRingElem<MOD> & Modular
             //logger.info("qdegv = {}", qdegv); // + ", qr.degree(0) = {}", qr.degree(0));
         }
         for (MOD d = cofac.getZERO(); d.compareTo(end) <= 0; d = d.sum(inc)) {
+            checkInterrupted();
             if (++i >= en) {
                 logger.warn("elements of Z_p exhausted, en = {}, p = {}", en, cofac.getIntegerModul());
                 return mufd.resultant(P, S);
