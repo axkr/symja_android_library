@@ -220,7 +220,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       return assignedExpr;
     }
     IAST assignedAST = (IAST) assignedExpr;
-    final IExpr arg2 = part.get(partPosition);
+    final IExpr arg2 = engine.evaluate(part.get(partPosition));
     int partPositionPlus1 = partPosition + 1;
     int[] span = arg2.isSpan(assignedAST.size());
     if (span != null) {
@@ -243,7 +243,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             if (result.isNIL()) {
               result = assignedAST.copyAppendable();
             }
-            result.set(i, temp);
+            setElement(result, i, temp);
           }
         }
       } else if (step > 0 && (last != 1 || start <= last)) {
@@ -260,7 +260,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             if (result.isNIL()) {
               result = assignedAST.copyAppendable();
             }
-            result.set(i, temp);
+            setElement(result, i, temp);
           }
         }
       } else {
@@ -282,6 +282,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
         }
       }
       return ires;
+    } else if (assignedAST.isAssociation() && (arg2.isKey() || arg2.isString())) {
+      return assignAssociationKey((IAssociation) assignedAST, arg2, part, partPositionPlus1, rhs,
+          rhsPos, engine);
     } else if (arg2.isList()) {
       IExpr temp = null;
       final IAST list = (IAST) arg2;
@@ -370,9 +373,12 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
         if (result.isNIL()) {
           result = assignedAST.copyAppendable();
         }
-        result.set(indx, temp);
+        setElement(result, indx, temp);
       }
       return result;
+    } else if (assignedAST.isAssociation() && (arg2.isKey() || arg2.isString())) {
+      return assignAssociationKey((IAssociation) assignedAST, arg2, part, partPositionPlus1, value,
+          engine);
     } else if (arg2.isList()) {
       IExpr temp = null;
       final IAST list = (IAST) arg2;
@@ -409,6 +415,82 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
   }
 
   /**
+   * Assign the <code>value</code> to the rule of the association which is defined by the given
+   * <code>keySpecification</code>. <code>assoc[[key]] = value</code>
+   *
+   * <p>
+   * If <code>keySpecification</code> is the last element of the part specification, an existing
+   * rule will be updated or a new <code>key->value</code> rule will be appended to the association.
+   * This is the same behaviour as for the <code>assoc[key] = value</code> assignment. Otherwise the
+   * key must already exist, because an intermediate key can't be created automatically.
+   *
+   * @param assoc the association in which the value should be assigned
+   * @param keySpecification a string or a <code>Key(...)</code> expression
+   * @param part the <code>Part(...)</code> expression
+   * @param partPosition the index of the next part specification
+   * @param value
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if an error occurred
+   */
+  private static IExpr assignAssociationKey(IAssociation assoc, IExpr keySpecification,
+      final IAST part, int partPosition, IExpr value, EvalEngine engine) {
+    final IExpr key = keySpecification.isKey() ? keySpecification.first() : keySpecification;
+    if (partPosition >= part.size()) {
+      IAssociation result = assoc.copy();
+      result.appendRule(F.Rule(key, value));
+      return result;
+    }
+    final int index = assoc.getRulePosition(key);
+    if (index == 0) {
+      // Part `1` of `2` does not exist.
+      return Errors.printMessage(S.Part, "partw", F.list(keySpecification, assoc), engine);
+    }
+    IExpr temp = assignPart(assoc.getValue(index), part, partPosition, value, engine);
+    if (temp.isNIL()) {
+      return F.NIL;
+    }
+    IAssociation result = assoc.copy();
+    result.setValue(index, temp);
+    return result;
+  }
+
+  /**
+   * Assign the elements of the <code>rhs</code> list to the rule of the association which is
+   * defined by the given <code>keySpecification</code>. <code>assoc[[key]] = rhs</code>
+   *
+   * @param assoc the association in which the value should be assigned
+   * @param keySpecification a string or a <code>Key(...)</code> expression
+   * @param part the <code>Part(...)</code> expression
+   * @param partPosition the index of the next part specification
+   * @param rhs the right-hand-side list of the assignment
+   * @param rhsPos the current position in the <code>rhs</code> list
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if an error occurred
+   * @see #assignAssociationKey(IAssociation, IExpr, IAST, int, IExpr, EvalEngine)
+   */
+  private static IExpr assignAssociationKey(IAssociation assoc, IExpr keySpecification,
+      final IAST part, int partPosition, IAST rhs, int rhsPos, EvalEngine engine) {
+    final IExpr key = keySpecification.isKey() ? keySpecification.first() : keySpecification;
+    if (partPosition >= part.size()) {
+      IAssociation result = assoc.copy();
+      result.appendRule(F.Rule(key, rhs));
+      return result;
+    }
+    final int index = assoc.getRulePosition(key);
+    if (index == 0) {
+      // Part `1` of `2` does not exist.
+      return Errors.printMessage(S.Part, "partw", F.list(keySpecification, assoc), engine);
+    }
+    IExpr temp = assignPart(assoc.getValue(index), part, partPosition, rhs, rhsPos, engine);
+    if (temp.isNIL()) {
+      return F.NIL;
+    }
+    IAssociation result = assoc.copy();
+    result.setValue(index, temp);
+    return result;
+  }
+
+  /**
    * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the
    * result to the given position in the result. <code>result[[position]] = resultValue</code>
    *
@@ -429,9 +511,26 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       if (result.isNIL()) {
         result = expr.copyAppendable();
       }
-      result.set(position, resultValue);
+      setElement(result, position, resultValue);
     }
     return result;
+  }
+
+  /**
+   * Set the element at the given <code>position</code>. An {@link IAssociation} stores
+   * <code>Rule(key, value)</code> expressions internally, therefore only the value of the rule at
+   * <code>position</code> gets replaced, so that the association keys are preserved.
+   *
+   * @param result the expression in which the element should be set
+   * @param position
+   * @param value
+   */
+  private static void setElement(IASTAppendable result, int position, IExpr value) {
+    if (result.isAssociation()) {
+      ((IAssociation) result).setValue(position, value);
+    } else {
+      result.set(position, value);
+    }
   }
 
   /**
@@ -450,6 +549,11 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     if ((partPosition < 0) || (partPosition >= lhs.size())) {
       throw new ArgumentTypeException(
           "Part: index " + partPosition + " of " + lhs.toString() + " is out of bounds.");
+    }
+    if (lhs.isAssociation()) {
+      IAssociation result = ((IAssociation) lhs).copy();
+      result.setValue(partPosition, value);
+      return result;
     }
     return lhs.setAtCopy(partPosition, value);
   }
