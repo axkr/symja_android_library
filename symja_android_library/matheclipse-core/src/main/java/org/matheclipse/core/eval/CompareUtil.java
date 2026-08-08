@@ -181,7 +181,13 @@ public class CompareUtil {
         IExpr expr;
         if (function.hasTrigonometricFunction()) {
           expr = S.TrigToExp.of(engine, function);
-          if (expr.leafCount() < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+          // Simplify() asks whether numerator-denominator is zero for every Times it visits, so
+          // while it is running this must stay a test and not become a second simplifier: each
+          // nested simplifyStep() runs the whole pipeline again, and those nestings stack — up to
+          // four deep on FullSimplify(Cosh(x)/(b*Cosh(x)+c*Sinh(x))). The exponential form that
+          // TrigToExp() just produced is what decides the test; evaluating it is enough.
+          if (engine.getSimplifyDepth() == 0
+              && expr.leafCount() < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
             expr = SimplifyUtil.simplifyStep(expr, expr, !fastTest, true, engine);
           } else {
             expr = engine.evaluate(expr);

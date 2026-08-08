@@ -10,7 +10,6 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -140,19 +139,14 @@ public class Iterator {
         if (sub.isReal()) {
           return !sub.isNegative();
         }
-        double d;
-        try {
-          d = sub.evalf();
+        double d = sub.evalfNaN();
+        if (!Double.isNaN(d)) {
           return !(d < 0.0);
-        } catch (ValidateException ve) {
-          // fall through
         }
         IExpr together = evalEngine.evaluate(F.Together(sub));
-        try {
-          d = together.evalf();
+        d = together.evalfNaN();
+        if (!Double.isNaN(d)) {
           return !(d < 0.0);
-        } catch (ValidateException ve) {
-          // return false;
         }
       }
       return false;

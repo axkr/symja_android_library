@@ -154,16 +154,16 @@ public class GraphicsUtil {
           }
         } else if (ast.isASTSizeGE(S.EdgeForm, 2)) {
           IAST edgeFormList = ast.arg1().makeList();
-          ObjectNode edgeForm = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-          ObjectNode edgeList = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+          ObjectNode edgeForm = GraphicsOptions.jsonObjectMapper().createObjectNode();
+          ObjectNode edgeList = GraphicsOptions.jsonObjectMapper().createObjectNode();
           for (int j = 1; j < edgeFormList.size(); j++) {
             IExpr expr = edgeFormList.get(i);
             if (expr.isAST(S.Opacity, 2)) {
-              ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+              ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
               double opacity = expr.toDoubleDefault(1.0);
               edgeList.put("opacity", opacity);
             } else if (expr.isAST(S.RGBColor)) {
-              ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+              ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
               if (expr.isAST(S.RGBColor, 4, 5)) {
                 double red = ((IAST) expr).arg1().toDoubleDefault(0.0);
                 double green = ((IAST) expr).arg2().toDoubleDefault(0.0);
@@ -187,9 +187,10 @@ public class GraphicsUtil {
             } else if (expr.isAST(S.GrayLevel, 2, 3)) {
               RGBColor rgb = null;
               IAST grayLevel = (IAST) expr;
-              if (grayLevel.isAST1() || grayLevel.isAST2()) {
-                ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-                rgb = RGBColor.getGrayLevel((float) grayLevel.arg1().evalf());
+              double level = grayLevel.arg1().evalfNaN();
+              if ((grayLevel.isAST1() || grayLevel.isAST2()) && !Double.isNaN(level)) {
+                ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
+                rgb = RGBColor.getGrayLevel((float) level);
                 ArrayNode array = g.arrayNode();
                 array.add(rgb.getRed() / 255.0);
                 array.add(rgb.getGreen() / 255.0);
@@ -197,7 +198,7 @@ public class GraphicsUtil {
                 edgeList.set("color", array);
 
                 if (grayLevel.isAST2()) {
-                  g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+                  g = GraphicsOptions.jsonObjectMapper().createObjectNode();
                   double opacity = grayLevel.arg2().toDoubleDefault(1.0);
                   edgeList.put("opacity", opacity);
                 }
@@ -207,18 +208,21 @@ public class GraphicsUtil {
           edgeForm.set("edgeForm", edgeList);
           arrayNode.add(edgeForm);
         } else if (ast.isAST(S.Hue, 2, 5)) {
-          ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+          ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
           if (graphicsOptions.setHueColor(arrayNode, ast)) {
             arrayNode.add(g);
           }
         } else if (ast.isAST(S.GrayLevel, 2, 3)) {
-          ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+          ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
           if (GraphicsOptions.setGrayLevel(g, ast)) {
             arrayNode.add(g);
           }
           double opacity = 1.0;
           if (ast.isAST2()) {
-            opacity = ast.arg2().evalf();
+            double opacityValue = ast.arg2().evalfNaN();
+            if (!Double.isNaN(opacityValue)) {
+              opacity = opacityValue;
+            }
           }
           GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
         } else if (ast.isRGBColor()) {
@@ -227,11 +231,9 @@ public class GraphicsUtil {
           // arrayNode.add(g);
         } else if (ast.isAST(S.Opacity, 2)) {
           double opacity = graphicsOptions.opacity();
-          try {
-            opacity = ast.arg1().evalf();
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double opacityValue = ast.arg1().evalfNaN();
+          if (!Double.isNaN(opacityValue)) {
+            opacity = opacityValue;
           }
           GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
         } else if (ast.isAST(S.PointSize, 2)) {
@@ -309,7 +311,7 @@ public class GraphicsUtil {
           } else if (ast.isBuiltInFunction()) {
             IGraphics3D graphics3DEvaluator = ast.headInstanceOf(IGraphics3D.class);
             if (graphics3DEvaluator != null) {
-              ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+              ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
               if (graphics3DEvaluator.graphics3D(g, ast, rgbColor, opacity)) {
                 arrayNode.add(g);
               }
@@ -326,20 +328,20 @@ public class GraphicsUtil {
     IExpr option;
     option = options.getOption(S.AspectRatio);
     if (option.isPresent()) {
-      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
       IReal value = option.evalReal();
       if (value != null) {
-        g.put("factor", option.evalf());
+        g.put("factor", value.evalfNaN());
       } else {
         g.put("symbol", option.toString().toLowerCase(Locale.US));
       }
-      ObjectNode aspectRatio = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode aspectRatio = GraphicsOptions.jsonObjectMapper().createObjectNode();
       aspectRatio.set("aspectRatio", g);
       arrayNode.add(aspectRatio);
     } else {
-      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
       g.put("symbol", "automatic");
-      ObjectNode aspectRatio = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode aspectRatio = GraphicsOptions.jsonObjectMapper().createObjectNode();
       aspectRatio.set("aspectRatio", g);
       arrayNode.add(aspectRatio);
     }
@@ -347,8 +349,8 @@ public class GraphicsUtil {
 
   public static boolean graphics2DJSON(StringBuilder graphics2DBuffer, IExpr data2D,
       OptionArgs options, boolean javaScript, boolean prettyPrint) {
-    ObjectNode json = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    ObjectNode json = GraphicsOptions.jsonObjectMapper().createObjectNode();
+    ArrayNode arrayNode = GraphicsOptions.jsonObjectMapper().createArrayNode();
     GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
     graphicsOptions.setOptions(options);
     IExpr plotRange = options.getOption(S.PlotRange);
@@ -361,7 +363,7 @@ public class GraphicsUtil {
         json.set("elements", arrayNode);
 
         options = graphicsOptions.options();
-        ObjectNode objectNode = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode objectNode = GraphicsOptions.jsonObjectMapper().createObjectNode();
 
         // IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
         IExpr option = options.getOption(S.PlotRange);
@@ -438,21 +440,29 @@ public class GraphicsUtil {
 
   public static boolean graphics3DCoordsOrListOfCoords(ObjectNode json, IAST coordsOrListOfCoords,
       String coordStr) {
-    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    ArrayNode arrayNode = GraphicsOptions.jsonObjectMapper().createArrayNode();
     if (coordsOrListOfCoords.isListOfLists()) {
       final int size = coordsOrListOfCoords.size();
       for (int i = 1; i < size; i++) {
-        ArrayNode subArrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+        ArrayNode subArrayNode = GraphicsOptions.jsonObjectMapper().createArrayNode();
         IAST subList = (IAST) coordsOrListOfCoords.get(i);
         for (int j = 1; j < subList.size(); j++) {
-          subArrayNode.add(subList.get(j).evalf());
+          double coordinate = subList.get(j).evalfNaN();
+          if (Double.isNaN(coordinate)) {
+            return false;
+          }
+          subArrayNode.add(coordinate);
         }
         arrayNode.add(subArrayNode);
       }
     } else if (coordsOrListOfCoords.isList()) {
-      ArrayNode subArrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+      ArrayNode subArrayNode = GraphicsOptions.jsonObjectMapper().createArrayNode();
       for (int i = 1; i < coordsOrListOfCoords.size(); i++) {
-        subArrayNode.add(coordsOrListOfCoords.get(i).evalf());
+        double coordinate = coordsOrListOfCoords.get(i).evalfNaN();
+        if (Double.isNaN(coordinate)) {
+          return false;
+        }
+        subArrayNode.add(coordinate);
       }
       arrayNode.add(subArrayNode);
     } else {
@@ -464,8 +474,8 @@ public class GraphicsUtil {
 
   public static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting, IExpr data3D,
       boolean javaScript) {
-    ObjectNode json = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    ObjectNode json = GraphicsOptions.jsonObjectMapper().createObjectNode();
+    ArrayNode arrayNode = GraphicsOptions.jsonObjectMapper().createArrayNode();
     if (GraphicsUtil.exportGraphics3DRecursive(arrayNode, (IAST) data3D)) {
       try {
         if (javaScript) {
@@ -473,7 +483,7 @@ public class GraphicsUtil {
         }
         json.set("elements", arrayNode);
         GraphicsUtil.graphics3DLigthing(json, lighting);
-        ArrayNode vp = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+        ArrayNode vp = GraphicsOptions.jsonObjectMapper().createArrayNode();
         vp.add(1.3);
         vp.add(-2.4);
         vp.add(2.0);
@@ -519,7 +529,7 @@ public class GraphicsUtil {
 
     boolean lightingDone = false;
     // graphics3DBuffer.append("\nlighting: [");
-    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    ArrayNode arrayNode = GraphicsOptions.jsonObjectMapper().createArrayNode();
     if (result.isPresent()) {
       if (result.isList()) {
         for (int i = 1; i < result.size(); i++) {
@@ -527,7 +537,7 @@ public class GraphicsUtil {
             // if (lightingDone) {
             // graphics3DBuffer.append(",");
             // }
-            ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+            ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
             if (graphics3DSingleLight(g, (IAST) result.get(i))) {
               arrayNode.add(g);
               lightingDone = true;
@@ -535,7 +545,7 @@ public class GraphicsUtil {
           }
         }
       } else {
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         if (graphics3DSingleLight(g, result)) {
           arrayNode.add(g);
           lightingDone = true;
@@ -544,7 +554,7 @@ public class GraphicsUtil {
     }
 
     if (!lightingDone) {
-      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
       lightingDone = graphics3DSingleLight(g, automatic);
       arrayNode.add(g);
     }
