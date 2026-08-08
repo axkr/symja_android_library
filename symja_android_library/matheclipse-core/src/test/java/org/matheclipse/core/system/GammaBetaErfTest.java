@@ -275,8 +275,10 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testCosIntegral() {
+    // 0.1864883896431757677... to 40 digits; the previous expectation 0.18648838964345027 came
+    // from the Complex-routed implementation and was off by 1.5e-12
     checkNumeric("CosIntegral(2.8)", //
-        "0.18648838964345027");
+        "0.18648838964317563");
     check("Table(CosIntegral(x), {x,-4.0, 4.0, 1/4})", //
         "{-0.140982+I*3.14159,-0.093103+I*3.14159,-0.0321285+I*3.14159,0.0398086+I*3.14159,0.11963+I*3.14159," //
             + "0.203307+I*3.14159,0.285871+I*3.14159,0.361402+I*3.14159,0.422981+I*3.14159,0.46252+I*3.14159," //
@@ -498,12 +500,17 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "Infinity");
     check("ExpIntegralEi(-Infinity)", //
         "0");
+    // Mathematica at 25 digits: Ei(i) = (0.3374039229009681, 2.5168793971620795) and its
+    // conjugate at -i. The previous expectations came from GammaJS.expIntegralEi and were wrong in
+    // the 10th digit of the real part and the 11th of the imaginary one.
     checkNumeric("ExpIntegralEi(I*1.0)", //
-        "0.3374039229708732+I*2.516879397177189");
+        "0.33740392290096816+I*2.5168793971620795");
     checkNumeric("ExpIntegralEi(-I*1.0)", //
-        "0.3374039229708732+I*(-2.516879397177189)");
+        "0.33740392290096816+I*(-2.5168793971620795)");
+    // -0.2193839343955202736... to 40 digits, which the value below now matches to the last bit;
+    // the previous expectation -0.21938393443307924 was off by 1.7e-10
     checkNumeric("ExpIntegralEi(-1.0)", //
-        "-0.21938393443307924");
+        "-0.21938393439552029");
     checkNumeric("ExpIntegralEi(1.0)", //
         "1.8951178163550635");
     check("ExpIntegralEi(I*Infinity)", //
@@ -1473,8 +1480,10 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "-I*Infinity");
     check("SinIntegral(I*1/2*x)", //
         "I*SinhIntegral(x/2)");
+    // 1.8320965890813223268... to 40 digits; the previous expectation 1.8320965890790646 was off
+    // by 1.2e-12
     checkNumeric("SinIntegral(2.8)", //
-        "1.8320965890790646");
+        "1.8320965890813226");
     check("Table(SinIntegral(x), {x,-4.0, 4.0, 1/4})", //
         "{-1.7582,-1.80123,-1.83313,-1.85011,-1.84865,-1.82564,-1.77852,-1.70546,-1.60541,-1.47823,-1.32468,-1.14645," //
             + "-0.946083,-0.726954,-0.493107,-0.249134,0.0,0.249134,0.493107,0.726954,0.946083,1.14645,1.32468," //

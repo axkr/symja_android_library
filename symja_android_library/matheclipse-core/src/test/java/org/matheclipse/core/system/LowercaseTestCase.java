@@ -17959,6 +17959,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     check("PolynomialGCD(x + C(1), x + C(2))", //
         "1");
+
+    // coefficients which the conversion to a JAS polynomial does not accept fall back to
+    // ExprPolynomial, which handles more than one variable since ExprPolynomialGcd exists. The
+    // common coefficient factor is not part of the result, the fallback normalizes to a leading
+    // coefficient of 1.
+    check("PolynomialGCD(Sqrt(2)*x^2 - Sqrt(2)*y^2, x - y)", //
+        "x-y");
+    check("PolynomialGCD(Sqrt(2)*(x^2 - y^2), Sqrt(2)*(x^2 - 2*x*y + y^2))", //
+        "x-y");
+    check("PolynomialGCD(Pi*x^2 - Pi*y^2, x^2 - 2*x*y + y^2)", //
+        "x-y");
+    check("PolynomialGCD(Sqrt(2)*x + Sqrt(2)*y, x^2 - y^2)", //
+        "x+y");
+    check("PolynomialGCD(Sqrt(2)*x^2*y^2, x*y)", //
+        "x*y");
+    check("PolynomialGCD(Sqrt(2)*(x + y), x - y)", //
+        "1");
+    check("PolynomialGCD(E*x*y + E*y, x*y + y)", //
+        "y+x*y");
+    // three and four variables
+    check("PolynomialGCD(Sqrt(2)*(x*y + z)*(x - z), (x*y + z)*(y + z))", //
+        "x*y+z");
+    check("PolynomialGCD(Sqrt(3)*(w*x + y*z)*(w - z), (w*x + y*z)*(x + y))", //
+        "w*x+y*z");
   }
 
   @Test
@@ -18040,6 +18064,60 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6*x");
     check("PolynomialLCM(6, 4)", //
         "12");
+
+    // coefficients which the conversion to a JAS polynomial does not accept fall back to
+    // ExprPolynomial, which computes lcm(a,b) == (a/gcd(a,b))*b there. Before that fallback the
+    // arguments were only multiplied out, so the results below were not least common multiples.
+    check("PolynomialLCM(Sqrt(2)*(x^2 - 4), x - 2)", //
+        "(-2+x)*(2*Sqrt(2)+Sqrt(2)*x)");
+    check("Expand(PolynomialLCM(Sqrt(2)*(x^2 - 4), x - 2))", //
+        "-4*Sqrt(2)+Sqrt(2)*x^2");
+    // and the same for the arguments the other way round
+    check("PolynomialLCM(x - 2, Sqrt(2)*(x^2 - 4))", //
+        "(-2+x)*(2*Sqrt(2)+Sqrt(2)*x)");
+    check("PolynomialLCM(Sqrt(2)*x^2 - Sqrt(2)*y^2, x - y)", //
+        "(-x+y)*(Sqrt(2)*x+Sqrt(2)*y)");
+    check("PolynomialLCM(Pi*(x^2 - y^2), x^2 - 2*x*y + y^2)", //
+        "(Pi*x+Pi*y)*(x^2-2*x*y+y^2)");
+    check("Expand(PolynomialLCM(Pi*(x^2 - y^2), x^2 - 2*x*y + y^2))", //
+        "Pi*x^3-Pi*x^2*y-Pi*x*y^2+Pi*y^3");
+    check("PolynomialLCM(Sqrt(2)*x^2*y^2, x*y)", //
+        "Sqrt(2)*x^2*y^2");
+    check("PolynomialLCM(Sqrt(2)*(x*y + z)*(x - z), (x*y + z)*(y + z))", //
+        "(Sqrt(2)*x-Sqrt(2)*z)*(x*y^2+y*z+x*y*z+z^2)");
+    check("PolynomialLCM(Sqrt(2)*(x^2 - y^2), x - y, x + y)", //
+        "Sqrt(2)*x^2-Sqrt(2)*y^2");
+    // arguments which are associates keep the coefficient factor rather than squaring it
+    check("PolynomialLCM(Sqrt(2)*x, Sqrt(2)*x)", //
+        "Sqrt(2)*x");
+    check("PolynomialLCM(E*x*y + E*y, x*y + y)", //
+        "E*y+E*x*y");
+    // a constant argument is a unit here, it is kept as a factor instead of being dropped
+    check("PolynomialLCM(Sqrt(2), x)", //
+        "Sqrt(2)*x");
+
+    // lcm(a, 0) == 0, as for the integer LCM(5, 0). The zero polynomial has a denominator lcm of
+    // 0, which used to be assembled into the infinite expression 1/0.
+    check("LCM(5, 0)", //
+        "0");
+    check("PolynomialLCM(x^2 - y^2, 0)", //
+        "0");
+    check("PolynomialLCM(0, x^2 - y^2)", //
+        "0");
+    check("PolynomialLCM(0, 0)", //
+        "0");
+    check("PolynomialLCM(x, 0, y)", //
+        "0");
+    check("PolynomialLCM(x, x - x)", //
+        "0");
+    // also on the fallback over ExprPolynomial
+    check("PolynomialLCM(Sqrt(2)*x, 0)", //
+        "0");
+    // the greatest common divisor keeps the other argument, as for GCD(5, 0)
+    check("PolynomialGCD(x^2 - y^2, 0)", //
+        "x^2-y^2");
+    check("PolynomialGCD(0, 0)", //
+        "0");
   }
 
   /** {@code Modulus->p} computes the least common multiple in {@code GF(p)[x]}. */
@@ -18060,6 +18138,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(1+x)*(6+x^3)");
     // 5*x+5 vanishes modulo 5, and the least common multiple with 0 is 0
     check("PolynomialLCM(5*x + 5, x + 1, Modulus -> 5)", //
+        "0");
+    // an argument which is already zero before the reduction
+    check("PolynomialLCM(x, 0, Modulus -> 7)", //
         "0");
   }
 

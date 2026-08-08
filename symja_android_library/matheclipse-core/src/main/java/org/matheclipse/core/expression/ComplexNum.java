@@ -28,9 +28,16 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.BarnesG;
 import org.matheclipse.core.numerics.functions.BesselJS;
+import org.matheclipse.core.numerics.functions.ComplexAiry;
+import org.matheclipse.core.numerics.functions.ComplexBessel;
+import org.matheclipse.core.numerics.functions.ComplexGamma;
+import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
+import org.matheclipse.core.numerics.functions.FresnelIntegrals;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
+import org.matheclipse.core.numerics.functions.PolyLog;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -368,24 +375,50 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr airyAi() {
+    // ComplexAiry where its series is well conditioned; the Apfloat fall-back covers the rest.
+    // NOT BesselJS.airyAi, which returns -40.7 where the true value is 4.8e-20 at a large argument.
+    Complex airyAiValue = ComplexAiry.airyAi(fComplex);
+    if (airyAiValue != null) {
+      return F.complexNum(airyAiValue);
+    }
     Apcomplex airyAi = EvalEngine.getApfloatDouble().airyAi(apcomplexValue());
     return F.complexNum(airyAi.real().doubleValue(), airyAi.imag().doubleValue());
   }
 
   @Override
   public IExpr airyAiPrime() {
+    // ComplexAiry where its series is well conditioned; the Apfloat fall-back covers the rest.
+    // NOT BesselJS.airyAiPrime, which returns -40.7 where the true value is 4.8e-20 at a large
+    // argument.
+    Complex airyAiPrimeValue = ComplexAiry.airyAiPrime(fComplex);
+    if (airyAiPrimeValue != null) {
+      return F.complexNum(airyAiPrimeValue);
+    }
     Apcomplex airyAiPrime = EvalEngine.getApfloatDouble().airyAiPrime(apcomplexValue());
     return F.complexNum(airyAiPrime.real().doubleValue(), airyAiPrime.imag().doubleValue());
   }
 
   @Override
   public IExpr airyBi() {
+    // ComplexAiry where its series is well conditioned; the Apfloat fall-back covers the rest.
+    // NOT BesselJS.airyBi, which returns -40.7 where the true value is 4.8e-20 at a large argument.
+    Complex airyBiValue = ComplexAiry.airyBi(fComplex);
+    if (airyBiValue != null) {
+      return F.complexNum(airyBiValue);
+    }
     Apcomplex airyBi = EvalEngine.getApfloatDouble().airyBi(apcomplexValue());
     return F.complexNum(airyBi.real().doubleValue(), airyBi.imag().doubleValue());
   }
 
   @Override
   public IExpr airyBiPrime() {
+    // ComplexAiry where its series is well conditioned; the Apfloat fall-back covers the rest.
+    // NOT BesselJS.airyBiPrime, which returns -40.7 where the true value is 4.8e-20 at a large
+    // argument.
+    Complex airyBiPrimeValue = ComplexAiry.airyBiPrime(fComplex);
+    if (airyBiPrimeValue != null) {
+      return F.complexNum(airyBiPrimeValue);
+    }
     Apcomplex airyBiPrime = EvalEngine.getApfloatDouble().airyBiPrime(apcomplexValue());
     return F.complexNum(airyBiPrime.real().doubleValue(), airyBiPrime.imag().doubleValue());
   }
@@ -427,6 +460,18 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      // ComplexBessel covers a non-integer order; at an integer order its reflection
+      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
+      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
+        Complex argument = (arg2 instanceof IComplexNum)
+            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
+                ((IComplexNum) arg2).imDoubleValue())
+            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+        Complex besselIValue = ComplexBessel.besselI(fComplex, argument);
+        if (besselIValue != null) {
+          return F.complexNum(besselIValue);
+        }
+      }
       try {
         Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
@@ -441,6 +486,18 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      // ComplexBessel covers a non-integer order; at an integer order its reflection
+      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
+      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
+        Complex argument = (arg2 instanceof IComplexNum)
+            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
+                ((IComplexNum) arg2).imDoubleValue())
+            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+        Complex besselJValue = ComplexBessel.besselJ(fComplex, argument);
+        if (besselJValue != null) {
+          return F.complexNum(besselJValue);
+        }
+      }
       try {
         Apcomplex besselJ = EvalEngine.getApfloatDouble().besselJ(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
@@ -455,6 +512,18 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselK(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      // ComplexBessel covers a non-integer order; at an integer order its reflection
+      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
+      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
+        Complex argument = (arg2 instanceof IComplexNum)
+            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
+                ((IComplexNum) arg2).imDoubleValue())
+            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+        Complex besselKValue = ComplexBessel.besselK(fComplex, argument);
+        if (besselKValue != null) {
+          return F.complexNum(besselKValue);
+        }
+      }
       try {
         Apcomplex besselK = EvalEngine.getApfloatDouble().besselK(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
@@ -469,6 +538,18 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselY(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      // ComplexBessel covers a non-integer order; at an integer order its reflection
+      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
+      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
+        Complex argument = (arg2 instanceof IComplexNum)
+            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
+                ((IComplexNum) arg2).imDoubleValue())
+            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+        Complex besselYValue = ComplexBessel.besselY(fComplex, argument);
+        if (besselYValue != null) {
+          return F.complexNum(besselYValue);
+        }
+      }
       try {
         Apcomplex besselY = EvalEngine.getApfloatDouble().besselY(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
@@ -483,6 +564,15 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr beta(IExpr b) {
     if (b instanceof INumber) {
+      if (b instanceof IComplexNum || b instanceof IReal) {
+        Complex other = (b instanceof IComplexNum)
+            ? new Complex(((IComplexNum) b).reDoubleValue(), ((IComplexNum) b).imDoubleValue())
+            : new Complex(((IReal) b).doubleValue(), 0.0);
+        Complex beta = ComplexGamma.beta(fComplex, other);
+        if (beta != null) {
+          return F.complexNum(beta);
+        }
+      }
       try {
         Apcomplex beta =
             EvalEngine.getApfloatDouble().beta(apcomplexValue(), ((INumber) b).apcomplexValue());
@@ -699,13 +789,29 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr coshIntegral() {
+    // Deliberately NOT routed to GammaJS.coshIntegral, even though sinIntegral, cosIntegral and
+    // sinhIntegral beside it are. GammaJS is accurate only for a moderate argument: measured
+    // against Apfloat at 40 digits it holds to 1e-12 around |z| <= 5, but at z = -30+1i - well
+    // clear of the branch cut, so this is not a convention difference - the real part is wrong by
+    // 21.4 and the imaginary part by 6.8. Routing here would trade ~74ms for a wrong answer in the
+    // left half-plane. The three siblings have the same defect and want the same fix: complex
+    // versions of ExponentialIntegrals, which currently covers the real axis only.
+    Complex[] coshIntegralPair = ExponentialIntegrals.sinhCoshIntegral(fComplex);
+    if (coshIntegralPair != null) {
+      return F.complexNum(coshIntegralPair[1]);
+    }
     Apcomplex coshIntegral = EvalEngine.getApfloatDouble().coshIntegral(apcomplexValue());
     return F.complexNum(coshIntegral.real().doubleValue(), coshIntegral.imag().doubleValue());
   }
 
   @Override
   public IExpr cosIntegral() {
-    return F.complexNum(GammaJS.cosIntegral(fComplex));
+    Complex[] cosIntegralPair = ExponentialIntegrals.sinCosIntegral(fComplex);
+    if (cosIntegralPair != null) {
+      return F.complexNum(cosIntegralPair[1]);
+    }
+    Apcomplex cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apcomplexValue());
+    return F.complexNum(cosIntegral.real().doubleValue(), cosIntegral.imag().doubleValue());
     // Apcomplex cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apcomplexValue());
     // return F.complexNum(cosIntegral.real().doubleValue(), cosIntegral.imag().doubleValue());
   }
@@ -718,7 +824,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IComplexNum dawsonF() {
-    Apcomplex dawsonF = EvalEngine.getApfloat().dawsonF(apcomplexValue());
+    Apcomplex dawsonF = EvalEngine.getApfloatDouble().dawsonF(apcomplexValue());
     return F.complexNum(dawsonF.real().doubleValue(), dawsonF.imag().doubleValue());
   }
 
@@ -896,9 +1002,12 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr expIntegralEi() {
-    return F.complexNum(GammaJS.expIntegralEi(fComplex));
-    // Apcomplex expIntegralEi = EvalEngine.getApfloatDouble().expIntegralEi(apcomplexValue());
-    // return valueOf(expIntegralEi.real().doubleValue(), expIntegralEi.imag().doubleValue());
+    Complex expIntegralEiValue = ExponentialIntegrals.expIntegralEi(fComplex);
+    if (expIntegralEiValue != null) {
+      return F.complexNum(expIntegralEiValue);
+    }
+    Apcomplex expIntegralEi = EvalEngine.getApfloatDouble().expIntegralEi(apcomplexValue());
+    return valueOf(expIntegralEi.real().doubleValue(), expIntegralEi.imag().doubleValue());
   }
 
   @Override
@@ -947,14 +1056,24 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr fresnelC() {
+    // FresnelIntegrals where its series is well conditioned - it withdraws the rest, so the
+    // Apfloat fall-back still covers the whole plane
+    Complex[] fresnelPair = FresnelIntegrals.fresnelCS(fComplex);
+    if (fresnelPair != null) {
+      return F.complexNum(fresnelPair[0]);
+    }
     Apcomplex fresnelC = EvalEngine.getApfloatDouble().fresnelC(apcomplexValue());
     return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 
   @Override
   public IExpr fresnelS() {
+    // see fresnelC
+    Complex[] fresnelPair = FresnelIntegrals.fresnelCS(fComplex);
+    if (fresnelPair != null) {
+      return F.complexNum(fresnelPair[1]);
+    }
     Apcomplex fresnelS = EvalEngine.getApfloatDouble().fresnelS(apcomplexValue());
-    // Apcomplex fresnelS = ApcomplexNum.fresnelS(apcomplexValue(), EvalEngine.getApfloatDouble());
     return F.complexNum(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
   }
 
@@ -1087,7 +1206,7 @@ public class ComplexNum implements IComplexNum {
   public IExpr gegenbauerC(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        Apcomplex gegenbauerC = EvalEngine.getApfloat().gegenbauerC(apcomplexValue(),
+        Apcomplex gegenbauerC = EvalEngine.getApfloatDouble().gegenbauerC(apcomplexValue(),
             ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
         return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
       } catch (ArithmeticException | NumericComputationException e) {
@@ -1563,13 +1682,24 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IComplexNum barnesG() {
-    Apcomplex barnesG = EvalEngine.getApfloat().barnesG(apcomplexValue());
+    // ~80ms through Apfloat against ~2us here; BarnesG returns null outside its measured range and
+    // those points keep the fall-back
+    Complex barnesGValue = BarnesG.barnesG(fComplex);
+    if (barnesGValue != null) {
+      return F.complexNum(barnesGValue);
+    }
+    Apcomplex barnesG = EvalEngine.getApfloatDouble().barnesG(apcomplexValue());
     return F.complexNum(barnesG.real().doubleValue(), barnesG.imag().doubleValue());
   }
 
   @Override
   public IComplexNum logBarnesG() {
-    Apcomplex logBarnesG = EvalEngine.getApfloat().logBarnesG(apcomplexValue());
+    // see barnesG
+    Complex logBarnesGValue = BarnesG.logBarnesG(fComplex);
+    if (logBarnesGValue != null) {
+      return F.complexNum(logBarnesGValue);
+    }
+    Apcomplex logBarnesG = EvalEngine.getApfloatDouble().logBarnesG(apcomplexValue());
     return F.complexNum(logBarnesG.real().doubleValue(), logBarnesG.imag().doubleValue());
   }
 
@@ -1749,6 +1879,20 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      // PolyLog inside the unit disc, where its series converges and the cancellation guard
+      // passes; ~82ms through Apfloat against under 2us here
+      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
+        Complex z = (arg2 instanceof IComplexNum)
+            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
+                ((IComplexNum) arg2).imDoubleValue())
+            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+        if (PolyLog.isSupported(fComplex, z)) {
+          Complex polylog = PolyLog.polyLog(fComplex, z);
+          if (polylog != null) {
+            return F.complexNum(polylog);
+          }
+        }
+      }
       try {
         Apcomplex polylog = EvalEngine.getApfloatDouble().polylog(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
@@ -1851,14 +1995,24 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr sinhIntegral() {
-    return F.complexNum(GammaJS.sinhIntegral(fComplex));
+    Complex[] sinhIntegralPair = ExponentialIntegrals.sinhCoshIntegral(fComplex);
+    if (sinhIntegralPair != null) {
+      return F.complexNum(sinhIntegralPair[0]);
+    }
+    Apcomplex sinhIntegral = EvalEngine.getApfloatDouble().sinhIntegral(apcomplexValue());
+    return F.complexNum(sinhIntegral.real().doubleValue(), sinhIntegral.imag().doubleValue());
     // Apcomplex sinhIntegral = EvalEngine.getApfloatDouble().sinhIntegral(apcomplexValue());
     // return F.complexNum(sinhIntegral.real().doubleValue(), sinhIntegral.imag().doubleValue());
   }
 
   @Override
   public IExpr sinIntegral() {
-    return F.complexNum(GammaJS.sinIntegral(fComplex));
+    Complex[] sinIntegralPair = ExponentialIntegrals.sinCosIntegral(fComplex);
+    if (sinIntegralPair != null) {
+      return F.complexNum(sinIntegralPair[0]);
+    }
+    Apcomplex sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apcomplexValue());
+    return F.complexNum(sinIntegral.real().doubleValue(), sinIntegral.imag().doubleValue());
     // Apcomplex sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apcomplexValue());
     // return F.complexNum(sinIntegral.real().doubleValue(), sinIntegral.imag().doubleValue());
   }

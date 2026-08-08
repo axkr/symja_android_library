@@ -26,8 +26,13 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.BarnesG;
 import org.matheclipse.core.numerics.functions.BesselJS;
+import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
+import org.matheclipse.core.numerics.functions.FresnelIntegrals;
 import org.matheclipse.core.numerics.functions.GammaJS;
+import org.matheclipse.core.numerics.functions.PolyLog;
+import org.matheclipse.core.numerics.functions.ZetaJS;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -702,6 +707,13 @@ public class Num implements INum {
 
   @Override
   public IExpr coshIntegral() {
+    // Chi is real only for a positive argument
+    if (value > 0.0 && ExponentialIntegrals.isSupported(value)) {
+      double chi = ExponentialIntegrals.coshIntegral(value);
+      if (!Double.isNaN(chi)) {
+        return valueOf(chi);
+      }
+    }
     return F.complexReduced(GammaJS.coshIntegral(new Complex(value)));
     // try {
     // if (isNonNegativeResult()) {
@@ -717,6 +729,15 @@ public class Num implements INum {
 
   @Override
   public IExpr cosIntegral() {
+    // Ci is real only for a positive argument - Ci(-x) carries an imaginary Pi - so the Complex
+    // route still serves the rest. Where the real one applies it is accurate to 4e-14 against
+    // Apfloat at 40 digits, where the Complex route reaches only 2e-7.
+    if (value > 0.0 && ExponentialIntegrals.isSupported(value)) {
+      double ci = ExponentialIntegrals.cosIntegral(value);
+      if (!Double.isNaN(ci)) {
+        return valueOf(ci);
+      }
+    }
     return F.complexReduced(GammaJS.cosIntegral(new Complex(value)));
     // try {
     // if (isNonNegativeResult()) {
@@ -948,6 +969,15 @@ public class Num implements INum {
 
   @Override
   public IExpr expIntegralEi() {
+    // Ei is real for every non-zero real argument. The Complex route below loses four digits on
+    // the negative side (measured 4.9e-4 at x = -14.7 against Apfloat at 40 digits); the real
+    // implementation stays at 3e-14.
+    if (value != 0.0 && ExponentialIntegrals.isSupported(value)) {
+      double ei = ExponentialIntegrals.expIntegralEi(value);
+      if (!Double.isNaN(ei)) {
+        return valueOf(ei);
+      }
+    }
     return F.complexReduced(GammaJS.expIntegralEi(new Complex(value)));
     // return valueOf(EvalEngine.getApfloatDouble().expIntegralEi(apfloatValue()).doubleValue());
   }
@@ -1001,12 +1031,29 @@ public class Num implements INum {
 
   @Override
   public IExpr fresnelC() {
+    // NOT GammaJS.fresnelC: despite living in the numerics package that is a thin wrapper over
+    // EvalEngine.getApfloat() - the FULL precision helper - and measures ~258ms against ~27ms for
+    // the Apfloat call it would replace. FresnelIntegrals is a real double implementation and
+    // costs 0.1us.
+    if (FresnelIntegrals.isSupported(value)) {
+      double fresnelC = FresnelIntegrals.fresnelC(value);
+      if (!Double.isNaN(fresnelC)) {
+        return valueOf(fresnelC);
+      }
+    }
     Apfloat fresnelC = EvalEngine.getApfloatDouble().fresnelC(apfloatValue());
     return F.num(fresnelC.doubleValue());
   }
 
   @Override
   public IExpr fresnelS() {
+    // see fresnelC
+    if (FresnelIntegrals.isSupported(value)) {
+      double fresnelS = FresnelIntegrals.fresnelS(value);
+      if (!Double.isNaN(fresnelS)) {
+        return valueOf(fresnelS);
+      }
+    }
     Apfloat fresnelS = EvalEngine.getApfloatDouble().fresnelS(apfloatValue());
     return F.num(fresnelS.doubleValue());
   }
@@ -1138,7 +1185,7 @@ public class Num implements INum {
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        Apcomplex gegenbauerC = EvalEngine.getApfloat().gegenbauerC(apfloatValue(),
+        Apcomplex gegenbauerC = EvalEngine.getApfloatDouble().gegenbauerC(apfloatValue(),
             ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
         return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
       } catch (ArithmeticException | NumericComputationException e) {
@@ -1746,7 +1793,7 @@ public class Num implements INum {
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        Apcomplex laguerreL = EvalEngine.getApfloat().laguerreL(apfloatValue(),
+        Apcomplex laguerreL = EvalEngine.getApfloatDouble().laguerreL(apfloatValue(),
             ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
         return F.complexNum(laguerreL.real().doubleValue(), laguerreL.imag().doubleValue());
       } catch (ArithmeticException | NumericComputationException e) {
@@ -1854,6 +1901,15 @@ public class Num implements INum {
 
   @Override
   public IInexactNumber barnesG() {
+    // ~50ms through Apfloat against 0.3us here. BarnesG reports NaN outside its measured range -
+    // beyond the double overflow at about x=26, and far down the negative axis - which routes
+    // those to the fall-back below.
+    if (BarnesG.isSupportedG(value)) {
+      double barnesG = BarnesG.barnesG(value);
+      if (!Double.isNaN(barnesG)) {
+        return valueOf(barnesG);
+      }
+    }
     try {
       return valueOf(EvalEngine.getApfloatDouble().barnesG(apfloatValue()).doubleValue());
     } catch (ApfloatArithmeticException aae) {
@@ -1865,6 +1921,14 @@ public class Num implements INum {
 
   @Override
   public IInexactNumber logBarnesG() {
+    // see barnesG. Only a positive argument is taken here: log G is not real on the negative axis,
+    // where G alternates sign between its zeros, so those keep the Apcomplex path below.
+    if (BarnesG.isSupportedLogG(value)) {
+      double logBarnesG = BarnesG.logBarnesG(value);
+      if (!Double.isNaN(logBarnesG)) {
+        return valueOf(logBarnesG);
+      }
+    }
     try {
       return valueOf(EvalEngine.getApfloatDouble().logBarnesG(apfloatValue()).doubleValue());
     } catch (ApfloatArithmeticException aae) {
@@ -2091,6 +2155,17 @@ public class Num implements INum {
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal && ((IReal) arg2).isLE(F.C1)) {
+        // NOT ZetaJS.polyLog: that agrees with Apfloat exactly because it IS Apfloat - its double
+        // implementation is commented out and it just forwards to getApfloatDouble().polylog.
+        // PolyLog is a real double implementation and turns ~74ms into well under a microsecond;
+        // it reports NaN wherever its series cancelled, which routes those points to Apfloat.
+        double z = ((IReal) arg2).doubleValue();
+        if (PolyLog.isSupported(value, z)) {
+          double polylog = PolyLog.polyLog(value, z);
+          if (!Double.isNaN(polylog) && !Double.isInfinite(polylog)) {
+            return F.num(polylog);
+          }
+        }
         try {
           Apfloat polylog =
               EvalEngine.getApfloatDouble().polylog(apfloatValue(), ((IReal) arg2).apfloatValue());
@@ -2232,6 +2307,13 @@ public class Num implements INum {
 
   @Override
   public IExpr sinhIntegral() {
+    // Shi is odd and real for every real argument
+    if (ExponentialIntegrals.isSupported(value)) {
+      double shi = ExponentialIntegrals.sinhIntegral(value);
+      if (!Double.isNaN(shi)) {
+        return valueOf(shi);
+      }
+    }
     return F.complexReduced(GammaJS.sinhIntegral(new Complex(value)));
     // Apfloat sinhIntegral = EvalEngine.getApfloatDouble().sinhIntegral(apfloatValue());
     // return F.num(sinhIntegral.doubleValue());
@@ -2239,6 +2321,15 @@ public class Num implements INum {
 
   @Override
   public IExpr sinIntegral() {
+    // Si is odd and real for every real argument, so the real implementation always applies.
+    // Measured against Apfloat at 40 digits it is accurate to 6e-16 where the Complex route
+    // below reaches only 3e-10.
+    if (ExponentialIntegrals.isSupported(value)) {
+      double si = ExponentialIntegrals.sinIntegral(value);
+      if (!Double.isNaN(si)) {
+        return valueOf(si);
+      }
+    }
     return F.complexReduced(GammaJS.sinIntegral(new Complex(value)));
     // Apfloat sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apfloatValue());
     // return F.num(sinIntegral.doubleValue());

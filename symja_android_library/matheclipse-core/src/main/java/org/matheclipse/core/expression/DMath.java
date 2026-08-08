@@ -2,6 +2,10 @@ package org.matheclipse.core.expression;
 
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
+import org.hipparchus.complex.Complex;
+import org.matheclipse.core.numerics.functions.BesselIK;
+import org.matheclipse.core.numerics.functions.ComplexGamma;
+import org.matheclipse.core.numerics.functions.BesselJY;
 
 public class DMath {
 
@@ -93,23 +97,87 @@ public class DMath {
     return EvalEngine.getApfloatDouble().angerJ(new Apfloat(v), new Apfloat(z)).doubleValue();
   }
 
+  /**
+   * <code>BesselI(v, x)</code> as a machine double. Same split as {@link #besselJ(double, double)}:
+   * {@link BesselIK} where it is validated, Apfloat elsewhere and whenever BesselIK reports NaN.
+   */
   public static double besselI(double v, double x) {
+    if (BesselIK.isSupported(v, x)) {
+      double result = BesselIK.besselI(v, x);
+      if (!Double.isNaN(result)) {
+        return result;
+      }
+    }
     return EvalEngine.getApfloatDouble().besselI(new Apfloat(v), new Apfloat(x)).doubleValue();
   }
 
+  /**
+   * <code>BesselJ(v, x)</code> as a machine double.
+   *
+   * <p>
+   * Uses {@link BesselJY} where that is validated and falls back to Apfloat everywhere else. The
+   * fall-back is not a formality: Apfloat needs milliseconds for a single evaluation - enough to
+   * make a Bessel-zero root find take a second - while the double implementation needs well under a
+   * microsecond, so the split is what makes numeric Bessel work usable at all. {@link BesselJY}
+   * reports NaN when its own conditioning check fails, which routes those points here too.
+   */
   public static double besselJ(double v, double x) {
+    if (BesselJY.isSupported(v, x)) {
+      double result = BesselJY.besselJ(v, x);
+      if (!Double.isNaN(result)) {
+        return result;
+      }
+    }
     return EvalEngine.getApfloatDouble().besselJ(new Apfloat(v), new Apfloat(x)).doubleValue();
   }
 
+  /**
+   * <code>BesselK(v, x)</code> as a machine double. See {@link #besselI(double, double)}. Note that
+   * {@code BesselJS.besselK} is NOT used: it is wrong by 8e-7 against Apfloat at 40 digits.
+   */
   public static double besselK(double v, double x) {
+    if (BesselIK.isSupported(v, x)) {
+      double result = BesselIK.besselK(v, x);
+      if (!Double.isNaN(result)) {
+        return result;
+      }
+    }
     return EvalEngine.getApfloatDouble().besselK(new Apfloat(v), new Apfloat(x)).doubleValue();
   }
 
+  /**
+   * <code>BesselY(v, x)</code> as a machine double. See {@link #besselJ(double, double)} for how the
+   * double implementation and the Apfloat fall-back divide the domain.
+   */
   public static double besselY(double v, double x) {
+    if (BesselJY.isSupported(v, x)) {
+      double result = BesselJY.besselY(v, x);
+      if (!Double.isNaN(result)) {
+        return result;
+      }
+    }
     return EvalEngine.getApfloatDouble().besselY(new Apfloat(v), new Apfloat(x)).doubleValue();
   }
 
+  /**
+   * <code>Beta(a, b)</code> as a machine double.
+   *
+   * <p>
+   * Routed through the complex log-gamma form rather than the real quotient
+   * <code>Gamma(a)Gamma(b)/Gamma(a+b)</code>: the quotient loses the answer next to the poles at the
+   * non-positive integers, where Beta is legitimately enormous rather than undefined. Beta of real
+   * arguments is real, so the imaginary part is only rounding residue - a result carrying more than
+   * that is not trusted and falls back.
+   */
   public static double beta(double a, double b) {
+    Complex beta = ComplexGamma.beta(new Complex(a, 0.0), new Complex(b, 0.0));
+    if (beta != null) {
+      double re = beta.getReal();
+      double im = beta.getImaginary();
+      if (Math.abs(im) <= 1.0e-12 * Math.abs(re)) {
+        return re;
+      }
+    }
     return EvalEngine.getApfloatDouble().beta(new Apfloat(a), new Apfloat(b)).doubleValue();
   }
 
