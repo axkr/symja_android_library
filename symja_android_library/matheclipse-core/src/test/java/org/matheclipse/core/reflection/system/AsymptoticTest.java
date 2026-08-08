@@ -22,6 +22,51 @@ public class AsymptoticTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLeadingTerm() {
+    // The rule syntax x -> x0 requests the leading term of the expansion only
+    check("Asymptotic(Sin(x), x -> 0)", //
+        "x");
+    check("Asymptotic(Cos(x), x -> 0)", //
+        "1");
+    check("Asymptotic(Exp(x), x -> 0)", //
+        "1");
+    check("Asymptotic(Log(1 + x), x -> 0)", //
+        "x");
+    check("Asymptotic(Cos(x) - 1, x -> 0)", //
+        "-x^2/2");
+    check("Asymptotic(x^2 + x^3, x -> 0)", //
+        "x^2");
+    check("Asymptotic(1 + x^2, x -> 0)", //
+        "1");
+    check("Asymptotic(2 + 3*x, x -> 0)", //
+        "2");
+    check("Asymptotic(x + x^2 + x^3, x -> 0)", //
+        "x");
+    check("Asymptotic(Sin(x)/x, x -> 0)", //
+        "1");
+    check("Asymptotic(E^x - 1, x -> 0)", //
+        "x");
+
+    // expansion at a non-zero finite point
+    check("Asymptotic(Sin(x), x -> 1)", //
+        "Sin(1)");
+    check("Asymptotic(1/x, x -> 1)", //
+        "1");
+
+    // an expression which is free of the expansion variable is returned unchanged
+    check("Asymptotic(5, x -> 0)", //
+        "5");
+  }
+
+  @Test
+  public void testExplicitOrder() {
+    check("Asymptotic(Sin(x), {x, 0, 5})", //
+        "x-x^3/6+x^5/120");
+    check("Asymptotic(Log(1 + x), {x, 0, 3})", //
+        "x-x^2/2+x^3/3");
+  }
+
+  @Test
   public void testInfiniteExpansion() {
     // Test asymptotic behavior as x approaches Infinity
 

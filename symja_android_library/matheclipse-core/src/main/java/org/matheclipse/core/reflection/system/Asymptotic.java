@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -36,7 +37,47 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class Asymptotic extends AbstractFunctionOptionEvaluator {
 
+  /** Order of the first series expansion used to search for a leading term. */
+  private static final int LEADING_TERM_START_ORDER = 3;
+
+  /** Maximum order of the series expansions used to search for a leading term. */
+  private static final int LEADING_TERM_MAX_ORDER = 24;
+
   public Asymptotic() {}
+
+  /**
+   * Determine the leading (lowest order) non-zero term of the series expansion of
+   * <code>expr</code> for the variable <code>xVar</code> near <code>x0</code>.
+   *
+   * <p>
+   * If the expansion vanishes up to the currently computed order, the expansion is repeated with a
+   * doubled order until {@link #LEADING_TERM_MAX_ORDER} is exceeded.
+   *
+   * @return {@link F#NIL} if no series expansion could be determined
+   */
+  private static IExpr leadingTerm(IExpr expr, IExpr xVar, IExpr x0, EvalEngine engine) {
+    if (expr.isFree(xVar)) {
+      return expr;
+    }
+    for (int order = LEADING_TERM_START_ORDER; order <= LEADING_TERM_MAX_ORDER; order *= 2) {
+      IExpr series = engine.evaluate(F.Series(expr, F.List(xVar, x0, F.ZZ(order))));
+      if (series instanceof ASTSeriesData) {
+        IExpr leadingTerm = ((ASTSeriesData) series).leadingTerm();
+        if (leadingTerm.isPresent()) {
+          return leadingTerm;
+        }
+        // all coefficients up to the current order are zero - retry with a higher order
+        continue;
+      }
+      if (series.isPresent() && !series.isAST(S.Series)) {
+        // the expansion collapsed into a single expression
+        return series;
+      }
+      return F.NIL;
+    }
+    // the expansion vanishes up to the maximum computed order
+    return F.C0;
+  }
 
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
@@ -119,8 +160,22 @@ public class Asymptotic extends AbstractFunctionOptionEvaluator {
         case ID.Integrate:
           return engine.evaluate(F.AsymptoticIntegrate(exprAST.arg1(), exprAST.arg2(), spec));
       }
+    }
 
-      // 5. Structural Asymptotic Expansion using generalized BellY polynomials
+    // 5. Leading term mode: return the lowest order non-zero term of the series expansion.
+    // This covers Plus, Times and Power expressions, which the structural expansion in step 6
+    // cannot handle because it is restricted to unary function applications.
+    if (isLeadingTerm) {
+      IExpr leadingTerm = leadingTerm(expr, xVar, x0, engine);
+      if (leadingTerm.isPresent()) {
+        return leadingTerm;
+      }
+    }
+
+    if (expr.isAST()) {
+      IAST exprAST = (IAST) expr;
+
+      // 6. Structural Asymptotic Expansion using generalized BellY polynomials
       if (exprAST.argSize() == 1 && exprAST.arg1().has(xVar)) {
         IExpr fHead = exprAST.head();
         IExpr gExpr = exprAST.arg1();
@@ -190,7 +245,7 @@ public class Asymptotic extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    // 6. Base Case Fallback: Standard Series Expansion
+    // 7. Base Case Fallback: Standard Series Expansion
     int searchOrder = isLeadingTerm ? Math.max(order, 6) : order;
     IAST seriesSpec = F.List(xVar, x0, F.ZZ(searchOrder));
     IExpr seriesRes = engine.evaluate(F.Series(expr, seriesSpec));
