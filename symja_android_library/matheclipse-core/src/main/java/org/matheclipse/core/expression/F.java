@@ -902,6 +902,7 @@ public class F extends S {
       JASConfig.MAX_DEGREE_KRONECKER_FACTORIZATION = 100;
       JASConfig.MAX_ITERATIONS_KRONECKER_FACTORIZATION = 100;
       ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
+      JASConfig.USE_SPARSE_GCD = Config.JAS_GCD_SPARSE;
 
       initApfloat();
       S.C.setAttributes(ISymbol.NHOLDALL);

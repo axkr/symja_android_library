@@ -471,9 +471,10 @@ public class Config {
   /**
    * Time limit in milliseconds for the rational integration stage. It bounds the one part of the
    * stage that can be slow: expanding a {@link org.matheclipse.core.integrate.RationalIntegration
-   * RootSum} over a solvable cubic or quartic into explicit radicals (only in EMIT mode). Everything
-   * else - degree 1/2 factors, the inert degree &gt;= 5 RootSum - returns in milliseconds and never
-   * approaches the limit. An expansion that overruns is dropped and the integral falls through.
+   * RootSum} over a solvable cubic or quartic into explicit radicals (only in EMIT mode).
+   * Everything else - degree 1/2 factors, the inert degree &gt;= 5 RootSum - returns in
+   * milliseconds and never approaches the limit. An expansion that overruns is dropped and the
+   * integral falls through.
    */
   public static long INTEGRATE_RATIONAL_TIMELIMIT_MILLIS = 3000L;
 
@@ -498,6 +499,25 @@ public class Config {
    * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
    */
   public static boolean JAS_NO_THREADS = false;
+
+  /**
+   * Use sparse interpolation, Zippel's algorithm, for the polynomial greatest common divisor.
+   *
+   * <p>
+   * Affects {@link org.matheclipse.core.expression.S#PolynomialGCD},
+   * {@link org.matheclipse.core.expression.S#PolynomialLCM} and everything else which reaches a JAS
+   * gcd - {@code Factor}, {@code Together}, {@code Cancel}, {@code Apart}. The sparse algorithm
+   * wins on polynomials in many variables whose gcd has few terms and loses its extra bookkeeping
+   * on the dense low variable count problems which are the common case, which is why it is off by
+   * default.
+   *
+   * <p>
+   * <b>Note:</b> the sparse algorithm verifies its result by division and falls back to a dense one
+   * whenever that fails, so this flag changes the running time and never the result.
+   *
+   * @see edu.jas.kern.JASConfig#USE_SPARSE_GCD
+   */
+  public static boolean JAS_GCD_SPARSE = true;
 
   /** Use of <code>java.misc.Unsafe</code> is allowed if <code>true</code>. */
   public static boolean JAVA_UNSAFE = false;
