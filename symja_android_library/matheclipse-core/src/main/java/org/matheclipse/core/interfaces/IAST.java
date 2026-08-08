@@ -1562,10 +1562,29 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Returns <code>true</code> if all elements in this IAST from index <code>1</code> to
    * <code>argSize()</code> have the same uniform Java class {@link UniformFlags}
-   * 
+   * <p>
+   * <b>Note</b>: <code>typeMask</code> is tested with &quot;and&quot; semantics, i.e. every bit of
+   * <code>typeMask</code> must be set. Combining bits of mutually exclusive types (for example
+   * {@link UniformFlags#NUMBER} and {@link UniformFlags#STRING}) can never return
+   * <code>true</code>. Use {@link #isUniformAny(int)} to test for one of several types.
+   *
    * @return
    */
   default boolean isUniform(int typeMask) {
+    return false;
+  }
+
+  /**
+   * Returns <code>true</code> if all elements in this IAST from index <code>1</code> to
+   * <code>argSize()</code> have the same uniform Java class {@link UniformFlags} and this class is
+   * one of the types contained in <code>typeMask</code>.
+   * <p>
+   * <b>Note</b>: <code>typeMask</code> is tested with &quot;or&quot; semantics, i.e. at least one
+   * bit of <code>typeMask</code> must be set.
+   *
+   * @return
+   */
+  default boolean isUniformAny(int typeMask) {
     return false;
   }
 

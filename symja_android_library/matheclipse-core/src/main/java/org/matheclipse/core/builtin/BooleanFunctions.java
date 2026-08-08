@@ -43,6 +43,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -1760,8 +1761,66 @@ public final class BooleanFunctions {
       if (b == IExpr.COMPARE_TERNARY.TRUE) {
         return S.True;
       }
+      IExpr temp = checkPolynomialAssumptions(arg1, arg2, engine);
+      if (temp.isPresent()) {
+        return temp;
+      }
 
       return BooleanFunctions.Equal.simplifyCompare(S.Equal, a1, a2);
+    }
+
+    /**
+     * Decide the equation <code>arg1 == arg2</code> with the polynomial equations of the
+     * assumptions.
+     *
+     * <p>
+     * The assumptions force the polynomials <code>g1,...,gn</code> of
+     * {@link IAssumptions#zeroPolynomials()} to vanish, so only the points of the variety
+     * <code>V</code> of those polynomials are considered. Dividing <code>p = arg1-arg2</code> by
+     * them gives <code>p = q1*g1 + ... + qn*gn + r</code>, and because every <code>gi</code> is
+     * <code>0</code> on <code>V</code> the polynomial <code>p</code> equals its remainder
+     * <code>r</code> there. A remainder of <code>0</code> therefore proves the equation and a
+     * remainder which is a constant unequal <code>0</code> disproves it. For any other remainder
+     * nothing is decided, because it may or may not vanish somewhere on <code>V</code>.
+     *
+     * @param arg1
+     * @param arg2
+     * @param engine
+     * @return {@link S#True} or {@link S#False} if the equation could be decided, {@link F#NIL}
+     *         otherwise
+     */
+    private static IExpr checkPolynomialAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions == null) {
+        return F.NIL;
+      }
+      IAST zeroPolynomials = assumptions.zeroPolynomials();
+      if (zeroPolynomials.argSize() == 0) {
+        return F.NIL;
+      }
+      IExpr difference = engine.evaluate(F.Subtract(arg1, arg2));
+      if (difference.isNumber()) {
+        return F.NIL;
+      }
+      IAST variables = new VariablesSet(F.List(difference, zeroPolynomials)).getVarList();
+      if (variables.argSize() == 0) {
+        return F.NIL;
+      }
+      if (!S.PolynomialQ.ofQ(engine, difference, variables)
+          || zeroPolynomials.exists(g -> !S.PolynomialQ.ofQ(engine, g, variables))) {
+        return F.NIL;
+      }
+      IExpr reduced = S.PolynomialReduce.of(engine, difference, zeroPolynomials, variables);
+      if (reduced.isList2()) {
+        IExpr remainder = reduced.second();
+        if (remainder.isZero()) {
+          return S.True;
+        }
+        if (remainder.isNumber()) {
+          return S.False;
+        }
+      }
+      return F.NIL;
     }
   }
 
@@ -1913,7 +1972,8 @@ public final class BooleanFunctions {
         return F.NIL;
       }
 
-      if (expr.isFree(x)) {
+      IAST vars = x.makeList();
+      if (expr.isFree(v -> vars.contains(v), true)) {
         return expr;
       }
       if (evaled) {
@@ -1969,6 +2029,51 @@ public final class BooleanFunctions {
           return S.True;
         }
         if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)) {
+          return S.False;
+        }
+      }
+      return compareDifference(arg1, arg2, true);
+    }
+
+    /**
+     * Decide <code>arg1 &gt; arg2</code> resp. <code>arg1 &gt;= arg2</code> through the difference
+     * <code>arg1-arg2</code>.
+     *
+     * <p>
+     * A relational assumption between two expressions of which neither is a number has no symbol it
+     * could be attached to, so it is recorded for the difference instead: the assumption
+     * <code>a&gt;b</code> is stored as <code>a-b&gt;0</code>. Assumptions of that shape are
+     * therefore answered by building the same difference here.
+     *
+     * @param arg1
+     * @param arg2
+     * @param strict if <code>true</code> decide the strict relation <code>arg1 &gt; arg2</code>,
+     *        otherwise the non-strict relation <code>arg1 &gt;= arg2</code>
+     * @return {@link S#True} or {@link S#False} if the relation can be decided, {@link F#NIL}
+     *         otherwise
+     */
+    protected static IExpr compareDifference(IExpr arg1, IExpr arg2, boolean strict) {
+      if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
+        // a relation between two numbers is already decided by compareTernary()
+        return F.NIL;
+      }
+      IExpr difference = F.eval(F.Subtract(arg1, arg2));
+      if (difference.isZero()) {
+        // equal arguments are decided by compareTernary()
+        return F.NIL;
+      }
+      if (strict) {
+        if (difference.isPositiveResult()) {
+          return S.True;
+        }
+        if (difference.isNonPositiveResult()) {
+          return S.False;
+        }
+      } else {
+        if (difference.isNonNegativeResult()) {
+          return S.True;
+        }
+        if (difference.isNegativeResult()) {
           return S.False;
         }
       }
@@ -2161,8 +2266,7 @@ public final class BooleanFunctions {
         if (ternaryCompare == IExpr.COMPARE_TERNARY.TRUE) {
           return S.True;
         }
-        if (engine.getAssumptions() != null
-            && (arg1.isNumericFunction(true) || arg2.isNumericFunction(true))) {
+        if (engine.getAssumptions() != null) {
           IExpr temp2 = checkAssumptions(arg1, arg2);
           if (temp2.isPresent()) {
             return temp2;
@@ -2374,7 +2478,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       }
-      return F.NIL;
+      return compareDifference(arg1, arg2, false);
     }
 
     @Override
@@ -2635,7 +2739,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       }
-      return F.NIL;
+      return compareDifference(arg2, arg1, true);
     }
 
     @Override
@@ -2693,7 +2797,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       }
-      return F.NIL;
+      return compareDifference(arg2, arg1, false);
     }
 
     @Override
@@ -2865,7 +2969,16 @@ public final class BooleanFunctions {
         } else if (comp.isTrue()) {
           evaled = true;
         } else {
-          if (max1.isRealResult()) {
+          // Greater() is undecidable for an assumption like a>=b, which still determines the
+          // maximum. An assumption a==b on the other hand leaves both of them undecidable, so
+          // that Max(a,b) is kept.
+          comp = engine.evaluate(F.GreaterEqual(max1, max2));
+          if (comp.isTrue()) {
+            evaled = true;
+          } else if (comp.isFalse()) {
+            max1 = max2;
+            evaled = true;
+          } else if (max1.isRealResult()) {
             f.append(max2);
           } else {
             f.append(max1);
@@ -3004,7 +3117,16 @@ public final class BooleanFunctions {
         } else if (comp.isTrue()) {
           evaled = true;
         } else {
-          if (min1.isRealResult()) {
+          // Less() is undecidable for an assumption like a<=b, which still determines the
+          // minimum. An assumption a==b on the other hand leaves both of them undecidable, so
+          // that Min(a,b) is kept.
+          comp = engine.evaluate(F.LessEqual(min1, min2));
+          if (comp.isTrue()) {
+            evaled = true;
+          } else if (comp.isFalse()) {
+            min1 = min2;
+            evaled = true;
+          } else if (min1.isRealResult()) {
             f.append(min2);
           } else {
             f.append(min1);
@@ -3152,6 +3274,9 @@ public final class BooleanFunctions {
       if (arg1.isNegativeResult()) {
         return S.True;
       }
+      if (arg1.isNonNegativeResult()) {
+        return S.False;
+      }
       if (arg1.isNumber()) {
         return S.False;
       }
@@ -3246,6 +3371,9 @@ public final class BooleanFunctions {
       if (arg1.isNonNegativeResult()) {
         return S.True;
       }
+      if (arg1.isNegativeResult()) {
+        return S.False;
+      }
       if (arg1.isNumber()) {
         return S.False;
       }
@@ -3298,8 +3426,11 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isNegativeResult() || arg1.isZero()) {
+      if (arg1.isNegativeResult() || arg1.isZero() || arg1.isNonPositiveResult()) {
         return S.True;
+      }
+      if (arg1.isPositiveResult()) {
+        return S.False;
       }
       if (arg1.isNumber()) {
         return S.False;
@@ -3535,6 +3666,9 @@ public final class BooleanFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isPositiveResult()) {
         return S.True;
+      }
+      if (arg1.isNonPositiveResult()) {
+        return S.False;
       }
       if (arg1.isNumber()) {
         return S.False;

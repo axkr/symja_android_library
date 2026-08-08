@@ -926,6 +926,26 @@ public class IntervalDataSym {
   }
 
 
+  /**
+   * The method test all intervals if they are in the range
+   * <code>{-Infinity, LessEqual, LessEqual,0}</code>.
+   *
+   * @param intervalData the interval to test
+   */
+  public static boolean isNonPositiveResult(IAST intervalData) {
+    for (int i = 1; i < intervalData.size(); i++) {
+      IAST intervalList = (IAST) intervalData.get(i);
+      if (intervalList.isList4()) {
+        boolean isNonPositivePart =
+            intervalList.arg1().isNonPositiveResult() && intervalList.arg4().isNonPositiveResult();
+        if (!isNonPositivePart) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   private static boolean isNormalized(final IAST interval) {
     return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
   }

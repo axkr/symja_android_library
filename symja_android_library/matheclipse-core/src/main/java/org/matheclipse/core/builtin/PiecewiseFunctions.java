@@ -534,6 +534,16 @@ public class PiecewiseFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (!arg1.isList()) {
+        // Piecewise is HoldAll, so that the value of a branch is only evaluated once its condition
+        // holds - Piecewise({{0^0, False}}, -1) must not complain about 0^0. The list of branches
+        // itself still has to be evaluated, otherwise a symbol holding the branches
+        // (Piecewise(x) with x = {{1, True}}) would never be recognized as a list of pairs.
+        IExpr evaledArg1 = engine.evaluateNIL(arg1);
+        if (evaledArg1.isPresent() && evaledArg1.isList()) {
+          return ast.setAtCopy(1, evaledArg1);
+        }
+      }
       if (!arg1.isList(x -> x.isList2())) {
         if (arg1.isEmptyList()) {
           if (ast.isAST2()) {
@@ -651,6 +661,13 @@ public class PiecewiseFunctions {
         return expr;
       }
       if (expr.isNegativeResult() || expr.isNegativeInfinity() || expr.isZero()) {
+        return F.C0;
+      }
+      // Ramp(0) == 0, so the non-strict bounds determine the result as well
+      if (expr.isNonNegativeResult()) {
+        return expr;
+      }
+      if (expr.isNonPositiveResult()) {
         return F.C0;
       }
       return F.NIL;

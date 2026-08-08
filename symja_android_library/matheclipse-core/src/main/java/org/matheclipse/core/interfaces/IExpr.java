@@ -1500,6 +1500,35 @@ public interface IExpr
   }
 
   /**
+   * Evaluate the expression to a Java <code>double</code> value. In contrast to {@link #evalf()}
+   * this method doesn't throw an {@link ArgumentTypeException}, but returns {@link Double#NaN} if
+   * this expression cannot be converted into a machine-sized double value.
+   *
+   * <p>
+   * Note that {@link Double#NaN} is also a legal result of a successful conversion (for example for
+   * <code>Indeterminate</code>), so <code>Double.isNaN(...)</code> tests &quot;no usable numeric
+   * value&quot; rather than &quot;conversion failed&quot;.
+   *
+   * @return the double value or {@link Double#NaN} if this expression cannot be converted
+   */
+  default double evalfNaN() {
+    return EvalEngine.get().evalDoubleNaN(this);
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value. In contrast to
+   * {@link #evalf(Function)} this method doesn't throw an {@link ArgumentTypeException}, but
+   * returns {@link Double#NaN} if this expression cannot be converted into a machine-sized double
+   * value.
+   *
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return the double value or {@link Double#NaN} if this expression cannot be converted
+   */
+  default double evalfNaN(final Function<IExpr, IExpr> function) {
+    return EvalEngine.get().evalDoubleNaN(this, function);
+  }
+
+  /**
    * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
    *
    * @return the complex float value
@@ -1518,6 +1547,31 @@ public interface IExpr
    */
   default Complex evalfc(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
     return EvalEngine.get().evalComplex(this, function);
+  }
+
+  /**
+   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
+   * In contrast to {@link #evalfc()} this method doesn't throw an {@link ArgumentTypeException},
+   * but returns {@link Complex#NaN} if this expression cannot be converted into a machine-sized
+   * complex value.
+   *
+   * @return the complex float value or {@link Complex#NaN} if this expression cannot be converted
+   */
+  default Complex evalfcNaN() {
+    return EvalEngine.get().evalComplexNaN(this);
+  }
+
+  /**
+   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
+   * In contrast to {@link #evalfc(Function)} this method doesn't throw an
+   * {@link ArgumentTypeException}, but returns {@link Complex#NaN} if this expression cannot be
+   * converted into a machine-sized complex value.
+   *
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return the complex float value or {@link Complex#NaN} if this expression cannot be converted
+   */
+  default Complex evalfcNaN(final Function<IExpr, IExpr> function) {
+    return EvalEngine.get().evalComplexNaN(this, function);
   }
 
   /**
@@ -4081,9 +4135,20 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression has a non-positive result (i.e. less equal 0) or is assumed to be
+   * non-positive.
+   *
+   * @return <code>true</code>, if the given expression is a non-positive function or value.
+   * @see #isRealResult()
+   */
+  default boolean isNonPositiveResult() {
+    return AbstractAssumptions.assumeNonPositive(this);
+  }
+
+  /**
    * Test if this expression unequals <code>0</code> and is a numeric complex value or is assumed to
    * be a negative or positive value.
-   * 
+   *
    */
   default boolean isNonZeroComplexResult() {
     if (isZero()) {
@@ -5727,7 +5792,7 @@ public interface IExpr
       for (k = 0; k < a.length; k++) {
         IExpr bk = b[k];
         if (bk instanceof Num) {
-          sum = Math.fma(a[k], bk.evalf(), sum);
+          sum = Math.fma(a[k], bk.evalfNaN(), sum);
         } else {
           break;
         }
@@ -5783,7 +5848,7 @@ public interface IExpr
         IExpr ak = a[k];
         IExpr bk = b[k];
         if (ak instanceof Num && bk instanceof Num) {
-          sum = Math.fma(a[k].evalf(), bk.evalf(), sum);
+          sum = Math.fma(a[k].evalfNaN(), bk.evalfNaN(), sum);
         } else {
           break;
         }

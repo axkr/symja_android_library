@@ -1,10 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.And;
-import static org.matheclipse.core.expression.F.ArcCos;
-import static org.matheclipse.core.expression.F.ArcCot;
-import static org.matheclipse.core.expression.F.ArcSin;
-import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C0;
@@ -14,7 +9,6 @@ import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Conjugate;
 import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Equal;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Factorial2;
 import static org.matheclipse.core.expression.F.Im;
@@ -22,7 +16,6 @@ import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.NIL;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Positive;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.Re;
@@ -58,6 +51,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.BinomialCache;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -162,6 +156,8 @@ public final class Arithmetic {
    */
   private static final class Abs extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 
+
+
     private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
       final ISymbol symbol;
 
@@ -247,6 +243,10 @@ public final class Arithmetic {
       if (arg1.isNonNegativeResult()) {
         return arg1;
       }
+      if (arg1.isNonPositiveResult()) {
+        // Abs(0) == -0 == 0, so the non-strict bound is enough here
+        return F.Negate(arg1);
+      }
       if (arg1.isSymbol()) {
         ISymbol sym = (ISymbol) arg1;
         return sym.mapConstantDouble(new AbsNumericFunction(sym));
@@ -299,6 +299,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
   }
 
   /**
@@ -446,7 +447,7 @@ public final class Arithmetic {
     @Override
     protected ISymbol getArithmeticSymbol() {
       return S.KeyDrop;
-      }
+    }
 
     @Override
     protected IASTMutable getAST(final IExpr value) {
@@ -649,7 +650,7 @@ public final class Arithmetic {
       if (ast.isAST2()) {
         IExpr tolerance = ast.arg2();
         if (tolerance instanceof IReal && tolerance.isPositive()) {
-          delta = tolerance.evalf();
+          delta = tolerance.evalfNaN();
         } else {
           // Tolerance specification `1` must be a non-negative number.
           return Errors.printMessage(S.Chop, "tolnn", F.List(tolerance), engine);
@@ -1314,6 +1315,12 @@ public final class Arithmetic {
         if (absSquared.isZero()) {
           return S.Indeterminate;
         }
+        if (!absSquared.isPositiveResult()) {
+          // z isn't known to be unequal 0. Normalising by Sqrt(absSquared) would silently assume
+          // it is, e.g. a*Infinity would become Infinity for the assumption a>=0 although it is
+          // Indeterminate for a==0. Keep the product unevaluated instead.
+          return F.NIL;
+        }
         // Normalise: z / Sqrt( Re(z)^2 + Im(z)^2 )
         final IExpr normalised = engine.evaluate(F.Divide(z, F.Sqrt(absSquared)));
         return F.DirectedInfinity(normalised);
@@ -1557,6 +1564,13 @@ public final class Arithmetic {
    * 1.1018024908797128
    * </pre>
    */
+  /**
+   * Maximum <code>n</code> for which {@code FunctionExpand(Gamma(n,z))} expands the incomplete
+   * gamma function into its finite sum. The sum has <code>n</code> terms, so a bound keeps a large
+   * first argument from blowing up the expression.
+   */
+  private static final int MAX_GAMMA_FUNCTION_EXPAND = 256;
+
   private static final class Gamma extends AbstractFunctionEvaluator
       implements IFunctionExpand, IMatch {
 
@@ -1822,6 +1836,22 @@ public final class Arithmetic {
             return F.Times(F.CSqrtPi, F.Subtract(F.C1, F.Erf(F.Sqrt(z))));
           }
         } else {
+          if (a.isInteger() && a.isPositive()) {
+            // Gamma(n, z_) := E^(-z) * Sum((n-1)!/k! * z^k, {k, 0, n-1}) for a positive integer n
+            int n = a.toIntDefault();
+            if (n > 0 && n <= MAX_GAMMA_FUNCTION_EXPAND) {
+              java.math.BigInteger coefficient = java.math.BigInteger.ONE;
+              for (int i = 2; i < n; i++) {
+                coefficient = coefficient.multiply(java.math.BigInteger.valueOf(i));
+              }
+              IASTAppendable sum = F.PlusAlloc(n);
+              for (int k = 0; k < n; k++) {
+                sum.append(F.Times(F.ZZ(coefficient), F.Power(z, F.ZZ(k))));
+                coefficient = coefficient.divide(java.math.BigInteger.valueOf(k + 1L));
+              }
+              return F.Times(F.Exp(F.Negate(z)), sum);
+            }
+          }
           if (a.isMinusOne()) {
             // Gamma(-1, z_) := 1/(E^z*z)+ExpIntegralEi(-z)+(1/2)*(Log(-(1/z))-Log(-z)) +
             // Log(z)
@@ -2183,6 +2213,16 @@ public final class Arithmetic {
       if (ast.isAST2()) {
         IExpr n = ast.arg1();
         IExpr z = ast.arg2();
+        int order = z.toIntDefault();
+        if (order >= 2) {
+          // for an integer order the HurwitzZeta() is a PolyGamma(). Expand it here, because the
+          // matcher which rewrites HurwitzZeta(n_Integer,a_) doesn't run again on this result.
+          // Zeta(z)-((-1)^z/(z-1)!)*PolyGamma(z-1,1+n)
+          return F.Plus(F.Zeta(z),
+              F.Times(F.Power(F.CN1, F.Plus(F.C1, z)),
+                  F.Power(F.Factorial(F.Plus(F.CN1, z)), F.CN1),
+                  F.PolyGamma(F.Plus(F.CN1, z), F.Plus(F.C1, n))));
+        }
         // -HurwitzZeta(z,1+n)+Zeta(z)
         return F.Plus(F.Negate(F.HurwitzZeta(z, F.Plus(F.C1, n))), F.Zeta(z));
       }
@@ -2238,7 +2278,12 @@ public final class Arithmetic {
    * 2.3
    * </pre>
    */
-  private static final class Im extends AbstractEvaluator {
+  private static final class Im extends AbstractEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      return reImFunctionExpand(ast, S.Im);
+    }
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -2617,8 +2662,11 @@ public final class Arithmetic {
           IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
           return F.list(F.Divide(n, F.Power(base, exp)), exp);
         }
-        double x = nN.evalf();
-        double b = baseN.evalf();
+        double x = nN.evalfNaN();
+        double b = baseN.evalfNaN();
+        if (Double.isNaN(x) || Double.isNaN(b)) {
+          return F.NIL;
+        }
         long baseExp = (long) (Math.log(x) / Math.log(b));
         IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
         return F.list(F.Divide(n, F.Power(base, exp)), exp);
@@ -2828,7 +2876,7 @@ public final class Arithmetic {
 
       // The inverse-trigonometric identities that used to live here — ArcSin(x)+ArcCos(x),
       // ArcTan(x)+ArcCot(x), ArcTan(x)+ArcTan(1/x) and the two numeric ArcTan pairs — have moved to
-      // SimplifyUtil, because Mathematica does not apply them during plain evaluation:
+      // SimplifyUtil:
       // ArcSin[x]+ArcCos[x] stays put until Simplify is asked for. Two of them were also wrong
       // here: they fired on part of a larger sum (a+ArcSin[x]+ArcCos[x]+2/3), and
       // ArcTan(x)+ArcCot(x) == Pi/2 only holds for Re(x) > 0.
@@ -3400,7 +3448,7 @@ public final class Arithmetic {
           }
         }
 
-        if (base.isZero()) {
+        if (F.isExactZero(base)) {
           if (exponent.isInterval()) {
             return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
           } else if (exponent.isIntervalData()) {
@@ -3471,7 +3519,7 @@ public final class Arithmetic {
             while (actualMin < 0 && actualMin < sd.truncateOrder()
                 && sd.coefficient(actualMin).isZero()) {
               actualMin++;
-              }
+            }
             // Only proceed if it can be expanded as a power series without an essential singularity
             if (actualMin >= 0) {
               int n = sd.truncateOrder();
@@ -3506,56 +3554,55 @@ public final class Arithmetic {
                   if (res != null) {
                     return res;
                   }
-                  }
                 }
               }
-            } else {
-              // Base depends on x (e.g., f(x)^SeriesData)
-              // Mathematically equivalent to Exp[ SeriesData * Log[base] ]
-              int n = sd.truncateOrder();
-              ASTSeriesData logSeries = ASTSeriesData.seriesDataRecursive(F.Log(base), x,
-                  sd.expansionPoint(), n, 0, engine);
-              if (logSeries != null) {
-                ASTSeriesData expArg = sd.timesPS(logSeries);
-                if (expArg != null) {
-                  int expArgMin = expArg.minExponent();
-                  while (expArgMin < 0 && expArgMin < expArg.truncateOrder()
-                      && expArg.coefficient(expArgMin).isZero()) {
-                    expArgMin++;
+            }
+          } else {
+            // Base depends on x (e.g., f(x)^SeriesData)
+            // Mathematically equivalent to Exp[ SeriesData * Log[base] ]
+            int n = sd.truncateOrder();
+            ASTSeriesData logSeries = ASTSeriesData.seriesDataRecursive(F.Log(base), x,
+                sd.expansionPoint(), n, 0, engine);
+            if (logSeries != null) {
+              ASTSeriesData expArg = sd.timesPS(logSeries);
+              if (expArg != null) {
+                int expArgMin = expArg.minExponent();
+                while (expArgMin < 0 && expArgMin < expArg.truncateOrder()
+                    && expArg.coefficient(expArgMin).isZero()) {
+                  expArgMin++;
+                }
+                // Ensure there is no essential singularity before composing
+                if (expArgMin >= 0) {
+                  int k = 1;
+                  while (k < expArg.truncateOrder() && expArg.coefficient(k).isZero()) {
+                    k++;
                   }
-                  // Ensure there is no essential singularity before composing
-                  if (expArgMin >= 0) {
-                    int k = 1;
-                    while (k < expArg.truncateOrder() && expArg.coefficient(k).isZero()) {
-                      k++;
-                    }
 
-                    if (k >= expArg.truncateOrder()) {
-                      // The exponent evaluates to a constant
-                      ASTSeriesData constSeries = new ASTSeriesData(x, sd.expansionPoint(), 0,
-                          expArg.truncateOrder(), expArg.puiseuxDenominator());
-                      constSeries.setCoeff(0, engine.evaluate(F.Exp(expArg.coefficient(0))));
-                      return constSeries;
-                    }
+                  if (k >= expArg.truncateOrder()) {
+                    // The exponent evaluates to a constant
+                    ASTSeriesData constSeries = new ASTSeriesData(x, sd.expansionPoint(), 0,
+                        expArg.truncateOrder(), expArg.puiseuxDenominator());
+                    constSeries.setCoeff(0, engine.evaluate(F.Exp(expArg.coefficient(0))));
+                    return constSeries;
+                  }
 
-                    if (k > 0) {
-                      int expArgTruncate = expArg.truncateOrder();
-                      int den = expArg.puiseuxDenominator();
-                      int outerN = (expArgTruncate * den + k - 1) / k;
-                      outerN = Math.max(outerN, 1) + 2;
+                  if (k > 0) {
+                    int expArgTruncate = expArg.truncateOrder();
+                    int den = expArg.puiseuxDenominator();
+                    int outerN = (expArgTruncate * den + k - 1) / k;
+                    outerN = Math.max(outerN, 1) + 2;
 
-                      IExpr y = F.Dummy("y");
-                      IExpr u0 = expArg.coefficient(0);
+                    IExpr y = F.Dummy("y");
+                    IExpr u0 = expArg.coefficient(0);
 
-                      // Compute the Taylor series of Exp(y) around y = u0
-                      ASTSeriesData outerSeries =
-                          ASTSeriesData.seriesDataRecursive(F.Exp(y), y, u0, outerN, 0, engine);
-                      if (outerSeries != null) {
-                        // Compose the Exp outer series with the combined exponent inner series
-                        ASTSeriesData res = outerSeries.compose(expArg);
-                        if (res != null) {
-                          return res;
-                        }
+                    // Compute the Taylor series of Exp(y) around y = u0
+                    ASTSeriesData outerSeries =
+                        ASTSeriesData.seriesDataRecursive(F.Exp(y), y, u0, outerN, 0, engine);
+                    if (outerSeries != null) {
+                      // Compose the Exp outer series with the combined exponent inner series
+                      ASTSeriesData res = outerSeries.compose(expArg);
+                      if (res != null) {
+                        return res;
                       }
                     }
                   }
@@ -3563,6 +3610,7 @@ public final class Arithmetic {
               }
             }
           }
+        }
 
         if (exponent.isReal()) {
           if (exponent.isZero()) {
@@ -3811,7 +3859,7 @@ public final class Arithmetic {
     }
 
     private static IExpr e2ApfloatArg(final ApfloatNum base, final ApfloatNum exponent) {
-      if (base.isZero()) {
+      if (F.isExactZero(base)) {
         if (exponent.isNegative()) {
           // Infinite expression `1` encountered.
           Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)), EvalEngine.get());
@@ -3840,7 +3888,7 @@ public final class Arithmetic {
     }
 
     private static IExpr e2DblArg(final INum base, final INum exponent) {
-      if (base.isZero()) {
+      if (F.isExactZero(base)) {
         if (exponent.isNegative()) {
           Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)), EvalEngine.get());
           // EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
@@ -4296,6 +4344,18 @@ public final class Arithmetic {
           }
           return F.Power(base.base(), F.Times(exponent, base.exponent()));
         }
+        final IExpr baseExponent = base.exponent();
+        if (!baseExponent.isNumericFunction(true)
+            && AbstractAssumptions.assumeAbsLessThanOne(baseExponent)) {
+          // (a^b)^c => a^(b*c) /; -1 < b < 1
+          return F.Power(base.base(), F.Times(baseExponent, exponent));
+        }
+      } else if (base.isAbs() && base.isAST1()) {
+        // Abs(u)^n => u^n for a real valued u and an even integer n
+        IExpr u = base.first();
+        if (exponent.isEvenResult() && u.isRealResult()) {
+          return F.Power(u, exponent);
+        }
       }
       if (exponent.isMinusOne()) {
         if (base.equals(F.Overflow())) {
@@ -4659,7 +4719,8 @@ public final class Arithmetic {
       HashMap<IFraction, IASTAppendable> exponent2Times = null;
       // A factor whose own Arg() is nonzero (-1, +-I, a negative rational) is left in `rest` and
       // raised as a whole below. A second such factor must then not be split off on its own: both
-      // splits contribute a phase and the two phases add up to a wrong one. E.g. Sqrt(-5*(2-Sqrt(5)))
+      // splits contribute a phase and the two phases add up to a wrong one. E.g.
+      // Sqrt(-5*(2-Sqrt(5)))
       // is Sqrt(5)*Sqrt(-1*(2-Sqrt(5))) == +Sqrt(5*(Sqrt(5)-2)), but splitting the negative sum too
       // gives Sqrt(5)*I*I*Sqrt(Sqrt(5)-2), i.e. the negative of the correct (positive) root.
       final boolean phaseInRest = baseTimes.exists(arg -> !arg.isPower() //
@@ -5051,9 +5112,32 @@ public final class Arithmetic {
           final IExpr arg1 = plus.arg1();
           final IExpr arg2 = plus.arg2();
           if (arg1.isRational()) {
-            return sqrtDenest((IRational) arg1, arg2);
+            IExpr denested = sqrtDenest((IRational) arg1, arg2);
+            if (denested.isPresent()) {
+              return denested;
+            }
           }
         }
+        return sqrtFactorSplit(ast.base(), engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Split <code>Sqrt(poly)</code> into a product of square roots of the factors of
+     * <code>poly</code>, e.g. <code>Sqrt(1-x^2)</code> to <code>Sqrt(1-x)*Sqrt(1+x)</code>. Only
+     * sums containing a variable are considered, so that the numeric nested radicals handled by
+     * {@link #sqrtDenest(IRational, IExpr)} aren't intercepted.
+     *
+     * @return {@link F#NIL} if <code>poly</code> doesn't factor into more than one factor
+     */
+    private static IExpr sqrtFactorSplit(IExpr poly, EvalEngine engine) {
+      if (!poly.isPlus() || new VariablesSet(poly).isEmpty()) {
+        return F.NIL;
+      }
+      IExpr factored = engine.evaluate(F.Factor(poly));
+      if (factored.isTimes() && factored.size() > 2) {
+        return ((IAST) factored).mapThread(F.unaryAST1(S.Sqrt, F.Slot1), 1);
       }
       return F.NIL;
     }
@@ -5300,7 +5384,13 @@ public final class Arithmetic {
    * 2.3
    * </pre>
    */
-  private static final class Re extends AbstractEvaluator {
+  private static final class Re extends AbstractEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      return reImFunctionExpand(ast, S.Re);
+    }
+
     @Override
     public boolean evalIsReal(IAST ast) {
       return (ast.argSize() == 1);
@@ -7310,6 +7400,22 @@ public final class Arithmetic {
   }
 
   /**
+   * <code>FunctionExpand</code> step shared by {@link Re} and {@link Im}: both are additive, so
+   * <code>Re(x+y)</code> expands to <code>Re(x)+Re(y)</code>. Everything else is left alone, so
+   * that <code>FunctionExpand(Re(x))</code> stays <code>Re(x)</code>.
+   *
+   * @param ast the <code>Re(...)</code> or <code>Im(...)</code> expression
+   * @param head {@link S#Re} or {@link S#Im}
+   * @return {@link F#NIL} if the argument isn't a sum
+   */
+  private static IExpr reImFunctionExpand(IAST ast, ISymbol head) {
+    if (ast.isAST1() && ast.arg1().isPlus()) {
+      return ((IAST) ast.arg1()).mapThread(F.unaryAST1(head, F.Slot1), 1);
+    }
+    return F.NIL;
+  }
+
+  /**
    * Compute Pochhammer's symbol (that)_n.
    *
    * @param that
@@ -7448,6 +7554,15 @@ public final class Arithmetic {
     if (base1.equals(base2)) {
       // x^(a)*x^(b) => x ^(a+b)
       return F.Power(base1, exponent1.plus(exponent2));
+    }
+    if (exponent1.equals(exponent2) //
+        // numeric bases are combined by the rules below, merging them here would compete with
+        // the normalization of numbers and constants and can run into an endless recursion
+        && !base1.isNumericFunction(true) && !base2.isNumericFunction(true) //
+        && base1.isPositiveResult() && base2.isPositiveResult()) {
+      // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/
+      // a^(c)*b^(c) => (a*b)^c holds for arbitrary c if a and b are assumed to be positive
+      return F.Power(base1.times(base2), exponent1);
     }
     if (exponent1.equals(exponent2) //
         && (!exponent1.isInteger()) && (!exponent1.isMinusOne())
