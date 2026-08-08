@@ -533,6 +533,13 @@ public class Config {
   /** The maximum precision which could be requested from a user for numerical calculations. */
   public static long MAX_PRECISION_APFLOAT = 256;
 
+  /**
+   * If <code>true</code> the {@link S#N} function truncates a requested precision which is greater
+   * than {@link #MAX_PRECISION_APFLOAT} down to {@link #MAX_PRECISION_APFLOAT}, instead of printing
+   * the <code>N::precgt</code> message and leaving the expression unevaluated.
+   */
+  public static boolean TRUNCATE_PRECISION_IN_N = false;
+
   /** The extended precision in {@link S#N} function if exact numbers extend double precision. */
   public static boolean USE_EXTENDED_PRECISION_IN_N = false;
 

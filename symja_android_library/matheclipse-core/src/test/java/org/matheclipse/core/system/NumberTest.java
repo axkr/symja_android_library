@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -10,6 +11,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import org.apfloat.Apfloat;
 import org.junit.jupiter.api.Test;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -21,7 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 
-public class NumberTest {
+public class NumberTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testComplexNum() {
@@ -147,5 +149,221 @@ public class NumberTest {
     StringBuilder buf = new StringBuilder();
     assertTrue(outputFormFactory.convert(buf, apfloatNum));
     assertEquals(buf.toString(), "-1.44224957030740838");
+  }
+
+  @Test
+  public void testPrecisionOutOfConfigValue() {
+    // Config.MAX_PRECISION_APFLOAT is 512 in ExprEvaluatorTestCase#setUp()
+    assertTrue(Config.MAX_PRECISION_APFLOAT < 1000,
+      "the 1001 digits requested below must exceed Config.MAX_PRECISION_APFLOAT="
+        + Config.MAX_PRECISION_APFLOAT + ", otherwise nothing is truncated");
+    boolean oldTruncate = Config.TRUNCATE_PRECISION_IN_N;
+    try {
+      Config.TRUNCATE_PRECISION_IN_N = true;
+      // the 1001 requested digits are truncated to Config.MAX_PRECISION_APFLOAT == 512
+      check("N(Simplify(-3858/3125+N(1.23456,1001)),1001)", //
+        "0");
+      check("Precision(N(Pi,1001))", //
+        "512");
+
+      // the truncation starts one digit above Config.MAX_PRECISION_APFLOAT, a request at or below
+      // the limit is passed through unchanged
+      check("Precision(N(Pi,513))", //
+        "512");
+      check("Precision(N(Pi,512))", //
+        "512");
+      check("Precision(N(Pi,511))", //
+        "511");
+      // SameQ compares the precision too, so this pins the clamp target exactly: an over-bound
+      // request is the same number as a request for the bound, and not one digit less. Note that
+      // Equal and Subtract would NOT pin it - they degrade to the lower operand precision, so
+      // N(Pi,1001)==N(Pi,511) is True and N(Pi,1001)-N(Pi,17) is 0.
+      check("N(Pi,1001)===N(Pi,512)", //
+        "True");
+      check("N(Pi,1001)===N(Pi,511)", //
+        "False");
+      check("N(Pi,512)===N(Pi,513)", //
+        "True");
+      // the clamped precision really is on the Apfloat, not only in Precision()'s bookkeeping
+      assertEquals(512L, assertInstanceOf(ApfloatNum.class, evaluator.eval("N(Pi,1001)"))
+        .apfloatValue().precision());
+      check("StringLength(ToString(N(Pi,1001)))", //
+        "517");
+      check("StringTake(ToString(N(Pi,1001)),12)", //
+        "3.1415926535");
+      // head, leading digits, elision and the `512 precision marker in a single readable line
+      check("Short(N(Pi,1001))", //
+        "3.141592653589793238462643<<SHORT>>1830119491298336733624`512");
+      // the truncation is silent: Check() would return -1 if N::precgt had been emitted
+      check("Precision(Check(N(Pi,1001),-1))", //
+        "512");
+
+      // the List/Association/Rule threading in N() truncates element by element, and so does the
+      // second mapping site in evalN2() which only sees the List after symbolic evaluation
+      check("Map(Precision,N({Pi,E},1001))", //
+        "{512,512}");
+      check("Map(Precision,N(<|a->Pi,b->E|>,1001))", //
+        "<|a->512,b->512|>");
+      check("Map(Precision,N(a->Pi,1001))", //
+        "Infinity->512");
+      check("Map(Precision,N(Table(Pi,{2}),1001))", //
+        "{512,512}");
+      check("Map(Precision,N({x,Pi},1001))", //
+        "{Infinity,512}");
+      // truncating an already truncated number is idempotent, and the truncation never invents
+      // digits which the inner call didn't produce
+      check("Precision(N(N(Pi,1001),1001))", //
+        "512");
+      check("Precision(N(N(Pi,50),1001))", //
+        "50");
+      check("N(N(Pi,1001),20)", //
+        "3.1415926535897932384");
+      // the argument shape doesn't matter: exact rational, inexact double, complex, AST
+      check("Precision(N(2/3,1001))", //
+        "512");
+      check("Precision(N(1.23456,1001))", //
+        "512");
+      check("Precision(N(Sqrt(-2),1001))", //
+        "512");
+      check("Precision(N(E^Pi,1001))", //
+        "512");
+      // the requested precision is Ceiling()ed before it is truncated, so the truncation starts at
+      // a fractional request just above the limit
+      check("Precision(N(Pi,1000.5))", //
+        "512");
+      check("Precision(N(Pi,2001/2))", //
+        "512");
+      check("Precision(N(Pi,512.5))", //
+        "512");
+      check("Precision(N(Pi,511.5))", //
+        "512");
+      check("Precision(N(Pi,Sqrt(2)*1000))", //
+        "512");
+      // the truncated result is a real number, not an unevaluated N(...)
+      check("NumberQ(N(Pi,1001))", //
+        "True");
+      check("Head(N(Pi,1001))", //
+        "Real");
+      check("N(x,1001)", //
+        "x");
+      // N() restores the engine numeric mode, so the sibling fraction stays exact
+      check("{Precision(N(Pi,1001)),2/3}", //
+        "{512,2/3}");
+
+      // the flag doesn't touch the lower bound, N::precsm is still reported. getMessageShortcut()
+      // has to be asserted immediately after its own check() - EvalEngine#initInstance() nulls it
+      // at the start of the next evaluation.
+      check("N(Pi,0)", //
+        "N(Pi,0)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
+      check("N(Pi,-5)", //
+        "N(Pi,-5)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
+      // a second argument which isn't a real number is refused, the flag doesn't turn it into one
+      check("N(Pi,1+I)", //
+        "N(Pi,I+1)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
+      // known limitation: the bound is tested on arg2.toIntDefault(), so a request which doesn't
+      // fit an int collapses to Config.INVALID_INT and reports N::precsm instead of truncating.
+      // 2147483646 is the largest request which is still truncated, Integer.MAX_VALUE is not.
+      check("Precision(N(Pi,2147483646))", //
+        "512");
+      check("N(Pi,2147483647)", //
+        "N(Pi,2147483647)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut(),
+        "an int-overflowing precision must fall into the lower-bound branch");
+      check("N(Pi,2^31)", //
+        "N(Pi,2^31)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
+      check("N(Pi,10^20)", //
+        "N(Pi,10^20)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
+      check("N(Pi,2^40)", //
+        "N(Pi,2^40)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
+      check("N(Pi,Infinity)", //
+        "N(Pi,Infinity)");
+      assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
+
+      // second known limitation: the truncation doesn't survive into sibling subexpressions.
+      // AbstractAST#determinePrecision() special-cases N(expr,prec) and returns arg2 unclamped, so
+      // the engine numeric precision is still raised to the requested 1001 at parse time.
+      check("Precision(N(Pi,1001)*1)", //
+        "1001");
+    } finally {
+      Config.TRUNCATE_PRECISION_IN_N = oldTruncate;
+    }
+  }
+
+  @Test
+  public void testPrecisionGreaterThanConfigValue() {
+    // default: N() prints the N::precgt message and leaves the expression unevaluated
+    assertFalse(Config.TRUNCATE_PRECISION_IN_N,
+      "Config.TRUNCATE_PRECISION_IN_N must default to false - if this fails either the default "
+        + "changed or testPrecisionOutOfConfigValue() didn't restore it");
+    assertTrue(Config.MAX_PRECISION_APFLOAT < 1000,
+      "the 1001 digits requested below must exceed Config.MAX_PRECISION_APFLOAT="
+        + Config.MAX_PRECISION_APFLOAT + ", otherwise N() doesn't report N::precgt");
+    check("N(Pi,1001)", //
+      "N(Pi,1001)");
+    assertEquals("precgt", evaluator.getEvalEngine().getMessageShortcut(),
+      "an over-bound precision must report N::precgt, not N::precsm");
+    // the mirror of the truncating test's headline assertion: Precision() of the unevaluated N()
+    check("Precision(N(Pi,1001))", //
+      "Infinity");
+    check("N(Pi,1001)===N(Pi,512)", //
+      "False");
+    // one digit above the limit is already refused, the limit itself still evaluates - the same
+    // boundary after the Ceiling() of a fractional request
+    check("N(Pi,513)", //
+      "N(Pi,513)");
+    check("Precision(N(Pi,512))", //
+      "512");
+    check("N(Pi,512.5)", //
+      "N(Pi,512.5)");
+    check("Precision(N(Pi,511.5))", //
+      "512");
+    // Check() returns its second argument, so the N::precgt message really was emitted
+    check("Check(N(Pi,1001),\"msg\")", //
+      "msg");
+
+    // whatever the first argument looks like, the call comes back unevaluated
+    check("N(1.23456,1001)", //
+      "N(1.23456,1001)");
+    check("N(2/3,1001)", //
+      "N(2/3,1001)");
+    check("N(x,1001)", //
+      "N(x,1001)");
+    // the List/Rule threading happens before the precision is validated, so every element refuses
+    check("N({Pi,E},1001)", //
+      "{N(Pi,1001),N(E,1001)}");
+    check("Map(Precision,N({Pi,E},1001))", //
+      "{Infinity,Infinity}");
+    check("N(a->Pi,1001)", //
+      "N(a,1001)->N(Pi,1001)");
+    check("N(Simplify(-3858/3125+N(1.23456,1001)),1001)", //
+      "N(Simplify(-3858/3125+N(1.23456,1001)),1001)");
+    // no number is produced at all - contrast with the 517 characters of the truncated result
+    check("StringLength(ToString(N(Pi,1001)))", //
+      "10");
+    check("Short(N(Pi,1001))", //
+      "N(Pi,1001)");
+    check("Head(N(Pi,1001))", //
+      "N");
+    check("NumberQ(N(Pi,1001))", //
+      "False");
+
+    // the lower bound reports N::precsm, unchanged by this feature
+    check("N(Pi,0)", //
+      "N(Pi,0)");
+    check("N(Pi,-5)", //
+      "N(Pi,-5)");
+    check("N(Pi,2147483646)", //
+      "N(Pi,2147483646)");
+    assertEquals("precgt", evaluator.getEvalEngine().getMessageShortcut());
+    check("N(Pi,10^20)", //
+      "N(Pi,10^20)");
+    assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut(),
+      "the int-overflowing precision reports N::precsm with the flag off too");
   }
 }
