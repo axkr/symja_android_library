@@ -149,7 +149,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
     try {
       IExpr evaluated = fUnaryCompiled.evaluate(F.unaryAST1(fUnaryCompiled, F.num(value)), fEngine);
       if (evaluated.isPresent()) {
-        return evaluated.evalf();
+        return evaluated.evalfNaN();
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -230,6 +230,6 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
 
   @Override
   public double applyAsDouble(double value) {
-    return F.subst(fUnaryFunction, fVariable, F.num(value)).evalf();
+    return F.subst(fUnaryFunction, fVariable, F.num(value)).evalfNaN();
   }
 }

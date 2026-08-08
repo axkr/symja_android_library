@@ -611,7 +611,7 @@ public abstract class ComplexFormFactory {
       return;
     }
     if (o instanceof IReal) {
-      double d = o.evalf();
+      double d = o.evalfNaN();
       if (fPackagePrefix) {
         buf.append("org.hipparchus.complex.");
       }

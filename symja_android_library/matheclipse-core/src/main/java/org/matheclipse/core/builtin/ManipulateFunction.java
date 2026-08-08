@@ -677,10 +677,16 @@ public class ManipulateFunction {
           new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
       IASTAppendable newsliderRange = sliderRange.copyAppendable(1);
       double stepValue = 1.0;
-      double minValue = sliderRange.arg2().evalf();
-      double maxValue = sliderRange.arg3().evalf();
+      double minValue = sliderRange.arg2().evalfNaN();
+      double maxValue = sliderRange.arg3().evalfNaN();
+      if (Double.isNaN(minValue) || Double.isNaN(maxValue)) {
+        return F.NIL;
+      }
       if (sliderRange.size() == 5) {
-        stepValue = sliderRange.arg4().evalf();
+        stepValue = sliderRange.arg4().evalfNaN();
+        if (Double.isNaN(stepValue)) {
+          return F.NIL;
+        }
       } else {
         stepValue = (maxValue - minValue) / 100.0;
         newsliderRange.append(stepValue);

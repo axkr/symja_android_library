@@ -9,12 +9,12 @@ public class PrimitivePolynomialQTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testDegreeOne() {
-    // Every degree-1 monic polynomial is primitive: m = p - 1 has no prime divisors leading to
-    // x^((p-1)/q) = 1 ... in fact the order-loop is vacuous when m = 1.
+    // A degree-1 polynomial x + c is primitive iff its root -c generates GF(p)^*. The root of x
+    // is 0, which generates nothing, while the root of x + 1 over GF(2) is 1 and GF(2)^* = {1}.
     check("PrimitivePolynomialQ(x, 2)", //
-        "True");
-    check("PrimitivePolynomialQ(x + 1, 2)", //
         "False");
+    check("PrimitivePolynomialQ(x + 1, 2)", //
+        "True");
   }
 
   @Test
@@ -76,15 +76,18 @@ public class PrimitivePolynomialQTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNonPrimeModulus() {
+    // a negative modulus is used with its absolute value
     check("PrimitivePolynomialQ(x^2 + x + 1, -2)", //
         "True");
 
+    // Primitivity is only defined over GF(p) for a prime p, so anything else stays unevaluated
+    // instead of answering False to a question that wasn't asked.
     check("PrimitivePolynomialQ(x^2 + x + 1, 4)", //
-        "False");
+        "PrimitivePolynomialQ(1+x+x^2,4)");
     check("PrimitivePolynomialQ(x^2 + x + 1, 1)", //
-        "False");
+        "PrimitivePolynomialQ(1+x+x^2,1)");
     check("PrimitivePolynomialQ(x^2 + x + 1, 0)", //
-        "False");
+        "PrimitivePolynomialQ(1+x+x^2,0)");
     check("PrimitivePolynomialQ(x^2 + x + 1, 2)", //
         "True");
 
@@ -93,7 +96,55 @@ public class PrimitivePolynomialQTest extends ExprEvaluatorTestCase {
   @Test
   public void testNonIntegerModulus() {
     check("PrimitivePolynomialQ(x^2 + x + 1, 2.5)", //
+        "PrimitivePolynomialQ(1+x+x^2,2.5)");
+  }
+
+  /** The modulus is a required argument. */
+  @Test
+  public void testMissingModulus() {
+    check("PrimitivePolynomialQ(1 + x + x^2)", //
+        "PrimitivePolynomialQ(1+x+x^2)");
+  }
+
+  @Test
+  public void testPrimitiveMod2Extra() {
+    check("PrimitivePolynomialQ(1 + x + x^2, 2)", //
+        "True");
+    check("PrimitivePolynomialQ(1 + x + x^3, 2)", //
+        "True");
+    check("PrimitivePolynomialQ(1 + x^2 + x^3, 2)", //
+        "True");
+    check("PrimitivePolynomialQ(1 + x + x^4, 2)", //
+        "True");
+    check("PrimitivePolynomialQ(x^5 + x^2 + 1, 2)", //
+        "True");
+    check("PrimitivePolynomialQ(1 + x, 2)", //
+        "True");
+    // reducible over GF(2): 1 + x^3 == (1 + x)*(1 + x + x^2), 1 + x^2 == (1 + x)^2
+    check("PrimitivePolynomialQ(1 + x^3, 2)", //
         "False");
+    check("PrimitivePolynomialQ(1 + x^2, 2)", //
+        "False");
+    check("PrimitivePolynomialQ(x, 2)", //
+        "False");
+    check("PrimitivePolynomialQ(1 + x + x^2 + x^3 + x^4, 2)", //
+        "False");
+  }
+
+  @Test
+  public void testOddPrimeModulus() {
+    check("PrimitivePolynomialQ(2 + x + x^2, 3)", //
+        "True");
+    // irreducible mod 3, but the order of x is 4 rather than 3^2 - 1 == 8
+    check("PrimitivePolynomialQ(1 + x^2, 3)", //
+        "False");
+    // 1 + x + x^2 == (x - 1)^2 mod 3
+    check("PrimitivePolynomialQ(1 + x + x^2, 3)", //
+        "False");
+    check("PrimitivePolynomialQ(3 + 2*x + x^2, 5)", //
+        "True");
+    check("PrimitivePolynomialQ(x^4 + 3*x^3 + 2*x^2 + x + 7, 13)", //
+        "True");
   }
 
 }

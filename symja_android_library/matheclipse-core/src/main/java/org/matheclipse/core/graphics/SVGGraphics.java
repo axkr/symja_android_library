@@ -1891,7 +1891,11 @@ public class SVGGraphics {
       weights = new double[points.size()];
       int count = Math.min(weights.length, wList.size() - 1);
       for (int i = 0; i < count; i++) {
-        weights[i] = wList.get(i + 1).evalf();
+        weights[i] = wList.get(i + 1).evalfNaN();
+        if (Double.isNaN(weights[i])) {
+          weights = null;
+          break;
+        }
       }
       for (int i = count; i < weights.length; i++)
         weights[i] = 1.0;
@@ -1903,7 +1907,11 @@ public class SVGGraphics {
       IAST kList = (IAST) optKnots;
       knots = new double[kList.size() - 1];
       for (int i = 0; i < knots.length; i++) {
-        knots[i] = kList.get(i + 1).evalf();
+        knots[i] = kList.get(i + 1).evalfNaN();
+        if (Double.isNaN(knots[i])) {
+          knots = null;
+          break;
+        }
       }
     }
 
@@ -2549,11 +2557,9 @@ public class SVGGraphics {
             if (val == S.Automatic) {
               options.aspectRatio = Double.POSITIVE_INFINITY;
             } else {
-              try {
-                options.aspectRatio = val.evalf();
-              } catch (Exception e) {
-                options.aspectRatio = Double.POSITIVE_INFINITY;
-              }
+              double aspectRatio = val.evalfNaN();
+              options.aspectRatio =
+                  Double.isNaN(aspectRatio) ? Double.POSITIVE_INFINITY : aspectRatio;
             }
             break;
           case ID.AxesStyle:
@@ -2836,13 +2842,11 @@ public class SVGGraphics {
   }
 
   private double getDouble(IExpr expr, double def) {
-    try {
-      if (expr instanceof INumber)
-        return ((INumber) expr).reDoubleValue();
-      return expr.evalf();
-    } catch (RuntimeException e) {
+    if (expr instanceof INumber) {
+      return ((INumber) expr).reDoubleValue();
     }
-    return def;
+    double d = expr.evalfNaN();
+    return Double.isNaN(d) ? def : d;
   }
 
   private double getDouble(IExpr expr) {

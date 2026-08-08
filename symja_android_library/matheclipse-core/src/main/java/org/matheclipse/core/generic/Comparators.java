@@ -6,7 +6,6 @@ import java.util.function.BiPredicate;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -194,15 +193,13 @@ public final class Comparators {
     public int compare(final IExpr o1, final IExpr o2) {
       IExpr abs2 = o2.abs();
       IExpr abs1 = o1.abs();
-      try {
-        double evalf2 = abs2.evalf();
-        double evalf1 = abs1.evalf();
+      double evalf2 = abs2.evalfNaN();
+      double evalf1 = abs1.evalfNaN();
+      if (!Double.isNaN(evalf2) && !Double.isNaN(evalf1)) {
         if (F.isEqual(evalf2, evalf1)) {
           return o1.compareTo(o2);
         }
         return evalf2 < evalf1 ? -1 : 1;
-      } catch (ArgumentTypeException t) {
-        // ignore
       }
       if (abs2.isReal()) {
         return -1;

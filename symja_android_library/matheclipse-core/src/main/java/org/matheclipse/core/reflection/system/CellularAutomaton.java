@@ -889,13 +889,19 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       IExpr rspec = rule.get(3);
 
       if (rspec.isNumber()) {
-        double rVal = rspec.evalf();
+        double rVal = rspec.evalfNaN();
+        if (Double.isNaN(rVal)) {
+          return F.NIL;
+        }
         int size = (int) Math.round(2 * rVal + 1);
         rMin = -(int) Math.floor(rVal + 0.5);
         rMax = rMin + size - 1;
       } else if (rspec.isList()) {
         if (rspec.argSize() == 1 && rspec.get(1).isNumber()) { // {r}
-          double rVal = rspec.get(1).evalf();
+          double rVal = rspec.get(1).evalfNaN();
+          if (Double.isNaN(rVal)) {
+            return F.NIL;
+          }
           int size = (int) Math.round(2 * rVal + 1);
           rMin = -(int) Math.floor(rVal + 0.5);
           rMax = rMin + size - 1;

@@ -695,7 +695,7 @@ public class ComplexSym implements IComplex {
         Apcomplex temp = apcomplexValue().add(((ApfloatNum) that).apfloatValue());
         return F.complexNum(temp);
       }
-      return F.complexNum(evalfc().add(((INum) that).evalf()));
+      return F.complexNum(evalfc().add(((INum) that).evalfNaN()));
     }
     throw new java.lang.ArithmeticException();
   }
@@ -964,7 +964,7 @@ public class ComplexSym implements IComplex {
         Apcomplex temp = apcomplexValue().multiply(((ApfloatNum) that).apfloatValue());
         return F.complexNum(temp);
       }
-      return F.complexNum(evalfc().multiply(((INum) that).evalf()));
+      return F.complexNum(evalfc().multiply(((INum) that).evalfNaN()));
     }
     throw new java.lang.ArithmeticException();
   }

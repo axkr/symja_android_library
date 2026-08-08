@@ -1857,11 +1857,7 @@ public class HypergeometricFunctions {
       try {
         double A[] = a.toDoubleVector();
         double B[] = b.toDoubleVector();
-        double cDouble = Double.NaN;
-        try {
-          cDouble = c.evalf();
-        } catch (ValidateException ve) {
-        }
+        double cDouble = c.evalfNaN();
         if (A == null || B == null || Double.isNaN(cDouble)) {
           Complex AC[] = a.toComplexVector();
           Complex BC[] = b.toComplexVector();

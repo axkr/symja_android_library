@@ -102,7 +102,10 @@ public class BoxWhiskerChart extends ListPlot {
 
     double spacing = 0.5; // Default spacing
     if (barSpacing.isNumber()) {
-      spacing = barSpacing.evalf();
+      double spacingValue = barSpacing.evalfNaN();
+      if (!Double.isNaN(spacingValue)) {
+        spacing = spacingValue;
+      }
     }
 
     double boxWidth = 1.0 / (1.0 + spacing);

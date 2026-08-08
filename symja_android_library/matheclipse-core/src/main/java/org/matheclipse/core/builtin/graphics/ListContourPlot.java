@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -151,16 +150,15 @@ public class ListContourPlot extends ContourPlot {
     gd.yMax = rows;
 
     if (dataRange.isList() && dataRange.size() >= 3) {
-      try {
-        IAST dr = (IAST) dataRange;
-        IAST xR = (IAST) dr.arg1();
-        IAST yR = (IAST) dr.arg2();
-        gd.xMin = xR.arg1().evalf();
-        gd.xMax = xR.arg2().evalf();
-        gd.yMin = yR.arg1().evalf();
-        gd.yMax = yR.arg2().evalf();
-      } catch (RuntimeException rex) {
-        Errors.printMessage(S.ListContourPlot, rex);
+      IAST dr = (IAST) dataRange;
+      IAST xR = (IAST) dr.arg1();
+      IAST yR = (IAST) dr.arg2();
+      gd.xMin = xR.arg1().evalfNaN();
+      gd.xMax = xR.arg2().evalfNaN();
+      gd.yMin = yR.arg1().evalfNaN();
+      gd.yMax = yR.arg2().evalfNaN();
+      if (Double.isNaN(gd.xMin) || Double.isNaN(gd.xMax) || Double.isNaN(gd.yMin)
+          || Double.isNaN(gd.yMax)) {
         return null;
       }
     }

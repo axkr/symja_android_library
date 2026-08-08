@@ -98,15 +98,10 @@ public final class MultivariateJacobianGradient implements MultivariateJacobianF
         }
         return F.NIL;
       };
-      value.setEntry(i - 1, fFunction.get(i).evalf(function));
+      value.setEntry(i - 1, fFunction.get(i).evalfNaN(function));
       for (int j = 1; j < row.size(); j++) {
-        try {
-          double entry = row.get(j).evalf(function);
-          jacobian.setEntry(i - 1, j - 1, entry);
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          jacobian.setEntry(i - 1, j - 1, Double.NaN);
-        }
+        double entry = row.get(j).evalfNaN(function);
+        jacobian.setEntry(i - 1, j - 1, entry);
       }
     }
     return new Pair<RealVector, RealMatrix>(value, jacobian);

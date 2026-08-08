@@ -43,13 +43,16 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
 
         if (ast.argSize() >= 3) {
           // Extract the normalized color components using evalf()
-          float r = (float) ast.arg1().evalf();
-          float g = (float) ast.arg2().evalf();
-          float b = (float) ast.arg3().evalf();
-          float a = ast.argSize() >= 4 ? (float) ast.arg4().evalf() : 1.0f;
-
-          RGBColor color = new RGBColor(r, g, b, a);
-          return color.getRGB();
+          double red = ast.arg1().evalfNaN();
+          double green = ast.arg2().evalfNaN();
+          double blue = ast.arg3().evalfNaN();
+          double alpha = ast.argSize() >= 4 ? ast.arg4().evalfNaN() : 1.0;
+          if (!Double.isNaN(red) && !Double.isNaN(green) && !Double.isNaN(blue)
+              && !Double.isNaN(alpha)) {
+            RGBColor color =
+                new RGBColor((float) red, (float) green, (float) blue, (float) alpha);
+            return color.getRGB();
+          }
         }
       }
     }

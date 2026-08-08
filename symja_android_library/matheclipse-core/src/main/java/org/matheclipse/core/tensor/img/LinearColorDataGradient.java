@@ -54,7 +54,7 @@ public class LinearColorDataGradient implements ColorDataGradient {
 
   @Override // from ColorDataGradient
   public IExpr apply(IExpr scalar) {
-    double value = scalar.multiply(scale).evalf();
+    double value = scalar.multiply(scale).evalfNaN();
     // if (value > 1.0 || value < 0.0) {
     // return Transparent.rgba();
     // }

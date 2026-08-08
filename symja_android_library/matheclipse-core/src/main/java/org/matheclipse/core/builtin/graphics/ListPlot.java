@@ -7,7 +7,6 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -561,12 +560,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     double drMax = pointList.argSize();
     boolean useDataRange = false;
     if (dataRange.isList2()) {
-      try {
-        drMin = ((IAST) dataRange).arg1().evalf();
-        drMax = ((IAST) dataRange).arg2().evalf();
-        useDataRange = true;
-      } catch (ArgumentTypeException e) {
-      }
+      drMin = ((IAST) dataRange).arg1().evalfNaN();
+      drMax = ((IAST) dataRange).arg2().evalfNaN();
+      useDataRange = !Double.isNaN(drMin) && !Double.isNaN(drMax);
     }
 
     double startX = useDataRange ? drMin : 1.0;
@@ -1009,8 +1005,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   private static IExpr createPolygonToBottom(IAST pts, double yBottom) {
     if (pts.argSize() < 2)
       return F.NIL;
-    double xStart = ((IAST) pts.arg1()).arg1().evalf();
-    double xEnd = ((IAST) pts.get(pts.argSize())).arg1().evalf();
+    double xStart = ((IAST) pts.arg1()).arg1().evalfNaN();
+    double xEnd = ((IAST) pts.get(pts.argSize())).arg1().evalfNaN();
+    if (Double.isNaN(xStart) || Double.isNaN(xEnd)) {
+      return F.NIL;
+    }
     IASTAppendable polyPts = F.ListAlloc();
     polyPts.appendArgs(pts);
     polyPts.append(F.List(F.num(xEnd), F.num(yBottom)));

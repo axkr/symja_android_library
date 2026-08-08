@@ -477,7 +477,11 @@ public class StatisticsFunctions {
         }
       } else {
         dx = Integer.MIN_VALUE;
-        dxNum = F.num(arg2.evalf());
+        double dxDouble = arg2.evalfNaN();
+        if (Double.isNaN(dxDouble)) {
+          return F.NIL;
+        }
+        dxNum = F.num(dxDouble);
         IExpr dXMax = S.Max.of(engine, vector);
         xMax = S.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault();
         if (xMax < 0) {

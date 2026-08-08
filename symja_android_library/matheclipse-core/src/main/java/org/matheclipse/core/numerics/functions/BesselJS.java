@@ -32,7 +32,7 @@ public class BesselJS extends JS {
 
     @Override
     public double value(double x) {
-      return n.besselY(F.num(x)).evalf();
+      return n.besselY(F.num(x)).evalfNaN();
     }
   }
 
@@ -45,7 +45,7 @@ public class BesselJS extends JS {
 
     @Override
     public double value(double x) {
-      return n.besselJ(F.num(x)).evalf();
+      return n.besselJ(F.num(x)).evalfNaN();
     }
   }
 

@@ -22,6 +22,11 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr result = ast.arg1();
 
+    if (ast.isAST1()) {
+      // DiscreteRatio(expr) has no variable to shift and returns the expression unchanged
+      return result;
+    }
+
     // Iterate over variables: DiscreteRatio(expr, n, m) -> loop n, then m
     for (int i = 2; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
@@ -38,6 +43,10 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
         if (list.size() >= 2 && list.arg1().isSymbol()) {
           variable = (ISymbol) list.arg1();
           if (list.size() >= 3) {
+            if (!list.arg2().isInteger()) {
+              // a symbolic or inexact order such as {n, h} or {n, 2.5} stays unevaluated
+              return F.NIL;
+            }
             order = list.arg2().toMachineInt();
           }
           if (list.size() >= 4) {
@@ -59,17 +68,18 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
       }
     }
 
-    // Reduce to wolframscript's canonical single-fraction ratio form. FunctionExpand collapses
-    // factorial/Gamma/Pochhammer/Binomial ratios (e.g. DiscreteRatio(n!, n) -> 1 + n), and
-    // Together cancels common polynomial factors (e.g. DiscreteRatio(n^2 + n, n) -> (2 + n)/n)
-    // while keeping a single grouped fraction (Cancel would rewrite (1 + n)^2/n^2 as (1 + 1/n)^2).
+    // Reduce to canonical single-fraction ratio form. FunctionExpand collapses
+    // factorial/Gamma/Pochhammer/Binomial ratios (e.g. DiscreteRatio(n!, n) -> 1 + n), Together
+    // cancels common polynomial factors (e.g. DiscreteRatio(n^2 + n, n) -> (2 + n)/n) and Factor
+    // restores the factored numerator/denominator (e.g. DiscreteRatio(n^2, n) -> (1 + n)^2/n^2
+    // instead of the expanded (1 + 2 n + n^2)/n^2).
     // Only adopt the FunctionExpand result when it fully reduces (no Gamma/Factorial residue left,
     // e.g. a scaled argument like (2 n)! that Symja cannot reduce further).
-    IExpr expanded = engine.evaluate(F.Together(F.FunctionExpand(result)));
+    IExpr expanded = engine.evaluate(F.Factor(F.Together(F.FunctionExpand(result))));
     if (expanded.isFree(S.Gamma, true) && expanded.isFree(S.Factorial, true)) {
       return expanded;
     }
-    return engine.evaluate(F.Together(result));
+    return engine.evaluate(F.Factor(F.Together(result)));
   }
 
   /**
@@ -88,6 +98,6 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_INFINITY;
+    return ARGS_1_INFINITY;
   }
 }

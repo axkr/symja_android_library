@@ -5,9 +5,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -23,7 +21,29 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Options for the 2D Graphics object.
  */
 public class GraphicsOptions {
-  public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
+
+  /**
+   * Holder for the lazily created JSON object mapper.
+   *
+   * <p>
+   * This class is initialized during start-up, because the <code>setUp()</code> methods of the plot
+   * functions read the default option values from here. Creating the {@link ObjectMapper} eagerly
+   * would load about 380 Jackson classes at that point, although JSON is only needed when graphics
+   * are really rendered.
+   */
+  private static final class MapperHolder {
+    static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
+  }
+
+  /**
+   * The JSON object mapper used to create the graphics output. The Jackson databind subsystem is
+   * initialized on the first call.
+   *
+   * @return the JSON object mapper for graphics output
+   */
+  public static ObjectMapper jsonObjectMapper() {
+    return MapperHolder.JSON_OBJECT_MAPPER;
+  }
 
   public final static int X_JSFORM = 0;
   public final static int X_FILLING = 1;
@@ -189,7 +209,7 @@ public class GraphicsOptions {
   }
 
   public static void optionBoolean(ArrayNode arrayNode, String optionName, boolean value) {
-    ObjectNode jsonDefaults = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+    ObjectNode jsonDefaults = GraphicsOptions.jsonObjectMapper().createObjectNode();
     jsonDefaults.put("option", optionName);
     jsonDefaults.put("value", value);
     arrayNode.add(jsonDefaults);
@@ -207,7 +227,7 @@ public class GraphicsOptions {
   }
 
   public static void optionInt(ArrayNode arrayNode, String optionName, int value) {
-    ObjectNode jsonDefaults = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+    ObjectNode jsonDefaults = GraphicsOptions.jsonObjectMapper().createObjectNode();
     jsonDefaults.put("option", optionName);
     jsonDefaults.put("value", value);
     arrayNode.add(jsonDefaults);
@@ -360,7 +380,11 @@ public class GraphicsOptions {
   public static boolean setGrayLevel(ObjectNode g, IAST grayLevel) {
     RGBColor rgb = null;
     if (grayLevel.isAST1() || grayLevel.isAST2()) {
-      rgb = RGBColor.getGrayLevel((float) grayLevel.arg1().evalf());
+      double level = grayLevel.arg1().evalfNaN();
+      if (Double.isNaN(level)) {
+        return false;
+      }
+      rgb = RGBColor.getGrayLevel((float) level);
     }
     if (rgb != null) {
       setColorOption(g, rgb.getRed() / 255.0, rgb.getGreen() / 255.0, rgb.getBlue() / 255.0);
@@ -509,16 +533,16 @@ public class GraphicsOptions {
     IExpr scalingFunctions = options.getOption(S.$Scaling);
     if (scalingFunctions.isPresent()) {
       if (scalingFunctions.isList1()) {
-        scalingArray = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+        scalingArray = GraphicsOptions.jsonObjectMapper().createArrayNode();
         setXFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.first()));
         scalingArray.add("none");
         setYFunction(y -> y);
       } else if (scalingFunctions.isList2()) {
-        scalingArray = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+        scalingArray = GraphicsOptions.jsonObjectMapper().createArrayNode();
         setXFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.first()));
         setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.second()));
       } else if (!scalingFunctions.isList()) {
-        scalingArray = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+        scalingArray = GraphicsOptions.jsonObjectMapper().createArrayNode();
         scalingArray.add("none");
         setXFunction(x -> x);
         setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions));
@@ -527,7 +551,7 @@ public class GraphicsOptions {
       }
     }
 
-    ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+    ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
     IExpr axesOptions = this.axes; // options.getOption(S.Axes);
     if (!axesOptions.isPresent()) {
       axesOptions = S.False;
@@ -579,7 +603,7 @@ public class GraphicsOptions {
   }
 
   private static void hasAxesJSON(ObjectNode g, IExpr a1, IExpr a2) {
-    ArrayNode an = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    ArrayNode an = GraphicsOptions.jsonObjectMapper().createArrayNode();
     if (a1.isTrue()) {
       an.add(true);
     } else {
@@ -596,7 +620,7 @@ public class GraphicsOptions {
   public void graphics2DFilling(ArrayNode arrayNode, OptionArgs options) {
     IExpr filling = options.getOption(S.Filling);
     if (filling.isPresent()) {
-      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
       g.put("option", "filling");
       // if (filling.isNone()) {
       // g.put("value", "none");
@@ -619,10 +643,18 @@ public class GraphicsOptions {
       IExpr arg1 = plotRange.first();
       IExpr arg2 = plotRange.second();
       if (arg1.isList2() && arg2.isList2()) {
-        boundingbox[0] = arg1.first().evalf();
-        boundingbox[1] = arg1.second().evalf();
-        boundingbox[2] = arg2.first().evalf();
-        boundingbox[3] = arg2.second().evalf();
+        double xMin = arg1.first().evalfNaN();
+        double xMax = arg1.second().evalfNaN();
+        double yMin = arg2.first().evalfNaN();
+        double yMax = arg2.second().evalfNaN();
+        if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin)
+            || Double.isNaN(yMax)) {
+          return false;
+        }
+        boundingbox[0] = xMin;
+        boundingbox[1] = xMax;
+        boundingbox[2] = yMin;
+        boundingbox[3] = yMax;
         objectNode.put("xmin", boundingbox[0]);
         objectNode.put("xmax", boundingbox[1]);
         objectNode.put("ymin", boundingbox[2]);
@@ -631,8 +663,13 @@ public class GraphicsOptions {
       } else {
         objectNode.put("xmin", boundingbox[0]);
         objectNode.put("xmax", boundingbox[1]);
-        boundingbox[2] = arg1.evalf();
-        boundingbox[3] = arg2.evalf();
+        double yMin = arg1.evalfNaN();
+        double yMax = arg2.evalfNaN();
+        if (Double.isNaN(yMin) || Double.isNaN(yMax)) {
+          return false;
+        }
+        boundingbox[2] = yMin;
+        boundingbox[3] = yMax;
         objectNode.put("ymin", boundingbox[2]);
         objectNode.put("ymax", boundingbox[3]);
         return true;
@@ -677,24 +714,32 @@ public class GraphicsOptions {
         if (option == S.PlotRange) {
           IExpr plotRange = listOfOptions.get(i).second();
           if (plotRange.isList2()) {
-            try {
-              IExpr arg1 = plotRange.first();
-              IExpr arg2 = plotRange.second();
-              if (arg1.isList2() && arg2.isList2()) {
-                boundingbox[0] = arg1.first().evalf();
-                boundingbox[1] = arg1.second().evalf();
-                boundingbox[2] = arg2.first().evalf();
-                boundingbox[3] = arg2.second().evalf();
-                yMinMax[0] = boundingbox[2];
-                yMinMax[1] = boundingbox[3];
-              } else {
-                boundingbox[2] = arg1.evalf();
-                boundingbox[3] = arg2.evalf();
-                yMinMax[0] = boundingbox[2];
-                yMinMax[1] = boundingbox[3];
+            IExpr arg1 = plotRange.first();
+            IExpr arg2 = plotRange.second();
+            if (arg1.isList2() && arg2.isList2()) {
+              double xMin = arg1.first().evalfNaN();
+              double xMax = arg1.second().evalfNaN();
+              double yMin = arg2.first().evalfNaN();
+              double yMax = arg2.second().evalfNaN();
+              // only assign if every bound is numeric - ignore false plot ranges
+              if (!Double.isNaN(xMin) && !Double.isNaN(xMax) && !Double.isNaN(yMin)
+                  && !Double.isNaN(yMax)) {
+                boundingbox[0] = xMin;
+                boundingbox[1] = xMax;
+                boundingbox[2] = yMin;
+                boundingbox[3] = yMax;
+                yMinMax[0] = yMin;
+                yMinMax[1] = yMax;
               }
-            } catch (ArgumentTypeException ate) {
-              // ignore false plot ranges
+            } else {
+              double yMin = arg1.evalfNaN();
+              double yMax = arg2.evalfNaN();
+              if (!Double.isNaN(yMin) && !Double.isNaN(yMax)) {
+                boundingbox[2] = yMin;
+                boundingbox[3] = yMax;
+                yMinMax[0] = yMin;
+                yMinMax[1] = yMax;
+              }
             }
           }
         }
@@ -758,26 +803,18 @@ public class GraphicsOptions {
 
   public double pointSize(IAST pointSizeAST) {
     if (pointSizeAST.isAST(S.PointSize, 2)) {
-      try {
-        IExpr arg1 = pointSizeAST.arg1();
-        if (arg1.isBuiltInSymbol()) {
-          if (arg1 == S.Large) {
-            pointSize = LARGE_POINTSIZE;
-          } else if (arg1 == S.Medium) {
-            pointSize = MEDIUM_POINTSIZE;
-          } else if (arg1 == S.Small) {
-            pointSize = SMALL_POINTSIZE;
-          } else if (arg1 == S.Tiny) {
-            pointSize = TINY_POINTSIZE;
-          } else {
-            pointSize = pointSizeAST.arg1().evalf();
-          }
-        } else {
-          pointSize = pointSizeAST.arg1().evalf();
-        }
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
+      IExpr arg1 = pointSizeAST.arg1();
+      if (arg1 == S.Large) {
+        pointSize = LARGE_POINTSIZE;
+      } else if (arg1 == S.Medium) {
         pointSize = MEDIUM_POINTSIZE;
+      } else if (arg1 == S.Small) {
+        pointSize = SMALL_POINTSIZE;
+      } else if (arg1 == S.Tiny) {
+        pointSize = TINY_POINTSIZE;
+      } else {
+        double size = arg1.evalfNaN();
+        pointSize = Double.isNaN(size) ? MEDIUM_POINTSIZE : size;
       }
     }
     return pointSize;
@@ -800,50 +837,47 @@ public class GraphicsOptions {
   }
 
   public void setBoundingBoxScaled(double[] boundingbox) {
-    try {
-      // first do all evaluations, so if exception is raised no value is changed
-      double x0 = xFunction.apply(F.num(boundingbox[0])).evalf();
-      double x1 = xFunction.apply(F.num(boundingbox[1])).evalf();
-      double y0 = yFunction.apply(F.num(boundingbox[2])).evalf();
-      double y1 = yFunction.apply(F.num(boundingbox[3])).evalf();
-      if (x0 < this.boundingbox[0]) {
-        this.boundingbox[0] = x0;
-      }
-      if (x1 > this.boundingbox[1]) {
-        this.boundingbox[1] = x1;
-      }
-      if (y0 < this.boundingbox[2]) {
-        this.boundingbox[2] = y0;
-      }
-      if (y1 > this.boundingbox[3]) {
-        this.boundingbox[3] = y1;
-      }
-    } catch (ArgumentTypeException ate) {
-      //
+    // first do all evaluations, so if one of them isn't numeric no value is changed
+    double x0 = xFunction.apply(F.num(boundingbox[0])).evalfNaN();
+    double x1 = xFunction.apply(F.num(boundingbox[1])).evalfNaN();
+    double y0 = yFunction.apply(F.num(boundingbox[2])).evalfNaN();
+    double y1 = yFunction.apply(F.num(boundingbox[3])).evalfNaN();
+    if (Double.isNaN(x0) || Double.isNaN(x1) || Double.isNaN(y0) || Double.isNaN(y1)) {
+      return;
+    }
+    if (x0 < this.boundingbox[0]) {
+      this.boundingbox[0] = x0;
+    }
+    if (x1 > this.boundingbox[1]) {
+      this.boundingbox[1] = x1;
+    }
+    if (y0 < this.boundingbox[2]) {
+      this.boundingbox[2] = y0;
+    }
+    if (y1 > this.boundingbox[3]) {
+      this.boundingbox[3] = y1;
     }
   }
 
   public void setBoundingBoxScaled(double x, double y) {
-    try {
-      // first do all evaluations, so if exception is raised no value is changed
-      double xValue = xFunction.apply(F.num(x)).evalf();
-      double yValue = yFunction.apply(F.num(y)).evalf();
+    // first do all evaluations, so if one of them isn't numeric no value is changed
+    double xValue = xFunction.apply(F.num(x)).evalfNaN();
+    double yValue = yFunction.apply(F.num(y)).evalfNaN();
+    if (Double.isNaN(xValue) || Double.isNaN(yValue)) {
+      return;
+    }
+    if (xValue < this.boundingbox[0]) {
+      this.boundingbox[0] = xValue;
+    }
+    if (xValue > this.boundingbox[1]) {
+      this.boundingbox[1] = xValue;
+    }
 
-      if (xValue < this.boundingbox[0]) {
-        this.boundingbox[0] = xValue;
-      }
-      if (xValue > this.boundingbox[1]) {
-        this.boundingbox[1] = xValue;
-      }
-
-      if (yValue < this.boundingbox[2]) {
-        this.boundingbox[2] = yValue;
-      }
-      if (yValue > this.boundingbox[3]) {
-        this.boundingbox[3] = yValue;
-      }
-    } catch (ArgumentTypeException ate) {
-      //
+    if (yValue < this.boundingbox[2]) {
+      this.boundingbox[2] = yValue;
+    }
+    if (yValue > this.boundingbox[3]) {
+      this.boundingbox[3] = yValue;
     }
   }
 

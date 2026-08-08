@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -132,7 +131,10 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       if (result.isList() && result.size() == 2) {
         IExpr rule = result.first();
         if (rule.isRuleAST() && rule.second().isNumber()) {
-          return rule.second().evalf();
+          double root = rule.second().evalfNaN();
+          if (!Double.isNaN(root)) {
+            return root;
+          }
         }
       }
     } catch (RuntimeException rex) {
@@ -147,7 +149,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       IExpr substituted = F.subst(expr, x, F.num(value));
       IExpr numeric = engine.evaluate(F.N(substituted));
       if (numeric.isNumber()) {
-        return numeric.evalf();
+        return numeric.evalfNaN();
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -545,12 +547,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       for (Double c : roots) {
         IAST rootExpr = F.unaryAST1(S.Root, F.list(pureFunction, F.num(c)));
         IExpr yCandidate = engine.evaluate(F.subst(function, x, rootExpr));
-        double yNum;
-        try {
-          yNum = engine.evaluate(F.N(yCandidate)).evalf();
-        } catch (ArgumentTypeException atex) {
-          continue;
-        }
+        double yNum = engine.evaluate(F.N(yCandidate)).evalfNaN();
         if (Double.isNaN(yNum) || Double.isInfinite(yNum)) {
           continue;
         }
@@ -619,12 +616,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       for (Double c : boundaryRoots) {
         // Prefer the unevaluated Subst form, mirroring the Root[..] style used above.
         IExpr yCandidate = F.subst(function, x, F.num(c));
-        double yNum;
-        try {
-          yNum = engine.evaluate(F.N(yCandidate)).evalf();
-        } catch (ArgumentTypeException atex) {
-          continue;
-        }
+        double yNum = engine.evaluate(F.N(yCandidate)).evalfNaN();
         if (Double.isNaN(yNum) || Double.isInfinite(yNum)) {
           continue;
         }
@@ -715,7 +707,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       IExpr substituted = F.subst(expr, x, F.num(value));
       IExpr numeric = engine.evaluate(F.N(F.Abs(substituted)));
       if (numeric.isNumber()) {
-        double v = numeric.evalf();
+        double v = numeric.evalfNaN();
         if (!Double.isNaN(v) && !Double.isInfinite(v)) {
           return v;
         }
@@ -740,7 +732,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     try {
       IExpr lim = engine.evalQuiet(F.Limit(function, F.Rule(x, direction)));
       if (lim.isNumber()) {
-        double v = lim.evalf();
+        double v = lim.evalfNaN();
         if (!Double.isNaN(v) && !Double.isInfinite(v)) {
           return v;
         }

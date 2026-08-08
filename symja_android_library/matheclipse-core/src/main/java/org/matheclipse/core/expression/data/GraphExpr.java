@@ -121,7 +121,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
         IExpr weight = weights.get(i);
         ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
         if (edge != null) {
-          weightedGraph.setEdgeWeight(edge, F.eval(weight).evalf());
+          double edgeWeightValue = F.eval(weight).evalfNaN();
+          if (!Double.isNaN(edgeWeightValue)) {
+            weightedGraph.setEdgeWeight(edge, edgeWeightValue);
+          }
         }
       }
     } else {
@@ -187,7 +190,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
           Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
           ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
           if (edge != null) {
-            weightedGraph.setEdgeWeight(edge, entry.getValue().evalf());
+            double edgeWeightValue = entry.getValue().evalfNaN();
+            if (!Double.isNaN(edgeWeightValue)) {
+              weightedGraph.setEdgeWeight(edge, edgeWeightValue);
+            }
           }
         } else {
           Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
@@ -233,14 +239,20 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
         DefaultDirectedWeightedGraph gw = (DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
         for (int i = 1; i < list.size(); i++) {
           IAST edge = list.getAST(i);
-          gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalf());
+          double edgeWeightValue = edgeWeight.get(i).evalfNaN();
+          if (!Double.isNaN(edgeWeightValue)) {
+            gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeightValue);
+          }
         }
       } else {
         DefaultUndirectedWeightedGraph gw =
             (DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
         for (int i = 1; i < list.size(); i++) {
           IAST edge = list.getAST(i);
-          gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalf());
+          double edgeWeightValue = edgeWeight.get(i).evalfNaN();
+          if (!Double.isNaN(edgeWeightValue)) {
+            gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeightValue);
+          }
         }
       }
 

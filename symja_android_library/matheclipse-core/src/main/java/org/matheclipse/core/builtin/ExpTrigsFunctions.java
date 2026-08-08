@@ -1133,9 +1133,23 @@ public class ExpTrigsFunctions {
       // if (imPart.isPresent()) {
       // return F.Times(F.CI, F.ArcTanh(imPart));
       // }
-      if (arg1.isTan() && arg1.first().isPositive()) {
+      if (arg1.isTan()) {
         // ArcTan(Tan(z))
-        return arcTanArcCotInverse(arg1);
+        if (arg1.first().isPositive()) {
+          IExpr temp = arcTanArcCotInverse(arg1);
+          if (temp.isPresent()) {
+            return temp;
+          }
+        }
+        // ArcTan(Tan(z)) == z /; -Pi/2 < Re(z) < Pi/2
+        // arcTanArcCotInverse() determines the branch from a numeric Re(z), here the interval is
+        // taken from the assumptions instead
+        final IExpr z = arg1.first();
+        final IExpr zRe = S.Re.of(z);
+        if (AbstractAssumptions.assumeGreaterThan(zRe, F.CNPiHalf)
+            && AbstractAssumptions.assumeLessThan(zRe, F.CPiHalf)) {
+          return z;
+        }
       }
 
       if (arg1.isInterval()) {
@@ -1149,8 +1163,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e2ObjArg(IExpr x, IExpr y) {
-      if (x.isZero() && y.isRealResult()) {
-        if (y.isZero()) {
+      // the two-argument form is the angle of the point (x,y), so only an *exact* zero puts the
+      // point on an axis. F.isExactZero() is used instead of IExpr#isZero(), whose tolerance for
+      // inexact numbers would collapse a tiny but perfectly ordinary point like
+      // (3.0*10^-20, 4.0*10^-20) onto the origin and answer Indeterminate.
+      if (F.isExactZero(x) && y.isRealResult()) {
+        if (F.isExactZero(y)) {
           return S.Indeterminate;
         }
         if (y.isPositiveResult()) {
@@ -1161,7 +1179,7 @@ public class ExpTrigsFunctions {
         }
         return F.NIL;
       }
-      if (y.isZero() && x.isNumericFunction(true) && !x.isZero()) {
+      if (F.isExactZero(y) && x.isNumericFunction(true) && !F.isExactZero(x)) {
         return F.Times(F.Subtract(F.C1, x.unitStep()), S.Pi);
       }
       IExpr yUnitStep = y.unitStep();
@@ -1203,13 +1221,8 @@ public class ExpTrigsFunctions {
           }
           return F.NIL;
         }
-        double xd = Double.NaN;
-        double yd = Double.NaN;
-        try {
-          xd = x.evalf();
-          yd = y.evalf();
-        } catch (ValidateException ve) {
-        }
+        double xd = x.evalfNaN();
+        double yd = y.evalfNaN();
         if (Double.isNaN(xd) || Double.isNaN(yd)) {
           Complex xc = x.evalfc();
           Complex yc = y.evalfc();
@@ -1921,8 +1934,9 @@ public class ExpTrigsFunctions {
         // t - 1/2
         temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
         if (temp2.isIntegerResult()) {
-          // I^(-1+2*t)
-          return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
+          // I^(-1+2*t); distribute the 2 over a Plus, so that the half integer part of t
+          // cancels against the -1 instead of being carried along unevaluated
+          return F.Power(F.CI, F.Plus(F.CN1, F.distributePlusOnTimes(F.C2, t)));
         }
       }
       return F.NIL;
@@ -2837,6 +2851,11 @@ public class ExpTrigsFunctions {
           // Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is real
           return temp;
         }
+        if (!exponent.isNumericFunction(true)
+            && AbstractAssumptions.assumeAbsLessThanOne(exponent)) {
+          // Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -1 < arg2 < 1
+          return temp;
+        }
       } else if (arg1.isTimes()) {
         EvalEngine engine = EvalEngine.get();
         IAST timesAST = (IAST) arg1;
@@ -3568,8 +3587,9 @@ public class ExpTrigsFunctions {
         // t - 1/2
         temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
         if (temp2.isIntegerResult()) {
-          // I^(-1+2*t)
-          return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
+          // I^(-1+2*t); distribute the 2 over a Plus, so that the half integer part of t
+          // cancels against the -1 instead of being carried along unevaluated
+          return F.Power(F.CI, F.Plus(F.CN1, F.distributePlusOnTimes(F.C2, t)));
         }
       }
       return F.NIL;

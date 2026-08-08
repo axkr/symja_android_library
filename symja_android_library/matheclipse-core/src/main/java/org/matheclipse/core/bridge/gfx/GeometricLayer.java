@@ -33,8 +33,8 @@ public class GeometricLayer {
    */
   public Point2D toPoint2D(IAST vector) {
     return deque.peek().toPoint2D( //
-        vector.arg1().evalf(), //
-        vector.arg2().evalf());
+        vector.arg1().evalfNaN(), //
+        vector.arg2().evalfNaN());
   }
 
   /**
@@ -52,8 +52,8 @@ public class GeometricLayer {
    */
   public IAST toVector(IAST vector) {
     return deque.peek().toVector( //
-        vector.arg1().evalf(), //
-        vector.arg2().evalf());
+        vector.arg1().evalfNaN(), //
+        vector.arg2().evalfNaN());
   }
 
   /**
@@ -151,7 +151,7 @@ public class GeometricLayer {
    * @return non-negative value
    */
   public float model2pixelWidth(IReal modelWidth) {
-    return (float) (Math.sqrt(Math.abs(deque.peek().det())) * modelWidth.evalf());
+    return (float) (Math.sqrt(Math.abs(deque.peek().det())) * modelWidth.evalfNaN());
   }
 
   public double pixel2modelWidth(double pixelWidth) {

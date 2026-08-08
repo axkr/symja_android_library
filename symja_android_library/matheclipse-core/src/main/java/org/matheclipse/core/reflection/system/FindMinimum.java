@@ -343,7 +343,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
             if (!coefficient.isFree(x -> varsList.contains(x), false)) {
               return false;
             }
-            coefficients[offset] = coefficient.evalf();
+            coefficients[offset] = coefficient.evalfNaN();
+              if (Double.isNaN(coefficients[offset])) {
+                return false;
+              }
           }
         }
         continue;
@@ -354,7 +357,11 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       }
       coefficients[offset] = 1.0;
     }
-    equalitiesConstants[equalitiesConstantsIndex[0]++] = rhs.evalf();
+    double equalityConstant = rhs.evalfNaN();
+    if (Double.isNaN(equalityConstant)) {
+      return false;
+    }
+    equalitiesConstants[equalitiesConstantsIndex[0]++] = equalityConstant;
     return true;
   }
 
@@ -389,7 +396,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
             if (!coefficient.isFree(x -> varsList.contains(x), false)) {
               return false;
             }
-            coefficients[offset] = coefficient.evalf();
+            coefficients[offset] = coefficient.evalfNaN();
+              if (Double.isNaN(coefficients[offset])) {
+                return false;
+              }
           }
         }
         continue;
@@ -400,7 +410,11 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       }
       coefficients[offset] = 1.0;
     }
-    inequalitiesConstants[inequalitiesConstantsIndex[0]++] = rhs.evalf();
+    double inequalityConstant = rhs.evalfNaN();
+    if (Double.isNaN(inequalityConstant)) {
+      return false;
+    }
+    inequalitiesConstants[inequalitiesConstantsIndex[0]++] = inequalityConstant;
     return true;
   }
 
@@ -478,31 +492,40 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
               variable, engine);
           if (value != null) {
             int offset = getVariableOffset(varsList, variable);
+            double bound = value[0].evalfNaN();
+            if (Double.isNaN(bound)) {
+              return null;
+            }
             if (value[1] == S.Less) {
-              upperBounds[offset] = value[0].evalf();
+              upperBounds[offset] = bound;
               double ulp = Math.ulp(upperBounds[offset]);
               if (ulp > 0.0) {
                 upperBounds[offset] -= 2 * ulp;
               }
             } else if (value[1] == S.LessEqual) {
-              upperBounds[offset] = value[0].evalf();
+              upperBounds[offset] = bound;
             } else if (value[1] == S.Greater) {
-              lowerBounds[offset] = value[0].evalf();
+              lowerBounds[offset] = bound;
               double ulp = Math.ulp(lowerBounds[offset]);
               if (ulp > 0.0) {
                 lowerBounds[offset] += 2 * ulp;
               }
             } else if (value[1] == S.GreaterEqual) {
-              lowerBounds[offset] = value[0].evalf();
+              lowerBounds[offset] = bound;
             }
             reducedAndAST.remove(j);
             continue;
           }
         } else if (relationAST.argSize() == 3 && relationAST.arg2().equals(variable)) {
           int offset = getVariableOffset(varsList, variable);
+          double lowerBound = relationAST.arg1().evalfNaN();
+          double upperBound = relationAST.arg3().evalfNaN();
+          if (Double.isNaN(lowerBound) || Double.isNaN(upperBound)) {
+            return null;
+          }
           if (relationHead == S.Less) {
-            lowerBounds[offset] = relationAST.arg1().evalf();
-            upperBounds[offset] = relationAST.arg3().evalf();
+            lowerBounds[offset] = lowerBound;
+            upperBounds[offset] = upperBound;
             double ulp = Math.ulp(lowerBounds[offset]);
             if (ulp > 0.0) {
               lowerBounds[offset] += 2 * ulp;
@@ -512,12 +535,12 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
               upperBounds[offset] -= 2 * ulp;
             }
           } else if (relationHead == S.LessEqual) {
-            lowerBounds[offset] = relationAST.arg1().evalf();
-            upperBounds[offset] = relationAST.arg3().evalf();
+            lowerBounds[offset] = lowerBound;
+            upperBounds[offset] = upperBound;
 
           } else if (relationHead == S.Greater) {
-            lowerBounds[offset] = relationAST.arg3().evalf();
-            upperBounds[offset] = relationAST.arg1().evalf();
+            lowerBounds[offset] = upperBound;
+            upperBounds[offset] = lowerBound;
             double ulp = Math.ulp(lowerBounds[offset]);
             if (ulp > 0.0) {
               lowerBounds[offset] += 2 * ulp;
@@ -527,8 +550,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
               upperBounds[offset] -= 2 * ulp;
             }
           } else if (relationHead == S.GreaterEqual) {
-            lowerBounds[offset] = relationAST.arg3().evalf();
-            upperBounds[offset] = relationAST.arg1().evalf();
+            lowerBounds[offset] = upperBound;
+            upperBounds[offset] = lowerBound;
           }
           reducedAndAST.remove(j);
           continue;
@@ -609,7 +632,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         variableList = F.list(list.arg1());
       } else if (list.argSize() == 2 && !list.arg2().isSymbol()) {
         initialValues = new double[1];
-        initialValues[0] = list.arg2().evalf();
+        initialValues[0] = list.arg2().evalfNaN();
+        if (Double.isNaN(initialValues[0])) {
+          return F.NIL;
+        }
         variableList = F.list(list.arg1());
       } else {
         initialValues = new double[list.argSize()];
@@ -625,7 +651,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           initialValues = new double[list.argSize()];
           for (int i = 0; i < list.argSize(); i++) {
             IAST row = (IAST) list.get(i + 1);
-            initialValues[i] = list.getPart(i + 1, 2).evalf();
+            initialValues[i] = list.getPart(i + 1, 2).evalfNaN();
+            if (Double.isNaN(initialValues[i])) {
+              return F.NIL;
+            }
             vars.append(row.arg1());
           }
           variableList = vars;
@@ -633,7 +662,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           initialValues = new double[list.argSize()];
           for (int i = 0; i < list.argSize(); i++) {
             IAST row = (IAST) list.get(i + 1);
-            initialValues[i] = row.arg2().evalf();
+            initialValues[i] = row.arg2().evalfNaN();
+            if (Double.isNaN(initialValues[i])) {
+              return F.NIL;
+            }
             vars.append(row.arg1());
           }
           variableList = vars;

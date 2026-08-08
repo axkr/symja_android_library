@@ -191,7 +191,7 @@ public class QuantumPhysicsFunctions {
             // m2.evalf(), m3.evalf());
             IExpr wigner6j = Wigner.wigner6j((IReal) j1, (IReal) j2, (IReal) j3, (IReal) m1,
                 (IReal) m2, (IReal) m3);
-            return F.num(wigner6j.evalf());
+            return F.num(wigner6j.evalfNaN());
           } catch (Wigner.TriangularException wtex) {
             Errors.printMessage(S.SixJSymbol, "tri", F.List(ast), engine);
             return wtex.getValue();

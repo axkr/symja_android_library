@@ -554,6 +554,19 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->-E^x+x*C(1)+x*ExpIntegralEi(x)}}");
   }
 
+  @Test
+  public void testAndOperatorInsteadOfList() {
+    // the equations and the boundary conditions may be combined with `&&` instead of a list
+    check("DSolve(y'(x)==y(x)+2 && y(0)==1, y(x), x)", //
+        "{{y(x)->-2+3*E^x}}");
+    check("DSolve(y''(x) + y(x) == 0 && y(0)==1 && y'(0)==0, y(x), x)", //
+        "{{y(x)->Cos(x)}}");
+    check("DSolve(y'(x) == -3*y(x)^2 && y(0)==2, y(x), x)", //
+        "{{y(x)->1/(1/2+3*x)}}");
+    check("DSolveValue(y'(x)==y(x)+2 && y(0)==1, y(x), x)", //
+        "-2+3*E^x");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

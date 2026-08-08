@@ -69,16 +69,20 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       extentX = 0.5;
       extentY = 0.5;
     } else if (extentOption.isNumber()) {
-      double val = extentOption.evalf();
-      extentX = val / 2.0;
-      extentY = val / 2.0;
+      double val = extentOption.evalfNaN();
+      if (!Double.isNaN(val)) {
+        extentX = val / 2.0;
+        extentY = val / 2.0;
+      }
     } else if (extentOption.isList() && ((IAST) extentOption).size() >= 3) {
       IExpr ex = ((IAST) extentOption).get(1);
-      if (ex.isNumber())
-        extentX = ex.evalf() / 2.0;
+      double exValue = ex.isNumber() ? ex.evalfNaN() : Double.NaN;
+      if (!Double.isNaN(exValue))
+        extentX = exValue / 2.0;
       IExpr ey = ((IAST) extentOption).get(2);
-      if (ey.isNumber())
-        extentY = ey.evalf() / 2.0;
+      double eyValue = ey.isNumber() ? ey.evalfNaN() : Double.NaN;
+      if (!Double.isNaN(eyValue))
+        extentY = eyValue / 2.0;
     }
 
     // Scaling Logic

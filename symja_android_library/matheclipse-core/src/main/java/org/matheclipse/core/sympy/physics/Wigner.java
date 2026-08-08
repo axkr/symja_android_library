@@ -201,7 +201,7 @@ public class Wigner {
       try {
         IExpr wigner3j =
             Wigner.wigner3j((IReal) j1, (IReal) j2, (IReal) j3, (IReal) m1, (IReal) m2, (IReal) m3);
-        return F.num(wigner3j.evalf());
+        return F.num(wigner3j.evalfNaN());
       } catch (Wigner.NotPhysicalException wnph) {
         Errors.printMessage(S.ThreeJSymbol, "phy", F.List(ast));
         return wnph.getValue();

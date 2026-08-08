@@ -187,7 +187,7 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
         if (covMatrix == null) {
           return F.NIL;
         }
-        nu = nuExpr.evalf();
+        nu = nuExpr.evalfNaN();
         int dim = covMatrix.length;
         meanVector = new double[dim]; // Initialize to zero vector
       } else if (dist.isAST3()) {
@@ -199,7 +199,7 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
         if (meanVector == null || covMatrix == null) {
           return F.NIL;
         }
-        nu = nuExpr.evalf();
+        nu = nuExpr.evalfNaN();
       } else {
         return F.NIL;
       }

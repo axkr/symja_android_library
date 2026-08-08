@@ -37,15 +37,11 @@ public class PrimeZetaP extends AbstractFunctionEvaluator {
   @Override
   public IExpr numericFunction(IAST ast, final EvalEngine engine) {
     if (ast.argSize() == 1) {
-      try {
-        double s = ast.arg1().evalf();
-        // Only evaluate numerically for Real (approximate) arguments greater than 1.0
-        if (!Double.isNaN(s) && s > 1.0) {
-          double result = evaluatePrimeZetaP(s, engine);
-          return F.num(result);
-        }
-      } catch (RuntimeException rex) {
-        // return Errors.printMessage(S.PrimeZetaP, ate);
+      double s = ast.arg1().evalfNaN();
+      // Only evaluate numerically for Real (approximate) arguments greater than 1.0
+      if (!Double.isNaN(s) && s > 1.0) {
+        double result = evaluatePrimeZetaP(s, engine);
+        return F.num(result);
       }
 
       // Handle Complex Numbers
@@ -81,7 +77,7 @@ public class PrimeZetaP extends AbstractFunctionEvaluator {
 
       // Use the evaluator's Zeta function for accuracy
       IAST zetaAst = F.Zeta(F.num(ks));
-      double zetaVal = engine.evaluate(zetaAst).evalf();
+      double zetaVal = engine.evaluate(zetaAst).evalfNaN();
 
       // Default or invalid calculation boundaries
       if (Double.isNaN(zetaVal) || zetaVal <= 1.0) {
@@ -249,7 +245,7 @@ public class PrimeZetaP extends AbstractFunctionEvaluator {
       return new double[] {((IComplexNum) expr).getRealPart(),
           ((IComplexNum) expr).getImaginaryPart()};
     } else if (expr instanceof IInexactNumber) {
-      return new double[] {expr.evalf(), 0.0};
+      return new double[] {expr.evalfNaN(), 0.0};
     } else {
       Complex c = expr.evalfc();
       if (c != null) {

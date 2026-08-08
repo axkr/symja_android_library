@@ -112,13 +112,8 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
 
     if (engine.isDoubleMode()) {
       try {
-        double sDouble = Double.NaN;
-        double aDouble = Double.NaN;
-        try {
-          sDouble = s.evalf();
-          aDouble = a.evalf();
-        } catch (ValidateException ve) {
-        }
+        double sDouble = s.evalfNaN();
+        double aDouble = a.evalfNaN();
         if (aDouble < 0.0 || Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
           Complex sc = s.evalfc();
           Complex ac = a.evalfc();

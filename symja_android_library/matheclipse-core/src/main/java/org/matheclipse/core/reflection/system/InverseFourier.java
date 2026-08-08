@@ -53,8 +53,11 @@ public class InverseFourier extends AbstractFunctionOptionEvaluator {
     final IExpr fourierParameters = options[0];
     if (fourierParameters.isList2()) {
       IAST params = (IAST) fourierParameters;
-      paramA = params.arg1().evalf();
-      paramB = params.arg2().evalf();
+      paramA = params.arg1().evalfNaN();
+      paramB = params.arg2().evalfNaN();
+      if (Double.isNaN(paramA) || Double.isNaN(paramB)) {
+        return F.NIL;
+      }
     }
 
     try {

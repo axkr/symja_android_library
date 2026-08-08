@@ -1090,6 +1090,43 @@ public class IntegerFunctions {
    */
   private static class FractionalPart extends AbstractFunctionEvaluator {
 
+    /**
+     * Determine <code>FractionalPart(expr)</code> from an assumed value of
+     * <code>Mod(expr, 1)</code>.
+     *
+     * <p>
+     * <code>Mod(x, 1)</code> measures from the next integer below <code>x</code> and is therefore
+     * never negative, while <code>FractionalPart(x)</code> truncates towards <code>0</code>:
+     * <code>Mod(-2.6, 1) == 0.4</code> but <code>FractionalPart(-2.6) == -0.6</code>. The two
+     * differ by <code>1</code> for a negative <code>x</code> with a non vanishing fractional part,
+     * so the sign of <code>expr</code> decides which of them applies.
+     *
+     * @param expr
+     * @param engine
+     * @return {@link F#NIL} if no assumption determines the value
+     */
+    private static IExpr fractionalPartFromAssumptions(IExpr expr, EvalEngine engine) {
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions == null) {
+        return F.NIL;
+      }
+      IAST interval = assumptions.intervalData(F.Mod(expr, F.C1));
+      if (interval.isNIL()) {
+        return F.NIL;
+      }
+      IExpr value = IntervalDataSym.toSinglePoint(interval);
+      if (!value.isReal() || value.isZero()) {
+        return F.NIL;
+      }
+      if (expr.isNonNegativeResult()) {
+        return value;
+      }
+      if (expr.isNegativeResult()) {
+        return engine.evaluate(F.Subtract(value, F.C1));
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -1113,6 +1150,10 @@ public class IntegerFunctions {
       }
       if (arg1.isIntegerResult()) {
         return F.C0;
+      }
+      IExpr assumedPart = fractionalPartFromAssumptions(arg1, engine);
+      if (assumedPart.isPresent()) {
+        return assumedPart;
       }
       if (arg1.isQuantity()) {
         IQuantity quantity = (IQuantity) arg1;
@@ -1543,6 +1584,40 @@ public class IntegerFunctions {
       IExpr value = AbstractAssumptions.assumeFunctionValue(F.Mod(m, n));
       if (value.isPresent()) {
         return value;
+      }
+      return modFromAssumptions(m, n, engine);
+    }
+
+    /**
+     * Determine <code>Mod(m, n)</code> from an assumption which forces a linear expression in
+     * <code>m</code> to be an integer.
+     *
+     * <p>
+     * If <code>k == (m + r)/n</code> is assumed to be an integer, then <code>m == k*n - r</code>
+     * and therefore <code>Mod(m, n) == Mod(-r, n)</code>, e.g. the assumption
+     * <code>Element((a+3)/4, Integers)</code> gives <code>Mod(a, 4) == Mod(-3, 4) == 1</code>.
+     *
+     * @param m
+     * @param n
+     * @param engine
+     * @return {@link F#NIL} if no assumption determines the value
+     */
+    private static IExpr modFromAssumptions(IExpr m, IExpr n, EvalEngine engine) {
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions == null || !n.isNumber()) {
+        // a numeric modulus keeps the Mod(-r, n) below from recursing back into this method
+        return F.NIL;
+      }
+      IAST integerElements = assumptions.domainElements(S.Integers);
+      for (int i = 1; i < integerElements.size(); i++) {
+        // n*k - m has to be the constant r
+        IExpr r = engine.evaluate(F.Subtract(F.Times(n, integerElements.get(i)), m));
+        if (r.isNumber() && !r.isZero()) {
+          return engine.evaluate(F.Mod(r.negate(), n));
+        }
+        if (r.isZero()) {
+          return F.C0;
+        }
       }
       return F.NIL;
     }
@@ -1985,14 +2060,8 @@ public class IntegerFunctions {
 
       if (z.isNumericFunction(true) && n.isNumericFunction(true)) {
         try {
-          double zDouble = Double.NaN;
-          double nDouble = Double.NaN;
-          try {
-            zDouble = z.evalf();
-            nDouble = n.evalf();
-          } catch (RuntimeException ve) {
-            Errors.rethrowsInterruptException(ve);
-          }
+          double zDouble = z.evalfNaN();
+          double nDouble = n.evalfNaN();
           if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
             Complex zComplex = z.evalfc();
             Complex nComplex = n.evalfc();
@@ -2131,14 +2200,8 @@ public class IntegerFunctions {
 
         if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
           try {
-            double zDouble = Double.NaN;
-            double nDouble = Double.NaN;
-            try {
-              zDouble = arg1.evalf();
-              nDouble = arg2.evalf();
-            } catch (RuntimeException ve) {
-              Errors.rethrowsInterruptException(ve);
-            }
+            double zDouble = arg1.evalfNaN();
+            double nDouble = arg2.evalfNaN();
             if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
               Complex zComplex = arg1.evalfc();
               Complex nComplex = arg2.evalfc();

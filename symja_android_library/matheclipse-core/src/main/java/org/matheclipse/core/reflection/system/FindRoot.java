@@ -20,7 +20,6 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -410,11 +409,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
     if (varValuePairs.isList2() && !varValuePairs.isListOfLists()) {
       if (!needsComplexComputation) {
-        try {
-          IExpr startValue = varValuePairs.second();
-          // throw an ArgumentTypeException as side effect
-          startValue.evalf();
-        } catch (ArgumentTypeException ate) {
+        IExpr startValue = varValuePairs.second();
+        if (Double.isNaN(startValue.evalfNaN())) {
           needsComplexComputation = true;
         }
       }
@@ -495,15 +491,11 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       if (variableInitialGuessPair.isList2()) {
         vectorOfVariables.append(variableInitialGuessPair.first());
         IExpr guessedValue = variableInitialGuessPair.second();
-        try {
-          double doubleValue = guessedValue.evalf();
-          if (Double.isFinite(doubleValue)) {
-            initialGuess.append(doubleValue);
-          } else {
-            Complex complexValue = engine.evalComplex(guessedValue);
-            initialGuess.append(complexValue);
-          }
-        } catch (ArgumentTypeException ate) {
+        // a non-numeric or non-finite guess falls back to the complex computation
+        double doubleValue = guessedValue.evalfNaN();
+        if (Double.isFinite(doubleValue)) {
+          initialGuess.append(doubleValue);
+        } else {
           Complex complexValue = engine.evalComplex(guessedValue);
           initialGuess.append(complexValue);
         }

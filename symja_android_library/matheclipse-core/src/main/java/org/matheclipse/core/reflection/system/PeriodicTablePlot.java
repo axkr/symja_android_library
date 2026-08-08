@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -94,11 +93,8 @@ public class PeriodicTablePlot extends AbstractFunctionOptionEvaluator {
       S.Automatic, S.Automatic, S.Automatic, F.List(), S.True, S.Automatic, F.List()};
 
   private static double getDouble(IExpr expr) {
-    try {
-      return expr.evalf();
-    } catch (ArgumentTypeException ex) {
-    }
-    return 0.0;
+    double d = expr.evalfNaN();
+    return Double.isNaN(d) ? 0.0 : d;
   }
 
   private static IExpr getLighterColor(IExpr baseColor, double fraction) {

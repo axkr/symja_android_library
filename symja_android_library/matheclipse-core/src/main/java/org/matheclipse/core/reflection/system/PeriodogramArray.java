@@ -122,7 +122,7 @@ public class PeriodogramArray extends AbstractFunctionEvaluator {
         squaredWindowSum = 0.0;
         for (IExpr w : (IAST) windowWeights) {
           // Assuming real weights for standard windows, but Abs^2 is safer general case
-          double val = w.evalf();
+          double val = w.evalfNaN();
           squaredWindowSum += val * val;
         }
       }

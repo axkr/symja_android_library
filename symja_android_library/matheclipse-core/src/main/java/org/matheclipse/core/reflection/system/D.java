@@ -390,6 +390,25 @@ public class D extends AbstractFunctionOptionEvaluator {
     return arg.isRuleAST() || (arg.isListOfRules(true) && !arg.isEmptyList());
   }
 
+  /**
+   * Test if <code>x</code> can be used as the differentiation variable of <code>D(fx, x)</code>.
+   *
+   * <p>
+   * Besides symbols, a general function expression like <code>x(k)</code> or <code>Sin(x)</code> is
+   * accepted and is differentiated as if it were an independent variable. Sums, products and powers
+   * are structured arithmetic expressions and are rejected with message <code>General::ivar</code>,
+   * so <code>D(y, x^2)</code> or <code>D(y, 2*x)</code> stay unevaluated.
+   *
+   * @param x the second argument of <code>D</code>
+   * @return <code>true</code> if <code>x</code> is a valid differentiation variable
+   */
+  private static boolean isDerivativeVariable(IExpr x) {
+    if (x.isVariable()) {
+      return true;
+    }
+    return x.isAST() && !x.isList() && !x.isPlusTimesPower() && !isOptionLike(x);
+  }
+
   private static IExpr evaluateD(final IAST ast, EvalEngine engine) {
     if (ast.isAST1()) {
       return ast.arg1();
@@ -408,7 +427,7 @@ public class D extends AbstractFunctionOptionEvaluator {
         return fx.mapThread(F.D(F.Slot1, x), 1);
       }
 
-      if (!(x.isVariable() || x.isList())) {
+      if (!(isDerivativeVariable(x) || x.isList())) {
         // `1` is not a valid variable.
         return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
@@ -544,7 +563,7 @@ public class D extends AbstractFunctionOptionEvaluator {
             }
             return F.NIL;
           }
-          if (!x.isVariable()) {
+          if (!isDerivativeVariable(x)) {
             // `1` is not a valid variable.
             return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
           }
@@ -558,7 +577,7 @@ public class D extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
 
-      if (!x.isVariable()) {
+      if (!isDerivativeVariable(x)) {
         // `1` is not a valid variable.
         return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
@@ -582,7 +601,7 @@ public class D extends AbstractFunctionOptionEvaluator {
       EvalEngine engine) {
     int[] dim = functionOfX.isPiecewise();
     if (dim != null) {
-      return dPiecewise(dim, (IAST) functionOfX, ast, engine);
+      return dPiecewise(dim, (IAST) functionOfX, x, ast, engine);
     }
 
     if (functionOfX instanceof ASTSeriesData) {
@@ -952,8 +971,59 @@ public class D extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
-  private static IExpr dPiecewise(int[] dim, final IAST piecewiseFunction, final IAST ast,
-      EvalEngine engine) {
+  /**
+   * Open the comparisons of a {@link S#Piecewise} condition which contain the differentiation
+   * variable, i.e. rewrite <code>x&gt;=c</code> to <code>x&gt;c</code> and <code>x&lt;=c</code> to
+   * <code>x&lt;c</code>.
+   *
+   * <p>
+   * A piece is only differentiable in the interior of its condition - at the boundary the left and
+   * the right derivative generally differ - so a closed range of the value becomes an open range of
+   * the derivative. Comparisons which are free of the differentiation variable don't describe a
+   * transition point and are left unchanged.
+   *
+   * @param condition the condition of a <code>Piecewise</code> piece
+   * @param x the differentiation variable
+   * @return the condition with the comparisons containing <code>x</code> opened
+   */
+  private static IExpr openCondition(IExpr condition, IExpr x) {
+    if (condition.isFree(x, true)) {
+      return condition;
+    }
+    if (condition.isAST(S.LessEqual)) {
+      return ((IAST) condition).apply(S.Less);
+    }
+    if (condition.isAST(S.GreaterEqual)) {
+      return ((IAST) condition).apply(S.Greater);
+    }
+    if (condition.isAST(S.Inequality)) {
+      // Inequality(lhs, operator, expr, operator, rhs, ...) - the operators are at even indices
+      IAST inequality = (IAST) condition;
+      IASTMutable result = inequality.copy();
+      for (int i = 2; i < inequality.size(); i += 2) {
+        IExpr operator = inequality.get(i);
+        if (operator == S.LessEqual) {
+          result.set(i, S.Less);
+        } else if (operator == S.GreaterEqual) {
+          result.set(i, S.Greater);
+        }
+      }
+      return result;
+    }
+    if (condition.isAnd() || condition.isOr()) {
+      // Not() isn't mapped - opening the negated comparison would close the condition
+      IAST logical = (IAST) condition;
+      IASTMutable result = logical.copy();
+      for (int i = 1; i < logical.size(); i++) {
+        result.set(i, openCondition(logical.get(i), x));
+      }
+      return result;
+    }
+    return condition;
+  }
+
+  private static IExpr dPiecewise(int[] dim, final IAST piecewiseFunction, final IExpr x,
+      final IAST ast, EvalEngine engine) {
 
     IAST list = (IAST) piecewiseFunction.arg1();
     if (list.size() > 1) {
@@ -961,19 +1031,12 @@ public class D extends AbstractFunctionOptionEvaluator {
       for (int i = 1; i < list.size(); i++) {
         IASTMutable piecewiseD = ast.copy();
         piecewiseD.set(1, list.get(i).first());
-        pwResult.append(F.list(piecewiseD, list.get(i).second()));
+        pwResult.append(F.list(piecewiseD, openCondition(list.get(i).second(), x)));
       }
-      if (piecewiseFunction.size() > 2) {
-        IASTMutable piecewiseD = ast.copy();
-        piecewiseD.set(1, piecewiseFunction.arg2());
-        pwResult.append(F.list(engine.evaluate(piecewiseD), S.True));
-      }
-      IASTMutable piecewise = piecewiseFunction.copy();
-      piecewise.set(1, pwResult);
-      if (piecewise.size() > 2) {
-        piecewise.set(2, S.Indeterminate);
-      }
-      return piecewise;
+      // The opened conditions leave exactly the transition points to the default value, and there
+      // the derivative doesn't exist - so the default becomes Indeterminate and the derivative of
+      // the original default value isn't carried over.
+      return F.Piecewise(pwResult, S.Indeterminate);
     }
     return F.NIL;
   }

@@ -851,6 +851,12 @@ public class ComplexNum implements IComplexNum {
     return fComplex;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public Complex evalfcNaN() {
+    return fComplex;
+  }
+
   @Override
   public INumber evalNumber() {
     return this;
@@ -1704,7 +1710,7 @@ public class ComplexNum implements IComplexNum {
       return plus((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return this.add(F.complexNum(that.evalf()));
+      return this.add(F.complexNum(that.evalfNaN()));
     }
     if (that instanceof ComplexSym) {
       return F.complexNum(fComplex.add(that.evalfc()));
@@ -1956,7 +1962,7 @@ public class ComplexNum implements IComplexNum {
       return times((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return this.multiply(F.complexNum(that.evalf()));
+      return this.multiply(F.complexNum(that.evalfNaN()));
     }
     if (that instanceof ComplexSym) {
       return F.complexNum(fComplex.multiply(that.evalfc()));

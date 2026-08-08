@@ -7,6 +7,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import us.hebi.matlab.mat.format.Mat5Type;
 import us.hebi.matlab.mat.types.MatlabType;
 import us.hebi.matlab.mat.types.Sink;
@@ -55,7 +56,12 @@ class AnyMatrixWrapper extends AbstractMatrixWrapper<AnyMatrix> {
         Mat5Type.Double.writeTag(getNumElements, sink);
         for (int col = 0; col < rows; col++) {
           for (int row = 0; row < columns; row++) {
-            sink.writeDouble(astMatrix.getPart(row + 1, col + 1).evalf());
+            IExpr part = astMatrix.getPart(row + 1, col + 1);
+            double d = part.evalfNaN();
+            if (Double.isNaN(d) && !part.isReal()) {
+              throw new NotSerializableException();
+            }
+            sink.writeDouble(d);
           }
         }
         Mat5Type.Double.writePadding(getNumElements, sink);

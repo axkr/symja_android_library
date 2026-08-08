@@ -73,7 +73,7 @@ public class MatrixPlot extends ListPlot {
         IAST rowAst = (IAST) rowExpr;
         for (int c = 0; c < Math.min(cols, rowAst.size()); c++) {
           try {
-            double val = rowAst.get(c + 1).evalf();
+            double val = rowAst.get(c + 1).evalfNaN();
             data[r][c] = val;
             if (Double.isFinite(val)) {
               if (val < min)

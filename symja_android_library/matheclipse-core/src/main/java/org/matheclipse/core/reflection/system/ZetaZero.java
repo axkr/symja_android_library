@@ -45,13 +45,7 @@ public class ZetaZero extends AbstractFunctionEvaluator {
 
       Apfloat tMin = null;
       if (ast.isAST2()) {
-        double tMinDouble;
-        try {
-          tMinDouble = ast.arg2().evalf();
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          return F.NIL;
-        }
+        double tMinDouble = ast.arg2().evalfNaN();
         if (Double.isNaN(tMinDouble) || Double.isInfinite(tMinDouble)) {
           return F.NIL;
         }

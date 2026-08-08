@@ -58,7 +58,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
     }
     if (!t.isList() && !s.isList() && !t.equals(s)) {
       if (s instanceof INum && t.isSymbol()) {
-        double sDouble = s.evalf();
+        double sDouble = s.evalfNaN();
         final IAST cacheKey = F.List(S.LaplaceTransform, a1, t);
         Object value = engine.getObjectCache(cacheKey);
         final UnaryNumerical unaryNumerical;

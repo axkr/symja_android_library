@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -176,16 +175,17 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
       IExpr imageSizeOpt = options[0];
       if (imageSizeOpt != null) {
         if (imageSizeOpt.isList2()) {
-          try {
-            imgW = imageSizeOpt.first().evalf();
-            imgH = imageSizeOpt.second().evalf();
-          } catch (Exception e) {
+          double width = imageSizeOpt.first().evalfNaN();
+          double height = imageSizeOpt.second().evalfNaN();
+          if (!Double.isNaN(width) && !Double.isNaN(height)) {
+            imgW = width;
+            imgH = height;
           }
         } else if (imageSizeOpt.isNumber()) {
-          try {
-            imgW = imageSizeOpt.evalf();
-            imgH = imgW;
-          } catch (Exception e) {
+          double width = imageSizeOpt.evalfNaN();
+          if (!Double.isNaN(width)) {
+            imgW = width;
+            imgH = width;
           }
         }
       }
@@ -242,14 +242,13 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
    */
   private double getWeightValue(IExpr expr, EvalEngine engine) {
     if (expr.isNumber()) {
-      return expr.evalf();
+      return expr.evalfNaN();
     }
     if (expr.isQuantity()) {
       IQuantity q = (IQuantity) expr;
-      IExpr val = q.value();
-      try {
-        return val.evalf();
-      } catch (ArgumentTypeException ate) {
+      double value = q.value().evalfNaN();
+      if (!Double.isNaN(value)) {
+        return value;
       }
     }
     if (expr.isAST(S.Missing)) {
@@ -258,10 +257,10 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
     try {
       IExpr evaled = engine.evaluate(expr);
       if (evaled.isNumber()) {
-        return evaled.evalf();
+        return evaled.evalfNaN();
       }
       if (evaled.isQuantity()) {
-        return ((IQuantity) evaled).value().evalf();
+        return ((IQuantity) evaled).value().evalfNaN();
       }
     } catch (Exception e) {
     }

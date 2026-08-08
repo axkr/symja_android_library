@@ -130,7 +130,7 @@ public class CurveFitterFunctions {
         createSubstitutionRules(t, parameters);
         final double[] gradient = new double[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
-          gradient[i] = F.subst(gradientList.get(i + 1), listOfRules).evalf();
+          gradient[i] = F.subst(gradientList.get(i + 1), listOfRules).evalfNaN();
         }
         return gradient;
       }

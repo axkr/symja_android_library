@@ -27,7 +27,6 @@ import org.matheclipse.core.eval.CombinatoricUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -2707,34 +2706,46 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return super.subList(startPosition, endPosition);
   }
 
+  /**
+   * Test if the {@link IExpr#evalfNaN()} result <code>converted</code> signals that
+   * <code>value</code> has no machine-sized <code>double</code> representation. A
+   * {@link Double#NaN} which originates from a real number (for example
+   * <code>F.num(Double.NaN)</code>) is a legal entry and not a conversion failure.
+   */
+  private static boolean isNotConvertible(IExpr value, double converted) {
+    return Double.isNaN(converted) && !value.isReal();
+  }
+
   /** {@inheritDoc} */
   @Override
   public double[][] toDoubleMatrix(boolean setMatrixFormat) {
     if (fDimension.length == 2 && fDimension[0] > 0 && fDimension[1] > 0) {
-      IExpr value = null;
-      try {
-        double[][] result = new double[fDimension[0]][fDimension[1]];
-        if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalf();
-          for (int i = 0; i < fDimension[0]; i++) {
-            for (int j = 0; j < fDimension[1]; j++) {
-              result[i][j] = d;
-            }
-          }
-        }
-        for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-          int[] key = entry.getKey();
-          value = entry.getValue();
-          result[key[0] - 1][key[1] - 1] = value.evalf();
-        }
-        return result;
-      } catch (ArgumentTypeException rex) {
-        if (value != null && value.isIndeterminate()) {
-          // Input matrix contains an indeterminate entry.
-          Errors.printMessage(S.SparseArray, "mindet", F.List());
+      double[][] result = new double[fDimension[0]][fDimension[1]];
+      if (!fDefaultValue.isZero()) {
+        double d = fDefaultValue.evalfNaN();
+        if (isNotConvertible(fDefaultValue, d)) {
           return null;
         }
+        for (int i = 0; i < fDimension[0]; i++) {
+          for (int j = 0; j < fDimension[1]; j++) {
+            result[i][j] = d;
+          }
+        }
       }
+      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+        int[] key = entry.getKey();
+        IExpr value = entry.getValue();
+        double d = value.evalfNaN();
+        if (isNotConvertible(value, d)) {
+          if (value.isIndeterminate()) {
+            // Input matrix contains an indeterminate entry.
+            Errors.printMessage(S.SparseArray, "mindet", F.List());
+          }
+          return null;
+        }
+        result[key[0] - 1][key[1] - 1] = d;
+      }
+      return result;
     }
     return null;
   }
@@ -2743,28 +2754,30 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public double[] toDoubleVector() {
     if (fDimension.length == 1 && fDimension[0] > 0) {
-      IExpr value = null;
-      try {
-        double[] result = new double[fDimension[0]];
-        if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalf();
-          for (int i = 0; i < result.length; i++) {
-            result[i] = d;
-          }
-        }
-        for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-          int[] key = entry.getKey();
-          value = entry.getValue();
-          result[key[0] - 1] = value.evalf();
-        }
-        return result;
-      } catch (ArgumentTypeException rex) {
-        if (value != null && value.isIndeterminate()) {
-          // Input matrix contains an indeterminate entry.
-          Errors.printMessage(S.SparseArray, "mindet", F.List());
+      double[] result = new double[fDimension[0]];
+      if (!fDefaultValue.isZero()) {
+        double d = fDefaultValue.evalfNaN();
+        if (isNotConvertible(fDefaultValue, d)) {
           return null;
         }
+        for (int i = 0; i < result.length; i++) {
+          result[i] = d;
+        }
       }
+      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+        int[] key = entry.getKey();
+        IExpr value = entry.getValue();
+        double d = value.evalfNaN();
+        if (isNotConvertible(value, d)) {
+          if (value.isIndeterminate()) {
+            // Input matrix contains an indeterminate entry.
+            Errors.printMessage(S.SparseArray, "mindet", F.List());
+          }
+          return null;
+        }
+        result[key[0] - 1] = d;
+      }
+      return result;
     }
     return null;
   }
@@ -2789,30 +2802,32 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public RealMatrix toRealMatrix() {
     if (fDimension.length == 2 && fDimension[0] > 0 && fDimension[1] > 0) {
-      IExpr value = null;
-      try {
-        OpenMapRealMatrix result = new OpenMapRealMatrix(fDimension[0], fDimension[1]);
-        if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalf();
-          for (int i = 0; i < fDimension[0]; i++) {
-            for (int j = 0; j < fDimension[1]; j++) {
-              result.setEntry(i, j, d);
-            }
-          }
-        }
-        for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-          int[] key = entry.getKey();
-          value = entry.getValue();
-          result.setEntry(key[0] - 1, key[1] - 1, value.evalf());
-        }
-        return result;
-      } catch (ArgumentTypeException rex) {
-        if (value != null && value.isIndeterminate()) {
-          // Input matrix contains an indeterminate entry.
-          Errors.printMessage(S.SparseArray, "mindet", F.List());
+      OpenMapRealMatrix result = new OpenMapRealMatrix(fDimension[0], fDimension[1]);
+      if (!fDefaultValue.isZero()) {
+        double d = fDefaultValue.evalfNaN();
+        if (isNotConvertible(fDefaultValue, d)) {
           return null;
         }
+        for (int i = 0; i < fDimension[0]; i++) {
+          for (int j = 0; j < fDimension[1]; j++) {
+            result.setEntry(i, j, d);
+          }
+        }
       }
+      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+        int[] key = entry.getKey();
+        IExpr value = entry.getValue();
+        double d = value.evalfNaN();
+        if (isNotConvertible(value, d)) {
+          if (value.isIndeterminate()) {
+            // Input matrix contains an indeterminate entry.
+            Errors.printMessage(S.SparseArray, "mindet", F.List());
+          }
+          return null;
+        }
+        result.setEntry(key[0] - 1, key[1] - 1, d);
+      }
+      return result;
     }
     return null;
   }
@@ -2821,28 +2836,30 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public RealVector toRealVector() {
     if (fDimension.length == 1 && fDimension[0] > 0) {
-      IExpr value = null;
-      try {
-        OpenMapRealVector result = new OpenMapRealVector(fDimension[0]);
-        if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalf();
-          for (int i = 0; i < fDimension[0]; i++) {
-            result.setEntry(i, d);
-          }
-        }
-        for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-          int[] key = entry.getKey();
-          value = entry.getValue();
-          result.setEntry(key[0] - 1, value.evalf());
-        }
-        return result;
-      } catch (ArgumentTypeException rex) {
-        if (value != null && value.isIndeterminate()) {
-          // Input matrix contains an indeterminate entry.
-          Errors.printMessage(S.SparseArray, "mindet", F.List());
+      OpenMapRealVector result = new OpenMapRealVector(fDimension[0]);
+      if (!fDefaultValue.isZero()) {
+        double d = fDefaultValue.evalfNaN();
+        if (isNotConvertible(fDefaultValue, d)) {
           return null;
         }
+        for (int i = 0; i < fDimension[0]; i++) {
+          result.setEntry(i, d);
+        }
       }
+      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+        int[] key = entry.getKey();
+        IExpr value = entry.getValue();
+        double d = value.evalfNaN();
+        if (isNotConvertible(value, d)) {
+          if (value.isIndeterminate()) {
+            // Input matrix contains an indeterminate entry.
+            Errors.printMessage(S.SparseArray, "mindet", F.List());
+          }
+          return null;
+        }
+        result.setEntry(key[0] - 1, d);
+      }
+      return result;
     }
     return null;
   }

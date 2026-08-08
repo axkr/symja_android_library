@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -57,15 +56,15 @@ public class PieChart extends ListPlot {
         } else if (key.toString().equals("SectorOrigin")) {
           // Basic parsing for SectorOrigin -> {val, "Clockwise"/"CounterClockwise"}
           if (val.isList() && val.argSize() > 0) {
-            try {
-              startAngle = ((IAST) val).arg1().evalf();
-              // Convert degrees to radians if mostly numbers are used?
-              // Mma usually assumes Radians in math, but Degrees in SectorOrigin options often.
-              // For safety, let's assume the user provided Radians or Degrees wrapped.
-              // If simple number, assume radians to match Disk? Or Degrees to match SectorOrigin
-              // default?
-              // "SectorOrigin -> {90 Degree, ...}" -> 1.57
-            } catch (ArgumentTypeException e) {
+            // Convert degrees to radians if mostly numbers are used?
+            // Mma usually assumes Radians in math, but Degrees in SectorOrigin options often.
+            // For safety, let's assume the user provided Radians or Degrees wrapped.
+            // If simple number, assume radians to match Disk? Or Degrees to match SectorOrigin
+            // default?
+            // "SectorOrigin -> {90 Degree, ...}" -> 1.57
+            double angle = ((IAST) val).arg1().evalfNaN();
+            if (!Double.isNaN(angle)) {
+              startAngle = angle;
             }
           }
         }
@@ -213,7 +212,7 @@ public class PieChart extends ListPlot {
       }
       if (expr instanceof INumber)
         return ((INumber) expr).reDoubleValue();
-      return expr.evalf();
+      return expr.evalfNaN();
     } catch (Exception e) {
       return Double.NaN;
     }

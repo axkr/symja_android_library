@@ -709,12 +709,11 @@ public class ChocoConvert {
       return temp;
     }
     if (expr.isNumericFunction(true)) {
-      try {
-        double value = expr.evalf();
+      double value = expr.evalfNaN();
+      if (!Double.isNaN(value)) {
         return net.realVar(value);
-      } catch (ArgumentTypeException ate) {
-        // fall through
       }
+      // fall through
     }
     if (expr.isAST()) {
       IAST ast = (IAST) expr;

@@ -203,6 +203,11 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
     return new Complex(reDoubleValue(), imDoubleValue());
   }
 
+  @Override
+  default Complex evalfcNaN() {
+    return new Complex(reDoubleValue(), imDoubleValue());
+  }
+
   default INumber evaluatePrecision(EvalEngine engine) {
     return this;
   }

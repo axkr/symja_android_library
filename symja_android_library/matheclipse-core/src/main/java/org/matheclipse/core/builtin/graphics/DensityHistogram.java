@@ -67,8 +67,8 @@ public class DensityHistogram extends ListPlot {
       IExpr row = dataList.get(i);
       if (row.isList() && row.size() >= 2) {
         try {
-          double x = ((IAST) row).get(1).evalf();
-          double y = ((IAST) row).get(2).evalf();
+          double x = ((IAST) row).get(1).evalfNaN();
+          double y = ((IAST) row).get(2).evalfNaN();
           if (Double.isFinite(x) && Double.isFinite(y)) {
             xValues[count] = x;
             yValues[count] = y;

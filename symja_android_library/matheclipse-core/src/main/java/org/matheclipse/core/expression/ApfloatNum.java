@@ -99,7 +99,7 @@ public class ApfloatNum implements INum {
           engine.setNumericPrecision(ParserConfig.MACHINE_PRECISION * 2);
           if (base.isRational()) {
             IRational ratBase = (IRational) base;
-            final double fNum = base.evalf();
+            final double fNum = base.evalfNaN();
             if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
               if (ratBase.isPositive()) {
                 ApfloatNum apfloat = ratBase.apfloatNumValue();

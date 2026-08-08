@@ -2,7 +2,6 @@ package org.matheclipse.core.graphics;
 
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
@@ -365,23 +364,22 @@ public class ECharts {
         if (isNonReal(xExpr) || isNonReal(yExpr)) {
           values.append("''");
         } else {
-          try {
-            double xValue = xExpr.evalf();
+          double xValue = xExpr.evalfNaN();
+          double yValue = yExpr.evalfNaN();
+          // only update if both coordinates are real
+          if (!Double.isNaN(xValue) && !Double.isNaN(yValue)) {
             if (xValue > minMax[1]) {
               minMax[1] = xValue;
             }
             if (xValue < minMax[0]) {
               minMax[0] = xValue;
             }
-            double yValue = yExpr.evalf();
             if (yValue > minMax[3]) {
               minMax[3] = yValue;
             }
             if (yValue < minMax[2]) {
               minMax[2] = yValue;
             }
-          } catch (ArgumentTypeException e) {
-            // yValue isn't real ?
           }
           toJS.convertExpr(values, arg);
         }
@@ -402,21 +400,20 @@ public class ECharts {
           if (isNonReal(yExpr)) {
             values.append("''");
           } else {
-            try {
+            double yValue = yExpr.evalfNaN();
+            // yValue isn't real ?
+            if (!Double.isNaN(yValue)) {
               double xValue = i;
               if (xValue > minMax[1]) {
                 minMax[1] = xValue;
               } else if (xValue < minMax[0]) {
                 minMax[0] = xValue;
               }
-              double yValue = yExpr.evalf();
               if (yValue > minMax[3]) {
                 minMax[3] = yValue;
               } else if (yValue < minMax[2]) {
                 minMax[2] = yValue;
               }
-            } catch (ArgumentTypeException e) {
-              // yValue isn't real ?
             }
             toJS.convertExpr(values, yExpr);
           }

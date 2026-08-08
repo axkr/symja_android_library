@@ -73,8 +73,11 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
           IExpr arg1 = matrix.get(j).first();
           minMaxList.append(arg1);
         }
-        double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalf();
-        double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalf();
+        double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalfNaN();
+        double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalfNaN();
+        if (Double.isNaN(min) || Double.isNaN(max)) {
+          return F.NIL;
+        }
         if (rowsSize <= 5) {
           IAST interpolator = F.Function(F.InterpolatingPolynomial(matrix, F.Slot1));
           return InterpolatingFunctionExpr.newInstance(interpolator, min, max);
@@ -132,8 +135,11 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       return arg1;
     });
 
-    double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalf();
-    double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalf();
+    double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalfNaN();
+    double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalfNaN();
+    if (Double.isNaN(min) || Double.isNaN(max)) {
+      return null;
+    }
     return InterpolatingFunctionExpr.newInstance(interpolator, min, max);
   }
 

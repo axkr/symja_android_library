@@ -678,6 +678,13 @@ public class EvalEngine implements Serializable {
    */
   transient int fOptimizeExpressionDepth = 0;
 
+  /**
+   * Reentrancy depth counter of {@code Simplify}/{@code FullSimplify}. Builtins that the simplifier
+   * calls as a rewrite candidate simplify their argument again internally; this counter lets them
+   * skip that while the simplifier is already running (see {@link #incSimplifyDepth()}).
+   */
+  transient int fSimplifyDepth = 0;
+
   transient String f$Input = null;
 
   transient String f$InputFileName = null;
@@ -1812,18 +1819,23 @@ public class EvalEngine implements Serializable {
     if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
       if (fNumericMode //
           && mutableAST.isBuiltInFunction()//
-          && mutableAST.forAll(x -> x.isInexactNumber()) //
+          // REAL and DOUBLECOMPLEX are only set by inexact numbers
+          && (mutableAST.isUniformAny(UniformFlags.REAL | UniformFlags.DOUBLECOMPLEX)
+              || mutableAST.forAll(x -> x.isInexactNumber())) //
           && symbol != S.None) {
         IExpr temp = numericFunction((IBuiltInSymbol) symbol, mutableAST);
         if (temp.isPresent()) {
           return temp;
         }
       } else if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
-        if (mutableAST.exists(x -> x.isIndeterminate())) {
-          return S.Indeterminate;
-        }
-        if (mutableAST.exists(x -> x.isUndefined())) {
-          return S.Undefined;
+        // Indeterminate and Undefined are symbols, so they can't occur in uniform numeric arguments
+        if (!mutableAST.isUniform(UniformFlags.NUMBER)) {
+          if (mutableAST.exists(x -> x.isIndeterminate())) {
+            return S.Indeterminate;
+          }
+          if (mutableAST.exists(x -> x.isUndefined())) {
+            return S.Undefined;
+          }
         }
       }
     }
@@ -2001,6 +2013,45 @@ public class EvalEngine implements Serializable {
    */
   public final Complex evalComplex(IExpr expr, final Function<IExpr, IExpr> function)
       throws ArgumentTypeException {
+    return evalComplex(expr, function, true);
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
+   * org.hipparchus.complex.Complex</code> value. In contrast to {@link #evalComplex(IExpr)} this
+   * method returns {@link Complex#NaN} instead of throwing an exception, if <code>expr</code>
+   * cannot be converted into a machine-sized complex value.
+   *
+   * @param expr
+   * @return {@link Complex#NaN} if the expression cannot be converted
+   */
+  public final Complex evalComplexNaN(IExpr expr) {
+    return evalComplex(expr, null, false);
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
+   * org.hipparchus.complex.Complex</code> value. In contrast to
+   * {@link #evalComplex(IExpr, Function)} this method returns {@link Complex#NaN} instead of
+   * throwing an exception, if <code>expr</code> cannot be converted into a machine-sized complex
+   * value.
+   *
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return {@link Complex#NaN} if the expression cannot be converted
+   */
+  public final Complex evalComplexNaN(IExpr expr, final Function<IExpr, IExpr> function) {
+    return evalComplex(expr, function, false);
+  }
+
+  /**
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @param throwOnFailure if <code>true</code> throw an {@link ArgumentTypeException} if the
+   *        expression cannot be converted; if <code>false</code> return {@link Complex#NaN}
+   */
+  private Complex evalComplex(IExpr expr, final Function<IExpr, IExpr> function,
+      boolean throwOnFailure) {
     if (expr.isReal()) {
       return new Complex(((IReal) expr).doubleValue());
     }
@@ -2024,13 +2075,41 @@ public class EvalEngine implements Serializable {
         return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
       }
       if (result.isAST(S.Labeled, 3, 4)) {
-        return evalComplex(result.first(), function);
+        return evalComplex(result.first(), function, throwOnFailure);
       }
+    } catch (RuntimeException rex) {
+      if (throwOnFailure) {
+        throw rex;
+      }
+      rethrowUnrecoverable(rex);
     } finally {
       fQuietMode = quietMode;
     }
-    throw new ArgumentTypeException("Expression \"" + Errors.shorten(expr)
-        + "\" cannot be converted to a machine-sized Complex numeric value!");
+    if (throwOnFailure) {
+      throw new ArgumentTypeException("Expression \"" + Errors.shorten(expr)
+          + "\" cannot be converted to a machine-sized Complex numeric value!");
+    }
+    return Complex.NaN;
+  }
+
+  /**
+   * Rethrow those exceptions which must never be swallowed and converted into a <code>NaN</code>
+   * value.
+   *
+   * <p>
+   * {@link FlowControlException}s carry the control flow of the interpreter (<code>Abort[]</code>,
+   * <code>Throw[]</code>, <code>Return[]</code>, <code>Break[]</code>, <code>Continue[]</code>) or
+   * signal an exceeded evaluation limit (<code>$RecursionLimit</code>,
+   * <code>$IterationLimit</code>, timeouts, memory limits). Swallowing them would break
+   * <code>Catch[]</code> semantics and let runaway evaluations continue.
+   *
+   * @param rex the exception which was caught while converting an expression to a numeric value
+   */
+  private static void rethrowUnrecoverable(RuntimeException rex) {
+    if (rex instanceof FlowControlException) {
+      throw rex;
+    }
+    Errors.rethrowsInterruptException(rex);
   }
 
   public final Complex[][] evalComplexMatrix(final IExpr expr) {
@@ -2156,9 +2235,48 @@ public class EvalEngine implements Serializable {
    * 
    * @param expr
    * @param function maybe <code>null</code>; returns a substitution value for some expressions
-   * @param defaultValue
+   * @param defaultValue if {@link Double#NaN} an {@link ArgumentTypeException} is thrown instead of
+   *        returning the default value
    */
   public final double evalDouble(IExpr expr, Function<IExpr, IExpr> function, double defaultValue) {
+    return evalDouble(expr, function, defaultValue, Double.isNaN(defaultValue));
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value. In contrast to
+   * {@link #evalDouble(IExpr)} this method returns {@link Double#NaN} instead of throwing an
+   * exception, if <code>expr</code> cannot be converted into a machine-sized double value.
+   *
+   * @param expr
+   * @return {@link Double#NaN} if the expression cannot be converted
+   */
+  public final double evalDoubleNaN(IExpr expr) {
+    return evalDouble(expr, null, Double.NaN, false);
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value. In contrast to
+   * {@link #evalDouble(IExpr, Function)} this method returns {@link Double#NaN} instead of throwing
+   * an exception, if <code>expr</code> cannot be converted into a machine-sized double value.
+   *
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return {@link Double#NaN} if the expression cannot be converted
+   */
+  public final double evalDoubleNaN(IExpr expr, Function<IExpr, IExpr> function) {
+    return evalDouble(expr, function, Double.NaN, false);
+  }
+
+  /**
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @param defaultValue returned if <code>throwOnFailure</code> is <code>false</code> and the
+   *        expression cannot be converted
+   * @param throwOnFailure if <code>true</code> throw an {@link ArgumentTypeException} if the
+   *        expression cannot be converted; if <code>false</code> return <code>defaultValue</code>
+   */
+  private double evalDouble(IExpr expr, Function<IExpr, IExpr> function, double defaultValue,
+      boolean throwOnFailure) {
     if (expr.isReal()) {
       return ((IReal) expr).doubleValue();
     }
@@ -2174,7 +2292,7 @@ public class EvalEngine implements Serializable {
       if (F.isZero(cc.getImaginaryPart())) {
         return cc.getRealPart();
       }
-      if (Double.isNaN(defaultValue)) {
+      if (throwOnFailure) {
         throw new ArgumentTypeException("Expression \"" + Errors.shorten(expr)
             + "\" cannot be converted to a machine-sized double numeric value!");
       }
@@ -2225,10 +2343,15 @@ public class EvalEngine implements Serializable {
           return result.first().evalReal().doubleValue();
         }
       }
+    } catch (RuntimeException rex) {
+      if (throwOnFailure) {
+        throw rex;
+      }
+      rethrowUnrecoverable(rex);
     } finally {
       fQuietMode = quietMode;
     }
-    if (Double.isNaN(defaultValue)) {
+    if (throwOnFailure) {
       throw new ArgumentTypeException("Expression \"" + Errors.shorten(expr)
           + "\" cannot be converted to a machine-sized double numeric value!");
     }
@@ -2418,6 +2541,12 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return <code>ast</code> if no evaluation was executed.
    */
+  /**
+   * <code>true</code> while a pattern matcher is built from a pattern expression in
+   * {@link #evalPattern(IExpr)}, as opposed to the left-hand-side of a definition.
+   */
+  private transient boolean fEvalPatternMatcherMode = false;
+
   public IExpr evalHoldPattern(IAST ast) {
     return evalHoldPattern(ast, false, false);
   }
@@ -2594,10 +2723,20 @@ public class EvalEngine implements Serializable {
             if (Thread.interrupted()) {
               throw TimeoutException.TIMED_OUT;
             }
-            if (Config.DEBUG && temp.equals(result)) {
-              // Endless iteration detected in `1` in evaluation loop.
-              Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
-              IterationLimitExceeded.throwIt(fIterationLimit, result);
+            // the cheap head test first: equals() compares the expressions structurally and this is
+            // the innermost loop of the evaluation
+            if (result.isAST(S.Integrate) && temp.equals(result)) {
+              // The evaluation returned the expression unchanged, so every further iteration would
+              // repeat the same work. Treat it as a fixed point instead of iterating until
+              // $IterationLimit is exceeded.
+              if (Config.DEBUG) {
+                // Endless iteration detected in `1` in evaluation loop.
+                Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
+              }
+              if (result instanceof IAST) {
+                ((IAST) result).setEvalEpoch(SYSTEM_EPOCH.get());
+              }
+              return iterationCounter == 0 ? F.NIL : result;
             }
             if (fOnOffMode) {
               printOnOffTrace(result, temp);
@@ -2885,7 +3024,9 @@ public class EvalEngine implements Serializable {
    */
   public final IExpr evalPattern(final IExpr expr) {
     boolean numericMode = fNumericMode;
+    boolean patternMatcherMode = fEvalPatternMatcherMode;
     try {
+      fEvalPatternMatcherMode = true;
       if (expr.isFreeOfPatterns()) {
         return evalWithoutNumericReset(expr);
       }
@@ -2903,6 +3044,7 @@ public class EvalEngine implements Serializable {
       return expr;
     } finally {
       setNumericMode(numericMode);
+      fEvalPatternMatcherMode = patternMatcherMode;
     }
   }
 
@@ -2937,10 +3079,28 @@ public class EvalEngine implements Serializable {
    * @see EvalEngine#evalWithoutNumericReset(IExpr)
    */
   public final IExpr evalQuiet(final IExpr expr) {
+    return withQuietMode(() -> evaluate(expr));
+  }
+
+  /**
+   * Run <code>supplier</code> in &quot;quiet mode&quot; and restore the previous mode afterwards.
+   * In &quot;quiet mode&quot; all warnings will be suppressed.
+   *
+   * <p>
+   * Use this for a computation which is more than a single evaluation - a speculative rewrite which
+   * evaluates several intermediate expressions, for example - where the messages produced along the
+   * way describe expressions the caller never sees. For a plain expression prefer
+   * {@link #evalQuiet(IExpr)} or {@link #evalQuietNIL(IExpr)}.
+   *
+   * @param <T> the result type of the supplier
+   * @param supplier the computation to run
+   * @return whatever <code>supplier</code> returns
+   */
+  public final <T> T withQuietMode(final Supplier<T> supplier) {
     boolean quiet = isQuietMode();
     try {
       setQuietMode(true);
-      return evaluate(expr);
+      return supplier.get();
     } finally {
       setQuietMode(quiet);
     }
@@ -2955,13 +3115,7 @@ public class EvalEngine implements Serializable {
    * @see EvalEngine#evalWithoutNumericReset(IExpr)
    */
   public final IExpr evalQuietNIL(final IExpr expr) {
-    boolean quiet = isQuietMode();
-    try {
-      setQuietMode(true);
-      return evaluateNIL(expr);
-    } finally {
-      setQuietMode(quiet);
-    }
+    return withQuietMode(() -> evaluateNIL(expr));
   }
 
   /**
@@ -3106,6 +3260,28 @@ public class EvalEngine implements Serializable {
 
     final int attributes = symbol.getAttributes();
     IASTMutable resultList = F.NIL;
+
+    if (fEvalPatternMatcherMode && ast.isAST(S.Condition, 3)) {
+      // Condition() has the HoldAll attribute, so the loop below would leave both arguments
+      // unevaluated. When a matcher is built from `lhs /; test` only the test has to stay
+      // unevaluated though: the left-hand-side is a pattern like any other and is evaluated, which
+      // is what HoldPattern() exists to opt out of. Without this, a computed sub-expression of the
+      // pattern (for example the exponent in `a_.*v_^Expon(px,x)`) is matched literally and the
+      // pattern never matches.
+      //
+      // Only while a matcher is built (see evalPattern). For the left-hand-side of a definition
+      // (`lhs /; test = rhs`) the pattern must stay untouched, because evaluating it would apply
+      // the rules already defined for the very symbol which is being defined.
+      IExpr lhs = ast.arg1();
+      if (lhs.isAST()) {
+        IExpr temp =
+            evalSetAttributesRecursive((IAST) lhs, noEvaluation, evalNumericFunction, level + 1);
+        if (temp.isPresent()) {
+          return ast.setAtCopy(1, temp);
+        }
+      }
+      return F.NIL;
+    }
 
     if ((ISymbol.HOLDALL & attributes) != ISymbol.HOLDALL) {
       final int astSize = ast.size();
@@ -3642,6 +3818,37 @@ public class EvalEngine implements Serializable {
    */
   public int getOptimizeExpressionDepth() {
     return fOptimizeExpressionDepth;
+  }
+
+  /**
+   * Increment the reentrancy depth counter of {@code Simplify}/{@code FullSimplify} and return the
+   * new depth. Builtins that {@code Simplify} calls as a rewrite candidate — {@code Apart},
+   * {@code PossibleZeroQ} — simplify their argument again internally; they use this counter to skip
+   * that work while the simplifier is already running on the stack, where the surrounding pipeline
+   * covers it anyway.
+   *
+   * @return the new (incremented) simplifier reentrancy depth
+   */
+  public int incSimplifyDepth() {
+    return ++fSimplifyDepth;
+  }
+
+  /**
+   * Decrement the reentrancy depth counter of {@code Simplify}/{@code FullSimplify}.
+   *
+   * @return the new (decremented) simplifier reentrancy depth
+   */
+  public int decSimplifyDepth() {
+    return --fSimplifyDepth;
+  }
+
+  /**
+   * Get the current reentrancy depth of {@code Simplify}/{@code FullSimplify}.
+   *
+   * @return the current simplifier reentrancy depth (<code>0</code> if no simplifier is running)
+   */
+  public int getSimplifyDepth() {
+    return fSimplifyDepth;
   }
 
   public final Context getContext() {

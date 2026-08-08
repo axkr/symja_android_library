@@ -85,9 +85,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IAST row = (IAST) data.get(i);
-      double x = row.arg1().evalf();
-      double y = row.arg2().evalf();
-      double z = row.arg3().evalf();
+      double x = row.arg1().evalfNaN();
+      double y = row.arg2().evalfNaN();
+      double z = row.arg3().evalfNaN();
 
       if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z) && !Double.isInfinite(x)
           && !Double.isInfinite(y) && !Double.isInfinite(z)) {
@@ -139,15 +139,19 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     if (dataRangeOpt.isList() && ((IAST) dataRangeOpt).argSize() == 2) {
       IAST range = (IAST) dataRangeOpt;
       if (range.arg1().isList() && range.arg2().isList()) {
-        try {
-          IAST xRange = (IAST) range.arg1();
-          IAST yRange = (IAST) range.arg2();
-          xMin = xRange.arg1().evalf();
-          xMax = xRange.arg2().evalf();
-          yMin = yRange.arg1().evalf();
-          yMax = yRange.arg2().evalf();
-        } catch (RuntimeException rex) {
-          // ignore parsing error, stick to defaults
+        IAST xRange = (IAST) range.arg1();
+        IAST yRange = (IAST) range.arg2();
+        double xMinValue = xRange.arg1().evalfNaN();
+        double xMaxValue = xRange.arg2().evalfNaN();
+        double yMinValue = yRange.arg1().evalfNaN();
+        double yMaxValue = yRange.arg2().evalfNaN();
+        if (!Double.isNaN(xMinValue) && !Double.isNaN(xMaxValue) && !Double.isNaN(yMinValue)
+            && !Double.isNaN(yMaxValue)) {
+          // otherwise ignore the parsing error and stick to the defaults
+          xMin = xMinValue;
+          xMax = xMaxValue;
+          yMin = yMinValue;
+          yMax = yMaxValue;
         }
       }
     }
@@ -168,7 +172,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       for (int j = 1; j <= cols; j++) {
         indices[i - 1][j - 1] = -1;
         double x = (cols > 1) ? xMin + (j - 1) * (xMax - xMin) / (cols - 1.0) : xMin;
-        double z = row.get(j).evalf();
+        double z = row.get(j).evalfNaN();
 
         if (!Double.isNaN(z) && !Double.isInfinite(z)) {
           indices[i - 1][j - 1] = builder.addVertex(x, y, z, null, null);

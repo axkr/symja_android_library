@@ -280,7 +280,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
   private static ImageExpr createImageExpr(BufferedImage buffer, int rowSize, int colSize) {
     final IAST byteMatrix = ImageFormat.from(buffer);
     IAST resultMatrix = F.matrix(
-        (i, j) -> F.num((byteMatrix.getPart(i + 1, j + 1).evalf()) / 255.0), rowSize, colSize);
+        (i, j) -> F.num((byteMatrix.getPart(i + 1, j + 1).evalfNaN()) / 255.0), rowSize, colSize);
     Extension format = Extension.PNG;
     try (OutputStream outputStream = new ByteArrayOutputStream()) {
       Export.exportImage(outputStream, resultMatrix, format);

@@ -51,26 +51,19 @@ public final class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFu
 
   @Override
   public double value(final double x, final double y) {
-    double result = 0.0;
-    try {
-      final INum xValue = F.num(x);
-      final INum yValue = F.num(y);
-      // substitution is more thread safe than direct value assigning to global variables
-      final Function<IExpr, IExpr> function = arg -> {
-        if (arg.equals(variable1)) {
-          return xValue;
-        }
-        if (arg.equals(variable2)) {
-          return yValue;
-        }
-        return F.NIL;
-      };
-      result = fun.evalf(function);
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      return Double.NaN;
-    }
-    return result;
+    final INum xValue = F.num(x);
+    final INum yValue = F.num(y);
+    // substitution is more thread safe than direct value assigning to global variables
+    final Function<IExpr, IExpr> function = arg -> {
+      if (arg.equals(variable1)) {
+        return xValue;
+      }
+      if (arg.equals(variable2)) {
+        return yValue;
+      }
+      return F.NIL;
+    };
+    return fun.evalfNaN(function);
   }
 
   public ComplexNum value(final ComplexNum z1, final ComplexNum z2) {

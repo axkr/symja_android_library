@@ -27,9 +27,8 @@ public class BoxMatrix extends AbstractFunctionEvaluator {
       dimension = listR.argSize();
     } else if (!rIsAll) {
       // Validate that it evaluates to a number
-      try {
-        arg1Double = arg1.evalf();
-      } catch (Exception e) {
+      arg1Double = arg1.evalfNaN();
+      if (Double.isNaN(arg1Double)) {
         return F.NIL;
       }
     }
@@ -64,9 +63,8 @@ public class BoxMatrix extends AbstractFunctionEvaluator {
         if (ri == S.All) {
           r[i] = Double.POSITIVE_INFINITY;
         } else {
-          try {
-            r[i] = ri.evalf();
-          } catch (Exception e) {
+          r[i] = ri.evalfNaN();
+          if (Double.isNaN(r[i])) {
             return F.NIL;
           }
         }

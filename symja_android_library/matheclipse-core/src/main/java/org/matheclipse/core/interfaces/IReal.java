@@ -80,7 +80,17 @@ public interface IReal extends INumber {
   }
 
   @Override
+  default double evalfNaN() {
+    return doubleValue();
+  }
+
+  @Override
   default Complex evalfc() throws ArgumentTypeException {
+    return new Complex(doubleValue());
+  }
+
+  @Override
+  default Complex evalfcNaN() {
     return new Complex(doubleValue());
   }
 
@@ -189,6 +199,11 @@ public interface IReal extends INumber {
   @Override
   default boolean isNonNegativeResult() {
     return !isNegative();
+  }
+
+  @Override
+  default boolean isNonPositiveResult() {
+    return !isPositive();
   }
 
   /**

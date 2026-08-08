@@ -38,7 +38,18 @@ import io.pebbletemplates.pebble.template.PebbleTemplateImpl;
 
 public class Errors {
 
-  private static PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
+  /**
+   * Holder for the lazily created Pebble template engine.
+   *
+   * <p>
+   * {@link #initGeneralMessages()} is called from the {@link F} class initializer, so the
+   * {@link Errors} class is initialized during start-up. Building the engine eagerly would load the
+   * complete Pebble template engine there, although templates are only needed when a message with a
+   * template has to be rendered.
+   */
+  private static final class PebbleHolder {
+    static final PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
+  }
 
   private final static Errors ERRORS_INSTANCE = new Errors();
 
@@ -282,6 +293,7 @@ public class Errors {
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
       "nodim", "Invalid dimension specification `1`.", //
+      "naqs", "`1` is not a quantified system of equations and inequalities.", //
       "nofirst", "`1` has zero length and no first element.", //
       "nofwd", "No enclosing For, While or Do found for `1`.", //
       "noneg", "Argument `1` should be a real non-negative number.", //
@@ -874,7 +886,7 @@ public class Errors {
     }
     BodyNode body = new BodyNode(0, nodes);
     RootNode rootNode = new RootNode(body);
-    return new PebbleTemplateImpl(PEBBLE_ENGINE, rootNode, templateStr);
+    return new PebbleTemplateImpl(PebbleHolder.PEBBLE_ENGINE, rootNode, templateStr);
   }
 
   /**
@@ -887,7 +899,7 @@ public class Errors {
    */
   private static void templateApply(String templateString, Writer outputWriter,
       Map<String, Object> context) throws IOException {
-    PebbleCache<Object, PebbleTemplate> cache = PEBBLE_ENGINE.getTemplateCache();
+    PebbleCache<Object, PebbleTemplate> cache = PebbleHolder.PEBBLE_ENGINE.getTemplateCache();
     PebbleTemplate template =
         cache.computeIfAbsent(templateString, x -> templateCompile(templateString));
 

@@ -32,12 +32,7 @@ public class NSum extends Sum {
 
     @Override
     public Double apply(Long value) {
-      try {
-        return unaryFunction.evalf(x -> x.equals(variable) ? F.ZZ(value) : F.NIL);
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        return Double.NaN;
-      }
+      return unaryFunction.evalfNaN(x -> x.equals(variable) ? F.ZZ(value) : F.NIL);
     }
   }
 

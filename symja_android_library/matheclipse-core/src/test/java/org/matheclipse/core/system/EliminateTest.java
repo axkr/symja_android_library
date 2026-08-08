@@ -15,8 +15,10 @@ public class EliminateTest extends ExprEvaluatorTestCase {
     // check("Eliminate({a0*x^p+a1*x^q==0},x)", //
     // "(-a1)*x^q == a0*x^p");
 
+    // the same equation with both sides negated - `Resultant`, which eliminates the variables,
+    // changes sign with the order of its arguments
     check("Eliminate({x^2 + y^2 + z^2 == 1, x - y + z == 2, x^3 - y^2 == z + 1}, {y, z})",
-        "18*x-4*x^2+28*x^3-8*x^4-4*x^5-4*x^6==27");
+        "-18*x+4*x^2-28*x^3+8*x^4+4*x^5+4*x^6==-27");
 
     // print: Eliminate: y>2 is not a well-formed equation.
     check("Eliminate({x==y,y>2},{x})", //

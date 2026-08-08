@@ -851,6 +851,25 @@ public final class Validate {
    * @param position the position of the equations argument in the <code>ast</code> expression.
    */
   public static IASTAppendable checkEquationsAndInequations(final IAST ast, int position) {
+    return checkEquationsAndInequations(ast, position, false);
+  }
+
+  /**
+   * Like {@link #checkEquationsAndInequations(IAST, int)}, but a term which isn't a relation can be
+   * read as the equation <code>expr == 0</code>.
+   *
+   * <p>
+   * That reading belongs to the numerical polynomial solvers <code>NSolve</code> and
+   * <code>NSolveValues</code>, which take a polynomial system, and not to <code>Solve</code>, which
+   * requires a quantified system of equations and inequalities.
+   *
+   * @param ast
+   * @param position the position of the equations argument in the <code>ast</code> expression
+   * @param bareExpressionsAreEquations if <code>true</code> read a term which isn't a relation as
+   *        the equation <code>expr == 0</code>
+   */
+  public static IASTAppendable checkEquationsAndInequations(final IAST ast, int position,
+      boolean bareExpressionsAreEquations) {
     IExpr expr = ast.get(position);
     IASTAppendable termsEqualZeroList;
     if (expr.isList() || expr.isAnd()) {
@@ -858,11 +877,11 @@ public final class Validate {
       IAST eqns = (IAST) expr;
       termsEqualZeroList = F.ListAlloc(eqns.size());
       for (int i = 1; i < eqns.size(); i++) {
-        addEquationOrInequation(eqns.get(i), termsEqualZeroList);
+        addEquationOrInequation(eqns.get(i), termsEqualZeroList, bareExpressionsAreEquations);
       }
     } else {
       termsEqualZeroList = F.ListAlloc();
-      addEquationOrInequation(expr, termsEqualZeroList);
+      addEquationOrInequation(expr, termsEqualZeroList, bareExpressionsAreEquations);
     }
     return termsEqualZeroList;
   }
@@ -876,13 +895,16 @@ public final class Validate {
    *
    * @param arg the equation / inequation / boolean combination
    * @param termsEqualZeroList the collector for the resulting equations / inequations
+   * @param bareExpressionsAreEquations if <code>true</code> read a term which isn't a relation as
+   *        the equation <code>expr == 0</code>
    */
-  private static void addEquationOrInequation(IExpr arg, IASTAppendable termsEqualZeroList) {
+  private static void addEquationOrInequation(IExpr arg, IASTAppendable termsEqualZeroList,
+      boolean bareExpressionsAreEquations) {
     if (arg.isAnd()) {
       // flatten a conjunction of equations / inequations
       IAST and = (IAST) arg;
       for (int j = 1; j < and.size(); j++) {
-        addEquationOrInequation(and.get(j), termsEqualZeroList);
+        addEquationOrInequation(and.get(j), termsEqualZeroList, bareExpressionsAreEquations);
       }
       return;
     }
@@ -908,7 +930,12 @@ public final class Validate {
       return;
     }
     if (arg.isAST2() || arg.isTrue() || arg.isFalse()) {
-      checkEquationAndInequation(arg, termsEqualZeroList);
+      checkEquationAndInequation(arg, termsEqualZeroList, bareExpressionsAreEquations);
+      return;
+    }
+    if (bareExpressionsAreEquations && isEquationCandidate(arg)) {
+      // a bare expression is the equation expr == 0
+      subtractListRecursive(arg, termsEqualZeroList);
       return;
     }
     // not an equation or inequation
@@ -916,8 +943,26 @@ public final class Validate {
         "binary equation or inequation expression expected instead of " + arg.toString());
   }
 
+  /**
+   * Test if a term which isn't a relation can be read as the equation <code>expr == 0</code>.
+   *
+   * <p>
+   * <code>NSolve({x+y-3, x-y-1}, {x,y})</code> asks for the solutions of
+   * <code>x+y-3 == 0 &amp;&amp; x-y-1 == 0</code>, the same way
+   * <a href="https://reference.wolfram.com/language/ref/NSolve.html">Wolfram Language</a> reads a
+   * bare expression of a polynomial system. A string, a list or a rule has no reading as an
+   * equation.
+   *
+   * @param expr a term of the equation list
+   * @return <code>true</code> if <code>expr</code> can be read as <code>expr == 0</code>
+   */
+  private static boolean isEquationCandidate(IExpr expr) {
+    return !expr.isList() && !expr.isString() && !expr.isRuleAST() && !expr.isPatternExpr();
+  }
 
-  private static void checkEquationAndInequation(IExpr eq, IASTAppendable termsEqualZeroList) {
+
+  private static void checkEquationAndInequation(IExpr eq, IASTAppendable termsEqualZeroList,
+      boolean bareExpressionsAreEquations) {
     if (eq.isEqual()) {
       IAST equal = (IAST) eq;
       IExpr subtract = EvalEngine.get().evaluate(F.Subtract(equal.arg1(), equal.arg2()));
@@ -939,6 +984,11 @@ public final class Validate {
       return;
     } else if (eq.isFalse()) {
       termsEqualZeroList.append(S.False);
+      return;
+    }
+    if (bareExpressionsAreEquations && isEquationCandidate(eq)) {
+      // a bare expression is the equation expr == 0
+      subtractListRecursive(eq, termsEqualZeroList);
       return;
     }
     // not an equation or inequation

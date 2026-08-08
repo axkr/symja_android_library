@@ -46,7 +46,7 @@ public class MultiVariateNumerical implements MultivariateFunction {
       for (int i = 0; i < fDummyVariables.size(); i++) {
         fDummyVariables.get(i).assignValue(F.num(point[i]));
       }
-      return fFunction.evalf();
+      return fFunction.evalfNaN();
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Double.NaN;

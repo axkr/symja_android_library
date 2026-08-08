@@ -159,9 +159,17 @@ public class JavaClassExpr extends DataExpr<Class<?>> implements Externalizable 
             return null;
           }
         } else if (clazz.equals(double.class)) {
-          params[j] = Double.valueOf(arg.evalf());
+          double d = arg.evalfNaN();
+          if (Double.isNaN(d) && !arg.isReal()) {
+            return null;
+          }
+          params[j] = Double.valueOf(d);
         } else if (clazz.equals(float.class)) {
-          params[j] = Float.valueOf((float) arg.evalf());
+          double f = arg.evalfNaN();
+          if (Double.isNaN(f) && !arg.isReal()) {
+            return null;
+          }
+          params[j] = Float.valueOf((float) f);
         } else if (clazz.equals(int.class)) {
           int n = arg.toIntDefault();
           if (F.isNotPresent(n)) {

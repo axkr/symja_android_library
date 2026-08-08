@@ -1586,14 +1586,14 @@ public class TeXFormFactory {
                 IExpr min = subList.arg1();
                 IExpr max = subList.arg2();
                 if (min instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalf()),
+                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalfNaN()),
                       Precedence.NO_PRECEDENCE, false);
                 } else {
                   convertInternal(buf, min, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
                 }
                 buf.append(",");
                 if (max instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalf()),
+                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalfNaN()),
                       Precedence.NO_PRECEDENCE, false);
                 } else {
                   convertInternal(buf, max, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);

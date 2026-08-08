@@ -154,13 +154,10 @@ public class ListStepPlot extends ListPlot {
         IExpr e = data.get(i);
         double val = Double.NaN;
         if (e != S.Missing && !e.isNone()) {
-          try {
-            if (e instanceof INumber)
-              val = ((INumber) e).reDoubleValue();
-            else
-              val = e.evalf();
-          } catch (Exception ex) {
-          }
+          if (e instanceof INumber)
+            val = ((INumber) e).reDoubleValue();
+          else
+            val = e.evalfNaN();
         }
         points.add(new double[] {i, val});
       }

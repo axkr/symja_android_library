@@ -206,7 +206,7 @@ public class StatisticsDiscreteDistributions {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
-        double p = dist.arg1().evalf();
+        double p = dist.arg1().evalfNaN();
         if (0 <= p && p <= 1) {
           RandomDataGenerator rdg = new RandomDataGenerator();
           int[] vector = rdg.nextDeviates(
@@ -417,7 +417,7 @@ public class StatisticsDiscreteDistributions {
         int n = dist.arg1().toIntDefault(-1);
         if (n > 0) {
           // see exception handling in RandonmVariate() function
-          double p = dist.arg2().evalf();
+          double p = dist.arg2().evalfNaN();
           if (0 <= p && p <= 1) {
             RandomDataGenerator rdg = new RandomDataGenerator();
             int[] vector = rdg.nextDeviates(
@@ -1107,7 +1107,7 @@ public class StatisticsDiscreteDistributions {
         IExpr lambdaExpr = dist.arg2();
         if (lambdaExpr.isList()) {
           try {
-            double theta = thetaExpr.evalf();
+            double theta = thetaExpr.evalfNaN();
             double[] lambdas = lambdaExpr.toDoubleVector();
             if (lambdas != null && theta > 0) {
               RandomDataGenerator rdg = new RandomDataGenerator();
@@ -1293,7 +1293,10 @@ public class StatisticsDiscreteDistributions {
           // Parameter `1` at position `2` in `3` is expected to be positive.
           return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
         }
-        double mean = arg1.evalf();
+        double mean = arg1.evalfNaN();
+        if (Double.isNaN(mean)) {
+          return F.NIL;
+        }
         // return F.ZZ(new PoissonGenerator(mean, random).nextValue());
         RandomDataGenerator rdg = new RandomDataGenerator();
         int[] vector = rdg

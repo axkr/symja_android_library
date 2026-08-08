@@ -63,7 +63,7 @@ public class NumberLinePlot extends ListPlot {
 
         for (IExpr item : levelData) {
           if (item.isNumber()) {
-            double val = item.evalf();
+            double val = item.evalfNaN();
             if (Double.isFinite(val)) {
               if (val < minFinite)
                 minFinite = val;
@@ -76,8 +76,8 @@ public class NumberLinePlot extends ListPlot {
               IExpr intervalRange = ((IAST) item).get(k);
               if (intervalRange.isList() && intervalRange.size() >= 3) {
                 checkBounds(intervalRange.get(1), intervalRange.get(2), minFinite, maxFinite);
-                double a = intervalRange.get(1).evalf();
-                double b = intervalRange.get(2).evalf();
+                double a = intervalRange.get(1).evalfNaN();
+                double b = intervalRange.get(2).evalfNaN();
                 if (Double.isFinite(a)) {
                   if (a < minFinite)
                     minFinite = a;
@@ -97,8 +97,8 @@ public class NumberLinePlot extends ListPlot {
           } else if (item.isIntervalData()) {
             IExpr arg1 = ((IAST) item).arg1();
             if (arg1.isList() && arg1.size() >= 5) {
-              double a = ((IAST) arg1).get(1).evalf();
-              double b = ((IAST) arg1).get(4).evalf();
+              double a = ((IAST) arg1).get(1).evalfNaN();
+              double b = ((IAST) arg1).get(4).evalfNaN();
               if (Double.isFinite(a)) {
                 if (a < minFinite)
                   minFinite = a;
@@ -158,7 +158,7 @@ public class NumberLinePlot extends ListPlot {
 
         for (IExpr item : levelData) {
           if (item.isNumber()) {
-            double val = item.evalf();
+            double val = item.evalfNaN();
             if (Double.isFinite(val)) {
               levelPrimitives.append(F.Point(F.List(F.num(val), F.num(y))));
             }
@@ -203,8 +203,11 @@ public class NumberLinePlot extends ListPlot {
       IExpr rType, double y, double drawMin, double drawMax, IExpr color, double thickness,
       boolean filledPoints) {
 
-    double a = minExpr.evalf();
-    double b = maxExpr.evalf();
+    double a = minExpr.evalfNaN();
+    double b = maxExpr.evalfNaN();
+    if (Double.isNaN(a) || Double.isNaN(b)) {
+      return;
+    }
     boolean aInf = Double.isInfinite(a);
     boolean bInf = Double.isInfinite(b);
     boolean aNeg = a < 0;

@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -111,7 +110,7 @@ public class DensityPlot extends ListPlot {
         try {
           IExpr result = engine.evaluate(valExpr);
           // Use evalf() per user guidelines, then extract value
-          z = result.evalf();
+          z = result.evalfNaN();
           // if (num instanceof INumber) {
           // z = ((INumber) num).reDoubleValue();
           // }
@@ -205,11 +204,10 @@ public class DensityPlot extends ListPlot {
 
   private double[] parseRange(IExpr iter, EvalEngine engine) {
     if (iter.isList() && iter.argSize() >= 3) {
-      try {
-        double min = ((IAST) iter).arg2().evalf();
-        double max = ((IAST) iter).arg3().evalf();
+      double min = ((IAST) iter).arg2().evalfNaN();
+      double max = ((IAST) iter).arg3().evalfNaN();
+      if (!Double.isNaN(min) && !Double.isNaN(max)) {
         return new double[] {min, max};
-      } catch (ArgumentTypeException e) {
       }
     }
     return null;

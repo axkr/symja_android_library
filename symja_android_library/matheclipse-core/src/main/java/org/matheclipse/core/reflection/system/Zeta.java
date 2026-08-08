@@ -201,13 +201,8 @@ public class Zeta extends AbstractArg12 {
     if (engine.isDoubleMode()) {
       if (a.re().isPositive()) {
         try {
-          double sDouble = Double.NaN;
-          double aDouble = Double.NaN;
-          try {
-            sDouble = s.evalf();
-            aDouble = a.evalf();
-          } catch (ValidateException ve) {
-          }
+          double sDouble = s.evalfNaN();
+          double aDouble = a.evalfNaN();
           if (aDouble < 0.0 || Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
             Complex sc = s.evalfc();
             Complex ac = a.evalfc();
@@ -228,13 +223,8 @@ public class Zeta extends AbstractArg12 {
         }
       } else if (a.re().isNegative()) {
         try {
-          double sDouble = Double.NaN;
-          double aDouble = Double.NaN;
-          try {
-            sDouble = s.evalf();
-            aDouble = a.evalf();
-          } catch (ValidateException ve) {
-          }
+          double sDouble = s.evalfNaN();
+          double aDouble = a.evalfNaN();
           Complex sc = s.evalfc();
           Complex ac = a.evalfc();
           double aReal = ac.getReal();

@@ -8,7 +8,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -87,12 +86,8 @@ public class ND extends AbstractFunctionEvaluator {
 
   private IExpr partialDerivative(IExpr function, ISymbol variable, int order, IExpr value,
       EvalEngine engine) {
-    double a3Double = Double.NaN;
-    try {
-      a3Double = value.evalf();
-    } catch (ArgumentTypeException ve) {
-      // Ignored to allow fallback to complex numerical evaluation
-    }
+    // a NaN allows the fallback to complex numerical evaluation below
+    double a3Double = value.evalfNaN();
 
     if (Double.isNaN(a3Double)) {
       Complex a3Complex = value.evalfc();

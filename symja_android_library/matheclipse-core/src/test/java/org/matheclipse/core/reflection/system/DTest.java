@@ -243,13 +243,13 @@ public class DTest extends ExprEvaluatorTestCase {
         "AiryAi(Sqrt(x))/2");
 
     check("D(Piecewise({{x^2, x < 0}, {x, x > 0}}),x)", //
-        "Piecewise({{2*x,x<0},{1,x>0}},0)");
+        "Piecewise({{2*x,x<0},{1,x>0}},Indeterminate)");
     check("D(Piecewise({{(x^2 - 1)/(x - 1), x != 1}},2),x)", //
-        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x!=1}},0)");
+        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x!=1}},Indeterminate)");
 
     // TODO simplify result to 1
     check("D(Piecewise({{(x^2 - 1)/(x - 1), x < 1 || x > 1}},2),x)", //
-        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x<1||x>1}},0)");
+        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x<1||x>1}},Indeterminate)");
 
     check("D(Factorial(b*x),x)", //
         "b*Gamma(1+b*x)*PolyGamma(0,1+b*x)");
@@ -633,13 +633,13 @@ public class DTest extends ExprEvaluatorTestCase {
         "AiryAi(Sqrt(x))/2");
 
     check("D(Piecewise({{x^2, x < 0}, {x, x > 0}}),x)", //
-        "Piecewise({{2*x,x<0},{1,x>0}},0)");
+        "Piecewise({{2*x,x<0},{1,x>0}},Indeterminate)");
     check("D(Piecewise({{(x^2 - 1)/(x - 1), x != 1}},2),x)", //
-        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x!=1}},0)");
+        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x!=1}},Indeterminate)");
 
     // TODO simplify result to 1
     check("D(Piecewise({{(x^2 - 1)/(x - 1), x < 1 || x > 1}},2),x)", //
-        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x<1||x>1}},0)");
+        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x<1||x>1}},Indeterminate)");
 
     check("D(Factorial(b*x),x)", //
         "b*Gamma(1+b*x)*PolyGamma(0,1+b*x)");

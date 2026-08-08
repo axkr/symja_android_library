@@ -100,9 +100,8 @@ public class CrossMatrix extends AbstractFunctionEvaluator {
         rArr[i] = -1.0;
       } else {
         rIsAll[i] = false;
-        try {
-          rArr[i] = evalR.evalf();
-        } catch (Exception e) {
+        rArr[i] = evalR.evalfNaN();
+        if (Double.isNaN(rArr[i])) {
           return F.NIL;
         }
         if (rArr[i] < 0) {

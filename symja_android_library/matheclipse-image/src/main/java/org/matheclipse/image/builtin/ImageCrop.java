@@ -231,11 +231,8 @@ public class ImageCrop extends AbstractEvaluator {
   }
 
   private static double evalDouble(IExpr expr) {
-    try {
-      return expr.evalf();
-    } catch (RuntimeException rex) {
-      return 0.0;
-    }
+    double d = expr.evalfNaN();
+    return Double.isNaN(d) ? 0.0 : d;
   }
 
   @Override

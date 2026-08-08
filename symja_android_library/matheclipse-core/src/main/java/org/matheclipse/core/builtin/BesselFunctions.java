@@ -643,7 +643,7 @@ public class BesselFunctions {
         try {
           // numeric mode evaluation
           if (n.isReal()) {
-            return F.num(BesselJS.besselJZero(n.evalf(), k));
+            return F.num(BesselJS.besselJZero(n.evalfNaN(), k));
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
@@ -1041,7 +1041,7 @@ public class BesselFunctions {
         try {
           // numeric mode evaluation
           if (n.isReal()) {
-            return F.num(BesselJS.besselYZero(n.evalf(), k));
+            return F.num(BesselJS.besselYZero(n.evalfNaN(), k));
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
@@ -1288,13 +1288,8 @@ public class BesselFunctions {
       }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
-          double nDouble = Double.NaN;
-          double zDouble = Double.NaN;
-          try {
-            nDouble = n.evalf();
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
+          double nDouble = n.evalfNaN();
+          double zDouble = z.evalfNaN();
 
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
             Complex nc = n.evalfc();
@@ -1545,13 +1540,8 @@ public class BesselFunctions {
       }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
-          double nDouble = Double.NaN;
-          double zDouble = Double.NaN;
-          try {
-            nDouble = n.evalf();
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
+          double nDouble = n.evalfNaN();
+          double zDouble = z.evalfNaN();
 
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
             Complex nc = n.evalfc();

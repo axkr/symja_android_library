@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -213,12 +214,20 @@ public class VariablesSet {
         return true;
       }
       IExpr head = list.head();
-      if (head.isVariable() && list.forAll(x -> x.isInteger())) {
+      if (head.isVariable()
+          && (list.isUniform(UniformFlags.INTEGER) || list.forAll(x -> x.isInteger()))) {
         if (!list.isNumericFunction(true) && !list.isBooleanFunction()
             && !list.isComparatorFunction()) {
           fCollection.add(list);
           return true;
         }
+      }
+      if (list.isUniformAny(UniformFlags.NUMBER | UniformFlags.STRING)) {
+        // none of the arguments is a symbol or contains a nested variable
+        if (fHeadOffset == 0) {
+          head.accept(this);
+        }
+        return false;
       }
       return super.visit(list);
     }

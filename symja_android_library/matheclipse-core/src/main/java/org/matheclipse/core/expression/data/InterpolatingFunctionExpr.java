@@ -1,11 +1,11 @@
 package org.matheclipse.core.expression.data;
 
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
+import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.stat.regression.SimpleRegression;
 import org.hipparchus.stat.regression.UpdatingMultipleLinearRegression;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -77,6 +77,93 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     }
   }
 
+  /**
+   * Wrapper for the solution of an ordinary differential equation, held as the continuous extension
+   * the integrator built while it stepped.
+   *
+   * <p>
+   * Sampling the integrator's own dense output is both more accurate and cheaper than laying the
+   * solution on a grid and fitting it a second time: the fit would add its own error - for
+   * <code>E^x</code> on a grid of <code>0.1</code> roughly <code>10^-5</code>, against the
+   * <code>10^-12</code> the integrator was asked for - and would need one stored row per grid
+   * point, where the model stores one interpolator per step it actually took.
+   *
+   * <p>
+   * Initial conditions given at an interior point are integrated once in each direction, so up to
+   * two models are held and the one covering the requested point is asked for the value. They
+   * cannot be joined into one: {@link DenseOutputModel#append} rejects a model running the other
+   * way with a propagation direction mismatch.
+   */
+  private static class ODEFunctionExpr extends InterpolatingFunctionExpr<DenseOutputModel[]> {
+    private static final long serialVersionUID = 8127358036442621281L;
+
+    /** The component of the state vector this function reads. */
+    private final int component;
+
+    /** The point the initial conditions were given at, separating the two directions. */
+    private final double t0;
+
+    /**
+     * @param forward the model covering <code>[t0, max]</code>, or <code>null</code>
+     * @param backward the model covering <code>[min, t0]</code>, or <code>null</code>
+     * @param t0 the point the initial conditions were given at
+     * @param component the component of the state vector this function reads
+     * @param min the minimum domain value
+     * @param max the maximum domain value
+     */
+    public ODEFunctionExpr(final DenseOutputModel forward, final DenseOutputModel backward,
+        double t0, int component, double min, double max) {
+      super(new DenseOutputModel[] {forward, backward}, min, max);
+      this.t0 = t0;
+      this.component = component;
+    }
+
+    /**
+     * The value of the solution at <code>t</code>, taken from whichever direction covers it.
+     *
+     * @param t the point to sample at
+     * @return the value of this function's state component
+     */
+    public IExpr valueAt(double t) {
+      DenseOutputModel[] models = toData();
+      DenseOutputModel model = (t < t0 && models[1] != null) ? models[1] : models[0];
+      if (model == null) {
+        // the requested range lies entirely on the other side of t0
+        model = models[1];
+      }
+      return F.num(model.getInterpolatedState(t).getPrimaryState()[component]);
+    }
+
+    @Override
+    public IExpr copy() {
+      DenseOutputModel[] models = toData();
+      return new ODEFunctionExpr(models[0], models[1], t0, component, min, max);
+    }
+
+    /**
+     * The model is opaque, so it is shown as the domain it is defined on, followed by a placeholder
+     * for the data.
+     */
+    @Override
+    public String toString() {
+      return "InterpolatingFunction({{" + min + "," + max + "}},<>)";
+    }
+
+    /**
+     * The stored data is an array of integrator models, whose own <code>toString</code> is the bare
+     * Java identity. Show the same opaque form the other outputs use instead of leaking it.
+     */
+    @Override
+    public String fullFormString() {
+      return toString();
+    }
+
+    @Override
+    public String toHTML() {
+      return toString();
+    }
+  }
+
   /** */
   private static final long serialVersionUID = -3183236658957651705L;
 
@@ -117,6 +204,24 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   public static InterpolatingFunctionExpr newInstance(final UpdatingMultipleLinearRegression value,
       double min, double max) {
     return new InterpolatingFunctionExpr(value, min, max);
+  }
+
+  /**
+   * Create a new instance wrapping the continuous extension of an integrated ODE.
+   *
+   * @param forward the model covering <code>[t0, max]</code>, or <code>null</code> if the requested
+   *        range does not extend past <code>t0</code>
+   * @param backward the model covering <code>[min, t0]</code>, or <code>null</code> if the
+   *        requested range does not extend below <code>t0</code>
+   * @param t0 the point the initial conditions were given at
+   * @param component the component of the state vector this function reads
+   * @param min the minimum domain value
+   * @param max the maximum domain value
+   * @return a new {@link InterpolatingFunctionExpr} instance
+   */
+  public static InterpolatingFunctionExpr newInstance(final DenseOutputModel forward,
+      final DenseOutputModel backward, double t0, int component, double min, double max) {
+    return new ODEFunctionExpr(forward, backward, t0, component, min, max);
   }
 
   /**
@@ -194,19 +299,24 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
         return F.NIL;
       }
       boolean evaled = false;
-      try {
-        double value = arg1.evalf();
+      double value = arg1.evalfNaN();
+      // a non-numeric value falls through for symbolic arguments
+      if (!Double.isNaN(value)) {
         evaled = true;
         if (value < min || value > max) {
           // Input value `1` lies outside the range of data in the interpolating function.
           // Extrapolation will be used.
           Errors.printMessage(ast.topHead(), "dmval", F.list(F.list(arg1)), engine);
         }
-      } catch (ArgumentTypeException atex) {
-        // fall through for symbolic arguments
       }
       final IExpr head = ast.head();
-      if (head instanceof HermiteFunctionExpr) {
+      if (head instanceof ODEFunctionExpr) {
+        if (evaled) {
+          return ((ODEFunctionExpr) head).valueAt(value);
+        }
+        // a symbolic argument leaves y(x) -> InterpolatingFunction(...)(x) standing, which is what
+        // the caller asked for: the model cannot be written out as an expression
+      } else if (head instanceof HermiteFunctionExpr) {
         if (evaled) {
           InterpolatingFunctionExpr<IAST> function = (InterpolatingFunctionExpr<IAST>) head;
           Object model = function.toData();

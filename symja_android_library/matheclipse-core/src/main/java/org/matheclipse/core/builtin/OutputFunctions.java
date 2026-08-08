@@ -3,10 +3,12 @@ package org.matheclipse.core.builtin;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -407,6 +409,9 @@ public final class OutputFunctions {
    *
    * &gt;&gt; HornerForm(a+b*x+c*x^2,x)
    * a+x*(b+c*x)
+   *
+   * &gt;&gt; HornerForm((11*x^3-4*x^2+7*x+2)/(x^2-3*x+1))
+   * (2+x*(7+x*(-4+11*x)))/(1+(-3+x)*x)
    * </pre>
    */
   private static class HornerForm extends AbstractFunctionEvaluator {
@@ -416,7 +421,6 @@ public final class OutputFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST()) {
 
-        IAST poly = (IAST) arg1;
         VariablesSet eVar;
         IAST variables;
         if (ast.isAST2()) {
@@ -427,14 +431,45 @@ public final class OutputFunctions {
         }
         if (variables.isPresent()) {
           if (variables.size() >= 2) {
-            if (poly.isPlus()) {
-              HornerScheme scheme = new HornerScheme();
-              return scheme.generate(engine.isNumericMode(), poly, variables.arg1());
+            IExpr variable = variables.arg1();
+            IExpr temp = hornerScheme(arg1, variable, engine);
+            if (temp.isPresent()) {
+              return temp;
+            }
+            // generate the horner scheme for the numerator and denominator separately
+            Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
+            if (parts.isPresent()) {
+              IExpr numerator = parts.get()[0];
+              IExpr denominator = parts.get()[1];
+              if (!denominator.isOne()) {
+                IExpr numeratorHorner = hornerScheme(numerator, variable, engine);
+                IExpr denominatorHorner = hornerScheme(denominator, variable, engine);
+                if (numeratorHorner.isPresent() || denominatorHorner.isPresent()) {
+                  return F.Divide(numeratorHorner.orElse(numerator),
+                      denominatorHorner.orElse(denominator));
+                }
+              }
             }
           }
         }
       }
       return arg1;
+    }
+
+    /**
+     * Generate the horner scheme for the given <code>expr</code> in the given <code>variable</code>.
+     *
+     * @param expr
+     * @param variable
+     * @param engine
+     * @return {@link F#NIL} if <code>expr</code> isn't a {@link S#Plus} expression
+     */
+    private static IExpr hornerScheme(IExpr expr, IExpr variable, EvalEngine engine) {
+      if (expr.isPlus()) {
+        HornerScheme scheme = new HornerScheme();
+        return scheme.generate(engine.isNumericMode(), (IAST) expr, variable);
+      }
+      return F.NIL;
     }
 
     @Override

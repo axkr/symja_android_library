@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -330,18 +329,17 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
             }
 
             for (double[] point : matrix) {
-              try {
-                IExpr exprWithX = F.subst(fittedExpr, e -> e.equals(var), F.num(point[0]));
-                double yFitted = exprWithX.evalf();
-                double residual = yFitted - point[1];
-                rss += residual * residual;
-
-                if (maxRssThreshold != null && rss > maxRssThreshold) {
-                  // can't beat current best BIC; early stop
-                  return;
-                }
-              } catch (ArgumentTypeException ate) {
+              IExpr exprWithX = F.subst(fittedExpr, e -> e.equals(var), F.num(point[0]));
+              double yFitted = exprWithX.evalfNaN();
+              if (Double.isNaN(yFitted)) {
                 // invalid evaluation for this model -> discard
+                return;
+              }
+              double residual = yFitted - point[1];
+              rss += residual * residual;
+
+              if (maxRssThreshold != null && rss > maxRssThreshold) {
+                // can't beat current best BIC; early stop
                 return;
               }
             }
@@ -425,15 +423,14 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
 
           for (double[] point : matrix) {
             IExpr exprWithX = F.subst(fittedExpr, e -> e.equals(var), F.num(point[0]));
-            try {
-              double yFitted = exprWithX.evalf();
-              double yActual = point[1];
-              double residual = yFitted - yActual;
-              rss += residual * residual;
-            } catch (ArgumentTypeException ate) {
+            double yFitted = exprWithX.evalfNaN();
+            if (Double.isNaN(yFitted)) {
               rss = Double.NaN;
               break;
             }
+            double yActual = point[1];
+            double residual = yFitted - yActual;
+            rss += residual * residual;
           }
 
           if (Double.isNaN(rss)) {
@@ -516,14 +513,12 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
             IExpr exprWithX = F.subst(fittedExpr, e -> e.equals(var), F.num(point[0]));
 
             // Evaluate it numerically
-            try {
-              double yFitted = exprWithX.evalf();
+            double yFitted = exprWithX.evalfNaN();
+            if (!Double.isNaN(yFitted)) {
               double yActual = point[1];
 
               double residual = yFitted - yActual;
               rss += residual * residual;
-            } catch (ArgumentTypeException ate) {
-
             }
           }
 

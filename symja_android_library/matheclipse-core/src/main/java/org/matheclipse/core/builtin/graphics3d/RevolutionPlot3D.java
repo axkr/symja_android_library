@@ -52,28 +52,26 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
 
     IExpr tVar = ((IAST) tRange).arg1();
     double tMin = 0.0, tMax = 1.0;
-    try {
-      if (((IAST) tRange).argSize() >= 3) {
-        tMin = ((IAST) tRange).arg2().evalf();
-        tMax = ((IAST) tRange).arg3().evalf();
-      } else {
-        tMax = ((IAST) tRange).arg2().evalf();
-      }
-    } catch (RuntimeException e) {
+    if (((IAST) tRange).argSize() >= 3) {
+      tMin = ((IAST) tRange).arg2().evalfNaN();
+      tMax = ((IAST) tRange).arg3().evalfNaN();
+    } else {
+      tMax = ((IAST) tRange).arg2().evalfNaN();
+    }
+    if (Double.isNaN(tMin) || Double.isNaN(tMax)) {
       return F.NIL;
     }
 
     double thetaMin = 0.0, thetaMax = 2.0 * Math.PI;
     if (thetaRange != null && thetaRange.isList()) {
-      try {
-        IAST tList = (IAST) thetaRange;
-        if (tList.argSize() == 2) {
-          thetaMax = tList.arg2().evalf();
-        } else if (tList.argSize() >= 3) {
-          thetaMin = tList.arg2().evalf();
-          thetaMax = tList.arg3().evalf();
-        }
-      } catch (RuntimeException e) {
+      IAST tList = (IAST) thetaRange;
+      if (tList.argSize() == 2) {
+        thetaMax = tList.arg2().evalfNaN();
+      } else if (tList.argSize() >= 3) {
+        thetaMin = tList.arg2().evalfNaN();
+        thetaMax = tList.arg3().evalfNaN();
+      }
+      if (Double.isNaN(thetaMin) || Double.isNaN(thetaMax)) {
         return F.NIL;
       }
     }
@@ -147,14 +145,14 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
 
           if (isParametric) {
             if (val.isList() && ((IAST) val).argSize() >= 2) {
-              rVal = ((IAST) val).arg1().evalf();
-              zVal = ((IAST) val).arg2().evalf();
+              rVal = ((IAST) val).arg1().evalfNaN();
+              zVal = ((IAST) val).arg2().evalfNaN();
               validPoint = !Double.isNaN(rVal) && !Double.isNaN(zVal) && !Double.isInfinite(rVal)
                   && !Double.isInfinite(zVal);
             }
           } else {
             if (val.isNumber()) {
-              zVal = val.evalf();
+              zVal = val.evalfNaN();
               rVal = t;
               validPoint = !Double.isNaN(zVal) && !Double.isInfinite(zVal);
             }

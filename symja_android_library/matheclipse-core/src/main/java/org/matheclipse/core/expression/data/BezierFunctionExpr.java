@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -137,10 +136,8 @@ public class BezierFunctionExpr extends DataExpr<IAST> implements Externalizable
    */
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     if (ast.head() instanceof BezierFunctionExpr && ast.isAST1()) {
-      double scalar;
-      try {
-        scalar = ast.arg1().evalf();
-      } catch (ArgumentTypeException ate) {
+      double scalar = ast.arg1().evalfNaN();
+      if (Double.isNaN(scalar)) {
         return F.NIL;
       }
       double[][] pts = copyMatrix(points);

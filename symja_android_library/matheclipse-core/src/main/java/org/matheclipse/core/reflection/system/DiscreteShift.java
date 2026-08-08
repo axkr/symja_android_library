@@ -28,6 +28,10 @@ public class DiscreteShift extends AbstractFunctionEvaluator {
     // DiscreteShift requires at least the expression and one variable spec
     // Usage: DiscreteShift(expr, k) or DiscreteShift(expr, {k, m}, ...)
     IExpr expression = ast.arg1();
+    if (ast.isAST1()) {
+      // DiscreteShift(expr) has no variable to shift and returns the expression unchanged
+      return expression;
+    }
     // Use IASTAppendable to collect the transformation rules.
     // We allocate size based on ast.size() - 1 args.
     IASTAppendable rulesList = F.ListAlloc(ast.argSize());
@@ -78,7 +82,7 @@ public class DiscreteShift extends AbstractFunctionEvaluator {
 
     // Apply all rules to the expression structurally.
     IExpr result = engine.evaluate(F.subst(expression, rulesList));
-    // With an integer shift wolframscript combines rational summands over a common denominator, so
+    // With an integer shift it combines rational summands over a common denominator, so
     // DiscreteShift(1/(2 n + 1), n) becomes (3 + 2 n)^-1 rather than (1 + 2 (1 + n))^-1. A symbolic
     // shift stays unfolded (e.g. (1 + 2 (k + n))^-1). A pure polynomial product such as
     // (1 + m) (1 + n) has no denominator to combine and must not be expanded here.
@@ -105,6 +109,6 @@ public class DiscreteShift extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_INFINITY;
+    return ARGS_1_INFINITY;
   }
 }

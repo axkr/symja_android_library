@@ -333,6 +333,22 @@ public class MinMaxFunctions {
         if (head.isBuiltInSymbol() && ast.argSize() >= 1) {
           IExpr arg1 = ast.arg1();
           switch (((IBuiltInSymbol) head).ordinal()) {
+            case ID.Plus:
+            case ID.Times:
+            case ID.Abs:
+            case ID.Min:
+            case ID.Max:
+            case ID.Sin:
+            case ID.Cos:
+            case ID.Sinh:
+            case ID.Cosh:
+            case ID.Tanh:
+            case ID.Sinc:
+            case ID.ArcSinh:
+            case ID.Erf:
+            case ID.Erfc:
+              // continuous on the whole domain; the arguments were checked above
+              return noWarning;
             case ID.Floor:
             case ID.Ceiling:
               conditions.add(F.Equal(F.Sin(F.Times(S.Pi, arg1)), F.C0));
@@ -1305,7 +1321,7 @@ public class MinMaxFunctions {
     private static void init() {
       S.ArgMax.setEvaluator(new ArgMax());
       S.ArgMin.setEvaluator(new ArgMin());
-      // S.FunctionContinuous.setEvaluator(new FunctionContinuous());
+      S.FunctionContinuous.setEvaluator(new FunctionContinuous());
       S.FunctionDiscontinuities.setEvaluator(new FunctionDiscontinuities());
       S.FunctionDomain.setEvaluator(new FunctionDomain());
       S.FunctionPeriod.setEvaluator(new FunctionPeriod());

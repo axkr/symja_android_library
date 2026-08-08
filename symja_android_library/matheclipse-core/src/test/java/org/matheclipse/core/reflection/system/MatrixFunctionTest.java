@@ -329,10 +329,12 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
             + " {0.000309008+I*(-0.000730508),-0.104964+I*3.14139}}");
     check("m = {{E,0,0},{0,4*E,-4*E},{0,4*E,4*E}};", //
         "");
+    // the off-diagonal entries are I/2*(Log(4+I*4)-Log(4-I*4)) == I/2 * I*Pi/2, see the numeric
+    // check below
     check("MatrixLog(m)", //
         "{{1,0,0},\n"//
-            + " {0,1/2*(2+Log(4-I*4)+Log(4+I*4)),-I*1/2*Log(4-I*4)+I*1/2*Log(4+I*4)},\n" //
-            + " {0,I*1/2*Log(4-I*4)-I*1/2*Log(4+I*4),1/2*(2+Log(4-I*4)+Log(4+I*4))}}");
+            + " {0,1/2*(2+Log(4-I*4)+Log(4+I*4)),-Pi/4},\n" //
+            + " {0,Pi/4,1/2*(2+Log(4-I*4)+Log(4+I*4))}}");
     check("MatrixLog(m) // N", //
         "{{1.0,0.0,0.0},{0.0,2.73287,-0.785398},{0.0,0.785398,2.73287}}");
 

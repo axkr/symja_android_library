@@ -48,7 +48,7 @@ public class GraphicsFunctions {
     public boolean graphics2D(ArrayNode arrayNode, IAST ast, GraphicsOptions options) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "arrow");
         g.put("thickness", options.thickness());
         if (list.isListOfLists() && graphics2DCoords(g, list, options)) {
@@ -64,7 +64,7 @@ public class GraphicsFunctions {
         GraphicsOptions options) {
       if (ast.argSize() > 0) {
         IExpr list = ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "arrow");
         options.setColor(g);
         if (graphicsComplex2DPositions(arrayNode, g, list, listOfIntPositions, options)) {
@@ -97,7 +97,7 @@ public class GraphicsFunctions {
     private static boolean circle(ArrayNode arrayNode, String jsonType, IAST circleCoords,
         double circleRadius1, double circleRadius2, double angle1, double angle2,
         GraphicsOptions options) {
-      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
       g.put("type", jsonType);
       g.put("radius1", circleRadius1);
       g.put("radius2", circleRadius2);
@@ -183,7 +183,7 @@ public class GraphicsFunctions {
         GraphicsOptions options) {
       if (ast.argSize() > 0) {
         IExpr list = ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", getJSONType());
         options.setColor(g);
         if (graphicsComplex2DPositions(arrayNode, g, list, listOfIntPositions, options)) {
@@ -200,7 +200,7 @@ public class GraphicsFunctions {
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         if (arg.isList()) {
-          ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+          ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
           if (!graphicsComplex2DPositions(g, (IAST) arg, listOfIntPositions, options)) {
             return false;
           }
@@ -215,8 +215,11 @@ public class GraphicsFunctions {
             return false;
           }
           IAST point = (IAST) listOfIntPositions.get(iValue);
-          double xCoord = point.first().evalf();
-          double yCoord = point.second().evalf();
+          double xCoord = point.first().evalfNaN();
+          double yCoord = point.second().evalfNaN();
+          if (Double.isNaN(xCoord) || Double.isNaN(yCoord)) {
+            return false;
+          }
           double xDelta = 1.0;
           double yDelta = 1.0;
           double[] boundingbox =
@@ -334,10 +337,13 @@ public class GraphicsFunctions {
 
       if (ast.arg1().isList3()) {
         IAST list = (IAST) ast.arg1();
-        double x = list.arg1().evalf();
-        double y = list.arg1().evalf();
-        double z = list.arg1().evalf();
-        double halfLength = ast.arg2().evalf() / 2.0;
+        double x = list.arg1().evalfNaN();
+        double y = list.arg2().evalfNaN();
+        double z = list.arg3().evalfNaN();
+        double halfLength = ast.arg2().evalfNaN() / 2.0;
+        if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z) || Double.isNaN(halfLength)) {
+          return false;
+        }
 
         json.put("type", "cuboid");
         GraphicsOptions.setColor(json, color, F.NIL, true);
@@ -513,11 +519,11 @@ public class GraphicsFunctions {
       if (ast.argSize() == 2 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         IAST primitives = ast.arg2().makeList();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "graphicscomplex");
         if (list.isListOfLists() && graphics2DCoords(g, list, options)) {
           arrayNode.add(g);
-          ArrayNode array = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+          ArrayNode array = GraphicsOptions.jsonObjectMapper().createArrayNode();
           for (int i = 1; i < primitives.size(); i++) {
             IExpr primitive = primitives.get(i);
             if (primitive.isAST() && primitive.isBuiltInFunction()) {
@@ -546,14 +552,14 @@ public class GraphicsFunctions {
         IAST primitives = ast.arg2().makeList();
         json.put("type", "graphicscomplex");
         if (list.isListOfLists() && graphics3DCoords(json, list)) {
-          ArrayNode array = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+          ArrayNode array = GraphicsOptions.jsonObjectMapper().createArrayNode();
           for (int i = 1; i < primitives.size(); i++) {
             IExpr primitive = primitives.get(i);
             if (primitive.isAST() && primitive.isBuiltInFunction()) {
               IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
               IEvaluator evaluator = symbol.getEvaluator();
               if (evaluator instanceof IGraphics3D) {
-                ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+                ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
                 if (((IGraphics3D) evaluator).graphics3D(g, (IAST) primitive, color, opacity)) {
                   array.add(g);
                 }
@@ -716,7 +722,7 @@ public class GraphicsFunctions {
             allLists = false;
             break;
           }
-          ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+          ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
           g.put("type", "line");
           if (graphics2DCoords(g, (IAST) element, options)) {
             arrayNode.add(g);
@@ -725,7 +731,7 @@ public class GraphicsFunctions {
         if (allLists) {
           return true;
         }
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "line");
         if (list.isListOfLists() && graphics2DCoords(g, list, options)) {
           arrayNode.add(g);
@@ -740,7 +746,7 @@ public class GraphicsFunctions {
         GraphicsOptions options) {
       if (ast.argSize() > 0) {
         IExpr list = ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "line");
         options.setColor(g);
         if (graphicsComplex2DPositions(arrayNode, g, list, listOfIntPositions, options)) {
@@ -853,7 +859,7 @@ public class GraphicsFunctions {
     public boolean graphics2D(ArrayNode arrayNode, IAST ast, GraphicsOptions options) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "point");
         if (list.isList()) {
           if (list.isListOfLists()) {
@@ -878,7 +884,7 @@ public class GraphicsFunctions {
         GraphicsOptions options) {
       if (ast.argSize() > 0) {
         IExpr list = ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "point");
         options.setColor(g);
         if (graphicsComplex2DPositions(arrayNode, g, list, listOfIntPositions, options)) {
@@ -944,7 +950,7 @@ public class GraphicsFunctions {
     public boolean graphics2D(ArrayNode arrayNode, IAST ast, GraphicsOptions options) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "polygon");
         if (list.isListOfLists() && graphics2DCoords(g, list, options)) {
           arrayNode.add(g);
@@ -959,7 +965,7 @@ public class GraphicsFunctions {
         GraphicsOptions options) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "polygon");
         options.setColor(g);
         if (list.isList() && graphicsComplex2DPositions(g, list, listOfIntPositions, options)) {
@@ -994,7 +1000,7 @@ public class GraphicsFunctions {
 
     private static boolean rectangle(ArrayNode arrayNode, IAST list1, IAST list2,
         GraphicsOptions options) {
-      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
       g.put("type", "rectangle");
       if (graphics2DCoords(g, F.List(list1, list2), options)) {
         arrayNode.add(g);
@@ -1044,7 +1050,7 @@ public class GraphicsFunctions {
         GraphicsOptions options) {
       if (ast.argSize() > 0) {
         IExpr list = ast.arg1();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "rectangle");
         options.setColor(g);
         if (graphicsComplex2DPositions(arrayNode, g, list, listOfIntPositions, options)) {
@@ -1259,7 +1265,7 @@ public class GraphicsFunctions {
       if (ast.argSize() == 2 && ast.arg2().isList2()) {
         IExpr expr = ast.arg1();
         IAST coords = (IAST) ast.arg2();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "text");
         if (graphics2DCoords(g, F.List(coords), options) && graphicsTexts(g, expr.toString())) {
           arrayNode.add(g);
@@ -1275,7 +1281,7 @@ public class GraphicsFunctions {
       if (ast.argSize() > 0) {
         IExpr expr = ast.arg1();
         IExpr list = ast.arg2();
-        ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+        ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
         g.put("type", "text");
         options.setColor(g);
         if (graphicsComplex2DPositions(arrayNode, g, list, listOfIntPositions, options)
@@ -1353,8 +1359,11 @@ public class GraphicsFunctions {
       IAST coords = (IAST) arg;
       ArrayNode arrayNode0 = json.arrayNode();
       ArrayNode arrayNode = json.arrayNode();
-      double xCoord = coords.arg1().evalf();
-      double yCoord = coords.arg2().evalf();
+      double xCoord = coords.arg1().evalfNaN();
+      double yCoord = coords.arg2().evalfNaN();
+      if (Double.isNaN(xCoord) || Double.isNaN(yCoord)) {
+        return false;
+      }
       arrayNode.add(xCoord);
       arrayNode.add(yCoord);
       options.setBoundingBoxScaled(xCoord, yCoord);
@@ -1376,8 +1385,11 @@ public class GraphicsFunctions {
       IAST coords = (IAST) arg;
       ArrayNode arrayNode0 = json.arrayNode();
       ArrayNode arrayNode = json.arrayNode();
-      double xCoord = coords.arg1().evalf();
-      double yCoord = coords.arg2().evalf();
+      double xCoord = coords.arg1().evalfNaN();
+      double yCoord = coords.arg2().evalfNaN();
+      if (Double.isNaN(xCoord) || Double.isNaN(yCoord)) {
+        return false;
+      }
       arrayNode.add(xCoord);
       arrayNode.add(yCoord);
       double[] boundingbox =
@@ -1408,9 +1420,15 @@ public class GraphicsFunctions {
       }
       IAST coords = (IAST) arg;
       ArrayNode arrayNode = json.arrayNode();
-      arrayNode.add(coords.arg1().evalf());
-      arrayNode.add(coords.arg2().evalf());
-      arrayNode.add(coords.arg3().evalf());
+      double xCoord = coords.arg1().evalfNaN();
+      double yCoord = coords.arg2().evalfNaN();
+      double zCoord = coords.arg3().evalfNaN();
+      if (Double.isNaN(xCoord) || Double.isNaN(yCoord) || Double.isNaN(zCoord)) {
+        return false;
+      }
+      arrayNode.add(xCoord);
+      arrayNode.add(yCoord);
+      arrayNode.add(zCoord);
 
       ArrayNode arrayNode0 = json.arrayNode();
       if (relativeCoords) {
@@ -1451,9 +1469,9 @@ public class GraphicsFunctions {
   }
 
   public static IAST textAtPoint(IExpr labeledPoint, IExpr x, IExpr y) {
-    double xValue = x.evalf();
+    double xValue = x.evalfNaN();
     // xValue += (GraphicsOptions.MEDIUM_FONTSIZE / 2);
-    double yValue = y.evalf();
+    double yValue = y.evalfNaN();
     return F.Text(labeledPoint.second(), F.List(F.num(xValue), F.num(yValue)));
   }
 

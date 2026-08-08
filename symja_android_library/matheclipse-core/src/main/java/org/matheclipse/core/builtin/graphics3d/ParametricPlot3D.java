@@ -165,8 +165,11 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       GraphicsComplexBuilder builder) {
 
     ISymbol uVar = (ISymbol) range.arg1();
-    double uMin = range.arg2().evalf();
-    double uMax = range.arg3().evalf();
+    double uMin = range.arg2().evalfNaN();
+    double uMax = range.arg3().evalfNaN();
+    if (Double.isNaN(uMin) || Double.isNaN(uMax)) {
+      return;
+    }
     double step = (uMax - uMin) / (pointsCount - 1);
 
     IASTAppendable currentLine = F.ListAlloc();
@@ -180,9 +183,9 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
 
       if (res.isList() && ((IAST) res).argSize() >= 3) {
         try {
-          double x = ((IAST) res).arg1().evalf();
-          double y = ((IAST) res).arg2().evalf();
-          double z = ((IAST) res).arg3().evalf();
+          double x = ((IAST) res).arg1().evalfNaN();
+          double y = ((IAST) res).arg2().evalfNaN();
+          double z = ((IAST) res).arg3().evalfNaN();
 
           if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z)) {
             int idx = builder.addVertex(x, y, z, null, null);
@@ -210,11 +213,14 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       EvalEngine engine, GraphicsComplexBuilder builder) {
 
     ISymbol uVar = (ISymbol) uRange.arg1();
-    double uMin = uRange.arg2().evalf();
-    double uMax = uRange.arg3().evalf();
+    double uMin = uRange.arg2().evalfNaN();
+    double uMax = uRange.arg3().evalfNaN();
     ISymbol vVar = (ISymbol) vRange.arg1();
-    double vMin = vRange.arg2().evalf();
-    double vMax = vRange.arg3().evalf();
+    double vMin = vRange.arg2().evalfNaN();
+    double vMax = vRange.arg3().evalfNaN();
+    if (Double.isNaN(uMin) || Double.isNaN(uMax) || Double.isNaN(vMin) || Double.isNaN(vMax)) {
+      return;
+    }
     double uStep = (uMax - uMin) / (pointsCount - 1);
     double vStep = (vMax - vMin) / (pointsCount - 1);
 
@@ -231,9 +237,9 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
 
         if (res.isList() && ((IAST) res).argSize() >= 3) {
           try {
-            double x = ((IAST) res).arg1().evalf();
-            double y = ((IAST) res).arg2().evalf();
-            double z = ((IAST) res).arg3().evalf();
+            double x = ((IAST) res).arg1().evalfNaN();
+            double y = ((IAST) res).arg2().evalfNaN();
+            double z = ((IAST) res).arg3().evalfNaN();
 
             if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z)) {
               indices[i][j] = builder.addVertex(x, y, z, null, null);

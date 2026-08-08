@@ -51,6 +51,7 @@ public class SeriesFunctions {
     private static void init() {
 
       if (ToggleFeature.SERIES) {
+        S.O.setEvaluator(new O());
         S.ComposeSeries.setEvaluator(new ComposeSeries());
         S.InverseSeries.setEvaluator(new InverseSeries());
         S.PadeApproximant.setEvaluator(new PadeApproximant());
@@ -711,6 +712,62 @@ public class SeriesFunctions {
 
   /**
    *
+   *
+   * <pre>
+   * O(x)^n
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * represents a term of order <code>x^n</code> in a power series.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; O(x)^3 // InputForm
+   * SeriesData(x,0,{},3,3,1)
+   * </pre>
+   */
+  private static final class O extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isVariable()) {
+        return new ASTSeriesData(arg1, F.C0, 1, 1, 1);
+      }
+      if (arg1.isPlus() && arg1.size() == 3) {
+        // O(x - x0) expands at the point x0
+        IAST plus = (IAST) arg1;
+        IExpr x = plus.arg2();
+        IExpr x0 = plus.arg1();
+        if (!x.isVariable()) {
+          x = plus.arg1();
+          x0 = plus.arg2();
+        }
+        if (x.isVariable() && !x0.isVariable() && x0.isFree(x)) {
+          return new ASTSeriesData(x, engine.evaluate(x0.negate()), 1, 1, 1);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   *
    * <pre>
    * Series(expr, {x, x0, n})
    * </pre>
@@ -986,6 +1043,10 @@ public class SeriesFunctions {
           } else {
             return F.NIL;
           }
+        }
+        if (currentExpr instanceof ASTSeriesData) {
+          // don't carry a Puiseux denominator which the exponents don't need
+          return ((ASTSeriesData) currentExpr).reducePuiseuxDenominator();
         }
         return currentExpr;
       }

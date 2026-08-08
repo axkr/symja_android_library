@@ -2636,10 +2636,8 @@ public final class NumberTheory {
                     F.Gamma(F.complexNum(cxDchPlus1SubtractN)));
               }
             }
-            double real = Double.NaN;
-            try {
-              real = v.evalf();
-            } catch (ArgumentTypeException ate) {
+            double real = v.evalfNaN();
+            if (Double.isNaN(real)) {
               Complex temp = v.evalfc();
               if (temp == null) {
                 return F.NIL;
@@ -2649,8 +2647,11 @@ public final class NumberTheory {
             if (Double.isNaN(real)) {
               return F.NIL;
             }
-            double dN = n.evalf();
-            double doubleH = h.evalf();
+            double dN = n.evalfNaN();
+            double doubleH = h.evalfNaN();
+            if (Double.isNaN(dN) || Double.isNaN(doubleH)) {
+              return F.NIL;
+            }
             if (h.isZero()) {
               while (n.isPositive()) {// engine.evalTrue(F.Greater(n, F.C0))) {
                 result = result.multiply(v);
@@ -7166,10 +7167,8 @@ public final class NumberTheory {
             return F.Divide(F.Gamma(F.complexNum(cx)), F.Gamma(F.complexNum(cn)));
           }
         }
-        double real = Double.NaN;
-        try {
-          real = v.evalf();
-        } catch (ArgumentTypeException ate) {
+        double real = v.evalfNaN();
+        if (Double.isNaN(real)) {
           Complex temp = v.evalfc();
           if (temp == null) {
             return F.NIL;
@@ -7181,7 +7180,10 @@ public final class NumberTheory {
         }
         long iterationLimit = EvalEngine.get().getIterationLimit();
         long k = 0L;
-        double dN = n.evalf();
+        double dN = n.evalfNaN();
+        if (Double.isNaN(dN)) {
+          return F.NIL;
+        }
         double i = real - dN + 1;
         while (real >= i) {
           result = result.multiply(v);

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -70,19 +69,19 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     ISymbol zVar;
     double zMin, zMax;
 
-    try {
-      xVar = (ISymbol) ((IAST) xRange).arg1();
-      xMin = ((IAST) xRange).arg2().evalf();
-      xMax = ((IAST) xRange).arg3().evalf();
+    xVar = (ISymbol) ((IAST) xRange).arg1();
+    xMin = ((IAST) xRange).arg2().evalfNaN();
+    xMax = ((IAST) xRange).arg3().evalfNaN();
 
-      yVar = (ISymbol) ((IAST) yRange).arg1();
-      yMin = ((IAST) yRange).arg2().evalf();
-      yMax = ((IAST) yRange).arg3().evalf();
+    yVar = (ISymbol) ((IAST) yRange).arg1();
+    yMin = ((IAST) yRange).arg2().evalfNaN();
+    yMax = ((IAST) yRange).arg3().evalfNaN();
 
-      zVar = (ISymbol) ((IAST) zRange).arg1();
-      zMin = ((IAST) zRange).arg2().evalf();
-      zMax = ((IAST) zRange).arg3().evalf();
-    } catch (ArgumentTypeException ate) {
+    zVar = (ISymbol) ((IAST) zRange).arg1();
+    zMin = ((IAST) zRange).arg2().evalfNaN();
+    zMax = ((IAST) zRange).arg3().evalfNaN();
+    if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin) || Double.isNaN(yMax)
+        || Double.isNaN(zMin) || Double.isNaN(zMax)) {
       return F.NIL;
     }
 
@@ -115,7 +114,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
             IExpr evaluated = engine.evaluate(subst);
 
             if (evaluated.isNumber()) {
-              double val = evaluated.evalf();
+              double val = evaluated.evalfNaN();
               if (Double.isNaN(val) || Double.isInfinite(val)) {
                 gridValues[i][j][k] = Double.NaN;
               } else {

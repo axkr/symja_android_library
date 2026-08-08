@@ -54,6 +54,11 @@ public class EvalAttributes {
       // already flattened
       return F.NIL;
     }
+    if (ast.isUniform()) {
+      // the arguments are atoms, so none of them is a nested function with the same head
+      ast.addEvalFlags(IAST.IS_FLATTENED);
+      return F.NIL;
+    }
     final IExpr sym = ast.head();
     if (sym.isSymbol() && ast.isAST(sym)) {
       IASTAppendable result = flattenDeep((ISymbol) sym, ast);
@@ -116,6 +121,11 @@ public class EvalAttributes {
       // already flattened
       return F.NIL;
     }
+    if (ast.isUniform()) {
+      // the arguments are atoms, so none of them is a nested function with the same head
+      ast.addEvalFlags(IAST.IS_FLATTENED);
+      return F.NIL;
+    }
 
     final IExpr sym = ast.head();
     if (sym.isSymbol() && ast.isAST(sym)) {
@@ -140,6 +150,10 @@ public class EvalAttributes {
    *     F#NIL</code>..
    */
   public static IASTAppendable flattenDeep(final ISymbol head, final IAST ast) {
+    if (ast.isUniform()) {
+      // the arguments are atoms, so none of them is a nested function with the same head
+      return F.NIL;
+    }
     int[] newSize = new int[1];
     newSize[0] = 0;
     boolean[] flattened = new boolean[] {false};
@@ -180,6 +194,10 @@ public class EvalAttributes {
    * @see #flattenDeep(ISymbol, IAST)
    */
   public static IASTAppendable flatten(final ISymbol head, final IAST ast) {
+    if (ast.isUniform()) {
+      // the arguments are atoms, so none of them is a nested function with the same head
+      return F.NIL;
+    }
     int[] newSize = new int[1];
     newSize[0] = 0;
     boolean[] flattened = new boolean[] {false};

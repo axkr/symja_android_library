@@ -92,12 +92,7 @@ public final class MultiVariateVectorGradient implements MultivariateVectorFunct
       return F.NIL;
     };
     for (int i = 1; i < fGradientFunctions.size(); i++) {
-      try {
-        result[i - 1] = fGradientFunctions.get(i).evalf(function);
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        result[i - 1] = Double.NaN;
-      }
+      result[i - 1] = fGradientFunctions.get(i).evalfNaN(function);
     }
 
     return result;

@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics3d;
 
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -132,17 +131,16 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
           IAST dr = (IAST) dataRangeOpt;
           if (dr.get(1).isList() && dr.get(2).isList()) {
             // simple numeric eval
-            try {
-              IExpr xr = dr.get(1);
-              IExpr yr = dr.get(2);
-              xMin = ((IAST) xr).get(1).evalf();
-              xMax = ((IAST) xr).get(2).evalf();
-              yMin = ((IAST) yr).get(1).evalf();
-              yMax = ((IAST) yr).get(2).evalf();
-            } catch (RuntimeException rex) {
-              Errors.printMessage(S.ListPointPlot3D, rex);
+            IExpr xr = dr.get(1);
+            IExpr yr = dr.get(2);
+            xMin = ((IAST) xr).get(1).evalfNaN();
+            xMax = ((IAST) xr).get(2).evalfNaN();
+            yMin = ((IAST) yr).get(1).evalfNaN();
+            yMax = ((IAST) yr).get(2).evalfNaN();
+            if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin)
+                || Double.isNaN(yMax)) {
               return F.NIL;
-            } // Fallback to defaults
+            }
           }
         }
 
@@ -175,17 +173,15 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
         for (int k = 1; k < datasetList.size(); k++) {
           IExpr pt = datasetList.get(k);
           if (pt.isList3()) {
-            try {
-              double x = pt.get(1).evalf();
-              double y = pt.get(2).evalf();
-              double z = pt.get(3).evalf();
-              allPoints.append(F.List(x, y, z));
-              pointCounter++;
-              pointIndices.append(F.ZZ(pointCounter));
-            } catch (RuntimeException rex) {
-              Errors.printMessage(S.ListPointPlot3D, rex);
+            double x = pt.get(1).evalfNaN();
+            double y = pt.get(2).evalfNaN();
+            double z = pt.get(3).evalfNaN();
+            if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
               return F.NIL;
             }
+            allPoints.append(F.List(x, y, z));
+            pointCounter++;
+            pointIndices.append(F.ZZ(pointCounter));
           }
         }
       }

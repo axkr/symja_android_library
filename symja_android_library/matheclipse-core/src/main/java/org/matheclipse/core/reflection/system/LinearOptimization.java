@@ -131,7 +131,10 @@ public class LinearOptimization extends LinearProgramming {
         if (lhsList.isNIL()) {
           return false;
         }
-        double rhs = relation.arg2().evalf();
+        double rhs = relation.arg2().evalfNaN();
+        if (Double.isNaN(rhs)) {
+          return false;
+        }
         switch (headID) {
           case ID.Equal:
             constraints.add(new LinearConstraint(lhsList.toDoubleVector(), Relationship.EQ, rhs));

@@ -149,7 +149,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
 
       IExpr result = engine.evalWithoutNumericReset(expr);
       if (result instanceof ApfloatNum) {
-        return F.num(result.evalf());
+        return F.num(result.evalfNaN());
       }
       if (result instanceof ApcomplexNum) {
         return F.complexNum(result.evalfc());

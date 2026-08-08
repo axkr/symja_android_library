@@ -1433,13 +1433,11 @@ public class SVGGraphics3D {
   }
 
   private static double getDouble(IExpr expr, double def) {
-    try {
-      if (expr instanceof INumber)
-        return ((INumber) expr).reDoubleValue();
-      return expr.evalf();
-    } catch (RuntimeException e) {
-      return def;
+    if (expr instanceof INumber) {
+      return ((INumber) expr).reDoubleValue();
     }
+    double d = expr.evalfNaN();
+    return Double.isNaN(d) ? def : d;
   }
 
   private static Vector3 parseVector(IAST list, Vector3 def) {

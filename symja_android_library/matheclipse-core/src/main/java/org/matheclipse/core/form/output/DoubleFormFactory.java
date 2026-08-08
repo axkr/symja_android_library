@@ -885,7 +885,7 @@ public abstract class DoubleFormFactory {
       return;
     }
     if (o instanceof IFraction) {
-      double doubleValue = ((IFraction) o).evalf();
+      double doubleValue = ((IFraction) o).evalfNaN();
       convertDouble(buf, F.num(doubleValue), precedence, caller);
       return;
     }

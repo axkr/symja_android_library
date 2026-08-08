@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -349,6 +350,69 @@ public abstract class ExprEvaluatorTestCase {
     return difference <= relativeTolerance * magnitude;
   }
 
+  /**
+   * Evaluate <code>evalString</code> and compare the result against <code>expected</code> with an
+   * <b>absolute</b> tolerance.
+   *
+   * <p>
+   * This complements {@link #checkNumeric(String, String, double)}, which compares the two
+   * <i>printed</i> expressions with a relative tolerance. Use <code>checkApprox</code> when the
+   * expected value is a machine number the test computes in Java - <code>Math.exp(0.5)</code>,
+   * <code>-Math.acos(31.0 / 40.0)</code> - rather than a literal the algorithm is expected to
+   * reproduce digit for digit. Writing such a value as a string would force the test to encode the
+   * exact result of the current implementation, so that a harmless change of step size or solver
+   * tolerance breaks it even though the answer got no worse.
+   *
+   * <p>
+   * The tolerance is absolute because the callers of this method know the size of the answer they
+   * expect: a solution which oscillates through zero, such as <code>Cos</code> sampled near
+   * <code>Pi/2</code>, has no useful relative accuracy there, and demanding one would make the
+   * comparison unsatisfiable at the crossing while leaving it vacuous at the peaks.
+   *
+   * @param evalString the expression to evaluate
+   * @param expected the expected value of the evaluated expression
+   * @param absoluteTolerance the largest absolute difference which still counts as equal
+   */
+  public void checkApprox(String evalString, double expected, double absoluteTolerance) {
+    checkApprox(evaluatorN, evalString, expected, absoluteTolerance);
+  }
+
+  /**
+   * Like {@link #checkApprox(String, double, double)}, but evaluated by the given script engine.
+   *
+   * @param scriptEngine the engine which evaluates <code>evalString</code>
+   * @param evalString the expression to evaluate
+   * @param expected the expected value of the evaluated expression
+   * @param absoluteTolerance the largest absolute difference which still counts as equal
+   */
+  public void checkApprox(ExprEvaluator scriptEngine, String evalString, double expected,
+      double absoluteTolerance) {
+    IExpr result;
+    try {
+      result = scriptEngine.eval(evalString);
+    } catch (SyntaxError e) {
+      fail(evalString + " - " + e.getMessage());
+      return;
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail(evalString + " - threw " + e);
+      return;
+    }
+    double evaledValue = result.evalfNaN();
+    if (Double.isNaN(evaledValue) && !Double.isNaN(expected)) {
+      // report the expression itself - an unevaluated result, a symbol or a message is far more
+      // useful here than "expected <1.6487> but was <NaN>"
+      fail(evalString + " - expected " + expected + " but did not evaluate to a machine number: "
+          + printResultNumeric(result));
+      return;
+    }
+    double difference = Math.abs(evaledValue - expected);
+    // negated, so that a NaN difference fails rather than silently passing
+    if (!(difference <= absoluteTolerance)) {
+      fail(evalString + " - expected " + expected + " but was " + evaledValue + " (difference "
+          + difference + " exceeds tolerance " + absoluteTolerance + ")");
+    }
+  }
 
   public void check(IAST ast, String strResult) {
     check(EvalEngine.get(), true, ast, strResult);

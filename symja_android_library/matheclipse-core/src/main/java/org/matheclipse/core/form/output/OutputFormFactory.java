@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
@@ -1301,15 +1302,22 @@ public class OutputFormFactory {
         }
 
         convert(buf, header, Integer.MIN_VALUE, true);
+        // An interpolating function already prints as a call - InterpolatingFunction({{0.,1.}},<>)
+        // - so applying it reads better in the same syntax as the rest of the output. Other
+        // non-symbol heads keep the brackets, which is also what tells a reader that
+        // f(#1,y)&[x] applies a pure function rather than multiplying by one. Neither form can be
+        // read back: in the relaxed syntax `expr(x)` parses as a product and `expr[x]` as a part,
+        // so the choice is about which is clearer, not about round tripping.
+        final boolean relaxedApplication = fRelaxedSyntax && header instanceof InterpolatingFunctionExpr;
         // avoid fast StackOverflow
-        append(buf, "[");
+        append(buf, relaxedApplication ? "(" : "[");
         for (int i = 1; i < list.size(); i++) {
           convert(buf, list.get(i), Integer.MIN_VALUE, false);
           if (i < list.argSize()) {
             append(buf, ",");
           }
         }
-        append(buf, "]");
+        append(buf, relaxedApplication ? ")" : "]");
         return;
       }
       if (header.isSymbol()) {

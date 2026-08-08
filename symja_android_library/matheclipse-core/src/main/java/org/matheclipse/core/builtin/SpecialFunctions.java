@@ -2,9 +2,7 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CNInfinity;
 import static org.matheclipse.core.expression.F.Erf;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Log;
@@ -823,24 +821,29 @@ public class SpecialFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      if (z.isZero()) {
+        return F.C1;
+      }
+      // the DirectedInfinity cases must be tested OUTSIDE an isReal() guard: Infinity is the AST
+      // DirectedInfinity(1), for which isReal() is false. Left inside, Erfc(Infinity) stays
+      // unevaluated and e.g. Erfc(2*Infinity)/Erfc(Infinity) cancels structurally to 1.
+      if (z.isInfinity()) {
+        return F.C0;
+      }
+      if (z.isNegativeInfinity()) {
+        return F.C2;
+      }
+      if (z.isComplexInfinity()) {
+        return S.Indeterminate;
+      }
+      if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
+        // Erfc(z) = 1 - Erf(z) and Erf(+-I*Infinity) = +-I*Infinity
+        return z.negate();
+      }
       if (z.isReal()) {
-        if (z.isZero()) {
-          return F.C1;
-        }
-        if (z.equals(CInfinity)) {
-          return F.C0;
-        }
-        if (z.equals(CNInfinity)) {
-          return F.C2;
-        }
-        if (z.isComplexInfinity()) {
-          return S.Indeterminate;
-        }
-        if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
-          return z.negate();
-        }
         return F.NIL;
-      } else if (z.isAST(S.InverseErfc, 2)) {
+      }
+      if (z.isAST(S.InverseErfc, 2)) {
         return z.first();
       }
       if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
@@ -1389,9 +1392,14 @@ public class SpecialFunctions {
       }
       if (doubleMode && (z.isNumericFunction(true) && a.isNumericFunction(true)
           && b.isNumericFunction(true))) {
-        org.hipparchus.distribution.continuous.BetaDistribution beta = //
-            new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf());
-        return F.num(beta.inverseCumulativeProbability(z.evalf()));
+        double aDouble = a.evalfNaN();
+        double bDouble = b.evalfNaN();
+        double zDouble = z.evalfNaN();
+        if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(zDouble)) {
+          org.hipparchus.distribution.continuous.BetaDistribution beta = //
+              new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble);
+          return F.num(beta.inverseCumulativeProbability(zDouble));
+        }
       }
       return F.NIL;
     }
@@ -1603,17 +1611,15 @@ public class SpecialFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
-        try {
-          double z = ast.arg1().evalf();
-          double s = ast.arg2().evalf();
-          double a = ast.arg3().evalf();
-
+        double z = ast.arg1().evalfNaN();
+        double s = ast.arg2().evalfNaN();
+        double a = ast.arg3().evalfNaN();
+        // Fallback if inputs cannot be evaluated to machine-precision doubles
+        if (!Double.isNaN(z) && !Double.isNaN(s) && !Double.isNaN(a)) {
           // The series expansion only converges for |z| < 1 or (z == 1 and s > 1)
           if (Math.abs(z) < 1.0 || (Math.abs(z - 1.0) < 1e-14 && s > 1.0)) {
             return F.num(lerchPhiNumeric(z, s, a));
           }
-        } catch (ValidateException ve) {
-          // Fallback if inputs cannot be evaluated to machine-precision doubles
         }
       }
       return F.NIL;

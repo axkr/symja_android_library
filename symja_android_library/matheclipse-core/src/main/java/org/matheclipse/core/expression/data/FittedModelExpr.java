@@ -52,10 +52,8 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
         IExpr substitutedFunction = F.subst(basisFunction, substitutionRules);
         IExpr value = engine.evaluate(substitutedFunction);
 
-        try {
-          x[i][j] = value.evalf();
-        } catch (Exception e) {
-          Errors.printMessage(S.LinearModelFit, e, engine);
+        x[i][j] = value.evalfNaN();
+        if (Double.isNaN(x[i][j]) && !value.isReal()) {
           return null;
         }
       }

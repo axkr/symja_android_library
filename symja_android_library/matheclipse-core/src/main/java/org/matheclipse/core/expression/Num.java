@@ -1250,11 +1250,14 @@ public class Num implements INum {
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
     if (!F.isNumIntValue(value) || value > 0) {
-      try {
-        return F.num(HypergeometricJS.hypergeometric0F1(value, arg2.evalf()));
-      } catch (RuntimeException e) {
-        Errors.rethrowsInterruptException(e);
-        // try as computation with complex numbers
+      double arg2Double = arg2.evalfNaN();
+      if (!Double.isNaN(arg2Double)) {
+        try {
+          return F.num(HypergeometricJS.hypergeometric0F1(value, arg2Double));
+        } catch (RuntimeException e) {
+          Errors.rethrowsInterruptException(e);
+          // try as computation with complex numbers
+        }
       }
     }
     try {
@@ -1290,13 +1293,17 @@ public class Num implements INum {
 
   @Override
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
-    try {
-      return F.num(HypergeometricJS.hypergeometric1F1(value, //
-          arg2.evalf(), //
-          arg3.evalf()));
-    } catch (RuntimeException e) {
-      Errors.rethrowsInterruptException(e);
-      // try as computation with complex numbers
+    double arg2Double = arg2.evalfNaN();
+    double arg3Double = arg3.evalfNaN();
+    if (!Double.isNaN(arg2Double) && !Double.isNaN(arg3Double)) {
+      try {
+        return F.num(HypergeometricJS.hypergeometric1F1(value, //
+            arg2Double, //
+            arg3Double));
+      } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+        // try as computation with complex numbers
+      }
     }
 
     try {
@@ -1882,7 +1889,7 @@ public class Num implements INum {
         if (isNegative()) {
           return ComplexNum.valueOf(value).log(ComplexNum.valueOf(base.evalfc()));
         }
-        return valueOf(Math.log(value) / Math.log(base.evalf()));
+        return valueOf(Math.log(value) / Math.log(base.evalfNaN()));
       }
       return ComplexNum.valueOf(value).log(ComplexNum.valueOf(base.evalfc()));
     }
@@ -2026,7 +2033,7 @@ public class Num implements INum {
       return plus((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return Num.valueOf(value + that.evalf());
+      return Num.valueOf(value + that.evalfNaN());
     }
     if (that instanceof ComplexSym) {
       return F.complexNum(new Complex(value).add(that.evalfc()));
@@ -2253,12 +2260,15 @@ public class Num implements INum {
 
   @Override
   public IExpr struveH(IExpr arg2) {
-    try {
-      return F.num(BesselJS.struveH(value, //
-          arg2.evalf()));
-    } catch (RuntimeException e) {
-      Errors.rethrowsInterruptException(e);
-      // try as computation with complex numbers
+    double arg2Double = arg2.evalfNaN();
+    if (!Double.isNaN(arg2Double)) {
+      try {
+        return F.num(BesselJS.struveH(value, //
+            arg2Double));
+      } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+        // try as computation with complex numbers
+      }
     }
 
     try {
@@ -2273,12 +2283,15 @@ public class Num implements INum {
 
   @Override
   public IExpr struveL(IExpr arg2) {
-    try {
-      return F.num(BesselJS.struveL(value, //
-          arg2.evalf()));
-    } catch (RuntimeException e) {
-      Errors.rethrowsInterruptException(e);
-      // try as computation with complex numbers
+    double arg2Double = arg2.evalfNaN();
+    if (!Double.isNaN(arg2Double)) {
+      try {
+        return F.num(BesselJS.struveL(value, //
+            arg2Double));
+      } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+        // try as computation with complex numbers
+      }
     }
 
     try {
@@ -2352,7 +2365,7 @@ public class Num implements INum {
       return times((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return Num.valueOf(value * that.evalf());
+      return Num.valueOf(value * that.evalfNaN());
     }
     if (that instanceof ComplexSym) {
       return F.complexNum(new Complex(value).multiply(that.evalfc()));

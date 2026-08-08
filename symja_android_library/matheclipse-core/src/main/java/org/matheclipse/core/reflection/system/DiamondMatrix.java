@@ -70,9 +70,8 @@ public class DiamondMatrix extends AbstractFunctionEvaluator {
         rArr[i] = -1.0;
       } else {
         rIsAll[i] = false;
-        try {
-          rArr[i] = evalR.evalf();
-        } catch (Exception e) {
+        rArr[i] = evalR.evalfNaN();
+        if (Double.isNaN(rArr[i])) {
           return F.NIL;
         }
         if (rArr[i] < 0) {
@@ -137,7 +136,7 @@ public class DiamondMatrix extends AbstractFunctionEvaluator {
         // Evaluate the scaled Manhattan distance condition for the current coordinate
         double sum = 0.0;
         for (int d = 0; d < wArr.length; d++) {
-          // Mathematica evaluates diamond inclusion by extending the radii by 0.5
+          // Evaluate diamond inclusion by extending the radii by 0.5
           // This appropriately maps discrete integer grids to the continuous L1 radius
           double rExt = rArr[d] + 0.5;
           sum += Math.abs(indices[d] - cArr[d]) / rExt;

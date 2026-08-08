@@ -246,9 +246,16 @@ public class Sum extends ListFunctions.Table implements SumRules {
         double partial = 0.0;
         for (int k = fromInt; k <= fromInt + 120; k++) {
           IExpr summand = engine.evaluate(F.N(F.ReplaceAll(F.xreplace(term, var, F.ZZ(k)), rules)));
-          partial += summand.evalf();
+          double summandValue = summand.evalfNaN();
+          if (Double.isNaN(summandValue)) {
+            return false;
+          }
+          partial += summandValue;
         }
-        double closed = engine.evaluate(F.N(F.ReplaceAll(result, rules))).evalf();
+        double closed = engine.evaluate(F.N(F.ReplaceAll(result, rules))).evalfNaN();
+        if (Double.isNaN(closed)) {
+          return false;
+        }
         return Math.abs(partial - closed) < 1.0e-6;
       } catch (RuntimeException rex) {
         return false;

@@ -110,10 +110,12 @@ public class Dimensions2D {
 
   public void setColorRGB(IAST rgbColor) {
     if (rgbColor.size() == 4 || rgbColor.size() == 5) {
-      float r = (float) rgbColor.arg1().evalf();
-      float g = (float) rgbColor.arg2().evalf();
-      float b = (float) rgbColor.arg3().evalf();
-      color = new RGBColor(r, g, b);
+      double red = rgbColor.arg1().evalfNaN();
+      double green = rgbColor.arg2().evalfNaN();
+      double blue = rgbColor.arg3().evalfNaN();
+      if (!Double.isNaN(red) && !Double.isNaN(green) && !Double.isNaN(blue)) {
+        color = new RGBColor((float) red, (float) green, (float) blue);
+      }
     }
   }
 

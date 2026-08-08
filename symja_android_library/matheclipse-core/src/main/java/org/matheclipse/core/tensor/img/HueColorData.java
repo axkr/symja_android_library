@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
   @Override // from ScalarTensorFunction
   public IAST apply(IExpr scalar) {
-    double value = scalar.evalf();
+    double value = scalar.evalfNaN();
     return Double.isFinite(value) //
         ? ColorFormat.toVector(Hue.of(value, 1, 1, opacity))
         : Transparent.rgba();
@@ -24,6 +24,6 @@ import org.matheclipse.core.interfaces.IExpr;
 
   @Override // from ColorDataGradient
   public ColorDataGradient deriveWithOpacity(IExpr opacity) {
-    return new HueColorData(opacity.evalf());
+    return new HueColorData(opacity.evalfNaN());
   }
 }

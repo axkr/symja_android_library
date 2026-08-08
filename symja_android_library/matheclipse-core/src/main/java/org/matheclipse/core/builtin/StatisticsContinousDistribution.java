@@ -40,13 +40,18 @@ public class StatisticsContinousDistribution {
             && (a.isNumericArgument(true) //
                 || b.isNumericArgument(true) //
                 || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -80,13 +85,18 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -137,13 +147,18 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -320,27 +335,39 @@ public class StatisticsContinousDistribution {
       double[][] covariances;
       if (dist.isAST1()) {
         rhoExpr = dist.arg1();
-        double p = rhoExpr.evalf();
+        double p = rhoExpr.evalfNaN();
+        if (Double.isNaN(p)) {
+          return F.NIL;
+        }
         covariances = new double[][] {{1.0, p}, {p, 1.0}};
       } else if (dist.isAST2()) {
         IExpr sigma = dist.arg1();
         rhoExpr = dist.arg2();
-        double s1 = sigma.first().evalf();
-        double s2 = sigma.second().evalf();
+        double s1 = sigma.first().evalfNaN();
+        double s2 = sigma.second().evalfNaN();
         rhoExpr = dist.arg3();
-        double p = rhoExpr.evalf();
+        double p = rhoExpr.evalfNaN();
+        if (Double.isNaN(s1) || Double.isNaN(s2) || Double.isNaN(p)) {
+          return F.NIL;
+        }
         double cov12 = p * s1 * s2;
         covariances = new double[][] {{s1 * s1, cov12}, {cov12, s2 * s2}};
       } else if (dist.isAST3()) {
         mu = dist.arg1();
-        double mu1 = mu.first().evalf();
-        double mu2 = mu.second().evalf();
+        double mu1 = mu.first().evalfNaN();
+        double mu2 = mu.second().evalfNaN();
+        if (Double.isNaN(mu1) || Double.isNaN(mu2)) {
+          return F.NIL;
+        }
         means = new double[] {mu1, mu2};
         IExpr sigma = dist.arg2();
-        double s1 = sigma.first().evalf();
-        double s2 = sigma.second().evalf();
+        double s1 = sigma.first().evalfNaN();
+        double s2 = sigma.second().evalfNaN();
         rhoExpr = dist.arg3();
-        double p = rhoExpr.evalf();
+        double p = rhoExpr.evalfNaN();
+        if (Double.isNaN(s1) || Double.isNaN(s2) || Double.isNaN(p)) {
+          return F.NIL;
+        }
         double cov12 = p * s1 * s2;
         covariances = new double[][] {{s1 * s1, cov12}, {cov12, s2 * s2}};
       } else {
@@ -519,8 +546,11 @@ public class StatisticsContinousDistribution {
           b = dist.arg2();
         }
         // see exception handling in RandonmVariate() function
-        double ad = a.evalf();
-        double bd = b.evalf();
+        double ad = a.evalfNaN();
+        double bd = b.evalfNaN();
+        if (Double.isNaN(ad) || Double.isNaN(bd)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.CauchyDistribution(ad, bd), size);
@@ -560,13 +590,17 @@ public class StatisticsContinousDistribution {
         IExpr v = dist.arg1();
         if (!engine.isArbitraryMode() && //
             (v.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double vDouble = v.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(vDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(vDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -604,13 +638,17 @@ public class StatisticsContinousDistribution {
         IExpr v = dist.arg1();
         if (!engine.isArbitraryMode() && //
             (v.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double vDouble = v.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(vDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(vDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -667,13 +705,17 @@ public class StatisticsContinousDistribution {
         IExpr v = dist.arg1();
         if (!engine.isArbitraryMode() && //
             (v.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double vDouble = v.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(vDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(vDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -692,8 +734,10 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
-        double v = dist.arg1().evalf();
-        // see exception handling in RandonmVariate() function
+        double v = dist.arg1().evalfNaN();
+        if (Double.isNaN(v)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v), size);
@@ -739,12 +783,14 @@ public class StatisticsContinousDistribution {
                 .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
         if (empiricalDistribution != null) {
           // if (!engine.isArbitraryMode()) {
-          try {
-            double x = k.evalf();
-            return F.num(empiricalDistribution.cumulativeProbability(x));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double x = k.evalfNaN();
+          if (!Double.isNaN(x)) {
+            try {
+              return F.num(empiricalDistribution.cumulativeProbability(x));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
           // }
         }
@@ -828,12 +874,14 @@ public class StatisticsContinousDistribution {
                 .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
         if (empiricalDistribution != null) {
           // if (!engine.isArbitraryMode()) {
-          try {
-            double x = k.evalf();
-            return F.num(empiricalDistribution.density(x));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double x = k.evalfNaN();
+          if (!Double.isNaN(x)) {
+            try {
+              return F.num(empiricalDistribution.density(x));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
           // }
         }
@@ -1043,19 +1091,22 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            double x = k.evalf();
-            if (x <= 0.0) {
-              return F.CD0;
-            }
-            return F.num(1.0 - Math.exp(-x * n.evalf()));
+          double x = k.evalfNaN();
+          double nDouble = n.evalfNaN();
+          if (!Double.isNaN(x) && !Double.isNaN(nDouble)) {
+            try {
+              if (x <= 0.0) {
+                return F.CD0;
+              }
+              return F.num(1.0 - Math.exp(-x * nDouble));
 
-            // return F.num(new
-            // org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
-            // .cumulativeProbability(k.evalDouble()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+              // return F.num(new
+              // org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
+              // .cumulativeProbability(k.evalDouble()));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -1094,18 +1145,21 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            double x = k.evalf();
-            if (F.isEqual(x, 1.0)) {
-              return F.CInfinity;
+          double x = k.evalfNaN();
+          double nDouble = n.evalfNaN();
+          if (!Double.isNaN(x) && !Double.isNaN(nDouble)) {
+            try {
+              if (F.isEqual(x, 1.0)) {
+                return F.CInfinity;
+              }
+              return F.num(-Math.log(1.0 - x) / nDouble);
+              // return F.num(new
+              // org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
+              // .inverseCumulativeProbability(k.evalDouble()));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
             }
-            return F.num(-Math.log(1.0 - x) / n.evalf());
-            // return F.num(new
-            // org.hipparchus.distribution.continuous.ExponentialDistribution(n.evalDouble()) //
-            // .inverseCumulativeProbability(k.evalDouble()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
           }
         }
         IExpr function =
@@ -1166,7 +1220,7 @@ public class StatisticsContinousDistribution {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
-        double rate = dist.arg1().evalf();
+        double rate = dist.arg1().evalfNaN();
         if (rate > 0.0) {
           // return F.num(new ExponentialGenerator(rate, random).nextValue());
           RandomDataGenerator rdg = new RandomDataGenerator();
@@ -1211,13 +1265,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(), m.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.FDistribution(nDouble, mDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -1242,13 +1301,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(), m.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.FDistribution(nDouble, mDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -1308,13 +1372,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(), m.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.FDistribution(nDouble, mDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -1583,13 +1652,18 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(), b.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.GammaDistribution(aDouble, bDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -1652,13 +1726,18 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(), b.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.GammaDistribution(aDouble, bDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -1771,13 +1850,18 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(), b.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.GammaDistribution(aDouble, bDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -1822,8 +1906,11 @@ public class StatisticsContinousDistribution {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
-        double a = dist.arg1().evalf();
-        double b = dist.arg2().evalf();
+        double a = dist.arg1().evalfNaN();
+        double b = dist.arg2().evalfNaN();
+        if (Double.isNaN(a) || Double.isNaN(b)) {
+          return F.NIL;
+        }
 
         // TODO cache RandomDataGenerator instance
         RandomDataGenerator rdg = new RandomDataGenerator();
@@ -1960,8 +2047,11 @@ public class StatisticsContinousDistribution {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
-        double lambda = dist.arg1().evalf();
-        double xi = dist.arg2().evalf();
+        double lambda = dist.arg1().evalfNaN();
+        double xi = dist.arg2().evalfNaN();
+        if (Double.isNaN(lambda) || Double.isNaN(xi)) {
+          return F.NIL;
+        }
         double reference = random.nextDouble();
         double uniform = Math.nextUp(reference);
         double result = Math.log((xi - Math.log(uniform)) / xi) / lambda;
@@ -2041,10 +2131,13 @@ public class StatisticsContinousDistribution {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
-          try {
-            return F.num(1.0 - Math.exp(-Math.exp(k.evalf())));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(kDouble)) {
+            try {
+              return F.num(1.0 - Math.exp(-Math.exp(kDouble)));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+            }
           }
         }
         IExpr function =
@@ -2056,12 +2149,17 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            final double z = (k.evalf() - n.evalf()) / m.evalf();
-            return F.num(1.0 - Math.exp(-Math.exp(z)));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double kDouble = k.evalfNaN();
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          if (!Double.isNaN(kDouble) && !Double.isNaN(nDouble) && !Double.isNaN(mDouble)) {
+            try {
+              final double z = (kDouble - nDouble) / mDouble;
+              return F.num(1.0 - Math.exp(-Math.exp(z)));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -2088,17 +2186,19 @@ public class StatisticsContinousDistribution {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
-          try {
-            double p = k.evalf();
-            MathUtils.checkRangeInclusive(p, 0, 1);
-            if (F.isZero(p)) {
-              return F.CNInfinity;
-            } else if (F.isEqual(p, 1.0)) {
-              return F.CInfinity;
+          double p = k.evalfNaN();
+          if (!Double.isNaN(p)) {
+            try {
+              MathUtils.checkRangeInclusive(p, 0, 1);
+              if (F.isZero(p)) {
+                return F.CNInfinity;
+              } else if (F.isEqual(p, 1.0)) {
+                return F.CInfinity;
+              }
+              return F.num(Math.log(-Math.log(1.0 - p)));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
             }
-            return F.num(Math.log(-Math.log(1.0 - p)));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
           }
         }
         IExpr function =
@@ -2116,18 +2216,22 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            double p = k.evalf();
-            MathUtils.checkRangeInclusive(p, 0, 1);
-            if (F.isZero(p)) {
-              return F.CNInfinity;
-            } else if (F.isEqual(p, 1.0)) {
-              return F.CInfinity;
+          double p = k.evalfNaN();
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          if (!Double.isNaN(p) && !Double.isNaN(nDouble) && !Double.isNaN(mDouble)) {
+            try {
+              MathUtils.checkRangeInclusive(p, 0, 1);
+              if (F.isZero(p)) {
+                return F.CNInfinity;
+              } else if (F.isEqual(p, 1.0)) {
+                return F.CInfinity;
+              }
+              return F.num(nDouble + mDouble * Math.log(-Math.log(1.0 - p)));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
             }
-            return F.num(n.evalf() + m.evalf() * Math.log(-Math.log(1.0 - p)));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
           }
         }
         IExpr function =
@@ -2181,11 +2285,13 @@ public class StatisticsContinousDistribution {
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
-          try {
-            double z = k.evalf();
-            return F.num(Math.exp(-Math.exp(z) + z));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
+          double z = k.evalfNaN();
+          if (!Double.isNaN(z)) {
+            try {
+              return F.num(Math.exp(-Math.exp(z) + z));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+            }
           }
         }
         IExpr function =
@@ -2217,8 +2323,11 @@ public class StatisticsContinousDistribution {
         return new ASTRealVector(vector, false);
       } else if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
-        double n = dist.arg1().evalf();
-        double m = dist.arg2().evalf();
+        double n = dist.arg1().evalfNaN();
+        double m = dist.arg2().evalfNaN();
+        if (Double.isNaN(n) || Double.isNaN(m)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.GumbelDistribution(n, m), size);
@@ -2618,13 +2727,18 @@ public class StatisticsContinousDistribution {
         //
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalf(),
-                m.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(nDouble,
+                  mDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -2659,13 +2773,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalf(),
-                m.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(nDouble,
+                  mDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -2731,13 +2850,18 @@ public class StatisticsContinousDistribution {
         //
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalf(),
-                m.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(nDouble,
+                  mDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -2755,8 +2879,11 @@ public class StatisticsContinousDistribution {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
-        double mean = dist.arg1().evalf();
-        double sigma = dist.arg2().evalf();
+        double mean = dist.arg1().evalfNaN();
+        double sigma = dist.arg2().evalfNaN();
+        if (Double.isNaN(mean)) {
+          return F.NIL;
+        }
         if (sigma > 0) {
           RandomDataGenerator rdg = new RandomDataGenerator();
           double[] vector = rdg.nextDeviates(
@@ -3032,13 +3159,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
-                m.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(nDouble,
+                  mDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -3064,13 +3196,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
-                m.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(nDouble,
+                  mDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -3123,13 +3260,18 @@ public class StatisticsContinousDistribution {
         //
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
-                m.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(nDouble,
+                  mDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -3150,8 +3292,11 @@ public class StatisticsContinousDistribution {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
-        double n = dist.arg1().evalf();
-        double m = dist.arg2().evalf();
+        double n = dist.arg1().evalfNaN();
+        double m = dist.arg2().evalfNaN();
+        if (Double.isNaN(n) || Double.isNaN(m)) {
+          return F.NIL;
+        }
 
         // TODO cache RandomDataGenerator instance
         RandomDataGenerator rdg = new RandomDataGenerator();
@@ -3299,13 +3444,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(), m.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.NormalDistribution(nDouble, mDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -3394,13 +3544,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(), m.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.NormalDistribution(nDouble, mDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -3457,13 +3612,18 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(), m.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.NormalDistribution(nDouble, mDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -3482,8 +3642,11 @@ public class StatisticsContinousDistribution {
       }
       if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
-        double mean = dist.arg1().evalf();
-        double sigma = dist.arg2().evalf();
+        double mean = dist.arg1().evalfNaN();
+        double sigma = dist.arg2().evalfNaN();
+        if (Double.isNaN(mean)) {
+          return F.NIL;
+        }
         if (sigma > 0) {
           // double mean = dist.arg1().evalDouble();
           // double sigma = dist.arg2().evalDouble();
@@ -3901,12 +4064,16 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalf()) //
-                .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.TDistribution(nDouble) //
+                  .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         //
@@ -3931,11 +4098,18 @@ public class StatisticsContinousDistribution {
         if (!engine.isArbitraryMode() && //
             (m.isNumericArgument(true) || s.isNumericArgument(true) || v.isNumericArgument(true)
                 || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.TDistribution(v.evalf()) //
-                .cumulativeProbability((k.evalf() - m.evalf()) / s.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
+          double vDouble = v.evalfNaN();
+          double kDouble = k.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double sDouble = s.evalfNaN();
+          if (!Double.isNaN(vDouble) && !Double.isNaN(kDouble)
+              && !Double.isNaN(mDouble) && !Double.isNaN(sDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.TDistribution(vDouble) //
+                  .cumulativeProbability((kDouble - mDouble) / sDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+            }
           }
         }
         IExpr z = F.Times(F.Subtract(F.Slot1, m), F.Power(s, F.CN1));
@@ -3969,12 +4143,16 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalf()) //
-                .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.TDistribution(nDouble) //
+                  .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4011,12 +4189,19 @@ public class StatisticsContinousDistribution {
         if (!engine.isArbitraryMode() && //
             (m.isNumericArgument(true) || s.isNumericArgument(true) || v.isNumericArgument(true)
                 || k.isNumericArgument(true))) {
-          try {
-            return F.num(m.evalf()
-                + s.evalf() * new org.hipparchus.distribution.continuous.TDistribution(v.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
+          double mDouble = m.evalfNaN();
+          double sDouble = s.evalfNaN();
+          double vDouble = v.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(mDouble) && !Double.isNaN(sDouble)
+              && !Double.isNaN(vDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(mDouble
+                  + sDouble * new org.hipparchus.distribution.continuous.TDistribution(vDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+            }
           }
         }
         IExpr function = F.Function(F.ConditionalExpression(
@@ -4048,8 +4233,11 @@ public class StatisticsContinousDistribution {
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
         if (EvalEngine.get().isDoubleMode() || arg1.isNumericArgument(true)) {
-          return F.num(new org.hipparchus.distribution.continuous.TDistribution(arg1.evalf())
-              .getNumericalMean());
+          double arg1Double = arg1.evalfNaN();
+          if (!Double.isNaN(arg1Double)) {
+            return F.num(new org.hipparchus.distribution.continuous.TDistribution(arg1Double)
+                .getNumericalMean());
+          }
         }
         // (v) -> Piecewise({{0, v > 1}}, Indeterminate)
         return F.Piecewise(F.list(F.list(F.C0, F.Greater(dist.arg1(), F.C1))), S.Indeterminate);
@@ -4081,12 +4269,16 @@ public class StatisticsContinousDistribution {
         //
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalf()) //
-                .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.TDistribution(nDouble) //
+                  .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4103,12 +4295,19 @@ public class StatisticsContinousDistribution {
         if (!engine.isArbitraryMode() && //
             (m.isNumericArgument(true) || s.isNumericArgument(true) || v.isNumericArgument(true)
                 || k.isNumericArgument(true))) {
-          try {
-            return F.num((1.0 / s.evalf())
-                * new org.hipparchus.distribution.continuous.TDistribution(v.evalf()) //
-                    .density((k.evalf() - m.evalf()) / s.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
+          double sDouble = s.evalfNaN();
+          double vDouble = v.evalfNaN();
+          double kDouble = k.evalfNaN();
+          double mDouble = m.evalfNaN();
+          if (!Double.isNaN(sDouble) && !Double.isNaN(vDouble)
+              && !Double.isNaN(kDouble) && !Double.isNaN(mDouble)) {
+            try {
+              return F.num((1.0 / sDouble)
+                  * new org.hipparchus.distribution.continuous.TDistribution(vDouble) //
+                      .density((kDouble - mDouble) / sDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+            }
           }
         }
         IExpr z = F.Times(F.Subtract(F.Slot1, m), F.Power(s, F.CN1));
@@ -4124,15 +4323,21 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
-        double n = dist.arg1().evalf();
+        double n = dist.arg1().evalfNaN();
+        if (Double.isNaN(n)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector =
             rdg.nextDeviates(new org.hipparchus.distribution.continuous.TDistribution(n), size);
         return new ASTRealVector(vector, false);
       } else if (dist.isAST3()) {
-        double m = dist.arg1().evalf();
-        double s = dist.arg2().evalf();
-        double v = dist.arg3().evalf();
+        double m = dist.arg1().evalfNaN();
+        double s = dist.arg2().evalfNaN();
+        double v = dist.arg3().evalfNaN();
+        if (Double.isNaN(m) || Double.isNaN(s) || Double.isNaN(v)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector =
             rdg.nextDeviates(new org.hipparchus.distribution.continuous.TDistribution(v), size);
@@ -4164,8 +4369,11 @@ public class StatisticsContinousDistribution {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         if (EvalEngine.get().isDoubleMode() || n.isNumericArgument(true)) {
-          return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalf())
-              .getNumericalVariance());
+          double nDouble = n.evalfNaN();
+          if (!Double.isNaN(nDouble)) {
+            return F.num(new org.hipparchus.distribution.continuous.TDistribution(nDouble)
+                .getNumericalVariance());
+          }
         }
         return F.Piecewise(F.list(F.list(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))),
             S.Indeterminate);
@@ -4174,9 +4382,13 @@ public class StatisticsContinousDistribution {
         IExpr v = dist.arg3();
         if (EvalEngine.get().isDoubleMode()
             || (s.isNumericArgument(true) && v.isNumericArgument(true))) {
-          return F.num(s.evalf() * s.evalf()
-              * new org.hipparchus.distribution.continuous.TDistribution(v.evalf())
-                  .getNumericalVariance());
+          double sDouble = s.evalfNaN();
+          double vDouble = v.evalfNaN();
+          if (!Double.isNaN(sDouble) && !Double.isNaN(vDouble)) {
+            return F.num(sDouble * sDouble
+                * new org.hipparchus.distribution.continuous.TDistribution(vDouble)
+                    .getNumericalVariance());
+          }
         }
         return F.Piecewise(
             F.list(F.list(F.Times(F.Sqr(s), F.Divide(v, F.Plus(F.CN2, v))), F.Greater(v, F.C2))),
@@ -4240,14 +4452,19 @@ public class StatisticsContinousDistribution {
         IExpr b = minMax[1];
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.UniformRealDistribution(a.evalf(),
-                    b.evalf()) //
-                        .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.UniformRealDistribution(aDouble,
+                      bDouble) //
+                          .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4283,14 +4500,19 @@ public class StatisticsContinousDistribution {
         IExpr b = minMax[1];
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.UniformRealDistribution(a.evalf(),
-                    b.evalf()) //
-                        .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double aDouble = a.evalfNaN();
+          double bDouble = b.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F
+                  .num(new org.hipparchus.distribution.continuous.UniformRealDistribution(aDouble,
+                      bDouble) //
+                          .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4367,8 +4589,11 @@ public class StatisticsContinousDistribution {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         // see exception handling in RandonmVariate() function
-        double min = minMax[0].evalf();
-        double max = minMax[1].evalf();
+        double min = minMax[0].evalfNaN();
+        double max = minMax[1].evalfNaN();
+        if (Double.isNaN(min) || Double.isNaN(max)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.UniformRealDistribution(min, max), size);
@@ -4444,13 +4669,19 @@ public class StatisticsContinousDistribution {
         //
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(), m.evalf()) //
-                    .cumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
+                      mDouble) //
+                      .cumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4467,14 +4698,21 @@ public class StatisticsContinousDistribution {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || scale.isNumericArgument(true)
                 || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            // Shift x by the location parameter before calculating CDF
-            return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
-                scale.evalf()) //
-                    .cumulativeProbability(k.evalf() - loc.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double scaleDouble = scale.evalfNaN();
+          double kDouble = k.evalfNaN();
+          double locDouble = loc.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(scaleDouble)
+              && !Double.isNaN(kDouble) && !Double.isNaN(locDouble)) {
+            try {
+              // Shift x by the location parameter before calculating CDF
+              return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
+                  scaleDouble) //
+                      .cumulativeProbability(kDouble - locDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4508,13 +4746,19 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(), m.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
+                      mDouble) //
+                      .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4540,15 +4784,22 @@ public class StatisticsContinousDistribution {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || scale.isNumericArgument(true)
                 || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            // Shift InverseCDF result by the location parameter
-            return F.num(loc.evalf()
-                + new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
-                    scale.evalf()) //
-                        .inverseCumulativeProbability(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double locDouble = loc.evalfNaN();
+          double nDouble = n.evalfNaN();
+          double scaleDouble = scale.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(locDouble) && !Double.isNaN(nDouble)
+              && !Double.isNaN(scaleDouble) && !Double.isNaN(kDouble)) {
+            try {
+              // Shift InverseCDF result by the location parameter
+              return F.num(locDouble
+                  + new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
+                      scaleDouble) //
+                          .inverseCumulativeProbability(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4612,13 +4863,19 @@ public class StatisticsContinousDistribution {
         //
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(), m.evalf()) //
-                    .density(k.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double mDouble = m.evalfNaN();
+          double kDouble = k.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
+            try {
+              return F.num(
+                  new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
+                      mDouble) //
+                      .density(kDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4640,13 +4897,20 @@ public class StatisticsContinousDistribution {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument(true) || scale.isNumericArgument(true)
                 || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
-          try {
-            return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
-                scale.evalf()) //
-                    .density(k.evalf() - loc.evalf()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
+          double nDouble = n.evalfNaN();
+          double scaleDouble = scale.evalfNaN();
+          double kDouble = k.evalfNaN();
+          double locDouble = loc.evalfNaN();
+          if (!Double.isNaN(nDouble) && !Double.isNaN(scaleDouble)
+              && !Double.isNaN(kDouble) && !Double.isNaN(locDouble)) {
+            try {
+              return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
+                  scaleDouble) //
+                      .density(kDouble - locDouble));
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              //
+            }
           }
         }
         IExpr function =
@@ -4672,16 +4936,22 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
-        double n = dist.arg1().evalf();
-        double m = dist.arg2().evalf();
+        double n = dist.arg1().evalfNaN();
+        double m = dist.arg2().evalfNaN();
+        if (Double.isNaN(n) || Double.isNaN(m)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.WeibullDistribution(n, m), size);
         return new ASTRealVector(vector, false);
       } else if (dist.isAST3()) {
-        double n = dist.arg1().evalf();
-        double scale = dist.arg2().evalf();
-        double loc = dist.arg3().evalf();
+        double n = dist.arg1().evalfNaN();
+        double scale = dist.arg2().evalfNaN();
+        double loc = dist.arg3().evalfNaN();
+        if (Double.isNaN(n) || Double.isNaN(scale) || Double.isNaN(loc)) {
+          return F.NIL;
+        }
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.WeibullDistribution(n, scale), size);

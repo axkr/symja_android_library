@@ -122,7 +122,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
     };
     double[] result = new double[fGradientFunctions.argSize()];
     for (int i = 1; i < fGradientFunctions.size(); i++) {
-      result[i - 1] = fGradientFunctions.get(i).evalf(function);
+      result[i - 1] = fGradientFunctions.get(i).evalfNaN(function);
     }
     return new ArrayRealVector(result, false);
   }
@@ -141,7 +141,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
     double[][] result = new double[rowDimension][columnDimension];
     for (int i = 0; i < rowDimension; i++) {
       for (int j = 0; j < columnDimension; j++) {
-        result[i][j] = fHessianMatrix.getEntry(i, j).evalf(function);
+        result[i][j] = fHessianMatrix.getEntry(i, j).evalfNaN(function);
       }
     }
     return new Array2DRowRealMatrix(result, false);
@@ -164,7 +164,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
         }
         return F.NIL;
       };
-      return fFunction.evalf(function);
+      return fFunction.evalfNaN(function);
     } catch (MathRuntimeException | ArgumentTypeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Double.NaN;

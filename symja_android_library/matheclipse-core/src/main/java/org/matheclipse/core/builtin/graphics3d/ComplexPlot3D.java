@@ -90,7 +90,7 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
         if (fz instanceof INumber) {
           IComplexNum cn = toComplex(fz);
           height = cn.dabs();
-          arg = cn.complexArg().evalf();
+          arg = cn.complexArg().evalfNaN();
         }
 
         if (Double.isFinite(height)) {

@@ -208,7 +208,7 @@ public class ExprOLSLinearRegression extends ExprAbstractLinearRegression {
    * @throws org.hipparchus.exception.MathIllegalArgumentException if the design matrix is singular
    */
   public double calculateRSquared() {
-    return 1 - calculateResidualSumOfSquares().evalf() / calculateTotalSumOfSquares();
+    return 1 - calculateResidualSumOfSquares().evalfNaN() / calculateTotalSumOfSquares();
   }
 
   /**
@@ -242,7 +242,7 @@ public class ExprOLSLinearRegression extends ExprAbstractLinearRegression {
     if (isNoIntercept()) {
       return 1 - (1 - calculateRSquared()) * (n / (n - getX().getColumnDimension()));
     } else {
-      return 1 - (calculateResidualSumOfSquares().evalf() * (n - 1))
+      return 1 - (calculateResidualSumOfSquares().evalfNaN() * (n - 1))
           / (calculateTotalSumOfSquares() * (n - getX().getColumnDimension()));
     }
   }

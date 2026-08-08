@@ -123,12 +123,12 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "ProductLog(a*Log(a))");
 
     check("FunctionExpand(Sin(4*ArcSin(x)))", //
-        "x*(-4*Sqrt(1-x^2)+8*(1-x^2)^(3/2))");
+        "x*(-4*Sqrt(1-x)*Sqrt(1+x)+8*(1-x^2)^(3/2))");
     check("FunctionExpand(Sin(4*ArcTan(x)))", //
         "(4*x-4*x^3)/(1+x^2)^2");
 
     check("FunctionExpand(Cos(-7*ArcSin(x)))", //
-        "-7*Sqrt(1-x^2)+56*(1-x^2)^(3/2)-112*(1-x^2)^(5/2)+64*(1-x^2)^(7/2)");
+        "-7*Sqrt(1-x)*Sqrt(1+x)+56*(1-x^2)^(3/2)-112*(1-x^2)^(5/2)+64*(1-x^2)^(7/2)");
     check("FunctionExpand(Hypergeometric2F1(a, b, b -2, z))", //
         "(1+(-2*(-2-a+b)*z)/(-2+b)+((-2-a+b)*(-1-a+b)*z^2)/((-2+b)*(-1+b)))/(1-z)^(2+a)");
 
@@ -168,9 +168,9 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(E^ArcTanh(x))", //
         "(1+x)/Sqrt(1-x^2)");
     check("FunctionExpand(E^ArcCsch(x))", //
-        "Sqrt(1+1/x^2)+1/x");
+        "1/x+Sqrt(1/x^2)*Sqrt(1+x^2)");
     check("FunctionExpand(E^ArcSech(x))", //
-        "Sqrt(-1+1/x)*Sqrt(1+1/x)+1/x");
+        "1/x+(Sqrt(1-x)*Sqrt(1+x))/x");
     check("FunctionExpand(E^ArcCoth(x))", //
         "1/Sqrt((-1+x)/(1+x))");
 
@@ -295,6 +295,76 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "Gamma(1+a)/Gamma(1+a-b)");
     check("FunctionExpand(FactorialPower(a,b,-1))", //
         "(a^b*Gamma(1-a))/((-a)^b*Gamma(1-a-b))");
+
+    check("FunctionExpand(FactorialPower(x, 3))", //
+        "(-2+x)*(-1+x)*x");
+    check("FunctionExpand(FactorialPower(x, 4))", //
+        "(-3+x)*(-2+x)*(-1+x)*x");
+    check("FunctionExpand(FactorialPower(x, 0))", //
+        "1");
+    check("FunctionExpand(FactorialPower(x, 1))", //
+        "x");
+    check("FunctionExpand(FactorialPower(5, 3))", //
+        "60");
+    // a positive integer exponent gives the explicit product for any step h, not the Gamma quotient
+    check("FunctionExpand(FactorialPower(y, 2, 3))", //
+        "(-3+y)*y");
+    check("FunctionExpand(FactorialPower(a, 3, 2))", //
+        "(-4+a)*(-2+a)*a");
+    check("FunctionExpand(FactorialPower(x, n))", //
+        "Gamma(1+x)/Gamma(1-n+x)");
+  }
+
+  @Test
+  public void testFunctionExpandReIm() {
+    // Re() and Im() are additive
+    check("FunctionExpand(Re(x + y))", //
+        "Re(x)+Re(y)");
+    check("FunctionExpand(Im(a + b + c))", //
+        "Im(a)+Im(b)+Im(c)");
+    // nothing to expand for a single symbol
+    check("FunctionExpand(Re(x))", //
+        "Re(x)");
+    check("FunctionExpand(Im(x))", //
+        "Im(x)");
+  }
+
+  @Test
+  public void testFunctionExpandAbs() {
+    // Abs(x)^n expands for even n only
+    check("FunctionExpand(Abs(x)^2)", //
+        "Im(x)^2+Re(x)^2");
+    check("FunctionExpand(Abs(x)^4)", //
+        "(Im(x)^2+Re(x)^2)^2");
+    check("FunctionExpand(Abs(x)^3)", //
+        "Abs(x)^3");
+    check("FunctionExpand(Abs(3)^2)", //
+        "9");
+    check("FunctionExpand(Abs(x + y)^2)", //
+        "(Im(x)+Im(y))^2+(Re(x)+Re(y))^2");
+  }
+
+  @Test
+  public void testFunctionExpandSqrtFactor() {
+    // Sqrt() of a factorable polynomial splits into a product of square roots
+    check("FunctionExpand(Sqrt(1 - x^2))", //
+        "Sqrt(1-x)*Sqrt(1+x)");
+    check("FunctionExpand(Sqrt(4 - x^2))", //
+        "Sqrt(2-x)*Sqrt(2+x)");
+    check("FunctionExpand(Sqrt(1 - x^4))", //
+        "Sqrt(1-x)*Sqrt(1+x)*Sqrt(1+x^2)");
+    // 1-2*x^2 is irreducible over the rationals
+    check("FunctionExpand(Sqrt(1 - 2*x^2))", //
+        "Sqrt(1-2*x^2)");
+  }
+
+  @Test
+  public void testFunctionExpandFibonacci() {
+    // 1/2*(1+Sqrt(5)) is the OutputForm of (1+Sqrt(5))/2
+    check("FunctionExpand(Fibonacci(n))", //
+        "((1/2)^n*(1+Sqrt(5))^n-2^n*((1/(1+Sqrt(5))))^n*Cos(n*Pi))/Sqrt(5)");
+    check("FunctionExpand(LucasL(n))", //
+        "(1/2)^n*(1+Sqrt(5))^n+2^n*((1/(1+Sqrt(5))))^n*Cos(n*Pi)");
   }
 
   @Test

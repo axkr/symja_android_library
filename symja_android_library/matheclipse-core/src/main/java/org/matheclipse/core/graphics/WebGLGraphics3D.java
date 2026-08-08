@@ -944,13 +944,11 @@ public class WebGLGraphics3D {
   }
 
   private static double getDouble(IExpr expr, double def) {
-    try {
-      if (expr instanceof INumber)
-        return ((INumber) expr).reDoubleValue();
-      return expr.evalf();
-    } catch (RuntimeException e) {
-      return def;
+    if (expr instanceof INumber) {
+      return ((INumber) expr).reDoubleValue();
     }
+    double d = expr.evalfNaN();
+    return Double.isNaN(d) ? def : d;
   }
 
   private static double getDouble(IExpr expr) {
@@ -1058,8 +1056,12 @@ public class WebGLGraphics3D {
                 try {
                   ColorDataGradients grad = ColorDataGradients.valueOf(name.toUpperCase(Locale.US));
 
-                  // Extract the float/double value (usually between 0.0 and 1.0) using evalf()
-                  double val = ast.arg1().evalf();
+                  // Extract the float/double value (usually between 0.0 and 1.0)
+                  double val = ast.arg1().evalfNaN();
+                  if (Double.isNaN(val)) {
+                    // Fallback
+                    break;
+                  }
 
                   // Use the gradient enum to map the value to an RGB color.
                   // Note: Depending on your Symja build, this method might be getRGB(), color(), or

@@ -61,23 +61,23 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     ISymbol phiVar;
     double phiMin = 0.0, phiMax;
 
-    try {
-      thetaVar = (ISymbol) ((IAST) thetaRange).arg1();
-      if (((IAST) thetaRange).argSize() == 2) {
-        thetaMax = ((IAST) thetaRange).arg2().evalf();
-      } else {
-        thetaMin = ((IAST) thetaRange).arg2().evalf();
-        thetaMax = ((IAST) thetaRange).arg3().evalf();
-      }
+    thetaVar = (ISymbol) ((IAST) thetaRange).arg1();
+    if (((IAST) thetaRange).argSize() == 2) {
+      thetaMax = ((IAST) thetaRange).arg2().evalfNaN();
+    } else {
+      thetaMin = ((IAST) thetaRange).arg2().evalfNaN();
+      thetaMax = ((IAST) thetaRange).arg3().evalfNaN();
+    }
 
-      phiVar = (ISymbol) ((IAST) phiRange).arg1();
-      if (((IAST) phiRange).argSize() == 2) {
-        phiMax = ((IAST) phiRange).arg2().evalf();
-      } else {
-        phiMin = ((IAST) phiRange).arg2().evalf();
-        phiMax = ((IAST) phiRange).arg3().evalf();
-      }
-    } catch (RuntimeException rex) {
+    phiVar = (ISymbol) ((IAST) phiRange).arg1();
+    if (((IAST) phiRange).argSize() == 2) {
+      phiMax = ((IAST) phiRange).arg2().evalfNaN();
+    } else {
+      phiMin = ((IAST) phiRange).arg2().evalfNaN();
+      phiMax = ((IAST) phiRange).arg3().evalfNaN();
+    }
+    if (Double.isNaN(thetaMin) || Double.isNaN(thetaMax) || Double.isNaN(phiMin)
+        || Double.isNaN(phiMax)) {
       return F.NIL;
     }
 
@@ -140,7 +140,7 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
             IExpr rValExpr = engine.evaluate(subst);
 
             if (rValExpr.isNumber()) {
-              double r = rValExpr.evalf();
+              double r = rValExpr.evalfNaN();
               if (!Double.isNaN(r) && !Double.isInfinite(r)) {
                 double x = r * sinTheta * Math.cos(phi);
                 double y = r * sinTheta * Math.sin(phi);

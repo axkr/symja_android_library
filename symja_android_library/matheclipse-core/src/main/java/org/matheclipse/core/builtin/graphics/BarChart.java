@@ -84,7 +84,10 @@ public class BarChart extends ListPlot {
     // Bar dimensions
     double spacing = 0.1; // Default Automatic
     if (barSpacing.isNumber()) {
-      spacing = barSpacing.evalf();
+      double spacingValue = barSpacing.evalfNaN();
+      if (!Double.isNaN(spacingValue)) {
+        spacing = spacingValue;
+      }
     }
 
     // Width logic: Total width per item = 1.0. Bar width + spacing = 1.0?
