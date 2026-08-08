@@ -27,10 +27,18 @@
  ArcTan(-Infinity)=-Pi/2,
  ArcTan(I*Infinity)=Pi/2,
  ArcTan(-I*Infinity)=-Pi/2,
- ArcTan(ComplexInfinity)=Indeterminate,
- ArcTan(x_?RealValuedNumberQ, y_?RealValuedNumberQ) :=  
-   If(x == 0, If(y == 0, Indeterminate, If(y > 0, Pi/2, -Pi/2)), If(x > 0,
-        ArcTan(y/x), If(y >= 0, ArcTan(y/x) + Pi, ArcTan(y/x) - Pi))),
- ArcTan(x_?NumberQ, y_?NumberQ) := (Pi*(2*Sqrt(x^2) - x))/(4*y) 
-   /; (x^2 == y^2)
+ ArcTan(ComplexInfinity)=Indeterminate
+ (* The two 2-argument down rules that used to stand here were deleted on purpose:
+      ArcTan(x_?RealValuedNumberQ, y_?RealValuedNumberQ) := If(x == 0, ...)
+      ArcTan(x_?NumberQ, y_?NumberQ) := (Pi*(2*Sqrt(x^2) - x))/(4*y) /; (x^2 == y^2)
+    1) They are redundant: the built-in evaluator ExpTrigsFunctions.ArcTan#e2ObjArg computes the
+       same quadrant corrected angle for every pair of numbers.
+    2) They are harmful: EvalEngine tries the down rules BEFORE the built-in evaluator, so these
+       rules hid the built-in completely and any fix made there was dead code.
+    3) They cannot be repaired in rule syntax: both decide their case with Equal, which is
+       tolerance based for inexact numbers, and there is no exact zero predicate at rule level.
+       For ArcTan(3.0*10^-20, 4.0*10^-20) the first rule saw x == 0 and y == 0 and answered
+       Indeterminate, the second saw x^2 == y^2 and answered 3/16*Pi - although the point
+       (3*10^-20, 4*10^-20) has the very same direction as the point (3, 4).
+    See ExpTrigsFunctionsTest#testArcTanTwoArgumentsTinyValues. *)
  }

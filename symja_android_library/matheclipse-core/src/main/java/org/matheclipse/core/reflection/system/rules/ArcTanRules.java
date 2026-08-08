@@ -94,12 +94,18 @@ public class ArcTanRules {
       CNPiHalf, true),
     // ArcTan(ComplexInfinity)=Indeterminate
     ISet(ArcTan(CComplexInfinity),
-      Indeterminate, true),
-    // ArcTan(x_?RealValuedNumberQ,y_?RealValuedNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
-    ISetDelayed(ArcTan(PatternTest(x_,RealValuedNumberQ),PatternTest(y_,RealValuedNumberQ)),
-      If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),CPiHalf,Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,CN1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,CN1),y)),Pi),Plus(CNPi,ArcTan(Times(Power(x,CN1),y))))))),
-    // ArcTan(x_?NumberQ,y_?NumberQ):=(Pi*(-x+2*Sqrt(x^2)))/(4*y)/;x^2==y^2
-    ISetDelayed(ArcTan(PatternTest(x_,NumberQ),PatternTest(y_,NumberQ)),
-      Condition(Times(Pi,Plus(Negate(x),Times(C2,Sqrt(Sqr(x)))),Power(Times(C4,y),CN1)),Equal(Sqr(x),Sqr(y))))
+      Indeterminate, true)
+    // The two 2-argument down rules that used to stand here were deleted on purpose - see
+    // rules/ArcTanRules.m for the same note in the generator source:
+    //   ArcTan(x_?RealValuedNumberQ,y_?RealValuedNumberQ) := If(x==0, ...)
+    //   ArcTan(x_?NumberQ,y_?NumberQ) := (Pi*(-x+2*Sqrt(x^2)))/(4*y) /; x^2==y^2
+    // EvalEngine consults the down rules of a symbol BEFORE the built-in evaluator, so both rules
+    // shadowed ExpTrigsFunctions.ArcTan#e2ObjArg for every pair of numbers. Both decide their case
+    // with Equal, which is tolerance based for inexact numbers, and both therefore answered
+    // nonsense for arguments below that tolerance: for ArcTan(3.0*10^-20,4.0*10^-20) the first
+    // rule saw x==0 and y==0 and returned Indeterminate, the second saw x^2==y^2 and returned
+    // 3/16*Pi - although the point (3*10^-20,4*10^-20) has the very same direction as (3,4).
+    // Neither is repairable in rule syntax because there is no exact zero predicate at rule level.
+    // Both rules are redundant: e2ObjArg computes the same quadrant corrected angle exactly.
   );
 }

@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.builtin.ExpTrigsFunctionsExt.divideExact;
+import static org.matheclipse.core.builtin.ExpTrigsFunctionsExt.isExactZero;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcCoth;
 import static org.matheclipse.core.expression.F.ArcCsc;
@@ -1149,8 +1151,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e2ObjArg(IExpr x, IExpr y) {
-      if (x.isZero() && y.isRealResult()) {
-        if (y.isZero()) {
+      // isExactZero() instead of isZero(): the angle of (x,y) is scale invariant, so "is this
+      // coordinate the origin?" has to be decided without a tolerance. isZero() would map every
+      // point closer to the origin than Config.DOUBLE_TOLERANCE onto the undefined ArcTan(0,0).
+      if (isExactZero(x) && y.isRealResult()) {
+        if (isExactZero(y)) {
+          // only the true origin has no angle
           return S.Indeterminate;
         }
         if (y.isPositiveResult()) {
@@ -1161,20 +1167,21 @@ public class ExpTrigsFunctions {
         }
         return F.NIL;
       }
-      if (y.isZero() && x.isNumericFunction(true) && !x.isZero()) {
+      // the point lies exactly on the x axis: 0 for a positive and Pi for a negative x
+      if (isExactZero(y) && x.isNumericFunction(true) && !isExactZero(x)) {
         return F.Times(F.Subtract(F.C1, x.unitStep()), S.Pi);
       }
       IExpr yUnitStep = y.unitStep();
       if (x.isNumericFunction(true) && yUnitStep.isInteger()) {
         if (x.re().isNegative()) {
-          return F.Plus(F.ArcTan(F.Divide(y, x)),
+          return F.Plus(F.ArcTan(divideExact(y, x)),
               F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), S.Pi));
         }
         IExpr argX = x.complexArg();
         // -Pi/2 < Arg(x) <= Pi/2
         if (argX.isPresent()
             && F.evalTrue(F.And(F.Less(F.CNPiHalf, argX), F.LessEqual(argX, F.CPiHalf)))) {
-          return F.ArcTan(F.Divide(y, x));
+          return F.ArcTan(divideExact(y, x));
         }
       }
       if (x.isInfinity()) {
