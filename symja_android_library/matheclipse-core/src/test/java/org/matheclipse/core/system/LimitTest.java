@@ -592,6 +592,182 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Infinity");
   }
 
+  /**
+   * <code>(a1^x + ... + an^x)^(k/x) -> max(ai)^k</code>: a race between exponentials of the same
+   * comparability class whose log-ratios are irrational, resolved through the leading w-power
+   * rather than the (rational-exponent) series machinery.
+   *
+   * <p>
+   * The two-base races with INTEGER bases; {@link #testLimitGruntzExponentRaceSlow()} carries the
+   * wider and the transcendental-base ones.
+   */
+  @Test
+  public void testLimitGruntzExponentRace() {
+    check("Limit((3^x + 5^x)^(1/x), x -> Infinity)", //
+        "5");
+    check("Limit((2^x + 3^x)^(1/x), x -> Infinity)", //
+        "3");
+    // a constant factor on the slower base must not tip the race
+    check("Limit((3*2^x + 5^x)^(1/x), x -> Infinity)", //
+        "5");
+    // exponent != 1/x: the result E^(3*Log(3)) has no auto-evaluation rule and has to be
+    // collapsed to its closed form
+    check("Limit((2^x + 3^x)^(3/x), x -> Infinity)", //
+        "27");
+    check("Limit((2^x + 5^x)^(2/x), x -> Infinity)", //
+        "25");
+  }
+
+  /**
+   * The heavier half of {@link #testLimitGruntzExponentRace()}: more than two bases, or a
+   * transcendental base.
+   *
+   * <p>
+   * The work sits in the {@code Cancel} of the mrv rewrite. The rewritten form carries a power
+   * <code>w^(1-Log(b2)/Log(b1))</code> per base, {@code Cancel} calls {@code Factor}, and
+   * {@code factorWithPolynomialHomogenization} hands the JAS integer factorizer one variable per
+   * distinct irrational exponent - so the cost tracks the number of distinct bases, and a
+   * transcendental base adds to it by making every log-ratio against an integer base irrational.
+   * That {@code Cancel} cannot simply be skipped: dropping it for these shapes speeds the two-base
+   * races up ~4x but makes the five-base race stop terminating.
+   *
+   * <p>
+   * These are also the cases that exposed the runaway-cancellation bug in JAS's parallel gcd proxy
+   * (see {@code GCDProxy.checkNotInterrupted} and
+   * {@code GreatestCommonDivisorAbstract.checkInterrupted} in matheclipse-external): before that
+   * fix they cost ~23s here and left ~170 spinning threads plus gigabytes of retained heap behind
+   * in the shared surefire JVM, which stalled every test class that ran afterwards.
+   */
+  @Test
+  public void testLimitGruntzExponentRaceSlow() {
+    check("Limit((2^x + 3^x + 5^x + 7^x + 11^x)^(1/x), x -> Infinity)", //
+        "11");
+    check("Limit((E^x + 3^x)^(1/x), x -> Infinity)", //
+        "3");
+    check("Limit((E^(2*x) + 5^x)^(1/x), x -> Infinity)", //
+        "E^2");
+    check("Limit((Pi^x + 3^x)^(1/x), x -> Infinity)", //
+        "Pi");
+  }
+
+  /**
+   * Tower differences <code>E^g*(f(u + c*E^-g) - f(u))</code>: the vanishing shift has to survive
+   * the cancellation of the two leading terms, which is what the mrv rewrite plus the series
+   * expansion in <code>w</code> is for (Gruntz thesis 8.14).
+   */
+  @Test
+  public void testLimitGruntzTowerShift() {
+    check("Limit(E^x*(E^(1/x - E^-x) - E^(1/x)), x -> Infinity)", //
+        "-1");
+    check("Limit(E^x*(E^(1/x - 2*E^-x) - E^(1/x)), x -> Infinity)", //
+        "-2");
+    check("Limit(E^x*(E^(1/x - E^-x/2) - E^(1/x)), x -> Infinity)", //
+        "-1/2");
+    check("Limit(E^x*(E^(1/x + E^-x) - E^(1/x)), x -> Infinity)", //
+        "1");
+    check("Limit(E^(2*x)*(E^(1/x - 2*E^(-2*x)) - E^(1/x)), x -> Infinity)", //
+        "-2");
+    check("Limit(E^(3*x)*(E^(1/x - 5*E^(-3*x)) - E^(1/x)), x -> Infinity)", //
+        "-5");
+
+    // E^(E^(x + shift))/E^(E^x) -> E^(lim shift*E^x)
+    check("Limit(E^(E^(x + 2*E^-x))/E^(E^x), x -> Infinity)", //
+        "E^2");
+    check("Limit(E^(E^(x - E^-x))/E^(E^x), x -> Infinity)", //
+        "1/E");
+    check("Limit(E^(E^(x + E^-x/3))/E^(E^x), x -> Infinity)", //
+        "E^(1/3)");
+    // a shift that vanishes FASTER than E^-x leaves nothing behind
+    check("Limit(E^(E^(x + E^(-x^2)))/E^(E^x), x -> Infinity)", //
+        "1");
+
+    // the same shift through a trig/inverse-trig function: the derivative at the (converging)
+    // argument decides, so Cos contributes 0 while Sin/Tan/ArcTan contribute the shift
+    check("Limit(E^x*(Sin(1/x + 2*E^-x) - Sin(1/x)), x -> Infinity)", //
+        "2");
+    check("Limit(E^x*(Tan(1/x + E^-x) - Tan(1/x)), x -> Infinity)", //
+        "1");
+    check("Limit(E^x*(ArcTan(1/x + E^-x) - ArcTan(1/x)), x -> Infinity)", //
+        "1");
+    check("Limit(E^x*(Cos(1/x + E^-x) - Cos(1/x)), x -> Infinity)", //
+        "0");
+    check("Limit(E^(E^x)*(E^Sin(1/x + 2*E^(-E^x)) - E^Sin(1/x)), x -> Infinity)", //
+        "2");
+  }
+
+  /** Nested Log growth classes, and Exp of a sub-polynomial Log expression against a power. */
+  @Test
+  public void testLimitGruntzLogNest() {
+    check("Limit(Log(x^3 + x)/Log(x), x -> Infinity)", //
+        "3");
+    check("Limit(Log(Log(x^7))/Log(Log(x)), x -> Infinity)", //
+        "1");
+    check("Limit(E^(Log(x^2 + x)/Log(x)), x -> Infinity)", //
+        "E^2");
+    check("Limit(Log(x + Log(x)) - Log(x), x -> Infinity)", //
+        "0");
+    // the difference above vanishes like Log(x)/x, so this ratio is 1
+    check("Limit(x*(Log(x + Log(x)) - Log(x))/Log(x), x -> Infinity)", //
+        "1");
+
+    check("Limit(E^(Sqrt(Log(x))*Log(Log(x))^2)/Sqrt(x), x -> Infinity)", //
+        "0");
+    check("Limit((Log(x))^100/x, x -> Infinity)", //
+        "0");
+    check("Limit(E^(Log(x)^(2/3))/x, x -> Infinity)", //
+        "0");
+    check("Limit(x/E^(Sqrt(Log(x))), x -> Infinity)", //
+        "Infinity");
+  }
+
+  /** Root differences at Infinity, and 0/0 root quotients at a finite point. */
+  @Test
+  public void testLimitGruntzRoots() {
+    check("Limit(Sqrt(x^2 + 3*x) - x, x -> Infinity)", //
+        "3/2");
+    check("Limit((x^3 + x^2)^(1/3) - x, x -> Infinity)", //
+        "1/3");
+    check("Limit(Sqrt(x)*(Sqrt(x + 1) - Sqrt(x)), x -> Infinity)", //
+        "1/2");
+    check("Limit(((1 + 2*x)^3 - 1)/x, x -> 0)", //
+        "6");
+    check("Limit((Sqrt(x) - 1)/(x^(1/3) - 1), x -> 1)", //
+        "3/2");
+    check("Limit((x^4 - 1)/(x^7 - 1), x -> 1)", //
+        "4/7");
+  }
+
+  /**
+   * <code>Max</code>/<code>Min</code> is EQUAL to its dominant argument in a neighbourhood of the
+   * limit point, so the limit is that argument's limit. Without the rewrite the direct substitution
+   * degenerates (<code>Infinity*0</code>) and the series machinery differentiates <code>Max</code>
+   * as an unknown smooth function.
+   */
+  @Test
+  public void testLimitMaxMin() {
+    check("Limit(x*Max(1/x, 2/x, 3/x), x -> Infinity)", //
+        "3");
+    check("Limit(Log(Max(E^x, E^(2*x)))/x, x -> Infinity)", //
+        "2");
+    check("Limit(x*Min(1/x, 2/x, 3/x), x -> Infinity)", //
+        "1");
+    check("Limit(Max(E^x, E^(2*x)), x -> Infinity)", //
+        "Infinity");
+    // arguments of different growth classes, and an x-free argument
+    check("Limit(x*Max(1/x, 1/x^2), x -> Infinity)", //
+        "1");
+    check("Limit(Max(1, 1/x), x -> Infinity)", //
+        "1");
+    check("Limit(Max(x, Sin(x)), x -> Infinity)", //
+        "Infinity");
+    // the dominance flips with the approach direction
+    check("Limit(x*Max(1/x, 2/x, 3/x), x -> -Infinity)", //
+        "1");
+    // arguments that cross infinitely often stay unresolved rather than being guessed
+    check("Limit(Max(Sin(x), Cos(x)), x -> Infinity)", //
+        "Indeterminate");
+  }
+
   @Test
   public void testGruntzSpecialFunctions() {
     check("Limit(Gamma(1/t),t->-Infinity)", //
@@ -680,6 +856,32 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(LogGamma(x) / Log(Gamma(x)), x -> Infinity)", //
         "1");
     check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", //
+        "1/2");
+
+    // --- ID.Erfc ---
+    // Erfc(z) ~ E^(-z^2)/(z*Sqrt(Pi)) for z -> +Infinity. Neither Series nor Asymptotic supplies
+    // that expansion, and x*Erfc(x)*E^(x^2) has no denominator for L'Hospital, so Limit has to
+    // substitute the asymptotic form itself.
+    check("Limit(x*Erfc(x)*E^(x^2), x -> Infinity)", //
+        "1/Sqrt(Pi)");
+    check("Limit(Erfc(x + 1/x)/Erfc(x), x -> Infinity)", //
+        "1/E^2");
+    check("Limit(Erfc(x + 3/x)/Erfc(x), x -> Infinity)", //
+        "1/E^6");
+    // Erfc(Infinity) used to stay unevaluated (the DirectedInfinity test sat behind an isReal()
+    // guard), so Erfc(2*Infinity)/Erfc(Infinity) cancelled structurally to a wrong 1
+    check("Limit(Erfc(x), x -> Infinity)", //
+        "0");
+    check("Limit(Erfc(x), x -> -Infinity)", //
+        "2");
+    check("Limit(Erfc(2*x)/Erfc(x), x -> Infinity)", //
+        "0");
+
+    // --- ID.ExpIntegralEi ---
+    // Ei(x) ~ E^x/x
+    check("Limit(x*ExpIntegralEi(x)*E^-x, x -> Infinity)", //
+        "1");
+    check("Limit(ExpIntegralEi(2*x)*E^(-2*x)*x, x -> Infinity)", //
         "1/2");
   }
 

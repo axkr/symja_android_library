@@ -8,7 +8,6 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -534,7 +533,10 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           }
           if (exponentLimit.isFree(x) && exponentLimit.isFree(S.DirectedInfinity)
               && exponentLimit.isIndeterminateFree()) {
-            return engine.evaluate(F.Exp(exponentLimit));
+            // E^(c*Log(b)) has no auto-evaluation rule - (2^x+3^x)^(3/x) would report
+            // E^(3*Log(3)) instead of 27. The result is limit-variable-free, so collapsing it
+            // with Simplify is cheap; adopt it only when it stays well-defined.
+            return collapseConstant(engine.evaluate(F.Exp(exponentLimit)), engine);
           }
         }
         // exponent limit unknown - fall through to the general machinery
@@ -706,11 +708,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (argLead == null) {
             return true; // cannot prove the argument converges - refuse
           }
-          try {
-            return engine.evaluate(argLead[0]).evalf() < -1.0e-9;
-          } catch (RuntimeException rex) {
-            return true;
-          }
+          double argValuation = engine.evaluate(argLead[0]).evalfNaN();
+          // a non-numeric valuation cannot be proven to converge - refuse
+          return Double.isNaN(argValuation) || argValuation < -1.0e-9;
         }
         return false;
       }, true);
@@ -731,9 +731,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         if (valuation.isZero()) {
           v = 0.0;
         } else {
-          try {
-            v = valuation.evalf();
-          } catch (RuntimeException rex) {
+          v = valuation.evalfNaN();
+          if (Double.isNaN(v)) {
             return F.NIL;
           }
         }
@@ -946,6 +945,31 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         GRUNTZ_DEPTH.set(depth);
         engine.setRecursionLimit(oldRecursionLimit);
       }
+    }
+
+    /**
+     * Collapse a constant (limit-variable-free) limit result to its closed form. The exponential
+     * continuity route returns <code>E^(lim c*Log(b))</code> literally, and the engine has no
+     * auto-evaluation for e.g. <code>E^(3*Log(3))</code>; {@link S#Simplify} turns that into
+     * <code>27</code>. Cheap because the argument no longer contains the limit variable.
+     *
+     * @return the simplified form, or <code>constant</code> unchanged when the simplification did
+     *         not produce a well-defined result
+     */
+    private static IExpr collapseConstant(IExpr constant, EvalEngine engine) {
+      if (constant.isNumber() || constant.isSymbol()) {
+        return constant;
+      }
+      try {
+        IExpr simplified = engine.evalQuiet(F.Simplify(constant));
+        if (simplified.isPresent() && simplified.isFree(S.Simplify)
+            && simplified.isIndeterminateFree()) {
+          return simplified;
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+      return constant;
     }
 
     /**
@@ -1162,10 +1186,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (f == null) {
             return null;
           }
-          double fv;
-          try {
-            fv = engine.evaluate(f[0]).evalf();
-          } catch (RuntimeException rex) {
+          double fv = engine.evaluate(f[0]).evalfNaN();
+          if (Double.isNaN(fv)) {
             return null;
           }
           if (fv > 1.0e-9) {
@@ -1203,10 +1225,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (p == null) {
             return null;
           }
-          double v;
-          try {
-            v = engine.evaluate(p[0]).evalf();
-          } catch (RuntimeException rex) {
+          double v = engine.evaluate(p[0]).evalfNaN();
+          if (Double.isNaN(v)) {
             return null;
           }
           parts[i - 1] = p;
@@ -1232,10 +1252,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         if (f == null) {
           return null;
         }
-        double fv;
-        try {
-          fv = engine.evaluate(f[0]).evalf();
-        } catch (RuntimeException rex) {
+        double fv = engine.evaluate(f[0]).evalfNaN();
+        if (Double.isNaN(fv)) {
           return null;
         }
         if (Math.abs(fv) <= 1.0e-9) {
@@ -1987,6 +2005,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       ThreadLocal.withInitial(() -> 0);
 
   /**
+   * Depth guard for the Erfc asymptotic substitution in {@link #evaluateLimit}: the rewritten form
+   * is resolved by a recursive {@link #evaluateLimit}, whose own sub-limits may carry further Erfc
+   * applications.
+   */
+  private static final ThreadLocal<Integer> ERFC_ASYMPTOTIC_DEPTH =
+      ThreadLocal.withInitial(() -> 0);
+
+  /**
    * Recursion guard for the dominant-term rule {@link #dominantTermLimit}, which recurses through
    * {@link #evaluateLimit} on the winning summand and {@link #evalLimitQuiet} on the pairwise
    * ratios.
@@ -2010,6 +2036,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * that sub-limit from starting another rewrite sweep.
    */
   private static final ThreadLocal<Boolean> STEP_FUNCTION_REWRITE =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * One-shot guard for the dominant-argument rewrite of {@link S#Max} / {@link S#Min}. Selecting the
+   * dominant argument compares argument DIFFERENCES through the sign machinery, which re-enters
+   * {@link #evalLimit}; the flag keeps that sub-limit from starting another rewrite sweep.
+   */
+  private static final ThreadLocal<Boolean> MAX_MIN_REWRITE =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   /**
@@ -2049,6 +2083,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     IExpr stepRewritten = stepFunctionRewrite(evaledExpr, data, engine);
     if (stepRewritten.isPresent()) {
       evaledExpr = stepRewritten;
+    }
+
+    // Max/Min is eventually EQUAL to whichever argument dominates near the limit point, so replace
+    // it by that argument. Without this, x*Max(1/x,2/x,3/x) substitutes to Infinity*0 ->
+    // Indeterminate and the series machinery differentiates Max as an unknown smooth function
+    // (Derivative(0,0,1)[Max][0,0,0] terms). Only fires when EVERY argument comparison is
+    // decidable, so crossing arguments (Max(Sin(x),Cos(x))) keep their current behaviour.
+    IExpr maxMinRewritten = maxMinRewrite(evaledExpr, data, engine);
+    if (maxMinRewritten.isPresent()) {
+      evaledExpr = maxMinRewritten;
     }
 
     // --- OSCILLATING SPECIAL FUNCTIONS AT NEGATIVE INFINITY ---
@@ -2519,6 +2563,98 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Replace every {@link S#Max} / {@link S#Min} sub-expression that depends on the limit variable by
+   * the argument which dominates in a neighbourhood of the limit point.
+   *
+   * <p>
+   * <code>Max(f1, ..., fn)</code> is not merely <i>close to</i> but <b>equal</b> to its dominant
+   * argument on that neighbourhood, so the substitution preserves the limit exactly. Unlike
+   * {@link #stepFunctionRewrite} this is not restricted to a finite limit point - the interesting
+   * cases (<code>x*Max(1/x,2/x,3/x)</code>, <code>Log(Max(E^x,E^(2*x)))/x</code>) live at Infinity,
+   * where the direct substitution otherwise degenerates into <code>Infinity*0</code> and the series
+   * machinery treats <code>Max</code> as an unknown differentiable function.
+   *
+   * @return {@link F#NIL} if nothing was rewritten
+   */
+  private static IExpr maxMinRewrite(IExpr expr, LimitData data, EvalEngine engine) {
+    if (MAX_MIN_REWRITE.get()) {
+      return F.NIL;
+    }
+    final ISymbol variable = data.variable();
+    if (!expr.has(y -> y.isFunctionID(ID.Max, ID.Min) && !y.isFree(variable, true), true)) {
+      return F.NIL;
+    }
+    MAX_MIN_REWRITE.set(Boolean.TRUE);
+    try {
+      IExpr result = F.subst(expr, y -> {
+        if ((y.isAST(S.Max) || y.isAST(S.Min)) && ((IAST) y).argSize() >= 2
+            && !y.isFree(variable, true)) {
+          return dominantExtremum((IAST) y, data, engine);
+        }
+        return F.NIL;
+      });
+      if (result.isPresent() && !result.equals(expr)) {
+        return result;
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    } finally {
+      MAX_MIN_REWRITE.set(Boolean.FALSE);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The argument of a {@link S#Max} / {@link S#Min} which dominates near the limit point, found by
+   * comparing the sign of the pairwise differences.
+   *
+   * @return {@link F#NIL} unless <b>every</b> comparison is decidable - an undecided pair means the
+   *         arguments cross infinitely often (or are asymptotically indistinguishable to the sign
+   *         machinery), and picking either one would be a guess
+   */
+  private static IExpr dominantExtremum(IAST extremum, LimitData data, EvalEngine engine) {
+    final boolean isMax = extremum.isAST(S.Max);
+    IExpr dominant = extremum.arg1();
+    for (int i = 2; i < extremum.size(); i++) {
+      IExpr candidate = extremum.get(i);
+      IExpr difference = engine.evaluate(F.Subtract(candidate, dominant));
+      if (difference.isZero()) {
+        continue;
+      }
+      int sign = signAtLimitPoint(difference, data, engine);
+      if (sign == 0) {
+        return F.NIL;
+      }
+      if (isMax == (sign > 0)) {
+        dominant = candidate;
+      }
+    }
+    return dominant;
+  }
+
+  /**
+   * The sign of <code>expr</code> in a neighbourhood of the limit point, on the approached side.
+   * Dispatches between the two sign engines: {@link GruntzLimit#signInf} at
+   * <code>&plusmn;Infinity</code> and {@link #signViaApproach} at a finite point (which returns
+   * <code>0</code> for an infinite limit value by construction and cannot be used there).
+   *
+   * @return <code>1</code>, <code>-1</code>, or <code>0</code> when the sign is not decidable
+   */
+  private static int signAtLimitPoint(IExpr expr, LimitData data, EvalEngine engine) {
+    IExpr limitValue = data.limitValue();
+    ISymbol variable = data.variable();
+    if (limitValue.isInfinity()) {
+      return GruntzLimit.signInf(expr, variable, engine);
+    }
+    if (limitValue.isNegativeInfinity()) {
+      // x -> -Infinity becomes x -> +Infinity under x -> -x, which is what signInf expects
+      IExpr reflected = engine.evaluate(F.subst(expr, variable, variable.negate()));
+      return GruntzLimit.signInf(reflected, variable, engine);
+    }
+    return signViaApproach(expr, variable, limitValue, data.direction(), engine);
+  }
+
+  /**
    * The one-sided limit of a single jump-discontinuous function application <code>f(g(x))</code>.
    *
    * <p>
@@ -2809,6 +2945,45 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             // ignore - continue with the unexpanded function
           } finally {
             GAMMA_POLE_SHIFT_DEPTH.set(eiDepth);
+          }
+        }
+      }
+
+      // Erfc(z) with z -> +Infinity is exponentially small, and neither Series nor Asymptotic
+      // provides its expansion at Infinity - so x*Erfc(x)*E^(x^2) never resolves (no denominator
+      // for L'Hopital either) and Erfc(x+c/x)/Erfc(x) has to be reconstructed from derivatives.
+      // Substitute the standard asymptotic expansion (an exact asymptotic equality that preserves
+      // the limit - see expandErfcAtInfinity for the truncation order) and resolve the rewritten
+      // form, adopting only a clean result.
+      //
+      // The rewritten form is a pure exp/log expression - Gruntz territory - and it is handed to
+      // GruntzLimit FIRST, deliberately bypassing the general machinery: the expansion produces
+      // shapes like rational(x)*E^(vanishing) (x/(x+1/x)*E^(-2-1/x^2) for Erfc(x+1/x)/Erfc(x)),
+      // on which timesLimit and lHospitalesRule recurse into each other with an exponential
+      // fan-out and never terminate. The general path stays as the fallback.
+      if (ERFC_ASYMPTOTIC_DEPTH.get() < 3
+          && function.has(g -> g.isAST(S.Erfc, 2) && !g.first().isFree(symbol, true), true)) {
+        IExpr expanded = expandErfcAtInfinity(function, rule, direction, engine);
+        if (expanded.isPresent() && !expanded.equals(function)) {
+          int erfcDepth = ERFC_ASYMPTOTIC_DEPTH.get();
+          ERFC_ASYMPTOTIC_DEPTH.set(erfcDepth + 1);
+          try {
+            expanded = engine.evaluate(expanded);
+            IExpr erfcResult =
+                GruntzLimit.evaluateLimit(expanded, symbol, limit, direction, engine);
+            if (erfcResult.isNIL() || !erfcResult.isFree(S.Limit)
+                || !erfcResult.isIndeterminateFree()) {
+              erfcResult = evaluateLimit(expanded, rule, direction, engine);
+            }
+            if (erfcResult.isPresent() && erfcResult.isFree(S.Limit)
+                && erfcResult.isIndeterminateFree()) {
+              return erfcResult;
+            }
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            // ignore - continue with the unexpanded function
+          } finally {
+            ERFC_ASYMPTOTIC_DEPTH.set(erfcDepth);
           }
         }
       }
@@ -3986,10 +4161,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return null;
     }
     if (term.isPower() && term.exponent().isFree(x)) {
-      double e;
-      try {
-        e = term.exponent().evalf();
-      } catch (RuntimeException rex) {
+      double e = term.exponent().evalfNaN();
+      if (Double.isNaN(e)) {
         return null;
       }
       if (term.base().equals(x)) {
@@ -4179,7 +4352,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (limitExpLog.isPresent() && !limitExpLog.isAST(S.Limit)
           && limitExpLog.isIndeterminateFree()) {
         // Use PowerExpand to cleanly format terms like E^(Log(a)/2) into Sqrt(a)
-        return engine.evaluate(F.PowerExpand(F.Exp(limitExpLog)));
+        IExpr powerResult = engine.evaluate(F.PowerExpand(F.Exp(limitExpLog)));
+        // PowerExpand leaves E^(3*Log(3)) alone - collapse a constant result to its closed form
+        // so (2^x+3^x)^(3/x) reports 27 rather than E^(3*Log(3))
+        return powerResult.isFree(data.variable())
+            ? GruntzLimit.collapseConstant(powerResult, engine)
+            : powerResult;
       }
     }
 
@@ -4459,6 +4637,50 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           // leave this Ei unexpanded
+        }
+      }
+      return F.NIL;
+    });
+  }
+
+  /**
+   * Substitute the asymptotic expansion
+   * <code>Erfc(z) ~ E^(-z^2)/(z*Sqrt(Pi)) * (1 - 1/(2*z^2))</code> for every <code>Erfc(z)</code>
+   * whose argument diverges to <code>+Infinity</code> at the limit point. Only a
+   * <code>+Infinity</code> argument qualifies - on the other branch <code>Erfc</code> tends to
+   * <code>2</code> and the expansion does not hold.
+   *
+   * <p>
+   * The relation is an exact asymptotic equality there, so the limit is preserved. One correction
+   * term is carried rather than the leading one alone, so that a limit probing the
+   * <code>1/z^2</code> order (<code>x^2*(Sqrt(Pi)*x*E^(x^2)*Erfc(x) - 1) -> -1/2</code>) still
+   * resolves correctly. Like the truncations in {@link #expandEiNearZero} and
+   * {@link #replaceStirling}, the series stops there: a limit probing the <code>1/z^4</code> order
+   * collapses to <code>0</code>. The next term costs about 20x - the degree-4 rational factor it
+   * introduces turns the Gruntz series expansion into repeated Expand of large polynomials
+   * (measured: 24s vs 1s for <code>Erfc(x+1/x)/Erfc(x)</code>) - so raising the order is only worth
+   * it if a case actually needs it.
+   *
+   * @return {@link F#NIL} if no <code>Erfc</code> was expanded
+   */
+  private static IExpr expandErfcAtInfinity(IExpr function, IAST rule, Direction direction,
+      EvalEngine engine) {
+    final LimitData data = new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
+    return F.subst(function, sub -> {
+      if (sub.isAST(S.Erfc, 2) && !sub.first().isFree(data.variable(), true)) {
+        IExpr z = sub.first();
+        try {
+          if (evalLimitQuiet(z, data).isInfinity()) {
+            // The square MUST be expanded: an unexpanded E^(-(x+1/x)^2) does not cancel against
+            // the E^(x^2) of a neighbouring factor, and the surviving exponential tower grinds
+            // in the mrv machinery for minutes. Expanded, -(x^2+2+1/x^2) cancels term by term.
+            IExpr zSqr = engine.evaluate(F.ExpandAll(F.Sqr(z)));
+            return F.Times(F.Power(F.Times(z, F.Sqrt(S.Pi)), F.CN1), F.Exp(F.Negate(zSqr)), //
+                F.Plus(F.C1, F.Negate(F.Divide(F.C1, F.Times(F.C2, zSqr)))));
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // leave this Erfc unexpanded
         }
       }
       return F.NIL;
@@ -4874,54 +5096,42 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
       if (z.isValidBuiltInFunction() && z.isNumericFunction()) {
         switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Erf:
-            try {
-              double re = z.re().evalf();
-              double im = z.im().evalf();
-
-              if (Math.abs(re) >= Math.abs(im)) {
+          case ID.Erf: {
+            double re = z.re().evalfNaN();
+            double im = z.im().evalfNaN();
+            if (!Double.isNaN(re) && !Double.isNaN(im) && Math.abs(re) >= Math.abs(im)) {
                 if (re > 0) {
                   return F.C1;
                 } else if (re < 0) {
                   return F.CN1;
                 }
-              }
-            } catch (ArgumentTypeException ate) {
-              // evalf can fail for some symbolic expressions
             }
             break;
-          case ID.Erfc:
-            try {
-              double re = z.re().evalf();
-              double im = z.im().evalf();
-
-              if (Math.abs(re) >= Math.abs(im)) {
+          }
+          case ID.Erfc: {
+            double re = z.re().evalfNaN();
+            double im = z.im().evalfNaN();
+            if (!Double.isNaN(re) && !Double.isNaN(im) && Math.abs(re) >= Math.abs(im)) {
                 if (re > 0) {
                   return F.C0;
                 } else if (re < 0) {
                   return F.C2;
                 }
-              }
-            } catch (ArgumentTypeException ate) {
-              // evalf can fail for some symbolic expressions
             }
             break;
-          case ID.Erfi:
-            try {
-              double re = z.re().evalf();
-              double im = z.im().evalf();
-
-              if (Math.abs(im) >= Math.abs(re)) {
+          }
+          case ID.Erfi: {
+            double re = z.re().evalfNaN();
+            double im = z.im().evalfNaN();
+            if (!Double.isNaN(re) && !Double.isNaN(im) && Math.abs(im) >= Math.abs(re)) {
                 if (im > 0) {
                   return F.CI;
                 } else if (im < 0) {
                   return F.CNI;
                 }
-              }
-            } catch (ArgumentTypeException ate) {
-              // evalf can fail for some symbolic expressions
             }
             break;
+          }
         }
       }
     }
