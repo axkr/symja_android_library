@@ -16,6 +16,7 @@ import edu.jas.arith.ModIntegerRing;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.kern.ComputerThreads;
+import edu.jas.kern.JASConfig;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 
@@ -89,6 +90,9 @@ public class GCDFactory {
     public static GreatestCommonDivisorAbstract<ModLong> getImplementation(ModLongRing fac) {
         GreatestCommonDivisorAbstract<ModLong> ufd;
         if (fac.isField()) {
+            if (JASConfig.USE_SPARSE_GCD) {
+                return new GreatestCommonDivisorZippel<ModLong>();
+            }
             ufd = new GreatestCommonDivisorSubres<ModLong>();
             //ufd = new GreatestCommonDivisorModEval<ModLong>();
             //ufd = new GreatestCommonDivisorSimple<ModLong>();
@@ -126,6 +130,9 @@ public class GCDFactory {
     public static GreatestCommonDivisorAbstract<ModInt> getImplementation(ModIntRing fac) {
         GreatestCommonDivisorAbstract<ModInt> ufd;
         if (fac.isField()) {
+            if (JASConfig.USE_SPARSE_GCD) {
+                return new GreatestCommonDivisorZippel<ModInt>();
+            }
             ufd = new GreatestCommonDivisorSubres<ModInt>();
             //ufd = new GreatestCommonDivisorModEval<ModInt>();
             //ufd = new GreatestCommonDivisorSimple<ModInt>();
@@ -164,6 +171,9 @@ public class GCDFactory {
     public static GreatestCommonDivisorAbstract<ModInteger> getImplementation(ModIntegerRing fac) {
         GreatestCommonDivisorAbstract<ModInteger> ufd;
         if (fac.isField()) {
+            if (JASConfig.USE_SPARSE_GCD) {
+                return new GreatestCommonDivisorZippel<ModInteger>();
+            }
             ufd = new GreatestCommonDivisorModEval<ModInteger>();
             //ufd = new GreatestCommonDivisorSimple<ModInteger>();
             return ufd;
@@ -199,6 +209,10 @@ public class GCDFactory {
     @SuppressWarnings("unused")
     public static GreatestCommonDivisorAbstract<BigInteger> getImplementation(BigInteger fac) {
         GreatestCommonDivisorAbstract<BigInteger> ufd;
+        if (JASConfig.USE_SPARSE_GCD) {
+            // same modular lift, sparse interpolation for each prime
+            return new GreatestCommonDivisorModular<ModLong>(new GreatestCommonDivisorZippel<ModLong>());
+        }
         if (true) {
             ufd = new GreatestCommonDivisorModular<ModLong>(); // dummy type
         } else {
@@ -250,6 +264,12 @@ public class GCDFactory {
       if (rationalGCD) {
         ufd = new GreatestCommonDivisorRational();
       } else {
+        // Note: no sparse variant here. Over Q the content is a matter of convention - the
+        // recursive content of GreatestCommonDivisorPrimitive, not the coefficient gcd - and
+        // clearing the denominators to reach the integer algorithms returns an associate rather
+        // than the same polynomial, gcd((x^2/2 + y*z)*(x + 3/4), (x^2/2 + y*z)*(z + 5)) for
+        // example. JASConfig.USE_SPARSE_GCD may only change the running time, so this case keeps
+        // its dense algorithm.
         ufd = new GreatestCommonDivisorPrimitive<BigRational>();
       }
       return ufd;

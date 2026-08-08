@@ -74,6 +74,20 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
 
 
     /**
+     * Constructor with an explicit modular algorithm. The modular images and the Chinese remainder
+     * lift to <code>Z[x_1, ..., x_n]</code> stay the same, only the gcd computed for each prime
+     * changes - pass a {@link GreatestCommonDivisorZippel} to get the sparse interpolation.
+     * @param modular gcd algorithm for the modular images.
+     */
+    public GreatestCommonDivisorModular(GreatestCommonDivisorAbstract<MOD> modular) {
+        if (modular == null) {
+            throw new IllegalArgumentException("modular == null not supported");
+        }
+        mufd = modular;
+    }
+
+
+    /**
      * Univariate GenPolynomial greatest common divisor. Delegate to subresultant
      * baseGcd, should not be needed.
      * @param P univariate GenPolynomial.
