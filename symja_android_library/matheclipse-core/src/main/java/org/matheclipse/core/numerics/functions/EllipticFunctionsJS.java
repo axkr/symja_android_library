@@ -577,9 +577,29 @@ public class EllipticFunctionsJS extends JS {
         .divide(3.0).subtract(2.0 * Math.PI * n / 3.0).cos()).multiply(2.0 / Math.sqrt(3));
   }
 
+  /** The primitive cube root of unity <code>(-1+I*Sqrt(3))/2</code>. */
+  private static final Complex CUBE_ROOT_OF_UNITY =
+      new Complex(-0.5, Math.sqrt(3.0) / 2.0);
+
+  /**
+   * The three roots of <code>4*t^3-g2*t-g3</code>, i.e. of the depressed cubic
+   * <code>t^3-(g2/4)*t-(g3/4)</code>.
+   *
+   * @param g2 the first Weierstrass invariant
+   * @param g3 the second Weierstrass invariant
+   */
   public static Complex[] weierstrassRoots(Complex g2, Complex g3) {
     g2 = g2.divide(4);
     g3 = g3.divide(4);
+
+    if (g2.getReal() == 0.0 && g2.getImaginary() == 0.0) {
+      // the equianharmonic case: t^3-g3/4 == 0 is solved by the cube roots of g3/4.
+      // cubicTrigSolution() cannot be used here, because it evaluates (g2/4)^(-3/2)
+      Complex e1 = g3.pow(1.0 / 3.0);
+      Complex e2 = e1.multiply(CUBE_ROOT_OF_UNITY);
+      Complex e3 = e2.multiply(CUBE_ROOT_OF_UNITY);
+      return new Complex[] {e1, e2, e3};
+    }
 
     Complex e1 = cubicTrigSolution(g2, g3, 0);
     Complex e2 = cubicTrigSolution(g2, g3, 1);

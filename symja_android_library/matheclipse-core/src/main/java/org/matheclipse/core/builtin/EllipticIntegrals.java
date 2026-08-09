@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -9,6 +10,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -35,8 +37,10 @@ public class EllipticIntegrals {
       S.CarlsonRJ.setEvaluator(new CarlsonRJ());
 
       S.EllipticE.setEvaluator(new EllipticE());
+      S.EllipticExp.setEvaluator(new EllipticExp());
       S.EllipticF.setEvaluator(new EllipticF());
       S.EllipticK.setEvaluator(new EllipticK());
+      S.EllipticLog.setEvaluator(new EllipticLog());
       S.EllipticPi.setEvaluator(new EllipticPi());
       S.EllipticTheta.setEvaluator(new EllipticTheta());
 
@@ -432,36 +436,7 @@ public class EllipticIntegrals {
       super.setUp(newSymbol);
     }
   }
-  /**
-   *
-   *
-   * <pre>
-   * EllipticE(z)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the complete elliptic integral of the second kind.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href=
-   * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_second_kind">Wikipedia
-   * - Elliptic integral - Complete elliptic integral of the second kind)</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; EllipticE(5/4,1)
-   * Sin(5/4)
-   * </pre>
-   */
+ 
   private static class EllipticE extends AbstractFunctionEvaluator {
 
     @Override
@@ -571,36 +546,110 @@ public class EllipticIntegrals {
     }
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * EllipticF(z)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the incomplete elliptic integral of the first kind.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href=
-   * "https://en.wikipedia.org/wiki/Elliptic_integral#Incomplete_elliptic_integral_of_the_first_kind">Wikipedia
-   * - Elliptic integral - Incomplete elliptic integral of the first kind)</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; EllipticF(17/2*Pi, m)
-   * 17*EllipticK(m)
-   * </pre>
-   */
+  private static class EllipticExp extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    /**
+     * The Weierstrass invariants <code>{g2,g3}</code> of the curve
+     * <code>y^2 == x^3+a*x^2+b*x</code>, which is brought into the form
+     * <code>Y^2 == 4*X^3-g2*X-g3</code> by <code>X == x+a/3</code> and <code>Y == 2*y</code>.
+     *
+     * @param a
+     * @param b
+     */
+    private static IAST invariants(IExpr a, IExpr b) {
+      return F.list(//
+          // g2 == 4/3*(a^2-3*b)
+          F.Times(F.QQ(4, 3), F.Subtract(F.Sqr(a), F.Times(F.C3, b))), //
+          // g3 == 4/27*(9*a*b-2*a^3)
+          F.Times(F.QQ(4, 27), F.Subtract(F.Times(F.C9, a, b), F.Times(F.C2, F.Power(a, F.C3)))));
+    }
+
+    /**
+     * The point <code>{x,y}</code> of the curve <code>y^2 == x^3+a*x^2+b*x</code> expressed by the
+     * Weierstrass functions of its invariants:
+     * <code>{-a/3+WeierstrassP(u,{g2,g3}), WeierstrassPPrime(u,{g2,g3})/2}</code>.
+     *
+     * @param u
+     * @param a
+     * @param invariants the <code>{g2,g3}</code> of {@link #invariants(IExpr, IExpr)}
+     */
+    private static IAST weierstrassForm(IExpr u, IExpr a, IAST invariants) {
+      return F.list(//
+          F.Subtract(F.binaryAST2(S.WeierstrassP, u, invariants), F.Divide(a, F.C3)), //
+          F.Divide(F.binaryAST2(S.WeierstrassPPrime, u, invariants), F.C2));
+    }
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.arg2().isList2()) {
+        IExpr u = ast.arg1();
+        IAST list = (IAST) ast.arg2();
+        IExpr a = list.arg1();
+        IExpr invariants = engine.evaluate(invariants(a, list.arg2()));
+        if (invariants.isList2()) {
+          IAST inv = (IAST) invariants;
+          IAST parameters = weierstrassJacobiParameters(inv.arg1(), inv.arg2());
+          if (parameters.isPresent()) {
+            // FunctionExpand() only descends one level into the returned expression, so expand the
+            // Weierstrass functions here instead of leaving them to a second FunctionExpand() call
+            return F.list(//
+                F.Subtract(weierstrassPJacobi(u, parameters), F.Divide(a, F.C3)), //
+                F.Divide(weierstrassPPrimeJacobi(u, parameters), F.C2));
+          }
+          return weierstrassForm(u, a, inv);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr u = ast.arg1();
+      if (!ast.arg2().isList2()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) ast.arg2();
+      IExpr a = list.arg1();
+      IExpr b = list.arg2();
+      if (u.isZero()) {
+        // the point at infinity of the curve y^2 == x^3+a*x^2+b*x
+        return F.list(F.CComplexInfinity, F.CComplexInfinity);
+      }
+      IExpr temp = engine.evaluate(weierstrassForm(u, a, invariants(a, b)));
+      if (temp.isList2() && isConcrete(temp)) {
+        IAST point = (IAST) temp;
+        return F.list(//
+            F.chopExpr(point.arg1(), Config.DEFAULT_CHOP_DELTA), //
+            F.chopExpr(point.arg2(), Config.DEFAULT_CHOP_DELTA));
+      }
+      return F.NIL;
+    }
+
+    /**
+     * <code>true</code> if the Weierstrass functions of
+     * {@link #weierstrassForm(IExpr, IExpr, IAST)} were reduced to a value. Returning the
+     * unreduced form would replace <code>EllipticExp</code> by two special functions which are no
+     * simpler, and returning <code>Indeterminate</code> would hide that no value is known.
+     *
+     * @param expr the evaluated result of {@link #weierstrassForm(IExpr, IExpr, IAST)}
+     */
+    private static boolean isConcrete(IExpr expr) {
+      return expr.isFree(S.WeierstrassP, true) //
+          && expr.isFree(S.WeierstrassPPrime, true) //
+          && expr.isFree(S.Indeterminate, true);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+  }
+ 
   private static class EllipticF extends AbstractFunctionEvaluator {
 
     @Override
@@ -696,36 +745,7 @@ public class EllipticIntegrals {
     }
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * EllipticK(z)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the complete elliptic integral of the first kind.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href=
-   * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_first_kind">Wikipedia
-   * - Elliptic integral - Complete elliptic integral of the first kind)</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Table(EllipticK(x+I), {x,-1.0, 1.0, 1/4})
-   * {1.26549+I*0.16224,1.30064+I*0.18478,1.33866+I*0.21305,1.37925+I*0.24904,1.42127+I*0.29538,1.46203+I*0.35524,1.49611+I*0.43136,1.51493+I*0.52354,1.50924+I*0.62515}
-   * </pre>
-   */
+
   private static class EllipticK extends AbstractFunctionEvaluator {
 
     @Override
@@ -778,6 +798,170 @@ public class EllipticIntegrals {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
+    }
+  }
+
+  private static class EllipticLog extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    /**
+     * The elliptic logarithm of the point <code>{x,y}</code> of the curve
+     * <code>y^2 == x^3+a*x^2+b*x</code> as the Carlson symmetric form
+     * <code>-CarlsonRF(x, x-r1, x-r2)</code>, where <code>r1,r2</code> are the roots of
+     * <code>t^2+a*t+b</code>. The sign is the one of the principal square root
+     * <code>y == Sqrt(x^3+a*x^2+b*x)</code>.
+     *
+     * @param x the <code>x</code> coordinate of the point
+     * @param a
+     * @param b
+     */
+    private static IExpr carlsonForm(IExpr x, IExpr a, IExpr b) {
+      // d == Sqrt(a^2-4*b)
+      IExpr d = F.Sqrt(F.Subtract(F.Sqr(a), F.Times(F.C4, b)));
+      return F.Negate(F.CarlsonRF(x, //
+          // x-r1 == x+(a+d)/2
+          F.Plus(x, F.Times(F.C1D2, F.Plus(a, d))), //
+          // x-r2 == x+(a-d)/2
+          F.Plus(x, F.Times(F.C1D2, F.Subtract(a, d)))));
+    }
+
+    /**
+     * The sign of the square root <code>Sqrt(x^3+a*x^2+b*x)</code> which is selected by the
+     * <code>y</code> coordinate of the point <code>{x,y}</code>.
+     *
+     * @return <code>1</code> for the principal square root, <code>-1</code> for its negation and
+     *         <code>0</code> if <code>{x,y}</code> isn't recognized as a point of the curve
+     *         <code>y^2 == x^3+a*x^2+b*x</code>
+     */
+    private static int principalSqrtSign(IExpr x, IExpr y, IExpr a, IExpr b, EvalEngine engine) {
+      // Sqrt(x^3+a*x^2+b*x)
+      IExpr sqrt = engine
+          .evaluate(F.Sqrt(F.Plus(F.Power(x, F.C3), F.Times(a, F.Sqr(x)), F.Times(b, x))));
+      if (sqrt.isZero()) {
+        // {x,y} is a point of order 2, both signs give the same half period
+        return y.isZero() ? 1 : 0;
+      }
+      int sign = compare(y, sqrt, engine);
+      if (sign == 0) {
+        // FunctionExpand() rewrites the y coordinate before it calls
+        // functionExpand(IAST, EvalEngine), so compare the same normal form of both square roots
+        sign = compare(F.FunctionExpand(y), F.FunctionExpand(sqrt), engine);
+      }
+      return sign;
+    }
+
+    /**
+     * Compare the <code>y</code> coordinate of a point with the principal square root
+     * <code>Sqrt(x^3+a*x^2+b*x)</code>.
+     *
+     * @return <code>1</code> if both are equal, <code>-1</code> if they are negatives of each other
+     *         and <code>0</code> if that can't be decided
+     */
+    private static int compare(IExpr y, IExpr sqrt, EvalEngine engine) {
+      // compare the quotient, because the coordinates of a point can be large
+      IExpr quotient = engine.evaluate(F.Divide(y, sqrt));
+      if (isZero(F.Subtract(quotient, F.C1), engine)) {
+        return 1;
+      }
+      if (isZero(F.Plus(quotient, F.C1), engine)) {
+        return -1;
+      }
+      return 0;
+    }
+
+    private static boolean isZero(IExpr expr, EvalEngine engine) {
+      return F.chopExpr(engine.evaluate(expr), Config.DEFAULT_CHOP_DELTA).isZero();
+    }
+
+    /**
+     * Evaluate {@link #carlsonForm(IExpr, IExpr, IExpr)} numerically. The <code>CarlsonRF</code>
+     * evaluator itself is restricted to {@link EvalEngine#isDoubleMode()}, but like for
+     * <code>EllipticExp</code> the numeric mode isn't necessarily set here.
+     *
+     * @return {@link F#NIL} if the arguments of the Carlson symmetric form aren't inexact numbers
+     */
+    private static IExpr numericCarlsonForm(IExpr x, IExpr a, IExpr b, EvalEngine engine) {
+      // d == Sqrt(a^2-4*b)
+      IExpr d = engine.evaluate(F.Sqrt(F.Subtract(F.Sqr(a), F.Times(F.C4, b))));
+      IExpr y = engine.evaluate(F.Plus(x, F.Times(F.C1D2, F.Plus(a, d))));
+      IExpr z = engine.evaluate(F.Plus(x, F.Times(F.C1D2, F.Subtract(a, d))));
+      if (x.isNumber() && y.isNumber() && z.isNumber() //
+          && (engine.isDoubleMode() || x.isInexactNumber() || y.isInexactNumber()
+              || z.isInexactNumber())) {
+        try {
+          return F.complexNum(
+              EllipticIntegralsJS.carlsonRF(x.evalfc(), y.evalfc(), z.evalfc()).negate());
+        } catch (ValidateException ve) {
+          throw ve;
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.EllipticLog, rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isList2() && ast.arg2().isList2()) {
+        IAST point = (IAST) ast.arg1();
+        IAST list = (IAST) ast.arg2();
+        int sign = principalSqrtSign(point.arg1(), point.arg2(), list.arg1(), list.arg2(), engine);
+        if (sign != 0) {
+          IExpr carlsonForm = carlsonForm(point.arg1(), list.arg1(), list.arg2());
+          return sign < 0 ? carlsonForm.negate() : carlsonForm;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList2() || !ast.arg2().isList2()) {
+        return F.NIL;
+      }
+      IAST point = (IAST) ast.arg1();
+      IExpr x = point.arg1();
+      IExpr y = point.arg2();
+      IAST list = (IAST) ast.arg2();
+      IExpr a = list.arg1();
+      IExpr b = list.arg2();
+      if (x.isComplexInfinity() && y.isComplexInfinity()) {
+        // the point at infinity is the neutral element of the group law of the curve
+        // y^2 == x^3+a*x^2+b*x
+        return F.C0;
+      }
+      if (a.isZero() && b.isZero()) {
+        if (x.isZero() && y.isZero()) {
+          // the singular point of the curve y^2 == x^3
+          return F.NIL;
+        }
+        IExpr onCurve = engine.evaluate(F.Subtract(F.Sqr(y), F.Power(x, F.C3)));
+        if (onCurve.isNumber() && !isZero(onCurve, engine)) {
+          // {x,y} isn't a point of the curve y^2 == x^3
+          return F.NIL;
+        }
+        // invert the rational parameterization EllipticExp(u,{0,0}) == {1/u^2,-1/u^3}
+        return F.Divide(F.Negate(x), y);
+      }
+      int sign = principalSqrtSign(x, y, a, b, engine);
+      if (sign == 0) {
+        return F.NIL;
+      }
+      IExpr logarithm = numericCarlsonForm(x, a, b, engine);
+      if (logarithm.isPresent()) {
+        return F.chopExpr(sign < 0 ? logarithm.negate() : logarithm, Config.DEFAULT_CHOP_DELTA);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
   }
 
@@ -2177,7 +2361,100 @@ public class EllipticIntegrals {
     }
   }
 
-  private static class WeierstrassP extends AbstractFunctionEvaluator {
+  /**
+   * The parameters <code>{e3, e1-e3, (e2-e3)/(e1-e3)}</code> which express the Weierstrass functions
+   * of the invariants <code>{g2,g3}</code> by Jacobi elliptic functions, where
+   * <code>e1,e2,e3</code> are the roots of <code>4*t^3-g2*t-g3</code>. They are returned in this
+   * reduced form, because the differences of the roots simplify much further than the roots
+   * themselves. Available for the two families of invariants whose cubic factors:
+   *
+   * <ul>
+   * <li><code>g3 == 0</code> - the lemniscatic case
+   * <code>4*t^3-g2*t == 4*t*(t-Sqrt(g2)/2)*(t+Sqrt(g2)/2)</code>, with the roots
+   * <code>{Sqrt(g2)/2, 0, -Sqrt(g2)/2}</code>
+   * <li><code>g2 == 0</code> - the equianharmonic case, where the roots are the cube roots
+   * <code>c*{1, (-1+I*Sqrt(3))/2, (-1-I*Sqrt(3))/2}</code> of <code>c^3 == g3/4</code>
+   * </ul>
+   *
+   * <p>
+   * For all other invariants the roots are the general solutions of a cubic equation, which are too
+   * unwieldy to expand into; this method returns {@link F#NIL} for them.
+   *
+   * @param g2 the first Weierstrass invariant
+   * @param g3 the second Weierstrass invariant
+   * @return <code>F.NIL</code> if the roots of <code>4*t^3-g2*t-g3</code> aren't available in closed
+   *         form
+   */
+  private static IAST weierstrassJacobiParameters(IExpr g2, IExpr g3) {
+    if (g2.isZero() && g3.isZero()) {
+      // all three roots are 0 - WeierstrassP() and WeierstrassPPrime() are rational functions of z
+      // here and are already rewritten in their evaluate() step
+      return F.NIL;
+    }
+    if (g3.isZero()) {
+      IExpr sqrtG2 = F.Sqrt(g2);
+      return F.list(F.Times(F.CN1D2, sqrtG2), sqrtG2, F.C1D2);
+    }
+    if (g2.isZero()) {
+      IExpr c = F.Power(F.Times(F.C1D4, g3), F.C1D3);
+      return F.list(//
+          // e3 == (-1-I*Sqrt(3))/2*c
+          F.Times(F.C1D2, F.Plus(F.CN1, F.Times(F.CNI, F.CSqrt3)), c), //
+          // e1-e3 == (3+I*Sqrt(3))/2*c
+          F.Times(F.C1D2, F.Plus(F.C3, F.Times(F.CI, F.CSqrt3)), c), //
+          // (e2-e3)/(e1-e3) == (1+I*Sqrt(3))/2
+          F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.CI, F.CSqrt3))));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Whittaker &amp; Watson, Section 22.351:
+   * <code>WeierstrassP(z,{g2,g3}) == e3+(e1-e3)/JacobiSN(Sqrt(e1-e3)*z,m)^2</code>.
+   *
+   * @param z
+   * @param parameters the <code>{e3, e1-e3, m}</code> of
+   *        {@link #weierstrassJacobiParameters(IExpr, IExpr)}
+   */
+  private static IExpr weierstrassPJacobi(IExpr z, IAST parameters) {
+    IExpr e3 = parameters.arg1();
+    IExpr e13 = parameters.arg2();
+    IExpr m = parameters.arg3();
+    return F.Plus(e3, F.Times(e13, F.Power(F.JacobiSN(F.Times(F.Sqrt(e13), z), m), F.CN2)));
+  }
+
+  /**
+   * The derivative of {@link #weierstrassPJacobi(IExpr, IAST)}:
+   * <code>WeierstrassPPrime(z,{g2,g3}) ==
+   * -2*(e1-e3)^(3/2)*JacobiCN(w,m)*JacobiDN(w,m)/JacobiSN(w,m)^3</code> with
+   * <code>w == Sqrt(e1-e3)*z</code>.
+   *
+   * @param z
+   * @param parameters the <code>{e3, e1-e3, m}</code> of
+   *        {@link #weierstrassJacobiParameters(IExpr, IExpr)}
+   */
+  private static IExpr weierstrassPPrimeJacobi(IExpr z, IAST parameters) {
+    IExpr e13 = parameters.arg2();
+    IExpr m = parameters.arg3();
+    IExpr w = F.Times(F.Sqrt(e13), z);
+    return F.Times(F.CN2, F.Power(e13, F.C3D2), F.JacobiCN(w, m), F.JacobiDN(w, m),
+        F.Power(F.JacobiSN(w, m), F.CN3));
+  }
+
+  private static class WeierstrassP extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.arg2().isList2()) {
+        IAST list = (IAST) ast.arg2();
+        IAST parameters = weierstrassJacobiParameters(list.arg1(), list.arg2());
+        if (parameters.isPresent()) {
+          return weierstrassPJacobi(ast.arg1(), parameters);
+        }
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -2227,7 +2504,20 @@ public class EllipticIntegrals {
     }
   }
 
-  private static class WeierstrassPPrime extends AbstractFunctionEvaluator {
+  private static class WeierstrassPPrime extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.arg2().isList2()) {
+        IAST list = (IAST) ast.arg2();
+        IAST parameters = weierstrassJacobiParameters(list.arg1(), list.arg2());
+        if (parameters.isPresent()) {
+          return weierstrassPPrimeJacobi(ast.arg1(), parameters);
+        }
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
