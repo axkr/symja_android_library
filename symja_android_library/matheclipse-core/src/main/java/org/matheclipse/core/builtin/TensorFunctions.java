@@ -63,11 +63,123 @@ public class TensorFunctions {
       S.TensorRank.setEvaluator(new TensorRank());
       S.TensorSymmetry.setEvaluator(new TensorSymmetry());
 
+      S.AffineTransform.setEvaluator(new AffineTransform());
+      S.ReflectionTransform.setEvaluator(new ReflectionTransform());
       S.ScalingTransform.setEvaluator(new ScalingTransform());
       S.RotationTransform.setEvaluator(new RotationTransform());
       S.ShearingTransform.setEvaluator(new ShearingTransform());
       S.TransformationFunction.setEvaluator(new TransformationFunction());
       S.TranslationTransform.setEvaluator(new TranslationTransform());
+    }
+  }
+
+  /**
+   * Embed the <code>dim x dim</code> linear part <code>linear</code> and the translation vector
+   * <code>translation</code> into the <code>(dim+1) x (dim+1)</code> homogeneous transformation
+   * matrix <code>{{linear, translation}, {0, ..., 0, 1}}</code>.
+   *
+   * @param linear the <code>dim x dim</code> linear part of the transformation
+   * @param translation the translation vector or <code>null</code> if the transformation doesn't
+   *        translate
+   * @param dim the dimension of the transformation
+   */
+  private static IAST homogeneousMatrix(IAST linear, IAST translation, int dim) {
+    return F.mapRange(0, dim + 1, i -> {
+      if (i == dim) {
+        // last row {0, ..., 0, 1}
+        return F.mapRange(0, dim + 1, j -> j == dim ? F.C1 : F.C0);
+      }
+      IAST row = (IAST) linear.get(i + 1);
+      return F.mapRange(0, dim + 1, j -> j == dim //
+          ? (translation == null ? F.C0 : translation.get(i + 1)) //
+          : row.get(j + 1));
+    });
+  }
+
+  /**
+   * The squared euclidean norm <code>Sum(Abs(vector_k)^2)</code> of <code>vector</code>.
+   *
+   * @param vector a vector with <code>dim</code> elements
+   * @param dim the number of elements of <code>vector</code>
+   * @param engine the evaluation engine
+   */
+  private static IExpr squaredNorm(IAST vector, int dim, EvalEngine engine) {
+    return engine.evaluate(F.mapRange(S.Plus, 0, dim, k -> F.Sqr(F.Abs(vector.get(k + 1)))));
+  }
+
+  /**
+   * The <code>dim x dim</code> matrix of a scaling by the factor <code>s</code> along the direction
+   * <code>direction</code>:
+   * <code>KroneckerDelta(i,j) + (s-1)*direction_i*Conjugate(direction_j) / magnitude</code>.
+   *
+   * <p>
+   * The entries are built as a single fraction, so that for example the symbolic diagonal entry is
+   * printed as <code>1/2*(1+s)</code> instead of <code>1/2+s/2</code>.
+   *
+   * @param s the scaling factor
+   * @param direction the direction vector along which is scaled
+   * @param magnitude the squared norm of <code>direction</code>; must not be zero
+   * @param dim the number of elements of <code>direction</code>
+   */
+  private static IAST directionalScalingMatrix(IExpr s, IAST direction, IExpr magnitude, int dim) {
+    return F.mapRange(0, dim, i -> F.mapRange(0, dim, j -> {
+      IExpr entry =
+          F.Times(F.Plus(F.CN1, s), direction.get(i + 1), F.Conjugate(direction.get(j + 1)));
+      return F.Divide(i == j ? F.Plus(magnitude, entry) : entry, magnitude);
+    }));
+  }
+
+  /**
+   * Move the fixed point of <code>transform</code> from the origin to the point <code>p</code> with
+   * <code>TranslationTransform(p) . transform . TranslationTransform(-p)</code>. The
+   * {@link S#Dot} operator fuses the three {@link S#TransformationFunction}s into a single one.
+   *
+   * @param transform the transformation which leaves the origin fixed
+   * @param p the point which should be left fixed
+   */
+  private static IExpr centeredTransform(IExpr transform, IExpr p) {
+    if (p.isVector() > 0) {
+      return F.Dot(F.TranslationTransform(p), transform, F.TranslationTransform(F.Negate(p)));
+    }
+    return F.NIL;
+  }
+
+  private static class AffineTransform extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int[] dims = arg1.isMatrix(false);
+      if (dims != null) {
+        if (dims[0] != dims[1] || dims[0] == 0) {
+          return F.NIL;
+        }
+        // AffineTransform(m) maps the vector r to m.r
+        return F.TransformationFunction(
+            homogeneousMatrix((IAST) arg1.normal(false), null, dims[0]));
+      }
+      if (arg1.isList2()) {
+        // AffineTransform({m, v}) maps the vector r to m.r+v
+        IExpr m = arg1.first();
+        IExpr v = arg1.second();
+        int[] mDims = m.isMatrix(false);
+        if (mDims != null && mDims[0] == mDims[1] && mDims[0] > 0
+            && v.isVector() == mDims[0]) {
+          return F.TransformationFunction(homogeneousMatrix((IAST) m.normal(false),
+              (IAST) v.normal(false), mDims[0]));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.READPROTECTED);
     }
   }
 
@@ -1608,6 +1720,43 @@ public class TensorFunctions {
   }
 
 
+  private static class ReflectionTransform extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int dim = arg1.isVector();
+      if (dim > 0) {
+        IAST v = (IAST) arg1.normal(false);
+        IExpr magnitude = squaredNorm(v, dim, engine);
+        if (magnitude.isZero()) {
+          // Direction vector `1` has zero magnitude.
+          return Errors.printMessage(S.ReflectionTransform, "idir", F.list(arg1), engine);
+        }
+        // a reflection normal to `v` is a scaling by the factor -1 along `v`
+        IAST matrix =
+            homogeneousMatrix(directionalScalingMatrix(F.CN1, v, magnitude, dim), null, dim);
+        if (ast.isAST2()) {
+          // ReflectionTransform(v, p) - the mirror goes through the point `p`
+          return centeredTransform(F.TransformationFunction(matrix), ast.arg2());
+        }
+        return F.TransformationFunction(matrix);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.READPROTECTED);
+    }
+  }
+
+
   private static class RotationTransform extends AbstractFunctionEvaluator {
 
     @Override
@@ -1615,10 +1764,8 @@ public class TensorFunctions {
 
       IExpr phi = ast.arg1();
       if (ast.isAST2()) {
-        IExpr p = ast.arg1();
-        // TranslationTransform(p) . RotationTransform(phi) . TranslationTransform(-p)
-        return F.Dot(F.TranslationTransform(p), F.RotationTransform(phi),
-            F.TranslationTransform(F.Negate(p)));
+        // RotationTransform(phi, p) - rotate around the point `p`
+        return centeredTransform(F.RotationTransform(phi), ast.arg2());
       }
       // TransformationFunction({{Cos(phi), -Sin(phi), 0}, {Sin(phi), Cos(phi), 0}, {0, 0, 1}})
       return F.TransformationFunction(F.list(F.list(F.Cos(phi), F.Negate(F.Sin(phi)), F.C0),
@@ -1629,6 +1776,11 @@ public class TensorFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.READPROTECTED);
+    }
   }
 
 
@@ -1638,40 +1790,38 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr s = ast.arg1();
-      if (ast.isAST2()) {
-        IExpr p = ast.arg2();
-        if (p.isList2()) {
-          IExpr p1 = p.first();
-          IExpr p2 = p.second();
-          // TransformationFunction({{(Abs(p1)^2 + Abs(p2)^2 - p1*Conjugate(p1) +
-          // p1*s*Conjugate(p1))/(Abs(p1)^2 + Abs(p2)^2), (p1*(-1 + s)*Conjugate(p2))/
-          // (Abs(p1)^2 + Abs(p2)^2), 0}, {(p2*(-1 + s)*Conjugate(p1))/(Abs(p1)^2 + Abs(p2)^2),
-          // (Abs(p1)^2 + Abs(p2)^2 - p2*Conjugate(p2) +
-          // p2*s*Conjugate(p2))/(Abs(p1)^2 + Abs(p2)^2), 0}, {0, 0, 1}})
-          IExpr magnitude = engine.evaluate(F.Plus(F.Sqr(F.Abs(p1)), F.Sqr(F.Abs(p2))));
-          if (magnitude.isZero()) {
-            // Direction vector `1` has zero magnitude.
-            return Errors.printMessage(S.ScalingTransform, "idir", F.List(p), engine);
-          }
-          return F.TransformationFunction(F.list(
-              F.list(
-                  F.Times(F.Power(magnitude, F.CN1),
-                      F.Plus(magnitude, F.Times(F.CN1, p1, F.Conjugate(p1)),
-                          F.Times(p1, F.s, F.Conjugate(p1)))),
-                  F.Times(p1, F.Plus(F.CN1, F.s), F.Power(magnitude, F.CN1), F.Conjugate(p2)),
-                  F.C0),
-              F.list(F.Times(p2, F.Plus(F.CN1, F.s), F.Power(magnitude, F.CN1), F.Conjugate(p1)),
-                  F.Times(F.Power(magnitude, F.CN1), F.Plus(magnitude,
-                      F.Times(F.CN1, p2, F.Conjugate(p2)), F.Times(p2, F.s, F.Conjugate(p2)))),
-                  F.C0),
-              F.list(F.C0, F.C0, F.C1)));
+      if (s.isVector() > 0) {
+        // ScalingTransform({s1, s2, ...}) - scale along the coordinate axes
+        // TransformationFunction(DiagonalMatrix(Join(s, {1})))
+        IExpr scaling = F.TransformationFunction(F.DiagonalMatrix(F.Join(s, F.list(F.C1))));
+        if (ast.isAST1()) {
+          return scaling;
+        }
+        if (ast.isAST2()) {
+          // ScalingTransform({s1, s2, ...}, p) - leave the point `p` fixed
+          return centeredTransform(scaling, ast.arg2());
         }
         return F.NIL;
       }
-      int dim = s.isVector();
-      if (dim > 0) {
-        // TransformationFunction(DiagonalMatrix(Join(s, {1})))
-        return F.TransformationFunction(F.DiagonalMatrix(F.Join(s, F.list(F.C1))));
+      if (ast.size() >= 3) {
+        // ScalingTransform(s, v) - scale by the factor `s` along the direction `v`
+        IExpr direction = ast.arg2();
+        int dim = direction.isVector();
+        if (dim > 0) {
+          IAST v = (IAST) direction.normal(false);
+          IExpr magnitude = squaredNorm(v, dim, engine);
+          if (magnitude.isZero()) {
+            // Direction vector `1` has zero magnitude.
+            return Errors.printMessage(S.ScalingTransform, "idir", F.list(direction), engine);
+          }
+          IAST matrix =
+              homogeneousMatrix(directionalScalingMatrix(s, v, magnitude, dim), null, dim);
+          if (ast.isAST3()) {
+            // ScalingTransform(s, v, p) - leave the point `p` fixed
+            return centeredTransform(F.TransformationFunction(matrix), ast.arg3());
+          }
+          return F.TransformationFunction(matrix);
+        }
       }
       return F.NIL;
 
@@ -1679,7 +1829,12 @@ public class TensorFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.READPROTECTED);
     }
   }
   private static class SymbolicDeltaProductArray extends AbstractFunctionEvaluator
@@ -1778,30 +1933,47 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr phi = ast.arg1();
-      IExpr u = ast.arg2();
-      IExpr v = ast.arg3();
+      IExpr direction = ast.arg2();
+      IExpr normal = ast.arg3();
+      int dim = direction.isVector();
+      if (dim <= 0 || normal.isVector() != dim) {
+        return F.NIL;
+      }
+      IAST u = (IAST) direction.normal(false);
+      IAST n = (IAST) normal.normal(false);
+      IExpr normU = engine.evaluate(F.Norm(u));
+      if (normU.isZero()) {
+        // Direction vector `1` has zero magnitude.
+        return Errors.printMessage(S.ShearingTransform, "idir", F.list(direction), engine);
+      }
+      IExpr normN = engine.evaluate(F.Norm(n));
+      if (normN.isZero()) {
+        // Direction vector `1` has zero magnitude.
+        return Errors.printMessage(S.ShearingTransform, "idir", F.list(normal), engine);
+      }
+      // KroneckerDelta(i,j) + Tan(phi)*u_i*Conjugate(n_j) / (Norm(u)*Norm(n))
+      IExpr tan = F.Tan(phi);
+      IExpr scale = F.Times(normU, normN);
+      IAST linear = F.mapRange(0, dim, i -> F.mapRange(0, dim, j -> {
+        IExpr entry = F.Divide(F.Times(tan, u.get(i + 1), F.Conjugate(n.get(j + 1))), scale);
+        return i == j ? F.Plus(F.C1, entry) : entry;
+      }));
+      IAST matrix = homogeneousMatrix(linear, null, dim);
       if (ast.size() == 5) {
-        IExpr p = ast.arg4();
-        // TranslationTransform(p) . ShearingTransform(phi, u, v) . TranslationTransform(-p)
-        return F.Dot(F.TranslationTransform(p), F.ShearingTransform(phi, u, v),
-            F.TranslationTransform(F.Negate(p)));
+        // ShearingTransform(phi, u, n, p) - leave the point `p` fixed
+        return centeredTransform(F.TransformationFunction(matrix), ast.arg4());
       }
-      if (u.equals(F.List(F.C1, F.C0)) && v.equals(F.List(F.C0, F.C1))) {
-        // TransformationFunction({{1, Tan(phi), 0}, {0, 1, 0}, {0, 0, 1}})
-        return F.TransformationFunction(F.list(F.list(F.C1, F.Tan(phi), F.C0),
-            F.list(F.C0, F.C1, F.C0), F.list(F.C0, F.C0, F.C1)));
-      }
-      if (u.equals(F.List(F.C0, F.C1)) && v.equals(F.List(F.C1, F.C0))) {
-        // TransformationFunction({{1, 0, 0}, {Tan(phi), 1, 0}, {0, 0, 1}})
-        return F.TransformationFunction(F.list(F.list(F.C1, F.C0, F.C0),
-            F.list(F.Tan(phi), F.C1, F.C0), F.list(F.C0, F.C0, F.C1)));
-      }
-      return F.NIL;
+      return F.TransformationFunction(matrix);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_4;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.READPROTECTED);
     }
   }
 
@@ -1811,6 +1983,15 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.head().isAST(S.TransformationFunction, 2)) {
+        if (ast.isAST(S.TransformationFunction, 2) && ast.arg1().isList()) {
+          // The wrapped matrix should be printed on a single line, so clear the matrix formatting
+          // flag which `F.matrix()`, `DiagonalMatrix`, `Dot` or `Inverse` may have set.
+          IAST matrix = (IAST) ast.arg1();
+          int evalFlags = matrix.getEvalFlags();
+          if ((evalFlags & IAST.IS_MATRIX) != 0) {
+            matrix.setEvalFlags(evalFlags & ~IAST.IS_MATRIX);
+          }
+        }
         return F.NIL;
       }
 
@@ -1828,6 +2009,11 @@ public class TensorFunctions {
         return F.Take(F.Dot(m, F.Join(v, F.list(F.C1))), F.ZZ(dim));
       }
       return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.READPROTECTED);
     }
 
 
@@ -1862,6 +2048,11 @@ public class TensorFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.READPROTECTED);
     }
 
   }

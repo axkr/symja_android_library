@@ -312,6 +312,24 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("CollinearPoints({{0,1}, {1,2}, {x,y}})", //
         "1+x==y");
+
+    check("CollinearPoints({{0, 0}, {1, 1}, {2, 2}})", "True");
+    check("CollinearPoints({{0, 0}, {1, 1}, {2, 3}})", "False");
+    check("CollinearPoints({{0, 0}, {1, 1}, {2, 2}, {3, 3}})", "True");
+    check("CollinearPoints({{0, 0}, {1, 1}, {2, 2}, {3, 4}})", "False");
+    check("CollinearPoints({{0, 0, 0}, {1, 2, 3}, {2, 4, 6}, {-1, -2, -3}})", "True");
+    check("CollinearPoints({{1, 2, 3}, {2, 4, 6}, {3, 6, 10}})", "False");
+    check("CollinearPoints({{0, 0}, {1/2, 1}, {1, 2}})", "True");
+    check("CollinearPoints({{0., 0.}, {1., 1.}, {2., 2.0000000001}})", "False");
+    check("CollinearPoints({{5, 5}})", "True");
+    check("CollinearPoints({{0, 0}, {1, 1}})", "True");
+    check("CollinearPoints({{1, 1}, {1, 1}, {1, 1}})", "True");
+
+    // a repeated point must not hide a bend in the point list
+    check("CollinearPoints({{0, 0}, {1, 0}, {1, 0}, {0, 1}})", "False");
+    check("CollinearPoints({{0, 0, 0}, {0, 0, 0}, {1, 2, 3}, {5, 0, 0}})", "False");
+    // identical points don't define a line
+    check("CollinearPoints({{1, 1, 1}, {1, 1, 1}, {2, 5, 7}})", "True");
   }
 
   @Test
@@ -377,8 +395,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("CoplanarPoints( {{0,-1,-1}, {4,5,1}, {3,9,4}, {-4,4,3}} )", //
         "False");
+    // all points are tested against the plane through the first three points
     check("CoplanarPoints({{1, a, 1}, {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c}})", //
-        "(1-a)*(-2+a)==0&&(-1+a)*(-5+3*b-c)==0");
+        "(1-a)*(-2+a)==0&&(1-a)*(-2+a)*(-1+c)==0");
     check("CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c} })", //
         "(-1+a)*(-5+3*b-c)==0");
     check("CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {a, b, c}, {2, 3, 4}})", //
@@ -391,6 +410,25 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("CoplanarPoints( {{1,2}, {3,4}, {a,b,r}, {c,d}})", //
         "CoplanarPoints({{1,2},{3,4},{a,b,r},{c,d}})");
+
+    check("CoplanarPoints({{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}})", "True");
+    check("CoplanarPoints({{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", "False");
+    check("CoplanarPoints({{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 1}})", "False");
+    check("CoplanarPoints({{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {2, 3, 0}, {-1, 5, 0}})", "True");
+    check("CoplanarPoints({{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {2, 3, 0}, {-1, 5, 1}})", "False");
+    check("CoplanarPoints({{0, 0, 0}, {1/2, 0, 0}, {0, 1/3, 0}, {1, 1, 0}})", "True");
+    check("CoplanarPoints({{0., 0., 0.}, {1., 0., 0.}, {0., 1., 0.}, {1., 1., 0.0000000001}})",
+        "False");
+    check("CoplanarPoints({{0, 0, 0}, {1, 2, 3}, {4, 5, 6}})", "True");
+    check("CoplanarPoints({{1, 2}, {3, 4}, {5, 6}, {7, 8}})", "True");
+
+    // a repeated point must not hide a point outside of the plane
+    check("CoplanarPoints({{0, 0, 0}, {1, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", "False");
+    // points on one line don't define a plane
+    check("CoplanarPoints({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {1, 2, 3}})", "True");
+    check("CoplanarPoints({{0, 0, 0}, {1, 0, 0}, {2, 0, 0}, {3, 0, 0}})", "True");
+    // an empty list of points stays unevaluated
+    check("CoplanarPoints({})", "CoplanarPoints({})");
   }
 
   @Test

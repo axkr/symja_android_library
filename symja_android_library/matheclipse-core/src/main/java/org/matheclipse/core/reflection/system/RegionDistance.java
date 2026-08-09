@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -51,10 +52,40 @@ public class RegionDistance extends AbstractFunctionEvaluator {
             return SignedRegionDistance.boxDistance(reg, p, engine, false);
           case ID.Triangle:
             return SignedRegionDistance.triangleDistance(reg, p, engine, false);
+          case ID.HalfSpace:
+            return halfSpaceDistance(reg, p, engine);
+          case ID.StadiumShape:
+            return stadiumShapeDistance(reg, p, engine);
         }
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Points inside the half-space have distance <code>0</code>, outside points the perpendicular
+   * distance <code>(n.p - c)/Norm(n)</code> to the bounding hyperplane.
+   */
+  private IExpr halfSpaceDistance(IAST reg, IExpr p, EvalEngine engine) {
+    RegionPrimitives.HalfSpaceSpec spec = RegionPrimitives.parseHalfSpace(reg, engine);
+    if (spec == null || !p.isList() || p.argSize() != spec.normal.argSize()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Max(F.C0, //
+        F.Divide(F.Subtract(F.Dot(spec.normal, p), spec.offset), F.Norm(spec.normal))));
+  }
+
+  /** The distance to the axis segment, reduced by the radius. */
+  private IExpr stadiumShapeDistance(IAST reg, IExpr p, EvalEngine engine) {
+    RegionPrimitives.StadiumSpec spec = RegionPrimitives.parseStadiumShape(reg);
+    if (spec == null || !p.isList2()) {
+      return F.NIL;
+    }
+    IExpr distance = SignedRegionDistance.distanceToSegment(p, spec.p1, spec.p2, engine);
+    if (!distance.isPresent()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Max(F.C0, F.Subtract(distance, spec.radius)));
   }
 
   private IExpr pointDistance(IAST reg, IExpr p, EvalEngine engine) {

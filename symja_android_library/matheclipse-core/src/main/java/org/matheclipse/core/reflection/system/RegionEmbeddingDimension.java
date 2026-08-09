@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -30,6 +31,10 @@ public class RegionEmbeddingDimension extends AbstractFunctionEvaluator {
     if (reg.isAST()) {
       IAST ast = (IAST) reg;
       IExpr head = ast.head();
+      if (MeshFunctions.isMeshRegion(reg)) {
+        // a mesh region is full dimensional
+        return MeshFunctions.embeddingDimension((IAST) reg);
+      }
       if (head.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) head).ordinal()) {
           case ID.Point:
@@ -84,6 +89,42 @@ public class RegionEmbeddingDimension extends AbstractFunctionEvaluator {
             }
             if (ast.arg1().isList()) {
               return firstVectorSize(ast.arg1());
+            }
+            return -1;
+          case ID.Tetrahedron:
+          case ID.Cube:
+          case ID.Octahedron:
+          case ID.Dodecahedron:
+          case ID.Icosahedron:
+          case ID.Torus:
+          case ID.FilledTorus:
+          case ID.SphericalShell:
+            return 3;
+          case ID.CapsuleShape:
+            if (ast.argSize() == 0) {
+              return 3;
+            }
+            return firstVectorSize(ast.arg1());
+          case ID.Parallelogram:
+          case ID.HalfPlane:
+          case ID.InfinitePlane:
+          case ID.StadiumShape:
+            if (ast.argSize() == 0) {
+              return 2;
+            }
+            return firstVectorSize(ast.arg1());
+          case ID.EmptyRegion:
+            // EmptyRegion(n) is the empty subset of the n-dimensional space
+            return ast.argSize() == 1 ? ast.arg1().toIntDefault(-1) : -1;
+          case ID.HalfSpace:
+            // HalfSpace(normalVector, c)
+            if (ast.argSize() >= 1 && ast.arg1().isList()) {
+              return ast.arg1().argSize();
+            }
+            return -1;
+          case ID.DiskSegment:
+            if (ast.argSize() == 3 && ast.arg1().isList()) {
+              return ast.arg1().argSize();
             }
             return -1;
         }

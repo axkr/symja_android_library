@@ -254,6 +254,9 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.PermutationProduct());
       S.Permutations.setEvaluator(new org.matheclipse.core.reflection.system.Permutations());
       S.PiecewiseExpand.setEvaluator(new org.matheclipse.core.reflection.system.PiecewiseExpand());
+      S.PolygonAngle.setEvaluator(new org.matheclipse.core.reflection.system.PolygonAngle());
+      S.PolygonCoordinates
+          .setEvaluator(new org.matheclipse.core.reflection.system.PolygonCoordinates());
       S.PolynomialReduce
           .setEvaluator(new org.matheclipse.core.reflection.system.PolynomialReduce());
       S.PositionIndex.setEvaluator(new org.matheclipse.core.reflection.system.PositionIndex());
@@ -272,6 +275,12 @@ public final class FunctionDefinitions {
       S.RangeSpace.setEvaluator(new org.matheclipse.core.reflection.system.RangeSpace());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
+      S.BoundedRegionQ.setEvaluator(new org.matheclipse.core.reflection.system.BoundedRegionQ());
+      S.MomentOfInertia.setEvaluator(new org.matheclipse.core.reflection.system.MomentOfInertia());
+      S.PlanarAngle.setEvaluator(new org.matheclipse.core.reflection.system.PlanarAngle());
+      S.RegionEqual.setEvaluator(new org.matheclipse.core.reflection.system.RegionEqual());
+      S.RegionMoment.setEvaluator(new org.matheclipse.core.reflection.system.RegionMoment());
+      S.RegionQ.setEvaluator(new org.matheclipse.core.reflection.system.RegionQ());
       S.RegionBounds.setEvaluator(new org.matheclipse.core.reflection.system.RegionBounds());
       S.RegionCentroid.setEvaluator(new org.matheclipse.core.reflection.system.RegionCentroid());
       S.RegionDimension.setEvaluator(new org.matheclipse.core.reflection.system.RegionDimension());
@@ -298,6 +307,7 @@ public final class FunctionDefinitions {
       S.SpectrogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.SpectrogramArray());
       S.Subgraph.setEvaluator(new org.matheclipse.core.reflection.system.Subgraph());
+      S.SurfaceArea.setEvaluator(new org.matheclipse.core.reflection.system.SurfaceArea());
       S.Subsets.setEvaluator(new org.matheclipse.core.reflection.system.Subsets());
       S.SudokuSolve.setEvaluator(new org.matheclipse.core.reflection.system.SudokuSolve());
       S.Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
@@ -315,6 +325,10 @@ public final class FunctionDefinitions {
       S.TreeGraphQ.setEvaluator(new org.matheclipse.core.reflection.system.TreeGraphQ());
       S.TreePlot.setEvaluator(new org.matheclipse.core.reflection.system.TreePlot());
       S.TriangleCenter.setEvaluator(new org.matheclipse.core.reflection.system.TriangleCenter());
+      S.TriangleConstruct
+          .setEvaluator(new org.matheclipse.core.reflection.system.TriangleConstruct());
+      S.TriangleMeasurement
+          .setEvaluator(new org.matheclipse.core.reflection.system.TriangleMeasurement());
       S.TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
       S.TrigFactor.setEvaluator(new org.matheclipse.core.reflection.system.TrigFactor());
       S.TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
@@ -457,6 +471,7 @@ public final class FunctionDefinitions {
     CompilerFunctions.initialize();
     JavaFunctions.initialize();
     SidesFunctions.initialize();
+    MeshFunctions.initialize();
     ComputationalGeometryFunctions.initialize();
     PiecewiseFunctions.initialize();
     QuantumPhysicsFunctions.initialize();

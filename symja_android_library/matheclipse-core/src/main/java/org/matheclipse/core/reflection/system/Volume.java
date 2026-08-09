@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -19,6 +21,11 @@ public class Volume extends AbstractFunctionEvaluator {
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
     }
+    arg1 = MeshFunctions.normalizeRegion(arg1);
+    if (MeshFunctions.isMeshRegion(arg1)
+        && MeshFunctions.embeddingDimension((IAST) arg1) == 3) {
+      return MeshFunctions.volume3D((IAST) arg1, engine);
+    }
 
     if (arg1.isAST()) {
       IAST reg = (IAST) arg1;
@@ -35,18 +42,43 @@ public class Volume extends AbstractFunctionEvaluator {
             return ball(reg, engine);
           case ID.Ellipsoid:
             return ellipsoid(reg, engine);
-          case ID.Tetrahedron:
           case ID.Simplex:
             return simplex(reg, engine);
+          case ID.Tetrahedron:
+            if (RegionPrimitives.isCornerPointsForm(reg)) {
+              return simplex(reg, engine);
+            }
+            return platonicSolid(reg, engine);
+          case ID.Cube:
+          case ID.Octahedron:
+          case ID.Dodecahedron:
+          case ID.Icosahedron:
+            return platonicSolid(reg, engine);
           case ID.Parallelepiped:
             return parallelepiped(reg, engine);
+          case ID.SphericalShell:
+            return RegionPrimitives.sphericalShellVolume(reg, engine);
+          case ID.CapsuleShape:
+            return RegionPrimitives.capsuleShapeVolume(reg, engine);
+          case ID.HalfSpace:
+            return unboundedVolume(reg, engine);
+          case ID.Torus:
+          case ID.FilledTorus:
+            if (reg.head() == S.FilledTorus) {
+              return S.RegionMeasure.funEval(engine, reg);
+            }
+            // a Torus is a 2D surface; its 3-volume is Undefined
+            return S.Undefined;
           case ID.Point:
           case ID.Line:
           case ID.Circle:
           case ID.Disk:
+          case ID.DiskSegment:
           case ID.Rectangle:
           case ID.Triangle:
           case ID.Polygon:
+          case ID.Parallelogram:
+          case ID.StadiumShape:
           case ID.Sphere: // Sphere is a 2D surface; its 3-volume is Undefined
             return S.Undefined;
         }
@@ -158,6 +190,27 @@ public class Volume extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * An unbounded region has infinite volume, but only if it is three dimensional - otherwise the
+   * three dimensional volume is <code>Undefined</code>.
+   */
+  private IExpr unboundedVolume(IAST reg, EvalEngine engine) {
+    int dim = RegionDimension.getRegionDimension(reg);
+    if (dim < 0) {
+      return F.NIL;
+    }
+    return dim == 3 ? F.CInfinity : S.Undefined;
+  }
+
+  private IExpr platonicSolid(IAST reg, EvalEngine engine) {
+    RegionPrimitives.SolidSpec spec = RegionPrimitives.parsePlatonicSolid(reg);
+    if (spec == null) {
+      return F.NIL;
+    }
+    return RegionPrimitives.platonicVolume(((IBuiltInSymbol) reg.head()).ordinal(), spec.edge,
+        engine);
   }
 
   private IExpr parallelepiped(IAST reg, EvalEngine engine) {

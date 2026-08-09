@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -21,6 +23,50 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
     }
+    arg1 = MeshFunctions.normalizeRegion(arg1);
+    if (MeshFunctions.isMeshRegion(arg1)) {
+      int embeddingDimension = MeshFunctions.embeddingDimension((IAST) arg1);
+      if (embeddingDimension == 3) {
+        return dimensionalMeasure(MeshFunctions.volume3D((IAST) arg1, engine), 3, ast, engine);
+      }
+      if (embeddingDimension == 2) {
+        return dimensionalMeasure(MeshFunctions.area2D((IAST) arg1, engine), 2, ast, engine);
+      }
+    }
+    if (ast.isAST2()) {
+      int regionDimension = RegionDimension.getRegionDimension(arg1);
+      if (regionDimension < 0) {
+        return F.NIL;
+      }
+      IExpr measure = evaluateMeasure(arg1, engine);
+      return dimensionalMeasure(measure, regionDimension, ast, engine);
+    }
+    return evaluateMeasure(arg1, engine);
+  }
+
+  /**
+   * <code>RegionMeasure(region, d)</code> asks for the <code>d</code>-dimensional measure: below
+   * the dimension of the region it is infinite, above it the region is a null set.
+   */
+  private static IExpr dimensionalMeasure(IExpr measure, int regionDimension, IAST ast,
+      EvalEngine engine) {
+    if (!ast.isAST2()) {
+      return measure;
+    }
+    int dimension = ast.arg2().toIntDefault();
+    if (dimension < 0) {
+      return F.NIL;
+    }
+    if (dimension < regionDimension) {
+      return F.CInfinity;
+    }
+    if (dimension > regionDimension) {
+      return F.C0;
+    }
+    return measure;
+  }
+
+  private IExpr evaluateMeasure(IExpr arg1, EvalEngine engine) {
 
     if (arg1.isAST()) {
       IAST reg = (IAST) arg1;
@@ -56,10 +102,41 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
           case ID.Cone:
             return coneMeasure(reg, engine);
           case ID.Simplex:
-          case ID.Tetrahedron:
             return simplexMeasure(reg, engine);
+          case ID.Tetrahedron:
+            if (RegionPrimitives.isCornerPointsForm(reg)) {
+              return simplexMeasure(reg, engine);
+            }
+            return platonicSolidMeasure(reg, engine);
+          case ID.Cube:
+          case ID.Octahedron:
+          case ID.Dodecahedron:
+          case ID.Icosahedron:
+            return platonicSolidMeasure(reg, engine);
           case ID.Parallelepiped:
             return parallelepipedMeasure(reg, engine);
+          case ID.Torus:
+          case ID.FilledTorus:
+            return torusMeasure(reg, engine);
+          case ID.Parallelogram:
+            return parallelogramMeasure(reg, engine);
+          case ID.HalfPlane:
+          case ID.InfinitePlane:
+          case ID.InfiniteLine:
+          case ID.HalfLine:
+            return F.CInfinity;
+          case ID.HalfSpace:
+            return RegionPrimitives.parseHalfSpace(reg, engine) == null ? F.NIL : F.CInfinity;
+          case ID.SphericalShell:
+            return sphericalShellMeasure(reg, engine);
+          case ID.CapsuleShape:
+            return capsuleShapeMeasure(reg, engine);
+          case ID.StadiumShape:
+          case ID.DiskSegment:
+            // the measure of a two dimensional region is its area
+            return S.Area.funEval(engine, reg);
+          case ID.EmptyRegion:
+            return reg.argSize() == 1 ? F.C0 : F.NIL;
         }
       }
     }
@@ -276,6 +353,49 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * The surface area <code>4*Pi^2*R*r</code> of a <code>Torus</code> and the volume
+   * <code>2*Pi^2*R*r^2</code> of a <code>FilledTorus</code>.
+   */
+  private IExpr torusMeasure(IAST reg, EvalEngine engine) {
+    RegionPrimitives.TorusSpec spec = RegionPrimitives.parseTorus(reg, engine);
+    if (spec == null) {
+      return F.NIL;
+    }
+    if (reg.head() == S.FilledTorus) {
+      return engine.evaluate(
+          F.Times(F.C2, F.Sqr(S.Pi), spec.major, F.Sqr(spec.minor)));
+    }
+    return engine.evaluate(F.Times(F.C4, F.Sqr(S.Pi), spec.major, spec.minor));
+  }
+
+  /** The measure of a full dimensional shell or capsule is its volume. */
+  private IExpr sphericalShellMeasure(IAST reg, EvalEngine engine) {
+    return RegionPrimitives.sphericalShellVolume(reg, engine);
+  }
+
+  private IExpr capsuleShapeMeasure(IAST reg, EvalEngine engine) {
+    return RegionPrimitives.capsuleShapeVolume(reg, engine);
+  }
+
+  private IExpr parallelogramMeasure(IAST reg, EvalEngine engine) {
+    RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(reg);
+    if (spec == null) {
+      return F.NIL;
+    }
+    return RegionPrimitives.parallelogramArea(spec, engine);
+  }
+
+  /** The measure of a full dimensional platonic solid is its volume. */
+  private IExpr platonicSolidMeasure(IAST reg, EvalEngine engine) {
+    RegionPrimitives.SolidSpec spec = RegionPrimitives.parsePlatonicSolid(reg);
+    if (spec == null) {
+      return F.NIL;
+    }
+    return RegionPrimitives.platonicVolume(((IBuiltInSymbol) reg.head()).ordinal(), spec.edge,
+        engine);
+  }
+
   private IExpr parallelepipedMeasure(IAST reg, EvalEngine engine) {
     if (reg.argSize() == 2 && reg.arg2().isList()) {
       IAST vecs = (IAST) reg.arg2();
@@ -287,6 +407,6 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_1;
+    return ARGS_1_2;
   }
 }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -30,6 +31,10 @@ public class RegionDimension extends AbstractFunctionEvaluator {
     if (reg.isAST()) {
       IAST ast = (IAST) reg;
       IExpr head = ast.head();
+      if (MeshFunctions.isMeshRegion(reg)) {
+        // a mesh region is full dimensional
+        return MeshFunctions.embeddingDimension((IAST) reg);
+      }
       if (head.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) head).ordinal()) {
           case ID.Point:
@@ -44,9 +49,29 @@ public class RegionDimension extends AbstractFunctionEvaluator {
           case ID.Disk:
           case ID.Rectangle:
           case ID.Annulus:
+          case ID.Torus:
+          case ID.Parallelogram:
+          case ID.HalfPlane:
+          case ID.InfinitePlane:
+          case ID.StadiumShape:
             return 2;
+          case ID.DiskSegment:
+            // DiskSegment(c, r, {theta1, theta2})
+            return ast.argSize() == 3 ? 2 : -1;
+          case ID.FilledTorus:
+          case ID.SphericalShell:
+          case ID.CapsuleShape:
+            return 3;
+          case ID.HalfSpace:
+            // a half-space is full dimensional
+            return RegionEmbeddingDimension.getEmbeddingDimension(ast);
           case ID.Cylinder:
           case ID.Cone:
+          case ID.Tetrahedron:
+          case ID.Cube:
+          case ID.Octahedron:
+          case ID.Dodecahedron:
+          case ID.Icosahedron:
             return 3;
           case ID.Sphere: {
             // Sphere is the (n-1)-dimensional surface of an n-ball

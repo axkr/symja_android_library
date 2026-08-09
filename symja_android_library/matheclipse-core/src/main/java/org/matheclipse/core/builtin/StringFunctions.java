@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
@@ -3126,15 +3127,45 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        return toStringForm(ast.arg1(), ast.arg2(), engine);
+      }
       if (ast.arg1().isString()) {
         return ast.arg1();
       }
       return F.stringx(IStringX.inputForm(ast.arg1()));
     }
 
+    /**
+     * <code>ToString(expr, form)</code> gives the string which <code>form(expr)</code> prints.
+     *
+     * @return {@link F#NIL} if <code>form</code> isn't a supported output form
+     */
+    private static IExpr toStringForm(IExpr expr, IExpr form, EvalEngine engine) {
+      if (form.isBuiltInSymbol()) {
+        switch (((IBuiltInSymbol) form).ordinal()) {
+          case ID.InputForm:
+          case ID.OutputForm:
+          case ID.FullForm:
+          case ID.TeXForm:
+          case ID.MathMLForm:
+          case ID.JavaForm:
+          case ID.HoldForm:
+          case ID.StandardForm:
+          case ID.TraditionalForm:
+            IExpr result = engine.evaluate(F.unaryAST1(form, expr));
+            if (result.isString()) {
+              return result;
+            }
+            return F.stringx(IStringX.inputForm(result));
+        }
+      }
+      return F.NIL;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 

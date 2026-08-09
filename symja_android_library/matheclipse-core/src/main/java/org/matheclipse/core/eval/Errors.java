@@ -393,6 +393,7 @@ public class Errors {
       "psl1", "Position specification `1` in `2` is not applicable.", //
       "pspec", "Part specification `1` is neither an integer nor a list of integer.", //
       "pts", "`1` should be a non-empty list of points.", //
+      "mcell", "`1` is not a valid mesh cell specification.", //
       "ptype",
       "The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater equal 1 for p-norms, or \"Frobenius\" for matrix norms.",
       "range", "Range specification in `1` does not have appropriate bounds.", //

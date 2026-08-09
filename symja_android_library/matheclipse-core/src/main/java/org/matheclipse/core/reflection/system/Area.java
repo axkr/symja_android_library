@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -14,9 +16,13 @@ public class Area extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
+    IExpr arg1 = MeshFunctions.normalizeRegion(ast.arg1());
+    if (MeshFunctions.isMeshRegion(arg1)
+        && MeshFunctions.embeddingDimension((IAST) arg1) == 2) {
+      return MeshFunctions.area2D((IAST) arg1, engine);
+    }
     if (arg1.isAST() && arg1.isBuiltInFunction()) {
-      IAST geoForm = (IAST) ast.arg1();
+      IAST geoForm = (IAST) arg1;
       int headID = arg1.headID();
       if (headID >= 0) {
         switch (headID) {
@@ -36,10 +42,63 @@ public class Area extends AbstractEvaluator {
             return regularPolygon(geoForm, engine);
           case ID.Sphere:
             return sphere(geoForm, engine);
+          case ID.DiskSegment:
+            return diskSegment(geoForm, engine);
+          case ID.StadiumShape:
+            return stadiumShape(geoForm, engine);
+          case ID.Parallelogram: {
+            RegionPrimitives.ParallelogramSpec spec =
+                RegionPrimitives.parseParallelogram(geoForm);
+            return spec == null ? F.NIL : RegionPrimitives.parallelogramArea(spec, engine);
+          }
+          case ID.HalfPlane:
+          case ID.InfinitePlane:
+          case ID.HalfSpace:
+            return unboundedArea(geoForm, engine);
         }
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The area <code>rx*ry*(theta - Sin(theta))/2</code> which the chord cuts off the disk. For an
+   * angle running backwards the segment is not defined.
+   */
+  private static IExpr diskSegment(IAST geoForm, EvalEngine engine) {
+    RegionPrimitives.DiskSegmentSpec spec = RegionPrimitives.parseDiskSegment(geoForm, engine);
+    if (spec == null) {
+      return F.NIL;
+    }
+    if (spec.angle.isNegativeResult()) {
+      return S.Undefined;
+    }
+    return engine.evaluate(F.Times(F.C1D2, spec.rx, spec.ry, //
+        F.Subtract(spec.angle, F.Sin(spec.angle))));
+  }
+
+  /** The rectangle <code>2*r*d</code> plus the two semicircular caps <code>Pi*r^2</code>. */
+  private static IExpr stadiumShape(IAST geoForm, EvalEngine engine) {
+    RegionPrimitives.StadiumSpec spec = RegionPrimitives.parseStadiumShape(geoForm);
+    if (spec == null) {
+      return F.NIL;
+    }
+    IExpr d = RegionPrimitives.distance(spec.p1, spec.p2, engine);
+    return engine.evaluate(F.Plus(//
+        F.Times(F.C2, spec.radius, d), //
+        F.Times(S.Pi, F.Sqr(spec.radius))));
+  }
+
+  /**
+   * An unbounded region has infinite area, but only if it is two dimensional - otherwise the two
+   * dimensional area is <code>Undefined</code>.
+   */
+  private static IExpr unboundedArea(IAST geoForm, EvalEngine engine) {
+    int dim = RegionDimension.getRegionDimension(geoForm);
+    if (dim < 0) {
+      return F.NIL;
+    }
+    return dim == 2 ? F.CInfinity : S.Undefined;
   }
 
   private static IExpr disk(IAST geoForm) {

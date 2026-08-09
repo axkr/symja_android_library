@@ -1,23 +1,28 @@
 package org.matheclipse.core.builtin;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Stack;
-import org.matheclipse.core.convert.Convert;
+import java.util.Map;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.tensor.opt.qh3.ConvexHull3D;
-import org.matheclipse.core.tensor.opt.qh3.Vector3d;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class ComputationalGeometryFunctions {
@@ -34,7 +39,16 @@ public class ComputationalGeometryFunctions {
       S.SSSTriangle.setEvaluator(new SSSTriangle());
 
 
+      S.ConvexHull.setEvaluator(new ConvexHull());
       S.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
+      S.ConvexHullRegion.setEvaluator(new ConvexHullRegion());
+      S.ConvexRegionQ.setEvaluator(new ConvexRegionQ());
+      S.RegionBoundary.setEvaluator(new RegionBoundary());
+      S.CircularArcThrough.setEvaluator(new CircularArcThrough());
+      S.CapsuleShape.setEvaluator(new CapsuleShape());
+      S.HalfSpace.setEvaluator(new HalfSpace());
+      S.SphericalShell.setEvaluator(new SphericalShell());
+      S.StadiumShape.setEvaluator(new StadiumShape());
       S.CollinearPoints.setEvaluator(new CollinearPoints());
       S.CoordinateBoundingBox.setEvaluator(new CoordinateBoundingBox());
       S.CoordinateBounds.setEvaluator(new CoordinateBounds());
@@ -126,6 +140,14 @@ public class ComputationalGeometryFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
+      if (a.isNegativeResult() || a.isZero()) {
+        // The triangle side `1`should be a positive number.
+        return Errors.printMessage(S.SASTriangle, "nps", F.List(a), engine);
+      }
+      if (c.isNegativeResult() || c.isZero()) {
+        // The triangle side `1`should be a positive number.
+        return Errors.printMessage(S.SASTriangle, "nps", F.List(c), engine);
+      }
       if (b.greaterEqualThan(S.Pi).isTrue()) {
         // The angle `1` should be a positive number less than `2`
         return Errors.printMessage(S.SASTriangle, "npa", F.List(b, S.Pi), engine);
@@ -153,6 +175,98 @@ public class ComputationalGeometryFunctions {
       return ARGS_3_3;
     }
 
+  }
+
+  /**
+   * <code>CapsuleShape()</code> and <code>CapsuleShape(r)</code> evaluate to the standard form
+   * <code>CapsuleShape({p1, p2}, r)</code>.
+   */
+  private static class CapsuleShape extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return RegionPrimitives.capsuleShapeStandardForm(ast);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+  }
+
+  /**
+   * <code>HalfSpace(n)</code> evaluates to <code>HalfSpace(n, 0)</code>, the points <code>x</code>
+   * with <code>n.x &lt;= 0</code>.
+   */
+  private static class HalfSpace extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 1 && ast.arg1().isList() && !ast.arg1().isListOfLists()) {
+        return F.binaryAST2(S.HalfSpace, ast.arg1(), F.C0);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>SphericalShell()</code>, <code>SphericalShell(r)</code> and
+   * <code>SphericalShell({rInner, rOuter})</code> evaluate to the standard form
+   * <code>SphericalShell(c, {rInner, rOuter})</code>.
+   */
+  private static class SphericalShell extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return RegionPrimitives.sphericalShellStandardForm(ast);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_3;
+    }
+  }
+
+  /**
+   * <code>StadiumShape()</code> and <code>StadiumShape(r)</code> evaluate to the standard form
+   * <code>StadiumShape({p1, p2}, r)</code>.
+   */
+  private static class StadiumShape extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return RegionPrimitives.stadiumShapeStandardForm(ast);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
   }
 
   private static class SSSTriangle extends AbstractEvaluator {
@@ -197,139 +311,909 @@ public class ComputationalGeometryFunctions {
 
   }
 
-  private static class ConvexHullMesh extends AbstractEvaluator {
-    /**
-     * Three points are a counter-clockwise turn (ccw) if <code>ccw > 0</code>, clockwise if
-     * <code>ccw < 0</code>, and co-linear if <code>ccw = 0</code> because <code>ccw</code> is a
-     * determinant that gives twice the signed area of the triangle formed by p1, p2 and p3. (from
-     * Wikipedia) * @param p1
-     * 
-     * @param p2
-     * @param p3
-     * @return Det2D[p2 - p1, p3 - p1]
-     */
-    private static IExpr counterClockwise(IAST p1, IAST p2, IAST p3) {
-      IAST v1 = (IAST) F.eval(F.Subtract(p2, p1));
-      IAST v2 = (IAST) F.eval(F.Subtract(p3, p1));
-      // see LinearAlgebra.determinant2x2();
-      return F.eval(v1.get(1).times(v2.get(2)).subtract(v1.get(2).times(v2.get(1))));
+  /**
+   * Twice the signed area of the triangle <code>(p1, p2, p3)</code>: the three points are a
+   * counter-clockwise turn if the result is positive, a clockwise turn if it's negative and
+   * co-linear if it's zero.
+   *
+   * @return <code>Det2D[p2 - p1, p3 - p1]</code>
+   */
+  private static IExpr counterClockwise(IAST p1, IAST p2, IAST p3) {
+    IExpr ux = F.eval(p2.arg1().subtract(p1.arg1()));
+    IExpr uy = F.eval(p2.arg2().subtract(p1.arg2()));
+    IExpr vx = F.eval(p3.arg1().subtract(p1.arg1()));
+    IExpr vy = F.eval(p3.arg2().subtract(p1.arg2()));
+    return F.eval(ux.times(vy).subtract(uy.times(vx)));
+  }
+
+  /** The squared euclidean distance between two 2D points. */
+  private static IExpr squaredDistance(IAST p1, IAST p2) {
+    IExpr dx = F.eval(p2.arg1().subtract(p1.arg1()));
+    IExpr dy = F.eval(p2.arg2().subtract(p1.arg2()));
+    return F.eval(dx.times(dx).plus(dy.times(dy)));
+  }
+
+  /** The scalar product of the vectors <code>p2 - p1</code> and <code>p3 - p1</code>. */
+  private static IExpr scalarProduct(IAST p1, IAST p2, IAST p3) {
+    IExpr ux = F.eval(p2.arg1().subtract(p1.arg1()));
+    IExpr uy = F.eval(p2.arg2().subtract(p1.arg2()));
+    IExpr vx = F.eval(p3.arg1().subtract(p1.arg1()));
+    IExpr vy = F.eval(p3.arg2().subtract(p1.arg2()));
+    return F.eval(ux.times(vx).plus(uy.times(vy)));
+  }
+
+  /**
+   * The center of the circle through the given 2D points: the midpoint if the points define a
+   * diameter, otherwise the circumcenter of the first three points which aren't on one line.
+   *
+   * @param listOfPoints a list of 2D points
+   * @return {@link F#NIL} if the points don't define a circle
+   */
+  private static IAST circleCenter(IAST listOfPoints, EvalEngine engine) {
+    IntArrayList candidates = distinctPointIndices(listOfPoints);
+    if (candidates.size() < 2) {
+      return F.NIL;
+    }
+    IAST p1 = (IAST) listOfPoints.get(candidates.getInt(0));
+    IAST p2 = (IAST) listOfPoints.get(candidates.getInt(1));
+    if (candidates.size() == 2) {
+      // the two points define the diameter of the circle
+      return F.list(F.eval(F.C1D2.times(p1.arg1().plus(p2.arg1()))), //
+          F.eval(F.C1D2.times(p1.arg2().plus(p2.arg2()))));
+    }
+    for (int i = 2; i < candidates.size(); i++) {
+      IAST p3 = (IAST) listOfPoints.get(candidates.getInt(i));
+      if (!isPossibleZero(counterClockwise(p1, p2, p3), engine)) {
+        return circumcenter(p1, p2, p3);
+      }
+    }
+    // all points are on one line
+    return F.NIL;
+  }
+
+  /** The center of the circle through the three 2D points <code>p1, p2, p3</code>. */
+  private static IAST circumcenter(IAST p1, IAST p2, IAST p3) {
+    IExpr x1 = p1.arg1();
+    IExpr y1 = p1.arg2();
+    IExpr x2 = p2.arg1();
+    IExpr y2 = p2.arg2();
+    IExpr x3 = p3.arg1();
+    IExpr y3 = p3.arg2();
+    // the squared distances of the points from the origin
+    IExpr n1 = x1.times(x1).plus(y1.times(y1));
+    IExpr n2 = x2.times(x2).plus(y2.times(y2));
+    IExpr n3 = x3.times(x3).plus(y3.times(y3));
+    // expand the coordinates, so that they cancel out if the center is a simple point
+    IExpr d = F.eval(F.Expand(F.C2.times(counterClockwise(p1, p2, p3))));
+    IExpr cx = F.eval(F.Expand(n1.times(y2.subtract(y3)).plus(n2.times(y3.subtract(y1)))
+        .plus(n3.times(y1.subtract(y2)))));
+    IExpr cy = F.eval(F.Expand(n1.times(x3.subtract(x2)).plus(n2.times(x1.subtract(x3)))
+        .plus(n3.times(x2.subtract(x1)))));
+    return F.list(F.eval(cx.divide(d)), F.eval(cy.divide(d)));
+  }
+
+  /** Test if <code>expr</code> is zero, also if that requires a symbolic simplification. */
+  private static boolean isPossibleZero(IExpr expr, EvalEngine engine) {
+    if (expr.isZero()) {
+      return true;
+    }
+    if (expr.isNumber()) {
+      return false;
+    }
+    return S.PossibleZeroQ.of(engine, expr).isTrue();
+  }
+
+  /**
+   * Test if all elements of <code>listOfPoints</code> are points with the same number of
+   * coordinates, which must be <code>2</code> or <code>3</code>.
+   *
+   * @param listOfPoints a list of points
+   */
+  private static boolean isPointList(IAST listOfPoints) {
+    int dimension = -1;
+    for (int i = 1; i < listOfPoints.size(); i++) {
+      IExpr point = listOfPoints.get(i);
+      if (!point.isList2() && !point.isList3()) {
+        return false;
+      }
+      if (i == 1) {
+        dimension = ((IAST) point).argSize();
+      } else if (((IAST) point).argSize() != dimension) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Test if the three dimensional points <code>p1, p2, p3</code> are on one line, because the cross
+   * product of the vectors <code>p2-p1</code> and <code>p3-p1</code> is the zero vector.
+   */
+  private static boolean isCollinear3D(IAST p1, IAST p2, IAST p3) {
+    IExpr[] cross = crossProduct(difference(p2, p1), difference(p3, p1));
+    return cross[0].isZero() && cross[1].isZero() && cross[2].isZero();
+  }
+
+  /** Test if every coordinate of every point is a real number. */
+  private static boolean isRealPointList(IAST listOfPoints) {
+    for (int i = 1; i < listOfPoints.size(); i++) {
+      IAST point = (IAST) listOfPoints.get(i);
+      for (int j = 1; j < point.size(); j++) {
+        if (!point.get(j).isReal()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** Test if every coordinate of every point is an exact number. */
+  private static boolean isExactPointList(IAST listOfPoints) {
+    for (int i = 1; i < listOfPoints.size(); i++) {
+      IAST point = (IAST) listOfPoints.get(i);
+      for (int j = 1; j < point.size(); j++) {
+        if (!point.get(j).isExactNumber()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** The indices of the points which occur for the first time in <code>listOfPoints</code>. */
+  private static IntArrayList distinctPointIndices(IAST listOfPoints) {
+    Map<IExpr, Integer> distinct = new LinkedHashMap<IExpr, Integer>();
+    for (int i = 1; i < listOfPoints.size(); i++) {
+      distinct.putIfAbsent(listOfPoints.get(i), i);
+    }
+    return new IntArrayList(distinct.values());
+  }
+
+  /**
+   * The indices of the convex hull of a list of one dimensional points.
+   *
+   * @return the indices of the minimum and the maximum point or <code>null</code> if all points are
+   *         equal
+   */
+  private static int[] hullIndices1D(IAST listOfPoints) {
+    IntArrayList candidates = distinctPointIndices(listOfPoints);
+    if (candidates.size() < 2) {
+      return null;
+    }
+    int minimum = candidates.getInt(0);
+    int maximum = candidates.getInt(0);
+    for (int i = 1; i < candidates.size(); i++) {
+      int index = candidates.getInt(i);
+      IExpr coordinate = ((IAST) listOfPoints.get(index)).arg1();
+      if (coordinate.compareTo(((IAST) listOfPoints.get(minimum)).arg1()) < 0) {
+        minimum = index;
+      }
+      if (coordinate.compareTo(((IAST) listOfPoints.get(maximum)).arg1()) > 0) {
+        maximum = index;
+      }
+    }
+    return new int[] {minimum, maximum};
+  }
+
+  /**
+   * The convex hull of a list of two dimensional points with a Graham scan.
+   *
+   * @param listOfPoints a list of 2D points
+   * @param allPoints if <code>true</code> the points which lie on a hull edge are part of the
+   *        result, if <code>false</code> only the corners of the hull are returned
+   * @return the 1-based indices of the hull points in counter-clockwise order, or <code>null</code>
+   *         if the points aren't affinely independent (less than three distinct points or all
+   *         points co-linear)
+   */
+  public static int[] hullIndices2D(IAST listOfPoints, boolean allPoints) {
+    if (!isRealPointList(listOfPoints)) {
+      return null;
+    }
+    IntArrayList candidates = distinctPointIndices(listOfPoints);
+    if (candidates.size() < 3) {
+      return null;
+    }
+    // the point with minimal y coordinate (minimal x coordinate breaks a tie) is a hull point and
+    // every other point is seen from it under an angle in the range [0, Pi)
+    int pivotIndex = candidates.getInt(0);
+    IAST pivot = (IAST) listOfPoints.get(pivotIndex);
+    for (int i = 1; i < candidates.size(); i++) {
+      IAST point = (IAST) listOfPoints.get(candidates.getInt(i));
+      int cmp = point.arg2().compareTo(pivot.arg2());
+      if (cmp < 0 || (cmp == 0 && point.arg1().compareTo(pivot.arg1()) < 0)) {
+        pivotIndex = candidates.getInt(i);
+        pivot = point;
+      }
     }
 
-    private static final Comparator<IAST> MINY_MINX = new Comparator<IAST>() {
+    final IAST pivotPoint = pivot;
+    List<Integer> sorted = new ArrayList<Integer>(candidates.size());
+    for (int i = 0; i < candidates.size(); i++) {
+      if (candidates.getInt(i) != pivotIndex) {
+        sorted.add(candidates.getInt(i));
+      }
+    }
+    // sort by the polar angle around the pivot, the nearer point wins a tie
+    Collections.sort(sorted, new Comparator<Integer>() {
       @Override
-      public int compare(IAST p1, IAST p2) {
-        int cmp = p1.arg2().compareTo(p2.arg2());
-        return cmp != 0 ? cmp : p1.arg1().compareTo(p2.arg1());
+      public int compare(Integer index1, Integer index2) {
+        IAST point1 = (IAST) listOfPoints.get(index1);
+        IAST point2 = (IAST) listOfPoints.get(index2);
+        IExpr ccw = counterClockwise(pivotPoint, point1, point2);
+        if (ccw.isPositive()) {
+          return -1;
+        }
+        if (ccw.isNegative()) {
+          return 1;
+        }
+        return squaredDistance(pivotPoint, point1)
+            .compareTo(squaredDistance(pivotPoint, point2));
       }
-    };
+    });
 
-    /**
-     * The Java API recommends to use ArrayDeque instead of Stack. However, in the implementation of
-     * GrahamScan, we can't conveniently exchange Stack and ArrayDeque because ArrayDeque#stream()
-     * reverses the order. GrahamScan is used in several applications. No performance issues were
-     * reported so far.
-     */
-    public static IAST grahamScann2D(IAST ast, EvalEngine engine) {
-      if (ast.isEmpty()) {
-        return F.CEmptyList;
-      }
-      // list is permuted during computation of convex hull
-      List<IAST> list = Convert.toList(ast, x -> (IAST) x);
-      // VectorQ.requireLength(list.get(0), 2);
-      final IAST point0 = Collections.min(list, MINY_MINX);
-      Collections.sort(list, new Comparator<>() {
-        @Override
-        public int compare(IAST p1, IAST p2) {
-          IAST d10 = (IAST) F.eval(F.Subtract(p1, point0));
-          IAST d20 = (IAST) F.eval(F.Subtract(p2, point0));
-          double atan1 = d10.arg1().isZero() ? 0.0 : F.ArcTan(d10.arg1(), d10.arg2()).evalfNaN();
-          double atan2 = d20.arg1().isZero() ? 0.0 : F.ArcTan(d20.arg1(), d20.arg2()).evalfNaN();
-          if (Double.isNaN(atan1) || Double.isNaN(atan2)) {
-            // keep the ordering total when an angle isn't numeric
-            return MINY_MINX.compare(p1, p2);
-          }
-          int cmp = F.isEqual(atan1, atan2) ? 0 : atan1 < atan2 ? -1 : 1;
-          return cmp != 0 ? cmp : MINY_MINX.compare(p1, p2);
-        }
-      });
-      // ArrayDeque::stream is reverse of Stack::stream
-      Stack<IAST> stack = new Stack<>();
-      stack.push(point0);
-      int k1 = 1;
-      IAST point1 = F.NIL; // find point1 different from point0
-      for (IAST point : list.subList(k1, list.size())) {
-        if (!point0.equals(point)) { // should Chop.08 be used for consistency with chop below ?
-          point1 = point;
+    IntArrayList stack = new IntArrayList(sorted.size() + 1);
+    stack.add(pivotIndex);
+    for (int i = 0; i < sorted.size(); i++) {
+      int index = sorted.get(i);
+      IAST point = (IAST) listOfPoints.get(index);
+      while (stack.size() >= 2) {
+        IAST last = (IAST) listOfPoints.get(stack.getInt(stack.size() - 1));
+        IAST beforeLast = (IAST) listOfPoints.get(stack.getInt(stack.size() - 2));
+        if (counterClockwise(beforeLast, last, point).isPositive()) {
           break;
         }
-        ++k1;
+        stack.removeInt(stack.size() - 1);
       }
-      if (point1.isNIL()) {
-        return F.List(point0);
-      }
-      ++k1;
-      // find point not co-linear with point0 and point1
-      for (IAST point : list.subList(k1, list.size())) {
-        if (counterClockwise(point0, point1, point).isZero()) {
-          ++k1;
-        } else {
-          break;
-        }
-      }
-      stack.push(list.get(k1 - 1));
-      for (IAST point : list.subList(k1, list.size())) {
-        IAST top = stack.pop();
-        while (!stack.isEmpty()) {
-          IExpr ccw = counterClockwise(stack.peek(), top, point);
-          if (ccw.isPositive()) {
-            break;
-          }
-          top = stack.pop();
-        }
-        stack.push(top);
-        stack.push(point);
-      }
-      return F.ListAlloc(stack.stream());
+      stack.add(index);
     }
+    if (stack.size() < 3) {
+      // all points are co-linear - there's no two dimensional hull
+      return null;
+    }
+    if (allPoints) {
+      stack = insertEdgePoints(listOfPoints, stack, candidates);
+    }
+    return stack.toIntArray();
+  }
+
+  /**
+   * Insert the points which lie on a hull edge between the corners of the hull, ordered along the
+   * boundary.
+   */
+  private static IntArrayList insertEdgePoints(IAST listOfPoints, IntArrayList hull,
+      IntArrayList candidates) {
+    IntArrayList result = new IntArrayList(candidates.size());
+    for (int i = 0; i < hull.size(); i++) {
+      int fromIndex = hull.getInt(i);
+      int toIndex = hull.getInt(i + 1 == hull.size() ? 0 : i + 1);
+      IAST from = (IAST) listOfPoints.get(fromIndex);
+      IAST to = (IAST) listOfPoints.get(toIndex);
+      result.add(fromIndex);
+
+      List<Integer> onEdge = new ArrayList<Integer>();
+      IExpr edgeLength = squaredDistance(from, to);
+      for (int j = 0; j < candidates.size(); j++) {
+        int index = candidates.getInt(j);
+        if (hull.contains(index)) {
+          continue;
+        }
+        IAST point = (IAST) listOfPoints.get(index);
+        if (!counterClockwise(from, to, point).isZero()) {
+          continue;
+        }
+        IExpr position = scalarProduct(from, to, point);
+        if (position.isPositive() && position.compareTo(edgeLength) < 0) {
+          onEdge.add(index);
+        }
+      }
+      if (!onEdge.isEmpty()) {
+        final IAST edgeStart = from;
+        Collections.sort(onEdge, new Comparator<Integer>() {
+          @Override
+          public int compare(Integer index1, Integer index2) {
+            return squaredDistance(edgeStart, (IAST) listOfPoints.get(index1))
+                .compareTo(squaredDistance(edgeStart, (IAST) listOfPoints.get(index2)));
+          }
+        });
+        result.addAll(onEdge);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Build the <code>BoundaryMeshRegion</code> of a convex hull.
+   *
+   * <p>
+   * The hull vertices are listed in the order in which they appear in the input, the boundary cells
+   * index into that list. If any input coordinate is inexact all coordinates are converted to
+   * machine precision numbers, otherwise the exact coordinates are kept and the region carries
+   * <code>WorkingPrecision -&gt; Infinity</code>.
+   *
+   * @param listOfPoints the original input points
+   * @param vertexIndices the 1-based indices of the hull vertices, in ascending order
+   * @param cells the boundary cells, indexing into <code>vertexIndices</code>
+   */
+  private static IExpr boundaryMeshRegion(IAST listOfPoints, int[] vertexIndices, IAST cells,
+      EvalEngine engine) {
+    IASTAppendable coordinates = F.ListAlloc(vertexIndices.length);
+    for (int i = 0; i < vertexIndices.length; i++) {
+      coordinates.append(listOfPoints.get(vertexIndices[i]));
+    }
+    boolean exact = isExactPointList(listOfPoints);
+    IExpr vertices = exact ? coordinates : engine.evaluate(F.N(coordinates));
+
+    IASTAppendable result = F.ast(S.BoundaryMeshRegion, 4);
+    result.append(vertices);
+    result.append(cells);
+    result.append(
+        F.Rule(S.Method, F.list(F.Rule(F.stringx("SeparateBoundaries"), S.False))));
+    if (exact) {
+      result.append(F.Rule(S.WorkingPrecision, F.CInfinity));
+    }
+    return result;
+  }
+
+  /**
+   * Map the 1-based indices of the input points to the 1-based positions of the hull vertices.
+   *
+   * @param vertexIndices the hull vertex indices in ascending order
+   * @param numberOfPoints the number of input points
+   */
+  private static int[] positionsOfVertices(int[] vertexIndices, int numberOfPoints) {
+    int[] positions = new int[numberOfPoints + 1];
+    for (int i = 0; i < vertexIndices.length; i++) {
+      positions[vertexIndices[i]] = i + 1;
+    }
+    return positions;
+  }
+
+  /** The convex hull of a list of one dimensional points as a <code>BoundaryMeshRegion</code>. */
+  private static IExpr convexHullMesh1D(IAST listOfPoints, EvalEngine engine) {
+    int[] hull = hullIndices1D(listOfPoints);
+    if (hull == null) {
+      return F.NIL;
+    }
+    int[] vertexIndices = hull.clone();
+    Arrays.sort(vertexIndices);
+    int[] positions = positionsOfVertices(vertexIndices, listOfPoints.argSize());
+    IAST cells = F.list(F.Point(F.list(F.list(F.ZZ(positions[hull[0]])), //
+        F.list(F.ZZ(positions[hull[1]])))));
+    return boundaryMeshRegion(listOfPoints, vertexIndices, cells, engine);
+  }
+
+  /**
+   * The convex hull of a list of two dimensional points as a <code>BoundaryMeshRegion</code> with
+   * <code>Line</code> boundary cells. The boundary walk starts at the first hull vertex and runs
+   * counter-clockwise.
+   */
+  private static IExpr convexHullMesh2D(IAST listOfPoints, EvalEngine engine) {
+    int[] cycle = hullIndices2D(listOfPoints, false);
+    if (cycle == null) {
+      return F.NIL;
+    }
+    int[] vertexIndices = cycle.clone();
+    Arrays.sort(vertexIndices);
+    int[] positions = positionsOfVertices(vertexIndices, listOfPoints.argSize());
+
+    // rotate the counter-clockwise walk so that it starts at the first hull vertex
+    int start = 0;
+    for (int i = 0; i < cycle.length; i++) {
+      if (positions[cycle[i]] == 1) {
+        start = i;
+        break;
+      }
+    }
+    IASTAppendable edges = F.ListAlloc(cycle.length);
+    for (int i = 0; i < cycle.length; i++) {
+      int from = positions[cycle[(start + i) % cycle.length]];
+      int to = positions[cycle[(start + i + 1) % cycle.length]];
+      edges.append(F.list(F.ZZ(from), F.ZZ(to)));
+    }
+    return boundaryMeshRegion(listOfPoints, vertexIndices, F.list(F.Line(edges)), engine);
+  }
+
+  /**
+   * The faces of a three dimensional hull, renumbered to the positions of the hull vertices and
+   * brought into a canonical order: every face keeps its counter-clockwise orientation but starts
+   * at its smallest vertex, and the faces are sorted by their vertex indices.
+   *
+   * @param hullFaces the zero based faces as returned by {@link ConvexHull3D#getFaces()}
+   * @param vertexIndices the 1-based input index of every hull vertex
+   * @param positions maps an input index to the position of that vertex in the result
+   */
+  private static IAST canonicalFaces(int[][] hullFaces, int[] vertexIndices, int[] positions) {
+    int[][] faces = new int[hullFaces.length][];
+    for (int i = 0; i < hullFaces.length; i++) {
+      int[] hullFace = hullFaces[i];
+      int[] face = new int[hullFace.length];
+      int minimum = 0;
+      for (int j = 0; j < hullFace.length; j++) {
+        face[j] = positions[vertexIndices[hullFace[j]]];
+        if (face[j] < face[minimum]) {
+          minimum = j;
+        }
+      }
+      // rotate the face so that it starts at its smallest vertex
+      int[] rotated = new int[face.length];
+      for (int j = 0; j < face.length; j++) {
+        rotated[j] = face[(minimum + j) % face.length];
+      }
+      faces[i] = rotated;
+    }
+    Arrays.sort(faces, new Comparator<int[]>() {
+      @Override
+      public int compare(int[] face1, int[] face2) {
+        for (int i = 0; i < face1.length && i < face2.length; i++) {
+          if (face1[i] != face2[i]) {
+            return face1[i] < face2[i] ? -1 : 1;
+          }
+        }
+        return face1.length - face2.length;
+      }
+    });
+    IASTAppendable result = F.ListAlloc(faces.length);
+    for (int i = 0; i < faces.length; i++) {
+      IASTAppendable face = F.ListAlloc(faces[i].length);
+      for (int j = 0; j < faces[i].length; j++) {
+        face.append(F.ZZ(faces[i][j]));
+      }
+      result.append(face);
+    }
+    return result;
+  }
+
+  /**
+   * The convex hull of a list of three dimensional points as a <code>BoundaryMeshRegion</code> with
+   * <code>Polygon</code> boundary cells.
+   *
+   * <p>
+   * Co-planar facets are merged by the QuickHull algorithm, so a cube results in six quadrilaterals
+   * and not in twelve triangles. Every face is listed counter-clockwise seen from outside the hull
+   * and starts at its smallest vertex; the faces are sorted by their vertex indices.
+   */
+  private static IExpr convexHullMesh3D(IAST listOfPoints, EvalEngine engine) {
+    ConvexHull3D hull = new ConvexHull3D();
+    hull.build(listOfPoints);
+    int[] hullVertices = hull.getVertexPointIndices();
+    int[][] hullFaces = hull.getFaces();
+    if (hullVertices.length < 4 || hullFaces.length < 4) {
+      return F.NIL;
+    }
+    int[] vertexIndices = new int[hullVertices.length];
+    for (int i = 0; i < hullVertices.length; i++) {
+      vertexIndices[i] = hullVertices[i] + 1;
+    }
+    int[] sortedVertexIndices = vertexIndices.clone();
+    Arrays.sort(sortedVertexIndices);
+    int[] positions = positionsOfVertices(sortedVertexIndices, listOfPoints.argSize());
+
+    IAST polygons = canonicalFaces(hullFaces, vertexIndices, positions);
+    return boundaryMeshRegion(listOfPoints, sortedVertexIndices, F.list(F.Polygon(polygons)),
+        engine);
+  }
+
+  /**
+   * The two lexicographically extreme points of a set of co-linear points.
+   *
+   * @return the indices of the smallest and the largest point
+   */
+  private static int[] extremeIndices(IAST listOfPoints, IntArrayList candidates) {
+    int minimum = candidates.getInt(0);
+    int maximum = candidates.getInt(0);
+    for (int i = 1; i < candidates.size(); i++) {
+      int index = candidates.getInt(i);
+      if (comparePoints((IAST) listOfPoints.get(index), (IAST) listOfPoints.get(minimum)) < 0) {
+        minimum = index;
+      }
+      if (comparePoints((IAST) listOfPoints.get(index), (IAST) listOfPoints.get(maximum)) > 0) {
+        maximum = index;
+      }
+    }
+    return new int[] {minimum, maximum};
+  }
+
+  /** Compare two points coordinate by coordinate. */
+  private static int comparePoints(IAST point1, IAST point2) {
+    for (int i = 1; i < point1.size() && i < point2.size(); i++) {
+      int cmp = point1.get(i).compareTo(point2.get(i));
+      if (cmp != 0) {
+        return cmp;
+      }
+    }
+    return 0;
+  }
+
+  /**
+   * Project co-planar three dimensional points into the plane they span.
+   *
+   * @return a list of 2D points in the same order as the input, or {@link F#NIL} if the points
+   *         aren't co-planar or span less than a plane
+   */
+  private static IAST projectToPlane(IAST listOfPoints, IntArrayList candidates) {
+    if (candidates.size() < 3) {
+      return F.NIL;
+    }
+    IAST origin = (IAST) listOfPoints.get(candidates.getInt(0));
+    IExpr[] u = null;
+    IExpr[] w = null;
+    for (int i = 1; i < candidates.size(); i++) {
+      IExpr[] direction = difference((IAST) listOfPoints.get(candidates.getInt(i)), origin);
+      if (u == null) {
+        u = direction;
+        continue;
+      }
+      IExpr[] cross = crossProduct(u, direction);
+      if (!(cross[0].isZero() && cross[1].isZero() && cross[2].isZero())) {
+        w = direction;
+        break;
+      }
+    }
+    if (u == null || w == null) {
+      return F.NIL;
+    }
+    // Gram-Schmidt: the second basis vector is orthogonal to the first one
+    IExpr uu = F.eval(dotProduct(u, u));
+    IExpr wu = F.eval(dotProduct(w, u));
+    IExpr[] e2 = new IExpr[3];
+    for (int i = 0; i < 3; i++) {
+      e2[i] = F.eval(w[i].subtract(F.Divide(wu, uu).times(u[i])));
+    }
+    IASTAppendable result = F.ListAlloc(listOfPoints.argSize());
+    for (int i = 1; i < listOfPoints.size(); i++) {
+      IExpr[] direction = difference((IAST) listOfPoints.get(i), origin);
+      result.append(F.list(F.eval(dotProduct(direction, u)), F.eval(dotProduct(direction, e2))));
+    }
+    return result;
+  }
+
+  private static IExpr[] difference(IAST point, IAST origin) {
+    return new IExpr[] {F.eval(point.arg1().subtract(origin.arg1())), //
+        F.eval(point.arg2().subtract(origin.arg2())), //
+        F.eval(point.arg3().subtract(origin.arg3()))};
+  }
+
+  private static IExpr[] crossProduct(IExpr[] u, IExpr[] v) {
+    return new IExpr[] {F.eval(u[1].times(v[2]).subtract(u[2].times(v[1]))), //
+        F.eval(u[2].times(v[0]).subtract(u[0].times(v[2]))), //
+        F.eval(u[0].times(v[1]).subtract(u[1].times(v[0])))};
+  }
+
+  private static IExpr dotProduct(IExpr[] u, IExpr[] v) {
+    return u[0].times(v[0]).plus(u[1].times(v[1])).plus(u[2].times(v[2]));
+  }
+
+  /** The points of a list selected by their 1-based indices. */
+  private static IAST selectPoints(IAST listOfPoints, int[] indices) {
+    IASTAppendable result = F.ListAlloc(indices.length);
+    for (int i = 0; i < indices.length; i++) {
+      result.append(listOfPoints.get(indices[i]));
+    }
+    return result;
+  }
+
+  /**
+   * The convex hull as <code>Polygon({p1,...}, {1,...,n})</code>: the hull corners ordered along
+   * the counter-clockwise boundary walk, which starts at the corner that appears first in the
+   * input.
+   */
+  private static IExpr hullPolygon(IAST listOfPoints, int[] cycle) {
+    int start = 0;
+    for (int i = 1; i < cycle.length; i++) {
+      if (cycle[i] < cycle[start]) {
+        start = i;
+      }
+    }
+    int[] walk = new int[cycle.length];
+    IASTAppendable indices = F.ListAlloc(cycle.length);
+    for (int i = 0; i < cycle.length; i++) {
+      walk[i] = cycle[(start + i) % cycle.length];
+      indices.append(F.ZZ(i + 1));
+    }
+    return F.binaryAST2(S.Polygon, selectPoints(listOfPoints, walk), indices);
+  }
+
+  /**
+   * The convex hull of a list of points as a geometric region. In contrast to
+   * <code>ConvexHullMesh</code> this also handles the degenerate cases where the hull isn't full
+   * dimensional.
+   */
+  private static class ConvexHullRegion extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isListOfLists()) {
-        IAST listOfPoints = (IAST) ast.arg1();
-        IntArrayList dimensions = LinearAlgebraUtil.dimensions(listOfPoints);
-        try {
-          if (dimensions.size() == 2 && dimensions.getInt(1) == 2) {
-            if (dimensions.getInt(0) <= 2) {
-              // `1` should be a list of `2` or more affinely independent points.
-              return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3),
-                  engine);
-            }
-            return grahamScann2D(listOfPoints, engine);
-          } else if (dimensions.size() == 2 && dimensions.getInt(1) == 3) {
-            if (dimensions.getInt(0) <= 3) {
-              // `1` should be a list of `2` or more affinely independent points.
-              return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C4),
-                  engine);
-            }
-            return quickHull3D(listOfPoints);
+      IExpr arg1 = ast.arg1();
+      if (MeshFunctions.isMeshRegion(arg1)) {
+        arg1 = MeshFunctions.meshCoordinates((IAST) arg1);
+      }
+      if (!arg1.isListOfLists()) {
+        return F.NIL;
+      }
+      IAST listOfPoints = (IAST) arg1;
+      IntArrayList dimensions = LinearAlgebraUtil.dimensions(listOfPoints);
+      if (dimensions.size() != 2) {
+        return F.NIL;
+      }
+      if (!isRealPointList(listOfPoints)) {
+        return F.NIL;
+      }
+      IntArrayList candidates = distinctPointIndices(listOfPoints);
+      if (candidates.size() == 1) {
+        return F.Point((IAST) listOfPoints.get(candidates.getInt(0)));
+      }
+      switch (dimensions.getInt(1)) {
+        case 1: {
+          int[] extremes = extremeIndices(listOfPoints, candidates);
+          return F.Interval(F.list(((IAST) listOfPoints.get(extremes[0])).arg1(),
+              ((IAST) listOfPoints.get(extremes[1])).arg1()));
+        }
+        case 2: {
+          int[] hull = hullIndices2D(listOfPoints, false);
+          if (hull == null) {
+            // all points are co-linear
+            return F.Line(selectPoints(listOfPoints, extremeIndices(listOfPoints, candidates)));
           }
-        } catch (IllegalArgumentException iae) {
-          //
+          return hullPolygon(listOfPoints, hull);
+        }
+        case 3: {
+          try {
+            return polyhedron(listOfPoints, engine);
+          } catch (IllegalArgumentException iae) {
+            // the points are co-planar or co-linear
+          }
+          IAST projected = projectToPlane(listOfPoints, candidates);
+          if (projected.isNIL()) {
+            return F.Line(selectPoints(listOfPoints, extremeIndices(listOfPoints, candidates)));
+          }
+          int[] hull = hullIndices2D(projected, false);
+          if (hull == null) {
+            return F.Line(selectPoints(listOfPoints, extremeIndices(listOfPoints, candidates)));
+          }
+          return hullPolygon(listOfPoints, hull);
         }
       }
       return F.NIL;
     }
 
-    private static IExpr quickHull3D(IAST listOfPoints) {
+    /** The three dimensional hull as <code>Polyhedron({p1,...}, {{i,j,k},...})</code>. */
+    private static IExpr polyhedron(IAST listOfPoints, EvalEngine engine) {
       ConvexHull3D hull = new ConvexHull3D();
       hull.build(listOfPoints);
-      Vector3d[] vertices = hull.getVertices();
-      IASTAppendable resultList = F.ListAlloc(vertices.length);
-      for (int i = 0; i < vertices.length; i++) {
-        Vector3d pnt = vertices[i];
-        resultList.append(pnt.toTensor());
+      int[] hullVertices = hull.getVertexPointIndices();
+      int[][] hullFaces = hull.getFaces();
+      if (hullVertices.length < 4 || hullFaces.length < 4) {
+        throw new IllegalArgumentException("degenerate hull");
       }
-      return resultList;
+      // the vertices are listed in the order in which they appear in the input
+      int[] vertexIndices = new int[hullVertices.length];
+      for (int i = 0; i < hullVertices.length; i++) {
+        vertexIndices[i] = hullVertices[i] + 1;
+      }
+      int[] sortedVertexIndices = vertexIndices.clone();
+      Arrays.sort(sortedVertexIndices);
+      int[] positions = positionsOfVertices(sortedVertexIndices, listOfPoints.argSize());
+
+      IAST faces = canonicalFaces(hullFaces, vertexIndices, positions);
+      return F.binaryAST2(S.Polyhedron, selectPoints(listOfPoints, sortedVertexIndices), faces);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /**
+   * The planar convex hull as a list of point indices in counter-clockwise order. This is the
+   * function of the legacy <code>ComputationalGeometry</code> package.
+   */
+  private static class ConvexHull extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isListOfLists()) {
+        return F.NIL;
+      }
+      IAST listOfPoints = (IAST) arg1;
+      IntArrayList dimensions = LinearAlgebraUtil.dimensions(listOfPoints);
+      if (dimensions.size() != 2 || dimensions.getInt(1) != 2) {
+        return F.NIL;
+      }
+      boolean allPoints = !options[0].isFalse();
+      int[] hull = hullIndices2D(listOfPoints, allPoints);
+      if (hull == null) {
+        // `1` should be a list of `2` or more affinely independent points.
+        return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3), engine);
+      }
+      IASTAppendable result = F.ListAlloc(hull.length);
+      for (int i = 0; i < hull.length; i++) {
+        result.append(F.ZZ(hull[i]));
+      }
+      return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.AllPoints, S.True);
+    }
+  }
+
+  /** Test if a region is convex. */
+  private static class ConvexRegionQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.Region, 1)) {
+        arg1 = arg1.first();
+      }
+      if (MeshFunctions.isMeshRegion(arg1)) {
+        return MeshFunctions.convexQ((IAST) arg1, engine);
+      }
+      arg1 = MeshFunctions.normalizeRegion(arg1);
+      if (arg1.isAST()) {
+        IAST region = (IAST) arg1;
+        IExpr head = region.head();
+        if (head.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) head).ordinal()) {
+            case ID.Point:
+            case ID.Line:
+            case ID.HalfLine:
+            case ID.InfiniteLine:
+            case ID.Triangle:
+            case ID.Rectangle:
+            case ID.Cuboid:
+            case ID.Disk:
+            case ID.Ball:
+            case ID.Ellipsoid:
+            case ID.Simplex:
+            case ID.Tetrahedron:
+            case ID.Parallelepiped:
+            case ID.HalfPlane:
+            case ID.HalfSpace:
+            case ID.Cone:
+            case ID.Cylinder:
+              return S.True;
+            case ID.Annulus:
+              return S.False;
+            case ID.Polygon:
+              if (region.argSize() == 1 && region.arg1().isListOfLists()) {
+                return MeshFunctions.convexPointCycleQ((IAST) region.arg1(), engine);
+              }
+              return F.NIL;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /** The boundary of a region. */
+  private static class RegionBoundary extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.Region, 1)) {
+        arg1 = arg1.first();
+      }
+      if (MeshFunctions.isMeshRegion(arg1)) {
+        return MeshFunctions.regionBoundary((IAST) arg1);
+      }
+      arg1 = MeshFunctions.normalizeRegion(arg1);
+      if (arg1.isAST()) {
+        IAST region = (IAST) arg1;
+        IExpr head = region.head();
+        if (head.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) head).ordinal()) {
+            case ID.Polygon:
+            case ID.Triangle:
+              if (region.argSize() == 1 && region.arg1().isListOfLists()) {
+                IAST points = (IAST) region.arg1();
+                IASTAppendable closed = F.ListAlloc(points.argSize() + 1);
+                closed.appendArgs(points);
+                closed.append(points.arg1());
+                return F.Line(closed);
+              }
+              return F.NIL;
+            case ID.Disk:
+              return region.setAtCopy(0, S.Circle);
+            case ID.Ball:
+              return region.setAtCopy(0, S.Sphere);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class ConvexHullMesh extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (MeshFunctions.isMeshRegion(arg1)) {
+        arg1 = MeshFunctions.meshCoordinates((IAST) arg1);
+      }
+      if (!arg1.isListOfLists()) {
+        return F.NIL;
+      }
+      IAST listOfPoints = (IAST) arg1;
+      IntArrayList dimensions = LinearAlgebraUtil.dimensions(listOfPoints);
+      if (dimensions.size() != 2) {
+        return F.NIL;
+      }
+      try {
+        int embeddingDimension = dimensions.getInt(1);
+        switch (embeddingDimension) {
+          case 1: {
+            IExpr mesh = convexHullMesh1D(listOfPoints, engine);
+            if (mesh.isPresent()) {
+              return mesh;
+            }
+            // `1` should be a list of `2` or more affinely independent points.
+            return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C2), engine);
+          }
+          case 2: {
+            IExpr mesh = convexHullMesh2D(listOfPoints, engine);
+            if (mesh.isPresent()) {
+              return mesh;
+            }
+            // `1` should be a list of `2` or more affinely independent points.
+            return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3), engine);
+          }
+          case 3: {
+            IExpr mesh = convexHullMesh3D(listOfPoints, engine);
+            if (mesh.isPresent()) {
+              return mesh;
+            }
+            // `1` should be a list of `2` or more affinely independent points.
+            return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C4), engine);
+          }
+        }
+      } catch (IllegalArgumentException iae) {
+        // the points are coincident, co-linear or co-planar
+        return Errors.printMessage(ast.topHead(), "affind",
+            F.List(listOfPoints, F.ZZ(dimensions.getInt(1) + 1)), engine);
+      }
+      return F.NIL;
     }
 
     @Override
@@ -511,6 +1395,10 @@ public class ComputationalGeometryFunctions {
    * points <code>{x1,y1,z1},{x2,y2,z2},{x3,y3,z3}</code>.
    *
    * <p>
+   * The plane is defined by the first three points of the list which don't lie on one line. A list
+   * of less than four points and a list of points on one line are coplanar.
+   *
+   * <p>
    * See:
    *
    * <ul>
@@ -532,8 +1420,15 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList() && ast.arg1().argSize() > 2) {
+      if (ast.arg1().isList()) {
         IAST listOfPoints = (IAST) ast.arg1();
+        if (listOfPoints.argSize() == 0) {
+          return F.NIL;
+        }
+        if (listOfPoints.argSize() <= 3) {
+          // less than four points are always coplanar
+          return isPointList(listOfPoints) ? S.True : F.NIL;
+        }
         if (listOfPoints.arg1().isList2()) {
           // all 2D points lie on the same plane
           for (int i = 2; i < listOfPoints.size(); i++) {
@@ -545,32 +1440,75 @@ public class ComputationalGeometryFunctions {
             }
           }
           return S.True;
-        } else if (ast.arg1().argSize() > 3 && listOfPoints.arg1().isList3()
+        } else if (listOfPoints.argSize() > 3 && listOfPoints.arg1().isList3()
             && listOfPoints.arg2().isList3() && listOfPoints.arg3().isList3()) {
 
-          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3);
           for (int i = 4; i < listOfPoints.size(); i++) {
-            IAST p1 = (IAST) listOfPoints.get(i - 3);
-            IAST p2 = (IAST) listOfPoints.get(i - 2);
-            IAST p3 = (IAST) listOfPoints.get(i - 1);
-            // equation of plane is: a*x + b*y + c*z = 0
-            if (listOfPoints.get(i).isList3()) {
-              IAST p4 = (IAST) listOfPoints.get(i);
-              IExpr temp = coplanarPoints3D(p1, p2, p3, p4, engine);
-              result.append(temp);
-            } else {
+            if (!listOfPoints.get(i).isList3()) {
               // `1` should be a non-empty list of points.
               return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
-          if (result.argSize() == 1) {
-            return result.arg1();
-          }
-          return result;
+          return coplanarPoints(listOfPoints, engine);
         }
       }
 
       return F.NIL;
+    }
+
+    /**
+     * Test if all points of <code>listOfPoints</code> are on the plane defined by the first three
+     * points of the list which don't lie on one line.
+     *
+     * @param listOfPoints a list of at least four points with 3 coordinates each
+     * @param engine
+     */
+    private static IExpr coplanarPoints(IAST listOfPoints, EvalEngine engine) {
+      IAST p1 = (IAST) listOfPoints.arg1();
+      // the first point which is different from p1 spans a line together with p1
+      int lineIndex = -1;
+      for (int i = 2; i < listOfPoints.size(); i++) {
+        if (!listOfPoints.get(i).equals(p1)) {
+          lineIndex = i;
+          break;
+        }
+      }
+      if (lineIndex < 0) {
+        // all points are identical
+        return S.True;
+      }
+      IAST p2 = (IAST) listOfPoints.get(lineIndex);
+      // the first point which isn't on this line spans the plane together with p1 and p2
+      int planeIndex = -1;
+      for (int i = lineIndex + 1; i < listOfPoints.size(); i++) {
+        if (!isCollinear3D(p1, p2, (IAST) listOfPoints.get(i))) {
+          planeIndex = i;
+          break;
+        }
+      }
+      if (planeIndex < 0) {
+        // all points are on one line
+        return S.True;
+      }
+      IAST p3 = (IAST) listOfPoints.get(planeIndex);
+
+      // equation of plane is: a*x + b*y + c*z = 0
+      IASTAppendable result = F.ast(S.And, listOfPoints.argSize() - 3);
+      for (int i = 2; i < listOfPoints.size(); i++) {
+        if (i == lineIndex || i == planeIndex) {
+          continue;
+        }
+        IAST p4 = (IAST) listOfPoints.get(i);
+        IExpr temp = coplanarPoints3D(p1, p2, p3, p4, engine);
+        if (temp.isNIL()) {
+          return F.NIL;
+        }
+        result.append(temp);
+      }
+      if (result.argSize() == 1) {
+        return result.arg1();
+      }
+      return result;
     }
 
     /**
@@ -661,6 +1599,10 @@ public class ComputationalGeometryFunctions {
    * <code>{x1,y1,z1},{x2,y2,z2}</code>.
    *
    * <p>
+   * The line is defined by the first two <i>different</i> points of the list. A list of less than
+   * three points and a list of identical points are collinear.
+   *
+   * <p>
    * See:
    *
    * <ul>
@@ -680,55 +1622,81 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList() && ast.arg1().argSize() > 2) {
+      if (ast.arg1().isList()) {
         IAST listOfPoints = (IAST) ast.arg1();
-        if (ast.arg1().argSize() > 2 && listOfPoints.arg1().isList2()
+        if (listOfPoints.argSize() > 0 && listOfPoints.argSize() <= 2) {
+          // less than three points are always collinear
+          return isPointList(listOfPoints) ? S.True : F.NIL;
+        }
+        if (listOfPoints.argSize() > 2 && listOfPoints.arg1().isList2()
             && listOfPoints.arg2().isList2()) {
 
-          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 2);
           for (int i = 3; i < listOfPoints.size(); i++) {
-            IAST p1 = (IAST) listOfPoints.get(i - 2);
-            IAST p2 = (IAST) listOfPoints.get(i - 1);
-            if (listOfPoints.get(i).isList2()) {
-              IAST p3 = (IAST) listOfPoints.get(i);
-              IExpr temp = collinearPoints2D(p1, p2, p3, engine);
-              result.append(temp);
-            } else {
+            if (!listOfPoints.get(i).isList2()) {
               // `1` should be a non-empty list of points.
               return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
-          if (result.argSize() == 1) {
-            return result.arg1();
-          }
-          return result;
-        } else if (ast.arg1().argSize() > 2 && listOfPoints.arg1().isList3()
+          return collinearPoints(listOfPoints, 2, engine);
+        } else if (listOfPoints.argSize() > 2 && listOfPoints.arg1().isList3()
             && listOfPoints.arg2().isList3() && listOfPoints.arg3().isList3()) {
 
-          IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3);
-          for (int i = 3; i < listOfPoints.size(); i++) {
-            IAST p1 = (IAST) listOfPoints.get(i - 2);
-            IAST p2 = (IAST) listOfPoints.get(i - 1);
-            if (listOfPoints.get(i).isList3()) {
-              IAST p3 = (IAST) listOfPoints.get(i);
-              IExpr temp = collinearPoints3D(p1, p2, p3, engine);
-              if (temp.isNIL()) {
-                return F.NIL;
-              }
-              result.append(temp);
-            } else {
+          for (int i = 4; i < listOfPoints.size(); i++) {
+            if (!listOfPoints.get(i).isList3()) {
               // `1` should be a non-empty list of points.
               return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
-          if (result.argSize() == 1) {
-            return result.arg1();
-          }
-          return result;
+          return collinearPoints(listOfPoints, 3, engine);
         }
       }
 
       return F.NIL;
+    }
+
+    /**
+     * Test if all points of <code>listOfPoints</code> are on the line defined by the first two
+     * different points of the list.
+     *
+     * @param listOfPoints a list of at least three points, which all have <code>dimension</code>
+     *        coordinates
+     * @param dimension the number of coordinates of each point; <code>2</code> or <code>3</code>
+     * @param engine
+     */
+    private static IExpr collinearPoints(IAST listOfPoints, int dimension, EvalEngine engine) {
+      IAST p1 = (IAST) listOfPoints.arg1();
+      // the first point which is different from p1 defines the line together with p1
+      int lineIndex = -1;
+      for (int i = 2; i < listOfPoints.size(); i++) {
+        if (!listOfPoints.get(i).equals(p1)) {
+          lineIndex = i;
+          break;
+        }
+      }
+      if (lineIndex < 0) {
+        // all points are identical
+        return S.True;
+      }
+      IAST p2 = (IAST) listOfPoints.get(lineIndex);
+
+      IASTAppendable result = F.ast(S.And, listOfPoints.argSize() - 2);
+      for (int i = 2; i < listOfPoints.size(); i++) {
+        if (i == lineIndex) {
+          continue;
+        }
+        IAST p3 = (IAST) listOfPoints.get(i);
+        IExpr temp = dimension == 2 //
+            ? collinearPoints2D(p1, p2, p3, engine)
+            : collinearPoints3D(p1, p2, p3, engine);
+        if (temp.isNIL()) {
+          return F.NIL;
+        }
+        result.append(temp);
+      }
+      if (result.argSize() == 1) {
+        return result.arg1();
+      }
+      return result;
     }
 
     private static IExpr collinearPoints2D(IAST p1, IAST p2, IAST p3, EvalEngine engine) {
@@ -769,6 +1737,10 @@ public class ComputationalGeometryFunctions {
       IExpr x21 = x2.subtract(x1);
       IExpr y21 = y2.subtract(y1);
       IExpr z21 = z2.subtract(z1);
+      if (x21.isZero() && y21.isZero() && z21.isZero()) {
+        // p1 and p2 are identical - they don't define a line, so every point is collinear with them
+        return S.True;
+      }
       // vector p3-p1
       IExpr x31 = x3.subtract(x1);
       IExpr y31 = y3.subtract(y1);
@@ -815,6 +1787,156 @@ public class ComputationalGeometryFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>CircularArcThrough({{x1,y1},{x2,y2},...})
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the circular arc through the 2D points <code>{x1,y1},{x2,y2},...</code> as a
+   * <code>Circle(center, radius, {startAngle, endAngle})</code> object.
+   *
+   * <pre>
+   * <code>CircularArcThrough({{x1,y1},{x2,y2},...}, center)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the circular arc through the points around the given <code>center</code>.
+   *
+   * <pre>
+   * <code>CircularArcThrough({{x1,y1},{x2,y2},...}, center, radius)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the circular arc through the points around the given <code>center</code> with the given
+   * <code>radius</code>.
+   *
+   * <p>
+   * Two points define the diameter of the circle, three or more points define the circle through
+   * them. The arc starts at the smallest and ends at the largest angle of the points, measured
+   * counter-clockwise from the center. If the points aren't on a common circle or don't define one,
+   * the expression is returned unevaluated.
+   *
+   * <p>
+   * See:
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Circular_arc">Wikipedia - Circular arc</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; CircularArcThrough({{1,0}, {0,1}, {-1,0}})
+   * Circle({0,0},1,{0,Pi})
+   *
+   * &gt;&gt; CircularArcThrough({{3,0}, {0,3}}, {0,0})
+   * Circle({0,0},3,{0,Pi/2})
+   * </code>
+   * </pre>
+   */
+  private static class CircularArcThrough extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST listOfPoints = (IAST) ast.arg1();
+      if (listOfPoints.argSize() < 2) {
+        return F.NIL;
+      }
+      for (int i = 1; i < listOfPoints.size(); i++) {
+        if (!listOfPoints.get(i).isList2()) {
+          return F.NIL;
+        }
+      }
+
+      IAST center;
+      if (ast.argSize() >= 2 && !ast.arg2().equals(S.Automatic)) {
+        if (!ast.arg2().isList2()) {
+          return F.NIL;
+        }
+        center = (IAST) ast.arg2();
+      } else {
+        center = circleCenter(listOfPoints, engine);
+        if (center.isNIL()) {
+          return F.NIL;
+        }
+      }
+
+      // all points must have the same distance from the center
+      IExpr squaredRadius = squaredDistance(center, (IAST) listOfPoints.arg1());
+      if (isPossibleZero(squaredRadius, engine)) {
+        return F.NIL;
+      }
+      for (int i = 2; i < listOfPoints.size(); i++) {
+        IExpr squared = squaredDistance(center, (IAST) listOfPoints.get(i));
+        if (!isPossibleZero(F.eval(squared.subtract(squaredRadius)), engine)) {
+          return F.NIL;
+        }
+      }
+      if (ast.argSize() == 3) {
+        IExpr radius = ast.arg3();
+        if (radius.isNegativeResult()
+            || !isPossibleZero(F.eval(radius.times(radius).subtract(squaredRadius)), engine)) {
+          return F.NIL;
+        }
+      }
+
+      // the arc reaches from the smallest to the largest angle of the points
+      IExpr startAngle = F.NIL;
+      IExpr endAngle = F.NIL;
+      double minimum = Double.POSITIVE_INFINITY;
+      double maximum = Double.NEGATIVE_INFINITY;
+      for (int i = 1; i < listOfPoints.size(); i++) {
+        IAST point = (IAST) listOfPoints.get(i);
+        IExpr dx = F.eval(point.arg1().subtract(center.arg1()));
+        IExpr dy = F.eval(point.arg2().subtract(center.arg2()));
+        if (!dx.isNumericFunction() || !dy.isNumericFunction()) {
+          return F.NIL;
+        }
+        IExpr angle = F.eval(F.ArcTan(dx, dy));
+        // the angle itself can be an exact expression which isn't machine-sized numeric
+        double value = Math.atan2(engine.evalDouble(dy, null, Double.NaN),
+            engine.evalDouble(dx, null, Double.NaN));
+        if (Double.isNaN(value)) {
+          return F.NIL;
+        }
+        if (value < 0.0) {
+          // normalize the angle to the range 0 <= angle < 2*Pi
+          angle = F.eval(F.Plus(angle, F.C2Pi));
+          value += 2.0 * Math.PI;
+        }
+        if (value < minimum) {
+          minimum = value;
+          startAngle = angle;
+        }
+        if (value > maximum) {
+          maximum = value;
+          endAngle = angle;
+        }
+      }
+      return F.Circle(center, F.eval(F.Sqrt(squaredRadius)), F.list(startAngle, endAngle));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
 
   }

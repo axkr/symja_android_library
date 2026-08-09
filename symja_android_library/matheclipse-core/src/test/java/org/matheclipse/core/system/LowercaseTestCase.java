@@ -4130,14 +4130,141 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testConvexHull() {
+    // the planar convex hull as a list of point indices in counter-clockwise order
+    check("ConvexHull({{0,0},{2,0},{2,2},{0,2}})", //
+        "{1,2,3,4}");
+
+    // AllPoints->True is the default and keeps the points which lie on a hull edge
+    check("ConvexHull({{0,0},{1,0},{2,0},{2,2},{0,2}})", //
+        "{1,2,3,4,5}");
+    check("ConvexHull({{0,0},{1,0},{2,0},{2,2},{0,2}}, AllPoints->False)", //
+        "{1,3,4,5}");
+
+    // an interior point isn't part of the hull
+    check("ConvexHull({{1,1},{0,0},{2,0},{2,2},{0,2}})", //
+        "{2,3,4,5}");
+
+    // co-linear points don't have a two dimensional hull
+    check("ConvexHull({{0,0},{1,1},{2,2}})", //
+        "ConvexHull({{0,0},{1,1},{2,2}})");
+  }
+
+  @Test
   public void testConvexHullMesh() {
+    // ConvexHullMesh returns a BoundaryMeshRegion. The hull vertices are listed in the order in
+    // which they appear in the input and the Line cells walk the boundary counter-clockwise,
+    // starting at the first vertex.
+
+    // an interior point is dropped, but a single machine number turns all coordinates into
+    // machine numbers and drops the WorkingPrecision option
+    check("ConvexHullMesh({{0,0},{1,0},{0,1},{1,1},{0.5,0.5}})", //
+        "BoundaryMeshRegion({{0.0,0.0},{1.0,0.0},{0.0,1.0},{1.0,1.0}},{Line({{1,2},{2,4},{\n"
+            + "4,3},{3,1}})},Method->{SeparateBoundaries->False})");
+
+    // the SeparateBoundaries suboption is a string, only InputForm shows the quotes
+    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), InputForm)", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
+            + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
+
+    // exact input keeps exact vertices and carries WorkingPrecision
+    check("ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}})", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    // the vertices stay in input order, the boundary walk still runs counter-clockwise from 1
+    check("ConvexHullMesh({{0,0},{2,2},{2,0},{0,2}})", //
+        "BoundaryMeshRegion({{0,0},{2,2},{2,0},{0,2}},{Line({{1,3},{3,2},{2,4},{4,1}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    // a point lying on a hull edge is not a corner and is dropped
+    check("ConvexHullMesh({{0,0},{1,0},{2,0},{2,2},{0,2}})", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    // rational coordinates stay exact
+    check("ConvexHullMesh({{0,0},{1,0},{1/2,1}})", //
+        "BoundaryMeshRegion({{0,0},{1,0},{1/2,1}},{Line({{1,2},{2,3},{3,1}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    // if the first input point is interior, vertex 1 is the first hull point in input order
+    check("ConvexHullMesh({{1,1},{0,0},{2,0},{2,2},{0,2}})", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    // a general convex polygon given in scrambled order
+    check("ConvexHullMesh({{0,0},{4,1},{3,4},{-1,3},{1,-1}})", //
+        "BoundaryMeshRegion({{0,0},{4,1},{3,4},{-1,3},{1,-1}},{Line({{1,5},{5,2},{2,3},{3,\n"
+            + "4},{4,1}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    check("Head(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "BoundaryMeshRegion");
+
+    // fewer than three affinely independent points, all co-linear point sets and symbolic
+    // arguments stay unevaluated
+    check("ConvexHullMesh({{0,0},{1,1}})", //
+        "ConvexHullMesh({{0,0},{1,1}})");
+    check("ConvexHullMesh({{0,0},{1,1},{2,2}})", //
+        "ConvexHullMesh({{0,0},{1,1},{2,2}})");
+    check("ConvexHullMesh(x)", //
+        "ConvexHullMesh(x)");
+
+    // one dimensional points have a Point boundary
+    check("ConvexHullMesh({{0},{1},{3}})", //
+        "BoundaryMeshRegion({{0},{3}},{Point({{1},{2}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    // three dimensional points have a Polygon boundary
+    check("ConvexHullMesh({{0,0,0},{1,0,0},{0,1,0},{0,0,1},{1,1,1}})", //
+        "BoundaryMeshRegion({{0,0,0},{1,0,0},{0,1,0},{0,0,1},{1,1,1}},{Polygon({{1,2,4},{\n"
+            + "1,3,2},{1,4,3},{2,3,5},{2,5,4},{3,4,5}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
+    // co-planar facets are merged, so a cube has six quadrilaterals and not twelve triangles
+    check("ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}})", //
+        "BoundaryMeshRegion({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,\n"
+            + "1}},{Polygon({{1,2,6,5},{1,4,3,2},{1,5,8,4},{2,3,7,6},{3,4,8,7},{5,6,7,8}})},Method->{SeparateBoundaries->False},WorkingPrecision->Infinity)");
+
     check(
         "ConvexHullMesh({{0.0, 0.0, 0.0}, {1.0, 0.5, 0.0}, {2.0, 0.0, 0.0}, "
             + "{0.5, 0.5, 0.5}, {0.0, 0.0, 2.0}, {0.1, 0.2, 0.3}, {0.0, 2.0, 0.0}})", //
-        "{{0.0,0.0,0.0},{2.0,0.0,0.0},{0.0,0.0,2.0},{0.0,2.0,0.0}}");
+        "BoundaryMeshRegion({{0.0,0.0,0.0},{2.0,0.0,0.0},{0.0,0.0,2.0},{0.0,2.0,0.0}},{Polygon({{\n"
+            + "1,2,3},{1,3,4},{1,4,2},{2,4,3}})},Method->{SeparateBoundaries->False})");
 
     check("ConvexHullMesh({{0., 0.}, {1., 0.}, {0.5, 0.1}, {4.5,1.1}, {2., 3.}})", //
-        "{{0.0,0.0},{1.0,0.0},{4.5,1.1},{2.0,3.0}}");
+        "BoundaryMeshRegion({{0.0,0.0},{1.0,0.0},{4.5,1.1},{2.0,3.0}},{Line({{1,2},{2,3},{\n"
+            + "3,4},{4,1}})},Method->{SeparateBoundaries->False})");
+  }
+
+  @Test
+  public void testConvexHullRegion() {
+    // in contrast to ConvexHullMesh the hull of a degenerate point set is returned too
+    // the corners are ordered along the counter-clockwise boundary walk, which starts at the
+    // corner that appears first in the input
+    check("ConvexHullRegion({{0,0},{2,0},{2,2},{0,2}})", //
+        "Polygon({{0,0},{2,0},{2,2},{0,2}},{1,2,3,4})");
+    check("ConvexHullRegion({{0,0},{2,2},{2,0},{0,2}})", //
+        "Polygon({{0,0},{2,0},{2,2},{0,2}},{1,2,3,4})");
+    check("ConvexHullRegion({{1,1},{0,0},{2,0},{2,2},{0,2}})", //
+        "Polygon({{0,0},{2,0},{2,2},{0,2}},{1,2,3,4})");
+    check("ConvexHullRegion({{0,0},{1,1},{2,2}})", //
+        "Line({{0,0},{2,2}})");
+    check("ConvexHullRegion({{0,0},{1,1}})", //
+        "Line({{0,0},{1,1}})");
+    check("ConvexHullRegion({{5,5}})", //
+        "Point({5,5})");
+
+    // one dimensional points give an Interval
+    check("ConvexHullRegion({{3},{1},{7}})", //
+        "Interval({1,7})");
+
+    // three dimensional points give a Polyhedron with the corners in input order, co-planar
+    // points give a Polygon
+    check("ConvexHullRegion({{0,0,0},{1,0,0},{0,1,0},{0,0,1}})", //
+        "Polyhedron({{0,0,0},{1,0,0},{0,1,0},{0,0,1}},{{1,2,4},{1,3,2},{1,4,3},{2,3,4}})");
+    check("ConvexHullRegion({{1,1,1},{0,0,0},{1,0,0},{0,1,0},{0,0,1}})", //
+        "Polyhedron({{1,1,1},{0,0,0},{1,0,0},{0,1,0},{0,0,1}},{{1,3,4},{1,4,5},{1,5,3},{2,\n"
+            + "3,5},{2,4,3},{2,5,4}})");
+    check("ConvexHullRegion({{0,0,0},{1,0,0},{1,1,0},{0,1,0}})", //
+        "Polygon({{0,0,0},{1,0,0},{1,1,0},{0,1,0}},{1,2,3,4})");
+    // an interior point isn't a corner of the co-planar hull
+    check("ConvexHullRegion({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{1/2,1/2,0}})", //
+        "Polygon({{0,0,0},{1,0,0},{1,1,0},{0,1,0}},{1,2,3,4})");
+    check("ConvexHullRegion({{0,0,0},{1,1,1},{2,2,2}})", //
+        "Line({{0,0,0},{2,2,2}})");
   }
 
   @Test
@@ -6865,6 +6992,76 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEllipticExp() {
+    // {a,b}=={0,0} is the singular curve y^2==x^3, where the Weierstrass functions degenerate to
+    // the rational functions 1/u^2 and -2/u^3, so an exact result exists for every u
+    check("EllipticExp(Hypergeometric2F1(I*1/2, 1/2, 1/2, 3/2), {0 , 0})", //
+        "{(-1/2)^I,-(-1/2)^(I*3/2)}");
+    check("EllipticExp(Hypergeometric2F1(1/2, 1/3, 1/2, 3/2), {0 , 0})", //
+        "{(-1)^(2/3)/2^(2/3),1/2}");
+    check("EllipticExp(t, {0, 0})", //
+        "{1/t^2,-1/t^3}");
+    checkNumeric("EllipticExp(-0.4, {0, 0})", //
+        "{6.249999999999999,15.624999999999998}");
+    check("EllipticExp(u, {a, b})", //
+        "EllipticExp(u,{a,b})");
+    check("EllipticExp(1, {1, 1})", //
+        "EllipticExp(1,{1,1})");
+    // the point at infinity of the curve y^2==x^3+x^2+x
+    check("EllipticExp(0, {1, 1})", //
+        "{ComplexInfinity,ComplexInfinity}");
+    check("EllipticExp(0, {1, 2})", //
+        "{ComplexInfinity,ComplexInfinity}");
+    checkNumeric("EllipticExp(-0.4, {4, 1})", //
+        "{5.043827135411493,15.333640384130709}");
+    checkNumeric("EllipticExp(-0.1, {4, 1})", //
+        "{98.67528490530962,999.9142994129613}");
+    checkNumeric("EllipticExp(-1.0, {4, 1})", //
+        "{0.21791718623082618,0.6466971594261198}");
+    // EllipticExp(-u,{a,b}) is the point EllipticExp(u,{a,b}) reflected in the x-axis
+    checkNumeric("EllipticExp(0.4, {4, 1})", //
+        "{5.043827135411493,-15.333640384130709}");
+    checkNumeric("EllipticExp(-0.3, {2, 1})", //
+        "{10.450531251495653,37.01645463778015}");
+    checkNumeric("EllipticExp(-0.5, {1, 2})", //
+        "{3.58917180413188,8.142282396294094}");
+
+    // the result {x,y} is a point of the curve y^2==x^3+a*x^2+b*x
+    check("EllipticExp(-0.4, {4, 1}) /. {x_, y_} :> Chop(y^2 - (x^3 + 4*x^2 + x))", //
+        "0");
+    check("EllipticExp(-0.5, {1, 2}) /. {x_, y_} :> Chop(y^2 - (x^3 + x^2 + 2*x))", //
+        "0");
+
+    // the invariants of {a,b}=={3,9/4} and {a,b}=={-3/2,0} are {g2,g3}=={3,1}, where the lattice
+    // degenerates and the Weierstrass functions become trigonometric
+    check("EllipticExp(u, {3, 9/4})", //
+        "{3/2*Cot(Sqrt(3/2)*u)^2,-3/2*Sqrt(3/2)*Cot(Sqrt(3/2)*u)*Csc(Sqrt(3/2)*u)^2}");
+    check("EllipticExp(u, {-3/2, 0})", //
+        "{3/2+3/2*Cot(Sqrt(3/2)*u)^2,-3/2*Sqrt(3/2)*Cot(Sqrt(3/2)*u)*Csc(Sqrt(3/2)*u)^2}");
+    check("Simplify(EllipticExp(u,{3,9/4}) /. {x_,y_} :> y^2-(x^3+3*x^2+9/4*x))", //
+        "0");
+
+    // b==a^2/3 gives the equianharmonic invariants {0,4/27*a^3}
+    checkNumeric("EllipticExp(0.7, {1, 1/3})", //
+        "{1.7087534243990288,-2.911821830895702}");
+    check("EllipticExp(0.7, {1, 1/3}) /. {x_, y_} :> Chop(y^2 - (x^3 + x^2 + 1/3*x))", //
+        "0");
+
+    // FunctionExpand() returns the Weierstrass form of a generic curve...
+    check("FunctionExpand(EllipticExp(u, {a, b}))", //
+        "{-a/3+WeierstrassP(u,{4/3*(a^2-3*b),4/27*(-2*a^3+9*a*b)}),WeierstrassPPrime(u,{4/\n"
+            + "3*(a^2-3*b),4/27*(-2*a^3+9*a*b)})/2}");
+    // ...and the Jacobi form if the invariants are lemniscatic (b==2/9*a^2) or equianharmonic
+    check("FunctionExpand(EllipticExp(u, {1, 2/9}))", //
+        "{-2/3+2/(3*JacobiSN(Sqrt(2/3)*u,1/2)^2),-2/3*(Sqrt(2/3)*JacobiCN(Sqrt(2/3)*u,1/2)*JacobiDN(Sqrt(\n"
+            + "2/3)*u,1/2))/JacobiSN(Sqrt(2/3)*u,1/2)^3}");
+    check("Chop((FunctionExpand(EllipticExp(u,{1,2/9})) /. u->0.7) - EllipticExp(0.7,{1,2/9}))", //
+        "{0,0}");
+    check("Chop((FunctionExpand(EllipticExp(u,{1,1/3})) /. u->0.7) - EllipticExp(0.7,{1,1/3}))", //
+        "{0,0}");
+  }
+
+  @Test
   public void testEllipticF() {
     check("EllipticF(0.3,0.8)", //
         "0.303652");
@@ -6936,6 +7133,73 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.31103,1.35906,1.41574,1.48441,1.5708,1.68575,1.85407,2.15652,ComplexInfinity}");
     check("Table(EllipticK(x+I), {x,-1.0, 1.0, 1/4})", //
         "{1.26549+I*0.162237,1.30064+I*0.18478,1.33866+I*0.213052,1.37925+I*0.249038,1.42127+I*0.29538,1.46203+I*0.355241,1.49611+I*0.431362,1.51493+I*0.523542,1.50924+I*0.625146}");
+  }
+
+  @Test
+  public void testEllipticLog() {
+    check("EllipticLog({x, y}, {a, b})", //
+        "EllipticLog({x,y},{a,b})");
+    // {1.0,2.0} isn't a point of the curve y^2==x^3+4*x^2+x
+    check("EllipticLog({1.0, 2.0}, {4, 1})", //
+        "EllipticLog({1.0,2.0},{4,1})");
+    // exact arguments need N() because CarlsonRF is only evaluated numerically
+    check("EllipticLog({1, 3}, {2, 6})", //
+        "EllipticLog({1,3},{2,6})");
+    check("N(EllipticLog({1, 3}, {2, 6}))", //
+        "-0.709852");
+
+    // the point at infinity is the neutral element of the group law of the curve
+    check("EllipticLog({ComplexInfinity, ComplexInfinity}, {4, 1})", //
+        "0");
+    // {0,0} is a point of order 2, its elliptic logarithm is a half period
+    check("N(EllipticLog({0, 0}, {0, 1}))", //
+        "-1.85407");
+
+    checkNumeric("EllipticLog({5.043827135411493, 15.333640384130709}, {4, 1})", //
+        "-0.40000000000000013");
+    // EllipticLog({x,-y},{a,b}) is the negation of EllipticLog({x,y},{a,b})
+    checkNumeric("EllipticLog({5.043827135411493, -15.333640384130709}, {4, 1})", //
+        "0.40000000000000013");
+    check("EllipticLog({2, 5}, {3, 2.5})", //
+        "-0.581447");
+    check("EllipticLog({1, 2}, {1, 2.0})", //
+        "-0.814338");
+    // the y coordinate selects the sign of the square root only
+    check("EllipticLog({0.3, Sqrt(0.3^3-5*0.3^2+0.3)}, {-5, 1})", //
+        "-0.725631+I*1.06818");
+    check("EllipticLog({0.3, -Sqrt(0.3^3-5*0.3^2+0.3)}, {-5, 1})", //
+        "0.725631+I*(-1.06818)");
+    check("EllipticLog({2+I, -I*Sqrt(15)}, {1-I, -12.0})", //
+        "0.631719+I*(-0.250181)");
+
+    // EllipticLog is the inverse of EllipticExp
+    check("EllipticLog(EllipticExp(0, {4, 1}), {4, 1})", //
+        "0");
+    checkNumeric("EllipticLog(EllipticExp(-0.4, {4, 1}), {4, 1})", //
+        "-0.40000000000000013");
+    checkNumeric("EllipticLog(EllipticExp(0.4, {4, 1}), {4, 1})", //
+        "0.40000000000000013");
+    checkNumeric("EllipticLog(EllipticExp(-1.0, {4, 1}), {4, 1})", //
+        "-1.0000000000000002");
+    checkNumeric("EllipticLog(EllipticExp(-0.3, {2, 1}), {2, 1})", //
+        "-0.29999999999999993");
+    checkNumeric("EllipticLog(EllipticExp(-0.5, {1, 2}), {1, 2})", //
+        "-0.5000000000000001");
+    // {a,b} == {0,0} is the singular curve y^2 == x^3
+    check("EllipticLog(EllipticExp(u, {0, 0}), {0, 0})", //
+        "u");
+    check("EllipticLog({1, 5}, {0, 0})", //
+        "EllipticLog({1,5},{0,0})");
+
+    // FunctionExpand returns the Carlson symmetric form
+    check("FunctionExpand(EllipticLog({x, Sqrt(x^3+a*x^2+b*x)}, {a, b}))", //
+        "-CarlsonRF(x,1/2*(a+Sqrt(a^2-4*b))+x,1/2*(a-Sqrt(a^2-4*b))+x)");
+    check("FunctionExpand(EllipticLog({x, -Sqrt(x^3+a*x^2+b*x)}, {a, b}))", //
+        "CarlsonRF(x,1/2*(a+Sqrt(a^2-4*b))+x,1/2*(a-Sqrt(a^2-4*b))+x)");
+    check("FunctionExpand(EllipticLog({2, 5}, {3, 5/2}))", //
+        "-CarlsonRF(2,7/2+I*1/2,7/2-I*1/2)");
+    check("FunctionExpand(EllipticLog({x, y}, {a, b}))", //
+        "EllipticLog({x,y},{a,b})");
   }
 
   @Test
@@ -25594,6 +25858,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sqrt(1-x^2)/x");
     check("ToString(Sqrt(1-1/x^2))", //
         "Sqrt(1 - 1/x^2)");
+
+    // ToString(expr, form) gives the string which form(expr) prints
+    check("ToString(1/2, InputForm)", //
+        "1/2");
+    check("ToString(\"abc\", InputForm)", //
+        "\"abc\"");
+    check("ToString(a+b, FullForm)", //
+        "Plus(a, b)");
+    check("ToString(a+b, TeXForm)", //
+        "a + b");
+    // an unknown output form doesn't evaluate
+    check("ToString(a+b, Blubb)", //
+        "ToString(a+b,blubb)");
     String expected = String.join("\n", //
         "       -1+Sin(x)^2 == -Cos(x)^2 ", //
         "     1+Sin(x)^2 == 1 + Sin(x)^2 ", //
@@ -26776,6 +27053,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "{1.40035+I*(-0.30217),-0.30217+I*1.40035},{1.36146+I*(-0.301917),-0.301917+I*1.36146}," //
             + "{1.32906+I*(-0.300747),-0.300747+I*1.32906},{1.30139+I*(-0.299127),-0.299127+I*1.30139}}"); //
 
+    // g2==0 was evaluated to Indeterminate before
+    check("WeierstrassHalfPeriods({0.0,4.0})", //
+        "{1.21433+I*(-2.85195*10^-16),0.607163+I*1.05164}");
+
     check("WeierstrassHalfPeriods({1.0, 2.0*I} )", //
         "{1.30139+I*(-0.299127),-0.299127+I*1.30139}");
   }
@@ -26804,6 +27085,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("WeierstrassP(2.0, {1,2} )", //
         "2.65854+I*2.10942*10^-15");
 
+    // the equianharmonic invariants g2==0 were evaluated to Indeterminate before
+    check("Chop(WeierstrassP(0.7,{0,4/27}))", //
+        "2.04209");
+    check("Chop(WeierstrassP(0.7,{0,1}))", //
+        "2.04939");
+    check("Chop(WeierstrassP(0.5,{0.0,2.0}))", //
+        "4.00446");
+
+    // Whittaker & Watson, Section 22.351, for the two families of invariants whose cubic
+    // 4*t^3-g2*t-g3 factors: g3==0 (lemniscatic) and g2==0 (equianharmonic)
+    check("FunctionExpand(WeierstrassP(z,{g2,0}))", //
+        "-Sqrt(g2)/2+Sqrt(g2)/JacobiSN(g2^(1/4)*z,1/2)^2");
+    check("FunctionExpand(WeierstrassP(z,{0,g3}))", //
+        "((-1-I*Sqrt(3))*g3^(1/3))/(2*2^(2/3))+((3+I*Sqrt(3))*g3^(1/3))/(2*2^(2/3)*JacobiSN((Sqrt((\n"
+            + "3+I*Sqrt(3))*g3^(1/3))*z)/2^(5/6),1/2*(1+I*Sqrt(3)))^2)");
+    check("FunctionExpand(WeierstrassP(z,{0,0}))", //
+        "1/z^2");
+    // the general invariants would need the solutions of a cubic equation
+    check("FunctionExpand(WeierstrassP(z,{g2,g3}))", //
+        "WeierstrassP(z,{g2,g3})");
+    // the expansion agrees with the numeric evaluation
+    check("Chop((FunctionExpand(WeierstrassP(z,{4,0})) /. z->0.7) - WeierstrassP(0.7,{4,0}))", //
+        "0");
+    check("Chop((FunctionExpand(WeierstrassP(z,{0,4/27})) /. z->0.7) - WeierstrassP(0.7,{0,4/27}))", //
+        "0");
+
     check("Table(WeierstrassP(x,{1.0,3.0} ), {x,-2.0, 2.0, 1/4})", //
         "{4.55263+I*2.88658*10^-15,1.98649+I*8.88178*10^-16,1.20805+I*2.22045*10^-16,1.00064,1.16036+I*(-3.33067*10^-16),1.84015+I*(-5.55112*10^-16),4.01922+I*4.44089*10^-16,16.00354+I*2.22045*10^-16,ComplexInfinity,16.00354+I*2.22045*10^-16,4.01922+I*4.44089*10^-16,1.84015+I*(-5.55112*10^-16),1.16036+I*(-3.33067*10^-16),1.00064,1.20805+I*2.22045*10^-16,1.98649+I*8.88178*10^-16,4.55263+I*2.88658*10^-15}");
   }
@@ -26818,6 +27125,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1357.348+I*1.16055*10^-11");
     check("WeierstrassPPrime(1/3, {1, 2}) // N // Chop", //
         "-53.95606");
+
+    // the equianharmonic invariants g2==0 were evaluated to Indeterminate before
+    check("Chop(WeierstrassPPrime(0.7,{0,4/27}))", //
+        "-5.82364");
+
+    check("FunctionExpand(WeierstrassPPrime(z,{g2,0}))", //
+        "(-2*g2^(3/4)*JacobiCN(g2^(1/4)*z,1/2)*JacobiDN(g2^(1/4)*z,1/2))/JacobiSN(g2^(1/4)*z,\n"
+            + "1/2)^3");
+    check("FunctionExpand(WeierstrassPPrime(z,{0,g3}))", //
+        "(-((3+I*Sqrt(3))*g3^(1/3))^(3/2)*JacobiCN((Sqrt((3+I*Sqrt(3))*g3^(1/3))*z)/2^(5/\n"
+            + "6),1/2*(1+I*Sqrt(3)))*JacobiDN((Sqrt((3+I*Sqrt(3))*g3^(1/3))*z)/2^(5/6),1/2*(1+I*Sqrt(\n"
+            + "3))))/(2*Sqrt(2)*JacobiSN((Sqrt((3+I*Sqrt(3))*g3^(1/3))*z)/2^(5/6),1/2*(1+I*Sqrt(\n"
+            + "3)))^3)");
+    check("FunctionExpand(WeierstrassPPrime(z,{0,0}))", //
+        "-2/z^3");
+    // the expansion agrees with the numeric evaluation
+    check("Chop((FunctionExpand(WeierstrassPPrime(z,{4,0})) /. z->0.7) - WeierstrassPPrime(0.7,{4,0}))", //
+        "0");
+    check("Chop((FunctionExpand(WeierstrassPPrime(z,{0,4/27})) /. z->0.7) - WeierstrassPPrime(0.7,{0,4/27}))", //
+        "0");
 
     check("Table(WeierstrassPPrime(x,{1.0,3.0} ), {x,-2.0, 2.0, 1/4})", //
         "{-19.23245+I*(-2.02665*10^-14),-5.13514+I*(-3.76819*10^-15),-1.68643+I*(-1.16607*10^-15),-0.0838866+I*(-5.45142*10^-16),1.44536+I*(-3.30329*10^-16),4.48151+I*2.98579*10^-16,15.89616+I*1.58114*10^-15,127.9683+I*1.1967*10^-15,ComplexInfinity,-127.9683+I*(-1.1967*10^-15),-15.89616+I*(-1.58114*10^-15),-4.48151+I*(-2.98579*10^-16),-1.44536+I*3.30329*10^-16,0.0838866+I*5.45142*10^-16,1.68643+I*1.16607*10^-15,5.13514+I*3.76819*10^-15,19.23245+I*2.02665*10^-14}"); //

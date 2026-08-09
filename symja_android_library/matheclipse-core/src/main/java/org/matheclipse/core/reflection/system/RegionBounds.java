@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -17,6 +19,10 @@ public class RegionBounds extends AbstractFunctionEvaluator {
     IExpr arg1 = ast.arg1();
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
+    }
+    arg1 = MeshFunctions.normalizeRegion(arg1);
+    if (MeshFunctions.isMeshRegion(arg1)) {
+      return MeshFunctions.bounds((IAST) arg1, engine);
     }
     if (arg1.isAST()) {
       IAST reg = (IAST) arg1;
@@ -41,6 +47,11 @@ public class RegionBounds extends AbstractFunctionEvaluator {
           case ID.Rectangle:
           case ID.Cuboid:
             return boxBounds(reg, engine);
+          case ID.Torus:
+          case ID.FilledTorus:
+            return torusBounds(reg, engine);
+          case ID.Parallelogram:
+            return parallelogramBounds(reg, engine);
         }
       }
     }
@@ -58,6 +69,38 @@ public class RegionBounds extends AbstractFunctionEvaluator {
       return engine.evaluate(F.CoordinateBounds(reg.arg1()));
     }
     return F.NIL;
+  }
+
+  /**
+   * A torus around the z-axis extends by the outer radius in the x- and y-direction and by the
+   * tube radius in the z-direction. A <code>FilledTorus</code> has the same bounding box.
+   */
+  private IExpr torusBounds(IAST reg, EvalEngine engine) {
+    RegionPrimitives.TorusSpec spec = RegionPrimitives.parseTorus(reg, engine);
+    if (spec == null || !spec.center.isList3()) {
+      return F.NIL;
+    }
+    IAST c = (IAST) spec.center;
+    IExpr outer = engine.evaluate(F.Plus(spec.major, spec.minor));
+    return engine.evaluate(F.List(//
+        F.List(F.Subtract(c.arg1(), outer), F.Plus(c.arg1(), outer)), //
+        F.List(F.Subtract(c.arg2(), outer), F.Plus(c.arg2(), outer)), //
+        F.List(F.Subtract(c.arg3(), spec.minor), F.Plus(c.arg3(), spec.minor))));
+  }
+
+  /** The bounding box of the four corner points of the parallelogram. */
+  private IExpr parallelogramBounds(IAST reg, EvalEngine engine) {
+    RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(reg);
+    if (spec == null) {
+      return F.NIL;
+    }
+    IExpr v1 = spec.vectors.arg1();
+    IExpr v2 = spec.vectors.arg2();
+    IAST corners = F.List(spec.base, //
+        F.Plus(spec.base, v1), //
+        F.Plus(spec.base, v2), //
+        F.Plus(spec.base, v1, v2));
+    return engine.evaluate(F.CoordinateBounds(corners));
   }
 
   private IExpr boxBounds(IAST reg, EvalEngine engine) {

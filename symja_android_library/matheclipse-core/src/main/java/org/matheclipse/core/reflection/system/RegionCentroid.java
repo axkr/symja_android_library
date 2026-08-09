@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -20,6 +22,16 @@ public class RegionCentroid extends AbstractFunctionEvaluator {
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
     }
+    arg1 = MeshFunctions.normalizeRegion(arg1);
+    if (MeshFunctions.isMeshRegion(arg1)) {
+      int embeddingDimension = MeshFunctions.embeddingDimension((IAST) arg1);
+      if (embeddingDimension == 3) {
+        return MeshFunctions.centroid3D((IAST) arg1, engine);
+      }
+      if (embeddingDimension == 2) {
+        return MeshFunctions.centroid2D((IAST) arg1, engine);
+      }
+    }
 
     if (arg1.isAST()) {
       IAST reg = (IAST) arg1;
@@ -38,12 +50,60 @@ public class RegionCentroid extends AbstractFunctionEvaluator {
             return boxCentroid(reg, engine);
           case ID.Triangle:
           case ID.Simplex:
-          case ID.Tetrahedron:
             return meanCentroid(reg, engine);
+          case ID.Tetrahedron:
+            if (RegionPrimitives.isCornerPointsForm(reg)) {
+              return meanCentroid(reg, engine);
+            }
+            return platonicSolidCentroid(reg);
+          case ID.Cube:
+          case ID.Octahedron:
+          case ID.Dodecahedron:
+          case ID.Icosahedron:
+            return platonicSolidCentroid(reg);
           case ID.Line:
             return lineCentroid(reg, engine);
           case ID.Polygon:
             return polygonCentroid(reg, engine);
+          case ID.Torus:
+          case ID.FilledTorus: {
+            RegionPrimitives.TorusSpec torus = RegionPrimitives.parseTorus(reg, engine);
+            return torus == null ? F.NIL : torus.center;
+          }
+          case ID.SphericalShell: {
+            RegionPrimitives.ShellSpec shell = RegionPrimitives.parseSphericalShell(reg);
+            return shell == null ? F.NIL : shell.center;
+          }
+          case ID.CapsuleShape: {
+            RegionPrimitives.CapsuleSpec capsule = RegionPrimitives.parseCapsuleShape(reg);
+            return capsule == null ? F.NIL
+                : RegionPrimitives.midpoint(capsule.p1, capsule.p2, engine);
+          }
+          case ID.StadiumShape: {
+            RegionPrimitives.StadiumSpec stadium = RegionPrimitives.parseStadiumShape(reg);
+            return stadium == null ? F.NIL
+                : RegionPrimitives.midpoint(stadium.p1, stadium.p2, engine);
+          }
+          case ID.DiskSegment:
+            return diskSegmentCentroid(reg, engine);
+          case ID.HalfPlane:
+          case ID.InfinitePlane:
+          case ID.InfiniteLine:
+          case ID.HalfLine:
+          case ID.HalfSpace: {
+            // an unbounded region has no centroid
+            int embeddingDim = RegionEmbeddingDimension.getEmbeddingDimension(reg);
+            return embeddingDim < 1 ? F.NIL
+                : RegionPrimitives.indeterminateCentroid(embeddingDim);
+          }
+          case ID.Parallelogram: {
+            RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(reg);
+            if (spec == null) {
+              return F.NIL;
+            }
+            return engine.evaluate(F.Plus(spec.base,
+                F.Times(F.C1D2, F.Plus(spec.vectors.arg1(), spec.vectors.arg2()))));
+          }
         }
       }
     }
@@ -96,6 +156,38 @@ public class RegionCentroid extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The centroid of a circular segment lies on the angle bisector, at the distance
+   * <code>4*Sin(theta/2)^3 / (3*(theta - Sin(theta)))</code> from the center of the unit disk. For
+   * an elliptical segment the offset is scaled by the two semi axes.
+   */
+  private IExpr diskSegmentCentroid(IAST reg, EvalEngine engine) {
+    RegionPrimitives.DiskSegmentSpec spec = RegionPrimitives.parseDiskSegment(reg, engine);
+    if (spec == null) {
+      return F.NIL;
+    }
+    if (spec.angle.isNegativeResult()) {
+      return S.Undefined;
+    }
+    IExpr denominator = engine.evaluate(F.Subtract(spec.angle, F.Sin(spec.angle)));
+    if (denominator.isZero()) {
+      return F.NIL;
+    }
+    IExpr distance = engine.evaluate(F.Divide(//
+        F.Times(F.C4, F.Power(F.Sin(F.Times(F.C1D2, spec.angle)), F.C3)), //
+        F.Times(F.C3, denominator)));
+    IExpr bisector = engine.evaluate(F.Times(F.C1D2, F.Plus(spec.theta1, spec.theta2)));
+    IAST offset = F.List(//
+        F.Times(spec.rx, distance, F.Cos(bisector)), //
+        F.Times(spec.ry, distance, F.Sin(bisector)));
+    return engine.evaluate(F.Plus(spec.center, offset));
+  }
+
+  private IExpr platonicSolidCentroid(IAST reg) {
+    RegionPrimitives.SolidSpec spec = RegionPrimitives.parsePlatonicSolid(reg);
+    return spec == null ? F.NIL : spec.center;
   }
 
   private IExpr meanCentroid(IAST reg, EvalEngine engine) {

@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -19,6 +21,7 @@ public class Perimeter extends AbstractEvaluator {
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
     }
+    arg1 = MeshFunctions.normalizeRegion(arg1);
 
     if (arg1.isAST() && arg1.isBuiltInFunction()) {
       IAST geoForm = (IAST) arg1;
@@ -39,10 +42,42 @@ public class Perimeter extends AbstractEvaluator {
             return polygon(geoForm, engine);
           case ID.Ellipsoid:
             return ellipsoid(geoForm, engine);
+          case ID.DiskSegment:
+            return diskSegment(geoForm, engine);
+          case ID.StadiumShape:
+            return stadiumShape(geoForm, engine);
         }
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The chord <code>2*r*Sin(theta/2)</code> plus the arc <code>r*theta</code>. The perimeter of an
+   * elliptical segment has no closed form.
+   */
+  private static IExpr diskSegment(IAST geoForm, EvalEngine engine) {
+    RegionPrimitives.DiskSegmentSpec spec = RegionPrimitives.parseDiskSegment(geoForm, engine);
+    if (spec == null || !spec.isCircular()) {
+      return F.NIL;
+    }
+    if (spec.angle.isNegativeResult()) {
+      return S.Undefined;
+    }
+    return engine.evaluate(F.Plus(//
+        F.Times(F.C2, spec.rx, F.Sin(F.Times(F.C1D2, spec.angle))), //
+        F.Times(spec.rx, spec.angle)));
+  }
+
+  /** The two straight sides <code>2*d</code> plus the two semicircular caps <code>2*Pi*r</code>. */
+  private static IExpr stadiumShape(IAST geoForm, EvalEngine engine) {
+    RegionPrimitives.StadiumSpec spec = RegionPrimitives.parseStadiumShape(geoForm);
+    if (spec == null) {
+      return F.NIL;
+    }
+    IExpr d = RegionPrimitives.distance(spec.p1, spec.p2, engine);
+    return engine
+        .evaluate(F.Plus(F.Times(F.C2, d), F.Times(F.C2, S.Pi, spec.radius)));
   }
 
   private static IExpr disk(IAST geoForm, EvalEngine engine) {

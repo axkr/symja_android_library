@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -19,6 +21,16 @@ public class RegionMember extends AbstractFunctionEvaluator {
 
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
+    }
+    arg1 = MeshFunctions.normalizeRegion(arg1);
+    if (MeshFunctions.isMeshRegion(arg1)) {
+      int embeddingDimension = MeshFunctions.embeddingDimension((IAST) arg1);
+      if (embeddingDimension == 3) {
+        return MeshFunctions.member3D((IAST) arg1, p, engine);
+      }
+      if (embeddingDimension == 2) {
+        return MeshFunctions.member2D((IAST) arg1, p, engine);
+      }
     }
 
     if (arg1.isAST()) {
@@ -43,10 +55,40 @@ public class RegionMember extends AbstractFunctionEvaluator {
                 F.LessEqual(SignedRegionDistance.triangleDistance(reg, p, engine, true), F.C0));
           case ID.Polygon:
             return polygonMember(reg, p, engine);
+          case ID.HalfSpace:
+            return halfSpaceMember(reg, p, engine);
+          case ID.StadiumShape:
+            return stadiumShapeMember(reg, p, engine);
         }
       }
     }
     return F.NIL;
+  }
+
+  /** A point of the half-space <code>n.x &lt;= c</code>. */
+  private IExpr halfSpaceMember(IAST reg, IExpr p, EvalEngine engine) {
+    RegionPrimitives.HalfSpaceSpec spec = RegionPrimitives.parseHalfSpace(reg, engine);
+    if (spec == null || !p.isList() || p.argSize() != spec.normal.argSize()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(F.LessEqual(F.Dot(spec.normal, p), spec.offset));
+    // for symbolic coordinates the inequality can't be decided
+    return result.isTrue() || result.isFalse() ? result : F.NIL;
+  }
+
+  /** All points which are no further than <code>r</code> away from the axis segment. */
+  private IExpr stadiumShapeMember(IAST reg, IExpr p, EvalEngine engine) {
+    RegionPrimitives.StadiumSpec spec = RegionPrimitives.parseStadiumShape(reg);
+    if (spec == null || !p.isList2()) {
+      return F.NIL;
+    }
+    IExpr distance = SignedRegionDistance.distanceToSegment(p, (IAST) spec.p1, (IAST) spec.p2,
+        engine);
+    if (!distance.isPresent()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(F.LessEqual(distance, spec.radius));
+    return result.isTrue() || result.isFalse() ? result : F.NIL;
   }
 
   private IExpr polygonMember(IAST reg, IExpr p, EvalEngine engine) {

@@ -62,6 +62,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArea() {
+    check("Area(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", "4");
     check("Area(Disk())", "Pi");
     check("Area(Disk({0, 0}, 5))", "25*Pi");
     check("Area(Disk({0, 0}, {3, 2}))", "6*Pi");
@@ -110,6 +111,44 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "r1*r2*Min(Pi,Abs(-t1+t2)/2)");
     check("Area(Rectangle({a,b},{c,d}))", //
         "Abs((-a+c)*(-b+d))");
+  }
+
+  @Test
+  public void testCircularArcThrough() {
+    check("CircularArcThrough({{1, 0}, {0, 1}, {-1, 0}})", "Circle({0,0},1,{0,Pi})");
+    check("CircularArcThrough({{1, 0}, {-1, 0}, {0, 1}})", "Circle({0,0},1,{0,Pi})");
+    check("CircularArcThrough({{-1, 0}, {0, 1}, {1, 0}})", "Circle({0,0},1,{0,Pi})");
+    check("CircularArcThrough({{1, 1}, {2, 2}, {3, 1}})", "Circle({2,1},1,{0,Pi})");
+    check("CircularArcThrough({{1, 0}, {0, 1}, {2, 3}})",
+        "Circle({3/2,3/2},Sqrt(5/2),{ArcTan(3),Pi+ArcTan(3)})");
+    check("CircularArcThrough({{Sqrt(2), 0}, {1, 1}, {0, Sqrt(2)}})",
+        "Circle({0,0},Sqrt(2),{0,Pi/2})");
+    check("CircularArcThrough({{1, 0}, {0, 1}, {-1, 0}, {0, -1}})", "Circle({0,0},1,{0,3/2*Pi})");
+    check("CircularArcThrough({{0, 1}, {1, 0}, {0, -1}})", "Circle({0,0},1,{0,3/2*Pi})");
+    check("CircularArcThrough({{1, 0}, {0, 1}})", "Circle({1/2,1/2},1/Sqrt(2),{3/4*Pi,7/4*Pi})");
+    check("CircularArcThrough({{0, 0}, {1, 1}})", "Circle({1/2,1/2},1/Sqrt(2),{Pi/4,5/4*Pi})");
+    check("CircularArcThrough({{1, 0}, {-1, 0}}, {0, 0})", "Circle({0,0},1,{0,Pi})");
+    check("CircularArcThrough({{0, 0}, {2, 0}}, {1, 0})", "Circle({1,0},1,{0,Pi})");
+    check("CircularArcThrough({{3, 0}, {0, 3}}, {0, 0})", "Circle({0,0},3,{0,Pi/2})");
+    check("CircularArcThrough({{0, 0}, {2, 0}}, {1, 0}, 1)", "Circle({1,0},1,{0,Pi})");
+    check("CircularArcThrough({{1, 0}, {0, 1}, {-1, 0}}, {0, 0}, 1)", "Circle({0,0},1,{0,Pi})");
+    check("CircularArcThrough({{1, 0}, {0, 2}}, {0, 0})",
+        "CircularArcThrough({{1,0},{0,2}},{0,0})");
+    check("CircularArcThrough({{1, 0}, {0, 1}}, {0, 0}, 2)",
+        "CircularArcThrough({{1,0},{0,1}},{0,0},2)");
+    check("CircularArcThrough({{0, 0}, {2, 0}}, Automatic, 2)",
+        "CircularArcThrough({{0,0},{2,0}},Automatic,2)");
+
+    // Automatic determines the circle from the points
+    check("CircularArcThrough({{0, 0}, {2, 0}}, Automatic)", "Circle({1,0},1,{0,Pi})");
+    // points which don't define a circle
+    check("CircularArcThrough({{0, 0}, {1, 0}, {2, 0}})", "CircularArcThrough({{0,0},{1,0},{2,0}})");
+    check("CircularArcThrough({{1, 1}})", "CircularArcThrough({{1,1}})");
+    check("CircularArcThrough({{1, 1}, {1, 1}})", "CircularArcThrough({{1,1},{1,1}})");
+    check("CircularArcThrough({{a, b}, {c, d}})", "CircularArcThrough({{a,b},{c,d}})");
+    check("CircularArcThrough({{1, 0}, {0, 1}, {2, 3}, {5, 5}})",
+        "CircularArcThrough({{1,0},{0,1},{2,3},{5,5}})");
+    check("CircularArcThrough({{1, 0, 0}, {0, 1, 0}})", "CircularArcThrough({{1,0,0},{0,1,0}})");
   }
 
   @Test
@@ -228,6 +267,70 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // Unsupported region unevaluated
     check("FindShortestCurve(Annulus(), {1, 0}, {-0.8, 0.4})", //
         "FindShortestCurve(Annulus(),{1,0},{-0.8,0.4})");
+  }
+
+  @Test
+  public void testPolygonAngle() {
+    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {1, 1}, {0, 1}}))", "{Pi/2,Pi/2,Pi/2,Pi/2}");
+    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}))", "{Pi/2,Pi/4,Pi/4}");
+    check("PolygonAngle(Triangle({{0, 0}, {1, 0}, {0, 1}}))", "{Pi/2,Pi/4,Pi/4}");
+    check("PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}))", "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
+    check("PolygonAngle(Polygon({{0, 0}, {2, 0}, {2, 2}, {1, 1}, {0, 2}}))",
+        "{Pi/2,Pi/2,Pi/4,3/2*Pi,Pi/4}");
+    check("PolygonAngle(Polygon({{0, 0}, {2, 0}, {3, 2}, {1, 3}, {-1, 2}}))",
+        "{Pi/2,ArcCos(-1/Sqrt(5)),ArcCos(-1/Sqrt(5)),Pi/2,ArcCos(-3/5)}");
+    check("PolygonAngle(Polygon({{0, 0}, {2, 0}, {2, 1}, {0, 1}}), {0, 0})", "Pi/2");
+    check("PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), {4, 3})", "ArcCos(3/5)");
+    check("Total(PolygonAngle(Polygon({{0, 0}, {1, 0}, {1, 1}, {0, 1}})))", "2*Pi");
+
+    // the angles sum up to (n-2)*Pi, also for the concave polygon
+    check("Total(PolygonAngle(Polygon({{0, 0}, {2, 0}, {2, 2}, {1, 1}, {0, 2}})))", "3*Pi");
+    check("N(Total(PolygonAngle(Polygon({{0, 0}, {2, 0}, {3, 2}, {1, 3}, {-1, 2}}))))", "9.42478");
+
+    // the vertex can be given as index, coordinates or Point in canonical order
+    check("Table(PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), i), {i, 1, 3})",
+        "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
+    check("PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), Point({4, 3}))", "ArcCos(3/5)");
+    check("PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), All)",
+        "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
+
+    // clockwise oriented vertices give the same angles
+    check("PolygonAngle(Polygon({{0, 0}, {4, 3}, {4, 0}}))", "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
+
+    // interior, exterior and full exterior angle
+    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}), \"Interior\")", "{Pi/2,Pi/4,Pi/4}");
+    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}), \"Exterior\")",
+        "{Pi/2,3/4*Pi,3/4*Pi}");
+    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}), {1, 0}, \"FullExterior\")", "7/4*Pi");
+
+    // degenerate or invalid polygons are returned unevaluated
+    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {2, 0}}))",
+        "PolygonAngle(Polygon({{0,0},{1,0},{2,0}}))");
+    check("PolygonAngle(Polygon({{1, 2}, {3, 4}}))", "PolygonAngle(Polygon({{1,2},{3,4}}))");
+    check("PolygonAngle(Polygon({{a, b}, {c, d}, {e, f}}))",
+        "PolygonAngle(Polygon({{a,b},{c,d},{e,f}}))");
+  }
+
+  @Test
+  public void testPolygonCoordinates() {
+    check("PolygonCoordinates(Polygon({{0, 0}, {1, 0}, {0, 1}}))", "{{0,0},{0,1},{1,0}}");
+    check("PolygonCoordinates(Polygon({{2, 2}, {0, 0}, {1, 1}, {3, 0}}))",
+        "{{0,0},{1,1},{2,2},{3,0}}");
+    check("PolygonCoordinates(Triangle({{0, 0}, {2, 0}, {0, 2}}))", "{{0,0},{0,2},{2,0}}");
+    check("PolygonCoordinates(Polygon({{0, 0}, {1/2, 0}, {0, 1/2}}))", "{{0,0},{0,1/2},{1/2,0}}");
+    check("PolygonCoordinates(Polygon({{c, d}, {a, b}, {e, f}}))", "{{a,b},{c,d},{e,f}}");
+    check("PolygonCoordinates(Polygon({{0, 0}, {4, 0}, {4, 3}, {2, 5}, {0, 3}}))",
+        "{{0,0},{0,3},{2,5},{4,0},{4,3}}");
+    check("PolygonCoordinates(Polygon({{0, 0}, {1, 0}, {2, 0}}))",
+        "PolygonCoordinates(Polygon({{0,0},{1,0},{2,0}}))");
+    check("PolygonCoordinates(Polygon({{2, 1}, {2, 1}, {0, 0}}))",
+        "PolygonCoordinates(Polygon({{2,1},{2,1},{0,0}}))");
+    check("PolygonCoordinates(Polygon({{1, 2}, {3, 4}}))",
+        "PolygonCoordinates(Polygon({{1,2},{3,4}}))");
+
+    // a repeated coordinate doesn't add a corner
+    check("PolygonCoordinates(Polygon({{0, 0}, {1, 0}, {1, 0}, {0, 1}}))",
+        "{{0,0},{0,1},{1,0}}");
   }
 
   @Test
@@ -443,81 +546,8 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testTriangleCenter() {
-    // Default is Centroid
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}))", //
-        "{4/3,1}");
-    check("TriangleCenter(Triangle())", //
-        "{1/3,1/3}");
-
-    // Centroid
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"Centroid\")", //
-        "{4/3,1}");
-    check("TriangleCenter(Triangle({{a, b}, {c, d}, {e, f}}))", //
-        "{1/3*(a+c+e),1/3*(b+d+f)}");
-
-    // Incenter
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"Incenter\")", //
-        "{1,1}");
-    check("TriangleCenter(Triangle({{0, 0}, {1, 0}, {0, 1}}), \"Incenter\")", //
-        "{1/(2+Sqrt(2)),1/(2+Sqrt(2))}");
-
-    // Circumcenter
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"Circumcenter\")", //
-        "{2,3/2}");
-    check("TriangleCenter(Triangle({{-1, 0}, {5, 1}, {2, 4}}), \"Circumcenter\")", //
-        "{27/14,13/14}");
-
-    // Orthocenter
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"Orthocenter\")", //
-        "{0,0}");
-    check("TriangleCenter(Triangle({{-1, 0}, {5, 1}, {2, 4}}), \"Orthocenter\")", //
-        "{15/7,22/7}");
-
-    // NinePointCenter
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"NinePointCenter\")", //
-        "{1,3/4}");
-    check("TriangleCenter(Triangle({{-1, 0}, {5, 1}, {2, 4}}), \"NinePointCenter\")", //
-        "{57/28,57/28}");
-
-    // SymmedianPoint
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"SymmedianPoint\")", //
-        "{18/25,24/25}");
-
-    // Equilateral centers coincide
-    check("TriangleCenter(Triangle({{0, 0}, {1, 0}, {1/2, Sqrt(3)/2}}), \"Incenter\")", //
-        "{1/2,1/(2*Sqrt(3))}");
-    check("TriangleCenter(Triangle({{0, 0}, {1, 0}, {1/2, Sqrt(3)/2}}), \"Circumcenter\")", //
-        "{1/2,1/(2*Sqrt(3))}");
-    check("TriangleCenter(Triangle({{0, 0}, {1, 0}, {1/2, Sqrt(3)/2}}), \"Orthocenter\")", //
-        "{1/2,1/(2*Sqrt(3))}");
-    check("TriangleCenter(Triangle({{0, 0}, {1, 0}, {1/2, Sqrt(3)/2}}), \"NinePointCenter\")", //
-        "{1/2,1/(2*Sqrt(3))}");
-    check("TriangleCenter(Triangle({{0, 0}, {1, 0}, {1/2, Sqrt(3)/2}}), \"SymmedianPoint\")", //
-        "{1/2,1/(2*Sqrt(3))}");
-
-    // Bare vertex list
-    check("TriangleCenter({{0, 0}, {4, 0}, {0, 3}}, \"Incenter\")", //
-        "{1,1}");
-
-    // 3D Triangles
-    check("TriangleCenter(Triangle({{0, 0, 0}, {4, 0, 0}, {0, 3, 0}}), \"Circumcenter\")", //
-        "{2,3/2,0}");
-
-    // Float vertices
-    check("TriangleCenter(Triangle({{0., 0.}, {4., 0.}, {0., 3.}}), \"Circumcenter\")", //
-        "{2.0,1.5}");
-
-    // Unevaluated cases
-    check("TriangleCenter(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"Foo\")", //
-        "TriangleCenter(Triangle({{0,0},{4,0},{0,3}}),Foo)");
-    check("TriangleCenter(foo)", //
-        "TriangleCenter(foo)");
-  }
-
-
-  @Test
   public void testVolume() {
+    check("Volume(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", "1");
     check("Volume(Cylinder({{0, 0, 0}, {1, 1, 1}}, 1/2))", //
         "1/4*Sqrt(3)*Pi");
     check("Volume(Ball({a,b,c}, r))", //
@@ -578,6 +608,10 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRegionMeasure() {
+    // convex hull meshes
+    check("RegionMeasure(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", "4");
+    check("RegionMeasure(ConvexHullMesh({{0,0},{1,0},{1/2,1}}))", "1/2");
+    check("RegionMeasure(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", "1");
     // 3D Solids -> Volume
     check("RegionMeasure(Ellipsoid({0, 0, 0}, {1, 2, 3}))", "8*Pi");
     check("RegionMeasure(Cuboid({0, 0, 0}, {1, 2, 3}))", "6");
@@ -610,6 +644,8 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRegionCentroid() {
+    check("RegionCentroid(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", "{1,1}");
+    check("RegionCentroid(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", "{1/2,1/2,1/2}");
     check("RegionCentroid(Point({3, 4}))", "{3,4}");
     check("RegionCentroid(Disk())", "{0,0}");
     check("RegionCentroid(Disk({3, 4}, 2))", "{3,4}");
@@ -631,6 +667,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRegionBounds() {
+    check("RegionBounds(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", "{{0,2},{0,2}}");
     check("RegionBounds(HalfLine({{0, 0}, {1, 1}}))", //
         "{{0,Infinity},{0,Infinity}}");
     check("RegionBounds(HalfLine({{0, 0}, {-1, -1}}))", //
@@ -659,6 +696,10 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRegionMember() {
+    check("RegionMember(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), {1,1})", "True");
+    check("RegionMember(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), {3,1})", "False");
+    check("RegionMember(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), {0.5,0.5,0.5})", "True");
+    check("RegionMember(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), {2,0.5,0.5})", "False");
     check("RegionMember(Disk({0, 0}, 1), {0.5, 0.5})", "True");
     check("RegionMember(Disk({0, 0}, 1), {1, 0})", "True");
     check("RegionMember(Disk({0, 0}, 1), {2, 0})", "False");
@@ -702,6 +743,8 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRegionNearest() {
+    check("RegionNearest(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), {5,1})", //
+        "{2,1}");
     check("RegionNearest(x, y)", //
         "RegionNearest(x,y)");
 
@@ -834,5 +877,125 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "False");
     check("RegionWithin(Rectangle(), Polygon({{0.1, 0.1}, {0.9, 0.1}, {0.5, 0.9}}))", //
         "True");
+  }
+
+  @Test
+  public void testBoundaryMeshRegion() {
+    // a boundary mesh region stays unevaluated, but an index which doesn't address a coordinate
+    // is rejected
+    check("BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}}, {Line({{1,2},{2,3},{3,4},{4,1}})})", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})})");
+    check("BoundaryMeshRegionQ(BoundaryMeshRegion({{0,0},{2,0}},{Line({{1,5}})}))", //
+        "False");
+    check("BoundaryMeshRegionQ(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "True");
+    check("MeshRegionQ(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "True");
+    check("BoundaryMeshRegionQ(Polygon({{0,0},{2,0},{2,2}}))", //
+        "False");
+
+    check("MeshCoordinates(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "{{0,0},{2,0},{2,2},{0,2}}");
+    check("MeshCells(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), 0)", //
+        "{Point({1}),Point({2}),Point({3}),Point({4})}");
+    check("MeshCells(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), 1)", //
+        "{Line({1,2}),Line({2,3}),Line({3,4}),Line({4,1})}");
+    // the two dimensional cell is the polygon which the boundary encloses
+    check("MeshCells(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), 2)", //
+        "{Polygon({1,2,3,4})}");
+    check("MeshCells(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), {1,2})", //
+        "Line({2,3})");
+    check("MeshCellCount(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "{4,4}");
+    check("MeshCellCount(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), 1)", //
+        "4");
+
+    // in 3D the edges are derived from the polygon boundaries
+    check("MeshCells(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), 2)", //
+        "{Polygon({1,2,6,5}),Polygon({1,4,3,2}),Polygon({1,5,8,4}),Polygon({2,3,7,6}),Polygon({\n"
+            + "3,4,8,7}),Polygon({5,6,7,8})}");
+    check("MeshCellCount(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
+        "{8,12,6}");
+    // the solid cell of a three dimensional region isn't representable as an index based cell
+    check("Head(MeshCells(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), 3))", //
+        "MeshCells");
+  }
+
+  @Test
+  public void testIndexedPolygon() {
+    // ConvexHullRegion returns the index based Polygon({p1,...}, {i1,...}); the region functions
+    // resolve the indices
+    check("Area(ConvexHullRegion({{0,0},{2,0},{2,2},{0,2}}))", //
+        "4");
+    check("RegionMember(ConvexHullRegion({{0,0},{2,0},{2,2},{0,2}}), {1,1})", //
+        "True");
+    check("RegionCentroid(ConvexHullRegion({{0,0},{2,0},{2,2},{0,2}}))", //
+        "{1,1}");
+    check("Perimeter(ConvexHullRegion({{0,0},{2,0},{2,2},{0,2}}))", //
+        "8");
+    check("RegionBoundary(ConvexHullRegion({{0,0},{2,0},{2,2},{0,2}}))", //
+        "Line({{0,0},{2,0},{2,2},{0,2},{0,0}})");
+  }
+
+  @Test
+  public void testPolyhedronRegion() {
+    // ConvexHullRegion returns a Polyhedron in 3D; the region functions treat it like the
+    // boundary mesh region it describes
+    String tetrahedron = "ConvexHullRegion({{0,0,0},{1,0,0},{0,1,0},{0,0,1}})";
+    check("Volume(" + tetrahedron + ")", //
+        "1/6");
+    check("RegionMeasure(" + tetrahedron + ")", //
+        "1/6");
+    check("RegionCentroid(" + tetrahedron + ")", //
+        "{1/4,1/4,1/4}");
+    check("RegionBounds(" + tetrahedron + ")", //
+        "{{0,1},{0,1},{0,1}}");
+    check("RegionMember(" + tetrahedron + ", {1/10,1/10,1/10})", //
+        "True");
+    check("RegionMember(" + tetrahedron + ", {1,1,1})", //
+        "False");
+
+    // a cube with one corner pushed inwards isn't convex; its volume is still computed from the
+    // boundary, but the half space membership test isn't applicable
+    String dented = "BoundaryMeshRegion({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},"
+        + "{1/2,1/2,1/2},{0,1,1}},{Polygon({{1,2,6,5},{1,4,3,2},{1,5,8,4},{2,3,7,6},{3,4,8,7},"
+        + "{5,6,7,8}})})";
+    check("ConvexRegionQ(" + dented + ")", //
+        "False");
+    check("Volume(" + dented + ")", //
+        "7/12");
+    check("Head(RegionMember(" + dented + ", {9/10,9/10,9/10}))", //
+        "RegionMember");
+  }
+
+  @Test
+  public void testConvexRegionQ() {
+    check("ConvexRegionQ(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "True");
+    check("ConvexRegionQ(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
+        "True");
+    check("ConvexRegionQ(Polygon({{0,0},{2,0},{1,1/10},{2,2},{0,2}}))", //
+        "False");
+    check("ConvexRegionQ(Polygon({{0,0},{2,0},{2,2},{0,2}}))", //
+        "True");
+    check("ConvexRegionQ(ConvexHullRegion({{0,0},{2,0},{2,2},{0,2}}))", //
+        "True");
+    check("ConvexRegionQ(Disk())", //
+        "True");
+    check("ConvexRegionQ(Annulus())", //
+        "False");
+  }
+
+  @Test
+  public void testRegionBoundary() {
+    check("RegionBoundary(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "MeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({1,2}),Line({2,3}),Line({3,4}),Line({\n"
+            + "4,1})},Method->{SeparateBoundaries->False})");
+    check("RegionBoundary(Polygon({{0,0},{1,0},{0,1}}))", //
+        "Line({{0,0},{1,0},{0,1},{0,0}})");
+    check("RegionBoundary(Disk({0,0},2))", //
+        "Circle({0,0},2)");
+    check("RegionBoundary(Ball({0,0,0},2))", //
+        "Sphere({0,0,0},2)");
   }
 }

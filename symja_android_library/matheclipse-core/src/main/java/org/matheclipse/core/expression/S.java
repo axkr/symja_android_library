@@ -356,6 +356,17 @@ public class S {
   public final static IBuiltInSymbol Adjugate = S.initFinalSymbol("Adjugate", ID.Adjugate);
 
   /**
+   * AffineTransform(m) - gives a `TransformationFunction` that represents an affine transform that
+   * maps the vector `r` to `m.r`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AffineTransform.md">AffineTransform
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AffineTransform =
+      S.initFinalSymbol("AffineTransform", ID.AffineTransform);
+
+  /**
    * AiryAi(z) - returns the Airy function of the first kind of `z`.
    * 
    * @see <a href=
@@ -417,6 +428,15 @@ public class S {
 
   public final static IBuiltInSymbol AllowShortContext =
       S.initFinalSymbol("AllowShortContext", ID.AllowShortContext);
+
+  /**
+   * AllPoints(x) - TODO describe `AllPoints`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AllPoints.md">AllPoints
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AllPoints = S.initFinalSymbol("AllPoints", ID.AllPoints);
 
   /**
    * AllTrue({expr1, expr2, ...}, test) - returns `True` if all applications of `test` to `expr1,
@@ -780,6 +800,15 @@ public class S {
       S.initFinalSymbol("ArrayFlatten", ID.ArrayFlatten);
 
   /**
+   * ArrayMesh(x) - TODO describe `ArrayMesh`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayMesh.md">ArrayMesh
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ArrayMesh = S.initFinalSymbol("ArrayMesh", ID.ArrayMesh);
+
+  /**
    * ArrayPad(list, n) - adds `n` times `0` on the left and right of the `list`.
    * 
    * @see <a href=
@@ -1020,6 +1049,15 @@ public class S {
   public final static IBuiltInSymbol AxesStyle = S.initFinalSymbol("AxesStyle", ID.AxesStyle);
 
   public final static IBuiltInSymbol Axis = S.initFinalSymbol("Axis", ID.Axis);
+
+  /**
+   * AxisObject(x) - TODO describe `AxisObject`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AxisObject.md">AxisObject
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AxisObject = S.initFinalSymbol("AxisObject", ID.AxisObject);
 
   public final static IBuiltInSymbol Background = S.initFinalSymbol("Background", ID.Background);
 
@@ -1606,6 +1644,36 @@ public class S {
 
   public final static IBuiltInSymbol Bottom = S.initFinalSymbol("Bottom", ID.Bottom);
 
+  /**
+   * BoundaryMeshRegion(x) - TODO describe `BoundaryMeshRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BoundaryMeshRegion.md">BoundaryMeshRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BoundaryMeshRegion =
+      S.initFinalSymbol("BoundaryMeshRegion", ID.BoundaryMeshRegion);
+
+  /**
+   * BoundaryMeshRegionQ(x) - TODO describe `BoundaryMeshRegionQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BoundaryMeshRegionQ.md">BoundaryMeshRegionQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BoundaryMeshRegionQ =
+      S.initFinalSymbol("BoundaryMeshRegionQ", ID.BoundaryMeshRegionQ);
+
+  /**
+   * BoundedRegionQ(x) - TODO describe `BoundedRegionQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BoundedRegionQ.md">BoundedRegionQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BoundedRegionQ =
+      S.initFinalSymbol("BoundedRegionQ", ID.BoundedRegionQ);
+
   public final static IBuiltInSymbol BoundingRegion =
       S.initFinalSymbol("BoundingRegion", ID.BoundingRegion);
 
@@ -1669,6 +1737,16 @@ public class S {
 
   public final static IBuiltInSymbol BSplineFunction =
       S.initFinalSymbol("BSplineFunction", ID.BSplineFunction);
+
+  /**
+   * BSplineSurface(x) - TODO describe `BSplineSurface`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BSplineSurface.md">BSplineSurface
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BSplineSurface =
+      S.initFinalSymbol("BSplineSurface", ID.BSplineSurface);
 
   public final static IBuiltInSymbol Button = S.initFinalSymbol("Button", ID.Button);
 
@@ -1737,7 +1815,26 @@ public class S {
   public final static IBuiltInSymbol CancelButton =
       S.initFinalSymbol("CancelButton", ID.CancelButton);
 
+  /**
+   * CantorMesh(x) - TODO describe `CantorMesh`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CantorMesh.md">CantorMesh
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CantorMesh = S.initFinalSymbol("CantorMesh", ID.CantorMesh);
+
   public final static IBuiltInSymbol CapForm = S.initFinalSymbol("CapForm", ID.CapForm);
+
+  /**
+   * CapsuleShape(x) - TODO describe `CapsuleShape`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CapsuleShape.md">CapsuleShape
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CapsuleShape =
+      S.initFinalSymbol("CapsuleShape", ID.CapsuleShape);
 
   /**
    * CarlsonRC(x, y) - returns the Carlson RC function..
@@ -2063,6 +2160,16 @@ public class S {
   public final static IBuiltInSymbol CircleTimes = S.initFinalSymbol("CircleTimes", ID.CircleTimes);
 
   /**
+   * CircularArcThrough(x) - TODO describe `CircularArcThrough`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CircularArcThrough.md">CircularArcThrough
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CircularArcThrough =
+      S.initFinalSymbol("CircularArcThrough", ID.CircularArcThrough);
+
+  /**
    * Clear(symbol1, symbol2,...) - clears all values of the given symbols.
    * 
    * @see <a href=
@@ -2359,6 +2466,16 @@ public class S {
       S.initFinalSymbol("ComplexPlot3D", ID.ComplexPlot3D);
 
   /**
+   * ComplexRegionPlot(x) - TODO describe `ComplexRegionPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComplexRegionPlot.md">ComplexRegionPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ComplexRegionPlot =
+      S.initFinalSymbol("ComplexRegionPlot", ID.ComplexRegionPlot);
+
+  /**
    * ComposeList(list-of-symbols, variable) - creates a list of compositions of the symbols applied
    * at the argument `x`.
    * 
@@ -2615,8 +2732,37 @@ public class S {
    */
   public final static IBuiltInSymbol Convergents = S.initFinalSymbol("Convergents", ID.Convergents);
 
+  /**
+   * ConvexHull(x) - TODO describe `ConvexHull`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConvexHull.md">ConvexHull
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ConvexHull = S.initFinalSymbol("ConvexHull", ID.ConvexHull);
+
   public final static IBuiltInSymbol ConvexHullMesh =
       S.initFinalSymbol("ConvexHullMesh", ID.ConvexHullMesh);
+
+  /**
+   * ConvexHullRegion(x) - TODO describe `ConvexHullRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConvexHullRegion.md">ConvexHullRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ConvexHullRegion =
+      S.initFinalSymbol("ConvexHullRegion", ID.ConvexHullRegion);
+
+  /**
+   * ConvexRegionQ(x) - TODO describe `ConvexRegionQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConvexRegionQ.md">ConvexRegionQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ConvexRegionQ =
+      S.initFinalSymbol("ConvexRegionQ", ID.ConvexRegionQ);
 
   public final static IBuiltInSymbol Convolve = S.initFinalSymbol("Convolve", ID.Convolve);
 
@@ -3054,6 +3200,16 @@ public class S {
       S.initFinalSymbol("DegreeReverseLexicographic", ID.DegreeReverseLexicographic);
 
   /**
+   * DelaunayMesh(x) - TODO describe `DelaunayMesh`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DelaunayMesh.md">DelaunayMesh
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DelaunayMesh =
+      S.initFinalSymbol("DelaunayMesh", ID.DelaunayMesh);
+
+  /**
    * Delete(expr, n) - deletes the element at position `n` in `expr`. The position is counted from
    * the end if `n` is negative.
    * 
@@ -3449,6 +3605,15 @@ public class S {
   public final static IBuiltInSymbol DiskMatrix = S.initFinalSymbol("DiskMatrix", ID.DiskMatrix);
 
   /**
+   * DiskSegment(x) - TODO describe `DiskSegment`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiskSegment.md">DiskSegment
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DiskSegment = S.initFinalSymbol("DiskSegment", ID.DiskSegment);
+
+  /**
    * Dispatch({rule1, rule2, ...}) - create a dispatch map for a list of rules.
    * 
    * @see <a href=
@@ -3816,6 +3981,16 @@ public class S {
   public final static IBuiltInSymbol EllipticE = S.initFinalSymbol("EllipticE", ID.EllipticE);
 
   /**
+   * EllipticExp(u, {a, b}) - returns the generalized exponential <code>{x,y}</code> of
+   * <code>u</code> for the elliptic curve <code>y^2 == x^3 + a*x^2 + b*x</code>.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EllipticExp.md">EllipticExp
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EllipticExp = S.initFinalSymbol("EllipticExp", ID.EllipticExp);
+
+  /**
    * EllipticF(z) - returns the incomplete elliptic integral of the first kind.
    * 
    * @see <a href=
@@ -3834,6 +4009,16 @@ public class S {
   public final static IBuiltInSymbol EllipticK = S.initFinalSymbol("EllipticK", ID.EllipticK);
 
   /**
+   * EllipticLog({x, y}, {a, b}) - returns the generalized logarithm of the point <code>{x,y}</code>
+   * of the elliptic curve <code>y^2 == x^3 + a*x^2 + b*x</code>.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EllipticLog.md">EllipticLog
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EllipticLog = S.initFinalSymbol("EllipticLog", ID.EllipticLog);
+
+  /**
    * EllipticPi(n,m) - returns the complete elliptic integral of the third kind.
    * 
    * @see <a href=
@@ -3847,6 +4032,15 @@ public class S {
 
   public final static IBuiltInSymbol EmpiricalDistribution =
       S.initFinalSymbol("EmpiricalDistribution", ID.EmpiricalDistribution);
+
+  /**
+   * EmptyRegion(x) - TODO describe `EmptyRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EmptyRegion.md">EmptyRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EmptyRegion = S.initFinalSymbol("EmptyRegion", ID.EmptyRegion);
 
   /**
    * End( ) - end a context definition started with `Begin`
@@ -4194,6 +4388,25 @@ public class S {
   public final static IBuiltInSymbol FaceForm = S.initFinalSymbol("FaceForm", ID.FaceForm);
 
   /**
+   * FaceGrids(x) - TODO describe `FaceGrids`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FaceGrids.md">FaceGrids
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FaceGrids = S.initFinalSymbol("FaceGrids", ID.FaceGrids);
+
+  /**
+   * FaceGridsStyle(x) - TODO describe `FaceGridsStyle`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FaceGridsStyle.md">FaceGridsStyle
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FaceGridsStyle =
+      S.initFinalSymbol("FaceGridsStyle", ID.FaceGridsStyle);
+
+  /**
    * Factor(expr) - factors the polynomial expression `expr`
    * 
    * @see <a href=
@@ -4347,6 +4560,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol FilePrint = S.initFinalSymbol("FilePrint", ID.FilePrint);
+
+  /**
+   * FilledTorus(x) - TODO describe `FilledTorus`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FilledTorus.md">FilledTorus
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FilledTorus = S.initFinalSymbol("FilledTorus", ID.FilledTorus);
 
   public final static IBuiltInSymbol Filling = S.initFinalSymbol("Filling", ID.Filling);
 
@@ -5566,6 +5788,24 @@ public class S {
       S.initFinalSymbol("HalfNormalDistribution", ID.HalfNormalDistribution);
 
   /**
+   * HalfPlane(x) - TODO describe `HalfPlane`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HalfPlane.md">HalfPlane
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HalfPlane = S.initFinalSymbol("HalfPlane", ID.HalfPlane);
+
+  /**
+   * HalfSpace(x) - TODO describe `HalfSpace`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HalfSpace.md">HalfSpace
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HalfSpace = S.initFinalSymbol("HalfSpace", ID.HalfSpace);
+
+  /**
    * HamiltonianGraphQ(graph) - returns `True` if `graph` is an hamiltonian graph, and `False`
    * otherwise.
    * 
@@ -6148,6 +6388,16 @@ public class S {
 
   public final static IBuiltInSymbol InfiniteLine =
       S.initFinalSymbol("InfiniteLine", ID.InfiniteLine);
+
+  /**
+   * InfinitePlane(x) - TODO describe `InfinitePlane`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InfinitePlane.md">InfinitePlane
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol InfinitePlane =
+      S.initFinalSymbol("InfinitePlane", ID.InfinitePlane);
 
   /**
    * Infinity - represents an infinite real quantity.
@@ -6825,6 +7075,15 @@ public class S {
   // public final static IBuiltInSymbol JulianDate = S.initFinalSymbol("JulianDate", ID.JulianDate);
 
   public final static IBuiltInSymbol Joined = S.initFinalSymbol("Joined", ID.Joined);
+
+  /**
+   * JoinedCurve(x) - TODO describe `JoinedCurve`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JoinedCurve.md">JoinedCurve
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol JoinedCurve = S.initFinalSymbol("JoinedCurve", ID.JoinedCurve);
 
   public final static IBuiltInSymbol JoinForm = S.initFinalSymbol("JoinForm", ID.JoinForm);
 
@@ -8180,7 +8439,114 @@ public class S {
 
   public final static IBuiltInSymbol Mesh = S.initFinalSymbol("Mesh", ID.Mesh);
 
+  /**
+   * MeshCellCount(x) - TODO describe `MeshCellCount`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCellCount.md">MeshCellCount
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCellCount =
+      S.initFinalSymbol("MeshCellCount", ID.MeshCellCount);
+
+  /**
+   * MeshCellHighlight(x) - TODO describe `MeshCellHighlight`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCellHighlight.md">MeshCellHighlight
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCellHighlight =
+      S.initFinalSymbol("MeshCellHighlight", ID.MeshCellHighlight);
+
+  /**
+   * MeshCellLabel(x) - TODO describe `MeshCellLabel`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCellLabel.md">MeshCellLabel
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCellLabel =
+      S.initFinalSymbol("MeshCellLabel", ID.MeshCellLabel);
+
+  /**
+   * MeshCellMarker(x) - TODO describe `MeshCellMarker`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCellMarker.md">MeshCellMarker
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCellMarker =
+      S.initFinalSymbol("MeshCellMarker", ID.MeshCellMarker);
+
+  /**
+   * MeshCells(x) - TODO describe `MeshCells`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCells.md">MeshCells
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCells = S.initFinalSymbol("MeshCells", ID.MeshCells);
+
+  /**
+   * MeshCellShapeFunction(x) - TODO describe `MeshCellShapeFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCellShapeFunction.md">MeshCellShapeFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCellShapeFunction =
+      S.initFinalSymbol("MeshCellShapeFunction", ID.MeshCellShapeFunction);
+
+  /**
+   * MeshCellStyle(x) - TODO describe `MeshCellStyle`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCellStyle.md">MeshCellStyle
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCellStyle =
+      S.initFinalSymbol("MeshCellStyle", ID.MeshCellStyle);
+
+  /**
+   * MeshCoordinates(x) - TODO describe `MeshCoordinates`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshCoordinates.md">MeshCoordinates
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshCoordinates =
+      S.initFinalSymbol("MeshCoordinates", ID.MeshCoordinates);
+
+  /**
+   * MeshPrimitives(x) - TODO describe `MeshPrimitives`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshPrimitives.md">MeshPrimitives
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshPrimitives =
+      S.initFinalSymbol("MeshPrimitives", ID.MeshPrimitives);
+
   public final static IBuiltInSymbol MeshRange = S.initFinalSymbol("MeshRange", ID.MeshRange);
+
+  /**
+   * MeshRegion(x) - TODO describe `MeshRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshRegion.md">MeshRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshRegion = S.initFinalSymbol("MeshRegion", ID.MeshRegion);
+
+  /**
+   * MeshRegionQ(x) - TODO describe `MeshRegionQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeshRegionQ.md">MeshRegionQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeshRegionQ = S.initFinalSymbol("MeshRegionQ", ID.MeshRegionQ);
 
   /**
    * Message(symbol::msg, expr1, expr2, ...) - displays the specified message, replacing
@@ -8335,6 +8701,16 @@ public class S {
       S.initFinalSymbol("MoleculeValue", ID.MoleculeValue);
 
   public final static IBuiltInSymbol Moment = S.initFinalSymbol("Moment", ID.Moment);
+
+  /**
+   * MomentOfInertia(x) - TODO describe `MomentOfInertia`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MomentOfInertia.md">MomentOfInertia
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MomentOfInertia =
+      S.initFinalSymbol("MomentOfInertia", ID.MomentOfInertia);
 
   /**
    * MonomialList(polynomial, list-of-variables) - get the list of monomials of a `polynomial`
@@ -9605,6 +9981,15 @@ public class S {
    */
   public final static IBuiltInSymbol Pink = S.initFinalSymbol("Pink", ID.Pink);
 
+  /**
+   * PlanarAngle(x) - TODO describe `PlanarAngle`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlanarAngle.md">PlanarAngle
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PlanarAngle = S.initFinalSymbol("PlanarAngle", ID.PlanarAngle);
+
   public final static IBuiltInSymbol PlanarGraph = S.initFinalSymbol("PlanarGraph", ID.PlanarGraph);
 
   /**
@@ -9656,6 +10041,15 @@ public class S {
   public final static IBuiltInSymbol PlotRegion = S.initFinalSymbol("PlotRegion", ID.PlotRegion);
 
   public final static IBuiltInSymbol PlotStyle = S.initFinalSymbol("PlotStyle", ID.PlotStyle);
+
+  /**
+   * PlotTheme(x) - TODO describe `PlotTheme`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlotTheme.md">PlotTheme
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PlotTheme = S.initFinalSymbol("PlotTheme", ID.PlotTheme);
 
   /**
    * Plus(a, b, ...) - represents the sum of the terms `a, b, ...`.
@@ -9750,6 +10144,26 @@ public class S {
    */
   public final static IBuiltInSymbol PolygonalNumber =
       S.initFinalSymbol("PolygonalNumber", ID.PolygonalNumber);
+
+  /**
+   * PolygonAngle(poly) - returns the angles at the vertices of the polygon `poly`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolygonAngle.md">PolygonAngle
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PolygonAngle =
+      S.initFinalSymbol("PolygonAngle", ID.PolygonAngle);
+
+  /**
+   * PolygonCoordinates(poly) - returns the list of the coordinates of the polygon `poly`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolygonCoordinates.md">PolygonCoordinates
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PolygonCoordinates =
+      S.initFinalSymbol("PolygonCoordinates", ID.PolygonCoordinates);
 
   public final static IBuiltInSymbol Polyhedron = S.initFinalSymbol("Polyhedron", ID.Polyhedron);
 
@@ -10438,6 +10852,15 @@ public class S {
   public final static IBuiltInSymbol RankedMin = S.initFinalSymbol("RankedMin", ID.RankedMin);
 
   /**
+   * Raster3D(x) - TODO describe `Raster3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Raster3D.md">Raster3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Raster3D = S.initFinalSymbol("Raster3D", ID.Raster3D);
+
+  /**
    * Rational - is the head of rational numbers.
    * 
    * @see <a href=
@@ -10609,7 +11032,28 @@ public class S {
    */
   public final static IBuiltInSymbol Refine = S.initFinalSymbol("Refine", ID.Refine);
 
+  /**
+   * ReflectionTransform(v) - gives a `TransformationFunction` that represents a reflection in a
+   * mirror through the origin, normal to the vector `v`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReflectionTransform.md">ReflectionTransform
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ReflectionTransform =
+      S.initFinalSymbol("ReflectionTransform", ID.ReflectionTransform);
+
   public final static IBuiltInSymbol Region = S.initFinalSymbol("Region", ID.Region);
+
+  /**
+   * RegionBoundary(x) - TODO describe `RegionBoundary`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionBoundary.md">RegionBoundary
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionBoundary =
+      S.initFinalSymbol("RegionBoundary", ID.RegionBoundary);
 
   public final static IBuiltInSymbol RegionBounds =
       S.initFinalSymbol("RegionBounds", ID.RegionBounds);
@@ -10626,17 +11070,45 @@ public class S {
   public final static IBuiltInSymbol RegionEmbeddingDimension =
       S.initFinalSymbol("RegionEmbeddingDimension", ID.RegionEmbeddingDimension);
 
+  /**
+   * RegionEqual(x) - TODO describe `RegionEqual`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionEqual.md">RegionEqual
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionEqual = S.initFinalSymbol("RegionEqual", ID.RegionEqual);
+
   public final static IBuiltInSymbol RegionMeasure =
       S.initFinalSymbol("RegionMeasure", ID.RegionMeasure);
 
   public final static IBuiltInSymbol RegionMember =
       S.initFinalSymbol("RegionMember", ID.RegionMember);
 
+  /**
+   * RegionMoment(x) - TODO describe `RegionMoment`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionMoment.md">RegionMoment
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionMoment =
+      S.initFinalSymbol("RegionMoment", ID.RegionMoment);
+
   public final static IBuiltInSymbol RegionNearest =
       S.initFinalSymbol("RegionNearest", ID.RegionNearest);
 
   public final static IBuiltInSymbol RegionNearestFunction =
       S.initFinalSymbol("RegionNearestFunction", ID.RegionNearestFunction);
+
+  /**
+   * RegionQ(x) - TODO describe `RegionQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionQ.md">RegionQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionQ = S.initFinalSymbol("RegionQ", ID.RegionQ);
 
   public final static IBuiltInSymbol RegionWithin =
       S.initFinalSymbol("RegionWithin", ID.RegionWithin);
@@ -11211,8 +11683,9 @@ public class S {
       S.initFinalSymbol("ScalingFunctions", ID.ScalingFunctions);
 
   /**
-   * ScalingTransform(v) - gives a scaling transform of `v`. `v` may be a scalar or a vector.
-   * 
+   * ScalingTransform({s1, s2, ...}) - gives a `TransformationFunction` that scales by the factor
+   * `s1` along the first coordinate axis, by `s2` along the second and so on.
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ScalingTransform.md">ScalingTransform
    *      documentation</a>
@@ -11306,6 +11779,16 @@ public class S {
    */
   public final static IBuiltInSymbol SemanticImportString =
       S.initFinalSymbol("SemanticImportString", ID.SemanticImportString);
+
+  /**
+   * SeparateBoundaries(x) - TODO describe `SeparateBoundaries`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SeparateBoundaries.md">SeparateBoundaries
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SeparateBoundaries =
+      S.initFinalSymbol("SeparateBoundaries", ID.SeparateBoundaries);
 
   /**
    * Sequence[x1, x2, ...] - represents a sequence of arguments to a function.
@@ -11418,8 +11901,9 @@ public class S {
   public final static IBuiltInSymbol Share = S.initFinalSymbol("Share", ID.Share);
 
   /**
-   * ShearingTransform(phi, {1, 0}, {0, 1}) - gives a horizontal shear by the angle `phi`.
-   * 
+   * ShearingTransform(phi, u, n) - gives a `TransformationFunction` that shears by the angle `phi`
+   * in the direction of the vector `u`, normal to the vector `n` and leaves the origin fixed.
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ShearingTransform.md">ShearingTransform
    *      documentation</a>
@@ -11780,6 +12264,16 @@ public class S {
       S.initFinalSymbol("SphericalPlot3D", ID.SphericalPlot3D);
 
   /**
+   * SphericalShell(x) - TODO describe `SphericalShell`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SphericalShell.md">SphericalShell
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SphericalShell =
+      S.initFinalSymbol("SphericalShell", ID.SphericalShell);
+
+  /**
    * Splice(list-of-elements) - the `list-of-elements` will automatically be converted into a
    * `Sequence` of elements.
    * 
@@ -11892,6 +12386,15 @@ public class S {
   public final static IBuiltInSymbol SquareUnion = S.initFinalSymbol("SquareUnion", ID.SquareUnion);
 
   /**
+   * SquareWave(x) - TODO describe `SquareWave`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SquareWave.md">SquareWave
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SquareWave = S.initFinalSymbol("SquareWave", ID.SquareWave);
+
+  /**
    * SSSTriangle(a, b, c) - returns a triangle from 3 sides `a`, `b` and `c`.
    * 
    * @see <a href=
@@ -11918,6 +12421,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol StackBegin = S.initFinalSymbol("StackBegin", ID.StackBegin);
+
+  /**
+   * StadiumShape(x) - TODO describe `StadiumShape`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StadiumShape.md">StadiumShape
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StadiumShape =
+      S.initFinalSymbol("StadiumShape", ID.StadiumShape);
 
   /**
    * StandardDeviation(list) - computes the standard deviation of `list`. `list` may consist of
@@ -13074,6 +13587,15 @@ public class S {
       S.initFinalSymbol("TortoiseShellBracket", ID.TortoiseShellBracket);
 
   /**
+   * Torus(x) - TODO describe `Torus`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Torus.md">Torus
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Torus = S.initFinalSymbol("Torus", ID.Torus);
+
+  /**
    * ToSphericalCoordinates({x, y, z}) - returns the spherical coordinates for the cartesian
    * coordinates `{x, y, z}`.
    * 
@@ -13154,6 +13676,16 @@ public class S {
   public final static IBuiltInSymbol TransformationFunction =
       S.initFinalSymbol("TransformationFunction", ID.TransformationFunction);
 
+  /**
+   * TransformedRegion(x) - TODO describe `TransformedRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TransformedRegion.md">TransformedRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TransformedRegion =
+      S.initFinalSymbol("TransformedRegion", ID.TransformedRegion);
+
   public final static IBuiltInSymbol TransitiveClosure =
       S.initFinalSymbol("TransitiveClosure", ID.TransitiveClosure);
 
@@ -13213,8 +13745,48 @@ public class S {
 
   public final static IBuiltInSymbol Triangle = S.initFinalSymbol("Triangle", ID.Triangle);
 
+  /**
+   * TriangleCenter(tri, type) - returns the coordinates of the center of the specified `type` for
+   * the triangle `tri`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TriangleCenter.md">TriangleCenter
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol TriangleCenter =
       S.initFinalSymbol("TriangleCenter", ID.TriangleCenter);
+
+  /**
+   * TriangleConstruct(tri, type) - returns the geometric construct of the specified `type` for the
+   * triangle `tri`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TriangleConstruct.md">TriangleConstruct
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TriangleConstruct =
+      S.initFinalSymbol("TriangleConstruct", ID.TriangleConstruct);
+
+  /**
+   * TriangleMeasurement(tri, type) - returns the value of the measurement `type` for the triangle
+   * `tri`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TriangleMeasurement.md">TriangleMeasurement
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TriangleMeasurement =
+      S.initFinalSymbol("TriangleMeasurement", ID.TriangleMeasurement);
+
+  /**
+   * TriangleWave(x) - TODO describe `TriangleWave`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TriangleWave.md">TriangleWave
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TriangleWave =
+      S.initFinalSymbol("TriangleWave", ID.TriangleWave);
 
   public final static IBuiltInSymbol Trig = S.initFinalSymbol("Trig", ID.Trig);
 

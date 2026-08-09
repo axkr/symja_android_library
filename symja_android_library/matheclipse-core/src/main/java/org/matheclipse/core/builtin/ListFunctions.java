@@ -1819,7 +1819,12 @@ public final class ListFunctions {
         if (ast.isAST0()) {
           return S.Identity;
         }
-        return ast.remove(x -> x.equals(S.Identity));
+        IAST removed = ast.remove(x -> x.equals(S.Identity));
+        IExpr composed = composeTransformationFunctions(removed.orElse(ast));
+        if (composed.isPresent()) {
+          return composed;
+        }
+        return removed;
       }
       if (ast.head().isAST()) {
 
@@ -1838,6 +1843,44 @@ public final class ListFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Fuse runs of adjacent {@link S#TransformationFunction} arguments into a single
+     * {@link S#TransformationFunction} of the matrix product of their matrices, because
+     * <code>Composition(TransformationFunction(a), TransformationFunction(b))</code> is the
+     * transformation <code>TransformationFunction(a.b)</code>.
+     *
+     * @param composition a <code>Composition(...)</code> expression
+     * @return {@link F#NIL} if no two adjacent {@link S#TransformationFunction}s were found
+     */
+    private static IExpr composeTransformationFunctions(IAST composition) {
+      final int size = composition.size();
+      IASTAppendable result = F.ast(S.Composition, size);
+      boolean evaled = false;
+      int i = 1;
+      while (i < size) {
+        int j = i;
+        while (j < size && composition.get(j).isAST(S.TransformationFunction, 2)) {
+          j++;
+        }
+        if (j > i + 1) {
+          IASTAppendable dot = F.ast(S.Dot, j - i);
+          for (int k = i; k < j; k++) {
+            dot.append(composition.get(k).first());
+          }
+          result.append(F.TransformationFunction(dot));
+          evaled = true;
+          i = j;
+          continue;
+        }
+        result.append(composition.get(i));
+        i++;
+      }
+      if (!evaled) {
+        return F.NIL;
+      }
+      return result.isAST1() ? result.arg1() : result;
     }
 
     @Override

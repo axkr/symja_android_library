@@ -1416,6 +1416,10 @@ public class F extends S {
     return new AST2(AddSides, equationOrInequality, a1);
   }
 
+  public static IAST AffineTransform(final IExpr a0) {
+    return new AST1(AffineTransform, a0);
+  }
+
   public static IAST AiryAi(final IExpr a0) {
     return new AST1(AiryAi, a0);
   }
@@ -9764,6 +9768,14 @@ public class F extends S {
     return new AST2(Refine, a0, a1);
   }
 
+  public static IAST ReflectionTransform(final IExpr a0) {
+    return new AST1(ReflectionTransform, a0);
+  }
+
+  public static IAST ReflectionTransform(final IExpr a0, final IExpr a1) {
+    return new AST2(ReflectionTransform, a0, a1);
+  }
+
   public static IAST RegionMember(final IExpr a0, final IExpr a1) {
     return new AST2(RegionMember, a0, a1);
   }
@@ -10058,6 +10070,14 @@ public class F extends S {
     return new AST1(ScalingTransform, z);
   }
 
+  public static IAST ScalingTransform(final IExpr a0, final IExpr a1) {
+    return new AST2(ScalingTransform, a0, a1);
+  }
+
+  public static IAST ScalingTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(ScalingTransform, a0, a1, a2);
+  }
+
   public static IAST Scaled(final double s) {
     return new AST1(Scaled, F.num(s));
   }
@@ -10202,6 +10222,11 @@ public class F extends S {
 
   public static IAST ShearingTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(ShearingTransform, a0, a1, a2);
+  }
+
+  public static IAST ShearingTransform(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
+    return quaternary(ShearingTransform, a0, a1, a2, a3);
   }
 
   /**

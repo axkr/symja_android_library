@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -32,6 +33,7 @@ public class ArcLength extends AbstractFunctionEvaluator {
       if (arg1.isAST(S.Region, 1)) {
         arg1 = arg1.first();
       }
+      arg1 = MeshFunctions.normalizeRegion(arg1);
 
       if (arg1.isAST()) {
         IAST reg = (IAST) arg1;

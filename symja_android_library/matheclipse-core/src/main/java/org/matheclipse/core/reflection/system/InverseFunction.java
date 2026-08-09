@@ -77,6 +77,11 @@ public class InverseFunction extends AbstractFunctionEvaluator {
           }
         }
       }
+    } else if (arg1.isAST(S.TransformationFunction, 2)) {
+      if (ast.isAST1()) {
+        // the inverse transformation is defined by the inverse of the transformation matrix
+        return F.TransformationFunction(F.Inverse(arg1.first()));
+      }
     } else if (arg1.isASTSizeGE(S.Composition, 2) || arg1.isASTSizeGE(S.RightComposition, 2)) {
       IAST composition = (IAST) arg1;
       if (composition.forAll(x -> x.isSymbol())) {
