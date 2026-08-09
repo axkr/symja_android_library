@@ -62,7 +62,7 @@ public class VectorTest extends ExprEvaluatorTestCase {
   @Test
   public void testVectorLessMatrix() {
 
-    check("m1 = RandomReal({.99, 2}, {4, 4});m2 = RandomReal({0, 1.01}, {4, 4});", //
+    check("m1 = RandomReal({.99, 2}, {4, 4});m2 = RandomReal({0, 0.98}, {4, 4});", //
         "");
     check("VectorLess({m2, m1})", //
         "True");

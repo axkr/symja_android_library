@@ -382,21 +382,44 @@ public class TensorTest extends ExprEvaluatorTestCase {
 
 
   @Test
+  public void testAffineTransform() {
+    // AffineTransform(m) maps the vector r to m.r
+    check("AffineTransform({{2, 0}, {0, 2}})", //
+        "TransformationFunction({{2,0,0},{0,2,0},{0,0,1}})");
+    // AffineTransform({m, v}) maps the vector r to m.r+v
+    check("AffineTransform({{{1, 0}, {0, 1}}, {1, 2}})", //
+        "TransformationFunction({{1,0,1},{0,1,2},{0,0,1}})");
+    check("AffineTransform({{a, b}, {c, d}})[{x, y}]", //
+        "{a*x+b*y,c*x+d*y}");
+  }
+
+  @Test
+  public void testReflectionTransform() {
+    check("ReflectionTransform({1, 0})", //
+        "TransformationFunction({{-1,0,0},{0,1,0},{0,0,1}})");
+    check("ReflectionTransform({1, 1})", //
+        "TransformationFunction({{0,-1,0},{-1,0,0},{0,0,1}})");
+    // the mirror goes through the point {0, 2}
+    check("ReflectionTransform({0, 1}, {0, 2})", //
+        "TransformationFunction({{1,0,0},{0,-1,4},{0,0,1}})");
+    check("ReflectionTransform({1, 0})[{-1, 1}]", //
+        "{1,1}");
+  }
+
+  @Test
   public void testRotationTransform() {
     check("TransformationFunction(#2)[Sequence()]", //
         "TransformationFunction(#2)[]"); //
 
     check("RotationTransform(Pi).TranslationTransform({1, -1})", //
-        "TransformationFunction(\n" //
-            + "{{-1,0,-1},\n" //
-            + " {0,-1,1},\n" //
-            + " {0,0,1}})"); //
+        "TransformationFunction({{-1,0,-1},{0,-1,1},{0,0,1}})"); //
 
     check("TranslationTransform({1, -1}).RotationTransform(Pi)", //
-        "TransformationFunction(\n" //
-            + "{{-1,0,1},\n" //
-            + " {0,-1,-1},\n" //
-            + " {0,0,1}})"); //
+        "TransformationFunction({{-1,0,1},{0,-1,-1},{0,0,1}})"); //
+
+    // rotate around the point {1, 0}
+    check("RotationTransform(Pi/2, {1, 0})", //
+        "TransformationFunction({{0,-1,1},{1,0,-1},{0,0,1}})");
 
     check("RotationTransform(alpha)", //
         "TransformationFunction({{Cos(alpha),-Sin(alpha),0},{Sin(alpha),Cos(alpha),0},{0,\n" //
@@ -406,20 +429,75 @@ public class TensorTest extends ExprEvaluatorTestCase {
   @Test
   public void testScalingTransform() {
     check("ScalingTransform({a, b, c})", //
-        "TransformationFunction(\n" //
-            + "{{a,0,0,0},\n" //
-            + " {0,b,0,0},\n" //
-            + " {0,0,c,0},\n" //
-            + " {0,0,0,1}})");
+        "TransformationFunction({{a,0,0,0},{0,b,0,0},{0,0,c,0},{0,0,0,1}})");
 
+    // ScalingTransform({s1, s2, ...}) - scale along the coordinate axes
+    check("ScalingTransform({2, 3})", //
+        "TransformationFunction({{2,0,0},{0,3,0},{0,0,1}})");
+    check("ScalingTransform({2})", //
+        "TransformationFunction({{2,0},{0,1}})");
+    check("ScalingTransform({2, 3, 4})", //
+        "TransformationFunction({{2,0,0,0},{0,3,0,0},{0,0,4,0},{0,0,0,1}})");
+    check("ScalingTransform({sx, sy})", //
+        "TransformationFunction({{sx,0,0},{0,sy,0},{0,0,1}})");
+    check("ScalingTransform({2, 3})[{1, 1}]", //
+        "{2,3}");
+    check("ScalingTransform({2})[{5}]", //
+        "{10}");
+
+    // ScalingTransform({s1, s2, ...}, p) - leave the point p fixed
+    check("ScalingTransform({2, 3}, {1, 1})", //
+        "TransformationFunction({{2,0,-1},{0,3,-2},{0,0,1}})");
+    check("ScalingTransform({2, 3}, {5, 5})", //
+        "TransformationFunction({{2,0,-5},{0,3,-10},{0,0,1}})");
+    check("ScalingTransform({2, 3, 4}, {1, 1, 1})", //
+        "TransformationFunction({{2,0,0,-1},{0,3,0,-2},{0,0,4,-3},{0,0,0,1}})");
+    check("ScalingTransform({2, 3}, {1, 1})[{2, 2}]", //
+        "{3,4}");
+
+    // ScalingTransform(s, v) - scale by the factor s along the direction v
+    check("ScalingTransform(2, {1, 0})", //
+        "TransformationFunction({{2,0,0},{0,1,0},{0,0,1}})");
+    check("ScalingTransform(2, {1, 1})", //
+        "TransformationFunction({{3/2,1/2,0},{1/2,3/2,0},{0,0,1}})");
+    check("ScalingTransform(3, {1, 2, 2})", //
+        "TransformationFunction({{11/9,4/9,4/9,0},{4/9,17/9,8/9,0},{4/9,8/9,17/9,0},{0,0,\n" //
+            + "0,1}})");
     check("ScalingTransform(s,{1,1})", //
         "TransformationFunction({{1/2*(1+s),1/2*(-1+s),0},{1/2*(-1+s),1/2*(1+s),0},{0,0,1}})");
+
+    // ScalingTransform(s, v, p) - leave the point p fixed
+    check("ScalingTransform(2, {0, 1}, {3, 4})", //
+        "TransformationFunction({{1,0,0},{0,2,-4},{0,0,1}})");
+    check("ScalingTransform(2, {1, 0}, {5, 5})", //
+        "TransformationFunction({{2,0,-5},{0,1,0},{0,0,1}})");
+    check("ScalingTransform(2, {1, 1}, {1, 1})", //
+        "TransformationFunction({{3/2,1/2,-1},{1/2,3/2,-1},{0,0,1}})");
+    check("ScalingTransform(2, {1, 1}, {1, 1})[{1, 1}]", //
+        "{1,1}");
+
+    // the direction vector must have a non zero magnitude
+    check("ScalingTransform(2, {0, 0})", //
+        "ScalingTransform(2,{0,0})");
+
+    check("Attributes(ScalingTransform)", //
+        "{Protected,ReadProtected}");
   }
 
   @Test
   public void testShearingTransform() {
     check("ShearingTransform(\\[Theta], {1, 0}, {0, 1})", //
         "TransformationFunction({{1,Tan(θ),0},{0,1,0},{0,0,1}})");
+    check("ShearingTransform(Pi/4, {1, 0}, {0, 1})", //
+        "TransformationFunction({{1,1,0},{0,1,0},{0,0,1}})");
+    // works in any number of dimensions
+    check("ShearingTransform(Pi/4, {1, 0, 0}, {0, 1, 0}, {1, 2, 3})", //
+        "TransformationFunction({{1,1,0,-2},{0,1,0,0},{0,0,1,0},{0,0,0,1}})");
+    // leave the point p fixed
+    check("ShearingTransform(Pi/4, {1, 0}, {0, 1}, {2, 3})", //
+        "TransformationFunction({{1,1,-3},{0,1,0},{0,0,1}})");
+    check("ShearingTransform(Pi/6, {0, 1}, {1, 0}, {1, 1})", //
+        "TransformationFunction({{1,0,0},{1/Sqrt(3),1,-1/Sqrt(3)},{0,0,1}})");
   }
 
   @Test
@@ -428,33 +506,68 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "");
     check("r({x, y})", //
         "{x*Cos(θ)-y*Sin(θ),y*Cos(θ)+x*Sin(θ)}");
+
+    // transformations compose with Dot(...) and Composition(...)
+    check("TranslationTransform({a, b}) . TranslationTransform({c, d})", //
+        "TransformationFunction({{1,0,a+c},{0,1,b+d},{0,0,1}})");
+    check("Composition(TranslationTransform({a, b}), TranslationTransform({c, d}))", //
+        "TransformationFunction({{1,0,a+c},{0,1,b+d},{0,0,1}})");
+    check("Composition(TranslationTransform({1, 2}), RotationTransform(Pi/2))", //
+        "TransformationFunction({{0,-1,1},{1,0,2},{0,0,1}})");
+    check("TranslationTransform({1, 2}) @* RotationTransform(Pi/2)", //
+        "TransformationFunction({{0,-1,1},{1,0,2},{0,0,1}})");
+    check("Composition(TranslationTransform({1, 2}), RotationTransform(Pi/2))[{1, 0}]", //
+        "{1,3}");
+    // only adjacent TransformationFunctions are composed
+    check("Composition(TranslationTransform({1, 2}), f)", //
+        "TransformationFunction({{1,0,1},{0,1,2},{0,0,1}})@*f");
+  }
+
+  @Test
+  public void testInverseFunctionTransformationFunction() {
+    check("InverseFunction(TranslationTransform({1, 2}))", //
+        "TransformationFunction({{1,0,-1},{0,1,-2},{0,0,1}})");
+    check("InverseFunction(TranslationTransform({a, b}))", //
+        "TransformationFunction({{1,0,-a},{0,1,-b},{0,0,1}})");
+    check("InverseFunction(TransformationFunction({{2, 0, 0}, {0, 2, 0}, {0, 0, 1}}))", //
+        "TransformationFunction({{1/2,0,0},{0,1/2,0},{0,0,1}})");
+    check("InverseFunction(TranslationTransform({1, 2}))[{5, 5}]", //
+        "{4,3}");
+    check("InverseFunction(RotationTransform(Pi/2))[{0, 1}]", //
+        "{1,0}");
+    check("InverseFunction(ScalingTransform({2, 4}))[{2, 4}]", //
+        "{1,1}");
+    check("InverseFunction(AffineTransform({{2, 0}, {0, 2}}))[{2, 2}]", //
+        "{1,1}");
+    check("InverseFunction(ShearingTransform(Pi/4, {1, 0}, {0, 1}))[{2, 1}]", //
+        "{1,1}");
+    check("InverseFunction(ReflectionTransform({1, 0}))[{-1, 1}]", //
+        "{1,1}");
+    check("InverseFunction(TranslationTransform({1, 2}))[TranslationTransform({1, 2})[{3, 4}]]", //
+        "{3,4}");
+    check(
+        "Composition(TranslationTransform({1, 2}), InverseFunction(TranslationTransform({1, 2})))", //
+        "TransformationFunction({{1,0,0},{0,1,0},{0,0,1}})");
+    // Inverse() is not defined for a TransformationFunction
+    check("Inverse(TranslationTransform({1, 2}))", //
+        "Inverse(TransformationFunction({{1,0,1},{0,1,2},{0,0,1}}))");
   }
 
   @Test
   public void testTranslationTransform() {
 
     check("t = TranslationTransform({x0, y0})", //
-        "TransformationFunction(\n" //
-            + "{{1,0,x0},\n" //
-            + " {0,1,y0},\n" //
-            + " {0,0,1}})");
+        "TransformationFunction({{1,0,x0},{0,1,y0},{0,0,1}})");
     check("t({x, y})", //
         "{x+x0,y+y0}");
 
 
     check("TranslationTransform({a,b,c,d})", //
-        "TransformationFunction(\n" //
-            + "{{1,0,0,0,a},\n" //
-            + " {0,1,0,0,b},\n" //
-            + " {0,0,1,0,c},\n" //
-            + " {0,0,0,1,d},\n" //
-            + " {0,0,0,0,1}})");
+        "TransformationFunction({{1,0,0,0,a},{0,1,0,0,b},{0,0,1,0,c},{0,0,0,1,d},{0,0,0,0,\n" //
+            + "1}})");
 
     check("TranslationTransform({1, 2})", //
-        "TransformationFunction(\n" //
-            + "{{1,0,1},\n" //
-            + " {0,1,2},\n" //
-            + " {0,0,1}})"); //
+        "TransformationFunction({{1,0,1},{0,1,2},{0,0,1}})"); //
   }
 
   @Test
