@@ -555,20 +555,57 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("ZernikeR(2,2,p)", //
         "p^2");
     check("ZernikeR(3,1,p)", //
-        "-2*p+3*p^3");
+        "p*(-2+3*p^2)");
     check("ZernikeR(3,3,p)", //
         "p^3");
     check("ZernikeR(6,4,p)", //
-        "-5*p^4+6*p^6");
+        "p^4*(-5+6*p^2)");
 
     checkNumeric("ZernikeR(3, 1, 0.5)", //
         "-0.625");
     check("ZernikeR(5,3,r)", //
-        "-4*r^3+5*r^5");
+        "r^3*(-4+5*r^2)");
     check("ZernikeR(10,7,r)", //
         "0");
     check("ZernikeR(7,10,r)", //
         "0");
+
+    check("ZernikeR(5, 1, x)", //
+        "x*(3-12*x^2+10*x^4)");
+    check("ZernikeR(4, 2, x)", //
+        "x^2*(-3+4*x^2)");
+    check("ZernikeR(7, 3, x)", //
+        "x^3*(10-30*x^2+21*x^4)");
+    check("ZernikeR(0, 0, x)", //
+        "1");
+    check("ZernikeR(4, 0, x)", //
+        "1-6*x^2+6*x^4");
+    check("ZernikeR(8, 0, x)", //
+        "1-20*x^2+90*x^4-140*x^6+70*x^8");
+    check("ZernikeR(1, 1, x)", //
+        "x");
+    check("ZernikeR(2, 2, x)", //
+        "x^2");
+    check("ZernikeR(3, 3, x)", //
+        "x^3");
+    // m > n
+    check("ZernikeR(2, 4, x)", //
+        "0");
+    // n-m is odd
+    check("ZernikeR(4, 1, x)", //
+        "0");
+    check("ZernikeR(5, 2, x)", //
+        "0");
+    check("ZernikeR(6, 2, 1/2)", //
+        "31/64");
+    check("ZernikeR(3, 1, 0.5)", //
+        "-0.625");
+    check("ZernikeR(5, 1, 0.5)", //
+        "0.3125");
+    check("N(ZernikeR(6, 2, 1/2))", //
+        "0.484375");
+    check("ZernikeR(n, m, x)", //
+        "ZernikeR(n,m,x)");
     check("N(ZernikeR(1/5, 2/3, 1/7), 50)", //
         "0.16624107895274857519231711412376921850667019765573");
 

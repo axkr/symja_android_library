@@ -3682,6 +3682,24 @@ public class PolynomialFunctions {
               F.Plus(F.C1, F.Times(F.CN2, F.Sqr(r)))));
     }
 
+    /**
+     * The <code>Cos(1/2*(-m+n)*Pi)*JacobiP(1/2*(-m+n),m,0,1-2*r^2)</code> part of
+     * {@link #functionExpand(IExpr, IExpr, IExpr)} expanded into a polynomial in <code>r</code>.
+     *
+     * <p>
+     * The <code>r^m</code> prefactor is left out here, so that the result of <code>ZernikeR</code>
+     * is returned in the form <code>r^m*(...)</code>.
+     *
+     * @param n
+     * @param m
+     * @param r
+     */
+    private static IExpr radialPolynomial(IExpr n, IExpr m, IExpr r) {
+      IExpr degree = F.Times(F.C1D2, F.Plus(F.Negate(m), n));
+      return F.evalExpand(F.Times(F.Cos(F.Times(degree, F.Pi)),
+          F.JacobiP(degree, m, F.C0, F.Plus(F.C1, F.Times(F.CN2, F.Sqr(r))))));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
@@ -3689,7 +3707,12 @@ public class PolynomialFunctions {
       IExpr r = ast.arg3();
 
       if (n.isInteger() && m.isInteger()) {
-        return F.evalExpand(functionExpand(n, m, r));
+        IExpr polynomial = radialPolynomial(n, m, r);
+        if (!polynomial.isFree(S.JacobiP, true)) {
+          // JacobiP() isn't defined for a degree 1/2*(-m+n) <= -2
+          return F.NIL;
+        }
+        return engine.evaluate(F.Times(F.Power(r, m), polynomial));
       }
       return F.NIL;
     }
