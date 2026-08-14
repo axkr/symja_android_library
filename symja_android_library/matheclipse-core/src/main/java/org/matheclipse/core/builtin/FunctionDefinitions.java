@@ -438,6 +438,7 @@ public final class FunctionDefinitions {
     StatisticsFunctions.initialize();
     StatisticsContinousDistribution.initialize();
     StatisticsDiscreteDistributions.initialize();
+    StatisticsDerivedDistributions.initialize();
     StatisticalMomentFunctions.initialize();
     HypergeometricFunctions.initialize();
     EllipticIntegrals.initialize();
@@ -449,6 +450,7 @@ public final class FunctionDefinitions {
     CurveFitterFunctions.initialize();
     VectorAnalysisFunctions.initialize();
     QuantityFunctions.initialize();
+    DateTimeFunctions.initialize();
     IntervalFunctions.initialize();
     FinancialFunctions.initialize();
     WXFFunctions.initialize();
