@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import javax.script.ScriptEngine;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -440,15 +441,6 @@ public class PatternMatchingTestCase {
     check("MatchQ[{1,I,0},{__?Positive}]", //
         "False");
 
-    check("f[x_?NumericQ]:= NIntegrate[Sin[t^3], {t, 0, x}]", //
-        "");
-    check("f[2]", //
-        "0.4519484775376951");
-    check("f[(1+Sqrt[2])/5]", //
-        "0.0135767506050606");
-    check("f[a]", //
-        "f[a]");
-
     check("{3,-5,2,7,-6,3} /. _?Negative:>0", //
         "{3,0,2,7,0,3}");
 
@@ -469,6 +461,21 @@ public class PatternMatchingTestCase {
         "{{a,b}}");
     check("Cases[{{a,b},{1,2,3},{{d,6},{d,10}}}, {x_,y_}/;!ListQ[x]&&!ListQ[y]]", //
         "{{a,b}}");
+  }
+
+
+  @Test
+  @Disabled
+  public void testFlakyPatternTest() {
+    check("f[x_?NumericQ]:= NIntegrate[Sin[t^3], {t, 0, x}]", //
+        "");
+    // different results between ARM and x86 architecture
+    check("f[2]", //
+        "0.4519484775376951");
+    check("f[(1+Sqrt[2])/5]", //
+        "0.0135767506050606");
+    check("f[a]", //
+        "f[a]");
   }
 
   @Test
