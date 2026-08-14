@@ -48,7 +48,11 @@ import * as THREE_MODULE from 'three';
   // 3. Expose it globally so prototype.js and symja.js can find 'window.THREE'
   window.THREE = THREE;
 
-  console.log("Three.js loaded (Mutable Mode with OrbitControls)");
+  // 4. Module scripts are deferred, so a graphic emitted while the page was parsing has
+  //    parked itself on the queue and is waiting for three.js to arrive
+  if (typeof window.drainSymjaWebGLQueue === 'function') {
+    window.drainSymjaWebGLQueue();
+  }
 </script>
  
 <script type="text/javascript" src="/media/js/mathjax/MathJax.js?config=MML_HTMLorMML&amp;delayStartupUntil=configured"></script>

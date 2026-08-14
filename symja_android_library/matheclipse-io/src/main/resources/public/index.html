@@ -53,6 +53,11 @@ import * as THREE_MODULE from 'three';
 
   // 3. Expose it globally so prototype.js and symja.js can find 'window.THREE'
   window.THREE = THREE;
+
+  // a graphic emitted while the page was parsing waits on this queue for three.js to arrive
+  if (typeof window.drainSymjaWebGLQueue === 'function') {
+    window.drainSymjaWebGLQueue();
+  }
 </script>
  
 <script type="text/javascript" src="/media/js/mathjax/MathJax.js?config=MML_HTMLorMML&amp;delayStartupUntil=configured"></script>
