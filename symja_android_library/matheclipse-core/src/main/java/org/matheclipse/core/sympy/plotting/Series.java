@@ -37,6 +37,20 @@ public class Series {
     private final SortedSet<Plot.Point> plot = new TreeSet<>((s, t) -> Double.compare(s.x, t.x));
 
     /**
+     * Seed of the jitter used when subdividing a sampling interval.
+     *
+     * <p>
+     * The adaptive sampler splits an interval near, but not exactly at, its midpoint: splitting
+     * exactly in half resonates with periodic functions and produces visible aliasing. The offset
+     * therefore has to vary, but it does not have to be unpredictable, and drawing it from the
+     * global random source made the same plot come out different on every evaluation, which left
+     * the output impossible to compare or regression test.
+     */
+    private static final long SAMPLING_SEED = 0x5eed_1234L;
+
+    private java.util.Random jitter = new java.util.Random(SAMPLING_SEED);
+
+    /**
      * Create an adaptive sampling series over [start, end].
      *
      * @param f function to sample
@@ -117,7 +131,7 @@ public class Series {
      * @param depth current recursion depth
      */
     private void sample(double[] p, double[] q, int depth) {
-      double random = 0.45 + Math.random() * 0.1;
+      double random = 0.45 + jitter.nextDouble() * 0.1;
       double xnew;
       if (xScale.equals("Log") || xScale.equals("Log10")) {
         xnew = Math.pow(10.0, (Math.log10(p[0]) + random * (Math.log10(q[0]) - Math.log10(p[0]))));
@@ -218,6 +232,8 @@ public class Series {
       }
       double start = evalf(this.fStart);
       double end = evalf(this.fEnd);
+      // restart the jitter sequence so that sampling the same series twice gives the same points
+      jitter = new java.util.Random(SAMPLING_SEED);
       plot.add(new Plot.Point(this.fStart, start));
       sample(new double[] {fStart, start}, new double[] {fEnd, end}, 0);
       return plot;

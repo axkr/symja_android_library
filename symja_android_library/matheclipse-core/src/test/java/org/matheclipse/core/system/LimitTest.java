@@ -1038,7 +1038,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("DiscreteLimit((n / (n + 2)) * E^(-m / (m + 1)), {m -> Infinity, n -> Infinity})", //
         "1/E");
 
-    // examples from the Wolfram reference page
+    // examples from the WMA reference page
     check("DiscreteLimit((3 * n^2) / (n^2 + 5), n -> Infinity)", //
         "3");
     check("DiscreteLimit(E^n, n -> -Infinity)", //

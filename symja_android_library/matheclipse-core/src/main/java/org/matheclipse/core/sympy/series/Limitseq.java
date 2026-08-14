@@ -11,8 +11,7 @@ public class Limitseq {
 
   public static IExpr limit_seq(IExpr expr, IExpr n, int trials) {
     EvalEngine engine = new EvalEngine();
-    IExpr lim_val =
-        engine.evaluateNIL(F.Limit(expr, F.Rule(n, F.oo)));
+    IExpr lim_val = engine.evaluateNIL(F.Limit(expr, F.Rule(n, F.oo)));
     return lim_val;
   }
 }

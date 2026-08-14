@@ -124,13 +124,13 @@ public class SeriesFunctions {
      *
      * <p>
      * The Taylor coefficients are used as symbolic {@link IExpr} coefficients, so this also works
-     * for a function with unknown coefficients like <code>f(x)</code>, whose Taylor coefficients are
-     * the derivatives <code>f(x0), f'(x0), f''(x0)/2, ...</code>
+     * for a function with unknown coefficients like <code>f(x)</code>, whose Taylor coefficients
+     * are the derivatives <code>f(x0), f'(x0), f''(x0)/2, ...</code>
      *
      * <p>
      * If the series has a pole of order <code>p</code> at <code>x0</code>, the approximant of the
-     * regular function <code>(x-x0)^p*function</code> of order <code>{m, n-p}</code> is computed and
-     * the pole is factored back into the denominator. The numerator degree therefore stays
+     * regular function <code>(x-x0)^p*function</code> of order <code>{m, n-p}</code> is computed
+     * and the pole is factored back into the denominator. The numerator degree therefore stays
      * <code>&lt;= m</code> and the denominator degree stays <code>&lt;= n</code>.
      *
      * @return {@link F#NIL} if no approximant could be computed
@@ -150,8 +150,8 @@ public class SeriesFunctions {
         // ones a Pade approximant of order {m, n} consumes).
         IExpr normal = engine.evaluate(F.Normal(seriesExpr));
         if (!normal.equals(function) && engine.evaluate(F.PolynomialQ(normal, x)).isTrue()) {
-          return engine.evaluate(
-              F.PadeApproximant(normal, F.List(x, x0, F.List(F.ZZ(m), F.ZZ(n)))));
+          return engine
+              .evaluate(F.PadeApproximant(normal, F.List(x, x0, F.List(F.ZZ(m), F.ZZ(n)))));
         }
         // a genuine Puiseux series has fractional exponents a rational approximant can't represent
         return F.NIL;
@@ -211,8 +211,8 @@ public class SeriesFunctions {
      * @param a the Taylor coefficients <code>a[0], ..., a[m+n]</code>
      * @param m degree of the approximant numerator
      * @param n degree of the approximant denominator
-     * @return the coefficients <code>q[0], ..., q[n]</code> or <code>null</code> if the system has no
-     *         solution
+     * @return the coefficients <code>q[0], ..., q[n]</code> or <code>null</code> if the system has
+     *         no solution
      */
     private static IExpr[] padeDenominatorCoefficients(IExpr[] a, int m, int n, EvalEngine engine) {
       IExpr[] q = new IExpr[n + 1];
@@ -233,7 +233,8 @@ public class SeriesFunctions {
       }
 
       // a rank deficient system is solved for one particular solution, which reduces the order of
-      // the approximant; `LinearSolve` reports the deficiency in messages which aren't relevant here
+      // the approximant; `LinearSolve` reports the deficiency in messages which aren't relevant
+      // here
       final boolean quietMode = engine.isQuietMode();
       IExpr solution;
       try {
@@ -254,8 +255,8 @@ public class SeriesFunctions {
     }
 
     /**
-     * Return the Taylor coefficient <code>a[k]</code>, or <code>0</code> if <code>k</code> is outside
-     * the computed range.
+     * Return the Taylor coefficient <code>a[k]</code>, or <code>0</code> if <code>k</code> is
+     * outside the computed range.
      */
     private static IExpr coefficient(IExpr[] a, int k) {
       return (k < 0 || k >= a.length) ? F.C0 : a[k];
@@ -279,11 +280,12 @@ public class SeriesFunctions {
      * coefficient.
      *
      * <p>
-     * The linear system which is solved for the Pade approximant divides by the series coefficients.
-     * For symbolic coefficients (for example the Taylor coefficients <code>f'(0), f''(0),...</code>
-     * of an unknown function <code>f</code>) that leaves the result as a sum of deeply nested
-     * fractions. Collecting the powers of <code>x</code> and combining each coefficient over a
-     * common denominator recovers the compact form. For purely numeric coefficients this is a no-op.
+     * The linear system which is solved for the Pade approximant divides by the series
+     * coefficients. For symbolic coefficients (for example the Taylor coefficients
+     * <code>f'(0), f''(0),...</code> of an unknown function <code>f</code>) that leaves the result
+     * as a sum of deeply nested fractions. Collecting the powers of <code>x</code> and combining
+     * each coefficient over a common denominator recovers the compact form. For purely numeric
+     * coefficients this is a no-op.
      */
     private static IExpr collectCoefficients(IExpr poly, IExpr x, EvalEngine engine) {
       return engine.evaluate(F.ternaryAST3(S.Collect, poly, x, S.Together));
@@ -297,8 +299,8 @@ public class SeriesFunctions {
      * @throws JASConversionException if numerator and denominator aren't polynomials in
      *         <code>x</code> with rational coefficients, or <code>x0</code> isn't a rational number
      */
-    private static IExpr quotientTaylorFunction(IExpr[] numeratorDenominatorParts, IExpr x, IExpr x0,
-        final int m, final int n, EvalEngine engine) throws JASConversionException {
+    private static IExpr quotientTaylorFunction(IExpr[] numeratorDenominatorParts, IExpr x,
+        IExpr x0, final int m, final int n, EvalEngine engine) throws JASConversionException {
       if (!x0.isRational()) {
         throw JASConversionException.FAILED;
       }
@@ -714,7 +716,7 @@ public class SeriesFunctions {
    *
    *
    * <pre>
-   * O(x)^n
+   * O(x) ^ n
    * </pre>
    *
    * <blockquote>
@@ -1402,9 +1404,9 @@ public class SeriesFunctions {
      *
      * <p>
      * The coefficient of <code>x^n</code> in <code>(a + b*x)^p</code> is
-     * <code>b^n * a^(p-n) * Binomial(p, n)</code>. When <code>p</code> is a non-negative integer the
-     * expansion is finite, so the index is bounded by <code>0 &lt;= n &lt;= p</code>; otherwise the
-     * series runs for all <code>n &gt;= 0</code>. Returning this closed Binomial form is a
+     * <code>b^n * a^(p-n) * Binomial(p, n)</code>. When <code>p</code> is a non-negative integer
+     * the expansion is finite, so the index is bounded by <code>0 &lt;= n &lt;= p</code>; otherwise
+     * the series runs for all <code>n &gt;= 0</code>. Returning this closed Binomial form is a
      * readability improvement over the equivalent (but opaque) <code>DifferenceRoot</code> the
      * holonomic engine would otherwise emit for a finite binomial power.
      *
@@ -1434,8 +1436,8 @@ public class SeriesFunctions {
       if (a.isZero() || b.isZero()) {
         return F.NIL;
       }
-      IExpr coeff = engine
-          .evaluate(F.Times(F.Power(b, n), F.Power(a, F.Subtract(p, n)), F.Binomial(p, n)));
+      IExpr coeff =
+          engine.evaluate(F.Times(F.Power(b, n), F.Power(a, F.Subtract(p, n)), F.Binomial(p, n)));
       IExpr condition = p.isInteger() //
           ? F.LessEqual(F.C0, n, p) //
           : F.GreaterEqual(n, F.C0);

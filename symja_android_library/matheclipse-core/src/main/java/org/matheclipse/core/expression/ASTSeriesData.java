@@ -2361,8 +2361,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (expansionPoint.isInfinity() || expansionPoint.isNegativeInfinity()) {
       return engine.evaluate(F.Times(coefficient, F.Power(expansionVariable, power.negate())));
     }
-    IExpr variablePart = expansionPoint.isZero() ? expansionVariable
-        : F.Subtract(expansionVariable, expansionPoint);
+    IExpr variablePart =
+        expansionPoint.isZero() ? expansionVariable : F.Subtract(expansionVariable, expansionPoint);
     return engine.evaluate(F.Times(coefficient, F.Power(variablePart, power)));
   }
 
@@ -2638,11 +2638,12 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * series.
    *
    * <p>
-   * Operations like <code>Power</code> multiply the denominator <code>d</code> by the denominator of
-   * the exponent even if the result stays on a coarser lattice - e.g. <code>Sqrt(x)</code> expanded
-   * at <code>x==1</code> is analytic and yields <code>SeriesData(x,1,{1,0,1/2,0,-1/8,0,1/16},0,8,2)
-   * </code>, a Taylor series padded with zeros. Dividing all exponent indices and the denominator by
-   * their greatest common divisor <code>g</code> restores the canonical form
+   * Operations like <code>Power</code> multiply the denominator <code>d</code> by the denominator
+   * of the exponent even if the result stays on a coarser lattice - e.g. <code>Sqrt(x)</code>
+   * expanded at <code>x==1</code> is analytic and yields
+   * <code>SeriesData(x,1,{1,0,1/2,0,-1/8,0,1/16},0,8,2)
+   * </code>, a Taylor series padded with zeros. Dividing all exponent indices and the denominator
+   * by their greatest common divisor <code>g</code> restores the canonical form
    * <code>SeriesData(x,1,{1,1/2,-1/8,1/16},0,4,1)</code>.
    *
    * <p>
@@ -2686,8 +2687,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
     // ceiling division, also correct for the negative indices of a Laurent series
     final int newTruncate = -Math.floorDiv(-truncateOrder, gcd);
-    ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint,
-        firstNonZero / gcd, newTruncate, puiseuxDenominator / gcd);
+    ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint, firstNonZero / gcd,
+        newTruncate, puiseuxDenominator / gcd);
     for (int i = firstNonZero; i < truncateOrder; i += gcd) {
       IExpr coefficient = coefficient(i);
       if (coefficient != null && !coefficient.isZero()) {
