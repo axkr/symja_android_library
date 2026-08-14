@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.GraphicsUtil;
@@ -254,11 +253,10 @@ public class AJAXQueryServlet extends HttpServlet {
           }
           if (outExpr.isGraphicsObject()) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, engine)) {
-              String svg = buf.toString();
-              return JSONBuilder.createJSONJavaScript(
-                  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"400\" style=\"max-width: 100%; height: auto;\" viewBox=\"0 0 600 400\">"
-                      + svg + "</svg>");
+            // the converter emits its own <svg> root, sized from the ImageSize option; wrapping it
+            // in a second fixed size root here would override that
+            if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, true, engine)) {
+              return JSONBuilder.createJSONJavaScript(buf.toString());
             }
             // if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
             // try {
@@ -268,7 +266,7 @@ public class AJAXQueryServlet extends HttpServlet {
             // LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
             // }
             // }
-          } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
+          } else if (WebGLGraphics3D.isRenderable(outExpr)) {
             String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
             // Return as a JSON JavaScript result (which creates a line in the output UI)
             return JSONBuilder.createJSONJavaScript(webglSnippet);
@@ -303,13 +301,12 @@ public class AJAXQueryServlet extends HttpServlet {
             // BufferedImage bImage = imageExpr.getBufferedImage();
             byte[] data = imageExpr.toData();
             if (data != null) {
-              String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-              String[] argsToRender = new String[3];
-              argsToRender[0] = imageExpr.toBase64EncodedString();
-              html = Errors.templateRender(html, argsToRender);
-              html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+              // An image is inert content and needs no document of its own. Delivering it in an
+              // iframe gave it a fixed height, so a picture taller than that scrolled inside the
+              // frame instead of being shown; sent as an img it scales with the output column.
+              return JSONBuilder.createJSONJavaScript(
+                  "<img alt=\"image\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
+                      + imageExpr.toBase64EncodedString() + "\"/>");
               // } else {
               // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
               // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {

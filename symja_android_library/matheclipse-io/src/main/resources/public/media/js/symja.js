@@ -281,14 +281,29 @@ function createLine(value) {
 		dom.updateDOM(value);
 		return translateDOMElement(dom.childNodes[0]);
 	} else if (value.startsWith('<svg')) {
-		var dom = document.createElement('div');   
-		dom.setAttribute('style', 'width: 600px; height: 400px; margin: 0; padding: 0');
-		dom.update(value); 
+		var dom = document.createElement('div');
+		// The svg carries its own size and a viewBox, and asks to be scaled with
+		// max-width:100%; height:auto. Giving the wrapper a fixed box fought that: a plot
+		// taller than the box was simply cut off, which is what happened to every square
+		// one - MatrixPlot, ArrayPlot, DensityPlot - while a wide one such as Plot fitted
+		// inside it and looked fine. A max width and no height lets the graphic size itself.
+		dom.setAttribute('style', 'max-width: 600px; margin: 0; padding: 0');
+		dom.update(value);
+		return dom;
+	} else if (value.startsWith('<img')) {
+		var dom = document.createElement('div');
+		// A raster carries max-width:100%; height:auto of its own, so it only needs a wrapper
+		// that can narrow with the output column. It used to be delivered inside an iframe,
+		// whose fixed height made anything taller scroll within its own little window.
+		dom.setAttribute('style', 'max-width: 600px; margin: 0; padding: 0');
+		dom.update(value);
 		return dom;
 	} else if (value.startsWith('<iframe')) {
 		var dom = document.createElement('div'); 
 		dom.setAttribute('id', 'mathcell');
-		dom.setAttribute('style', 'width: 600px; height: 440px; margin: 0; padding: 0');
+		// an iframe needs a height of its own, but it must still be allowed to narrow with the
+		// output column rather than running off the side of it
+		dom.setAttribute('style', 'width: 600px; max-width: 100%; height: 440px; margin: 0; padding: 0');
 		dom.update(value); 
 		return dom;
 	} else if (value.startsWith('<div data-type="webgl"')) {
