@@ -1034,25 +1034,25 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Compute the default &quot;is zero&quot; tolerance for {@link Apfloat} / {@link org.apfloat.Apcomplex}
-   * values at the given working precision.
+   * Compute the default &quot;is zero&quot; tolerance for {@link Apfloat} /
+   * {@link org.apfloat.Apcomplex} values at the given working precision.
    *
    * <p>
    * The precision of an {@link Apfloat} counts <i>significant digits</i>; it says nothing about the
-   * magnitude of the value. The tolerance is therefore anchored at unit scale: it is one unit in the
-   * last place of a number of magnitude <code>1</code>, i.e. {@code 10^-precision}. Widening the
-   * tolerance beyond that would declare every value of small enough magnitude to be zero even when
-   * that value is known to full precision &ndash; a physical constant such as
+   * magnitude of the value. The tolerance is therefore anchored at unit scale: it is one unit in
+   * the last place of a number of magnitude <code>1</code>, i.e. {@code 10^-precision}. Widening
+   * the tolerance beyond that would declare every value of small enough magnitude to be zero even
+   * when that value is known to full precision &ndash; a physical constant such as
    * {@code 8.854187817`21*10^-12} is a perfectly well determined non-zero number, not numerical
    * noise.
    *
    * <p>
    * The exponent is floored at {@link ParserConfig#MACHINE_PRECISION} so that a low precision
-   * {@link Apfloat} never gets a more permissive tolerance than the corresponding <code>double</code>
-   * test, which uses the fixed {@link Config#DOUBLE_TOLERANCE}. Exact values (of
-   * {@link Apfloat#INFINITE} precision) get a tolerance of <code>0</code>, i.e. the test degenerates
-   * to an exact comparison against zero. The result is computed statelessly &ndash; no caching is
-   * performed.
+   * {@link Apfloat} never gets a more permissive tolerance than the corresponding
+   * <code>double</code> test, which uses the fixed {@link Config#DOUBLE_TOLERANCE}. Exact values
+   * (of {@link Apfloat#INFINITE} precision) get a tolerance of <code>0</code>, i.e. the test
+   * degenerates to an exact comparison against zero. The result is computed statelessly &ndash; no
+   * caching is performed.
    *
    * @param precision the Apfloat working precision (number of significant digits)
    * @return the default tolerance used by {@link F#isZero(Apfloat)} and
@@ -1067,8 +1067,9 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Compute the default &quot;is zero&quot; tolerance for {@link Apfloat} / {@link org.apfloat.Apcomplex}
-   * values using the working precision of this engine's {@link #apfloatHelper()}.
+   * Compute the default &quot;is zero&quot; tolerance for {@link Apfloat} /
+   * {@link org.apfloat.Apcomplex} values using the working precision of this engine's
+   * {@link #apfloatHelper()}.
    *
    * @return the default tolerance at {@code apfloatHelper().precision()}
    * @see #defaultApfloatZeroEpsilon(long)
@@ -2068,9 +2069,6 @@ public class EvalEngine implements Serializable {
       if (result.isReal()) {
         return new Complex(((IReal) result).doubleValue());
       }
-      if (result.isQuantity()) {
-        return new Complex(result.evalReal().doubleValue());
-      }
       if (result.isNumber()) {
         return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
       }
@@ -2145,9 +2143,6 @@ public class EvalEngine implements Serializable {
       if (result.isReal()) {
         return ApfloatField.valueOf(((IReal) result).apfloatValue());
       }
-      if (result.isQuantity()) {
-        return ApfloatField.valueOf(result.evalReal().apfloatValue());
-      }
       if (result.isAST(S.Labeled, 3, 4)) {
         return evalApfloat(result.first(), function);
       }
@@ -2192,9 +2187,6 @@ public class EvalEngine implements Serializable {
       IExpr result = evalN(expr);
       if (result.isReal()) {
         return ApcomplexField.valueOf(((IReal) result).apfloatValue());
-      }
-      if (result.isQuantity()) {
-        return ApcomplexField.valueOf(result.evalReal().apfloatValue());
       }
       if (result.isNumber()) {
         return ApcomplexField.valueOf(((INumber) result).apcomplexValue());
@@ -2335,9 +2327,6 @@ public class EvalEngine implements Serializable {
           if (F.isZero(cc.getImaginaryPart())) {
             return cc.getRealPart();
           }
-        }
-        if (result.isQuantity()) {
-          return result.evalReal().doubleValue();
         }
         if (result.isAST(S.Labeled, 3, 4)) {
           return result.first().evalReal().doubleValue();
@@ -3481,9 +3470,9 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Create the {@link NullPointerException} which
-   * {@link #evalTimeConstrained(IExpr, IExpr, long)} raises in {@link Config#FUZZ_TESTING} mode to
-   * flag an exception that escaped the evaluation thread.
+   * Create the {@link NullPointerException} which {@link #evalTimeConstrained(IExpr, IExpr, long)}
+   * raises in {@link Config#FUZZ_TESTING} mode to flag an exception that escaped the evaluation
+   * thread.
    *
    * <p>
    * The evaluation runs in a worker thread, so the exception the fuzz harness finally catches is

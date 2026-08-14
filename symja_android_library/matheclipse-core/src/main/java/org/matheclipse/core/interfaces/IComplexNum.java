@@ -48,7 +48,6 @@ public interface IComplexNum extends INumber, IInexactNumber {
 
   @Override
   default int uniformFlags() {
-    return UniformFlags.COMPLEX | UniformFlags.NUMBER
-        | UniformFlags.ATOM;
+    return UniformFlags.COMPLEX | UniformFlags.NUMBER | UniformFlags.ATOM;
   }
 }

@@ -12,8 +12,8 @@ public final class UniformFlags {
    * time {@link IAST#isUniform()}, {@link IAST#isUniform(int)} or {@link IAST#isUniformAny(int)} is
    * called.
    * <p>
-   * <b>Note</b>: this value must never be used in a bitwise &quot;and&quot;-operation with the flags
-   * of an argument, because all bits are set.
+   * <b>Note</b>: this value must never be used in a bitwise &quot;and&quot;-operation with the
+   * flags of an argument, because all bits are set.
    */
   public static final int UNKNOWN = -1;
 
