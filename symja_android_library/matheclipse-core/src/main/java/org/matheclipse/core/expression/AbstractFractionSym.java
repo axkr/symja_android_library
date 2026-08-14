@@ -1229,14 +1229,14 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   /**
-   * Returns the exact fraction of the shortest decimal representation of <code>value</code>, i.e. of
-   * the decimal literal the <code>double</code> was created from. For example
+   * Returns the exact fraction of the shortest decimal representation of <code>value</code>, i.e.
+   * of the decimal literal the <code>double</code> was created from. For example
    * <code>1.25663706E-6</code> is converted to <code>62831853/50000000000000</code>.
    *
    * <p>
    * Note that this is the fraction of the <i>decimal</i> representation, not of the exact binary
-   * value of the <code>double</code> (see {@link #valueOfExact(double)}), so it is only faithful for
-   * numbers which really are of machine precision.
+   * value of the <code>double</code> (see {@link #valueOfExact(double)}), so it is only faithful
+   * for numbers which really are of machine precision.
    *
    * @param value a finite machine precision double value
    * @return the exact fraction of {@link Double#toString(double)}

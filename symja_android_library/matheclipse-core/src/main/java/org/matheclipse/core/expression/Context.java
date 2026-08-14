@@ -148,7 +148,8 @@ public class Context implements Serializable {
     return symbolTable.put(key, value);
   }
 
-  public synchronized ISymbol computeIfAbsent(String key, Function<String, ISymbol> mappingFunction) {
+  public synchronized ISymbol computeIfAbsent(String key,
+      Function<String, ISymbol> mappingFunction) {
     return symbolTable.computeIfAbsent(key, mappingFunction);
   }
 

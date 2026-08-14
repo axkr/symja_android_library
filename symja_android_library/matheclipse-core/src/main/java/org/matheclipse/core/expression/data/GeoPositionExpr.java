@@ -116,8 +116,7 @@ public class GeoPositionExpr extends DataExpr<double[]> {
 
   @Override
   public IAST fullForm() {
-    return F.unaryAST1(S.GeoPosition,
-        F.List(F.num(fData[0]), F.num(fData[1]), F.num(fData[2])));
+    return F.unaryAST1(S.GeoPosition, F.List(F.num(fData[0]), F.num(fData[1]), F.num(fData[2])));
   }
 
   @Override

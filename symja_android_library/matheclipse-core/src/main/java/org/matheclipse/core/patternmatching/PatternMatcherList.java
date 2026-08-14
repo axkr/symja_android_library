@@ -72,8 +72,10 @@ public final class PatternMatcherList extends PatternMatcherAndEvaluator {
     }
     v.fLhsExprToMatch = fLhsExprToMatch;
     v.fSetFlags = fSetFlags;
+    v.fPatterHash = fPatterHash;
     v.fRightHandSide = fRightHandSide;
-    v.fReturnResult = fReturnResult;
+    // like in clone() - fReturnResult is per-match state and must not leak into the copy
+    v.fReturnResult = F.NIL;
     v.fReplaceList = fReplaceList;
     return v;
   }

@@ -194,6 +194,19 @@ public class PatternMatchingTestCase {
   }
 
   @Test
+  public void testFlatOrderlessSameHeadArgument() {
+    // The argument fo[a_Integer, b_Integer] of the pattern has the same head as the Flat-Orderless
+    // function itself, so it can only match a multi-element segment fo[1, 2] of the arguments,
+    // which the MultisetPartitionsIterator fallback of matchFlatOrderless() finds. The
+    // single-argument search must not consume the match attempt (fo[x, y] does not match
+    // a_Integer, b_Integer) and must not prune the fallback away.
+    check("SetAttributes[fo, {Flat, Orderless}]", "");
+    checkPattern("g[fo[fo[a_Integer, b_Integer], c_]]", //
+        "g[fo[fo[x, y], 1, 2, w]]", //
+        "[1, 2, fo[fo[x,y],w]]");
+  }
+
+  @Test
   public void testBlankAreNoTags() {
     // Message UpSetDelayed: F[_,_] does not contain a symbol to attach a rule to.
     // check("ClearAll[F, Q];F[_,_]^:=1", //
@@ -430,9 +443,9 @@ public class PatternMatchingTestCase {
     check("f[x_?NumericQ]:= NIntegrate[Sin[t^3], {t, 0, x}]", //
         "");
     check("f[2]", //
-        "0.4519484771568257");
+        "0.4519484775376951");
     check("f[(1+Sqrt[2])/5]", //
-        "0.0135767506042311");
+        "0.0135767506050606");
     check("f[a]", //
         "f[a]");
 

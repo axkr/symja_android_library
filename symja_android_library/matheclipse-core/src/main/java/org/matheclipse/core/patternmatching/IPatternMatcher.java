@@ -3,6 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ThrowException;
@@ -151,6 +152,44 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    */
   protected transient IExpr fLhsExprToMatch;
 
+  /**
+   * <code>0</code> if this matcher instance is free, <code>1</code> if it is currently used for a
+   * pattern-matching evaluation. Updated via {@link #IN_USE_UPDATER} in {@link #tryAcquire()}.
+   */
+  private transient volatile int fInUse;
+
+  private static final AtomicIntegerFieldUpdater<IPatternMatcher> IN_USE_UPDATER =
+      AtomicIntegerFieldUpdater.newUpdater(IPatternMatcher.class, "fInUse");
+
+  /**
+   * Try to acquire this matcher instance for exclusive use in a pattern-matching evaluation.
+   *
+   * <p>
+   * A matcher holds mutable per-match state (the pattern map bindings, the left-hand-side to match,
+   * a possibly evaluated right-hand-side result). The instances stored in {@link RulesData} are
+   * shared - between threads, and re-entrantly on the same thread when the evaluation of a rules
+   * right-hand-side (or condition) recurses into the same rule set. Callers which formerly always
+   * worked on a {@link #copy()} can instead acquire the shared instance: if the acquisition
+   * succeeds, evaluate with <code>this</code> and {@link #release()} in a <code>finally</code>
+   * block; if it fails, the instance is currently in use and the caller must fall back to
+   * {@link #copy()}.
+   *
+   * @return <code>true</code> if this instance may be used directly; <code>false</code> if it is
+   *         already in use and a copy is required
+   * @see RulesData#evalDownRule(IExpr, EvalEngine)
+   */
+  public final boolean tryAcquire() {
+    return IN_USE_UPDATER.compareAndSet(this, 0, 1);
+  }
+
+  /**
+   * Release this matcher instance after a successful {@link #tryAcquire()}. Must be called exactly
+   * once, in a <code>finally</code> block.
+   */
+  public final void release() {
+    fInUse = 0;
+  }
+
   protected IPatternMatcher() {
     fLhsPatternExpr = null;
     fLhsExprToMatch = F.NIL;
@@ -265,7 +304,9 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
 
   @Override
   public int hashCode() {
-    return fLhsPatternExpr.hashCode();
+    // fLhsPatternExpr can be null for matchers created by the serialization constructors;
+    // equals() guards against that case as well
+    return fLhsPatternExpr == null ? 0 : fLhsPatternExpr.hashCode();
   }
 
   /**
@@ -329,7 +370,9 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
   }
 
   /**
-   * If <code>true</code> throw a {@link ThrowException} with the matching result as it's value.
+   * If <code>true</code> the {@link #test(IExpr)} method throws a
+   * {@link org.matheclipse.core.eval.exception.ResultException} with the matched expression as its
+   * value instead of returning <code>true</code>.
    *
    * @param throwIfMatched
    */

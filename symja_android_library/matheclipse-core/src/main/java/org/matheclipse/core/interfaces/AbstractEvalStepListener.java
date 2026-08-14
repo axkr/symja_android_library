@@ -12,8 +12,8 @@ public abstract class AbstractEvalStepListener implements IEvalStepListener {
 
   /** {@inheritDoc} */
   @Override
-  public abstract void add(
-      IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, IAST hint);
+  public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth,
+      long iterationCounter, IAST hint);
 
   /** {@inheritDoc} */
   @Override
@@ -33,5 +33,6 @@ public abstract class AbstractEvalStepListener implements IEvalStepListener {
 
   /** {@inheritDoc} */
   @Override
-  public void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame, @Nullable Object stackMarker) {}
+  public void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame,
+      @Nullable Object stackMarker) {}
 }

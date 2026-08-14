@@ -146,8 +146,8 @@ public class DMath {
   }
 
   /**
-   * <code>BesselY(v, x)</code> as a machine double. See {@link #besselJ(double, double)} for how the
-   * double implementation and the Apfloat fall-back divide the domain.
+   * <code>BesselY(v, x)</code> as a machine double. See {@link #besselJ(double, double)} for how
+   * the double implementation and the Apfloat fall-back divide the domain.
    */
   public static double besselY(double v, double x) {
     if (BesselJY.isSupported(v, x)) {
@@ -164,10 +164,10 @@ public class DMath {
    *
    * <p>
    * Routed through the complex log-gamma form rather than the real quotient
-   * <code>Gamma(a)Gamma(b)/Gamma(a+b)</code>: the quotient loses the answer next to the poles at the
-   * non-positive integers, where Beta is legitimately enormous rather than undefined. Beta of real
-   * arguments is real, so the imaginary part is only rounding residue - a result carrying more than
-   * that is not trusted and falls back.
+   * <code>Gamma(a)Gamma(b)/Gamma(a+b)</code>: the quotient loses the answer next to the poles at
+   * the non-positive integers, where Beta is legitimately enormous rather than undefined. Beta of
+   * real arguments is real, so the imaginary part is only rounding residue - a result carrying more
+   * than that is not trusted and falls back.
    */
   public static double beta(double a, double b) {
     Complex beta = ComplexGamma.beta(new Complex(a, 0.0), new Complex(b, 0.0));

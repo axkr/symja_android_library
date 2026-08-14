@@ -1226,6 +1226,24 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
+  public void testHeadOfPatternObjects() {
+    // the head of a pattern object is the head of its FullForm
+    check("Head /@ {_, _Integer, x_, x_Symbol}", //
+        "{Blank,Blank,Pattern,Pattern}");
+    // a pattern with a default value is wrapped in Optional
+    check("Head /@ {_., x_.}", //
+        "{Optional,Optional}");
+    // the anonymous sequence patterns are no Pattern
+    check("Head /@ {__, ___, x__, x___}", //
+        "{BlankSequence,BlankNullSequence,Pattern,Pattern}");
+    check("Head /@ {OptionsPattern(), opts:OptionsPattern()}", //
+        "{OptionsPattern,Pattern}");
+    // Head and Part(..., 0) agree
+    check("{Head(x_.), Part(x_., 0), Head(__), Part(__, 0)}", //
+        "{Optional,Optional,BlankSequence,BlankSequence}");
+  }
+
   @Override
   public void setUp() {
     super.setUp();

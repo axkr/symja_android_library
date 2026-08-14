@@ -136,9 +136,8 @@ public class Symbol implements ISymbol, Serializable {
    * is indistinguishable from a symbol whose rules were installed eagerly.
    *
    * <p>
-   * The default implementation does nothing. See
-   * {@link BuiltInSymbol#setDeferredRules(String)} for the implementation which loads the generated
-   * <code>*Rules</code> classes lazily.
+   * The default implementation does nothing. See {@link BuiltInSymbol#setDeferredRules(String)} for
+   * the implementation which loads the generated <code>*Rules</code> classes lazily.
    */
   protected void ensureRulesLoaded() {
     // no deferred rules for a user defined symbol
@@ -1115,7 +1114,7 @@ public class Symbol implements ISymbol, Serializable {
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     fSymbolName = stream.readUTF();
-    fAttributes = stream.read();
+    fAttributes = stream.readInt();
     IExpr value = (IExpr) stream.readObject();
     assignValue(value, false);
     int contextNumber = stream.readInt();
@@ -1162,7 +1161,7 @@ public class Symbol implements ISymbol, Serializable {
   public void readRules(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     fSymbolName = stream.readUTF();
-    fAttributes = stream.read();
+    fAttributes = stream.readInt();
     boolean hasDownRulesData = stream.readBoolean();
     if (hasDownRulesData) {
       fRulesData = new RulesData();
@@ -1319,7 +1318,7 @@ public class Symbol implements ISymbol, Serializable {
   private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
     ensureRulesLoaded();
     stream.writeUTF(fSymbolName);
-    stream.write(fAttributes);
+    stream.writeInt(fAttributes);
     stream.writeObject(fValue);
     if (fContext.equals(Context.SYSTEM)) {
       stream.writeInt(1);
@@ -1350,7 +1349,7 @@ public class Symbol implements ISymbol, Serializable {
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
     ensureRulesLoaded();
     stream.writeUTF(fSymbolName);
-    stream.write(fAttributes);
+    stream.writeInt(fAttributes);
     // if (!containsRules()) {
     // return false;
     // }

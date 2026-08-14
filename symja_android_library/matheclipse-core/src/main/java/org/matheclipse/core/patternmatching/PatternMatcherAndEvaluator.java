@@ -151,8 +151,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
     v.fLhsExprToMatch = fLhsExprToMatch;
     v.fSetFlags = fSetFlags;
+    v.fPatterHash = fPatterHash;
     v.fRightHandSide = fRightHandSide;
-    v.fReturnResult = fReturnResult;
+    // like in clone() - fReturnResult is per-match state and must not leak into the copy
+    v.fReturnResult = F.NIL;
     return v;
   }
 
@@ -231,6 +233,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   private IExpr replaceInternal(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
     IPatternMap patternMap = null;
+
+    // reset per-match state; this matcher instance may be reused for several expressions (for
+    // example the PatternMatcherList instances in Functors are applied without copy()), and a
+    // fReturnResult of a previous match would short-circuit replacePatternMatch()
+    fReturnResult = F.NIL;
 
     if (isRuleWithoutPatterns()) {
       if (fLhsPatternExpr.equals(leftHandSide)) {
@@ -417,12 +424,20 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    fSetFlags = objectInput.readShort();
+    // mask the sign extension - the flags were written with writeShort()
+    fSetFlags = objectInput.readShort() & 0xFFFF;
     fLhsPatternExpr = (IExpr) objectInput.readObject();
     fRightHandSide = (IExpr) objectInput.readObject();
     if (fLhsPatternExpr != null) {
-      int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
-      this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
+      // also restores fLHSPriority, which was formerly left at 0 - a deserialized rule would sort
+      // in front of all other rules and compare wrongly in equivalentTo()
+      initPriorityFromLhs();
+      // restore the pattern hash pre-filter with the same rules as
+      // RulesData#putDownRule(int, boolean, IExpr, IExpr, int)
+      if (fLhsPatternExpr.isAST() && !RulesData.isComplicatedPatternRule(fLhsPatternExpr)
+          && !fLhsPatternExpr.isCondition()) {
+        fPatterHash = ((IAST) fLhsPatternExpr).patternHashCode();
+      }
     }
   }
 
@@ -436,9 +451,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (!super.equals(obj)) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
     PatternMatcherAndEvaluator other = (PatternMatcherAndEvaluator) obj;
     if (fRightHandSide == null) {
       return other.fRightHandSide == null;

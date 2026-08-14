@@ -55,6 +55,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.JavaClassExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntFunction;
@@ -4262,29 +4263,35 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public GraphType isListOfEdges() {
     if (S.List == head()) {
-      boolean directed = true;
+      boolean hasDirected = false;
+      boolean hasUndirected = false;
       for (int i = 1; i < size(); i++) {
-        IExpr temp = get(i);
+        IExpr temp = GraphExpr.unwrapEdge(get(i));
         if (temp.argSize() == 2 && temp.isBuiltInFunction()) {
           IBuiltInSymbol symbol = (IBuiltInSymbol) temp.head();
           if (symbol == S.DirectedEdge || symbol == S.Rule) {
+            hasDirected = true;
             continue;
           }
           if (!(symbol == S.UndirectedEdge || symbol == S.TwoWayRule)) {
             // the row is no list of edges
             return null;
           }
-          directed = false;
+          hasUndirected = true;
         } else {
           return null;
         }
       }
 
       Builder builder = new DefaultGraphType.Builder();
-      if (directed) {
-        return builder.directed().build();
+      if (hasDirected && hasUndirected) {
+        // a mixed graph has no JGraphT counterpart, see GraphExpr#createMixedGraph()
+        return builder.mixed().allowSelfLoops(true).allowMultipleEdges(true).build();
       }
-      return builder.undirected().build();
+      if (hasUndirected) {
+        return builder.undirected().build();
+      }
+      return builder.directed().build();
     }
     return null;
   }

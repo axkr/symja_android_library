@@ -26,6 +26,7 @@ public final class PatternMatcherEvalEngine extends PatternMatcher {
     }
     v.fLhsExprToMatch = fLhsExprToMatch;
     v.fSetFlags = fSetFlags;
+    v.fPatterHash = fPatterHash;
     v.fEngine = fEngine;
     return v;
   }

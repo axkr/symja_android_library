@@ -126,7 +126,9 @@ public final class PatternMatcherAndInvoker extends PatternMatcher {
       this.fMethod = namedMethods.get(0);
       this.fTypes = fMethod.getGenericParameterTypes();
     } else {
-      // throw an exception ?
+      // fail fast - leaving fMethod/fTypes null would throw a NullPointerException later in eval()
+      throw new IllegalArgumentException("PatternMatcherAndInvoker: expected exactly one method \""
+          + methodName + "\" in class " + c.getName() + " but found " + namedMethods.size());
     }
   }
 

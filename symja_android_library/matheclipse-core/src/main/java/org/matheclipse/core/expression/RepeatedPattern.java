@@ -195,6 +195,18 @@ public class RepeatedPattern extends AbstractPatternSequence {
   }
 
   @Override
+  public ISymbol head() {
+    return fZeroArgsAllowed ? S.RepeatedNull : S.Repeated;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IAST toFullFormAST() {
+    // "p.." is Repeated(p), "p..." is RepeatedNull(p)
+    return F.unaryAST1(fZeroArgsAllowed ? S.RepeatedNull : S.Repeated, fRepeatedExpr);
+  }
+
+  @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
     buffer.append(fRepeatedExpr.toString());

@@ -60,6 +60,9 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
 
   public WildMatcher(IExpr pattern) {
     this.pattern = pattern;
+    // keep the base class field in sync - hashCode(), equals() and getLHS() are inherited and
+    // dereference fLhsPatternExpr
+    this.fLhsPatternExpr = pattern;
   }
 
   @Override
@@ -713,6 +716,7 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     pattern = (IExpr) in.readObject();
+    fLhsPatternExpr = pattern;
   }
 
   @Override

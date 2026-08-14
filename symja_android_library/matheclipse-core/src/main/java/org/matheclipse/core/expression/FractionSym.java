@@ -463,6 +463,7 @@ public class FractionSym extends AbstractFractionSym {
   public IFraction inverseFraction() {
     return valueOf(fDenominator, fNumerator);
   }
+
   /**
    * Check whether this rational corresponds to a (finite) rational value. This function can be used
    * to test for infinites and NaNs.

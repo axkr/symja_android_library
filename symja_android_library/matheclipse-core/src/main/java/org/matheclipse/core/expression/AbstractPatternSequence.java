@@ -163,10 +163,15 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
     return fSymbol;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>
+   * Has to be the same head as the one of {@link #toFullFormAST()}, which is <b>not</b>
+   * {@link S#Pattern} for the anonymous forms (i.e. <code>__</code> or <code>p..</code>).
+   */
   @Override
-  public ISymbol head() {
-    return S.Pattern;
-  }
+  public abstract ISymbol head();
 
   /** {@inheritDoc} */
   @Override

@@ -35,7 +35,6 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
  * Static utility class for <b>Wolfram Language (WL) Compatibility</b> and data conversion.
@@ -606,9 +605,6 @@ public class WL {
         case IExpr.PATTERNSEQUENCEID:
           writePattern(arg1);
           return;
-        case IExpr.QUANTITYID:
-          writeQuantity(arg1);
-          return;
         case IExpr.SERIESID:
           writeSeriesData(arg1);
           return;
@@ -971,16 +967,6 @@ public class WL {
           writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.Blank));
         }
       }
-    }
-
-    private void writeQuantity(IExpr arg1) throws IOException {
-      IQuantity quantity = (IQuantity) arg1;
-      // simulate AST Quantity(..., ...)
-      stream.write(WXF_CONSTANTS.Function);
-      stream.write(varintBytes(2));
-      write(quantity.head());
-      write(quantity.value());
-      write(F.stringx(quantity.unitString()));
     }
 
     private void writeSeriesData(IExpr arg1) throws IOException {

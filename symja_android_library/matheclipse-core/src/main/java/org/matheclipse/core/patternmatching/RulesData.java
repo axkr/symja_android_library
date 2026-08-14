@@ -527,6 +527,37 @@ public final class RulesData implements Serializable {
   }
 
   /**
+   * Evaluate the pattern matcher against <code>expr</code>, reusing the shared matcher instance
+   * when possible.
+   *
+   * <p>
+   * The matcher instances stored in the rule lists hold mutable per-match state, so they formerly
+   * were {@link IPatternMatcher#copy() copied} before every single evaluation attempt - the
+   * dominating allocation cost for large rule sets. The copy is only really needed when the shared
+   * instance is already in use: by another thread, or re-entrantly when the evaluation of a rules
+   * right-hand-side (or condition) recurses into the same rule (for example nested
+   * <code>Integrate</code> rules). {@link IPatternMatcher#tryAcquire()} detects exactly these two
+   * cases, so the fast path works without any allocation.
+   *
+   * @param patternEvaluator the shared matcher instance from the rule list
+   * @param expr the expression which should be matched
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if no matching/evaluation was possible
+   */
+  private static IExpr evalMatcher(final IPatternMatcher patternEvaluator, final IExpr expr,
+      EvalEngine engine) {
+    if (patternEvaluator.tryAcquire()) {
+      try {
+        return patternEvaluator.eval(expr, engine);
+      } finally {
+        patternEvaluator.release();
+      }
+    }
+    // the instance is in use by a recursive evaluation or by another thread - work on a copy
+    return patternEvaluator.copy().eval(expr, engine);
+  }
+
+  /**
    * Try matching the <code>expr</code> expression with this pattern-matching rules and if matching
    * rule was found, return the evaluated right-hand-side of that matching rule, otherwise return
    * {@link F#NIL}.
@@ -556,7 +587,6 @@ public final class RulesData implements Serializable {
         }
       }
 
-      IPatternMatcher pmEvaluator;
       if (fPatternDownRules != null) {
         int patternHash = 0;
         if (expr.isASTOrAssociation()) {
@@ -579,12 +609,11 @@ public final class RulesData implements Serializable {
           // }
           // }
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
-            pmEvaluator = patternEvaluator.copy();
             IExpr result = F.NIL;
             if (isTraceMode) {
               stepListener.setUp(expr, engine.getRecursionCounter(), expr);
               try {
-                result = pmEvaluator.eval(expr, engine);
+                result = evalMatcher(patternEvaluator, expr, engine);
                 if (result.isPresent()) {
                   return result;
                 }
@@ -598,7 +627,7 @@ public final class RulesData implements Serializable {
               continue;
             }
 
-            result = pmEvaluator.eval(expr, engine);
+            result = evalMatcher(patternEvaluator, expr, engine);
 
             if (result.isPresent()) {
               if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
@@ -699,12 +728,10 @@ public final class RulesData implements Serializable {
       }
     }
 
-    IPatternMatcher pmEvaluator;
     if ((fSimplePatternUpRules != null) && (expression.isASTOrAssociation())) {
       IExpr result;
       for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
-        pmEvaluator = fSimplePatternUpRules.get(i).copy();
-        result = pmEvaluator.eval(expression, engine);
+        result = evalMatcher(fSimplePatternUpRules.get(i), expression, engine);
         if (result.isPresent()) {
           return result;
         }
@@ -849,9 +876,9 @@ public final class RulesData implements Serializable {
    * <p>
    * The priority is taken from {@link #fPriorityDownRules}, which is serialized and is exactly
    * aligned with {@link #fPatternDownRules}. The pattern hash is <i>recomputed</i> from the
-   * left-hand-side with the same rules used in {@link #putDownRule(int, boolean, IExpr, IExpr,
-   * int)}, because a serialized hash would become stale as soon as the <code>ID</code> ordinals of
-   * the built-in symbols change.
+   * left-hand-side with the same rules used in
+   * {@link #putDownRule(int, boolean, IExpr, IExpr, int)}, because a serialized hash would become
+   * stale as soon as the <code>ID</code> ordinals of the built-in symbols change.
    *
    * <p>
    * This method is idempotent.
@@ -864,7 +891,8 @@ public final class RulesData implements Serializable {
         if (matcher instanceof PatternMatcher) {
           int patternHash = recomputePatternHash(matcher.getLHS());
           if (i < prioritySize) {
-            ((PatternMatcher) matcher).initTransientState(fPriorityDownRules.getInt(i), patternHash);
+            ((PatternMatcher) matcher).initTransientState(fPriorityDownRules.getInt(i),
+                patternHash);
           } else {
             ((PatternMatcher) matcher).initTransientState(patternHash);
           }

@@ -13,8 +13,6 @@ public enum Hierarchy {
 
   SERIESID(64), //
 
-  QUANTITYID(128), //
-
   STRINGID(256), //
 
   SYMBOLID(512), //

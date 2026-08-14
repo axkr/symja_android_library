@@ -287,7 +287,8 @@ public class Blank implements IPattern {
 
   @Override
   public ISymbol head() {
-    return S.Blank;
+    // "_." is Optional(Blank())
+    return fDefault ? S.Optional : S.Blank;
   }
 
   @Override
@@ -356,6 +357,16 @@ public class Blank implements IPattern {
   @Override
   public boolean matchPattern(final IExpr expr, IPatternMap patternMap) {
     return isConditionMatched(expr, patternMap);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IAST toFullFormAST() {
+    if (fDefault) {
+      // "_." is Optional(Blank())
+      return F.unaryAST1(S.Optional, fHeadTest == null ? F.$b() : F.$b(fHeadTest));
+    }
+    return fHeadTest == null ? F.headAST0(S.Blank) : F.unaryAST1(S.Blank, fHeadTest);
   }
 
   @Override

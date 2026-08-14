@@ -287,6 +287,7 @@ public class BuiltinUsage {
     USAGE[ID.Hypergeometric2F1] = "compute Gauss hypergeometric function function";
     USAGE[ID.HypergeometricPFQ] = "compute the generalized hypergeometric function";
     USAGE[ID.HypergeometricU] = "Tricomi confluent hypergeometric function";
+    USAGE[ID.HyperHarmonicNumber] = "compute the hyperharmonic number";
 
     USAGE[ID.I] = "represents the imaginary number 'Sqrt(-1)'";
     USAGE[ID.If] = "test if a condition is true, false, or of unknown truth value";

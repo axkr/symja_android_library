@@ -147,7 +147,7 @@ public class JavaClassExpr extends DataExpr<Class<?>> implements Externalizable 
             continue;
           }
         }
-  
+
         if (clazz.isInstance(arg)) {
           params[j] = arg;
         } else if (clazz.equals(boolean.class)) {
@@ -222,7 +222,7 @@ public class JavaClassExpr extends DataExpr<Class<?>> implements Externalizable 
       }
       return params;
     } catch (ArgumentTypeException atex) {
-  
+
     }
     return null;
   }

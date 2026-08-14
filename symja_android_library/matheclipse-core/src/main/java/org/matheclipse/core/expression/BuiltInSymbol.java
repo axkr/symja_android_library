@@ -240,9 +240,9 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
    * {@link #setDeferredRules(String)} and are not loaded yet.
    *
    * <p>
-   * This method is called before every access to the rules of a symbol, so the common case - nothing
-   * to load - must not take a lock. Only the first access to one of the few symbols with deferred
-   * rules enters {@link #loadDeferredRules()}.
+   * This method is called before every access to the rules of a symbol, so the common case -
+   * nothing to load - must not take a lock. Only the first access to one of the few symbols with
+   * deferred rules enters {@link #loadDeferredRules()}.
    */
   @Override
   protected final void ensureRulesLoaded() {
@@ -253,8 +253,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   }
 
   /**
-   * Initialize the generated <code>*Rules</code> class of this symbol. The generated classes install
-   * their rules as a side effect of their class initializer (see <code>F.IInit()</code> and
+   * Initialize the generated <code>*Rules</code> class of this symbol. The generated classes
+   * install their rules as a side effect of their class initializer (see <code>F.IInit()</code> and
    * <code>F.ISet()</code>), so initializing the class <i>is</i> installing the rules.
    *
    * <p>

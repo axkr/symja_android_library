@@ -212,6 +212,25 @@ public class PatternSequence extends AbstractPatternSequence {
   }
 
   @Override
+  public ISymbol head() {
+    // "__" is BlankSequence(), but "x__" is Pattern(x, BlankSequence())
+    return fSymbol == null ? (fZeroArgsAllowed ? S.BlankNullSequence : S.BlankSequence) : S.Pattern;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IAST toFullFormAST() {
+    final ISymbol blankHead = fZeroArgsAllowed ? S.BlankNullSequence : S.BlankSequence;
+    if (fSymbol == null) {
+      // "__" is BlankSequence(), "___" is BlankNullSequence()
+      return fHeadTest == null ? F.headAST0(blankHead) : F.unaryAST1(blankHead, fHeadTest);
+    }
+    // "x__" is Pattern(x, BlankSequence())
+    return F.binaryAST2(S.Pattern, fSymbol,
+        PatternSequence.valueOf(null, fHeadTest, fZeroArgsAllowed));
+  }
+
+  @Override
   public String toString() {
     return toCharSequence().toString();
   }

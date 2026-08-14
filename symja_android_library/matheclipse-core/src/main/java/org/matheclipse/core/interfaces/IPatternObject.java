@@ -141,4 +141,28 @@ public interface IPatternObject extends IExpr, IAtomicEvaluate {
    * @return
    */
   public boolean matchPattern(final IExpr expr, IPatternMap patternMap);
+
+  /**
+   * Return this pattern object as an {@link IAST} which mirrors the structure printed by
+   * {@link IExpr#fullFormString()}. Pattern objects are atoms in Symja, so functions like
+   * {@link org.matheclipse.core.expression.S#Part} or
+   * {@link org.matheclipse.core.expression.S#Length} can't index into them directly. This method
+   * provides the &quot;<code>FullForm</code> view&quot; those functions need:
+   *
+   * <pre>
+   * x_Symbol -&gt; Pattern(x, _Symbol)
+   * _Integer -&gt; Blank(Integer)
+   * x_.      -&gt; Optional(x_)
+   * __       -&gt; BlankSequence()
+   * </pre>
+   *
+   * <p>
+   * The <b>elements</b> of the returned AST are the original sub-expressions and (where the
+   * <code>FullForm</code> nests another pattern) pattern objects again, so that they print in their
+   * usual short form (i.e. <code>_Symbol</code> and not <code>Blank(Symbol)</code>).
+   *
+   * @return an {@link IAST} with the same head and elements as the <code>FullForm</code> of this
+   *         pattern object
+   */
+  public IAST toFullFormAST();
 }

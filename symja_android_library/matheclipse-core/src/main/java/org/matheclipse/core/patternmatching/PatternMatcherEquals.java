@@ -196,7 +196,8 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    fSetFlags = objectInput.readShort();
+    // mask the sign extension - the flags were written with writeShort()
+    fSetFlags = objectInput.readShort() & 0xFFFF;
     fLhsPatternExpr = (IExpr) objectInput.readObject();
     fRightHandSide = (IExpr) objectInput.readObject();
   }

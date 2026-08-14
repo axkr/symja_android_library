@@ -967,8 +967,8 @@ public class IntervalDataSym {
   }
 
   /**
-   * Test all sub-intervals of an <code>IntervalData</code> against a &ldquo;holds
-   * everywhere&rdquo; predicate and its negation, returning a ternary result.
+   * Test all sub-intervals of an <code>IntervalData</code> against a &ldquo;holds everywhere&rdquo;
+   * predicate and its negation, returning a ternary result.
    *
    * <p>
    * Both predicates receive an interval bound together with a flag telling whether that bound is
@@ -1142,11 +1142,10 @@ public class IntervalDataSym {
    * <p>
    * In contrast to {@link #mapIntegerFunction(ISymbol, IAST, EvalEngine)}, which only succeeds if
    * the whole interval collapses onto a single integer, this maps each sub-interval onto the range
-   * <code>[f(min), f(max)]</code>. An open bound that sits exactly on an integer is nudged
-   * inwards, because that integer is not part of the interval: <code>Floor</code> of
-   * <code>[0,1)</code> is <code>0</code> while <code>Floor</code> of <code>[0,1]</code> is
-   * <code>[0,1]</code>. The image consists of integers, so both result bounds are closed (except
-   * for infinite bounds).
+   * <code>[f(min), f(max)]</code>. An open bound that sits exactly on an integer is nudged inwards,
+   * because that integer is not part of the interval: <code>Floor</code> of <code>[0,1)</code> is
+   * <code>0</code> while <code>Floor</code> of <code>[0,1]</code> is <code>[0,1]</code>. The image
+   * consists of integers, so both result bounds are closed (except for infinite bounds).
    *
    * @param integerFunctionSymbol the integer valued function to map
    * @param intervalData the interval to map
@@ -1816,8 +1815,7 @@ public class IntervalDataSym {
     IAST exponent = normalize(intervalExponent);
     if (base.isPresent() && exponent.isPresent()) {
       EvalEngine engine = EvalEngine.get();
-      IASTAppendable result =
-          F.IntervalDataAlloc(base.argSize() * exponent.argSize());
+      IASTAppendable result = F.IntervalDataAlloc(base.argSize() * exponent.argSize());
       for (int i = 1; i < base.size(); i++) {
         IAST baseList = (IAST) base.get(i);
         IExpr a = baseList.arg1();
@@ -1835,9 +1833,9 @@ public class IntervalDataSym {
           boolean cClosed = expList.arg2() == S.LessEqual;
           boolean dClosed = expList.arg3() == S.LessEqual;
 
-          IExpr[] corners = new IExpr[] {engine.evaluate(F.Power(a, c)),
-              engine.evaluate(F.Power(a, d)), engine.evaluate(F.Power(b, c)),
-              engine.evaluate(F.Power(b, d))};
+          IExpr[] corners =
+              new IExpr[] {engine.evaluate(F.Power(a, c)), engine.evaluate(F.Power(a, d)),
+                  engine.evaluate(F.Power(b, c)), engine.evaluate(F.Power(b, d))};
           boolean[] closed = new boolean[] {aClosed && cClosed, aClosed && dClosed,
               bClosed && cClosed, bClosed && dClosed};
           for (IExpr corner : corners) {

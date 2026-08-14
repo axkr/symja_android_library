@@ -976,9 +976,9 @@ public class IntervalSym {
           IAST expList = (IAST) exponent.get(j);
           IExpr c = expList.arg1();
           IExpr d = expList.arg2();
-          IExpr[] corners = new IExpr[] {engine.evaluate(F.Power(a, c)),
-              engine.evaluate(F.Power(a, d)), engine.evaluate(F.Power(b, c)),
-              engine.evaluate(F.Power(b, d))};
+          IExpr[] corners =
+              new IExpr[] {engine.evaluate(F.Power(a, c)), engine.evaluate(F.Power(a, d)),
+                  engine.evaluate(F.Power(b, c)), engine.evaluate(F.Power(b, d))};
           for (IExpr corner : corners) {
             if (!(corner.isRealResult() || corner.isInfinity() || corner.isNegativeInfinity())) {
               // e.g. 0^(negative) -> ComplexInfinity: can't build a real interval

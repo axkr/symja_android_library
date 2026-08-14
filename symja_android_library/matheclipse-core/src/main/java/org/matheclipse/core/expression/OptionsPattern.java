@@ -372,6 +372,22 @@ public class OptionsPattern extends AbstractPatternSequence {
   }
 
   @Override
+  public ISymbol head() {
+    // "OptionsPattern()", but "opts:OptionsPattern()" is Pattern(opts, OptionsPattern())
+    return fSymbol == null ? S.OptionsPattern : S.Pattern;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IAST toFullFormAST() {
+    if (fSymbol == null) {
+      return F.headAST0(S.OptionsPattern);
+    }
+    // "opts:OptionsPattern()" is Pattern(opts, OptionsPattern())
+    return F.binaryAST2(S.Pattern, fSymbol, F.headAST0(S.OptionsPattern));
+  }
+
+  @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
     if (fSymbol == null) {

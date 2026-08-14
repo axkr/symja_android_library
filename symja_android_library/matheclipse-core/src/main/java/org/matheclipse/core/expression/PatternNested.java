@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.matheclipse.core.form.output.WolframFormFactory;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -215,6 +216,13 @@ public class PatternNested extends Pattern {
   @Override
   public boolean isConditionMatched(final IExpr expr, IPatternMap patternMap) {
     return (fHeadTest == null || expr.head().equals(fHeadTest));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IAST toFullFormAST() {
+    // "x:pattern" is Pattern(x, pattern)
+    return F.binaryAST2(S.Pattern, fSymbol, fPatternExpr);
   }
 
   @Override

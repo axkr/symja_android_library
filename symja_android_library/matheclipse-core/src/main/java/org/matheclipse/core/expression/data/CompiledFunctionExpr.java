@@ -27,8 +27,8 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>> {
   }
 
   /**
-   * Wrap the <code>double</code> result of an integer-typed compiled function. If the computed value
-   * is a finite whole number within the exactly representable integer range, return an
+   * Wrap the <code>double</code> result of an integer-typed compiled function. If the computed
+   * value is a finite whole number within the exactly representable integer range, return an
    * {@link org.matheclipse.core.interfaces.IInteger}; otherwise fall back to a real
    * {@link org.matheclipse.core.interfaces.INum} value.
    *
@@ -129,6 +129,7 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>> {
     }
     return false;
   }
+
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     if (compiledJavaClass == null) {
       // Non deserialized expression `1`.
