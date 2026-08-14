@@ -13,21 +13,21 @@ public class ConstantPhysicsTest extends ExprEvaluatorTestCase {
   public void testAvogadroConstant() {
     // Moles^(-1)
     check("AvogadroConstant", //
-        "602214076000000000000000[mol^-1]");
+        "Quantity(602214076000000000000000,\"Moles\"^(-1))");
   }
 
   @Test
   public void testBohrRadius() {
     // Nanometers
     check("BohrRadius", //
-        "0.0529177[nm]");
+        "Quantity(0.0529177,\"Nanometers\")");
   }
 
   @Test
   public void testUniverseAge() {
     // Years
     check("UniverseAge", //
-        "1.3787*10^10[yr]");
+        "Quantity(1.3787*10^10,\"JulianYears\")");
   }
 
 

@@ -66,7 +66,6 @@ import org.matheclipse.core.sympy.core.Add;
 import org.matheclipse.core.sympy.core.Mul;
 import org.matheclipse.core.sympy.exception.ValueError;
 import org.matheclipse.core.sympy.simplify.Powsimp;
-import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -244,8 +243,6 @@ public interface IExpr
   public static final int INTERVALSETID = 64;
 
   public static final int INTERVALID = 65;
-
-  public static final int QUANTITYID = 66;
 
   public static final int CONDITIONID = 80;
 
@@ -2816,8 +2813,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an atomic constant (i.e. {@link INumber}, {@link IQuantity} or
-   * {@link IStringX} object)
+   * Test if this expression is an atomic constant (i.e. {@link INumber} or {@link IStringX} object)
    */
   default boolean isAtomicConstant() {
     return this instanceof IAtomicConstant;
@@ -4833,12 +4829,14 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a <code>Quantity(a,unit)</code> expression.
+   * Test if this expression is a <code>Quantity(magnitude, unit)</code> expression, i.e. an AST
+   * with head {@link S#Quantity} and exactly two arguments. The unit expression is not validated
+   * here; use the units engine for validity checks.
    *
    * @return
    */
   default boolean isQuantity() {
-    return false;
+    return isAST(S.Quantity, 3);
   }
 
   /**

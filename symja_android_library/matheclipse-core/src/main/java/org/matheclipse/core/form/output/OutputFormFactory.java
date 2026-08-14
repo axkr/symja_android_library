@@ -25,7 +25,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
+import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IAST;
@@ -43,7 +45,6 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
@@ -1260,6 +1261,20 @@ public class OutputFormFactory {
         append(buf, "NIL");
         return;
       }
+      if (o.isQuantity()) {
+        convertQuantityData(buf, (IAST) o, precedence);
+        return;
+      }
+      if (o.isAST(S.QuantityArray, 3) || o.isAST(S.QuantityDistribution, 3)) {
+        // the unit argument keeps its quotes so the output re-parses
+        buf.append(o.head().toString());
+        buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+        convert(buf, ((IAST) o).arg1());
+        buf.append(',');
+        convertUnitExpr(buf, ((IAST) o).arg2());
+        buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+        return;
+      }
       if (o.isDataset()) {
         // TODO improve output
         buf.append(o.toString());
@@ -1308,7 +1323,10 @@ public class OutputFormFactory {
         // f(#1,y)&[x] applies a pure function rather than multiplying by one. Neither form can be
         // read back: in the relaxed syntax `expr(x)` parses as a product and `expr[x]` as a part,
         // so the choice is about which is clearer, not about round tripping.
-        final boolean relaxedApplication = fRelaxedSyntax && header instanceof InterpolatingFunctionExpr;
+        final boolean relaxedApplication = fRelaxedSyntax //
+            && (header instanceof InterpolatingFunctionExpr //
+                || header instanceof DateObjectExpr //
+                || header instanceof TimeObjectExpr);
         // avoid fast StackOverflow
         append(buf, relaxedApplication ? "(" : "[");
         for (int i = 1; i < list.size(); i++) {
@@ -1544,7 +1562,16 @@ public class OutputFormFactory {
     } else if (o instanceof IPatternObject) {
       convertPattern(buf, (IPatternObject) o);
     } else if (o.isQuantity()) {
-      convertQuantityData(buf, (IQuantity) o, precedence);
+      convertQuantityData(buf, (IAST) o, precedence);
+    } else if (o instanceof DateObjectExpr || o instanceof TimeObjectExpr) {
+      // date and time objects are printed as DateObject(...) / TimeObject(...) expressions, so that
+      // the numerical components use the same number formatting as everywhere else
+      IAST fullForm = ((DataExpr) o).fullForm();
+      if (fullForm.isPresent()) {
+        convert(buf, fullForm);
+        return;
+      }
+      convertString(buf, o.toString());
     } else {
       // includes (o instanceof IStringX)
       if (fInputForm && (o instanceof DataExpr)) {
@@ -1670,6 +1697,26 @@ public class OutputFormFactory {
     return false;
   }
 
+  /**
+   * The operator form of a head, or <code>null</code> if it has none.
+   *
+   * <p>
+   * A head can have several operators - Function is the postfix <code>&amp;</code> and the infix
+   * <code>|-&gt;</code>, PlusMinus is a prefix and an infix <code>\u00b1</code> - so the choice
+   * depends on the arity of the call being printed. The preferred reading is the prefix or postfix
+   * one, which is what a one-argument call prints as. A call with more arguments upgrades to an
+   * infix reading only when that reading is <em>spelled the same way</em>: PlusMinus's two readings
+   * share <code>\u00b1</code>, so <code>PlusMinus(a,b)</code> prints as <code>a\u00b1b</code>,
+   * while Function's readings are spelled <code>&amp;</code> and <code>|-&gt;</code>, so
+   * <code>Function({x},body)</code> deliberately does <em>not</em> print as
+   * <code>{x}|-&gt;body</code> - the caller falls back to the functional form, which is what the
+   * test suite pins.
+   *
+   * <p>
+   * The token-list search below additionally recovers an infix operator of a <em>different</em>
+   * head sharing the winner's spelling (PreMinus's <code>-</code> finds Subtract). No printable
+   * head is known to rely on that, but it is what the previous two-step lookup did, so it is kept.
+   */
   public static Operator getOperator(ISymbol head, int argSize) {
     String headerStr = head.getSymbolName();
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
@@ -1678,20 +1725,32 @@ public class OutputFormFactory {
         headerStr = str;
       }
     }
-    Operator op = ASTNodeFactory.MMA_STYLE_FACTORY.get(headerStr);
-    if (op != null && argSize > 1 && !(op instanceof InfixOperator)) {
-      List<Operator> operatorList =
-          ASTNodeFactory.MMA_STYLE_FACTORY.getOperatorList(op.getOperatorString());
-      if (operatorList != null) {
-        for (int i = 0; i < operatorList.size(); i++) {
-          final Operator operator = operatorList.get(i);
-          if (operator instanceof InfixOperator) {
-            return operator;
+    List<Operator> operators = ASTNodeFactory.MMA_STYLE_FACTORY.getOperatorsByHead(headerStr);
+    if (operators == null || operators.isEmpty()) {
+      return null;
+    }
+    Operator preferred = null;
+    for (int i = 0; i < operators.size(); i++) {
+      if (!(operators.get(i) instanceof InfixOperator)) {
+        preferred = operators.get(i);
+        break;
+      }
+    }
+    if (preferred == null) {
+      preferred = operators.get(0);
+    }
+    if (argSize > 1 && !(preferred instanceof InfixOperator)) {
+      List<Operator> sameSpelling =
+          ASTNodeFactory.MMA_STYLE_FACTORY.getOperatorList(preferred.getOperatorString());
+      if (sameSpelling != null) {
+        for (int i = 0; i < sameSpelling.size(); i++) {
+          if (sameSpelling.get(i) instanceof InfixOperator) {
+            return sameSpelling.get(i);
           }
         }
       }
     }
-    return op;
+    return preferred;
   }
 
   public void convertSlot(final Appendable buf, final IAST list) throws IOException {
@@ -1895,34 +1954,105 @@ public class OutputFormFactory {
     return true;
   }
 
-  public boolean convertQuantityData(final Appendable buf, final IQuantity quantity,
+  public boolean convertQuantityData(final Appendable buf, final IAST quantity,
       final int precedence) throws IOException {
-    if (fInputForm) {
-      IExpr value = quantity.value();
-      String unitString = quantity.unitString();
+    // by design the output of a quantity looks like the InputForm - Quantity(3,"Meters") - so
+    // that unit strings keep their quotes and the output re-parses
+    try {
       buf.append("Quantity");
       buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
-      convert(buf, value);
-      buf.append(",\"");
-      buf.append(unitString);
-      buf.append("\"");
+      convert(buf, quantity.arg1());
+      buf.append(',');
+      convertUnitExpr(buf, quantity.arg2());
       buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
-      return true;
-    }
-    if (Precedence.PLUS < precedence) {
-      append(buf, "(");
-    }
-
-    try {
-      buf.append(quantity.toString());
-    } catch (Exception ex) {
+    } catch (RuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
       return false;
     }
-    if (Precedence.PLUS < precedence) {
-      append(buf, ")");
-    }
     return true;
+  }
+
+  /** Prints a unit expression with explicitly quoted strings, so the output re-parses. */
+  private void convertUnitExpr(final Appendable buf, final IExpr unit) throws IOException {
+    if (unit.isString()) {
+      buf.append('"');
+      buf.append(unit.toString());
+      buf.append('"');
+      return;
+    }
+    if (unit.isAST(S.IndependentUnit, 2) && unit.first().isString()) {
+      buf.append("IndependentUnit");
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+      convertUnitExpr(buf, unit.first());
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+      return;
+    }
+    if (unit.isList()) {
+      IAST components = (IAST) unit;
+      buf.append('{');
+      for (int i = 1; i < components.size(); i++) {
+        if (i > 1) {
+          buf.append(',');
+        }
+        convertUnitExpr(buf, components.get(i));
+      }
+      buf.append('}');
+      return;
+    }
+    if (unit.isAST(S.MixedUnit, 2) && unit.first().isList()) {
+      IAST components = (IAST) unit.first();
+      buf.append("MixedUnit");
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+      buf.append('{');
+      for (int i = 1; i < components.size(); i++) {
+        if (i > 1) {
+          buf.append(',');
+        }
+        convertUnitExpr(buf, components.get(i));
+      }
+      buf.append('}');
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+      return;
+    }
+    if (unit.isPower()) {
+      IExpr base = unit.base();
+      IExpr exponent = unit.exponent();
+      if (base.isString()) {
+        convertUnitExpr(buf, base);
+      } else {
+        buf.append('(');
+        convertUnitExpr(buf, base);
+        buf.append(')');
+      }
+      buf.append('^');
+      if (exponent.isInteger() && !exponent.isNegative()) {
+        convert(buf, exponent);
+      } else {
+        buf.append('(');
+        convert(buf, exponent);
+        buf.append(')');
+      }
+      return;
+    }
+    if (unit.isTimes()) {
+      IAST times = (IAST) unit;
+      for (int i = 1; i < times.size(); i++) {
+        if (i > 1) {
+          buf.append('*');
+        }
+        IExpr factor = times.get(i);
+        if (factor.isString() || factor.isPower() || !factor.isAST()
+            || factor.isAST(S.IndependentUnit, 2)) {
+          convertUnitExpr(buf, factor);
+        } else {
+          buf.append('(');
+          convertUnitExpr(buf, factor);
+          buf.append(')');
+        }
+      }
+      return;
+    }
+    convert(buf, unit);
   }
 
   /**

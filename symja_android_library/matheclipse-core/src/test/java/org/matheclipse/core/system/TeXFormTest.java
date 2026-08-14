@@ -20,209 +20,209 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check(evaluator, evalString, expectedResult, "", -1);
   }
 
-   @Test
-   public void testBeta() {
+  @Test
+  public void testBeta() {
     check("TeXForm(Beta(a,b))", //
         "B(a,b)");
     check("TeXForm(beta)", //
         "\\beta");
   }
 
-   @Test
-   public void testBesselI() {
+  @Test
+  public void testBesselI() {
     check("TeXForm(BesselI(a,b))", //
         "I_a(b)");
   }
 
-   @Test
-   public void testBesselJ() {
+  @Test
+  public void testBesselJ() {
     check("TeXForm(BesselJ(a,b))", //
         "J_a(b)");
   }
 
-   @Test
-   public void testBesselK() {
+  @Test
+  public void testBesselK() {
     check("TeXForm(BesselK(a,b))", //
         "K_a(b)");
   }
 
-   @Test
-   public void testBesselY() {
+  @Test
+  public void testBesselY() {
     check("TeXForm(BesselY(a,b))", //
         "Y_a(b)");
   }
 
-   @Test
-   public void testBetaRegularized() {
+  @Test
+  public void testBetaRegularized() {
     check("TeXForm(BetaRegularized(a,b,c))", //
         "I_a(b,c)");
   }
 
 
-   @Test
-   public void testCarlsonRC() {
+  @Test
+  public void testCarlsonRC() {
     check("TeXForm(CarlsonRC(a,b))", //
         "R_C(a,b)");
   }
 
-   @Test
-   public void testCarlsonRD() {
+  @Test
+  public void testCarlsonRD() {
     check("TeXForm(CarlsonRD(a,b,c))", //
         "R_D(a,b,c)");
   }
 
-   @Test
-   public void testCarlsonRG() {
+  @Test
+  public void testCarlsonRG() {
     check("TeXForm(CarlsonRG(a,b,c))", //
         "R_G(a,b,c)");
   }
 
-   @Test
-   public void testCarlsonRJ() {
+  @Test
+  public void testCarlsonRJ() {
     check("TeXForm(CarlsonRJ(a,b,c,d))", //
         "R_J(a,b,c,d)");
   }
 
-   @Test
-   public void testChebyshevT() {
+  @Test
+  public void testChebyshevT() {
     check("TeXForm(ChebyshevT(a,b))", //
         "T_a(b)");
   }
 
-   @Test
-   public void testChebyshevU() {
+  @Test
+  public void testChebyshevU() {
     check("TeXForm(ChebyshevU(a,b))", //
         "U_a(b)");
   }
 
-   @Test
-   public void testCosIntegral() {
+  @Test
+  public void testCosIntegral() {
     check("TeXForm(CosIntegral(a))", //
         "\\text{Ci}(a)");
   }
 
-   @Test
-   public void testCoshIntegral() {
+  @Test
+  public void testCoshIntegral() {
     check("TeXForm(CoshIntegral(a))", //
         "\\text{Chi}(a)");
   }
 
-   @Test
-   public void testEllipticE() {
+  @Test
+  public void testEllipticE() {
     check("TeXForm(EllipticE(a))", //
         "E(a)");
     check("TeXForm(EllipticE(a,b))", //
         "E(a,b)");
   }
 
-   @Test
-   public void testEllipticF() {
+  @Test
+  public void testEllipticF() {
     check("TeXForm(EllipticF(a,b))", //
         "F(a|b)");
   }
 
-   @Test
-   public void testEllipticK() {
+  @Test
+  public void testEllipticK() {
     check("TeXForm(EllipticK(a))", //
         "K(a)");
   }
 
-   @Test
-   public void testEllipticPi() {
+  @Test
+  public void testEllipticPi() {
     check("TeXForm(EllipticPi(a,b))", //
         "\\Pi (a|b)");
     check("TeXForm(EllipticPi(a,b,c))", //
         "\\Pi (a;b|c)");
   }
 
-   @Test
-   public void testEulerE() {
+  @Test
+  public void testEulerE() {
     check("TeXForm(EulerE(n))", //
         "E_n");
     check("TeXForm(EulerE(n,x))", //
         "E_n(x)");
   }
 
-   @Test
-   public void testEllipticTheta() {
+  @Test
+  public void testEllipticTheta() {
     check("TeXForm(EllipticTheta(a,b))", //
         "\\vartheta _a(b)");
     check("TeXForm(EllipticTheta(a,b,c))", //
         "\\vartheta _a(b,c)");
   }
 
-   @Test
-   public void testErf() {
+  @Test
+  public void testErf() {
     check("TeXForm(Erf(a))", //
         "\\text{erf}(a)");
   }
 
-   @Test
-   public void testErfc() {
+  @Test
+  public void testErfc() {
     check("TeXForm(Erfc(a))", //
         "\\text{erfc}(a)");
   }
 
-   @Test
-   public void testFactorialPower() {
+  @Test
+  public void testFactorialPower() {
     check("TeXForm(FactorialPower(a,b))", //
         "a^{(b)}");
     check("TeXForm(FactorialPower(a,b,c))", //
         "a^{(b,c)}");
   }
 
-   @Test
-   public void testGammaRegularized() {
+  @Test
+  public void testGammaRegularized() {
     check("TeXForm(GammaRegularized(a,b))", //
         "Q(a,b)");
     check("TeXForm(GammaRegularized(a,b,c))", //
         "Q(a,b,c)");
   }
 
-   @Test
-   public void testGudermannian() {
+  @Test
+  public void testGudermannian() {
     check("TeXForm(Gudermannian(a))", //
         "\\text{gd}(a)");
   }
 
-   @Test
-   public void testHankelH1() {
+  @Test
+  public void testHankelH1() {
     check("TeXForm(HankelH1(a,b))", //
         "H_a^{(1)}(b)");
   }
 
-   @Test
-   public void testHankelH2() {
+  @Test
+  public void testHankelH2() {
     check("TeXForm(HankelH2(a,b))", //
         "H_a^{(2)}(b)");
   }
 
-   @Test
-   public void testHermiteH() {
+  @Test
+  public void testHermiteH() {
     check("TeXForm(HermiteH(a,b))", //
         "H_a(b)");
   }
 
-   @Test
-   public void testHypergeometric0F1() {
+  @Test
+  public void testHypergeometric0F1() {
     check("TeXForm(f*g(Hypergeometric0F1(a,b)))", //
         "f \\cdot g(\\,_0F_1(;a;b))");
   }
 
-   @Test
-   public void testHypergeometric1F1() {
+  @Test
+  public void testHypergeometric1F1() {
     check("TeXForm(Hypergeometric1F1(a,b,c))", //
         "\\,_1F_1(a,b,c)");
   }
 
-   @Test
-   public void testHypergeometricU() {
+  @Test
+  public void testHypergeometricU() {
     check("TeXForm(HypergeometricU(a,b,c))", //
         "U(a,b,c)");
   }
 
-   @Test
-   public void testIntervalData() {
+  @Test
+  public void testIntervalData() {
     check("TeXForm(IntervalData())", //
         "\\emptyset ");
 
@@ -234,8 +234,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\left(-\\infty, \\infty\\right) ");
   }
 
-   @Test
-   public void testIntervalData001() {
+  @Test
+  public void testIntervalData001() {
     TeXFormFactory fTeXFactory = new TeXFormFactory();
     StringBuilder sb = new StringBuilder();
     fTeXFactory.convert(sb,
@@ -245,8 +245,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     Assertions.assertEquals("\\emptyset ", sb.toString());
   }
 
-   @Test
-   public void testIntervalData002() {
+  @Test
+  public void testIntervalData002() {
     TeXFormFactory fTeXFactory = new TeXFormFactory();
     StringBuilder sb = new StringBuilder();
     fTeXFactory.convert(sb,
@@ -257,8 +257,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     Assertions.assertEquals("\\left[0, 1\\right) \\cup \\left(1, 2\\right] ", sb.toString());
   }
 
-   @Test
-   public void testIntervalData003() {
+  @Test
+  public void testIntervalData003() {
     TeXFormFactory fTeXFactory = new TeXFormFactory();
     StringBuilder sb = new StringBuilder();
     fTeXFactory.convert(sb,
@@ -272,60 +272,60 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         sb.toString());
   }
 
-   @Test
-   public void testInverseBetaRegularized() {
+  @Test
+  public void testInverseBetaRegularized() {
     check("TeXForm(InverseBetaRegularized(a,b,c))", //
         "I_a^{-1}(b,c)");
   }
 
-   @Test
-   public void testInverseErf() {
+  @Test
+  public void testInverseErf() {
     check("TeXForm(InverseErf(a))", //
         "\\text{erf}^{-1}(a)");
   }
 
-   @Test
-   public void testInverseErfc() {
+  @Test
+  public void testInverseErfc() {
     check("TeXForm(InverseErfc(a))", //
         "\\text{erfc}^{-1}(a)");
   }
 
-   @Test
-   public void testInverseGammaRegularized() {
+  @Test
+  public void testInverseGammaRegularized() {
     check("TeXForm(InverseGammaRegularized(a,b))", //
         "Q^{-1}(a,b)");
   }
 
-   @Test
-   public void testInverseGudermannian() {
+  @Test
+  public void testInverseGudermannian() {
     check("TeXForm(InverseGudermannian(a))", //
         "\\text{gd}^{-1}(a)");
   }
 
-   @Test
-   public void testLegendreP() {
+  @Test
+  public void testLegendreP() {
     check("TeXForm(LegendreP(a,b))", //
         "P_a(b)");
     check("TeXForm(LegendreP(a,b,c))", //
         "P_a^b(c)");
   }
 
-   @Test
-   public void testLegendreQ() {
+  @Test
+  public void testLegendreQ() {
     check("TeXForm(LegendreQ(a,b))", //
         "Q_a(b)");
     check("TeXForm(LegendreQ(a,b,c))", //
         "Q_a^b(c)");
   }
 
-   @Test
-   public void testPochhammer() {
+  @Test
+  public void testPochhammer() {
     check("TeXForm(f*Pochhammer(a,b)*z(a,b))", //
         "f \\cdot (a)_b \\cdot z(a,b)");
   }
 
-   @Test
-   public void testPlusReversed001() {
+  @Test
+  public void testPlusReversed001() {
     TeXFormFactory fTeXFactory = new TeXFormFactory(true, -1, -1, " \\cdot ");
     IExpr expr = evaluator.eval("1+x-x^2");
     StringBuilder sb = new StringBuilder();
@@ -333,8 +333,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     Assertions.assertEquals(" - {x}^{2} + x + 1", sb.toString());
   }
 
-   @Test
-   public void testPlusReversed002() {
+  @Test
+  public void testPlusReversed002() {
     // issue #753
     TeXFormFactory teXFormFactory = new TeXFormFactory(true, -1, -1, " \\cdot ");
     IExpr term = F.Plus(F.ZZ(-6), S.a);
@@ -346,8 +346,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     assertEquals(buffer.toString(), "\\textcolor{red}{4} + a-6");
   }
 
-   @Test
-   public void testPlusReversed003() {
+  @Test
+  public void testPlusReversed003() {
     // issue #753
     TeXFormFactory teXFormFactory = new TeXFormFactory(true, -1, -1, " \\cdot ");
     IExpr[] args = new IExpr[] {F.Style(F.ZZ(4), S.Red), F.ZZ(-6), S.a};
@@ -358,34 +358,34 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "a-6 + \\textcolor{red}{4}");
   }
 
-   @Test
-   public void testSinIntegral() {
+  @Test
+  public void testSinIntegral() {
     check("TeXForm(SinIntegral(a))", //
         "\\text{Si}(a)");
   }
 
-   @Test
-   public void testSinhIntegral() {
+  @Test
+  public void testSinhIntegral() {
     check("TeXForm(SinhIntegral(a))", //
         "\\text{Shi}(a)");
   }
 
-   @Test
-   public void testWhittakerM() {
+  @Test
+  public void testWhittakerM() {
     check("TeXForm(WhittakerM(a,b,c))", //
         "M_{a,b}(c)");
   }
 
-   @Test
-   public void testWhittakerW() {
+  @Test
+  public void testWhittakerW() {
     check("TeXForm(WhittakerW(a,b,c))", //
         "W_{a,b}(c)");
   }
 
-   @Test
-   public void testTeXForm1() {
-     check("TeXForm({{a, b}, {c}})", //
-         "\\{\\{a,b\\},\\{c\\}\\}");
+  @Test
+  public void testTeXForm1() {
+    check("TeXForm({{a, b}, {c}})", //
+        "\\{\\{a,b\\},\\{c\\}\\}");
     check("TeXForm /@ {Subscript(x, a), x^a, Subsuperscript(x,a,b)}", //
         "{{x}_{a},{x}^{a},{x}_{a}^{b}}");
     check("TeXForm /@ {Subscript(x, 2*k+1), x^(2*k+1)}", //
@@ -403,8 +403,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "{x}^{3}+3 \\cdot {x}^{2} \\cdot y+3 \\cdot x \\cdot {y}^{2} + {y}^{3}");
   }
 
-   @Test
-   public void testTeXForm2() {
+  @Test
+  public void testTeXForm2() {
     check("TeXForm(Hold(2^3*3*5*11))", //
         "\\text{Hold}({2}^{3} \\cdot 3 \\cdot 5 \\cdot 11)");
     check("TeXForm(Hold(D(Sin(x),{x,3})))", //
@@ -475,38 +475,38 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\text{fgh}(a,b)");
   }
 
-   @Test
-   public void testTeXFormNegativeFraction() {
+  @Test
+  public void testTeXFormNegativeFraction() {
     check("TeXForm(a/2+Tan(x)/4-Tan(x)^2/3+12)", //
         "12 + \\frac{a}{2} + \\frac{\\tan (x)}{4} - \\frac{{\\tan (x)}^{2}}{3}");
   }
 
-   @Test
-   public void testWeierstrassHalfPeriods() {
+  @Test
+  public void testWeierstrassHalfPeriods() {
     check("TeXForm(WeierstrassHalfPeriods(a))", //
         "\\text{WeierstrassHalfPeriods}(a)");
   }
 
-   @Test
-   public void testTeXFormIntersection() {
+  @Test
+  public void testTeXFormIntersection() {
     check("TeXForm(Intersection(a,b,c))", //
         "a \\cap b \\cap c");
   }
 
-   @Test
-   public void testTeXFormUnion() {
+  @Test
+  public void testTeXFormUnion() {
     check("TeXForm(Union(a,b,c))", //
         "a \\cup b \\cup c");
   }
 
-   @Test
-   public void testTeXFormLogisticSigmoid() {
+  @Test
+  public void testTeXFormLogisticSigmoid() {
     check("TeXForm(LogisticSigmoid(a+(b*c)))", //
         "\\sigma (a + b \\cdot c)");
   }
 
-   @Test
-   public void testTeXFormPlusMinus() {
+  @Test
+  public void testTeXFormPlusMinus() {
     check("TeXForm(PlusMinus(a,(b*c)))", //
         "a \\pm b \\cdot c");
     check("TeXForm(PlusMinus(a,b)*c)", //
@@ -517,8 +517,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "c + \\pm{a}");
   }
 
-   @Test
-   public void testTeXDivide() {
+  @Test
+  public void testTeXDivide() {
     check("TeXForm((x+1)/( 3- 2x))", //
         "\\frac{1 + x}{3-2 \\cdot x}");
     check("TeXForm(a/b)", //
@@ -526,8 +526,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
 
-   @Test
-   public void testMapIndexed() {
+  @Test
+  public void testMapIndexed() {
     String input = "MapIndexed(f, {{a, b, c}, {x, y, z}})";
 
     ExprEvaluator exprEvaluator = new ExprEvaluator();
@@ -544,8 +544,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
 
-   @Test
-   public void testNonNegativePower() {
+  @Test
+  public void testNonNegativePower() {
     IExpr input = F.Times(F.a, F.Power(F.x, F.HoldForm(F.Plus(F.C1, F.CN1))));
 
     ExprEvaluator exprEvaluator = new ExprEvaluator();
@@ -557,20 +557,20 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "a \\cdot {x}^{-1 + 1}");
   }
 
-   @Test
-   public void testTeXFormMatrix() {
-     check("TeXForm(Hold({{1^(1+1),1^(1+2)},\n" //
-         + "     {1^(1+2),1^(2+2)}}))", //
-         "\\text{Hold}(\\left(\n" //
-             + "\\begin{array}{cc}\n" //
-             + "{1}^{\\left( 1 + 1\\right) } & {1}^{\\left( 1 + 2\\right) } \\\\\n" //
-             + "{1}^{\\left( 1 + 2\\right) } & {1}^{\\left( 2 + 2\\right) } \\\\\n" //
-             + "\\end{array}\n" //
-             + "\\right) )");
-   }
+  @Test
+  public void testTeXFormMatrix() {
+    check("TeXForm(Hold({{1^(1+1),1^(1+2)},\n" //
+        + "     {1^(1+2),1^(2+2)}}))", //
+        "\\text{Hold}(\\left(\n" //
+            + "\\begin{array}{cc}\n" //
+            + "{1}^{\\left( 1 + 1\\right) } & {1}^{\\left( 1 + 2\\right) } \\\\\n" //
+            + "{1}^{\\left( 1 + 2\\right) } & {1}^{\\left( 2 + 2\\right) } \\\\\n" //
+            + "\\end{array}\n" //
+            + "\\right) )");
+  }
 
-   @Test
-   public void testMinusOnePower() {
+  @Test
+  public void testMinusOnePower() {
     // issue #770
     IExpr ast = F.Power(F.CN1, F.Plus(F.ZZ(1), F.ZZ(2)));
     TeXFormFactory teXFormFactory = new TeXFormFactory(false, -1, -1, " \\cdot ");

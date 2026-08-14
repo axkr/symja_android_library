@@ -13,7 +13,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
  * Group elements of a list into successive bins. Supports 1D and multi-dimensional nested data.
@@ -69,6 +68,27 @@ public class BinLists extends AbstractFunctionEvaluator {
    * isolating their numerical magnitude.
    */
   private static double extractDouble(IExpr val, EvalEngine engine) {
+    return extractDouble(val, engine, null);
+  }
+
+  /** The unit of the first quantity in the (possibly nested) data list, or {@code null}. */
+  private static IExpr firstQuantityUnit(IAST data) {
+    for (int i = 1; i < data.size(); i++) {
+      IExpr element = data.get(i);
+      if (element.isQuantity()) {
+        return ((IAST) element).arg2();
+      }
+      if (element.isList()) {
+        IExpr unit = firstQuantityUnit((IAST) element);
+        if (unit != null) {
+          return unit;
+        }
+      }
+    }
+    return null;
+  }
+
+  private static double extractDouble(IExpr val, EvalEngine engine, IExpr commonUnit) {
     if (val.isInfinity()) {
       return Double.POSITIVE_INFINITY;
     }
@@ -78,7 +98,19 @@ public class BinLists extends AbstractFunctionEvaluator {
 
     final IExpr nVal;
     if (val.isQuantity()) {
-      nVal = engine.evalN(((IQuantity) val).valueSI());
+      IAST quantity = (IAST) val;
+      IExpr magnitude;
+      if (commonUnit != null) {
+        // bin quantities in the dataset's common unit (WMA behavior)
+        magnitude = org.matheclipse.core.units.Units.convertMagnitude(quantity.arg1(),
+            quantity.arg2(), commonUnit, engine);
+        if (magnitude.isNIL()) {
+          return Double.NaN; // incompatible units are excluded from binning
+        }
+      } else {
+        magnitude = org.matheclipse.core.units.QuantityOps.toBaseMagnitude(quantity, engine);
+      }
+      nVal = engine.evalN(magnitude);
     } else {
       nVal = engine.evalN(val);
     }
@@ -98,9 +130,10 @@ public class BinLists extends AbstractFunctionEvaluator {
     double xMax = Double.NaN;
     double dx = Double.NaN;
     double[] boundaries = null;
+    IExpr commonUnit = null;
 
     public int getBinIndex(IExpr val, EvalEngine engine) {
-      double d = extractDouble(val, engine);
+      double d = extractDouble(val, engine, commonUnit);
       if (Double.isNaN(d)) {
         return -1;
       }
@@ -136,19 +169,20 @@ public class BinLists extends AbstractFunctionEvaluator {
   }
 
   private static double getColValue(IAST data, int rowIndex, int colIndex, boolean is1D,
-      EvalEngine engine) {
+      EvalEngine engine, IExpr commonUnit) {
     IExpr val;
     if (is1D) {
       val = data.get(rowIndex);
     } else {
       val = ((IAST) data.get(rowIndex)).get(colIndex + 1);
     }
-    return extractDouble(val, engine);
+    return extractDouble(val, engine, commonUnit);
   }
 
   private static BinSpec createSpec(IAST data, int colIndex, IExpr specExpr, boolean is1D,
       EvalEngine engine) {
     BinSpec spec = new BinSpec();
+    spec.commonUnit = firstQuantityUnit(data);
     if (specExpr.isList()) {
       IAST list = (IAST) specExpr;
       if (list.argSize() == 1 && list.arg1().isList()) {
@@ -160,7 +194,7 @@ public class BinLists extends AbstractFunctionEvaluator {
         spec.capacity = bList.argSize() - 1;
         spec.boundaries = new double[bList.argSize()];
         for (int i = 1; i <= bList.argSize(); i++) {
-          double val = extractDouble(bList.get(i), engine);
+          double val = extractDouble(bList.get(i), engine, spec.commonUnit);
           if (Double.isNaN(val)) {
             return null;
           }
@@ -171,14 +205,14 @@ public class BinLists extends AbstractFunctionEvaluator {
         // Handle explicit boundaries {xmin, xmax} or {xmin, xmax, dx}
         double dx = 1.0;
         if (list.argSize() == 3) {
-          dx = extractDouble(list.arg3(), engine);
+          dx = extractDouble(list.arg3(), engine, spec.commonUnit);
           if (Double.isNaN(dx) || dx <= 0) {
             return null;
           }
         }
 
-        double xMin = extractDouble(list.arg1(), engine);
-        double xMax = extractDouble(list.arg2(), engine);
+        double xMin = extractDouble(list.arg1(), engine, spec.commonUnit);
+        double xMax = extractDouble(list.arg2(), engine, spec.commonUnit);
 
         if (Double.isNaN(xMin) || Double.isNaN(xMax) || xMax <= xMin) {
           return null;
@@ -192,7 +226,7 @@ public class BinLists extends AbstractFunctionEvaluator {
       }
     } else {
       // Handle implicit bounds defined only by dx
-      double dx = extractDouble(specExpr, engine);
+      double dx = extractDouble(specExpr, engine, spec.commonUnit);
       if (Double.isNaN(dx) || dx <= 0) {
         return null;
       }
@@ -200,7 +234,7 @@ public class BinLists extends AbstractFunctionEvaluator {
       double colMin = Double.POSITIVE_INFINITY;
       double colMax = Double.NEGATIVE_INFINITY;
       for (int i = 1; i <= data.argSize(); i++) {
-        double d = getColValue(data, i, colIndex, is1D, engine);
+        double d = getColValue(data, i, colIndex, is1D, engine, spec.commonUnit);
         if (!Double.isNaN(d)) {
           if (d < colMin)
             colMin = d;

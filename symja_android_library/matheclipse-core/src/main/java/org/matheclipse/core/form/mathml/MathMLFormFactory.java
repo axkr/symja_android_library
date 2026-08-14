@@ -1446,6 +1446,18 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
             return;
           }
           break;
+        case ID.Quantity:
+          if (list.isAST2() && org.matheclipse.core.units.Units.isKnownUnit(list.arg2())) {
+            // magnitude, invisible-times, unit abbreviation as text
+            tagStart(buf, "mrow");
+            convertInternal(buf, list.arg1(), Precedence.TIMES, false);
+            tag(buf, "mo", "&#x2062;");
+            tag(buf, "mtext",
+                org.matheclipse.core.units.Units.renderUnit(list.arg2(), "Abbreviation"));
+            tagEnd(buf, "mrow");
+            return;
+          }
+          break;
         case ID.Part:
           if ((list.size() >= 3)) {
             convertPart(buf, list);

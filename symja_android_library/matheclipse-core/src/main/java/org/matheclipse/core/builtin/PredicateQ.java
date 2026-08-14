@@ -1049,8 +1049,28 @@ public class PredicateQ {
       implements Predicate<IExpr>, IPredicate {
 
     @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      if (ast.isAST2()) {
+        // QuantityQ(expr, dims) additionally tests the unit dimensions
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        if (!test(arg1)) {
+          return S.False;
+        }
+        java.util.Map<String, org.matheclipse.core.interfaces.IRational> expected =
+            org.matheclipse.core.units.Units.dimensionSpec(engine.evaluate(ast.arg2()));
+        if (expected == null) {
+          return S.False;
+        }
+        java.util.Map<String, org.matheclipse.core.interfaces.IRational> actual =
+            org.matheclipse.core.units.Units.dimensions(((IAST) arg1).arg2());
+        return F.booleSymbol(actual != null && actual.equals(expected));
+      }
+      return super.evaluate(ast, engine);
+    }
+
+    @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-      return arg1.isQuantity();
+      return test(arg1);
     }
 
     @Override
@@ -1058,7 +1078,8 @@ public class PredicateQ {
 
     @Override
     public boolean test(final IExpr expr) {
-      return expr.isQuantity();
+      return expr.isQuantity()
+          && org.matheclipse.core.units.Units.isKnownUnit(((IAST) expr).arg2());
     }
   }
 

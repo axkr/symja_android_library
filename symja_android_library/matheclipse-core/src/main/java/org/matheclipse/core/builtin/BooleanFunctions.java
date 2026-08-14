@@ -59,6 +59,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBooleanFormula;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComparatorFunction;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
@@ -68,7 +69,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
-import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.math.MathException;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -1734,10 +1734,10 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {}
 
     private static IExpr equalNIL(final IExpr a1, final IExpr a2, EvalEngine engine) {
+      if (a1.isQuantity() && a2.isQuantity()) {
+        return BooleanFunctions.quantityEquals((IAST) a1, (IAST) a2);
+      }
       if ((a1.isExactNumber() || a1.isString()) && (a2.isExactNumber() || a2.isString())) {
-        if (a1.isQuantity() && a2.isQuantity()) {
-          return BooleanFunctions.quantityEquals((IQuantity) a1, (IQuantity) a2);
-        }
         return a1.equals(a2) ? S.True : S.False;
       }
       IExpr.COMPARE_TERNARY b;
@@ -2209,11 +2209,17 @@ public final class BooleanFunctions {
       } else if (a0.isInterval1() && a1.isInterval1()) {
         return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
       } else if (a0.isQuantity() && a1.isQuantity()) {
-        int comp = quantityCompareTo((IQuantity) a0, (IQuantity) a1);
+        int comp = quantityCompareTo((IAST) a0, (IAST) a1);
         if (F.isNotPresent(comp)) {
           return IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
         return comp > 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+      } else if (a0 instanceof IDataExpr && a1 instanceof IDataExpr) {
+        // DateObject(...) and TimeObject(...) are ordered by their start instant
+        IExpr comp = DateTimeFunctions.compareDateObject(a0, a1);
+        if (comp.isPresent()) {
+          return comp.toIntDefault() > 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+        }
       }
 
       if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult() && !a0.isList()) {
@@ -2497,11 +2503,17 @@ public final class BooleanFunctions {
       if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult()) {
         return IExpr.COMPARE_TERNARY.TRUE;
       } else if (a0.isQuantity() && a1.isQuantity()) {
-        int comp = quantityCompareTo((IQuantity) a0, (IQuantity) a1);
+        int comp = quantityCompareTo((IAST) a0, (IAST) a1);
         if (F.isNotPresent(comp)) {
           return IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
         return comp >= 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+      } else if (a0 instanceof IDataExpr && a1 instanceof IDataExpr) {
+        IExpr comp = DateTimeFunctions.compareDateObject(a0, a1);
+        if (comp.isPresent()) {
+          return comp.toIntDefault() >= 0 ? IExpr.COMPARE_TERNARY.TRUE
+              : IExpr.COMPARE_TERNARY.FALSE;
+        }
       }
       return super.compareTernary(a0, a1);
     }
@@ -2816,11 +2828,17 @@ public final class BooleanFunctions {
       if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult()) {
         return IExpr.COMPARE_TERNARY.TRUE;
       } else if (a0.isQuantity() && a1.isQuantity()) {
-        int comp = quantityCompareTo((IQuantity) a0, (IQuantity) a1);
+        int comp = quantityCompareTo((IAST) a0, (IAST) a1);
         if (F.isNotPresent(comp)) {
           return IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
         return comp <= 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+      } else if (a0 instanceof IDataExpr && a1 instanceof IDataExpr) {
+        IExpr comp = DateTimeFunctions.compareDateObject(a0, a1);
+        if (comp.isPresent()) {
+          return comp.toIntDefault() <= 0 ? IExpr.COMPARE_TERNARY.TRUE
+              : IExpr.COMPARE_TERNARY.FALSE;
+        }
       }
       return super.compareTernary(a1, a0);
     }
@@ -4194,47 +4212,31 @@ public final class BooleanFunctions {
   }
 
 
-  private static IExpr quantityEquals(IQuantity q1, IQuantity q2) {
+  private static IExpr quantityEquals(IAST q1, IAST q2) {
     try {
-      if (!q1.unit().equals(q2.unit())) {
-        org.matheclipse.core.tensor.qty.UnitConvert unitConvert =
-            org.matheclipse.core.tensor.qty.UnitConvert.SI();
-        q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
-      }
-      if (q1.unit().equals(q2.unit())) {
-        return F.booleSymbol(q1.value().equals(q2.value()));
-      }
+      return org.matheclipse.core.units.QuantityOps.equalsExpr(q1, q2, EvalEngine.get());
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }
     return F.NIL;
   }
 
-  private static IExpr quantityUnequals(IQuantity q1, IQuantity q2) {
-    try {
-      if (!q1.unit().equals(q2.unit())) {
-        org.matheclipse.core.tensor.qty.UnitConvert unitConvert =
-            org.matheclipse.core.tensor.qty.UnitConvert.SI();
-        q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
-      }
-      if (q1.unit().equals(q2.unit())) {
-        return F.booleSymbol(!q1.value().equals(q2.value()));
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
+  private static IExpr quantityUnequals(IAST q1, IAST q2) {
+    IExpr equals = quantityEquals(q1, q2);
+    if (equals.isTrue()) {
+      return S.False;
+    }
+    if (equals.isFalse()) {
+      return S.True;
     }
     return F.NIL;
   }
 
-  private static int quantityCompareTo(IQuantity q1, IQuantity q2) {
+  private static int quantityCompareTo(IAST q1, IAST q2) {
     try {
-      if (!q1.unit().equals(q2.unit())) {
-        org.matheclipse.core.tensor.qty.UnitConvert unitConvert =
-            org.matheclipse.core.tensor.qty.UnitConvert.SI();
-        q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
-      }
-      if (q1.unit().equals(q2.unit())) {
-        return q1.value().compareTo(q2.value());
+      int result = org.matheclipse.core.units.QuantityOps.compare(q1, q2, EvalEngine.get());
+      if (result != org.matheclipse.core.units.QuantityOps.INCOMPARABLE) {
+        return result;
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -4243,10 +4245,10 @@ public final class BooleanFunctions {
   }
 
   public static IExpr unequalNIL(IExpr a1, IExpr a2, EvalEngine engine) {
+    if (a1.isQuantity() && a2.isQuantity()) {
+      return quantityUnequals((IAST) a1, (IAST) a2);
+    }
     if ((a1.isExactNumber() || a1.isString()) && (a2.isExactNumber() || a2.isString())) {
-      if (a1.isQuantity() && a2.isQuantity()) {
-        return quantityUnequals((IQuantity) a1, (IQuantity) a2);
-      }
       return a1.equals(a2) ? S.False : S.True;
     }
     IExpr.COMPARE_TERNARY b;

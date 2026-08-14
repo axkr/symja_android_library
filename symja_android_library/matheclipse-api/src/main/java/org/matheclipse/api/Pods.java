@@ -41,6 +41,7 @@ import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
@@ -950,7 +951,7 @@ public class Pods {
               if (outExpr.isSameHeadSizeGE(S.Graphics, 2)) {
                 numpods = addGraphicsPod(numpods, inExpr, outExpr, inExpr, "Function", "Plotter",
                     podsArray, engine);
-              } else if (outExpr.isSameHeadSizeGE(S.Graphics3D, 2)) {
+              } else if (WebGLGraphics3D.isRenderable(outExpr)) {
                 numpods = addGraphics3DPod(numpods, inExpr, outExpr, inExpr, "Function", "Plotter",
                     podsArray, engine);
               } else if (outExpr.isAST(S.JSFormData, 3)) {
@@ -1204,7 +1205,7 @@ public class Pods {
       String title, String scanner, ArrayNode podsArray, EvalEngine engine) {
     int form = GRAPHICS3D;
     String html = null;
-    if (podOut.isSameHeadSizeGE(S.Graphics3D, 2)) {
+    if (WebGLGraphics3D.isRenderable(podOut)) {
       StringBuilder buf = new StringBuilder();
       if (GraphicsUtil.renderGraphics3D(buf, (IAST) podOut, engine)) {
         try {

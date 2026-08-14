@@ -88,6 +88,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
@@ -101,6 +102,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
@@ -122,7 +124,7 @@ import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.sympy.core.Expr;
 import org.matheclipse.core.sympy.exception.PoleError;
 import org.matheclipse.core.sympy.series.Order;
-import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.core.units.QuantityOps;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Arithmetic {
@@ -923,8 +925,11 @@ public final class Arithmetic {
      * @return {@link F#NIL} if the evaluation wasn't possible
      */
     private IExpr conjugate(IExpr arg1) {
-      if (arg1.isNumber() || arg1.isQuantity()) {
+      if (arg1.isNumber()) {
         return arg1.conjugate();
+      }
+      if (arg1.isQuantity()) {
+        return QuantityOps.mapMagnitude((IAST) arg1, S.Conjugate, EvalEngine.get());
       }
       if (arg1.isRealResult() || arg1.isRealVector() || arg1.isRealMatrix()) {
         return arg1;
@@ -2258,6 +2263,183 @@ public final class Arithmetic {
    *
    *
    * <pre>
+   * <code>HyperHarmonicNumber(r, n)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns the <code>n</code>th hyperharmonic number of order <code>r</code>.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * See
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Hyperharmonic_number">Wikipedia - Hyperharmonic
+   * number</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; HyperHarmonicNumber(2, 5)
+   * 87/10
+   * </code>
+   * </pre>
+   */
+  private static final class HyperHarmonicNumber extends AbstractEvaluator
+      implements IFunctionExpand {
+
+    /**
+     * Hyperharmonic number <code>H(r, n)</code> defined by the iterated sums
+     * <code>H(1, n) = HarmonicNumber(n)</code> and
+     * <code>H(r, n) = Sum(H(r-1, k), {k, 1, n})</code>.
+     */
+    private static IExpr hyperHarmonic(IExpr r, IExpr n, EvalEngine engine) {
+      if (r.isOne()) {
+        return F.HarmonicNumber(n);
+      }
+      if (r.isZero()) {
+        // H(0, n) = 1/n
+        return F.Power(n, F.CN1);
+      }
+      if (n.isZero()) {
+        // H(r, 0) = 0
+        return F.C0;
+      }
+      if (r.isInteger() && r.isPositive()) {
+        if (n.isOne()) {
+          return F.C1;
+        }
+        int ri = r.toIntDefault();
+        int ni = n.toIntDefault();
+        if (ri > 0 && ni > 0) {
+          // closed form: Binomial(n+r-1,n)*(HarmonicNumber(n+r-1)-HarmonicNumber(r-1))
+          IInteger nr1 = F.ZZ(((long) ni) + ri - 1L);
+          return F.Times(F.Binomial(nr1, n),
+              F.Subtract(F.HarmonicNumber(nr1), F.HarmonicNumber(F.ZZ(ri - 1L))));
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Generalized hyperharmonic number <code>H(r, n, m)</code> defined by
+     * <code>H(1, n, m) = HarmonicNumber(n, m)</code> and
+     * <code>H(r, n, m) = Sum(H(r-1, k, m), {k, 1, n})</code>.
+     */
+    private static IExpr hyperHarmonic(IExpr r, IExpr n, IExpr m, final IAST ast,
+        EvalEngine engine) {
+      if (m.isOne()) {
+        return F.HyperHarmonicNumber(r, n);
+      }
+      if (r.isOne()) {
+        return F.HarmonicNumber(n, m);
+      }
+      if (r.isZero()) {
+        // H(0, n, m) = n^(-m)
+        return F.Power(n, m.negate());
+      }
+      if (n.isZero()) {
+        // H(r, 0, m) = 0
+        return F.C0;
+      }
+      if (r.isInteger() && r.isPositive()) {
+        if (n.isOne()) {
+          return F.C1;
+        }
+        final int ri = r.toIntDefault();
+        final int ni = n.toIntDefault();
+        if (ri > 0 && ni > 0) {
+          int iterationLimit = engine.getIterationLimit();
+          if (iterationLimit >= 0 && iterationLimit <= ni) {
+            IterationLimitExceeded.throwIt(ni, ast);
+          }
+          // H(r, n, m) = Sum(Binomial(n-k+r-1, r-1)*k^(-m), {k, 1, n})
+          IExpr mNegate = m.negate();
+          return F.sum(k -> F.Times(
+              F.Binomial(F.ZZ(((long) ni) - k.toIntDefault() + ri - 1L), F.ZZ(ri - 1L)),
+              F.Power(k, mNegate)), 1, ni);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr r = ast.arg1();
+      IExpr n = ast.arg2();
+      if (ast.isAST2()) {
+        return hyperHarmonic(r, n, engine);
+      }
+      return hyperHarmonic(r, n, ast.arg3(), ast, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr r = ast.arg1();
+        IExpr n = ast.arg2();
+        // (Gamma(n+r)*(PolyGamma(0,n+r)-PolyGamma(0,r)))/(Gamma(r)*Gamma(1+n))
+        return F.Times(F.Gamma(F.Plus(n, r)),
+            F.Power(F.Times(F.Gamma(r), F.Gamma(F.Plus(F.C1, n))), F.CN1),
+            F.Subtract(F.PolyGamma(F.C0, F.Plus(n, r)), F.PolyGamma(F.C0, r)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber r = (IInexactNumber) ast.arg1();
+        IInexactNumber n = (IInexactNumber) ast.arg2();
+        if (r.isZero() || r.isMathematicalIntegerNegative() || n.isMathematicalIntegerNegative()) {
+          // the poles of Gamma(r) resp. Gamma(1+n) are not handled by the generic formula
+          return F.NIL;
+        }
+        // (Gamma(n+r)*(PolyGamma(0,n+r)-PolyGamma(0,r)))/(Gamma(r)*Gamma(1+n))
+        return engine.evaluate(F.Times(F.Gamma(F.Plus(n, r)),
+            F.Power(F.Times(F.Gamma(r), F.Gamma(F.Plus(F.C1, n))), F.CN1),
+            F.Subtract(F.PolyGamma(F.C0, F.Plus(n, r)), F.PolyGamma(F.C0, r))));
+      } else if (ast.argSize() == 3) {
+        IInexactNumber r = (IInexactNumber) ast.arg1();
+        IInexactNumber n = (IInexactNumber) ast.arg2();
+        IInexactNumber m = (IInexactNumber) ast.arg3();
+        int ri = r.toIntDefault();
+        int ni = n.toIntDefault();
+        if (ri > 0 && ni >= 0) {
+          IExpr result = hyperHarmonic(F.ZZ(ri), F.ZZ(ni), m, ast, engine);
+          if (result.isPresent()) {
+            return engine.evaluate(result);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
    * Im(z)
    * </pre>
    *
@@ -2333,8 +2515,11 @@ public final class Arithmetic {
           }
         }
       }
-      if (expr.isNumber() || expr.isQuantity()) {
+      if (expr.isNumber()) {
         return expr.im();
+      }
+      if (expr.isQuantity()) {
+        return QuantityOps.mapMagnitude((IAST) expr, S.Im, EvalEngine.get());
       }
       if (expr.isRealResult()) {
         return F.C0;
@@ -2523,6 +2708,7 @@ public final class Arithmetic {
       S.Gamma.setEvaluator(new Gamma());
       S.GCD.setEvaluator(new GCD());
       S.HarmonicNumber.setEvaluator(new HarmonicNumber());
+      S.HyperHarmonicNumber.setEvaluator(new HyperHarmonicNumber());
       S.Im.setEvaluator(new Im());
       S.Increment.setEvaluator(new Increment());
       S.KeyDropFrom.setEvaluator(new KeyDropFrom());
@@ -3024,6 +3210,20 @@ public final class Arithmetic {
         if (ast.head() != S.Plus) {
           return F.NIL;
         }
+        if (ast.exists(x -> x instanceof IDataExpr)) {
+          // DateObject(...) + Quantity(1, "Day") and friends
+          IExpr dateResult = DateTimeFunctions.plusDateObject(ast);
+          if (dateResult.isPresent()) {
+            return dateResult;
+          }
+        }
+        if (ast.exists(x -> x.isQuantity())) {
+          // T1 - T2 of two absolute temperatures is a temperature difference
+          IExpr temperatureResult = QuantityOps.temperatureSubtraction(ast, engine);
+          if (temperatureResult.isPresent()) {
+            return temperatureResult;
+          }
+        }
         if (ast.isUniform(UniformFlags.REAL)) {
           INum numResult = (INum) ast.arg1();
           for (int i = 2; i < ast.size(); i++) {
@@ -3457,12 +3657,7 @@ public final class Arithmetic {
           return powerZeroArg1(exponent);
         }
         if (base.isQuantity()) {
-          try {
-            IQuantity q = (IQuantity) base;
-            return q.power(exponent);
-          } catch (MathException mex) {
-            return F.NIL;
-          }
+          return QuantityOps.power((IAST) base, exponent, EvalEngine.get());
         } else if (base.isAST()) {
           if (base.isInterval()) {
             if (exponent.isInteger()) {
@@ -5415,8 +5610,11 @@ public final class Arithmetic {
           }
         }
       }
-      if (expr.isNumber() || expr.isQuantity()) {
+      if (expr.isNumber()) {
         return expr.re();
+      }
+      if (expr.isQuantity()) {
+        return QuantityOps.mapMagnitude((IAST) expr, S.Re, EvalEngine.get());
       }
       if (expr.isRealResult() || expr.isRealVector() || expr.isRealMatrix()) {
         return expr;
@@ -6433,7 +6631,7 @@ public final class Arithmetic {
     private static IExpr evalZeroTimesX(final IExpr zeroArg, final IExpr otherArg,
         boolean swappedArgs) {
       if (otherArg.isQuantity()) {
-        return ((IQuantity) otherArg).ofUnit(F.C0);
+        return F.Quantity(F.C0, ((IAST) otherArg).arg2());
       }
       if (otherArg.isDirectedInfinity() || otherArg.isIndeterminate()) {
         if (otherArg.isDirectedInfinity()) {
@@ -6881,11 +7079,16 @@ public final class Arithmetic {
         }
       }
 
-      // Quantities
-      if (arg1.isQuantity())
-        return ((IQuantity) arg1).times(arg2, true);
-      if (arg2.isQuantity())
-        return ((IQuantity) arg2).times(arg1, true);
+      // Quantities: a non-quantity factor is absorbed into the magnitude (WMA behavior)
+      if (arg1.isQuantity()) {
+        if (arg2.isQuantity()) {
+          return QuantityOps.times((IAST) arg1, (IAST) arg2, EvalEngine.get());
+        }
+        return QuantityOps.timesScalar((IAST) arg1, arg2, EvalEngine.get());
+      }
+      if (arg2.isQuantity()) {
+        return QuantityOps.timesScalar((IAST) arg2, arg1, EvalEngine.get());
+      }
 
       return F.NIL;
     }
@@ -6927,6 +7130,14 @@ public final class Arithmetic {
       if (size == 2) {
         // OneIdentity ?
         return (ast.head() == S.Times) ? ast.arg1() : F.NIL;
+      }
+      if (size == 3 && ast.exists(x -> x instanceof IDataExpr)) {
+        // in relaxed syntax mode DateObject(...)("Day") parses as an implicit multiplication;
+        // a date or time object multiplied by a string can only be meant as a property access
+        IExpr dateResult = DateTimeFunctions.timesDateObject(ast);
+        if (dateResult.isPresent()) {
+          return dateResult;
+        }
       }
       if (ast.isUniform(UniformFlags.REAL)) {
         INum numResult = (INum) ast.arg1();

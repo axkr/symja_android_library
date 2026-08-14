@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.core.units.QuantityOps;
 
 /**
  * {@link S#Times} operator for adding multiple arguments with the
@@ -45,8 +45,8 @@ public final class TimesOp {
         return IntervalDataSym.times(a1, (org.matheclipse.core.interfaces.IAST) a2);
       }
       if (a2.isQuantity()) {
-        IQuantity q = (IQuantity) a2;
-        return q.times(a1, returnNilIfUnevaluated);
+        return QuantityOps.timesScalar((org.matheclipse.core.interfaces.IAST) a2, a1,
+            EvalEngine.get());
       }
     } else if (a1.isIntervalData()) {
       if (a2.isAST()) {
@@ -66,8 +66,14 @@ public final class TimesOp {
         }
       }
     } else if (a1.isQuantity()) {
-      IQuantity q = (IQuantity) a1;
-      return q.times(a2, returnNilIfUnevaluated);
+      org.matheclipse.core.interfaces.IAST q1 = (org.matheclipse.core.interfaces.IAST) a1;
+      if (a2.isQuantity()) {
+        return QuantityOps.times(q1, (org.matheclipse.core.interfaces.IAST) a2, EvalEngine.get());
+      }
+      if (a2.isNumber()) {
+        return QuantityOps.timesScalar(q1, a2, EvalEngine.get());
+      }
+      return F.NIL;
     }
 
     if (a2.isNumber()) {
@@ -87,9 +93,6 @@ public final class TimesOp {
           return IntervalDataSym.times(interval, (org.matheclipse.core.interfaces.IAST) a2);
         }
       }
-    } else if (a2.isQuantity()) {
-      IQuantity q = (IQuantity) a2;
-      return q.times(a1, returnNilIfUnevaluated);
     }
     return F.NIL;
   }

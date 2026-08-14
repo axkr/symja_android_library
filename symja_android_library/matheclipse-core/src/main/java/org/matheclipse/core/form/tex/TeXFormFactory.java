@@ -1575,6 +1575,16 @@ public class TeXFormFactory {
               return;
             }
             break;
+          case ID.Quantity:
+            if (list.isAST2() && org.matheclipse.core.units.Units.isKnownUnit(list.arg2())) {
+              // magnitude, thin space, upright unit abbreviation
+              convertInternal(buf, list.arg1(), Precedence.TIMES, NO_PLUS_CALL);
+              buf.append("\\,\\text{");
+              buf.append(org.matheclipse.core.units.Units.renderUnit(list.arg2(), "Abbreviation"));
+              buf.append("}");
+              return;
+            }
+            break;
           case ID.Interval:
             if (list.size() > 1 && list.first().isASTSizeGE(S.List, 2)) {
               IAST interval = IntervalSym.normalize(list);

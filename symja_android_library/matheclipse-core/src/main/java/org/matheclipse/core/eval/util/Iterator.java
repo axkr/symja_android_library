@@ -19,8 +19,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity;
-import org.matheclipse.core.tensor.qty.IUnit;
 
 /**
  * Create iterators for functions like <code>Table()</code>, <code>Sum()</code> or <code>Product()
@@ -696,13 +694,13 @@ public class Iterator {
   }
 
   private static class QuantityIterator implements IIterator<IExpr> {
-    IQuantity count;
+    IAST count;
 
-    IQuantity lowerLimit;
+    IAST lowerLimit;
 
-    IQuantity upperLimit;
+    IAST upperLimit;
 
-    IQuantity step;
+    IAST step;
 
     final ISymbol variable;
 
@@ -712,56 +710,58 @@ public class Iterator {
      */
     IExpr variableValueBeforeIteration;
 
-    final IUnit unit;
+    final IExpr unit;
 
-    final IQuantity originalLowerLimit;
+    final IAST originalLowerLimit;
 
-    final IQuantity originalUpperLimit;
+    final IAST originalUpperLimit;
 
-    final IQuantity originalStep;
+    final IAST originalStep;
 
-    public QuantityIterator(final ISymbol symbol, IQuantity lowerLimit, IQuantity upperLimit,
-        final IQuantity step) {
-      this.unit = lowerLimit.unit();
-      if (!lowerLimit.unit().equals(unit)) {
-        lowerLimit = (IQuantity) IQuantity.unitConvert(lowerLimit, unit);
+    /** Converts the quantity to this iterator's unit; throws on incompatible units. */
+    private static IAST toUnit(IAST quantity, IExpr unit) {
+      if (quantity.arg2().equals(unit)) {
+        return quantity;
       }
-      if (!upperLimit.unit().equals(unit)) {
-        upperLimit = (IQuantity) IQuantity.unitConvert(upperLimit, unit);
+      IExpr magnitude = org.matheclipse.core.units.Units.convertMagnitude(quantity.arg1(),
+          quantity.arg2(), unit, EvalEngine.get());
+      if (magnitude.isNIL()) {
+        // `1` and `2` are incompatible units
+        throw new ArgumentTypeException("compat", F.list(quantity.arg2(), unit));
       }
+      return F.Quantity(magnitude, unit);
+    }
+
+    public QuantityIterator(final ISymbol symbol, IAST lowerLimit, IAST upperLimit,
+        final IAST step) {
+      this.unit = lowerLimit.arg2();
+      upperLimit = toUnit(upperLimit, unit);
+      IAST normalizedStep = toUnit(step, unit);
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
-      this.step = step;
+      this.step = normalizedStep;
+      this.originalLowerLimit = lowerLimit;
+      this.originalUpperLimit = upperLimit;
+      this.originalStep = normalizedStep;
+    }
+
+    public QuantityIterator(final ISymbol symbol, IAST lowerLimit, IAST upperLimit) {
+      this.unit = lowerLimit.arg2();
+      upperLimit = toUnit(upperLimit, unit);
+      this.step = F.Quantity(F.C1, unit);
+      this.variable = symbol;
+      this.lowerLimit = lowerLimit;
+      this.upperLimit = upperLimit;
       this.originalLowerLimit = lowerLimit;
       this.originalUpperLimit = upperLimit;
       this.originalStep = step;
     }
 
-    public QuantityIterator(final ISymbol symbol, IQuantity lowerLimit, IQuantity upperLimit) {
-      this.unit = lowerLimit.unit();
-      if (!lowerLimit.unit().equals(unit)) {
-        lowerLimit = (IQuantity) IQuantity.unitConvert(lowerLimit, unit);
-      }
-      if (!upperLimit.unit().equals(unit)) {
-        upperLimit = (IQuantity) IQuantity.unitConvert(upperLimit, unit);
-      }
-      this.step = IQuantity.of(F.C1, unit);
-      this.variable = symbol;
-      this.lowerLimit = lowerLimit;
-      this.upperLimit = upperLimit;
-      this.originalLowerLimit = lowerLimit;
-      this.originalUpperLimit = upperLimit;
-      this.originalStep = step;
-    }
-
-    public QuantityIterator(final ISymbol symbol, IQuantity upperLimit) {
-      this.unit = upperLimit.unit();
-      if (!upperLimit.unit().equals(unit)) {
-        upperLimit = (IQuantity) IQuantity.unitConvert(upperLimit, unit);
-      }
-      this.lowerLimit = IQuantity.of(F.C1, unit);
-      this.step = IQuantity.of(F.C1, unit);
+    public QuantityIterator(final ISymbol symbol, IAST upperLimit) {
+      this.unit = upperLimit.arg2();
+      this.lowerLimit = F.Quantity(F.C1, unit);
+      this.step = F.Quantity(F.C1, unit);
       this.variable = symbol;
       this.upperLimit = upperLimit;
       this.originalLowerLimit = lowerLimit;
@@ -771,15 +771,6 @@ public class Iterator {
 
     @Override
     public int allocHint() {
-      // TODO allocate hint
-
-      // IRational temp = lowerLimit.subtract(upperLimit).divideBy(step);
-      // IInteger hint = temp.numerator().div(temp.denominator());
-      // int alloc = hint.toInt();
-      // if (alloc < 0) {
-      // return (-alloc) + 1;
-      // }
-      // return alloc + 1;
       return 10;
     }
 
@@ -811,10 +802,10 @@ public class Iterator {
      */
     @Override
     public boolean hasNext() {
-      if (step.isNegative()) {
-        return count.greaterEqualThan(upperLimit).isTrue();
+      if (step.arg1().isNegative()) {
+        return count.arg1().greaterEqualThan(upperLimit.arg1()).isTrue();
       }
-      return count.lessEqualThan(upperLimit).isTrue();
+      return count.arg1().lessEqualThan(upperLimit.arg1()).isTrue();
     }
 
     @Override
@@ -838,12 +829,12 @@ public class Iterator {
      * @return the next element of this enumeration.
      */
     @Override
-    public IQuantity next() {
-      final IQuantity temp = count;
+    public IExpr next() {
+      final IAST temp = count;
       if (variable != null) {
         variable.assignValue(temp, false);
       }
-      count = (IQuantity) count.plus(step);
+      count = F.Quantity(EvalEngine.get().evaluate(F.Plus(count.arg1(), step.arg1())), unit);
       return temp;
     }
 
@@ -859,12 +850,12 @@ public class Iterator {
         variableValueBeforeIteration = variable.assignedValue();
       }
       count = lowerLimit;
-      if (step.isNegative()) {
-        if (lowerLimit.lessThan(upperLimit).isTrue()) {
+      if (step.arg1().isNegative()) {
+        if (lowerLimit.arg1().lessThan(upperLimit.arg1()).isTrue()) {
           return false;
         }
       } else {
-        if (lowerLimit.greaterThan(upperLimit).isTrue()) {
+        if (lowerLimit.arg1().greaterThan(upperLimit.arg1()).isTrue()) {
           return false;
         }
       }
@@ -1250,7 +1241,7 @@ public class Iterator {
               //
             }
           } else if (upperLimit.isQuantity()) {
-            return new QuantityIterator(variable, (IQuantity) upperLimit);
+            return new QuantityIterator(variable, (IAST) upperLimit);
           } else if (upperLimit.isReal()) {
             return new RealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
@@ -1298,7 +1289,7 @@ public class Iterator {
               //
             }
           } else if (upperLimit.isQuantity()) {
-            return new QuantityIterator(variable, (IQuantity) upperLimit);
+            return new QuantityIterator(variable, (IAST) upperLimit);
           } else if (upperLimit.isReal()) {
             return new RealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
@@ -1343,7 +1334,7 @@ public class Iterator {
               //
             }
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
-            return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit);
+            return new QuantityIterator(variable, (IAST) lowerLimit, (IAST) upperLimit);
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
             IReal iLowerLimit = (IReal) lowerLimit;
             IReal iUpperLimit = (IReal) upperLimit;
@@ -1390,8 +1381,8 @@ public class Iterator {
               //
             }
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity() && step.isQuantity()) {
-            return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit,
-                (IQuantity) step);
+            return new QuantityIterator(variable, (IAST) lowerLimit, (IAST) upperLimit,
+                (IAST) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
             return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, (IReal) step);
           }
@@ -1478,7 +1469,7 @@ public class Iterator {
               //
             }
           } else if (upperLimit.isQuantity()) {
-            return new QuantityIterator(symbol, (IQuantity) upperLimit);
+            return new QuantityIterator(symbol, (IAST) upperLimit);
           } else if (upperLimit.isReal()) {
             return new RealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
@@ -1523,7 +1514,7 @@ public class Iterator {
               //
             }
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
-            return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit);
+            return new QuantityIterator(symbol, (IAST) lowerLimit, (IAST) upperLimit);
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
             return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, F.C1);
           }
@@ -1558,8 +1549,7 @@ public class Iterator {
               //
             }
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity() && step.isQuantity()) {
-            return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit,
-                (IQuantity) step);
+            return new QuantityIterator(symbol, (IAST) lowerLimit, (IAST) upperLimit, (IAST) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
             return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, (IReal) step);
           }
