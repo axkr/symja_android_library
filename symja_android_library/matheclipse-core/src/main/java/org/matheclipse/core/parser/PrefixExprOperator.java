@@ -5,13 +5,13 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.Operator;
 
-class PrefixExprOperator extends Operator {
+class PrefixExprOperator extends ExprOperator {
 
   public PrefixExprOperator(final String oper, final String functionName, final int precedence) {
     super(oper, functionName, precedence);
   }
 
   public IExpr createFunction(final IParserFactory factory, final IExpr argument) {
-    return F.$(F.$s(getFunctionName()), argument);
+    return F.$(headSymbol(), argument);
   }
 }

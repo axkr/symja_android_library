@@ -313,6 +313,58 @@ public abstract class Scanner {
   /** protected List<Operator> fOperList; */
   protected List<Operator> fOperList;
 
+  /**
+   * A resizable view onto {@link #fInputString}, so that scanning an operator token can probe the
+   * operator table without building a String for every prefix it tries.
+   *
+   * <p>
+   * Operator tokens are scanned longest-match-wins: for <code>^:=</code> the scanner asks the table
+   * about <code>^</code>, then <code>^:</code>, then <code>^:=</code>. Materializing each of those
+   * copied the same characters over and over, so a k-character operator cost k allocations and
+   * O(k^2) copying. The table is keyed by a trie whose sequencer only ever calls
+   * <code>charAt</code> and <code>length</code>, so a plain view is enough to look one up.
+   *
+   * <p>
+   * The instance is reused across probes and across tokens, so it must not be handed to anything
+   * that keeps it. Only {@link #fOperatorString} - built once, from the winning prefix - escapes.
+   */
+  protected final class InputWindow implements CharSequence {
+    private int offset;
+    private int count;
+
+    /**
+     * Point the window at <code>count</code> characters of the input starting at
+     * <code>offset</code>. Public because {@link Scanner} subclasses live in other packages.
+     */
+    public void set(int offset, int count) {
+      this.offset = offset;
+      this.count = count;
+    }
+
+    @Override
+    public int length() {
+      return count;
+    }
+
+    @Override
+    public char charAt(int index) {
+      return fInputString[offset + index];
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return new String(fInputString, offset + start, end - start);
+    }
+
+    @Override
+    public String toString() {
+      return new String(fInputString, offset, count);
+    }
+  }
+
+  /** Reusable probe window for {@link #getOperator()}. */
+  protected final InputWindow fOperatorWindow = new InputWindow();
+
   /** Row counter for reporting the row where a syntax error occurred. */
   protected int fRowCounter;
 
@@ -461,13 +513,23 @@ public abstract class Scanner {
   }
 
   /**
-   * Parse an identifier string (function, constant or variable name) and the corresponding context
-   * if possible.
+   * The identifier most recently read by {@link #scanIdentifier()}, and the context it was
+   * qualified with (the empty string when it was unqualified).
    *
-   * @return an array which contains &quot;the main identifier&quot; at offset 0 and
-   *         &quot;context(or <code>null</code>)&quot; at offset 1.
+   * <p>
+   * Returned through fields rather than as a <code>String[2]</code>, because an identifier is
+   * scanned once per symbol occurrence and the array was pure garbage - the two strings are read
+   * out and dropped immediately by every caller.
    */
-  protected String[] getIdentifier() {
+  protected String fIdentifier;
+
+  protected String fIdentifierContext;
+
+  /**
+   * Parse an identifier string (function, constant or variable name) and the corresponding context
+   * if possible, into {@link #fIdentifier} and {@link #fIdentifierContext}.
+   */
+  protected void scanIdentifier() {
     int startPosition = fCurrentPosition - 1;
 
     getChar();
@@ -488,23 +550,26 @@ public abstract class Scanner {
     }
     int endPosition = fCurrentPosition--;
     final int length = (--endPosition) - startPosition;
+    fIdentifierContext = context;
     if (length == 1) {
       String name = optimizedCurrentTokenSource1(startPosition);
       if (name == null) {
         name = Characters.CharacterNamesMap.get(String.valueOf(fInputString[startPosition]));
         if (name != null) {
-          return new String[] {name, context};
+          fIdentifier = name;
+          return;
         }
-      } else {
-        return new String[] {name, context};
+        fIdentifier = new String(fInputString, startPosition, 1);
+        return;
       }
-      return new String[] {new String(fInputString, startPosition, 1), context};
+      fIdentifier = name;
+      return;
     }
     if (length == 2 && fInputString[startPosition] == '$') {
-      return new String[] {optimizedCurrentTokenSource2(startPosition), context};
+      fIdentifier = optimizedCurrentTokenSource2(startPosition);
+      return;
     }
-    return new String[] {new String(fInputString, startPosition, endPosition - startPosition),
-        context};
+    fIdentifier = new String(fInputString, startPosition, endPosition - startPosition);
   }
 
   /**
@@ -850,9 +915,22 @@ public abstract class Scanner {
   }
 
   /**
-   * Return an array of a <code>String</code> at index 0 representing the parse number string and an
-   * <code>Integer</code> representing the number format at index 1 and a <code>String</code>
-   * representing the integer exponent at index 2. The number format value can be
+   * The literal most recently read by {@link #scanNumber()}: its digits, its base, and the integer
+   * exponent that followed a <code>*^</code> (<code>"1"</code> when there was none).
+   *
+   * <p>
+   * Returned through fields rather than as an <code>Object[3]</code>, which boxed the base and
+   * allocated an array per numeric literal.
+   */
+  protected String fNumberString;
+
+  protected int fNumberFormat;
+
+  protected String fNumberExponent;
+
+  /**
+   * Read a numeric literal into {@link #fNumberString}, {@link #fNumberFormat} and
+   * {@link #fNumberExponent}. The number format value can be
    *
    * <ul>
    * <li>-1 for floating point numbers
@@ -862,11 +940,9 @@ public abstract class Scanner {
    * <li>16 for a hexadecimal coded integer number
    * </ul>
    *
-   * @return
    */
-  protected Object[] getNumberString() {
-    final Object[] result = new Object[3];
-    result[2] = "1";
+  protected void scanNumber() {
+    fNumberExponent = "1";
     int numFormat = 10;
     int startPosition = fCurrentPosition - 1;
     final char firstCh = fCurrentChar;
@@ -962,9 +1038,10 @@ public abstract class Scanner {
             }
             if (evaled && numFormat > 0 && numFormat <= 36) {
               int endPosition = fCurrentPosition--;
-              result[0] = new String(fInputString, startPosition, (--endPosition) - startPosition);
-              result[1] = Integer.valueOf(numFormat);
-              return result;
+              fNumberString =
+                  new String(fInputString, startPosition, (--endPosition) - startPosition);
+              fNumberFormat = numFormat;
+              return;
             }
           } catch (RuntimeException rex) {
             //
@@ -1031,15 +1108,14 @@ public abstract class Scanner {
     if (numFormat == 10) {
       int indx = numberStr.indexOf("*^");
       if (indx > 0) {
-        result[0] = numberStr.substring(0, indx);
-        result[1] = Integer.valueOf(numFormat);
-        result[2] = numberStr.substring(indx + 2);
-        return result;
+        fNumberString = numberStr.substring(0, indx);
+        fNumberFormat = numFormat;
+        fNumberExponent = numberStr.substring(indx + 2);
+        return;
       }
     }
-    result[0] = numberStr;
-    result[1] = Integer.valueOf(numFormat);
-    return result;
+    fNumberString = numberStr;
+    fNumberFormat = numFormat;
   }
 
   private String sanitizeBackslash(String numberStr) {
@@ -1185,7 +1261,12 @@ public abstract class Scanner {
     return true;
   }
 
-  protected static final boolean isComparatorOperator(String operatorString) {
+  /**
+   * The six comparison operators which chain into an <code>Inequality(...)</code> rather than
+   * nesting. Public so that an operator can precompute the answer for its own token instead of the
+   * parser re-deriving it from the token string inside the chaining loop.
+   */
+  public static final boolean isComparatorOperator(String operatorString) {
     return operatorString.equals("==") || operatorString.equals("!=") || operatorString.equals(">")
         || operatorString.equals(">=") || operatorString.equals("<") || operatorString.equals("<=");
   }

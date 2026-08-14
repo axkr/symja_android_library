@@ -21,6 +21,13 @@ import org.matheclipse.parser.client.ast.INodeParserFactory;
 public class InfixOperator extends Operator {
   private int fGrouping;
 
+  /**
+   * Whether this is one of the six comparison operators. Decided once, from the operator's own
+   * token, so that the chaining loop can ask the question of the operator rather than of the token
+   * text - the two differ for a unicode spelling.
+   */
+  private final boolean fComparator;
+
   public static final int NONE = 0;
 
   public static final int RIGHT_ASSOCIATIVE = 1;
@@ -31,6 +38,15 @@ public class InfixOperator extends Operator {
       final int grouping) {
     super(oper, functionName, precedence);
     fGrouping = grouping;
+    fComparator = Scanner.isComparatorOperator(oper);
+  }
+
+  /**
+   * @return <code>true</code> if a chain mixing this operator with another comparison operator
+   *         becomes an <code>Inequality(...)</code>
+   */
+  public boolean isComparator() {
+    return fComparator;
   }
 
   /**

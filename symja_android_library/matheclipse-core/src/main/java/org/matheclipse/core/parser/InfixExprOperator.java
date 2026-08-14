@@ -9,8 +9,15 @@ import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.Operator;
 
-class InfixExprOperator extends Operator {
+class InfixExprOperator extends ExprOperator {
   private int fGrouping;
+
+  /**
+   * Whether this is one of the six comparison operators. Decided once, from the operator's own
+   * token, so that the chaining loop can ask the question of the operator rather than of the token
+   * text - the two differ for a unicode spelling.
+   */
+  private final boolean fComparator;
 
   public static final int NONE = 0;
 
@@ -22,6 +29,15 @@ class InfixExprOperator extends Operator {
       final int grouping) {
     super(oper, functionName, precedence);
     fGrouping = grouping;
+    fComparator = Scanner.isComparatorOperator(oper);
+  }
+
+  /**
+   * @return <code>true</code> if a chain mixing this operator with another comparison operator
+   *         becomes an <code>Inequality(...)</code>
+   */
+  public boolean isComparator() {
+    return fComparator;
   }
 
   /**
@@ -41,7 +57,7 @@ class InfixExprOperator extends Operator {
       function.append(lhs);
       return function;
     }
-    IASTAppendable function = F.ast(F.$s(getFunctionName()), 10);
+    IASTAppendable function = F.ast(headSymbol(), 10);
     function.append(lhs);
     function.append(rhs);
     return function;

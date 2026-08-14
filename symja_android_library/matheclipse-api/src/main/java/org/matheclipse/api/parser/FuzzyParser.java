@@ -498,9 +498,9 @@ public class FuzzyParser extends Scanner {
           slot.append(slotNumber);
           return parseArguments(slot);
         } else if (fToken == TT_IDENTIFIER) {
-          String[] identifierContext = getIdentifier();
+          scanIdentifier();
           final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(identifierContext[0]);
+          slot.append(fIdentifier);
           getNextToken();
           return parseArguments(slot);
         } else if (fToken == TT_STRING) {
@@ -903,9 +903,9 @@ public class FuzzyParser extends Scanner {
    */
   private IExpr getNumber(final boolean negative) throws SyntaxError {
     IExpr temp = null;
-    final Object[] result = getNumberString();
-    String number = (String) result[0];
-    int numFormat = ((Integer) result[1]);
+    scanNumber();
+    String number = fNumberString;
+    int numFormat = fNumberFormat;
     try {
       if (negative) {
         number = '-' + number;
@@ -1107,12 +1107,12 @@ public class FuzzyParser extends Scanner {
    * @see
    */
   private IExpr getSymbol() throws SyntaxError {
-    String[] identifierContext = getIdentifier();
-    if (!fFactory.isValidIdentifier(identifierContext[0])) {
-      throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
+    scanIdentifier();
+    if (!fFactory.isValidIdentifier(fIdentifier)) {
+      throwSyntaxError("Invalid identifier: " + fIdentifier + " detected.");
     }
 
-    final IExpr symbol = convertSymbolOnInput(identifierContext[0], identifierContext[1]);
+    final IExpr symbol = convertSymbolOnInput(fIdentifier, fIdentifierContext);
     getNextToken();
     return symbol;
   }

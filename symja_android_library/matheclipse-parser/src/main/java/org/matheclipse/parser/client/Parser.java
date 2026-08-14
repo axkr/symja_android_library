@@ -169,6 +169,20 @@ public class Parser extends Scanner {
     return null;
   }
 
+  /**
+   * Whether the operator token the scanner is on is a comparison operator.
+   *
+   * <p>
+   * Asks the operator, not the token text. A unicode spelling is registered as a second token for
+   * the very same operator instance, so testing the text made the chaining loops skip
+   * <code>a \u2264 b \u2264 c</code> while running for <code>a &lt;= b &lt;= c</code> - the first
+   * nested, the second flattened, for what Wolfram treats as one expression.
+   */
+  private boolean isComparatorToken() {
+    InfixOperator infixOperator = determineBinaryOperator();
+    return infixOperator != null && infixOperator.isComparator();
+  }
+
   /** construct the arguments for an expression */
   private void getArguments(final FunctionNode function) throws SyntaxError {
     do {
@@ -627,8 +641,10 @@ public class Parser extends Scanner {
   protected final List<Operator> getOperator() {
     char lastChar;
     final int startPosition = fCurrentPosition - 1;
-    fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
-    List<Operator> list = fFactory.getOperatorList(fOperatorString);
+    // Longest match wins: probe every prefix of the token through a view over the input rather
+    // than building a String for each one.
+    fOperatorWindow.set(startPosition, fCurrentPosition - startPosition);
+    List<Operator> list = fFactory.getOperatorList(fOperatorWindow);
     List<Operator> lastList = null;
     int lastOperatorPosition = -1;
     if (list != null) {
@@ -642,8 +658,8 @@ public class Parser extends Scanner {
         break;
       }
       lastChar = fCurrentChar;
-      fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
-      list = fFactory.getOperatorList(fOperatorString);
+      fOperatorWindow.set(startPosition, fCurrentPosition - startPosition);
+      list = fFactory.getOperatorList(fOperatorWindow);
       if (list != null) {
         lastList = list;
         lastOperatorPosition = fCurrentPosition;
@@ -655,6 +671,9 @@ public class Parser extends Scanner {
     }
     if (lastOperatorPosition > 0) {
       fCurrentPosition = lastOperatorPosition;
+      // Built from the prefix that actually matched - see the note in ExprParser#getOperator().
+      fOperatorString =
+          new String(fInputString, startPosition, lastOperatorPosition - startPosition);
       return lastList;
     }
     final int endPosition = fCurrentPosition;
@@ -698,10 +717,10 @@ public class Parser extends Scanner {
     ASTNode temp = null;
     String numberStr = "";
     try {
-      final Object[] result = getNumberString();
-      numberStr = (String) result[0];
-      final int numFormat = ((Integer) result[1]);
-      String exponentStr = (String) result[2];
+      scanNumber();
+      numberStr = fNumberString;
+      final int numFormat = fNumberFormat;
+      String exponentStr = fNumberExponent;
       if (negative) {
         numberStr = '-' + numberStr;
       }
@@ -879,12 +898,12 @@ public class Parser extends Scanner {
    * @see
    */
   private SymbolNode getSymbol() throws SyntaxError {
-    String[] identifierContext = getIdentifier();
-    if (!fFactory.isValidIdentifier(identifierContext[0])) {
-      throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
+    scanIdentifier();
+    if (!fFactory.isValidIdentifier(fIdentifier)) {
+      throwSyntaxError("Invalid identifier: " + fIdentifier + " detected.");
     }
 
-    final SymbolNode symbol = fFactory.createSymbol(identifierContext[0], identifierContext[1]);
+    final SymbolNode symbol = fFactory.createSymbol(fIdentifier, fIdentifierContext);
     getNextToken();
     return symbol;
   }
@@ -1075,57 +1094,104 @@ public class Parser extends Scanner {
    * @param min_precedence
    * @return
    */
+  /**
+   * Whether the current token could begin an operand, and so stands next to the expression already
+   * parsed rather than combining with it - which is what makes {@code 2 x} a product.
+   *
+   * <p>
+   * {@code TT_ASSOCIATION_OPEN} is absent, where {@code ExprParser} includes it, so
+   * <code>a &lt;|b-&gt;1|&gt;</code> is not an implicit product here. That is existing behaviour on
+   * both paths of this parser and is left alone.
+   */
+  private boolean isOperandStart() {
+    return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_IDENTIFIER
+        || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
+        || fToken == TT_SLOTSEQUENCE;
+  }
+
   private ASTNode parseExpression(ASTNode lhs, final int min_precedence) {
-    ASTNode rhs;
-    Operator oper;
+    return climbOperators(lhs, min_precedence, true);
+  }
+
+  /**
+   * The one operator-climbing loop, shared by both halves of the parser - the same shape as
+   * {@code ExprParser#climbOperators}.
+   *
+   * <p>
+   * <code>foldEqualPrecedence</code> is what distinguished them. Continuing from a left-hand side
+   * folds an operator of exactly {@code min_precedence} into what is already there; looking ahead
+   * for a right-hand side must leave such an operator for the caller, or both would claim it and
+   * left-associative operators would come out right-associative.
+   */
+  private ASTNode climbOperators(ASTNode lhs, final int min_precedence,
+      final boolean foldEqualPrecedence) {
     while (true) {
       if (fToken == TT_NEWLINE) {
         return lhs;
       }
-      if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
-          || (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)
-          || (fToken == TT_SLOTSEQUENCE)) {
-        if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
-          // lazy evaluation of multiplication
-          oper = fFactory.get("Times");
-          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-            rhs = parseLookaheadOperator(oper.getPrecedence());
-            lhs = fFactory.createFunction(fFactory.createSymbol(oper.getFunctionName()), lhs, rhs);
-            continue;
-          }
-        }
-      } else {
-        if (fToken == TT_DERIVATIVE) {
-          lhs = parseDerivative(lhs);
-        }
-        if (fToken != TT_OPERATOR) {
+      if (isOperandStart()) {
+        if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
           break;
         }
-        InfixOperator infixOperator = determineBinaryOperator();
-
-        if (infixOperator != null) {
-          if (infixOperator.getPrecedence() >= min_precedence) {
-
-            getNextToken();
-            ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, lhs);
-            if (compoundExpressionNull != null) {
-              return compoundExpressionNull;
-            }
-
-            while (fToken == TT_NEWLINE) {
-              getNextToken();
-            }
-            lhs = parseInfixOperator(lhs, infixOperator);
-            continue;
+        // Juxtaposition is a product. Times is registered with grouping NONE, so the
+        // right-associative branch this replaced could never fire.
+        final InfixOperator timesOperator = (InfixOperator) fFactory.get("Times");
+        final int timesPrecedence = timesOperator.getPrecedence();
+        if (ParserConfig.DOMINANT_IMPLICIT_TIMES //
+            || (foldEqualPrecedence ? timesPrecedence >= min_precedence
+                : timesPrecedence > min_precedence)) {
+          if (foldEqualPrecedence) {
+            lhs = fFactory.createFunction(fFactory.createSymbol(timesOperator.getFunctionName()),
+                lhs, parseLookaheadOperator(timesPrecedence));
+          } else {
+            lhs = climbOperators(lhs, timesPrecedence, true);
           }
-        } else {
-          PostfixOperator postfixOperator = determinePostfixOperator();
-
-          if (postfixOperator != null && postfixOperator.getPrecedence() >= min_precedence) {
-            lhs = parsePostfixOperator(lhs, postfixOperator);
-            continue;
-          }
+          continue;
         }
+        break;
+      }
+      if (fToken == TT_DERIVATIVE) {
+        lhs = parseDerivative(lhs);
+      }
+      if (fToken != TT_OPERATOR) {
+        break;
+      }
+      final InfixOperator infixOperator = determineBinaryOperator();
+      if (infixOperator != null) {
+        final int precedence = infixOperator.getPrecedence();
+        final boolean accept = foldEqualPrecedence //
+            ? precedence >= min_precedence
+            : precedence > min_precedence //
+                || (fOperatorString.equals(":") && (lhs instanceof SymbolNode))
+                || (precedence == min_precedence
+                    && infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE);
+        if (!accept) {
+          break;
+        }
+        if (!foldEqualPrecedence) {
+          // A ';' at the top level of a package ends the statement, with an implicit Null after it.
+          if (infixOperator.isOperator(";") && fPackageMode && fRecursionDepth < 1) {
+            return infixOperator.createFunction(fFactory, lhs,
+                fFactory.createSymbol(IConstantOperators.Null));
+          }
+          lhs = climbOperators(lhs, precedence, true);
+          continue;
+        }
+        getNextToken();
+        ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, lhs);
+        if (compoundExpressionNull != null) {
+          return compoundExpressionNull;
+        }
+        while (fToken == TT_NEWLINE) {
+          getNextToken();
+        }
+        lhs = parseInfixOperator(lhs, infixOperator);
+        continue;
+      }
+      final PostfixOperator postfixOperator = determinePostfixOperator();
+      if (postfixOperator != null && postfixOperator.getPrecedence() >= min_precedence) {
+        lhs = parsePostfixOperator(lhs, postfixOperator);
+        continue;
       }
       break;
     }
@@ -1151,8 +1217,8 @@ public class Parser extends Scanner {
       String infixOperatorString = infixOperator.getOperatorString();
       if (isComparatorOperator(infixOperatorString)) {
         while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-            && isComparatorOperator(fOperatorString)) {
-          if (!infixOperator.isOperator(fOperatorString)) {
+            && isComparatorToken()) {
+          if (infixOperator != determineBinaryOperator()) {
             // rewrite to Inequality
             return parseInequality(ast, infixOperator);
           }
@@ -1166,8 +1232,11 @@ public class Parser extends Scanner {
         return ast;
       }
 
+      // Operator identity, not token text: a unicode spelling is a second token for the same
+      // operator instance, so comparing the text made "a \u2227 b \u2227 c" nest where
+      // "a && b && c" flattens.
       while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-          && infixOperatorString.equals(fOperatorString)) {
+          && infixOperator == determineBinaryOperator()) {
         getNextToken();
         if (";".equals(infixOperatorString)) {
           if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
@@ -1185,7 +1254,7 @@ public class Parser extends Scanner {
       lhs = infixOperator.endFunction(fFactory, ast, this);
     } else {
       if (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-          && infixOperator.isOperator(fOperatorString)) {
+          && infixOperator == determineBinaryOperator()) {
         throwSyntaxError(
             "Operator: \'" + fOperatorString + "\' not created properly (no grouping defined)");
       }
@@ -1219,7 +1288,7 @@ public class Parser extends Scanner {
     int precedence = infixOperator.getPrecedence();
     result.add(parseLookaheadOperator(precedence));
 
-    while (fToken == TT_OPERATOR && isComparatorOperator(fOperatorString)) {
+    while (fToken == TT_OPERATOR && isComparatorToken()) {
       compareOperator = determineBinaryOperator();
       result.add(fFactory.createSymbol(compareOperator.getFunctionName()));
       getNextToken();
@@ -1232,68 +1301,7 @@ public class Parser extends Scanner {
   }
 
   private ASTNode parseLookaheadOperator(final int min_precedence) {
-    ASTNode rhs = parsePrimary(min_precedence);
-
-    while (true) {
-      final int lookahead = fToken;
-      if (fToken == TT_NEWLINE) {
-        break;
-      }
-      if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
-          || (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
-        if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
-          // lazy evaluation of multiplication
-          InfixOperator timesOperator = (InfixOperator) fFactory.get("Times");
-          if (ParserConfig.DOMINANT_IMPLICIT_TIMES
-              || timesOperator.getPrecedence() > min_precedence) {
-            rhs = parseExpression(rhs, timesOperator.getPrecedence());
-            continue;
-          } else if ((timesOperator.getPrecedence() == min_precedence)
-              && (timesOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE)) {
-            rhs = parseExpression(rhs, timesOperator.getPrecedence());
-            continue;
-          }
-        }
-      } else {
-        if (fToken == TT_DERIVATIVE) {
-          rhs = parseDerivative(rhs);
-        }
-        if (lookahead != TT_OPERATOR && fToken != TT_OPERATOR) {
-          break;
-        }
-        InfixOperator infixOperator = determineBinaryOperator();
-        if (infixOperator != null) {
-          if (infixOperator.getPrecedence() > min_precedence
-              || (fOperatorString.equals(":") && (rhs instanceof SymbolNode))
-              || ((infixOperator.getPrecedence() == min_precedence)
-                  && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
-            if (infixOperator.isOperator(";")) {
-              if (fPackageMode && fRecursionDepth < 1) {
-                return infixOperator.createFunction(fFactory, rhs,
-                    fFactory.createSymbol(IConstantOperators.Null));
-              }
-            }
-            rhs = parseExpression(rhs, infixOperator.getPrecedence());
-            continue;
-          }
-
-        } else {
-          PostfixOperator postfixOperator = determinePostfixOperator();
-          if (postfixOperator != null) {
-            if (postfixOperator.getPrecedence() >= min_precedence) {
-              // getNextToken();
-              rhs = parsePostfixOperator(rhs, postfixOperator);
-              // rhs = postfixOperator.createFunction(fFactory, rhs);
-              // if (fToken == TT_ARGUMENTS_OPEN) {
-              // return getFunctionArguments(rhs);
-              // }
-              continue;
-            }
-          }
-        }
-      }
-      break;
-    }
+    ASTNode rhs = climbOperators(parsePrimary(min_precedence), min_precedence, false);
     if (fToken == TT_ARGUMENTS_OPEN) {
       rhs = parseArguments(rhs);
     }

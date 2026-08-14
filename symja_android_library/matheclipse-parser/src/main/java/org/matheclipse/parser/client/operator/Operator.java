@@ -15,7 +15,23 @@ package org.matheclipse.parser.client.operator;
 
 public abstract class Operator {
 
-  // // Constants for associativity
+  /**
+   * Constants for associativity.
+   *
+   * <p>
+   * <b>These are not the values {@link InfixOperator} uses.</b> That subclass declares its own
+   * {@code NONE = 0}, {@code RIGHT_ASSOCIATIVE = 1}, {@code LEFT_ASSOCIATIVE = 2}, so the same name
+   * means a different number depending on the static type through which it is read, and two of the
+   * numbers collide outright: {@code Operator.LEFT_ASSOCIATIVE} equals {@code InfixOperator.NONE},
+   * and {@code Operator.FLAT} equals {@code InfixOperator.LEFT_ASSOCIATIVE}.
+   *
+   * <p>
+   * Storing a grouping through one set and reading it through the other therefore silently changes
+   * it. The experimental WMA parser fork did exactly that - it assigned with the constants below
+   * and compared against {@code InfixOperator}'s, so left-associative operators behaved as flat -
+   * which is part of why that fork was removed. Nothing uses these constants any more; anything
+   * building an {@link InfixOperator} must use {@code InfixOperator}'s own.
+   */
   public static final int LEFT_ASSOCIATIVE = 0;
   public static final int RIGHT_ASSOCIATIVE = 1;
   public static final int FLAT = 2;

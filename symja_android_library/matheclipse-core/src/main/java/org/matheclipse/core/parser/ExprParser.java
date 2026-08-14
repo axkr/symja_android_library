@@ -300,52 +300,89 @@ public class ExprParser extends Scanner {
   }
 
   /**
-   * Determine the current BinaryOperator
+   * The infix, prefix and postfix reading of the operator token the scanner is currently on, or
+   * <code>null</code> where the token has no reading of that kind.
    *
-   * @return <code>null</code> if no binary operator could be determined
+   * <p>
+   * A token can stand for more than one operator - <code>+</code> is Plus or PrePlus,
+   * <code>-</code> is Subtract or PreMinus, <code>!</code> is Factorial or Not - so the parser has
+   * to pick the reading that fits the position. It used to pick by walking {@link #fOperList} and
+   * testing each entry with <code>instanceof</code>, once per question asked, and the questions are
+   * asked up to three times for a single token. The walk now happens once, in
+   * {@link #classifyOperators(List)}, when the scanner produces the token.
+   */
+  private InfixExprOperator fInfixOperator;
+
+  private PrefixExprOperator fPrefixOperator;
+
+  private PostfixExprOperator fPostfixOperator;
+
+  /**
+   * Split the operators a token can stand for into the three positions they can be read in. Called
+   * once per operator token, from {@link #getOperator()}.
+   */
+  private void classifyOperators(final List<Operator> operators) {
+    fInfixOperator = null;
+    fPrefixOperator = null;
+    fPostfixOperator = null;
+    for (int i = 0; i < operators.size(); i++) {
+      Operator oper = operators.get(i);
+      if (oper instanceof InfixExprOperator) {
+        if (fInfixOperator == null) {
+          fInfixOperator = (InfixExprOperator) oper;
+        }
+      } else if (oper instanceof PrefixExprOperator) {
+        if (fPrefixOperator == null) {
+          fPrefixOperator = (PrefixExprOperator) oper;
+        }
+      } else if (oper instanceof PostfixExprOperator) {
+        if (fPostfixOperator == null) {
+          fPostfixOperator = (PostfixExprOperator) oper;
+        }
+      }
+    }
+  }
+
+  /**
+   * The infix reading of the current operator token.
+   *
+   * @return <code>null</code> if the token cannot be read as an infix operator
    */
   private InfixExprOperator determineBinaryOperator() {
-    Operator oper = null;
-    for (int i = 0; i < fOperList.size(); i++) {
-      oper = fOperList.get(i);
-      if (oper instanceof InfixExprOperator) {
-        return (InfixExprOperator) oper;
-      }
-    }
-    return null;
+    return fInfixOperator;
   }
 
   /**
-   * Determine the current PostfixOperator
+   * The postfix reading of the current operator token.
    *
-   * @return <code>null</code> if no postfix operator could be determined
+   * @return <code>null</code> if the token cannot be read as a postfix operator
    */
   private PostfixExprOperator determinePostfixOperator() {
-    Operator oper = null;
-    for (int i = 0; i < fOperList.size(); i++) {
-      oper = fOperList.get(i);
-      if (oper instanceof PostfixExprOperator) {
-        return (PostfixExprOperator) oper;
-      }
-    }
-    return null;
+    return fPostfixOperator;
   }
 
   /**
-   * Determine the current PrefixOperator
+   * The prefix reading of the current operator token.
    *
-   * @return <code>null</code> if no prefix operator could be determined
+   * @return <code>null</code> if the token cannot be read as a prefix operator
    */
   private PrefixExprOperator determinePrefixOperator() {
-    Operator oper = null;
-    for (int i = 0; i < fOperList.size(); i++) {
-      oper = fOperList.get(i);
-      if (oper instanceof PrefixExprOperator) {
-        return (PrefixExprOperator) oper;
-      }
-    }
-    return null;
+    return fPrefixOperator;
   }
+
+  /**
+   * Whether the operator token the scanner is on is a comparison operator.
+   *
+   * <p>
+   * Asks the operator, not the token text. A unicode spelling is registered as a second token for
+   * the very same operator instance, so testing the text made the chaining loops skip
+   * <code>a \u2264 b \u2264 c</code> while running for <code>a &lt;= b &lt;= c</code> - the first
+   * nested, the second flattened, for what is treated as one expression.
+   */
+  private boolean isComparatorToken() {
+    return fInfixOperator != null && fInfixOperator.isComparator();
+  }
+
 
   /** construct the arguments for an expression */
   private void getArguments(final IASTAppendable function) throws SyntaxError {
@@ -455,8 +492,8 @@ public class ExprParser extends Scanner {
           }
           return parseArguments(F.Slot(slotNumber));
         } else if (fToken == TT_IDENTIFIER) {
-          String[] identifierContext = getIdentifier();
-          final IAST slot = F.Slot(identifierContext[0]);
+          scanIdentifier();
+          final IAST slot = F.Slot(fIdentifier);
           getNextToken();
           return parseArguments(slot);
         } else if (fToken == TT_STRING) {
@@ -866,10 +903,10 @@ public class ExprParser extends Scanner {
    */
   private IExpr getNumber(final boolean negative) throws SyntaxError {
     IExpr temp = null;
-    final Object[] result = getNumberString();
-    String numberStr = (String) result[0];
-    int numFormat = ((Integer) result[1]);
-    String exponentStr = (String) result[2];
+    scanNumber();
+    String numberStr = fNumberString;
+    int numFormat = fNumberFormat;
+    String exponentStr = fNumberExponent;
     try {
       if (negative) {
         numberStr = '-' + numberStr;
@@ -984,8 +1021,10 @@ public class ExprParser extends Scanner {
   protected final List<Operator> getOperator() {
     char lastChar = fCurrentChar;
     final int startPosition = fCurrentPosition - 1;
-    fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
-    List<Operator> list = fFactory.getOperatorList(fOperatorString);
+    // Longest match wins: probe every prefix of the token through a view over the input rather
+    // than building a String for each one.
+    fOperatorWindow.set(startPosition, fCurrentPosition - startPosition);
+    List<Operator> list = fFactory.getOperatorList(fOperatorWindow);
     List<Operator> lastList = null;
     int lastOperatorPosition = -1;
     if (list != null) {
@@ -999,8 +1038,8 @@ public class ExprParser extends Scanner {
         break;
       }
       lastChar = fCurrentChar;
-      fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
-      list = fFactory.getOperatorList(fOperatorString);
+      fOperatorWindow.set(startPosition, fCurrentPosition - startPosition);
+      list = fFactory.getOperatorList(fOperatorWindow);
       if (list != null) {
         lastList = list;
         lastOperatorPosition = fCurrentPosition;
@@ -1012,6 +1051,13 @@ public class ExprParser extends Scanner {
     }
     if (lastOperatorPosition > 0) {
       fCurrentPosition = lastOperatorPosition;
+      // Built from the prefix that actually matched. Previously fOperatorString was left holding
+      // whichever prefix was probed last, which is a longer, unmatched one whenever the scan
+      // overshot - so for an input like "a&&&b" the parser went on to compare "&&&" against the
+      // operator it had really selected for "&&".
+      fOperatorString =
+          new String(fInputString, startPosition, lastOperatorPosition - startPosition);
+      classifyOperators(lastList);
       return lastList;
     }
     final int endPosition = fCurrentPosition;
@@ -1110,13 +1156,12 @@ public class ExprParser extends Scanner {
    * @see
    */
   private IExpr getSymbol(boolean convertOnInput) throws SyntaxError {
-    String[] identifierContext = getIdentifier();
-    if (!fFactory.isValidIdentifier(identifierContext[0])) {
-      throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
+    scanIdentifier();
+    if (!fFactory.isValidIdentifier(fIdentifier)) {
+      throwSyntaxError("Invalid identifier: " + fIdentifier + " detected.");
     }
 
-    final IExpr symbol =
-        convertSymbolOnInput(identifierContext[0], identifierContext[1], convertOnInput);
+    final IExpr symbol = convertSymbolOnInput(fIdentifier, fIdentifierContext, convertOnInput);
     getNextToken();
     return symbol;
   }
@@ -1208,7 +1253,7 @@ public class ExprParser extends Scanner {
   }
 
   private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr lhs) {
-    if (infixOperator.isOperator(";")) {
+    if (infixOperator.headSymbol() == S.CompoundExpression) {
       if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
         return createInfixFunction(infixOperator, lhs, S.Null);
@@ -1217,163 +1262,291 @@ public class ExprParser extends Scanner {
     return null;
   }
 
+  /**
+   * The tokens which end a {@code Span} where a further part could have stood - a comma or a
+   * closing bracket. {@code a[[2;;]]} and {@code {1,2;;3}} both reach a Span this way.
+   */
+  private boolean isSpanEnd() {
+    return fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
+        || fToken == TT_PRECEDENCE_CLOSE;
+  }
+
+  /**
+   * Finish a {@code Span} whose next token is the {@code ;} operator, as in {@code a[[1;;]]; rest}
+   * - the Span takes {@code All} as its missing part and becomes the first argument of the
+   * CompoundExpression.
+   *
+   * @return <code>null</code> if the current token is not {@code ;}, in which case the caller
+   *         carries on parsing the Span's next part
+   */
+  private IExpr parseSpanCompoundExpression(IASTAppendable span) {
+    InfixExprOperator infixOperator = determineBinaryOperator();
+    if (infixOperator == null || !infixOperator.getOperatorString().equals(";")) {
+      return null;
+    }
+    span.append(S.All);
+    getNextToken();
+    IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
+    if (compoundExpressionNull != null) {
+      return compoundExpressionNull;
+    }
+    while (fToken == TT_NEWLINE) {
+      getNextToken();
+    }
+    return parseInfixOperator(span, infixOperator);
+  }
+
+  /**
+   * Parse a {@code Span} which begins with {@code ;;}, so that its first part is implicitly
+   * {@code 1} - {@code ;;3} is {@code Span(1, 3)}.
+   */
+  private IExpr parseSpanWithoutFirstPart() {
+    IASTAppendable span = F.ast(S.Span);
+    span.append(F.C1);
+    getNextToken();
+    if (fToken == TT_SPAN) {
+      span.append(S.All);
+      getNextToken();
+      if (isSpanEnd()) {
+        return span;
+      }
+    } else if (isSpanEnd()) {
+      span.append(S.All);
+      return span;
+    } else if (fToken == TT_OPERATOR) {
+      IExpr compoundExpression = parseSpanCompoundExpression(span);
+      if (compoundExpression != null) {
+        return compoundExpression;
+      }
+    }
+    span.append(parseExpression());
+    return span;
+  }
+
+  /**
+   * Parse the rest of a {@code Span} whose first part has already been read - {@code 1;;3} arrives
+   * here with {@code 1} in hand and the scanner on {@code ;;}.
+   */
+  private IExpr parseSpanAfterFirstPart(IExpr firstPart) {
+    IASTAppendable span = F.ast(S.Span);
+    span.append(firstPart);
+    getNextToken();
+    if (fToken == TT_SPAN) {
+      span.append(S.All);
+      getNextToken();
+      if (isSpanEnd()) {
+        return span;
+      } else if (fToken == TT_OPERATOR) {
+        return parseExpression(F.Times(span, F.Span(F.C1, S.All)), 0);
+      }
+    } else if (isSpanEnd()) {
+      span.append(S.All);
+      return span;
+    } else if (fToken == TT_OPERATOR) {
+      IExpr compoundExpression = parseSpanCompoundExpression(span);
+      if (compoundExpression != null) {
+        return compoundExpression;
+      }
+    }
+    if (fToken == TT_NEWLINE || fToken == TT_EOF) {
+      span.append(S.All);
+      getNextToken();
+    } else {
+      span.append(parseExpression(parsePrimary(0), 0));
+    }
+    if (fToken == TT_SPAN) {
+      // the step, as in a[[1;;10;;2]]
+      getNextToken();
+      if (isSpanEnd()) {
+        return span;
+      }
+      span.append(parseExpression(parsePrimary(0), 0));
+    }
+    return span;
+  }
+
   protected IExpr parseExpression() {
     if (fToken == TT_SPAN) {
-      IASTAppendable span = F.ast(S.Span);
-      span.append(F.C1);
-      getNextToken();
-      if (fToken == TT_SPAN) {
-        span.append(S.All);
-        getNextToken();
-        if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-            || fToken == TT_PRECEDENCE_CLOSE) {
-          return span;
-        }
-      } else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-          || fToken == TT_PRECEDENCE_CLOSE) {
-        span.append(S.All);
-        return span;
-      } else if (fToken == TT_OPERATOR) {
-        InfixExprOperator infixOperator = determineBinaryOperator();
-        if (infixOperator != null && //
-            infixOperator.getOperatorString().equals(";")) {
-          span.append(S.All);
-          getNextToken();
-          IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
-          if (compoundExpressionNull != null) {
-            return compoundExpressionNull;
-          }
-          while (fToken == TT_NEWLINE) {
-            getNextToken();
-          }
-          return parseInfixOperator(span, infixOperator);
-        }
-      }
-      span.append(parseExpression());
-      return span;
+      return parseSpanWithoutFirstPart();
     }
     IExpr temp = parseExpression(parsePrimary(0), 0);
-
     if (fToken == TT_SPAN) {
-      IASTAppendable span = F.ast(S.Span);
-      span.append(temp);
-      getNextToken();
-      if (fToken == TT_SPAN) {
-        span.append(S.All);
-        getNextToken();
-        if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-            || fToken == TT_PRECEDENCE_CLOSE) {
-          return span;
-        } else if (fToken == TT_OPERATOR) {
-          return parseExpression(F.Times(span, F.Span(F.C1, S.All)), 0);
-        }
-      } else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-          || fToken == TT_PRECEDENCE_CLOSE) {
-        span.append(S.All);
-        return span;
-      } else if (fToken == TT_OPERATOR) {
-        InfixExprOperator infixOperator = determineBinaryOperator();
-        if (infixOperator != null && //
-            infixOperator.getOperatorString().equals(";")) {
-          span.append(S.All);
-          getNextToken();
-          IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, span);
-          if (compoundExpressionNull != null) {
-            return compoundExpressionNull;
-          }
-          while (fToken == TT_NEWLINE) {
-            getNextToken();
-          }
-          return parseInfixOperator(span, infixOperator);
-        }
-      }
-      if (fToken == TT_NEWLINE || fToken == TT_EOF) {
-        span.append(S.All);
-        getNextToken();
-      } else {
-        span.append(parseExpression(parsePrimary(0), 0));
-      }
-      if (fToken == TT_SPAN) {
-        getNextToken();
-        if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
-            || fToken == TT_PRECEDENCE_CLOSE) {
-          return span;
-        }
-        span.append(parseExpression(parsePrimary(0), 0));
-      }
-      return span;
+      return parseSpanAfterFirstPart(temp);
     }
     return temp;
   }
 
   /**
-   * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence
-   * parser</a> for the idea, how to parse the operators depending on their precedence.
+   * Whether the current token could begin an operand, and so stands next to the expression already
+   * parsed rather than combining with it - which is what makes {@code 2 x} a product.
+   *
+   * <p>
+   * {@code ##} ({@code TT_SLOTSEQUENCE}) is included. The two climbing loops used to disagree about
+   * it - only {@link #parseExpression(IExpr, int)} counted it - so {@code a ##} was an implicit
+   * product while the {@code a + b ##} which reaches {@link #parseLookaheadOperator(int)} was not.
+   */
+  private boolean isOperandStart() {
+    return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_ASSOCIATION_OPEN
+        || fToken == TT_IDENTIFIER || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
+        || fToken == TT_SLOTSEQUENCE;
+  }
+
+  /**
+   * Climb operators while they bind at least as tightly as <code>min_precedence</code>, folding
+   * each into <code>lhs</code>.
+   *
+   * <p>
+   * This and {@link #parseLookaheadOperator(int)} are the two halves of one precedence-climbing
+   * parser: this one is the "loop while the operator binds at least this tightly" half, the other
+   * is the "read an operand, then recurse while the operator binds more tightly" half, and they
+   * call each other. Merging them into a single loop over an explicit operand/operator stack is the
+   * point of the shunting-yard rewrite; what follows is where they actually differ, which is the
+   * specification that merge has to satisfy.
+   *
+   * <table border="1">
+   * <caption>differences between the two halves</caption>
+   * <tr>
+   * <th></th>
+   * <th>parseExpression(IExpr,int)</th>
+   * <th>parseLookaheadOperator(int)</th>
+   * </tr>
+   * <tr>
+   * <td>entry</td>
+   * <td>takes an already-parsed lhs</td>
+   * <td>calls parsePrimary first</td>
+   * </tr>
+   * <tr>
+   * <td>newline</td>
+   * <td>returns lhs</td>
+   * <td>breaks, then still checks for a trailing <code>[</code></td>
+   * </tr>
+   * <tr>
+   * <td>operand start</td>
+   * <td>counts <code>##</code></td>
+   * <td>does not</td>
+   * </tr>
+   * <tr>
+   * <td>implicit times</td>
+   * <td><code>TIMES &gt;= min</code>; builds <code>Times(lhs,rhs)</code> and sets
+   * TIMES_PARSED_IMPLICIT</td>
+   * <td><code>TIMES &gt; min</code>; recurses and lets the other half build the Times</td>
+   * </tr>
+   * <tr>
+   * <td>leaving the loop</td>
+   * <td><code>fToken != TT_OPERATOR</code></td>
+   * <td>also accepts a token which <em>was</em> an operator before a Derivative was folded in</td>
+   * </tr>
+   * <tr>
+   * <td>infix accepted when</td>
+   * <td><code>prec &gt;= min</code></td>
+   * <td><code>prec &gt;
+   * min</code>, or <code>:</code> after a symbol, or <code>prec == min</code> and
+   * right-associative</td>
+   * </tr>
+   * <tr>
+   * <td>infix action</td>
+   * <td>checks for a trailing <code>;</code>, skips newlines, then parseInfixOperator - which is
+   * where flat chains and the Inequality rewrite happen</td>
+   * <td>recurses; none of that</td>
+   * </tr>
+   * <tr>
+   * <td>postfix action</td>
+   * <td>parsePostfixOperator, which also handles arguments and a following <code>[</code></td>
+   * <td>inline, and does neither</td>
+   * </tr>
+   * </table>
+   *
+   * <p>
+   * The last row looks like a latent bug rather than a deliberate difference, and the {@code ##}
+   * row likewise; see {@link #isOperandStart()}. Neither is changed here, because changing them is
+   * a language change and not a refactoring.
    *
    * @param lhs the already parsed left-hand-side of the operator
-   * @param min_precedence
-   * @return
+   * @param min_precedence the loosest operator this call may fold in
    */
   private IExpr parseExpression(IExpr lhs, final int min_precedence) {
-    IExpr rhs = null;
-    // Operator oper;
-    InfixExprOperator infixOperator;
-    PostfixExprOperator postfixOperator;
+    return climbOperators(lhs, min_precedence, true);
+  }
+
+  /**
+   * The one operator-climbing loop, shared by both halves of the parser.
+   *
+   * <p>
+   * <code>foldEqualPrecedence</code> is what used to distinguish them. Reading a left-hand side and
+   * continuing from it folds an operator of exactly {@code min_precedence} into what is already
+   * there; looking ahead for a right-hand side must leave such an operator for the caller, or the
+   * two would both claim it and left-associative operators would come out right-associative. The
+   * remaining difference - how an accepted operator is applied - follows from that same distinction
+   * and is spelled out below.
+   *
+   * <p>
+   * The lookahead half also used to keep a <code>lookahead</code> copy of the token from the top of
+   * the iteration and carry on when <em>either</em> it or the current token was an operator. That
+   * condition could never differ from testing the current token alone: the only thing which moves
+   * the scanner between the two reads is a derivative, and that branch is reached only when the
+   * token is {@code TT_DERIVATIVE}, which is not {@code TT_OPERATOR}. The variable is gone.
+   */
+  private IExpr climbOperators(IExpr lhs, final int min_precedence,
+      final boolean foldEqualPrecedence) {
     while (true) {
       if (fToken == TT_NEWLINE) {
         return lhs;
       }
-      if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN)
-          || (fToken == TT_ASSOCIATION_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
-          || (fToken == TT_DIGIT) || (fToken == TT_SLOT) || (fToken == TT_SLOTSEQUENCE)) {
-        // if (fPackageMode && fRecursionDepth < 1) {
-        // return lhs;
-        // }
-        // if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar ==
-        // '\n') {
-        // return lhs;
-        // }
-
-        if (!fExplicitTimes) {
-          // lazy evaluation of multiplication
-          // oper = fFactory.get("Times");
-          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || Precedence.TIMES >= min_precedence) {
-            rhs = parseLookaheadOperator(Precedence.TIMES);
-            lhs = F.$(S.Times, lhs, rhs);
-            ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
-            continue;
-          }
-        }
-      } else {
-        if (fToken == TT_DERIVATIVE) {
-          lhs = parseDerivative(lhs);
-        }
-        if (fToken != TT_OPERATOR) {
+      if (isOperandStart()) {
+        if (fExplicitTimes) {
           break;
         }
-        infixOperator = determineBinaryOperator();
-
-        if (infixOperator != null) {
-          if (infixOperator.getPrecedence() >= min_precedence) {
-            getNextToken();
-            IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, lhs);
-            if (compoundExpressionNull != null) {
-              return compoundExpressionNull;
-            }
-
-            while (fToken == TT_NEWLINE) {
-              getNextToken();
-            }
-            lhs = parseInfixOperator(lhs, infixOperator);
-            continue;
+        // Juxtaposition is a product. The lookahead half stops at an equal precedence here too.
+        if (ParserConfig.DOMINANT_IMPLICIT_TIMES //
+            || (foldEqualPrecedence ? Precedence.TIMES >= min_precedence
+                : Precedence.TIMES > min_precedence)) {
+          if (foldEqualPrecedence) {
+            lhs = F.$(S.Times, lhs, parseLookaheadOperator(Precedence.TIMES));
+            ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
+          } else {
+            lhs = climbOperators(lhs, Precedence.TIMES, true);
           }
-        } else {
-          postfixOperator = determinePostfixOperator();
-          if (postfixOperator != null && postfixOperator.getPrecedence() >= min_precedence) {
-            lhs = parsePostfixOperator(lhs, postfixOperator);
-            continue;
-          }
+          continue;
         }
+        break;
+      }
+      if (fToken == TT_DERIVATIVE) {
+        lhs = parseDerivative(lhs);
+      }
+      if (fToken != TT_OPERATOR) {
+        break;
+      }
+      final InfixExprOperator infixOperator = determineBinaryOperator();
+      if (infixOperator != null) {
+        final int precedence = infixOperator.getPrecedence();
+        final boolean accept = foldEqualPrecedence //
+            ? precedence >= min_precedence
+            : precedence > min_precedence //
+                || (fOperatorString.equals(":") && lhs.isSymbol()) || (precedence == min_precedence
+                    && infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE);
+        if (!accept) {
+          break;
+        }
+        if (!foldEqualPrecedence) {
+          // Hand the operator to a fold, which reads its right-hand side and builds the node.
+          lhs = climbOperators(lhs, precedence, true);
+          continue;
+        }
+        getNextToken();
+        IExpr compoundExpressionNull = parseCompoundExpressionNull(infixOperator, lhs);
+        if (compoundExpressionNull != null) {
+          return compoundExpressionNull;
+        }
+        while (fToken == TT_NEWLINE) {
+          getNextToken();
+        }
+        lhs = parseInfixOperator(lhs, infixOperator);
+        continue;
+      }
+      final PostfixExprOperator postfixOperator = determinePostfixOperator();
+      if (postfixOperator != null && postfixOperator.getPrecedence() >= min_precedence) {
+        lhs = parsePostfixOperator(lhs, postfixOperator);
+        continue;
       }
       break;
     }
@@ -1391,8 +1564,8 @@ public class ExprParser extends Scanner {
           (headID == ID.Equal || headID == ID.Greater || headID == ID.GreaterEqual
               || headID == ID.Less || headID == ID.LessEqual || headID == ID.Unequal)) {
         while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-            && isComparatorOperator(fOperatorString)) {
-          if (!infixOperator.isOperator(fOperatorString)) {
+            && isComparatorToken()) {
+          if (infixOperator != fInfixOperator) {
             // rewrite to Inequality
             return parseInequality(ast, infixOperator);
           }
@@ -1406,9 +1579,9 @@ public class ExprParser extends Scanner {
         return ast;
       }
       while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-          && infixOperator.isOperator(fOperatorString)) {
+          && infixOperator == fInfixOperator) {
         getNextToken();
-        if (infixOperator.isOperator(";")) {
+        if (infixOperator.headSymbol() == S.CompoundExpression) {
           if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
               || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
             ast.append(S.Null);
@@ -1425,7 +1598,7 @@ public class ExprParser extends Scanner {
       return infixOperator.endFunction(fFactory, ast, this);
     } else {
       if (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-          && infixOperator.isOperator(fOperatorString)) {
+          && infixOperator == fInfixOperator) {
         throwSyntaxError(
             "Operator: \'" + fOperatorString + "\' not created properly (no grouping defined)");
       }
@@ -1450,7 +1623,7 @@ public class ExprParser extends Scanner {
       result.append(head);
     });
     InfixExprOperator compareOperator = determineBinaryOperator();
-    result.set(result.argSize(), F.$s(compareOperator.getFunctionName()));
+    result.set(result.argSize(), compareOperator.headSymbol());
     getNextToken();
     while (fToken == TT_NEWLINE) {
       getNextToken();
@@ -1458,9 +1631,9 @@ public class ExprParser extends Scanner {
     int precedence = infixOperator.getPrecedence();
     result.append(parseLookaheadOperator(precedence));
 
-    while (fToken == TT_OPERATOR && isComparatorOperator(fOperatorString)) {
+    while (fToken == TT_OPERATOR && isComparatorToken()) {
       compareOperator = determineBinaryOperator();
-      result.append(F.$s(compareOperator.getFunctionName()));
+      result.append(compareOperator.headSymbol());
       getNextToken();
       while (fToken == TT_NEWLINE) {
         getNextToken();
@@ -1480,60 +1653,13 @@ public class ExprParser extends Scanner {
     return lhs;
   }
 
+  /**
+   * Read one operand and then climb operators which bind more tightly than
+   * <code>min_precedence</code>. The other half of the parser described on
+   * {@link #parseExpression(IExpr, int)}, where the differences between the two are tabulated.
+   */
   private IExpr parseLookaheadOperator(final int min_precedence) {
-    IExpr rhs = parsePrimary(min_precedence);
-
-    while (true) {
-      final int lookahead = fToken;
-      if (fToken == TT_NEWLINE) {
-        break;
-      }
-      if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN)
-          || (fToken == TT_ASSOCIATION_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
-          || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
-        if (!fExplicitTimes) {
-          // lazy evaluation of multiplication
-          InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
-          if (ParserConfig.DOMINANT_IMPLICIT_TIMES
-              || timesOperator.getPrecedence() > min_precedence) {
-            rhs = parseExpression(rhs, timesOperator.getPrecedence());
-            continue;
-          } else if ((timesOperator.getPrecedence() == min_precedence)
-              && (timesOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE)) {
-            rhs = parseExpression(rhs, timesOperator.getPrecedence());
-            continue;
-          }
-        }
-      } else {
-        if (fToken == TT_DERIVATIVE) {
-          rhs = parseDerivative(rhs);
-        }
-        if (lookahead != TT_OPERATOR && fToken != TT_OPERATOR) {
-          break;
-        }
-        InfixExprOperator infixOperator = determineBinaryOperator();
-        if (infixOperator != null) {
-          if (infixOperator.getPrecedence() > min_precedence
-              || (fOperatorString.equals(":") && rhs.isSymbol())
-              || ((infixOperator.getPrecedence() == min_precedence)
-                  && (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
-            rhs = parseExpression(rhs, infixOperator.getPrecedence());
-            continue;
-          }
-
-        } else {
-          PostfixExprOperator postfixOperator = determinePostfixOperator();
-          if (postfixOperator != null) {
-            if (postfixOperator.getPrecedence() >= min_precedence) {
-              getNextToken();
-              rhs = convert(postfixOperator.createFunction(fFactory, rhs));
-              continue;
-            }
-          }
-        }
-      }
-      break;
-    }
+    IExpr rhs = climbOperators(parsePrimary(min_precedence), min_precedence, false);
     if (fToken == TT_ARGUMENTS_OPEN) {
       rhs = parseArguments(rhs);
     }

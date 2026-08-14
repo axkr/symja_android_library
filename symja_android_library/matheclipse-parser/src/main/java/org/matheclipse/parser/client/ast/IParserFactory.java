@@ -57,6 +57,25 @@ public interface IParserFactory {
   public List<Operator> getOperatorList(String operatorString);
 
   /**
+   * Get the operator-list for an operator token which the caller has not materialized as a
+   * <code>String</code>.
+   *
+   * <p>
+   * The scanner probes this once per prefix of an operator token, so the default implementation -
+   * which does build the String - defeats the purpose. Trie-backed factories should override it
+   * with a direct lookup; the trie's sequencer needs nothing beyond
+   * {@link CharSequence#charAt(int)} and {@link CharSequence#length()}.
+   *
+   * <p>
+   * The argument may be a mutable view over the input and must not be retained.
+   *
+   * @return the operator-list for a given operator token like *, +, ==...
+   */
+  default List<Operator> getOperatorList(CharSequence operatorToken) {
+    return getOperatorList(operatorToken.toString());
+  }
+
+  /**
    * Check if the identifier name is valid.
    *
    * @param identifier the currently parsed identifier

@@ -31,6 +31,7 @@ import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.operator.OperatorTable;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -284,92 +285,6 @@ public class ExprParserFactory implements IParserFactory {
   public static final TagSetOperator TAG_SET_OPERATOR = //
       new TagSetOperator("/:", "TagSet", Precedence.TAGSET, InfixExprOperator.NONE);
 
-  static final String[] HEADER_STRINGS = {"MessageName", "Information", "Information", "Get",
-      "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet", "CompoundExpression", "Apply", "Map",
-      "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set", "Increment",
-      "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot",
-      "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition",
-      // "Colon",
-      "//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom",
-      "PrePlus", "RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function",
-      "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed", "Alternatives", "AddTo",
-      "Repeated", "ReplaceAll", "TagSet", "Composition", "RightComposition", "StringExpression",
-      "Pattern", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot",
-      "CircleDot", "CircleTimes", "Distributed", "Element", "NotElement", "Intersection",
-      "NotEqual", "Wedge", "TensorProduct", "Equivalent", "Implies", "PlusMinus", "PlusMinus", //
-      "Star", //
-
-
-      "DifferenceDelta", //
-      "Exists", //
-      "ForAll", //
-      "Product", //
-      "Put", //
-      "PutAppend", //
-      "RightTee", //
-      "RoundImplies", //
-      "Sqrt", //
-      "Square", //
-      "SuchThat", //
-      "Sum", //
-      "Therefore", //
-      "Transpose", //
-      "UpTee", //
-
-
-      "§TILDE§" //
-
-  };
-
-
-
-  static final String[] OPERATOR_STRINGS = {"::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";",
-      "@", "/@", "=.", "@@", "@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*",
-      "^", ".", "!", "-", "===", ":>", ">=", "/;", "//", "/=", "||", ";;", "==", "<>", "!=", "--",
-      "-=", "+", "...", "=!=", "->", "^:=", "++", "|->", "&", ">", "--", "-", ":=", "|", "+=", "..",
-      "/.", "/:", "@*", "/*", "~~", //
-      ":", // Pattern
-      "<->", // TwoWayRule
-      "\uF120", // TwoWayRule
-      "\uF3D5", // DirectedEdge
-      "\uF3D4", // UndirectedEdge
-      "\u00B7", // CenterDot
-      "\u2299", // CircleDot
-      "\u2297", // CircleTimes
-      "\uF3D2", // Distributed
-      "\u2208", // Element
-      "\u2209", // NotElement
-      "\u22C2", // Intersection
-      "\u2260", // NotEqual
-      "\u22C0", // Wedge
-      "\uF3DA", // TensorProduct
-      "\u29E6", // Equivalent
-      "\uF523", // Implies
-      "\u001b", // PlusMinus infix operator
-      "\u001b", // PlusMinus prefix operator
-      "\u22c6", // Star infix operator
-
-
-      "∆", // DifferenceDelta", 550),
-      "∃", // Exists", 240), //
-      "∀", // ForAll", 240),
-      "∏", // Product", 380),
-      ">>", // "Put", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
-      ">>>", // "PutAppend", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
-      "⊢", // "RightTee", 190, InfixExprOperator.RIGHT_ASSOCIATIVE),
-      "⥰", // "RoundImplies", 193, InfixExprOperator.RIGHT_ASSOCIATIVE),
-      "√", // "Sqrt", 570), //
-      "▫", // "Square", 540), //
-      "∍", // "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
-      "∑", // "Sum", 325), //
-      "∴", // "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
-      "\uF3C7", // "Transpose", 670),
-      "⊥", // UpTee
-
-      "~"};
-
-  private static Operator[] OPERATORS;
-
   public static final ExprParserFactory MMA_STYLE_FACTORY = new ExprParserFactory();
 
   public static final ExprParserFactory RELAXED_STYLE_FACTORY = new ExprParserFactory();
@@ -380,86 +295,7 @@ public class ExprParserFactory implements IParserFactory {
   /** */
   private static Trie<String, ArrayList<Operator>> fOperatorTokenStartSet;
 
-  // private static final String[] ADDITONAL_FUNCTION_STRINGS =
-  // {"DifferenceDelta", "Exists", "ForAll", "Product", "Put", "PutAppend", "RightTee",
-  // "RoundImplies", "Sqrt", "Square", "SuchThat", "Sum", "Therefore", "Transpose", "UpTee"};
-  //
-  // public static void main(String[] args) {
-  // initialize();
-  // for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
-  // String function = AST2Expr.FUNCTION_STRINGS[i];
-  // if (WMAOperatorTables.isLeftAssociative(function) //
-  // || WMAOperatorTables.isRightAssociative(function)
-  // || WMAOperatorTables.isPostfixOperator(function)
-  // || WMAOperatorTables.isPrefixOperator(function)) {
-  // Operator operator = fOperatorMap.get(function);
-  // if (operator == null) {
-  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(function);
-  // if (list != null) {
-  // System.out.println("\"" + function + "\",");
-  // }
-  //
-  // }
-  // }
-  // }
-  // for (int i = 0; i < ADDITONAL_FUNCTION_STRINGS.length; i++) {
-  // String operator = ADDITONAL_FUNCTION_STRINGS[i];
-  // if (WMAOperatorTables.isLeftAssociative(operator)) {
-  // // InfixExprOperator("//.", "ReplaceRepeated", precedence,
-  // // InfixExprOperator.LEFT_ASSOCIATIVE)
-  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-  // if (list == null) {
-  // System.out.println(operator);
-  // }
-  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-  // for (int j = 0; j < list.size(); j++) {
-  // System.out.println("new InfixExprOperator(\"" //
-  // + list.get(j) + "\",\""//
-  // + operator + "\"," //
-  // + precedence + ", InfixExprOperator.LEFT_ASSOCIATIVE);");
-  // }
-  // } else if (WMAOperatorTables.isRightAssociative(operator)) {
-  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-  // if (list == null) {
-  // System.out.println(operator);
-  // }
-  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-  // for (int j = 0; j < list.size(); j++) {
-  //
-  // System.out.println("new InfixExprOperator(\"" //
-  // + list.get(j) + "\",\""//
-  // + operator + "\"," //
-  // + precedence + ", InfixExprOperator.RIGHT_ASSOCIATIVE);");
-  // }
-  // } else if (WMAOperatorTables.isPrefixOperator(operator)) {
-  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-  // if (list == null) {
-  // System.out.println(operator);
-  // }
-  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-  // for (int j = 0; j < list.size(); j++) {
-  //
-  // System.out.println("new PrefixExprOperator(\"" //
-  // + list.get(j) + "\",\""//
-  // + operator + "\"," //
-  // + precedence + ");");
-  // }
-  // } else if (WMAOperatorTables.isPostfixOperator(operator)) {
-  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-  // if (list == null) {
-  // System.out.println(operator);
-  // }
-  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-  // for (int j = 0; j < list.size(); j++) {
-  // System.out.println("new PostfixExprOperator(\"" //
-  // + list.get(j) + "\",\""//
-  // + operator + "\"," //
-  // + precedence + ");");
-  // }
-  // }
-  //
-  // }
-  // }
+
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -469,164 +305,94 @@ public class ExprParserFactory implements IParserFactory {
 
     private static void init() {
 
-      OPERATORS = new Operator[] {
-          new InfixExprOperator("::", "MessageName", Precedence.MESSAGENAME,
-              InfixExprOperator.NONE),
-          new PrefixExprOperator("<<", "Get", Precedence.GET), //
-          INFORMATION_SHORT, //
-          INFORMATION_LONG, //
-          new InfixExprOperator("?", "PatternTest", Precedence.PATTERNTEST, InfixExprOperator.NONE), //
-          new InfixExprOperator("//@", "MapAll", Precedence.MAPALL,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("*=", "TimesBy", Precedence.TIMESBY,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("+", "Plus", Precedence.PLUS, InfixExprOperator.NONE), //
-          new InfixExprOperator("^=", "UpSet", Precedence.UPSET,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator(";", "CompoundExpression", Precedence.COMPOUNDEXPRESSION,
-              InfixExprOperator.NONE), //
-          APPLY_HEAD_OPERATOR, //
-          new InfixExprOperator("/@", "Map", Precedence.MAP, InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new PostfixExprOperator("=.", "Unset", Precedence.UNSET), //
-          APPLY_OPERATOR, //
-          MAPAPPLY_OPERATOR, //
-          new InfixExprOperator("//.", "ReplaceRepeated", Precedence.REPLACEREPEATED,
-              InfixExprOperator.LEFT_ASSOCIATIVE), //
-          new InfixExprOperator("<", "Less", Precedence.LESS, InfixExprOperator.NONE), //
-          new InfixExprOperator("&&", "And", Precedence.AND, InfixExprOperator.NONE), //
-          new DivideExprOperator("/", "Divide", Precedence.DIVIDE,
-              InfixExprOperator.LEFT_ASSOCIATIVE), //
-          SET_OPERATOR, //
-          new PostfixExprOperator("++", "Increment", Precedence.INCREMENT), //
-          new PostfixExprOperator("!!", "Factorial2", Precedence.FACTORIAL2), //
-          new InfixExprOperator("<=", "LessEqual", Precedence.LESSEQUAL, InfixExprOperator.NONE), //
-          NON_COMMUTATIVE_MULTIPLY_OPERATOR, //
-          new PostfixExprOperator("!", "Factorial", Precedence.FACTORIAL), //
-          new InfixExprOperator("*", "Times", Precedence.TIMES, InfixExprOperator.NONE), //
-          POWER_OPERATOR, //
-          new InfixExprOperator(".", "Dot", Precedence.DOT, InfixExprOperator.NONE), //
-          new PrefixExprOperator("!", "Not", Precedence.NOT), //
-          new PreMinusExprOperator("-", "PreMinus", Precedence.PREMINUS), //
-          new InfixExprOperator("===", "SameQ", Precedence.SAMEQ, InfixExprOperator.NONE), //
-          new InfixExprOperator(":>", "RuleDelayed", Precedence.RULEDELAYED,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator(">=", "GreaterEqual", Precedence.GREATEREQUAL,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("/;", "Condition", Precedence.CONDITION,
-              InfixExprOperator.LEFT_ASSOCIATIVE), //
-          // new InfixExprOperator(":", "Colon", Precedence.COLON,InfixExprOperator.NONE), //
-          new InfixExprOperator("//", "//", 70, InfixExprOperator.LEFT_ASSOCIATIVE), //
-          new InfixExprOperator("/=", "DivideBy", Precedence.DIVIDEBY,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("||", "Or", Precedence.OR, InfixExprOperator.NONE), //
-          new InfixExprOperator(";;", "Span", Precedence.SPAN, InfixExprOperator.NONE), //
-          EQUAL_OPERATOR, //
-          new InfixExprOperator("<>", "StringJoin", Precedence.STRINGJOIN, InfixExprOperator.NONE), //
-          new InfixExprOperator("!=", "Unequal", Precedence.UNEQUAL, InfixExprOperator.NONE), //
-          new PostfixExprOperator("--", "Decrement", Precedence.DECREMENT), //
-          new InfixExprOperator("-=", "SubtractFrom", Precedence.SUBTRACTFROM,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new PrePlusExprOperator("+", "PrePlus", Precedence.PREPLUS), //
-          new PostfixExprOperator("...", "RepeatedNull", Precedence.REPEATEDNULL), //
-          new InfixExprOperator("=!=", "UnsameQ", Precedence.UNSAMEQ, InfixExprOperator.NONE), //
-          new InfixExprOperator("->", "Rule", Precedence.RULE, InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("^:=", "UpSetDelayed", Precedence.UPSETDELAYED,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new PrefixExprOperator("++", "PreIncrement", Precedence.PREINCREMENT), // // the order of
-                                                                                 // the 2 operators
-                                                                                 // matters for
-                                                                                 // Function
-          new InfixExprOperator("|->", "Function", Precedence.FUNCTION,
-              InfixOperator.RIGHT_ASSOCIATIVE),
-          new PostfixExprOperator("&", "Function", Precedence.FUNCTION), //
-          new InfixExprOperator(">", "Greater", Precedence.GREATER, InfixExprOperator.NONE), //
-          new PrefixExprOperator("--", "PreDecrement", Precedence.PREDECREMENT), //
-          new SubtractExprOperator("-", "Subtract", Precedence.SUBTRACT,
-              InfixExprOperator.LEFT_ASSOCIATIVE), //
-          new InfixExprOperator(":=", "SetDelayed", Precedence.SETDELAYED,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("|", "Alternatives", Precedence.ALTERNATIVES,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("+=", "AddTo", Precedence.ADDTO,
-              InfixExprOperator.RIGHT_ASSOCIATIVE), //
-          new PostfixExprOperator("..", "Repeated", Precedence.REPEATED), //
-          new InfixExprOperator("/.", "ReplaceAll", Precedence.REPLACEALL,
-              InfixExprOperator.LEFT_ASSOCIATIVE), //
-          TAG_SET_OPERATOR, //
-          new InfixExprOperator("@*", "Composition", Precedence.COMPOSITION, InfixOperator.NONE),
-          new InfixExprOperator("/*", "RightComposition", Precedence.RIGHTCOMPOSITION,
-              InfixOperator.NONE),
-          new InfixExprOperator("~~", "StringExpression", Precedence.STRINGEXPRESSION,
-              InfixOperator.NONE),
-          new PatternExprOperator(":", "Pattern", Precedence.PATTERN, InfixOperator.NONE),
-          new InfixExprOperator("<->", "TwoWayRule", Precedence.TWOWAYRULE,
-              InfixOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("\uF120", "TwoWayRule", Precedence.TWOWAYRULE,
-              InfixOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("\uF3D5", "DirectedEdge", Precedence.DIRECTEDEDGE,
-              InfixOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("\uF3D4", "UndirectedEdge", Precedence.UNDIRECTEDEDGE,
-              InfixOperator.RIGHT_ASSOCIATIVE), //
-          new InfixExprOperator("\u00B7", "CenterDot", Precedence.CENTERDOT,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("\u2297", "CircleTimes", Precedence.CIRCLETIMES,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("\uF3D2", "Distributed", Precedence.DISTRIBUTED,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("\u2208", "Element", Precedence.ELEMENT, InfixExprOperator.NONE), //
-          new InfixExprOperator("\u2209", "NotElement", Precedence.NOTELEMENT,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("\u22C2", "Intersection", Precedence.INTERSECTION,
-              InfixExprOperator.NONE), //
-          new InfixExprOperator("\u2260", "Unequal", Precedence.UNEQUAL, InfixExprOperator.NONE), //
-          new InfixExprOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixExprOperator.NONE), //
-          new InfixExprOperator("\uF3DA", "TensorProduct", Precedence.TENSORPRODUCT,
-              InfixExprOperator.NONE),
-          new InfixExprOperator("\u29E6", "Equivalent", Precedence.EQUIVALENT, InfixOperator.NONE),
-          new InfixExprOperator("\uF523", "Implies", Precedence.IMPLIES,
-              InfixOperator.RIGHT_ASSOCIATIVE),
-          new InfixExprOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS,
-              InfixOperator.LEFT_ASSOCIATIVE),
-          new PrefixExprOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS),
-          new InfixExprOperator("\u22c6", "Star", Precedence.STAR, InfixExprOperator.NONE),
-
-          new PrefixExprOperator("∆", "DifferenceDelta", 550),
-          new PrefixExprOperator("∃", "Exists", 240), //
-          new PrefixExprOperator("∀", "ForAll", 240), new PrefixExprOperator("∏", "Product", 380),
-          new InfixExprOperator(">>", "Put", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
-          new InfixExprOperator(">>>", "PutAppend", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
-          new InfixExprOperator("⊢", "RightTee", 190, InfixExprOperator.RIGHT_ASSOCIATIVE),
-          new InfixExprOperator("⥰", "RoundImplies", 193, InfixExprOperator.RIGHT_ASSOCIATIVE),
-          new PrefixExprOperator("√", "Sqrt", 570), //
-          new PrefixExprOperator("▫", "Square", 540), //
-          new InfixExprOperator("∍", "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
-          new PrefixExprOperator("∑", "Sum", 325), //
-          new InfixExprOperator("∴", "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
-          new PostfixExprOperator("\uF3C7", "Transpose", 670),
-          new InfixExprOperator("⊥", "UpTee", 197, InfixExprOperator.LEFT_ASSOCIATIVE),
-
-
-          new TildeExprOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)};
-      StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
-
       fOperatorMap = ParserConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
       fOperatorTokenStartSet =
           ParserConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-      for (int i = 0; i < HEADER_STRINGS.length; i++) {
-        addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
-            OPERATORS[i]);
-        String unicodeChar =
-            org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
-        if (unicodeChar != null) {
-          addUnicodeOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, OPERATORS[i]);
-          buf.append(unicodeChar);
+      // Every operator comes from OperatorTable, so that this table and ASTNodeFactory's cannot
+      // describe different languages. Only the operators whose expansion is more than "wrap the
+      // arguments in a call to the head" need a class of their own; see createOperator.
+      StringBuilder operatorCharacters = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
+      for (OperatorTable.Row row : OperatorTable.ROWS) {
+        final Operator operator = createOperator(row);
+        addOperator(fOperatorMap, fOperatorTokenStartSet, row.token, row.head, operator);
+        appendOperatorCharacters(operatorCharacters, row.token);
+        for (String alias : row.aliases) {
+          // The same instance under every spelling: the parser decides whether a chain flattens by
+          // comparing operator identity, so a second instance would make the unicode spelling of a
+          // flat operator nest where the ASCII one flattens.
+          addUnicodeOperator(fOperatorMap, fOperatorTokenStartSet, alias, operator);
+          appendOperatorCharacters(operatorCharacters, alias);
         }
       }
-      // }
-      OPERATOR_MATCHER = CharMatcher.anyOf(buf.toString());
+      OPERATOR_MATCHER = CharMatcher.anyOf(operatorCharacters.toString());
+    }
+  }
+
+  /**
+   * Build the operator a row describes.
+   *
+   * <p>
+   * Most rows are a plain infix, prefix or postfix operator. The rest either need behaviour the
+   * table cannot express - {@code Divide} folds an integer denominator into a Rational,
+   * {@code TagSet} looks inside its right operand, {@code ~} collects its arguments and rebuilds
+   * them in {@code endFunction} - or are published as constants which other code compares against
+   * by identity, so the same instance has to be the one registered.
+   */
+  private static Operator createOperator(final OperatorTable.Row row) {
+    final int grouping = row.grouping.toInfixOperatorConstant();
+    switch (row.head) {
+      case "Information":
+        return row.token.equals("?") ? INFORMATION_SHORT : INFORMATION_LONG;
+      case "Apply":
+        return row.token.equals("@") ? APPLY_HEAD_OPERATOR : APPLY_OPERATOR;
+      case "MapApply":
+        return MAPAPPLY_OPERATOR;
+      case "Equal":
+        return EQUAL_OPERATOR;
+      case "NonCommutativeMultiply":
+        return NON_COMMUTATIVE_MULTIPLY_OPERATOR;
+      case "Power":
+        return POWER_OPERATOR;
+      case "Set":
+        return SET_OPERATOR;
+      case "TagSet":
+        return TAG_SET_OPERATOR;
+      case "Divide":
+        return new DivideExprOperator(row.token, row.head, row.precedence, grouping);
+      case "Pattern":
+        return new PatternExprOperator(row.token, row.head, row.precedence, grouping);
+      case "Subtract":
+        return new SubtractExprOperator(row.token, row.head, row.precedence, grouping);
+      case "PreMinus":
+        return new PreMinusExprOperator(row.token, row.head, row.precedence);
+      case "PrePlus":
+        return new PrePlusExprOperator(row.token, row.head, row.precedence);
+      case "\u00a7TILDE\u00a7":
+        return new TildeExprOperator(row.token, row.head, row.precedence, grouping);
+      default:
+        break;
+    }
+    switch (row.affix) {
+      case PREFIX:
+        return new PrefixExprOperator(row.token, row.head, row.precedence);
+      case POSTFIX:
+        return new PostfixExprOperator(row.token, row.head, row.precedence);
+      default:
+        return new InfixExprOperator(row.token, row.head, row.precedence, grouping);
+    }
+  }
+
+  /**
+   * Record every character a token is spelled with as one the scanner may find inside an operator.
+   * The ASCII tokens are already covered by {@link IParserFactory#BASIC_OPERATOR_CHARACTERS}; this
+   * is what makes the unicode spellings reachable at all.
+   */
+  private static void appendOperatorCharacters(StringBuilder buf, String token) {
+    for (int i = 0; i < token.length(); i++) {
+      if (buf.indexOf(token.substring(i, i + 1)) < 0) {
+        buf.append(token.charAt(i));
+      }
     }
   }
 
@@ -638,7 +404,28 @@ public class ExprParserFactory implements IParserFactory {
       final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorToken,
       final String headStr, final Operator operator) {
     ArrayList<Operator> list;
-    operatorMap.put(headStr, operator);
+    // First row wins the name key. Several heads have more than one operator - Function is the
+    // postfix "&" and the infix "|->", Information is "?" and "??" - and this map is what
+    // OutputFormFactory resolves an operator form through, so which one wins decides how the
+    // expression prints. Rows are ordered by token, so "&" is reached before "|->" and Function
+    // keeps printing as "f&" rather than "|->".
+    // A head can have more than one operator - Function is the postfix "&" and the infix
+    // "|->", PlusMinus is a prefix and an infix "\u00b1" - but this map holds one per name, and it
+    // is
+    // what OutputFormFactory resolves an operator form through. Prefer the prefix or postfix
+    // reading, which is the one that prints as an operator for a one-argument call; among readings
+    // of the same kind the later row wins, as it did when the table was an array.
+    Operator previous = operatorMap.get(headStr);
+    // First row wins, except that a prefix or postfix reading replaces an infix one: that is the
+    // reading which prints as an operator for a one-argument call. Keeping the first otherwise
+    // matters for Unequal, which has both "!=" and "\u2260" - the ASCII spelling is the one Symja
+    // prints, and it only stayed so before because the "\u2260" row was filed under a misspelled
+    // head.
+    boolean keepPrevious = previous != null
+        && !(previous instanceof InfixExprOperator && !(operator instanceof InfixExprOperator));
+    if (!keepPrevious) {
+      operatorMap.put(headStr, operator);
+    }
     list = operatorTokenStartSet.get(operatorToken);
     if (list == null) {
       list = new ArrayList<Operator>(2);
@@ -687,6 +474,15 @@ public class ExprParserFactory implements IParserFactory {
   /** */
   @Override
   public List<Operator> getOperatorList(final String key) {
+    return fOperatorTokenStartSet.get(key);
+  }
+
+  /**
+   * Look the token up directly, without materializing it. The trie compares element by element
+   * through its sequencer, so any {@link CharSequence} works as a key.
+   */
+  @Override
+  public List<Operator> getOperatorList(final CharSequence key) {
     return fOperatorTokenStartSet.get(key);
   }
 
