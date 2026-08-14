@@ -32,7 +32,7 @@ public class ArgumentTypeException extends ValidateException {
   public String getShortCut() {
     return fMessageShortcut;
   }
-  
+
   public static void throwNIL() {
     // unexpected NIL expression encountered.
     String str = Errors.getMessage("nil", F.CEmptyList);

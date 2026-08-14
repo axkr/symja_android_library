@@ -474,7 +474,7 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "True");
     check("StringMatchQ(\"+42\", NumberString)", //
         "True");
-    
+
     check("StringMatchQ(\"123.4\", NumberString)", //
         "True");
     check("StringMatchQ(\"123.4567890123456789\", NumberString)", //
@@ -874,7 +874,7 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "55");
     check(
         "TemplateApply(\"The orbit of `planet` has period `period`.\", <|\"planet\" -> \"Jupiter\", \"period\" -> Quantity(11.8707, \"Years\")|>)", //
-        "The orbit of Jupiter has period 11.8707[Years].");
+        "The orbit of Jupiter has period Quantity(11.8707,\"Years\").");
     check("TemplateApply({1, 2, 3, TemplateSlot(\"element\"), 5}, <|\"element\" -> 4|>)", //
         "{1,2,3,4,5}");
     // check(

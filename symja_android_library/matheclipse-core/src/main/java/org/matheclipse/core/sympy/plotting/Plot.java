@@ -36,8 +36,26 @@ public class Plot {
    */
   public static double[][] computePlot(final UnaryNumerical hun, double[][] data, final double xMin,
       final double xMax, String xScale) {
-    SortedSet<Point> plot =
-        new Series.LineOver1DRangeSeries(hun, xMin, xMax, MAXIMUM_DEPTH, true, xScale).getPoints();
+    return computePlot(hun, data, xMin, xMax, xScale, -1, -1);
+  }
+
+  /**
+   * Sample a function over a range.
+   *
+   * @param plotPoints number of evenly spaced samples to take, or a value below 2 to sample
+   *        adaptively
+   * @param maxRecursion how deep the adaptive sampler may subdivide, or a value below 1 for the
+   *        default depth
+   */
+  public static double[][] computePlot(final UnaryNumerical hun, double[][] data, final double xMin,
+      final double xMax, String xScale, int plotPoints, int maxRecursion) {
+    // An explicit PlotPoints asks for that many samples, which is a uniform sweep rather than the
+    // adaptive refinement; MaxRecursion only bounds the adaptive one.
+    int depth = maxRecursion >= 1 ? Math.min(maxRecursion, 20) : MAXIMUM_DEPTH;
+    Series.LineOver1DRangeSeries series = plotPoints >= 2
+        ? new Series.LineOver1DRangeSeries(hun, false, xMin, xMax, plotPoints, xScale)
+        : new Series.LineOver1DRangeSeries(hun, xMin, xMax, depth, true, xScale);
+    SortedSet<Point> plot = series.getPoints();
     if (plot.size() > 0) {
       data = new double[2][plot.size()];
       int i = 0;

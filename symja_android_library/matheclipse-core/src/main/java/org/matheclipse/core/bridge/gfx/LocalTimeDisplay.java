@@ -25,9 +25,11 @@ public enum LocalTimeDisplay {
   private final int secRadIn = 15;
   private final int secCirc = 10;
 
-  /** @param graphics
+  /**
+   * @param graphics
    * @param localTime
-   * @param center */
+   * @param center
+   */
   public void draw(Graphics2D graphics, LocalTime localTime, Point center) {
     RenderQuality.setQuality(graphics);
     graphics.setColor(Color.WHITE);
@@ -40,7 +42,8 @@ public enum LocalTimeDisplay {
     final double m = ((hms_m + hms_s / 60.0) / 60.0) * 2 * Math.PI;
     final double s = (hms_s + hms_n * 1E-9) / 60.0 * 2 * Math.PI;
     // Draw the hands of the clock
-    // graphics2d.drawLine(c.x, c.y, c.x + Math.cos(m) * minutesRadius, cy + sin(m) * minutesRadius);
+    // graphics2d.drawLine(c.x, c.y, c.x + Math.cos(m) * minutesRadius, cy + sin(m) *
+    // minutesRadius);
     graphics.setColor(Color.BLACK); // new Color(128, 128, 128, 255)
     Stroke stroke = graphics.getStroke();
     graphics.setStroke(new BasicStroke(4));

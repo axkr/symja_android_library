@@ -60,8 +60,7 @@ public final class MultivariateJacobianGradient implements MultivariateJacobianF
     variablesList.exists(x -> {
       if (!x.isVariable() || x.isBuiltInSymbol()) {
         // Cannot assign to raw object `1`.
-        throw new ArgumentTypeException(
-            Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
+        throw new ArgumentTypeException(Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
       }
       return false;
     });

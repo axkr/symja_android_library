@@ -21,8 +21,9 @@ public class SolveUtils {
    * equations.
    *
    * <p>
-   * The solvers accept their equations either as a list or combined with the <code>&amp;&amp;</code>
-   * operator, for example <code>DSolve(y'(x)==y(x) &amp;&amp; y(0)==1, y(x), x)</code>.
+   * The solvers accept their equations either as a list or combined with the
+   * <code>&amp;&amp;</code> operator, for example
+   * <code>DSolve(y'(x)==y(x) &amp;&amp; y(0)==1, y(x), x)</code>.
    *
    * @param expr the equations argument of a solver
    * @return the list of equations, or <code>expr</code> unchanged if it wasn't an <code>And(...)
@@ -83,8 +84,7 @@ public class SolveUtils {
    * @param isNumeric set isNumeric[0] = true, if an expression must be rationalized
    * @return
    */
-  public static IASTMutable[] filterSolveLists(IAST list, IAST solution,
-      boolean[] isNumeric) {
+  public static IASTMutable[] filterSolveLists(IAST list, IAST solution, boolean[] isNumeric) {
     // if numeric is true we use NSolve instead of SOlve
     boolean numeric = isNumeric[0];
     IASTMutable[] result = new IASTMutable[3];

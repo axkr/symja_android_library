@@ -1742,11 +1742,11 @@ public class SimplifyUtil extends VisitorExpr {
         if (ctx.ast().hasTrigonometricFunction()) {
           IExpr temp = ctx.util.eval(F.TrigToExp(ctx.expr));
           if (!ctx.result.checkLessPlusTimesPower(temp) && ctx.util.fFullSimplify
-              // Same bound the Factorization step below applies, and for the same reason: nested
-              // trigonometry explodes when it is rewritten to exponentials — TrigToExp turns the
-              // 28 leaves of 2*Cos(Pi/180*(60+3*Tan(Pi/180*(45-2*Sin(Pi/60))))) into 405 — and
-              // factoring something that big costs far more than the chance of it collapsing is
-              // worth. The cases this does pay for stay well inside the bound.
+          // Same bound the Factorization step below applies, and for the same reason: nested
+          // trigonometry explodes when it is rewritten to exponentials — TrigToExp turns the
+          // 28 leaves of 2*Cos(Pi/180*(60+3*Tan(Pi/180*(45-2*Sin(Pi/60))))) into 405 — and
+          // factoring something that big costs far more than the chance of it collapsing is
+          // worth. The cases this does pay for stay well inside the bound.
               && ctx.util.fComplexityFunction.apply(temp) < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
             ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Factor(temp)));
           }

@@ -384,4 +384,88 @@ public class PartTest extends ExprEvaluatorTestCase {
         "10");
   }
 
+  @Test
+  public void testPartReachesIntoNamedPattern() {
+    check("Part(x_Symbol, 0)", //
+        "Pattern");
+    check("Part(x_Symbol, 1)", //
+        "x");
+    check("Part(x_Symbol, 2)", //
+        "_Symbol");
+    check("Part(x_, 1)", //
+        "x");
+    check("Part(x_, 2)", //
+        "_");
+    // Negative indices count from the end, as everywhere else.
+    check("Part(x_Symbol, -1)", //
+        "_Symbol");
+    // message Part: Part 5 of x_Symbol does not exist.
+    check("Part(x_Symbol, 5)", //
+        "(x_Symbol)[[5]]");
+  }
+
+  @Test
+  public void testPartReachesIntoAnonymousPattern() {
+    // _Integer is the bare Blank(Integer) - no Pattern wrapper.
+    check("Part(_Integer, 0)", //
+        "Blank");
+    check("Part(_Integer, 1)", //
+        "Integer");
+    check("ToString(FullForm(_Integer))", //
+        "Blank(Integer)");
+    check("ToString(FullForm(__))", //
+        "BlankSequence()");
+    // reach into a blank nested in a pattern
+    check("Part(x_Symbol, 2, 1)", //
+        "Symbol");
+  }
+
+  @Test
+  public void testPartReachesIntoPatternSequence() {
+    check("Part(x__, 0)", //
+        "Pattern");
+    check("Part(x__, 1)", //
+        "x");
+    check("Part(x__, 2)", //
+        "__");
+    check("Part(x___, 2)", //
+        "___");
+  }
+
+  @Test
+  public void testPartReachesIntoPatternTestAndOptional() {
+    // x_?NumberQ is PatternTest(Pattern(x, Blank()), NumberQ).
+    check("Part(x_?NumberQ, 1)", //
+        "x_");
+    check("Part(x_?NumberQ, 2)", //
+        "NumberQ");
+    // x_:2 is Optional(Pattern(x, Blank()), 2).
+    check("Part(x_:2, 1)", //
+        "x_");
+    check("Part(x_:2, 2)", //
+        "2");
+    // x_. is the Pattern object with a default value - Optional(Pattern(x, Blank()))
+    check("Part(x_., 0)", //
+        "Optional");
+    check("Part(x_., 1)", //
+        "x_");
+  }
+
+  @Test
+  public void testLengthCountsFullFormParts() {
+    check("Length /@ {x_Symbol, x_, x_?NumberQ, x_:2, x_., _Integer}", //
+        "{2,2,2,2,1,1}");
+    check("Length /@ {_, __, ___, x__, opts:OptionsPattern(), OptionsPattern()}", //
+        "{0,0,0,2,2,0}");
+  }
+
+  @Test
+  public void testPartChainWalksStoredRuleDownToPatternName() {
+    // Converted index syntax [[...]] to the explicit Part(...) function to maintain standard round
+    // brackets
+    check("r = HoldPattern(Int(u_, x_Symbol)) :> Condition(a + b, t); "//
+        + "{Part(r, 1, 1, 2, 1), Part(r, 1, 1, -1), Part(r, 1, 1, -1, 1)}", //
+        "{x,x_Symbol,x}");
+  }
+
 }

@@ -11,26 +11,26 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /** Test F.symjify() */
 public class SymjifyTestCase extends ExprEvaluatorTestCase {
-   @Test
-   public void test787_1() {
+  @Test
+  public void test787_1() {
     // issue #787
     IExpr minus = F.symjify("y").minus(F.ZZ(1));
-     assertEquals("-1+y", //
-     minus.toString());
+    assertEquals("-1+y", //
+        minus.toString());
     IExpr power = F.symjify("z").power(minus);
-     assertEquals("z^(-1+y)", //
-         power.toString());
-     assertEquals("Times(x, Power(z, Plus(-1, y)))", //
-     F.symjify("x").multiply(power).fullFormString());
+    assertEquals("z^(-1+y)", //
+        power.toString());
+    assertEquals("Times(x, Power(z, Plus(-1, y)))", //
+        F.symjify("x").multiply(power).fullFormString());
 
-     assertEquals("x/z^(1-y)", //
+    assertEquals("x/z^(1-y)", //
         F.symjify("x").multiply(power).toString());
-     assertEquals("Times(x, Power(z, Plus(-1, y)))", //
-         F.symjify("x").multiply(power).fullFormString());
+    assertEquals("Times(x, Power(z, Plus(-1, y)))", //
+        F.symjify("x").multiply(power).fullFormString());
   }
 
-   @Test
-   public void test787_2() {
+  @Test
+  public void test787_2() {
     // issue #787
     IExpr minus = F.symjify("y").minus(F.ZZ(1));
     assertEquals("-1+y", //
@@ -47,29 +47,29 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
         F.symjify("x").divide(power).fullFormString());
   }
 
-   @Test
-   public void test001() {
+  @Test
+  public void test001() {
     IExpr expr = F.symjify("(a+(b+c))");
     assertEquals(expr.fullFormString(), "Plus(a, b, c)");
     assertEquals(expr.toString(), "a+b+c");
   }
 
-   @Test
-   public void test002() {
+  @Test
+  public void test002() {
     IExpr expr = F.symjify(new int[] {1, 2, 3});
     assertEquals(expr.fullFormString(), "List(1, 2, 3)");
     assertEquals(expr.toString(), "{1,2,3}");
   }
 
-   @Test
-   public void test003() {
+  @Test
+  public void test003() {
     IExpr expr = F.symjify(new double[] {1.0, 2.1, 3.5});
     assertEquals(expr.fullFormString(), "List(1.0`, 2.1`, 3.5`)");
     assertEquals(expr.toString(), "{1.0,2.1,3.5}");
   }
 
-   @Test
-   public void test004() {
+  @Test
+  public void test004() {
     IExpr expr = F.symjify(new double[][] {{1.0, 2.1, 3.5}, {1.1, 2.2, 3.6}});
     assertEquals(expr.fullFormString(), //
         "List(List(1.0`, 2.1`, 3.5`), List(1.1`, 2.2`, 3.6`))");
@@ -77,15 +77,15 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
         "\n{{1.0,2.1,3.5},\n" + " {1.1,2.2,3.6}}");
   }
 
-   @Test
-   public void test005() {
+  @Test
+  public void test005() {
     IExpr expr = F.symjify(new boolean[][] {{true, false}, {false, true}});
     assertEquals(expr.fullFormString(), "List(List(True, False), List(False, True))");
     assertEquals(expr.toString(), "{{True,False},{False,True}}");
   }
 
-   @Test
-   public void testEvalQuiet() {
+  @Test
+  public void testEvalQuiet() {
     final StringWriter outWriter = new StringWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
     final StringWriter errorWriter = new StringWriter();

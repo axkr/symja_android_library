@@ -26,12 +26,16 @@ public abstract class BSplineFunctionBase extends BSplineFunction {
     return project((IAST) S.Range.of(EvalEngine.get(), -degree + 1 + k, degree + k));
   }
 
-  /** @param scalar
+  /**
+   * @param scalar
    * @return scalar guaranteed to be in the evaluation domain
-   * @throws Exception if given scalar was outside permitted range */
+   * @throws Exception if given scalar was outside permitted range
+   */
   protected abstract IExpr requireValid(IExpr scalar);
 
-  /** @param knots
-   * @return */
+  /**
+   * @param knots
+   * @return
+   */
   protected abstract IAST project(IAST knots);
 }

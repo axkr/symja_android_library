@@ -7,8 +7,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.tensor.qty.IQuantity;
-import org.matheclipse.core.tensor.qty.IUnit;
 
 
 public class Unicode {
@@ -33,10 +31,6 @@ public class Unicode {
       if (!rationalScalar.denominator().isOne()) {
         return valueOf(rationalScalar.numerator()) + OVER + valueOf(rationalScalar.denominator());
       }
-    }
-    if (scalar instanceof IQuantity) {
-      IQuantity quantity = (IQuantity) scalar;
-      return quantity.toString();// (quantity.value()) + SPACE + valueOf(quantity.unit());
     }
     if (scalar instanceof INum) {
       // INum doubleScalar = (INum) scalar;
@@ -67,17 +61,5 @@ public class Unicode {
       stringBuilder.append(string.substring(index, index + 3));
     }
     return stringBuilder.toString();
-  }
-  // ---
-
-  /**
-   * "m*s^-1" -> "m/s" use of unicode characters for degC, Ohm and micro-x use of unicode characters
-   * for exponents such as ^-2 etc.
-   * 
-   * @param unit
-   * @return string expression of given unit suitable for rendering in {@link Graphics}
-   */
-  public static String valueOf(IUnit unit) {
-    return UnicodeUnit.toString(unit);
   }
 }

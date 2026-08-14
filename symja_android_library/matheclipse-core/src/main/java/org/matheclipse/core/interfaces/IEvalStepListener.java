@@ -42,8 +42,8 @@ public interface IEvalStepListener {
    * @param recursionDepth the current recursion depth of this evaluation step
    * @param commitTraceFrame set to <code>true</code> if the current trace frame should be stored.
    */
-  public abstract void tearDown(@Nonnull IExpr result, int recursionDepth,
-      boolean commitTraceFrame, @Nullable Object stackMarker);
+  public abstract void tearDown(@Nonnull IExpr result, int recursionDepth, boolean commitTraceFrame,
+      @Nullable Object stackMarker);
 
   /**
    * Tear down this evaluation step (called finally at the evaluation loop).
@@ -53,8 +53,8 @@ public interface IEvalStepListener {
    * @param recursionDepth the current recursion depth of this evaluation step
    * @param commitTraceFrame set to <code>true</code> if the current trace frame should be stored.
    */
-  default void tearDown(@Nonnull IExpr result, @Nonnull IAST hints, int recursionDepth, boolean commitTraceFrame,
-                        @Nullable Object stackMarker) {
+  default void tearDown(@Nonnull IExpr result, @Nonnull IAST hints, int recursionDepth,
+      boolean commitTraceFrame, @Nullable Object stackMarker) {
     tearDown(result, recursionDepth, commitTraceFrame, stackMarker);
   }
 

@@ -83,8 +83,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         "");
     check("%", //
         "");
-    check("Definition(Out)",
-        "Attributes(Out)={Listable,NHoldFirst,Protected}\n" //
+    check("Definition(Out)", "Attributes(Out)={Listable,NHoldFirst,Protected}\n" //
         + "\n" //
         + "Out(2)=42\n" //
         + "\n" //

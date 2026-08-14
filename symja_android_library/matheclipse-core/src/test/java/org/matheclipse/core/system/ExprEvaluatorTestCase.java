@@ -189,17 +189,16 @@ public abstract class ExprEvaluatorTestCase {
   }
 
   /**
-   * Default relative tolerance for the value comparison in
-   * {@link #checkNumeric(String, String)}.
+   * Default relative tolerance for the value comparison in {@link #checkNumeric(String, String)}.
    *
    * <p>
    * The last digits of a <code>double</code> result depend on the CPU: aarch64 (Apple silicon)
    * contracts a multiply and an add into a single fused multiply-add where x86-64 rounds twice, and
    * the platform's math library rounds the transcendental functions differently. The same
    * computation therefore prints with a different last digit on the two architectures, e.g.
-   * <code>-0.2193839343955203</code> against <code>-0.2193839343955202</code>, which a comparison of
-   * the printed strings reports as a failure on one architecture and not on the other. Across the
-   * whole test suite the observed spread is below <code>5*10^-15</code> relative, so this bound
+   * <code>-0.2193839343955203</code> against <code>-0.2193839343955202</code>, which a comparison
+   * of the printed strings reports as a failure on one architecture and not on the other. Across
+   * the whole test suite the observed spread is below <code>5*10^-15</code> relative, so this bound
    * leaves more than two orders of magnitude of head room while still catching a regression in the
    * 12th significant digit.
    */
@@ -285,9 +284,8 @@ public abstract class ExprEvaluatorTestCase {
   /**
    * Compare two parsed results. Two subexpressions which both evaluate to a number are compared by
    * value, everything else has to match structurally. Comparing whole subexpressions rather than
-   * the individual digits is what lets <code>3.19744*10^-14</code> and
-   * <code>3.73035*10^-14</code> - printed as a mantissa times a power of ten - be recognized as the
-   * same value.
+   * the individual digits is what lets <code>3.19744*10^-14</code> and <code>3.73035*10^-14</code>
+   * - printed as a mantissa times a power of ten - be recognized as the same value.
    */
   private static boolean equalsNumeric(IExpr expected, IExpr evaled, double relativeTolerance) {
     if (expected.equals(evaled)) {
@@ -345,8 +343,7 @@ public abstract class ExprEvaluatorTestCase {
       return false;
     }
     double difference = Math.hypot(expectedRe - evaledRe, expectedIm - evaledIm);
-    double magnitude =
-        Math.max(Math.hypot(expectedRe, expectedIm), Math.hypot(evaledRe, evaledIm));
+    double magnitude = Math.max(Math.hypot(expectedRe, expectedIm), Math.hypot(evaledRe, evaledIm));
     return difference <= relativeTolerance * magnitude;
   }
 

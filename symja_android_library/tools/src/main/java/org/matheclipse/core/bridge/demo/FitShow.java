@@ -11,7 +11,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.ext.HomeDirectory;
-import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.image.bridge.fig.ListPlot;
 import org.matheclipse.image.bridge.fig.VisualSet;
 
@@ -22,10 +21,10 @@ import org.matheclipse.image.bridge.fig.VisualSet;
   public static void main(String[] args) throws IOException {
     EvalEngine engine = EvalEngine.get();
     for (int degree = 1; degree <= 4; ++degree) {
-      IAST x = F.List(IQuantity.of(100, "K"), IQuantity.of(110.0, "K"), IQuantity.of(120, "K"),
-          IQuantity.of(133, "K"), IQuantity.of(140, "K"), IQuantity.of(15, "K"));
-      IAST y = F.List(IQuantity.of(10, "bar"), IQuantity.of(20, "bar"), IQuantity.of(22, "bar"),
-          IQuantity.of(23, "bar"), IQuantity.of(25, "bar"), IQuantity.of(26.0, "bar"));
+      IAST x = F.List(F.Quantity(F.num(100), F.stringx("Kelvins")), F.Quantity(F.num(110.0), F.stringx("Kelvins")), F.Quantity(F.num(120), F.stringx("Kelvins")),
+          F.Quantity(F.num(133), F.stringx("Kelvins")), F.Quantity(F.num(140), F.stringx("Kelvins")), F.Quantity(F.num(15), F.stringx("Kelvins")));
+      IAST y = F.List(F.Quantity(F.num(10), F.stringx("Bars")), F.Quantity(F.num(20), F.stringx("Bars")), F.Quantity(F.num(22), F.stringx("Bars")),
+          F.Quantity(F.num(23), F.stringx("Bars")), F.Quantity(F.num(25), F.stringx("Bars")), F.Quantity(F.num(26.0), F.stringx("Bars")));
       IExpr fit1 = F.Fit.of(engine, F.Transpose(F.list(x, y)), degree, F.Slot1);
       UnaryOperator<IExpr> x_to_y =
           arg -> engine.evalN(F.unaryAST1(F.Function(fit1), F.QuantityMagnitude(arg)));
@@ -33,9 +32,9 @@ import org.matheclipse.image.bridge.fig.VisualSet;
       UnaryOperator<IExpr> y_to_x =
           arg -> engine.evalN(F.unaryAST1(F.Function(fit2), F.QuantityMagnitude(arg)));
       IAST samples_x =
-          (IAST) S.Subdivide.of(engine, IQuantity.of(100, "K"), IQuantity.of(150, "K"), 300);
+          (IAST) S.Subdivide.of(engine, F.Quantity(F.num(100), F.stringx("Kelvins")), F.Quantity(F.num(150), F.stringx("Kelvins")), 300);
       IAST samples_y =
-          (IAST) S.Subdivide.of(engine, IQuantity.of(10, "bar"), IQuantity.of(26, "bar"), 300);
+          (IAST) S.Subdivide.of(engine, F.Quantity(F.num(10), F.stringx("Bars")), F.Quantity(F.num(26), F.stringx("Bars")), 300);
       // samples_x.map(x_to_y);
       // samples_y.map(y_to_x);
       VisualSet visualSet = new VisualSet();

@@ -2623,7 +2623,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testCeiling() {
     check("Ceiling(Quantity(8.5, \"Meters\"))", //
-        "9[Meters]");
+        "Quantity(9,\"Meters\")");
     check("Ceiling(DirectedInfinity(0))", //
         "ComplexInfinity");
     check("Ceiling(DirectedInfinity((1/2-I*1/2)*Sqrt(2)))", //
@@ -3663,9 +3663,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cosh(Im(x))");
 
     check("Conjugate(Quantity(2,\"m\"))", //
-        "2[m]");
+        "Quantity(2,\"Meters\")");
     check("Conjugate(Quantity(a,\"m\"))", //
-        "Conjugate(a)[m]");
+        "Quantity(Conjugate(a),\"Meters\")");
     check("Conjugate(3*E^(4*I))", //
         "3/E^(I*4)");
     check("Conjugate(Sin(Pi+I))", //
@@ -5178,10 +5178,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "2020-02-01T00:00");
 
     check("DateObject({2016,8,1})", //
-        "2016-08-01T00:00");
+        "DateObject({2016,8,1},Day)");
 
     check("d=DateObject({2018,8,8});t=TimeObject({13,15});DateObject(d,t)", //
-        "2018-08-08T13:15");
+        "DateObject({2018,8,8,13,15,0},Instant,Gregorian,0.0)");
   }
 
   @Test
@@ -5189,25 +5189,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a component that is not given defaults to its smallest value, so a shorter list names the
     // first instant of the period it describes
     check("DateObject({2021})", //
-        "2021-01-01T00:00");
+        "DateObject({2021},Year)");
     check("DateObject({2021,8})", //
-        "2021-08-01T00:00");
+        "DateObject({2021,8},Month)");
     check("DateObject({2021,8,1})", //
-        "2021-08-01T00:00");
+        "DateObject({2021,8,1},Day)");
     check("DateObject({2021,8,1,13})", //
-        "2021-08-01T13:00");
+        "DateObject({2021,8,1,13},Hour,Gregorian,0.0)");
     check("DateObject({2021,8,1,13,45})", //
-        "2021-08-01T13:45");
+        "DateObject({2021,8,1,13,45},Minute,Gregorian,0.0)");
     check("DateObject({2021,8,1,13,45,30})", //
-        "2021-08-01T13:45:30");
+        "DateObject({2021,8,1,13,45,30},Instant,Gregorian,0.0)");
 
     // an explicit zero time is the same as leaving it off
     check("DateObject({2021,8,1,0,0,0})", //
-        "2021-08-01T00:00");
+        "DateObject({2021,8,1,0,0,0},Instant,Gregorian,0.0)");
 
     // the seconds may be fractional
     check("DateObject({2021,8,1,13,45,30.5})", //
-        "2021-08-01T13:45:30.500");
+        "DateObject({2021,8,1,13,45,30.5},Instant,Gregorian,0.0)");
 
     check("DateValue(DateObject({2021,8,1,13,45,30}), {\"Hour\",\"Minute\",\"Second\"})", //
         "{13,45,30}");
@@ -5218,21 +5218,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // more than six components is not a date specification
     check("DateObject({2021,8,1,13,45,30,99})", //
         "DateObject({2021,8,1,13,45,30,99})");
-    check("DateObject({})", //
-        "DateObject({})");
+    // an empty date list is the current date
+    check("DateObjectQ(DateObject({}))", //
+        "True");
     check("DateObject({x,8,1})", //
         "DateObject({x,8,1})");
-    // DateObject: Invalid value for MonthOfYear (valid values 1 - 12): 13
+    // out of range components are rolled over instead of being rejected
     check("DateObject({2021,13,1})", //
-        "DateObject({2021,13,1})");
+        "DateObject({2022,1,1},Day)");
   }
 
   @Test
   public void testDateString() {
     check("DateString({2016,8,1})", //
-        "Mon 01 Aug 2016 00:00:00");
+        "Mon 1 Aug 2016 00:00:00");
     check("DateString(3155673600)", //
-        "Sat 01 Jan 2000 00:00:00");
+        "Sat 1 Jan 2000 00:00:00");
     // check(
     // "DateString( )", //
     // "Thu 26 Aug 2021 22:15:13");
@@ -7452,6 +7453,116 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testExcept003() {
+    // Except() as one of several arguments: the sibling patterns of the same level must still be
+    // matched after Except() succeeded
+    check("g(x_?IntegerQ, Except(a)) := h(x)", //
+        "");
+    check("g(1.5, b)", //
+        "g(1.5,b)");
+    check("g(3, b)", //
+        "h(3)");
+    check("g(3, a)", //
+        "g(3,a)");
+
+    // the Condition of the right-hand-side must be evaluated for an Except() left-hand-side
+    check("k(Except(a)) := m(1) /; False", //
+        "");
+    check("k(b)", //
+        "k(b)");
+
+    check("k2(Except(a)) := m(2) /; True", //
+        "");
+    check("k2(b)", //
+        "m(2)");
+
+    // the excluded pattern must not bind: y_ is bound by the second argument of Except() only
+    check("Cases({1, a, 2}, Except(y_Symbol, y_) :> y)", //
+        "{1,2}");
+  }
+
+  @Test
+  public void testAlternatives003() {
+    // Alternatives() as one of several arguments: the sibling patterns of the same level must
+    // still be matched after Alternatives() succeeded
+    check("g2(x_?IntegerQ, a|b) := h2(x)", //
+        "");
+    check("g2(1.5, a)", //
+        "g2(1.5,a)");
+    check("g2(3, a)", //
+        "h2(3)");
+    check("g2(3, b)", //
+        "h2(3)");
+    check("g2(3, c)", //
+        "g2(3,c)");
+
+    // the Condition of the right-hand-side must be evaluated for an Alternatives() left-hand-side
+    check("k3(a|b) := m(3) /; False", //
+        "");
+    check("k3(a)", //
+        "k3(a)");
+
+    // a named pattern inside the matching alternative stays bound
+    check("Cases({1, a, 2.5}, (y_Integer | y_Symbol) :> y)", //
+        "{1,a}");
+  }
+
+  @Test
+  public void testVerbatim002() {
+    // Verbatim() as one of several arguments: the sibling patterns of the same level must still be
+    // matched after Verbatim() succeeded
+    check("g4(x_?IntegerQ, Verbatim(_)) := h4(x)", //
+        "");
+    check("g4(1.5, _)", //
+        "g4(1.5,_)");
+    check("g4(3, _)", //
+        "h4(3)");
+
+    // the Condition of the right-hand-side must be evaluated for a Verbatim() left-hand-side
+    check("k4(Verbatim(_)) := m(4) /; False", //
+        "");
+    check("k4(_)", //
+        "k4(_)");
+  }
+
+  @Test
+  public void testKeyValuePattern002() {
+    // KeyValuePattern() as one of several arguments: the sibling patterns of the same level must
+    // still be matched after KeyValuePattern() succeeded
+    check("g5(x_?IntegerQ, KeyValuePattern({k -> v})) := h5(x)", //
+        "");
+    check("g5(1.5, <|k -> v|>)", //
+        "g5(1.5,<|k->v|>)");
+    check("g5(3, <|k -> v|>)", //
+        "h5(3)");
+    check("g5(3, <|k -> w|>)", //
+        "g5(3,<|k->w|>)");
+
+    // an empty KeyValuePattern() matches any association, but must not short-circuit the sibling
+    // patterns of the same level
+    check("g6(x_?IntegerQ, KeyValuePattern({})) := h6(x)", //
+        "");
+    check("g6(1.5, <|a -> 1|>)", //
+        "g6(1.5,<|a->1|>)");
+    check("g6(3, <|a -> 1|>)", //
+        "h6(3)");
+
+    // the Condition of the right-hand-side must be evaluated for a KeyValuePattern()
+    // left-hand-side
+    check("k5(KeyValuePattern({})) := m(5) /; False", //
+        "");
+    check("k5(<|a -> 1|>)", //
+        "k5(<|a->1|>)");
+
+    // backtracking: x_ -> 1 must not greedily consume a -> 1 - it has to release it again so
+    // that a -> y_ can match it, and match b -> 1 instead
+    check("MatchQ(<|a -> 1, b -> 1|>, KeyValuePattern({x_ -> 1, a -> y_}))", //
+        "True");
+    check("<|a -> 1, b -> 1|> /. KeyValuePattern({x_ -> 1, a -> y_}) :> {x, y}", //
+        "{b,1}");
+  }
+
+  @Test
   public void testExp() {
     check("Sin(Pi/5)", //
         "Sqrt(5/8-Sqrt(5)/8)");
@@ -9648,7 +9759,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Floor(IntegerPart(x))", //
         "IntegerPart(x)");
     check("Floor(Quantity(8.5, \"Meters\"))", //
-        "8[Meters]");
+        "Quantity(8,\"Meters\")");
     check("Floor(DirectedInfinity(0))", //
         "ComplexInfinity");
     check("Floor(DirectedInfinity((1/2-I*1/2)*Sqrt(2)))", //
@@ -9801,7 +9912,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFractionalPart() {
     check("FractionalPart(Quantity(-1.1, \"Meters\"))", //
-        "-0.1[Meters]");
+        "Quantity(-0.1,\"Meters\")");
     check("FractionalPart(235/47 + 53/10*I)", //
         "I*3/10");
     check("FractionalPart(235/47 + 5.3*I)", //
@@ -10608,16 +10719,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testGeodesyData() {
     check("GeodesyData(\"WGS84\", \"SemimajorAxis\")", //
-        "6.37814*10^6[m]");
+        "Quantity(6.37814*10^6,\"Meters\")");
     check("GeodesyData(\"WGS84\", \"SemiminorAxis\")", //
-        "6.35675*10^6[m]");
+        "Quantity(6.35675*10^6,\"Meters\")");
     check("GeodesyData(\"WGS84\", \"InverseFlattening\")", //
         "298.2572");
     check("GeodesyData(\"WGS84\", \"Eccentricity\")", //
         "0.0818192");
     // ITRF00 is an alias of the IERS 2010 ellipsoid
     check("GeodesyData(\"ITRF00\", \"SemimajorAxis\")", //
-        "6.37814*10^6[m]");
+        "Quantity(6.37814*10^6,\"Meters\")");
     // one argument lists the available properties
     check("GeodesyData(\"WGS84\")", //
         "{SemimajorAxis,SemiminorAxis,Flattening,InverseFlattening,Eccentricity}");
@@ -11323,9 +11434,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Im(I*Re(z)+x+y+Im(t)*I)", //
         "Im(t+x+y)+Re(z)");
     check("Im(Quantity(2,\"m\"))", //
-        "0[m]");
+        "Quantity(0,\"Meters\")");
     check("Im(Quantity(a,\"m\"))", //
-        "Im(a)[m]");
+        "Quantity(Im(a),\"Meters\")");
     check("Im(I*x+y)", //
         "Im(y)+Re(x)");
     check("Im(I*x)", //
@@ -11779,7 +11890,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testIntegerPart() {
     check("IntegerPart(Quantity(-1.1, \"Meters\"))", //
-        "-1[Meters]");
+        "Quantity(-1,\"Meters\")");
     check("IntegerPart(Pi^20)", //
         "8769956796");
     check("IntegerPart(2^128-1)", //
@@ -12029,19 +12140,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4.55228");
 
     check("InverseCDF(GammaDistribution(a,b,g,d))", //
-        "ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<\n"
-            + "1},{d,#1<=0}},Infinity),0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),\n0<#1<1},{d,#1<=0}},Infinity),0<=#1<=1),Listable)");
     check("InverseCDF(GompertzMakehamDistribution(m,n),k)", //
         "ConditionalExpression(Piecewise({{Log(1-Log(1-k)/n)/m,0<k<1},{0,k<=0}},Infinity),\n" + //
             "0<=k<=1)");
     check("InverseCDF(NormalDistribution(0,1))", //
-        "ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1),Listable)");
     check("InverseCDF(NormalDistribution( ))", //
-        "ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1),Listable)");
     check("InverseCDF(NormalDistribution( ), p)", //
         "ConditionalExpression(-Sqrt(2)*InverseErfc(2*p),0<=p<=1)");
     check("InverseCDF(NormalDistribution(n,m))", //
-        "ConditionalExpression(n-Sqrt(2)*m*InverseErfc(2*#1),0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(n-Sqrt(2)*m*InverseErfc(2*#1),0<=#1<=1),Listable)");
     check("InverseCDF(NormalDistribution(n,m), p)", //
         "ConditionalExpression(n-Sqrt(2)*m*InverseErfc(2*p),0<=p<=1)");
 
@@ -12049,9 +12159,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{ConditionalExpression(-Sqrt(2)*InverseErfc(2*x),0<=x<=1),ConditionalExpression(-Sqrt(\n"
             + "2)*InverseErfc(2*y),0<=y<=1)}");
     check("InverseCDF(StudentTDistribution(n))", //
-        "ConditionalExpression(Piecewise({{-Sqrt(n)*Sqrt(-1+1/InverseBetaRegularized(2*#1,n/\n"
-            + "2,1/2)),0<#1<1/2},{0,#1==1/2},{Sqrt(n)*Sqrt(-1+1/InverseBetaRegularized(2*(1-#1),n/\n"
-            + "2,1/2)),1/2<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(Piecewise({{-Sqrt(n)*Sqrt(-1+1/InverseBetaRegularized(\n2*#1,n/2,1/2)),0<#1<1/2},{0,#1==1/2},{Sqrt(n)*Sqrt(-1+1/InverseBetaRegularized(2*(\n1-#1),n/2,1/2)),1/2<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1),Listable)");
   }
 
 
@@ -13703,7 +13811,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("LucasL(151,1/1317624576693539401)", //
         "LucasL(151,1/1317624576693539401)");
     check("LucasL(Quantity(1.2,\"m\"),2.718281828459045)", //
-        "LucasL(1.2[m],2.71828)");
+        "LucasL(Quantity(1.2,\"Meters\"),2.71828)");
 
     check("LucasL(1+I/2)//N", //
         "0.0653384+I*0.755095");
@@ -15410,7 +15518,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\"Red\",\"Row\",\"Sec\",\"Set\",\"Sin\",\"Sow\",\"Sum\",\"Tan\",\"Top\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalUnion}");
     check("Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers}");
     check("Names(\"IntegerPart\" )", //
@@ -16480,7 +16588,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check(
         "NumericalSort({ Infinity, Sqrt(2), -1, 0, -Infinity, Quantity(1, \"Meters\"),  Quantity(3, \"Feet\")})", //
-        "{-Infinity,-1,0,Sqrt(2),Infinity,3[Feet],1[Meters]}");
+        "{-Infinity,-1,0,Sqrt(2),Infinity,Quantity(3,\"Feet\"),Quantity(1,\"Meters\")}");
 
     check("NumericalSort({1, Pi, E, Infinity, -Sqrt[2], -Infinity})", //
         "{-Infinity,-Sqrt(2),1,E,Pi,Infinity}");
@@ -20910,9 +21018,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testRankedMin() {
     check(
         "RankedMin({Quantity(1, \"Kilograms\"), Quantity(2, \"kg\"), Quantity(3, \"Kilograms\")}, 2)", //
-        "2[kg]");
+        "Quantity(2,\"Kilograms\")");
     check("RankedMin({Quantity(1, \"kg\"), Quantity(2, \"kg\"), Quantity(3, \"kg\")}, 2)", //
-        "2[kg]");
+        "Quantity(2,\"Kilograms\")");
     check("RankedMin(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 2)", //
         "2");
 
@@ -21153,9 +21261,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Re(u+x+y)");
 
     check("Re(Quantity(2,\"m\"))", //
-        "2[m]");
+        "Quantity(2,\"Meters\")");
     check("Re(Quantity(a,\"m\"))", //
-        "Re(a)[m]");
+        "Quantity(Re(a),\"Meters\")");
     check("Re(I*Pi/4 )", //
         "0");
     check("Re(E^(I*Pi/4))", //
@@ -22581,7 +22689,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRound() {
     check("Round(Quantity(8.5, \"Meters\"))", //
-        "8[Meters]");
+        "Quantity(8,\"Meters\")");
     check("Round(-1.235512, 0)", //
         "Indeterminate");
 
@@ -24520,13 +24628,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/E^2");
 
     check("SurvivalFunction(GeometricDistribution(1/3), x)", //
-        "1-Piecewise({{1-(2/3)^(1+Floor(x)),x>=0}},0)");
+        "Piecewise({{(2/3)^(1+Floor(x)),x>=0}},1)");
     check("SurvivalFunction(NormalDistribution(), {0.2, 0.3})", //
         "{0.42074,0.382089}");
     check("SurvivalFunction(BetaDistribution(1/2,1/2), {{0.0, 0.0}, {0.2, 0.2}, {0.3, 0.3}})", //
         "{{1.0,1.0},{0.704833,0.704833},{0.63099,0.63099}}");
     check("SurvivalFunction(NormalDistribution(0, 1), x)", //
-        "1-Erfc(-x/Sqrt(2))/2");
+        "Erfc(x/Sqrt(2))/2");
     check("CDF(NormalDistribution(0, 1), x)", //
         "Erfc(-x/Sqrt(2))/2");
   }
@@ -25306,11 +25414,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "17:38:38");
 
     check("TimeObject({10,45})", //
-        "10:45:00");
+        "TimeObject({10,45},Minute)");
     check("TimeObject({11,11,11})", //
-        "11:11:11");
+        "TimeObject({11,11,11},Instant)");
     check("TimeObject({03,02,01})", //
-        "03:02:01");
+        "TimeObject({3,2,1},Instant)");
   }
 
   @Test
@@ -27141,9 +27249,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FunctionExpand(WeierstrassPPrime(z,{0,0}))", //
         "-2/z^3");
     // the expansion agrees with the numeric evaluation
-    check("Chop((FunctionExpand(WeierstrassPPrime(z,{4,0})) /. z->0.7) - WeierstrassPPrime(0.7,{4,0}))", //
+    check(
+        "Chop((FunctionExpand(WeierstrassPPrime(z,{4,0})) /. z->0.7) - WeierstrassPPrime(0.7,{4,0}))", //
         "0");
-    check("Chop((FunctionExpand(WeierstrassPPrime(z,{0,4/27})) /. z->0.7) - WeierstrassPPrime(0.7,{0,4/27}))", //
+    check(
+        "Chop((FunctionExpand(WeierstrassPPrime(z,{0,4/27})) /. z->0.7) - WeierstrassPPrime(0.7,{0,4/27}))", //
         "0");
 
     check("Table(WeierstrassPPrime(x,{1.0,3.0} ), {x,-2.0, 2.0, 1/4})", //

@@ -29,7 +29,6 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -814,25 +813,6 @@ public abstract class ComplexFormFactory {
     append(buf, "]]");
   }
 
-  public boolean convertQuantityData(final StringBuilder buf, final IQuantity quantity,
-      final int precedence) {
-    StringBuilder tempBuffer = new StringBuilder();
-    if (Precedence.PLUS < precedence) {
-      append(tempBuffer, "(");
-    }
-
-    try {
-      buf.append(quantity.toString());
-    } catch (Exception ex) {
-      Errors.rethrowsInterruptException(ex);
-      return false;
-    }
-    if (Precedence.PLUS < precedence) {
-      append(tempBuffer, ")");
-    }
-    buf.append(tempBuffer);
-    return true;
-  }
 
   public void convertFunctionArgs(final StringBuilder buf, final IAST list) {
     append(buf, "(");

@@ -124,7 +124,7 @@ public class DeletePositions {
       if (level == positions.argSize()) {
         if (p == 0) {
           if (ast.isAssociation()) {
-            // deleting the head yields the bare values as a Sequence(...) (like Mathematica),
+            // deleting the head yields the bare values as a Sequence(...),
             // consistent with the non-association head removal below
             IASTAppendable result = F.ast(S.Sequence, ast.argSize());
             result.addEvalFlags(IAST.IS_COPIED);

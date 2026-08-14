@@ -26,7 +26,7 @@ public final class MultiVariateVectorGradient implements MultivariateVectorFunct
    * 
    * @param function the (multivariate-) function
    * @param variablesList
-   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#RealAbs} function, because of assuming
    *        real input values
    */
   public MultiVariateVectorGradient(final IExpr function, final IAST variablesList,
@@ -39,7 +39,7 @@ public final class MultiVariateVectorGradient implements MultivariateVectorFunct
    * 
    * @param function the (multivariate-) function
    * @param variablesList
-   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#RealAbs} function, because of assuming
    *        real input values
    * @param engine
    */

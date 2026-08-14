@@ -106,8 +106,8 @@ public final class KPermutationsIterable implements Iterable<int[]> {
   }
 
   /**
-   * Create an iterator which gives all possible permutations of <code>data</code> which contains
-   * at most <code>parts</code> number of elements. Repeated elements are treated as same.
+   * Create an iterator which gives all possible permutations of <code>data</code> which contains at
+   * most <code>parts</code> number of elements. Repeated elements are treated as same.
    *
    * @param data a list of integers which should be permutated.
    * @param parts
@@ -117,12 +117,11 @@ public final class KPermutationsIterable implements Iterable<int[]> {
   }
 
   /**
-   * Create an iterator which gives all possible permutations of <code>data</code> which contains
-   * at most <code>parts</code> number of elements. Repeated elements are treated as same.
+   * Create an iterator which gives all possible permutations of <code>data</code> which contains at
+   * most <code>parts</code> number of elements. Repeated elements are treated as same.
    *
    * @param data a list of integers which should be permutated.
-   * @param len consider only the first <code>n</code> elements of <code>data</code> for
-   *        permutation
+   * @param len consider only the first <code>n</code> elements of <code>data</code> for permutation
    * @param parts
    */
   public KPermutationsIterable(final int[] data, final int len, final int parts) {

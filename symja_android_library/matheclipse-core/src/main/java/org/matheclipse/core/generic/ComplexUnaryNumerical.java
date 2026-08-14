@@ -9,15 +9,13 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public final class ComplexUnaryNumerical 
-    implements CalculusFieldUnivariateFunction<Complex> {
+public final class ComplexUnaryNumerical implements CalculusFieldUnivariateFunction<Complex> {
   final IExpr fUnaryFunction;
   final ISymbol fVariable;
   final EvalEngine fEngine;
 
   public ComplexUnaryNumerical(final IExpr unaryFunction, final ISymbol variable,
-      final EvalEngine engine
-      ) {
+      final EvalEngine engine) {
     if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
@@ -26,10 +24,10 @@ public final class ComplexUnaryNumerical
     fVariable = variable;
     fUnaryFunction = unaryFunction;
     fEngine = engine;
-//    if (firstDerivative) {
-//      IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));
-//      fFirstDerivative = new UnaryNumerical(temp, fVariable, engine, false);
-//    }
+    // if (firstDerivative) {
+    // IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));
+    // fFirstDerivative = new UnaryNumerical(temp, fVariable, engine, false);
+    // }
   }
 
   @Override

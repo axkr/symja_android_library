@@ -86,7 +86,7 @@ public class DifferenceDeltaTest extends ExprEvaluatorTestCase {
     check("DifferenceDelta(x^2, x)", "1+2*x");
     check("DifferenceDelta(x^3, x)", "1+3*x+3*x^2");
     check("DifferenceDelta(f(x), x)", "-f(x)+f(1+x)");
-    // Wolfram simplifies this trig difference to 2*Sin[1/2]*Sin[(1+Pi)/2+x]
+    // WMA simplifies this trig difference to 2*Sin[1/2]*Sin[(1+Pi)/2+x]
     check("DifferenceDelta(Sin(x), x)", "2*Sin(1/2)*Sin(1/2*(1+Pi)+x)");
     // second-order difference of x^2 is 2
     check("DifferenceDelta(x^2, {x, 2})", "2");

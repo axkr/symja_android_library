@@ -354,16 +354,16 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     assertEquals("{0,5,0,20,0,7}", s.total(S.List).toString());
 
     // gaps, leading and trailing elements are filled with a non zero default value
-    ISparseArray d = (ISparseArray) EvalEngine.get()
-        .evaluate("SparseArray({{1,2}->5, {2,3}->7}, {2,3}, 1)");
+    ISparseArray d =
+        (ISparseArray) EvalEngine.get().evaluate("SparseArray({{1,2}->5, {2,3}->7}, {2,3}, 1)");
     assertEquals("{1,5,1,1,1,7}", d.total(S.List).toString());
 
-    ISparseArray first = (ISparseArray) EvalEngine.get()
-        .evaluate("SparseArray({{1,1}->2}, {2,2}, 1)");
+    ISparseArray first =
+        (ISparseArray) EvalEngine.get().evaluate("SparseArray({{1,1}->2}, {2,2}, 1)");
     assertEquals("{2,1,1,1}", first.total(S.List).toString());
 
-    ISparseArray last = (ISparseArray) EvalEngine.get()
-        .evaluate("SparseArray({{2,2}->2}, {2,2}, 1)");
+    ISparseArray last =
+        (ISparseArray) EvalEngine.get().evaluate("SparseArray({{2,2}->2}, {2,2}, 1)");
     assertEquals("{1,1,1,2}", last.total(S.List).toString());
 
     // an array without any entry - the rule is dropped, because it is the default value - is
@@ -373,8 +373,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     assertEquals("{1,1,1,1}", empty.total(S.List).toString());
 
     // three dimensions
-    ISparseArray t = (ISparseArray) EvalEngine.get()
-        .evaluate("SparseArray({{1,2,2}->5, {2,1,1}->6}, {2,2,2})");
+    ISparseArray t =
+        (ISparseArray) EvalEngine.get().evaluate("SparseArray({{1,2,2}->5, {2,1,1}->6}, {2,2,2})");
     assertEquals("{0,0,0,5,6,0,0,0}", t.total(S.List).toString());
   }
 

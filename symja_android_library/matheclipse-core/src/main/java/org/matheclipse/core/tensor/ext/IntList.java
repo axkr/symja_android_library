@@ -15,22 +15,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/** unmodifiable list wrapped around an array of primitive ints.
- * Any sublist is backed by a corresponding part of the same array.
- * Outside modification of the array are reflected by the list.
+/**
+ * unmodifiable list wrapped around an array of primitive ints. Any sublist is backed by a
+ * corresponding part of the same array. Outside modification of the array are reflected by the
+ * list.
  * 
- * <p>The implementation of the {@link List} interface assumes that
- * the "list does not permit null elements". That means, that calls
- * to certain functions with parameter "null" result in a
+ * <p>
+ * The implementation of the {@link List} interface assumes that the "list does not permit null
+ * elements". That means, that calls to certain functions with parameter "null" result in a
  * {@link NullPointerException}. Example: {@link #contains(Object)}.
  * 
- * <p>A sublist of an {@link IntList} is {@link Serializable}. This
- * is in contrast to a sublist of {@link Arrays#asList(Object...)}
- * or {@link ArrayList}, which are not serializable. */
+ * <p>
+ * A sublist of an {@link IntList} is {@link Serializable}. This is in contrast to a sublist of
+ * {@link Arrays#asList(Object...)} or {@link ArrayList}, which are not serializable.
+ */
 /* package */ class IntList implements List<Integer>, RandomAccess, Serializable {
 
-  /** @param array non-null
-   * @return unmodifiable list */
+  /**
+   * @param array non-null
+   * @return unmodifiable list
+   */
   public static List<Integer> wrap(int[] array) {
     return new IntList(array, 0, array.length);
   }
@@ -40,9 +44,11 @@ import java.util.stream.Stream;
   private final int ofs;
   private final int len;
 
-  /** @param array non-null
+  /**
+   * @param array non-null
    * @param ofs non-negative
-   * @param len non-negative */
+   * @param len non-negative
+   */
   private IntList(int[] array, int ofs, int len) {
     this.array = array;
     this.ofs = ofs;
@@ -76,7 +82,8 @@ import java.util.stream.Stream;
     if (dif < 0) // asserts that fromIndex <= toIndex
       throw new IllegalArgumentException();
     // implied: 0 <= fromIndex <= len
-    // implied: fromIndex + dif <= len because fromIndex + toIndex - fromIndex <= len is toIndex <= len
+    // implied: fromIndex + dif <= len because fromIndex + toIndex - fromIndex <= len is toIndex <=
+    // len
     return new IntList(array, ofs + fromIndex, dif);
   }
 

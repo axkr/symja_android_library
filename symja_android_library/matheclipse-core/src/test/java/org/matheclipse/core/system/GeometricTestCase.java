@@ -142,7 +142,8 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // Automatic determines the circle from the points
     check("CircularArcThrough({{0, 0}, {2, 0}}, Automatic)", "Circle({1,0},1,{0,Pi})");
     // points which don't define a circle
-    check("CircularArcThrough({{0, 0}, {1, 0}, {2, 0}})", "CircularArcThrough({{0,0},{1,0},{2,0}})");
+    check("CircularArcThrough({{0, 0}, {1, 0}, {2, 0}})",
+        "CircularArcThrough({{0,0},{1,0},{2,0}})");
     check("CircularArcThrough({{1, 1}})", "CircularArcThrough({{1,1}})");
     check("CircularArcThrough({{1, 1}, {1, 1}})", "CircularArcThrough({{1,1},{1,1}})");
     check("CircularArcThrough({{a, b}, {c, d}})", "CircularArcThrough({{a,b},{c,d}})");
@@ -291,16 +292,14 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("Table(PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), i), {i, 1, 3})",
         "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
     check("PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), Point({4, 3}))", "ArcCos(3/5)");
-    check("PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), All)",
-        "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
+    check("PolygonAngle(Polygon({{0, 0}, {4, 0}, {4, 3}}), All)", "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
 
     // clockwise oriented vertices give the same angles
     check("PolygonAngle(Polygon({{0, 0}, {4, 3}, {4, 0}}))", "{ArcCos(4/5),Pi/2,ArcCos(3/5)}");
 
     // interior, exterior and full exterior angle
     check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}), \"Interior\")", "{Pi/2,Pi/4,Pi/4}");
-    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}), \"Exterior\")",
-        "{Pi/2,3/4*Pi,3/4*Pi}");
+    check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}), \"Exterior\")", "{Pi/2,3/4*Pi,3/4*Pi}");
     check("PolygonAngle(Polygon({{0, 0}, {1, 0}, {0, 1}}), {1, 0}, \"FullExterior\")", "7/4*Pi");
 
     // degenerate or invalid polygons are returned unevaluated
@@ -329,8 +328,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "PolygonCoordinates(Polygon({{1,2},{3,4}}))");
 
     // a repeated coordinate doesn't add a corner
-    check("PolygonCoordinates(Polygon({{0, 0}, {1, 0}, {1, 0}, {0, 1}}))",
-        "{{0,0},{0,1},{1,0}}");
+    check("PolygonCoordinates(Polygon({{0, 0}, {1, 0}, {1, 0}, {0, 1}}))", "{{0,0},{0,1},{1,0}}");
   }
 
   @Test
@@ -547,7 +545,9 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testVolume() {
-    check("Volume(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", "1");
+    check(
+        "Volume(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))",
+        "1");
     check("Volume(Cylinder({{0, 0, 0}, {1, 1, 1}}, 1/2))", //
         "1/4*Sqrt(3)*Pi");
     check("Volume(Ball({a,b,c}, r))", //
@@ -611,7 +611,9 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // convex hull meshes
     check("RegionMeasure(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", "4");
     check("RegionMeasure(ConvexHullMesh({{0,0},{1,0},{1/2,1}}))", "1/2");
-    check("RegionMeasure(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", "1");
+    check(
+        "RegionMeasure(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))",
+        "1");
     // 3D Solids -> Volume
     check("RegionMeasure(Ellipsoid({0, 0, 0}, {1, 2, 3}))", "8*Pi");
     check("RegionMeasure(Cuboid({0, 0, 0}, {1, 2, 3}))", "6");
@@ -645,7 +647,9 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRegionCentroid() {
     check("RegionCentroid(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", "{1,1}");
-    check("RegionCentroid(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", "{1/2,1/2,1/2}");
+    check(
+        "RegionCentroid(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))",
+        "{1/2,1/2,1/2}");
     check("RegionCentroid(Point({3, 4}))", "{3,4}");
     check("RegionCentroid(Disk())", "{0,0}");
     check("RegionCentroid(Disk({3, 4}, 2))", "{3,4}");
@@ -698,8 +702,12 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   public void testRegionMember() {
     check("RegionMember(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), {1,1})", "True");
     check("RegionMember(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), {3,1})", "False");
-    check("RegionMember(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), {0.5,0.5,0.5})", "True");
-    check("RegionMember(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), {2,0.5,0.5})", "False");
+    check(
+        "RegionMember(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), {0.5,0.5,0.5})",
+        "True");
+    check(
+        "RegionMember(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), {2,0.5,0.5})",
+        "False");
     check("RegionMember(Disk({0, 0}, 1), {0.5, 0.5})", "True");
     check("RegionMember(Disk({0, 0}, 1), {1, 0})", "True");
     check("RegionMember(Disk({0, 0}, 1), {2, 0})", "False");
@@ -911,13 +919,16 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "4");
 
     // in 3D the edges are derived from the polygon boundaries
-    check("MeshCells(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), 2)", //
+    check(
+        "MeshCells(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), 2)", //
         "{Polygon({1,2,6,5}),Polygon({1,4,3,2}),Polygon({1,5,8,4}),Polygon({2,3,7,6}),Polygon({\n"
             + "3,4,8,7}),Polygon({5,6,7,8})}");
-    check("MeshCellCount(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
+    check(
+        "MeshCellCount(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
         "{8,12,6}");
     // the solid cell of a three dimensional region isn't representable as an index based cell
-    check("Head(MeshCells(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), 3))", //
+    check(
+        "Head(MeshCells(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}), 3))", //
         "MeshCells");
   }
 
@@ -972,7 +983,8 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   public void testConvexRegionQ() {
     check("ConvexRegionQ(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
         "True");
-    check("ConvexRegionQ(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
+    check(
+        "ConvexRegionQ(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
         "True");
     check("ConvexRegionQ(Polygon({{0,0},{2,0},{1,1/10},{2,2},{0,2}}))", //
         "False");

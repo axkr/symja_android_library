@@ -13,21 +13,27 @@ import org.matheclipse.core.tensor.api.ScalarUnaryOperator;
  */
 // TODO TENSOR NUM implement https://en.wikipedia.org/wiki/Modular_arithmetic
 public class Mod implements ScalarUnaryOperator {
-  /** @param n
-   * @return remainder on division by n */
+  /**
+   * @param n
+   * @return remainder on division by n
+   */
   public static Mod function(IExpr n) {
     return function(n, n.zero());
   }
 
-  /** @param n
-   * @return remainder on division by n */
+  /**
+   * @param n
+   * @return remainder on division by n
+   */
   public static Mod function(Number n) {
     return function(F.num(n.doubleValue()));
   }
 
-  /** @param n
+  /**
+   * @param n
    * @param d offset
-   * @return remainder on division by n with offset d */
+   * @return remainder on division by n with offset d
+   */
   public static Mod function(IExpr n, IExpr d) {
     if (n.isZero()) {
       throw new IllegalArgumentException("");
@@ -36,9 +42,11 @@ public class Mod implements ScalarUnaryOperator {
     return new Mod(n, Objects.requireNonNull(d));
   }
 
-  /** @param n
+  /**
+   * @param n
    * @param d offset
-   * @return remainder on division by n with offset d */
+   * @return remainder on division by n with offset d
+   */
   public static Mod function(Number n, Number d) {
     return function(F.num(n.doubleValue()), F.num(d.doubleValue()));
   }

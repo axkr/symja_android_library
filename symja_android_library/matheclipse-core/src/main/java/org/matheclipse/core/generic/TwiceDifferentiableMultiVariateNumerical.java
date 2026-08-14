@@ -35,7 +35,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
    * 
    * @param function the (multivariate-) function
    * @param variablesList
-   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#RealAbs} function, because of assuming
    *        real input values
    */
   public TwiceDifferentiableMultiVariateNumerical(final IExpr function, final IAST variablesList,
@@ -49,7 +49,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
    * 
    * @param function the (multivariate-) function
    * @param variablesList
-   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#RealAbs} function, because of assuming
    *        real input values
    * @param engine
    */

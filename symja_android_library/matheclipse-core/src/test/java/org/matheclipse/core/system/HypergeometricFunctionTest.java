@@ -92,7 +92,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     // "{Hypergeometric1F1(-8.38488*10^17,2.0,0.5),Hypergeometric1F1(-8.38488*10^17,3.0,0.5),Hypergeometric1F1(-8.38488*10^17,4.0,0.5)}");
     // TODO check wrong
     check("Hypergeometric1F1(3,Quantity(1.2,\"m\"),-1+I)", //
-        "Hypergeometric1F1(3,1.2[m],-1+I)");
+        "Hypergeometric1F1(3,Quantity(1.2,\"Meters\"),-1+I)");
     check("Hypergeometric1F1(2 + I, {2,3,4}, 0.5)", //
         "{1.61833+I*0.379258,1.391+I*0.228543,1.28402+I*0.161061}");
 
@@ -260,9 +260,9 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("Hypergeometric2F1(2/3,3/7,10, 1)", //
         "(362880*Gamma(187/21))/(Gamma(28/3)*Gamma(67/7))");
 
-    // message Expand: m^2 and m are incompatible units
+    // messages: incompatible units stay as an unevaluated sum of quantities
     check("Hypergeometric2F1(-5,Quantity(1.2,\"m\"),c,1)", //
-        "Expand((-1.2[m]+c)*(1+-1.2[m]+c)*(2+-1.2[m]+c)*(3+-1.2[m]+c)*(4+-1.2[m]+c))/(c*(1+c)*(2+c)*(3+c)*(4+c))");
+        "(24*c+50*c^2+35*c^3+10*c^4+c^5+Quantity(-2.48832,\"Meters\"^5)+Quantity(20.736,\"Meters\"^4)+Quantity(72.0,\"Meters\"^2)+Quantity(10.368*c,\"Meters\"^4)+Quantity(151.2*c,\"Meters\"^2)+Quantity(86.4*c^\n2,\"Meters\"^2)+Quantity(14.4*c^3,\"Meters\"^2)+Quantity(-60.48-69.12*c-17.28*c^2,\"Meters\"^3)+Quantity(-28.8-120.0*c-126.0*c^2-48.0*c^3-6.0*c^4,\"Meters\"))/(c*(\n1+c)*(2+c)*(3+c)*(4+c))");
 
     // check("Hypergeometric2F1(1317624576693539401,0.333,-3/2,-0.5)", //
     // "Hypergeometric2F1(0.333,1.31762*10^18,-1.5,-0.5)");

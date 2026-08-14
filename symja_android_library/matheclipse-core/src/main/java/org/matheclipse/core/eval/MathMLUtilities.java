@@ -80,6 +80,7 @@ public class MathMLUtilities {
   public synchronized boolean toMathML(final String inputExpression, final Writer out) {
     return toMathML(inputExpression, out, false);
   }
+
   /**
    * Converts the inputExpression string into a MathML expression and writes the result to the given
    * <code>Writer</code>

@@ -12,29 +12,33 @@ import org.matheclipse.core.interfaces.IExpr;
 public interface ScalarUnaryOperator extends UnaryOperator<IExpr>, Serializable {
   ScalarUnaryOperator IDENTITY = s -> s;
 
-  /** @param before non-null
+  /**
+   * @param before non-null
    * @return scalar -> apply(before.apply(scalar))
-   * @throws Exception if operator before is null */
+   * @throws Exception if operator before is null
+   */
   default ScalarUnaryOperator compose(ScalarUnaryOperator before) {
     Objects.requireNonNull(before);
     return scalar -> apply(before.apply(scalar));
   }
 
-  /** @param after non-null
+  /**
+   * @param after non-null
    * @return scalar -> after.apply(apply(scalar))
-   * @throws Exception if operator after is null */
+   * @throws Exception if operator after is null
+   */
   default ScalarUnaryOperator andThen(ScalarUnaryOperator after) {
     Objects.requireNonNull(after);
     return scalar -> after.apply(apply(scalar));
   }
 
-  /** Remark:
-   * The empty chain ScalarUnaryOperator.chain() returns
-   * the instance {@link #IDENTITY}
+  /**
+   * Remark: The empty chain ScalarUnaryOperator.chain() returns the instance {@link #IDENTITY}
    * 
    * @param scalarUnaryOperators
    * @return operator that nests given operators with execution from left to right
-   * @throws Exception if any given operator is null */
+   * @throws Exception if any given operator is null
+   */
   @SafeVarargs
   static ScalarUnaryOperator chain(ScalarUnaryOperator... scalarUnaryOperators) {
     return List.of(scalarUnaryOperators).stream() //

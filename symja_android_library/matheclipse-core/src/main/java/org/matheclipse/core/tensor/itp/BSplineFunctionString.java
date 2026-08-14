@@ -10,13 +10,15 @@ import org.matheclipse.core.tensor.sca.Clips;
 
 /** function defined over the interval [0, control.length() - 1] */
 public class BSplineFunctionString extends BSplineFunctionBase {
-  /** the control point are stored by reference, i.e. modifications to
-   * given tensor alter the behavior of this BSplineFunction instance.
+  /**
+   * the control point are stored by reference, i.e. modifications to given tensor alter the
+   * behavior of this BSplineFunction instance.
    * 
    * @param degree of polynomial basis function, non-negative integer
    * @param sequence points with at least one element
    * @return
-   * @throws Exception if degree is negative, or control does not have length at least one */
+   * @throws Exception if degree is negative, or control does not have length at least one
+   */
   public static Function<IExpr, IExpr> of(int degree, IAST sequence) {
     return new BSplineFunctionString(degree, sequence);
   }

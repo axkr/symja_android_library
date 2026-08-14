@@ -18,11 +18,14 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.data.DateGranularity;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
@@ -61,11 +64,28 @@ public class SerializableTest {
   }
 
   @Test
+  public void testDateObjectGranularity() {
+    // the granularity, the calendar and the time zone are part of the serialized state
+    equalsCopy(
+        DateObjectExpr.newInstance(LocalDateTime.of(2024, 2, 29, 0, 0), DateGranularity.DAY));
+    equalsCopy(
+        DateObjectExpr.newInstance(LocalDateTime.of(2024, 1, 1, 0, 0), DateGranularity.YEAR));
+    equalsCopy(DateObjectExpr.newInstance(LocalDateTime.of(2024, 2, 29, 13, 5, 7),
+        DateGranularity.INSTANT, DateObjectExpr.JULIAN, F.num(5.5), true));
+  }
+
+  @Test
   public void testTimeObject() {
     LocalTime now = LocalTime.now();
     TimeObjectExpr ldt =
         TimeObjectExpr.newInstance(LocalTime.of(now.getHour(), now.getMinute(), now.getSecond()));
     equalsCopy(ldt);
+  }
+
+  @Test
+  public void testTimeObjectGranularity() {
+    equalsCopy(TimeObjectExpr.newInstance(LocalTime.of(14, 30), DateGranularity.MINUTE));
+    equalsCopy(TimeObjectExpr.newInstance(LocalTime.of(14, 0), DateGranularity.HOUR, F.CD0, false));
   }
 
   @Test
@@ -115,16 +135,12 @@ public class SerializableTest {
 
     equalsCopy(F.CC(F.QQ(1L, Integer.MAX_VALUE), F.QQ(1L, Integer.MAX_VALUE)));
     equalsCopy(F.CC(F.QQ(1L, Integer.MIN_VALUE), F.QQ(1L, Integer.MIN_VALUE)));
-    equalsCopy(
-        F.CC(F.QQ(1L, Integer.MAX_VALUE * 2L), F.QQ(1L, Integer.MAX_VALUE * 2L)));
-    equalsCopy(
-        F.CC(F.QQ(1L, Integer.MIN_VALUE * 2L), F.QQ(1L, Integer.MAX_VALUE * 2L)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MAX_VALUE * 2L), F.QQ(1L, Integer.MAX_VALUE * 2L)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MIN_VALUE * 2L), F.QQ(1L, Integer.MAX_VALUE * 2L)));
     equalsCopy(F.CC(F.QQ(Integer.MAX_VALUE, 7L), F.QQ(Integer.MAX_VALUE, 7L)));
     equalsCopy(F.CC(F.QQ(Integer.MIN_VALUE, 3L), F.QQ(Integer.MIN_VALUE, 3L)));
-    equalsCopy(
-        F.CC(F.QQ(Integer.MAX_VALUE * 2L, 5L), F.QQ(Integer.MAX_VALUE * 2L, 5L)));
-    equalsCopy(
-        F.CC(F.QQ(Integer.MIN_VALUE * 2L, 11L), F.QQ(Integer.MIN_VALUE * 2L, 11L)));
+    equalsCopy(F.CC(F.QQ(Integer.MAX_VALUE * 2L, 5L), F.QQ(Integer.MAX_VALUE * 2L, 5L)));
+    equalsCopy(F.CC(F.QQ(Integer.MIN_VALUE * 2L, 11L), F.QQ(Integer.MIN_VALUE * 2L, 11L)));
   }
 
   @Test
@@ -219,6 +235,39 @@ public class SerializableTest {
   @Test
   public void testNIL() {
     equalsCopy(F.NIL);
+  }
+
+  @Test
+  public void testPatternMatcherAndEvaluatorTransientState() {
+    // the priority, the flags and the pattern hash are transient state derived from the
+    // left-hand-side; they must survive a serialization round trip.
+    // fserialtest(gserialtest(x_)) is a "not complicated" rule, so RulesData#putDownRule() would
+    // assign it a pattern hash for pre-filtering
+    IExpr lhs =
+        F.unaryAST1(F.symbol("fserialtest"), F.unaryAST1(F.symbol("gserialtest"), F.$p(F.x)));
+    PatternMatcherAndEvaluator original =
+        new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, lhs, F.C0, true,
+            ((org.matheclipse.core.interfaces.IAST) lhs).patternHashCode());
+    try {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(original);
+      byte[] bArray = baos.toByteArray();
+      baos.close();
+      oos.close();
+      ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      PatternMatcherAndEvaluator copy = (PatternMatcherAndEvaluator) ois.readObject();
+      bais.close();
+      ois.close();
+      assertEquals(original, copy);
+      assertEquals(original.getLHSPriority(), copy.getLHSPriority());
+      assertEquals(original.getFlags(), copy.getFlags());
+      assertEquals(original.getPatternHash(), copy.getPatternHash());
+    } catch (ClassNotFoundException | IOException e) {
+      e.printStackTrace();
+      assertEquals("", e.toString());
+    }
   }
 
   @Test

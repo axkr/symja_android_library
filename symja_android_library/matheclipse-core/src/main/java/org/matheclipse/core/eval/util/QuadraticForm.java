@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * <code>v</code>:
  *
  * <pre>
- * q(v) == v^T*Q*v + c^T*v + d
+ * q(v) == v ^ T * Q * v + c ^ T * v + d
  * </pre>
  *
  * <p>

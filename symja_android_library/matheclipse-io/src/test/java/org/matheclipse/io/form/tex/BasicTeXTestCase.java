@@ -365,7 +365,7 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX30() {
     check("Quantity(3,\"m\")", //
-        "\\text{Quantity}(3,\\textnormal{m})");
+        "3\\,\\text{m}");
   }
 
   @Test

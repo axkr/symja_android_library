@@ -30,7 +30,6 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -359,7 +358,7 @@ public class ExprEvaluatorTests {
    * that triggers {@link java.util.regex.PatternSyntaxException}.</li>
    * <li><b>Numerical pathologies:</b> {@code 1/0} ({@code Power(0,-1)}), {@code 1-1}.</li>
    * <li><b>Option-style rules:</b> {@code Modulus -> 2/10}, {@code Heads -> True/False}.</li>
-   * <li><b>Quantity:</b> {@code 1.2 m} via {@link IQuantity#of(double, String)}.</li>
+   * <li><b>Quantity:</b> {@code 1.2 m} as {@code Quantity(1.2, "Meters")} AST.</li>
    * </ul>
    *
    * <p>
@@ -578,7 +577,7 @@ public class ExprEvaluatorTests {
         F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
         F.Slot2, //
         F.Slot(Integer.MAX_VALUE), //
-        IQuantity.of(1.2, "m"), //
+        F.Quantity(F.num(1.2), F.stringx("Meters")), //
         // throws PatternSyntaxException
         F.RegularExpression("?i)"), //
         F.CEmptyString, //
@@ -1057,9 +1056,8 @@ public class ExprEvaluatorTests {
         }
         if (result.isAST()) {
           if (!result.isFree(x -> x == null || x.isNIL(), true)) {
-            System.out.println(
-                "Corrupted AST: " + IStringX.inputForm(ast) + "\n" + "       ===> "
-                    + IStringX.inputForm(result));
+            System.out.println("Corrupted AST: " + IStringX.inputForm(ast) + "\n" + "       ===> "
+                + IStringX.inputForm(result));
             throw new NullPointerException();
           }
         }

@@ -34,8 +34,7 @@ public final class Sequence extends ListSizeSequence {
    * @param engine
    * @return <code>null</code> if no <code>Sequence[]</code> can be created
    */
-  public static Sequence[] createSequences(final IAST ast, final int startPosition,
-      int endPosition,
+  public static Sequence[] createSequences(final IAST ast, final int startPosition, int endPosition,
       String messageShortcut, IBuiltInSymbol head, EvalEngine engine) {
     final Sequence[] sequArray = new Sequence[endPosition - startPosition];
     Sequence sequ = null;

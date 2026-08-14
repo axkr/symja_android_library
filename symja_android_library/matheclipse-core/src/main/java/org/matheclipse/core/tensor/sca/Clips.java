@@ -5,24 +5,23 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.tensor.qty.QuantityUnit;
 
 /**
  * factory for the creation of {@link Clip}
- * 
+ *
  * Remark: A {@link Clip} represents a non-empty, closed interval of the form [min, max]. The values
- * min and max can be real numbers, or instances of {@link Quantity} with identical {@link Unit}.
+ * min and max can be real numbers, or quantities with identical units.
  */
 public class Clips {
 
   /**
    * clips in the interval [min, ..., max]
-   * 
+   *
    * @param min
    * @param max equals or greater than given min
    * @return function that clips the input to the closed interval [min, max]
    * @throws Exception if min is greater than max
-   * @throws Exception if min and max give different {@link QuantityUnit}
+   * @throws Exception if min and max have different units
    */
   public static Clip interval(IExpr min, IExpr max) {
     // Scalars.compare(min, max); // assert that min and max have identical units

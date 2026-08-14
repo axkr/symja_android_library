@@ -1,10 +1,8 @@
 package org.matheclipse.core.interfaces;
 
-import org.matheclipse.core.tensor.qty.IQuantity;
-
 /**
- * Marker interface for atomic classes which have a constan value like {@link INumber},
- * {@link IQuantity}, {@link IStringX}
+ * Marker interface for atomic classes which have a constant value like {@link INumber} or
+ * {@link IStringX}
  */
 public interface IAtomicConstant {
 

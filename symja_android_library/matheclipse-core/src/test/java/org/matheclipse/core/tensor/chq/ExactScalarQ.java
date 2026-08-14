@@ -8,7 +8,6 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.tensor.qty.IQuantity;
 
 
 /**
@@ -50,7 +49,10 @@ public enum ExactScalarQ {
    * @return true, if scalar is instance of {@link InexactScalarMarker} which evaluates to true
    */
   public static boolean of(IExpr scalar) {
-    if (!(scalar instanceof INumber) && !(scalar instanceof IQuantity)) {
+    if (scalar.isQuantity()) {
+      return of(scalar.first());
+    }
+    if (!(scalar instanceof INumber)) {
       return false;
     }
     if (scalar instanceof IRational) {
@@ -58,10 +60,6 @@ public enum ExactScalarQ {
     }
     if (scalar instanceof IComplex) {
       return true;
-    }
-    if (scalar instanceof IQuantity) {
-      IQuantity q = ((IQuantity) scalar);
-      return of(q.value());
     }
     Objects.requireNonNull(scalar);
     return true;

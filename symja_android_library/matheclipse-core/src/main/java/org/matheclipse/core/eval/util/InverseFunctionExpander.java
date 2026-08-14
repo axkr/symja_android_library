@@ -15,8 +15,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * <code>C[n]</code>.
  *
  * <p>
- * This is a neutral, low-level utility so that both {@link org.matheclipse.core.reflection.system.Solve}
- * and {@link org.matheclipse.core.reflection.system.Reduce} can reuse the same periodic inversion
+ * This is a neutral, low-level utility so that both
+ * {@link org.matheclipse.core.reflection.system.Solve} and
+ * {@link org.matheclipse.core.reflection.system.Reduce} can reuse the same periodic inversion
  * without creating a dependency on the <code>Solve</code> evaluator.
  */
 public class InverseFunctionExpander {

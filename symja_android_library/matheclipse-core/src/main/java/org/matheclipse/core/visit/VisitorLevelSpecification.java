@@ -239,7 +239,8 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
           }
           // the head is visited to emit/transform its parts, but its depth must not contribute to
           // this expression's depth: negative levels ignore the head chain (like `Depth`), so
-          // `Heads->True` changes which parts are emitted, never how deep an expression is measured.
+          // `Heads->True` changes which parts are emitted, never how deep an expression is
+          // measured.
         }
         ast.forEach((x, i) -> {
           final IExpr temp = x.accept(this);

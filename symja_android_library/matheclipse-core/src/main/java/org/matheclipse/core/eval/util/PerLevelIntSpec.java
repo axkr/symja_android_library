@@ -61,7 +61,7 @@ public final class PerLevelIntSpec {
     }
     return new PerLevelIntSpec(new int[] {value}, true);
   }
- 
+
 
   /** The number of levels this specification defines. */
   public int levels() {
@@ -104,8 +104,10 @@ public final class PerLevelIntSpec {
     return true;
   }
 
-  /** The specified values as an array, with the value for level <code>i</code> at index <code>i-1
-   * </code>. */
+  /**
+   * The specified values as an array, with the value for level <code>i</code> at index <code>i-1
+    * </code>.
+   */
   public int[] toArray() {
     return values.clone();
   }

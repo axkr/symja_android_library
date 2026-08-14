@@ -141,7 +141,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("CDF(GumbelDistribution(n, m),k)", //
         "1-1/E^E^((k-n)/m)");
     check("CDF(GompertzMakehamDistribution(m,n) )", //
-        "Piecewise({{1-E^((1-E^(m*#1))*n),#1>=0}},0)&");
+        "Function(#1,Piecewise({{1-E^((1-E^(m*#1))*n),#1>=0}},0),Listable)");
     check("CDF(HypergeometricDistribution(n, ns, nt),k)", //
         "Piecewise({{1+(-ns!*(-ns+nt)!*HypergeometricPFQRegularized({1,1-n+Floor(k),1-ns+Floor(k)},{\n"
             + "2+Floor(k),2-n-ns+nt+Floor(k)},1))/(Binomial(nt,n)*(-1+n-Floor(k))!*(-1+ns-Floor(k))!),\n"
@@ -167,9 +167,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Variance(ChiSquareDistribution(v))", //
         "2*v");
     check("CDF(ChiSquareDistribution(v))", //
-        "Piecewise({{GammaRegularized(v/2,0,#1/2),#1>0}},0)&");
+        "Function(#1,Piecewise({{GammaRegularized(v/2,0,#1/2),#1>0}},0),Listable)");
     check("PDF(ChiSquareDistribution(v))", //
-        "Piecewise({{1/(2^(v/2)*E^(#1/2)*Gamma(v/2)*#1^(1-v/2)),#1>0}},0)&");
+        "Function(#1,Piecewise({{1/(2^(v/2)*E^(#1/2)*Gamma(v/2)*#1^(1-v/2)),#1>0}},0),Listable)");
 
     check("CDF(ChiSquareDistribution(v), k)", //
         "Piecewise({{GammaRegularized(v/2,0,k/2),k>0}},0)");
@@ -189,14 +189,14 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("edata=EmpiricalDistribution(data);", //
         "");
     check("{CDF(edata,0.25),CDF(edata,1),CDF(edata,3),CDF(edata,4),CDF(edata,5)}", //
-        "{0.7,0.9,1.0,1.0,1.0}");
+        "{7/10,9/10,1,1,1}");
     // https://github.com/Hipparchus-Math/hipparchus/pull/317
     check("{PDF(edata,0.25),PDF(edata,1),PDF(edata,3),PDF(edata,4),PDF(edata,5)}", //
-        "{0.0,0.0,0.0,0.0,0.0}");
+        "{0,0,0,0,0}");
     check("Mean(edata)", //
-        "-0.0795254");
+        "-0.079525440658974979");
     check("Variance(edata)", //
-        "0.860326");
+        "0.86032633068786471493");
   }
 
   @Test
@@ -229,17 +229,172 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "1/2*(f(a)+f(b))");
     // check("PDF( PoissonDistribution(m),x)", //
     // "Piecewise({{m^x/(E^m*x!),x>=0}},0)");
-    // check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", //
-    // "8+8*m+m^2");
-    // check("Expectation(E^(2*x) + 3, Distributed( x, PoissonDistribution(l)))", //
-    // "");
-    //
-    // check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
-    // check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
-    //
-    // check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
-    // check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
+    check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", //
+        "8+8*m+m^2");
+    check("Expectation(E^(2*x) + 3, Distributed( x, PoissonDistribution(l)))", //
+        "3+E^((-1+E^2)*l)");
 
+    check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
+    check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
+
+    check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
+    check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
+  }
+
+  @Test
+  public void testExpectationConditioned() {
+    // E(expr | pred) == E(expr*Boole(pred)) / P(pred)
+    check("Expectation(Conditioned(x, x > 0), Distributed(x, NormalDistribution()))", //
+        "2/Sqrt(2*Pi)");
+    check("NExpectation(Conditioned(x, x > 0), Distributed(x, NormalDistribution()))", //
+        "0.797885");
+    check("NProbability(Conditioned(x > 1, x > 0), Distributed(x, NormalDistribution()))", //
+        "0.317311");
+  }
+
+  @Test
+  public void testExpectationMultipleVariables() {
+    // independent random variables are computed by iterated expectation
+    check(
+        "Expectation(x*y, {Distributed(x, NormalDistribution(1,1)), Distributed(y, NormalDistribution(2,1))})", //
+        "2");
+    check(
+        "Expectation(x^2+y, {Distributed(x, PoissonDistribution(2)), Distributed(y, PoissonDistribution(3))})", //
+        "9");
+  }
+
+  @Test
+  public void testExpectationNumericFallback() {
+    // N(Expectation(...)) falls back to NExpectation if there is no symbolic result
+    check("N(Expectation(Sin(x), Distributed(x, PoissonDistribution(2))))", //
+        "0.396255");
+    check("N(Probability(1 < x && x < 3, Distributed(x, NormalDistribution())))", //
+        "0.157305");
+  }
+
+  @Test
+  public void testExpectationGeneratingFunctions() {
+    // closed forms from the moment generating function of the distribution
+    check("Expectation(z^x, Distributed(x, PoissonDistribution(l)))", //
+        "E^(l*(-1+z))");
+    check("Expectation(E^(t*x), Distributed(x, BinomialDistribution(n,p)))", //
+        "(1-p+E^t*p)^n");
+    check("Expectation(2^x, Distributed(x, HypergeometricDistribution(3,3,6)))", //
+        "63/20");
+    check("Expectation(E^(2*x), Distributed(x, NormalDistribution()))", //
+        "E^2");
+    check("Expectation(x^2*E^x, Distributed(x, NormalDistribution()))", //
+        "2*Sqrt(E)");
+    // closed forms found by summing the unwrapped piecewise density
+    check("Expectation(z^x, Distributed(x, GeometricDistribution(p)))", //
+        "p/(1-z+p*z)");
+    check("Expectation(x*E^x, Distributed(x, PoissonDistribution(1)))", //
+        "E^E");
+    // the true series diverges - the closed form of the sum is not valid here
+    check("Expectation(3^x, Distributed(x, GeometricDistribution(1/5)))", //
+        "Expectation(3^x,x\uF3D2GeometricDistribution(1/5))");
+    // numeric cross checks of the symbolic closed forms
+    check("N(Expectation(E^(2*x) + 3, Distributed(x, PoissonDistribution(1/2))))", //
+        "27.39866");
+    check("NExpectation(E^(2*x) + 3, Distributed(x, PoissonDistribution(0.5)))", //
+        "27.39866");
+  }
+
+  @Test
+  public void testMomentGeneratingFunction() {
+    check("MomentGeneratingFunction(NormalDistribution(m,s), t)", //
+        "E^(m*t+1/2*s^2*t^2)");
+    check("MomentGeneratingFunction(GammaDistribution(a,b), t)", //
+        "(1-b*t)^(-a)");
+    check("MomentGeneratingFunction(ExponentialDistribution(l), t)", //
+        "l/(l-t)");
+    check("MomentGeneratingFunction(GeometricDistribution(p), t)", //
+        "p/(1+E^t*(-1+p))");
+    check("MomentGeneratingFunction(UniformDistribution({a,b}), t)", //
+        "(-E^(a*t)+E^(b*t))/((-a+b)*t)");
+    check("MomentGeneratingFunction(ChiSquareDistribution(k), t)", //
+        "(1-2*t)^(-k/2)");
+    check("MomentGeneratingFunction(GumbelDistribution(n,m), t)", //
+        "E^(n*t)*Gamma(1+m*t)");
+    check("MomentGeneratingFunction(BetaDistribution(a,b), t)", //
+        "Hypergeometric1F1(a,a+b,t)");
+    check("MomentGeneratingFunction(ErlangDistribution(n,m), t)", //
+        "(1-t/m)^(-n)");
+    check("MomentGeneratingFunction(LaplaceDistribution(m,b), t)", //
+        "E^(m*t)/(1-b^2*t^2)");
+    // empirical moment generating function of a data list
+    check("MomentGeneratingFunction({1,2,3}, t)", //
+        "1/3*(E^t+E^(2*t)+E^(3*t))");
+    // MGF(0) == 1 and D(MGF)(0) == Mean
+    check("MomentGeneratingFunction(GammaDistribution(2,3), 0)", //
+        "1");
+    check("ReplaceAll(D(MomentGeneratingFunction(PoissonDistribution(l), t), t), t->0)", //
+        "l");
+  }
+
+  @Test
+  public void testCharacteristicFunction() {
+    check("CharacteristicFunction(NormalDistribution(m,s), t)", //
+        "E^(I*m*t-1/2*s^2*t^2)");
+    check("CharacteristicFunction(CauchyDistribution(a,b), t)", //
+        "E^(I*a*t-b*Abs(t))");
+    check("CharacteristicFunction(StudentTDistribution(v), t)", //
+        "(2^(1-v/2)*(Sqrt(v)*Abs(t))^(v/2)*BesselK(v/2,Sqrt(v)*Abs(t)))/Gamma(v/2)");
+    check("CharacteristicFunction(ExponentialDistribution(l), t)", //
+        "l/(l-I*t)");
+    // StudentTDistribution(1) is CauchyDistribution(0,1): CF == E^(-Abs(t))
+    check("N(CharacteristicFunction(StudentTDistribution(1), 7/10))", //
+        "0.496585");
+    check("N(CharacteristicFunction(CauchyDistribution(0,1), 1))", //
+        "0.367879");
+    check("CharacteristicFunction(PoissonDistribution(l), 0)", //
+        "1");
+  }
+
+  @Test
+  public void testFactorialMomentGeneratingFunction() {
+    check("FactorialMomentGeneratingFunction(BinomialDistribution(n,p), z)", //
+        "(1-p+p*z)^n");
+    check("FactorialMomentGeneratingFunction(PoissonDistribution(l), z)", //
+        "E^(l*(-1+z))");
+    check("FactorialMomentGeneratingFunction(GeometricDistribution(p), z)", //
+        "p/(1+(-1+p)*z)");
+    check("FactorialMomentGeneratingFunction(DiscreteUniformDistribution({a,b}), z)", //
+        "(z^a-z^(1+b))/((1-a+b)*(1-z))");
+    check("FactorialMomentGeneratingFunction(BetaBinomialDistribution(a,b,n), z)", //
+        "Hypergeometric2F1(a,-n,a+b,1-z)");
+    check("FactorialMomentGeneratingFunction(LogSeriesDistribution(q), z)", //
+        "Log(1-q*z)/Log(1-q)");
+    check("FactorialMomentGeneratingFunction(ZipfDistribution(r), z)", //
+        "PolyLog(1+r,z)/Zeta(1+r)");
+    // exact enumeration of a small finite support
+    check("FactorialMomentGeneratingFunction(HypergeometricDistribution(3,3,6), 2)", //
+        "63/20");
+    check("N(FactorialMomentGeneratingFunction(BenfordDistribution(10), 1))", //
+        "1.0");
+  }
+
+  @Test
+  public void testCentralMomentGeneratingFunction() {
+    check("CentralMomentGeneratingFunction(NormalDistribution(m,s), t)", //
+        "E^(1/2*s^2*t^2)");
+    check("CentralMomentGeneratingFunction(PoissonDistribution(l), t)", //
+        "E^((-1+E^t)*l-l*t)");
+  }
+
+  @Test
+  public void testCumulantGeneratingFunction() {
+    check("CumulantGeneratingFunction(NormalDistribution(m,s), t)", //
+        "m*t+1/2*s^2*t^2");
+    check("CumulantGeneratingFunction(PoissonDistribution(l), t)", //
+        "(-1+E^t)*l");
+    check("CumulantGeneratingFunction(GammaDistribution(a,b), t)", //
+        "Log((1-b*t)^(-a))");
+    check("CumulantGeneratingFunction(LaplaceDistribution(m,b), t)", //
+        "m*t+Log(1/(1-b^2*t^2))");
+    // the second derivative at 0 is the variance
+    check("ReplaceAll(D(CumulantGeneratingFunction(NormalDistribution(m,s), t), {t,2}), t->0)", //
+        "s^2");
   }
 
   @Test
@@ -251,15 +406,15 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("NExpectation(Abs(2*x-1), Distributed(x, GammaDistribution(3.5,2)))", //
         "13.00025");
 
-    // check("NExpectation(E^x, Distributed(x, HypergeometricDistribution(20,50,100)))", //
-    // "");
+    check("NExpectation(E^x, Distributed(x, HypergeometricDistribution(20,50,100)))", //
+        "158982.7");
+    // E^x grows faster than the geometric tail decays - the expectation diverges
     // check("NExpectation(E^x, Distributed(x, GeometricDistribution(0.1)))", //
     // "");
-    // check("NExpectation(E^x, Distributed(x, DiscreteUniformDistribution({20,40})))", //
-    // "");
-    // check(
-    // "NExpectation(E^x, Distributed(x, BinomialDistribution(10,0.4)))", //
-    // "187.049");
+    check("NExpectation(E^x, Distributed(x, DiscreteUniformDistribution({20,40})))", //
+        "1.77321*10^16");
+    check("NExpectation(E^x, Distributed(x, BinomialDistribution(10,0.4)))", //
+        "187.0492");
     check("NExpectation(E^x, Distributed(x, PoissonDistribution(1.0)))", //
         "5.57494");
     check("NExpectation(x^2+7*x+8, Distributed(x, PoissonDistribution(2.7)))", //
@@ -306,10 +461,45 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "1");
     check("NSum(1/(E*x!), {x,0,Infinity})", //
         "1.0");
-    // check("NProbability(E^x < 3, Distributed(x,PoissonDistribution(1)))", //
-    // "");
+    check("NProbability(x == 3, Distributed(x, PoissonDistribution(5)))", //
+        "0.140374");
+    check("NProbability(1 < x && x < 3, Distributed(x, NormalDistribution()))", //
+        "0.157305");
+    check("NProbability(x < 1, Distributed(x, NormalDistribution()), WorkingPrecision -> 20)", //
+        "0.841345");
+    check("NExpectation(#^2 &, {1,2,3})", //
+        "4.66667");
+  }
 
+  @Test
+  public void testProbabilityDiscreteTail() {
+    // before the support bound fixes these enumerations ran out of memory
+    check("Probability(x >= 3, Distributed(x, GeometricDistribution(1/5)))", //
+        "64/125");
+    check("Probability(x >= 3, Distributed(x, BinomialDistribution(10, 1/2)))", //
+        "121/128");
+    check("NProbability(x >= 3, Distributed(x, GeometricDistribution(1/5)))", //
+        "0.512");
+    check("Probability(x >= 3, Distributed(x, PoissonDistribution(2)))", //
+        "1-5/E^2");
+    check("Probability(x != 5, Distributed(x, PoissonDistribution(3)))", //
+        "1-81/(40*E^3)");
+  }
 
+  @Test
+  public void testNExpectationLargeParameters() {
+    // overflow of the probability mass function terms produced Indeterminate before
+    check("NExpectation(x, Distributed(x, PoissonDistribution(1000.0)))", //
+        "1000.0");
+    check("NExpectation(x, Distributed(x, PoissonDistribution(3000.0)))", //
+        "3000.0");
+    check("NExpectation(x, Distributed(x, BinomialDistribution(20, 0.5)))", //
+        "10.0");
+    check("NProbability(x <= 500, Distributed(x, PoissonDistribution(400.)))", //
+        "0.999999");
+    // a piecewise density is integrated over its support intervals only
+    check("NExpectation(x^2, Distributed(x, UniformDistribution({2,4})))", //
+        "9.33333");
   }
 
   @Test
@@ -330,10 +520,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Variance(FRatioDistribution(n, m))", //
         "Piecewise({{(2*m^2*(-2+m+n))/((2-m)^2*(-4+m)*n),m>4}},Indeterminate)");
     check("CDF(FRatioDistribution(n, m))", //
-        "Piecewise({{BetaRegularized((n*#1)/(m+n*#1),n/2,m/2),#1>0}},0)&");
+        "Function(#1,Piecewise({{BetaRegularized((n*#1)/(m+n*#1),n/2,m/2),#1>0}},0),Listable)");
     check("PDF(FRatioDistribution(n, m))", //
-        "Piecewise({{(m^(m/2)*n^(n/2)*(m+n*#1)^(1/2*(-m-n)))/(Beta(n/2,m/2)*#1^(1-n/2)),#1>\n"
-            + "0}},0)&");
+        "Function(#1,Piecewise({{(m^(m/2)*n^(n/2)*(m+n*#1)^(1/2*(-m-n)))/(Beta(n/2,m/2)*#1^(\n1-n/2)),#1>0}},0),Listable)");
     // TODO
     // check("Skewness(FRatioDistribution(n, m))", //
     // "");
@@ -362,13 +551,13 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Variance(GammaDistribution(m, s))", //
         "m*s^2");
     check("CDF(GammaDistribution(a, b))", //
-        "Piecewise({{GammaRegularized(a,0,#1/b),#1>0}},0)&");
+        "Function(#1,Piecewise({{GammaRegularized(a,0,#1/b),#1>0}},0),Listable)");
     check("CDF(GammaDistribution(a, b, g, d))", //
-        "Piecewise({{GammaRegularized(a,0,((-d+#1)/b)^g),#1>d}},0)&");
+        "Function(#1,Piecewise({{GammaRegularized(a,0,((-d+#1)/b)^g),#1>d}},0),Listable)");
     check("PDF(GammaDistribution(a, b))", //
-        "Piecewise({{1/(b^a*E^(#1/b)*Gamma(a)*#1^(1-a)),#1>0}},0)&");
+        "Function(#1,Piecewise({{1/(b^a*E^(#1/b)*Gamma(a)*#1^(1-a)),#1>0}},0),Listable)");
     check("PDF(GammaDistribution(a, b, g, d))", //
-        "Piecewise({{g/(b*E^((-d+#1)/b)^g*Gamma(a)*((-d+#1)/b)^(1-a*g)),#1>d}},0)&");
+        "Function(#1,Piecewise({{g/(b*E^((-d+#1)/b)^g*Gamma(a)*((-d+#1)/b)^(1-a*g)),#1>d}},\n0),Listable)");
     check("Quantile(GammaDistribution(a, b), {1/4, 1/2, 3/4})", //
         "{b*InverseGammaRegularized(a,0,1/4),b*InverseGammaRegularized(a,0,1/2),b*InverseGammaRegularized(a,\n"
             + "0,3/4)}");
@@ -470,6 +659,106 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLogisticDistribution() {
+    check("PDF(LogisticDistribution(a,b), x)", //
+        "E^((a-x)/b)/(b*(1+E^((a-x)/b))^2)");
+    check("CDF(LogisticDistribution(a,b), x)", //
+        "1/(1+E^((a-x)/b))");
+    check("InverseCDF(LogisticDistribution(a,b), p)", //
+        "ConditionalExpression(Piecewise({{a+b*Log(p/(1-p)),0<p<1},{-Infinity,p<=0}},Infinity),\n"
+            + "0<=p<=1)");
+    check("Mean(LogisticDistribution(a,b))", //
+        "a");
+    check("Median(LogisticDistribution(a,b))", //
+        "a");
+    check("Variance(LogisticDistribution(a,b))", //
+        "1/3*b^2*Pi^2");
+    check("StandardDeviation(LogisticDistribution(a,b))", //
+        "(b*Pi)/Sqrt(3)");
+    check("Skewness(LogisticDistribution(a,b))", //
+        "0");
+    // Kurtosis is not the excess kurtosis: 3 + 6/5
+    check("Kurtosis(LogisticDistribution(a,b))", //
+        "21/5");
+
+    // LogisticDistribution() is LogisticDistribution(0, 1)
+    check("PDF(LogisticDistribution(), x)", //
+        "1/(E^x*(1+E^(-x))^2)");
+    check("CDF(LogisticDistribution(), x)", //
+        "1/(1+E^(-x))");
+    check("Mean(LogisticDistribution())", //
+        "0");
+    check("Variance(LogisticDistribution())", //
+        "Pi^2/3");
+
+    // the median is the 1/2 quantile and CDF and InverseCDF are inverse to each other
+    check("CDF(LogisticDistribution(0,1), 0)", //
+        "1/2");
+    check("Quantile(LogisticDistribution(0,1), 1/2)", //
+        "0");
+    check("N(CDF(LogisticDistribution(1,2), 3))", //
+        "0.731059");
+
+    // the scale parameter must be positive
+    check("DistributionParameterQ(LogisticDistribution(0,2))", //
+        "True");
+    check("DistributionParameterQ(LogisticDistribution(0,-2))", //
+        "False");
+    check("Length(RandomVariate(LogisticDistribution(0,1), 20))", //
+        "20");
+  }
+
+  @Test
+  public void testLogisticDistributionGeneratingFunctions() {
+    // the Gamma function form evaluates to 1 at t == 0 and can be differentiated symbolically
+    check("MomentGeneratingFunction(LogisticDistribution(a,b), t)", //
+        "E^(a*t)*Gamma(1+b*t)*Gamma(1-b*t)");
+    check("MomentGeneratingFunction(LogisticDistribution(a,b), 0)", //
+        "1");
+    check("CharacteristicFunction(LogisticDistribution(a,b), t)", //
+        "E^(I*a*t)*Gamma(1-I*b*t)*Gamma(1+I*b*t)");
+    check("CharacteristicFunction(LogisticDistribution(a,b), 0)", //
+        "1");
+    check("CumulantGeneratingFunction(LogisticDistribution(a,b), t)", //
+        "a*t+Log(Gamma(1+b*t))+Log(Gamma(1-b*t))");
+    check("CentralMomentGeneratingFunction(LogisticDistribution(a,b), t)", //
+        "Gamma(1+b*t)*Gamma(1-b*t)");
+    // the first derivative at 0 is the mean, the second derivative of the cumulant generating
+    // function at 0 is the variance
+    check("ReplaceAll(D(MomentGeneratingFunction(LogisticDistribution(a,b), t), t), t->0)", //
+        "a");
+    check("ReplaceAll(D(CumulantGeneratingFunction(LogisticDistribution(a,b), t), {t,2}), t->0)", //
+        "1/3*b^2*Pi^2");
+    // numeric cross check of the moment generating function
+    check("N(MomentGeneratingFunction(LogisticDistribution(1,1/2), 1/5))", //
+        "1.24173");
+    check("NExpectation(E^(0.2*x), Distributed(x, LogisticDistribution(1,0.5)))", //
+        "1.24173");
+  }
+
+  @Test
+  public void testLogisticDistributionExpectation() {
+    // the moments are used for polynomial expressions
+    check("Expectation(2*x+3, Distributed(x, LogisticDistribution(a,b)))", //
+        "3+2*a");
+    check("Expectation(x^2, Distributed(x, LogisticDistribution(a,b)))", //
+        "a^2+1/3*b^2*Pi^2");
+    check("NExpectation(x, Distributed(x, LogisticDistribution(2,3)))", //
+        "2.0");
+    check("NExpectation(x^2, Distributed(x, LogisticDistribution(0,1)))", //
+        "3.28987");
+    // the probability is computed from the CDF
+    check("Probability(x < 1, Distributed(x, LogisticDistribution(0,1)))", //
+        "1/(1+1/E)");
+    check("NProbability(x < 1, Distributed(x, LogisticDistribution(0,1)))", //
+        "0.731059");
+    // the moment generating function converges only for Abs(t) < 1/b, so the formal value must
+    // not be used here
+    check("Expectation(E^(2*x), Distributed(x, LogisticDistribution(0,1)))", //
+        "Integrate(E^(2*x)/(E^x*(1+E^(-x))^2),{x,-Infinity,Infinity})");
+  }
+
+  @Test
   public void testBinormalDistribution() {
     check("Skewness(BinormalDistribution(p))", //
         "{0,0}");
@@ -520,27 +809,25 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   @Test
   public void testParetoDistribution() {
     check("CDF(ParetoDistribution(k,a))", //
-        "Piecewise({{1-(k/#1)^a,#1>=k}},0)&");
+        "Function(#1,Piecewise({{1-(k/#1)^a,#1>=k}},0),Listable)");
     check("CDF(ParetoDistribution(k,a,m))", //
-        "Piecewise({{1-1/(1+(-m+#1)/k)^a,#1>=m}},0)&");
+        "Function(#1,Piecewise({{1-1/(1+(-m+#1)/k)^a,#1>=m}},0),Listable)");
     check("CDF(ParetoDistribution(k,a,g,m))", //
-        "Piecewise({{1-1/(1+((-m+#1)/k)^(1/g))^a,#1>=m}},0)&");
+        "Function(#1,Piecewise({{1-1/(1+((-m+#1)/k)^(1/g))^a,#1>=m}},0),Listable)");
 
     check("InverseCDF(ParetoDistribution(k,a))", //
-        "ConditionalExpression(Piecewise({{k/(1-#1)^(1/a),#1<1}},Infinity),0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(Piecewise({{k/(1-#1)^(1/a),#1<1}},Infinity),0<=#1<=\n1),Listable)");
     check("InverseCDF(ParetoDistribution(k,a,m))", //
-        "ConditionalExpression(Piecewise({{m+k*(-1+(1-#1)^(-1/a)),0<#1<1},{m,#1<=0}},Infinity),\n"
-            + "0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(Piecewise({{m+k*(-1+(1-#1)^(-1/a)),0<#1<1},{m,#1<=\n0}},Infinity),0<=#1<=1),Listable)");
     check("InverseCDF(ParetoDistribution(k,a,g,m))", //
-        "ConditionalExpression(Piecewise({{m+k*(-1+(1-#1)^(-1/a))^g,0<#1<1},{m,#1<=0}},Infinity),\n"
-            + "0<=#1<=1)&");
+        "Function(#1,ConditionalExpression(Piecewise({{m+k*(-1+(1-#1)^(-1/a))^g,0<#1<1},{m,#1<=\n0}},Infinity),0<=#1<=1),Listable)");
 
     check("PDF(ParetoDistribution(k,a))", //
-        "Piecewise({{(a*k^a)/#1^(1+a),#1>=k}},0)&");
+        "Function(#1,Piecewise({{(a*k^a)/#1^(1+a),#1>=k}},0),Listable)");
     check("PDF(ParetoDistribution(k,a,m))", //
-        "Piecewise({{a/(k*((k-m+#1)/k)^(1+a)),#1>=m}},0)&");
+        "Function(#1,Piecewise({{a/(k*((k-m+#1)/k)^(1+a)),#1>=m}},0),Listable)");
     check("PDF(ParetoDistribution(k,a,g,m))", //
-        "Piecewise({{a/(g*k^(1/g)*(-m+#1)^(1-1/g)*(1+(k/(-m+#1))^(-1/g))^(1+a)),#1>=m}},0)&");
+        "Function(#1,Piecewise({{a/(g*k^(1/g)*(-m+#1)^(1-1/g)*(1+(k/(-m+#1))^(-1/g))^(1+a)),#1>=m}},\n0),Listable)");
 
     check("Mean(ParetoDistribution(k,a))", //
         "Piecewise({{(a*k)/(-1+a),a>1}},Indeterminate)");
@@ -631,7 +918,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{1/(E^(x^2/2)*Sqrt(2*Pi)),1/(E^(y^2/2)*Sqrt(2*Pi))}");
 
     check("PDF(NormalDistribution(n, m))", //
-        "1/(E^((-n+#1)^2/(2*m^2))*m*Sqrt(2*Pi))&");
+        "Function(#1,1/(E^((-n+#1)^2/(2*m^2))*m*Sqrt(2*Pi)),Listable)");
     check("PDF(NormalDistribution(n, m),k)", //
         "1/(E^((k-n)^2/(2*m^2))*m*Sqrt(2*Pi))");
     check("PDF(BernoulliDistribution(p),k)", //
@@ -907,7 +1194,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Covariance(MultivariatePoissonDistribution(m, {m1,m2,m3})) // MatrixForm", //
         "{{m+m1,m,m},\n" //
             + " {m,m+m2,m},\n" //
-        + " {m,m,m+m3}}");
+            + " {m,m,m+m3}}");
     check("PDF(MultivariatePoissonDistribution(m, {m1,m2}), {x, y})", //
         "Piecewise({{((-m)^x*HypergeometricU(-x,1-x+y,(-m1*m2)/m))/(E^(m+m1+m2)*m2^(x-y)*x!*y!),x>=\n"
             + "0&&y>=0}},0)");
@@ -969,7 +1256,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "Probability(#^2 + 3*# < 11 &, {-0.21848,1.67503,0.78687,4.9887,7.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
         "7/10");
     check("PDF(PoissonDistribution(a))", //
-        "Piecewise({{a^#1/(E^a*#1!),#1>=0}},0)&");
+        "Function(#1,Piecewise({{a^#1/(E^a*#1!),#1>=0}},0),Listable)");
     //
     check("1/(2!*E) + 1/(3!*E)+ 1/(4!*E)+ 1/(5!*E)+ 1/(6!*E) ", //
         "517/(720*E)");

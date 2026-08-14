@@ -26,8 +26,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
     return sb.toString();
   }
 
-   @Test
-   public void testVarint() {
+  @Test
+  public void testVarint() {
     byte[] bytes = WL.varintBytes(500);
     assertEquals("244 3 ", toString(bytes));
     assertEquals(500, WL.parseVarint(bytes, 0)[0]);
@@ -53,8 +53,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
     assertEquals(0, WL.parseVarint(bytes, 0)[0]);
   }
 
-   @Test
-   public void testBinarySerialize() {
+  @Test
+  public void testBinarySerialize() {
     // decimal 4611686018427387893
     check("BinarySerialize(2^62 -11) // Normal", //
         "{56,58,76,245,255,255,255,255,255,255,63}");
@@ -171,8 +171,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
             + "67,2}");
   }
 
-   @Test
-   public void testBinarySerializeRubi() {
+  @Test
+  public void testBinarySerializeRubi() {
     // IExpr rubi = UtilityFunctionCtors.FunctionOfExponentialQ(F.C1, F.C1);
 
     check("ba=BinarySerialize( ( Rubi`FunctionOfExponentialQ(1,1) ) ) // Normal ", //
@@ -181,8 +181,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
   }
 
 
-   @Test
-   public void testBinarySerializeGraph() {
+  @Test
+  public void testBinarySerializeGraph() {
 
     check("BinarySerialize( EdgeWeight->{0.0,1.0,1.0} ) // Normal ", //
         "{56,58,102,2,115,4,82,117,108,101,115,10,69,100,103,101,87,101,105,103,104,116,\n" //
@@ -201,16 +201,16 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
             + "114,0,0,0,0,0,0,240,63}");
   }
 
-   @Test
-   public void testBinaryDeserializeRubi() {
+  @Test
+  public void testBinaryDeserializeRubi() {
     // IExpr rubi = UtilityFunctionCtors.FunctionOfExponentialQ(F.C1, F.C1);
     check(
         "BinaryDeserialize( ByteArray({56,58,102,2,115,27,82,117,98,105,96,102,117,110,99,116,105,111,110,111,102,101,120,112,111,110,101,110,116,105,97,108,113,67,1,67,1} ))  ", //
         "Rubi`functionofexponentialq(1,1)");
   }
 
-   @Test
-   public void testBinarySerializeNumericArray() {
+  @Test
+  public void testBinarySerializeNumericArray() {
     check(
         "BinarySerialize( NumericArray({3.145+I*2.9,-3.145 - I*2.9}, \"ComplexReal32\") ) // Normal", //
         "{56,58,194,51,1,2,174,71,73,64,154,153,57,64,174,71,73,192,154,153,57,192}");
@@ -244,8 +244,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
             + "255,255,255,255,255}");
   }
 
-   @Test
-   public void testBinarySerializeSparseArray() {
+  @Test
+  public void testBinarySerializeSparseArray() {
     check(
         "BinarySerialize( SparseArray({{1, 1} -> a, {2, 2} -> b, {3, 3} -> 3, {1, 3} -> c})  ) // Normal", //
         "{56,58,102,4,115,11,83,112,97,114,115,101,65,114,114,97,121,115,9,65,117,116,111,\n"
@@ -262,8 +262,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
             + "76,105,115,116,193,0,1,4,0,2,3,4,193,0,2,4,1,1,3,2,3,193,0,1,4,1,4,2,3}");
   }
 
-   @Test
-   public void testBinaryDeserialize() {
+  @Test
+  public void testBinaryDeserialize() {
     // decimal 4611686018427387893 == 2^62 -11
     check("BinaryDeserialize(ByteArray({56,58,76,245,255,255,255,255,255,255,63})) ", //
         "4611686018427387893");
@@ -305,7 +305,7 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
     check(
         "BinaryDeserialize(ByteArray({56,58,102,2,115,8,81,117,97,110,116,105,116,121,67,12,83,5,72,111,117,114,115}))", //
         //
-        "12[Hours]");
+        "Quantity(12,\"Hours\")");
 
     checkNumeric(
         "BinaryDeserialize(ByteArray({56,58,193,35,2,2,3,154,153,153,153,153,153,241,63,184,30,133,235,81,184,2,64,"
@@ -424,8 +424,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
         "f(g,2)");
   }
 
-   @Test
-   public void testBinaryDeserializeGraph() {
+  @Test
+  public void testBinaryDeserializeGraph() {
     check("BinaryDeserialize(ByteArray(" //
         + "{56,58,102,3,115,5,71,114,97,112,104,102,3,115,4,76,105,115,116,67,1,67,2,67,3,\n" //
         + "102,3,115,4,76,105,115,116,102,2,115,12,68,105,114,101,99,116,101,100,69,100,103,\n" //
@@ -464,8 +464,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
         "Graph({1,2,3},{Null,{{1,2},{2,3},{3,1}}})");
   }
 
-   @Test
-   public void testBinaryDeserializeSparseArray() {
+  @Test
+  public void testBinaryDeserializeSparseArray() {
     // SparseArray({{1, 1} -> a, {2, 2} -> b, {3, 3} -> 3, {1, 3} -> c})
     check(
         "BinaryDeserialize( ByteArray({56,58,102,4,115,11,83,112,97,114,115,101,65,114,114,97,121,115,9,65,117,116,111,\n"
@@ -491,8 +491,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
         "{{-2,1,0,0,0},{1,-2,1,0,0},{0,1,-2,1,0},{0,0,1,-2,1},{0,0,0,1,-2}}");
   }
 
-   @Test
-   public void testBinaryDeserializeNumericArray() {
+  @Test
+  public void testBinaryDeserializeNumericArray() {
     // NumericArray({-2,-1,0,1,2}, "Integer16")
     check("a=BinaryDeserialize( ByteArray({56,58,194,1,1,5,254,255,255,255,0,0,1,0,2,0}))", //
         "NumericArray(Type: Integer16 Dimensions: {5})");
@@ -574,8 +574,8 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
         "{0,1,128,18446744073709551615}");
   }
 
-   @Test
-   public void testByteArrayData() {
+  @Test
+  public void testByteArrayData() {
     // serialize {0,42,192}
     check("bytes = Normal(BinarySerialize(ByteArray({0, 42, 192})))", //
         "{56,58,66,3,0,42,192}");
@@ -584,16 +584,16 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
         "{0,42,192}");
   }
 
-   @Test
-   public void testByteArray() {
+  @Test
+  public void testByteArray() {
     check(" ByteArray({1,2,3})", //
         "ByteArray[3 Bytes]");
     check(" ByteArray(Range(16))", //
         "ByteArray[16 Bytes]");
   }
 
-   @Test
-   public void testByteArrayQ() {
+  @Test
+  public void testByteArrayQ() {
     check("ByteArrayQ(ByteArray({1,2,3}))", //
         "True");
     check("ByteArrayQ(ByteArray(Range(16)))", //

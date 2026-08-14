@@ -39,7 +39,7 @@ public abstract class ExprAbstractLinearRegression { // implements IExprLinearRe
    * @since 3.0
    */
   protected ExprAbstractLinearRegression() { // NOPMD - unnecessary constructor added
-                                                 // intentionally to make javadoc happy
+                                             // intentionally to make javadoc happy
     // nothing to do
   }
 

@@ -12,8 +12,6 @@ import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.qty.IQuantity;
-import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.parser.client.ParserConfig;
 
 /** */
@@ -99,35 +97,38 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testJavaFormQuantity_unitKG() {
-    IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));
-    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ofPutIfAbsent(\"kg\"))",
-        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
+    IExpr quantity = F.Quantity(F.ZZ(43L), F.stringx("Kilograms"));
+    assertEquals("F.Quantity(F.ZZ(43L),F.$str(\"Kilograms\"))",
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
   }
 
   @Test
   public void testJavaFormQuantity_unitKGAndFullyQualifiedName() {
     IExpr quantity =
-        org.matheclipse.core.tensor.qty.IQuantity.of(org.matheclipse.core.expression.F.ZZ(43L),
-            org.matheclipse.core.tensor.qty.IUnit.ofPutIfAbsent("kg"));
+        org.matheclipse.core.expression.F.Quantity(org.matheclipse.core.expression.F.ZZ(43L),
+            org.matheclipse.core.expression.F.stringx("Kilograms"));
     assertEquals(
-        "org.matheclipse.core.tensor.qty.IQuantity.of(org.matheclipse.core.expression.F.ZZ(43L),org.matheclipse.core.tensor.qty.IUnit.ofPutIfAbsent(\"kg\"))",
-        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, null).toString());
+        "org.matheclipse.core.expression.F.Quantity(org.matheclipse.core.expression.F.ZZ(43L),org.matheclipse.core.expression.F.$str(\"Kilograms\"))",
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null)
+            .toString());
   }
 
   @Test
   public void testJavaFormQuantity_unitOne() {
-    IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ONE);
-    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ONE)",
-        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
+    IExpr quantity = F.Quantity(F.ZZ(43L), F.stringx("PureUnities"));
+    assertEquals("F.Quantity(F.ZZ(43L),F.$str(\"PureUnities\"))",
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
   }
 
   @Test
   public void testJavaFormQuantity_unitOneAndFullyQualifiedName() {
-    IExpr quantity = org.matheclipse.core.tensor.qty.IQuantity
-        .of(org.matheclipse.core.expression.F.ZZ(43L), org.matheclipse.core.tensor.qty.IUnit.ONE);
+    IExpr quantity =
+        org.matheclipse.core.expression.F.Quantity(org.matheclipse.core.expression.F.ZZ(43L),
+            org.matheclipse.core.expression.F.stringx("PureUnities"));
     assertEquals(
-        "org.matheclipse.core.tensor.qty.IQuantity.of(org.matheclipse.core.expression.F.ZZ(43L),org.matheclipse.core.tensor.qty.IUnit.ONE)",
-        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, null).toString());
+        "org.matheclipse.core.expression.F.Quantity(org.matheclipse.core.expression.F.ZZ(43L),org.matheclipse.core.expression.F.$str(\"PureUnities\"))",
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null)
+            .toString());
   }
 
   @Test
@@ -136,7 +137,7 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
         F.QQ(F.ZZ("43000000000000000000000000000000000000000000000000000000", 10), F.ZZ(3));
     assertEquals(
         "F.QQ(F.ZZ(\"43000000000000000000000000000000000000000000000000000000\", 10),F.C3)",
-        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
 
     IExpr quantity2 =
         F.QQ(F.ZZ("43000000000000000000000000000000000000000000000000000000", 10), F.ZZ(27));

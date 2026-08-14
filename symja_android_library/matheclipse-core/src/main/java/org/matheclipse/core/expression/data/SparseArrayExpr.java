@@ -964,8 +964,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         final int n = v.getDimension();
         IExpr thisDefault = array.fDefaultValue;
         IExpr thatDefault = v.array.fDefaultValue;
-        SparseExprMatrix res =
-            new SparseExprMatrix(virtualSize, n, thisDefault.times(thatDefault));
+        SparseExprMatrix res = new SparseExprMatrix(virtualSize, n, thisDefault.times(thatDefault));
 
         if (thisDefault.isZero() && thatDefault.isZero()) {
           // only the products of two stored elements can differ from the default value 0

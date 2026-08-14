@@ -950,8 +950,7 @@ public class AlgebraUtil {
           Optional<IExpr[]> result = cancelGCD(numParts.arg1(), denominator);
           if (result.isPresent()) {
             IExpr[] elements = result.get();
-            return F.Times(elements[0], elements[1], numParts.arg2(),
-                F.Power(elements[2], F.CN1));
+            return F.Times(elements[0], elements[1], numParts.arg2(), F.Power(elements[2], F.CN1));
           }
         }
       }
@@ -978,8 +977,7 @@ public class AlgebraUtil {
    * @param denominator a expression which could be converted to JAS polynomial (using
    *        substitutions)
    * @return {@link Optional#empty()} if the expressions couldn't be converted to JAS polynomials,
-   *         gcd equals 1 or an argument is larger than
-   *         {@link Config#MAX_CANCEL_GCD_LEAFCOUNT}
+   *         gcd equals 1 or an argument is larger than {@link Config#MAX_CANCEL_GCD_LEAFCOUNT}
    * @throws JASConversionException
    */
   public static Optional<IExpr[]> cancelGCD(final IExpr numerator, final IExpr denominator)
@@ -1706,8 +1704,8 @@ public class AlgebraUtil {
       // temp = F.Power(temp, expr.exponent());
       // } else
       if (expr.isPower()) {
-        IExpr p =
-            factorExpr((IAST) expr, expr.base(), eVar, squareFree, withHomogenization, trig, engine);
+        IExpr p = factorExpr((IAST) expr, expr.base(), eVar, squareFree, withHomogenization, trig,
+            engine);
         if (p.isPresent() && !p.equals(expr.base())) {
           return F.Power(p, expr.exponent());
         }
@@ -1842,8 +1840,8 @@ public class AlgebraUtil {
     return engine.evaluate(F.Divide(newFactors.oneIdentity1(), newDenominator));
   }
 
-  public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
-      boolean trig, EvalEngine engine) {
+  public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar, boolean trig,
+      EvalEngine engine) {
     boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
     PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, trig);
     IExpr subsPolynomial = substitutions.replaceForward(expr);
@@ -3172,8 +3170,8 @@ public class AlgebraUtil {
    *
    * @param useCanonicalForms if {@code true} the canonical sequence identities (Fibonacci,
    *        ChebyshevU) are returned when they match; if {@code false} the explicit universal Binet
-   *        formula is always returned (used by {@code RSolve}, which canonicalizes special sequences
-   *        in a later pass).
+   *        formula is always returned (used by {@code RSolve}, which canonicalizes special
+   *        sequences in a later pass).
    */
   public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine,
       boolean useCanonicalForms) {
@@ -3194,18 +3192,18 @@ public class AlgebraUtil {
 
     // 2. Universal Binet Formula for Generic Roots
     IExpr delta = engine.evaluate(F.Sqrt(F.Subtract(F.Sqr(a), F.Times(F.C4, b))));
-  
+
     // r1 = a + delta, r2 = a - delta
     IExpr r1 = engine.evaluate(F.Plus(a, delta));
     IExpr r2 = engine.evaluate(F.Subtract(a, delta));
-  
+
     // (r1^n - r2^n) / (2^n * delta)
     IExpr term1 = engine.evaluate(F.Power(r1, n));
     IExpr term2 = engine.evaluate(F.Power(r2, n));
-  
+
     IExpr numBinet = engine.evaluate(F.Subtract(term1, term2));
     IExpr denBinet = engine.evaluate(F.Times(F.Power(F.C2, n), delta));
-  
+
     return engine.evaluate(F.Together(F.Divide(numBinet, denBinet)));
   }
 

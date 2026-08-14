@@ -16,17 +16,21 @@ import org.matheclipse.core.tensor.itp.BSplineFunction;
  */
 @FunctionalInterface
 public interface ScalarTensorFunction extends Function<IExpr, IAST>, Serializable {
-  /** @param before non-null
+  /**
+   * @param before non-null
    * @return scalar -> apply(before.apply(scalar))
-   * @throws Exception if operator before is null */
+   * @throws Exception if operator before is null
+   */
   default ScalarTensorFunction compose(ScalarUnaryOperator before) {
     Objects.requireNonNull(before);
     return tensor -> apply(before.apply(tensor));
   }
 
-  /** @param after non-null
+  /**
+   * @param after non-null
    * @return scalar -> after.apply(apply(scalar))
-   * @throws Exception if operator after is null */
+   * @throws Exception if operator after is null
+   */
   default ScalarTensorFunction andThen(TensorUnaryOperator after) {
     Objects.requireNonNull(after);
     return scalar -> after.apply(apply(scalar));

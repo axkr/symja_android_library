@@ -677,6 +677,26 @@ public class SumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSumHyperHarmonicNumber() {
+    // partial sums of (generalized) harmonic numbers give hyperharmonic numbers
+    check("Sum(HarmonicNumber(k), {k, 1, n})", //
+        "HyperHarmonicNumber(2,n)");
+    check("Sum(HarmonicNumber(k, 2), {k, 1, n})", //
+        "HyperHarmonicNumber(2,n,2)");
+    check("Sum(HarmonicNumber(k, r), {k, 1, n})", //
+        "HyperHarmonicNumber(2,n,r)");
+    check("Sum(HarmonicNumber(k), {k, 1, m})", //
+        "HyperHarmonicNumber(2,m)");
+    check("Sum(HarmonicNumber(k), {k, 1, 5})", //
+        "87/10");
+    check("Sum(HarmonicNumber(k, 2), {k, 1, 5})", //
+        "3899/600");
+    // the exponent must be free of the iteration variable
+    check("Sum(HarmonicNumber(k, k), {k, 1, n})", //
+        "Sum(HarmonicNumber(k,k),{k,1,n})");
+  }
+
+  @Test
   public void testSumTrigonometric() {
     // Sum(Sin(k)/k, {k, 1, Infinity})
     check("Sum(Sin(k)/k, {k, 1, Infinity})", //

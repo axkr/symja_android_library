@@ -20,8 +20,7 @@ public class ODEUtils {
   private ODEUtils() {} // static use only
 
   /**
-   * The derivative order of an applied derivative, e.g. <code>2</code> for
-   * <code>y''(x)</code>.
+   * The derivative order of an applied derivative, e.g. <code>2</code> for <code>y''(x)</code>.
    *
    * @param deriveExpr the result of {@link IExpr#isDerivativeAST1()}, whose first entry is the
    *        <code>Derivative(n)</code> operator

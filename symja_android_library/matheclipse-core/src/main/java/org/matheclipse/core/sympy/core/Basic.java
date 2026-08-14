@@ -21,7 +21,7 @@ public class Basic {
     return result;
   }
 
-  public static IASTAppendable atoms(IAST ast ) {
+  public static IASTAppendable atoms(IAST ast) {
     return atoms(ast, x -> x.isAtom());
   }
 

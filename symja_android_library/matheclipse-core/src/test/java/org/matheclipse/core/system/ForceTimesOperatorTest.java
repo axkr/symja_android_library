@@ -19,8 +19,8 @@ public class ForceTimesOperatorTest extends ExprEvaluatorTestCase {
     }
 
     check("-3!2==2108", //
-          "False");
+        "False");
     check("-3!2==-12", //
-          "True");
+        "True");
   }
 }

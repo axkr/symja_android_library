@@ -13,29 +13,33 @@ import org.matheclipse.core.interfaces.IAST;
 public interface TensorUnaryOperator extends UnaryOperator<IAST>, Serializable {
   TensorUnaryOperator IDENTITY = t -> t;
 
-  /** @param before non-null
+  /**
+   * @param before non-null
    * @return tensor -> apply(before.apply(tensor))
-   * @throws Exception if operator before is null */
+   * @throws Exception if operator before is null
+   */
   default TensorUnaryOperator compose(TensorUnaryOperator before) {
     Objects.requireNonNull(before);
     return tensor -> apply(before.apply(tensor));
   }
 
-  /** @param after non-null
+  /**
+   * @param after non-null
    * @return tensor -> after.apply(apply(tensor))
-   * @throws Exception if operator after is null */
+   * @throws Exception if operator after is null
+   */
   default TensorUnaryOperator andThen(TensorUnaryOperator after) {
     Objects.requireNonNull(after);
     return tensor -> after.apply(apply(tensor));
   }
 
-  /** Remark:
-   * The empty chain TensorUnaryOperator.chain() returns
-   * the instance {@link #IDENTITY}
+  /**
+   * Remark: The empty chain TensorUnaryOperator.chain() returns the instance {@link #IDENTITY}
    * 
    * @param tensorUnaryOperators
    * @return operator that nests given operators with execution from left to right
-   * @throws Exception if any given operator is null */
+   * @throws Exception if any given operator is null
+   */
   @SafeVarargs
   static TensorUnaryOperator chain(TensorUnaryOperator... tensorUnaryOperators) {
     return List.of(tensorUnaryOperators).stream() //

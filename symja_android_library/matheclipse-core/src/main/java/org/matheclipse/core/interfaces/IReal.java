@@ -14,7 +14,8 @@ import org.matheclipse.core.expression.S;
  * 
  * 
  * <p>
- * <b>Note:</b> the name was refactored from <code>ISignedNumber</code> (Symja 2.x) to <code>IReal</code> (Symja 3.x) 
+ * <b>Note:</b> the name was refactored from <code>ISignedNumber</code> (Symja 2.x) to
+ * <code>IReal</code> (Symja 3.x)
  */
 public interface IReal extends INumber {
 

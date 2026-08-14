@@ -23,20 +23,20 @@ public class CombinatoricUtil {
    * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
    */
   public static final class KSubsetsList implements Iterable<IAST> {
-  
+
     private class KSubsetsIterator implements Iterator<IAST> {
-  
+
       private final Iterator<int[]> fIterable;
-  
+
       private KSubsetsIterator() {
         this.fIterable = new KSubsetsIterable(fList.size() - fOffset, fK).iterator();
       }
-  
+
       @Override
       public boolean hasNext() {
         return fIterable.hasNext();
       }
-  
+
       /**
        * Get the index array for the next partition.
        *
@@ -48,7 +48,7 @@ public class CombinatoricUtil {
         if (j == null) {
           return null;
         }
-  
+
         IASTAppendable temp = fResultList.copyAppendable();
         return temp.appendArgs(0, fK, i -> {
           if (j.length > i && fList.size() > (j[i] + fOffset)) {
@@ -58,20 +58,21 @@ public class CombinatoricUtil {
         });
       }
     }
+
     private final IAST fList;
     private final IAST fResultList;
-  
+
     private final int fOffset;
-  
+
     private final int fK;
-  
+
     private KSubsetsList(final IAST list, final int k, IAST resultList, final int offset) {
       fList = list;
       fK = k;
       fResultList = resultList;
       fOffset = offset;
     }
-  
+
     @Override
     public Iterator<IAST> iterator() {
       return new KSubsetsIterator();
@@ -113,7 +114,7 @@ public class CombinatoricUtil {
         }
         mainList = (IAST) temp;
       }
-  
+
       IASTAppendable result = F.ListAlloc(mainList.argSize());
       Set<IExpr> set = new HashSet<IExpr>();
       for (int j = 1; j < mainList.size(); j++) {
@@ -144,15 +145,15 @@ public class CombinatoricUtil {
               }
               return F.NIL;
             }
-  
+
             // symbolic args => return unevaluated
             return F.NIL;
           }
         }
-  
+
         if (list.size() > 2) {
           // drop empty and singleton cycles
-  
+
           // rotate cycle by rotateLeftPositions so that the smallest position is at index 1
           int rotateLeftPositions = 0;
           IInteger value = (IInteger) list.get(1);
@@ -171,7 +172,7 @@ public class CombinatoricUtil {
           }
         }
       }
-  
+
       EvalAttributes.sort(result, Comparators.LEXICAL_COMPARATOR);
       IAST resultCycles = F.Cycles(result);
       resultCycles.setEvalFlags(IAST.BUILT_IN_EVALED);
@@ -345,12 +346,13 @@ public class CombinatoricUtil {
 
   public static IAST permutationReplace(IAST list1, IAST mainList) {
     IASTMutable result = list1.copy();
-  
+
     boolean changed = false;
     for (int i = 1; i < list1.size(); i++) {
       IExpr arg = list1.get(i);
       if (arg.isInteger()) {
-        IInteger element = Combinatoric.PermutationReplace.replaceSingleElement(mainList, (IInteger) arg);
+        IInteger element =
+            Combinatoric.PermutationReplace.replaceSingleElement(mainList, (IInteger) arg);
         if (!element.equals(arg)) {
           result.set(i, element);
           changed = true;
@@ -364,8 +366,7 @@ public class CombinatoricUtil {
     IExpr temp = CombinatoricUtil.permutationCycles(permutationList);
     if (temp.isAST(S.Cycles, 2)) {
       IAST permutationMainList = (IAST) temp.first();
-      IExpr permute =
-          permute(list, permutationMainList, F.Permute(list, permutationList));
+      IExpr permute = permute(list, permutationMainList, F.Permute(list, permutationList));
       return permute.toIntVector();
     }
     return null;
@@ -374,7 +375,7 @@ public class CombinatoricUtil {
   public static IExpr permute(IAST list1, IAST cyclesMainList, final IAST ast) {
     IASTMutable result = list1.copy();
     boolean changed = false;
-  
+
     for (int j = 1; j < cyclesMainList.size(); j++) {
       IAST list = (IAST) cyclesMainList.get(j);
       for (int i = 1; i < list.size(); i++) {
@@ -387,7 +388,7 @@ public class CombinatoricUtil {
           return Errors.printMessage(S.Permute, "lowlen",
               F.list(F.ZZ(list1.argSize()), list.get(i), ast));
         }
-  
+
         int toPosition;
         if (i < list.size() - 1) {
           toPosition = list.get(i + 1).toIntDefault();

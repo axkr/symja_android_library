@@ -121,7 +121,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("BetaRegularized(0.9768451023103443, 337.0, 0.5)", //
         "0.0000712171");
     check("BetaRegularized(2,Quantity(1.2,\"m\"),1009)", //
-        "BetaRegularized(2,1.2[m],1009)");
+        "BetaRegularized(2,Quantity(1.2,\"Meters\"),1009)");
 
     check("BetaRegularized(0.99,ByteArray(1),1009)", //
         "BetaRegularized(0.99,ByteArray(1),1009)");
@@ -500,7 +500,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "Infinity");
     check("ExpIntegralEi(-Infinity)", //
         "0");
-    // Mathematica at 25 digits: Ei(i) = (0.3374039229009681, 2.5168793971620795) and its
+    // WMA at 25 digits: Ei(i) = (0.3374039229009681, 2.5168793971620795) and its
     // conjugate at -i. The previous expectations came from GammaJS.expIntegralEi and were wrong in
     // the 10th digit of the real part and the 11th of the imaginary one.
     checkNumeric("ExpIntegralEi(I*1.0)", //
@@ -1005,6 +1005,55 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0");
     check("HarmonicNumber(Infinity,2)", //
         "Pi^2/6");
+  }
+
+  @Test
+  public void testHyperHarmonicNumber() {
+    check("HyperHarmonicNumber(2, 5)", //
+        "87/10");
+    check("HyperHarmonicNumber(2, 5, 2)", //
+        "3899/600");
+    check("Table(HyperHarmonicNumber(r, n), {r, 1, 4}, {n, 0, 5})", //
+        "{{0,1,3/2,11/6,25/12,137/60},{0,1,5/2,13/3,77/12,87/10},{0,1,7/2,47/6,57/4,459/\n"
+            + "20},{0,1,9/2,37/3,319/12,743/15}}");
+    // HyperHarmonicNumber(1, n) is the harmonic number
+    check("HyperHarmonicNumber(1, n)", //
+        "HarmonicNumber(n)");
+    check("HyperHarmonicNumber(1, n, m)", //
+        "HarmonicNumber(n,m)");
+    // order r=0
+    check("HyperHarmonicNumber(0, n)", //
+        "1/n");
+    check("HyperHarmonicNumber(0, n, m)", //
+        "n^(-m)");
+    // special values
+    check("HyperHarmonicNumber(r, 0)", //
+        "0");
+    check("HyperHarmonicNumber(7, 1)", //
+        "1");
+    check("HyperHarmonicNumber(r, n, 1)", //
+        "HyperHarmonicNumber(r,n)");
+    // symbolic arguments stay unevaluated
+    check("HyperHarmonicNumber(2, n)", //
+        "HyperHarmonicNumber(2,n)");
+    check("HyperHarmonicNumber(2, n, 2)", //
+        "HyperHarmonicNumber(2,n,2)");
+    // generalized hyperharmonic number with symbolic exponent
+    check("HyperHarmonicNumber(2, 5, m)", //
+        "5+2^(1-2*m)+2^(2-m)+3^(1-m)+5^(-m)");
+    check("HyperHarmonicNumber(3, 5, -2)", //
+        "182");
+    check("FunctionExpand(HyperHarmonicNumber(r, n))", //
+        "(Gamma(n+r)*(-PolyGamma(0,r)+PolyGamma(0,n+r)))/(Gamma(1+n)*Gamma(r))");
+    // numeric evaluation by analytic continuation
+    check("HyperHarmonicNumber(2.5, 3.2)", //
+        "6.66126");
+    check("HyperHarmonicNumber(2.0, 5.0)", //
+        "8.7");
+    check("HyperHarmonicNumber(2.0, 5.0, 2.0)", //
+        "6.49833");
+    check("N(HyperHarmonicNumber(2, 5))", //
+        "8.7");
   }
 
   @Test

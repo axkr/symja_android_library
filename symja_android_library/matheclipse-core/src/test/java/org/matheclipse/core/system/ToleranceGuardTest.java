@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-/** Verifies that the tolerant numeric comparison accepts rounding noise but not real differences. */
+/**
+ * Verifies that the tolerant numeric comparison accepts rounding noise but not real differences.
+ */
 public class ToleranceGuardTest extends ExprEvaluatorTestCase {
 
   private boolean eq(String expected, String actual) {

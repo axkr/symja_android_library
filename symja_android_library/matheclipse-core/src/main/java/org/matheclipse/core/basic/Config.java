@@ -380,8 +380,21 @@ public class Config {
   /** Define the recursion limit for <code>Integrate#integrateByRubiRules()</code> method. */
   public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 100;
 
-  /** Define the Rubi time limit for the <code>TimeConstrained()</code> function. */
+  /**
+   * Define the Rubi time limit in <b>seconds</b> for the <code>TimeConstrained()</code> function
+   * used <i>inside</i> the Rubi rules (the Rubi <code>§$timelimit</code> variable).
+   *
+   * <p>
+   * This is independent of {@link #INTEGRATE_RUBI_TIMELIMIT_MILLIS}, which is the total wall-clock
+   * budget the <code>Integrate()</code> watchdog grants to one top-level run of the Rubi rules.
+   */
   public static int INTEGRATE_RUBI_TIMELIMIT = 8;
+
+  /**
+   * Maximum number of entries in the per-engine LRU cache which memoizes the results of the Rubi
+   * integration rules for <code>Integrate()</code> (including "the rules have no match" results).
+   */
+  public static int INTEGRATE_RUBI_CACHE_SIZE = 500;
 
   /**
    * Master flag which enables the fast algorithmic integration cascade (rational function
@@ -455,7 +468,9 @@ public class Config {
    * Time budget in milliseconds for the Rubi rules inside <code>Integrate()</code>. When the rules
    * exceed it, they are interrupted and the native post-Rubi stages get their turn instead of the
    * whole evaluation running into the caller's deadline. <code>0</code> disables the budget (the
-   * rules then run until they finish or the evaluation is aborted).
+   * rules then run until they finish or the evaluation is aborted). Not to be confused with
+   * {@link #INTEGRATE_RUBI_TIMELIMIT}, the <b>seconds</b> limit for a single
+   * <code>TimeConstrained()</code> call inside the Rubi rules themselves.
    *
    * <p>
    * When the evaluation has a deadline of its own, the budget is additionally capped at

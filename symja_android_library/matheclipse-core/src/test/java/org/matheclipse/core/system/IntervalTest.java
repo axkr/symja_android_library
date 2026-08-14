@@ -16,7 +16,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "{}");
 
     check("Intersection(Quantity(1.2,\"m\"))", //
-        "Intersection(1.2[m])");
+        "{1.2,Meters}");
   }
 
   @Test

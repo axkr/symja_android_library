@@ -95,7 +95,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
     html.text(code);
   }
 
-  private boolean renderMMA(WolframFormFactory wolframForm, String code) {
+  private boolean renderMMA(WolframFormFactory wmaForm, String code) {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
 
     try {
@@ -118,23 +118,10 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
             return true;
           }
           // return openSVGOnDesktop((IAST) expr);
-        } else if (result.isASTSizeGE(S.Graphics3D, 2)
-            || result.isASTSizeGE(S.SurfaceGraphics, 2)) {
+        } else if (WebGLGraphics3D.isRenderable(result)) {
           String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) result);
           html.raw(webglSnippet);
           return true;
-        } else if (result.isSameHeadSizeGE(S.Graphics3D, 2)) {
-          StringBuilder buf = new StringBuilder();
-          if (GraphicsUtil.renderGraphics3D(buf, (IAST) result, EvalEngine.get())) {
-
-            String graphics3DStr = buf.toString();
-            String htmlStr =
-                JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE, graphics3DStr);
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-          }
         } else if (result instanceof GraphExpr) {
           String javaScriptStr = ((GraphExpr) result).graphToJSForm();
           if (javaScriptStr != null) {
@@ -153,14 +140,10 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           ImageExpr imageExpr = (ImageExpr) result;
           byte[] data = imageExpr.toData();
           if (data != null) {
-            String htmlStr = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-            String[] argsToRender = new String[3];
-            argsToRender[0] = imageExpr.toBase64EncodedString();
-            htmlStr = Errors.templateRender(htmlStr, argsToRender);
-
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 100%; height: 1050%; border: none;\" ></iframe>");
+            // an image is inert content, so it goes in directly and scales with the page rather
+            // than sitting in an iframe of its own whose height never matched the picture
+            html.raw("<img alt=\"image\" style=\"max-width: 100%; height: auto;\""
+                + " src=\"data:image/png;base64," + imageExpr.toBase64EncodedString() + "\"/>");
             return true;
           }
         } else if (result.isAST(F.JSFormData, 3)) {
@@ -227,7 +210,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           }
         } else {
           html.tag("pre");
-          code = wolframForm.toString(result);
+          code = wmaForm.toString(result);
           html.text(StringEscapeUtils.escapeEcmaScript(code));
           html.tag("/pre");
           return true;

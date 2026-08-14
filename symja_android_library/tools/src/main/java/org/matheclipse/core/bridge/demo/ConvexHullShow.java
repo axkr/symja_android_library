@@ -29,7 +29,9 @@ import org.matheclipse.core.tensor.sca.Clips;
     points = points.mapLeaf(S.List, Clips.unit());
     // .map(Clips.unit());
     // System.err.println(points.toString());
-    IAST hull = (IAST) S.ConvexHullMesh.of(points);
+    // ConvexHullMesh returns a BoundaryMeshRegion whose vertices are listed in input order;
+    // ConvexHullRegion gives the Polygon with its corners in boundary order
+    IAST hull = (IAST) ((IAST) S.ConvexHullRegion.of(points)).arg1();
     GeometricLayer geometricLayer = new GeometricLayer(StaticHelper.SE2);
     BufferedImage bufferedImage = StaticHelper.createWhite();
     Graphics2D graphics = bufferedImage.createGraphics();
