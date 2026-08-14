@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.builtin.GraphFunctions;
@@ -98,13 +100,16 @@ public class KirchhoffMatrix extends AbstractFunctionEvaluator {
       }
 
     } else {
-      // Use a list of maps to represent sparse rows and avoid O(N^2) memory footprint
-      List<Map<Integer, Integer>> matrix = new ArrayList<>(n);
+      // "The Kirchhoff matrix of a non-simple graph and its simple graph is the same", so
+      // self-loops are ignored and parallel edges are collapsed into a single adjacency.
+      List<Set<Integer>> adjacent = new ArrayList<>(n);
+      // the degree of a vertex counts the incident edges in both directions
+      List<Set<Integer>> incident = new ArrayList<>(n);
       for (int i = 0; i < n; i++) {
-        matrix.add(new HashMap<>());
+        adjacent.add(new TreeSet<>());
+        incident.add(new TreeSet<>());
       }
 
-      // Populate adjacency bounds (off-diagonal elements)
       for (Object edgeObj : g.edgeSet()) {
         IExpr source = g.getEdgeSource(edgeObj);
         IExpr target = g.getEdgeTarget(edgeObj);
@@ -115,31 +120,26 @@ public class KirchhoffMatrix extends AbstractFunctionEvaluator {
         if (iIndex != null && jIndex != null) {
           int i = iIndex;
           int j = jIndex;
-          // Self-loops do not contribute to the off-diagonal Laplacian
+          // Self-loops do not contribute to the Laplacian
           if (i != j) {
-            matrix.get(i).put(j, matrix.get(i).getOrDefault(j, 0) - 1);
+            adjacent.get(i).add(j);
+            incident.get(i).add(j);
+            incident.get(j).add(i);
             if (!type.isDirected()) {
-              matrix.get(j).put(i, matrix.get(j).getOrDefault(i, 0) - 1);
+              adjacent.get(j).add(i);
             }
           }
         }
       }
 
-      // Calculate the diagonal (Degree matrix)
-      // The diagonal is the sum of the out-degrees, which elegantly corresponds
-      // to the negative sum of the non-diagonal elements in the same row.
+      // L = D - A where the diagonal entry d(i,i) is the degree of the vertex vi
       for (int i = 0; i < n; i++) {
-        int sum = 0;
-        for (Map.Entry<Integer, Integer> entry : matrix.get(i).entrySet()) {
-          int j = entry.getKey();
-          int val = entry.getValue();
-          sum -= val;
-          if (val != 0) {
-            rules.append(F.Rule(F.List(F.ZZ(i + 1), F.ZZ(j + 1)), F.ZZ(val)));
-          }
+        int degree = incident.get(i).size();
+        if (degree != 0) {
+          rules.append(F.Rule(F.List(F.ZZ(i + 1), F.ZZ(i + 1)), F.ZZ(degree)));
         }
-        if (sum != 0) {
-          rules.append(F.Rule(F.List(F.ZZ(i + 1), F.ZZ(i + 1)), F.ZZ(sum)));
+        for (int j : adjacent.get(i)) {
+          rules.append(F.Rule(F.List(F.ZZ(i + 1), F.ZZ(j + 1)), F.CN1));
         }
       }
     }

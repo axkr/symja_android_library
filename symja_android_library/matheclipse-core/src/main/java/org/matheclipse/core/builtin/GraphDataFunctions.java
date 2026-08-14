@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.jgrapht.Graph;
-import org.jgrapht.generate.CompleteBipartiteGraphGenerator;
 import org.jgrapht.generate.CompleteGraphGenerator;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.generate.GnmRandomGraphGenerator;
@@ -67,7 +66,100 @@ public class GraphDataFunctions {
       S.PetersenGraph.setEvaluator(new PetersenGraph());
       S.RandomGraph.setEvaluator(new RandomGraph());
       S.StarGraph.setEvaluator(new StarGraph());
+      S.TorusGraph.setEvaluator(new TorusGraph());
       S.WheelGraph.setEvaluator(new WheelGraph());
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>TorusGraph({n1, n2, ...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * return the graph Cartesian product of the cycle graphs <code>CycleGraph(n1)</code>,
+   * <code>CycleGraph(n2)</code>,... Every vertex of the resulting graph has the degree
+   * <code>2*k</code> for <code>k</code> dimensions.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; EdgeCount(TorusGraph({3, 3}))
+   * 18
+   * </code>
+   * </pre>
+   */
+  private static class TorusGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isNonEmptyList()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) arg1;
+      int dimensions = list.argSize();
+      int[] sizes = new int[dimensions];
+      int vertexCount = 1;
+      for (int i = 1; i < list.size(); i++) {
+        int size = list.get(i).toMachineInt();
+        if (size <= 0) {
+          // Positive machine-sized integer expected at position `2` in `1`
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+        }
+        sizes[i - 1] = size;
+        vertexCount *= size;
+        if (vertexCount > Config.MAX_GRAPH_VERTICES_SIZE) {
+          ASTElementLimitExceeded.throwIt(vertexCount);
+        }
+      }
+
+      // the vertices are numbered in row major order, `strides[d]` is the distance between two
+      // neighbours along dimension `d`
+      int[] strides = new int[dimensions];
+      int stride = 1;
+      for (int d = dimensions - 1; d >= 0; d--) {
+        strides[d] = stride;
+        stride *= sizes[d];
+      }
+
+      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(true).allowingSelfLoops(true) //
+          .edgeClass(ExprEdge.class) //
+          .buildGraph();
+      for (int i = 1; i <= vertexCount; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+
+      int edgeId = 0;
+      for (int v = 0; v < vertexCount; v++) {
+        for (int d = 0; d < dimensions; d++) {
+          // the cyclic successor of `v` along dimension `d`
+          int index = (v / strides[d]) % sizes[d];
+          int successor = (index + 1 == sizes[d]) //
+              ? v - index * strides[d] //
+              : v + strides[d];
+          target.addEdge(F.ZZ(v + 1), F.ZZ(successor + 1), new ExprEdge(false, ++edgeId));
+        }
+      }
+      return GraphExpr.newInstance(target);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -132,21 +224,30 @@ public class GraphDataFunctions {
     }
   }
 
-  private static class CompleteGraph extends AbstractEvaluator {
+  private static class CompleteGraph extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        if (arg1.isList2()) {
-          int partitionA = list.arg1().toMachineInt();
-          int partitionB = list.arg2().toMachineInt();
-          if (partitionA <= 0 || partitionB <= 0) {
-            // Positive machine-sized integer expected at position `2` in `1`
-            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+        if (list.argSize() >= 2) {
+          int[] partitions = new int[list.argSize()];
+          int vertexCount = 0;
+          for (int i = 1; i < list.size(); i++) {
+            partitions[i - 1] = list.get(i).toMachineInt();
+            if (partitions[i - 1] <= 0) {
+              // Positive machine-sized integer expected at position `2` in `1`
+              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+            }
+            vertexCount += partitions[i - 1];
           }
-          return bipartiteCompleteGraph(partitionA, partitionB, engine);
+          if (vertexCount > Config.MAX_GRAPH_VERTICES_SIZE) {
+            ASTElementLimitExceeded.throwIt(vertexCount);
+          }
+          return multipartiteCompleteGraph(partitions, vertexCount, optionsList);
         }
         if (!arg1.isList1()) {
           // Function `1` only implemented for `2` list arguments.
@@ -165,7 +266,43 @@ public class GraphDataFunctions {
         ASTElementLimitExceeded.throwIt(partition);
       }
 
-      return completeGraph(partition, engine);
+      return completeGraph(partition, optionsList);
+    }
+
+    /**
+     * Generates a complete multipartite graph. The vertices are split into the given partitions and
+     * two vertices are connected if and only if they belong to different partitions.
+     *
+     * @param partitions the sizes of the partitions
+     * @param vertexCount the total number of vertices
+     * @param optionsList the options of the resulting graph
+     */
+    private static IExpr multipartiteCompleteGraph(int[] partitions, int vertexCount,
+        IASTAppendable optionsList) {
+      // partitionOfVertex[v] is the index of the partition the vertex `v+1` belongs to
+      int[] partitionOfVertex = new int[vertexCount];
+      int vertex = 0;
+      for (int p = 0; p < partitions.length; p++) {
+        for (int i = 0; i < partitions[p]; i++) {
+          partitionOfVertex[vertex++] = p;
+        }
+      }
+
+      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
+          .buildGraph();
+      for (int i = 1; i <= vertexCount; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+      for (int u = 0; u < vertexCount; u++) {
+        for (int v = u + 1; v < vertexCount; v++) {
+          if (partitionOfVertex[u] != partitionOfVertex[v]) {
+            target.addEdge(F.ZZ(u + 1), F.ZZ(v + 1));
+          }
+        }
+      }
+      return GraphExpr.newInstance(target, optionsList);
     }
 
     /**
@@ -175,7 +312,7 @@ public class GraphDataFunctions {
      * is a directed graph, then edges must always exist in both directions.
      * 
      */
-    private static IExpr completeGraph(int partition, EvalEngine engine) {
+    private static IExpr completeGraph(int partition, IASTAppendable optionsList) {
       CompleteGraphGenerator<IExpr, ExprEdge> gen =
           new CompleteGraphGenerator<IExpr, ExprEdge>(partition);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
@@ -183,23 +320,7 @@ public class GraphDataFunctions {
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
           .buildGraph();
       gen.generateGraph(target);
-      return GraphExpr.newInstance(target);
-    }
-
-    /**
-     * Generates a complete bipartite graph of any size. This is a graph with two partitions; two
-     * vertices will contain an edge if and only if they belong to different partitions.
-     * 
-     */
-    private static IExpr bipartiteCompleteGraph(int partitionA, int partitionB, EvalEngine engine) {
-      CompleteBipartiteGraphGenerator<IExpr, ExprEdge> gen =
-          new CompleteBipartiteGraphGenerator<IExpr, ExprEdge>(partitionA, partitionB);
-      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
-          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
-          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
-          .buildGraph();
-      gen.generateGraph(target);
-      return GraphExpr.newInstance(target);
+      return GraphExpr.newInstance(target, optionsList);
     }
 
     @Override
@@ -210,6 +331,12 @@ public class GraphDataFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
+          GraphGraphics.defaultGraphOptionValues());
     }
   }
 
@@ -290,6 +417,22 @@ public class GraphDataFunctions {
     }
 
     private static IExpr gridGraph(EvalEngine engine, int m, int n) {
+      if (m == 1 || n == 1) {
+        // the JGraphT generator needs at least two rows and columns, a degenerated grid is a
+        // path graph
+        Graph<IExpr, ExprEdge> path = GraphTypeBuilder //
+            .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+            .edgeClass(ExprEdge.class) //
+            .buildGraph();
+        int size = m * n;
+        for (int i = 1; i <= size; i++) {
+          path.addVertex(F.ZZ(i));
+        }
+        for (int i = 2; i <= size; i++) {
+          path.addEdge(F.ZZ(i - 1), F.ZZ(i));
+        }
+        return GraphExpr.newInstance(path);
+      }
       GridGraphGenerator<IExpr, ExprEdge> gen = new GridGraphGenerator<IExpr, ExprEdge>(n, m);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //

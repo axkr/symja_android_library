@@ -269,7 +269,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
     check("FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
         + "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
-        "{6852.025[mi],{1,2,5,3,4,1}}");
+        "{Quantity(6852.025,\"Miles\"),{1,2,5,3,4,1}}");
     check(
         "FindShortestTour({{1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 1}, {2, 3}, {2, 5}, {3, 1}, {3, 2}," //
             + " {3, 4}, {3, 5}, {4, 1}, {4, 3}, {4, 5}, {5, 1}, {5, 2}, {5, 3}, {5, 4}})", //
@@ -351,10 +351,9 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
     check("IncidenceMatrix(Graph({1, 2}, {1 <-> 2, 2 <-> 2})) // Normal", //
         "{{1,0},{1,2}}");
 
-    // Directed graph with a self-loop (self-loops cancel out to 0, which is dropped from
-    // SparseArray)
+    // Directed graph with a self-loop (self-loops get an incidence of -2)
     check("IncidenceMatrix(Graph({1, 2}, {1 -> 2, 2 -> 2})) // Normal", //
-        "{{-1,0},{1,0}}");
+        "{{-1,0},{1,-2}}");
 
     // Standard un-normalized output check (testing the SparseArray structure directly)
     check("IncidenceMatrix(Graph({1 -> 2, 2 -> 3})) // FullForm", //

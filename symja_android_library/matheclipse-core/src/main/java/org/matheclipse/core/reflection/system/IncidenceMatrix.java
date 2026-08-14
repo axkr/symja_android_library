@@ -60,9 +60,11 @@ public class IncidenceMatrix extends AbstractFunctionEvaluator {
 
         if (uIdx != null && vIdx != null) {
           if (isDirected) {
-            // Directed self-loops cancel out to 0, which is omitted in a sparse array.
+            // Directed self-loops have an incidence of -2 (2 for the opposite orientation).
             // For distinct vertices, mark the source as -1 and target as 1.
-            if (!uIdx.equals(vIdx)) {
+            if (uIdx.equals(vIdx)) {
+              rules.append(F.Rule(F.List(F.ZZ(uIdx), F.ZZ(j)), F.CN2));
+            } else {
               rules.append(F.Rule(F.List(F.ZZ(uIdx), F.ZZ(j)), F.CN1));
               rules.append(F.Rule(F.List(F.ZZ(vIdx), F.ZZ(j)), F.C1));
             }

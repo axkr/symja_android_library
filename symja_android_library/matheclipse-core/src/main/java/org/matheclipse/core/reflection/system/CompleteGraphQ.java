@@ -51,15 +51,15 @@ public class CompleteGraphQ extends AbstractEvaluator {
       // Undirected complete graph: n * (n - 1) / 2 edges
       return (edgeCount == n * (n - 1) / 2) ? S.True : S.False;
     }
-    }
+  }
 
   @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
-    }
+  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_1_1;
-    }
   }
+}

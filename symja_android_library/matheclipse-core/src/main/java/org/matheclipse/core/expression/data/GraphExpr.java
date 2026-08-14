@@ -16,6 +16,7 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.SimpleGraph;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.DataExpr;
@@ -391,7 +392,8 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
       weights.append(weightedEdge.weight());
     } else if (edge instanceof ExprEdge) {
       ExprEdge exprEdge = (ExprEdge) edge;
-      if (type.isDirected()) {
+      // in a mixed graph the orientation is stored per edge, not per graph
+      if (type.isDirected() && !exprEdge.isUndirected()) {
         edges.append(F.DirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
       } else {
         edges.append(F.UndirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
@@ -493,8 +495,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
    * @param newIndex
    * @return <code>null</code> if the graph type is <code>null</code>.
    */
-  public static Graph<IExpr, ? extends IExprEdge> createGraph(Graph<IExpr, ?> graph,
-      int newIndex) {
+  public static Graph<IExpr, ? extends IExprEdge> createGraph(Graph<IExpr, ?> graph, int newIndex) {
     Graph<IExpr, ? extends IExprEdge> resultGraph;
     GraphType t = graph.getType();
     if (t == null) {
@@ -558,31 +559,89 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     return newInstance(value, options);
   }
 
-  public static GraphExpr<ExprEdge> newInstance(final IAST vertices, final IAST edges) {
+  /**
+   * Remove a wrapper like <code>Labeled(...)</code>, <code>Annotation(...)</code> or
+   * <code>Style(...)</code> from an edge specification.
+   *
+   * @param expr an edge specification, possibly wrapped
+   * @return the unwrapped edge or <code>expr</code> itself, if it isn't wrapped
+   */
+  public static IExpr unwrapEdge(IExpr expr) {
+    while (expr.isAST() && expr.size() > 1) {
+      IExpr head = expr.head();
+      if (head == S.Labeled || head == S.Annotation || head == S.Style) {
+        expr = expr.first();
+        continue;
+      }
+      break;
+    }
+    return expr;
+  }
 
+  /**
+   * Test if the graph mixes <code>DirectedEdge</code> and <code>UndirectedEdge</code> entries. Such
+   * a graph is stored as a directed pseudograph whose undirected edges carry the
+   * {@link ExprEdge#isUndirected()} flag, so the JGraphT {@link GraphType} reports it as directed.
+   *
+   * @param graph
+   */
+  public static boolean isMixedGraph(Graph<IExpr, ?> graph) {
+    if (!graph.getType().isDirected()) {
+      return false;
+    }
+    for (Object edge : graph.edgeSet()) {
+      if (edge instanceof ExprEdge && ((ExprEdge) edge).isUndirected()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Create a JGraphT graph for the given {@link GraphType}, which may be directed, undirected or
+   * mixed. A mixed graph has no counterpart in the JGraphT library and is represented by a directed
+   * pseudograph whose undirected edges carry the {@link ExprEdge#isUndirected()} flag.
+   *
+   * @param t the graph type determined by {@link IAST#isListOfEdges()}
+   * @param vertices an explicit list of vertices or {@link F#NIL}
+   * @param edges the list of edge specifications
+   */
+  private static Graph<IExpr, ExprEdge> buildGraph(GraphType t, final IAST vertices,
+      final IAST edges) {
+    final boolean mixed = t.isMixed();
     Graph<IExpr, ExprEdge> resultGraph;
-    GraphType t = edges.isListOfEdges();
-    if (t != null) {
-      if (t.isDirected()) {
-        resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-      } else {
-        resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+    if (mixed) {
+      resultGraph = new DirectedPseudograph<IExpr, ExprEdge>(ExprEdge.class);
+    } else if (t.isDirected()) {
+      resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+    } else {
+      resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+    }
+    if (vertices.isList()) {
+      for (int i = 1; i < vertices.size(); i++) {
+        resultGraph.addVertex(vertices.get(i));
       }
-      if (vertices.isList()) {
-        // Graph<IExpr, IExprEdge> g = new DefaultDirectedGraph<IExpr, IExprEdge>(IExprEdge.class);
-        for (int i = 1; i < vertices.size(); i++) {
-          resultGraph.addVertex(vertices.get(i));
-        }
-      }
+    }
 
-      for (int i = 1; i < edges.size(); i++) {
-        IAST edge = edges.getAST(i);
-        resultGraph.addVertex(edge.arg1());
-        resultGraph.addVertex(edge.arg2());
+    for (int i = 1; i < edges.size(); i++) {
+      IAST edge = (IAST) unwrapEdge(edges.get(i));
+      resultGraph.addVertex(edge.arg1());
+      resultGraph.addVertex(edge.arg2());
+      if (mixed) {
+        IExpr head = edge.head();
+        boolean undirected = head == S.UndirectedEdge || head == S.TwoWayRule;
+        resultGraph.addEdge(edge.arg1(), edge.arg2(), new ExprEdge(undirected, i));
+      } else {
         resultGraph.addEdge(edge.arg1(), edge.arg2());
       }
+    }
+    return resultGraph;
+  }
 
-      return newInstance(resultGraph);
+  public static GraphExpr<ExprEdge> newInstance(final IAST vertices, final IAST edges) {
+    GraphType t = edges.isListOfEdges();
+    if (t != null) {
+      return newInstance(buildGraph(t, vertices, edges));
     }
 
     return null;
@@ -595,25 +654,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
    * @param arg1
    */
   public static GraphExpr<?> newInstance(IExpr arg1) {
-    Graph<IExpr, ExprEdge> resultGraph;
     if (arg1.isList()) {
       GraphType t = arg1.isListOfEdges();
       if (t != null) {
-        if (t.isDirected()) {
-          resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        } else {
-          resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        }
-
-        IAST list = (IAST) arg1;
-        for (int i = 1; i < list.size(); i++) {
-          IAST edge = list.getAST(i);
-          resultGraph.addVertex(edge.arg1());
-          resultGraph.addVertex(edge.arg2());
-          resultGraph.addEdge(edge.arg1(), edge.arg2());
-        }
-
-        return newInstance(resultGraph);
+        return newInstance(buildGraph(t, F.NIL, (IAST) arg1));
       }
       return null;
     }
@@ -625,21 +669,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
 
       GraphType t = arg1.isListOfEdges();
       if (t != null) {
-        if (t.isDirected()) {
-          resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        } else {
-          resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        }
-
-        IAST list = (IAST) arg1;
-        for (int i = 1; i < list.size(); i++) {
-          IAST edge = list.getAST(i);
-          resultGraph.addVertex(edge.arg1());
-          resultGraph.addVertex(edge.arg2());
-          resultGraph.addEdge(edge.arg1(), edge.arg2());
-        }
-
-        return newInstance(resultGraph);
+        return newInstance(buildGraph(t, F.NIL, (IAST) arg1));
       }
     }
 

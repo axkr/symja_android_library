@@ -47,7 +47,7 @@ public class ChromaticNumber extends AbstractFunctionEvaluator {
       for (IExprEdge e : graphSet) {
         IExpr u = e.lhs();
         IExpr v = e.rhs();
-        if (!u.equals(v)) { 
+        if (!u.equals(v)) {
           undirected.addEdge(u, v);
         }
       }

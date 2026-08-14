@@ -20,72 +20,69 @@ import us.hebi.matlab.mat.types.Sink;
 abstract class AbstractMatrixWrapper<M extends AnyMatrix> extends AbstractArray
     implements Mat5Serializable, Mat5Serializable.Mat5Attributes {
 
-    protected final M matrix;
+  protected final M matrix;
 
-    protected AbstractMatrixWrapper(M matrix) {
-      super(Mat5.dims(matrix.getRowDimension(), matrix.getColumnDimension()));
-        this.matrix = matrix;
-    }
+  protected AbstractMatrixWrapper(M matrix) {
+    super(Mat5.dims(matrix.getRowDimension(), matrix.getColumnDimension()));
+    this.matrix = matrix;
+  }
 
-    @Override
-    public void close() throws IOException {
-    }
+  @Override
+  public void close() throws IOException {}
 
-    @Override
-    public int[] getDimensions() {
-      dims[0] = matrix.getRowDimension();
-      dims[1] = matrix.getColumnDimension();
-        return dims;
-    }
+  @Override
+  public int[] getDimensions() {
+    dims[0] = matrix.getRowDimension();
+    dims[1] = matrix.getColumnDimension();
+    return dims;
+  }
 
-    protected abstract int getMat5DataSize();
+  protected abstract int getMat5DataSize();
 
-    @Override
-    public int getMat5Size(String name) {
-        return Mat5.MATRIX_TAG_SIZE
-                + computeArrayHeaderSize(name, this)
-                + getMat5DataSize();
-    }
+  @Override
+  public int getMat5Size(String name) {
+    return Mat5.MATRIX_TAG_SIZE + computeArrayHeaderSize(name, this) + getMat5DataSize();
+  }
 
-    @Override
-    public int getNzMax() {
-        return 0;
-    }
+  @Override
+  public int getNzMax() {
+    return 0;
+  }
 
-    @Override
-    public boolean isComplex() {
-        return false;
-    }
+  @Override
+  public boolean isComplex() {
+    return false;
+  }
 
-    @Override
-    public boolean isLogical() {
-        return false;
-    }
+  @Override
+  public boolean isLogical() {
+    return false;
+  }
 
-    @Override
-    protected boolean subEqualsGuaranteedSameClass(Object otherGuaranteedSameClass) {
-      AnyMatrixWrapper other = (AnyMatrixWrapper) otherGuaranteedSameClass;
-      return other.matrix.equals(matrix);
-    }
+  @Override
+  protected boolean subEqualsGuaranteedSameClass(Object otherGuaranteedSameClass) {
+    AnyMatrixWrapper other = (AnyMatrixWrapper) otherGuaranteedSameClass;
+    return other.matrix.equals(matrix);
+  }
 
-    @Override
-    protected int subHashCode() {
-        return matrix.hashCode();
-    }
+  @Override
+  protected int subHashCode() {
+    return matrix.hashCode();
+  }
 
-    @Override
-    public void writeMat5(String name, boolean isGlobal, Sink sink) throws IOException {
-        writeMatrixTag(name, this, sink);
-        writeArrayHeader(name, isGlobal, this, sink);
-        writeMat5Data(sink);
-      }
+  @Override
+  public void writeMat5(String name, boolean isGlobal, Sink sink) throws IOException {
+    writeMatrixTag(name, this, sink);
+    writeArrayHeader(name, isGlobal, this, sink);
+    writeMat5Data(sink);
+  }
 
-    /**
-     * Writes data part in column-major order
-     *
-     * @param sink
-     * @throws IOException
-     */
-    protected abstract void writeMat5Data(Sink sink) throws IOException;
+  /**
+   * Writes data part in column-major order
+   *
+   * @param sink
+   * @throws IOException
+   */
+  protected abstract void writeMat5Data(Sink sink) throws IOException;
 
 }

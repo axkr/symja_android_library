@@ -96,7 +96,7 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       // If not specified, default is undirected if matrix is symmetric, else directed
       boolean isSymmetric = true;
       for (int i = 1; i <= rows; i++) {
-        for (int j = i + 1; j <= rows; j++) { 
+        for (int j = i + 1; j <= rows; j++) {
           IExpr valIJ = matrix.getIndex(i, j);
           IExpr valJI = matrix.getIndex(j, i);
           if (!valIJ.equals(valJI)) {
