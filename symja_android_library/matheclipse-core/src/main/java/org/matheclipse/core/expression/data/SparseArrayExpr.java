@@ -40,6 +40,7 @@ import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.trie.Trie;
+import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.TrieNode;
 import it.unimi.dsi.fastutil.ints.IntList;
 
@@ -474,10 +475,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     public SparseExprVector add(FieldVector<IExpr> v) throws MathIllegalArgumentException {
       final int n = v.getDimension();
       checkVectorDimensions(n);
-      SparseExprVector res = new SparseExprVector(getDimension(), array.fDefaultValue);
 
       if (v instanceof SparseExprVector) {
         SparseExprVector vSparse = (SparseExprVector) v;
+        // the positions where both vectors are default hold the sum of the two default values
+        IExpr newDefault = array.fDefaultValue.plus(vSparse.array.fDefaultValue);
+        SparseExprVector res = new SparseExprVector(getDimension(), newDefault);
 
         // Add elements present in 'this'
         for (TrieNode<int[], IExpr> entry : array.fData.nodeSet()) {
@@ -494,11 +497,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
             res.setEntry(key[0] - 1, array.fDefaultValue.plus(entry.getValue()));
           }
         }
-      } else {
-        // Fallback for dense vectors
-        for (int i = 0; i < n; i++) {
-          res.setEntry(i, getEntry(i).plus(v.getEntry(i)));
-        }
+        return res;
+      }
+
+      // Fallback for dense vectors; every position is set explicitly
+      SparseExprVector res = new SparseExprVector(getDimension(), array.fDefaultValue);
+      for (int i = 0; i < n; i++) {
+        res.setEntry(i, getEntry(i).plus(v.getEntry(i)));
       }
       return res;
     }
@@ -621,10 +626,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     public SparseExprVector ebeDivide(FieldVector<IExpr> v)
         throws MathIllegalArgumentException, MathRuntimeException {
       checkVectorDimensions(v.getDimension());
-      SparseExprVector res = new SparseExprVector(getDimension(), array.fDefaultValue);
 
       if (v instanceof SparseExprVector) {
         SparseExprVector vSparse = (SparseExprVector) v;
+        // the positions where both vectors are default hold the quotient of the two default values
+        IExpr newDefault = array.fDefaultValue.divide(vSparse.array.fDefaultValue);
+        SparseExprVector res = new SparseExprVector(getDimension(), newDefault);
 
         // Divide elements present in 'this'
         for (TrieNode<int[], IExpr> entry : array.fData.nodeSet()) {
@@ -641,11 +648,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
             res.setEntry(key[0] - 1, array.fDefaultValue.divide(entry.getValue()));
           }
         }
-      } else {
-        // Fallback for dense vectors
-        for (int i = 0; i < getDimension(); i++) {
-          res.setEntry(i, getEntry(i).divide(v.getEntry(i)));
-        }
+        return res;
+      }
+
+      // Fallback for dense vectors; every position is set explicitly
+      SparseExprVector res = new SparseExprVector(getDimension(), array.fDefaultValue);
+      for (int i = 0; i < getDimension(); i++) {
+        res.setEntry(i, getEntry(i).divide(v.getEntry(i)));
       }
       return res;
     }
@@ -661,10 +670,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     @Override
     public SparseExprVector ebeMultiply(FieldVector<IExpr> v) throws MathIllegalArgumentException {
       checkVectorDimensions(v.getDimension());
-      SparseExprVector res = new SparseExprVector(getDimension(), array.fDefaultValue);
 
       if (v instanceof SparseExprVector) {
         SparseExprVector vSparse = (SparseExprVector) v;
+        // the positions where both vectors are default hold the product of the two default values
+        IExpr newDefault = array.fDefaultValue.times(vSparse.array.fDefaultValue);
+        SparseExprVector res = new SparseExprVector(getDimension(), newDefault);
 
         // Multiply elements present in 'this'
         for (TrieNode<int[], IExpr> entry : array.fData.nodeSet()) {
@@ -681,11 +692,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
             res.setEntry(key[0] - 1, array.fDefaultValue.times(entry.getValue()));
           }
         }
-      } else {
-        // Fallback for dense vectors
-        for (int i = 0; i < getDimension(); i++) {
-          res.setEntry(i, getEntry(i).times(v.getEntry(i)));
-        }
+        return res;
+      }
+
+      // Fallback for dense vectors; every position is set explicitly
+      SparseExprVector res = new SparseExprVector(getDimension(), array.fDefaultValue);
+      for (int i = 0; i < getDimension(); i++) {
+        res.setEntry(i, getEntry(i).times(v.getEntry(i)));
       }
       return res;
     }
@@ -949,18 +962,37 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       if (fv instanceof SparseExprVector) {
         SparseExprVector v = (SparseExprVector) fv;
         final int n = v.getDimension();
-        SparseExprMatrix res = new SparseExprMatrix(virtualSize, n, array.fDefaultValue);
+        IExpr thisDefault = array.fDefaultValue;
+        IExpr thatDefault = v.array.fDefaultValue;
+        SparseExprMatrix res =
+            new SparseExprMatrix(virtualSize, n, thisDefault.times(thatDefault));
 
-        Trie<int[], IExpr> trie1 = array.fData;
-        for (TrieNode<int[], IExpr> entry1 : trie1.nodeSet()) {
-          int[] key1 = entry1.getKey();
-          IExpr value1 = entry1.getValue();
+        if (thisDefault.isZero() && thatDefault.isZero()) {
+          // only the products of two stored elements can differ from the default value 0
+          for (TrieNode<int[], IExpr> entry1 : array.fData.nodeSet()) {
+            int[] key1 = entry1.getKey();
+            IExpr value1 = entry1.getValue();
 
-          Trie<int[], IExpr> trie2 = v.array.fData;
-          for (TrieNode<int[], IExpr> entry2 : trie2.nodeSet()) {
-            int[] key2 = entry2.getKey();
-            IExpr value2 = entry2.getValue();
-            res.setEntry(key1[0] - 1, key2[0] - 1, value1.multiply(value2));
+            for (TrieNode<int[], IExpr> entry2 : v.array.fData.nodeSet()) {
+              int[] key2 = entry2.getKey();
+              res.setEntry(key1[0] - 1, key2[0] - 1, value1.multiply(entry2.getValue()));
+            }
+          }
+          return res;
+        }
+
+        // a stored element of one vector combined with the default value of the other one also
+        // differs from the default value of the result
+        for (int i = 0; i < virtualSize; i++) {
+          IExpr value1 = getEntry(i);
+          boolean isDefault1 = value1.equals(thisDefault);
+          for (int j = 0; j < n; j++) {
+            IExpr value2 = v.getEntry(j);
+            if (isDefault1 && value2.equals(thatDefault)) {
+              // the product is the default value of the result
+              continue;
+            }
+            res.setEntry(i, j, value1.multiply(value2));
           }
         }
         return res;
@@ -1644,6 +1676,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return total;
   }
 
+  /**
+   * Internal marker for a dimension which isn't restricted to a single position, when a part of
+   * this array is extracted. Positions are 1-based, so it can't collide with a real position.
+   */
+  private static final int ALL_POSITIONS = -1;
+
   /** Flags for controlling evaluation and left-hand-side pattern-matching expressions */
   protected int fEvalFlags = 0;
 
@@ -1769,26 +1807,26 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     } else if (fDefaultValue.isNumericArgument(true)) {
       containsNumericArg = true;
     }
-    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    // The new trie is only allocated if the default value or an entry really changes; the unchanged
+    // entries which were visited before the first change are copied into it. An array which is
+    // already evaluated therefore doesn't rebuild its whole trie on every evaluation.
+    Trie<int[], IExpr> trie = evaled ? copyOfData(0, newDefaultValue) : null;
+    int visited = 0;
     for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
       IExpr value = entry.getValue();
       temp = engine.evaluateNIL(value);
-      if (temp.isPresent()) {
-        evaled = true;
-        if (temp.isNumericArgument(true)) {
-          containsNumericArg = true;
-        }
-        if (!temp.equals(newDefaultValue)) {
-          trie.put(entry.getKey(), temp);
-        }
-      } else {
-        if (value.isNumericArgument(true)) {
-          containsNumericArg = true;
-        }
-        if (!value.equals(newDefaultValue)) {
-          trie.put(entry.getKey(), value);
-        }
+      IExpr newValue = temp.orElse(value);
+      if (newValue.isNumericArgument(true)) {
+        containsNumericArg = true;
       }
+      if (trie == null && temp.isPresent()) {
+        evaled = true;
+        trie = copyOfData(visited, newDefaultValue);
+      }
+      if (trie != null && !newValue.equals(newDefaultValue)) {
+        trie.put(entry.getKey(), newValue);
+      }
+      visited++;
     }
     if (evaled) {
       SparseArrayExpr result = new SparseArrayExpr(trie, fDimension, newDefaultValue, false);
@@ -1808,6 +1846,30 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
     // }
     return F.NIL;
+  }
+
+  /**
+   * A new {@link Trie} with the first <code>count</code> entries of {@link #fData}, without the
+   * entries which are equal to <code>skipValue</code>.
+   *
+   * @param count the number of entries to copy in the iteration order of {@link #fData}
+   * @param skipValue entries equal to this value aren't copied
+   */
+  private Trie<int[], IExpr> copyOfData(int count, IExpr skipValue) {
+    Trie<int[], IExpr> result = Config.TRIE_INT2EXPR_BUILDER.build();
+    if (count > 0) {
+      int index = 0;
+      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+        if (index++ == count) {
+          break;
+        }
+        IExpr value = entry.getValue();
+        if (!value.equals(skipValue)) {
+          result.put(entry.getKey(), value);
+        }
+      }
+    }
+    return result;
   }
 
   @Override
@@ -1990,47 +2052,77 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       throw new IndexOutOfBoundsException("Index: " + position + ", Size: " + size());
     }
 
-    int[] dims = getDimension();
-    final int partSize = 1;
-
-    int len = 0;
-    int[] partIndex = new int[dims.length];
-    int count = 0;
+    int[] partIndex = new int[fDimension.length];
     partIndex[0] = position;
+    for (int i = 1; i < partIndex.length; i++) {
+      partIndex[i] = ALL_POSITIONS;
+    }
+    return extractPart(partIndex);
+  }
 
-    for (int i = partSize; i < dims.length; i++) {
-      partIndex[i] = -1;
-      count++;
+  /**
+   * The entries which can match <code>partIndex</code>. The leading concrete positions are used as
+   * a {@link TrieMatch#PARTIAL} prefix of the internal {@link Trie}, so that for example a single
+   * row of a matrix isn't searched by scanning all entries of the array. The result is a superset
+   * of the matching entries, because a prefix which isn't stored in the trie falls back to the
+   * subtree of its longest stored prefix.
+   *
+   * @param partIndex the positions to select, {@link #ALL_POSITIONS} selects all positions of that
+   *        dimension
+   */
+  private Iterable<TrieNode<int[], IExpr>> matchCandidates(int[] partIndex) {
+    int prefixLength = 0;
+    while (prefixLength < partIndex.length && partIndex[prefixLength] != ALL_POSITIONS) {
+      prefixLength++;
     }
-    if (count == 0 && partSize == dims.length) {
-      return getIndex(partIndex);
+    if (prefixLength == 0) {
+      return fData.nodeSet();
     }
-    int[] newDimension = new int[count];
-    count = 0;
+    return fData.nodeSet(Arrays.copyOf(partIndex, prefixLength), TrieMatch.PARTIAL);
+  }
+
+  /**
+   * Extract the sub array which is selected by <code>partIndex</code>. The dimensions selected by
+   * {@link #ALL_POSITIONS} are kept, the other dimensions are dropped.
+   *
+   * @param partIndex the positions to select for each dimension; must have one entry for each
+   *        dimension of this array
+   * @return the selected value if all positions are concrete, otherwise a sparse array of the
+   *         remaining dimensions
+   */
+  private IExpr extractPart(int[] partIndex) {
+    int selectedDimensions = 0;
     for (int i = 0; i < partIndex.length; i++) {
-      if (partIndex[i] == (-1)) {
-        len++;
-        newDimension[count++] = dims[i];
+      if (partIndex[i] == ALL_POSITIONS) {
+        selectedDimensions++;
       }
     }
+    if (selectedDimensions == 0) {
+      return getIndex(partIndex);
+    }
+    int[] newDimension = new int[selectedDimensions];
+    int count = 0;
+    for (int i = 0; i < partIndex.length; i++) {
+      if (partIndex[i] == ALL_POSITIONS) {
+        newDimension[count++] = fDimension[i];
+      }
+    }
+
     final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
-    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+    for (TrieNode<int[], IExpr> entry : matchCandidates(partIndex)) {
       int[] key = entry.getKey();
-      boolean evaled = true;
+      boolean matched = true;
       for (int i = 0; i < partIndex.length; i++) {
-        if (partIndex[i] == (-1)) {
-          continue;
-        }
-        if (partIndex[i] != key[i]) {
-          evaled = false;
+        if (partIndex[i] != ALL_POSITIONS && partIndex[i] != key[i]) {
+          matched = false;
           break;
         }
       }
-      if (evaled) {
-        int[] newKey = new int[len];
+      if (matched) {
+        int[] newKey = new int[selectedDimensions];
         int j = 0;
         for (int i = 0; i < partIndex.length; i++) {
-          if (partIndex[i] == (-1)) {
+          if (partIndex[i] == ALL_POSITIONS) {
             newKey[j++] = key[i];
           }
         }
@@ -2073,14 +2165,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     final int partSize = ast.size() - startPosition;
     if (dims.length >= partSize) {
 
-      int len = 0;
       int[] partIndex = new int[dims.length];
-      int count = 0;
       for (int i = startPosition; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         if (arg.equals(S.All) || arg.isBlank()) {
-          partIndex[i - startPosition] = -1; // safe internal wildcard marker
-          count++;
+          partIndex[i - startPosition] = ALL_POSITIONS;
         } else {
           int idx = arg.toIntDefault(Integer.MIN_VALUE);
           if (idx == Integer.MIN_VALUE) {
@@ -2095,99 +2184,28 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           partIndex[i - startPosition] = idx;
         }
       }
+      // the dimensions which aren't selected by `ast` are kept completely
       for (int i = partSize; i < dims.length; i++) {
-        partIndex[i] = -1;
-        count++;
+        partIndex[i] = ALL_POSITIONS;
       }
-      if (count == 0 && partSize == dims.length) {
-        return getIndex(partIndex);
-      }
-      int[] newDimension = new int[count];
-      count = 0;
-      for (int i = 0; i < partIndex.length; i++) {
-        if (partIndex[i] == (-1)) {
-          len++;
-          newDimension[count++] = dims[i];
-        }
-      }
-      final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
-      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-        int[] key = entry.getKey();
-        boolean evaled = true;
-        for (int i = 0; i < partIndex.length; i++) {
-          if (partIndex[i] == (-1)) {
-            continue;
-          }
-          if (partIndex[i] != key[i]) {
-            evaled = false;
-            break;
-          }
-        }
-        if (evaled) {
-          int[] newKey = new int[len];
-          int j = 0;
-          for (int i = 0; i < partIndex.length; i++) {
-            if (partIndex[i] == (-1)) {
-              newKey[j++] = key[i];
-            }
-          }
-          trie.put(newKey, entry.getValue());
-        }
-      }
-      return new SparseArrayExpr(trie, newDimension, fDefaultValue.orElse(F.C0), false);
+      return extractPart(partIndex);
     }
     return Errors.printMessage(S.Part, "partd", F.list(ast), EvalEngine.get());
   }
 
   @Override
-  public IExpr getPart(final int... partIndex) {
+  public IExpr getPart(final int... positions) {
     int[] dims = getDimension();
 
-    final int partSize = partIndex.length;
+    final int partSize = positions.length;
     if (dims.length >= partSize) {
-
-      int len = 0;
-      int count = 0;
+      // copy, because the trailing dimensions are marked as `ALL_POSITIONS` and the argument
+      // belongs to the caller
+      int[] partIndex = Arrays.copyOf(positions, dims.length);
       for (int i = partSize; i < dims.length; i++) {
-        partIndex[i] = -1;
-        count++;
+        partIndex[i] = ALL_POSITIONS;
       }
-      if (count == 0 && partSize == dims.length) {
-        return getIndex(partIndex);
-      }
-      int[] newDimension = new int[count];
-      count = 0;
-      for (int i = 0; i < partIndex.length; i++) {
-        if (partIndex[i] == (-1)) {
-          len++;
-          newDimension[count++] = dims[i];
-        }
-      }
-      final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
-      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-        int[] key = entry.getKey();
-        boolean evaled = true;
-        for (int i = 0; i < partIndex.length; i++) {
-          if (partIndex[i] == (-1)) {
-            continue;
-          }
-          if (partIndex[i] != key[i]) {
-            evaled = false;
-            break;
-          }
-        }
-        if (evaled) {
-          int[] newKey = new int[len];
-          int j = 0;
-          for (int i = 0; i < partIndex.length; i++) {
-            if (partIndex[i] == (-1)) {
-              newKey[j++] = key[i];
-            }
-          }
-          trie.put(newKey, entry.getValue());
-        }
-      }
-      return new SparseArrayExpr(trie, newDimension, fDefaultValue.orElse(F.C0), false);
+      return extractPart(partIndex);
     }
     return F.NIL;
   }
@@ -2912,35 +2930,37 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return totalAppendable(result);
   }
 
+  /**
+   * Append all elements of this array in row major order to <code>result</code>. The entries of the
+   * internal {@link Trie} are iterated in lexicographic order, which is the same order, so that the
+   * gaps between two entries are exactly the positions of the default value and no lookup per
+   * element is necessary.
+   */
   private IASTAppendable totalAppendable(IASTAppendable result) {
-    int[] index = new int[fDimension.length];
-    for (int i = 0; i < index.length; i++) {
-      index[i] = 1;
+    long position = 0;
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      long entryPosition = rowMajorPosition(entry.getKey());
+      for (; position < entryPosition; position++) {
+        result.append(fDefaultValue);
+      }
+      result.append(entry.getValue());
+      position++;
     }
-    totalRecursive(fData, fDimension, 0, index, result);
+    for (long total = totalSize(fDimension); position < total; position++) {
+      result.append(fDefaultValue);
+    }
     return result;
   }
 
-  private void totalRecursive(Trie<int[], IExpr> trie, int[] dimension, int position, int[] index,
-      IASTAppendable result) {
-    if (dimension.length - 1 == position) {
-      int size = dimension[position];
-      for (int i = 1; i <= size; i++) {
-        index[position] = i;
-        IExpr expr = trie.get(index);
-        if (expr == null) {
-          result.append(fDefaultValue);
-        } else {
-          result.append(expr);
-        }
-      }
-      return;
+  /**
+   * The 0-based position of the 1-based <code>key</code> in the row major order of this array.
+   */
+  private long rowMajorPosition(int[] key) {
+    long position = 0;
+    for (int i = 0; i < key.length; i++) {
+      position = position * fDimension[i] + (key[i] - 1);
     }
-    int size1 = dimension[position];
-    for (int i = 1; i <= size1; i++) {
-      index[position] = i;
-      totalRecursive(trie, dimension, position + 1, index, result);
-    }
+    return position;
   }
 
   @Override

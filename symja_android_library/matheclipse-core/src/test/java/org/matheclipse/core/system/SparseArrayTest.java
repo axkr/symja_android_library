@@ -10,9 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr.SparseExprMatrix;
 import org.matheclipse.core.expression.data.SparseArrayExpr.SparseExprVector;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -242,6 +244,138 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "SparseArray(Number of elements: 2 Dimensions: {5} Default value: 0)");
     check("t // MatrixForm", //
         "{1,0,0,4,0}");
+  }
+
+  /**
+   * The leading positions of a part specification are used as a prefix of the internal trie, so
+   * rows with one entry, without entries and with several entries have to be extracted correctly.
+   */
+  @Test
+  public void testPartRowExtraction() {
+    check("s=SparseArray({{1,2}->5, {1,5}->10, {2,1}->20, {2,7}->7, {3,2}->30, {5,5}->50}, {5,7})", //
+        "SparseArray(Number of elements: 6 Dimensions: {5,7} Default value: 0)");
+    // a row with two entries
+    check("s[[1]] // Normal", //
+        "{0,5,0,0,10,0,0}");
+    // a row which is stored in a single trie node
+    check("s[[3]] // Normal", //
+        "{0,30,0,0,0,0,0}");
+    // a row without any entry
+    check("s[[4]] // Normal", //
+        "{0,0,0,0,0,0,0}");
+    check("s[[5]] // Normal", //
+        "{0,0,0,0,50,0,0}");
+    // single elements
+    check("s[[3,2]]", //
+        "30");
+    check("s[[3,1]]", //
+        "0");
+    check("s[[4,4]]", //
+        "0");
+    // columns and the complete array
+    check("s[[All,2]] // Normal", //
+        "{5,0,30,0,0}");
+    check("s[[All,5]] // Normal", //
+        "{10,0,0,0,50}");
+    check("s[[All,All]] // Normal", //
+        "{{0,5,0,0,10,0,0},{20,0,0,0,0,0,7},{0,30,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,50,\n"
+            + "0,0}}");
+    check("s[[3,All]] // Normal", //
+        "{0,30,0,0,0,0,0}");
+
+    // three dimensions
+    check("t=SparseArray({{1,1,1}->1, {1,2,3}->2, {2,1,1}->3, {3,2,2}->9}, {3,3,3})", //
+        "SparseArray(Number of elements: 4 Dimensions: {3,3,3} Default value: 0)");
+    check("t[[1]] // Normal", //
+        "{{1,0,0},{0,0,2},{0,0,0}}");
+    check("t[[3]] // Normal", //
+        "{{0,0,0},{0,9,0},{0,0,0}}");
+    check("t[[1,2]] // Normal", //
+        "{0,0,2}");
+    check("t[[1,2,3]]", //
+        "2");
+    check("t[[All,2,2]] // Normal", //
+        "{0,0,9}");
+    check("t[[2,All,All]] // Normal", //
+        "{{3,0,0},{0,0,0},{0,0,0}}");
+    // a concrete position which isn't stored anywhere must not select another entry
+    check("t[[3,1]] // Normal", //
+        "{0,0,0}");
+    check("t[[1,3]] // Normal", //
+        "{0,0,0}");
+  }
+
+  /**
+   * <code>Total</code> with a head other than <code>Plus</code> builds the dense array from the
+   * ordered entries and the default value.
+   */
+  @Test
+  public void testTotalWithHead() {
+    check("s=SparseArray({{1,2}->5, {2,1}->20, {2,3}->7}, {2,3})", //
+        "SparseArray(Number of elements: 3 Dimensions: {2,3} Default value: 0)");
+    check("Total(s)", //
+        "{20,5,7}");
+    check("Total(s,2)", //
+        "32");
+    check("Total(Normal(s),2)", //
+        "32");
+
+    // a non zero default value has to fill the gaps
+    check("d=SparseArray({{1,2}->5, {2,3}->7}, {2,3}, 1)", //
+        "SparseArray(Number of elements: 2 Dimensions: {2,3} Default value: 1)");
+    check("Normal(d)", //
+        "{{1,5,1},{1,1,7}}");
+    check("Total(d)", //
+        "{2,6,8}");
+    check("Total(d,2)", //
+        "16");
+    check("Total(d,2) == Total(Normal(d),2)", //
+        "True");
+
+    // the last entry isn't the last element of the array
+    check("e=SparseArray({{1,1}->2}, {2,2})", //
+        "SparseArray(Number of elements: 1 Dimensions: {2,2} Default value: 0)");
+    check("Total(e,2)", //
+        "2");
+    check("Total(SparseArray({{2,2}->2}, {2,2}), 2)", //
+        "2");
+  }
+
+  /**
+   * {@link ISparseArray#total(IExpr)} with a head other than {@link S#Plus} appends all elements in
+   * row major order. No built-in function calls it with such a head at the moment, so it is tested
+   * through the API.
+   */
+  @Test
+  public void testTotalNonPlusHeadAPI() {
+    // {{0,5,0},{20,0,7}}
+    ISparseArray s = (ISparseArray) EvalEngine.get()
+        .evaluate("SparseArray({{1,2}->5, {2,1}->20, {2,3}->7}, {2,3})");
+    assertEquals("{0,5,0,20,0,7}", s.total(S.List).toString());
+
+    // gaps, leading and trailing elements are filled with a non zero default value
+    ISparseArray d = (ISparseArray) EvalEngine.get()
+        .evaluate("SparseArray({{1,2}->5, {2,3}->7}, {2,3}, 1)");
+    assertEquals("{1,5,1,1,1,7}", d.total(S.List).toString());
+
+    ISparseArray first = (ISparseArray) EvalEngine.get()
+        .evaluate("SparseArray({{1,1}->2}, {2,2}, 1)");
+    assertEquals("{2,1,1,1}", first.total(S.List).toString());
+
+    ISparseArray last = (ISparseArray) EvalEngine.get()
+        .evaluate("SparseArray({{2,2}->2}, {2,2}, 1)");
+    assertEquals("{1,1,1,2}", last.total(S.List).toString());
+
+    // an array without any entry - the rule is dropped, because it is the default value - is
+    // completely filled with the default value
+    ISparseArray empty =
+        (ISparseArray) EvalEngine.get().evaluate("SparseArray({{1,1}->1}, {2,2}, 1)");
+    assertEquals("{1,1,1,1}", empty.total(S.List).toString());
+
+    // three dimensions
+    ISparseArray t = (ISparseArray) EvalEngine.get()
+        .evaluate("SparseArray({{1,2,2}->5, {2,1,1}->6}, {2,2,2})");
+    assertEquals("{0,0,0,5,6,0,0,0}", t.total(S.List).toString());
   }
 
   @Test
@@ -612,6 +746,74 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "SparseArray(Number of elements: 8 Dimensions: {2,4} Default value: 0)");
     check("s // Normal", //
         "{{11,1,19,2},{11,1,19,2}}");
+  }
+
+  /** The elements of a {@link SparseExprVector} as a dense string, including the default value. */
+  private static String denseString(SparseExprVector vector) {
+    StringBuilder buf = new StringBuilder("{");
+    for (int i = 0; i < vector.getDimension(); i++) {
+      buf.append(i > 0 ? "," : "").append(vector.getEntry(i));
+    }
+    return buf.append("}").toString();
+  }
+
+  private static String denseString(SparseExprMatrix matrix) {
+    StringBuilder buf = new StringBuilder("{");
+    for (int i = 0; i < matrix.getRowDimension(); i++) {
+      buf.append(i > 0 ? "," : "").append("{");
+      for (int j = 0; j < matrix.getColumnDimension(); j++) {
+        buf.append(j > 0 ? "," : "").append(matrix.getEntry(i, j));
+      }
+      buf.append("}");
+    }
+    return buf.append("}").toString();
+  }
+
+  private static SparseExprVector sparseVector(String input) {
+    ISparseArray array = (ISparseArray) EvalEngine.get().evaluate(input);
+    return (SparseExprVector) array.toFieldVector(false);
+  }
+
+  /**
+   * A binary operation of two sparse vectors has to combine the two default values, because the
+   * positions where both vectors hold their default value aren't stored anywhere.
+   */
+  @Test
+  public void testNonZeroDefaultValueVectorOperations() {
+    SparseExprVector v1 = sparseVector("SparseArray({{2}->8}, {3}, 1)"); // {1,8,1}
+    SparseExprVector v2 = sparseVector("SparseArray({{3}->9}, {3}, 2)"); // {2,2,9}
+    assertEquals("{1,8,1}", denseString(v1));
+    assertEquals("{2,2,9}", denseString(v2));
+
+    assertEquals("{3,10,10}", denseString(v1.add(v2)));
+    assertEquals("{-1,6,-8}", denseString(v1.subtract(v2)));
+    assertEquals("{2,16,9}", denseString(v1.ebeMultiply(v2)));
+    assertEquals("{1/2,4,1/9}", denseString(v1.ebeDivide(v2)));
+    assertEquals("27", v1.dotProduct(v2).toString());
+    assertEquals("{{2,2,9},{16,16,72},{2,2,9}}", denseString(v1.outerProduct(v2)));
+
+    // one default value is zero
+    SparseExprVector v3 = sparseVector("SparseArray({{2}->8}, {3}, 0)"); // {0,8,0}
+    assertEquals("{2,10,9}", denseString(v3.add(v2)));
+    assertEquals("{0,16,0}", denseString(v3.ebeMultiply(v2)));
+    assertEquals("{{0,0,0},{16,16,72},{0,0,0}}", denseString(v3.outerProduct(v2)));
+  }
+
+  /** The zero default value keeps its sparse fast paths. */
+  @Test
+  public void testZeroDefaultValueVectorOperations() {
+    SparseExprVector v1 = sparseVector("SparseArray({{2}->8}, {3}, 0)"); // {0,8,0}
+    SparseExprVector v2 = sparseVector("SparseArray({{3}->9}, {3}, 0)"); // {0,0,9}
+
+    assertEquals("{0,8,9}", denseString(v1.add(v2)));
+    assertEquals("{0,8,-9}", denseString(v1.subtract(v2)));
+    assertEquals("{0,0,0}", denseString(v1.ebeMultiply(v2)));
+    assertEquals("0", v1.dotProduct(v2).toString());
+
+    SparseExprMatrix outer = v1.outerProduct(v2);
+    assertEquals("{{0,0,0},{0,0,72},{0,0,0}}", denseString(outer));
+    // only the product of the two stored elements is stored
+    assertEquals(1, outer.getSparseArray().toData().size());
   }
 
   @Test
