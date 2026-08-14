@@ -1019,6 +1019,14 @@ public class HypergeometricFunctions {
         // 1/Gamma(b)
         return F.Power(F.Gamma(b), F.CN1);
       }
+      if (b.equals(F.C1D2)) {
+        // Cosh(2*Sqrt(z))/Sqrt(Pi)
+        return F.Divide(F.Cosh(F.Times(F.C2, F.Sqrt(z))), F.Sqrt(F.Pi));
+      }
+      if (b.equals(F.C3D2)) {
+        // Sinh(2*Sqrt(z))/(Sqrt(Pi)*Sqrt(z))
+        return F.Divide(F.Sinh(F.Times(F.C2, F.Sqrt(z))), F.Times(F.Sqrt(F.Pi), F.Sqrt(z)));
+      }
       return F.NIL;
     }
 
