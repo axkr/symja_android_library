@@ -40,7 +40,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numerics.utils.RealDigitsResult;
-import org.matheclipse.core.tensor.qty.IQuantity;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
@@ -641,7 +640,7 @@ public class IntegerFunctions {
         return IntervalDataSym.mapIntegerFunctionToInterval(S.Ceiling, (IAST) arg1, engine);
       }
       if (arg1.isQuantity()) {
-        return arg1.ceil();
+        return org.matheclipse.core.units.QuantityOps.mapMagnitude((IAST) arg1, S.Ceiling, engine);
       }
 
       IAssumptions assumptions = engine.getAssumptions();
@@ -1047,7 +1046,7 @@ public class IntegerFunctions {
         return IntervalDataSym.mapIntegerFunctionToInterval(S.Floor, (IAST) arg1, engine);
       }
       if (arg1.isQuantity()) {
-        return arg1.floor();
+        return org.matheclipse.core.units.QuantityOps.mapMagnitude((IAST) arg1, S.Floor, engine);
       }
       IAssumptions assumptions = engine.getAssumptions();
       if (assumptions != null) {
@@ -1156,9 +1155,9 @@ public class IntegerFunctions {
         return assumedPart;
       }
       if (arg1.isQuantity()) {
-        IQuantity quantity = (IQuantity) arg1;
-        IExpr fractionalPart = S.FractionalPart.funEval(engine, quantity.value());
-        return quantity.ofUnit(fractionalPart);
+        IAST quantity = (IAST) arg1;
+        IExpr fractionalPart = S.FractionalPart.funEval(engine, quantity.arg1());
+        return F.Quantity(fractionalPart, quantity.arg2());
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
@@ -1439,9 +1438,9 @@ public class IntegerFunctions {
           return IntervalDataSym.mapIntegerFunctionToInterval(S.IntegerPart, (IAST) arg1, engine);
         }
         if (arg1.isQuantity()) {
-          IQuantity quantity = (IQuantity) arg1;
-          IExpr fractionalPart = S.IntegerPart.funEval(engine, quantity.value());
-          return quantity.ofUnit(fractionalPart);
+          IAST quantity = (IAST) arg1;
+          IExpr integerPart = S.IntegerPart.funEval(engine, quantity.arg1());
+          return F.Quantity(integerPart, quantity.arg2());
         }
 
         final IReal realNumber = arg1.evalReal();
@@ -2407,7 +2406,8 @@ public class IntegerFunctions {
             return expr;
           }
           if (expr.isQuantity()) {
-            return expr.roundExpr();
+            return org.matheclipse.core.units.QuantityOps.mapMagnitude((IAST) expr, S.Round,
+                engine);
           }
           // if (expr.isPlus()) {
           // not used in WMA
