@@ -10,7 +10,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.tensor.img.ColorDataIndexed;
 import org.matheclipse.core.tensor.img.ColorDataLists;
-import org.matheclipse.core.tensor.qty.QuantityUnit;
 
 public class VisualSet extends VisualBase {
   private final List<VisualRow> visualRows = new ArrayList<>();
@@ -36,10 +35,10 @@ public class VisualSet extends VisualBase {
   public VisualRow add(IAST points) {
     if (!points.isEmpty()) {
       if (!getAxisX().hasUnit()) {
-        getAxisX().setUnit(QuantityUnit.of(points.getPart(1, 1)));
+        getAxisX().setUnit(axisUnit(points.getPart(1, 1)));
       }
       if (!getAxisY().hasUnit()) {
-        getAxisY().setUnit(QuantityUnit.of(points.getPart(1, 2)));
+        getAxisY().setUnit(axisUnit(points.getPart(1, 2)));
       }
     }
     final int index = visualRows.size();
@@ -57,10 +56,10 @@ public class VisualSet extends VisualBase {
   public VisualRow add(IAST points, int colorDataIndex, boolean first, String label) {
     if (!points.isEmpty()) {
       if (!getAxisX().hasUnit()) {
-        getAxisX().setUnit(QuantityUnit.of(points.getPart(1, 1)));
+        getAxisX().setUnit(axisUnit(points.getPart(1, 1)));
       }
       if (!getAxisY().hasUnit()) {
-        getAxisY().setUnit(QuantityUnit.of(points.getPart(1, 2)));
+        getAxisY().setUnit(axisUnit(points.getPart(1, 2)));
       }
     }
     final int index = visualRows.size();
@@ -99,5 +98,12 @@ public class VisualSet extends VisualBase {
 
   public int getColorDataIndex() {
     return colorDataIndex++;
+  }
+
+  /** the unit of the given value, or {@code null} for plain scalars */
+  private static org.matheclipse.core.interfaces.IExpr axisUnit(
+      org.matheclipse.core.interfaces.IExpr value) {
+    org.matheclipse.core.interfaces.IExpr unit = Axis.unitOf(value);
+    return unit.isOne() ? null : unit;
   }
 }

@@ -13,9 +13,7 @@ import org.jfree.data.time.TimePeriod;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.tensor.qty.IUnit;
-import org.matheclipse.core.tensor.qty.QuantityMagnitude;
-import org.matheclipse.core.tensor.qty.UnitConvert;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.sca.Clip;
 import org.matheclipse.core.tensor.sca.Clips;
 
@@ -49,13 +47,13 @@ import org.matheclipse.core.tensor.sca.Clips;
    */
   public static VisualImage create(BufferedImage bufferedImage, VisualSet visualSet, IAST domain,
       IReal yhi) {
-    IUnit unitX = visualSet.getAxisX().getUnit();
-    UnaryOperator<IExpr> suoX = UnitConvert.SI().to(unitX);
+    IExpr unitX = visualSet.getAxisX().getUnit();
+    UnaryOperator<IExpr> suoX = Axis.convertTo(unitX);
     Clip clipX = Clips.interval(suoX.apply(domain.first()),
         suoX.apply(domain.last()));
     // ---
-    IUnit unitY = visualSet.getAxisY().getUnit();
-    UnaryOperator<IExpr> suoY = UnitConvert.SI().to(unitY);
+    IExpr unitY = visualSet.getAxisY().getUnit();
+    UnaryOperator<IExpr> suoY = Axis.convertTo(unitY);
     Clip clipY =
         Clips.interval(suoY.apply(yhi.zero()), suoY.apply(yhi));
     // ---
@@ -75,7 +73,7 @@ import org.matheclipse.core.tensor.sca.Clips;
     Optional<Clip> optional = axis.getOptionalClip();
     if (optional.isPresent()) {
       Clip clip = optional.orElseThrow();
-      UnaryOperator<IExpr> suo = QuantityMagnitude.SI().in(axis.getUnit());
+      UnaryOperator<IExpr> suo = Axis.magnitudeIn(axis.getUnit());
       valueAxis.setRange( //
           suo.apply(clip.min()).toDoubleDefault(), //
           suo.apply(clip.max()).toDoubleDefault());

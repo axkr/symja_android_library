@@ -5,15 +5,13 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-import org.matheclipse.core.bridge.lang.Unicode;
-import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.qty.IUnit;
-import org.matheclipse.core.tensor.qty.QuantityMagnitude;
-import org.matheclipse.core.tensor.qty.QuantityUnit;
-import org.matheclipse.core.tensor.qty.UnitConvert;
 import org.matheclipse.core.tensor.sca.Clip;
 import org.matheclipse.core.tensor.sca.Clips;
+import org.matheclipse.core.units.Units;
 
 public class Axis implements Serializable {
 
@@ -23,7 +21,8 @@ public class Axis implements Serializable {
   }
 
   private String label = "";
-  private IUnit unit = null;
+  /** canonical unit expression (string atoms), or null if the axis carries no unit */
+  private IExpr unit = null;
   private Clip clip = null;
   private Type type = Type.LINEAR;
 
@@ -35,7 +34,7 @@ public class Axis implements Serializable {
     setClip(clip);
   }
 
-  /** @param label of axis */
+  /** @param string of axis */
   public void setLabel(String string) {
     label = string;
   }
@@ -45,11 +44,11 @@ public class Axis implements Serializable {
     return label;
   }
 
-  public void setUnit(IUnit unit) {
+  public void setUnit(IExpr unit) {
     this.unit = unit;
   }
 
-  public IUnit getUnit() {
+  public IExpr getUnit() {
     return unit;
   }
 
@@ -61,6 +60,42 @@ public class Axis implements Serializable {
     return type;
   }
 
+  /** @return the unit of the given expression: the quantity's unit or {@code 1} for scalars */
+  static IExpr unitOf(IExpr expr) {
+    return expr.isQuantity() ? ((IAST) expr).arg2() : F.C1;
+  }
+
+  /** @return operator converting a quantity to the given unit (identity for non-quantities) */
+  static UnaryOperator<IExpr> convertTo(IExpr unit) {
+    return expr -> {
+      if (expr.isQuantity() && unit != null && !unit.isOne()) {
+        IAST quantity = (IAST) expr;
+        IExpr magnitude = Units.convertMagnitude(quantity.arg1(), quantity.arg2(), unit,
+            EvalEngine.get());
+        if (magnitude.isPresent()) {
+          return F.Quantity(magnitude, unit);
+        }
+      }
+      return expr;
+    };
+  }
+
+  /** @return operator extracting the magnitude of a quantity in the given unit */
+  static UnaryOperator<IExpr> magnitudeIn(IExpr unit) {
+    return expr -> {
+      if (expr.isQuantity()) {
+        IAST quantity = (IAST) expr;
+        if (unit == null || unit.isOne() || quantity.arg2().equals(unit)) {
+          return quantity.arg1();
+        }
+        IExpr magnitude = Units.convertMagnitude(quantity.arg1(), quantity.arg2(), unit,
+            EvalEngine.get());
+        return magnitude.isPresent() ? magnitude : quantity.arg1();
+      }
+      return expr;
+    };
+  }
+
   // ---
   /** @param clip with non-zero width */
   public void setClip(Clip clip) {
@@ -70,7 +105,8 @@ public class Axis implements Serializable {
         System.err.println("empty axis range is not supported");
       }
       if (Objects.isNull(unit)) {
-        setUnit(QuantityUnit.of(clip));
+        IExpr clipUnit = unitOf(clip.min());
+        setUnit(clipUnit.isOne() ? null : clipUnit);
       }
     }
   }
@@ -86,7 +122,7 @@ public class Axis implements Serializable {
   public Optional<Clip> getOptionalClip() {
     return Objects.isNull(clip) //
         ? Optional.empty()
-        : Optional.of(slash(clip, UnitConvert.SI().to(unit)));
+        : Optional.of(slash(clip, convertTo(getAxisUnit())));
   }
 
   /**
@@ -111,19 +147,18 @@ public class Axis implements Serializable {
   }
 
   /**
-   * 
-   * @return operator that maps an expression value to instance of {@link Num}.
+   * @return operator that maps an expression value to its magnitude in this axis' unit.
    */
   /* package */ UnaryOperator<IExpr> toReals() {
-    return QuantityMagnitude.SI().in(getAxisUnit());
+    return magnitudeIn(getAxisUnit());
   }
 
   /* package */ String getUnitString() {
-    IUnit unit = getAxisUnit();
-    return IUnit.ONE.equals(unit) ? "" : '[' + Unicode.valueOf(unit) + ']';
+    IExpr axisUnit = getAxisUnit();
+    return axisUnit.isOne() ? "" : '[' + axisUnit.toString() + ']';
   }
 
-  private IUnit getAxisUnit() {
-    return Objects.isNull(unit) ? IUnit.ONE : unit;
+  private IExpr getAxisUnit() {
+    return Objects.isNull(unit) ? F.C1 : unit;
   }
 }
