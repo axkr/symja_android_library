@@ -1,8 +1,8 @@
 package org.matheclipse.core.numerics.functions;
 
 /**
- * The modified Bessel functions <code>I</code> and <code>K</code> of arbitrary <b>real</b> order for
- * <code>double</code> arguments - the companion of {@link BesselJY}, by the same Temme/Steed
+ * The modified Bessel functions <code>I</code> and <code>K</code> of arbitrary <b>real</b> order
+ * for <code>double</code> arguments - the companion of {@link BesselJY}, by the same Temme/Steed
  * approach adapted to the modified equation.
  *
  * <p>
@@ -76,8 +76,8 @@ public final class BesselIK {
   }
 
   /**
-   * <code>K_v(x)</code>, or NaN when a double cannot carry the result. <code>K</code> is even in the
-   * order, so the sign of <code>v</code> never matters.
+   * <code>K_v(x)</code>, or NaN when a double cannot carry the result. <code>K</code> is even in
+   * the order, so the sign of <code>v</code> never matters.
    */
   public static double besselK(double v, double x) {
     return besselIK(v, x)[1];
@@ -145,7 +145,9 @@ public final class BesselIK {
     return lead * sum;
   }
 
-  /** The core: <code>{I_nu(x), K_nu(x)}</code> for <code>nu &gt;= 0</code>, <code>x &gt; 0</code>. */
+  /**
+   * The core: <code>{I_nu(x), K_nu(x)}</code> for <code>nu &gt;= 0</code>, <code>x &gt; 0</code>.
+   */
   private static double[] ik(final double nu, final double x) {
     final int nl = (int) (nu + 0.5);
     final double xmu = nu - nl;

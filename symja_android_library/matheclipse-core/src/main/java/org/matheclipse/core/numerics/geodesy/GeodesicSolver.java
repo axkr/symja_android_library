@@ -10,9 +10,8 @@ package org.matheclipse.core.numerics.geodesy;
  * given distance along a given initial bearing: see {@link #direct}.
  *
  * <p>
- * All latitudes and longitudes are in <b>degrees</b>, all distances and altitudes in
- * <b>meters</b>, and all azimuths in degrees clockwise from north in the range
- * <code>[0, 360)</code>.
+ * All latitudes and longitudes are in <b>degrees</b>, all distances and altitudes in <b>meters</b>,
+ * and all azimuths in degrees clockwise from north in the range <code>[0, 360)</code>.
  *
  * <p>
  * This is a port of <code>org.gavaghan.geodesy.GeodeticCalculator</code> (Mike Gavaghan, Apache
@@ -69,8 +68,9 @@ public final class GeodesicSolver {
     GeodesicMeasurement(GeodesicCurve curve, double elevationChange) {
       this.curve = curve;
       this.elevationChange = elevationChange;
-      this.pointToPointDistance = Math.sqrt(curve.ellipsoidalDistance()
-          * curve.ellipsoidalDistance() + elevationChange * elevationChange);
+      this.pointToPointDistance =
+          Math.sqrt(curve.ellipsoidalDistance() * curve.ellipsoidalDistance()
+              + elevationChange * elevationChange);
     }
 
     /** @return the geodesic across the ellipsoid raised to the average altitude */
@@ -120,8 +120,8 @@ public final class GeodesicSolver {
   private GeodesicSolver() {}
 
   /**
-   * Canonicalize a latitude/longitude pair such that
-   * <code>-90 &lt;= latitude &lt;= +90</code> and <code>-180 &lt; longitude &lt;= +180</code>.
+   * Canonicalize a latitude/longitude pair such that <code>-90 &lt;= latitude &lt;= +90</code> and
+   * <code>-180 &lt; longitude &lt;= +180</code>.
    *
    * <p>
    * A latitude that runs over a pole flips the longitude by 180 degrees.
@@ -298,17 +298,15 @@ public final class GeodesicSolver {
       double radians;
 
       // eq. 20
-      radians =
-          Math.atan2(cosU2 * Math.sin(lambda), (cosU1sinU2 - sinU1cosU2 * Math.cos(lambda)));
+      radians = Math.atan2(cosU2 * Math.sin(lambda), (cosU1sinU2 - sinU1cosU2 * Math.cos(lambda)));
       if (radians < 0.0) {
         radians += TWO_PI;
       }
       alpha1 = toDegrees(radians);
 
       // eq. 21
-      radians =
-          Math.atan2(cosU1 * Math.sin(lambda), (-sinU1cosU2 + cosU1sinU2 * Math.cos(lambda)))
-              + Math.PI;
+      radians = Math.atan2(cosU1 * Math.sin(lambda), (-sinU1cosU2 + cosU1sinU2 * Math.cos(lambda)))
+          + Math.PI;
       if (radians < 0.0) {
         radians += TWO_PI;
       }
@@ -371,8 +369,7 @@ public final class GeodesicSolver {
         1 + (uSquared / 16384) * (4096 + uSquared * (-768 + uSquared * (320 - 175 * uSquared)));
 
     // eq. 4
-    double bigB =
-        (uSquared / 1024) * (256 + uSquared * (-128 + uSquared * (74 - 47 * uSquared)));
+    double bigB = (uSquared / 1024) * (256 + uSquared * (-128 + uSquared * (74 - 47 * uSquared)));
 
     // iterate until there is a negligible change in sigma
     double deltaSigma;
@@ -393,8 +390,9 @@ public final class GeodesicSolver {
       double cosSignma = Math.cos(sigma);
 
       // eq. 6
-      deltaSigma = bigB * sinSigma * (cosSigmaM2 + (bigB / 4.0) * (cosSignma * (-1 + 2 * cos2SigmaM2)
-          - (bigB / 6.0) * cosSigmaM2 * (-3 + 4 * sinSigma * sinSigma) * (-3 + 4 * cos2SigmaM2)));
+      deltaSigma = bigB * sinSigma
+          * (cosSigmaM2 + (bigB / 4.0) * (cosSignma * (-1 + 2 * cos2SigmaM2) - (bigB / 6.0)
+              * cosSigmaM2 * (-3 + 4 * sinSigma * sinSigma) * (-3 + 4 * cos2SigmaM2)));
 
       // eq. 7
       sigma = sOverbA + deltaSigma;
@@ -441,9 +439,9 @@ public final class GeodesicSolver {
    *
    * <p>
    * The reference ellipsoid is first expanded to pass through the average altitude of the two
-   * positions and the geodesic is computed across that surface. The point-to-point distance is
-   * then the hypotenuse of the right triangle whose legs are that geodesic length and the
-   * difference in altitude.
+   * positions and the geodesic is computed across that surface. The point-to-point distance is then
+   * the hypotenuse of the right triangle whose legs are that geodesic length and the difference in
+   * altitude.
    *
    * @param ellipsoid reference ellipsoid
    * @param latitude1 latitude of the starting point in degrees

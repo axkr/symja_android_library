@@ -22,10 +22,9 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <p>
  * Bounding each variable on its own is not enough for this, because it loses the correlation
- * between them: the assumption <code>x^2+y^2 &lt;= 1</code> gives <code>x</code> and
- * <code>y</code> in <code>[-1,1]</code>, and the resulting bound
- * <code>(x-1)^2+(y-2)^2 &gt;= 1</code> is far below the true minimum <code>6-2*Sqrt(5)</code>. The
- * region has to be treated as a whole.
+ * between them: the assumption <code>x^2+y^2 &lt;= 1</code> gives <code>x</code> and <code>y</code>
+ * in <code>[-1,1]</code>, and the resulting bound <code>(x-1)^2+(y-2)^2 &gt;= 1</code> is far below
+ * the true minimum <code>6-2*Sqrt(5)</code>. The region has to be treated as a whole.
  *
  * <p>
  * <b>Implemented case.</b> A target which is a scaled squared distance

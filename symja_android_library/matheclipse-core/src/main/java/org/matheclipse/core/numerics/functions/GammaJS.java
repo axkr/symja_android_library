@@ -443,8 +443,8 @@ public class GammaJS extends JS {
     // return diff( x => logGamma(x), x );
     ISymbol xSymbol = F.Dummy("x");
     FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(15, 0.01);
-    UnivariateDifferentiableFunction f = differentiator
-        .differentiate(new UnaryNumerical(F.LogGamma(xSymbol), xSymbol, Double.NaN, EvalEngine.get()));
+    UnivariateDifferentiableFunction f = differentiator.differentiate(
+        new UnaryNumerical(F.LogGamma(xSymbol), xSymbol, Double.NaN, EvalEngine.get()));
     DSFactory factory = new DSFactory(1, 1);
     return f.value(factory.variable(0, x)).getPartialDerivative(1);
   }

@@ -369,6 +369,7 @@ public class EllipticFunctionsJS extends JS {
     final JacobiElliptic je = JacobiEllipticBuilder.build(m);
     return je.arcsn(x);
   }
+
   /**
    * JacobiCN function for real values.
    *
@@ -578,8 +579,7 @@ public class EllipticFunctionsJS extends JS {
   }
 
   /** The primitive cube root of unity <code>(-1+I*Sqrt(3))/2</code>. */
-  private static final Complex CUBE_ROOT_OF_UNITY =
-      new Complex(-0.5, Math.sqrt(3.0) / 2.0);
+  private static final Complex CUBE_ROOT_OF_UNITY = new Complex(-0.5, Math.sqrt(3.0) / 2.0);
 
   /**
    * The three roots of <code>4*t^3-g2*t-g3</code>, i.e. of the depressed cubic

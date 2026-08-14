@@ -75,9 +75,11 @@ public abstract class Quadrature {
       return new QuadratureResult(0.0, 0.0, 0, true);
     }
 
-    // opposite bounds
+    // opposite bounds: Integrate(f, {x, a, b}) == -Integrate(f, {x, b, a})
     if (a > b) {
-      return integrate(f, b, a);
+      final QuadratureResult result = integrate(f, b, a);
+      return new QuadratureResult(-result.estimate, result.error, result.evaluations,
+          result.converged);
     }
 
     // finite integral (a, b)

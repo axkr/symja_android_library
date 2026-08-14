@@ -587,8 +587,7 @@ public class Assumptions extends AbstractAssumptions {
 
     // Neither side is a number, so there is no symbol the relation could be attached to.
     // Normalize the relation to its difference instead: a>b is recorded as a-b>0.
-    IExpr difference =
-        engine.evaluate(F.Subtract(relationalAST.arg1(), relationalAST.arg2()));
+    IExpr difference = engine.evaluate(F.Subtract(relationalAST.arg1(), relationalAST.arg2()));
     if (difference.isNumericFunction(false) || difference.isZero()) {
       return false;
     }

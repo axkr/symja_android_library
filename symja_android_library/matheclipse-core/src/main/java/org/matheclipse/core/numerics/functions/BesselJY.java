@@ -28,13 +28,13 @@ package org.matheclipse.core.numerics.functions;
  * </ul>
  *
  * <p>
- * <b>Validated domain.</b> {@link #isSupported(double, double)} states exactly where the results are
- * trusted. Callers are expected to fall back to the arbitrary-precision implementation outside it -
- * see {@code DMath.besselJ} / {@code DMath.besselY}. The bound is not decorative: it was measured
- * against Apfloat at 40 digits over a dense grid of orders and arguments, and the fall-back covers
- * the regions where a <code>double</code> simply cannot carry the answer (very large arguments,
- * where the phase of the oscillation is lost, and very large orders, where <code>J</code>
- * underflows).
+ * <b>Validated domain.</b> {@link #isSupported(double, double)} states exactly where the results
+ * are trusted. Callers are expected to fall back to the arbitrary-precision implementation outside
+ * it - see {@code DMath.besselJ} / {@code DMath.besselY}. The bound is not decorative: it was
+ * measured against Apfloat at 40 digits over a dense grid of orders and arguments, and the
+ * fall-back covers the regions where a <code>double</code> simply cannot carry the answer (very
+ * large arguments, where the phase of the oscillation is lost, and very large orders, where
+ * <code>J</code> underflows).
  */
 public final class BesselJY {
 
@@ -58,10 +58,10 @@ public final class BesselJY {
    * meaningful scale, since relative error is unbounded next to a zero - the worst error over a
    * range of orders runs 2e-15 at <code>x=10</code>, 6e-14 at 100, 1.5e-13 at 200, 4e-13 at 500,
    * 8e-13 at 1000 and 7e-11 at 3000. The cut at 100 keeps better than a decimal order of magnitude
-   * of head room under the 1e-12 that callers rely on - a sweep of 8235 points over
-   * <code>v</code> in [-20,20] and <code>x</code> in [1e-8, 300] put the worst case at 8.2e-13, and
-   * all of that was at the top of the range. Past the cut Apfloat, which keeps guard digits
-   * internally and stays exact to the last bit, is worth its cost.
+   * of head room under the 1e-12 that callers rely on - a sweep of 8235 points over <code>v</code>
+   * in [-20,20] and <code>x</code> in [1e-8, 300] put the worst case at 8.2e-13, and all of that
+   * was at the top of the range. Past the cut Apfloat, which keeps guard digits internally and
+   * stays exact to the last bit, is worth its cost.
    */
   private static final double X_MAX = 100.0;
 
@@ -77,8 +77,8 @@ public final class BesselJY {
       -3.4706269649e-6, 6.9437664e-9, 3.67795e-11, -1.356e-13};
 
   /** Chebyshev coefficients for {@code gam2(x) = (1/Gamma(1-x) + 1/Gamma(1+x)) / 2}. */
-  private static final double[] C2 = {1.843740587300905e0, -7.68528408447867e-2,
-      1.2719271366546e-3, -4.9717367042e-6, -3.31261198e-8, 2.423096e-10, -1.702e-13, -1.49e-15};
+  private static final double[] C2 = {1.843740587300905e0, -7.68528408447867e-2, 1.2719271366546e-3,
+      -4.9717367042e-6, -3.31261198e-8, 2.423096e-10, -1.702e-13, -1.49e-15};
 
   private BesselJY() {}
 
@@ -198,7 +198,8 @@ public final class BesselJY {
   }
 
   /**
-   * The core: <code>{J_nu(x), Y_nu(x)}</code> for <code>nu &gt;= 0</code> and <code>x &gt; 0</code>.
+   * The core: <code>{J_nu(x), Y_nu(x)}</code> for <code>nu &gt;= 0</code> and
+   * <code>x &gt; 0</code>.
    */
   private static double[] jy(final double nu, final double x) {
     // Split nu = xmu + nl with |xmu| <= 1/2. For a small argument the series needs the whole
@@ -387,8 +388,8 @@ public final class BesselJY {
    * <code>|x| &lt;= 1/2</code>.
    *
    * @return <code>{gam1, gam2, 1/Gamma(1+x), 1/Gamma(1-x)}</code> where
-   *         <code>gam1 = (1/Gamma(1-x) - 1/Gamma(1+x))/(2x)</code> - the form that stays accurate as
-   *         <code>x -&gt; 0</code>, where the difference itself cancels - and
+   *         <code>gam1 = (1/Gamma(1-x) - 1/Gamma(1+x))/(2x)</code> - the form that stays accurate
+   *         as <code>x -&gt; 0</code>, where the difference itself cancels - and
    *         <code>gam2 = (1/Gamma(1-x) + 1/Gamma(1+x))/2</code>
    * @see BesselIK - Temme's series for the modified functions needs the same four quantities
    */
