@@ -379,8 +379,8 @@ public class AssociationFunctions {
         // Part `1` of `2` does not exist.
         return Errors.printMessage(builtinSymbol, "partw", F.list(key, assoc), engine);
       }
-      IExpr temp = assignKeys((IAssociation) nested, keys, keyPosition + 1, value, builtinSymbol,
-          engine);
+      IExpr temp =
+          assignKeys((IAssociation) nested, keys, keyPosition + 1, value, builtinSymbol, engine);
       if (temp.isNIL()) {
         return F.NIL;
       }
