@@ -103,8 +103,7 @@ public class Errors {
       "bspec", "`1` is not a valid `2` specification.", //
       "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
       "cas", "Warning contradictory assumption(s) `1` encountered.", //
-      "cfct",
-      "The number of arguments `1` does not match the length `2` of the argument template.", //
+      "cfct", "The number of arguments `1` does not match the length `2` of the argument template.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
@@ -204,6 +203,8 @@ public class Errors {
       "intpp", "Positive integer argument expected in `1`.", //
       "intrange", "Integer expected in range `1` to `2`.", //
       "intype", "Interpreter type specification `1` is invalid.", //
+      "inumr",
+      "The integrand `1` has evaluated to non-numerical values for all sampling points in the region with boundaries `2`.", //
       "inv", "The argument `2`  in  `1`  is not a valid parameter.", //
       "invcpts",
       "`1` should be a rectangular array of machine-sized real numbers of any depth, whose dimensions are greater than 1.", //
@@ -280,6 +281,7 @@ public class Errors {
       "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
+      "nlim", "`1` = `2` is not a valid limit of integration.", //
       "neql", "Lists `1` and `2` have different lengths.", //
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
       "nlnmt2",
@@ -413,8 +415,8 @@ public class Errors {
       "reps",
       "(`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be used for replacing.", //
       "rneg", "The specified rule number `1` should be non-negative.", //
-      "rnkz", "A rank decomposition does not exist for a rank 0 matrix.",
-      "root", "Unable to determine the appropriate root for the periodic continued fraction.", //
+      "rnkz", "A rank decomposition does not exist for a rank 0 matrix.", "root",
+      "Unable to determine the appropriate root for the periodic continued fraction.", //
       "root2", "The equation `1` has no integer solutions.", //
       "rrlim", "Exiting after `1` scanned `2` times.", //
       "rspec",
