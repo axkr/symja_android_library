@@ -15,12 +15,16 @@
 
 package org.matheclipse.parser.trie;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -97,6 +101,19 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
     this.entries = new EntrySet(root);
     this.nodes = new NodeSet(root);
     this.sequencer = sequencer;
+  }
+
+  /**
+   * The cached views of this Trie are transient, so they have to be created again after this Trie
+   * was deserialized. Otherwise {@link #keySet()}, {@link #values()}, {@link #entrySet()} and
+   * {@link #nodeSet()} would return <code>null</code>.
+   */
+  private void readObject(ObjectInputStream input) throws IOException, ClassNotFoundException {
+    input.defaultReadObject();
+    this.sequences = new SequenceSet(root);
+    this.values = new ValueCollection(root);
+    this.entries = new EntrySet(root);
+    this.nodes = new NodeSet(root);
   }
 
   /**
@@ -501,7 +518,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
   public Iterable<TrieNode<S, T>> nodeSetAll(S sequence, TrieMatch match) {
     TrieNode<S, T> node = search(root, sequence, match);
 
-    return (node == null ? (Iterable<TrieNode<S, T>>) EMPTY_CONTAINER : new NodeAllIterator(root));
+    return (node == null ? (Iterable<TrieNode<S, T>>) EMPTY_CONTAINER : new NodeAllIterator(node));
   }
 
   @Override
@@ -568,7 +585,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
   public Collection<T> values(S sequence, TrieMatch match) {
     TrieNode<S, T> node = search(root, sequence, match);
 
-    return (node == null ? null : new ValueCollection(node));
+    return (node == null ? (Collection<T>) EMPTY_CONTAINER : new ValueCollection(node));
   }
 
   @Override
@@ -860,6 +877,8 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
     private int depth;
     private int[] indices = new int[32];
     private boolean usedAsIterable = false;
+    /** `true` if {@link #nextNode()} was called and the returned node wasn't removed yet. */
+    private boolean removable = false;
 
     public AbstractIterator(TrieNode<S, T> root) {
       this.root = root;
@@ -869,6 +888,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
     public AbstractIterator<K> reset() {
       depth = 0;
       indices[0] = -1;
+      removable = false;
 
       if (root.value == null) {
         previous = root;
@@ -891,25 +911,43 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
     }
 
     public TrieNode<S, T> nextNode() {
+      if (current == null) {
+        throw new NoSuchElementException();
+      }
       previous = current;
       current = findNext();
+      removable = true;
       return previous;
     }
 
     @Override
     public void remove() {
+      if (!removable) {
+        // `reset()` sets `previous` to the root if the root has no value, so without this check a
+        // `remove()` before the first `next()` call would remove the node the iteration starts from
+        throw new IllegalStateException();
+      }
+      removable = false;
       previous.remove(sequencer);
     }
 
     private TrieNode<S, T> findNext() {
-      if (indices[0] == root.children.capacity()) {
+      if (!root.hasChildren()) {
+        // the iteration is rooted in a node without descendants. A valued root was already returned
+        // by `reset()`, so walking up to `root.parent` would leave the subtree and return nodes
+        // which don't match the searched sequence.
+        return null;
+      }
+      if (indices[0] >= root.children.capacity()) {
         return null;
       }
 
       TrieNode<S, T> node = previous;
       boolean foundValue = false;
 
-      if (node.children == null) {
+      // `hasChildren()` instead of a null check: removing all children of a node leaves an empty
+      // `PerfectHashMap` behind
+      if (!node.hasChildren()) {
         node = node.parent;
       }
 
@@ -922,7 +960,9 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
           id++;
         }
 
-        if (id == childCapacity) {
+        // `>=` instead of `==`: removing entries shrinks the table, so the remembered index can be
+        // behind its end
+        if (id >= childCapacity) {
           node = node.parent;
           depth--;
 
@@ -935,7 +975,11 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
           node = children.valueAt(id);
 
           if (node.hasChildren()) {
-            indices[++depth] = -1;
+            if (++depth == indices.length) {
+              // the depth of the Trie isn't bounded, so the stack of child indices has to grow
+              indices = Arrays.copyOf(indices, indices.length << 1);
+            }
+            indices[depth] = -1;
           }
 
           if (node.value != null || isAnyNode()) {
@@ -977,10 +1021,12 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
 
     @Override
     public T next() {
-      return null;
+      throw new NoSuchElementException();
     }
 
     @Override
-    public void remove() {}
+    public void remove() {
+      throw new IllegalStateException();
+    }
   }
 }
