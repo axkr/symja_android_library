@@ -49,7 +49,8 @@ public class SymmetricPolynomial extends AbstractFunctionEvaluator {
         }
         IASTAppendable sumResult = F.PlusAlloc(sumArgSize);
 
-        final CombinatoricUtil.KSubsetsList iter = CombinatoricUtil.subsets(vars, k, F.ast(S.Times), 1);
+        final CombinatoricUtil.KSubsetsList iter =
+            CombinatoricUtil.subsets(vars, k, F.ast(S.Times), 1);
         for (IAST part : iter) {
           if (part == null) {
             break;

@@ -311,16 +311,16 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     coFac = cf;
     nvar = n;
     tord = t;
-    partial = false; 
+    partial = false;
     vars = listOfVariables.copy();
     ZERO = new ExprPolynomial(this);
     IExpr coeff = coFac.getONE();
     evzero = new ExpVectorLong(nvar);
     this.numericFunction = numericFunction;
-    ONE = new ExprPolynomial(this, coeff, evzero); 
+    ONE = new ExprPolynomial(this, coeff, evzero);
     if (vars.argSize() != nvar) {
       throw new IllegalArgumentException("incompatible variable size " + vars.size() + ", " + nvar);
-    } 
+    }
   }
 
   /**

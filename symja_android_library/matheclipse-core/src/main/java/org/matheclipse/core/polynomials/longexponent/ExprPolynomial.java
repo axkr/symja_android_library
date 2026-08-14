@@ -825,6 +825,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     ret[2] = c2;
     return ret;
   }
+
   /**
    * Comparison with any other object.
    *

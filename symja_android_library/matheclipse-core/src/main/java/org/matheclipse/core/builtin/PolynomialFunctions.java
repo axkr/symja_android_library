@@ -2258,6 +2258,18 @@ public class PolynomialFunctions {
           IExpr z = ast.arg2();
           return F.Times(F.Exp(z), laguerreL(-degree - 1, z.negate()));
         }
+      } else if (ast.isAST2() && ast.arg2().isZero()) {
+        // LaguerreL(n, 0) == 1 for every n
+        return F.C1;
+      } else if (ast.isAST2() && n.equals(F.C1D2)) {
+        IExpr z = ast.arg2();
+        if (z.isNumber() && z.isNegativeResult()) {
+          // LaguerreL(1/2, -x) == ((1 + x)*BesselI(0, x/2) + x*BesselI(1, x/2))/E^(x/2)
+          IExpr x = z.negate();
+          IExpr half = F.Times(F.C1D2, x);
+          return F.Divide(F.Plus(F.Times(F.Plus(F.C1, x), F.BesselI(F.C0, half)),
+              F.Times(x, F.BesselI(F.C1, half))), F.Exp(half));
+        }
       }
       return F.NIL;
     }
@@ -3494,15 +3506,14 @@ public class PolynomialFunctions {
      * Reduce every coefficient of <code>coefficientList</code> modulo <code>modulus</code>.
      */
     private static IAST polynomialModList(IAST coefficientList, IExpr modulus, EvalEngine engine) {
-      return coefficientList
-          .mapThread(F.binaryAST2(S.PolynomialMod, F.Slot1, modulus), 1)
+      return coefficientList.mapThread(F.binaryAST2(S.PolynomialMod, F.Slot1, modulus), 1)
           .mapThread(engine::evaluate);
     }
 
     /**
-     * The degree of the polynomial given by <code>coefficientList</code>, i.e. the index of the last
-     * coefficient which isn't zero. The list is ordered: constant term first ... leading coefficient
-     * last.
+     * The degree of the polynomial given by <code>coefficientList</code>, i.e. the index of the
+     * last coefficient which isn't zero. The list is ordered: constant term first ... leading
+     * coefficient last.
      *
      * @return <code>-1</code> if all coefficients are zero
      */

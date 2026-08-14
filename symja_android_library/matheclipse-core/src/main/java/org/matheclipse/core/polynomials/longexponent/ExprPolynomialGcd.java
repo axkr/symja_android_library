@@ -25,11 +25,11 @@ import org.matheclipse.core.interfaces.IASTAppendable;
  * primitive part of every pseudo remainder keeps the coefficients from growing over the sequence.
  *
  * <p>
- * The coefficient domain is a field here - {@link org.matheclipse.core.interfaces.IExpr#isUnit()} is
- * true for every expression - so the result is normalized to a leading coefficient of <code>1</code>
- * exactly as the univariate {@link ExprPolynomial#gcd(ExprPolynomial)} does. A common numeric or
- * symbolic factor of all coefficients, <code>Sqrt(2)</code> for example, is therefore not part of
- * the result.
+ * The coefficient domain is a field here - {@link org.matheclipse.core.interfaces.IExpr#isUnit()}
+ * is true for every expression - so the result is normalized to a leading coefficient of
+ * <code>1</code> exactly as the univariate {@link ExprPolynomial#gcd(ExprPolynomial)} does. A
+ * common numeric or symbolic factor of all coefficients, <code>Sqrt(2)</code> for example, is
+ * therefore not part of the result.
  */
 class ExprPolynomialGcd {
 
@@ -70,8 +70,8 @@ class ExprPolynomialGcd {
     ExprPolynomial[] b = coefficients(S, subRing);
     ExprPolynomial contentA = content(a, subRing);
     ExprPolynomial contentB = content(b, subRing);
-    ExprPolynomial[] gcd = primitiveRemainderSequence(primitivePart(a, contentA),
-        primitivePart(b, contentB), subRing);
+    ExprPolynomial[] gcd =
+        primitiveRemainderSequence(primitivePart(a, contentA), primitivePart(b, contentB), subRing);
     return distribute(multiply(gcd, recursiveGcd(contentA, contentB)), ring);
   }
 
@@ -79,9 +79,9 @@ class ExprPolynomialGcd {
    * The polynomial ring without its last variable.
    *
    * <p>
-   * The last variable of {@link ExprPolynomialRing#vars} is the one at index <code>0</code> of every
-   * {@link ExpVectorLong}, which is the variable {@link ExprPolynomial#contract(ExprPolynomialRing)}
-   * splits off.
+   * The last variable of {@link ExprPolynomialRing#vars} is the one at index <code>0</code> of
+   * every {@link ExpVectorLong}, which is the variable
+   * {@link ExprPolynomial#contract(ExprPolynomialRing)} splits off.
    */
   private static ExprPolynomialRing subRing(ExprPolynomialRing ring) {
     IASTAppendable variables = F.ListAlloc(ring.nvar - 1);
@@ -95,8 +95,8 @@ class ExprPolynomialGcd {
   /**
    * A term order for one variable less. Term orders with a split index or with exponent weights are
    * defined for the number of variables of the ring they belong to, so only the plain order
-   * indicator is carried over - which order is used does not change the result, every admissible one
-   * gives the same greatest common divisor.
+   * indicator is carried over - which order is used does not change the result, every admissible
+   * one gives the same greatest common divisor.
    */
   private static ExprTermOrder subTermOrder(ExprTermOrder termOrder) {
     int evord = termOrder.getEvord();
