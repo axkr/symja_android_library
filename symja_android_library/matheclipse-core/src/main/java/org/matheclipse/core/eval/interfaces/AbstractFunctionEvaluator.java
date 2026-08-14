@@ -60,7 +60,13 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       IExpr arg = ast.get(argSize);
 
       // check that arg has the correct options format:
-      if (arg.isRule()) {
+      //
+      // RuleDelayed counts too. We have to write exactly the options whose value has to stay
+      // unevaluated with `:>` - EvaluationMonitor and StepMonitor are the usual ones - and a list
+      // of options already accepted that form, so only the bare rule was left out. An arg whose
+      // left hand side is not one of this symbol's option names still stops the scan below, so a
+      // RuleDelayed that was meant as an ordinary argument is read as one, as before.
+      if (arg.isRule() || arg.isAST(S.RuleDelayed, 3)) {
         evaled = false;
         for (int i = 0; i < optionSymbol.length; i++) {
           if (optionSymbol[i].equals(arg.first())) {
