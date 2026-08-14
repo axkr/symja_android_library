@@ -81,7 +81,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
     // TODO use same unit for all quantities
     check("BinLists({Quantity(1000, \"g\"), Quantity(1, \"KG\")})", //
-        "{{},{1000[g],1[KG]}}");
+        "{{},{Quantity(1000,\"Grams\"),Quantity(1,\"Kilograms\")}}");
     check(
         "BinLists({Quantity(-1.541, \"Grams\"), Quantity(-0.849, \"Grams\"), Quantity(-0.477, \"Grams\"), Quantity(-0.133, \"Grams\"), Quantity(-0.11, \"Grams\"), Quantity(-0.054, \"Grams\"), Quantity(0.226, \"Grams\"), Quantity(0.259, \"Grams\"), Quantity(1.4, \"Grams\"), Quantity(1.661, \"Grams\")}) // InputForm", //
         "{{Quantity(-1.541`,\"Grams\")},{Quantity(-0.849`,\"Grams\"),Quantity(-0.477`,\"Grams\"),Quantity(-0.133`,\"Grams\"),Quantity(-0.11`,\"Grams\"),Quantity(-0.054`,\"Grams\")},{Quantity(0.226`,\"Grams\"),Quantity(0.259`,\"Grams\")},{Quantity(1.4`,\"Grams\"),Quantity(1.661`,\"Grams\")}}");
@@ -625,9 +625,9 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     check(
         "data={Quantity(0.7158053755285898`,\"Meters\"),Quantity(0.6165538695742894`,\"Meters\"),Quantity(0.28515333590035374`,\"Meters\")," //
             + "Quantity(0.7076548991038116`,\"Meters\"),Quantity(0.266982550128781`,\"Meters\"),Quantity(0.8175584666730205`,\"Meters\")}", //
-        "{0.715805[Meters],0.616554[Meters],0.285153[Meters],0.707655[Meters],0.266983[Meters],0.817558[Meters]}");
+        "{Quantity(0.715805,\"Meters\"),Quantity(0.616554,\"Meters\"),Quantity(0.285153,\"Meters\"),Quantity(0.707655,\"Meters\"),Quantity(0.266983,\"Meters\"),Quantity(0.817558,\"Meters\")}");
     check("StandardDeviation(data)", //
-        "0.235202[Meters]");
+        "Quantity(0.235202,\"Meters\")");
   }
 
   @Test

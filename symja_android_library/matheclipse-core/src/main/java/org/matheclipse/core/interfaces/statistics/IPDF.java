@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces.statistics;
 import org.matheclipse.core.builtin.StatisticsDiscreteDistributions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -31,7 +32,8 @@ public interface IPDF extends IDistribution {
    * Call the pure (CDF, InverseCDF, PDF,...) function.
    *
    * @param function the pure function
-   * @param x if <code>F.NIL</code> return the pure function unevaluated. If <code>List(...)
+   * @param x if <code>F.NIL</code> return the operator form of the pure function. If
+   *        <code>List(...)
    *     </code> map the pure function over all elements.
    * @return
    */
@@ -49,6 +51,20 @@ public interface IPDF extends IDistribution {
       }
       return F.unaryAST1(pureFunction, x);
     }
+    if (pureFunction.isFunction()) {
+      return operatorForm(pureFunction.first());
+    }
     return pureFunction;
+  }
+
+  /**
+   * The operator form <code>CDF(dist)</code>, <code>PDF(dist)</code>, ... of a distribution
+   * function: a {@link S#Listable} pure function, so that it threads over a list argument even if
+   * <code>body</code> holds its arguments like {@link S#Piecewise} does.
+   *
+   * @param body the body of the pure function, using {@link F#Slot1} for the argument
+   */
+  static IAST operatorForm(IExpr body) {
+    return F.ternaryAST3(S.Function, F.Slot1, body, S.Listable);
   }
 }

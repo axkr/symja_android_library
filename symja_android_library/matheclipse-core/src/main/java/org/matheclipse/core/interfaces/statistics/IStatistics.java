@@ -22,6 +22,15 @@ public interface IStatistics {
   /** @return skewness of distribution */
   IExpr skewness(IAST distribution);
 
+  /**
+   * The <code>n</code>-th raw moment <code>E[X^n]</code> of the distribution.
+   *
+   * @return {@link F#NIL} if no closed form is implemented
+   */
+  default IExpr moment(IAST distribution, IExpr n) {
+    return F.NIL;
+  }
+
   /** @return standard deviation of distribution */
   default IExpr standardDeviation(IAST distribution) {
     IExpr variance = variance(distribution);

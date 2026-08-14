@@ -29,6 +29,20 @@ public interface IDistribution {
     return distribution;
   }
 
+  /**
+   * The assumptions the parameters of this distribution have to fulfill, as a single boolean
+   * expression (typically an {@link S#And} of inequalities).
+   *
+   * <p>
+   * Used by {@link S#DistributionParameterQ}: the expression is evaluated and only an explicit
+   * {@link S#False} makes the distribution invalid, so symbolic parameters are considered valid.
+   *
+   * @return {@link F#NIL} if no assumptions are known for this distribution
+   */
+  default IExpr parameterAssumptions(IAST distribution) {
+    return F.NIL;
+  }
+
   IExpr mean(IAST distribution);
 
   IExpr median(IAST distribution);

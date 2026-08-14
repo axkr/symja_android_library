@@ -16,4 +16,18 @@ public interface ICDF extends IDistribution {
 
   public IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine);
 
+  /**
+   * The survival function <code>1 - CDF(dist, x)</code>.
+   *
+   * <p>
+   * Implement this only if the distribution has a closed form which is simpler than the literal
+   * <code>1 - CDF(dist, x)</code>; otherwise
+   * {@link org.matheclipse.core.builtin.StatisticsFunctions} falls back to that difference.
+   *
+   * @return {@link F#NIL} if no dedicated closed form is available
+   */
+  default IExpr survivalFunction(IAST dist, IExpr x, EvalEngine engine) {
+    return F.NIL;
+  }
+
 }

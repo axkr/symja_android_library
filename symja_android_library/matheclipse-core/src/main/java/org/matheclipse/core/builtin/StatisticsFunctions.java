@@ -3,8 +3,11 @@ package org.matheclipse.core.builtin;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.LongPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.hipparchus.distribution.IntegerDistribution;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -30,6 +33,7 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
@@ -80,7 +84,12 @@ public class StatisticsFunctions {
       S.BrownianBridgeProcess.setEvaluator(new BrownianBridgeProcess());
       S.Correlation.setEvaluator(new Correlation());
       S.Covariance.setEvaluator(new Covariance());
+      S.DistributionParameterQ.setEvaluator(new DistributionParameterQ());
+      S.FindDistributionParameters.setEvaluator(new FindDistributionParameters());
       S.Expectation.setEvaluator(new Expectation());
+      S.HazardFunction.setEvaluator(new HazardFunction());
+      S.InverseSurvivalFunction.setEvaluator(new InverseSurvivalFunction());
+      S.MedianDeviation.setEvaluator(new MedianDeviation());
       S.FiveNum.setEvaluator(new FiveNum());
       S.GeometricMean.setEvaluator(new GeometricMean());
       S.HarmonicMean.setEvaluator(new HarmonicMean());
@@ -117,6 +126,286 @@ public class StatisticsFunctions {
 
   public static IDiscreteDistribution getDiscreteDistribution(final IExpr arg1) {
     return (IDiscreteDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
+  }
+
+  /** Test for a non-empty list whose elements are all <code>Distributed(x, dist)</code>. */
+  private static boolean isDistributedList(IExpr expr) {
+    if (expr.isList() && expr.argSize() > 0) {
+      return ((IAST) expr).forAll(e -> e.isAST(S.Distributed, 3));
+    }
+    return false;
+  }
+
+  /**
+   * Conditional expectation <code>E(expr | pred) == E(expr * Boole(pred)) / P(pred)</code>,
+   * computed with the given expectation and probability heads (symbolic or numeric variants).
+   */
+  private static IExpr conditionedExpectation(IBuiltInSymbol expectationHead,
+      IBuiltInSymbol probabilityHead, IAST conditioned, IExpr distributed, EvalEngine engine) {
+    IExpr expr = conditioned.arg1();
+    IExpr predicate = conditioned.arg2();
+    IExpr numerator = engine
+        .evaluate(F.binaryAST2(expectationHead, F.Times(expr, F.Boole(predicate)), distributed));
+    if (!numerator.isFree(expectationHead, true) || !numerator.isFree(S.Integrate, true)
+        || !numerator.isFree(S.NIntegrate, true)) {
+      return F.NIL;
+    }
+    IExpr denominator = engine.evaluate(F.binaryAST2(probabilityHead, predicate, distributed));
+    if (!denominator.isFree(probabilityHead, true) || denominator.isZero()) {
+      return F.NIL;
+    }
+    return F.Divide(numerator, denominator);
+  }
+
+  /**
+   * If <code>expr</code> is a <code>Boole(pred)</code> factor (or contains one as a
+   * <code>Times</code> factor) whose predicate converts into an interval region of <code>x</code>,
+   * return <code>{remainingFactor, region}</code>, otherwise <code>null</code>.
+   */
+  private static IExpr[] extractBooleFactor(IExpr expr, IExpr x) {
+    if (expr.isAST(S.Boole, 2)) {
+      IAST region = DistributionRegion.regionFromPredicate(expr.first(), x);
+      if (region.isPresent()) {
+        return new IExpr[] {F.C1, region};
+      }
+    } else if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        if (factor.isAST(S.Boole, 2)) {
+          IAST region = DistributionRegion.regionFromPredicate(factor.first(), x);
+          if (region.isPresent()) {
+            IASTAppendable rest = F.TimesAlloc(times.argSize());
+            for (int j = 1; j < times.size(); j++) {
+              if (j != i) {
+                rest.append(times.get(j));
+              }
+            }
+            return new IExpr[] {rest.oneIdentity1(), region};
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * <code>Integrate(integrand, {x, min_i, max_i})</code> summed over all pieces of the region.
+   *
+   * @param integrateHead {@link S#Integrate} or {@link S#NIntegrate}
+   * @return {@link F#NIL} if an integral does not evaluate
+   */
+  private static IExpr integrateOverRegion(IExpr integrand, IExpr x, IAST region,
+      IBuiltInSymbol integrateHead, EvalEngine engine) {
+    IASTAppendable sum = F.PlusAlloc(region.argSize() + 1);
+    for (int i = 1; i < region.size(); i++) {
+      IAST piece = (IAST) region.get(i);
+      if (piece.arg1().equals(piece.arg4())) {
+        // a point has measure zero
+        continue;
+      }
+      sum.append(F.binaryAST2(integrateHead, integrand, F.list(x, piece.arg1(), piece.arg4())));
+    }
+    IExpr result = engine.evaluate(sum);
+    return result.isFree(integrateHead, true) ? result : F.NIL;
+  }
+
+  /**
+   * The branch list <code>{{value1, cond1}, {value2, cond2}, ...}</code> of a piecewise function
+   * whose default value is <code>0</code>.
+   *
+   * @return <code>null</code> if <code>piecewise</code> has another structure
+   */
+  private static IAST piecewiseZeroDefaultBranches(IExpr piecewise) {
+    if (!piecewise.isAST(S.Piecewise) || piecewise.size() < 2
+        || !((IAST) piecewise).arg1().isListOfLists()) {
+      return null;
+    }
+    IAST piecewiseAST = (IAST) piecewise;
+    if (piecewiseAST.argSize() >= 2 && !piecewiseAST.arg2().isZero()) {
+      return null;
+    }
+    return (IAST) piecewiseAST.arg1();
+  }
+
+  /**
+   * <code>Sum(factor*branchValue, {x, lo, hi})</code> over the integer windows on which the
+   * branches of a piecewise density are valid, intersected with <code>windows</code>. Unwrapping
+   * the {@link S#Piecewise} enables closed form summation of exponential generating series like
+   * <code>Expectation(E^(2*x), x \[Distributed] PoissonDistribution(l))</code>, which {@link S#Sum}
+   * cannot see through the piecewise.
+   *
+   * @param windows the summation windows (usually the distribution support, possibly restricted by
+   *        a <code>Boole</code> factor)
+   * @return {@link F#NIL} if the piecewise cannot be decomposed or the sum does not evaluate to a
+   *         closed form
+   */
+  private static IExpr sumProductOverPiecewise(IExpr factor, IExpr piecewisePdf, IExpr x,
+      long[] windows, EvalEngine engine) {
+    IAST branches = piecewiseZeroDefaultBranches(piecewisePdf);
+    if (branches == null) {
+      return F.NIL;
+    }
+    IASTAppendable sum = F.PlusAlloc(branches.argSize() + 1);
+    for (int i = 1; i < branches.size(); i++) {
+      IAST branch = (IAST) branches.get(i);
+      if (branch.size() != 3) {
+        return F.NIL;
+      }
+      IAST region = DistributionRegion.regionFromPredicate(branch.arg2(), x);
+      if (region.isNIL()) {
+        return F.NIL;
+      }
+      long[] branchWindows = DistributionRegion.integerWindows(region, engine);
+      if (branchWindows == null) {
+        return F.NIL;
+      }
+      branchWindows = DistributionRegion.intersectWindows(branchWindows, windows);
+      // Sum does not thread over a Plus summand on an infinite range - expand and emit one
+      // Sum per additive term
+      IExpr expanded = engine.evaluate(F.Expand(F.Times(factor, branch.arg1())));
+      IAST terms = expanded.isPlus() ? (IAST) expanded : F.List(expanded);
+      for (int w = 0; w < branchWindows.length; w += 2) {
+        IExpr lower = branchWindows[w] == Long.MIN_VALUE ? F.CNInfinity : F.ZZ(branchWindows[w]);
+        IExpr upper =
+            branchWindows[w + 1] == Long.MAX_VALUE ? F.CInfinity : F.ZZ(branchWindows[w + 1]);
+        for (int t = 1; t < terms.size(); t++) {
+          sum.append(F.Sum(terms.get(t), F.List(x, lower, upper)));
+        }
+      }
+    }
+    IExpr result = engine.evaluate(sum);
+    if (result.isFree(S.Sum, true) && result.isFree(S.Boole, true)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /** Evaluate <code>expr</code> with the numeric mode switched off. */
+  private static IExpr evaluateNonNumeric(IExpr expr, EvalEngine engine) {
+    boolean numericMode = engine.isNumericMode();
+    try {
+      engine.setNumericMode(false);
+      return engine.evaluate(expr);
+    } finally {
+      engine.setNumericMode(numericMode);
+    }
+  }
+
+  /**
+   * The number of samples for <code>Method -&gt; "MonteCarlo"</code> or
+   * <code>Method -&gt; {"MonteCarlo", n}</code>.
+   *
+   * @param options the options determined by the evaluator; <code>options[0]</code> is the
+   *        <code>Method</code> value
+   * @return <code>-1</code> if the monte carlo method was not requested
+   */
+  private static int monteCarloSamples(IExpr[] options) {
+    if (options != null && options.length > 0 && options[0] != null && options[0].isPresent()) {
+      IExpr method = options[0];
+      if (method.isString() && method.toString().equals("MonteCarlo")) {
+        return 10000;
+      }
+      if (method.isList() && method.argSize() >= 1 && method.first().isString()
+          && method.first().toString().equals("MonteCarlo")) {
+        if (method.argSize() >= 2) {
+          int n = method.second().toIntDefault();
+          if (n > 0) {
+            return Math.min(n, 10_000_000);
+          }
+        }
+        return 10000;
+      }
+    }
+    return -1;
+  }
+
+  /** Monte carlo estimate of <code>E[function(x)]</code> based on {@link S#RandomVariate}. */
+  private static IExpr monteCarloExpectation(IExpr function, IExpr x, IExpr distribution,
+      int samples, EvalEngine engine) {
+    IExpr list = engine.evaluate(F.binaryAST2(S.RandomVariate, distribution, F.ZZ(samples)));
+    if (list.isList() && list.argSize() == samples) {
+      DoubleUnaryOperator compiled = DistributionRegion.compile(function, x, engine);
+      if (compiled == null) {
+        return F.NIL;
+      }
+      IAST values = (IAST) list;
+      double sum = 0.0;
+      double compensation = 0.0;
+      for (int i = 1; i < values.size(); i++) {
+        double sample = values.get(i).evalfNaN();
+        double term = compiled.applyAsDouble(sample);
+        if (!Double.isFinite(term)) {
+          return F.NIL;
+        }
+        double y = term - compensation;
+        double t = sum + y;
+        compensation = (t - sum) - y;
+        sum = t;
+      }
+      return F.num(sum / samples);
+    }
+    return F.NIL;
+  }
+
+  /** Monte carlo estimate of <code>P(predicate)</code> based on {@link S#RandomVariate}. */
+  private static IExpr monteCarloProbability(IExpr predicate, IExpr x, IExpr distribution,
+      int samples, EvalEngine engine) {
+    IExpr list = engine.evaluate(F.binaryAST2(S.RandomVariate, distribution, F.ZZ(samples)));
+    if (list.isList() && list.argSize() == samples) {
+      IAST values = (IAST) list;
+      int trueCounter = 0;
+      for (int i = 1; i < values.size(); i++) {
+        if (engine.evalTrue(F.subst(predicate, x, values.get(i)))) {
+          trueCounter++;
+        }
+      }
+      return F.num(((double) trueCounter) / samples);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Integrate <code>factor * piecewise</code> over the validity regions of the piecewise branches
+   * (optionally intersected with an additional region from a <code>Boole</code> factor). The
+   * default value of the piecewise function must be <code>0</code>.
+   *
+   * @param integrateHead {@link S#Integrate} or {@link S#NIntegrate}
+   * @return {@link F#NIL} if the piecewise cannot be decomposed or an integral does not evaluate
+   */
+  private static IExpr integrateProductOverPiecewise(IExpr factor, IExpr piecewise, IExpr x,
+      IAST booleRegion, IBuiltInSymbol integrateHead, EvalEngine engine) {
+    IAST branches = piecewiseZeroDefaultBranches(piecewise);
+    if (branches == null) {
+      return F.NIL;
+    }
+    IASTAppendable sum = F.PlusAlloc(branches.argSize() + 1);
+    for (int i = 1; i < branches.size(); i++) {
+      IAST branch = (IAST) branches.get(i);
+      if (branch.size() != 3) {
+        return F.NIL;
+      }
+      IAST region = DistributionRegion.regionFromPredicate(branch.arg2(), x);
+      if (region.isNIL()) {
+        return F.NIL;
+      }
+      if (booleRegion != null && booleRegion.isPresent()) {
+        region = IntervalDataSym.intersection(region, booleRegion);
+        if (!region.isIntervalData()) {
+          return F.NIL;
+        }
+      }
+      for (int p = 1; p < region.size(); p++) {
+        IAST piece = (IAST) region.get(p);
+        if (piece.arg1().equals(piece.arg4())) {
+          continue;
+        }
+        sum.append(F.binaryAST2(integrateHead, F.Times(factor, branch.arg1()),
+            F.list(x, piece.arg1(), piece.arg4())));
+      }
+    }
+    IExpr result = engine.evaluate(sum);
+    return result.isFree(integrateHead, true) ? result : F.NIL;
   }
 
   private static final class AbsoluteCorrelation extends AbstractFunctionEvaluator {
@@ -1054,58 +1343,67 @@ public class StatisticsFunctions {
    * 1/4*(12+2*a+2*b+2*c+2*d)
    * </pre>
    */
-  private static class Expectation extends AbstractFunctionEvaluator {
-    // static final double CDF_NUMERIC_THRESHOLD = Config.DOUBLE_EPSILON;
-    //
-    // static boolean isFinished(IExpr p_equals, IExpr cumprob) {
-    // boolean finished = false;
-    // finished |= cumprob.isOne();
-    // finished |= // !ExactScalarQ.of(cumprob) && //
-    // p_equals.isZero() && //
-    // F.isZero(cumprob.subtract(F.C1).abs().evalDouble(), CDF_NUMERIC_THRESHOLD);
-    // return finished;
-    // }
-    //
-    // private static IExpr expect(Function<IExpr, IExpr> function, IAST distribution,
-    // IDiscreteDistribution discreteDistribution) {
-    // IExpr value = null;
-    // IExpr p_equals = F.C0;
-    // IExpr cumprob = F.C0;
-    // int sample = discreteDistribution.getSupportLowerBound(distribution);
-    // while (!isFinished(p_equals, cumprob)) {
-    // IExpr x = F.QQ(sample, 1);
-    // p_equals = discreteDistribution.pEquals(sample, distribution);
-    // cumprob = cumprob.add(p_equals);
-    // IExpr delta = function.apply(x).multiply(p_equals);
-    // value = Objects.isNull(value) ? delta : value.add(delta);
-    // ++sample;
-    // }
-    // return value;
-    // }
+  private static class Expectation extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize != 2) {
+        return F.NIL;
+      }
       try {
         IExpr xExpr = ast.arg1();
-        if (xExpr.isFunction() && ast.arg2().isList()) {
-          IAST data = (IAST) ast.arg2();
+        IExpr arg2 = ast.arg2();
+        if (xExpr.isAST(S.Conditioned, 3)) {
+          // E(expr | pred) == E(expr*Boole(pred)) / P(pred)
+          return conditionedExpectation(S.Expectation, S.Probability, (IAST) xExpr, arg2, engine);
+        }
+        if (xExpr.isFunction() && arg2.isList()) {
+          IAST data = (IAST) arg2;
           IASTAppendable sum = F.PlusAlloc(data.size());
           for (int i = 1; i < data.size(); i++) {
             sum.append(F.unaryAST1(xExpr, data.get(i)));
           }
           return sum.divide(F.ZZ(data.argSize()));
-          // int sum = 0;
-          // for (int i = 1; i < data.size(); i++) {
-          // if (engine.evalTrue(F.unaryAST1(predicate, data.get(i)))) {
-          // sum++;
-          // }
-          // }
-          // return F.QQ(sum, data.argSize());
         }
-        if (ast.arg2().isAST(S.Distributed, 3)) {
-          IExpr x = ast.arg2().first();
-          IExpr distribution = ast.arg2().second();
+        if (isDistributedList(arg2)) {
+          // independent random variables: iterated expectation, the last variable is summed
+          // (integrated) first
+          IAST distributedList = (IAST) arg2;
+          IExpr nested = xExpr;
+          for (int i = distributedList.argSize(); i >= 1; i--) {
+            nested = F.Expectation(nested, distributedList.get(i));
+          }
+          IExpr result = engine.evaluate(nested);
+          return result.isFree(S.Expectation, true) ? result : F.NIL;
+        }
+        if (arg2.isAST(S.Distributed, 3)) {
+          IExpr x = arg2.first();
+          IExpr distribution = arg2.second();
+          if (xExpr.isAST(S.Boole, 2)) {
+            // Expectation(Boole(pred), x \[Distributed] dist) == Probability(pred, ...)
+            return F.Probability(xExpr.first(), arg2);
+          }
+          if (distribution.isAST(S.ProbabilityDistribution)) {
+            IExpr result = StatisticsDerivedDistributions.ProbabilityDistribution
+                .expectation((IAST) distribution, xExpr, x, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+          if (distribution.isAST(S.CensoredDistribution)) {
+            IExpr result = StatisticsDerivedDistributions.CensoredDistribution
+                .expectation((IAST) distribution, xExpr, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+          if (distribution.isAST() && distribution.isDistribution() && x.isSymbol()) {
+            IExpr result = polynomialExpectation(xExpr, (ISymbol) x, (IAST) distribution, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
           if (distribution.isList()) {
             IAST data = (IAST) distribution;
             // Sum( predicate , data ) / data.argSize()
@@ -1115,39 +1413,275 @@ public class StatisticsFunctions {
             }
             return sum.divide(F.ZZ(data.argSize()));
           } else if (distribution.isContinuousDistribution()) {
-            IExpr pdf = S.PDF.of(engine, distribution, x);
-            if (pdf.isFree(S.Piecewise)) {
-              return F.Integrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
-            } else {
-              // TODO improve integration of Piecewise function
-              // if (pdf.isAST2()) {
-              // IExpr arg1 = pdf.first();
-              // IExpr arg2 = pdf.second();
-              // int[] dims = arg1.isMatrix(false);
-              // if (arg1.isListOfLists() && dims != null && dims.length == 2 && dims[1] == 2) {
-              // IAST piecewiseList = (IAST) arg1;
-              // IASTAppendable result = F.ListAlloc(piecewiseList.size());
-              // for (int i = 1; i < piecewiseList.size(); i++) {
-              // IAST pair = (IAST) piecewiseList.get(i);
-              // IExpr integrate = F.Integrate.of(engine, F.Times(ast.arg1(), pair.arg1()), x);
-              // result.append(F.List(integrate, pair.arg2()));
-              // }
-              // IExpr integrate = F.Integrate.of(engine, F.Times(ast.arg1(), arg2),
-              // F.list(x, F.CNInfinity, F.CInfinity));
-              // return F.Piecewise(result, integrate);
-              // }
-              // }
+            IExpr result = expectationContinuous(xExpr, x, distribution, engine);
+            if (result.isPresent()) {
+              return result;
             }
           } else if (distribution.isDiscreteDistribution()) {
-            // TODO
+            IExpr result = expectationDiscrete(xExpr, x, distribution, engine);
+            if (result.isPresent()) {
+              return result;
+            }
           }
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.Expectation, rex, engine);
       }
-
+      if (engine.isNumericMode() && ast.arg2().isAST(S.Distributed, 3)) {
+        // N(Expectation(...)) falls back to NExpectation
+        IExpr temp = engine.evaluate(F.binaryAST2(S.NExpectation, ast.arg1(), ast.arg2()));
+        if (temp.isFree(S.NExpectation, true)) {
+          return temp;
+        }
+      }
       return F.NIL;
+    }
+
+    /**
+     * Expectation for a continuous distribution: integrate <code>expr*pdf</code>. A single
+     * <code>Boole</code> factor restricts the integration region; a piecewise density restricts the
+     * integration to the branch validity intervals.
+     */
+    private static IExpr expectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
+        EvalEngine engine) {
+      IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+      if (pdf.isNIL()) {
+        return F.NIL;
+      }
+      IExpr remainder = xExpr;
+      IAST booleRegion = F.NIL;
+      IExpr[] extracted = extractBooleFactor(xExpr, x);
+      if (extracted != null) {
+        remainder = extracted[0];
+        booleRegion = (IAST) extracted[1];
+      }
+      if (pdf.isFree(S.Piecewise)) {
+        if (booleRegion.isPresent()) {
+          return integrateOverRegion(F.Times(remainder, pdf), x, booleRegion, S.Integrate, engine);
+        }
+        return F.Integrate(F.Times(xExpr, pdf), F.list(x, F.CNInfinity, F.CInfinity));
+      }
+      if (booleRegion.isNIL() && pdf.isAST(S.Piecewise, 3) && pdf.first().isList1()
+          && pdf.first().first().isList2() && x.isSymbol()) {
+        // a density which is 0 outside a single interval: integrate over that interval only
+        IAST branch = (IAST) pdf.first().first();
+        IAST interval = IntervalDataSym.relationToIntervalSet((IAST) branch.arg2(), (ISymbol) x);
+        if (interval.isIntervalData() && interval.argSize() == 1) {
+          IAST bounds = (IAST) interval.arg1();
+          return F.Integrate(F.Times(xExpr, branch.arg1()),
+              F.list(x, bounds.arg1(), bounds.arg4()));
+        }
+      }
+      return integrateProductOverPiecewise(remainder, pdf, x, booleRegion, S.Integrate, engine);
+    }
+
+    /**
+     * Expectation for a discrete distribution: enumerate <code>Sum(expr*pmf)</code> exactly over a
+     * small finite support, otherwise try the symbolic <code>Sum</code> over the support.
+     */
+    private static IExpr expectationDiscrete(IExpr xExpr, IExpr x, IExpr distribution,
+        EvalEngine engine) {
+      if (!x.isSymbol()) {
+        return F.NIL;
+      }
+      IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+      if (pdf.isNIL()) {
+        return F.NIL;
+      }
+      IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+      long supportLo = DistributionRegion.supportLowerBound(dist, distribution);
+      long supportHi = DistributionRegion.supportUpperBound(dist, distribution);
+      IExpr remainder = xExpr;
+      long[] windows = new long[] {supportLo, supportHi};
+      IExpr[] extracted = extractBooleFactor(xExpr, x);
+      if (extracted != null) {
+        long[] restricted = DistributionRegion.integerWindows((IAST) extracted[1], engine);
+        if (restricted != null) {
+          remainder = extracted[0];
+          windows = DistributionRegion.clampWindows(restricted, supportLo, supportHi);
+        }
+      }
+      if (DistributionRegion
+          .countWindows(windows) <= DistributionRegion.SYMBOLIC_ENUMERATION_LIMIT) {
+        IExpr result = DistributionRegion.enumerateSymbolic(F.Times(remainder, pdf), x, windows,
+            F.NIL, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+      if (pdf.isAST(S.Piecewise)) {
+        // unwrap the piecewise density, so that Sum can find closed forms for e.g. exponential
+        // generating series
+        IExpr result = sumProductOverPiecewise(remainder, pdf, x, windows, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+      IExpr lower = supportLo == Long.MIN_VALUE ? F.CNInfinity : F.ZZ(supportLo);
+      IExpr upper = supportHi == Long.MAX_VALUE ? F.CInfinity : F.ZZ(supportHi);
+      IExpr sum = engine.evaluate(F.Sum(F.Times(xExpr, pdf), F.List(x, lower, upper)));
+      if (sum.isFree(S.Sum, true) && sum.isFree(S.Boole, true)) {
+        return sum;
+      }
+      return F.NIL;
+    }
+
+    /**
+     * If <code>expr</code> expands into a sum of terms <code>c * x^n * b^(a*x + d)</code>, replace
+     * every power <code>x^n</code> by the raw moment <code>E[X^n]</code> of the distribution and
+     * every exponential part by a value of the moment generating function
+     * (<code>E[X^n*E^(s*X)]</code> is the <code>n</code>-th derivative of the moment generating
+     * function at <code>s</code>). The generating function is only used for distributions where it
+     * is an entire function, so that no divergent expectation can be turned into a finite formal
+     * value.
+     *
+     * @return {@link F#NIL} if a term has another structure or the distribution has no closed form
+     *         for one of the required moments or generating function values
+     */
+    private static IExpr polynomialExpectation(IExpr expr, ISymbol x, IAST distribution,
+        EvalEngine engine) {
+      IStatistics statistics = distribution.headInstanceOf(IStatistics.class);
+      if (statistics == null) {
+        return F.NIL;
+      }
+      IExpr expanded = engine.evaluate(F.Expand(expr));
+      IAST terms = expanded.isPlus() ? (IAST) expanded : F.List(expanded);
+      IASTAppendable sum = F.PlusAlloc(terms.size());
+      for (int i = 1; i < terms.size(); i++) {
+        IExpr term = terms.get(i);
+        if (term.isFree(x)) {
+          sum.append(term);
+          continue;
+        }
+        // split the term into a coefficient, a power x^n and exponential factors b^(a*x+d)
+        IAST factors = term.isTimes() ? (IAST) term : F.List(term);
+        IASTAppendable coefficient = F.TimesAlloc(factors.size());
+        IExpr power = F.NIL;
+        IExpr exponentialRate = F.NIL;
+        for (int j = 1; j < factors.size(); j++) {
+          IExpr factor = factors.get(j);
+          if (factor.isFree(x)) {
+            coefficient.append(factor);
+            continue;
+          }
+          if (factor.equals(x)
+              || (factor.isPower() && factor.base().equals(x) && factor.exponent().isInteger())) {
+            if (power.isPresent()) {
+              return F.NIL;
+            }
+            power = factor;
+            continue;
+          }
+          if (factor.isPower() && factor.base().isFree(x)) {
+            // exponential factor b^e(x) with a linear exponent e(x) == a*x + d
+            IExpr exponent = factor.exponent();
+            IExpr a = engine.evaluate(F.D(exponent, x));
+            if (a.isFree(x) && !a.isZero()) {
+              IExpr d = engine.evaluate(F.subst(exponent, x, F.C0));
+              IExpr nonLinearRest = engine.evaluate(F.Subtract(exponent, F.Plus(F.Times(a, x), d)));
+              if (nonLinearRest.isZero()) {
+                IExpr base = factor.base();
+                // b^(a*x) == E^(a*Log(b)*x)
+                IExpr rate = base.equals(S.E) ? a : F.Times(a, F.Log(base));
+                exponentialRate = exponentialRate.isNIL() ? rate : F.Plus(exponentialRate, rate);
+                if (!d.isZero()) {
+                  coefficient.append(F.Power(base, d));
+                }
+                continue;
+              }
+            }
+          }
+          return F.NIL;
+        }
+        if (exponentialRate.isPresent()) {
+          int derivativeOrder = 0;
+          if (power.isPresent()) {
+            derivativeOrder = power.equals(x) ? 1 : power.exponent().toIntDefault();
+            if (derivativeOrder < 1 || derivativeOrder > 8) {
+              return F.NIL;
+            }
+          }
+          IExpr value = momentGeneratingFunctionValue(distribution,
+              engine.evaluate(exponentialRate), derivativeOrder, engine);
+          if (value.isNIL()) {
+            return F.NIL;
+          }
+          sum.append(F.Times(coefficient, value));
+        } else if (power.isPresent()) {
+          IExpr exponent = power.equals(x) ? F.C1 : power.exponent();
+          IExpr moment = statistics.moment(distribution, exponent);
+          if (moment.isNIL()) {
+            return F.NIL;
+          }
+          sum.append(F.Times(coefficient, moment));
+        } else {
+          return F.NIL;
+        }
+      }
+      return engine.evaluate(sum);
+    }
+
+    /**
+     * Test if the moment generating function of the distribution is an entire function (finite
+     * support or e.g. Poisson, Normal, Beta): only for those every formal generating function value
+     * is a correct expectation.
+     */
+    private static boolean hasEntireGeneratingFunction(IExpr distribution) {
+      if (!distribution.isAST()) {
+        return false;
+      }
+      switch (((IAST) distribution).headID()) {
+        case ID.BenfordDistribution:
+        case ID.BernoulliDistribution:
+        case ID.BetaBinomialDistribution:
+        case ID.BetaDistribution:
+        case ID.BinomialDistribution:
+        case ID.DiscreteUniformDistribution:
+        case ID.HypergeometricDistribution:
+        case ID.NormalDistribution:
+        case ID.PoissonDistribution:
+        case ID.UniformDistribution:
+          return true;
+        default:
+          return false;
+      }
+    }
+
+    /**
+     * <code>E[X^n * E^(t*X)]</code> as the <code>n</code>-th derivative of the moment generating
+     * function at <code>t</code>. Only distributions with an entire generating function are used -
+     * see {@link #hasEntireGeneratingFunction(IExpr)}.
+     *
+     * @param derivativeOrder <code>n >= 0</code>
+     */
+    private static IExpr momentGeneratingFunctionValue(IExpr distribution, IExpr t,
+        int derivativeOrder, EvalEngine engine) {
+      if (!hasEntireGeneratingFunction(distribution)) {
+        return F.NIL;
+      }
+      if (derivativeOrder == 0) {
+        IExpr value = engine.evaluate(F.binaryAST2(S.MomentGeneratingFunction, distribution, t));
+        return value.isFree(S.MomentGeneratingFunction, true) ? value : F.NIL;
+      }
+      ISymbol dummy = F.Dummy("t");
+      IExpr mgf = engine.evaluate(F.binaryAST2(S.MomentGeneratingFunction, distribution, dummy));
+      if (!mgf.isFree(S.MomentGeneratingFunction, true)) {
+        return F.NIL;
+      }
+      IExpr derivative = engine.evaluate(F.D(mgf, F.list(dummy, F.ZZ(derivativeOrder))));
+      if (!derivative.isFree(S.D, true)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.subst(derivative, dummy, t));
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol,
+          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
+              S.AccuracyGoal, S.PrecisionGoal},
+          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
     }
 
     @Override
@@ -1161,24 +1695,61 @@ public class StatisticsFunctions {
     }
   }
 
-  private static class NExpectation extends AbstractFunctionEvaluator {
+  private static class NExpectation extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize != 2) {
+        return F.NIL;
+      }
       try {
         IExpr xExpr = ast.arg1();
-        if (xExpr.isFunction() && ast.arg2().isList()) {
-          IAST data = (IAST) ast.arg2();
+        IExpr arg2 = ast.arg2();
+        if (xExpr.isAST(S.Conditioned, 3)) {
+          // E(expr | pred) == E(expr*Boole(pred)) / P(pred)
+          return conditionedExpectation(S.NExpectation, S.NProbability, (IAST) xExpr, arg2, engine);
+        }
+        if (xExpr.isFunction() && arg2.isList()) {
+          IAST data = (IAST) arg2;
           IASTAppendable sum = F.PlusAlloc(data.size());
           for (int i = 1; i < data.size(); i++) {
             sum.append(F.unaryAST1(xExpr, data.get(i)));
           }
-          return sum.divide(F.ZZ(data.argSize()));
+          return engine.evalN(sum.divide(F.ZZ(data.argSize())));
         }
-        if (ast.arg2().isAST(S.Distributed, 3)) {
-          IExpr x = ast.arg2().first();
-          IExpr distribution = ast.arg2().second();
+        if (isDistributedList(arg2)) {
+          // iterated expectation over independent variables: compute symbolically and numericize
+          IExpr temp = evaluateNonNumeric(F.Expectation(xExpr, arg2), engine);
+          if (temp.isFree(S.Expectation, true)) {
+            return engine.evalN(temp);
+          }
+          return F.NIL;
+        }
+        if (arg2.isAST(S.Distributed, 3)) {
+          IExpr x = arg2.first();
+          IExpr distribution = arg2.second();
+          if (xExpr.isAST(S.Boole, 2)) {
+            // NExpectation(Boole(pred), x \[Distributed] dist) == NProbability(pred, ...)
+            return F.binaryAST2(S.NProbability, xExpr.first(), arg2);
+          }
+          int samples = monteCarloSamples(options);
+          if (samples > 0) {
+            IExpr result = monteCarloExpectation(xExpr, x, distribution, samples, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+          if (distribution.isAST(S.ProbabilityDistribution)
+              || distribution.isAST(S.CensoredDistribution)) {
+            // numericize the symbolic expectation of the derived distribution: its plain PDF is
+            // not limited to the distribution domain, so the generic integration is not usable
+            IExpr temp = evaluateNonNumeric(F.Expectation(xExpr, arg2), engine);
+            if (temp.isFree(S.Expectation, true) && temp.isNumericFunction(true)) {
+              return engine.evalN(temp);
+            }
+            return F.NIL;
+          }
           if (distribution.isList()) {
             IAST data = (IAST) distribution;
             // Sum( predicate , data ) / data.argSize()
@@ -1194,37 +1765,136 @@ public class StatisticsFunctions {
               }
             }
             sum.set(1, sumValue);
-            return engine.evaluate(sum.divide(F.ZZ(data.argSize())));
+            return engine.evalN(sum.divide(F.ZZ(data.argSize())));
           } else if (distribution.isContinuousDistribution()) {
-            IExpr pdf = S.PDF.of(engine, distribution, x);
-            if (pdf.isPresent()) {
-              return F.NIntegrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
+            IExpr result = nExpectationContinuous(xExpr, x, distribution, engine);
+            if (result.isPresent()) {
+              return result;
             }
           } else if (distribution.isDiscreteDistribution()) {
-            IExpr pdf = S.PDF.of(engine, distribution, x);
-            if (pdf.isPresent()) {
-              IDiscreteDistribution dist = getDiscreteDistribution(distribution);
-              int supportUpperBound = dist.getSupportUpperBound(distribution);
-              if (supportUpperBound < Integer.MAX_VALUE) {
-                int supportLowerBound = dist.getSupportLowerBound(distribution);
-                if (supportLowerBound > Integer.MIN_VALUE
-                    && supportLowerBound < supportUpperBound) {
-                  IAST function = F.Times(ast.arg1(), pdf);
-                  int lowerBound = dist.getSupportLowerBound(distribution);
-                  return NSum.nsum(function, x, F.ZZ(lowerBound), F.ZZ(supportUpperBound));
-                }
-              }
-              IAST function = F.Times(ast.arg1(), pdf);
-              return NSum.nsum(function, x, F.CNInfinity, F.CInfinity);
+            IExpr result = nExpectationDiscrete(xExpr, x, distribution, engine);
+            if (result.isPresent()) {
+              return result;
             }
           }
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        return Errors.printMessage(S.Expectation, rex, engine);
+        return Errors.printMessage(S.NExpectation, rex, engine);
       }
-
       return F.NIL;
+    }
+
+    /**
+     * Numeric expectation for a continuous distribution: <code>NIntegrate(expr*pdf)</code>. A
+     * single <code>Boole</code> factor restricts the integration region; a piecewise density
+     * restricts the integration to the branch validity intervals - this avoids integrating a
+     * discontinuous integrand over an infinite interval.
+     */
+    private static IExpr nExpectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
+        EvalEngine engine) {
+      IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+      if (pdf.isNIL()) {
+        return F.NIL;
+      }
+      IExpr remainder = xExpr;
+      IAST booleRegion = F.NIL;
+      IExpr[] extracted = extractBooleFactor(xExpr, x);
+      if (extracted != null) {
+        remainder = extracted[0];
+        booleRegion = (IAST) extracted[1];
+      }
+      if (pdf.isFree(S.Piecewise)) {
+        if (booleRegion.isPresent()) {
+          IExpr result =
+              integrateOverRegion(F.Times(remainder, pdf), x, booleRegion, S.NIntegrate, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
+        return F.NIntegrate(F.Times(xExpr, pdf), F.list(x, F.CNInfinity, F.CInfinity));
+      }
+      IExpr result =
+          integrateProductOverPiecewise(remainder, pdf, x, booleRegion, S.NIntegrate, engine);
+      if (result.isPresent()) {
+        return result;
+      }
+      return F.NIntegrate(F.Times(xExpr, pdf), F.list(x, F.CNInfinity, F.CInfinity));
+    }
+
+    /**
+     * Numeric expectation for a discrete distribution. If the distribution maps onto a hipparchus
+     * implementation, the sum runs over the quantile window with overflow safe probabilities and an
+     * adaptively extended tail; otherwise a bounded support is enumerated or the computation falls
+     * back to {@link NSum}.
+     */
+    private static IExpr nExpectationDiscrete(IExpr xExpr, IExpr x, IExpr distribution,
+        EvalEngine engine) {
+      IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+      long supportLo = DistributionRegion.supportLowerBound(dist, distribution);
+      long supportHi = DistributionRegion.supportUpperBound(dist, distribution);
+      IExpr remainder = xExpr;
+      long[] restriction = null;
+      IExpr[] extracted = extractBooleFactor(xExpr, x);
+      if (extracted != null) {
+        long[] windows = DistributionRegion.integerWindows((IAST) extracted[1], engine);
+        if (windows != null) {
+          remainder = extracted[0];
+          restriction = DistributionRegion.clampWindows(windows, supportLo, supportHi);
+        }
+      }
+      IntegerDistribution hipparchus = DistributionRegion.hipparchusDiscrete(distribution);
+      if (hipparchus != null && x.isSymbol()) {
+        DoubleUnaryOperator function = DistributionRegion.compile(remainder, x, engine);
+        if (function != null) {
+          double result;
+          if (restriction == null) {
+            result =
+                DistributionRegion.expectationNumeric(hipparchus, function, supportLo, supportHi);
+          } else {
+            long[] windows = DistributionRegion.clampWindows(restriction, Integer.MIN_VALUE + 2L,
+                Integer.MAX_VALUE - 2L);
+            long[] quantile = DistributionRegion.quantileWindow(hipparchus);
+            if (quantile != null) {
+              // avoid enumerating huge index ranges where the probability mass vanishes
+              windows = DistributionRegion.clampWindows(windows, quantile[0] - 1, quantile[1] + 1);
+            }
+            result = DistributionRegion.kahanSum(
+                j -> function.applyAsDouble(j) * hipparchus.probability((int) j), null, windows);
+          }
+          if (!Double.isNaN(result)) {
+            return F.num(result);
+          }
+        }
+      }
+      IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+      if (pdf.isNIL()) {
+        return F.NIL;
+      }
+      if (x.isSymbol() && supportLo != Long.MIN_VALUE && supportHi != Long.MAX_VALUE) {
+        long[] windows = restriction != null ? restriction : new long[] {supportLo, supportHi};
+        if (DistributionRegion
+            .countWindows(windows) <= DistributionRegion.NUMERIC_ENUMERATION_LIMIT) {
+          DoubleUnaryOperator term = DistributionRegion.compile(F.Times(remainder, pdf), x, engine);
+          if (term != null) {
+            double result = DistributionRegion.kahanSum(term, null, windows);
+            if (!Double.isNaN(result)) {
+              return F.num(result);
+            }
+          }
+        }
+      }
+      IExpr lower = supportLo == Long.MIN_VALUE ? F.CNInfinity : F.ZZ(supportLo);
+      IExpr upper = supportHi == Long.MAX_VALUE ? F.CInfinity : F.ZZ(supportHi);
+      return NSum.nsum(F.Times(xExpr, pdf), x, lower, upper);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol,
+          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
+              S.AccuracyGoal, S.PrecisionGoal},
+          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
     }
 
     @Override
@@ -1238,83 +1908,209 @@ public class StatisticsFunctions {
     }
   }
 
-  private static class NProbability extends AbstractFunctionEvaluator {
+  private static class NProbability extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 3) {
-        try {
-          if (ast.arg2().isList()) {
-            IExpr predicate = ast.arg1();
-            IAST data = (IAST) ast.arg2();
-            if (predicate.isFunction()) {
-              // Sum( Boole(predicate), data ) / data.argSize()
-              int sum = 0;
-              for (int i = 1; i < data.size(); i++) {
-                if (engine.evalTrue(predicate, data.get(i))) {
-                  sum++;
-                }
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize != 2) {
+        return F.NIL;
+      }
+      try {
+        IExpr predicate = ast.arg1();
+        IExpr arg2 = ast.arg2();
+        if (arg2.isList() && !isDistributedList(arg2)) {
+          if (predicate.isFunction()) {
+            IAST data = (IAST) arg2;
+            // Sum( Boole(predicate), data ) / data.argSize()
+            int sum = 0;
+            for (int i = 1; i < data.size(); i++) {
+              if (engine.evalTrue(predicate, data.get(i))) {
+                sum++;
               }
-              return F.QQ(sum, data.argSize());
             }
-          } else if (ast.arg2().isAST(S.Distributed, 3)) {
-            IExpr predicate = ast.arg1();
-            IExpr x = ast.arg2().first();
-            IExpr distribution = ast.arg2().second();
-            if (distribution.isList()) {
-              IAST data = (IAST) distribution;
-              // Sum( Boole(predicate), data ) / data.argSize()
-              int sum = 0;
-              for (int i = 1; i < data.size(); i++) {
-                if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
-                  sum++;
-                }
+            return engine.evalN(F.QQ(sum, data.argSize()));
+          }
+          return F.NIL;
+        }
+        if (isDistributedList(arg2)) {
+          // independent random variables: compute symbolically and numericize
+          IExpr temp = evaluateNonNumeric(F.Probability(predicate, arg2), engine);
+          if (temp.isFree(S.Probability, true)) {
+            return engine.evalN(temp);
+          }
+          return F.NIL;
+        }
+        if (arg2.isAST(S.Distributed, 3)) {
+          IExpr x = arg2.first();
+          IExpr distribution = arg2.second();
+          if (predicate.isTrue()) {
+            return F.CD1;
+          }
+          if (predicate.isFalse()) {
+            return F.CD0;
+          }
+          if (predicate.isAST(S.Conditioned, 3)) {
+            // P(a | b) == P(a && b)/P(b)
+            IExpr joint = engine.evaluate(
+                F.binaryAST2(S.NProbability, F.And(predicate.first(), predicate.second()), arg2));
+            IExpr condition =
+                engine.evaluate(F.binaryAST2(S.NProbability, predicate.second(), arg2));
+            if (joint.isNumber() && condition.isNumber() && !condition.isZero()) {
+              return F.Divide(joint, condition);
+            }
+            return F.NIL;
+          }
+          if (distribution.isList()) {
+            IAST data = (IAST) distribution;
+            // Sum( Boole(predicate), data ) / data.argSize()
+            int sum = 0;
+            for (int i = 1; i < data.size(); i++) {
+              if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
+                sum++;
               }
-              return F.QQ(sum, data.argSize());
-            } else if (distribution.isDiscreteDistribution()) {
-              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
-              if (pdf.isPresent()) {
-                IDiscreteDistribution dist = getDiscreteDistribution(distribution);
-                IntArrayList interval = dist.range(distribution, predicate, x);
-                if (interval != null) {
-                  // for discrete distributions take the sum:
-                  IASTAppendable sum = F.PlusAlloc(10);
-                  for (int i = 0; i < interval.size(); i += 2) {
-                    for (int j = interval.getInt(i); j <= interval.getInt(i + 1); j++) {
-                      if (engine.evalTrue(F.subst(predicate, x, F.num(j)))) {
-                        sum.append(F.subst(pdf, x, F.num(j)));
-                      }
-                    }
-                  }
-                  return sum;
-                } else {
-                  return engine.evaluate(F.NSum(F.Times(F.Boole(predicate), pdf),
-                      F.List(x, F.CNInfinity, F.CInfinity)));
+            }
+            return engine.evalN(F.QQ(sum, data.argSize()));
+          }
+          int samples = monteCarloSamples(options);
+          if (samples > 0) {
+            IExpr result = monteCarloProbability(predicate, x, distribution, samples, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+          IAST region = DistributionRegion.regionFromPredicate(predicate, x);
+          if (region.isNIL()) {
+            // Reduce may solve nonlinear predicates; the result is verified by sampling
+            region = DistributionRegion.regionFromPredicateViaReduce(predicate, x, engine);
+          }
+          if (distribution.isDiscreteDistribution()) {
+            IExpr result = nProbabilityDiscrete(predicate, x, distribution, region, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          } else if (distribution.isContinuousDistribution()) {
+            IExpr result = nProbabilityContinuous(predicate, x, distribution, region, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return Errors.printMessage(S.NProbability, rex, engine);
+      }
+      return F.NIL;
+    }
 
-                }
-              }
-            } else if (distribution.isContinuousDistribution()) {
-              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
-              if (pdf.isPresent()) {
-                if (predicate.isRelational()) {
-                  IAST interval = IntervalDataSym.relationToIntervalSet((IAST) predicate, x);
-                  if (interval.isIntervalData() && interval.argSize() == 1) {
-                    IAST intervalList = (IAST) interval.arg1();
-                    return engine.evaluate(
-                        F.NIntegrate(pdf, F.List(x, intervalList.arg1(), intervalList.arg4())));
-                  }
-                }
-                return engine.evaluate(F.NIntegrate(F.Times(F.Boole(predicate), pdf),
-                    F.List(x, F.CNInfinity, F.CInfinity)));
+    /**
+     * Machine probability for a continuous distribution: numeric CDF differences over the region
+     * pieces, numeric integration of the density over the pieces as first fallback and the
+     * <code>Boole</code> integrand over the whole real axis as last resort.
+     */
+    private static IExpr nProbabilityContinuous(IExpr predicate, IExpr x, IExpr distribution,
+        IAST region, EvalEngine engine) {
+      if (region.isPresent()) {
+        double result =
+            DistributionRegion.probabilityNumericContinuous(distribution, region, engine);
+        if (!Double.isNaN(result)) {
+          return F.num(Math.min(1.0, Math.max(0.0, result)));
+        }
+        IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+        if (pdf.isPresent()) {
+          IExpr integrated = integrateOverRegion(pdf, x, region, S.NIntegrate, engine);
+          if (integrated.isPresent()) {
+            return integrated;
+          }
+        }
+      }
+      IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+      if (pdf.isPresent()) {
+        return engine.evaluate(
+            F.NIntegrate(F.Times(F.Boole(predicate), pdf), F.List(x, F.CNInfinity, F.CInfinity)));
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Machine probability for a discrete distribution: cumulative probability differences of the
+     * hipparchus implementation over the integer windows, numeric CDF differences as first
+     * fallback, then predicate filtered summation over the quantile window and finally
+     * <code>NSum</code> over the support.
+     */
+    private static IExpr nProbabilityDiscrete(IExpr predicate, IExpr x, IExpr distribution,
+        IAST region, EvalEngine engine) {
+      IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+      long supportLo = DistributionRegion.supportLowerBound(dist, distribution);
+      long supportHi = DistributionRegion.supportUpperBound(dist, distribution);
+      IntegerDistribution hipparchus = DistributionRegion.hipparchusDiscrete(distribution);
+      if (region.isPresent()) {
+        long[] windows = DistributionRegion.integerWindows(region, engine);
+        if (windows != null) {
+          windows = DistributionRegion.clampWindows(windows, supportLo, supportHi);
+          if (windows.length == 0) {
+            return F.CD0;
+          }
+          if (hipparchus != null) {
+            double result = DistributionRegion.windowsProbability(hipparchus, windows);
+            if (!Double.isNaN(result)) {
+              return F.num(result);
+            }
+          }
+          double result =
+              DistributionRegion.probabilityNumericDiscrete(distribution, windows, engine);
+          if (!Double.isNaN(result)) {
+            return F.num(Math.min(1.0, Math.max(0.0, result)));
+          }
+          IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+          if (pdf.isPresent() && x.isSymbol()) {
+            DoubleUnaryOperator term = DistributionRegion.compile(pdf, x, engine);
+            if (term != null) {
+              double sum = DistributionRegion.kahanSum(term, null, windows);
+              if (!Double.isNaN(sum)) {
+                return F.num(Math.min(1.0, Math.max(0.0, sum)));
               }
             }
           }
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.Probability, rex, engine);
         }
       }
+      // arbitrary predicate: enumerate the quantile window and filter with the predicate
+      if (hipparchus != null && x.isSymbol()) {
+        long[] window = DistributionRegion.quantileWindow(hipparchus);
+        if (window != null) {
+          long[] windows = DistributionRegion.clampWindows(new long[] {window[0], window[1]},
+              supportLo, supportHi);
+          boolean[] undecidable = new boolean[] {false};
+          LongPredicate filter = j -> {
+            IExpr truth = DistributionRegion.definiteTruthValue(predicate, x, j, engine);
+            if (truth.isNIL()) {
+              undecidable[0] = true;
+              return false;
+            }
+            return truth.isTrue();
+          };
+          double result =
+              DistributionRegion.kahanSum(j -> hipparchus.probability((int) j), filter, windows);
+          if (!undecidable[0] && !Double.isNaN(result)) {
+            return F.num(Math.min(1.0, Math.max(0.0, result)));
+          }
+        }
+      }
+      IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+      if (pdf.isPresent() && predicate.isNumericFunction(x)) {
+        IExpr lower = supportLo == Long.MIN_VALUE ? F.CNInfinity : F.ZZ(supportLo);
+        IExpr upper = supportHi == Long.MAX_VALUE ? F.CInfinity : F.ZZ(supportHi);
+        return engine.evaluate(F.NSum(F.Times(F.Boole(predicate), pdf), F.List(x, lower, upper)));
+      }
       return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol,
+          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
+              S.AccuracyGoal, S.PrecisionGoal},
+          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
     }
 
     @Override
@@ -1708,6 +2504,269 @@ public class StatisticsFunctions {
     }
   }
 
+
+  /**
+   * <code>DistributionParameterQ(dist)</code> - test whether the parameters of <code>dist</code>
+   * are consistent.
+   *
+   * <p>
+   * Symbolic parameters are assumed to be valid, so only an explicitly {@link S#False} assumption
+   * makes the result {@link S#False}. For an argument which is not a distribution the expression
+   * stays unevaluated.
+   */
+  private static final class DistributionParameterQ extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isAST() || !arg1.head().isBuiltInSymbol()) {
+        return F.NIL;
+      }
+      IEvaluator evaluator = ((IBuiltInSymbol) arg1.head()).getEvaluator();
+      if (!(evaluator instanceof IDistribution)) {
+        return F.NIL;
+      }
+      IAST dist = (IAST) arg1;
+      IDistribution distribution = (IDistribution) evaluator;
+      IExpr assumptions = distribution.parameterAssumptions(dist);
+      if (assumptions.isNIL()) {
+        // no assumptions known for this distribution: only the argument count can be checked
+        return F.bool(distribution.checkParameters(dist).isPresent());
+      }
+      IExpr condition = engine.evaluate(assumptions);
+      if (condition.isFalse()) {
+        return S.False;
+      }
+      return S.True;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    }
+  }
+
+  /**
+   * <code>FindDistributionParameters(data, dist)</code> - maximum likelihood estimates for the
+   * symbolic parameters of <code>dist</code>.
+   */
+  private static final class FindDistributionParameters extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.isAST2() || !ast.arg2().isAST2()) {
+        return F.NIL;
+      }
+      double[] data = ast.arg1().toDoubleVector();
+      if (data == null || data.length == 0) {
+        return F.NIL;
+      }
+      IAST dist = (IAST) ast.arg2();
+      IExpr firstParameter = dist.arg1();
+      IExpr secondParameter = dist.arg2();
+      if (!firstParameter.isSymbol() || !secondParameter.isSymbol()) {
+        return F.NIL;
+      }
+      if (dist.isAST(S.NormalDistribution, 3)) {
+        double mean = StatUtils.mean(data);
+        double variance = 0.0;
+        for (int i = 0; i < data.length; i++) {
+          variance += (data[i] - mean) * (data[i] - mean);
+        }
+        // maximum likelihood uses the population standard deviation
+        return F.list(F.Rule(firstParameter, F.num(mean)),
+            F.Rule(secondParameter, F.num(Math.sqrt(variance / data.length))));
+      }
+      if (dist.isAST(S.LaplaceDistribution, 3)) {
+        double[] sorted = data.clone();
+        Arrays.sort(sorted);
+        int n = sorted.length;
+        double median = (n % 2 == 1) ? sorted[n / 2] //
+            : (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0;
+        double meanAbsoluteDeviation = 0.0;
+        for (int i = 0; i < n; i++) {
+          meanAbsoluteDeviation += Math.abs(sorted[i] - median);
+        }
+        return F.list(F.Rule(firstParameter, F.num(median)),
+            F.Rule(secondParameter, F.num(meanAbsoluteDeviation / n)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    }
+  }
+
+  /**
+   * <code>HazardFunction(dist, x)</code> - the hazard function <code>PDF/SurvivalFunction</code>.
+   */
+  private static final class HazardFunction extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isAST()) {
+        return F.NIL;
+      }
+      IAST dist = (IAST) ast.arg1();
+      if (!dist.isContinuousDistribution()) {
+        // for discrete distributions WMA uses a different definition, which is not supported yet
+        return F.NIL;
+      }
+      if (ast.isAST1()) {
+        return IPDF.operatorForm(F.HazardFunction(dist, F.Slot1));
+      }
+      IExpr x = ast.arg2();
+      if (x.isList()) {
+        return ((IAST) x).mapThread(ast, 2);
+      }
+      IExpr pdf = engine.evaluate(F.PDF(dist, x));
+      if (pdf.isAST(S.PDF)) {
+        return F.NIL;
+      }
+      IExpr survival = engine.evaluate(F.SurvivalFunction(dist, x));
+      if (survival.isAST(S.SurvivalFunction)) {
+        return F.NIL;
+      }
+      if (pdf.isAST(S.Piecewise, 3) && survival.isAST(S.Piecewise, 3)) {
+        // divide the matching branches instead of dividing the two Piecewise expressions
+        IExpr quotient = dividePiecewise((IAST) pdf, (IAST) survival, engine);
+        if (quotient.isPresent()) {
+          return quotient;
+        }
+      }
+      return F.Divide(pdf, survival);
+    }
+
+    /**
+     * Divide two {@link S#Piecewise} expressions which use exactly the same conditions, by dividing
+     * the values of the corresponding branches.
+     */
+    private static IExpr dividePiecewise(IAST pdf, IAST survival, EvalEngine engine) {
+      IAST pdfBranches = (IAST) pdf.arg1();
+      IAST survivalBranches = (IAST) survival.arg1();
+      if (pdfBranches.size() != survivalBranches.size()) {
+        return F.NIL;
+      }
+      IASTAppendable branches = F.ListAlloc(pdfBranches.argSize());
+      for (int i = 1; i < pdfBranches.size(); i++) {
+        IExpr p = pdfBranches.get(i);
+        IExpr s = survivalBranches.get(i);
+        if (!p.isList2() || !s.isList2() || !p.second().equals(s.second())) {
+          return F.NIL;
+        }
+        branches.append(F.list(engine.evaluate(F.Divide(p.first(), s.first())), p.second()));
+      }
+      return F.Piecewise(branches, engine.evaluate(F.Divide(pdf.arg2(), survival.arg2())));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    }
+  }
+
+  /**
+   * <code>InverseSurvivalFunction(dist, q)</code> - the <code>(1-q)</code>th quantile of
+   * <code>dist</code>.
+   */
+  private static final class InverseSurvivalFunction extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isAST()) {
+        return F.NIL;
+      }
+      IAST dist = (IAST) ast.arg1();
+      if (!dist.isDistribution()) {
+        return F.NIL;
+      }
+      if (ast.isAST1()) {
+        return IPDF.operatorForm(F.InverseSurvivalFunction(dist, F.Slot1));
+      }
+      IExpr q = ast.arg2();
+      if (q.isList()) {
+        return ((IAST) q).mapThread(ast, 2);
+      }
+      return F.Quantile(dist, F.Subtract(F.C1, q));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    }
+  }
+
+  /**
+   * <code>MedianDeviation(list)</code> - the median absolute deviation from the median of the
+   * elements in <code>list</code>.
+   */
+  private static final class MedianDeviation extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+
+      final IntList dimensions =
+          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() != 0) {
+        switch (dimensions.size()) {
+          case 1:
+            arg1 = arg1.normal(false);
+            if (arg1.isList()) {
+              IAST vector = (IAST) arg1;
+              IExpr median = engine.evaluate(F.Median(vector));
+              if (median.isAST(S.Median)) {
+                return F.NIL;
+              }
+              return F.Median(vector.map(x -> F.Abs(F.Subtract(x, median)), 1));
+            }
+            return F.NIL;
+          case 2:
+            return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.MedianDeviation(x))
+                .normal(false);
+          default:
+            return F.ArrayReduce(S.MedianDeviation, arg1, F.C1);
+        }
+      }
+      if (arg1.isNumber()) {
+        // Rectangular array expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "rectt", F.list(F.C1, ast), engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    }
+  }
 
   private static final class MeanDeviation extends AbstractFunctionEvaluator {
 
@@ -2104,82 +3163,245 @@ public class StatisticsFunctions {
    * 9/10
    * </pre>
    */
-  private static class Probability extends AbstractFunctionEvaluator {
+  private static class Probability extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 3) {
-        try {
-          if (ast.arg2().isList()) {
-            IExpr predicate = ast.arg1();
-            IAST data = (IAST) ast.arg2();
-            if (predicate.isFunction()) {
-              // Sum( Boole(predicate), data ) / data.argSize()
-              int sum = 0;
-              for (int i = 1; i < data.size(); i++) {
-                if (engine.evalTrue(predicate, data.get(i))) {
-                  sum++;
-                }
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize != 2) {
+        return F.NIL;
+      }
+      try {
+        IExpr predicate = ast.arg1();
+        IExpr arg2 = ast.arg2();
+        if (arg2.isList() && !isDistributedList(arg2)) {
+          if (predicate.isFunction()) {
+            IAST data = (IAST) arg2;
+            // Sum( Boole(predicate), data ) / data.argSize()
+            int sum = 0;
+            for (int i = 1; i < data.size(); i++) {
+              if (engine.evalTrue(predicate, data.get(i))) {
+                sum++;
               }
-              return F.QQ(sum, data.argSize());
             }
-          } else if (ast.arg2().isAST(S.Distributed, 3)) {
-            IExpr predicate = ast.arg1();
-            IExpr x = ast.arg2().first();
-            IExpr distribution = ast.arg2().second();
-            if (distribution.isList()) {
-              IAST data = (IAST) distribution;
-              // Sum( Boole(predicate), data ) / data.argSize()
-              int sum = 0;
-              for (int i = 1; i < data.size(); i++) {
-                if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
-                  sum++;
-                }
-              }
-              return F.QQ(sum, data.argSize());
-            } else if (distribution.isDiscreteDistribution()) {
-              IDiscreteDistribution dist = getDiscreteDistribution(distribution);
-              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
-              if (pdf.isPresent()) {
-                IntArrayList interval = dist.range(distribution, predicate, x);
-                if (interval != null) {
-                  // for discrete distributions take the sum:
-                  IASTAppendable sum = F.PlusAlloc(10);
-                  for (int i = 0; i < interval.size(); i += 2) {
-                    for (int j = interval.getInt(i); j <= interval.getInt(i + 1); j++) {
-                      if (engine.evalTrue(F.subst(predicate, x, F.ZZ(j)))) {
-                        sum.append(F.subst(pdf, x, F.ZZ(j)));
-                      }
-                    }
-                  }
-                  return sum;
-                } else {
-                  return engine.evaluate(F.Sum(F.Times(F.Boole(predicate), pdf),
-                      F.List(x, F.CNInfinity, F.CInfinity)));
-                }
-              }
-            } else if (distribution.isContinuousDistribution()) {
-              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
-              if (pdf.isPresent()) {
-                // if (predicate.isRelational()) {
-                // IAST interval = IntervalDataSym.relationToInterval((IAST) predicate, x);
-                // if (interval.isIntervalData() && interval.argSize() == 1) {
-                // IAST intervalList = (IAST) interval.arg1();
-                // return engine.evaluate(
-                // F.Integrate(pdf, F.List(x, intervalList.arg1(), intervalList.arg4())));
-                // }
-                // }
-                return engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
-                    F.List(x, F.CNInfinity, F.CInfinity)));
-              }
+            return F.QQ(sum, data.argSize());
+          }
+          return F.NIL;
+        }
+        if (isDistributedList(arg2)) {
+          // independent random variables: P(pred) == E(Boole(pred))
+          IExpr result = engine.evaluate(F.Expectation(F.Boole(predicate), arg2));
+          return result.isFree(S.Expectation, true) && result.isFree(S.Probability, true) ? result
+              : F.NIL;
+        }
+        if (arg2.isAST(S.Distributed, 3)) {
+          IExpr x = arg2.first();
+          IExpr distribution = arg2.second();
+          if (predicate.isTrue()) {
+            return F.C1;
+          }
+          if (predicate.isFalse()) {
+            return F.C0;
+          }
+          if (predicate.isAST(S.Conditioned, 3)) {
+            // P(a | b) == P(a && b)/P(b)
+            IExpr joint =
+                engine.evaluate(F.Probability(F.And(predicate.first(), predicate.second()), arg2));
+            IExpr condition = engine.evaluate(F.Probability(predicate.second(), arg2));
+            if (!joint.isAST(S.Probability) && !condition.isAST(S.Probability)
+                && !condition.isZero()) {
+              return F.Divide(joint, condition);
+            }
+            return F.NIL;
+          }
+          if (distribution.isAST(S.ProbabilityDistribution) && x.isSymbol()
+              && (predicate.isRelational() || predicate.isAST(S.And))) {
+            // for an explicit density the integration below can not handle the Boole() factor,
+            // so use the CDF instead. Other distributions keep their existing (often simpler)
+            // result.
+            IExpr result = probabilityFromCDF(predicate, (ISymbol) x, distribution, engine);
+            if (result.isPresent()) {
+              return result;
             }
           }
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.Probability, rex, engine);
+          if (distribution.isList()) {
+            IAST data = (IAST) distribution;
+            // Sum( Boole(predicate), data ) / data.argSize()
+            int sum = 0;
+            for (int i = 1; i < data.size(); i++) {
+              if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
+                sum++;
+              }
+            }
+            return F.QQ(sum, data.argSize());
+          } else if (distribution.isDiscreteDistribution()) {
+            IExpr result = probabilityDiscrete(predicate, x, distribution, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          } else if (distribution.isContinuousDistribution()) {
+            IAST region = DistributionRegion.regionFromPredicate(predicate, x);
+            if (region.isPresent()) {
+              // the probability is the sum of CDF differences over the region pieces
+              IExpr result =
+                  DistributionRegion.probabilityFromCDFContinuous(distribution, region, engine);
+              if (result.isPresent()) {
+                return result;
+              }
+            }
+            IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+            if (pdf.isPresent()) {
+              return engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
+                  F.List(x, F.CNInfinity, F.CInfinity)));
+            }
+          }
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return Errors.printMessage(S.Probability, rex, engine);
+      }
+      if (engine.isNumericMode() && ast.arg2().isAST(S.Distributed, 3)) {
+        // N(Probability(...)) falls back to NProbability
+        IExpr temp = engine.evaluate(F.binaryAST2(S.NProbability, ast.arg1(), ast.arg2()));
+        if (temp.isFree(S.NProbability, true)) {
+          return temp;
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Exact probability for a discrete distribution. Strategy: enumerate the integer points of the
+     * predicate region if there are only a few, otherwise enumerate the complement (
+     * <code>P == 1 - P(complement)</code>), otherwise use CDF differences; the last resort is a
+     * symbolic <code>Sum</code> over the support.
+     */
+    private static IExpr probabilityDiscrete(IExpr predicate, IExpr x, IExpr distribution,
+        EvalEngine engine) {
+      IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+      long supportLo = DistributionRegion.supportLowerBound(dist, distribution);
+      long supportHi = DistributionRegion.supportUpperBound(dist, distribution);
+      IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+      IAST region = DistributionRegion.regionFromPredicate(predicate, x);
+      if (region.isPresent()) {
+        long[] windows = DistributionRegion.integerWindows(region, engine);
+        if (windows != null) {
+          windows = DistributionRegion.clampWindows(windows, supportLo, supportHi);
+          if (windows.length == 0) {
+            return F.C0;
+          }
+          if (pdf.isPresent() && DistributionRegion
+              .countWindows(windows) <= DistributionRegion.SYMBOLIC_ENUMERATION_LIMIT) {
+            IExpr result = DistributionRegion.enumerateSymbolic(pdf, x, windows, predicate, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+          if (supportLo != Long.MIN_VALUE) {
+            long[] complement = DistributionRegion.complementWindows(windows, supportLo, supportHi);
+            if (pdf.isPresent() && DistributionRegion
+                .countWindows(complement) <= DistributionRegion.SYMBOLIC_ENUMERATION_LIMIT) {
+              // P(pred) == 1 - P(complement)
+              IExpr sum = DistributionRegion.enumerateSymbolic(pdf, x, complement, F.NIL, engine);
+              if (sum.isPresent()) {
+                return engine.evaluate(F.Subtract(F.C1, sum));
+              }
+            }
+          }
+          IExpr result =
+              DistributionRegion.probabilityFromCDFDiscrete(distribution, windows, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
+      }
+      if (pdf.isPresent() && x.isSymbol() && supportLo != Long.MIN_VALUE) {
+        long[] windows = new long[] {supportLo, supportHi};
+        if (DistributionRegion
+            .countWindows(windows) <= DistributionRegion.SYMBOLIC_ENUMERATION_LIMIT) {
+          // a small finite support can always be enumerated with the predicate as filter
+          IExpr result = DistributionRegion.enumerateSymbolic(pdf, x, windows, predicate, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        } else if (predicateEventuallyFalse(predicate, x, supportLo, engine)) {
+          // predicates like E^x < 3 hold only near the lower end of the support
+          long hi =
+              Math.min(supportHi, supportLo + DistributionRegion.SYMBOLIC_ENUMERATION_LIMIT - 1);
+          IExpr result = DistributionRegion.enumerateSymbolic(pdf, x, new long[] {supportLo, hi},
+              predicate, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
+      }
+      if (pdf.isPresent()) {
+        IExpr lower = supportLo == Long.MIN_VALUE ? F.CNInfinity : F.ZZ(supportLo);
+        IExpr upper = supportHi == Long.MAX_VALUE ? F.CInfinity : F.ZZ(supportHi);
+        IExpr sum =
+            engine.evaluate(F.Sum(F.Times(F.Boole(predicate), pdf), F.List(x, lower, upper)));
+        if (sum.isFree(S.Sum, true) && sum.isFree(S.Boole, true)) {
+          return sum;
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Heuristic test whether the predicate is false everywhere except near the lower end of the
+     * support: it must evaluate to <code>False</code> at the sampled magnitudes and to a definite
+     * truth value at the support start.
+     */
+    private static boolean predicateEventuallyFalse(IExpr predicate, IExpr x, long supportLo,
+        EvalEngine engine) {
+      IExpr first = DistributionRegion.definiteTruthValue(predicate, x, supportLo, engine);
+      if (first.isNIL()) {
+        return false;
+      }
+      for (long offset : new long[] {1000L, 1000000L, 1000000000L}) {
+        if (!DistributionRegion.definiteTruthValue(predicate, x, supportLo + offset, engine)
+            .isFalse()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Compute <code>P(predicate)</code> from the CDF of the distribution, by turning the relational
+     * <code>predicate</code> into an interval of the random variable.
+     */
+    private static IExpr probabilityFromCDF(IExpr predicate, ISymbol x, IExpr distribution,
+        EvalEngine engine) {
+      if (predicate.isAST(S.And)) {
+        // combine the single relations into one relation, e.g. x > 1/2 && x > 1/4 -> x > 1/2
+        IExpr reduced = engine.evaluate(F.Reduce(predicate, x));
+        if (!reduced.isRelational()) {
+          return F.NIL;
+        }
+        predicate = reduced;
+      }
+      IAST interval = IntervalDataSym.relationToIntervalSet((IAST) predicate, x);
+      if (!interval.isIntervalData() || interval.argSize() != 1) {
+        return F.NIL;
+      }
+      IAST bounds = (IAST) interval.arg1();
+      IExpr min = bounds.arg1();
+      IExpr max = bounds.arg4();
+      IExpr upper = max.isInfinity() ? F.C1 : engine.evaluate(F.CDF(distribution, max));
+      IExpr lower = min.isNegativeInfinity() ? F.C0 : engine.evaluate(F.CDF(distribution, min));
+      if (upper.isAST(S.CDF) || lower.isAST(S.CDF)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Subtract(upper, lower));
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol,
+          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
+              S.AccuracyGoal, S.PrecisionGoal},
+          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
     }
 
     @Override
@@ -3117,6 +4339,14 @@ public class StatisticsFunctions {
         }
         return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
       } else if (arg1.isDistribution()) {
+        IAST dist = (IAST) arg1;
+        IStatistics stat = dist.headInstanceOf(IStatistics.class);
+        if (stat != null) {
+          IExpr result = stat.standardDeviation(dist);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
         return standardDeviation(arg1);
       } else if (arg1.isNumber()) {
         // Rectangular array expected at position `1` in `2`.
@@ -3183,7 +4413,11 @@ public class StatisticsFunctions {
       if (ast.isAST1() && ast.first().isAST()) {
         IAST dist = (IAST) ast.arg1();
         if (dist.isDistribution()) {
-          return F.Function(F.Expand(F.Subtract(F.C1, F.CDF(dist, F.Slot1))));
+          IExpr closedForm = closedForm(dist, F.Slot1, engine);
+          if (closedForm.isPresent()) {
+            return IPDF.operatorForm(closedForm);
+          }
+          return IPDF.operatorForm(F.Expand(F.Subtract(F.C1, F.CDF(dist, F.Slot1))));
         }
         return F.NIL;
       }
@@ -3193,6 +4427,10 @@ public class StatisticsFunctions {
           if (ast.arg2().isList()) {
             return ast.arg2().mapThread(ast, 2);
           }
+          IExpr closedForm = closedForm(dist, ast.arg2(), engine);
+          if (closedForm.isPresent()) {
+            return closedForm;
+          }
           return F.Expand(F.Subtract(F.C1, F.CDF(dist, ast.arg2())));
         }
         return F.NIL;
@@ -3200,6 +4438,20 @@ public class StatisticsFunctions {
       return F.NIL;
     }
 
+    /**
+     * Ask the distribution for a dedicated closed form of the survival function, which is usually
+     * much simpler than the literal <code>1 - CDF(dist, x)</code>.
+     */
+    private static IExpr closedForm(IAST dist, IExpr x, EvalEngine engine) {
+      ICDF cdf = dist.headInstanceOf(ICDF.class);
+      if (cdf != null) {
+        IAST checked = cdf.checkParameters(dist);
+        if (checked.isPresent()) {
+          return cdf.survivalFunction(checked, x, engine);
+        }
+      }
+      return F.NIL;
+    }
   }
 
 

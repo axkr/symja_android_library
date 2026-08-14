@@ -14,19 +14,27 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.statistics.IStatistics;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
+import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
+import org.matheclipse.core.interfaces.statistics.IGeneratingFunction;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class StatisticalMomentFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.CentralMomentGeneratingFunction.setEvaluator(new CentralMomentGeneratingFunction());
+      S.CharacteristicFunction.setEvaluator(new CharacteristicFunction());
       S.Cumulant.setEvaluator(new Cumulant());
+      S.CumulantGeneratingFunction.setEvaluator(new CumulantGeneratingFunction());
       S.CentralMoment.setEvaluator(new CentralMoment());
       S.FactorialMoment.setEvaluator(new FactorialMoment());
+      S.FactorialMomentGeneratingFunction.setEvaluator(new FactorialMomentGeneratingFunction());
       S.Moment.setEvaluator(new Moment());
+      S.MomentGeneratingFunction.setEvaluator(new MomentGeneratingFunction());
     }
   }
 
@@ -41,6 +49,17 @@ public class StatisticalMomentFunctions {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
+
+      if (arg1.isAST() && arg1.isDistribution()) {
+        IStatistics statistics = ((IAST) arg1).headInstanceOf(IStatistics.class);
+        if (statistics != null) {
+          IExpr moment = statistics.moment((IAST) arg1, arg2);
+          if (moment.isPresent()) {
+            return engine.evaluate(moment);
+          }
+        }
+        return F.NIL;
+      }
 
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
@@ -557,7 +576,7 @@ public class StatisticalMomentFunctions {
       return F.NIL;
     }
 
-    private IAST factorialPower2(IExpr arg1, IExpr arg2 ) {
+    private IAST factorialPower2(IExpr arg1, IExpr arg2) {
       if (arg2.isInteger() && arg2.isPositive() && arg2.isPositive()
           && ((IInteger) arg2).isLE(F.C4)) {
         return F.FunctionExpand(F.FactorialPower(arg1, arg2));
@@ -580,13 +599,269 @@ public class StatisticalMomentFunctions {
   }
 
 
+  /** The {@link IGeneratingFunction} implementation of the distribution head or null. */
+  private static IGeneratingFunction generatingFunction(IExpr distribution) {
+    if (distribution.isAST() && distribution.isDistribution()) {
+      return ((IAST) distribution).headInstanceOf(IGeneratingFunction.class);
+    }
+    return null;
+  }
+
+  /**
+   * The probability (factorial moment) generating function <code>E[z^X]</code>: the distributions
+   * {@link IGeneratingFunction#pgf(IAST, IExpr, EvalEngine)} implementation or - for a discrete
+   * distribution with a small finite support - the exact enumeration <code>Sum(z^k*pmf(k))</code>.
+   */
+  private static IExpr probabilityGeneratingFunction(IExpr distribution, IExpr z,
+      EvalEngine engine) {
+    IGeneratingFunction gf = generatingFunction(distribution);
+    if (gf != null) {
+      IExpr pgf = gf.pgf((IAST) distribution, z, engine);
+      if (pgf.isPresent()) {
+        return pgf;
+      }
+    }
+    if (distribution.isDiscreteDistribution()) {
+      IDiscreteDistribution dist = StatisticsFunctions.getDiscreteDistribution(distribution);
+      long lo = DistributionRegion.supportLowerBound(dist, distribution);
+      long hi = DistributionRegion.supportUpperBound(dist, distribution);
+      long[] windows = new long[] {lo, hi};
+      if (DistributionRegion
+          .countWindows(windows) <= DistributionRegion.SYMBOLIC_ENUMERATION_LIMIT) {
+        ISymbol x = F.Dummy("x");
+        IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+        if (pdf.isPresent()) {
+          return DistributionRegion.enumerateSymbolic(F.Times(F.Power(z, x), pdf), x, windows,
+              F.NIL, engine);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The moment generating function <code>E[E^(t*X)]</code>: the distributions
+   * {@link IGeneratingFunction#mgf(IAST, IExpr, EvalEngine)} implementation or the probability
+   * generating function at <code>E^t</code>.
+   */
+  private static IExpr momentGeneratingFunction(IExpr distribution, IExpr t, EvalEngine engine) {
+    IGeneratingFunction gf = generatingFunction(distribution);
+    if (gf != null) {
+      IExpr mgf = gf.mgf((IAST) distribution, t, engine);
+      if (mgf.isPresent()) {
+        return mgf;
+      }
+    }
+    return probabilityGeneratingFunction(distribution, F.Exp(t), engine);
+  }
+
+  /** <code>Mean(termMap(x_k))</code> for the empirical distribution of a data list. */
+  private static IExpr dataGeneratingFunction(IAST data,
+      java.util.function.Function<IExpr, IExpr> termMap) {
+    IASTAppendable sum = F.PlusAlloc(data.size());
+    for (int i = 1; i < data.size(); i++) {
+      sum.append(termMap.apply(data.get(i)));
+    }
+    return F.Divide(sum, F.ZZ(data.argSize()));
+  }
+
+  /**
+   * Formal logarithm of a generating function: <code>Log(E^f) == f</code> and the logarithm of a
+   * product is expanded into a sum, so that e.g. the cumulant generating function of the normal
+   * distribution is returned as <code>t*m+t^2*s^2/2</code> and not as
+   * <code>Log(E^(t*m+t^2*s^2/2))</code>.
+   */
+  private static IExpr logGeneratingFunction(IExpr mgf) {
+    if (mgf.isPower() && mgf.base().equals(S.E)) {
+      return mgf.exponent();
+    }
+    if (mgf.isTimes()) {
+      IAST times = (IAST) mgf;
+      IASTAppendable sum = F.PlusAlloc(times.size());
+      for (int i = 1; i < times.size(); i++) {
+        sum.append(logGeneratingFunction(times.get(i)));
+      }
+      return sum;
+    }
+    return F.Log(mgf);
+  }
+
+  /**
+   * <code>MomentGeneratingFunction(dist, t)</code> - the moment generating function
+   * <code>E[E^(t*X)]</code> of the distribution or of a data list. The result is a formal closed
+   * form without convergence conditions.
+   */
+  private static class MomentGeneratingFunction extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      final IExpr t = ast.arg2();
+      if (arg1.isList()) {
+        // the empirical moment generating function of a data list
+        return dataGeneratingFunction((IAST) arg1, x -> F.Exp(F.Times(t, x)));
+      }
+      return momentGeneratingFunction(arg1, t, engine);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>CharacteristicFunction(dist, t)</code> - the characteristic function
+   * <code>E[E^(I*t*X)]</code> of the distribution or of a data list.
+   */
+  private static class CharacteristicFunction extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      final IExpr t = ast.arg2();
+      if (arg1.isList()) {
+        return dataGeneratingFunction((IAST) arg1, x -> F.Exp(F.Times(F.CI, t, x)));
+      }
+      IGeneratingFunction gf = generatingFunction(arg1);
+      if (gf != null) {
+        IExpr cf = gf.cf((IAST) arg1, t, engine);
+        if (cf.isPresent()) {
+          return cf;
+        }
+      }
+      return momentGeneratingFunction(arg1, F.Times(F.CI, t), engine);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>FactorialMomentGeneratingFunction(dist, z)</code> - the probability generating function
+   * <code>E[z^X]</code> of the distribution or of a data list.
+   */
+  private static class FactorialMomentGeneratingFunction extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      final IExpr z = ast.arg2();
+      if (arg1.isList()) {
+        return dataGeneratingFunction((IAST) arg1, x -> F.Power(z, x));
+      }
+      IExpr pgf = probabilityGeneratingFunction(arg1, z, engine);
+      if (pgf.isPresent()) {
+        return pgf;
+      }
+      IGeneratingFunction gf = generatingFunction(arg1);
+      if (gf != null) {
+        IExpr mgf = gf.mgf((IAST) arg1, F.Log(z), engine);
+        if (mgf.isPresent()) {
+          return mgf;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>CentralMomentGeneratingFunction(dist, t)</code> -
+   * <code>E[E^(t*(X - mean))] == E^(-t*mean) * MomentGeneratingFunction(dist, t)</code>.
+   */
+  private static class CentralMomentGeneratingFunction extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      final IExpr t = ast.arg2();
+      if (arg1.isList()) {
+        IExpr mean = engine.evaluate(F.Mean(arg1));
+        return dataGeneratingFunction((IAST) arg1, x -> F.Exp(F.Times(t, F.Subtract(x, mean))));
+      }
+      IExpr mgf = momentGeneratingFunction(arg1, t, engine);
+      if (mgf.isPresent()) {
+        IStatistics statistics = ((IAST) arg1).headInstanceOf(IStatistics.class);
+        if (statistics != null) {
+          IExpr mean = statistics.mean((IAST) arg1);
+          if (mean.isPresent()) {
+            return F.Times(F.Exp(F.Times(F.CN1, t, mean)), mgf);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>CumulantGeneratingFunction(dist, t)</code> -
+   * <code>Log(MomentGeneratingFunction(dist, t))</code>.
+   */
+  private static class CumulantGeneratingFunction extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      final IExpr t = ast.arg2();
+      if (arg1.isList()) {
+        return F.Log(dataGeneratingFunction((IAST) arg1, x -> F.Exp(F.Times(t, x))));
+      }
+      IExpr mgf = momentGeneratingFunction(arg1, t, engine);
+      if (mgf.isPresent()) {
+        return logGeneratingFunction(engine.evaluate(mgf));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
   private static boolean isVectorMatrixOrDistribution(ISymbol head, IAST list,
       IntArrayList dimensions, EvalEngine engine) {
     if (dimensions.size() == 0 || dimensions.contains(0)) {
       // The first argument `1` is expected to be `1`.
       Errors.printMessage(S.Moment, "arg1",
-          F.List(list, F.stringx("a vector, matrix or a distribution")),
-          engine);
+          F.List(list, F.stringx("a vector, matrix or a distribution")), engine);
       return false;
     }
     return true;
