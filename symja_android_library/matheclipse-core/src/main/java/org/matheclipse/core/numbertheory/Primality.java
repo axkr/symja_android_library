@@ -89,6 +89,24 @@ public class Primality implements IPrimality {
 
   private static final SecureRandom random = new SecureRandom();
   private static final BigInteger TWO = new BigInteger("2");
+  private static final BigInteger FOUR = new BigInteger("4");
+
+  /**
+   * The certainty for the {@link BigInteger#isProbablePrime(int)} tests in Pollards rho algorithm.
+   */
+  private static final int PRIME_CERTAINTY = 32;
+
+  /**
+   * The number of times {@link #rho(BigInteger)} is restarted with new random start values, before
+   * a composite number is considered as &quot;not factorizable&quot;.
+   */
+  private static final int MAX_RHO_RESTARTS = 5;
+
+  /**
+   * The number of times a composite divisor determined by {@link #rho(BigInteger)} is split up
+   * recursively.
+   */
+  private static final int MAX_RHO_RECURSION_DEPTH = 64;
 
   public Primality() {}
 
@@ -703,40 +721,95 @@ public class Primality implements IPrimality {
   }
 
   /**
+   * Determine the prime factors of <code>val</code> with Pollards rho algorithm. The prime factors
+   * and their exponents are stored in the <code>map</code>.
+   *
+   * <p>
+   * Pollards rho algorithm only splits a composite number into two factors, which aren't
+   * necessarily prime. Every determined divisor is therefore tested for primality and split again,
+   * if it's composite.
+   *
+   * <p>
    * See <a href="https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm">Wikipedia: Pollards rho
    * algorithm</a>
    *
-   * @param val
-   * @param map
+   * @param val the integer which should be factored; small prime factors should already be divided
+   *        out with {@link #countPrimes32749(BigInteger, Int2IntMap)}
+   * @param map the map of all determined prime factors and their associated exponents
    */
   public static void pollardRhoFactors(final BigInteger val, Map<BigInteger, Integer> map) {
-    BigInteger factor;
-    BigInteger temp = val;
-    int iterationCounter = 0;
-    Integer count;
-    while (!temp.isProbablePrime(32)) {
-      factor = rho(temp);
-      if (factor.equals(temp)) {
-        if (iterationCounter++ > 4) {
-          break;
+    if (val.compareTo(BigInteger.ONE) <= 0) {
+      return;
+    }
+    pollardRhoFactors(val, map, MAX_RHO_RECURSION_DEPTH);
+  }
+
+  /**
+   * Determine the prime factors of <code>rest</code> and store them in the <code>map</code>.
+   *
+   * @param rest a positive integer
+   * @param map the map of all determined prime factors and their associated exponents
+   * @param recursionDepth the number of allowed recursions for splitting composite divisors
+   */
+  private static void pollardRhoFactors(BigInteger rest, Map<BigInteger, Integer> map,
+      int recursionDepth) {
+    while (!rest.equals(BigInteger.ONE)) {
+      if (rest.isProbablePrime(PRIME_CERTAINTY)) {
+        addToMap(rest, 1, map);
+        return;
+      }
+      BigInteger divisor = recursionDepth > 0 ? pollardRhoDivisor(rest) : BigInteger.ONE;
+      if (divisor.equals(BigInteger.ONE)) {
+        // no divisor could be determined - store the composite rest as a factor, to avoid an
+        // endless loop
+        addToMap(rest, 1, map);
+        return;
+      }
+      if (divisor.isProbablePrime(PRIME_CERTAINTY)) {
+        // divide out the complete prime power in one step
+        int exponent = 0;
+        BigInteger[] divRem = rest.divideAndRemainder(divisor);
+        while (divRem[1].signum() == 0) {
+          exponent++;
+          rest = divRem[0];
+          divRem = rest.divideAndRemainder(divisor);
         }
+        addToMap(divisor, exponent, map);
       } else {
-        iterationCounter = 1;
+        pollardRhoFactors(divisor, map, recursionDepth - 1);
+        rest = rest.divide(divisor);
       }
-      count = map.get(factor);
-      if (count == null) {
-        map.put(factor, 1);
-      } else {
-        map.put(factor, count + 1);
+    }
+  }
+
+  /**
+   * Determine a nontrivial divisor of the composite number <code>val</code> with Pollards rho
+   * algorithm. The determined divisor isn't necessarily a prime number.
+   *
+   * @param val a composite number
+   * @return {@link BigInteger#ONE} if no nontrivial divisor could be determined
+   */
+  private static BigInteger pollardRhoDivisor(BigInteger val) {
+    for (int i = 0; i < MAX_RHO_RESTARTS; i++) {
+      BigInteger divisor = rho(val);
+      if (divisor.compareTo(BigInteger.ONE) > 0 && !divisor.equals(val)) {
+        return divisor;
       }
-      temp = temp.divide(factor);
     }
-    count = map.get(temp);
-    if (count == null) {
-      map.put(temp, 1);
-    } else {
-      map.put(temp, count + 1);
+    // Pollards rho algorithm doesn't work reliably for small numbers, which contain only a few
+    // prime factors; fall back to trial division by the primes less equal 32749
+    for (int i = 0; i < BIprimes.length; i++) {
+      if (val.compareTo(BIprimes[i]) > 0 && val.mod(BIprimes[i]).signum() == 0) {
+        return BIprimes[i];
+      }
     }
+    for (int i = 0; i < PRIMES_1031_32749.length; i++) {
+      BigInteger prime = BigInteger.valueOf(PRIMES_1031_32749[i]);
+      if (val.compareTo(prime) > 0 && val.mod(prime).signum() == 0) {
+        return prime;
+      }
+    }
+    return BigInteger.ONE;
   }
 
   public static List<BigInteger> factorize(final BigInteger val) {
@@ -758,7 +831,7 @@ public class Primality implements IPrimality {
     return result;
   }
 
-  private static void addToMap(BigInteger N, int exp, SortedMap<BigInteger, Integer> map) {
+  private static void addToMap(BigInteger N, int exp, Map<BigInteger, Integer> map) {
     Integer oldExp = map.get(N);
     // old entry is replaced if oldExp!=null
     map.put(N, (oldExp == null) ? exp : oldExp + exp);
@@ -813,6 +886,13 @@ public class Primality implements IPrimality {
   }
 
   public static BigInteger rho(final BigInteger val) {
+    if (val.compareTo(FOUR) < 0) {
+      // 0, 1, 2, 3 cannot be split up; especially for 1 the loop below wouldn't terminate
+      return val;
+    }
+    if (!val.testBit(0)) {
+      return TWO;
+    }
     BigInteger divisor;
     BigInteger c = new BigInteger(val.bitLength(), random);
     BigInteger x = new BigInteger(val.bitLength(), random);
