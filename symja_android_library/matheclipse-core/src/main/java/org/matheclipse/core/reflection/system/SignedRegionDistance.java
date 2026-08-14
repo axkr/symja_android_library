@@ -39,7 +39,7 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
-    }
+  }
 
   public static IExpr ballDistance(IAST reg, IExpr p, EvalEngine engine, boolean signed) {
     IExpr head = reg.head();
@@ -64,9 +64,9 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
       } else {
         return engine.evaluate(F.Max(F.C0, F.Subtract(dist, r)));
       }
-        }
-    return F.NIL;
     }
+    return F.NIL;
+  }
 
   public static IExpr boxDistance(IAST reg, IExpr p, EvalEngine engine, boolean signed) {
     IExpr head = reg.head();
@@ -115,7 +115,7 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
-    }
+  }
 
   public static IExpr triangleDistance(IAST reg, IExpr p, EvalEngine engine, boolean signed) {
     IAST pts = F.NIL;
@@ -162,7 +162,7 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
-    }
+  }
 
   private static IExpr edgeSign(IExpr p, IExpr a, IExpr b, EvalEngine engine) {
     IExpr px = ((IAST) p).arg1();
@@ -173,7 +173,7 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
     IExpr by = ((IAST) b).arg2();
     return engine.evaluate(F.Subtract(F.Times(F.Subtract(px, ax), F.Subtract(by, ay)),
         F.Times(F.Subtract(py, ay), F.Subtract(bx, ax))));
-    }
+  }
 
   public static IExpr distanceToSegment(IExpr p, IExpr v, IExpr w, EvalEngine engine) {
     IExpr l2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(v, w))));
@@ -185,10 +185,10 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
 
     IExpr proj = engine.evaluate(F.Plus(v, F.Times(t, F.Subtract(w, v))));
     return engine.evaluate(F.Norm(F.Subtract(p, proj)));
-    }
+  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_2_2;
-    }
+  }
 }

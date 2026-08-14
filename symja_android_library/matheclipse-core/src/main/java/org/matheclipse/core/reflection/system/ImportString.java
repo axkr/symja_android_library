@@ -81,7 +81,7 @@ public class ImportString extends AbstractEvaluator {
       }
 
     } catch (SyntaxError se) {
-      Errors.printMessage(S.ImportString, se , engine);
+      Errors.printMessage(S.ImportString, se, engine);
     } catch (IOException jpe) {
       Errors.printMessage(S.ImportString, jpe, engine);
     } catch (RuntimeException rex) {

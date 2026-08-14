@@ -18,8 +18,8 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <blockquote>
  * <p>
- * gives the value of the specified measurement <code>type</code> for the triangle
- * <code>tri</code>. <code>TriangleMeasurement(tri)</code> gives the area of the triangle.
+ * gives the value of the specified measurement <code>type</code> for the triangle <code>tri</code>.
+ * <code>TriangleMeasurement(tri)</code> gives the area of the triangle.
  * </p>
  * </blockquote>
  */
@@ -116,13 +116,11 @@ public class TriangleMeasurement extends AbstractFunctionEvaluator {
       return engine.evaluate(F.Divide(area, TriangleGeometry.semiperimeter(sides, engine)));
     }
     if ("Circumradius".equals(type)) {
-      return engine.evaluate(
-          F.Divide(F.Times(sides[0], sides[1], sides[2]), F.Times(F.C4, area)));
+      return engine.evaluate(F.Divide(F.Times(sides[0], sides[1], sides[2]), F.Times(F.C4, area)));
     }
     if ("NinePointRadius".equals(type)) {
       // half of the circumradius
-      return engine.evaluate(
-          F.Divide(F.Times(sides[0], sides[1], sides[2]), F.Times(F.C8, area)));
+      return engine.evaluate(F.Divide(F.Times(sides[0], sides[1], sides[2]), F.Times(F.C8, area)));
     }
     if ("Exradius".equals(type)) {
       return engine.evaluate(F.Divide(area,

@@ -505,9 +505,8 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
             result.append(F.Times(nc[i], F.DiracDelta(t)));
           } else {
             // DiracDelta^(n)(t) represented as Derivative[n][DiracDelta][t]
-            result.append(F.Times(nc[i],
-                F.unaryAST1(F.unaryAST1(F.unaryAST1(S.Derivative, F.ZZ(derivOrder)), S.DiracDelta),
-                    t)));
+            result.append(F.Times(nc[i], F.unaryAST1(
+                F.unaryAST1(F.unaryAST1(S.Derivative, F.ZZ(derivOrder)), S.DiracDelta), t)));
           }
         }
       }

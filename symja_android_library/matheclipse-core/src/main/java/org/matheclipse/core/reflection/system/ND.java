@@ -102,8 +102,8 @@ public class ND extends AbstractFunctionEvaluator {
       DSFactory factory = new DSFactory(1, order);
       FiniteDifferencesDifferentiator differentiator =
           new FiniteDifferencesDifferentiator(15, 0.01);
-      UnivariateDifferentiableFunction f =
-          differentiator.differentiate(new UnaryNumerical(function, variable, false, Double.NaN, engine));
+      UnivariateDifferentiableFunction f = differentiator
+          .differentiate(new UnaryNumerical(function, variable, false, Double.NaN, engine));
       DerivativeStructure x = factory.variable(0, a3Double);
       DerivativeStructure y = f.value(x);
       return F.num(y.getPartialDerivative(order));

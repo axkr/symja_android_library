@@ -31,8 +31,8 @@ public class Root extends AbstractFunctionEvaluator {
 
   /**
    * Extra digits carried while Newton-refining a root in {@link Apcomplex} arithmetic. Evaluating
-   * the polynomial close to one of its roots cancels leading digits, so the working precision has to
-   * exceed the requested precision.
+   * the polynomial close to one of its roots cancels leading digits, so the working precision has
+   * to exceed the requested precision.
    */
   private static final long GUARD_DIGITS = 20L;
 
@@ -177,8 +177,8 @@ public class Root extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Normalize an inert {@code Root[f, k]} object to the canonical input form
-   * {@code Root[f, k, 0]}, with the polynomial body of {@code f} in canonical term order.
+   * Normalize an inert {@code Root[f, k]} object to the canonical input form {@code Root[f, k, 0]},
+   * with the polynomial body of {@code f} in canonical term order.
    *
    * <p>
    * {@code Function} is {@link ISymbol#HOLDALL}, so the body of {@code f} is never evaluated and
@@ -245,8 +245,8 @@ public class Root extends AbstractFunctionEvaluator {
    * All roots are computed at machine precision with Laguerre's method and are then ordered by the
    * {@code Root} k-indexing convention (real roots first in ascending order, then the complex roots
    * by ascending real part and ascending imaginary part). If the engine asks for more than machine
-   * precision, the selected root is additionally refined with Newton's method in
-   * {@link Apcomplex} arithmetic.
+   * precision, the selected root is additionally refined with Newton's method in {@link Apcomplex}
+   * arithmetic.
    *
    * @param ast the {@code Root[f, k]} or {@code Root[f, k, n]} expression
    * @param engine the evaluation engine
@@ -295,7 +295,8 @@ public class Root extends AbstractFunctionEvaluator {
 
     IExpr[] numericRoots = new IExpr[degree];
     for (int i = 0; i < degree; i++) {
-      // Chop with the same tolerance which sortRootsByMmaOrder() uses to tell real and complex roots
+      // Chop with the same tolerance which sortRootsByMmaOrder() uses to tell real and complex
+      // roots
       // apart, otherwise a root could be sorted as complex but printed as real (or vice versa).
       numericRoots[i] =
           F.chopExpr(F.complexNum(complexRoots[i].getReal(), complexRoots[i].getImaginary()),
@@ -319,8 +320,8 @@ public class Root extends AbstractFunctionEvaluator {
    *
    * @param roots the numeric roots of a polynomial
    * @param index the index of the root to measure from
-   * @return the distance to the nearest other root, or {@link Double#MAX_VALUE} if there is no other
-   *         root or the distance cannot be determined
+   * @return the distance to the nearest other root, or {@link Double#MAX_VALUE} if there is no
+   *         other root or the distance cannot be determined
    */
   private static double minimumSeparation(IExpr[] roots, int index) {
     double separation = Double.MAX_VALUE;
@@ -374,8 +375,8 @@ public class Root extends AbstractFunctionEvaluator {
    *
    * <p>
    * The iteration is carried out with {@link #GUARD_DIGITS} extra digits, because evaluating the
-   * polynomial near one of its roots cancels as many leading digits as the approximation already has
-   * correct.
+   * polynomial near one of its roots cancels as many leading digits as the approximation already
+   * has correct.
    *
    * @param coefficients the exact polynomial coefficients indexed by their exponent
    * @param approximation the machine-precision approximation of the root to refine

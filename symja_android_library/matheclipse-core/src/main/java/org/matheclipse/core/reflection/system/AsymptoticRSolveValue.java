@@ -134,8 +134,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         }
 
         // Use a robust check: If Series evaluates successfully, it drops the S.Series head
-        if (seriesRes.isPresent() && !seriesRes.equals(S.$Aborted)
-            && !seriesRes.isAST(S.Series)) {
+        if (seriesRes.isPresent() && !seriesRes.equals(S.$Aborted) && !seriesRes.isAST(S.Series)) {
           IExpr normalPoly = engine.evaluate(seriesRes.normal(false));
 
           // Rejects "exact" solutions that are effectively unresolved summations or products, or

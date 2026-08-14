@@ -266,7 +266,8 @@ public class Reduce extends AbstractEvaluator {
      *
      * @param andExpr the {@link S#And} AST
      * @param variableInterval
-     * @return {@link #REDUCE_CONTINUE}, if all condition terms could be reduced (evaluated) in <code>
+     * @return {@link #REDUCE_CONTINUE}, if all condition terms could be reduced (evaluated) in
+     *         <code>
      * variableInterval
      * </code>, an {@link S#And} AST if some parts could be evaluated, {@link F#NIL} otherwise
      * @throws ArgumentTypeException
@@ -393,8 +394,8 @@ public class Reduce extends AbstractEvaluator {
 
     private IExpr rewriteVariableValue(VariableInterval cd, IExpr lastArg) {
       if (lastArg.isEqual()) {
-        IAST[] reduced =
-            Eliminate.eliminateOneVariable(F.list(lastArg), cd.variable, false, false, EvalEngine.get());
+        IAST[] reduced = Eliminate.eliminateOneVariable(F.list(lastArg), cd.variable, false, false,
+            EvalEngine.get());
         if (reduced != null && reduced[0].isEmptyList() && reduced[1].isRule()) {
           IAST rule = reduced[1];
           lastArg = F.Equal(variable, rule.second());
@@ -1765,15 +1766,14 @@ public class Reduce extends AbstractEvaluator {
   }
 
   /**
-   * Reduce a single univariate polynomial inequality <code>lhs OP rhs</code> (with
-   * <code>OP</code> one of {@link S#Less}, {@link S#LessEqual}, {@link S#Greater},
-   * {@link S#GreaterEqual}) over the {@link S#Reals} by a sign analysis of the polynomial
-   * <code>f = lhs - rhs</code>. The sign of a real polynomial can only change at its real roots, so
-   * the real line is split at the distinct real roots and the sign of <code>f</code> is sampled in
-   * each open region. The satisfied regions (and, for the non-strict relations, the roots
-   * themselves) are merged into a maximal {@link S#IntervalData} set and returned as the
-   * corresponding {@link S#Or} of comparators. For example <code>4*x^3-4*x&gt;0</code> reduces to
-   * <code>(-1&lt;x&lt;0)||x&gt;1</code>.
+   * Reduce a single univariate polynomial inequality <code>lhs OP rhs</code> (with <code>OP</code>
+   * one of {@link S#Less}, {@link S#LessEqual}, {@link S#Greater}, {@link S#GreaterEqual}) over the
+   * {@link S#Reals} by a sign analysis of the polynomial <code>f = lhs - rhs</code>. The sign of a
+   * real polynomial can only change at its real roots, so the real line is split at the distinct
+   * real roots and the sign of <code>f</code> is sampled in each open region. The satisfied regions
+   * (and, for the non-strict relations, the roots themselves) are merged into a maximal
+   * {@link S#IntervalData} set and returned as the corresponding {@link S#Or} of comparators. For
+   * example <code>4*x^3-4*x&gt;0</code> reduces to <code>(-1&lt;x&lt;0)||x&gt;1</code>.
    *
    * <p>
    * Inequalities are inherently real-valued, so this reduction is applied independent of the
@@ -1928,8 +1928,8 @@ public class Reduce extends AbstractEvaluator {
   }
 
   /**
-   * Numerically evaluate the sign of the polynomial <code>f</code> at <code>variable == sample</code>
-   * .
+   * Numerically evaluate the sign of the polynomial <code>f</code> at
+   * <code>variable == sample</code> .
    *
    * @return <code>1</code> / <code>-1</code> for a positive / negative value, <code>0</code> if the
    *         value is zero or cannot be evaluated to a real number

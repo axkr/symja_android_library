@@ -64,7 +64,7 @@ public class ExportString extends AbstractEvaluator {
       if (format.equals(Extension.SVG)) {
         if (arg1.isGraphicsObject()) {
           SVGGraphics svgGraphics = new SVGGraphics(360, 360);
-          String svgString=svgGraphics.toSVG((IAST) arg1, true);
+          String svgString = svgGraphics.toSVG((IAST) arg1, true);
           return F.stringx(svgString);
         }
         if (arg1.isAST(S.Graphics3D)) {

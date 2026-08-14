@@ -24,8 +24,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>
  * Depending on the construct the result is a <code>Point</code>, a <code>Line</code>, an
  * <code>InfiniteLine</code>, a <code>Circle</code> or a <code>Triangle</code>. The circle
- * constructs are only defined for a triangle in the plane; for a triangle embedded in 3D space
- * they return unevaluated.
+ * constructs are only defined for a triangle in the plane; for a triangle embedded in 3D space they
+ * return unevaluated.
  */
 public class TriangleConstruct extends AbstractFunctionEvaluator {
 
@@ -102,8 +102,7 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
     IExpr vertex = points.get(vertexIndex);
     switch (type) {
       case "Altitude":
-        return segment(vertex,
-            TriangleGeometry.center("Foot", F.NIL, points, vertexIndex, engine));
+        return segment(vertex, TriangleGeometry.center("Foot", F.NIL, points, vertexIndex, engine));
       case "Median":
         return segment(vertex,
             TriangleGeometry.center("Midpoint", F.NIL, points, vertexIndex, engine));
@@ -121,8 +120,7 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
         return segment(points.get(opposite[0]), points.get(opposite[1]));
       }
       case "Boundary":
-        return F.Line(
-            F.List(points.arg1(), points.arg2(), points.arg3(), points.arg1()));
+        return F.Line(F.List(points.arg1(), points.arg2(), points.arg3(), points.arg1()));
 
       case "AngleBisector":
         return infiniteLine(vertex, TriangleGeometry.center("AngleBisectingCevianEndpoint", F.NIL,
@@ -182,10 +180,10 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
   private static IExpr exteriorAngleBisector(IAST points, int vertexIndex, EvalEngine engine) {
     int[] opposite = otherVertices(vertexIndex);
     IExpr vertex = points.get(vertexIndex);
-    IExpr edge1 = TriangleGeometry
-        .unit(engine.evaluate(F.Subtract(points.get(opposite[0]), vertex)), engine);
-    IExpr edge2 = TriangleGeometry
-        .unit(engine.evaluate(F.Subtract(points.get(opposite[1]), vertex)), engine);
+    IExpr edge1 =
+        TriangleGeometry.unit(engine.evaluate(F.Subtract(points.get(opposite[0]), vertex)), engine);
+    IExpr edge2 =
+        TriangleGeometry.unit(engine.evaluate(F.Subtract(points.get(opposite[1]), vertex)), engine);
     if (edge1.isNIL() || edge2.isNIL()) {
       return F.NIL;
     }
@@ -237,8 +235,8 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
     IASTAppendable vertices = F.ListAlloc(3);
     for (int i = 1; i <= 3; i++) {
       int[] opposite = otherVertices(i);
-      vertices.append(engine.evaluate(
-          F.Times(F.C1D2, F.Plus(points.get(opposite[0]), points.get(opposite[1])))));
+      vertices.append(engine
+          .evaluate(F.Times(F.C1D2, F.Plus(points.get(opposite[0]), points.get(opposite[1])))));
     }
     return F.Triangle(vertices);
   }
@@ -248,8 +246,8 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
     IASTAppendable vertices = F.ListAlloc(3);
     for (int i = 1; i <= 3; i++) {
       int[] opposite = otherVertices(i);
-      vertices.append(engine.evaluate(F.Subtract(
-          F.Plus(points.get(opposite[0]), points.get(opposite[1])), points.get(i))));
+      vertices.append(engine.evaluate(
+          F.Subtract(F.Plus(points.get(opposite[0]), points.get(opposite[1])), points.get(i))));
     }
     return F.Triangle(vertices);
   }
@@ -277,8 +275,8 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
   }
 
   /**
-   * A circle is only representable for a triangle in the plane; for higher dimensions
-   * {@link F#NIL} is returned without a message.
+   * A circle is only representable for a triangle in the plane; for higher dimensions {@link F#NIL}
+   * is returned without a message.
    */
   private static IExpr circle(IExpr center, IExpr radius, IAST points) {
     if (TriangleGeometry.dimension(points) != 2 || !center.isList() || radius.isNIL()) {

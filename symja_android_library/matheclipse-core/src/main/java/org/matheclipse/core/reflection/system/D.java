@@ -1142,8 +1142,7 @@ public class D extends AbstractFunctionOptionEvaluator {
         }
         return F.NIL;
       }
-      if (node.isAST(S.D) && node.size() > 2
-          && !node.isFree(x -> backward.containsKey(x), true)) {
+      if (node.isAST(S.D) && node.size() > 2 && !node.isFree(x -> backward.containsKey(x), true)) {
         // an unevaluated D(...) expression which still contains a dummy function
         IASTAppendable dResult = F.ast(S.D, node.size() + 1);
         boolean hasOption = false;

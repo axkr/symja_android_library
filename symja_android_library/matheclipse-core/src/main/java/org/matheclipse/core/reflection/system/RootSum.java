@@ -360,8 +360,8 @@ public class RootSum extends AbstractFunctionEvaluator {
    *
    * <p>
    * They are found by solving a linear system in the basis <code>1, r, ..., r^(degree-1)</code>
-   * instead of by running the extended Euclidean algorithm: {@link S#PolynomialExtendedGCD} does not
-   * evaluate as soon as the coefficients contain free symbols -
+   * instead of by running the extended Euclidean algorithm: {@link S#PolynomialExtendedGCD} does
+   * not evaluate as soon as the coefficients contain free symbols -
    * <code>PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r)</code> stays unevaluated - while the
    * multiplication matrix of <code>b</code> modulo <code>pMonic</code> needs nothing but polynomial
    * arithmetic and one solve over the field of rational functions in the parameters.
@@ -381,8 +381,8 @@ public class RootSum extends AbstractFunctionEvaluator {
     // is the image of the basis element r^j under multiplication by b.
     IExpr[][] matrix = new IExpr[degree][degree];
     for (int j = 0; j < degree; j++) {
-      IExpr reduced = engine.evaluate(
-          F.PolynomialRemainder(F.Expand(F.Times(bx, F.Power(r, F.ZZ(j)))), pMonic, r));
+      IExpr reduced = engine
+          .evaluate(F.PolynomialRemainder(F.Expand(F.Times(bx, F.Power(r, F.ZZ(j)))), pMonic, r));
       for (int k = 0; k < degree; k++) {
         matrix[k][j] = engine.evaluate(F.Coefficient(reduced, r, F.ZZ(k)));
       }

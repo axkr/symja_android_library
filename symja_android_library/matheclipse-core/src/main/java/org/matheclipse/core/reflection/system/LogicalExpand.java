@@ -73,8 +73,7 @@ public class LogicalExpand extends AbstractFunctionEvaluator {
                   IAST list2 = (IAST) formula.arg2();
                   if (list1.size() == list2.size()) {
                     IASTAppendable logicalResult =
-                        ordinal == ID.Equal ? F.AndAlloc(list1.size())
-                            : F.OrAlloc(list1.size());
+                        ordinal == ID.Equal ? F.AndAlloc(list1.size()) : F.OrAlloc(list1.size());
                     for (int i = 1; i < list1.size(); i++) {
                       logicalResult.append(F.binaryAST2(head, list1.get(i), list2.get(i)));
                     }
@@ -88,8 +87,7 @@ public class LogicalExpand extends AbstractFunctionEvaluator {
                     if (coeffs.isList()) {
                       IAST list = (IAST) coeffs;
                       IASTAppendable logicalResult =
-                          ordinal == ID.Equal ? F.AndAlloc(list.size())
-                              : F.OrAlloc(list.size());
+                          ordinal == ID.Equal ? F.AndAlloc(list.size()) : F.OrAlloc(list.size());
                       for (int i = 1; i < list.size(); i++) {
                         logicalResult.append(F.binaryAST2(head, list.get(i), F.C0));
                       }
@@ -248,7 +246,7 @@ public class LogicalExpand extends AbstractFunctionEvaluator {
     } else if (expr.isAnd()) {
       IASTMutable andAST = ((IAST) expr).copy();
       andAST.sortInplace();
-        return engine.evaluate(andAST);
+      return engine.evaluate(andAST);
     }
     return expr;
   }

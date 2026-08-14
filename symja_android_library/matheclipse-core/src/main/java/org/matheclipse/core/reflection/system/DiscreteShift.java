@@ -95,7 +95,6 @@ public class DiscreteShift extends AbstractFunctionEvaluator {
           ? together
           : engine.evaluate(F.Divide(F.Numerator(together), F.Expand(denominator)));
     }
-    // wolframscript expands the result only when its top-level head is Plus.
     if (result.isPlus()) {
       result = engine.evaluate(F.Expand(result));
     }

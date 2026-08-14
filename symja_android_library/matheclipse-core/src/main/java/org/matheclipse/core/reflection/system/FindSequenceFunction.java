@@ -18,7 +18,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <code>FindSequenceFunction(list)</code> tries to find a unary function <code>f</code> such that
- * <code>f(n)</code> generates the given integer or rational sequence (indexed from <code>n=1</code>).
+ * <code>f(n)</code> generates the given integer or rational sequence (indexed from
+ * <code>n=1</code>).
  *
  * <p>
  * The search runs a fixed pipeline of recognizers, cheapest first, each of which produces a fully
@@ -39,8 +40,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </ol>
  *
  * Unlike the previous implementation this class stores <b>no</b> hard-coded prefix tables; every
- * named candidate is evaluated live through the engine, so a match is checked against the full input
- * rather than a truncated prefix.
+ * named candidate is evaluated live through the engine, so a match is checked against the full
+ * input rather than a truncated prefix.
  */
 public class FindSequenceFunction extends AbstractEvaluator {
 
@@ -87,7 +88,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
 
   /**
    * Wraps {@code function} around the requested variable. If {@code variable} is present the pure
-   * function is applied and evaluated, otherwise the {@code Function(...)} object itself is returned.
+   * function is applied and evaluated, otherwise the {@code Function(...)} object itself is
+   * returned.
    */
   private static IExpr createFunction(IAST function, IExpr variable, EvalEngine engine) {
     if (variable.isPresent()) {
@@ -116,10 +118,12 @@ public class FindSequenceFunction extends AbstractEvaluator {
    *
    * @return the matching closed form, or {@link F#NIL}
    */
-  private static IExpr findRegistryFunction(IInteger[] sequence, IExpr variable, EvalEngine engine) {
+  private static IExpr findRegistryFunction(IInteger[] sequence, IExpr variable,
+      EvalEngine engine) {
     int m = sequence.length;
     // solving two free parameters (alpha, gamma) needs at least two confirming terms beyond the two
-    // used to derive them; this also keeps very short inputs (e.g. {1,-1,3}) from matching spuriously
+    // used to derive them; this also keeps very short inputs (e.g. {1,-1,3}) from matching
+    // spuriously
     if (m < 4) {
       return F.NIL;
     }
@@ -214,7 +218,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
       // differences never stabilized within the available data
       return F.NIL;
     }
-    // A polynomial of degree d needs d+1 points to fit plus at least one confirming point (n >= d+2).
+    // A polynomial of degree d needs d+1 points to fit plus at least one confirming point (n >=
+    // d+2).
     // FindSequenceFunction returns the interpolating polynomial as soon as
     // the d-th differences are constant, even for a "known" sequence such as the first ten Motzkin
     // numbers, whose 8th differences {14,14} make a degree-8 polynomial interpolate all ten terms.
@@ -252,10 +257,10 @@ public class FindSequenceFunction extends AbstractEvaluator {
 
   /**
    * Hypergeometric-term recognizer (M2). Computes the term ratio {@code q(n) = a(n+1)/a(n)} and, if
-   * it is a rational function of {@code n} (numerator and denominator of degree &le; 1), rebuilds the
-   * sequence as {@code a(1) * Product[q(k), {k, 1, n-1}]} and lets the engine simplify the product to
-   * a closed form (typically a {@code Pochhammer}/{@code Gamma}/{@code Binomial} expression). The
-   * result is only returned after it reproduces every supplied term.
+   * it is a rational function of {@code n} (numerator and denominator of degree &le; 1), rebuilds
+   * the sequence as {@code a(1) * Product[q(k), {k, 1, n-1}]} and lets the engine simplify the
+   * product to a closed form (typically a {@code Pochhammer}/{@code Gamma}/{@code Binomial}
+   * expression). The result is only returned after it reproduces every supplied term.
    *
    * @return the closed form applied to {@code variable}, or {@link F#NIL}
    */
@@ -298,9 +303,9 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /**
-   * Attempts to express the sampled ratios {@code q[i]} (with {@code q[i]} taken at {@code var=i+1})
-   * as a single rational function {@code (a0+a1*var)/(b0+b1*var)}. Returns that expression or
-   * {@link F#NIL} if the samples are not consistent with such a form.
+   * Attempts to express the sampled ratios {@code q[i]} (with {@code q[i]} taken at
+   * {@code var=i+1}) as a single rational function {@code (a0+a1*var)/(b0+b1*var)}. Returns that
+   * expression or {@link F#NIL} if the samples are not consistent with such a form.
    */
   private static IExpr fitRationalRatio(IExpr[] q, ISymbol var, EvalEngine engine) {
     int len = q.length;
@@ -341,8 +346,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
 
   /**
    * Solves for {@code [a0, a1, b0, b1]} from three ratio samples with one denominator coefficient
-   * fixed to one ({@code fixed==0} fixes {@code b1=1}, {@code fixed==1} fixes {@code b0=1}). Uses the
-   * engine's linear solver on the 3x3 system; returns {@code null} if singular.
+   * fixed to one ({@code fixed==0} fixes {@code b1=1}, {@code fixed==1} fixes {@code b0=1}). Uses
+   * the engine's linear solver on the 3x3 system; returns {@code null} if singular.
    */
   private static IExpr[] solveRatio(IExpr[] q, int fixed, EvalEngine engine) {
     // unknowns u = [a0, a1, and the free denominator coefficient]
@@ -366,8 +371,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
       rows.append(F.List(F.C1, x, freeCol));
       rhs.append(constant);
     }
-    IExpr solution =
-        engine.evaluate(F.LinearSolve(rows, rhs));
+    IExpr solution = engine.evaluate(F.LinearSolve(rows, rhs));
     if (!solution.isList() || solution.size() != 4) {
       return null;
     }
@@ -382,9 +386,9 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /**
-   * C-finite recognizer (M3). Uses {@link S#FindLinearRecurrence} to detect a linear recurrence with
-   * constant coefficients and, if found, solves it through {@code RSolveValue} to a closed form which
-   * is then verified against every supplied term.
+   * C-finite recognizer (M3). Uses {@link S#FindLinearRecurrence} to detect a linear recurrence
+   * with constant coefficients and, if found, solves it through {@code RSolveValue} to a closed
+   * form which is then verified against every supplied term.
    *
    * @return the closed form applied to {@code variable}, or {@link F#NIL}
    */
@@ -424,8 +428,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
 
     IExpr closedForm;
     try {
-      closedForm =
-          engine.evaluate(F.ternaryAST3(S.RSolveValue, eqns, F.unaryAST1(a, n), n));
+      closedForm = engine.evaluate(F.ternaryAST3(S.RSolveValue, eqns, F.unaryAST1(a, n), n));
     } catch (RuntimeException rex) {
       return F.NIL;
     }
@@ -471,8 +474,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /**
-   * Top-level entry point for a single sequence. Runs the direct recognizer pipeline (M1–M4) and, if
-   * that fails, the transformation layer (M5) which retries the direct pipeline on a transformed
+   * Top-level entry point for a single sequence. Runs the direct recognizer pipeline (M1–M4) and,
+   * if that fails, the transformation layer (M5) which retries the direct pipeline on a transformed
    * sequence and inverts the transform on success.
    */
   private static IExpr findSequenceFunction(IInteger[] sequence, IExpr variable,
@@ -604,7 +607,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
             continue;
           }
           int rows = nTerms - r;
-          // require the system to be over-determined so a non-trivial null space is real, not fitted
+          // require the system to be over-determined so a non-trivial null space is real, not
+          // fitted
           if (rows < unknowns + 1) {
             continue;
           }
@@ -619,11 +623,11 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /**
-   * Attempts a single {@code (order r, coefficient degree d, inhomogeneous degree e)} ansatz: builds
-   * the exact coefficient matrix (1-indexed), extracts a one-dimensional null space, fast-verifies the
-   * recurrence generatively over the rationals, and only then materializes and returns the
-   * {@code DifferenceRoot} (re-checked through the engine so the emitted object really reproduces the
-   * sequence, e.g. at a singular leading coefficient).
+   * Attempts a single {@code (order r, coefficient degree d, inhomogeneous degree e)} ansatz:
+   * builds the exact coefficient matrix (1-indexed), extracts a one-dimensional null space,
+   * fast-verifies the recurrence generatively over the rationals, and only then materializes and
+   * returns the {@code DifferenceRoot} (re-checked through the engine so the emitted object really
+   * reproduces the sequence, e.g. at a singular leading coefficient).
    */
   private static IExpr tryHolonomicAnsatz(IRational[] seq, int r, int d, int e, IExpr variable,
       EvalEngine engine) {
@@ -649,7 +653,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
         }
       }
       for (int l = 0; l < qCols; l++) {
-        row.append(kPow[l].negate()); // -k^l  (moves q(k) to the left-hand side)
+        row.append(kPow[l].negate()); // -k^l (moves q(k) to the left-hand side)
       }
       matrix.append(row);
     }
@@ -774,7 +778,9 @@ public class FindSequenceFunction extends AbstractEvaluator {
     return true;
   }
 
-  /** Evaluates the polynomial with rational coefficients {@code coeff[0..deg]} at integer {@code k}. */
+  /**
+   * Evaluates the polynomial with rational coefficients {@code coeff[0..deg]} at integer {@code k}.
+   */
   private static IRational evalPoly(IExpr[] coeff, int k) {
     IRational sum = F.C0;
     IInteger kk = F.ZZ(k);
@@ -801,9 +807,9 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /**
-   * Clears denominators of a rational null-space vector, returning an equivalent integer-coefficient
-   * vector (and normalizing the overall sign to be non-negative on its last non-zero entry). Returns
-   * {@code null} if any entry is not rational.
+   * Clears denominators of a rational null-space vector, returning an equivalent
+   * integer-coefficient vector (and normalizing the overall sign to be non-negative on its last
+   * non-zero entry). Returns {@code null} if any entry is not rational.
    */
   private static IExpr[] clearDenominators(IAST vector) {
     int n = vector.argSize();
@@ -947,7 +953,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
       if (subForm.isNIL()) {
         return F.NIL;
       }
-      // re-express the sub-form in terms of the global index n: q = (n - res) / p  (n 1-indexed)
+      // re-express the sub-form in terms of the global index n: q = (n - res) / p (n 1-indexed)
       IExpr qOfN = F.Divide(F.Plus(F.Subtract(n, F.ZZ(res)), F.ZZ(p - 1)), F.ZZ(p));
       classForms[res] = engine.evaluate(F.subst(subForm, q, qOfN));
     }
@@ -961,9 +967,9 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /**
-   * Verifies that {@code closedForm} (a function of {@code n}) reproduces the whole sequence and, if
-   * so, wraps it for the requested variable (returning a pure {@code Function} when no variable was
-   * supplied).
+   * Verifies that {@code closedForm} (a function of {@code n}) reproduces the whole sequence and,
+   * if so, wraps it for the requested variable (returning a pure {@code Function} when no variable
+   * was supplied).
    */
   private static IExpr verifyAndWrap(IExpr closedForm, ISymbol n, IInteger[] sequence,
       IExpr variable, EvalEngine engine) {
@@ -1017,8 +1023,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /** Checks if the sequence is geometric with the given ratio. */
-  private static boolean isGeometric(IInteger[] sequence,
-      IRational ratio) {
+  private static boolean isGeometric(IInteger[] sequence, IRational ratio) {
     for (int i = 2; i < sequence.length; i++) {
       if (sequence[i - 1].isZero() || !sequence[i].divideBy(sequence[i - 1]).equals(ratio)) {
         return false;
@@ -1035,8 +1040,9 @@ public class FindSequenceFunction extends AbstractEvaluator {
    * Recognizer for sequences whose terms are symbolic expressions (containing parameters, e.g.
    * {@code {1+a, 1+a^2, 1+a^3, ...}}). Handles a symbolic constant, and the
    * {@code a(n) = c + b*r^n} family (constant plus geometric, which subsumes a pure symbolic
-   * geometric progression) by detecting that the successive differences form a geometric progression.
-   * The reconstructed closed form is verified against every term through symbolic simplification.
+   * geometric progression) by detecting that the successive differences form a geometric
+   * progression. The reconstructed closed form is verified against every term through symbolic
+   * simplification.
    *
    * @return the closed form, or {@link F#NIL}
    */
@@ -1077,9 +1083,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
         }
       }
       if (geometric) {
-        // diff[0] = a(2)-a(1) = b*r*(r-1)  =>  b = diff[0]/(r*(r-1)),  c = a(1) - b*r
-        IExpr b =
-            engine.evaluate(F.Simplify(F.Divide(diff[0], F.Times(r, F.Subtract(r, F.C1)))));
+        // diff[0] = a(2)-a(1) = b*r*(r-1) => b = diff[0]/(r*(r-1)), c = a(1) - b*r
+        IExpr b = engine.evaluate(F.Simplify(F.Divide(diff[0], F.Times(r, F.Subtract(r, F.C1)))));
         IExpr c = engine.evaluate(F.Simplify(F.Subtract(seq[0], F.Times(b, r))));
         IExpr closedForm = engine.evaluate(F.Simplify(F.Plus(c, F.Times(b, F.Power(r, n)))));
         if (validateSymbolic(closedForm, n, seq, engine)) {
@@ -1161,7 +1166,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
               }
             }
             // The independent split is non-elementary (a DifferenceRoot divided by something) or
-            // failed. Look for a single holonomic recurrence for the whole rational-valued sequence,
+            // failed. Look for a single holonomic recurrence for the whole rational-valued
+            // sequence,
             // (a lower-order, possibly inhomogeneous DifferenceRoot).
             IRational[] values = new IRational[numerators.length];
             for (int i = 0; i < numerators.length; i++) {

@@ -144,8 +144,8 @@ public class TrigFactor extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Condense a single polynomial factor in <code>Sin(x)</code> and <code>Cos(x)</code> into multiple
-   * angles with <code>TrigReduce()</code>.
+   * Condense a single polynomial factor in <code>Sin(x)</code> and <code>Cos(x)</code> into
+   * multiple angles with <code>TrigReduce()</code>.
    *
    * @param factor a factor of the factored product
    * @param engine the evaluation engine
@@ -194,8 +194,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
 
   /**
    * <code>Sin(x)+Cos(x)</code> becomes <code>Sqrt(2)*Sin(x+Pi/4)</code> and the sum-to-product
-   * identities like <code>Sin(x)+Sin(y)</code> become
-   * <code>2*Cos(x/2-y/2)*Sin(x/2+y/2)</code>.
+   * identities like <code>Sin(x)+Sin(y)</code> become <code>2*Cos(x/2-y/2)*Sin(x/2+y/2)</code>.
    *
    * @param plus a sum of exactly two terms
    * @return {@link F#NIL} if the two terms aren't <code>+-Sin(u)</code>, <code>+-Cos(u)</code>,
@@ -341,7 +340,8 @@ public class TrigFactor extends AbstractFunctionEvaluator {
    * <code>2*Cosh(x)*Sinh(x)</code> and <code>Cos(2*x)</code> becomes
    * <code>2*Sin(Pi/4-x)*Sin(Pi/4+x)</code>.
    *
-   * <p>Only used for a single trigonometric function, never for the terms of a sum:
+   * <p>
+   * Only used for a single trigonometric function, never for the terms of a sum:
    * <code>Sin(2*x)+Sin(4*x)</code> is left to the polynomial pipeline.
    *
    * @param expr the argument of <code>TrigFactor()</code>
@@ -860,8 +860,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {
-  }
+  public void setUp(final ISymbol newSymbol) {}
 
   @Override
   public int status() {

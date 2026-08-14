@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -559,6 +560,25 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
   }
 
   /**
+   * Return <code>expr</code> as an {@link IAST} which <code>Part</code> can index into. Pattern
+   * objects like <code>x_Symbol</code> are atoms in Symja, so they get converted into an
+   * {@link IAST} which mirrors their <code>FullForm</code> structure.
+   *
+   * @param expr
+   * @return {@link F#NIL} if <code>expr</code> can't be indexed
+   * @see IPatternObject#toFullFormAST()
+   */
+  private static IAST partTarget(IExpr expr) {
+    if (expr.isASTOrAssociation()) {
+      return (IAST) expr;
+    }
+    if (expr instanceof IPatternObject) {
+      return ((IPatternObject) expr).toFullFormAST();
+    }
+    return F.NIL;
+  }
+
+  /**
    * Get the element stored at the given <code>position</code>.
    *
    * @param ast
@@ -630,8 +650,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       IExpr result = getIndex(arg1, indx, engine);
       if (result.isPresent()) {
         if (p1 < ast.size()) {
-          if (result.isASTOrAssociation()) {
-            return part((IAST) result, ast, p1, engine);
+          IAST target = partTarget(result);
+          if (target.isPresent()) {
+            return part(target, ast, p1, engine);
           } else if (result.isSparseArray()) {
             return sparsePart((ISparseArray) result, ast, p1, engine);
           } else {
@@ -660,9 +681,10 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             IExpr ires = getIndexRule(arg1, indx, engine);
             if (ires.isPresent()) {
               if (p1 < ast.size()) {
-                if (ires.isASTOrAssociation()) {
+                IAST iresTarget = partTarget(ires);
+                if (iresTarget.isPresent()) {
 
-                  temp = part((IAST) ires, ast, p1, engine);
+                  temp = part(iresTarget, ast, p1, engine);
                   if (temp.isPresent()) {
                     try {
                       result.appendRule(temp);
@@ -734,8 +756,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           IExpr ires = getIndex(arg1, indx, engine);
           if (ires.isPresent()) {
             if (p1 < ast.size()) {
-              if (ires.isASTOrAssociation()) {
-                temp = part((IAST) ires, ast, p1, engine);
+              IAST iresTarget = partTarget(ires);
+              if (iresTarget.isPresent()) {
+                temp = part(iresTarget, ast, p1, engine);
                 if (temp.isPresent()) {
                   result.append(temp);
                 } else {
@@ -779,13 +802,14 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           }
           return F.NIL;
         }
-        if (arg1.get(i).isASTOrAssociation()) {
+        IAST target = partTarget(arg1.get(i));
+        if (target.isPresent()) {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
             return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
                 engine);
           }
-          IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
+          IExpr temp = part(target, ast, p1, engine);
           if (temp.isPresent()) {
             result.append(temp);
             continue;
@@ -806,7 +830,8 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           }
           return F.NIL;
         }
-        if (arg1.get(i).isASTOrAssociation()) {
+        IAST target = partTarget(arg1.get(i));
+        if (target.isPresent()) {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
             return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
@@ -815,16 +840,16 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
           if (arg1.isAssociation()) {
             IAST rule = (IAST) arg1.getRule(i);
-            IAST argAST = (IAST) rule.second();
-
-            IExpr temp = part(argAST, ast, p1, engine);
-            if (temp.isPresent()) {
-              result.appendRule(rule.setAtCopy(2, temp));
-              continue;
+            IAST argAST = partTarget(rule.second());
+            if (argAST.isPresent()) {
+              IExpr temp = part(argAST, ast, p1, engine);
+              if (temp.isPresent()) {
+                result.appendRule(rule.setAtCopy(2, temp));
+                continue;
+              }
             }
           } else {
-            IAST argAST = (IAST) arg1.get(i);
-            IExpr temp = part(argAST, ast, p1, engine);
+            IExpr temp = part(target, ast, p1, engine);
             if (temp.isPresent()) {
               result.append(temp);
               continue;
@@ -875,9 +900,13 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
     IASTMutable evaledAST = F.NIL;
     IExpr arg1 = engine.evaluateNIL(ast.arg1());
+    // the expression which the part specifications are applied to; for a pattern object this is the
+    // AST which mirrors its FullForm structure
+    IAST arg1AST = F.NIL;
     if (arg1.isPresent()) {
       evaledAST = ast.setAtCopy(1, arg1);
-      if (!arg1.isASTOrAssociation()) {
+      arg1AST = partTarget(arg1);
+      if (arg1AST.isNIL()) {
         if (arg1.isSparseArray()) {
           return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
         }
@@ -891,7 +920,8 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       }
     } else {
       arg1 = ast.arg1();
-      if (!arg1.isASTOrAssociation()) {
+      arg1AST = partTarget(arg1);
+      if (arg1AST.isNIL()) {
         if (arg1.isSparseArray()) {
           return sparseEvaluate(ast, (ISparseArray) arg1, engine);
         }
@@ -917,7 +947,6 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       }
     }
 
-    IAST arg1AST = (IAST) arg1;
     final int astSize = ast.size();
     for (int i = 2; i < astSize; i++) {
       IExpr temp = engine.evaluateNIL(ast.get(i));

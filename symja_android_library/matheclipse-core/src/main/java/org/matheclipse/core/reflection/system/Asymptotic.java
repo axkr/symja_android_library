@@ -46,8 +46,8 @@ public class Asymptotic extends AbstractFunctionOptionEvaluator {
   public Asymptotic() {}
 
   /**
-   * Determine the leading (lowest order) non-zero term of the series expansion of
-   * <code>expr</code> for the variable <code>xVar</code> near <code>x0</code>.
+   * Determine the leading (lowest order) non-zero term of the series expansion of <code>expr</code>
+   * for the variable <code>xVar</code> near <code>x0</code>.
    *
    * <p>
    * If the expansion vanishes up to the currently computed order, the expansion is repeated with a

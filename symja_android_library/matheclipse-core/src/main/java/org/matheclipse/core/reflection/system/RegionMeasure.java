@@ -363,8 +363,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     if (reg.head() == S.FilledTorus) {
-      return engine.evaluate(
-          F.Times(F.C2, F.Sqr(S.Pi), spec.major, F.Sqr(spec.minor)));
+      return engine.evaluate(F.Times(F.C2, F.Sqr(S.Pi), spec.major, F.Sqr(spec.minor)));
     }
     return engine.evaluate(F.Times(F.C4, F.Sqr(S.Pi), spec.major, spec.minor));
   }

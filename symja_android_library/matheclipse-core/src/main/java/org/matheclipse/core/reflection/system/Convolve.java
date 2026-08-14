@@ -73,8 +73,7 @@ public class Convolve extends AbstractFunctionEvaluator {
     final IExpr gAmplitude = causalAmplitude(g, x);
     if (fAmplitude.isPresent() && gAmplitude.isPresent()) {
       IExpr gShifted = F.subst(gAmplitude, x, F.Subtract(y, x));
-      IExpr inner =
-          engine.evaluate(F.Integrate(F.Times(fAmplitude, gShifted), F.list(x, F.C0, y)));
+      IExpr inner = engine.evaluate(F.Integrate(F.Times(fAmplitude, gShifted), F.list(x, F.C0, y)));
       if (inner.isPresent() && !inner.isIndeterminate() && inner.isFree(S.Integrate)) {
         return engine.evaluate(F.Times(F.UnitStep(y), inner));
       }
@@ -94,8 +93,8 @@ public class Convolve extends AbstractFunctionEvaluator {
 
     // 5. general definition: Convolve(f,g,x,y) == Integrate(f(x)*g(y-x), {x, -Infinity, Infinity})
     IExpr gShifted = F.subst(g, x, F.Subtract(y, x));
-    IExpr integral = engine
-        .evaluate(F.Integrate(F.Times(f, gShifted), F.list(x, F.CNInfinity, F.CInfinity)));
+    IExpr integral =
+        engine.evaluate(F.Integrate(F.Times(f, gShifted), F.list(x, F.CNInfinity, F.CInfinity)));
     if (integral.isPresent() && integral.isFree(S.Integrate) && integral.isFree(x)
         && !integral.isIndeterminate() && integral.isFree(S.DirectedInfinity)) {
       return engine.evaluate(F.Simplify(integral));

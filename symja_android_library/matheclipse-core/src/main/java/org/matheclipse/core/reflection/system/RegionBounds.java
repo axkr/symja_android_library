@@ -72,8 +72,8 @@ public class RegionBounds extends AbstractFunctionEvaluator {
   }
 
   /**
-   * A torus around the z-axis extends by the outer radius in the x- and y-direction and by the
-   * tube radius in the z-direction. A <code>FilledTorus</code> has the same bounding box.
+   * A torus around the z-axis extends by the outer radius in the x- and y-direction and by the tube
+   * radius in the z-direction. A <code>FilledTorus</code> has the same bounding box.
    */
   private IExpr torusBounds(IAST reg, EvalEngine engine) {
     RegionPrimitives.TorusSpec spec = RegionPrimitives.parseTorus(reg, engine);

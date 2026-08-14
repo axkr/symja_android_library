@@ -17,8 +17,7 @@ public class Area extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr arg1 = MeshFunctions.normalizeRegion(ast.arg1());
-    if (MeshFunctions.isMeshRegion(arg1)
-        && MeshFunctions.embeddingDimension((IAST) arg1) == 2) {
+    if (MeshFunctions.isMeshRegion(arg1) && MeshFunctions.embeddingDimension((IAST) arg1) == 2) {
       return MeshFunctions.area2D((IAST) arg1, engine);
     }
     if (arg1.isAST() && arg1.isBuiltInFunction()) {
@@ -47,8 +46,7 @@ public class Area extends AbstractEvaluator {
           case ID.StadiumShape:
             return stadiumShape(geoForm, engine);
           case ID.Parallelogram: {
-            RegionPrimitives.ParallelogramSpec spec =
-                RegionPrimitives.parseParallelogram(geoForm);
+            RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(geoForm);
             return spec == null ? F.NIL : RegionPrimitives.parallelogramArea(spec, engine);
           }
           case ID.HalfPlane:

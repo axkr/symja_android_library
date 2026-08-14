@@ -43,8 +43,8 @@ public class PolygonAngle extends AbstractFunctionEvaluator {
       vertexSpec = ast.arg2();
       if (!ast.arg3().isString() || !PolygonGeometry.isAngleType(ast.arg3().toString())) {
         // `1` is not a valid `2` specification.
-        return Errors.printMessage(S.PolygonAngle, "bspec",
-            F.List(ast.arg3(), F.stringx("angle")), engine);
+        return Errors.printMessage(S.PolygonAngle, "bspec", F.List(ast.arg3(), F.stringx("angle")),
+            engine);
       }
       type = ast.arg3().toString();
     } else if (ast.isAST2()) {

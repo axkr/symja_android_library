@@ -49,8 +49,7 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
           double alpha = ast.argSize() >= 4 ? ast.arg4().evalfNaN() : 1.0;
           if (!Double.isNaN(red) && !Double.isNaN(green) && !Double.isNaN(blue)
               && !Double.isNaN(alpha)) {
-            RGBColor color =
-                new RGBColor((float) red, (float) green, (float) blue, (float) alpha);
+            RGBColor color = new RGBColor((float) red, (float) green, (float) blue, (float) alpha);
             return color.getRGB();
           }
         }

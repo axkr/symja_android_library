@@ -53,9 +53,8 @@ public class ExponentialGeneratingFunction extends AbstractFunctionOptionEvaluat
       }
       IExpr result = expr;
       for (int i = 1; i <= nList.argSize(); i++) {
-        result = engine
-            .evaluate(
-                F.ternaryAST3(S.ExponentialGeneratingFunction, result, nList.get(i), xList.get(i)));
+        result = engine.evaluate(
+            F.ternaryAST3(S.ExponentialGeneratingFunction, result, nList.get(i), xList.get(i)));
       }
       return result;
     }

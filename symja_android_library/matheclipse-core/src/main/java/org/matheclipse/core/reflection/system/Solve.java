@@ -785,12 +785,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
     /**
      * @param numericFlag if <code>true</code> the caller ({@link S#NSolve}) asked for a numerical
-     *        solution. Note that this is not the same as
-     *        {@link IExpr#isNumericMode()} of <code>numerator</code>: <code>NSolve</code> is
-     *        regularly handed an <em>exact</em> polynomial like <code>x^5+2*x^3+x-7</code>, and
-     *        without this flag the polynomial would be answered with inert {@link S#Root} objects
-     *        which are only evaluated to numbers afterwards - in a different order, and running the
-     *        numerical root finder once per root.
+     *        solution. Note that this is not the same as {@link IExpr#isNumericMode()} of
+     *        <code>numerator</code>: <code>NSolve</code> is regularly handed an <em>exact</em>
+     *        polynomial like <code>x^5+2*x^3+x-7</code>, and without this flag the polynomial would
+     *        be answered with inert {@link S#Root} objects which are only evaluated to numbers
+     *        afterwards - in a different order, and running the numerical root finder once per
+     *        root.
      */
     public static IAST rootsOfUnivariatePolynomial(IExpr numerator, IExpr denominator,
         IExpr variable, boolean numericFlag, EvalEngine engine) {
@@ -908,8 +908,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       if (solveVariable.isNIL()) {
         return F.NIL;
       }
-      return solveRecursive(termsEqualZeroList, inequationsList, numericFlag,
-          F.list(solveVariable), engine);
+      return solveRecursive(termsEqualZeroList, inequationsList, numericFlag, F.list(solveVariable),
+          engine);
     }
 
     private IExpr solveMultiVariableSystem(IASTMutable termsEqualZeroList, IAST inequationsList,
@@ -991,12 +991,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * sub-expression with a fresh dummy variable (consistently across all equations), yielding a
      * polynomial system in the dummies. That system is solved for the kernel <em>values</em>. Each
      * kernel value then produces a decoupled equation <code>kernel(variable) == value</code> (via
-     * {@link PolynomialHomogenization#replaceBackward(IExpr)}); handing the decoupled system back to
-     * {@link S#Solve} lets the ordinary single-variable machinery invert every kernel - including
-     * the periodic {@code ConditionalExpression} branches of the trig/hyperbolic inverses and the
-     * cross-product across variables. Finally the candidates are cross-checked against the original
-     * equations, which discards branches inconsistent with the principal root (e.g. a negative
-     * square root).
+     * {@link PolynomialHomogenization#replaceBackward(IExpr)}); handing the decoupled system back
+     * to {@link S#Solve} lets the ordinary single-variable machinery invert every kernel -
+     * including the periodic {@code ConditionalExpression} branches of the trig/hyperbolic inverses
+     * and the cross-product across variables. Finally the candidates are cross-checked against the
+     * original equations, which discards branches inconsistent with the principal root (e.g. a
+     * negative square root).
      *
      * @param termsEqualZeroList the equations as expressions which should be <code>== 0</code>
      * @param inequationsList inequality constraints; kernel homogenization is only attempted when
@@ -1152,8 +1152,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     /**
      * Whether {@code term} contains a trigonometric / hyperbolic sub-expression that involves a
      * solve variable but is <em>not</em> a function of a bare solve variable (e.g. {@code Sin(2*x)}
-     * or {@code Sin(c0/z+..)}). Used to restrict {@link #solveViaKernelHomogenization} to invertible
-     * kernels and to keep it away from heavyweight trig homogenization on unrelated systems.
+     * or {@code Sin(c0/z+..)}). Used to restrict {@link #solveViaKernelHomogenization} to
+     * invertible kernels and to keep it away from heavyweight trig homogenization on unrelated
+     * systems.
      */
     private static boolean hasNonKernelTrig(IExpr term, IAST variables) {
       return !term.isFree(sub -> sub.isAST1() //
@@ -1164,8 +1165,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
     /**
      * Whether {@code head} is a (forward) trigonometric or hyperbolic function that
-     * {@link #solveViaKernelHomogenization} knows how to invert. Inverse functions are intentionally
-     * excluded.
+     * {@link #solveViaKernelHomogenization} knows how to invert. Inverse functions are
+     * intentionally excluded.
      */
     private static boolean isInvertibleKernelHead(IExpr head) {
       if (head.isBuiltInSymbol()) {
@@ -1248,9 +1249,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // copy the termsEqualZeroList back to a list of F.Equal(...) expressions
       // because Eliminate() operates on equations.
       IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Slot1, F.C0), 1);
-      IAST[] tempAST =
-          Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, periodicBranches,
-              engine);
+      IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues,
+          periodicBranches, engine);
       if (tempAST != null) {
         IAST lastRuleUsedForVariableElimination = tempAST[1];
         if (lastRuleUsedForVariableElimination != null) {
@@ -2018,8 +2018,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
 
           if (numericFlag && inequationsList.isEmpty() && intervalDataMap.isEmpty()) {
-            IExpr numericResult = solveNumericPolynomial(termsEqualZeroList, variables, domain,
-                maxRoots, engine);
+            IExpr numericResult =
+                solveNumericPolynomial(termsEqualZeroList, variables, domain, maxRoots, engine);
             if (numericResult.isPresent()) {
               return numericResult;
             }
@@ -2028,8 +2028,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IExpr result =
               solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
           if (result.isNIL()) {
-            result = solveUnderdetermined(termsEqualZeroList, lists[1], numericFlag, variables,
-                engine);
+            result =
+                solveUnderdetermined(termsEqualZeroList, lists[1], numericFlag, variables, engine);
           }
           if (result.isNIL()) {
             // The system cannot be solved with the methods available to Solve.
@@ -2236,8 +2236,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Order the solutions of a single variable by their real part and, for equal real parts, by
-   * their imaginary part, the same way {@link #solveNumericPolynomial} orders the machine precision
+   * Order the solutions of a single variable by their real part and, for equal real parts, by their
+   * imaginary part, the same way {@link #solveNumericPolynomial} orders the machine precision
    * solutions.
    *
    * @param solutions a "list of solution lists"
@@ -2320,11 +2320,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    *
    * <p>
    * This is the path <code>NSolve</code> takes - and <code>Solve</code> for an equation which
-   * already contains machine numbers. Determining the roots numerically rather than solving
-   * exactly and applying <code>N</code> afterwards is what makes the result a machine number for
-   * every degree (a symbolic solution of degree 5 or higher stays an inert <code>Root</code>
-   * object), keeps a root of multiplicity <code>k</code> present <code>k</code> times, and orders
-   * the solutions by real and then imaginary part.
+   * already contains machine numbers. Determining the roots numerically rather than solving exactly
+   * and applying <code>N</code> afterwards is what makes the result a machine number for every
+   * degree (a symbolic solution of degree 5 or higher stays an inert <code>Root</code> object),
+   * keeps a root of multiplicity <code>k</code> present <code>k</code> times, and orders the
+   * solutions by real and then imaginary part.
    *
    * @param termsEqualZeroList the equations, as expressions which have to become <code>0</code>
    * @param variables the variables to solve for
@@ -2388,8 +2388,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Test if a numerically determined root is a rational number, i.e. if the root is a member of
-   * the {@link S#Rationals} domain.
+   * Test if a numerically determined root is a rational number, i.e. if the root is a member of the
+   * {@link S#Rationals} domain.
    *
    * <p>
    * The test cannot be made on the machine number itself - every machine number <i>is</i> a
@@ -2446,8 +2446,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     int modulus = modulusOption.toIntDefault();
     if (!modulusOption.isInteger() || modulus < 1) {
       // Value of option `1` should be a prime number or zero.
-      return Errors.printMessage(ast.topHead(), "modp",
-          F.List(F.Rule(S.Modulus, modulusOption)), engine);
+      return Errors.printMessage(ast.topHead(), "modp", F.List(F.Rule(S.Modulus, modulusOption)),
+          engine);
     }
     IInteger modulusValue = (IInteger) modulusOption;
 

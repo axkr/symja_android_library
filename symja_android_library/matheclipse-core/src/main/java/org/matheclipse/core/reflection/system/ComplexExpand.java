@@ -461,9 +461,11 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
           case ID.Log:
             // I*Arg(x + I*y) + (1/2)*Log(x^2 + y^2)
             final IExpr logPart;
-            if (x.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE) && y.isPositiveResult()) {
+            if (x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+                && y.isPositiveResult()) {
               logPart = F.Log(y);
-            } else if (y.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE) && x.isPositiveResult()) {
+            } else if (y.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+                && x.isPositiveResult()) {
               logPart = F.Log(x);
             } else {
               IExpr logPlusReImSquared =

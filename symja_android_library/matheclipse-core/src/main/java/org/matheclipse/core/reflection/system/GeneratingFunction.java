@@ -245,13 +245,12 @@ public class GeneratingFunction extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     IExpr head = expr.head();
-    IExpr baseGF =
-        engine.evaluate(F.ternaryAST3(S.GeneratingFunction, F.unaryAST1(head, n), n, x));
+    IExpr baseGF = engine.evaluate(F.ternaryAST3(S.GeneratingFunction, F.unaryAST1(head, n), n, x));
     IASTAppendable numerator = F.PlusAlloc(k + 1);
     numerator.append(baseGF);
     for (int j = 0; j < k; j++) {
-      numerator.append(
-          F.Negate(F.Times(engine.evaluate(F.unaryAST1(head, F.ZZ(j))), F.Power(x, j))));
+      numerator
+          .append(F.Negate(F.Times(engine.evaluate(F.unaryAST1(head, F.ZZ(j))), F.Power(x, j))));
     }
     return F.Divide(numerator, F.Power(x, k));
   }
@@ -307,11 +306,9 @@ public class GeneratingFunction extends AbstractFunctionOptionEvaluator {
     IExpr denominator = engine.evaluate(F.Denominator(together));
     if (engine.evalTrue(F.PolynomialQ(numerator, x))
         && engine.evalTrue(F.PolynomialQ(denominator, x))) {
-      IExpr quotient =
-          engine.evaluate(F.Divide(F.Expand(numerator), F.Factor(denominator)));
+      IExpr quotient = engine.evaluate(F.Divide(F.Expand(numerator), F.Factor(denominator)));
       // expand the numerator again, because Factor() may have moved a sign into it
-      return engine.evaluate(
-          F.Divide(F.Expand(F.Numerator(quotient)), F.Denominator(quotient)));
+      return engine.evaluate(F.Divide(F.Expand(F.Numerator(quotient)), F.Denominator(quotient)));
     }
     return result;
   }

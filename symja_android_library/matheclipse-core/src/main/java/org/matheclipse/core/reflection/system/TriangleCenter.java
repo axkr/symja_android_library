@@ -39,8 +39,8 @@ public class TriangleCenter extends AbstractFunctionEvaluator {
     TriangleGeometry.Spec spec = TriangleGeometry.spec(arg2, points);
     if (spec == null || !TriangleGeometry.isCenterType(spec.type)) {
       // `1` is not a valid `2` specification.
-      return Errors.printMessage(S.TriangleCenter, "bspec",
-          F.List(arg2, F.stringx("center")), engine);
+      return Errors.printMessage(S.TriangleCenter, "bspec", F.List(arg2, F.stringx("center")),
+          engine);
     }
     if (spec.vertex == TriangleGeometry.INVALID_VERTEX) {
       // `1` is not a valid `2` specification.

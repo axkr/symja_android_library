@@ -83,8 +83,8 @@ public class FindGeneratingFunction extends AbstractFunctionEvaluator {
     int length = Math.min(sequenceCoefficients.size(), maxNumbers);
     for (int i = 1; i < length; i++) {
       IExpr sequenceCoefficient = sequenceCoefficients.get(i);
-      IExpr seriesCoefficient =
-          S.SeriesCoefficient.funEval(engine, approximantNumericFunction, F.List(x, F.C0, F.ZZ(i - 1)));
+      IExpr seriesCoefficient = S.SeriesCoefficient.funEval(engine, approximantNumericFunction,
+          F.List(x, F.C0, F.ZZ(i - 1)));
       if (!sequenceCoefficient.equals(seriesCoefficient)) {
         return false;
       }

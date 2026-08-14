@@ -12,8 +12,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * Shared geometry kernel for {@link PolygonAngle} and {@link PolygonCoordinates}.
  *
  * <p>
- * A polygon is represented by the list of its vertices in the order in which they are connected. Two
- * derived orders are used by the polygon functions:
+ * A polygon is represented by the list of its vertices in the order in which they are connected.
+ * Two derived orders are used by the polygon functions:
  *
  * <ul>
  * <li>the <i>canonical order</i> of {@link #canonicalOrder(IAST, EvalEngine)} keeps the cyclic
@@ -46,11 +46,11 @@ public final class PolygonGeometry {
    * Accepted forms are <code>{p1, ..., pn}</code>, <code>Polygon({p1, ..., pn})</code> and
    * <code>Triangle({p1, p2, p3})</code>. The argument-less <code>Polygon()</code> and
    * <code>Triangle()</code> default to the unit triangle <code>{{0,0}, {1,0}, {0,1}}</code>.
-   * Coordinates which repeat the previous vertex are dropped, because they don't add a corner to the
-   * polygon.
+   * Coordinates which repeat the previous vertex are dropped, because they don't add a corner to
+   * the polygon.
    *
-   * @return the list of at least three vertices or {@link F#NIL} if <code>arg</code> doesn't define a
-   *         polygon
+   * @return the list of at least three vertices or {@link F#NIL} if <code>arg</code> doesn't define
+   *         a polygon
    */
   public static IAST vertices(IExpr arg) {
     IExpr list = arg;
@@ -244,8 +244,8 @@ public final class PolygonGeometry {
   }
 
   /**
-   * <code>true</code> if the counter clockwise oriented polygon turns clockwise at the vertex, which
-   * means that its interior angle is greater than <code>Pi</code>.
+   * <code>true</code> if the counter clockwise oriented polygon turns clockwise at the vertex,
+   * which means that its interior angle is greater than <code>Pi</code>.
    */
   private static boolean isReflex(IExpr vertex, IExpr previous, IExpr next, EvalEngine engine) {
     if (!vertex.isList2() || !previous.isList2() || !next.isList2()) {

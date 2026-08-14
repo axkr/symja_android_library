@@ -61,10 +61,10 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
    */
   public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr variable,
       IExpr additionalSolution) {
-    if (a.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       return quadraticSolve(b, c, d, variable, additionalSolution, null);
     } else {
-      if (d.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         return quadraticSolve(a, b, c, variable, additionalSolution, C0);
       }
       IExpr list = F.List(//
@@ -96,8 +96,8 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
       // IExpr C = F.eval(Times(ZZ(-27L), a.power(C2), discriminant));
-      if (discriminant.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        if (delta0.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (discriminant.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (delta0.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // the three roots are equal
           // (-b)/(3*a)
           result.append(Times(CN1, b, Power(Times(C3, a), CN1)));
@@ -203,7 +203,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
     if (solution2 != null) {
       result.append(solution2);
     }
-    if (!a.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (!a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       EvalEngine engine = EvalEngine.get();
       if (variable.isNIL()) {
         variable = F.x;
@@ -239,7 +239,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       // Square `3`.
       IExpr quadraticFormula =
           F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
-      if (!c.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         engine.addTraceInfoStep(//
             quadraticFormula, //
             F.List(S.QuarticSolve, F.$str("QuadraticFormulaSquareB"), b));
@@ -251,7 +251,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       // Multiply `3` times `4`.
       discriminant = Plus(bSquared, F.Times(F.CN4, a, c));
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
-      if (!c.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         bSquared = b.times(b);
         engine.addTraceInfoStep(//
             quadraticFormula, //
@@ -261,7 +261,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       // Multiply `3` times `4`.
       discriminant = Plus(bSquared, F.Times(factor, c));
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
-      if (!c.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         engine.addTraceInfoStep(//
             quadraticFormula, //
             F.List(S.QuarticSolve, F.$str("QuadraticFormulaTimes"), factor, c));
@@ -272,7 +272,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       // Add `3` to `4`.
       discriminant = Plus(bSquared, factor);
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
-      if (!c.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         engine.addTraceInfoStep(//
             quadraticFormula, //
             F.List(S.QuarticSolve, F.$str("QuadraticFormulaPlus"), bSquared, factor));
@@ -317,7 +317,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       return result;
 
     }
-    if (!b.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (!b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       return linearSolve(b, c, variable, result);
     }
     return result;

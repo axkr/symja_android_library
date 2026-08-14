@@ -93,8 +93,7 @@ public class RegionCentroid extends AbstractFunctionEvaluator {
           case ID.HalfSpace: {
             // an unbounded region has no centroid
             int embeddingDim = RegionEmbeddingDimension.getEmbeddingDimension(reg);
-            return embeddingDim < 1 ? F.NIL
-                : RegionPrimitives.indeterminateCentroid(embeddingDim);
+            return embeddingDim < 1 ? F.NIL : RegionPrimitives.indeterminateCentroid(embeddingDim);
           }
           case ID.Parallelogram: {
             RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(reg);

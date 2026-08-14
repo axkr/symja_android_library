@@ -112,10 +112,10 @@ public class ZetaZero extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Find the imaginary part of the {@code index}-th nontrivial zeta zero. A cheap
-   * machine-precision Riemann-Siegel locate phase brackets the zero and seeds a high-precision root
-   * polish; if that fast path fails to produce a valid bracket the method falls back to the
-   * arbitrary-precision scan-and-bisect in {@link #zzFindZeroApfloat}.
+   * Find the imaginary part of the {@code index}-th nontrivial zeta zero. A cheap machine-precision
+   * Riemann-Siegel locate phase brackets the zero and seeds a high-precision root polish; if that
+   * fast path fails to produce a valid bracket the method falls back to the arbitrary-precision
+   * scan-and-bisect in {@link #zzFindZeroApfloat}.
    */
   private static Apfloat zzFindZero(FixedPrecisionApfloatHelper h, int index, Apfloat half,
       Apfloat quarter, Apfloat two, Apfloat logPi, Apfloat tol, long precision) {
@@ -223,10 +223,10 @@ public class ZetaZero extends AbstractFunctionEvaluator {
    * Polish a zero to full precision from a double-precision bracket using the secant method with a
    * bisection safeguard on the arbitrary-precision Riemann-Siegel {@code Z(t)}. The secant iterates
    * converge superlinearly (order ~1.6), so only a handful of arbitrary-precision zeta evaluations
-   * are needed instead of the ~{@code 3.3 * precision} of a bisection. The bracket {@code [a, b]} is
-   * kept straddling the root and a bisection step is taken whenever a secant step would leave it.
-   * Returns {@code null} if the bracket does not straddle a sign change at full precision, so the
-   * caller can fall back to the arbitrary-precision search.
+   * are needed instead of the ~{@code 3.3 * precision} of a bisection. The bracket {@code [a, b]}
+   * is kept straddling the root and a bisection step is taken whenever a secant step would leave
+   * it. Returns {@code null} if the bracket does not straddle a sign change at full precision, so
+   * the caller can fall back to the arbitrary-precision search.
    */
   private static Apfloat zzPolish(FixedPrecisionApfloatHelper h, double aDouble, double bDouble,
       Apfloat half, Apfloat quarter, Apfloat two, Apfloat logPi, Apfloat tol, long precision) {

@@ -344,9 +344,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
               return false;
             }
             coefficients[offset] = coefficient.evalfNaN();
-              if (Double.isNaN(coefficients[offset])) {
-                return false;
-              }
+            if (Double.isNaN(coefficients[offset])) {
+              return false;
+            }
           }
         }
         continue;
@@ -397,9 +397,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
               return false;
             }
             coefficients[offset] = coefficient.evalfNaN();
-              if (Double.isNaN(coefficients[offset])) {
-                return false;
-              }
+            if (Double.isNaN(coefficients[offset])) {
+              return false;
+            }
           }
         }
         continue;

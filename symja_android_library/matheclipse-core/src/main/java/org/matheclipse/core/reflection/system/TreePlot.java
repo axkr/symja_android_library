@@ -25,7 +25,7 @@ public class TreePlot extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
-    
+
     IExpr arg1 = ast.arg1();
     GraphExpr<?> graphExpr = GraphExpr.newInstance(arg1);
     if (graphExpr == null) {

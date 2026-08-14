@@ -86,8 +86,8 @@ public class RiemannSiegelTheta extends AbstractArg1 {
   }
 
   /** Riemann-Siegel theta function at {@code t}. */
-  public static Apfloat zzTheta(FixedPrecisionApfloatHelper h,
-      Apfloat t, Apfloat quarter, Apfloat two, Apfloat logPi) {
+  public static Apfloat zzTheta(FixedPrecisionApfloatHelper h, Apfloat t, Apfloat quarter,
+      Apfloat two, Apfloat logPi) {
     Apcomplex s = new Apcomplex(quarter, t.divide(two));
     Apcomplex logGamma = h.logGamma(s);
     Apfloat term = h.divide(t, two).multiply(logPi);
@@ -126,7 +126,7 @@ public class RiemannSiegelTheta extends AbstractArg1 {
     Apfloat half = new Apfloat("0.5", precision);
     Apfloat quarter = new Apfloat("0.25", precision);
     Apfloat logPi = ApfloatMath.log(ApfloatMath.pi(precision));
-  
+
     Apcomplex iOver2 = new Apcomplex(Apfloat.ZERO, half);
     Apcomplex it2 = h.multiply(t, iOver2);
     Apcomplex quarterC = new Apcomplex(quarter);

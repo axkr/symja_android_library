@@ -82,8 +82,8 @@ public class RegionMember extends AbstractFunctionEvaluator {
     if (spec == null || !p.isList2()) {
       return F.NIL;
     }
-    IExpr distance = SignedRegionDistance.distanceToSegment(p, (IAST) spec.p1, (IAST) spec.p2,
-        engine);
+    IExpr distance =
+        SignedRegionDistance.distanceToSegment(p, (IAST) spec.p1, (IAST) spec.p2, engine);
     if (!distance.isPresent()) {
       return F.NIL;
     }

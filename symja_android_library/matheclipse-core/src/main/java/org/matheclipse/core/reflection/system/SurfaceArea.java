@@ -105,8 +105,8 @@ public class SurfaceArea extends AbstractFunctionEvaluator {
     } else if (reg.argSize() > 2) {
       return F.NIL;
     }
-    return engine.evaluate(
-        F.Times(F.C2, F.Plus(F.Times(dx, dy), F.Times(dy, dz), F.Times(dx, dz))));
+    return engine
+        .evaluate(F.Times(F.C2, F.Plus(F.Times(dx, dy), F.Times(dy, dz), F.Times(dx, dz))));
   }
 
   private IExpr cylinder(IAST reg, EvalEngine engine, boolean isCone) {
@@ -124,8 +124,7 @@ public class SurfaceArea extends AbstractFunctionEvaluator {
     IExpr h = RegionPrimitives.distance(p1, p2, engine);
     if (isCone) {
       // Pi*r*(r + Sqrt(r^2+h^2))
-      return engine.evaluate(
-          F.Times(S.Pi, r, F.Plus(r, F.Sqrt(F.Plus(F.Sqr(r), F.Sqr(h))))));
+      return engine.evaluate(F.Times(S.Pi, r, F.Plus(r, F.Sqrt(F.Plus(F.Sqr(r), F.Sqr(h))))));
     }
     // 2*Pi*r*h + 2*Pi*r^2
     return engine.evaluate(F.Plus(F.Times(F.C2, S.Pi, r, h), F.Times(F.C2, S.Pi, F.Sqr(r))));
@@ -139,8 +138,7 @@ public class SurfaceArea extends AbstractFunctionEvaluator {
       // degenerates to a ball and the inner sphere doesn't contribute any surface
       return F.NIL;
     }
-    return engine
-        .evaluate(F.Times(F.C4, S.Pi, F.Plus(F.Sqr(spec.rInner), F.Sqr(spec.rOuter))));
+    return engine.evaluate(F.Times(F.C4, S.Pi, F.Plus(F.Sqr(spec.rInner), F.Sqr(spec.rOuter))));
   }
 
   /** <code>2*Pi*r*h + 4*Pi*r^2</code> for the cylinder and the two hemispherical caps. */

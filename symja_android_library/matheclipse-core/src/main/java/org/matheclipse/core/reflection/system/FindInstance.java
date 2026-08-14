@@ -191,8 +191,7 @@ public class FindInstance extends Solve {
 
     engine.incOptimizeExpressionDepth();
     try {
-      IExpr result =
-          Maximize.multivariateExtremum(S.FindInstance, function, vars, true, engine);
+      IExpr result = Maximize.multivariateExtremum(S.FindInstance, function, vars, true, engine);
       IExpr point = extractFeasiblePoint(result, vars);
       if (point.isPresent()) {
         return F.list(point);

@@ -122,8 +122,8 @@ public final class TriangleGeometry {
   public static boolean isDegenerate(IAST points, EvalEngine engine) {
     IExpr[] sideSquares = sideSquares(points, engine);
     IExpr sc = conway(sideSquares, engine)[2];
-    return engine
-        .evaluate(F.Subtract(F.Times(F.C4, sideSquares[0], sideSquares[1]), F.Sqr(sc))).isZero();
+    return engine.evaluate(F.Subtract(F.Times(F.C4, sideSquares[0], sideSquares[1]), F.Sqr(sc)))
+        .isZero();
   }
 
   /** The number of coordinates of each vertex; <code>2</code> for a triangle in the plane. */
@@ -265,8 +265,7 @@ public final class TriangleGeometry {
       return F.NIL;
     }
     IExpr[] sides = sides(sideSquares(points, engine), engine);
-    return engine.evaluate(
-        F.Divide(F.Times(sides[0], sides[1], sides[2]), F.Times(F.C4, area)));
+    return engine.evaluate(F.Divide(F.Times(sides[0], sides[1], sides[2]), F.Times(F.C4, area)));
   }
 
   /**
@@ -279,8 +278,8 @@ public final class TriangleGeometry {
       return F.NIL;
     }
     IExpr[] sides = sides(sideSquares(points, engine), engine);
-    return engine.evaluate(
-        F.Divide(area, F.Subtract(semiperimeter(sides, engine), sides[vertexIndex - 1])));
+    return engine
+        .evaluate(F.Divide(area, F.Subtract(semiperimeter(sides, engine), sides[vertexIndex - 1])));
   }
 
   /**
@@ -499,8 +498,7 @@ public final class TriangleGeometry {
         || "CevianEndpoint".equals(centerSpec.type)) {
       return F.NIL;
     }
-    IExpr[] barycentrics =
-        barycentrics(centerSpec.type, sideSquares, conway, centerSpec.vertex);
+    IExpr[] barycentrics = barycentrics(centerSpec.type, sideSquares, conway, centerSpec.vertex);
     if (barycentrics[0].isNIL()) {
       return F.NIL;
     }

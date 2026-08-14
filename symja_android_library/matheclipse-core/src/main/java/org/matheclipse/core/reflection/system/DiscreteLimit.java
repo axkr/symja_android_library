@@ -21,10 +21,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </p>
  *
  * <p>
- * <code>DiscreteLimit(f, n -> Infinity)</code> gives the limit of the sequence <code>f</code> as the
- * <b>integer</b> variable <code>n</code> tends to infinity. <code>-Infinity</code> is allowed as
- * well; every other limit point is rejected with the <code>dlim</code> message, because a sequence
- * has no interesting limit at a finite point.
+ * <code>DiscreteLimit(f, n -> Infinity)</code> gives the limit of the sequence <code>f</code> as
+ * the <b>integer</b> variable <code>n</code> tends to infinity. <code>-Infinity</code> is allowed
+ * as well; every other limit point is rejected with the <code>dlim</code> message, because a
+ * sequence has no interesting limit at a finite point.
  * </p>
  *
  * <p>

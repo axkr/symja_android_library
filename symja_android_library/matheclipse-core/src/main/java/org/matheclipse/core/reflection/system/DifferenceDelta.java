@@ -127,11 +127,11 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
 
   /**
    * Bring a raw forward-difference result into the canonical output form. A genuine polynomial or
-   * rational function of <code>x</code> is canonicalized: with a numeric step it is factored
-   * (matching wolframscript, e.g. <code>x^2 + x -&gt; 2*(1 + x)</code>, and rational summands combine
-   * over a common denominator), with a symbolic step it is only expanded. A difference of unknown
-   * functions such as <code>f(x + 1) - f(x)</code> is already in simplest form and is returned
-   * unchanged (Factor must not reorder it or fold it into an opaque product).
+   * rational function of <code>x</code> is canonicalized: with a numeric step it is factored (e.g.
+   * <code>x^2 + x -&gt; 2*(1 + x)</code>, and rational summands combine over a common denominator),
+   * with a symbolic step it is only expanded. A difference of unknown functions such as
+   * <code>f(x + 1) - f(x)</code> is already in simplest form and is returned unchanged (Factor must
+   * not reorder it or fold it into an opaque product).
    */
   private static IExpr normalizeDifference(IExpr result, IExpr x, IExpr stepH, EvalEngine engine) {
     IExpr together = engine.evaluate(F.Together(result));
@@ -193,11 +193,10 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
             }
             case ID.Factorial: {
               // first forward difference: Factorial(arg + a*h) - Factorial(arg)
-              //   = Factorial(arg) * (Pochhammer(arg + 1, a*h) - 1)
+              // = Factorial(arg) * (Pochhammer(arg + 1, a*h) - 1)
               // (e.g. DifferenceDelta(k!, k) -> k*k!)
               if (n == 1) {
-                return F.Times(f,
-                    F.Subtract(F.Pochhammer(F.Plus(arg, F.C1), F.Times(a, h)), F.C1));
+                return F.Times(f, F.Subtract(F.Pochhammer(F.Plus(arg, F.C1), F.Times(a, h)), F.C1));
               }
               break;
             }

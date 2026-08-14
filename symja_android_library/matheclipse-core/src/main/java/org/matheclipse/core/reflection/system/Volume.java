@@ -22,8 +22,7 @@ public class Volume extends AbstractFunctionEvaluator {
       arg1 = arg1.first();
     }
     arg1 = MeshFunctions.normalizeRegion(arg1);
-    if (MeshFunctions.isMeshRegion(arg1)
-        && MeshFunctions.embeddingDimension((IAST) arg1) == 3) {
+    if (MeshFunctions.isMeshRegion(arg1) && MeshFunctions.embeddingDimension((IAST) arg1) == 3) {
       return MeshFunctions.volume3D((IAST) arg1, engine);
     }
 
@@ -109,14 +108,14 @@ public class Volume extends AbstractFunctionEvaluator {
         }
         return S.Undefined;
       }
-        }
+    }
     return F.NIL;
   }
 
   private IExpr cylinder(IAST reg, EvalEngine engine, boolean isCone) {
     IExpr p1 = F.List(F.C0, F.C0, F.CN1);
     IExpr p2 = F.List(F.C0, F.C0, F.C1);
-        IExpr r = F.C1;
+    IExpr r = F.C1;
 
     if (reg.argSize() >= 1) {
       if (reg.arg1().isList2()) {
@@ -134,7 +133,7 @@ public class Volume extends AbstractFunctionEvaluator {
 
     if (isCone) {
       vol = engine.evaluate(F.Times(F.C1D3, vol));
-        }
+    }
     return vol;
   }
 
@@ -168,7 +167,7 @@ public class Volume extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
-    }
+  }
 
   private IExpr simplex(IAST reg, EvalEngine engine) {
     if (reg.argSize() == 1 && reg.arg1().isList()) {

@@ -370,7 +370,7 @@ public class Derivative extends AbstractFunctionEvaluator {
       }
     }
 
-  return F.Function(exprToDifferentiate);
+    return F.Function(exprToDifferentiate);
 
   }
 

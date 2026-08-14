@@ -95,8 +95,8 @@ public class MinimalBy extends AbstractFunctionEvaluator {
    * Returns all elements of {@code data} whose f-value equals the minimum f-value, preserving
    * original order. Returns an association if {@code data} is an association.
    */
-  private static IExpr minimalElements(IAST data, List<IExpr> fValues,
-      Comparator<IExpr> comparator, boolean isAssociation) {
+  private static IExpr minimalElements(IAST data, List<IExpr> fValues, Comparator<IExpr> comparator,
+      boolean isAssociation) {
     IExpr minVal = fValues.get(0);
     for (int i = 1; i < fValues.size(); i++) {
       IExpr v = fValues.get(i);

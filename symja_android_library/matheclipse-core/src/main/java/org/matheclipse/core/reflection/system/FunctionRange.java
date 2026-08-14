@@ -87,8 +87,8 @@ public class FunctionRange extends AbstractFunctionEvaluator {
 
   /**
    * Closed-form range for a known built-in function applied directly to the range variable, i.e.
-   * matching {@code FunctionRange(head(x), x, y)}. Returns {@link F#NIL} when {@code function} is not
-   * such a form or its head is not tabled here.
+   * matching {@code FunctionRange(head(x), x, y)}. Returns {@link F#NIL} when {@code function} is
+   * not such a form or its head is not tabled here.
    */
   private static IExpr builtinRange(IExpr function, ISymbol x, ISymbol y) {
     if (!function.isAST1() || !function.first().equals(x)) {
@@ -325,8 +325,8 @@ public class FunctionRange extends AbstractFunctionEvaluator {
 
   /**
    * Return {@code true} iff {@code v} is a finite real value. Rejects every flavour of infinity and
-   * {@code Indeterminate} first, because {@code isRealResult()} returns {@code true} for the directed
-   * infinities.
+   * {@code Indeterminate} first, because {@code isRealResult()} returns {@code true} for the
+   * directed infinities.
    */
   private static boolean isFiniteRealValue(IExpr v) {
     if (v.isInfinity() || v.isNegativeInfinity() || v.isComplexInfinity() || v.isDirectedInfinity()

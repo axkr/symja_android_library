@@ -323,8 +323,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param equalAST an <code>Equal()</code> expression.
    * @param variable the variable which should be eliminated.
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
-   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
+   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
    */
   private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable, boolean multipleValues,
@@ -338,12 +338,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       IExpr result = F.NIL;
       if (!boolArg1 && boolArg2) {
         result = extractVariableRecursive(arg1, arg2, predicate, variable, multipleValues,
-            periodicBranches,
-            engine);
+            periodicBranches, engine);
       } else if (boolArg1 && !boolArg2) {
         result = extractVariableRecursive(arg2, arg1, predicate, variable, multipleValues,
-            periodicBranches,
-            engine);
+            periodicBranches, engine);
       }
       return result;
     }
@@ -418,8 +416,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param analyzerList the list of <code>Equal()</code> terms with statistics of it's equations.
    * @param variable the variable which should be eliminated.
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
-   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
+   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *         rule which is used for variable elimination in index <code>[1]</code>.
@@ -428,9 +426,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       IExpr variable, boolean multipleValues, boolean periodicBranches, EvalEngine engine) {
     IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
     for (int i = 0; i < analyzerList.size(); i++) {
-      IExpr variableValues =
-          eliminateAnalyze(analyzerList.get(i).getExpr(), variable, multipleValues, engine,
-              periodicBranches);
+      IExpr variableValues = eliminateAnalyze(analyzerList.get(i).getExpr(), variable,
+          multipleValues, engine, periodicBranches);
       if (variableValues.isPresent()) {
         analyzerList.remove(i);
         IAST[] result = new IAST[2];
@@ -468,8 +465,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param ast
    * @param variable
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
-   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
+   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @param engine
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
@@ -547,8 +544,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param predicate the predicate to check for the variable
    * @param variable the variable which should be eliminated.
    * @param multipleValues if true multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
-   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
+   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @param engine the evaluation engine
    * @return F.NIL if we can't find an equation for the given variable.
    */
@@ -743,7 +740,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                   || exponent.equals(variable);
             }
             if (principalOnly) {
-              // base ^ f(x) == exprWithoutVariable  ->  f(x) == Log(exprWithoutVariable)/Log(base)
+              // base ^ f(x) == exprWithoutVariable -> f(x) == Log(exprWithoutVariable)/Log(base)
               IExpr value = base.isE() ? F.Log(exprWithoutVariable)
                   : F.Divide(F.Log(exprWithoutVariable), F.Log(base));
               return extractVariableRecursive(exponent, value, predicate, variable, multipleValues,

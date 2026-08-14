@@ -86,8 +86,8 @@ public class MaximalBy extends AbstractFunctionEvaluator {
     return result;
   }
 
-  private static IExpr maximalElements(IAST data, List<IExpr> fValues,
-      Comparator<IExpr> comparator, boolean isAssociation) {
+  private static IExpr maximalElements(IAST data, List<IExpr> fValues, Comparator<IExpr> comparator,
+      boolean isAssociation) {
     IExpr maxVal = fValues.get(0);
     for (int i = 1; i < fValues.size(); i++) {
       IExpr v = fValues.get(i);

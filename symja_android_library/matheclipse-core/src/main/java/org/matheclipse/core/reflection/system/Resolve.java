@@ -30,8 +30,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>c&gt;=0</code>)</li>
  * <li>a polynomial equation over the {@link S#Complexes} is solvable if the polynomial isn't
  * constant</li>
- * <li>an existence claim is otherwise proven by a witness which is verified by substituting it
- * into the original condition</li>
+ * <li>an existence claim is otherwise proven by a witness which is verified by substituting it into
+ * the original condition</li>
  * <li>a univariate condition is delegated to {@link S#Reduce}; an empty solution set refutes the
  * existence claim</li>
  * </ul>
@@ -423,8 +423,8 @@ public class Resolve extends AbstractEvaluator {
     engine.incOptimizeExpressionDepth();
     try {
       if (!vars.isList1()) {
-        Extremum global =
-            toExtremum(Maximize.multivariateExtremum(head, f, vars, isMax, engine), f, vars, engine);
+        Extremum global = toExtremum(Maximize.multivariateExtremum(head, f, vars, isMax, engine), f,
+            vars, engine);
         if (global != null) {
           return global;
         }

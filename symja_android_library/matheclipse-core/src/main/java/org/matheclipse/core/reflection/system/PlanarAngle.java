@@ -72,8 +72,7 @@ public class PlanarAngle extends AbstractFunctionEvaluator {
       return S.Indeterminate;
     }
 
-    IExpr cosine =
-        engine.evaluate(F.Divide(F.Dot(u, v), F.Times(normU, normV)));
+    IExpr cosine = engine.evaluate(F.Divide(F.Dot(u, v), F.Times(normU, normV)));
     IExpr result = engine.evaluate(F.ArcCos(cosine));
     if (!counterclockwise) {
       return result;

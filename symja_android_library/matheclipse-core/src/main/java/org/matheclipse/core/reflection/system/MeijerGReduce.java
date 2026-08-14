@@ -111,8 +111,7 @@ public class MeijerGReduce extends AbstractFunctionEvaluator {
           }
         }
       }
-    }
-    else if (expr.isAST2()) {
+    } else if (expr.isAST2()) {
       IExpr head = expr.head();
       if (head.isBuiltInSymbol()) {
         IExpr v = expr.first();
@@ -160,7 +159,7 @@ public class MeijerGReduce extends AbstractFunctionEvaluator {
   public int status() {
     return ImplementationStatus.EXPERIMENTAL;
   }
-  
+
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_2_2;

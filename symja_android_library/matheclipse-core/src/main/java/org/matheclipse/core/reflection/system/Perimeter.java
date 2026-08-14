@@ -76,8 +76,7 @@ public class Perimeter extends AbstractEvaluator {
       return F.NIL;
     }
     IExpr d = RegionPrimitives.distance(spec.p1, spec.p2, engine);
-    return engine
-        .evaluate(F.Plus(F.Times(F.C2, d), F.Times(F.C2, S.Pi, spec.radius)));
+    return engine.evaluate(F.Plus(F.Times(F.C2, d), F.Times(F.C2, S.Pi, spec.radius)));
   }
 
   private static IExpr disk(IAST geoForm, EvalEngine engine) {

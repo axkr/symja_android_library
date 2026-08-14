@@ -50,12 +50,12 @@ public class BellY extends AbstractFunctionEvaluator {
     if (n == 0 || k == 0 || n < k) {
       return F.C0;
     }
-  
+
     // DP Cache hit
     if (cache != null && cache[n][k] != null) {
       return cache[n][k];
     }
-  
+
     final int recursionLimit = engine.getRecursionLimit();
     try {
       if (recursionLimit > 0) {
@@ -64,19 +64,19 @@ public class BellY extends AbstractFunctionEvaluator {
           RecursionLimitExceeded.throwIt(counter, originalAST);
         }
       }
-  
+
       IExpr s = F.C0;
       int max = n - k + 2;
-  
+
       int iterationLimit = engine.getIterationLimit();
       if (iterationLimit >= 0 && iterationLimit <= max) {
         IterationLimitExceeded.throwIt(max, originalAST);
       }
-  
+
       for (int m = 1; m < max; m++) {
         if ((m < symbols.size()) && !symbols.get(m).isZero()) {
           IExpr subBell = bellY(n - m, k - 1, symbols, originalAST, engine, cache, expand);
-  
+
           if (!subBell.isZero()) {
             // Exact arbitrary-precision Binomial Coefficient
             IExpr binom = engine.evaluate(F.Binomial(F.ZZ(n - 1), F.ZZ(m - 1)));
@@ -86,13 +86,13 @@ public class BellY extends AbstractFunctionEvaluator {
           }
         }
       }
-  
+
       // DP Cache save
       if (cache != null) {
         cache[n][k] = s;
       }
       return s;
-  
+
     } finally {
       if (recursionLimit > 0) {
         engine.decRecursionCounter();

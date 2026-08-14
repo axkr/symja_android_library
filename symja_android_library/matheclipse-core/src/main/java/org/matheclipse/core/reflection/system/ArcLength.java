@@ -133,7 +133,7 @@ public class ArcLength extends AbstractFunctionEvaluator {
           return engine.evaluate(F.Plus(F.Times(partialArc, step1), F.Times(fullPerimeter, step2)));
         }
       }
-        }
+    }
 
     if (r.isList2()) {
       // Full perimeter of an ellipse
@@ -141,11 +141,11 @@ public class ArcLength extends AbstractFunctionEvaluator {
       IExpr r2 = ((IAST) r).arg2();
       return engine.evaluate(
           F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2))))));
-        }
+    }
 
     // Full perimeter of a standard circle
     return engine.evaluate(F.Times(F.C2, S.Pi, r));
-    }
+  }
 
   private IExpr lineArcLength(IAST reg, EvalEngine engine) {
     if (reg.argSize() == 1 && reg.arg1().isList()) {
@@ -159,12 +159,12 @@ public class ArcLength extends AbstractFunctionEvaluator {
         }
         return len;
       }
-        }
-    return F.NIL;
     }
+    return F.NIL;
+  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_1_2;
-    }
+  }
 }
