@@ -959,7 +959,7 @@ Functions in alphabetical order:
 * &#x2705; [Roots](functions/Roots.md)
 * &#x2705; [RotateLeft](functions/RotateLeft.md)
 * &#x2705; [RotateRight](functions/RotateRight.md)
-* &#x2705; [RotationMatrix](functions/RotationMatrix.md)
+* &#x2611; [RotationMatrix](functions/RotationMatrix.md)
 * &#x2705; [RotationTransform](functions/RotationTransform.md)
 * &#x2705; [Round](functions/Round.md)
 * &#x2705; [RowReduce](functions/RowReduce.md)

@@ -404,6 +404,9 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "TransformationFunction({{1,0,0},{0,-1,4},{0,0,1}})");
     check("ReflectionTransform({1, 0})[{-1, 1}]", //
         "{1,1}");
+    // the point must have the same dimension as the mirror normal
+    check("ReflectionTransform({1, 0}, {1, 2, 3})", //
+        "ReflectionTransform({1,0},{1,2,3})");
   }
 
   @Test
@@ -424,6 +427,96 @@ public class TensorTest extends ExprEvaluatorTestCase {
     check("RotationTransform(alpha)", //
         "TransformationFunction({{Cos(alpha),-Sin(alpha),0},{Sin(alpha),Cos(alpha),0},{0,\n" //
             + "0,1}})");
+
+    // RotationTransform(phi, w) - rotate around the axis `w`; the 3x3 rotation has to be embedded
+    // in a 4x4 homogeneous matrix
+    check("RotationTransform(Pi/6, {0, 0, 1})", //
+        "TransformationFunction({{Sqrt(3)/2,-1/2,0,0},{1/2,Sqrt(3)/2,0,0},{0,0,1,0},{0,0,\n" //
+            + "0,1}})");
+    check("MatrixQ(RotationTransform(Pi/6, {0, 0, 1})[[1]])", //
+        "True");
+    check("Dimensions(RotationTransform(Pi/6, {0, 0, 1})[[1]])", //
+        "{4,4}");
+    // the rotation goes counterclockwise around the z axis
+    check("RotationTransform(Pi/6, {0, 0, 1})[{1, 0, 0}]", //
+        "{Sqrt(3)/2,1/2,0}");
+    check("RotationTransform(Pi/2, {0, 0, 1})[{1, 0, 0}]", //
+        "{0,1,0}");
+    // points on the axis are left fixed
+    check("RotationTransform(Pi/6, {0, 0, 1})[{0, 0, 1}]", //
+        "{0,0,1}");
+    check("RotationTransform(t, {1, 0, 0})", //
+        "TransformationFunction({{1,0,0,0},{0,Cos(t),-Sin(t),0},{0,Sin(t),Cos(t),0},{0,0,\n" //
+            + "0,1}})");
+    // the axis doesn't have to be normalized
+    check("RotationTransform(Pi/2, {0, 0, 2})", //
+        "TransformationFunction({{0,-1,0,0},{1,0,0,0},{0,0,1,0},{0,0,0,1}})");
+    // rotations around an arbitrary axis are orthogonal
+    check(
+        "Transpose(RotationTransform(Pi/3, {1, 2, 3})[[1]]) . RotationTransform(Pi/3, {1, 2, 3})[[1]] // Simplify", //
+        "{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}");
+
+    // RotationTransform(phi, w, p) - rotate around the axis `w` through the point `p`
+    check("RotationTransform(Pi/2, {0, 0, 1}, {1, 0, 0})", //
+        "TransformationFunction({{0,-1,0,1},{1,0,0,-1},{0,0,1,0},{0,0,0,1}})");
+    check("RotationTransform(Pi/2, {0, 0, 1}, {1, 0, 0})[{1, 0, 0}]", //
+        "{1,0,0}");
+
+    // the axis vector must have a non zero magnitude
+    check("RotationTransform(Pi/6, {0, 0, 0})", //
+        "RotationTransform(Pi/6,{0,0,0})");
+    // only rotations in 2D and 3D are defined
+    check("RotationTransform(Pi/2, {1, 2, 3, 4})", //
+        "RotationTransform(Pi/2,{1,2,3,4})");
+    // the fixed point must have the same dimension as the rotation
+    check("RotationTransform(Pi/2, {0, 0, 1}, {1, 0})", //
+        "RotationTransform(Pi/2,{0,0,1},{1,0})");
+
+    // RotationTransform({u, v}) - rotate the vector `u` into the direction of the vector `v`
+    check("RotationTransform({{1, 0}, {0, 1}})", //
+        "TransformationFunction({{0,-1,0},{1,0,0},{0,0,1}})");
+    check("RotationTransform({{1, 0}, {0, 1}})[{1, 0}]", //
+        "{0,1}");
+    check("RotationTransform({{1, 0, 0}, {0, 1, 0}})", //
+        "TransformationFunction({{0,-1,0,0},{1,0,0,0},{0,0,1,0},{0,0,0,1}})");
+    // RotationTransform({u, v}, p) - rotate around the point `p`
+    check("RotationTransform({{1, 0}, {0, 1}}, {1, 1})", //
+        "TransformationFunction({{0,-1,2},{1,0,0},{0,0,1}})");
+    check("RotationTransform({{1, 0}, {0, 1}}, {1, 1})[{1, 1}]", //
+        "{1,1}");
+    // the fixed point must have the same dimension as the rotation
+    check("RotationTransform({{1, 0}, {0, 1}}, {1, 1, 1})", //
+        "RotationTransform({{1,0},{0,1}},{1,1,1})");
+    // a vector isn't a rotation angle
+    check("RotationTransform({1, 2, 3})", //
+        "RotationTransform({1,2,3})");
+
+    // RotationTransform(phi, {u, v}) - rotate from the direction of `u` towards the direction of
+    // `v` in the plane they span
+    check("RotationTransform(t, {{1, 0}, {0, 1}})", //
+        "TransformationFunction({{Cos(t),-Sin(t),0},{Sin(t),Cos(t),0},{0,0,1}})");
+    // the 2D rotation is the rotation in the plane of the coordinate axes
+    check("RotationTransform(t) === RotationTransform(t, {{1, 0}, {0, 1}})", //
+        "True");
+    // the rotation around an axis is the rotation in the plane orthogonal to it
+    check("RotationTransform(t, {{1, 0, 0}, {0, 1, 0}}) === RotationTransform(t, {0, 0, 1})", //
+        "True");
+    check("RotationTransform(Pi/2, {{1, 0, 0}, {0, 0, 1}})[{1, 0, 0}]", //
+        "{0,0,1}");
+    // RotationTransform(phi, {u, v}, p) - any rotation in any number of dimensions around any
+    // point
+    check("RotationTransform(t, {{1, 0, 0, 0}, {0, 1, 0, 0}})", //
+        "TransformationFunction({{Cos(t),-Sin(t),0,0,0},{Sin(t),Cos(t),0,0,0},{0,0,1,0,0},{\n" //
+            + "0,0,0,1,0},{0,0,0,0,1}})");
+    check("RotationTransform(Pi/2, {{1, 0}, {0, 1}}, {1, 1})", //
+        "TransformationFunction({{0,-1,2},{1,0,0},{0,0,1}})");
+    check("RotationTransform(Pi/2, {{1, 0, 0}, {0, 1, 0}}, {1, 2, 3})[{1, 2, 3}]", //
+        "{1,2,3}");
+    // the vectors must span a plane, the fixed point must have the dimension of the rotation
+    check("RotationTransform(t, {{1, 0, 0}, {2, 0, 0}})", //
+        "RotationTransform(t,{{1,0,0},{2,0,0}})");
+    check("RotationTransform(t, {{1, 0}, {0, 1}}, {1, 2, 3})", //
+        "RotationTransform(t,{{1,0},{0,1}},{1,2,3})");
   }
 
   @Test
@@ -480,6 +573,12 @@ public class TensorTest extends ExprEvaluatorTestCase {
     check("ScalingTransform(2, {0, 0})", //
         "ScalingTransform(2,{0,0})");
 
+    // the fixed point must have the same dimension as the scaling
+    check("ScalingTransform({2, 3}, {1, 1, 1})", //
+        "ScalingTransform({2,3},{1,1,1})");
+    check("ScalingTransform(2, {1, 0}, {1, 1, 1})", //
+        "ScalingTransform(2,{1,0},{1,1,1})");
+
     check("Attributes(ScalingTransform)", //
         "{Protected,ReadProtected}");
   }
@@ -498,6 +597,9 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "TransformationFunction({{1,1,-3},{0,1,0},{0,0,1}})");
     check("ShearingTransform(Pi/6, {0, 1}, {1, 0}, {1, 1})", //
         "TransformationFunction({{1,0,0},{1/Sqrt(3),1,-1/Sqrt(3)},{0,0,1}})");
+    // the fixed point must have the same dimension as the shearing
+    check("ShearingTransform(Pi/4, {1, 0}, {0, 1}, {1, 2, 3})", //
+        "ShearingTransform(Pi/4,{1,0},{0,1},{1,2,3})");
   }
 
   @Test

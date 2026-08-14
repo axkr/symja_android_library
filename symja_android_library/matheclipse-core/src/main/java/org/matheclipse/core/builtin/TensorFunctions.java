@@ -136,9 +136,11 @@ public class TensorFunctions {
    *
    * @param transform the transformation which leaves the origin fixed
    * @param p the point which should be left fixed
+   * @param dim the dimension of <code>transform</code>; <code>p</code> has to be a vector with
+   *        <code>dim</code> elements, otherwise the homogeneous matrices wouldn't be composable
    */
-  private static IExpr centeredTransform(IExpr transform, IExpr p) {
-    if (p.isVector() > 0) {
+  private static IExpr centeredTransform(IExpr transform, IExpr p, int dim) {
+    if (p.isVector() == dim) {
       return F.Dot(F.TranslationTransform(p), transform, F.TranslationTransform(F.Negate(p)));
     }
     return F.NIL;
@@ -1738,7 +1740,7 @@ public class TensorFunctions {
             homogeneousMatrix(directionalScalingMatrix(F.CN1, v, magnitude, dim), null, dim);
         if (ast.isAST2()) {
           // ReflectionTransform(v, p) - the mirror goes through the point `p`
-          return centeredTransform(F.TransformationFunction(matrix), ast.arg2());
+          return centeredTransform(F.TransformationFunction(matrix), ast.arg2(), dim);
         }
         return F.TransformationFunction(matrix);
       }
@@ -1763,18 +1765,72 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr phi = ast.arg1();
-      if (ast.isAST2()) {
-        // RotationTransform(phi, p) - rotate around the point `p`
-        return centeredTransform(F.RotationTransform(phi), ast.arg2());
+      if (phi.isList()) {
+        // RotationTransform({u, v}) - rotate the vector `u` into the direction of the vector `v`
+        int pairDim = VectorAnalysisFunctions.vectorPairDimension(phi);
+        if (pairDim <= 0 || ast.size() > 3) {
+          return F.NIL;
+        }
+        IAST linear = VectorAnalysisFunctions.rotationMatrixPlane(F.NIL, phi, engine);
+        if (linear.isNIL()) {
+          return F.NIL;
+        }
+        IAST matrix = homogeneousMatrix(linear, null, pairDim);
+        if (ast.isAST2()) {
+          // RotationTransform({u, v}, p) - rotate around the point `p`
+          return centeredTransform(F.TransformationFunction(matrix), ast.arg2(), pairDim);
+        }
+        return F.TransformationFunction(matrix);
       }
-      // TransformationFunction({{Cos(phi), -Sin(phi), 0}, {Sin(phi), Cos(phi), 0}, {0, 0, 1}})
-      return F.TransformationFunction(F.list(F.list(F.Cos(phi), F.Negate(F.Sin(phi)), F.C0),
-          F.list(F.Sin(phi), F.Cos(phi), F.C0), F.list(F.C0, F.C0, F.C1)));
+      if (ast.isAST1()) {
+        // TransformationFunction({{Cos(phi), -Sin(phi), 0}, {Sin(phi), Cos(phi), 0}, {0, 0, 1}})
+        return F.TransformationFunction(F.list(F.list(F.Cos(phi), F.Negate(F.Sin(phi)), F.C0),
+            F.list(F.Sin(phi), F.Cos(phi), F.C0), F.list(F.C0, F.C0, F.C1)));
+      }
+
+      IExpr arg2 = ast.arg2();
+      int dim = arg2.isVector();
+      if (dim == 3) {
+        // RotationTransform(phi, w) - rotate around the axis `w` through the origin; the 3x3
+        // rotation has to be embedded in a 4x4 homogeneous matrix
+        IAST linear = VectorAnalysisFunctions.rotationMatrix3D(phi, (IAST) arg2.normal(false), //
+            engine);
+        if (linear.isNIL()) {
+          // Direction vector `1` has zero magnitude.
+          return Errors.printMessage(S.RotationTransform, "idir", F.list(arg2), engine);
+        }
+        IAST matrix = homogeneousMatrix(linear, null, 3);
+        if (ast.isAST3()) {
+          // RotationTransform(phi, w, p) - rotate around the axis `w` through the point `p`
+          return centeredTransform(F.TransformationFunction(matrix), ast.arg3(), 3);
+        }
+        return F.TransformationFunction(matrix);
+      }
+      if (ast.isAST2() && dim == 2) {
+        // RotationTransform(phi, p) - rotate around the point `p`
+        return centeredTransform(F.RotationTransform(phi), arg2, 2);
+      }
+      int pairDim = VectorAnalysisFunctions.vectorPairDimension(arg2);
+      if (pairDim > 0) {
+        // RotationTransform(phi, {u, v}) - rotate from the direction of `u` towards the direction
+        // of `v` in the plane they span
+        IAST linear = VectorAnalysisFunctions.rotationMatrixPlane(phi, arg2, engine);
+        if (linear.isNIL()) {
+          return F.NIL;
+        }
+        IAST matrix = homogeneousMatrix(linear, null, pairDim);
+        if (ast.isAST3()) {
+          // RotationTransform(phi, {u, v}, p) - rotate around the point `p`
+          return centeredTransform(F.TransformationFunction(matrix), ast.arg3(), pairDim);
+        }
+        return F.TransformationFunction(matrix);
+      }
+      return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override
@@ -1790,7 +1846,8 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr s = ast.arg1();
-      if (s.isVector() > 0) {
+      int scalingDim = s.isVector();
+      if (scalingDim > 0) {
         // ScalingTransform({s1, s2, ...}) - scale along the coordinate axes
         // TransformationFunction(DiagonalMatrix(Join(s, {1})))
         IExpr scaling = F.TransformationFunction(F.DiagonalMatrix(F.Join(s, F.list(F.C1))));
@@ -1799,7 +1856,7 @@ public class TensorFunctions {
         }
         if (ast.isAST2()) {
           // ScalingTransform({s1, s2, ...}, p) - leave the point `p` fixed
-          return centeredTransform(scaling, ast.arg2());
+          return centeredTransform(scaling, ast.arg2(), scalingDim);
         }
         return F.NIL;
       }
@@ -1818,7 +1875,7 @@ public class TensorFunctions {
               homogeneousMatrix(directionalScalingMatrix(s, v, magnitude, dim), null, dim);
           if (ast.isAST3()) {
             // ScalingTransform(s, v, p) - leave the point `p` fixed
-            return centeredTransform(F.TransformationFunction(matrix), ast.arg3());
+            return centeredTransform(F.TransformationFunction(matrix), ast.arg3(), dim);
           }
           return F.TransformationFunction(matrix);
         }
@@ -1961,7 +2018,7 @@ public class TensorFunctions {
       IAST matrix = homogeneousMatrix(linear, null, dim);
       if (ast.size() == 5) {
         // ShearingTransform(phi, u, n, p) - leave the point `p` fixed
-        return centeredTransform(F.TransformationFunction(matrix), ast.arg4());
+        return centeredTransform(F.TransformationFunction(matrix), ast.arg4(), dim);
       }
       return F.TransformationFunction(matrix);
     }

@@ -2672,6 +2672,140 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{Cos(t),0,Sin(t)},{0,1,0},{-Sin(t),0,Cos(t)}}");
     check("RotationMatrix(t,{1,0,0})", //
         "{{1,0,0},{0,Cos(t),-Sin(t)},{0,Sin(t),Cos(t)}}");
+
+    // rotate counterclockwise around an axis which isn't parallel to a coordinate axis
+    check("RotationMatrix(t,{1,1,1})", //
+        "{{1/3*(1+2*Cos(t)),1/3*(1-Cos(t)-Sqrt(3)*Sin(t)),1/3*(1-Cos(t)+Sqrt(3)*Sin(t))},{\n" //
+            + "1/3*(1-Cos(t)+Sqrt(3)*Sin(t)),1/3*(1+2*Cos(t)),1/3*(1-Cos(t)-Sqrt(3)*Sin(t))},{1/\n" //
+            + "3*(1-Cos(t)-Sqrt(3)*Sin(t)),1/3*(1-Cos(t)+Sqrt(3)*Sin(t)),1/3*(1+2*Cos(t))}}");
+    check("RotationMatrix(Pi/2,{1,1,1}) . {1,0,0}", //
+        "{1/3,1/3*(1+Sqrt(3)),1/3*(1-Sqrt(3))}");
+    // the axis doesn't have to be normalized
+    check("RotationMatrix(Pi/2,{0,0,3})", //
+        "{{0,-1,0},{1,0,0},{0,0,1}}");
+    check("RotationMatrix(t,{0,0,z})", //
+        "{{Cos(t),(-z*Sin(t))/Abs(z),0},{(Conjugate(z)*Sin(t))/Abs(z),Cos(t),0},{0,0,1}}");
+
+    // the axis is left fixed, the matrix is orthogonal and has determinant 1
+    check("Simplify(RotationMatrix(t,{1,1,1}) . {1,1,1})", //
+        "{1,1,1}");
+    check("Simplify(Transpose(RotationMatrix(t,{1,2,3})) . RotationMatrix(t,{1,2,3}))", //
+        "{{1,0,0},{0,1,0},{0,0,1}}");
+    check("Simplify(Det(RotationMatrix(t,{1,2,3})))", //
+        "1");
+
+    // the axis vector must have a non zero magnitude
+    check("RotationMatrix(t,{0,0,0})", //
+        "RotationMatrix(t,{0,0,0})");
+    // only 3D rotation axes are supported
+    check("RotationMatrix(t,{1,1})", //
+        "RotationMatrix(t,{1,1})");
+
+    // RotationMatrix({u,v}) - rotate `u` into the direction of `v`
+    check("RotationMatrix({{1,0},{0,1}})", //
+        "{{0,-1},{1,0}}");
+    check("RotationMatrix({{1,1},{1,0}})", //
+        "{{1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),1/Sqrt(2)}}");
+    check("RotationMatrix({{1,0,0},{0,0,1}})", //
+        "{{0,0,-1},{0,1,0},{1,0,0}}");
+    check("RotationMatrix({{1,0},{3,4}})", //
+        "{{3/5,-4/5},{4/5,3/5}}");
+    // `u` is rotated onto `v` and keeps its length
+    check("Simplify(RotationMatrix({{2,3,6},{0,0,1}}) . {2,3,6})", //
+        "{0,0,7}");
+    // parallel vectors don't span a plane; only the identity and the 2D point reflection are
+    // independent of the undetermined plane
+    check("RotationMatrix({{1,0},{2,0}})", //
+        "{{1,0},{0,1}}");
+    check("RotationMatrix({{1,0},{-1,0}})", //
+        "{{-1,0},{0,-1}}");
+    check("RotationMatrix({{1,0,0},{-1,0,0}})", //
+        "RotationMatrix({{1,0,0},{-1,0,0}})");
+    // the vectors must be non zero and have the same dimension
+    check("RotationMatrix({{0,0},{0,1}})", //
+        "RotationMatrix({{0,0},{0,1}})");
+    check("RotationMatrix({{1,0},{0,1,0}})", //
+        "RotationMatrix({{1,0},{0,1,0}})");
+
+    // RotationMatrix(theta,{u,v}) - rotate from `u` towards `v` in the plane they span
+    check("RotationMatrix(t,{{1,0},{0,1}})", //
+        "{{Cos(t),-Sin(t)},{Sin(t),Cos(t)}}");
+    check("RotationMatrix(t,{{1,0,0},{0,0,1}})", //
+        "{{Cos(t),0,-Sin(t)},{0,1,0},{Sin(t),0,Cos(t)}}");
+    // the rotation plane can be spanned in any dimension
+    check("RotationMatrix(t,{{1,0,0,0},{0,1,0,0}})", //
+        "{{Cos(t),-Sin(t),0,0},{Sin(t),Cos(t),0,0},{0,0,1,0},{0,0,0,1}}");
+    check("Simplify(Transpose(RotationMatrix(t,{{1,2,3},{0,1,1}}))"
+        + " . RotationMatrix(t,{{1,2,3},{0,1,1}}))", //
+        "{{1,0,0},{0,1,0},{0,0,1}}");
+    // parallel vectors don't determine the orientation of the rotation
+    check("RotationMatrix(t,{{1,0,0},{2,0,0}})", //
+        "RotationMatrix(t,{{1,0,0},{2,0,0}})");
+    // a vector isn't a rotation angle
+    check("RotationMatrix({1,2,3})", //
+        "RotationMatrix({1,2,3})");
+  }
+
+  /**
+   * The examples and the "Properties &amp; Relations" of
+   * <a href="https://reference.wolfram.com/language/ref/RotationMatrix.html">the reference page</a>.
+   */
+  @Test
+  public void testRotationMatrixReference() {
+    check("RotationMatrix(t) . {1,0}", //
+        "{Cos(t),Sin(t)}");
+    check("RotationMatrix(30*Degree)", //
+        "{{Sqrt(3)/2,-1/2},{1/2,Sqrt(3)/2}}");
+    check("RotationMatrix({{1,1},{0,1}})", //
+        "{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)}}");
+    check("RotationMatrix(t,{{1,0,0,0},{0,1,0,0}})", //
+        "{{Cos(t),-Sin(t),0,0},{Sin(t),Cos(t),0,0},{0,0,1,0},{0,0,0,1}}");
+    check("Simplify(RotationMatrix(t,{{1,1,1},{1,-2,1}}))", //
+        "{{1/2*(1+Cos(t)),Sin(t)/Sqrt(2),1/2*(-1+Cos(t))},{-Sin(t)/Sqrt(2),Cos(t),-Sin(t)/Sqrt(\n" //
+            + "2)},{1/2*(-1+Cos(t)),Sin(t)/Sqrt(2),1/2*(1+Cos(t))}}");
+    check("RotationMatrix({{1,0,0},{0,0,1}}) . {1,0,0}", //
+        "{0,0,1}");
+    // rotating {0,0,1} gives the normalized {x,y,z} for real x, y and z
+    check("Simplify(ComplexExpand(RotationMatrix({{0,0,1},{x,y,z}})," //
+        + " TargetFunctions->{Re,Im}) . {0,0,1})", //
+        "{x/Sqrt(x^2+y^2+z^2),y/Sqrt(x^2+y^2+z^2),z/Sqrt(x^2+y^2+z^2)}");
+
+    // RotationMatrix(theta) is the rotation in the plane spanned by the coordinate axes
+    check("RotationMatrix(t) === RotationMatrix(t,{{1,0},{0,1}})", //
+        "True");
+    // RotationMatrix(theta, w) rotates in the plane orthogonal to `w`; the plane spanned by
+    // {1,1,1} and {1,-2,1} has the normal {1,0,-1}
+    check("Simplify(RotationMatrix(t,{{1,1,1},{1,-2,1}}) - RotationMatrix(t,{1,0,-1}))", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
+    check("Simplify(RotationMatrix(t,{0,0,1}) - RotationMatrix(t,{{1,0,0},{0,1,0}}))", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
+    // rotation matrices are orthogonal with determinant 1 and preserve the norm
+    check("Simplify(Inverse(RotationMatrix(t,{1,2,3})) - Transpose(RotationMatrix(t,{1,2,3})))", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
+    check("Simplify(Det(RotationMatrix(t,{{1,1,1},{1,-2,1}})))", //
+        "1");
+    check("Simplify((RotationMatrix(t,{1,2,3}) . {3,-1,2})" //
+        + " . (RotationMatrix(t,{1,2,3}) . {3,-1,2}))", //
+        "14");
+    // the inverse rotates by the negated angle, or in the plane with the swapped vectors
+    check("Simplify(Inverse(RotationMatrix(t,{{1,2,3},{0,1,1}}))" //
+        + " - RotationMatrix(-t,{{1,2,3},{0,1,1}}))", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
+    check("Simplify(Inverse(RotationMatrix(t,{{1,2,3},{0,1,1}}))" //
+        + " - RotationMatrix(t,{{0,1,1},{1,2,3}}))", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
+
+    // for complex vectors the matrix is unitary with determinant 1
+    check("Simplify(ConjugateTranspose(RotationMatrix({{1,I,0},{0,1,I}}))" //
+        + " . RotationMatrix({{1,I,0},{0,1,I}}))", //
+        "{{1,0,0},{0,1,0},{0,0,1}}");
+    check("Simplify(Det(RotationMatrix({{1,I,0},{0,1,I}})))", //
+        "1");
+    check("Simplify(RotationMatrix({{1,I,0},{0,1,I}}) . {1,I,0})", //
+        "{0,1,I}");
+    check("Simplify(ConjugateTranspose(RotationMatrix(Pi/4,{{1,I,0},{0,1,I}}))" //
+        + " . RotationMatrix(Pi/4,{{1,I,0},{0,1,I}}))", //
+        "{{1,0,0},{0,1,0},{0,0,1}}");
   }
 
   @Test

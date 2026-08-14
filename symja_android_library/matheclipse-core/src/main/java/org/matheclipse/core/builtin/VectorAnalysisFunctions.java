@@ -1233,78 +1233,199 @@ public class VectorAnalysisFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr theta = ast.arg1();
       if (ast.isAST1()) {
-        IExpr theta = ast.arg1();
-        IExpr rotation =
-            // [$ {{Cos(theta),-Sin(theta)},{Sin(theta),Cos(theta)}} $]
-            F.list(F.list(F.Cos(theta), F.Negate(F.Sin(theta))),
-                F.list(F.Sin(theta), F.Cos(theta))); // $$;
-        return rotation;
+        if (theta.isList()) {
+          // RotationMatrix({u, v}) - rotate `u` into the direction of `v`
+          return rotationMatrixPlane(F.NIL, theta, engine);
+        }
+        // [$ {{Cos(theta),-Sin(theta)},{Sin(theta),Cos(theta)}} $]
+        return F.list(F.list(F.Cos(theta), F.Negate(F.Sin(theta))),
+            F.list(F.Sin(theta), F.Cos(theta))); // $$;
       }
-      if (ast.isAST2() && ast.arg2().isList3()) {
-        IExpr theta = ast.arg1();
-        IAST vector = (IAST) ast.arg2();
-        IExpr x = vector.arg1();
-        IExpr y = vector.arg2();
-        IExpr z = vector.arg3();
-        IExpr rotationMatrix = rotationMatrix(theta, x, y, z);
-        if (rotationMatrix.isPresent()) {
-          return rotationMatrix;
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        if (arg2.isVector() == 3) {
+          // RotationMatrix(theta, w) - rotate counterclockwise around the axis `w`
+          return rotationMatrix3D(theta, (IAST) arg2.normal(false), engine);
+        }
+        if (arg2.isList()) {
+          // RotationMatrix(theta, {u, v}) - rotate in the plane spanned by `u` and `v`
+          return rotationMatrixPlane(theta, arg2, engine);
         }
       }
       return F.NIL;
     }
 
-    private IExpr rotationMatrix(IExpr theta, IExpr x, IExpr y, IExpr z) {
-      if (z.isZero()) {
-        if (y.isZero()) {
-          return
-          // [$ {{(x^3*Conjugate(x)^3)/Abs(x)^6,0,0},{0,Cos(theta),-((x^2*Conjugate(x)*
-          // Sin(theta))/Abs(x)^3)},{0,(x*Conjugate(x)^2*Sin(theta))/Abs(x)^3,(x^3*Conjugate(x)^3*
-          // Cos(theta))/Abs(x)^6}} $]
-          F.list(
-              F.list(F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6),
-                  F.Power(F.Conjugate(x), F.C3)), F.C0, F.C0),
-              F.list(F.C0, F.Cos(theta),
-                  F.Times(F.CN1, F.Sqr(x), F.Power(F.Abs(x), F.CN3), F.Conjugate(x), F.Sin(theta))),
-              F.list(F.C0,
-                  F.Times(x, F.Power(F.Abs(x), F.CN3), F.Sqr(F.Conjugate(x)), F.Sin(theta)),
-                  F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6), F.Power(F.Conjugate(x), F.C3),
-                      F.Cos(theta)))); // $$;
-        }
-        if (x.isZero()) {
-          return
-          // [$
-          // {{Cos(theta),0,(y^2*Conjugate(y)*Sin(theta))/Abs(y)^3},{0,(y^3*Conjugate(y)^3)/Abs(y)^6,0},{-((y*Conjugate(y)^2*Sin(theta))/Abs(y)^3),0,(y^3*Conjugate(y)^3*Cos(theta))/Abs(y)^6}}
-          // $]
-          F.list(
-              F.list(F.Cos(theta), F.C0,
-                  F.Times(F.Sqr(y), F.Power(F.Abs(y), F.CN3), F.Conjugate(y), F.Sin(theta))),
-              F.list(F.C0,
-                  F.Times(F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6),
-                      F.Power(F.Conjugate(y), F.C3)),
-                  F.C0),
-              F.list(
-                  F.Times(F.CN1, y, F.Power(F.Abs(y), F.CN3), F.Sqr(F.Conjugate(y)), F.Sin(theta)),
-                  F.C0, F.Times(F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6),
-                      F.Power(F.Conjugate(y), F.C3), F.Cos(theta)))); // $$;
-        }
+    /** The option <code>TargetStructure</code> isn't supported. */
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+  }
+
+  /**
+   * The common dimension of the two vectors of a <code>{u, v}</code> pair or <code>-1</code> if
+   * <code>pair</code> isn't a list of two vectors with the same number of elements.
+   *
+   * @param pair the expression which should be tested
+   */
+  public static int vectorPairDimension(IExpr pair) {
+    if (pair.isList2()) {
+      int dim = pair.first().isVector();
+      if (dim > 0 && pair.second().isVector() == dim) {
+        return dim;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * The rotation matrix of a rotation by the angle <code>theta</code> in the plane spanned by the
+   * two vectors of the <code>{u, v}</code> pair. A positive angle rotates from the direction of
+   * <code>u</code> towards the direction of <code>v</code>; vectors orthogonal to that plane are
+   * left fixed.
+   *
+   * <p>
+   * In the orthonormal basis <code>{a, b}</code> of the plane the rotation acts as the matrix
+   * <code>{{Cos(theta), -Sin(theta)}, {Sin(theta), Conjugate(Cos(theta))}}</code>, which is unitary
+   * with determinant 1 because <code>Abs(Cos(theta))^2+Sin(theta)^2 == 1</code> holds for the
+   * complex cosine <code>Conjugate(a).v/Norm(v)</code> and the real sine
+   * <code>Norm(v-(Conjugate(a).v)*a)/Norm(v)</code>. For a given angle the cosine is used in both
+   * diagonal entries, because a rotation angle is real.
+   *
+   * @param theta the rotation angle or {@link F#NIL} to rotate <code>u</code> into the direction of
+   *        <code>v</code>
+   * @param pair the <code>{u, v}</code> pair which spans the rotation plane
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if <code>pair</code> isn't a pair of vectors with the same number of
+   *         elements, if one of them has zero magnitude, or if they don't span a plane
+   */
+  public static IAST rotationMatrixPlane(IExpr theta, IExpr pair, EvalEngine engine) {
+    int dim = vectorPairDimension(pair);
+    if (dim <= 0) {
+      return F.NIL;
+    }
+    IAST u = (IAST) ((IAST) pair).arg1().normal(false);
+    IAST v = (IAST) ((IAST) pair).arg2().normal(false);
+    IExpr normU = engine.evaluate(F.Norm(u));
+    if (normU.isZero()) {
+      return F.NIL;
+    }
+    // the orthonormal basis {a, b} of the rotation plane; `b` is the direction of the component of
+    // `v` which is orthogonal to `a`
+    IAST a = (IAST) engine.evaluate(F.mapRange(0, dim, k -> F.Divide(u.get(k + 1), normU)));
+    IExpr projection = engine.evaluate(
+        F.mapRange(S.Plus, 0, dim, k -> F.Times(F.Conjugate(a.get(k + 1)), v.get(k + 1))));
+    IAST w = (IAST) engine.evaluate(
+        F.mapRange(0, dim, k -> F.Subtract(v.get(k + 1), F.Times(projection, a.get(k + 1)))));
+    IExpr normW = engine.evaluate(F.Norm(w));
+
+    IExpr cos;
+    IExpr conjugatedCos;
+    IExpr sin;
+    if (theta.isPresent()) {
+      cos = engine.evaluate(F.Cos(theta));
+      // a rotation angle is real
+      conjugatedCos = cos;
+      sin = engine.evaluate(F.Sin(theta));
+    } else {
+      // rotate `u` into the direction of `v`: the cosine and the sine of the rotation angle are the
+      // coordinates of the normalized `v` in the basis {a, b}. The sine is real and non negative,
+      // the cosine is conjugated element wise instead of wrapping it into `Conjugate`
+      IExpr normV = engine.evaluate(F.Norm(v));
+      if (normV.isZero()) {
         return F.NIL;
       }
-      if (x.isZero() && y.isZero()) {
-        return
-        // [$
-        // {{Cos(theta),-((z*Sin(theta))/Abs(z)),0},{(Conjugate(z)*Sin(theta))/Abs(z),(z*Conjugate(z)*
-        // Cos(theta))/Abs(z)^2,0},{0,0,(z*Conjugate(z))/Abs(z)^2}} $]
-        F.list(
-            F.list(F.Cos(theta), F.Times(F.CN1, z, F.Power(F.Abs(z), F.CN1), F.Sin(theta)), F.C0),
-            F.list(F.Times(F.Power(F.Abs(z), F.CN1), F.Conjugate(z), F.Sin(theta)),
-                F.Times(z, F.Power(F.Abs(z), F.CN2), F.Conjugate(z), F.Cos(theta)), F.C0),
-            F.list(F.C0, F.C0, F.Times(z, F.Power(F.Abs(z), F.CN2), F.Conjugate(z)))); // $$;
+      cos = engine.evaluate(F.Divide(projection, normV));
+      conjugatedCos = engine.evaluate(F.Divide(
+          F.mapRange(S.Plus, 0, dim, k -> F.Times(a.get(k + 1), F.Conjugate(v.get(k + 1)))), normV));
+      sin = engine.evaluate(F.Divide(normW, normV));
+    }
+    if (normW.isZero()) {
+      // `v` is parallel to `u`, so the rotation plane isn't determined. The rotation by the angle 0
+      // is the identity and in 2D the rotation by the angle Pi is the point reflection - both don't
+      // depend on the plane
+      if (cos.isOne()) {
+        return F.mapRange(0, dim, i -> F.mapRange(0, dim, j -> i == j ? F.C1 : F.C0));
+      }
+      if (dim == 2 && cos.isMinusOne()) {
+        return F.mapRange(0, 2, i -> F.mapRange(0, 2, j -> i == j ? F.CN1 : F.C0));
       }
       return F.NIL;
     }
+    IAST b = (IAST) engine.evaluate(F.mapRange(0, dim, k -> F.Divide(w.get(k + 1), normW)));
 
+    // KroneckerDelta(i,j) + Sin(theta)*(b_i*Conjugate(a_j)-a_i*Conjugate(b_j))
+    // + (Cos(theta)-1)*a_i*Conjugate(a_j) + (Conjugate(Cos(theta))-1)*b_i*Conjugate(b_j)
+    IExpr cosMinusOne = F.Subtract(cos, F.C1);
+    IExpr conjugatedCosMinusOne = F.Subtract(conjugatedCos, F.C1);
+    // a real cosine can be factored out of the two projectors, so that the terms of the plane
+    // cancel each other in the entries outside of the plane
+    boolean realCos = conjugatedCos.equals(cos);
+    return F.mapRange(0, dim, i -> F.mapRange(0, dim, j -> {
+      IExpr conjugatedA = F.Conjugate(a.get(j + 1));
+      IExpr conjugatedB = F.Conjugate(b.get(j + 1));
+      IExpr projectors = realCos //
+          ? F.Times(cosMinusOne,
+              F.Plus(F.Times(a.get(i + 1), conjugatedA), F.Times(b.get(i + 1), conjugatedB)))
+          : F.Plus(F.Times(cosMinusOne, a.get(i + 1), conjugatedA),
+              F.Times(conjugatedCosMinusOne, b.get(i + 1), conjugatedB));
+      IExpr rotation = F.Plus(F.Times(sin, F.Subtract(F.Times(b.get(i + 1), conjugatedA), //
+          F.Times(a.get(i + 1), conjugatedB))), projectors);
+      return i == j ? F.Plus(F.C1, rotation) : rotation;
+    }));
+  }
+
+  /**
+   * The <code>3 x 3</code> matrix of a counterclockwise rotation by the angle <code>theta</code>
+   * around the axis <code>axis</code>, see <a
+   * href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula">Wikipedia - Rodrigues'
+   * rotation formula</a>:
+   * <code>KroneckerDelta(i,j)*Cos(theta) + (1-Cos(theta))*u_i*Conjugate(u_j) - Sin(theta)*Sum(LeviCivita(i,j,k)*u_k)</code>
+   * for the normalized axis <code>u = axis/Norm(axis)</code>, so that the <code>axis</code> doesn't
+   * have to be normalized.
+   *
+   * <p>
+   * The entries are built as a single fraction over the squared norm, so that for example a
+   * diagonal entry of <code>RotationMatrix(theta, {1,1,1})</code> is printed as
+   * <code>1/3*(1+2*Cos(theta))</code> instead of <code>Cos(theta)+1/3*(1-Cos(theta))</code>.
+   *
+   * @param theta the rotation angle
+   * @param axis the rotation axis; a vector with 3 elements
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if <code>axis</code> has zero magnitude
+   */
+  public static IAST rotationMatrix3D(IExpr theta, IAST axis, EvalEngine engine) {
+    IExpr squaredNorm =
+        engine.evaluate(F.mapRange(S.Plus, 0, 3, k -> F.Sqr(F.Abs(axis.get(k + 1)))));
+    if (squaredNorm.isZero()) {
+      return F.NIL;
+    }
+    IExpr norm = engine.evaluate(F.Sqrt(squaredNorm));
+    IExpr cos = F.Cos(theta);
+    IExpr sin = F.Sin(theta);
+    IExpr oneMinusCos = F.Subtract(F.C1, cos);
+    return F.mapRange(0, 3, i -> F.mapRange(0, 3, j -> {
+      if (i == j) {
+        // (Abs(axis_i)^2 + (squaredNorm-Abs(axis_i)^2)*Cos(theta)) / squaredNorm; the difference
+        // cancels for an axis parallel to the `i`-th coordinate axis
+        IExpr squaredComponent = F.Sqr(F.Abs(axis.get(i + 1)));
+        return F.Divide(
+            F.Plus(squaredComponent, F.Times(F.Subtract(squaredNorm, squaredComponent), cos)),
+            squaredNorm);
+      }
+      IExpr entry = F.Times(oneMinusCos, axis.get(i + 1), F.Conjugate(axis.get(j + 1)));
+      // the rotation in the plane of the axes `i` and `j` is determined by the remaining component
+      // `axis_k`; its sign is the Levi-Civita symbol LeviCivita(i,j,k) and it is conjugated below
+      // the diagonal
+      int k = 3 - i - j;
+      IExpr component = i < j ? axis.get(k + 1) : F.Conjugate(axis.get(k + 1));
+      IExpr cross = F.Times(sin, norm, component);
+      return F.Divide(j == (i + 1) % 3 ? F.Subtract(entry, cross) : F.Plus(entry, cross),
+          squaredNorm);
+    }));
   }
 
   public static void initialize() {
