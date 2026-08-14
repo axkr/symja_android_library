@@ -14,17 +14,17 @@ import org.matheclipse.core.interfaces.IExpr;
  * Run a piece of integration work under a wall-clock time budget.
  *
  * <p>
- * Some native stages call {@link EvalEngine#evaluate} internally on inputs that can grind far longer
- * than they are worth (the Rubi rules on an integral they cannot finish, or a {@code RootSum} over a
- * solvable cubic/quartic that {@code FullSimplify} chews on for tens of seconds). The engine has no
- * per-call deadline of its own, but it does enforce time limits through the <em>interrupt flag</em>
- * of the evaluating thread - its evaluation loop throws
+ * Some native stages call {@link EvalEngine#evaluate} internally on inputs that can grind far
+ * longer than they are worth (the Rubi rules on an integral they cannot finish, or a
+ * {@code RootSum} over a solvable cubic/quartic that {@code FullSimplify} chews on for tens of
+ * seconds). The engine has no per-call deadline of its own, but it does enforce time limits through
+ * the <em>interrupt flag</em> of the evaluating thread - its evaluation loop throws
  * {@link org.matheclipse.core.eval.exception.TimeoutException} when it sees the thread interrupted.
  *
  * <p>
  * So a watchdog that interrupts <em>this</em> thread after the budget elapses reuses exactly that
- * mechanism, and nothing has to move to another thread - which matters because {@link EvalEngine} is
- * thread-local. The interrupt is best-effort: it only takes effect once control returns to the
+ * mechanism, and nothing has to move to another thread - which matters because {@link EvalEngine}
+ * is thread-local. The interrupt is best-effort: it only takes effect once control returns to the
  * evaluation loop, so code that never checks for interruption (notably JAS) can still overrun.
  */
 public final class IntegrateTimeBudget {

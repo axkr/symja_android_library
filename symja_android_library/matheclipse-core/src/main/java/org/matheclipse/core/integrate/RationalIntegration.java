@@ -67,8 +67,8 @@ public class RationalIntegration {
   }
 
   /**
-   * Integrate a rational function in <code>x</code>, emitting a {@link F#RootSum} antiderivative for
-   * irreducible denominator factors of degree &gt;= 5 (i.e. {@link RootSumMode#EMIT}).
+   * Integrate a rational function in <code>x</code>, emitting a {@link F#RootSum} antiderivative
+   * for irreducible denominator factors of degree &gt;= 5 (i.e. {@link RootSumMode#EMIT}).
    *
    * @param integrand the integrand
    * @param x the integration variable
@@ -84,13 +84,13 @@ public class RationalIntegration {
    *
    * <p>
    * In {@link RootSumMode#DEFER} mode, when the computed antiderivative is <em>essentially a bare
-   * {@link F#RootSum}</em> (a single top-level term containing a {@code RootSum}, with no additional
-   * closed-form {@code Log}/{@code ArcTan}/rational/polynomial terms), this returns {@link F#NIL} so
-   * the caller can hand the integrand to the Rubi rules first — those often have a far simpler
-   * closed form. A mixed antiderivative (e.g. {@code Log(x-1) + RootSum[...]}) is a {@code Plus} and
-   * is <em>not</em> deferred: it is a correct-by-construction closed form and deferring it would
-   * route the integrand into a fragile Rubi recursion. The RootSum is re-emitted by a post-Rubi
-   * fallback that calls this method with {@link RootSumMode#EMIT}.
+   * {@link F#RootSum}</em> (a single top-level term containing a {@code RootSum}, with no
+   * additional closed-form {@code Log}/{@code ArcTan}/rational/polynomial terms), this returns
+   * {@link F#NIL} so the caller can hand the integrand to the Rubi rules first — those often have a
+   * far simpler closed form. A mixed antiderivative (e.g. {@code Log(x-1) + RootSum[...]}) is a
+   * {@code Plus} and is <em>not</em> deferred: it is a correct-by-construction closed form and
+   * deferring it would route the integrand into a fragile Rubi recursion. The RootSum is re-emitted
+   * by a post-Rubi fallback that calls this method with {@link RootSumMode#EMIT}.
    *
    * @param integrand the integrand
    * @param x the integration variable
@@ -105,8 +105,8 @@ public class RationalIntegration {
     // expansion that does not finish in time is dropped so the integral falls through rather than
     // grinding. DEFER never emits a degree 3/4 RootSum, so it needs no budget.
     long budgetMillis = mode == RootSumMode.EMIT ? Config.INTEGRATE_RATIONAL_TIMELIMIT_MILLIS : 0;
-    IExpr result = IntegrateTimeBudget.runWithin(
-        () -> integrateRationalFunction(integrand, x, engine, mode), budgetMillis);
+    IExpr result = IntegrateTimeBudget
+        .runWithin(() -> integrateRationalFunction(integrand, x, engine, mode), budgetMillis);
     if (mode == RootSumMode.DEFER && result.isPresent() && !result.isPlus()
         && !result.isFree(F.RootSum)) {
       // Antiderivative is essentially a bare RootSum: defer to the Rubi rules.

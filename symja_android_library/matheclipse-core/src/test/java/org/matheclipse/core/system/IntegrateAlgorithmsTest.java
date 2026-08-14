@@ -17,8 +17,8 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * Tests for the native integration algorithm stages ({@link IntegralTable},
  * {@link RationalIntegration}, {@link RadicalSubstitution}, {@link DerivativeDivides},
- * {@link org.matheclipse.core.integrate.RischNorman}) which are called from
- * <code>Integrate</code> in addition to the Rubi rules.
+ * {@link org.matheclipse.core.integrate.RischNorman}) which are called from <code>Integrate</code>
+ * in addition to the Rubi rules.
  */
 public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
 
@@ -47,8 +47,7 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
   private static void assertAntiderivative(IExpr result, IExpr integrand, IExpr x,
       EvalEngine engine) {
     assertTrue(result.isPresent(), "no result returned");
-    IExpr diff = engine
-        .evaluate(F.Simplify(F.Together(F.Subtract(F.D(result, x), integrand))));
+    IExpr diff = engine.evaluate(F.Simplify(F.Together(F.Subtract(F.D(result, x), integrand))));
     assertTrue(diff.isZero(), "D(result) != integrand, difference: " + diff);
   }
 

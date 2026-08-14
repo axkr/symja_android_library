@@ -68,11 +68,13 @@ public class ChebyshevIntegration {
       return F.NIL;
     }
     // integrand(x)|x->xOfT * dx/dt, reduced to a rational function of t. PowerExpand collapses the
-    // fractional powers that the case condition guarantees are integer powers; any unsound branch it
+    // fractional powers that the case condition guarantees are integer powers; any unsound branch
+    // it
     // introduces is caught by the final diff-back verification, so it is safe to apply here.
     IExpr dxdt = engine.evaluate(F.D(xOfT, t));
     IExpr subIntegrand = engine.evaluate(F.subst(integrand, x, xOfT));
-    // PowerExpand splits the substituted radicals into integer powers (the case condition guarantees
+    // PowerExpand splits the substituted radicals into integer powers (the case condition
+    // guarantees
     // the reduced integrand is rational in t); any unsound branch it assumes is caught by the final
     // diff-back verification.
     IExpr integrandT = engine.evaluate(F.Together(F.PowerExpand(F.Times(subIntegrand, dxdt))));
@@ -104,14 +106,15 @@ public class ChebyshevIntegration {
       IInteger sA = par.m.denominator().lcm(par.n.denominator());
       if (sA.isOne()) {
         // m, n, p all integers: the integrand is already rational in x, so x = t is a no-op that
-        // would just re-integrate the same expression (infinite recursion). Leave such integrands to
+        // would just re-integrate the same expression (infinite recursion). Leave such integrands
+        // to
         // the rational-function / Rubi stages.
         return F.NIL;
       }
       return F.Power(t, sA);
     }
     if (q.isInteger()) {
-      // case B: t^s = a + b*x^n  =>  x = ((t^s - a)/b)^(1/n)
+      // case B: t^s = a + b*x^n => x = ((t^s - a)/b)^(1/n)
       return F.Power(F.Divide(F.Subtract(F.Power(t, s), par.a), par.b), invN);
     }
     // TODO(clean-room) case C ((m+1)/n + p integer; substitute t^s = a*x^-n + b) is not yet robust:
@@ -242,9 +245,10 @@ public class ChebyshevIntegration {
   }
 
   /**
-   * Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand. Because
-   * the reduction uses {@code PowerExpand} (which assumes principal branches), this check is what
-   * guarantees the returned antiderivative is actually correct before it can short-circuit anything.
+   * Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand.
+   * Because the reduction uses {@code PowerExpand} (which assumes principal branches), this check
+   * is what guarantees the returned antiderivative is actually correct before it can short-circuit
+   * anything.
    */
   private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
       EvalEngine engine) {

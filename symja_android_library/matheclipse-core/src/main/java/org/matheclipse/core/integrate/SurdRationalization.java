@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * root, then multiplying by the conjugate gives the identity
  *
  * <pre>
- * N / (A + B*Sqrt(R)) == N*(A - B*Sqrt(R)) / (A^2 - B^2*R)
+ * N / (A + B * Sqrt(R)) == N * (A - B * Sqrt(R)) / (A ^ 2 - B ^ 2 * R)
  * </pre>
  *
  * with a denominator free of the root. The rewritten integrand is handed back to
@@ -134,8 +134,7 @@ public class SurdRationalization {
       return F.NIL;
     }
 
-    IExpr conjugateDenominator =
-        engine.evaluate(F.Subtract(F.Sqr(a), F.Times(F.Sqr(b), radicand)));
+    IExpr conjugateDenominator = engine.evaluate(F.Subtract(F.Sqr(a), F.Times(F.Sqr(b), radicand)));
     if (conjugateDenominator.isZero() || !conjugateDenominator.isFree(sqrtR, true)) {
       return F.NIL;
     }

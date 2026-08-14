@@ -115,7 +115,9 @@ public class TranscendentalRisch {
     return F.NIL;
   }
 
-  /** {@code Integrate(c*E^(a*x^2+b*x+c0), x) = c*Sqrt(Pi)/(2*Sqrt(-a))*E^(c0-b^2/(4a))*Erf(...)}. */
+  /**
+   * {@code Integrate(c*E^(a*x^2+b*x+c0), x) = c*Sqrt(Pi)/(2*Sqrt(-a))*E^(c0-b^2/(4a))*Erf(...)}.
+   */
   private static IExpr integrateGaussian(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr constFactor = F.C1;
     IExpr expFactor = F.NIL;
@@ -149,7 +151,8 @@ public class TranscendentalRisch {
       return F.NIL;
     }
     IExpr sqrtNegA = F.Sqrt(F.Negate(a));
-    // Erf argument is Sqrt(-a)*(x + b/(2a)) = -(2*a*x + b)/(2*Sqrt(-a)); the negation matters so the
+    // Erf argument is Sqrt(-a)*(x + b/(2a)) = -(2*a*x + b)/(2*Sqrt(-a)); the negation matters so
+    // the
     // result differentiates back to +integrand rather than -integrand.
     IExpr erfArg = F.Divide(F.Negate(F.Plus(F.Times(F.C2, a, x), b)), F.Times(F.C2, sqrtNegA));
     IExpr prefactor = F.Times(F.Divide(F.Sqrt(S.Pi), F.Times(F.C2, sqrtNegA)),
@@ -164,10 +167,11 @@ public class TranscendentalRisch {
   /**
    * Hyperexponential Risch case: {@code Integrate(R(x)*E^(b(x)), x)} with {@code R} and {@code b}
    * rational functions and {@code b} non-constant. If elementary, the antiderivative is
-   * {@code q(x)*E^(b(x))} where {@code q} solves the Risch differential equation {@code q' + b'*q = R}
-   * (delegated to {@link RischDifferentialEquation#solveRationalRDE}). No such {@code q} is a proof
-   * that no antiderivative of this form exists (e.g. {@code Integrate(E^(x^2))} has none, so it falls
-   * through to the Erf form). This is the first RDE-based (rather than table-based) recogniser.
+   * {@code q(x)*E^(b(x))} where {@code q} solves the Risch differential equation
+   * {@code q' + b'*q = R} (delegated to {@link RischDifferentialEquation#solveRationalRDE}). No
+   * such {@code q} is a proof that no antiderivative of this form exists (e.g.
+   * {@code Integrate(E^(x^2))} has none, so it falls through to the Erf form). This is the first
+   * RDE-based (rather than table-based) recogniser.
    */
   private static IExpr integrateHyperexponential(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr rational = F.C1;
@@ -202,8 +206,9 @@ public class TranscendentalRisch {
   }
 
   /**
-   * {@code Integrate(c*E^(k*x+d)/x^m, x)} for {@code m >= 1}, via the integration-by-parts recurrence
-   * {@code I_m = -E^(k*x)/((m-1) x^(m-1)) + k/(m-1) I_(m-1)}, {@code I_1 = ExpIntegralEi(k*x)}.
+   * {@code Integrate(c*E^(k*x+d)/x^m, x)} for {@code m >= 1}, via the integration-by-parts
+   * recurrence {@code I_m = -E^(k*x)/((m-1) x^(m-1)) + k/(m-1) I_(m-1)},
+   * {@code I_1 = ExpIntegralEi(k*x)}.
    */
   private static IExpr integrateExpOverX(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr c = F.C1;
@@ -255,8 +260,9 @@ public class TranscendentalRisch {
   }
 
   /**
-   * {@code Integrate(c*g(k*x)/x, x)} for {@code g} in {@code {Sin, Cos, Sinh, Cosh}} gives {@code c}
-   * times the matching {@code SinIntegral / CosIntegral / SinhIntegral / CoshIntegral} of {@code k*x}.
+   * {@code Integrate(c*g(k*x)/x, x)} for {@code g} in {@code {Sin, Cos, Sinh, Cosh}} gives
+   * {@code c} times the matching {@code SinIntegral / CosIntegral / SinhIntegral / CoshIntegral} of
+   * {@code k*x}.
    */
   private static IExpr integrateTrigOverX(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr c = F.C1;
@@ -309,8 +315,8 @@ public class TranscendentalRisch {
   }
 
   /**
-   * {@code Integrate(c*Sin(a*x^2), x) = c*Sqrt(Pi/(2a))*FresnelS(x*Sqrt(2a/Pi))}, and the {@code Cos}
-   * analogue with {@code FresnelC} (Symja's Pi/2-normalised Fresnel convention).
+   * {@code Integrate(c*Sin(a*x^2), x) = c*Sqrt(Pi/(2a))*FresnelS(x*Sqrt(2a/Pi))}, and the
+   * {@code Cos} analogue with {@code FresnelC} (Symja's Pi/2-normalised Fresnel convention).
    */
   private static IExpr integrateFresnel(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr c = F.C1;
@@ -445,7 +451,8 @@ public class TranscendentalRisch {
   /**
    * {@code Integrate(c*x^s*E^(a*x+b), x) = c*E^b*(-(-a)^(-1-s)*Gamma(1+s, -a*x))} &mdash; the upper
    * incomplete Gamma function (equivalently an {@code ExpIntegralE}). The pure reciprocal-integer
-   * power case {@code E^(a*x)/x^m} is taken first by {@link #integrateExpOverX} (an {@code Ei} form).
+   * power case {@code E^(a*x)/x^m} is taken first by {@link #integrateExpOverX} (an {@code Ei}
+   * form).
    */
   private static IExpr integrateIncompleteGamma(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr c = F.C1;
@@ -519,7 +526,9 @@ public class TranscendentalRisch {
     return verifyAntiderivative(result, integrand, x, engine) ? result : F.NIL;
   }
 
-  /** {@code Integrate(c*Log(d+a*x)/x, x) = c*(Log(d)*Log(x) - PolyLog(2, -(a/d)*x))}, {@code d!=0}. */
+  /**
+   * {@code Integrate(c*Log(d+a*x)/x, x) = c*(Log(d)*Log(x) - PolyLog(2, -(a/d)*x))}, {@code d!=0}.
+   */
   private static IExpr integrateLogOverX(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr c = F.C1;
     IExpr logFactor = F.NIL;
@@ -565,7 +574,8 @@ public class TranscendentalRisch {
    * coefficients using the coefficient recursion {@code q_i' = p_i - (i+1)*q_{i+1}*(u'/u)} over the
    * base field {@code Q(x)} (built on the {@link DifferentialTower} representation). Conservative:
    * succeeds only when every coefficient antiderivative stays rational in {@code x} &mdash; the top
-   * level may raise the degree by one {@code Log(u)} (e.g. {@code Integrate(Log(x)/x) = Log(x)^2/2}).
+   * level may raise the degree by one {@code Log(u)} (e.g.
+   * {@code Integrate(Log(x)/x) = Log(x)^2/2}).
    */
   private static IExpr integratePrimitiveLog(IExpr integrand, IExpr x, EvalEngine engine) {
     DifferentialTower tower = DifferentialTower.build(integrand, x, engine);
@@ -677,8 +687,8 @@ public class TranscendentalRisch {
       } else if (n == 1) {
         tanIntegral[1] = F.Times(F.CN1, F.Divide(F.Log(F.Cos(u)), a));
       } else {
-        tanIntegral[n] = F.Subtract(F.Divide(F.Power(tanU, n - 1), F.Times(a, F.ZZ(n - 1))),
-            tanIntegral[n - 2]);
+        tanIntegral[n] =
+            F.Subtract(F.Divide(F.Power(tanU, n - 1), F.Times(a, F.ZZ(n - 1))), tanIntegral[n - 2]);
       }
     }
     IASTAppendable sum = F.PlusAlloc(m + 1);
@@ -799,9 +809,12 @@ public class TranscendentalRisch {
       if (engine.evaluate(F.Simplify(diff)).isZero()) {
         return true;
       }
-      // Special-function antiderivatives (LogIntegral of x^(a+1), PolyLog, ...) often will not reduce
-      // symbolically because of Log branch identities; confirm numerically at generic interior points.
-      // This can only reject, so it never accepts a result a nonzero symbolic diff already disproved.
+      // Special-function antiderivatives (LogIntegral of x^(a+1), PolyLog, ...) often will not
+      // reduce
+      // symbolically because of Log branch identities; confirm numerically at generic interior
+      // points.
+      // This can only reject, so it never accepts a result a nonzero symbolic diff already
+      // disproved.
       return numericallyZero(diff, x, engine);
     } catch (RuntimeException rex) {
       org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
@@ -815,8 +828,8 @@ public class TranscendentalRisch {
     for (double pt : points) {
       IExpr check;
       try {
-        check = engine.evaluate(
-            F.Less(F.Abs(F.ReplaceAll(expr, F.Rule(x, F.num(pt)))), F.num(1.0e-9)));
+        check =
+            engine.evaluate(F.Less(F.Abs(F.ReplaceAll(expr, F.Rule(x, F.num(pt)))), F.num(1.0e-9)));
       } catch (RuntimeException rex) {
         org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
         return false;

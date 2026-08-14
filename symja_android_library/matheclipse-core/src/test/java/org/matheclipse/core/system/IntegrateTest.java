@@ -336,12 +336,14 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
     check("Refine(Integrate(Abs(Pi+42*x^6),x), Element(x,Reals))", //
         "Pi*x+6*x^7");
+    // sign-indefinite argument (root at x^6 == Pi/42) - dropping Abs() would be wrong here
+    check("Refine(Integrate(Abs(-Pi+42*x^6),x), Element(x,Reals))", //
+        "Integrate(Abs(-Pi+42*x^6),x)");
+    // antiderivatives are real and continuous at the root -Pi/E resp. -2/E
     check("Refine(Integrate(Abs(E+Pi*x^(-1)),x), Element(x,Reals))", //
-        "Piecewise({{E*x+Pi*Log(x),x<=-Pi/E},{-E*x+2*Pi*(-2+I*Pi+Log(Pi))-Pi*Log(x),-Pi/E<x&&x<=\n"
-            + "0}},E*x+Pi*Log(x))");
+        "Piecewise({{-E*x+2*Pi*(-2+Log(Pi))-Pi*Log(Abs(x)),-Pi/E<x&&x<=0}},E*x+Pi*Log(Abs(x)))");
     check("Refine(Integrate(Abs(E+2*x^(-1)),x), Element(x,Reals))", //
-        "Piecewise({{E*x+2*Log(x),x<=-2/E},{-E*x+4*(-2+I*2+Log(2))-2*Log(x),-2/E<x&&x<=0}},E*x+\n" //
-            + "2*Log(x))");
+        "Piecewise({{-E*x+4*(-2+Log(2))-2*Log(Abs(x)),-2/E<x&&x<=0}},E*x+2*Log(Abs(x)))");
   }
 
   @Test
@@ -353,27 +355,35 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "Piecewise({{x^3/3,x<=0},{x^2/2,x>0}},0)");
 
 
+    // u*Abs(u)/(2*l1) is the antiderivative of Abs(u), u==l0+l1*x, which is continuous through
+    // the root of u - definite integrals across the kink stay correct:
+    // Integrate(Abs(E+2*x),{x,-E,0}) == E^2/2
     check("Refine(Integrate(Abs(E+2*x),x), Element(x,Reals))", //
-        "Piecewise({{-E*x-x^2,x<=-E/2}},E^2/Pi+E*x+x^2)");
+        "1/4*(E+2*x)*Abs(E+2*x)");
     check("Refine(Integrate(Abs(E+Pi*x),x), Element(x,Reals))", //
-        "Piecewise({{-E*x-1/2*Pi*x^2,x<=-E/Pi}},E^2/Pi+E*x+1/2*Pi*x^2)");
+        "((E+Pi*x)*Abs(E+Pi*x))/(2*Pi)");
+    check("N(Refine(Integrate(Abs(E+2*x),{x,-E,0}), Element(x,Reals)))", //
+        "3.69453");
+    // without sign information about a and b the integral stays unevaluated
     check("Refine(Integrate(Abs(a+b*x),x), Element(x,Reals))", //
         "Integrate(Abs(a+b*x),x)");
     check("Refine(Integrate(Abs(x),x), Element(x,Reals))", //
-        "Piecewise({{-x^2/2,x<=0}},x^2/2)");
+        "1/2*x*Abs(x)");
+    check("Refine(Integrate(Abs(t+1),t), Element(t,Reals))", //
+        "1/2*(1+t)*Abs(1+t)");
     check("Refine(Integrate(Abs(x^3),x), Element(x,Reals))", //
-        "Piecewise({{-x^4/4,x<=0}},x^4/4)");
+        "1/4*x^3*Abs(x)");
     check("Refine(Integrate(Abs(x^2),x), Element(x,Reals))", //
         "x^3/3");
     check("Refine(Integrate(Abs(x^4),x), Element(x,Reals))", //
         "x^5/5");
 
     check("Refine(Integrate(Abs(x^(-1)),x), Element(x,Reals))", //
-        "Piecewise({{-Log(x),x<=0}},Log(x))");
+        "(x*Log(Abs(x)))/Abs(x)");
     check("Refine(Integrate(Abs(x^(-5)),x), Element(x,Reals))", //
-        "Piecewise({{1/(4*x^4),x<=0}},-1/(4*x^4))");
+        "-Abs(x)/(4*x^5)");
     check("Refine(Integrate(Abs(x^(-7)),x), Element(x,Reals))", //
-        "Piecewise({{1/(6*x^6),x<=0}},-1/(6*x^6))");
+        "-Abs(x)/(6*x^7)");
 
     check("Refine(Integrate(Abs(x^(-2)),x), Element(x,Reals))", //
         "-1/x");
@@ -824,14 +834,50 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNIntegrateMultidimensional() {
+    // nested integration: the first iterator is the outermost integral
+    check("NIntegrate(x*y, {x,0,1}, {y,0,1})", //
+        "0.25");
+    // inner limits may depend on the outer variable
+    check("NIntegrate(x*y, {x,0,1}, {y,0,x})", //
+        "0.125");
+  }
+
+  @Test
+  public void testNIntegrateReversedLimits() {
+    // Integrate(f,{x,a,b}) == -Integrate(f,{x,b,a})
+    check("NIntegrate(x, {x,1,0})", //
+        "-0.5");
+    check("NIntegrate(x, {x,1,0}, Method->\"DoubleExponential\")", //
+        "-0.5");
+  }
+
+  @Test
+  public void testNIntegrateNonNumericalLimits() {
+    // message NIntegrate: x = a is not a valid limit of integration.
+    check("NIntegrate(1/x, {x,a,1})", //
+        "NIntegrate(1/x,{x,a,1})");
+  }
+
+  @Test
+  public void testNIntegrateComplexValued() {
+    // the integrand is complex-valued on (0,1); solved through the symbolic fallback instead of
+    // silently integrating 0.0 for every non-real sample point
+    check("NIntegrate(Sqrt(x-2), {x,0,1}, Method->\"DoubleExponential\")", //
+        "I*1.21895");
+  }
+
+  @Test
   public void testXReciprocalIssue1064() {
     // message - NIntegrate: maximal count (10,000) exceeded.
     check("NIntegrate(1/x, {x,0,1},Method->\"GaussKronrod\")", //
         "NIntegrate(1/x,{x,0,1},Method->GaussKronrod)");
     check("NIntegrate(1/x, {x,0,1},Method->\"LegendreGauss\")", //
         "10.37476");
+    // stays unevaluated (and doesn't run into $RecursionLimit anymore, see the old
+    // Hold(N(Integrate(1/x,{x,0,1}))) result of this test)
     check("N(Integrate(1/x, {x,0,1}))", //
-        "Hold(N(Integrate(1/x,{x,0,1})))");
+        "Integrate(1/x,{x,0,1})");
 
     // message - Integrate: Integral of 1/x does not converge on {x,0,1}.
     check("Integrate(1/x, {x,0,1})", //

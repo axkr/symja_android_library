@@ -16,10 +16,10 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
  * Integration by substitution of radicals of a linear function.
  *
  * <p>
- * If the integrand is built from <code>x</code> and fractional powers <code>(a+b*x)^(p/q)</code>
- * of one common linear base <code>u = a+b*x</code>, the substitution <code>t = u^(1/n)</code>
- * (where <code>n</code> is the least common multiple of all exponent denominators) transforms the
- * integral into the integral of a rational function in <code>t</code>:
+ * If the integrand is built from <code>x</code> and fractional powers <code>(a+b*x)^(p/q)</code> of
+ * one common linear base <code>u = a+b*x</code>, the substitution <code>t = u^(1/n)</code> (where
+ * <code>n</code> is the least common multiple of all exponent denominators) transforms the integral
+ * into the integral of a rational function in <code>t</code>:
  *
  * <pre>
  * x = (t^n - a)/b,  dx = (n/b) * t^(n-1) dt
@@ -91,7 +91,8 @@ public class RadicalSubstitution {
         } finally {
           ACTIVE.set(Boolean.FALSE);
         }
-        if (innerResult.isNIL() || !innerResult.isFreeAST(org.matheclipse.core.expression.S.Integrate)
+        if (innerResult.isNIL()
+            || !innerResult.isFreeAST(org.matheclipse.core.expression.S.Integrate)
             || !innerResult.isSpecialsFree()) {
           return F.NIL;
         }

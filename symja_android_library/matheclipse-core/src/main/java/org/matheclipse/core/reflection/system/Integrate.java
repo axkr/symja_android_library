@@ -107,14 +107,12 @@ import edu.jas.kern.PreemptingException;
 public class Integrate extends AbstractFunctionOptionEvaluator {
 
 
-  private static Thread INIT_THREAD = null;
-
   private static final CountDownLatch COUNT_DOWN_LATCH = new CountDownLatch(1);
 
   /**
    * Define rules for functions of the form <code>Integrate(x^n * unaryFunction(m*x), x)</code>.
    */
-  private static Matcher POWER_TIMES_FUNCION_MATCHER;
+  private static Matcher POWER_TIMES_FUNCTION_MATCHER;
 
   private static Matcher initPowerTimesFunction() {
     Matcher MATCHER = new Matcher();
@@ -138,7 +136,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       org.matheclipse.core.reflection.system.Integrate::integrateXPowNTimesFMTimesX);
 
   /**
-   * Causes the current thread to wait until the INIT_THREAD has initialized the Integrate() rules.
+   * Causes the current thread to wait until the initializer thread (see {@link #setUp(ISymbol)})
+   * has loaded the Integrate() rules.
    */
   @Override
   public final void await() throws InterruptedException {
@@ -148,66 +147,67 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   public static class IntegrateInitializer implements Runnable {
     @Override
     public void run() {
-      if (!INTEGRATE_RULES_READ.get()) {
-        INTEGRATE_RULES_READ.set(true);
-        final EvalEngine engine = EvalEngine.get();
-        ContextPath path = engine.getContextPath();
+      // compareAndSet: exactly one thread performs the rule loading, even when several threads
+      // call evaluate() concurrently (the Config.JAS_NO_THREADS path runs this inline)
+      if (INTEGRATE_RULES_READ.compareAndSet(false, true)) {
         try {
-          engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
-
-          UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
-          getRuleASTStatic();
-
-          ISymbol[] rubiSymbols = {S.Derivative, S.D};
-          for (int i = 0; i < rubiSymbols.length; i++) {
-            INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
-          }
+          initializeRules();
         } finally {
-          engine.setContextPath(path);
+          // always release the waiting evaluation threads - a latch stranded by an exception
+          // during rule loading would block every further Integrate evaluation forever
+          COUNT_DOWN_LATCH.countDown();
         }
-        // F.Integrate.setEvaluator(CONST);
-        engine.setPackageMode(false);
-
-        F.ISet(F.$s("§simplifyflag"), S.False);
-
-        F.ISet(F.$s("§$timelimit"), F.ZZ(Config.INTEGRATE_RUBI_TIMELIMIT));
-        F.ISet(F.$s("§$showsteps"), S.False);
-        UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
-        F.ISet(F.$s("§$trigfunctions"), F.List(S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc));
-        F.ISet(F.$s("§$hyperbolicfunctions"),
-            F.List(S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch));
-        F.ISet(F.$s("§$inversetrigfunctions"),
-            F.List(S.ArcSin, S.ArcCos, S.ArcTan, S.ArcCot, S.ArcSec, S.ArcCsc));
-        F.ISet(F.$s("§$inversehyperbolicfunctions"),
-            F.List(S.ArcSinh, S.ArcCosh, S.ArcTanh, S.ArcCoth, S.ArcSech, S.ArcCsch));
-        F.ISet(F.$s("§$calculusfunctions"), F.List(S.D, S.Sum, S.Product, S.Integrate,
-            F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
-        F.ISet(F.$s("§$stopfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern, S.If,
-            S.Integrate, UtilityFunctionCtors.Unintegrable, F.$rubi("CannotIntegrate")));
-        F.ISet(F.$s("§$heldfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern));
-
-        F.ISet(UtilityFunctionCtors.IntegerPowerQ, //
-            F.Function(
-                F.And(F.SameQ(F.Head(F.Slot1), S.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
-
-        F.ISet(UtilityFunctionCtors.FractionalPowerQ, //
-            F.Function(F.And(F.SameQ(F.Head(F.Slot1), S.Power),
-                F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), S.Rational))));
-
-        POWER_TIMES_FUNCION_MATCHER = initPowerTimesFunction();
-
-        COUNT_DOWN_LATCH.countDown();
       }
+    }
+
+    private static void initializeRules() {
+      final EvalEngine engine = EvalEngine.get();
+      ContextPath path = engine.getContextPath();
+      try {
+        engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
+
+        UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
+        getRuleASTStatic();
+
+        ISymbol[] rubiSymbols = {S.Derivative, S.D};
+        for (int i = 0; i < rubiSymbols.length; i++) {
+          INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
+        }
+      } finally {
+        engine.setContextPath(path);
+      }
+      engine.setPackageMode(false);
+
+      F.ISet(F.$s("§simplifyflag"), S.False);
+
+      F.ISet(F.$s("§$timelimit"), F.ZZ(Config.INTEGRATE_RUBI_TIMELIMIT));
+      F.ISet(F.$s("§$showsteps"), S.False);
+      UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
+      F.ISet(F.$s("§$trigfunctions"), F.List(S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc));
+      F.ISet(F.$s("§$hyperbolicfunctions"), F.List(S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch));
+      F.ISet(F.$s("§$inversetrigfunctions"),
+          F.List(S.ArcSin, S.ArcCos, S.ArcTan, S.ArcCot, S.ArcSec, S.ArcCsc));
+      F.ISet(F.$s("§$inversehyperbolicfunctions"),
+          F.List(S.ArcSinh, S.ArcCosh, S.ArcTanh, S.ArcCoth, S.ArcSech, S.ArcCsch));
+      F.ISet(F.$s("§$calculusfunctions"), F.List(S.D, S.Sum, S.Product, S.Integrate,
+          F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
+      F.ISet(F.$s("§$stopfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern, S.If,
+          S.Integrate, UtilityFunctionCtors.Unintegrable, F.$rubi("CannotIntegrate")));
+      F.ISet(F.$s("§$heldfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern));
+
+      F.ISet(UtilityFunctionCtors.IntegerPowerQ, //
+          F.Function(F.And(F.SameQ(F.Head(F.Slot1), S.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
+
+      F.ISet(UtilityFunctionCtors.FractionalPowerQ, //
+          F.Function(F.And(F.SameQ(F.Head(F.Slot1), S.Power),
+              F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), S.Rational))));
+
+      POWER_TIMES_FUNCTION_MATCHER = initPowerTimesFunction();
     }
 
     private static void getRuleASTStatic() {
       INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7000});
       UtilityFunctionCtors.getRuleASTRubi45();
-
-      // ISymbol[] rubiSymbols = {S.Derivative, S.D};
-      // for (int i = 0; i < rubiSymbols.length; i++) {
-      // INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
-      // }
     }
   }
 
@@ -217,8 +217,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   public static final Integrate CONST = new Integrate();
 
   public static final Set<ISymbol> INT_RUBI_FUNCTIONS = new HashSet<ISymbol>();
-
-  public static final Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
 
   public static final AtomicBoolean INTEGRATE_RULES_READ = new AtomicBoolean(false);
 
@@ -246,7 +244,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       IExpr x = holdallAST.arg2().isList() ? holdallAST.arg2().first() : holdallAST.arg2();
       return RadicalCoefficients.collect(result, x, engine).orElse(result);
     } finally {
-      EVAL_DEPTH.set(depth);
+      if (depth == 0) {
+        // don't leave a boxed 0 behind in pooled threads
+        EVAL_DEPTH.remove();
+      } else {
+        EVAL_DEPTH.set(depth);
+      }
     }
   }
 
@@ -280,7 +283,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
       boolean evaled = false;
       IExpr result;
-      if (argSize < 2) { // || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      if (argSize < 2) {
         return F.NIL;
       }
       if (engine.isNumericMode()) {
@@ -293,9 +296,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (temp.isFreeAST(S.NIntegrate)) {
             return temp;
           }
-
-          // Invalid integration variable or limit(s) in `1`.
-          return Errors.printMessage(S.Integrate, "ilim", F.List(arg2), engine);
+          // NIntegrate left the integral unevaluated (and already reported why); the limits
+          // themselves are a valid {x,a,b} list here, so an "ilim" message would be misleading.
+          return F.NIL;
         }
         return F.NIL;
       }
@@ -401,13 +404,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if (arg1.equals(x)) {
         // Integrate[x_,x_Symbol] -> x^2 / 2
         return Times(F.C1D2, Power(arg1, F.C2));
-      }
-      boolean showSteps = false;
-      if (showSteps) {
-        // if (DEBUG_EXPR.contains(arg1)) {
-        // System.exit(-1);
-        // }
-        DEBUG_EXPR.add(arg1);
       }
       if (arg1.isAST()) {
         final IAST fx = (IAST) arg1;
@@ -516,13 +512,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (result.isPresent()) {
           IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
-              IAST integrate = F.Integrate(f.first(), f.second());
-              // integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
-              return integrate;
+              return F.Integrate(f.first(), f.second());
             } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
-              IAST integrate = F.Integrate(f.first(), f.second());
-              // integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
-              return integrate;
+              return F.Integrate(f.first(), f.second());
             }
             return F.NIL;
           });
@@ -761,80 +753,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
   }
 
-  // /**
-  // * Try to integrate {@code 1/p(x)} where {@code p} is a univariate polynomial in {@code x} of
-  // * degree ≥ 5 that appears irreducible over Q (no rational roots detected). Returns a
-  // * {@code RootSum} antiderivative:
-  // *
-  // * <pre>
-  // * RootSum[(#^n + ...)&, (Log[x - #1] / p'(#1))&]
-  // * </pre>
-  // *
-  // * @param function the integrand expression
-  // * @param x the integration variable
-  // * @param engine the evaluation engine
-  // * @return the {@code RootSum} antiderivative, or {@link F#NIL} if not applicable
-  // */
-  // private static IExpr integrateOneOverPoly(final IExpr function, final IExpr x,
-  // EvalEngine engine) {
-  // // Match Power[poly, -1] i.e. poly^(-1)
-  // if (!function.isPower()) {
-  // return F.NIL;
-  // }
-  // IExpr base = function.base();
-  // IExpr exponent = function.exponent();
-  // if (!exponent.isMinusOne()) {
-  // return F.NIL;
-  // }
-  // // base must be a polynomial in x
-  // IExpr poly = base;
-  //
-  // // Determine degree
-  // IExpr degExpr = engine.evaluate(F.Exponent(poly, x));
-  // if (!degExpr.isInteger()) {
-  // return F.NIL;
-  // }
-  // int deg = degExpr.toIntDefault();
-  // if (deg < 5) {
-  // // Degrees ≤ 4 have closed-form radical solutions;
-  // // leave for Rubi / standard partial fraction rules
-  // return F.NIL;
-  // }
-  //
-  // // Check that poly is actually a polynomial in x (no x in denominators, etc.)
-  // IExpr polyExpanded = engine.evaluate(F.ExpandAll(poly));
-  // IExpr coeffList = engine.evaluate(F.CoefficientList(polyExpanded, x));
-  // if (!coeffList.isList()) {
-  // return F.NIL;
-  // }
-  //
-  // // Quick rational-root screen: check if Factor splits off a linear factor
-  // IExpr factored = engine.evaluate(F.Factor(polyExpanded));
-  // // If factored differs from polyExpanded and contains a degree-1 factor, bail out
-  // // to let partial fractions handle it
-  // if (!factored.equals(polyExpanded)) {
-  // // Contains factorable parts → partial fractions already handle this
-  // return F.NIL;
-  // }
-  //
-  // // Build p'(x)
-  // IExpr dpoly = engine.evaluate(F.D(polyExpanded, x));
-  //
-  // // Build Function bodies by replacing x → Slot1 (#1)
-  // IExpr polyInSlot = engine.evaluate(F.ReplaceAll(polyExpanded, F.Rule(x, F.Slot1)));
-  // IExpr dpolyInSlot = engine.evaluate(F.ReplaceAll(dpoly, F.Rule(x, F.Slot1)));
-  //
-  // // polyFn = (polyInSlot)& i.e. Function[polyInSlot]
-  // IExpr polyFn = F.Function(polyInSlot);
-  //
-  // // formBody = Log[x - #1] / p'(#1)
-  // IExpr logArg = F.Subtract(x, F.Slot1);
-  // IExpr formBody = F.Divide(F.Log(logArg), dpolyInSlot);
-  // IExpr formFn = F.Function(formBody);
-  //
-  // return F.RootSum(polyFn, formFn);
-  // }
-
   /**
    * Integrates the given <code>function</code>, by analyzing, if its a multiplication with a
    * {@link S#Boole}. Example: <code>Integrate(Boole(condition)*f(x), {x,-Infinity,Infinity})</code>
@@ -960,9 +878,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         IASTAppendable appendableList = list.copyAppendable();
         appendableList.set(0, S.f4);
         appendableList.appendArgs(naryFunction.rest());
-        return POWER_TIMES_FUNCION_MATCHER.apply(appendableList);
+        return POWER_TIMES_FUNCTION_MATCHER.apply(appendableList);
       }
-      return POWER_TIMES_FUNCION_MATCHER.apply(list);
+      return POWER_TIMES_FUNCTION_MATCHER.apply(list);
     }
     return F.NIL;
   }
@@ -986,17 +904,21 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Integrate forms of <code>Abs()</code> or <code>Abs()^n</code> with <code>n^n</code> integer.
+   * Integrate forms of <code>Abs()</code> or <code>Abs()^n</code> with <code>n</code> integer.
    *
-   * @param function
-   * @param x assumes to be an element of the Reals
-   * @return
+   * <p>
+   * Every returned antiderivative is real and continuous through the roots of the
+   * <code>Abs()</code> argument (the integrand is locally integrable there), so the results stay
+   * valid for definite integration by the fundamental theorem of calculus.
+   *
+   * @param function the integrand
+   * @param x the integration variable, assumed to be an element of the reals
+   * @return the antiderivative, {@link S#Undefined} as a marker that ends the integration cascade
+   *         (the integral is then left unevaluated), or {@link F#NIL} if this method does not apply
    */
   private static IExpr integrateAbs(IAST function, final IExpr x) {
-    IExpr constant = F.C0;
     if (function.isAST1() && function.first().equals(x)) {
-      IAST f1 = function;
-      IExpr head = f1.head();
+      IExpr head = function.head();
       if (head.equals(S.RealAbs)) {
         return F.Times(F.C1D2, x, F.RealAbs(x));
       } else if (head.equals(S.RealSign)) {
@@ -1006,92 +928,60 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
     if (x.isRealResult()) {
       if (function.isAbs()) {
-        // Abs(x)
-        IAST abs = function;
-        IExpr[] lin = abs.arg1().linearPower(x);
+        // Abs(l0 + l1 * x^exp)
+        IExpr[] lin = function.arg1().linearPower(x);
         if (lin != null && !lin[1].isZero() && lin[0].isRealResult() && lin[1].isRealResult()
             && lin[2].isInteger()) {
-          // Abs(l0 + l1 * x^exp)
-
           IExpr l0 = lin[0];
           IExpr l1 = lin[1];
           IInteger exp = (IInteger) lin[2];
-          constant = F.Divide(F.Negate(l0), l1);
           if (exp.isOne()) {
-            // Piecewise({{(-l0)*x - (l1*x^2)/2, x <= constant}}, l0^2/Pi + l0*x + (l1*x^2)/2)
-            return F.Piecewise( //
-                F.list(F.list( //
-                    F.Plus(F.Times(F.CN1, l0, S.x), F.Times(F.CN1D2, l1, F.Sqr(S.x))),
-                    F.LessEqual(S.x, constant))),
-                F.Plus(F.Times(F.Sqr(l0), F.Power(S.Pi, F.CN1)), F.Times(l0, S.x),
-                    F.Times(F.C1D2, l1, F.Sqr(S.x))));
+            // u*Abs(u)/(2*l1) with u = l0+l1*x is the antiderivative of Abs(u) which is
+            // continuous through the root of u
+            IExpr u = F.Plus(l0, F.Times(l1, x));
+            return F.Divide(F.Times(u, F.Abs(u)), F.Times(F.C2, l1));
+          }
+          if (exp.isEven()) {
+            // x^exp >= 0 everywhere (x != 0 for negative exp), so l0 + l1*x^exp is sign-definite
+            // exactly when l0 and l1 have the same sign - only then may Abs() be dropped
+            IInteger expP1 = exp.inc();
+            IExpr dropped =
+                F.Plus(F.Times(l0, x), F.Times(F.Power(expP1, F.CN1), l1, F.Power(x, expP1)));
+            if (l0.isNonNegativeResult() && l1.isNonNegativeResult()) {
+              return dropped;
+            }
+            if (l0.isNonPositiveResult() && l1.isNonPositiveResult()) {
+              return F.Negate(dropped);
+            }
           } else if (exp.isMinusOne()) {
-            // Abs(l0 + l1 * x^(-1))
-
-            if (!l0.isZero()) {
-              // Piecewise({{l0*x + l1*Log(x), x <= -(l1/l0)},
-              // {(-l0)*x - l1*(2 - I*l1 - Log(l1)) + l1*(-2 + I*l1 + Log(l1)) - l1*Log(x),
-              // Inequality(-(l1/l0), Less, x, LessEqual, 0)}}, l0*x + l1*Log(x))
-              return F.Piecewise(F.list(F.list( //
-                  F.Plus(F.Times(l0, S.x), F.Times(l1, F.Log(S.x))),
-                  F.LessEqual(S.x, F.Times(F.CN1, F.Power(l0, F.CN1), l1))),
-                  F.list(
-                      F.Plus(F.Times(F.CN1, l0, S.x),
-                          F.Times(F.C2, l1, F.Plus(F.CN2, F.Times(F.CI, l1), F.Log(l1))),
-                          F.Times(F.CN1, l1, F.Log(S.x))),
-                      F.And(F.Less(F.Times(F.CN1, F.Power(l0, F.CN1), l1), S.x),
-                          F.LessEqual(S.x, F.C0)))),
-                  F.Plus(F.Times(l0, S.x), F.Times(l1, F.Log(S.x))));
-            }
-          } else if (exp.isPositive()) {
-            IInteger expP1 = exp.inc();
-            if (exp.isEven()) {
-              // l0*x + (l1*x^(expP1))/(expP1)
-              return F.Plus(F.Times(l0, S.x), F.Times(expP1.inverse(), l1, F.Power(S.x, expP1)));
-            }
-          } else if (exp.isNegative()) {
-            IInteger expP1 = exp.inc();
-            if (exp.isEven()) {
-              // -(l1/(expP1*x^expP1)) + l0*x
-              return F.Plus(F.Times(l0, S.x),
-                  F.Times(F.CN1, F.Power(expP1, F.CN1), l1, F.Power(S.x, F.Negate(expP1))));
+            IExpr temp = integrateAbsLinearOverX(l0, l1, x);
+            if (temp.isPresent()) {
+              return temp;
             }
           }
         }
       } else if (function.isPower() && function.base().isAbs() && function.exponent().isInteger()) {
-        IAST power = function;
-        IAST abs = (IAST) power.base();
-
+        // Abs(l0 + l1 * x) ^ exp
+        IAST abs = (IAST) function.base();
         IExpr[] lin = abs.arg1().linear(x);
         if (lin != null && !lin[1].isZero() && lin[0].isRealResult() && lin[1].isRealResult()) {
-          // Abs(l0 + l1 * x) ^ exp
           IExpr l0 = lin[0];
           IExpr l1 = lin[1];
-          constant = F.Divide(F.Negate(l0), l1);
-          IInteger exp = (IInteger) power.exponent();
+          IInteger exp = (IInteger) function.exponent();
           IInteger expP1 = exp.inc();
-          if (exp.isNegative()) {
-            if (exp.isMinusOne()) {
-              // Abs(l0 + l1 * x) ^ (-1)
-
-              return F.Piecewise( //
-                  F.list(F.list(F.Negate(F.Log(x)), F.LessEqual(x, constant))), //
-                  F.Log(x));
-            }
-            if (exp.isEven()) {
-              return F.Times(expP1.inverse().negate(), F.Power(x, expP1));
-            }
-            return F.Piecewise( //
-                F.list(F.list(F.Times(expP1.inverse().negate(), F.Power(x, expP1)),
-                    F.LessEqual(x, constant))), //
-                F.Times(expP1.inverse(), F.Power(x, expP1)));
+          IExpr u = F.Plus(l0, F.Times(l1, x));
+          if (exp.isMinusOne()) {
+            // Sign(u)*Log(Abs(u))/l1 - the root of u is a non-integrable singularity, the
+            // antiderivative is valid on each side of it
+            return F.Divide(F.Times(F.Sign(u), F.Log(F.Abs(u))), l1);
           }
           if (exp.isEven()) {
-            return F.Divide(F.Power(x, expP1), expP1);
+            // Abs(u)^exp == u^exp for even integer exponents
+            return F.Divide(F.Power(u, expP1), F.Times(expP1, l1));
           }
-          return F.Piecewise( //
-              F.list(F.list(F.Divide(F.Power(x, expP1), expP1.negate()), F.LessEqual(x, constant))), //
-              F.Divide(F.Power(x, expP1), expP1));
+          // odd exp != -1: u^exp*Abs(u)/((exp+1)*l1) == Abs(u)^exp*u/((exp+1)*l1), continuous
+          // through the root of u for positive exp
+          return F.Divide(F.Times(F.Power(u, exp), F.Abs(u)), F.Times(expP1, l1));
         }
       }
     }
@@ -1102,14 +992,46 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Antiderivative of <code>Abs(l0 + l1/x)</code> for real <code>x</code>, currently only when
+   * <code>l0</code> and <code>l1</code> are both positive or both negative (otherwise
+   * {@link F#NIL}).
+   *
+   * <p>
+   * With <code>p0 = Abs(l0), p1 = Abs(l1)</code> the integrand equals <code>Abs(p0 + p1/x)</code>,
+   * which changes sign at its root <code>r = -p1/p0 &lt; 0</code> and has a non-integrable pole at
+   * <code>x = 0</code>. With the primitive <code>P(x) = p0*x + p1*Log(Abs(x))</code> of
+   * <code>p0 + p1/x</code>, the antiderivative is <code>P</code> outside of <code>(r, 0)</code> and
+   * <code>2*P(r) - P</code> inside - real, and continuous at <code>r</code>.
+   */
+  private static IExpr integrateAbsLinearOverX(IExpr l0, IExpr l1, IExpr x) {
+    final IExpr p0, p1;
+    if (l0.isPositiveResult() && l1.isPositiveResult()) {
+      p0 = l0;
+      p1 = l1;
+    } else if (l0.isNegativeResult() && l1.isNegativeResult()) {
+      p0 = l0.negate();
+      p1 = l1.negate();
+    } else {
+      return F.NIL;
+    }
+    IExpr root = F.Divide(F.Negate(p1), p0);
+    IExpr primitive = F.Plus(F.Times(p0, x), F.Times(p1, F.Log(F.Abs(x))));
+    // 2*P(r) with P(r) = -p1 + p1*Log(p1/p0)
+    IExpr constant = F.Times(F.C2, p1, F.Plus(F.CN1, F.Log(F.Divide(p1, p0))));
+    return F.Piecewise(F.list(F.list( //
+        F.Subtract(constant, primitive), //
+        F.And(F.Less(root, x), F.LessEqual(x, F.C0)))), //
+        primitive);
+  }
+
+  /**
    * Recursively collects potential branch points by finding arguments of Log() and Power()
    * (fractional) that depend on the integration variable x.
    *
    * @param expr The expression to scan.
    * @param x The integration variable.
    */
-  private static IAST collectBranchPoints(IExpr expr, IExpr x, IExpr lower, IExpr upper,
-      EvalEngine engine) {
+  private static IAST collectBranchPoints(IExpr expr, IExpr x, EvalEngine engine) {
     if (expr.isFree(x, true)) {
       return F.NIL;
     }
@@ -1227,8 +1149,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IExpr upper = xValueList.arg3();
 
 
-    // Branch points (Log arguments, Root bases)
-    IAST potentialSingularityEquations = collectBranchPoints(function, x, lower, upper, engine);
+    // Branch points / poles of the antiderivative (Log arguments, fractional or negative powers,
+    // ...). A polynomial antiderivative has none - skip the FunctionSingularities/Solve round
+    // trip, which would otherwise run for every simple definite integral.
+    IAST potentialSingularityEquations =
+        function.isPolynomial(F.list(x)) ? F.NIL : collectBranchPoints(function, x, engine);
 
     // Solve and Split
     if (potentialSingularityEquations.isPresent()) {
@@ -1298,11 +1223,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
+    if (!lowerLimit.isFreeAST(S.Limit)) {
+      // the limit stayed unevaluated - neither convergence nor divergence can be decided, so
+      // don't assemble a result containing raw Limit() calls; leave the integral unevaluated
+      return F.NIL;
+    }
     IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
     if (!upperLimit.isSpecialsFree() || upperLimit.isInterval() || upperLimit.isIntervalData()) {
       // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
+    }
+    if (!upperLimit.isFreeAST(S.Limit)) {
+      return F.NIL;
     }
 
 
@@ -1345,11 +1278,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           }
           return filterCollector;
         }
-
-        // IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
-        // if (temp.isPresent()) {
-        // return temp;
-        // }
       }
 
       if (arg1AST.size() >= 3 && arg1AST.isFree(S.Integrate) && arg1AST.isPlusTimesPower()) {
@@ -1357,18 +1285,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, true);
           if (parts.isPresent()) {
             IExpr temp = AlgebraUtil.partsApart(parts.get(), x, engine);
-            if (temp.isPresent() && !temp.equals(arg1)) {
-              if (temp.isPlus()) {
-                return mapIntegrate((IAST) temp, x);
-              }
-              // return F.Integrate(temp, x);
-              // return mapIntegrate((IAST) temp, x);
+            if (temp.isPresent() && !temp.equals(arg1) && temp.isPlus()) {
+              return mapIntegrate((IAST) temp, x);
             }
-            // if (temp.isPlus()) {
-            // return mapIntegrate((IAST) temp, x);
-            // }
-            // return Algebra.partialFractionDecompositionRational(new
-            // PartialFractionIntegrateGenerator(x),parts, x);
           }
         }
       }
@@ -1390,43 +1309,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * </ul>
    *
    * @param ast a <code>List(...)</code> or <code>Plus(...)</code> ast
-   * @param x the integ ration variable
+   * @param x the integration variable
    * @return
    */
   private static IExpr mapIntegrate(IAST ast, final IExpr x) {
     return ast.mapThread(F.Integrate(F.Slot1, x), 1);
   }
 
-  /**
-   * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by
-   * parts</a>
-   *
-   * @param arg1
-   * @param symbol
-   * @return
-   */
-  // private static IExpr integratePolynomialByParts(final IAST arg1, IExpr symbol,
-  // EvalEngine engine) {
-  // IASTAppendable fTimes = F.TimesAlloc(arg1.size());
-  // IASTAppendable gTimes = F.TimesAlloc(arg1.size());
-  // collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
-  // IExpr g = gTimes.oneIdentity1();
-  // IExpr f = fTimes.oneIdentity1();
-  // // conflicts with Rubi 4.5 integration rules
-  // // only call integrateByParts for simple Times() expressions
-  // if (f.isOne() || g.isOne()) {
-  // return F.NIL;
-  // }
-  // return integrateByParts(f, g, symbol, engine);
-  // }
 
-  /**
-   * Use the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a> to
-   * integrate the expression.
-   *
-   * @param ast
-   * @return
-   */
   /**
    * Run the Rubi rules under a time budget, see {@link Config#INTEGRATE_RUBI_TIMELIMIT_MILLIS}.
    *
@@ -1513,28 +1403,38 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast, EvalEngine engine) {
-    // EvalEngine engine = EvalEngine.get();
     if (arg1.isFreeAST(s -> s.isSymbol() && ((ISymbol) s).isContext(Context.RUBI))) {
       int limit = engine.getRecursionLimit();
       boolean quietMode = engine.isQuietMode();
       if (arg1.isNumericFunctionAST() || INT_RUBI_FUNCTIONS.contains(arg1.topHead())
           || arg1.topHead().getSymbolName().startsWith("§")) {
 
-        boolean newCache = false;
-        try {
-
-          if (engine.rubiASTCache != null) {
-            IExpr result = engine.rubiASTCache.getIfPresent(ast);
-            if (result != null) { // &&engine.getRecursionCounter()>0) {
-              if (result.isPresent()) {
-                return result;
-              }
-              return callRestIntegrate(arg1, x, engine);
-            }
-          } else {
-            newCache = true;
-            engine.rubiASTCache = CacheBuilder.newBuilder().maximumSize(50).build();
+        // Persistent per-engine LRU memo for Rubi results. Entry semantics:
+        // - F.NIL: in-progress sentinel - the same integral is already being matched further up
+        // the call stack (breaks rule-recursion cycles),
+        // - the input `ast` itself: the rules matched nothing for this integral,
+        // - anything else: the rule result.
+        // Rubi answers depend on the active assumptions, so while assumptions are set the memo
+        // is neither trusted nor written - only the cycle sentinel is used (and removed again in
+        // the finally block below, because it is left as F.NIL on that path).
+        final boolean assumptionsActive = engine.getAssumptions() != null;
+        if (engine.rubiASTCache == null) {
+          engine.rubiASTCache =
+              CacheBuilder.newBuilder().maximumSize(Config.INTEGRATE_RUBI_CACHE_SIZE).build();
+        }
+        IExpr cached = engine.rubiASTCache.getIfPresent(ast);
+        if (cached != null) {
+          if (cached.isNIL()) {
+            return callRestIntegrate(arg1, x, engine);
           }
+          if (!assumptionsActive) {
+            if (cached.equals(ast)) {
+              return F.NIL;
+            }
+            return cached;
+          }
+        }
+        try {
           try {
             engine.setQuietMode(true);
             if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
@@ -1542,111 +1442,52 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             }
 
             engine.rubiASTCache.put(ast, F.NIL);
-            IExpr temp = S.Integrate.evalDownRule(EvalEngine.get(), ast);
+            IExpr temp = S.Integrate.evalDownRule(engine, ast);
             if (temp.isPresent()) {
               if (temp.equals(ast)) {
+                if (!assumptionsActive) {
+                  engine.rubiASTCache.put(ast, ast);
+                }
                 return F.NIL;
               }
-              if (temp.isAST()) {
+              if (!assumptionsActive && temp.isAST()) {
                 engine.rubiASTCache.put(ast, temp);
               }
               return temp;
             }
+            if (!assumptionsActive) {
+              // remember that the rules have no match for this integral
+              engine.rubiASTCache.put(ast, ast);
+            }
           } catch (RecursionLimitExceeded rle) {
-            // engine.printMessage("Integrate(Rubi recursion): " +
-            // Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
-            // + " exceeded: " + ast.toString());
             engine.setRecursionLimit(limit);
-            // LOGGER.log(engine.getLogLevel(), "Integrate(Rubi recursion)", rle);
             return F.NIL;
-          } catch (ApfloatInterruptedException | PreemptingException ex) {
+          } catch (ApfloatInterruptedException | PreemptingException | AbortException ex) {
+            // a user Abort[] (or an engine abort) must terminate the whole evaluation instead
+            // of being treated as "the rules failed, try the next integration stage"
             throw ex;
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
             engine.setRecursionLimit(limit);
             return Errors.printMessage(S.Integrate, rex, engine);
-            // LOGGER.log(engine.getLogLevel(),
-            // "Integrate Rubi recursion limit {} RuntimeException: {}",
-            // Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT, ast, rex);
-            // return F.NIL;
           }
 
-        } catch (AbortException ae) {
-          // LOGGER.debug("Integrate.integrateByRubiRules() aborted", ae);
         } catch (final FailedException fe) {
-          // LOGGER.debug("Integrate.integrateByRubiRules() failed", fe);
+          // Rubi utility functions use FailedException as internal control flow, treat as "no
+          // result from the rules"
         } finally {
           engine.setRecursionLimit(limit);
-          if (newCache) {
-            engine.rubiASTCache = null;
+          IExpr sentinel = engine.rubiASTCache.getIfPresent(ast);
+          if (sentinel != null && sentinel.isNIL()) {
+            // an exception/assumption path left the in-progress sentinel behind: this attempt
+            // is retryable (budget, recursion limit, assumptions), don't memoize it as failure
+            engine.rubiASTCache.invalidate(ast);
           }
           engine.setQuietMode(quietMode);
         }
       }
     }
     return F.NIL;
-  }
-
-  /**
-   * Integrate by parts rule: <code>
-   * Integrate(f'(x) * g(x), x) = f(x) * g(x) - Integrate(f(x) * g'(x),x )</code> . See
-   * <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
-   *
-   * @param f <code>f(x)</code>
-   * @param g <code>g(x)</code>
-   * @param x
-   * @return <code>f(x) * g(x) - Integrate(f(x) * g'(x),x )</code>
-   */
-  private static IExpr integrateByParts(IExpr f, IExpr g, IExpr x, EvalEngine engine) {
-    int limit = engine.getRecursionLimit();
-    try {
-      if (limit <= 0 || limit > Config.INTEGRATE_BY_PARTS_RECURSION_LIMIT) {
-        engine.setRecursionLimit(Config.INTEGRATE_BY_PARTS_RECURSION_LIMIT);
-      }
-      IExpr firstIntegrate = engine.evaluate(F.Integrate(f, x));
-      if (!firstIntegrate.isFreeAST(Integrate)) {
-        return F.NIL;
-      }
-      IExpr gDerived = F.eval(F.D(g, x));
-      IExpr second2Integrate = F.eval(F.Integrate(F.Times(gDerived, firstIntegrate), x));
-      if (!second2Integrate.isFreeAST(Integrate)) {
-        return F.NIL;
-      }
-      return F.eval(F.Subtract(F.Times(g, firstIntegrate), second2Integrate));
-    } catch (RecursionLimitExceeded rle) {
-      engine.setRecursionLimit(limit);
-    } finally {
-      engine.setRecursionLimit(limit);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Collect all found polynomial terms into <code>polyTimes</code> and the rest into <code>
-   * restTimes</code>.
-   *
-   * @param timesAST an AST representing a <code>Times[...]</code> expression.
-   * @param symbol
-   * @param polyTimes the polynomial terms part
-   * @param restTimes the non-polynomil terms part
-   */
-  private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol,
-      IASTAppendable polyTimes, IASTAppendable restTimes) {
-    IExpr temp;
-    for (int i = 1; i < timesAST.size(); i++) {
-      temp = timesAST.get(i);
-      if (temp.isFree(symbol, true)) {
-        polyTimes.append(temp);
-        continue;
-      } else if (temp.equals(symbol)) {
-        polyTimes.append(temp);
-        continue;
-      } else if (temp.isPolynomial(F.list(symbol))) {
-        polyTimes.append(temp);
-        continue;
-      }
-      restTimes.append(temp);
-    }
   }
 
   @Override
@@ -1667,15 +1508,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     super.setUp(newSymbol);
 
     if (!Config.JAS_NO_THREADS) {
+      final Thread initThread;
       if (Config.THREAD_FACTORY != null) {
-        INIT_THREAD = Config.THREAD_FACTORY.newThread(new IntegrateInitializer());
+        initThread = Config.THREAD_FACTORY.newThread(new IntegrateInitializer());
       } else {
-        INIT_THREAD = new Thread(new IntegrateInitializer(), "IntegrateInitializer");
+        initThread = new Thread(new IntegrateInitializer(), "IntegrateInitializer");
       }
-      INIT_THREAD.start();
+      initThread.start();
     } else {
       // see #evaluate() method
     }
-
   }
 }

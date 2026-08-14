@@ -19,8 +19,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * coefficients written over different radical extensions, and <code>Plus</code> cannot add those:
  *
  * <pre>
- * -Sqrt(2/5)/Sqrt(1+Sqrt(5))*ArcTan(u) + 2/5*Sqrt(5*(2+Sqrt(5)))*ArcTan(u)
- *     - 1/5*Sqrt(-10+5*Sqrt(5))*ArcTan(u)
+ * -Sqrt(2 / 5) / Sqrt(1 + Sqrt(5)) * ArcTan(u) + 2 / 5 * Sqrt(5 * (2 + Sqrt(5))) * ArcTan(u)
+ *     - 1 / 5 * Sqrt(-10 + 5 * Sqrt(5)) * ArcTan(u)
  * </pre>
  *
  * is one term, <code>Sqrt(1/2*(1+Sqrt(5)))*ArcTan(u)</code>. Summing the coefficients is only half
@@ -31,11 +31,14 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <p>
  * The pass is gated on a nested radical actually occurring in a collected coefficient and only
- * replaces the expression when it gets smaller, so it is inert for the ordinary output of the rules.
+ * replaces the expression when it gets smaller, so it is inert for the ordinary output of the
+ * rules.
  */
 public class RadicalCoefficients {
 
-  /** Re-entrancy guard: the pass evaluates expressions and must not collect its own intermediates. */
+  /**
+   * Re-entrancy guard: the pass evaluates expressions and must not collect its own intermediates.
+   */
   private static final ThreadLocal<Boolean> RUNNING = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   /** Coefficients above this size are not run through {@code RootReduce}. */

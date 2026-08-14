@@ -31,7 +31,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * it is what
  *
  * <pre>
- * Integrate((2*Log(x)^2-Log(x)-x^2)/(Log(x)^3-x^2*Log(x)), x)
+ * Integrate((2 * Log(x) ^ 2 - Log(x) - x ^ 2) / (Log(x) ^ 3 - x ^ 2 * Log(x)), x)
  * </pre>
  *
  * needs: over {@code t = Log(x)} it is {@code 1/t + ((x-1)/(2*x))/(t-x) + ((x+1)/(2*x))/(t+x)},
@@ -87,7 +87,8 @@ public class PrimitiveTowerIntegration {
    * The structure-theorem step for rationally <em>dependent</em> logarithms. Two {@code Log}
    * monomials such as {@code Log(x)} and {@code Log(x^2) = 2*Log(x)} are not algebraically
    * independent, so the tower must not treat them as separate transcendentals -
-   * {@code 1/(Log(x)+Log(x^2))} is {@code 1/(3*Log(x))}, whose integral is {@code LogIntegral(x)/3}.
+   * {@code 1/(Log(x)+Log(x^2))} is {@code 1/(3*Log(x))}, whose integral is
+   * {@code LogIntegral(x)/3}.
    *
    * <p>
    * The relations are exposed by {@code PowerExpand} ({@code Log(u^n) -> n*Log(u)},
@@ -195,8 +196,8 @@ public class PrimitiveTowerIntegration {
     // it only splits over the factorization it is given, and a partly factored denominator
     // (t*(t^2-x^2)) stops one step short of the simple poles the logarithmic test needs.
     IExpr fraction = engine.evaluate(F.Together(F.Divide(numerator, denominator)));
-    IExpr expanded = engine.evaluate(
-        F.Divide(F.Expand(F.Numerator(fraction)), F.Expand(F.Denominator(fraction))));
+    IExpr expanded = engine
+        .evaluate(F.Divide(F.Expand(F.Numerator(fraction)), F.Expand(F.Denominator(fraction))));
     IExpr apart = engine.evaluate(F.Apart(expanded, t));
     IAST terms = apart.isPlus() ? (IAST) apart : F.Plus(apart);
     IASTAppendable sum = F.PlusAlloc(terms.size());
@@ -240,15 +241,16 @@ public class PrimitiveTowerIntegration {
    *
    * <p>
    * The step is the primitive-case analogue of ordinary Hermite reduction (Bronstein, <i>Symbolic
-   * Integration I</i>, ch. 5.3). Writing the derivation as {@code D}, and using that for a primitive
-   * monomial {@code D(t - r) = D(t) - D(r)} lies in the base field (free of {@code t}),
+   * Integration I</i>, ch. 5.3). Writing the derivation as {@code D}, and using that for a
+   * primitive monomial {@code D(t - r) = D(t) - D(r)} lies in the base field (free of {@code t}),
    *
    * <pre>
-   * D(B/(t-r)^(m-1)) = D(B)/(t-r)^(m-1) - (m-1)*B*D(t-r)/(t-r)^m
+   * D(B / (t - r) ^ (m - 1)) = D(B) / (t - r) ^ (m - 1) - (m - 1) * B * D(t - r) / (t - r) ^ m
    * </pre>
    *
    * so a pole {@code P/(t-r)^m} is lowered by choosing the constant (in {@code t}) {@code B =
-   * -P(r)/((m-1)*D(t-r))} and carrying {@code (Q - D(B))/(t-r)^(m-1)} forward, where {@code Q = (P +
+   * -P(r)/((m-1)*D(t-r))} and carrying {@code (Q - D(B))/(t-r)^(m-1)} forward, where
+   * {@code Q = (P +
    * (m-1)*B*D(t-r))/(t-r)}. Iterating down to {@code m = 1} yields the rational part
    * {@code sum B_i/(t-r)^i} and an order-1 remainder. Restricting to a linear factor keeps "mod
    * {@code (t-r)}" a plain evaluation at {@code t = r}, so no polynomial arithmetic over the base
@@ -270,9 +272,8 @@ public class PrimitiveTowerIntegration {
       return null;
     }
     // the denominator must be (up to a t-free factor) a power of a single linear factor t - r
-    IExpr radical =
-        engine.evaluate(F.Cancel(F.Divide(denominator, F.PolynomialGCD(denominator,
-            F.D(denominator, t)))));
+    IExpr radical = engine.evaluate(
+        F.Cancel(F.Divide(denominator, F.PolynomialGCD(denominator, F.D(denominator, t)))));
     if (engine.evaluate(F.Exponent(radical, t)).toIntDefault() != 1) {
       return null; // repeated factor is not linear
     }
@@ -306,8 +307,7 @@ public class PrimitiveTowerIntegration {
         return null;
       }
       rationalPart.append(F.Divide(b, F.Power(linear, F.ZZ(m - 1))));
-      IExpr shifted =
-          engine.evaluate(F.ExpandAll(F.Plus(pm, F.Times(F.ZZ(m - 1), b, dv))));
+      IExpr shifted = engine.evaluate(F.ExpandAll(F.Plus(pm, F.Times(F.ZZ(m - 1), b, dv))));
       IExpr quotient = engine.evaluate(F.Cancel(F.Divide(shifted, linear)));
       if (!engine.evaluate(F.PolynomialQ(quotient, t)).isTrue()) {
         return null; // exact division failed - not the expected shape
@@ -363,7 +363,10 @@ public class PrimitiveTowerIntegration {
     return engine.evaluate(F.Times(lambda, F.Log(argument)));
   }
 
-  /** Hand a single term back to {@code Integrate}; {@link F#NIL} unless it comes back in closed form. */
+  /**
+   * Hand a single term back to {@code Integrate}; {@link F#NIL} unless it comes back in closed
+   * form.
+   */
   private static IExpr integrateByEngine(IExpr expr, IExpr x, EvalEngine engine) {
     IExpr integrated;
     try {
