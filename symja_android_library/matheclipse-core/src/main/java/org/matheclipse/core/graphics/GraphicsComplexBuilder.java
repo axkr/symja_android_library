@@ -104,11 +104,15 @@ public class GraphicsComplexBuilder {
       vertexMap.put(key, vertexCounter++);
       vertices.append(F.List(F.num(x), F.num(y), F.num(z)));
 
-      if (useNormals && normal != null && normal.length >= 3) {
-        normals.append(F.List(F.num(normal[0]), F.num(normal[1]), F.num(normal[2])));
+      // the normal and colour lists are indexed by vertex number, so a vertex without one still
+      // has to contribute an entry or everything after it refers to the wrong point
+      if (useNormals) {
+        normals.append(normal != null && normal.length >= 3
+            ? F.List(F.num(normal[0]), F.num(normal[1]), F.num(normal[2]))
+            : F.List(F.C0, F.C0, F.C1));
       }
-      if (useColors && color != null) {
-        colors.append(color);
+      if (useColors) {
+        colors.append(color != null ? color : S.Automatic);
       }
     }
     return vertexMap.get(key);

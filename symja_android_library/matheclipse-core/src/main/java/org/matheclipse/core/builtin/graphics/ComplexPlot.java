@@ -72,7 +72,13 @@ public class ComplexPlot extends ListPlot {
     int plotPoints = 100; // Higher default for raster-like quality
     String colorFunction = "Automatic";
 
-    for (IExpr opt : options) {
+    IExpr colorFunctionSpec =
+        GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic);
+    boolean colorFunctionScaling =
+        !GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True).isFalse();
+    // the options array holds resolved values, not the rules the caller wrote,
+    // so the option rules are read back off the original call
+    for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
@@ -83,6 +89,9 @@ public class ComplexPlot extends ListPlot {
         }
       }
     }
+    // A name this plot knows selects one of its own shading schemes. Anything else -- a gradient
+    // name, or a function -- colours the plot itself, and takes over from the schemes.
+    boolean namedScheme = colorFunctionSpec == S.Automatic || isNamedScheme(colorFunction);
 
     double x0 = 0, y0 = 0, x1 = 0, y1 = 0;
     try {
@@ -100,9 +109,10 @@ public class ComplexPlot extends ListPlot {
     double dy = (y1 - y0) / plotPoints;
 
     IASTAppendable primitives = F.ListAlloc();
-    primitives.append(F.EdgeForm(S.None));
+    // the grid becomes a single raster rather than one rectangle per cell
+    IExpr[][] cells = new IExpr[plotPoints][plotPoints];
 
-    // Generate grid of colored rectangles
+    // Generate the colour grid
     for (int i = 0; i < plotPoints; i++) {
       double rMid = x0 + (i + 0.5) * dx;
       for (int j = 0; j < plotPoints; j++) {
@@ -114,26 +124,26 @@ public class ComplexPlot extends ListPlot {
           IExpr valExpr = f.replaceAll(F.List(F.Rule(zVar, zVal)));
           IExpr res = engine.evaluate(valExpr);
 
-          double[] hsb = complexToHSB(res, colorFunction);
-          if (hsb != null) {
-            Color c = Color.getHSBColor((float) hsb[0], (float) hsb[1], (float) hsb[2]);
-            IExpr rgb = F.RGBColor(c.getRed() / 255.0, c.getGreen() / 255.0, c.getBlue() / 255.0);
-
-            double rx0 = x0 + i * dx;
-            double ry0 = y0 + j * dy;
-            // Add 1% overlap to close visual gaps in addition to crispEdges
-            double rx1 = rx0 + dx * 1.01;
-            double ry1 = ry0 + dy * 1.01;
-
-            primitives.append(rgb);
-            primitives.append(
-                F.Rectangle(F.List(F.num(rx0), F.num(ry0)), F.List(F.num(rx1), F.num(ry1))));
+          IExpr rgb = F.NIL;
+          if (namedScheme) {
+            double[] hsb = complexToHSB(res, colorFunction);
+            if (hsb != null) {
+              Color c = Color.getHSBColor((float) hsb[0], (float) hsb[1], (float) hsb[2]);
+              rgb = F.RGBColor(c.getRed() / 255.0, c.getGreen() / 255.0, c.getBlue() / 255.0);
+            }
+          } else {
+            rgb = paintedColor(colorFunctionSpec, res, colorFunctionScaling, engine);
+          }
+          if (rgb.isPresent()) {
+            // j counts upwards from the bottom, while the raster rows are given top first
+            cells[plotPoints - 1 - j][i] = rgb;
           }
         } catch (RuntimeException rex) {
           return Errors.printMessage(S.ComplexPlot, rex);
         }
       }
     }
+    primitives.append(GraphicsOptions.rasterTopFirst(cells, x0, y0, x1, y1));
 
     graphicsOptions.setBoundingBox(new double[] {x0, x1, y0, y1});
 
@@ -143,6 +153,77 @@ public class ComplexPlot extends ListPlot {
     }
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /** Shading schemes this plot draws itself, as opposed to colours a caller supplies. */
+  private static boolean isNamedScheme(String name) {
+    switch (name) {
+      case "Automatic":
+      case "None":
+      case "GlobalAbs":
+      case "MaxAbs":
+      case "CyclicArg":
+      case "CyclicLogAbs":
+      case "CyclicLogAbsArg":
+      case "CyclicReImLogAbs":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * The colour a caller's own {@code ColorFunction} gives a value.
+   *
+   * <p>
+   * A function is offered the value itself first. A gradient name takes a single number instead, so
+   * the phase is used: scaled to 0..1 over a full turn, or left as the angle in radians when
+   * {@code ColorFunctionScaling -> False}. A function that wanted a number rather than the value
+   * gets the same phase.
+   *
+   * @return the colour, or {@link F#NIL} when nothing usable came back
+   */
+  private static IExpr paintedColor(IExpr spec, IExpr value, boolean scaling, EvalEngine engine) {
+    if (!spec.isString()) {
+      IExpr direct = evalColor(F.unaryAST1(spec, value), engine);
+      if (direct.isPresent()) {
+        return direct;
+      }
+    }
+    double phase = phaseOf(value);
+    if (Double.isNaN(phase)) {
+      return F.NIL;
+    }
+    double argument = scaling ? (phase + Math.PI) / (2.0 * Math.PI) : phase;
+    IExpr function = spec.isString() ? F.unaryAST1(S.ColorData, spec) : spec;
+    return evalColor(F.unaryAST1(function, F.num(argument)), engine);
+  }
+
+  /** The phase of a complex value, or {@code NaN} when it has none. */
+  private static double phaseOf(IExpr value) {
+    if (!value.isNumber()) {
+      return Double.NaN;
+    }
+    try {
+      Complex c = value.evalfc();
+      double re = c.getRealPart();
+      double im = c.getImaginaryPart();
+      if (!Double.isFinite(re) || !Double.isFinite(im)) {
+        return Double.NaN;
+      }
+      return Math.atan2(im, re);
+    } catch (RuntimeException rex) {
+      return Double.NaN;
+    }
+  }
+
+  private static IExpr evalColor(IExpr call, EvalEngine engine) {
+    try {
+      IExpr color = engine.evaluate(call);
+      return GraphicsOptions.isColorExpr(color) ? color : F.NIL;
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
   }
 
   /**
@@ -254,6 +335,8 @@ public class ComplexPlot extends ListPlot {
     defaults[GraphicsOptions.X_AXES] = S.False;
     defaults[GraphicsOptions.X_ASPECTRATIO] = S.Automatic;
 
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.densityExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

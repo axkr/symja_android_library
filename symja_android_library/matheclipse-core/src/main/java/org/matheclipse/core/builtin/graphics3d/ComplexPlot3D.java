@@ -1,23 +1,24 @@
 package org.matheclipse.core.builtin.graphics3d;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Implementation of ComplexPlot3D that generates an optimized GraphicsComplex AST. Maps: - Height
- * (z) -> Magnitude |f(z)| - Color -> Argument Arg(f(z))
+ * {@code ComplexPlot3D[f, {z, zmin, zmax}]} - the modulus of a complex function as height, with its
+ * argument as colour.
  */
 public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
 
@@ -26,190 +27,117 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-
+    if (argSize < 2 || !ast.arg2().isList()) {
+      return F.NIL;
+    }
     IExpr function = ast.arg1();
-    IExpr rangeSpec = ast.arg2();
+    IAST range = (IAST) ast.arg2();
+    if (range.argSize() < 1 || !range.arg1().isSymbol()) {
+      return Errors.printMessage(S.ComplexPlot3D, "pllim", F.list(range), engine);
+    }
+    ISymbol zVar = (ISymbol) range.arg1();
 
-    ISymbol zVar = null;
     double minRe = -2.0;
     double maxRe = 2.0;
     double minIm = -2.0;
     double maxIm = 2.0;
-
-    if (rangeSpec.isList()) {
-      IAST range = (IAST) rangeSpec;
-      if (range.argSize() >= 1 && range.arg1().isSymbol()) {
-        zVar = (ISymbol) range.arg1();
-
-        if (range.argSize() == 3) {
-          IComplexNum min = toComplex(engine.evalN(range.arg2()));
-          IComplexNum max = toComplex(engine.evalN(range.arg3()));
-          minRe = min.reDoubleValue();
-          minIm = min.imDoubleValue();
-          maxRe = max.reDoubleValue();
-          maxIm = max.imDoubleValue();
-        }
-      }
+    if (range.argSize() >= 3) {
+      IComplexNum min = toComplex(engine.evalN(range.arg2()));
+      IComplexNum max = toComplex(engine.evalN(range.arg3()));
+      minRe = min.reDoubleValue();
+      minIm = min.imDoubleValue();
+      maxRe = max.reDoubleValue();
+      maxIm = max.imDoubleValue();
+    }
+    if (!(maxRe > minRe) || !(maxIm > minIm)) {
+      return Errors.printMessage(S.ComplexPlot3D, "pllim", F.list(range), engine);
     }
 
-    if (zVar == null) {
-      return F.NIL;
-    }
-
-    int plotPoints = 50;
-    if (options[0].isInteger()) {
-      int optPoints = options[0].toIntDefault();
-      if (optPoints > 10) {
-        plotPoints = optPoints;
-      }
-    }
-
-    int rows = plotPoints;
-    int cols = plotPoints;
-
+    int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS], 50);
+    final int rows = samples[1];
+    final int cols = samples[0];
     double dRe = (maxRe - minRe) / (cols - 1);
     double dIm = (maxIm - minIm) / (rows - 1);
 
-    Vector3D[][] points3D = new Vector3D[rows][cols];
-    IExpr[][] colorData = new IExpr[rows][cols];
-    double[] zValues = new double[rows * cols];
-    int zCount = 0;
+    Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[Plot3DTools.X_COLOR_FUNCTION],
+        options[Plot3DTools.X_COLOR_FUNCTION_SCALING], engine);
 
-    // Evaluate Function & Coordinates
+    double[][][] grid = new double[rows][cols][];
+    IExpr[][] colors = new IExpr[rows][cols];
+    double[] heights = new double[rows * cols];
+    int finiteCount = 0;
+
     for (int i = 0; i < rows; i++) {
       double im = minIm + i * dIm;
       for (int j = 0; j < cols; j++) {
         double re = minRe + j * dRe;
-
-        IExpr zVal = F.complexNum(re, im);
-        IExpr fz = engine.evalN(F.subst(function, F.Rule(zVar, zVal)));
-
-        double height = 0.0;
+        double height = Double.NaN;
         double arg = 0.0;
-
-        if (fz instanceof INumber) {
-          IComplexNum cn = toComplex(fz);
-          height = cn.dabs();
-          arg = cn.complexArg().evalfNaN();
-        }
-
-        if (Double.isFinite(height)) {
-          zValues[zCount++] = height;
-        }
-
-        points3D[i][j] = new Vector3D(re, im, height);
-
-        double hue = (arg + Math.PI) / (2 * Math.PI);
-        colorData[i][j] = F.Hue(F.num(hue), F.num(0.6), F.num(1.0));
-      }
-    }
-
-    // Determine max Z to clamp poles
-    double maxZValue = 100.0;
-    if (zCount > 0) {
-      double[] validZ = new double[zCount];
-      System.arraycopy(zValues, 0, validZ, 0, zCount);
-      double[] range = GraphicsUtil.automaticPlotRange3D(validZ);
-      if (range[1] > range[0]) {
-        maxZValue = range[1];
-      }
-    }
-
-    // Pass 1.5: Clamp Z in points3D
-    for (int i = 0; i < rows; i++) {
-      for (int j = 0; j < cols; j++) {
-        Vector3D p = points3D[i][j];
-        double h = p.getZ();
-        if (Double.isInfinite(h) || Double.isNaN(h) || h > maxZValue) {
-          points3D[i][j] = new Vector3D(p.getX(), p.getY(), maxZValue);
-        }
-      }
-    }
-
-    // Calculate Normals & Add to Builder
-    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, true);
-
-    IExpr meshOption = options[5];
-    if (meshOption.isFalse() || meshOption.equals(S.None)) {
-      IASTAppendable edgeForm = F.ast(S.EdgeForm);
-      edgeForm.append(S.None);
-      builder.setStyle(S.Orange, edgeForm);
-    } else {
-      builder.setStyle(S.Orange);
-    }
-
-
-    int[][] indices = new int[rows][cols];
-
-    for (int i = 0; i < rows; i++) {
-      for (int j = 0; j < cols; j++) {
-        Vector3D p = points3D[i][j];
-
-        int iPrev = (i > 0) ? i - 1 : i;
-        int iNext = (i < rows - 1) ? i + 1 : i;
-        int jPrev = (j > 0) ? j - 1 : j;
-        int jNext = (j < cols - 1) ? j + 1 : j;
-
-        Vector3D u = points3D[i][jNext].subtract(points3D[i][jPrev]);
-        Vector3D v = points3D[iNext][j].subtract(points3D[iPrev][j]);
-
-        Vector3D n;
         try {
-          n = u.crossProduct(v).normalize();
-          if (n.getZ() < 0) {
-            n = n.negate();
+          Plot3DTools.monitor(options[Plot3DTools.X_EVALUATION_MONITOR], engine);
+          IExpr value = engine.evalN(F.subst(function, F.Rule(zVar, F.complexNum(re, im))));
+          if (value instanceof INumber) {
+            IComplexNum cn = toComplex(value);
+            height = cn.dabs();
+            arg = cn.complexArg().evalfNaN();
           }
-        } catch (Exception e) {
-          n = new Vector3D(0, 0, 1);
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
         }
-
-        double[] normalArr = new double[] {n.getX(), n.getY(), n.getZ()};
-
-        indices[i][j] = builder.addVertex(p.getX(), p.getY(), p.getZ(), normalArr, colorData[i][j]);
+        if (Double.isFinite(height)) {
+          heights[finiteCount++] = height;
+        }
+        grid[i][j] = new double[] {re, im, height};
+        double hue = (arg + Math.PI) / (2 * Math.PI);
+        // the argument runs round the colour wheel, which is the convention for a domain colouring
+        colors[i][j] = colorMap != null ? colorMap.apply(re, im, hue)
+            : F.Hue(F.num(hue), F.num(0.6), F.num(1.0));
       }
     }
-
-    // Pass 3: Generate Quads
-    for (int i = 0; i < rows - 1; i++) {
-      for (int j = 0; j < cols - 1; j++) {
-        int p1 = indices[i][j];
-        int p2 = indices[i][j + 1];
-        int p3 = indices[i + 1][j + 1];
-        int p4 = indices[i + 1][j];
-
-        if (p1 != -1 && p2 != -1 && p3 != -1 && p4 != -1) {
-          builder.addPolygon(new int[] {p1, p2, p3, p4});
-        }
-      }
-    }
-
-    IExpr graphicsComplex = builder.build();
-    if (graphicsComplex.equals(F.NIL)) {
+    if (finiteCount == 0) {
       return F.NIL;
     }
 
-    IASTAppendable result = F.ast(S.Graphics3D);
-    result.append(graphicsComplex);
+    // a pole would otherwise take the whole box with it, so the height is capped at the body of
+    // the data and the pole comes out as a flat topped column
+    double[] valid = new double[finiteCount];
+    System.arraycopy(heights, 0, valid, 0, finiteCount);
+    double[] plotRange = GraphicsUtil.automaticPlotRange3D(valid);
+    double maxHeight = plotRange[1] > plotRange[0] ? plotRange[1] : 1.0;
 
-    result.append(F.Rule(S.PlotRange, S.Automatic));
-    result.append(F.Rule(S.BoxRatios, F.List(F.num(1), F.num(1), F.num(0.4))));
-    result.append(F.Rule(S.Axes, S.True));
-    result.append(F.Rule(S.Lighting, F.stringx("Neutral")));
-
-    if (ast.argSize() > 2) {
-      for (int i = 3; i <= ast.argSize(); i++) {
-        if (ast.get(i).isRuleAST()) {
-          result.append(ast.get(i));
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        double h = grid[i][j][2];
+        if (!Double.isFinite(h) || h > maxHeight) {
+          grid[i][j][2] = maxHeight;
         }
       }
     }
 
-    return result;
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, true);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, options[Plot3DTools.X_PLOT_STYLE]),
+        options[Plot3DTools.X_MESH]);
+    Plot3DTools.addSurface(builder, grid, false, false, colors, true, options[Plot3DTools.X_MESH],
+        options[Plot3DTools.X_MESH_STYLE]);
+    IExpr graphicsComplex = builder.build();
+    if (graphicsComplex.isNIL()) {
+      return F.NIL;
+    }
+    // the rim of the domain, drawn outside the GraphicsComplex so it keeps its own colour rather
+    // than being shaded like the surface underneath it
+    IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
+    if (!boundaryStyle.isNone() && grid.length > 1 && grid[0].length > 1) {
+      graphicsComplex = F.List(graphicsComplex,
+          boundaryStyle.equals(S.Automatic) ? S.Black : boundaryStyle, boundaryLine(grid));
+    }
+
+    return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
+        new IExpr[] {F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
+            F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS), F.Rule(S.Axes, S.True),
+            // the colour carries the meaning here, so the lights must not tint it
+            F.Rule(S.Lighting, F.stringx("Neutral"))});
   }
 
-  /**
-   * Helper to convert various numeric types to IComplexNum
-   */
   private IComplexNum toComplex(IExpr expr) {
     if (expr instanceof INumber) {
       if (expr instanceof IComplexNum) {
@@ -221,22 +149,58 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
       if (expr.isNumber()) {
         return F.complexNum(expr.evalfc());
       }
-    } catch (Exception e) {
-      // fall through
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
     }
     return F.complexNum(0.0, 0.0);
   }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_3;
+    return ARGS_2_INFINITY;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
+  }
+
+  /** The four edges of the sampled rectangle, as one closed line through the surface. */
+  private static IExpr boundaryLine(double[][][] grid) {
+    int n = grid.length;
+    int m = grid[0].length;
+    IASTAppendable points = F.ListAlloc(2 * (n + m));
+    for (int i = 0; i < n; i++) {
+      points.append(point(grid[i][0]));
+    }
+    for (int j = 1; j < m; j++) {
+      points.append(point(grid[n - 1][j]));
+    }
+    for (int i = n - 2; i >= 0; i--) {
+      points.append(point(grid[i][m - 1]));
+    }
+    for (int j = m - 2; j >= 0; j--) {
+      points.append(point(grid[0][j]));
+    }
+    return F.unaryAST1(S.Line, points);
+  }
+
+  private static IAST point(double[] xyz) {
+    return F.List(F.num(xyz[0]), F.num(xyz[1]), F.num(xyz[2]));
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol,
-        new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.ColorFunction, S.DataRange,
-            S.PlotLegends, S.Mesh},
-        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.None, S.True});
+    // The surface is read by its colour, so draws no mesh over it and outlines the domain
+    // in black instead. Both are changes of default only: they are applied with override so that
+    // the options keep the positions the shared X_* constants name them by. Declaring them ahead
+    // of the shared block instead would put every later option one place along, and each plot
+    // would quietly start reading its neighbour's value.
+    GraphicsOptions.OptionSet options = Plot3DTools
+        .frameExtras(Plot3DTools.surfaceExtras(Plot3DTools.base3D()) //
+            .add(S.Automatic, S.DataRange)) //
+        .override(S.Mesh, S.None) //
+        .override(S.BoundaryStyle, S.Black);
+    setOptions(newSymbol, options.keys(), options.values());
   }
 }

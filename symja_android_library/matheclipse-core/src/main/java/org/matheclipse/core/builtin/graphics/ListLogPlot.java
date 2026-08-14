@@ -28,6 +28,13 @@ public class ListLogPlot extends ListPlot {
 
     // Use standard options initially (no data transformation)
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
 
     // Generate raw points
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
@@ -64,7 +71,9 @@ public class ListLogPlot extends ListPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false, false));
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.listPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(),
+            GraphicsOptions.listPlotDefaultOptionValues(false, false)));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

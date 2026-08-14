@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -37,6 +38,13 @@ public class ListPolarPlot extends ListPlot {
         IASTMutable listPlot = ast.setAtCopy(1, table);
 
         GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+        // PlotMarkers and Mesh are family options appended after the positional block, so they
+        // are read from the call rather than by index
+        graphicsOptions
+            .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+        graphicsOptions.readColorFunction(originalAST);
+        graphicsOptions.applyPlotTheme(originalAST);
         IAST graphicsPrimitives = listPlot(listPlot, options, graphicsOptions, engine);
         if (graphicsPrimitives.isPresent()) {
           graphicsOptions.addPadding();
@@ -102,7 +110,12 @@ public class ListPolarPlot extends ListPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false, false));
+    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
+    // a polar curve reaches its own extent in every direction, so clipping it to the plot range
+    // would cut the outermost points off
+    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.listPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

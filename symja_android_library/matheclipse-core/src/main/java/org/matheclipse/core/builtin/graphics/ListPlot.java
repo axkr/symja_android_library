@@ -48,7 +48,14 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
 
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
     String graphicsPrimitivesStr = listPlotECharts(ast, options, graphicsOptions, engine);
     if (graphicsPrimitivesStr != null) {
       StringBuilder jsControl = new StringBuilder();
@@ -160,8 +167,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine,
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
     IExpr arg1 = ast.arg1();
     if (!checkList(engine, arg1)) {
@@ -179,6 +185,14 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     GraphicsOptions graphicsOptions =
         setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
+    graphicsOptions.forwardOptions(originalAST);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
 
     // Pre-process Labeled curves
     if (arg1.isList()) {
@@ -265,7 +279,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (graphicsOptions.filling() != S.None) {
       try {
         IAST newPrimitives = processFilling(graphicsPrimitives, graphicsOptions.filling(),
-            graphicsOptions.fillingStyle(), 0.0);
+            graphicsOptions.fillingStyle(), 0.0, graphicsOptions.effectiveYScale());
         graphicsPrimitives = newPrimitives;
       } catch (RuntimeException rex) {
       }
@@ -300,8 +314,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       for (int j = 1; j < listOfLists.size(); j++) {
         IAST curveData = (IAST) listOfLists.get(j);
 
-        IExpr defaultColor =
-            GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+        IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
+            F.NIL, graphicsOptions.curveThickness());
         IExpr style = defaultColor;
         if (!plotStyle.isNone()) {
           IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, j - 1);
@@ -366,8 +380,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       IAST pointList = (IAST) arg1;
       if (pointList.isList()) {
         if (pointList.isListOfPoints(2)) {
-          IExpr defaultColor =
-              GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+          IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
+              F.NIL, graphicsOptions.curveThickness());
           IExpr style = defaultColor;
           if (plotStyle.isPresent() && plotStyle != S.None) {
             IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
@@ -385,8 +399,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           for (int i = 1; i < listOfLists.size(); i++) {
             pointList = (IAST) listOfLists.get(i);
 
-            IExpr defaultColor =
-                GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+            IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
+                F.NIL, graphicsOptions.curveThickness());
             IExpr style = defaultColor;
             if (plotStyle.isPresent() && plotStyle != S.None) {
               IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, i - 1);
@@ -407,8 +421,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         }
 
       }
-      IExpr defaultColor =
-          GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+      IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
+          F.NIL, graphicsOptions.curveThickness());
       IExpr style = defaultColor;
       if (plotStyle.isPresent() && plotStyle != S.None) {
         IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
@@ -875,6 +889,18 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
   }
 
+  /**
+   * The graphics options of a call, including the ones the positional block does not carry.
+   *
+   * @param originalAST the unevaluated call, read for the options that are not positional
+   */
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    graphicsOptions.forwardOptions(originalAST);
+    return graphicsOptions;
+  }
+
   protected GraphicsOptions setGraphicsOptions(final IExpr[] options,
       final IBuiltInSymbol[] optionSymbols, final EvalEngine engine) {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
@@ -884,8 +910,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false, false));
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.listPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(),
+            GraphicsOptions.listPlotDefaultOptionValues(false, false)));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 
   protected static void extractCurvesRecursive(IExpr expr, List<CurveData> curves,
@@ -978,6 +1006,29 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return F.Polygon(polyPts);
   }
 
+  /** True for the logarithmic y scalings the plot family uses. */
+  protected static boolean isLogScale(String scale) {
+    return scale != null && (scale.equalsIgnoreCase("Log") || scale.equalsIgnoreCase("Log10")
+        || scale.equalsIgnoreCase("Log2"));
+  }
+
+  /** The smallest strictly positive y value across all curves, or 0 when there is none. */
+  private static double smallestPositiveY(List<CurveData> curves) {
+    double smallest = Double.MAX_VALUE;
+    for (CurveData curve : curves) {
+      for (int i = 1; i < curve.points.size(); i++) {
+        IExpr point = curve.points.get(i);
+        if (point.isList() && ((IAST) point).argSize() >= 2) {
+          double y = ((IAST) point).arg2().evalfNaN();
+          if (Double.isFinite(y) && y > 0 && y < smallest) {
+            smallest = y;
+          }
+        }
+      }
+    }
+    return smallest == Double.MAX_VALUE ? 0 : smallest;
+  }
+
   private static void processFillingAction(int srcIndex, IExpr target, List<CurveData> curves,
       IASTAppendable out, IExpr globalStyle, double baseline) {
     CurveData srcCurve = curves.get(srcIndex);
@@ -1028,12 +1079,25 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
   }
 
+  /**
+   * @param yScale the y axis scaling, so that a logarithmic axis can be filled to the bottom of the
+   *        data instead of to zero
+   */
   protected static IAST processFilling(IExpr primitives, IExpr filling, IExpr fillingStyle,
-      double baseline) {
+      double baseline, String yScale) {
     List<CurveData> curves = new ArrayList<>();
     extractCurvesRecursive(primitives, curves, null);
     if (curves.isEmpty())
       return (IAST) primitives;
+    if (isLogScale(yScale)) {
+      // Zero lies at minus infinity on a logarithmic axis, so filling down to it would stretch the
+      // visible range by however far the converter clamps the logarithm, burying the data at the
+      // top of the picture. Fill to the smallest value actually plotted instead.
+      double smallest = smallestPositiveY(curves);
+      if (smallest > 0) {
+        baseline = smallest;
+      }
+    }
     IASTAppendable fillingPrimitives = F.ListAlloc();
     IExpr defaultStyle = fillingStyle;
 

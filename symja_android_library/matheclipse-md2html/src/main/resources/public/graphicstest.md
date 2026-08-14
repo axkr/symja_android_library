@@ -145,3 +145,102 @@ Graphics[Line[{{-1, -1}, {3,3}, {1, 1}, {4, 5}}],Axes->True, PlotRange->{0.0, 2.
 ```mma
 TreeForm[a+(b*q*s)^(2*y)+Sin[c]^(3-z)]
 ```
+## Primitives
+
+```mma
+Graphics[{Circle[{0, 0}, {2, 1}], Red, Circle[{0, 0}, 1, {0, Pi/2}], Blue, Disk[{4, 0}, 1, {0, 3 Pi/4}]}]
+```
+
+```mma
+Graphics[{Annulus[{0, 0}, {1, 2}], Red, Annulus[{5, 0}, {1, 2}, {0, Pi}]}]
+```
+
+```mma
+Graphics[Table[{Hue[n/8], RegularPolygon[{2 n, 0}, 1, n + 2]}, {n, 0, 6}]]
+```
+
+```mma
+Graphics[{LightBlue, EdgeForm[Black], StadiumShape[{{0, 0}, {3, 1}}, 0.6]}]
+```
+
+```mma
+Graphics[{Yellow, EdgeForm[Thick], Polygon[{{0, 0}, {4, 0}, {4, 4}, {0, 4}} -> {{{1, 1}, {2, 1}, {2, 2}, {1, 2}}}]}]
+```
+
+```mma
+Graphics[{Raster[Table[N[Sin[i] Cos[j]], {i, 0, 6, 0.25}, {j, 0, 6, 0.25}]]}]
+```
+
+```mma
+Graphics[{Red, HalfPlane[{{0, 0}, {1, 1}}, {1, -1}], Black, InfiniteLine[{{0, 0}, {1, 1}}]}]
+```
+
+```mma
+Graphics[{Thick, JoinedCurve[{Line[{{0, 0}, {1, 1}}], BezierCurve[{{1, 1}, {2, 2}, {3, 0}, {4, 1}}]}]}]
+```
+
+```mma
+Graphics[{Orange, FilledCurve[{Line[{{0, 0}, {2, 1}, {4, 0}, {2, -1}}]}]}]
+```
+
+## Transformations
+
+```mma
+Graphics[Table[Rotate[Rectangle[{0, 0}, {2, 1}], n Pi/6], {n, 0, 5}]]
+```
+
+```mma
+Graphics[Translate[{Red, Disk[{0, 0}, 0.5]}, Table[{n, Sin[n]}, {n, 0, 6, 0.5}]]]
+```
+
+```mma
+Graphics[{Scale[Rectangle[{0, 0}, {1, 1}], {3, 1}], Red, Scale[Rectangle[{0, 0}, {1, 1}], {1, 3}]}]
+```
+
+```mma
+Graphics[GeometricTransformation[{Blue, Rectangle[{0, 0}, {2, 1}]}, RotationTransform[Pi/5]]]
+```
+
+## Directives
+
+```mma
+Graphics[Table[{Blend[{Red, Yellow, Green}, n/8], Rectangle[{n, 0}, {n + 0.9, 1}]}, {n, 0, 8}]]
+```
+
+```mma
+Graphics[{Opacity[0.4], Red, Disk[{0, 0}, 1], Blue, Disk[{1, 0}, 1], Green, Disk[{0.5, 1}, 1]}]
+```
+
+```mma
+Graphics[{Arrowheads[{-0.06, 0.06}], Arrow[{{0, 0}, {2, 1}}], Red, Arrowheads[Large], Arrow[{{0, 1}, {2, 2}}, 0.2]}]
+```
+
+```mma
+Graphics[Table[Text[Style["size " <> ToString[n], FontSize -> n, Bold], {0, -n}], {n, 8, 20, 4}]]
+```
+
+```mma
+Graphics[{Dashed, Line[{{0, 0}, {3, 0}}], Dotted, Line[{{0, 1}, {3, 1}}], DotDashed, Line[{{0, 2}, {3, 2}}]}]
+```
+
+## Options
+
+```mma
+Graphics[Disk[], Frame -> True, FrameLabel -> {"x axis", "y axis"}, PlotLabel -> "a disk in a frame"]
+```
+
+```mma
+Graphics[Circle[], Axes -> True, GridLines -> Automatic, GridLinesStyle -> Directive[LightGray, Dashed]]
+```
+
+```mma
+Graphics[{Red, Disk[]}, Frame -> True, Background -> LightYellow, ImageSize -> 250]
+```
+
+```mma
+Graphics[Disk[{0, 0}, 3], PlotRange -> {{-1, 1}, {-1, 1}}, PlotRangeClipping -> True, Frame -> True]
+```
+
+```mma
+Graphics[Line[{{0, 0}, {1, 1}}], Axes -> True, Ticks -> {{{0, "start"}, {1, "end"}}, Automatic}]
+```

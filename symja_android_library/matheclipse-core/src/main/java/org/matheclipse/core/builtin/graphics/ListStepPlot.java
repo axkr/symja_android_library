@@ -60,8 +60,24 @@ public class ListStepPlot extends ListPlot {
 
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setGraphicOptions(GraphicsOptions.listPlotDefaultOptionKeys(), options, engine);
+    // this plot builds its options object directly rather than through setGraphicsOptions, so the
+    // options that live outside the positional block have to be picked up here too
+    graphicsOptions.forwardOptions(originalAST);
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
 
     boolean joined = graphicsOptions.isJoined();
+    // ExtentSize shortens each step, so the steps become detached bars rather than a staircase;
+    // Full (the default) runs each step all the way to the next point.
+    IExpr extentOpt = GraphicsOptions.optionValue(originalAST, S.ExtentSize, S.Automatic);
+    double extent = 1.0;
+    if (extentOpt != S.Automatic && extentOpt != S.Full) {
+      double e = extentOpt.evalfNaN();
+      if (Double.isFinite(e) && e > 0) {
+        extent = Math.min(1.0, e);
+      }
+    }
+    IExpr stepMarkers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic);
 
     IAST dataList = (IAST) dataArg;
     if (dataList.isAssociation()) {
@@ -87,24 +103,26 @@ public class ListStepPlot extends ListPlot {
       for (int i = 1; i < dataList.size(); i++) {
         IExpr subData = dataList.get(i);
         if (subData.isList()) {
-          IExpr style = GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+          IExpr style = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(), F.NIL,
+              graphicsOptions.curveThickness());
           IExpr userStyle =
               GraphicsOptions.getPlotStyle(options[GraphicsOptions.X_PLOTSTYLE], i - 1);
           if (userStyle.isPresent())
             style = F.Directive(style, userStyle);
 
-          generated = generateStepPrimitives(primitives, (IAST) subData, stepType,
-              joined, style, graphicsOptions, engine);
+          generated = generateStepPrimitivesSub(primitives, (IAST) subData, stepType, joined, style,
+              graphicsOptions, engine);
         }
       }
     } else {
-      IExpr style = GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+      IExpr style = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(), F.NIL,
+          graphicsOptions.curveThickness());
       IExpr userStyle = GraphicsOptions.getPlotStyle(options[GraphicsOptions.X_PLOTSTYLE], 0);
       if (userStyle.isPresent())
         style = F.Directive(style, userStyle);
 
-      generated = generateStepPrimitives(primitives, dataList, stepType, joined, style,
-          graphicsOptions, engine);
+      generated = generateStepPrimitives(primitives, dataList, stepType, joined && extent >= 1.0,
+          style, graphicsOptions, engine, extent, stepMarkers);
     }
 
     if (!generated) {
@@ -113,8 +131,15 @@ public class ListStepPlot extends ListPlot {
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
-  private boolean generateStepPrimitives(IASTAppendable primitives, IAST data, StepType type,
+  private boolean generateStepPrimitivesSub(IASTAppendable primitives, IAST data, StepType type,
       boolean joined, IExpr style, GraphicsOptions opts, EvalEngine engine) {
+    return generateStepPrimitives(primitives, data, type, joined, style, opts, engine, 1.0,
+        S.Automatic);
+  }
+
+  private boolean generateStepPrimitives(IASTAppendable primitives, IAST data, StepType type,
+      boolean joined, IExpr style, GraphicsOptions opts, EvalEngine engine, double extent,
+      IExpr markers) {
 
     Function<IExpr, IExpr> fx = opts.xFunction();
     Function<IExpr, IExpr> fy = opts.yFunction();
@@ -199,13 +224,22 @@ public class ListStepPlot extends ListPlot {
         xNext = x + dx;
       }
 
+      if (extent < 1.0) {
+        xNext = x + (xNext - x) * extent;
+      }
+      if (markers.isPresent() && markers != S.Automatic && !markers.isNone() && !Double.isNaN(y)) {
+        IExpr marker =
+            markers.isList() && ((IAST) markers).argSize() > 0 ? ((IAST) markers).arg1() : markers;
+        group.append(F.Text(marker, F.List(F.num(x), F.num(y))));
+      }
+
       double[] pNextVal = (i < n - 1) ? points.get(i + 1) : null;
       double yNextVal = (pNextVal != null) ? pNextVal[1] : Double.NaN;
 
       if (Double.isNaN(y)) {
         // Gap at current index. Finish current line if exists.
         if (currentLine.size() > 1) {
-          group.append(F.Line(currentLine));
+          appendStepCurve(group, currentLine, opts);
           currentLine = F.ListAlloc();
         }
         continue;
@@ -235,7 +269,7 @@ public class ListStepPlot extends ListPlot {
         } else {
           // Break
           if (currentLine.size() > 1) {
-            group.append(F.Line(currentLine));
+            appendStepCurve(group, currentLine, opts);
             currentLine = F.ListAlloc();
           }
         }
@@ -243,7 +277,7 @@ public class ListStepPlot extends ListPlot {
       } else if (type == StepType.LEFT) {
         if (Double.isNaN(yNextVal)) {
           if (currentLine.size() > 1) {
-            group.append(F.Line(currentLine));
+            appendStepCurve(group, currentLine, opts);
             currentLine = F.ListAlloc();
           }
         } else {
@@ -254,13 +288,13 @@ public class ListStepPlot extends ListPlot {
               addScaledPoint(currentLine, xNext, yNextNext, fx, fy);
             } else {
               if (currentLine.size() > 1) {
-                group.append(F.Line(currentLine));
+                appendStepCurve(group, currentLine, opts);
                 currentLine = F.ListAlloc();
               }
             }
           } else {
             if (currentLine.size() > 1) {
-              group.append(F.Line(currentLine));
+              appendStepCurve(group, currentLine, opts);
               currentLine = F.ListAlloc();
             }
           }
@@ -279,7 +313,7 @@ public class ListStepPlot extends ListPlot {
           addScaledPoint(currentLine, xNext, yNextVal, fx, fy);
         } else {
           if (currentLine.size() > 1) {
-            group.append(F.Line(currentLine));
+            appendStepCurve(group, currentLine, opts);
             currentLine = F.ListAlloc();
           }
         }
@@ -288,7 +322,7 @@ public class ListStepPlot extends ListPlot {
 
     // Flush any remaining line
     if (currentLine.size() > 1) {
-      group.append(F.Line(currentLine));
+      appendStepCurve(group, currentLine, opts);
     }
 
     // Handle "Left" Pre-Step (Initial interval ending at first point)
@@ -429,6 +463,13 @@ public class ListStepPlot extends ListPlot {
     return echarts.getJSONStr();
   }
 
+  /** The step line, painted by {@code ColorFunction} when one was asked for. */
+  private static void appendStepCurve(IASTAppendable group, IAST points,
+      GraphicsOptions graphicsOptions) {
+    IAST painted = graphicsOptions.colorCurve(points);
+    group.append(painted.isPresent() ? painted : F.Line(points));
+  }
+
   @Override
   public int status() {
     return ImplementationStatus.EXPERIMENTAL;
@@ -437,7 +478,9 @@ public class ListStepPlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     // Defaults: Joined -> True
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false, true));
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.listPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(),
+            GraphicsOptions.listPlotDefaultOptionValues(false, true)));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

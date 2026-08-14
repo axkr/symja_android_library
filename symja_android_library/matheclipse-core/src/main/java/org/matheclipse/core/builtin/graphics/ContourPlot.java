@@ -30,13 +30,25 @@ public class ContourPlot extends ListPlot {
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
+    // ContourLines draws the level curves themselves; without them only the shading is left.
+    // ContourLabels writes each level's value onto its curve.
+    boolean contourLines =
+        !GraphicsOptions.optionValue(originalAST, S.ContourLines, S.True).isFalse();
+    IExpr contourLabelsOption = GraphicsOptions.optionValue(originalAST, S.ContourLabels, S.None);
+    boolean contourLabels = contourLabelsOption.isTrue() || contourLabelsOption.isAutomatic();
+
     int plotPoints = 25;
+    int maxRecursion = -1;
     int numberOfContours = 10;
     IExpr contourStyle = S.Automatic;
     IExpr contourShading = S.Automatic;
     boolean colorFunctionScaling = true;
+    IExpr colorFunctionOpt = S.Automatic;
+    IExpr meshOpt = S.None;
 
-    for (IExpr opt : options) {
+    // the options array holds resolved values, not the rules the caller wrote,
+    // so the option rules are read back off the original call
+    for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
@@ -60,9 +72,25 @@ public class ContourPlot extends ListPlot {
             case ID.PlotPoints:
               plotPoints = val.toIntDefault(25);
               break;
+            case ID.MaxRecursion:
+              maxRecursion = val.toIntDefault(-1);
+              break;
+            case ID.ColorFunction:
+              colorFunctionOpt = val;
+              break;
+            case ID.Mesh:
+              meshOpt = val;
+              break;
           }
         }
       }
+    }
+
+    // The contours are traced on a fixed grid rather than refined adaptively, so MaxRecursion is
+    // honoured as what it is for: each level doubles the sampling resolution, which is what makes
+    // the traced contours smoother.
+    if (maxRecursion >= 0) {
+      plotPoints = Math.min(400, plotPoints * (1 << Math.min(maxRecursion, 4)));
     }
 
     IExpr functionArg = ast.arg1();
@@ -104,13 +132,21 @@ public class ContourPlot extends ListPlot {
         }
 
         generateContours(primitives, func, xRange, yRange, xVar, yVar, plotPoints, numberOfContours,
-            style, contourShading, colorFunctionScaling, engine, true);
+            style, contourShading, colorFunctionScaling, colorFunctionOpt, engine, true,
+            contourLines, contourLabels);
         count++;
       }
     } else {
       // Single function/equation
       generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, plotPoints,
-          numberOfContours, contourStyle, contourShading, colorFunctionScaling, engine, false);
+          numberOfContours, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
+          engine, false, contourLines, contourLabels);
+    }
+
+    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, xRange[0], yRange[0], xRange[1], yRange[1],
+        plotPoints, plotPoints);
+    if (meshLines.isPresent()) {
+      primitives.append(meshLines);
     }
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
@@ -118,8 +154,11 @@ public class ContourPlot extends ListPlot {
 
   private void generateContours(IASTAppendable primitives, IExpr function, double[] xRange,
       double[] yRange, ISymbol xVar, ISymbol yVar, int plotPoints, int numberOfContours,
-      IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling, EvalEngine engine,
-      boolean isMulti) {
+      IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
+      IExpr colorFunctionOpt, EvalEngine engine, boolean isMulti, boolean contourLines,
+      boolean contourLabels) {
+    java.util.function.DoubleFunction<IExpr> colorMap =
+        GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getShadingColor);
 
     boolean isEquation = false;
     if (function.isAST(S.Equal, 3)) {
@@ -195,7 +234,7 @@ public class ContourPlot extends ListPlot {
           double upper = (k == levels.length - 1) ? maxZ : levels[k + 1];
           double bandZ = (lower + upper) * 0.5;
           double t = (colorFunctionScaling && !isEquation) ? (bandZ - minZ) / (maxZ - minZ) : bandZ;
-          color = getShadingColor(t);
+          color = colorMap.apply(t);
         }
 
         IASTAppendable polygons = F.ListAlloc();
@@ -220,7 +259,7 @@ public class ContourPlot extends ListPlot {
     }
 
     // 4. Contour Lines
-    if (!contourStyle.equals(S.None) && !contourStyle.isFalse()) {
+    if (contourLines && !contourStyle.equals(S.None) && !contourStyle.isFalse()) {
       for (int k = 0; k < levels.length; k++) {
         double level = levels[k];
         IASTAppendable lineSegments = F.ListAlloc();
@@ -256,9 +295,48 @@ public class ContourPlot extends ListPlot {
           for (IExpr line : lineSegments)
             group.append(line);
           primitives.append(group);
+          if (contourLabels) {
+            IExpr label = levelLabel(lineSegments, level);
+            if (label.isPresent()) {
+              primitives.append(label);
+            }
+          }
         }
       }
     }
+  }
+
+  /**
+   * The value of a contour, written where that contour runs.
+   *
+   * <p>
+   * The label goes on the middle segment of the level, which keeps it away from the edges of the
+   * picture where a contour is most likely to be clipped.
+   *
+   * @param lineSegments the {@code Line} primitives making up one level
+   * @param level the value the contour stands for
+   * @return the label, or {@link F#NIL} when the level has no segment to put it on
+   */
+  private static IExpr levelLabel(IAST lineSegments, double level) {
+    if (lineSegments.argSize() < 1) {
+      return F.NIL;
+    }
+    IExpr segment = lineSegments.get(1 + lineSegments.argSize() / 2);
+    if (!segment.isAST(S.Line, 2) || !segment.first().isList()) {
+      return F.NIL;
+    }
+    IAST points = (IAST) segment.first();
+    if (points.argSize() < 2 || !points.arg1().isList() || !points.arg2().isList()) {
+      return F.NIL;
+    }
+    double x =
+        (((IAST) points.arg1()).arg1().evalfNaN() + ((IAST) points.arg2()).arg1().evalfNaN()) / 2.0;
+    double y =
+        (((IAST) points.arg1()).arg2().evalfNaN() + ((IAST) points.arg2()).arg2().evalfNaN()) / 2.0;
+    if (!Double.isFinite(x) || !Double.isFinite(y)) {
+      return F.NIL;
+    }
+    return F.List(S.Black, F.Text(F.num(level), F.List(F.num(x), F.num(y))));
   }
 
   @Override
@@ -499,7 +577,10 @@ public class ContourPlot extends ListPlot {
     optionValues[GraphicsOptions.X_AXES] = S.False;
     optionValues[GraphicsOptions.X_FRAME] = S.True;
     optionValues[GraphicsOptions.X_ASPECTRATIO] = F.C1;
-    setOptions(newSymbol, GraphicsOptions.contourPlotDefaultOptionKeys(), optionValues);
+    GraphicsOptions.OptionSet optionSet =
+        GraphicsOptions.contourExtras(new GraphicsOptions.OptionSet()
+            .add(GraphicsOptions.contourPlotDefaultOptionKeys(), optionValues));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
     // setOptions(newSymbol, //
     // new IBuiltInSymbol[] {S.ContourShading, S.ColorFunctionScaling, S.ContourStyle,
     // S.AspectRatio, S.Frame, S.Axes}, //

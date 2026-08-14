@@ -1,19 +1,22 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Implementation of ListPointPlot3D. Generates a Graphics3D object containing a GraphicsComplex.
- * Supports explicit coordinates {{x,y,z}...} and height arrays {{z...}...}.
+ * {@code ListPointPlot3D[{{x, y, z}, ...}]} - a scatter of points in space, also accepting a
+ * rectangular array of heights.
  */
 public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
 
@@ -22,219 +25,204 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    if (argSize < 1) {
+    if (argSize < 1 || !ast.arg1().isList()) {
       return F.NIL;
     }
-
-    IExpr data = ast.arg1();
-    if (!data.isList()) {
-      return F.NIL;
-    }
-
-    // --- Option Parsing ---
-    IExpr plotStyleOpt = S.Automatic;
-    IExpr dataRangeOpt = S.Automatic;
-
-    if (options.length > 0) {
-      // options are pre-parsed by the engine into the array based on setUp() order
-      // 0: PlotStyle, 1: DataRange
-      if (options.length > 0)
-        plotStyleOpt = options[0];
-      if (options.length > 1)
-        dataRangeOpt = options[1];
-    }
-
-    // --- Data Normalization ---
-    // We need to determine if 'data' is:
-    // 1. A single set of points {{x,y,z}, ...}
-    // 2. A single height map {{z,z...}, {z,z...}}
-    // 3. Multiple sets of points {{{x,y,z}...}, {{x,y,z}...}}
-    // 4. Multiple height maps
-
-    // Heuristic: Check the first element
-    boolean isMultiDataset = false;
-    boolean isHeightMap = false; // true if {z, z...}, false if {x,y,z}
-
-    IAST listData = (IAST) data;
+    IAST listData = (IAST) ast.arg1();
     if (listData.isEmpty()) {
       return F.Graphics3D(F.CEmptyList);
     }
 
+    boolean isMultiDataset = false;
+    boolean isHeightMap = false;
     IExpr first = listData.arg1();
     if (first.isList()) {
       IAST firstList = (IAST) first;
-      // If the first element is a coordinate {x,y,z}, then the whole data is one dataset of points.
-      // If the first element is a list of coordinates {{x,y,z}...} or list of numbers {z,z...},
-      // then 'data' contains multiple items or rows.
-
       if (firstList.isList3() && !firstList.arg1().isList()) {
-        // Case: {{x,y,z}, {x,y,z}} -> Single Dataset, Explicit Coords
+        // {{x,y,z}, ...} - one set of explicit coordinates
         isMultiDataset = false;
-        isHeightMap = false;
+      } else if (!firstList.isEmpty() && firstList.arg1().isList()) {
+        isMultiDataset = true;
+      } else if (!firstList.isEmpty() && firstList.arg1().isNumber()) {
+        isHeightMap = true;
       } else {
-        // It's a list of lists.
-        // Check content of firstList to distinguish "Multiple Datasets" from "Single Height Map"
-        // If firstList contains numbers -> Single Height Map (rows of z)
-        // If firstList contains coordinates -> Multiple Datasets of coords
-
-        if (!firstList.isEmpty() && firstList.arg1().isList()) {
-          // {{{x,y,z}...}, ...}
-          isMultiDataset = true;
-          isHeightMap = false;
-        } else if (!firstList.isEmpty() && firstList.arg1().isNumber()) {
-          // {{z1, z2...}, ...} -> Single Height Map
-          isMultiDataset = false;
-          isHeightMap = true;
-        } else {
-          // Fallback/Edge cases (e.g. empty lists)
-          // Assume MultiDataset if structure suggests depth 3
-          isMultiDataset = true;
-        }
+        isMultiDataset = true;
       }
     }
 
-    // --- Processing ---
-
-    // Master list of all points for GraphicsComplex
-    IASTAppendable allPoints = F.ListAlloc();
-    // List of primitives (Point[...]) to be added to GraphicsComplex
-    IASTAppendable primitives = F.ListAlloc();
-
-    int pointCounter = 0;
-
-    // Helper to wrap single dataset logic
-    // If not multi-dataset, we treat 'data' as a list containing 1 dataset
+    IExpr plotStyle = options[Plot3DTools.X_PLOT_STYLE];
+    IExpr dataRange = options[Plot3DTools.X_DATA_RANGE];
+    IExpr filling = options[Plot3DTools.X_FILLING];
+    IExpr fillingStyle = options[Plot3DTools.X_FILLING_STYLE];
     IAST datasets = isMultiDataset ? listData : F.List(listData);
 
-    // Cycle styles if multiple datasets
-    IAST styles = null;
-    if (plotStyleOpt.isList()) {
-      styles = (IAST) plotStyleOpt;
-    }
-
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
+    boolean any = false;
     for (int i = 1; i < datasets.size(); i++) {
-      IExpr currentData = datasets.get(i);
-      if (!currentData.isList())
+      if (!datasets.get(i).isList()) {
         continue;
-
-      IAST datasetList = (IAST) currentData;
-      IASTAppendable pointIndices = F.ListAlloc();
-
-      if (isHeightMap) {
-        // Process Grid: datasetList is {{z11, z12...}, {z21...}...}
-        // Need DataRange for x, y mapping
-        double xMin = 1.0, xMax = datasetList.argSize(); // Cols (inner size approx)
-        double yMin = 1.0, yMax = datasetList.size() - 1; // Rows
-
-        // Try Parse DataRange -> {{xmin, xmax}, {ymin, ymax}}
-        if (dataRangeOpt.isList() && ((IAST) dataRangeOpt).size() == 3) {
-          IAST dr = (IAST) dataRangeOpt;
-          if (dr.get(1).isList() && dr.get(2).isList()) {
-            // simple numeric eval
-            IExpr xr = dr.get(1);
-            IExpr yr = dr.get(2);
-            xMin = ((IAST) xr).get(1).evalfNaN();
-            xMax = ((IAST) xr).get(2).evalfNaN();
-            yMin = ((IAST) yr).get(1).evalfNaN();
-            yMax = ((IAST) yr).get(2).evalfNaN();
-            if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin)
-                || Double.isNaN(yMax)) {
-              return F.NIL;
-            }
-          }
-        }
-
-        int rowCount = datasetList.size() - 1;
-        for (int r = 1; r <= rowCount; r++) {
-          IExpr rowExpr = datasetList.get(r);
-          if (!rowExpr.isList())
-            continue;
-          IAST row = (IAST) rowExpr;
-          int colCount = row.size() - 1;
-
-          for (int c = 1; c <= colCount; c++) {
-            IExpr zVal = row.get(c);
-            if (zVal.isNumber()) {
-              // Map indices to range
-              // x corresponds to column index c
-              // y corresponds to row index r
-              double x = (colCount > 1) ? xMin + (c - 1) * (xMax - xMin) / (colCount - 1) : xMin;
-              double y = (rowCount > 1) ? yMin + (r - 1) * (yMax - yMin) / (rowCount - 1) : yMin;
-
-              allPoints.append(F.List(F.num(x), F.num(y), zVal));
-              pointCounter++;
-              pointIndices.append(F.ZZ(pointCounter));
-            }
-          }
-        }
-
-      } else {
-        // Process Explicit Coordinates: datasetList is {{x,y,z}, ...}
-        for (int k = 1; k < datasetList.size(); k++) {
-          IExpr pt = datasetList.get(k);
-          if (pt.isList3()) {
-            double x = pt.get(1).evalfNaN();
-            double y = pt.get(2).evalfNaN();
-            double z = pt.get(3).evalfNaN();
-            if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
-              return F.NIL;
-            }
-            allPoints.append(F.List(x, y, z));
-            pointCounter++;
-            pointIndices.append(F.ZZ(pointCounter));
-          }
-        }
       }
-
-      // Create Primitive for this dataset
-      if (pointIndices.size() > 1) {
-        // Add Style Directive if present
-        if (styles != null && styles.size() > 1) {
-          // Cyclic indexing
-          int styleIdx = (i - 1) % (styles.size() - 1) + 1;
-          primitives.append(styles.get(styleIdx));
-        } else if (plotStyleOpt.isAST() && !plotStyleOpt.isList()) {
-          // Single directive for all (if passed as non-list, though typically PlotStyle is a list
-          // or option)
-          // If simple option passed like PlotStyle->Red (not in list), apply it.
-          // Note: AbstractFunctionOptionEvaluator usually puts options in array.
-          // If user said PlotStyle->Red, options[0] is Red.
-          if (i == 1 && !plotStyleOpt.equals(S.Automatic))
-            primitives.append(plotStyleOpt);
-        }
-
-        primitives.append(F.Point(pointIndices));
+      IAST dataset = (IAST) datasets.get(i);
+      IASTAppendable indices = F.ListAlloc(dataset.argSize());
+      List<double[]> coordinates = new ArrayList<>();
+      if (isHeightMap) {
+        addHeightMap(builder, dataset, dataRange, indices, coordinates);
+      } else {
+        addCoordinates(builder, dataset, indices, coordinates);
+      }
+      if (indices.argSize() > 0) {
+        IExpr style = Plot3DTools.curveStyle(i - 1, plotStyle);
+        builder.addPrimitive(style);
+        builder.addPrimitive(F.Point(indices));
+        addFilling(builder, coordinates, filling, fillingStyle, style);
+        any = true;
       }
     }
+    if (!any) {
+      return F.NIL;
+    }
 
-    // --- Result Construction ---
-    IExpr graphicsComplex = F.GraphicsComplex(allPoints, primitives);
-    IASTAppendable result = F.ast(S.Graphics3D);
-    result.append(graphicsComplex);
-
-    // Append standard options
-    result.append(F.Rule(S.PlotRange, S.Automatic));
-    result.append(F.Rule(S.BoxRatios, F.List(F.num(1), F.num(1), F.num(0.4)))); // Default for
-                                                                                // ListPointPlot3D
-    result.append(F.Rule(S.Axes, S.True));
-
-    return result;
+    return Plot3DTools.graphics3D(builder.build(), originalAST, argSize,
+        new IExpr[] {F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
+            F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS), F.Rule(S.Axes, S.True)});
   }
 
+  /**
+   * A rectangular array of heights, laid out over the {@code DataRange} rectangle.
+   *
+   * <p>
+   * The column index runs along x and the row index along y. The extent of each has to come from
+   * the count in that direction: reading both from the row count put the x extent of any array that
+   * was not square in the wrong place.
+   */
+  private static void addHeightMap(GraphicsComplexBuilder builder, IAST rows, IExpr dataRange,
+      IASTAppendable indices, List<double[]> coordinates) {
+    int rowCount = rows.argSize();
+    int colCount = 0;
+    for (int r = 1; r <= rowCount; r++) {
+      if (rows.get(r).isList()) {
+        colCount = Math.max(colCount, ((IAST) rows.get(r)).argSize());
+      }
+    }
+    if (rowCount == 0 || colCount == 0) {
+      return;
+    }
+    double[] x = {1.0, colCount};
+    double[] y = {1.0, rowCount};
+    if (dataRange != null && dataRange.isList() && ((IAST) dataRange).argSize() == 2) {
+      IAST ranges = (IAST) dataRange;
+      double[] parsedX = pair(ranges.arg1());
+      double[] parsedY = pair(ranges.arg2());
+      if (parsedX != null && parsedY != null) {
+        x = parsedX;
+        y = parsedY;
+      }
+    }
+
+    for (int r = 1; r <= rowCount; r++) {
+      if (!rows.get(r).isList()) {
+        continue;
+      }
+      IAST row = (IAST) rows.get(r);
+      for (int c = 1; c <= row.argSize(); c++) {
+        double z = row.get(c).evalfNaN();
+        if (!Double.isFinite(z)) {
+          continue;
+        }
+        double px = colCount > 1 ? x[0] + (c - 1) * (x[1] - x[0]) / (colCount - 1) : x[0];
+        double py = rowCount > 1 ? y[0] + (r - 1) * (y[1] - y[0]) / (rowCount - 1) : y[0];
+        indices.append(F.ZZ(builder.addVertex(px, py, z, null, null)));
+        coordinates.add(new double[] {px, py, z});
+      }
+    }
+  }
+
+  private static void addCoordinates(GraphicsComplexBuilder builder, IAST dataset,
+      IASTAppendable indices, List<double[]> coordinates) {
+    for (int k = 1; k < dataset.size(); k++) {
+      IExpr point = dataset.get(k);
+      if (!point.isList3()) {
+        continue;
+      }
+      double x = point.first().evalfNaN();
+      double y = point.second().evalfNaN();
+      double z = point.last().evalfNaN();
+      // a point that cannot be evaluated is left out; it used to abandon the whole plot
+      if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
+        indices.append(F.ZZ(builder.addVertex(x, y, z, null, null)));
+        coordinates.add(new double[] {x, y, z});
+      }
+    }
+  }
+
+  /**
+   * Drops a stem from every point to the level {@code Filling} names.
+   *
+   * <p>
+   * The stems are added as fresh vertices rather than by reusing the point indices, because the
+   * base of a stem is a position the data never contained. {@code FillingStyle -> Automatic} leaves
+   * them in the colour of the points they belong to, which is what keeps two overlapping datasets
+   * apart.
+   */
+  private static void addFilling(GraphicsComplexBuilder builder, List<double[]> coordinates,
+      IExpr filling, IExpr fillingStyle, IExpr pointStyle) {
+    if (coordinates.isEmpty() || filling.isNone() || filling.equals(S.Automatic)) {
+      return;
+    }
+    double base;
+    if (filling.equals(S.Bottom) || filling.equals(S.Axis)) {
+      base = filling.equals(S.Axis) ? 0.0 : Double.MAX_VALUE;
+      if (filling.equals(S.Bottom)) {
+        for (double[] xyz : coordinates) {
+          base = Math.min(base, xyz[2]);
+        }
+      }
+    } else if (filling.equals(S.Top)) {
+      base = -Double.MAX_VALUE;
+      for (double[] xyz : coordinates) {
+        base = Math.max(base, xyz[2]);
+      }
+    } else {
+      base = filling.evalfNaN();
+      if (!Double.isFinite(base)) {
+        return;
+      }
+    }
+
+    IASTAppendable stems = F.ListAlloc(coordinates.size());
+    for (double[] xyz : coordinates) {
+      int from = builder.addVertex(xyz[0], xyz[1], base, null, null);
+      int to = builder.addVertex(xyz[0], xyz[1], xyz[2], null, null);
+      stems.append(F.List(F.ZZ(from), F.ZZ(to)));
+    }
+    builder.addPrimitive(fillingStyle.equals(S.Automatic) ? pointStyle : fillingStyle);
+    builder.addPrimitive(F.unaryAST1(S.Line, stems));
+    // the points are drawn after the stems again, so they keep their own colour
+    builder.addPrimitive(pointStyle);
+  }
+
+  private static double[] pair(IExpr expr) {
+    if (!expr.isList() || ((IAST) expr).argSize() < 2) {
+      return null;
+    }
+    double lo = ((IAST) expr).arg1().evalfNaN();
+    double hi = ((IAST) expr).arg2().evalfNaN();
+    return Double.isFinite(lo) && Double.isFinite(hi) ? new double[] {lo, hi} : null;
+  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
+    return ARGS_1_INFINITY;
   }
 
   @Override
   public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, new IBuiltInSymbol[] {S.PlotStyle, S.DataRange},
-        new IExpr[] {S.Automatic, S.Automatic});
+    GraphicsOptions.OptionSet options = Plot3DTools.listPlot();
+    setOptions(newSymbol, options.keys(), options.values());
   }
 }

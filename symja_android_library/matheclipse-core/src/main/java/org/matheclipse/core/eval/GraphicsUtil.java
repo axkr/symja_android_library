@@ -381,8 +381,7 @@ public class GraphicsUtil {
           }
         }
 
-        if (plotRange.isPresent()
-            && graphicsOptions.graphicsExtent2D(objectNode, plotRange)) {
+        if (plotRange.isPresent() && graphicsOptions.graphicsExtent2D(objectNode, plotRange)) {
           json.set("extent", objectNode);
         }
 
@@ -676,13 +675,23 @@ public class GraphicsUtil {
     return true;
   }
 
+  /**
+   * Render to a complete SVG document, including the {@code <svg>} root element. The root carries
+   * the size the {@code ImageSize} option asked for, so callers must not wrap the result in a
+   * second root of their own.
+   */
   public static boolean renderGraphics2DSVG(StringBuilder graphics2DBuffer, IAST graphics2DAST,
       EvalEngine engine) {
-    return renderGraphics2DSVG(graphics2DBuffer, graphics2DAST, false, engine);
+    return renderGraphics2DSVG(graphics2DBuffer, graphics2DAST, true, engine);
   }
 
   public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
       boolean javaScript, EvalEngine engine) {
+    // a plot given PlotLegends comes back as Legended[Graphics3D[...], legend]; the graphic to
+    // draw is the argument underneath, and its options are the ones that belong to it
+    if (graphics3DAST.isAST(S.Legended, 3) && graphics3DAST.arg1().isAST()) {
+      graphics3DAST = (IAST) graphics3DAST.arg1();
+    }
     IExpr arg1 = graphics3DAST.first();
     if (!arg1.isList()) {
       arg1 = F.list(arg1);

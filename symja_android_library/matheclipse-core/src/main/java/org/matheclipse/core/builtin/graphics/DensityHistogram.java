@@ -38,7 +38,9 @@ public class DensityHistogram extends ListPlot {
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     boolean colorFunctionScaling = true;
-    for (IExpr opt : options) {
+    // the options array holds resolved values, not the rules the caller wrote,
+    // so the option rules are read back off the original call
+    for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
@@ -215,6 +217,8 @@ public class DensityHistogram extends ListPlot {
     defaults[GraphicsOptions.X_AXES] = S.False;
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.C1;
 
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.chartExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

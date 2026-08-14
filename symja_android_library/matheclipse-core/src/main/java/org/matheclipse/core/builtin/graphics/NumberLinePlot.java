@@ -138,29 +138,42 @@ public class NumberLinePlot extends ListPlot {
       // --- PASS 2: Generate Primitives ---
       IASTAppendable primitives = F.ListAlloc();
 
-      // Visual constants
-      double lineThickness = 0.01;
-      double pointSize = 0.025;
+      // Visual constants, matching the reference rendering: medium markers on a hairline axis
+      // rather than the much heavier defaults this used to draw.
+      double pointSize = GraphicsOptions.MEDIUM_POINTSIZE;
+      double lineThickness = 1.6;
+      // Spacings sets the vertical gap between the rows; PlotMarkers replaces the dots
+      double spacing = GraphicsOptions.optionValue(originalAST, S.Spacings, S.Automatic).evalfNaN();
+      if (!Double.isFinite(spacing) || spacing <= 0) {
+        spacing = 1.0;
+      }
+      IExpr markers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic);
 
       for (int i = 1; i < numLevels; i++) {
         IExpr levelItem = levels.get(i);
         IAST levelData = (levelItem.isList() && !levelItem.isAST(S.Interval)) ? (IAST) levelItem
             : F.List(levelItem);
 
-        IExpr color = GraphicsOptions.plotStyleColorExpr(i - 1, F.NIL);
-        IAST styleDirective =
-            F.Directive(color, F.PointSize(pointSize), F.Thickness(lineThickness));
+        IExpr plotStyle = GraphicsOptions.optionValue(originalAST, S.PlotStyle, S.None);
+        IExpr color = plotStyle.isNone() || plotStyle == S.Automatic
+            ? GraphicsOptions.plotStyleColorExpr(i - 1, F.NIL)
+            : GraphicsOptions.getPlotStyle(plotStyle, i - 1);
+        IAST styleDirective = F.Directive(color, F.PointSize(pointSize),
+            F.unaryAST1(S.AbsoluteThickness, F.num(lineThickness)));
 
         IASTAppendable levelPrimitives = F.ListAlloc();
         levelPrimitives.append(styleDirective);
 
-        double y = i;
+        double y = i * spacing;
 
         for (IExpr item : levelData) {
           if (item.isNumber()) {
             double val = item.evalfNaN();
             if (Double.isFinite(val)) {
-              levelPrimitives.append(F.Point(F.List(F.num(val), F.num(y))));
+              IExpr marker = markerAt(markers, i - 1);
+              levelPrimitives
+                  .append(marker.isPresent() ? F.Text(marker, F.List(F.num(val), F.num(y)))
+                      : F.Point(F.List(F.num(val), F.num(y))));
             }
           } else if (item.isAST(S.Interval)) {
             for (int k = 1; k < item.size(); k++) {
@@ -188,8 +201,22 @@ public class NumberLinePlot extends ListPlot {
       if (primitives.size() <= 1 && !hasData)
         return F.NIL;
 
-      graphicsOptions.setBoundingBox(new double[] {drawMin, drawMax, 0.0, numLevels + 1.0});
+      // The rows sit at y = 1..datasetCount. State that range explicitly, including the y = 0 the
+      // axis is drawn on: left to its own devices the converter derives the range from the points
+      // alone, which puts the axis hard against the lowest row instead of a full step below it.
+      int datasetCount = numLevels - 1;
+      double topRow = datasetCount * spacing;
+      graphicsOptions.setBoundingBox(new double[] {drawMin, drawMax, 0.0, topRow});
       graphicsOptions.addPadding();
+      graphicsOptions.addOption(F.Rule(S.PlotRange,
+          F.List(F.List(F.num(drawMin), F.num(drawMax)), F.List(F.C0, F.num(topRow)))));
+      // One row of the reference's height per data set. This has to go through the field rather
+      // than addOption: getListOfRules emits AspectRatio from the field and skips any option rule
+      // of the same name, so an added rule would be dropped.
+      // scaled by the row spacing as well as the row count, so that asking for more space between
+      // the rows actually produces a taller picture rather than the same one rescaled
+      graphicsOptions
+          .setAspectRatio(F.Times(F.num(topRow), F.Power(F.Times(F.ZZ(10), S.GoldenRatio), F.CN1)));
 
       IASTAppendable result = F.Graphics(primitives);
       result.appendArgs(graphicsOptions.getListOfRules());
@@ -276,9 +303,25 @@ public class NumberLinePlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
+    // charts and rasters draw their own extent, so the reference rendering does not clip
+    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
     defaults[GraphicsOptions.X_AXES] = F.List(S.True, S.False);
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.num(0.2);
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.listPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
+  }
+
+  /** The marker for one row of a {@code PlotMarkers} list, or {@link F#NIL} for the plain dot. */
+  private static IExpr markerAt(IExpr markers, int rowIndex) {
+    if (markers == null || markers == S.Automatic || markers.isNone()) {
+      return F.NIL;
+    }
+    if (markers.isList() && ((IAST) markers).argSize() > 0) {
+      IAST list = (IAST) markers;
+      return list.get(Math.floorMod(rowIndex, list.argSize()) + 1);
+    }
+    return markers;
   }
 
   @Override

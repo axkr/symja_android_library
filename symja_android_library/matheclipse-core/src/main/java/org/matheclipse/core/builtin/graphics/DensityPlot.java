@@ -44,8 +44,12 @@ public class DensityPlot extends ListPlot {
     // Increase default resolution to 50 for smoother gradients
     int plotPoints = 50;
     boolean colorFunctionScaling = true;
+    IExpr colorFunctionOpt = S.Automatic;
+    IExpr meshOpt = S.None;
 
-    for (IExpr opt : options) {
+    // the options array holds resolved values, not the rules the caller wrote,
+    // so the option rules are read back off the original call
+    for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
@@ -58,6 +62,12 @@ public class DensityPlot extends ListPlot {
               break;
             case ID.PlotPoints:
               plotPoints = val.toIntDefault(50);
+              break;
+            case ID.ColorFunction:
+              colorFunctionOpt = val;
+              break;
+            case ID.Mesh:
+              meshOpt = val;
               break;
           }
         }
@@ -131,10 +141,11 @@ public class DensityPlot extends ListPlot {
     if (minZ == Double.MAX_VALUE)
       return F.NIL;
 
-    // 4. Generate Primitives (Rectangles)
+    // 4. Generate the cell grid as a single raster rather than one rectangle per cell
     IASTAppendable primitives = F.ListAlloc();
-    // Use EdgeForm[None] globally to remove grid lines between rectangles
-    primitives.append(F.EdgeForm(S.None));
+    java.util.function.DoubleFunction<IExpr> colorMap =
+        GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getDensityColor);
+    IExpr[][] cells = new IExpr[gridY][gridX];
 
     for (int i = 0; i < gridX; i++) {
       double x = xRange[0] + i * stepX;
@@ -162,12 +173,17 @@ public class DensityPlot extends ListPlot {
           t = cellZ;
         }
 
-        IExpr color = getDensityColor(t);
-
-        primitives.append(color);
-        primitives.append(
-            F.Rectangle(F.List(F.num(x), F.num(y)), F.List(F.num(x + stepX), F.num(y + stepY))));
+        // j counts upwards from the bottom, while the raster rows are given top first
+        cells[gridY - 1 - j][i] = colorMap.apply(t);
       }
+    }
+    double meshX1 = xRange[0] + gridX * stepX;
+    double meshY1 = yRange[0] + gridY * stepY;
+    primitives.append(GraphicsOptions.rasterTopFirst(cells, xRange[0], yRange[0], meshX1, meshY1));
+    IExpr meshLines =
+        GraphicsOptions.meshGrid(meshOpt, xRange[0], yRange[0], meshX1, meshY1, gridX, gridY);
+    if (meshLines.isPresent()) {
+      primitives.append(meshLines);
     }
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
@@ -239,6 +255,8 @@ public class DensityPlot extends ListPlot {
     defaults[GraphicsOptions.X_AXES] = S.False;
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.C1;
 
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.densityExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

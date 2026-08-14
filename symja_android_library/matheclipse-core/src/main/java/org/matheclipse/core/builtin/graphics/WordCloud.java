@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -16,7 +17,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
  * <pre>
@@ -31,13 +31,26 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
   private static class WordItem implements Comparable<WordItem> {
     IExpr word;
     double weight;
+    /** The weight after {@code ScalingFunctions}, which is what the size is worked out from. */
+    double scaledWeight;
+    /** Where this word sits between the smallest and largest, in 0..1. */
+    double fraction;
     double fontSize;
     double finalX;
     double finalY;
+    /** Writing direction, {@code {1, 0}} for the usual left to right. */
+    double dirX = 1;
+    double dirY = 0;
 
     WordItem(IExpr word, double weight) {
       this.word = word;
       this.weight = weight;
+      this.scaledWeight = weight;
+    }
+
+    /** True when the word reads bottom to top rather than left to right. */
+    boolean isUpright() {
+      return Math.abs(dirY) > Math.abs(dirX);
     }
 
     @Override
@@ -74,13 +87,25 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
         return F.Graphics(F.CEmptyList);
       }
 
+      IExpr wordOrientation =
+          GraphicsOptions.optionValue(originalAST, S.WordOrientation, S.Automatic);
+      IExpr wordSpacings = GraphicsOptions.optionValue(originalAST, S.WordSpacings, S.Automatic);
+      IExpr colorFunctionSpec =
+          GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic);
+      IExpr scalingFunctions =
+          GraphicsOptions.optionValue(originalAST, S.ScalingFunctions, S.Automatic);
+
+      // ScalingFunctions decides how a weight turns into a size, so it is applied before the
+      // weights are spread over the font range
+      applyScaling(items, scalingFunctions);
+
       double minW = Double.MAX_VALUE;
       double maxW = -Double.MAX_VALUE;
       for (WordItem item : items) {
-        if (item.weight < minW)
-          minW = item.weight;
-        if (item.weight > maxW)
-          maxW = item.weight;
+        if (item.scaledWeight < minW)
+          minW = item.scaledWeight;
+        if (item.scaledWeight > maxW)
+          maxW = item.scaledWeight;
       }
 
       Collections.sort(items);
@@ -89,12 +114,16 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
       double minFontSize = 10.0;
       double maxFontSize = 60.0; // Increased for better visual contrast
       for (WordItem item : items) {
-        if (maxW == minW) {
-          item.fontSize = maxFontSize;
-        } else {
-          item.fontSize =
-              minFontSize + ((item.weight - minW) / (maxW - minW)) * (maxFontSize - minFontSize);
-        }
+        item.fraction = maxW == minW ? 1.0 : (item.scaledWeight - minW) / (maxW - minW);
+        item.fontSize =
+            maxW == minW ? maxFontSize : minFontSize + item.fraction * (maxFontSize - minFontSize);
+      }
+
+      double spacing = spacingOf(wordSpacings);
+      for (int i = 0; i < items.size(); i++) {
+        double angle = orientationAngle(wordOrientation, i);
+        items.get(i).dirX = Math.cos(angle);
+        items.get(i).dirY = Math.sin(angle);
       }
 
       List<Rect> placedRects = new ArrayList<>();
@@ -107,8 +136,16 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
 
         // Generous bounding box to prevent touching
         // Width: ~0.6 per char + 0.4 padding. Height: 1.2 to account for ascenders/descenders.
-        double rectWidth = Math.max(text.length(), 1) * item.fontSize * 0.6 + item.fontSize * 0.4;
-        double rectHeight = item.fontSize * 1.2;
+        // WordSpacings widens that padding, in multiples of the word's own size.
+        double rectWidth = Math.max(text.length(), 1) * item.fontSize * 0.6
+            + item.fontSize * (0.4 + 2.0 * spacing);
+        double rectHeight = item.fontSize * (1.2 + 2.0 * spacing);
+        if (item.isUpright()) {
+          // a word written upwards takes up the room the other way round
+          double swap = rectWidth;
+          rectWidth = rectHeight;
+          rectHeight = swap;
+        }
 
         double theta = 0.0;
         boolean placed = false;
@@ -206,11 +243,18 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
 
       IASTAppendable insets = F.ListAlloc(items.size());
       int colorIndex = 0;
+      // a ColorFunction paints by weight; without one the words cycle through the palette
+      java.util.function.DoubleFunction<IExpr> colorFn =
+          GraphicsOptions.colorFunction(colorFunctionSpec, engine, t -> F.NIL);
 
       for (WordItem item : items) {
-        RGBColor rgb = GraphicsOptions.PLOT_COLORS[colorIndex % GraphicsOptions.PLOT_COLORS.length];
-        IAST colorAST = F.RGBColor(F.num(rgb.getRed() / 255.0), F.num(rgb.getGreen() / 255.0),
-            F.num(rgb.getBlue() / 255.0));
+        IExpr colorAST = colorFn.apply(item.fraction);
+        if (!colorAST.isPresent()) {
+          RGBColor rgb =
+              GraphicsOptions.PLOT_COLORS[colorIndex % GraphicsOptions.PLOT_COLORS.length];
+          colorAST = F.RGBColor(F.num(rgb.getRed() / 255.0), F.num(rgb.getGreen() / 255.0),
+              F.num(rgb.getBlue() / 255.0));
+        }
         colorIndex++;
 
         // Translate proportional abstract font to Scaled representation required by SVG mapping
@@ -219,8 +263,12 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
         IAST style =
             F.Style(item.word, F.Rule(S.FontSize, F.Scaled(f)), F.Rule(S.FontColor, colorAST));
 
+        // the fourth argument is the writing direction; left as Automatic the word reads the
+        // usual way, and the emitted expression stays what it always was
+        IExpr direction = item.dirY == 0 && item.dirX > 0 ? S.Automatic
+            : F.List(F.num(item.dirX), F.num(item.dirY));
         IAST inset =
-            F.Inset(style, F.List(F.num(item.finalX), F.num(item.finalY)), S.Center, S.Automatic);
+            F.Inset(style, F.List(F.num(item.finalX), F.num(item.finalY)), S.Center, direction);
         insets.append(inset);
       }
 
@@ -237,6 +285,96 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Re-weight the words for {@code ScalingFunctions}, which decides how a count turns into a size.
+   *
+   * <p>
+   * A scale that cannot take one of the weights -- a log of a count of zero, say -- leaves the
+   * weights alone rather than dropping the word or sizing it off the scale.
+   */
+  private static void applyScaling(List<WordItem> items, IExpr scalingFunctions) {
+    if (scalingFunctions == null || scalingFunctions == S.Automatic || scalingFunctions.isNone()) {
+      return;
+    }
+    IExpr spec =
+        scalingFunctions.isList() && scalingFunctions.size() > 1 ? ((IAST) scalingFunctions).arg1()
+            : scalingFunctions;
+    if (!spec.isString()) {
+      return;
+    }
+    DoubleUnaryOperator scale = GraphicsOptions.getScalingFunction(spec.toString());
+    double[] scaled = new double[items.size()];
+    for (int i = 0; i < items.size(); i++) {
+      scaled[i] = scale.applyAsDouble(items.get(i).weight);
+      if (!Double.isFinite(scaled[i])) {
+        return;
+      }
+    }
+    for (int i = 0; i < items.size(); i++) {
+      items.get(i).scaledWeight = scaled[i];
+    }
+  }
+
+  /**
+   * Extra room to leave around each word, as a multiple of its own size.
+   *
+   * @param wordSpacings the option value; a number, or a {@code {x, y}} pair of which the larger is
+   *        taken
+   */
+  private static double spacingOf(IExpr wordSpacings) {
+    if (wordSpacings == null || wordSpacings == S.Automatic || wordSpacings.isNone()) {
+      return 0.0;
+    }
+    IExpr value = wordSpacings;
+    if (wordSpacings.isList() && wordSpacings.size() > 1) {
+      IAST pair = (IAST) wordSpacings;
+      double widest = 0;
+      for (int i = 1; i < pair.size(); i++) {
+        double v = pair.get(i).evalfNaN();
+        if (Double.isFinite(v)) {
+          widest = Math.max(widest, v);
+        }
+      }
+      return Math.max(0, widest);
+    }
+    double spacing = value.evalfNaN();
+    return Double.isFinite(spacing) && spacing > 0 ? spacing : 0.0;
+  }
+
+  /**
+   * Which way the word at this position is written, in radians.
+   *
+   * <p>
+   * {@code "Random"} is spread over the words by position rather than drawn at random, because two
+   * renderings of the same cloud have to come out the same.
+   *
+   * @param wordOrientation the option value: a direction name, an angle, or a list to cycle
+   * @param index position of the word, largest first
+   */
+  private static double orientationAngle(IExpr wordOrientation, int index) {
+    if (wordOrientation == null || wordOrientation == S.Automatic || wordOrientation.isNone()) {
+      return 0.0;
+    }
+    IExpr spec = wordOrientation;
+    if (wordOrientation.isList() && wordOrientation.size() > 1) {
+      IAST list = (IAST) wordOrientation;
+      spec = list.get(1 + Math.floorMod(index, list.argSize()));
+    }
+    if (spec.isString()) {
+      String name = spec.toString();
+      if ("Vertical".equalsIgnoreCase(name)) {
+        return Math.PI / 2.0;
+      }
+      if ("Random".equalsIgnoreCase(name)) {
+        // every third word stands up, which mixes the two without needing a random source
+        return Math.floorMod(index, 3) == 1 ? Math.PI / 2.0 : 0.0;
+      }
+      return 0.0;
+    }
+    double angle = spec.evalfNaN();
+    return Double.isFinite(angle) ? angle : 0.0;
+  }
+
+  /**
    * Safely extracts a numeric weight from expressions, handling Number, Quantity, and Missing
    * cases.
    */
@@ -245,8 +383,7 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
       return expr.evalfNaN();
     }
     if (expr.isQuantity()) {
-      IQuantity q = (IQuantity) expr;
-      double value = q.value().evalfNaN();
+      double value = expr.first().evalfNaN();
       if (!Double.isNaN(value)) {
         return value;
       }
@@ -260,7 +397,7 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
         return evaled.evalfNaN();
       }
       if (evaled.isQuantity()) {
-        return ((IQuantity) evaled).value().evalfNaN();
+        return evaled.first().evalfNaN();
       }
     } catch (Exception e) {
     }
@@ -375,7 +512,9 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(ISymbol newSymbol) {
-    setOptions(newSymbol, new IBuiltInSymbol[] {S.ImageSize, S.PlotRange},
-        new IExpr[] {S.Automatic, S.Automatic});
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.wordCloudExtras(
+        new GraphicsOptions.OptionSet().add(new IBuiltInSymbol[] {S.ImageSize, S.PlotRange},
+            new IExpr[] {S.Automatic, S.Automatic}));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

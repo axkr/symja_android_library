@@ -44,14 +44,23 @@ public class PolarPlot extends Plot {
       ast = ast.copyUntil(argSize + 1);
     }
 
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
     IExpr function = ast.arg1();
     IAST rangeList = (IAST) ast.arg2();
 
     try {
       // Generate list of {{x1,y1}, {x2,y2}...} lists
-      final IAST listOfLines =
-          polarPlotToListPoints(function, rangeList, ast, graphicsOptions, engine);
+      final IAST listOfLines = polarPlotToListPoints(function, rangeList, ast, graphicsOptions,
+          engine,
+          GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic).toIntDefault(-1),
+          GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1));
 
       if (listOfLines.isNIL()) {
         return F.NIL;
@@ -66,6 +75,16 @@ public class PolarPlot extends Plot {
         IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
 
         if (graphicsPrimitives.isPresent()) {
+          // the polar scale is drawn first so that it sits behind the curve
+          IAST polar = polarScale(GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False),
+              GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None),
+              listPlotOptions.boundingBox());
+          if (polar.isPresent()) {
+            IASTAppendable withScale = F.ListAlloc(graphicsPrimitives.size() + 1);
+            withScale.append(polar);
+            withScale.appendArgs(graphicsPrimitives);
+            graphicsPrimitives = withScale;
+          }
           return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
         }
       }
@@ -77,8 +96,77 @@ public class PolarPlot extends Plot {
     return F.NIL;
   }
 
+  /** How many radial spokes the polar grid gets when nothing asked for a particular number. */
+  private static final int DEFAULT_SPOKES = 12;
+
+  /**
+   * The polar scale behind the curve: rings at round radii, spokes out from the centre, and the
+   * radial axis with its distances written on it.
+   *
+   * @param polarAxes the {@code PolarAxes} value; {@code True} adds the radial axis and its labels
+   * @param polarGridLines the {@code PolarGridLines} value; a number asks for that many spokes
+   * @param boundingBox the plot extent, as {xMin, xMax, yMin, yMax}
+   * @return the primitives, or {@link F#NIL} when neither option asked for anything
+   */
+  private static IAST polarScale(IExpr polarAxes, IExpr polarGridLines, double[] boundingBox) {
+    boolean axes = polarAxes.isTrue() || polarAxes.isAutomatic();
+    boolean grid = !polarGridLines.isNone() && !polarGridLines.isFalse();
+    if (!axes && !grid) {
+      return F.NIL;
+    }
+    double radius = 0;
+    for (double edge : boundingBox) {
+      if (Double.isFinite(edge)) {
+        radius = Math.max(radius, Math.abs(edge));
+      }
+    }
+    if (radius <= 0) {
+      return F.NIL;
+    }
+
+    IASTAppendable out = F.ListAlloc(32);
+    out.append(F.RGBColor(0.6, 0.6, 0.6));
+    out.append(F.unaryAST1(S.AbsoluteThickness, F.num(0.5)));
+
+    java.util.List<org.matheclipse.core.graphics.svg.TickGenerator.Tick> ticks =
+        org.matheclipse.core.graphics.svg.TickGenerator.linear(0, radius);
+    if (grid) {
+      for (org.matheclipse.core.graphics.svg.TickGenerator.Tick tick : ticks) {
+        if (tick.major && tick.value > 0) {
+          out.append(F.Circle(F.List(F.C0, F.C0), F.num(tick.value)));
+        }
+      }
+      int spokes = polarGridLines.toIntDefault(-1);
+      if (spokes < 2) {
+        spokes = DEFAULT_SPOKES;
+      }
+      for (int i = 0; i < spokes; i++) {
+        double angle = 2.0 * Math.PI * i / spokes;
+        out.append(F.Line(F.List(F.List(F.C0, F.C0),
+            F.List(F.num(radius * Math.cos(angle)), F.num(radius * Math.sin(angle))))));
+      }
+    }
+
+    if (axes) {
+      out.append(F.RGBColor(0.3, 0.3, 0.3));
+      out.append(F.unaryAST1(S.AbsoluteThickness, F.num(1.0)));
+      out.append(F.Line(F.List(F.List(F.num(-radius), F.C0), F.List(F.num(radius), F.C0))));
+      out.append(F.Line(F.List(F.List(F.C0, F.num(-radius)), F.List(F.C0, F.num(radius)))));
+      out.append(S.Black);
+      for (org.matheclipse.core.graphics.svg.TickGenerator.Tick tick : ticks) {
+        if (tick.major && tick.value > 0) {
+          // the distances go along the positive x axis, which is where a polar plot reads them
+          out.append(
+              F.Text(F.stringx(tick.label), F.List(F.num(tick.value), F.C0), F.List(F.C0, F.C1)));
+        }
+      }
+    }
+    return out;
+  }
+
   private static IAST polarPlotToListPoints(IExpr functionOrListOfFunctions, final IAST rangeList,
-      final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine) {
+      final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine, int plotPoints,
+      int maxRecursion) {
     if (!rangeList.arg1().isSymbol()) {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
@@ -105,8 +193,8 @@ public class PolarPlot extends Plot {
       double[][] data = null;
       // Use standard Plot sampler to get theta vs radius
       final UnaryNumerical hun = new UnaryNumerical(function, theta, Double.NaN, engine);
-      data =
-          org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, tMinD, tMaxD, "Linear");
+      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, tMinD, tMaxD, "Linear",
+          plotPoints, maxRecursion);
 
       if (data != null) {
         IASTAppendable linePoints = F.ListAlloc(data[0].length);
@@ -140,6 +228,8 @@ public class PolarPlot extends Plot {
     // // Set default AspectRatio to Automatic to preserve geometric shapes (circles)
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
     defaults[GraphicsOptions.X_ASPECTRATIO] = S.Automatic;
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.polarExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

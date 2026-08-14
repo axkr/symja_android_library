@@ -11,7 +11,6 @@ import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -31,12 +30,11 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    // --- Option Parsing ---
-    // 0: PlotPoints, 1: PlotRange, 2: DataRange, 3: InterpolationOrder, 4: BoxRatios, 5: Mesh
-    IExpr plotRangeOpt = options[1];
-    IExpr dataRangeOpt = options[2];
-    IExpr boxRatiosOpt = options[4];
-    IExpr meshOpt = options[5];
+    IExpr plotRangeOpt = options[Plot3DTools.X_PLOT_RANGE];
+    IExpr dataRangeOpt = options[Plot3DTools.X_DATA_RANGE];
+    IExpr boxRatiosOpt = options[Plot3DTools.X_BOX_RATIOS];
+    IExpr meshOpt = options[Plot3DTools.X_MESH];
+    IExpr plotStyleOpt = options[Plot3DTools.X_PLOT_STYLE];
 
     IAST listData = (IAST) data;
     if (listData.isEmpty()) {
@@ -50,16 +48,20 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr firstRow = listData.arg1();
     if (firstRow.isList()) {
       int cols = ((IAST) firstRow).argSize();
-      if (cols == 3 && dataRangeOpt.equals(S.Automatic)) {
+      // three columns of numbers are {x, y, z} triples. DataRange used to be part of this test,
+      // so giving it silently reinterpreted a coordinate list as a rectangular height array.
+      if (cols == 3 && ((IAST) firstRow).forAll(x -> x.isNumber())) {
         treatAsCoordinates = true;
       }
     }
 
     if (treatAsCoordinates) {
-      return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt, meshOpt);
+      return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt, meshOpt, plotStyleOpt,
+          originalAST, argSize);
     } else {
       if (isRectangularArray(listData)) {
-        return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt);
+        return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt,
+            plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize);
       }
     }
 
@@ -70,13 +72,13 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
    * Processes a list of {x,y,z} coordinates using Delaunay Triangulation.
    */
   private IExpr processCoordinateList(IAST data, IExpr boxRatiosOpt, IExpr plotRangeOpt,
-      IExpr meshOpt) {
+      IExpr meshOpt, IExpr plotStyleOpt, IAST originalAST, int argSize) {
     int n = data.argSize();
     if (n < 3)
       return F.NIL; // Need at least 3 points for a surface
 
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
-    applyMeshStyle(builder, meshOpt);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
 
     // 1. Extract Points and Register with Builder
     List<PointXYZ> points = new ArrayList<>(n);
@@ -109,24 +111,18 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    IASTAppendable result = F.ast(S.Graphics3D);
-    result.append(graphicsComplex);
-
-    // Options
-    result.append(F.Rule(S.PlotRange, plotRangeOpt));
-    result.append(F.Rule(S.BoxRatios,
-        (boxRatiosOpt.equals(S.Automatic)) ? F.List(F.num(1), F.num(1), F.num(0.4))
-            : boxRatiosOpt));
-    result.append(F.Rule(S.Axes, S.True));
-
-    return result;
+    return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
+        new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
+            F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
+            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
   }
 
   /**
    * Processes a rectangular array of z-values {{z11, z12...}, ...}
    */
   private IExpr processHeightMap(IAST heightData, IExpr dataRangeOpt, IExpr boxRatiosOpt,
-      IExpr plotRangeOpt, IExpr meshOpt) {
+      IExpr plotRangeOpt, IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST,
+      int argSize) {
     int rows = heightData.argSize();
     IExpr firstRow = heightData.arg1();
     int cols = ((IAST) firstRow).argSize();
@@ -156,11 +152,12 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
-    applyMeshStyle(builder, meshOpt);
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
 
-    int[][] indices = new int[rows][cols];
-
+    // the grid is handed to the shared surface builder, so this plot gets the same winding,
+    // vertex normals and mesh lines as the ones that sample a function
+    double[][][] grid = new double[rows][cols][];
     for (int i = 1; i <= rows; i++) {
       IExpr arg = heightData.get(i);
       if (!arg.isAST() || arg.argSize() != cols) {
@@ -170,56 +167,24 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       double y = (rows > 1) ? yMin + (i - 1) * (yMax - yMin) / (rows - 1.0) : yMin;
 
       for (int j = 1; j <= cols; j++) {
-        indices[i - 1][j - 1] = -1;
         double x = (cols > 1) ? xMin + (j - 1) * (xMax - xMin) / (cols - 1.0) : xMin;
         double z = row.get(j).evalfNaN();
-
-        if (!Double.isNaN(z) && !Double.isInfinite(z)) {
-          indices[i - 1][j - 1] = builder.addVertex(x, y, z, null, null);
+        if (Double.isFinite(z)) {
+          grid[i - 1][j - 1] = new double[] {x, y, z};
         }
       }
     }
-
-    for (int r = 0; r < rows - 1; r++) {
-      for (int c = 0; c < cols - 1; c++) {
-        int p1 = indices[r][c];
-        int p2 = indices[r][c + 1];
-        int p3 = indices[r + 1][c + 1];
-        int p4 = indices[r + 1][c];
-
-        // Exclude faces that contain NaN/Infinity vertices
-        if (p1 != -1 && p2 != -1 && p3 != -1 && p4 != -1) {
-          builder.addPolygon(new int[] {p1, p2, p3, p4});
-        }
-      }
-    }
+    Plot3DTools.addSurface(builder, grid, false, false, null, true, meshOpt, meshStyleOpt);
 
     IExpr graphicsComplex = builder.build();
     if (graphicsComplex.equals(F.NIL)) {
       return F.NIL;
     }
 
-    IASTAppendable result = F.ast(S.Graphics3D);
-    result.append(graphicsComplex);
-    result.append(F.Rule(S.PlotRange, plotRangeOpt));
-    result.append(F.Rule(S.BoxRatios,
-        (boxRatiosOpt.equals(S.Automatic)) ? F.List(F.num(1), F.num(1), F.num(0.4))
-            : boxRatiosOpt));
-    result.append(F.Rule(S.Axes, S.True));
-
-    return result;
-  }
-
-  private void applyMeshStyle(GraphicsComplexBuilder builder, IExpr meshOpt) {
-    IExpr defaultColor = GraphicsOptions.plotStyleColorExpr(0, F.NIL);
-
-    if (meshOpt.isFalse() || meshOpt.equals(S.None)) {
-      IASTAppendable edgeForm = F.ast(S.EdgeForm);
-      edgeForm.append(S.None);
-      builder.setStyle(defaultColor, edgeForm);
-    } else {
-      builder.setStyle(defaultColor);
-    }
+    return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
+        new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
+            F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
+            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
   }
 
   private boolean isRectangularArray(IAST list) {
@@ -385,9 +350,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol,
-        new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.DataRange, S.InterpolationOrder,
-            S.BoxRatios, S.Mesh},
-        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.None, S.Automatic, S.True});
+    GraphicsOptions.OptionSet options = Plot3DTools.listPlot();
+    setOptions(newSymbol, options.keys(), options.values());
   }
 }

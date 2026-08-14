@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -9,14 +10,16 @@ import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Implementation of SphericalPlot3D. Converts spherical coordinates (r, theta, phi) to Cartesian
- * (x, y, z) and generates optimized GraphicsComplex objects via GraphicsComplexBuilder. Supports
- * multiple surfaces with cyclic coloring.
+ * {@code SphericalPlot3D[r, {theta, tmin, tmax}, {phi, pmin, pmax}]} - the surface whose distance
+ * from the origin in the direction {@code (theta, phi)} is {@code r}.
+ *
+ * <p>
+ * {@code theta} is measured from the positive z axis and {@code phi} is the azimuth measured from
+ * the positive x axis.
  */
 public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
 
@@ -28,179 +31,150 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     if (argSize < 3) {
       return F.NIL;
     }
-
-    IExpr radiusFn = ast.arg1();
-    IExpr thetaRange = ast.arg2();
-    IExpr phiRange = ast.arg3();
-
-    if (!thetaRange.isList() || !phiRange.isList()) {
+    double[] theta = range(ast.arg2(), S.SphericalPlot3D, engine);
+    double[] phi = range(ast.arg3(), S.SphericalPlot3D, engine);
+    if (theta == null || phi == null) {
       return F.NIL;
     }
+    ISymbol thetaVar = (ISymbol) ((IAST) ast.arg2()).arg1();
+    ISymbol phiVar = (ISymbol) ((IAST) ast.arg3()).arg1();
 
-    int plotPoints = 40;
-    if (options[0].isInteger()) {
-      plotPoints = options[0].toIntDefault();
-    } else if (options[0].isList()) {
-      plotPoints = ((IAST) options[0]).arg1().toIntDefault(40);
-    }
-    if (plotPoints < 5) {
-      plotPoints = 5;
-    }
+    IAST functions = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
+    int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS], 40);
+    Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[Plot3DTools.X_COLOR_FUNCTION],
+        options[Plot3DTools.X_COLOR_FUNCTION_SCALING], engine);
 
-    IExpr plotStyle = options[3];
-
-    IAST functions;
-    if (radiusFn.isList()) {
-      functions = (IAST) radiusFn;
-    } else {
-      functions = F.List(radiusFn);
-    }
-
-    ISymbol thetaVar;
-    double thetaMin = 0.0, thetaMax;
-    ISymbol phiVar;
-    double phiMin = 0.0, phiMax;
-
-    thetaVar = (ISymbol) ((IAST) thetaRange).arg1();
-    if (((IAST) thetaRange).argSize() == 2) {
-      thetaMax = ((IAST) thetaRange).arg2().evalfNaN();
-    } else {
-      thetaMin = ((IAST) thetaRange).arg2().evalfNaN();
-      thetaMax = ((IAST) thetaRange).arg3().evalfNaN();
-    }
-
-    phiVar = (ISymbol) ((IAST) phiRange).arg1();
-    if (((IAST) phiRange).argSize() == 2) {
-      phiMax = ((IAST) phiRange).arg2().evalfNaN();
-    } else {
-      phiMin = ((IAST) phiRange).arg2().evalfNaN();
-      phiMax = ((IAST) phiRange).arg3().evalfNaN();
-    }
-    if (Double.isNaN(thetaMin) || Double.isNaN(thetaMax) || Double.isNaN(phiMin)
-        || Double.isNaN(phiMax)) {
-      return F.NIL;
-    }
-
-    return createSphericalPlot(functions, thetaVar, thetaMin, thetaMax, phiVar, phiMin, phiMax,
-        plotPoints, plotStyle, options, engine);
-  }
-
-  private IExpr createSphericalPlot(IAST functions, ISymbol thetaVar, double thetaMin,
-      double thetaMax, ISymbol phiVar, double phiMin, double phiMax, int plotPoints,
-      IExpr plotStyle, final IExpr[] options, EvalEngine engine) {
-
-    IASTAppendable graphicsList = F.ListAlloc();
-
-    double thetaStep = (thetaMax - thetaMin) / (plotPoints - 1);
-    double phiStep = (phiMax - phiMin) / (plotPoints - 1);
-
-    IAST explicitStyles = F.NIL;
-    if (plotStyle.isList()) {
-      explicitStyles = (IAST) plotStyle;
-    }
-
+    IASTAppendable graphicsList = F.ListAlloc(functions.argSize());
     for (int k = 1; k <= functions.argSize(); k++) {
-      IExpr rExpr = functions.get(k);
-
-      IExpr currentStyle;
-      if (explicitStyles.argSize() >= 1) {
-        int styleIdx = (k - 1) % explicitStyles.argSize() + 1;
-        currentStyle = explicitStyles.get(styleIdx);
-      } else if (plotStyle.isAST() && !plotStyle.isList()) {
-        currentStyle = plotStyle;
-      } else {
-        int colorIdx = GraphicsOptions.incColorIndex(k - 1);
-        currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
-      }
-
-      GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
-
-      IExpr meshOption = options[5];
-      if (meshOption.isFalse() || meshOption.equals(S.None)) {
-        IASTAppendable edgeForm = F.ast(S.EdgeForm);
-        edgeForm.append(S.None);
-        builder.setStyle(currentStyle, edgeForm);
-      } else {
-        builder.setStyle(currentStyle);
-      }
-
-      int[][] indices = new int[plotPoints][plotPoints];
-
-      for (int i = 0; i < plotPoints; i++) {
-        double theta = thetaMin + i * thetaStep;
-        double sinTheta = Math.sin(theta);
-        double cosTheta = Math.cos(theta);
-
-        for (int j = 0; j < plotPoints; j++) {
-          double phi = phiMin + j * phiStep;
-          indices[i][j] = -1;
-          try {
-            IExpr subst =
-                F.subst(rExpr, F.List(F.Rule(thetaVar, F.num(theta)), F.Rule(phiVar, F.num(phi))));
-            IExpr rValExpr = engine.evaluate(subst);
-
-            if (rValExpr.isNumber()) {
-              double r = rValExpr.evalfNaN();
-              if (!Double.isNaN(r) && !Double.isInfinite(r)) {
-                double x = r * sinTheta * Math.cos(phi);
-                double y = r * sinTheta * Math.sin(phi);
-                double z = r * cosTheta;
-                indices[i][j] = builder.addVertex(x, y, z, null, null);
-              }
-            }
-          } catch (Exception e) {
-            // Point failed to evaluate; leave index as -1
-          }
-        }
-      }
-
-      for (int i = 0; i < plotPoints - 1; i++) {
-        for (int j = 0; j < plotPoints - 1; j++) {
-          int p1 = indices[i][j];
-          int p2 = indices[i + 1][j];
-          int p3 = indices[i + 1][j + 1];
-          int p4 = indices[i][j + 1];
-
-          // Only form a polygon if all 4 corners were successfully evaluated
-          if (p1 != -1 && p2 != -1 && p3 != -1 && p4 != -1) {
-            builder.addPolygon(new int[] {p1, p2, p3, p4});
-          }
-        }
-      }
-
-      IExpr complex = builder.build();
-      if (!complex.equals(F.NIL)) {
-        graphicsList.append(complex);
+      IExpr surface = buildSurface(functions.get(k), k - 1, thetaVar, theta, phiVar, phi, samples,
+          options, colorMap, engine);
+      if (surface.isPresent()) {
+        graphicsList.append(surface);
       }
     }
-
     if (graphicsList.argSize() == 0) {
       return F.NIL;
     }
+    return Plot3DTools.graphics3D(graphicsList, originalAST, argSize,
+        new IExpr[] {F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
+            F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1)), F.Rule(S.Axes, S.True),
+            F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+  }
 
-    IASTAppendable result = F.ast(S.Graphics3D);
-    result.append(graphicsList);
-    result.append(F.Rule(S.PlotRange, S.Automatic));
-    result.append(F.Rule(S.BoxRatios, F.List(F.num(1), F.num(1), F.num(1))));
+  /**
+   * The {@code {min, max}} of an iterator, or {@code null} when it is not one.
+   *
+   * <p>
+   * The shape is checked before anything is cast. The previous version cast the first element to a
+   * symbol and read the third element on the strength of an {@code isList} test alone, so
+   * {@code SphericalPlot3D[1, {t, Pi}, {p, 2 Pi}]} threw out of the evaluator.
+   */
+  private static double[] range(IExpr expr, ISymbol caller, EvalEngine engine) {
+    if (!expr.isList() || ((IAST) expr).argSize() < 2 || !((IAST) expr).arg1().isSymbol()) {
+      Errors.printMessage(caller, "pllim", F.list(expr), engine);
+      return null;
+    }
+    IAST list = (IAST) expr;
+    double min;
+    double max;
+    if (list.argSize() == 2) {
+      min = 0.0;
+      max = list.arg2().evalfNaN();
+    } else {
+      min = list.arg2().evalfNaN();
+      max = list.arg3().evalfNaN();
+    }
+    if (!Double.isFinite(min) || !Double.isFinite(max) || max <= min) {
+      Errors.printMessage(caller, "pllim", F.list(expr), engine);
+      return null;
+    }
+    return new double[] {min, max};
+  }
 
-    return result;
+  private static IExpr buildSurface(IExpr radius, int index, ISymbol thetaVar, double[] theta,
+      ISymbol phiVar, double[] phi, int[] samples, IExpr[] options, Plot3DTools.ColorMap colorMap,
+      EvalEngine engine) {
+    int nTheta = samples[0];
+    int nPhi = samples[1];
+    double thetaStep = (theta[1] - theta[0]) / (nTheta - 1);
+    double phiStep = (phi[1] - phi[0]) / (nPhi - 1);
+
+    double[][][] grid = new double[nTheta][nPhi][];
+    double[][] radii = new double[nTheta][nPhi];
+    double rMin = Double.MAX_VALUE;
+    double rMax = -Double.MAX_VALUE;
+    boolean any = false;
+
+    for (int i = 0; i < nTheta; i++) {
+      double t = theta[0] + i * thetaStep;
+      double sinT = Math.sin(t);
+      double cosT = Math.cos(t);
+      for (int j = 0; j < nPhi; j++) {
+        double p = phi[0] + j * phiStep;
+        double r = Double.NaN;
+        try {
+          IExpr value = engine.evaluate(
+              F.subst(radius, F.List(F.Rule(thetaVar, F.num(t)), F.Rule(phiVar, F.num(p)))));
+          r = value.evalfNaN();
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+        }
+        if (!Double.isFinite(r)) {
+          continue;
+        }
+        radii[i][j] = r;
+        rMin = Math.min(rMin, r);
+        rMax = Math.max(rMax, r);
+        grid[i][j] = new double[] {r * sinT * Math.cos(p), r * sinT * Math.sin(p), r * cosT};
+        any = true;
+      }
+    }
+    if (!any) {
+      return F.NIL;
+    }
+
+    IExpr[][] colors = null;
+    if (colorMap != null) {
+      colors = new IExpr[nTheta][nPhi];
+      for (int i = 0; i < nTheta; i++) {
+        for (int j = 0; j < nPhi; j++) {
+          if (grid[i][j] == null) {
+            continue;
+          }
+          double r = radii[i][j];
+          // the natural quantity to colour a spherical plot by is its radius
+          double scaled = colorMap.isScaled() && rMax > rMin ? (r - rMin) / (rMax - rMin) : r;
+          colors[i][j] = colorMap.apply(scaled, scaled, scaled);
+        }
+      }
+    }
+
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
+    Plot3DTools.applyStyle(builder,
+        Plot3DTools.surfaceStyle(index, options[Plot3DTools.X_PLOT_STYLE]),
+        options[Plot3DTools.X_MESH]);
+    // a full azimuth closes the surface, so the seam at phi = 2 Pi is welded to the one at 0
+    boolean wrapPhi = Math.abs((phi[1] - phi[0]) - 2 * Math.PI) < 1e-9;
+    Plot3DTools.addSurface(builder, grid, false, wrapPhi, colors, true, options[Plot3DTools.X_MESH],
+        options[Plot3DTools.X_MESH_STYLE]);
+    return builder.build();
   }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_3_3;
+    // options are stripped before this is checked, but a plot that declares options must still
+    // allow the arguments they occupy, or every option is an argument count error
+    return ARGS_3_INFINITY;
   }
 
   @Override
   public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol,
-        new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.ColorFunction, S.PlotStyle, S.BoxRatios,
-            S.Mesh},
-        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.True});
+    GraphicsOptions.OptionSet options = Plot3DTools.surfacePlot();
+    setOptions(newSymbol, options.keys(), options.values());
   }
 }

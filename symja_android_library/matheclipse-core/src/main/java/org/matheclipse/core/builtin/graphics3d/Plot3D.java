@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics3d;
 
-import static org.matheclipse.core.expression.F.Rule;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
@@ -14,14 +13,22 @@ import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/** {@code Plot3D[f, {x, xmin, xmax}, {y, ymin, ymax}]} - a surface over a rectangular domain. */
 public class Plot3D extends AbstractFunctionOptionEvaluator {
 
   public static final Plot3D CONST = new Plot3D();
+
+  private static final int X_PLOT_POINTS = Plot3DTools.X_PLOT_POINTS;
+  private static final int X_PLOT_RANGE = Plot3DTools.X_PLOT_RANGE;
+  private static final int X_COLOR_FUNCTION = Plot3DTools.X_COLOR_FUNCTION;
+  private static final int X_PLOT_STYLE = Plot3DTools.X_PLOT_STYLE;
+  private static final int X_BOX_RATIOS = Plot3DTools.X_BOX_RATIOS;
+  private static final int X_MESH = Plot3DTools.X_MESH;
+  private static final int X_COLOR_FUNCTION_SCALING = Plot3DTools.X_COLOR_FUNCTION_SCALING;
 
   public Plot3D() {}
 
@@ -31,218 +38,433 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-
-    // 1. Parse Options
-    int plotPoints = 40;
-    if (options[0].isInteger()) {
-      plotPoints = options[0].toIntDefault();
-    } else if (options[0].isList()) {
-      plotPoints = ((IAST) options[0]).arg1().toIntDefault(40);
+    if (ast.argSize() < 3 || !ast.arg2().isList() || !ast.arg3().isList()) {
+      return F.NIL;
     }
-    if (plotPoints < 5) {
-      plotPoints = 5;
-    }
-
-    IExpr plotStyle = options[3];
-
-    if ((ast.argSize() >= 3) && ast.arg2().isList() && ast.arg3().isList()) {
-      return createGraphicsComplex(ast, argSize, plotStyle, originalAST, plotPoints, options,
-          engine);
-    }
-    return F.NIL;
+    return createGraphicsComplex(ast, argSize, originalAST, options, engine);
   }
 
-  private static IExpr createGraphicsComplex(IAST ast, int argSize, IExpr plotStyle,
-      IAST originalAST, int plotPoints, final IExpr[] options, final EvalEngine engine) {
+  private static IExpr createGraphicsComplex(IAST ast, int argSize, IAST originalAST,
+      final IExpr[] options, final EvalEngine engine) {
     try {
       final IAST lst1 = (IAST) ast.arg2();
       final IAST lst2 = (IAST) ast.arg3();
-
-      if (lst1.isAST3() && lst2.isAST3()) {
-
-        final IExpr xMin = engine.evalN(lst1.arg2());
-        final IExpr xMax = engine.evalN(lst1.arg3());
-        final IExpr yMin = engine.evalN(lst2.arg2());
-        final IExpr yMax = engine.evalN(lst2.arg3());
-
-        if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || (!(yMin instanceof INum))
-            || (!(yMax instanceof INum))) {
-          return F.NIL;
-        }
-
-        final double xMinD = ((INum) xMin).getRealPart();
-        final double xMaxD = ((INum) xMax).getRealPart();
-        final double yMinD = ((INum) yMin).getRealPart();
-        final double yMaxD = ((INum) yMax).getRealPart();
-
-        if (xMaxD <= xMinD || yMaxD <= yMinD) {
-          return F.NIL;
-        }
-
-        final ISymbol xVar = (ISymbol) lst1.arg1();
-        final ISymbol yVar = (ISymbol) lst2.arg1();
-        final IExpr functions = ast.arg1().makeList();
-        final IASTAppendable graphicsComplexList = F.ListAlloc();
-
-        // Prepare styles list if explicit
-        IAST explicitStyles = F.NIL;
-        if (plotStyle.isList()) {
-          explicitStyles = (IAST) plotStyle;
-        }
-
-        for (int f = 1; f <= functions.argSize(); f++) {
-          IExpr function = functions.get(f);
-          IExpr currentStyle;
-
-          if (explicitStyles.argSize() >= 1) {
-            // Explicit list {Red, Green...}
-            int styleIdx = (f - 1) % explicitStyles.argSize() + 1;
-            currentStyle = explicitStyles.get(styleIdx);
-          } else if (plotStyle.isAST() && !plotStyle.isList()) {
-            // Explicit single style
-            currentStyle = plotStyle;
-          } else {
-            // Automatic: Cycle default colors
-            int colorIdx = GraphicsOptions.incColorIndex(f - 1);
-            currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
-          }
-
-          GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
-          IExpr meshOption = options[5];
-          if (meshOption.isFalse() || meshOption.equals(S.None)) {
-            IASTAppendable edgeForm = F.ast(S.EdgeForm);
-            edgeForm.append(S.None);
-            builder.setStyle(currentStyle, edgeForm);
-          } else {
-            builder.setStyle(currentStyle);
-          }
-
-          final int gridPoints = plotPoints;
-          final double xStep = (xMaxD - xMinD) / (gridPoints - 1);
-          final double yStep = (yMaxD - yMinD) / (gridPoints - 1);
-
-          final BinaryNumerical hbn = new BinaryNumerical(function, xVar, yVar, engine);
-          final double[] zValues = new double[gridPoints * gridPoints];
-
-          // 1. Calculate values
-          int zCount = 0;
-          double zActualMin = Double.POSITIVE_INFINITY;
-          double zActualMax = Double.NEGATIVE_INFINITY;
-          int idx = 0;
-
-          for (int i = 0; i < gridPoints; i++) {
-            double x = xMinD + i * xStep;
-            for (int j = 0; j < gridPoints; j++) {
-              double y = yMinD + j * yStep;
-              double z = hbn.value(x, y);
-              zValues[idx++] = z;
-
-              if (Double.isFinite(z)) {
-                zCount++;
-                if (z < zActualMin)
-                  zActualMin = z;
-                if (z > zActualMax)
-                  zActualMax = z;
-              }
-            }
-          }
-
-          // 2. Determine range & clamp asymptotes
-          double zMinCalc = zActualMin;
-          double zMaxCalc = zActualMax;
-
-          if (zCount > 0) {
-            double[] validZ = new double[zCount];
-            int vIdx = 0;
-            for (double val : zValues) {
-              if (Double.isFinite(val)) {
-                validZ[vIdx++] = val;
-              }
-            }
-            double[] range = GraphicsUtil.automaticPlotRange3D(validZ);
-            if (range[1] > range[0]) {
-              zMinCalc = range[0];
-              zMaxCalc = range[1];
-            }
-          } else {
-            zMinCalc = -1.0;
-            zMaxCalc = 1.0;
-          }
-
-          int[][] indices = new int[gridPoints][gridPoints];
-          idx = 0;
-
-          // 3. Register vertices into the GraphicsComplex pool
-          for (int i = 0; i < gridPoints; i++) {
-            double x = xMinD + i * xStep;
-            for (int j = 0; j < gridPoints; j++) {
-              double y = yMinD + j * yStep;
-              double z = zValues[idx];
-
-              // Map discontinuities gracefully to the bounding box
-              if (Double.isNaN(z) || Double.isInfinite(z)) {
-                if (z == Double.POSITIVE_INFINITY)
-                  z = zMaxCalc;
-                else if (z == Double.NEGATIVE_INFINITY)
-                  z = zMinCalc;
-                else
-                  z = zMaxCalc;
-              } else if (z > zMaxCalc) {
-                z = zMaxCalc;
-              } else if (z < zMinCalc) {
-                z = zMinCalc;
-              }
-
-              indices[i][j] = builder.addVertex(x, y, z, null, null);
-              idx++;
-            }
-          }
-
-          // 4. Construct faces
-          for (int i = 0; i < gridPoints - 1; i++) {
-            for (int j = 0; j < gridPoints - 1; j++) {
-              int p1 = indices[i][j];
-              int p2 = indices[i][j + 1];
-              int p3 = indices[i + 1][j + 1];
-              int p4 = indices[i + 1][j];
-
-              builder.addPolygon(new int[] {p1, p2, p3, p4});
-            }
-          }
-
-          IExpr complex = builder.build();
-          if (!complex.equals(F.NIL)) {
-            graphicsComplexList.append(complex);
-          }
-        }
-
-        final IASTAppendable result = F.ast(S.Graphics3D);
-        result.append(graphicsComplexList);
-        result.append(Rule(S.PlotRange, S.Automatic));
-
-        // Handle AxesEdge option
-        for (int i = argSize + 1; i <= originalAST.argSize(); i++) {
-          IExpr arg = originalAST.get(i);
-          if (arg.isRuleAST()) {
-            IExpr key = ((IAST) arg).arg1();
-            if (key == S.AxesEdge) {
-              result.append(arg);
-            }
-          }
-        }
-
-        return result;
+      if (!lst1.isAST3() || !lst2.isAST3() || !lst1.arg1().isSymbol() || !lst2.arg1().isSymbol()) {
+        return F.NIL;
       }
+
+      final IExpr xMin = engine.evalN(lst1.arg2());
+      final IExpr xMax = engine.evalN(lst1.arg3());
+      final IExpr yMin = engine.evalN(lst2.arg2());
+      final IExpr yMax = engine.evalN(lst2.arg3());
+      if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || (!(yMin instanceof INum))
+          || (!(yMax instanceof INum))) {
+        return F.NIL;
+      }
+      final double xMinD = ((INum) xMin).getRealPart();
+      final double xMaxD = ((INum) xMax).getRealPart();
+      final double yMinD = ((INum) yMin).getRealPart();
+      final double yMaxD = ((INum) yMax).getRealPart();
+      if (xMaxD <= xMinD || yMaxD <= yMinD) {
+        return F.NIL;
+      }
+
+      final ISymbol xVar = (ISymbol) lst1.arg1();
+      final ISymbol yVar = (ISymbol) lst2.arg1();
+      final IExpr functions = ast.arg1().makeList();
+
+      int[] samples = Plot3DTools.plotPoints(options[X_PLOT_POINTS], 40);
+      final int nx = samples[0];
+      final int ny = samples[1];
+      Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[X_COLOR_FUNCTION],
+          options[X_COLOR_FUNCTION_SCALING], engine);
+
+      final IASTAppendable surfaces = F.ListAlloc(functions.argSize());
+      for (int f = 1; f <= functions.argSize(); f++) {
+        IExpr surface = buildSurface(functions.get(f), f - 1, xVar, yVar, xMinD, xMaxD, yMinD,
+            yMaxD, nx, ny, options, colorMap, engine);
+        if (surface.isPresent()) {
+          surfaces.append(surface);
+        }
+      }
+
+      IExpr boxRatios =
+          options[X_BOX_RATIOS].isList() ? options[X_BOX_RATIOS] : Plot3DTools.FLAT_BOX_RATIOS;
+      return Plot3DTools.graphics3D(surfaces, originalAST, argSize,
+          new IExpr[] {F.Rule(S.PlotRange, options[X_PLOT_RANGE]), F.Rule(S.BoxRatios, boxRatios),
+              F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(S.Plot3D, rex, engine);
     }
-    return F.NIL;
   }
 
-  public static IExpr plotArray(double xMin, double xMax, double yMin, double yMax, IExpr function,
-      ISymbol xVar, ISymbol yVar, EvalEngine engine) {
-    return F.NIL;
+  private static IExpr buildSurface(IExpr function, int index, ISymbol xVar, ISymbol yVar,
+      double xMinD, double xMaxD, double yMinD, double yMaxD, int nx, int ny, final IExpr[] options,
+      Plot3DTools.ColorMap colorMap, EvalEngine engine) {
+    // nx, ny and the steps below are not final: MaxRecursion replaces the grid with a finer one
+    double xStep = (xMaxD - xMinD) / (nx - 1);
+    double yStep = (yMaxD - yMinD) / (ny - 1);
+    final BinaryNumerical hbn = new BinaryNumerical(function, xVar, yVar, engine);
+
+    double[][] z = sample(hbn, xMinD, xStep, yMinD, yStep, nx, ny, options, engine);
+
+    // MaxRecursion refines the whole grid, once per level, and stops as soon as a refinement
+    // stops telling us anything new. It only runs when the call asks for it: the sampling here
+    // is already dense by default, so refining every plot would cost four times the samples per
+    // level for a picture nobody asked to be finer.
+    int maxRecursion = options[Plot3DTools.X_MAX_RECURSION].toIntDefault(0);
+    for (int level = 0; level < maxRecursion; level++) {
+      int fineNx = nx * 2 - 1;
+      int fineNy = ny * 2 - 1;
+      if ((long) fineNx * fineNy > MAX_REFINED_SAMPLES) {
+        break;
+      }
+      double fineXStep = (xMaxD - xMinD) / (fineNx - 1);
+      double fineYStep = (yMaxD - yMinD) / (fineNy - 1);
+      double[][] fine =
+          sample(hbn, xMinD, fineXStep, yMinD, fineYStep, fineNx, fineNy, options, engine);
+      boolean converged = isResolved(z, fine, nx, ny);
+      z = fine;
+      nx = fineNx;
+      ny = fineNy;
+      xStep = fineXStep;
+      yStep = fineYStep;
+      if (converged) {
+        break;
+      }
+    }
+
+    // a sample the RegionFunction rejects, or one an Exclusions curve runs through, is not part
+    // of the surface; it is left out the same way a value that is not a number is
+    applyRegionFunction(z, xMinD, xStep, yMinD, yStep, nx, ny,
+        options[Plot3DTools.X_REGION_FUNCTION], engine);
+    applyExclusions(z, xMinD, xStep, yMinD, yStep, nx, ny, xVar, yVar,
+        options[Plot3DTools.X_EXCLUSIONS], engine);
+
+    int finiteCount = 0;
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (Double.isFinite(z[i][j])) {
+          finiteCount++;
+        }
+      }
+    }
+    if (finiteCount == 0) {
+      return F.NIL;
+    }
+
+    // a function with a pole would otherwise stretch the box over its whole range and flatten
+    // everything else into the floor, so the visible band is narrowed to the body of the data
+    double[] valid = new double[finiteCount];
+    int v = 0;
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (Double.isFinite(z[i][j])) {
+          valid[v++] = z[i][j];
+        }
+      }
+    }
+    double[] range = GraphicsUtil.automaticPlotRange3D(valid);
+    double zMin = range[1] > range[0] ? range[0] : -1.0;
+    double zMax = range[1] > range[0] ? range[1] : 1.0;
+
+    boolean clipToNothing = options[Plot3DTools.X_CLIPPING_STYLE].isNone();
+    double[][][] grid = new double[nx][ny][];
+    IExpr[][] colors = colorMap == null ? null : new IExpr[nx][ny];
+    for (int i = 0; i < nx; i++) {
+      double x = xMinD + i * xStep;
+      for (int j = 0; j < ny; j++) {
+        double y = yMinD + j * yStep;
+        double value = z[i][j];
+        if (!Double.isFinite(value)) {
+          // leave a hole where the function has no value rather than a wall at the top of the box
+          continue;
+        }
+        // a sample beyond the visible band is pinned to it, which is what keeps a steep but finite
+        // slope from escaping the box; a sample that is not finite at all is dropped above.
+        // ClippingStyle -> None asks for what lies beyond the band to be left out instead, so the
+        // surface is open where it leaves the box rather than capped flat against it
+        if (clipToNothing && (value < zMin || value > zMax)) {
+          continue;
+        }
+        double clamped = Math.max(zMin, Math.min(zMax, value));
+        grid[i][j] = new double[] {x, y, clamped};
+        if (colors != null) {
+          double cz = colorMap.isScaled() ? scale(clamped, zMin, zMax) : clamped;
+          double cx = colorMap.isScaled() ? scale(x, xMinD, xMaxD) : x;
+          double cy = colorMap.isScaled() ? scale(y, yMinD, yMaxD) : y;
+          colors[i][j] = colorMap.apply(cx, cy, cz);
+        }
+      }
+    }
+
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(index, options[X_PLOT_STYLE]),
+        options[X_MESH]);
+    Plot3DTools.addSurface(builder, grid, false, false, colors, true, options[X_MESH],
+        options[Plot3DTools.X_MESH_STYLE]);
+    IExpr complex = builder.build();
+
+    if (complex.isNIL()) {
+      return complex;
+    }
+
+    // the lines are kept outside the GraphicsComplex so that they carry their own colour rather
+    // than being shaded along with the surface they lie on
+    IASTAppendable decorated = F.ListAlloc(6);
+    decorated.append(complex);
+
+    IAST meshLines = meshFunctionLines(grid, nx, ny, options[Plot3DTools.X_MESH_FUNCTIONS],
+        options[X_MESH], engine);
+    if (meshLines.argSize() > 0) {
+      IExpr meshStyle = options[Plot3DTools.X_MESH_STYLE];
+      decorated.append(meshStyle.equals(S.Automatic) ? S.Black : meshStyle);
+      decorated.append(meshLines);
+    }
+
+    IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
+    if (!boundaryStyle.equals(S.Automatic) && !boundaryStyle.isNone()) {
+      IAST boundary = Plot3DTools.surfaceBoundary(grid);
+      if (boundary.argSize() > 0) {
+        decorated.append(boundaryStyle);
+        decorated.append(boundary);
+      }
+    }
+    return decorated.argSize() == 1 ? complex : decorated;
+  }
+
+  /** An upper bound on refinement, so a large MaxRecursion cannot build a mesh nothing renders. */
+  private static final long MAX_REFINED_SAMPLES = 250_000L;
+
+  /** How far a refined sample may sit from the estimate before the grid counts as unresolved. */
+  private static final double FLATNESS_TOLERANCE = 0.01;
+
+  private static double[][] sample(BinaryNumerical hbn, double xMin, double xStep, double yMin,
+      double yStep, int nx, int ny, final IExpr[] options, EvalEngine engine) {
+    double[][] z = new double[nx][ny];
+    for (int i = 0; i < nx; i++) {
+      double x = xMin + i * xStep;
+      for (int j = 0; j < ny; j++) {
+        Plot3DTools.monitor(options[Plot3DTools.X_EVALUATION_MONITOR], engine);
+        z[i][j] = hbn.value(x, yMin + j * yStep);
+      }
+    }
+    return z;
+  }
+
+  /**
+   * Whether the finer grid agrees with what the coarse one predicted.
+   *
+   * <p>
+   * Every point of the coarse grid is also a point of the finer one, so the points in between are
+   * the new information. Each is compared with the straight line between the two coarse samples it
+   * sits between: where the surface is flat the two agree, and where it bends they do not. When
+   * every new point lands within the tolerance, another doubling would only repeat what is already
+   * drawn.
+   */
+  private static boolean isResolved(double[][] coarse, double[][] fine, int nx, int ny) {
+    double min = Double.MAX_VALUE;
+    double max = -Double.MAX_VALUE;
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        double value = coarse[i][j];
+        if (Double.isFinite(value)) {
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      }
+    }
+    if (min > max) {
+      return true; // nothing finite to resolve
+    }
+    double span = max > min ? max - min : 1.0;
+
+    for (int i = 0; i < nx - 1; i++) {
+      for (int j = 0; j < ny; j++) {
+        double a = coarse[i][j];
+        double b = coarse[i + 1][j];
+        double actual = fine[2 * i + 1][2 * j];
+        if (!Double.isFinite(a) || !Double.isFinite(b) || !Double.isFinite(actual)) {
+          // a hole appearing between two samples is exactly what refinement is for
+          if (Double.isFinite(a) != Double.isFinite(actual)) {
+            return false;
+          }
+          continue;
+        }
+        if (Math.abs(actual - (a + b) / 2.0) > FLATNESS_TOLERANCE * span) {
+          return false;
+        }
+      }
+    }
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny - 1; j++) {
+        double a = coarse[i][j];
+        double b = coarse[i][j + 1];
+        double actual = fine[2 * i][2 * j + 1];
+        if (!Double.isFinite(a) || !Double.isFinite(b) || !Double.isFinite(actual)) {
+          if (Double.isFinite(a) != Double.isFinite(actual)) {
+            return false;
+          }
+          continue;
+        }
+        if (Math.abs(actual - (a + b) / 2.0) > FLATNESS_TOLERANCE * span) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Punches out every sample the {@code RegionFunction} does not accept.
+   *
+   * <p>
+   * The predicate is given the point as {@code region[x, y, z]} and anything but {@code True}
+   * leaves a hole, which is the same thing that happens where the function has no value, so the
+   * surface simply stops at the edge of the region.
+   */
+  private static void applyRegionFunction(double[][] z, double xMin, double xStep, double yMin,
+      double yStep, int nx, int ny, IExpr regionFunction, EvalEngine engine) {
+    if (regionFunction.isNone() || regionFunction.equals(S.Automatic)
+        || !regionFunction.isPresent()) {
+      return;
+    }
+    for (int i = 0; i < nx; i++) {
+      double x = xMin + i * xStep;
+      for (int j = 0; j < ny; j++) {
+        if (!Double.isFinite(z[i][j])) {
+          continue;
+        }
+        double y = yMin + j * yStep;
+        IExpr inside =
+            engine.evaluate(F.ternaryAST3(regionFunction, F.num(x), F.num(y), F.num(z[i][j])));
+        if (!inside.isTrue()) {
+          z[i][j] = Double.NaN;
+        }
+      }
+    }
+  }
+
+  /**
+   * Cuts the surface along the curves {@code Exclusions} names.
+   *
+   * <p>
+   * An exclusion is an equation in the plot variables, such as {@code x == 0}. The grid almost
+   * never lands exactly on such a curve, so what is looked for is the crossing: where the two sides
+   * of the equation swap over between one sample and the next, both samples are dropped and the
+   * surface is left open along the curve rather than being stitched across it.
+   *
+   * <p>
+   * {@code Automatic} means the curves are found by sampling alone, which is what dropping every
+   * value that is not a number already does.
+   */
+  private static void applyExclusions(double[][] z, double xMin, double xStep, double yMin,
+      double yStep, int nx, int ny, ISymbol xVar, ISymbol yVar, IExpr exclusions,
+      EvalEngine engine) {
+    if (exclusions.isNone() || exclusions.equals(S.Automatic) || !exclusions.isPresent()) {
+      return;
+    }
+    IAST list = exclusions.isList() ? (IAST) exclusions : F.list(exclusions);
+    for (int k = 1; k < list.size(); k++) {
+      IExpr difference = asDifference(list.get(k));
+      if (difference.isNIL()) {
+        continue;
+      }
+      double[][] sign = new double[nx][ny];
+      for (int i = 0; i < nx; i++) {
+        double x = xMin + i * xStep;
+        for (int j = 0; j < ny; j++) {
+          double y = yMin + j * yStep;
+          IExpr value = engine
+              .evalN(F.subst(difference, F.List(F.Rule(xVar, F.num(x)), F.Rule(yVar, F.num(y)))));
+          sign[i][j] = value.isNumber() ? value.evalfNaN() : Double.NaN;
+        }
+      }
+      boolean[][] cut = new boolean[nx][ny];
+      for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+          if (crosses(sign, i, j, i + 1, j, nx, ny) || crosses(sign, i, j, i, j + 1, nx, ny)) {
+            cut[i][j] = true;
+          }
+        }
+      }
+      for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+          if (cut[i][j]) {
+            z[i][j] = Double.NaN;
+          }
+        }
+      }
+    }
+  }
+
+  private static boolean crosses(double[][] sign, int i1, int j1, int i2, int j2, int nx, int ny) {
+    if (i2 >= nx || j2 >= ny) {
+      return false;
+    }
+    double a = sign[i1][j1];
+    double b = sign[i2][j2];
+    if (!Double.isFinite(a) || !Double.isFinite(b)) {
+      return false;
+    }
+    return a == 0.0 || b == 0.0 || (a < 0.0) != (b < 0.0);
+  }
+
+  /** An exclusion as an expression that is zero on the excluded curve. */
+  private static IExpr asDifference(IExpr exclusion) {
+    if (exclusion.isEqual() && ((IAST) exclusion).argSize() == 2) {
+      return F.Subtract(((IAST) exclusion).arg1(), ((IAST) exclusion).arg2());
+    }
+    if (exclusion.isAST(S.Unequal, 3)) {
+      return F.Subtract(((IAST) exclusion).arg1(), ((IAST) exclusion).arg2());
+    }
+    return exclusion.isNumber() ? F.NIL : exclusion;
+  }
+
+  /** How many mesh levels a {@code MeshFunctions} entry draws when {@code Mesh} does not say. */
+  private static final int MESH_FUNCTION_LEVELS = 8;
+
+  /**
+   * The mesh lines {@code MeshFunctions} asks for, as levels of each function it names.
+   *
+   * <p>
+   * {@code Automatic} keeps the lines on the sampling grid, which the surface builder already
+   * draws, so only an explicit list produces anything here.
+   */
+  private static IAST meshFunctionLines(double[][][] grid, int nx, int ny, IExpr meshFunctions,
+      IExpr meshOption, EvalEngine engine) {
+    if (meshFunctions.equals(S.Automatic) || meshFunctions.isNone() || meshOption.isNone()) {
+      return F.CEmptyList;
+    }
+    IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
+    int levels = meshOption.toIntDefault(MESH_FUNCTION_LEVELS);
+    if (levels < 1) {
+      levels = MESH_FUNCTION_LEVELS;
+    }
+    IASTAppendable all = F.ListAlloc(list.argSize() * 8);
+    for (int k = 1; k < list.size(); k++) {
+      IExpr meshFunction = list.get(k);
+      double[][] values = new double[nx][ny];
+      for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+          double[] point = grid[i][j];
+          if (point == null) {
+            values[i][j] = Double.NaN;
+            continue;
+          }
+          IExpr value = engine.evalN(
+              F.ternaryAST3(meshFunction, F.num(point[0]), F.num(point[1]), F.num(point[2])));
+          values[i][j] = value.isNumber() ? value.evalfNaN() : Double.NaN;
+        }
+      }
+      all.appendArgs(Plot3DTools.meshLines(grid, values, levels));
+    }
+    return all;
+  }
+
+  private static double scale(double value, double min, double max) {
+    return max > min ? (value - min) / (max - min) : 0.5;
   }
 
   @Override
@@ -252,14 +474,12 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
 
   @Override
   public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol,
-        new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.ColorFunction, S.PlotStyle, S.BoxRatios,
-            S.Mesh},
-        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.True});
+    GraphicsOptions.OptionSet options = Plot3DTools.surfacePlot();
+    setOptions(newSymbol, options.keys(), options.values());
   }
 }

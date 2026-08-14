@@ -36,38 +36,51 @@ public class PieChart extends ListPlot {
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
-    IExpr chartStyle = S.Automatic;
-    IExpr chartLabels = S.None;
-    IExpr chartLegends = S.None;
+    IExpr chartStyle = GraphicsOptions.optionValue(originalAST, S.ChartStyle, S.Automatic);
+    IExpr chartLabels = GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None);
+    IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
+    IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
+    IExpr sectorOrigin = GraphicsOptions.optionValue(originalAST, S.SectorOrigin, S.Automatic);
+    IExpr sectorSpacing = GraphicsOptions.optionValue(originalAST, S.SectorSpacing, S.None);
+    IExpr labelingFunction =
+        GraphicsOptions.optionValue(originalAST, S.LabelingFunction, S.Automatic);
+
     // Default sector origin: {90 degree, "Clockwise"} -> Start at Pi/2, subtract angles
     double startAngle = Math.PI / 2.0;
     int direction = -1; // -1 for Clockwise
 
-    for (IExpr opt : options) {
-      if (opt.isRuleAST()) {
-        IExpr key = ((IAST) opt).arg1();
-        IExpr val = ((IAST) opt).arg2();
-        if (key.equals(S.ChartStyle)) {
-          chartStyle = val;
-        } else if (key.equals(S.ChartLabels)) {
-          chartLabels = val;
-        } else if (key.equals(S.ChartLegends)) {
-          chartLegends = val;
-        } else if (key.toString().equals("SectorOrigin")) {
-          // Basic parsing for SectorOrigin -> {val, "Clockwise"/"CounterClockwise"}
-          if (val.isList() && val.argSize() > 0) {
-            // Convert degrees to radians if mostly numbers are used?
-            // Mma usually assumes Radians in math, but Degrees in SectorOrigin options often.
-            // For safety, let's assume the user provided Radians or Degrees wrapped.
-            // If simple number, assume radians to match Disk? Or Degrees to match SectorOrigin
-            // default?
-            // "SectorOrigin -> {90 Degree, ...}" -> 1.57
-            double angle = ((IAST) val).arg1().evalfNaN();
-            if (!Double.isNaN(angle)) {
-              startAngle = angle;
-            }
+    // SectorOrigin accepts a bare angle as well as {angle} and {angle, "Clockwise"}
+    if (sectorOrigin != S.Automatic) {
+      IExpr angleExpr = sectorOrigin;
+      if (sectorOrigin.isList() && sectorOrigin.argSize() > 0) {
+        IAST spec = (IAST) sectorOrigin;
+        angleExpr = spec.arg1();
+        for (int i = 1; i < spec.size(); i++) {
+          IExpr entry = spec.get(i);
+          if (entry.isString("Counterclockwise") || entry.isString("CounterClockwise")) {
+            direction = 1;
+          } else if (entry.isString("Clockwise")) {
+            direction = -1;
           }
         }
+      }
+      if (angleExpr.isList() && angleExpr.argSize() > 0) {
+        // the nested form {{angle, direction}, radius}
+        angleExpr = ((IAST) angleExpr).arg1();
+      }
+      double angle = angleExpr.evalfNaN();
+      if (Double.isFinite(angle)) {
+        startAngle = angle;
+      }
+    }
+
+    // SectorSpacing pushes each sector out along its own bisector, which is how the reference
+    // separates them; None or Automatic leaves the pie whole
+    double sectorOffset = 0.0;
+    if (sectorSpacing.isNumber()) {
+      double offset = sectorSpacing.evalfNaN();
+      if (Double.isFinite(offset) && offset > 0) {
+        sectorOffset = offset;
       }
     }
 
@@ -150,28 +163,32 @@ public class PieChart extends ListPlot {
         } else {
           color = getChartStyle(chartStyle, index);
         }
+        boolean colorIsExplicit = style != null || !chartStyle.isAutomatic();
+        IExpr elementStyle = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
+
+        double midAngle = (a1 + a2) / 2.0;
+        // an offset sector keeps its shape but sits further out along its own bisector
+        double cx = sectorOffset * Math.cos(midAngle);
+        double cy = sectorOffset * Math.sin(midAngle);
 
         // Group for sector
         IASTAppendable group = F.ListAlloc();
-        if (!color.equals(S.Automatic))
-          group.append(color);
+        if (elementStyle.isPresent())
+          group.append(elementStyle);
 
         // Disk Primitive
-        group.append(F.function(S.Disk, F.List(F.C0, F.C0), F.C1, F.List(F.num(a1), F.num(a2))));
+        group.append(
+            F.function(S.Disk, F.List(F.num(cx), F.num(cy)), F.C1, F.List(F.num(a1), F.num(a2))));
         primitives.append(group);
 
         // Label
         if (label != null) {
           // Position label at mid-angle, radius 0.7
-          double midAngle = (a1 + a2) / 2.0;
-          // If angles wrapped around 2Pi? simple average works for small wedges < Pi.
-          // For PieChart logic here, simple average is fine.
-
           double rLbl = 0.7; // Internal label
           // For external: rLbl = 1.1;
 
-          double lx = rLbl * Math.cos(midAngle);
-          double ly = rLbl * Math.sin(midAngle);
+          double lx = cx + rLbl * Math.cos(midAngle);
+          double ly = cy + rLbl * Math.sin(midAngle);
 
           // Text Primitive
           // Text[lbl, {lx, ly}, {0,0}] (Centered)
@@ -179,13 +196,28 @@ public class PieChart extends ListPlot {
               F.List(S.Black, F.Text(label, F.List(F.num(lx), F.num(ly)), F.List(F.C0, F.C0))));
         }
 
+        // the value written on the sector, which LabelingFunction asks for
+        IExpr valueLabel = GraphicsOptions.labelingText(labelingFunction, datum(item), engine);
+        if (valueLabel.isPresent()) {
+          double radius = labelRadius(GraphicsOptions.labelingPlacement(labelingFunction));
+          double lx = cx + radius * Math.cos(midAngle);
+          double ly = cy + radius * Math.sin(midAngle);
+          primitives.append(F.List(S.Black,
+              F.Text(valueLabel, F.List(F.num(lx), F.num(ly)), F.List(F.C0, F.C0))));
+        }
+
         currentAngle = endAngle;
         index++;
       }
     }
 
-    // Bounds for PieChart are fixed -1..1 usually
-    graphicsOptions.setBoundingBox(new double[] {-1.2, 1.2, -1.2, 1.2});
+    // Bounds for PieChart are fixed -1..1 usually, widened for sectors pushed out from the
+    // centre and for labels written outside the rim
+    double reach = 1.2 + sectorOffset;
+    if (GraphicsOptions.labelingPlacement(labelingFunction) == GraphicsOptions.LABELING_ABOVE) {
+      reach += 0.15;
+    }
+    graphicsOptions.setBoundingBox(new double[] {-reach, reach, -reach, reach});
 
     // Ensure Aspect Ratio 1
     if (graphicsOptions.aspectRatio().equals(S.Automatic)) {
@@ -195,9 +227,29 @@ public class PieChart extends ListPlot {
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
+  /** How far out from the centre a value label sits, for each placement. */
+  private static double labelRadius(int placement) {
+    switch (placement) {
+      case GraphicsOptions.LABELING_ABOVE:
+        return 1.15; // outside the rim
+      case GraphicsOptions.LABELING_BELOW:
+        return 0.3; // close in to the centre
+      default:
+        return 0.55;
+    }
+  }
+
+  /** The datum itself, with any {@code Labeled} or {@code Style} wrapper taken off. */
+  private static IExpr datum(IExpr item) {
+    if (item.isAST(S.Labeled) || item.isAST(S.Style)) {
+      return ((IAST) item).arg1();
+    }
+    return item;
+  }
+
   private IExpr getChartStyle(IExpr styleOption, int index) {
     if (styleOption.isAutomatic()) {
-      return GraphicsOptions.plotStyleColorExpr(index, F.NIL);
+      return GraphicsOptions.chartStyleColorExpr(index);
     }
     if (styleOption.isList()) {
       return GraphicsOptions.getPlotStyle(styleOption, index);
@@ -241,12 +293,16 @@ public class PieChart extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
+    // charts and rasters draw their own extent, so the reference rendering does not clip
+    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
 
     // PieChart Defaults
     defaults[GraphicsOptions.X_AXES] = S.False;
     defaults[GraphicsOptions.X_FRAME] = S.False;
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.C1;
 
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.chartExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

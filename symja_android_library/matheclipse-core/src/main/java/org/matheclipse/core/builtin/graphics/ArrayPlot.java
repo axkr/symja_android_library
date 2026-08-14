@@ -34,17 +34,42 @@ public class ArrayPlot extends ListPlot {
     if (!dataArg.isList()) {
       return F.NIL;
     }
+    // MaxPlotPoints paints a large array from a sample of it rather than from every cell
+    IAST thinned = GraphicsOptions.downsampleMatrix((IAST) dataArg,
+        GraphicsOptions.optionValue(originalAST, S.MaxPlotPoints, S.Automatic).toIntDefault(-1));
+    if (thinned.isPresent()) {
+      dataArg = thinned;
+    }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     boolean colorFunctionScaling = true;
-    for (IExpr opt : options) {
+    IExpr colorFunctionOpt = S.Automatic;
+    IExpr colorRulesOpt = S.None;
+    IExpr meshOpt = S.None;
+    // the options array holds resolved values, not the rules the caller wrote,
+    // so the option rules are read back off the original call
+    for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
-        if (key.isBuiltInSymbol() && ((IBuiltInSymbol) key).ordinal() == ID.ColorFunctionScaling) {
-          if (val.isFalse())
-            colorFunctionScaling = false;
+        if (key.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) key).ordinal()) {
+            case ID.ColorFunctionScaling:
+              if (val.isFalse()) {
+                colorFunctionScaling = false;
+              }
+              break;
+            case ID.ColorFunction:
+              colorFunctionOpt = val;
+              break;
+            case ID.ColorRules:
+              colorRulesOpt = val;
+              break;
+            case ID.Mesh:
+              meshOpt = val;
+              break;
+          }
         }
       }
     }
@@ -107,7 +132,10 @@ public class ArrayPlot extends ListPlot {
     }
 
     IASTAppendable primitives = F.ListAlloc();
-    primitives.append(F.EdgeForm(S.None));
+    // one raster rather than one rectangle per cell
+    java.util.function.DoubleFunction<IExpr> colorMap =
+        GraphicsOptions.colorFunction(colorFunctionOpt, engine, t -> F.GrayLevel(1.0 - t));
+    IExpr[][] cells = new IExpr[rows][cols];
 
     // Draw cells
     // Coordinate System:
@@ -149,22 +177,28 @@ public class ArrayPlot extends ListPlot {
               // Wait, standard grayscale: 0 is Black, 1 is White.
               // Mma ArrayPlot[{0,1}] -> 0 is White, 1 is Black.
               // So we invert: GrayLevel[1 - t]
-              color = F.GrayLevel(1.0 - t);
+              // ArrayPlot's own scale runs white at 0 to black at 1
+              color = colorMap.apply(t);
             }
           } catch (Exception e) {
           }
         }
 
+        // an explicit rule for this value takes precedence over the colour scale
+        IExpr ruleColor = GraphicsOptions.colorRule(colorRulesOpt, list.getAt(r + 1).getAt(c + 1));
+        if (ruleColor != null) {
+          color = ruleColor;
+        }
         if (color.isPresent()) {
-          primitives.append(color);
-          double x0 = c;
-          double x1 = c + 1.0;
-          double y0 = rows - 1.0 - r;
-          double y1 = rows - r;
-          primitives
-              .append(F.Rectangle(F.List(F.num(x0), F.num(y0)), F.List(F.num(x1), F.num(y1))));
+          // row 0 of the array is drawn at the top, which is the order rasterTopFirst expects
+          cells[r][c] = color;
         }
       }
+    }
+    primitives.append(GraphicsOptions.rasterTopFirst(cells, 0, 0, cols, rows));
+    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, 0, 0, cols, rows, cols, rows);
+    if (meshLines.isPresent()) {
+      primitives.append(meshLines);
     }
 
     graphicsOptions.setBoundingBox(new double[] {0, cols, 0, rows});
@@ -209,6 +243,8 @@ public class ArrayPlot extends ListPlot {
   public void setUp(final ISymbol newSymbol) {
 
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
+    // charts and rasters draw their own extent, so the reference rendering does not clip
+    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
 
     // ArrayPlot Defaults
     defaults[GraphicsOptions.X_FRAME] = S.True;
@@ -216,6 +252,8 @@ public class ArrayPlot extends ListPlot {
     defaults[GraphicsOptions.X_ASPECTRATIO] = S.Automatic;
     defaults[GraphicsOptions.X_FRAMETICKS] = S.None;
 
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.rasterExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

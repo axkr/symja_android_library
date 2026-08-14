@@ -48,7 +48,14 @@ public class Plot extends ListPlot {
       }
       return F.NIL;
     }
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
 
     if (argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
@@ -62,7 +69,14 @@ public class Plot extends ListPlot {
           if (rangeList.isList3()) {
 
             final IAST listOfLines =
-                plotToListPoints(function, rangeList, ast, graphicsOptions, engine);
+                plotToListPoints(function, rangeList, ast, graphicsOptions, engine,
+                    GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic)
+                        .toIntDefault(-1),
+                    GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic)
+                        .toIntDefault(-1),
+                    GraphicsOptions.optionValue(originalAST, S.Exclusions, S.Automatic),
+                    GraphicsOptions.optionValue(originalAST, S.WorkingPrecision, S.MachinePrecision)
+                        .toIntDefault(-1));
             if (listOfLines.isNIL()) {
               return F.NIL;
             }
@@ -107,7 +121,8 @@ public class Plot extends ListPlot {
   }
 
   private static IAST plotToListPoints(IExpr functionOrListOfFunctions, final IAST rangeList,
-      final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine) {
+      final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine, int plotPoints,
+      int maxRecursion, IExpr exclusions, int workingPrecision) {
     if (!rangeList.arg1().isSymbol()) {
       // `1` is not a valid variable.
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
@@ -143,7 +158,10 @@ public class Plot extends ListPlot {
       IExpr function = list.get(i);
       double[][] data = null;
       final UnaryNumerical hun = new UnaryNumerical(function, x, Double.NaN, engine);
-      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, xMinD, xMaxD, scale);
+      // WorkingPrecision only matters where machine arithmetic loses the answer
+      hun.setPrecision(workingPrecision);
+      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, xMinD, xMaxD, scale,
+          plotPoints, maxRecursion);
       if (data != null) {
         dataList.add(data);
         GraphicsUtil.automaticPlotRange2D(//
@@ -153,7 +171,8 @@ public class Plot extends ListPlot {
     }
     // graphicsOptions.mergeOptions(graphicsOptions.options().getListOfRules(), yMinMax);
     for (int i = 0; i < dataList.size(); i++) {
-      IExpr temp = plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine);
+      IExpr temp =
+          plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine, exclusions);
       if (temp.isPresent()) {
         listOfLines.append(temp);
       }
@@ -172,9 +191,78 @@ public class Plot extends ListPlot {
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
    */
+  /**
+   * The x positions {@code Exclusions} asks the curve to be broken at.
+   *
+   * <p>
+   * Accepts a bare value, a list of them, and equations such as {@code x == 0}, which are solved
+   * for the plot variable. Anything that does not reduce to a real position is passed over rather
+   * than failing the plot.
+   *
+   * @param exclusions the option value
+   * @param xVar the plot variable
+   */
+  private static double[] exclusionValues(IExpr exclusions, ISymbol xVar, EvalEngine engine) {
+    if (exclusions == null || exclusions.isAutomatic() || exclusions.isNone()
+        || exclusions.isFalse()) {
+      return new double[0];
+    }
+    List<Double> cuts = new ArrayList<Double>();
+    collectExclusions(exclusions, xVar, engine, cuts);
+    double[] out = new double[cuts.size()];
+    for (int i = 0; i < out.length; i++) {
+      out[i] = cuts.get(i);
+    }
+    return out;
+  }
+
+  private static void collectExclusions(IExpr spec, ISymbol xVar, EvalEngine engine,
+      List<Double> cuts) {
+    if (spec.isList()) {
+      IAST list = (IAST) spec;
+      for (int i = 1; i < list.size(); i++) {
+        collectExclusions(list.get(i), xVar, engine, cuts);
+      }
+      return;
+    }
+    double value = spec.evalfNaN();
+    if (Double.isFinite(value)) {
+      cuts.add(value);
+      return;
+    }
+    // an equation names the positions by their solutions
+    try {
+      IExpr solutions = S.Solve.of(engine, spec, xVar);
+      if (solutions.isList()) {
+        IAST list = (IAST) solutions;
+        for (int i = 1; i < list.size(); i++) {
+          IExpr rules = list.get(i);
+          if (!rules.isList()) {
+            continue;
+          }
+          IAST ruleList = (IAST) rules;
+          for (int j = 1; j < ruleList.size(); j++) {
+            if (ruleList.get(j).isRuleAST()) {
+              double solved = ((IAST) ruleList.get(j)).second().evalfNaN();
+              if (Double.isFinite(solved)) {
+                cuts.add(solved);
+              }
+            }
+          }
+        }
+      }
+    } catch (RuntimeException rex) {
+      // an exclusion that cannot be solved simply does not break the curve
+    }
+  }
+
   private static IAST plotLine(double[][] data, final ISymbol xVar, final double xMin,
-      final double xMax, double[] yMinMax, GraphicsOptions graphicsOptions,
-      final EvalEngine engine) {
+      final double xMax, double[] yMinMax, GraphicsOptions graphicsOptions, final EvalEngine engine,
+      IExpr exclusions) {
+    // Exclusions -> None keeps the curve unbroken across a jump; an explicit list breaks it where
+    // the caller says instead of where the jump detector thinks
+    boolean detectJumps = exclusions == null || exclusions.isAutomatic();
+    double[] excluded = exclusionValues(exclusions, xVar, engine);
 
     graphicsOptions.setBoundingBoxScaled(new double[] {xMin, xMax, yMinMax[0], yMinMax[1]});
     final IASTAppendable listOfLines = F.ListAlloc();
@@ -254,9 +342,15 @@ public class Plot extends ListPlot {
         // Heuristic: If current step is very steep AND previous step was relatively flat
         // it indicates a discrete jump (Step Function).
         // Continuous steep curves (like Sin[E^x]) are steep for multiple segments.
-        if (dx < 0.01 && currentSlope > jumpSlopeThreshold) {
+        if (detectJumps && dx < 0.01 && currentSlope > jumpSlopeThreshold) {
           if (lastSlope < flatSlopeThreshold) {
             breakLine = true;
+          }
+        }
+        for (double cut : excluded) {
+          if (cut > Math.min(lastx, curX) && cut <= Math.max(lastx, curX)) {
+            breakLine = true;
+            break;
           }
         }
         lastSlope = currentSlope;
@@ -313,6 +407,8 @@ public class Plot extends ListPlot {
     // Explicitly default AspectRatio to 1/GoldenRatio for Plot (NOT Automatic)
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.Power(S.GoldenRatio, F.CN1);
     defaults[GraphicsOptions.X_PLOTRANGE] = S.Automatic;
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.functionPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

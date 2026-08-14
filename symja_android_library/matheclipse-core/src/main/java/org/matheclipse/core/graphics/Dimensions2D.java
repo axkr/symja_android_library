@@ -21,9 +21,11 @@ public class Dimensions2D {
   private boolean plotRange;
 
   private boolean axes;
+
   public Dimensions2D() {
     this(600, 400);
   }
+
   public Dimensions2D(int width, int height) {
     this.color = RGBColor.BLACK;
     this.width = width;

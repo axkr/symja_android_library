@@ -271,8 +271,8 @@ public class ECharts {
     yAxisBuffer.append("}\n");
   }
 
-  public static void seriesData2D(IAST pointList2D,
-      StringBuilder yAxisBuffer, GraphicsOptions graphicsOptions, String type, String step) {
+  public static void seriesData2D(IAST pointList2D, StringBuilder yAxisBuffer,
+      GraphicsOptions graphicsOptions, String type, String step) {
     String[] legends = createLegends(graphicsOptions, 1);
     yAxisBuffer.append( //
         "{\n" //

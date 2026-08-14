@@ -32,6 +32,12 @@ public class ListContourPlot extends ContourPlot {
     if (!dataArg.isList()) {
       return F.NIL;
     }
+    // MaxPlotPoints contours a sample of a large grid rather than every point of it
+    IAST thinnedData = GraphicsOptions.downsampleMatrix((IAST) dataArg,
+        GraphicsOptions.optionValue(originalAST, S.MaxPlotPoints, S.Automatic).toIntDefault(-1));
+    if (thinnedData.isPresent()) {
+      dataArg = thinnedData;
+    }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
@@ -44,7 +50,9 @@ public class ListContourPlot extends ContourPlot {
     int gridResolution = 25;
 
     // Parse Options
-    for (IExpr opt : options) {
+    // the options array holds resolved values, not the rules the caller wrote,
+    // so the option rules are read back off the original call
+    for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
@@ -92,8 +100,19 @@ public class ListContourPlot extends ContourPlot {
 
     // Generate Primitives
     IASTAppendable primitives = F.ListAlloc();
+    boolean contourLines =
+        !GraphicsOptions.optionValue(originalAST, S.ContourLines, S.True).isFalse();
     generateContoursFromGrid(primitives, gridData, contoursOption, contourStyle, contourShading,
-        colorFunctionScaling);
+        colorFunctionScaling, contourLines,
+        GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic), engine);
+
+    // Mesh draws the sampling grid over the contours, as it does for the function plots
+    IExpr meshLines = GraphicsOptions.meshGrid(
+        GraphicsOptions.optionValue(originalAST, S.Mesh, S.None), gridData.xMin, gridData.yMin,
+        gridData.xMax, gridData.yMax, gridData.zGrid.length - 1, gridData.zGrid[0].length - 1);
+    if (meshLines.isPresent()) {
+      primitives.append(meshLines);
+    }
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
@@ -151,12 +170,21 @@ public class ListContourPlot extends ContourPlot {
 
     if (dataRange.isList() && dataRange.size() >= 3) {
       IAST dr = (IAST) dataRange;
-      IAST xR = (IAST) dr.arg1();
-      IAST yR = (IAST) dr.arg2();
-      gd.xMin = xR.arg1().evalfNaN();
-      gd.xMax = xR.arg2().evalfNaN();
-      gd.yMin = yR.arg1().evalfNaN();
-      gd.yMax = yR.arg2().evalfNaN();
+      if (dr.arg1().isList() && dr.arg2().isList()) {
+        // DataRange -> {{xmin, xmax}, {ymin, ymax}}
+        IAST xR = (IAST) dr.arg1();
+        IAST yR = (IAST) dr.arg2();
+        gd.xMin = xR.arg1().evalfNaN();
+        gd.xMax = xR.arg2().evalfNaN();
+        gd.yMin = yR.arg1().evalfNaN();
+        gd.yMax = yR.arg2().evalfNaN();
+      } else {
+        // DataRange -> {min, max} applies the same range to both axes
+        gd.xMin = dr.arg1().evalfNaN();
+        gd.xMax = dr.arg2().evalfNaN();
+        gd.yMin = gd.xMin;
+        gd.yMax = gd.xMax;
+      }
       if (Double.isNaN(gd.xMin) || Double.isNaN(gd.xMax) || Double.isNaN(gd.yMin)
           || Double.isNaN(gd.yMax)) {
         return null;
@@ -266,8 +294,10 @@ public class ListContourPlot extends ContourPlot {
   }
 
   private void generateContoursFromGrid(IASTAppendable primitives, GridData gd,
-      IExpr contoursOption, IExpr contourStyle, IExpr contourShading,
-      boolean colorFunctionScaling) {
+      IExpr contoursOption, IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
+      boolean contourLines, IExpr colorFunctionOpt, EvalEngine engine) {
+    java.util.function.DoubleFunction<IExpr> colorMap =
+        GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getShadingColor);
 
     if (gd.minZ == Double.MAX_VALUE) {
       return;
@@ -318,7 +348,7 @@ public class ListContourPlot extends ContourPlot {
           double upper = (k == levels.length - 1) ? gd.maxZ : levels[k + 1];
           double bandZ = (lower + upper) * 0.5;
           double t = colorFunctionScaling ? (bandZ - gd.minZ) / (gd.maxZ - gd.minZ) : bandZ;
-          color = getShadingColor(t);
+          color = colorMap.apply(t);
         }
 
         IASTAppendable polygons = F.ListAlloc();
@@ -342,7 +372,7 @@ public class ListContourPlot extends ContourPlot {
     }
 
     // 2. Contour Lines
-    if (!contourStyle.equals(S.None) && !contourStyle.isFalse()) {
+    if (contourLines && !contourStyle.equals(S.None) && !contourStyle.isFalse()) {
       for (int k = 0; k < levels.length; k++) {
         double level = levels[k];
         IASTAppendable lineSegments = F.ListAlloc();
@@ -601,21 +631,21 @@ public class ListContourPlot extends ContourPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    // ListContourPlot shares most defaults with ContourPlot (Frame->True, Axes->False)
-    setOptions(newSymbol, //
-        new IBuiltInSymbol[] {//
-            S.JSForm, S.Filling, S.Axes, S.PlotRange, S.$Scaling, S.Joined, // 6
-            S.PlotLegends, S.PlotLabel, S.AxesLabel, S.PlotStyle, S.GridLines, S.PlotLabels, // 6
-            S.FillingStyle, S.AspectRatio, S.Frame, S.ContourShading, S.ColorFunctionScaling, // 5
-            S.ContourStyle, S.Background, S.Epilog, // 3
-            S.ColorFunctionScaling, S.Contours, S.ContourStyle, S.ContourShading, S.DataRange, // 5
-            S.MaxPlotPoints}, //
-        new IExpr[] {//
-            S.False, S.None, S.False, S.Automatic, S.Automatic, S.False, // 6
-            S.None, S.None, S.None, S.None, S.None, S.None, // 6
-            S.Automatic, F.C1, S.True, S.Automatic, S.True, // 5
-            S.Automatic, S.None, F.CEmptyList, // 3
-            S.True, S.Automatic, S.Automatic, S.Automatic, S.Automatic, // 5
-            S.Automatic});
+    // ListContourPlot inherits ContourPlot's evaluate(), which reads its arguments by the position
+    // they occupy in contourPlotDefaultOptionKeys(). The registered option list must therefore
+    // start with exactly that array, in that order, so it is derived from it rather than repeated
+    // by hand: a hand written copy silently falls out of step whenever the shared list changes.
+    IExpr[] sharedValues = GraphicsOptions.contourPlotDefaultOptionValues(false, false);
+    // ListContourPlot shares ContourPlot's own deviations from those defaults
+    sharedValues[GraphicsOptions.X_AXES] = S.False;
+    sharedValues[GraphicsOptions.X_FRAME] = S.True;
+    sharedValues[GraphicsOptions.X_ASPECTRATIO] = F.C1;
+
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions
+        .contourExtras(new GraphicsOptions.OptionSet()
+            .add(GraphicsOptions.contourPlotDefaultOptionKeys(), sharedValues))
+        // only the list form takes a data range
+        .add(S.Automatic, S.DataRange);
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

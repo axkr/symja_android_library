@@ -38,18 +38,43 @@ public class MatrixPlot extends ListPlot {
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     boolean colorFunctionScaling = true;
-    for (IExpr opt : options) {
+    IExpr colorFunctionOpt = S.Automatic;
+    IExpr colorRulesOpt = S.None;
+    IExpr meshOpt = S.None;
+    // the options array holds resolved values, not the rules the caller wrote,
+    // so the option rules are read back off the original call
+    for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
-        if (key.isBuiltInSymbol() && ((IBuiltInSymbol) key).ordinal() == ID.ColorFunctionScaling) {
-          if (val.isFalse())
-            colorFunctionScaling = false;
+        if (key.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) key).ordinal()) {
+            case ID.ColorFunctionScaling:
+              if (val.isFalse()) {
+                colorFunctionScaling = false;
+              }
+              break;
+            case ID.ColorFunction:
+              colorFunctionOpt = val;
+              break;
+            case ID.ColorRules:
+              colorRulesOpt = val;
+              break;
+            case ID.Mesh:
+              meshOpt = val;
+              break;
+          }
         }
       }
     }
 
     IAST list = (IAST) dataArg;
+    // MaxPlotPoints draws a large matrix from a sample of it rather than from every entry
+    IAST thinned = GraphicsOptions.downsampleMatrix(list,
+        GraphicsOptions.optionValue(originalAST, S.MaxPlotPoints, S.Automatic).toIntDefault(-1));
+    if (thinned.isPresent()) {
+      list = thinned;
+    }
     int rows = list.argSize();
     if (rows == 0)
       return F.NIL;
@@ -94,39 +119,34 @@ public class MatrixPlot extends ListPlot {
     }
 
     IASTAppendable primitives = F.ListAlloc();
-    primitives.append(F.EdgeForm(S.None));
 
-    // Draw cells
-    // Row 0 at top (y = rows-1 to rows)
-    // Row rows-1 at bottom (y = 0 to 1)
-
+    // One raster rather than one rectangle per cell: row 0 of the matrix is drawn at the top,
+    // which is the order rasterTopFirst expects.
+    java.util.function.DoubleFunction<IExpr> colorMap =
+        GraphicsOptions.colorFunction(colorFunctionOpt, engine, GraphicsOptions::getMatrixColor);
+    double[] sortedValues = colorFunctionScaling ? sortedFiniteValues(data) : null;
+    IExpr[][] cells = new IExpr[rows][cols];
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         double val = data[r][c];
-        if (Double.isNaN(val))
+        if (Double.isNaN(val)) {
           continue;
-
+        }
         double t = 0.5;
         if (colorFunctionScaling) {
-          if (max > min)
-            t = (val - min) / (max - min);
+          t = rankFraction(sortedValues, val);
         } else {
           t = val;
         }
-
-        // Use the matrix-specific color map
-        IExpr color = GraphicsOptions.getMatrixColor(t);
-        primitives.append(color);
-
-        double x0 = c;
-        // Overlap by 0.02
-        double x1 = c + 1.02;
-        // Invert Y: row 0 is top
-        double y0 = rows - 1.0 - r;
-        double y1 = rows - r + 0.02;
-
-        primitives.append(F.Rectangle(F.List(F.num(x0), F.num(y0)), F.List(F.num(x1), F.num(y1))));
+        // an explicit rule for this value wins, then ColorFunction, then the matrix colour map
+        IExpr ruleColor = GraphicsOptions.colorRule(colorRulesOpt, list.getAt(r + 1).getAt(c + 1));
+        cells[r][c] = ruleColor != null ? ruleColor : colorMap.apply(t);
       }
+    }
+    primitives.append(GraphicsOptions.rasterTopFirst(cells, 0, 0, cols, rows));
+    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, 0, 0, cols, rows, cols, rows);
+    if (meshLines.isPresent()) {
+      primitives.append(meshLines);
     }
 
     graphicsOptions.setBoundingBox(new double[] {0, cols, 0, rows});
@@ -158,11 +178,69 @@ public class MatrixPlot extends ListPlot {
       }
     }
 
-    // FrameTicks -> {{Left, Right}, {Bottom, Top}}
-    IExpr frameTicks = F.List(F.List(leftTicks, S.None), F.List(S.None, topTicks));
-    graphicsOptions.setFrameTicks(frameTicks);
+    // FrameTicks -> {{Left, Right}, {Bottom, Top}}. The reference rendering labels all four edges,
+    // so the row ticks go on both sides and the column ticks on both top and bottom.
+    IExpr frameTicks = F.List(F.List(leftTicks, leftTicks), F.List(topTicks, topTicks));
+    // through addOption, not setFrameTicks: the field is not one of the values getListOfRules
+    // emits, so setting it alone leaves the registered default of None in the output
+    graphicsOptions.addOption(F.Rule(S.FrameTicks, frameTicks));
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /** Every finite entry of the matrix, in ascending order. */
+  private static double[] sortedFiniteValues(double[][] data) {
+    int count = 0;
+    for (double[] row : data) {
+      for (double v : row) {
+        if (Double.isFinite(v)) {
+          count++;
+        }
+      }
+    }
+    double[] values = new double[count];
+    int i = 0;
+    for (double[] row : data) {
+      for (double v : row) {
+        if (Double.isFinite(v)) {
+          values[i++] = v;
+        }
+      }
+    }
+    java.util.Arrays.sort(values);
+    return values;
+  }
+
+  /**
+   * Where a value sits in the distribution of the matrix, from 0 for the smallest to 1 for the
+   * largest.
+   *
+   * <p>
+   * Scaling linearly between the smallest and largest entry collapses the picture whenever the
+   * values span orders of magnitude: for {@code Table[Binomial[n, k], ...]} that leaves about
+   * ninety-eight percent of the cells within one percent of the pale end, so the plot reads as a
+   * flat field with a single bright spot. Ranking the values instead spends the colour range on
+   * where the data actually is. This is not the exact rescaling the reference rendering uses — that
+   * one could not be recovered from the captured colours alone — but it is far closer than a linear
+   * ramp, and it is monotonic, so the ordering of the cells is still faithful.
+   */
+  private static double rankFraction(double[] sortedValues, double value) {
+    int n = sortedValues.length;
+    if (n <= 1) {
+      return 0.5;
+    }
+    // number of entries strictly smaller, so the smallest maps to 0 and the largest to 1
+    int low = 0;
+    int high = n;
+    while (low < high) {
+      int mid = (low + high) >>> 1;
+      if (sortedValues[mid] < value) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return (double) low / (n - 1);
   }
 
   private List<Double> getNiceTicks(double min, double max, int maxTicks) {
@@ -193,11 +271,15 @@ public class MatrixPlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
+    // charts and rasters draw their own extent, so the reference rendering does not clip
+    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
 
     defaults[GraphicsOptions.X_FRAME] = S.True;
     defaults[GraphicsOptions.X_AXES] = S.False;
     defaults[GraphicsOptions.X_ASPECTRATIO] = S.Automatic;
 
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.rasterExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

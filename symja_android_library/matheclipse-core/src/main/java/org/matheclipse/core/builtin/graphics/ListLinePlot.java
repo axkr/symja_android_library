@@ -27,6 +27,13 @@ public class ListLinePlot extends ListPlot {
     }
     StringBuilder jsControl = new StringBuilder();
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
     String graphicsPrimitivesStr = listLinePlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitivesStr != null) {
       jsControl.append(
@@ -141,6 +148,13 @@ public class ListLinePlot extends ListPlot {
     }
     GraphicsOptions graphicsOptions =
         setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
     // GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setJoined(true);
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
@@ -159,7 +173,9 @@ public class ListLinePlot extends ListPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false, true));
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.listPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(),
+            GraphicsOptions.listPlotDefaultOptionValues(false, true)));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

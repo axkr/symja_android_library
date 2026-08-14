@@ -24,6 +24,13 @@ public class ListLogLogPlot extends ListPlot {
     }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
 
     if (graphicsPrimitives.isPresent()) {
@@ -43,7 +50,9 @@ public class ListLogLogPlot extends ListPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false, false));
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.listPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(),
+            GraphicsOptions.listPlotDefaultOptionValues(false, false)));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

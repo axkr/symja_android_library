@@ -64,12 +64,16 @@ public class GraphGraphics {
 
   public final static int X_DIRECTED_EDGES = 0;
 
+  public final static int X_VERTEX_SIZE = 2;
+
+  public final static int X_VERTEX_LABELS = 3;
+
   public static IBuiltInSymbol[] defaultGraphOptionKeys() {
-    return new IBuiltInSymbol[] {S.DirectedEdges, S.GraphLayout};
+    return new IBuiltInSymbol[] {S.DirectedEdges, S.GraphLayout, S.VertexSize, S.VertexLabels};
   }
 
   public static IExpr[] defaultGraphOptionValues() {
-    return new IExpr[] {S.False, F.stringx("LayeredEmbedding")};
+    return new IExpr[] {S.False, F.stringx("LayeredEmbedding"), S.Automatic, S.None};
   }
 
   private final Graph<IExpr, ?> graph;
@@ -796,12 +800,73 @@ public class GraphGraphics {
     return graphics;
   }
 
+  /**
+   * The coordinates of the vertices of a graph in the order of <code>VertexList</code>.
+   *
+   * <p>
+   * The default embedding <code>&quot;CircularEmbedding&quot;</code> places the <code>n</code>
+   * vertices counterclockwise on the unit circle, starting with the vertex at the angle
+   * <code>Pi/2 + 2*Pi/n</code>. Every other embedding is delegated to the layout algorithms used
+   * for <code>GraphPlot</code>.
+   * </p>
+   *
+   * @param graph
+   * @param embedding the name of the embedding, for example
+   *        <code>&quot;CircularEmbedding&quot;</code> or <code>&quot;SpringEmbedding&quot;</code>
+   */
+  public static IAST vertexCoordinates(Graph<IExpr, ?> graph, String embedding) {
+    Set<IExpr> vertexSet = graph.vertexSet();
+    int n = vertexSet.size();
+    IASTAppendable result = F.ListAlloc(n);
+    if (n == 0) {
+      return result;
+    }
+    if (embedding.isEmpty() || embedding.contains("CircularEmbedding")) {
+      if (n == 1) {
+        return F.list(F.list(F.CD0, F.CD0));
+      }
+      double angleStep = 2.0 * Math.PI / n;
+      int i = 1;
+      for (IExpr vertex : vertexSet) {
+        double angle = Math.PI / 2.0 + i++ * angleStep;
+        result.append(F.list(F.num(chopZero(Math.cos(angle))), F.num(chopZero(Math.sin(angle)))));
+      }
+      return result;
+    }
+
+    IASTAppendable options = F.ListAlloc(1);
+    options.append(F.Rule(S.GraphLayout, F.stringx(embedding)));
+    GraphGraphics graphGraphics = new GraphGraphics(GraphExpr.newInstance(graph, options));
+    graphGraphics.parseOptions();
+    graphGraphics.calculateLayout(graph);
+    for (IExpr vertex : vertexSet) {
+      double[] coordinates = graphGraphics.vertexCoords.get(vertex);
+      if (coordinates == null) {
+        result.append(F.list(F.CD0, F.CD0));
+      } else {
+        result.append(F.list(F.num(coordinates[0]), F.num(coordinates[1])));
+      }
+    }
+    return result;
+  }
+
+  /** Map a coordinate which is zero except for a rounding error to an exact <code>0.0</code>. */
+  private static double chopZero(double value) {
+    return Math.abs(value) < 1.0e-12 ? 0.0 : value;
+  }
+
   public static IASTAppendable createOptionsList(final IExpr[] options) {
-    IASTAppendable optionsList = F.ListAlloc(2);
+    IASTAppendable optionsList = F.ListAlloc(4);
     if (options[X_DIRECTED_EDGES].isTrue()) {
       optionsList.append(F.Rule(S.DirectedEdges, S.True));
     }
     optionsList.append(F.Rule(S.GraphLayout, options[X_GRAPH_LAYOUT]));
+    if (options.length > X_VERTEX_SIZE && options[X_VERTEX_SIZE] != S.Automatic) {
+      optionsList.append(F.Rule(S.VertexSize, options[X_VERTEX_SIZE]));
+    }
+    if (options.length > X_VERTEX_LABELS && options[X_VERTEX_LABELS] != S.None) {
+      optionsList.append(F.Rule(S.VertexLabels, options[X_VERTEX_LABELS]));
+    }
     return optionsList;
   }
 }

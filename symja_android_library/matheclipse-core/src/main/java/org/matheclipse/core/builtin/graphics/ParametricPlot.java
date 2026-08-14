@@ -49,7 +49,14 @@ public class ParametricPlot extends Plot {
       ast = ast.copyUntil(argSize + 1);
     }
 
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
     IExpr function = ast.arg1();
     IAST rangeList1 = (IAST) ast.arg2();
 
@@ -73,7 +80,7 @@ public class ParametricPlot extends Plot {
         IExpr plotStyle = options[GraphicsOptions.X_PLOTSTYLE];
         IExpr color;
         if (plotStyle.isNone()) {
-          color = GraphicsOptions.plotStyleColorExpr(0, F.NIL);
+          color = GraphicsOptions.plotStyleDirective(0, F.NIL, graphicsOptions.curveThickness());
         } else {
           color = GraphicsOptions.getPlotStyle(plotStyle, 0);
         }
@@ -87,8 +94,10 @@ public class ParametricPlot extends Plot {
 
       } else {
         // Standard Parametric Curve (1 parameter)
-        IAST listOfLines =
-            parametricPlotToListPoints(function, rangeList1, ast, graphicsOptions, engine);
+        IAST listOfLines = parametricPlotToListPoints(function, rangeList1, ast, graphicsOptions,
+            engine,
+            GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic).toIntDefault(-1),
+            GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1));
 
         if (listOfLines.isNIL()) {
           return F.NIL;
@@ -220,7 +229,7 @@ public class ParametricPlot extends Plot {
           polyIndices.append(F.List(F.ZZ(indexMap[k1]), F.ZZ(indexMap[k2]), F.ZZ(indexMap[k3]),
               F.ZZ(indexMap[k4])));
         }
-        }
+      }
     }
 
     if (polyIndices.isEmpty()) {
@@ -252,7 +261,8 @@ public class ParametricPlot extends Plot {
   }
 
   private static IAST parametricPlotToListPoints(IExpr functionOrListOfFunctions,
-      final IAST rangeList, final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine) {
+      final IAST rangeList, final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine,
+      int plotPoints, int maxRecursion) {
     if (!rangeList.arg1().isSymbol()) {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
@@ -264,7 +274,20 @@ public class ParametricPlot extends Plot {
     }
     double tMinD = ((INum) tMin).getRealPart();
     double tMaxD = ((INum) tMax).getRealPart();
-    double step = (tMaxD - tMinD) / STEPS;
+    // an explicit PlotPoints replaces the fixed sweep resolution
+    int steps = plotPoints;
+    if (steps < 2) {
+      steps = STEPS;
+    }
+    // This curve is swept at a fixed resolution rather than refined adaptively, so MaxRecursion
+    // is approximated by sampling more finely -- a level doubles the number of steps.
+    if (maxRecursion >= 1) {
+      steps = (int) Math.min((long) steps << Math.min(maxRecursion, 4), 20000L);
+    } else if (maxRecursion == 0) {
+      // MaxRecursion -> 0 asks for no refinement at all
+      steps = Math.max(2, steps / 8);
+    }
+    double step = (tMaxD - tMinD) / steps;
 
     IAST curveList;
     if (functionOrListOfFunctions.isList()) {
@@ -286,9 +309,9 @@ public class ParametricPlot extends Plot {
       IExpr fx = ((IAST) curveSpec).arg1();
       IExpr fy = ((IAST) curveSpec).arg2();
 
-      IASTAppendable linePoints = F.ListAlloc(STEPS);
+      IASTAppendable linePoints = F.ListAlloc(steps);
 
-      for (int i = 0; i <= STEPS; i++) {
+      for (int i = 0; i <= steps; i++) {
         double t = tMinD + i * step;
         IExpr tVal = F.num(t);
         IExpr xExpr = F.subst(fx, F.Rule(tSym, tVal));
@@ -326,6 +349,8 @@ public class ParametricPlot extends Plot {
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
     defaults[GraphicsOptions.X_ASPECTRATIO] = S.Automatic;
-    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(), defaults);
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.functionPlotExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }
