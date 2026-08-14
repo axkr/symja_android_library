@@ -32,6 +32,292 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({0,LessEqual,LessEqual,2})");
   }
 
+  /**
+   * Tests for the sign predicates and the integer valued (rounding) functions. In contrast to
+   * <code>Interval</code>, an <code>IntervalData</code> bound can be open (<code>Less</code>) so
+   * that a zero boundary is excluded from the value range.
+   */
+  @Test
+  public void testIntervalDataSignAndRounding() {
+    // Signs - closed intervals
+    check("Positive(IntervalData({1,LessEqual,LessEqual,5}))", //
+        "True");
+    check("Negative(IntervalData({1,LessEqual,LessEqual,5}))", //
+        "False");
+    check("NonNegative(IntervalData({1,LessEqual,LessEqual,5}))", //
+        "True");
+    check("NonPositive(IntervalData({1,LessEqual,LessEqual,5}))", //
+        "False");
+    check("Positive(IntervalData({-5,LessEqual,LessEqual,-1}))", //
+        "False");
+    check("Negative(IntervalData({-5,LessEqual,LessEqual,-1}))", //
+        "True");
+    check("NonNegative(IntervalData({-5,LessEqual,LessEqual,-1}))", //
+        "False");
+    check("NonPositive(IntervalData({-5,LessEqual,LessEqual,-1}))", //
+        "True");
+
+    // Straddling zero stays undecided
+    check("Positive(IntervalData({-1,LessEqual,LessEqual,5}))", //
+        "Positive(IntervalData({-1,LessEqual,LessEqual,5}))");
+    check("Negative(IntervalData({-1,LessEqual,LessEqual,5}))", //
+        "Negative(IntervalData({-1,LessEqual,LessEqual,5}))");
+
+    // Closed zero boundary includes zero
+    check("Positive(IntervalData({0,LessEqual,LessEqual,5}))", //
+        "False");
+    check("NonNegative(IntervalData({0,LessEqual,LessEqual,5}))", //
+        "True");
+    check("Negative(IntervalData({-5,LessEqual,LessEqual,0}))", //
+        "False");
+    check("NonPositive(IntervalData({-5,LessEqual,LessEqual,0}))", //
+        "True");
+
+    // Open zero boundary excludes zero
+    check("Positive(IntervalData({0,Less,LessEqual,5}))", //
+        "True");
+    check("NonPositive(IntervalData({0,Less,LessEqual,5}))", //
+        "False");
+    check("Negative(IntervalData({-5,LessEqual,Less,0}))", //
+        "True");
+    check("NonNegative(IntervalData({-5,LessEqual,Less,0}))", //
+        "False");
+
+    // Rounding
+    check("Floor(IntervalData({-1/3,LessEqual,LessEqual,3/4}))", //
+        "IntervalData({-1,LessEqual,LessEqual,0})");
+    check("Floor(IntervalData({0,LessEqual,LessEqual,1}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+    // the open upper bound excludes the integer 1
+    check("Floor(IntervalData({0,LessEqual,Less,1}))", //
+        "IntervalData({0,LessEqual,LessEqual,0})");
+    check("Floor(IntervalData({-Infinity,Less,LessEqual,3/4}))", //
+        "IntervalData({-Infinity,Less,LessEqual,0})");
+    check("Ceiling(IntervalData({-1/3,LessEqual,LessEqual,3/4}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+    check("Ceiling(IntervalData({0,Less,LessEqual,1}))", //
+        "IntervalData({1,LessEqual,LessEqual,1})");
+    check("IntegerPart(IntervalData({-3/2,LessEqual,LessEqual,3/2}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    check("Round(IntervalData({-1/3,LessEqual,LessEqual,3/4}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+  }
+
+  /** Tests for Plus, Times, reciprocals and powers of intervals. */
+  @Test
+  public void testIntervalDataArithmetic() {
+    // Plus / Times
+    check("IntervalData({1,LessEqual,LessEqual,2})+IntervalData({3,LessEqual,LessEqual,4})", //
+        "IntervalData({4,LessEqual,LessEqual,6})");
+    check("IntervalData({1,LessEqual,LessEqual,2})*IntervalData({3,LessEqual,LessEqual,4})", //
+        "IntervalData({3,LessEqual,LessEqual,8})");
+    check("1+IntervalData({-1,Less,Less,1})", //
+        "IntervalData({0,Less,Less,2})");
+    check("-IntervalData({1,Less,LessEqual,2})", //
+        "IntervalData({-2,LessEqual,Less,-1})");
+    check("IntervalData({1,Less,LessEqual,2})-IntervalData({1,LessEqual,LessEqual,2})", //
+        "IntervalData({-1,Less,LessEqual,1})");
+
+    // Reciprocal
+    check("1/IntervalData({2,LessEqual,LessEqual,4})", //
+        "IntervalData({1/4,LessEqual,LessEqual,1/2})");
+    check("1/IntervalData({-4,LessEqual,LessEqual,-2})", //
+        "IntervalData({-1/2,LessEqual,LessEqual,-1/4})");
+
+    // Integer powers
+    check("IntervalData({2,LessEqual,LessEqual,3})^2", //
+        "IntervalData({4,LessEqual,LessEqual,9})");
+    check("IntervalData({-1,LessEqual,LessEqual,2})^2", //
+        "IntervalData({0,LessEqual,LessEqual,4})");
+    check("IntervalData({-3,LessEqual,LessEqual,-1})^2", //
+        "IntervalData({1,LessEqual,LessEqual,9})");
+    check("IntervalData({2,LessEqual,LessEqual,3})^3", //
+        "IntervalData({8,LessEqual,LessEqual,27})");
+    check("IntervalData({2,Less,LessEqual,3})^2", //
+        "IntervalData({4,Less,LessEqual,9})");
+
+    // Interval exponent
+    check("IntervalData({2,LessEqual,LessEqual,3})^IntervalData({2,LessEqual,LessEqual,3})", //
+        "IntervalData({4,LessEqual,LessEqual,27})");
+    check("IntervalData({1/2,LessEqual,LessEqual,2})^IntervalData({2,LessEqual,LessEqual,3})", //
+        "IntervalData({1/8,LessEqual,LessEqual,8})");
+    check("IntervalData({2,LessEqual,LessEqual,3})^IntervalData({-1,LessEqual,LessEqual,1})", //
+        "IntervalData({1/3,LessEqual,LessEqual,3})");
+    check("IntervalData({3,LessEqual,LessEqual,5})^IntervalData({-2,LessEqual,LessEqual,-1})", //
+        "IntervalData({1/25,LessEqual,LessEqual,1/3})");
+    check("IntervalData({0,LessEqual,LessEqual,2})^IntervalData({2,LessEqual,LessEqual,3})", //
+        "IntervalData({0,LessEqual,LessEqual,8})");
+    // a negative base part is left unevaluated
+    check("IntervalData({-2,LessEqual,LessEqual,3})^IntervalData({2,LessEqual,LessEqual,3})", //
+        "IntervalData({-2,LessEqual,LessEqual,3})^IntervalData({2,LessEqual,LessEqual,3})");
+    check("IntervalData({2,Less,LessEqual,3})^IntervalData({2,LessEqual,LessEqual,3})", //
+        "IntervalData({4,Less,LessEqual,27})");
+  }
+
+  /** Tests for elementary, hyperbolic and (inverse) trigonometric functions. */
+  @Test
+  public void testIntervalDataElementaryAndTrigonometricFunctions() {
+    // Abs / Sqrt / Log / Exp
+    check("Abs(IntervalData({-43,LessEqual,LessEqual,-42}))", //
+        "IntervalData({42,LessEqual,LessEqual,43})");
+    check("Sqrt(IntervalData({1,LessEqual,LessEqual,4}))", //
+        "IntervalData({1,LessEqual,LessEqual,2})");
+    check("Log(IntervalData({1,LessEqual,LessEqual,E}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+    check("Exp(IntervalData({0,LessEqual,LessEqual,1}))", //
+        "IntervalData({1,LessEqual,LessEqual,E})");
+
+    // Hyperbolic
+    check("Sinh(IntervalData({-1,LessEqual,LessEqual,1}))", //
+        "IntervalData({-Sinh(1),LessEqual,LessEqual,Sinh(1)})");
+    check("Cosh(IntervalData({-1,LessEqual,LessEqual,1}))", //
+        "IntervalData({1,LessEqual,LessEqual,Cosh(1)})");
+    check("Tanh(IntervalData({-1,LessEqual,LessEqual,1}))", //
+        "IntervalData({-Tanh(1),LessEqual,LessEqual,Tanh(1)})");
+    check("Sech(IntervalData({-1,LessEqual,LessEqual,1}))", //
+        "IntervalData({Sech(1),LessEqual,LessEqual,1})");
+    check("Coth(IntervalData({1,LessEqual,LessEqual,2}))", //
+        "IntervalData({Coth(2),LessEqual,LessEqual,Coth(1)})");
+    // Coth(0+) tends to +Infinity
+    check("Coth(IntervalData({0,Less,LessEqual,2}))", //
+        "IntervalData({Coth(2),LessEqual,Less,Infinity})");
+    check("Coth(IntervalData({-1,LessEqual,LessEqual,2}))", //
+        "IntervalData({-Infinity,Less,LessEqual,-Coth(1)},{Coth(2),LessEqual,Less,Infinity})");
+    check("Csch(IntervalData({1,LessEqual,LessEqual,2}))", //
+        "IntervalData({Csch(2),LessEqual,LessEqual,Csch(1)})");
+    check("Csch(IntervalData({0,Less,LessEqual,2}))", //
+        "IntervalData({Csch(2),LessEqual,Less,Infinity})");
+
+    // Trigonometric
+    check("Sin(IntervalData({0,LessEqual,LessEqual,Pi}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+    check("Cos(IntervalData({0,LessEqual,LessEqual,Pi}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    check("Cos(IntervalData({0,Less,Less,Pi/2}))", //
+        "IntervalData({0,Less,Less,1})");
+    check("Tan(IntervalData({0,LessEqual,LessEqual,1}))", //
+        "IntervalData({0,LessEqual,LessEqual,Tan(1)})");
+    check("Cot(IntervalData({1,LessEqual,LessEqual,2}))", //
+        "IntervalData({Cot(2),LessEqual,LessEqual,Cot(1)})");
+    // crossing a single pole splits the image into two rays
+    check("Cot(IntervalData({-1,LessEqual,LessEqual,1}))", //
+        "IntervalData({-Infinity,Less,LessEqual,-Cot(1)},{Cot(1),LessEqual,Less,Infinity})");
+    check("Cot(IntervalData({Pi/6,LessEqual,LessEqual,Pi/3}))", //
+        "IntervalData({1/Sqrt(3),LessEqual,LessEqual,Sqrt(3)})");
+
+    // Inverse trigonometric
+    check("ArcSin(IntervalData({-1,LessEqual,LessEqual,1}))", //
+        "IntervalData({-Pi/2,LessEqual,LessEqual,Pi/2})");
+    check("ArcCos(IntervalData({0,LessEqual,LessEqual,1/2}))", //
+        "IntervalData({Pi/3,LessEqual,LessEqual,Pi/2})");
+    check("ArcTan(IntervalData({0,LessEqual,LessEqual,1}))", //
+        "IntervalData({0,LessEqual,LessEqual,Pi/4})");
+    check("ArcSinh(IntervalData({0,LessEqual,LessEqual,1}))", //
+        "IntervalData({0,LessEqual,LessEqual,ArcSinh(1)})");
+    check("ArcTanh(IntervalData({0,LessEqual,LessEqual,1/2}))", //
+        "IntervalData({0,LessEqual,LessEqual,ArcTanh(1/2)})");
+  }
+
+  /** Tests for IntervalMemberQ, the relational operators and equality. */
+  @Test
+  public void testIntervalDataMembershipAndComparisons() {
+    // IntervalMemberQ
+    check("IntervalMemberQ(IntervalData({1,LessEqual,LessEqual,5}),3)", //
+        "True");
+    check("IntervalMemberQ(IntervalData({1,LessEqual,LessEqual,5}),6)", //
+        "False");
+    check("IntervalMemberQ(IntervalData({1,LessEqual,LessEqual,5}),1)", //
+        "True");
+    check("IntervalMemberQ(IntervalData({1,Less,Less,5}),1)", //
+        "False");
+    check("IntervalMemberQ(IntervalData({1,Less,Less,5}),5)", //
+        "False");
+    check("IntervalMemberQ(IntervalData({1,LessEqual,LessEqual,5}),{2,7})", //
+        "{True,False}");
+
+    // Comparisons - disjoint intervals are decidable
+    check("Less(IntervalData({1,LessEqual,LessEqual,2}),IntervalData({5,LessEqual,LessEqual,6}))", //
+        "True");
+    check(
+        "Greater(IntervalData({5,LessEqual,LessEqual,6}),IntervalData({1,LessEqual,LessEqual,2}))", //
+        "True");
+    check("Greater(IntervalData({5,LessEqual,LessEqual,6}),3)", //
+        "True");
+    check("Less(IntervalData({2,LessEqual,LessEqual,3}),4)", //
+        "True");
+    check("Less(3,IntervalData({4,LessEqual,LessEqual,5}))", //
+        "True");
+
+    // Comparisons - closed bounds that touch
+    check("Less(IntervalData({1,LessEqual,LessEqual,2}),IntervalData({2,LessEqual,LessEqual,3}))", //
+        "IntervalData({1,LessEqual,LessEqual,2})<IntervalData({2,LessEqual,LessEqual,3})");
+    check(
+        "LessEqual(IntervalData({1,LessEqual,LessEqual,2}),IntervalData({2,LessEqual,LessEqual,3}))", //
+        "True");
+    check(
+        "GreaterEqual(IntervalData({5,LessEqual,LessEqual,6}),IntervalData({3,LessEqual,LessEqual,4}))", //
+        "True");
+
+    // Comparisons - an open bound excludes the touching value, so Less becomes decidable
+    check("Less(IntervalData({1,LessEqual,Less,2}),IntervalData({2,LessEqual,LessEqual,3}))", //
+        "True");
+    check("Less(IntervalData({1,LessEqual,LessEqual,2}),IntervalData({2,Less,LessEqual,3}))", //
+        "True");
+
+    // Comparisons - overlapping intervals stay undecided
+    check("Less(IntervalData({1,LessEqual,LessEqual,5}),IntervalData({3,LessEqual,LessEqual,7}))", //
+        "IntervalData({1,LessEqual,LessEqual,5})<IntervalData({3,LessEqual,LessEqual,7})");
+
+    // Equality
+    check("IntervalData({2,LessEqual,LessEqual,3})==IntervalData({4,LessEqual,LessEqual,5})", //
+        "False");
+    check("IntervalData({2,LessEqual,LessEqual,3})!=IntervalData({4,LessEqual,LessEqual,5})", //
+        "True");
+    check("IntervalData({2,LessEqual,LessEqual,3})==IntervalData({2,LessEqual,LessEqual,3})", //
+        "True");
+    // touching but disjoint because the upper bound is open
+    check("IntervalData({1,LessEqual,Less,2})==IntervalData({2,LessEqual,LessEqual,3})", //
+        "False");
+  }
+
+  /** Tests for Min, Max, MinMax and unions/intersections/complements of intervals. */
+  @Test
+  public void testIntervalDataPropertiesAndSets() {
+    // Min / Max / MinMax
+    check("Min(IntervalData({3,LessEqual,LessEqual,5}))", //
+        "3");
+    check("Max(IntervalData({3,LessEqual,LessEqual,5}))", //
+        "5");
+    check("Min(IntervalData({3,LessEqual,LessEqual,5},{1,LessEqual,LessEqual,2}))", //
+        "1");
+    check("Max(IntervalData({1,LessEqual,LessEqual,3},{5,LessEqual,LessEqual,7}))", //
+        "7");
+    check("MinMax(IntervalData({2,LessEqual,LessEqual,7}))", //
+        "{2,7}");
+    check("MinMax(IntervalData({1,LessEqual,LessEqual,2},{5,LessEqual,LessEqual,8}))", //
+        "{1,8}");
+    // symbolic bounds are not orderable
+    check("MinMax(IntervalData({a,LessEqual,LessEqual,b}))", //
+        "MinMax(IntervalData({a,LessEqual,LessEqual,b}))");
+
+    // Union / Intersection / Complement
+    check(
+        "IntervalUnion(IntervalData({1,LessEqual,LessEqual,3}),IntervalData({5,LessEqual,LessEqual,7}))", //
+        "IntervalData({1,LessEqual,LessEqual,3},{5,LessEqual,LessEqual,7})");
+    check(
+        "IntervalUnion(IntervalData({1,LessEqual,LessEqual,4}),IntervalData({3,LessEqual,LessEqual,7}))", //
+        "IntervalData({1,LessEqual,LessEqual,7})");
+    check(
+        "IntervalIntersection(IntervalData({1,LessEqual,LessEqual,3}),IntervalData({2,LessEqual,LessEqual,5}))", //
+        "IntervalData({2,LessEqual,LessEqual,3})");
+    check(
+        "IntervalIntersection(IntervalData({1,LessEqual,LessEqual,2}),IntervalData({4,LessEqual,LessEqual,5}))", //
+        "IntervalData()");
+    check(
+        "IntervalComplement(IntervalData({0,LessEqual,LessEqual,10}),IntervalData({2,LessEqual,LessEqual,4}))", //
+        "IntervalData({0,LessEqual,Less,2},{4,Less,LessEqual,10})");
+  }
+
   @Test
   public void testIntervalDataCos() {
     check("Cos(IntervalData({-Infinity,Less,Less,0}))", //

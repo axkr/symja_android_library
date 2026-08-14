@@ -886,4 +886,249 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "Interval({1/1000000,1/998001})");
   }
 
+
+  /**
+   * Tests for construction and normalization of Interval
+   */
+  @Test
+  public void testIntervalConstruction() {
+    check("Interval({1,3})", "Interval({1,3})");
+    check("Interval({5,1})", "Interval({1,5})");
+    check("Interval({1,3},{2,4})", "Interval({1,4})");
+    check("Interval({1,3},{3,5})", "Interval({1,5})");
+    check("Interval({1,2},{4,5})", "Interval({1,2},{4,5})");
+    check("Interval()", "Interval()");
+    check("Interval({1,3},{5,7},{2,6})", "Interval({1,7})");
+    check("Interval({1/3,2/3})", "Interval({1/3,2/3})");
+    check("Interval({-Infinity,5})", "Interval({-Infinity,5})");
+  }
+
+  /**
+   * Tests for arithmetic operations (Plus, Times, Divide, Power) on intervals
+   */
+  @Test
+  public void testIntervalArithmetic() {
+    // Plus
+    check("Interval({1,2})+Interval({3,4})", "Interval({4,6})");
+    check("Interval({1,2})+3", "Interval({4,5})");
+    check("Interval({1,2})+Interval({3,5},{7,9})", "Interval({4,7},{8,11})");
+
+    // Times
+    check("Interval({-2,1})*Interval({3,4})", "Interval({-8,4})");
+    check("2*Interval({1,3})", "Interval({2,6})");
+    check("0*Interval({1,3})", "Interval({0,0})");
+    check("Interval({1,2})*Interval({3,5},{7,9})", "Interval({3,18})");
+
+    // Divide and Reciprocal
+    check("1/Interval({2,4})", "Interval({1/4,1/2})");
+    check("Interval({1,2})^(-1)", "Interval({1/2,1})");
+    check("1/Interval({-2,3})", "Interval({-Infinity,-1/2},{1/3,Infinity})");
+    check("Interval({-2,3})^(-1)", "Interval({-Infinity,-1/2},{1/3,Infinity})");
+    check("2/Interval({-2,3})", "Interval({-Infinity,-1},{2/3,Infinity})");
+    check("1/Interval({0,3})", "Interval({1/3,Infinity})");
+    check("1/Interval({-3,0})", "Interval({-Infinity,-1/3})");
+    check("1/Interval({-4,-2})", "Interval({-1/2,-1/4})");
+
+    // Power
+    check("Interval({-1,2})^2", "Interval({0,4})");
+    check("Interval({-3,-1})^2", "Interval({1,9})");
+    check("Interval({2,3})^2", "Interval({4,9})");
+    check("Interval({2,3})^3", "Interval({8,27})");
+    check("Interval({-2,1})^3", "Interval({-8,1})");
+
+    // Interval Power Interval
+    check("Interval({2,3})^Interval({2,3})", "Interval({4,27})");
+    check("Interval({1/2,2})^Interval({2,3})", "Interval({1/8,8})");
+    check("Interval({2,3})^Interval({-1,1})", "Interval({1/3,3})");
+    check("Interval({3,5})^Interval({-2,-1})", "Interval({1/25,1/3})");
+    check("Interval({0,2})^Interval({2,3})", "Interval({0,8})");
+    check("Interval({-2,3})^Interval({2,3})", "Interval({-2,3})^Interval({2,3})");
+  }
+
+  /**
+   * Tests for Min, Max, MinMax, and unions/intersections of intervals.
+   */
+  @Test
+  public void testIntervalPropertiesAndSets() {
+    // Min / Max / MinMax
+    check("Min(Interval({3,5}))", "3");
+    check("Max(Interval({1,3},{5,7}))", "7");
+    check("Min(Interval({3,5},{1,2}))", "1");
+    check("MinMax(Interval({2,7}))", "{2,7}");
+    check("MinMax(Interval({-3,4}))", "{-3,4}");
+    check("MinMax(Interval({1,2},{5,8}))", "{1,8}");
+    check("MinMax(Interval({2,7}),1)", "{1,8}");
+    check("MinMax(Interval({a,b}))", "MinMax(Interval({a,b}))");
+
+    // Union and Intersection
+    check("IntervalUnion(Interval({1,3}),Interval({5,7}))", "Interval({1,3},{5,7})");
+    check("IntervalUnion(Interval({1,4}),Interval({3,7}))", "Interval({1,7})");
+    check("IntervalIntersection(Interval({1,3}),Interval({2,5}))", "Interval({2,3})");
+    check("IntervalIntersection(Interval({1,2}),Interval({4,5}))", "Interval()");
+  }
+
+  /**
+   * Tests for IntervalMemberQ and relational operators.
+   */
+  @Test
+  public void testIntervalMembershipAndComparisons() {
+    // IntervalMemberQ
+    check("IntervalMemberQ(Interval({1,5}),3)", "True");
+    check("IntervalMemberQ(Interval({1,5}),6)", "False");
+    check("IntervalMemberQ(Interval({1,5}),Interval({2,3}))", "True");
+    check("IntervalMemberQ(Interval({1,3},{5,7}),4)", "False");
+    check("IntervalMemberQ(Interval({1,3},{5,7}),6)", "True");
+    check("IntervalMemberQ(Interval({1,5}),{2,7})", "{True,False}");
+    check("IntervalMemberQ(Interval({1,5}),{0,3,6})", "{False,True,False}");
+    check("IntervalMemberQ(Interval({1,3},{5,7}),{2,4,6})", "{True,False,True}");
+    check("IntervalMemberQ(Interval({1,5}),{})", "{}");
+
+    // Comparisons
+    check("Less(Interval({1,2}),Interval({5,6}))", "True");
+    check("Less(Interval({1,5}),Interval({3,7}))", "Interval({1,5})<Interval({3,7})");
+    check("Greater(Interval({5,6}),3)", "True");
+    check("LessEqual(Interval({1,2}),Interval({2,3}))", "True");
+    check("GreaterEqual(Interval({5,6}),Interval({3,4}))", "True");
+    check("Interval({2,3})<Interval({4,5})", "True");
+    check("Interval({4,5})<Interval({2,3})", "False");
+    check("Interval({2,3})>Interval({4,5})", "False");
+    check("Interval({2,3})<=Interval({3,5})", "True");
+    check("Interval({2,3})<4", "True");
+    check("3<Interval({4,5})", "True");
+    check("Interval({2,5})<Interval({4,7})", "Interval({2,5})<Interval({4,7})");
+    check("Interval({1,2})<Interval({2,3})", "Interval({1,2})<Interval({2,3})");
+    check("Interval({2,3})<2.5", "Interval({2,3})<2.5");
+
+    // Equality
+    check("Interval({2,3})==Interval({4,5})", "False");
+    check("Interval({2,3})!=Interval({4,5})", "True");
+    check("Interval({2,3})==Interval({2,3})", "True");
+  }
+
+  /**
+   * Tests for CenteredInterval intersection/union
+   */
+  // @Test
+  // public void testCenteredIntervals() {
+  // check("CenteredInterval(5,1)", "CenteredInterval(5,1)");
+  // check("IntervalIntersection(CenteredInterval(5,1),CenteredInterval(7,2))",
+  // "CenteredInterval(11/2,1/2)");
+  // check("IntervalUnion(CenteredInterval(5,1),CenteredInterval(7,2))",
+  // "CenteredInterval(13/2,5/2)");
+  // check("IntervalIntersection(CenteredInterval(2+3*I,1+I),CenteredInterval(1+I,2+2*I))",
+  // "CenteredInterval(2+(5*I)/2,1+I/2)");
+  // check("IntervalUnion(CenteredInterval(2+3*I,1+I),CenteredInterval(1+I,2+2*I))",
+  // "CenteredInterval(1+(3*I)/2,2+(5*I)/2)");
+  // check("IntervalIntersection(CenteredInterval(0,1),CenteredInterval(10,1))", "Interval()");
+  // }
+
+  /**
+   * Tests for sign predicates, Abs, Floor, Ceiling, Round.
+   */
+  @Test
+  public void testIntervalSignAndRounding() {
+    // Signs
+    check("Positive(Interval({1,5}))", "True");
+    check("Negative(Interval({1,5}))", "False");
+    check("NonNegative(Interval({1,5}))", "True");
+    check("NonPositive(Interval({1,5}))", "False");
+    check("Positive(Interval({-5,-1}))", "False");
+    check("Negative(Interval({-5,-1}))", "True");
+    check("NonPositive(Interval({-5,-1}))", "True");
+
+    check("Positive(Interval({-1,5}))", "Positive(Interval({-1,5}))");
+    check("Negative(Interval({-1,5}))", "Negative(Interval({-1,5}))");
+
+    check("Positive(Interval({0,5}))", "False");
+    check("NonNegative(Interval({0,5}))", "True");
+    check("NonPositive(Interval({-5,0}))", "True");
+  }
+
+  @Test
+  public void testIntervalAbs() {
+    // Abs
+    check("Abs(Interval({-2,3}))", "Interval({0,3})");
+    check("Abs(Interval({-3,1}))", "Interval({0,3})");
+    check("Abs(Interval({2,5}))", "Interval({2,5})");
+    check("Abs(Interval({-5,-2}))", "Interval({2,5})");
+    check("Abs(Interval({1,2},{4,5}))", "Interval({1,2},{4,5})");
+    check("Abs(Interval({-5,-2},{2,5}))", "Interval({2,5})");
+  }
+
+  @Test
+  public void testIntervalFloorCeilingRound() {
+    // Floor / Ceiling / Round
+    check("Round(Interval({1.2,3.8}))", "Interval({1,4})");
+    check("Floor(Interval({1.2,3.8}))", "Interval({1,3})");
+    check("Ceiling(Interval({1.2,3.8}))", "Interval({2,4})");
+    check("Floor(Interval({-2,2}))", "Interval({-2,2})");
+    check("Round(Interval({1,3},{5,7}))", "Interval({1,3},{5,7})");
+  }
+
+  /**
+   * Tests for monotonic elementary and trigonometric functions over intervals.
+   */
+  @Test
+  public void testElementaryAndTrigonometricFunctions() {
+    // Basic Elementary
+    check("Sqrt(Interval({4,9}))", "Interval({2,3})");
+    check("Sqrt(Interval({0,16}))", "Interval({0,4})");
+    check("Sqrt(Interval({1,4},{9,16}))", "Interval({1,2},{3,4})");
+    check("Exp(Interval({0,1}))", "Interval({1,E})");
+    check("Exp(Interval({-1,1}))", "Interval({1/E,E})");
+    check("Log(Interval({1,E}))", "Interval({0,1})");
+    check("Log(Interval({1,100}))", "Interval({0,Log(100)})");
+    check("Sqrt(Interval({-1,4}))", "Sqrt(Interval({-1,4}))");
+
+    // Hyperbolic
+    check("Sinh(Interval({0,1}))", "Interval({0,Sinh(1)})");
+    check("Tanh(Interval({0,1}))", "Interval({0,Tanh(1)})");
+    check("ArcSinh(Interval({0,1}))", "Interval({0,ArcSinh(1)})");
+    check("ArcTanh(Interval({0,1/2}))", "Interval({0,ArcTanh(1/2)})");
+    check("Cosh(Interval({-1,1}))", "Interval({1,Cosh(1)})");
+    check("Cosh(Interval({-2,1}))", "Interval({1,Cosh(2)})");
+    check("Cosh(Interval({1,2}))", "Interval({Cosh(1),Cosh(2)})");
+    check("Cosh(Interval({-2,-1}))", "Interval({Cosh(1),Cosh(2)})");
+    check("ArcCosh(Interval({2,3}))", "Interval({ArcCosh(2),ArcCosh(3)})");
+    check("Sech(Interval({-1,1}))", "Interval({Sech(1),1})");
+    check("Sech(Interval({1,2}))", "Interval({Sech(2),Sech(1)})");
+    check("Coth(Interval({1,2}))", "Interval({Coth(2),Coth(1)})");
+    check("Csch(Interval({1,2}))", "Interval({Csch(2),Csch(1)})");
+    check("Coth(Interval({-1,2}))", "Interval({-Infinity,-Coth(1)},{Coth(2),Infinity})");
+    check("Csch(Interval({-1,1}))", "Interval({-Infinity,-Csch(1)},{Csch(1),Infinity})");
+    check("Coth(Interval({0,2}))", "Interval({Coth(2),Infinity})");
+    check("ArcTanh(Interval({0,2}))", "ArcTanh(Interval({0,2}))");
+
+    // Trigonometric & Inverse Trigonometric
+    check("Tan(Interval({0,1}))", "Interval({0,Tan(1)})");
+    check("Tan(Interval({-1,1}))", "Interval({-Tan(1),Tan(1)})");
+    check("Tan(Interval({0,2}))", "Interval({-Infinity,Tan(2)},{0,Infinity})");
+    check("Tan(Interval({0,Pi}))", "Interval({-Infinity,Infinity})");
+    check("Tan(Interval({0,5}))", "Interval({-Infinity,Infinity})");
+    check("Cot(Interval({1,2}))", "Interval({Cot(2),Cot(1)})");
+    check("Cot(Interval({Pi/6,Pi/3}))", "Interval({1/Sqrt(3),Sqrt(3)})");
+    check("Cot(Interval({-1,1}))", "Interval({-Infinity,-Cot(1)},{Cot(1),Infinity})");
+    check("Sec(Interval({0,1}))", "Interval({1,Sec(1)})");
+    check("Sec(Interval({-1,1}))", "Interval({1,Sec(1)})");
+    check("Sec(Interval({2,4}))", "Interval({Sec(2),-1})");
+    check("Sec(Interval({0,2}))", "Interval({-Infinity,Sec(2)},{1,Infinity})");
+    check("Sec(Interval({0,Pi}))", "Interval({-Infinity,-1},{1,Infinity})");
+    check("Csc(Interval({1,2}))", "Interval({1,Csc(1)})");
+    check("Csc(Interval({-1,1}))", "Interval({-Infinity,-Csc(1)},{Csc(1),Infinity})");
+    check("Csc(Interval({0,7}))", "Interval({-Infinity,-1},{1,Infinity})");
+    check("ArcTan(Interval({0,1}))", "Interval({0,Pi/4})");
+    check("ArcSin(Interval({0,1/2}))", "Interval({0,Pi/6})");
+    check("ArcSin(Interval({-1,1}))", "Interval({-Pi/2,Pi/2})");
+    check("ArcCos(Interval({0,1/2}))", "Interval({Pi/3,Pi/2})");
+
+    // Sine and Cosine special ranges
+    check("Sin(Interval({Pi/6,Pi/3}))", "Interval({1/2,Sqrt(3)/2})");
+    check("Sin(Interval({0,Pi}))", "Interval({0,1})");
+    check("Sin(Interval({0,2*Pi}))", "Interval({-1,1})");
+    check("Sin(Interval({-Pi/2,Pi/2}))", "Interval({-1,1})");
+    check("Sin(Interval({Pi,2*Pi}))", "Interval({-1,0})");
+    check("Cos(Interval({0,Pi}))", "Interval({-1,1})");
+    check("Cos(Interval({0,Pi/2}))", "Interval({0,1})");
+    check("Cos(Interval({Pi/3,2*Pi/3}))", "Interval({-1/2,1/2})");
+  }
 }
