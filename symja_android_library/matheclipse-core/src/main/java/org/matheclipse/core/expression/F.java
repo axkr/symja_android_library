@@ -196,10 +196,10 @@ public class F extends S {
    * Holder for the lazily created LOGGER of this class.
    *
    * <p>
-   * Creating the first log4j2 logger bootstraps the whole log4j2 {@code LoggerContext} (plugin scan,
-   * configuration factory probing, ...), which costs about 85 milliseconds and loads about 900
-   * additional classes. Because the {@link F} class initializer only logs in error cases, that work
-   * is deferred until a message is really written.
+   * Creating the first log4j2 logger bootstraps the whole log4j2 {@code LoggerContext} (plugin
+   * scan, configuration factory probing, ...), which costs about 85 milliseconds and loads about
+   * 900 additional classes. Because the {@link F} class initializer only logs in error cases, that
+   * work is deferred until a message is really written.
    *
    * <p>
    * <b>Attention:</b> the LOGGER must not be created before {@link AndroidLoggerFix#fix()} was
@@ -4814,7 +4814,8 @@ public class F extends S {
    * i.e. of the decimal literal the double was created from. For example <code>1.25663706E-6</code>
    * is converted to <code>62831853/50000000000000</code>.
    *
-   * @param value the machine precision double value which should be converted to a fractional number
+   * @param value the machine precision double value which should be converted to a fractional
+   *        number
    * @return
    */
   public static IFraction fractionDecimal(final double value) {
@@ -5242,6 +5243,14 @@ public class F extends S {
     return engine.getContextPath().hasSymbol(symbolName, engine.isRelaxedSyntax());
   }
 
+  public static IAST HazardFunction(final IExpr distribution) {
+    return new AST1(HazardFunction, distribution);
+  }
+
+  public static IAST HazardFunction(final IExpr distribution, final IExpr a1) {
+    return new AST2(HazardFunction, distribution, a1);
+  }
+
   public static IAST Haversine(final IExpr a) {
     return new AST1(Haversine, a);
   }
@@ -5369,6 +5378,14 @@ public class F extends S {
 
   public static IAST HypergeometricU(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(HypergeometricU, a0, a1, a2);
+  }
+
+  public static IAST HyperHarmonicNumber(final IExpr a0, final IExpr a1) {
+    return new AST2(HyperHarmonicNumber, a0, a1);
+  }
+
+  public static IAST HyperHarmonicNumber(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(HyperHarmonicNumber, a0, a1, a2);
   }
 
   public static IAST Inactive(final IExpr a0) {
@@ -6203,6 +6220,14 @@ public class F extends S {
 
   public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(InverseLaplaceTransform, a0, a1, a2);
+  }
+
+  public static IAST InverseSurvivalFunction(final IExpr distribution) {
+    return new AST1(InverseSurvivalFunction, distribution);
+  }
+
+  public static IAST InverseSurvivalFunction(final IExpr distribution, final IExpr a1) {
+    return new AST2(InverseSurvivalFunction, distribution, a1);
   }
 
   public static IAST InverseSeries(final IExpr a0) {
@@ -7860,6 +7885,14 @@ public class F extends S {
     return ast(Max);
   }
 
+  public static IAST MarcumQ(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(MarcumQ, a0, a1, a2);
+  }
+
+  public static IAST MarcumQ(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+    return quaternary(MarcumQ, a0, a1, a2, a3);
+  }
+
   public static IAST Max(final IExpr a0) {
     return new AST1(Max, a0);
   }
@@ -7890,6 +7923,10 @@ public class F extends S {
 
   public static IAST MeanDeviation(final IExpr list) {
     return new AST1(MeanDeviation, list);
+  }
+
+  public static IAST MedianDeviation(final IExpr list) {
+    return new AST1(MedianDeviation, list);
   }
 
   public static IAST Median(final IExpr list) {
@@ -9421,6 +9458,10 @@ public class F extends S {
    * @param iterationSpecification a standard iteration specification
    * @return <code>Product(expr, iterationSpecification)</code> AST
    */
+  public static IAST Probability(final IExpr predicate, final IExpr distributed) {
+    return new AST2(Probability, predicate, distributed);
+  }
+
   public static IAST Product(final IExpr expr, final IExpr iterationSpecification) {
     return new AST2(Product, expr, iterationSpecification);
   }
@@ -11108,13 +11149,16 @@ public class F extends S {
     return new AST2(Superscript, x, y);
   }
 
-  public static IAST Surd(final IExpr a0, final IExpr a1) {
-    return new AST2(Surd, a0, a1);
+  public static IAST SurvivalFunction(final IExpr distribution) {
+    return new AST1(SurvivalFunction, distribution);
   }
 
-  public static IASTAppendable SurfaceGraphics() {
+  public static IAST SurvivalFunction(final IExpr distribution, final IExpr a1) {
+    return new AST2(SurvivalFunction, distribution, a1);
+  }
 
-    return ast(SurfaceGraphics);
+  public static IAST Surd(final IExpr a0, final IExpr a1) {
+    return new AST2(Surd, a0, a1);
   }
 
   public static IAST Switch(final IExpr... a) {
