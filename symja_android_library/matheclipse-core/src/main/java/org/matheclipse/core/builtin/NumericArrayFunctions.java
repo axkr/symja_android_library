@@ -59,8 +59,7 @@ public class NumericArrayFunctions {
             return result;
           }
           // The argument `1` cannot be converted to a NumericArray of type `2` using method `3`
-          return Errors.printMessage(ast.topHead(), "nconvss", F.list(arg1, arg2, S.Check),
-              engine);
+          return Errors.printMessage(ast.topHead(), "nconvss", F.list(arg1, arg2, S.Check), engine);
         }
       }
 

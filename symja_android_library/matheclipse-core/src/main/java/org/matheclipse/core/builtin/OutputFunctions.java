@@ -457,7 +457,8 @@ public final class OutputFunctions {
     }
 
     /**
-     * Generate the horner scheme for the given <code>expr</code> in the given <code>variable</code>.
+     * Generate the horner scheme for the given <code>expr</code> in the given
+     * <code>variable</code>.
      *
      * @param expr
      * @param variable

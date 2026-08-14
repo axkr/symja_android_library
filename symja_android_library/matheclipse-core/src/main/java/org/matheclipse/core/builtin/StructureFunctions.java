@@ -191,9 +191,6 @@ public class StructureFunctions {
 
       IExpr arg1 = evaledAST.arg1();
       IExpr arg2 = evaledAST.arg2();
-      if (arg1.isQuantity() || arg2.isQuantity()) {
-        return F.NIL;
-      }
       IExpr level = F.C0;
       if (lastIndex == 3) {
         level = evaledAST.get(3);
@@ -554,8 +551,8 @@ public class StructureFunctions {
      * Flatten with an index specification of the form
      * <code>{{s11,s12,...},{s21,s22,...},...}</code> (or the shorthand <code>{i,j,...}</code> which
      * is treated as a single group). Each new level <code>i</code> of the result is built by
-     * combining all original levels listed in the <code>i</code>-th group. Original levels which are
-     * not mentioned are appended as trailing single-level groups. Works for irregularly shaped
+     * combining all original levels listed in the <code>i</code>-th group. Original levels which
+     * are not mentioned are appended as trailing single-level groups. Works for irregularly shaped
      * (ragged) arrays.
      *
      * @param list the (nested) expression which should be flattened
@@ -632,7 +629,8 @@ public class StructureFunctions {
             break;
           }
         }
-        // Level `1` specified in `2` exceeds the levels, `3`, which can be flattened together in `4`.
+        // Level `1` specified in `2` exceeds the levels, `3`, which can be flattened together in
+        // `4`.
         return Errors.printMessage(S.Flatten, "flrl",
             F.List(F.ZZ(exceeding), spec, F.ZZ(minDepth), list), engine);
       }
@@ -699,8 +697,8 @@ public class StructureFunctions {
      * Convert a list which is expected to contain positive integers into a Java <code>int[]</code>.
      *
      * @param list a list which is expected to contain positive integers only
-     * @return the positive integers as an array or <code>null</code> if the list contains an invalid
-     *         (non positive integer) element
+     * @return the positive integers as an array or <code>null</code> if the list contains an
+     *         invalid (non positive integer) element
      */
     private static int[] toLevelArray(IAST list) {
       int[] result = new int[list.argSize()];
@@ -715,9 +713,9 @@ public class StructureFunctions {
     }
 
     /**
-     * The number of nested <code>head</code>-headed levels which are present along <b>every</b> path
-     * of <code>expr</code> (i.e. the depth of the shallowest leaf). This is the maximum level number
-     * which can be flattened together.
+     * The number of nested <code>head</code>-headed levels which are present along <b>every</b>
+     * path of <code>expr</code> (i.e. the depth of the shallowest leaf). This is the maximum level
+     * number which can be flattened together.
      */
     private static int minListDepth(IExpr expr, ISymbol head) {
       if (!expr.isAST(head)) {
@@ -738,8 +736,8 @@ public class StructureFunctions {
     }
 
     /**
-     * Recursively collect all existing position tuples of length <code>maxLevel</code> together with
-     * the leaf element found at each position.
+     * Recursively collect all existing position tuples of length <code>maxLevel</code> together
+     * with the leaf element found at each position.
      */
     private static void collectPositions(IAST node, ISymbol head, int level, int maxLevel,
         int[] tuple, List<int[]> positions, List<IExpr> leaves) {
@@ -904,6 +902,17 @@ public class StructureFunctions {
 
         IAST astEvaled = engine.evalArgs(ast, attributes, false).orElse(ast);
 
+        if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE) {
+          // Listable threads the *application* over list arguments, before they are substituted
+          // into the body. Threading the already substituted body instead would thread the wrong
+          // expression as soon as the body holds its arguments, e.g. Piecewise(...): there the
+          // list ends up inside the branch condition.
+          IExpr threaded = engine.threadASTListArgs(astEvaled, S.Function, "tdlen");
+          if (threaded.isPresent()) {
+            return engine.evaluate(threaded);
+          }
+        }
+
         IExpr arg1 = function.arg1();
         if (function.isAST1()) {
           return Lambda.replaceSlotsOrElse(arg1, astEvaled, arg1);
@@ -928,8 +937,14 @@ public class StructureFunctions {
           });
           if (result.isAST()) {
             if (function.argSize() == 3) {
-              IASTMutable copy = ((IAST) result).copy();
-              return engine.evalAttributes(copy, copy.size(), S.None, attributes).orElse(result);
+              // LISTABLE is already applied to the arguments above, applying it to the result as
+              // well would thread an unrelated list produced by the body
+              int resultAttributes = attributes & ~ISymbol.LISTABLE;
+              if (resultAttributes != ISymbol.NOATTRIBUTE) {
+                IASTMutable copy = ((IAST) result).copy();
+                return engine.evalAttributes(copy, copy.size(), S.None, resultAttributes)
+                    .orElse(result);
+              }
             }
           }
           return engine.evaluate(result);

@@ -237,9 +237,9 @@ public class SimplifyFunctions {
     }
 
     /**
-     * Decide a relation by moving everything to the left-hand-side and testing
-     * <code>lhs-rhs</code> against <code>0</code>. That is how an identity such as
-     * <code>x^2-y^2 == (x+y)*(x-y)</code> is proved.
+     * Decide a relation by moving everything to the left-hand-side and testing <code>lhs-rhs</code>
+     * against <code>0</code>. That is how an identity such as <code>x^2-y^2 == (x+y)*(x-y)</code>
+     * is proved.
      *
      * <p>
      * The rewritten form is only used when it actually decides the relation, or when it is simpler
@@ -341,8 +341,7 @@ public class SimplifyFunctions {
         IExpr normalizedDir = engine.evaluate(F.Sign(F.Factor(dir)));
         if (normalizedDir.isPresent() && !normalizedDir.isAST(S.Sign)) {
           IExpr candidate = engine.evaluate(F.DirectedInfinity(normalizedDir));
-          if (candidate.isDirectedInfinity()
-              && complexityFunction.apply(candidate) < minCounter) {
+          if (candidate.isDirectedInfinity() && complexityFunction.apply(candidate) < minCounter) {
             return candidate;
           }
         }

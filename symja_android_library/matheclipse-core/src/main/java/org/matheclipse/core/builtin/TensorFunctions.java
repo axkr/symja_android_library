@@ -131,8 +131,8 @@ public class TensorFunctions {
 
   /**
    * Move the fixed point of <code>transform</code> from the origin to the point <code>p</code> with
-   * <code>TranslationTransform(p) . transform . TranslationTransform(-p)</code>. The
-   * {@link S#Dot} operator fuses the three {@link S#TransformationFunction}s into a single one.
+   * <code>TranslationTransform(p) . transform . TranslationTransform(-p)</code>. The {@link S#Dot}
+   * operator fuses the three {@link S#TransformationFunction}s into a single one.
    *
    * @param transform the transformation which leaves the origin fixed
    * @param p the point which should be left fixed
@@ -157,18 +157,17 @@ public class TensorFunctions {
           return F.NIL;
         }
         // AffineTransform(m) maps the vector r to m.r
-        return F.TransformationFunction(
-            homogeneousMatrix((IAST) arg1.normal(false), null, dims[0]));
+        return F
+            .TransformationFunction(homogeneousMatrix((IAST) arg1.normal(false), null, dims[0]));
       }
       if (arg1.isList2()) {
         // AffineTransform({m, v}) maps the vector r to m.r+v
         IExpr m = arg1.first();
         IExpr v = arg1.second();
         int[] mDims = m.isMatrix(false);
-        if (mDims != null && mDims[0] == mDims[1] && mDims[0] > 0
-            && v.isVector() == mDims[0]) {
-          return F.TransformationFunction(homogeneousMatrix((IAST) m.normal(false),
-              (IAST) v.normal(false), mDims[0]));
+        if (mDims != null && mDims[0] == mDims[1] && mDims[0] > 0 && v.isVector() == mDims[0]) {
+          return F.TransformationFunction(
+              homogeneousMatrix((IAST) m.normal(false), (IAST) v.normal(false), mDims[0]));
         }
       }
       return F.NIL;

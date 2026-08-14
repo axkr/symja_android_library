@@ -24,8 +24,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 /**
- * Functions for the mesh region objects <code>BoundaryMeshRegion</code> and <code>MeshRegion</code>
- * .
+ * Functions for the mesh region objects <code>BoundaryMeshRegion</code> and
+ * <code>MeshRegion</code>.
  *
  * <p>
  * A boundary mesh region is stored as the inert expression
@@ -57,6 +57,226 @@ public class MeshFunctions {
       S.ArrayMesh.setEvaluator(new ArrayMesh());
       S.CantorMesh.setEvaluator(new CantorMesh());
       S.DelaunayMesh.setEvaluator(new DelaunayMesh());
+      S.VoronoiMesh.setEvaluator(new VoronoiMesh());
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>VoronoiMesh({p1, p2, ...})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * return the Voronoi mesh of the 2D points <code>p1, p2,...</code> as a <code>MeshRegion</code>.
+   * The cell of a point contains all locations which are closer to this point than to any other
+   * one. The unbounded cells are clipped to a bounding box around the points.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>VoronoiMesh({p1, p2, ...}, {{xmin, xmax}, {ymin, ymax}})
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * clip the cells to the given bounds.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Head(VoronoiMesh({{0, 0}, {1, 0}, {0, 1}}))
+   * MeshRegion
+   * </code>
+   * </pre>
+   */
+  private static class VoronoiMesh extends AbstractEvaluator {
+
+    /** Two coordinates closer than this distance are considered to be the same. */
+    private static final double EPSILON = 1.0e-10;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isNonEmptyList()) {
+        return F.NIL;
+      }
+      IAST points = (IAST) arg1;
+      int n = points.argSize();
+      double[] x = new double[n];
+      double[] y = new double[n];
+      for (int i = 1; i <= n; i++) {
+        if (!points.get(i).isList2()) {
+          // the points aren't 2D coordinates
+          return F.unaryAST1(S.EmptyRegion, F.C2);
+        }
+        x[i - 1] = points.get(i).first().evalfNaN();
+        y[i - 1] = points.get(i).second().evalfNaN();
+        if (Double.isNaN(x[i - 1]) || Double.isNaN(y[i - 1])) {
+          // the coordinates aren't numeric
+          return F.unaryAST1(S.EmptyRegion, F.C2);
+        }
+      }
+
+      double[] bounds = ast.isAST2() ? boundsOption(ast.arg2()) : boundingBox(x, y);
+      if (bounds == null) {
+        // a single point or a degenerated bounding box has no Voronoi mesh
+        return F.unaryAST1(S.EmptyRegion, F.C2);
+      }
+
+      // the coordinates of the cell corners, shared between the cells
+      List<double[]> corners = new ArrayList<double[]>();
+      IASTAppendable cells = F.ListAlloc(n);
+      for (int i = 0; i < n; i++) {
+        List<double[]> cell = voronoiCell(x, y, i, bounds);
+        if (cell.size() < 3) {
+          // the cell is empty, this happens for duplicated points
+          continue;
+        }
+        IASTAppendable indices = F.ListAlloc(cell.size());
+        for (double[] corner : cell) {
+          indices.append(F.ZZ(cornerIndex(corners, corner) + 1));
+        }
+        cells.append(F.Polygon(indices));
+      }
+      if (cells.argSize() == 0) {
+        return F.unaryAST1(S.EmptyRegion, F.C2);
+      }
+
+      IASTAppendable coordinates = F.ListAlloc(corners.size());
+      for (double[] corner : corners) {
+        coordinates.append(F.list(F.num(corner[0]), F.num(corner[1])));
+      }
+      return F.binaryAST2(S.MeshRegion, coordinates, cells);
+    }
+
+    /** The index of <code>corner</code> in <code>corners</code>, appending it if it's new. */
+    private static int cornerIndex(List<double[]> corners, double[] corner) {
+      for (int i = 0; i < corners.size(); i++) {
+        double[] existing = corners.get(i);
+        if (Math.abs(existing[0] - corner[0]) < EPSILON
+            && Math.abs(existing[1] - corner[1]) < EPSILON) {
+          return i;
+        }
+      }
+      corners.add(corner);
+      return corners.size() - 1;
+    }
+
+    /**
+     * A bounding box around all points, enlarged so that the unbounded cells stay visible.
+     *
+     * @return <code>{xmin, xmax, ymin, ymax}</code> or <code>null</code> if all points are equal
+     */
+    private static double[] boundingBox(double[] x, double[] y) {
+      double minX = x[0], maxX = x[0], minY = y[0], maxY = y[0];
+      for (int i = 1; i < x.length; i++) {
+        minX = Math.min(minX, x[i]);
+        maxX = Math.max(maxX, x[i]);
+        minY = Math.min(minY, y[i]);
+        maxY = Math.max(maxY, y[i]);
+      }
+      double extent = Math.max(maxX - minX, maxY - minY);
+      if (extent <= EPSILON) {
+        // all points are equal, there is no Voronoi mesh
+        return null;
+      }
+      double padding = extent / 2.0;
+      return new double[] {minX - padding, maxX + padding, minY - padding, maxY + padding};
+    }
+
+    /** Read the explicit bounds <code>{{xmin, xmax}, {ymin, ymax}}</code>. */
+    private static double[] boundsOption(IExpr arg2) {
+      if (!arg2.isList2() || !arg2.first().isList2() || !arg2.second().isList2()) {
+        return null;
+      }
+      double xmin = arg2.first().first().evalfNaN();
+      double xmax = arg2.first().second().evalfNaN();
+      double ymin = arg2.second().first().evalfNaN();
+      double ymax = arg2.second().second().evalfNaN();
+      if (Double.isNaN(xmin) || Double.isNaN(xmax) || Double.isNaN(ymin) || Double.isNaN(ymax)
+          || xmax - xmin <= EPSILON || ymax - ymin <= EPSILON) {
+        return null;
+      }
+      return new double[] {xmin, xmax, ymin, ymax};
+    }
+
+    /**
+     * The Voronoi cell of the point with the index <code>site</code>: the bounding box clipped by
+     * the half plane of every other point.
+     *
+     * @return the counterclockwise corners of the convex cell
+     */
+    private static List<double[]> voronoiCell(double[] x, double[] y, int site, double[] bounds) {
+      List<double[]> cell = new ArrayList<double[]>(4);
+      cell.add(new double[] {bounds[0], bounds[2]});
+      cell.add(new double[] {bounds[1], bounds[2]});
+      cell.add(new double[] {bounds[1], bounds[3]});
+      cell.add(new double[] {bounds[0], bounds[3]});
+
+      for (int other = 0; other < x.length && !cell.isEmpty(); other++) {
+        if (other == site) {
+          continue;
+        }
+        double dx = x[other] - x[site];
+        double dy = y[other] - y[site];
+        if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) {
+          // a duplicated point: only the first of them gets a cell
+          if (other < site) {
+            return new ArrayList<double[]>();
+          }
+          continue;
+        }
+        // the points of the cell are on the site's side of the perpendicular bisector:
+        // dx*(px - mx) + dy*(py - my) <= 0 with the midpoint (mx, my)
+        double offset = dx * (x[site] + x[other]) / 2.0 + dy * (y[site] + y[other]) / 2.0;
+        cell = clipHalfPlane(cell, dx, dy, offset);
+      }
+      return cell;
+    }
+
+    /**
+     * Sutherland-Hodgman: clip the convex polygon to the half plane
+     * <code>a*px + b*py &lt;= offset</code>.
+     */
+    private static List<double[]> clipHalfPlane(List<double[]> polygon, double a, double b,
+        double offset) {
+      List<double[]> result = new ArrayList<double[]>(polygon.size() + 1);
+      int size = polygon.size();
+      for (int i = 0; i < size; i++) {
+        double[] current = polygon.get(i);
+        double[] next = polygon.get((i + 1) % size);
+        double currentSide = a * current[0] + b * current[1] - offset;
+        double nextSide = a * next[0] + b * next[1] - offset;
+        if (currentSide <= EPSILON) {
+          result.add(current);
+        }
+        if ((currentSide > EPSILON && nextSide < -EPSILON)
+            || (currentSide < -EPSILON && nextSide > EPSILON)) {
+          double t = currentSide / (currentSide - nextSide);
+          result.add(new double[] {current[0] + t * (next[0] - current[0]),
+              current[1] + t * (next[1] - current[1])});
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -289,9 +509,9 @@ public class MeshFunctions {
   }
 
   /**
-   * The cells of geometric dimension <code>dimension</code>, following the Wolfram Language
-   * conventions: dimension <code>0</code> are the coordinates as <code>Point</code> cells, the
-   * dimension of the region itself is the filled cell.
+   * The cells of geometric dimension <code>dimension</code>, following the conventions: dimension
+   * <code>0</code> are the coordinates as <code>Point</code> cells, the dimension of the region
+   * itself is the filled cell.
    */
   public static IAST meshCells(IAST meshRegion, int dimension) {
     if (!validate(meshRegion, null, null)) {
@@ -487,8 +707,8 @@ public class MeshFunctions {
     IExpr crossX = F.Subtract(F.Times(b.arg2(), c.arg3()), F.Times(b.arg3(), c.arg2()));
     IExpr crossY = F.Subtract(F.Times(b.arg3(), c.arg1()), F.Times(b.arg1(), c.arg3()));
     IExpr crossZ = F.Subtract(F.Times(b.arg1(), c.arg2()), F.Times(b.arg2(), c.arg1()));
-    return engine.evaluate(F.Plus(F.Times(a.arg1(), crossX), F.Times(a.arg2(), crossY),
-        F.Times(a.arg3(), crossZ)));
+    return engine.evaluate(
+        F.Plus(F.Times(a.arg1(), crossX), F.Times(a.arg2(), crossY), F.Times(a.arg3(), crossZ)));
   }
 
   /**
@@ -607,8 +827,8 @@ public class MeshFunctions {
       volumeSum.append(volume);
       for (int j = 1; j <= 3; j++) {
         // the centroid of the tetrahedron spanned by the origin and the triangle
-        IExpr center = F.Divide(
-            F.Plus(triangle[0].get(j), triangle[1].get(j), triangle[2].get(j)), F.C4);
+        IExpr center =
+            F.Divide(F.Plus(triangle[0].get(j), triangle[1].get(j), triangle[2].get(j)), F.C4);
         coordinateSums[j - 1].append(F.Times(volume, center));
       }
     }
@@ -1018,9 +1238,9 @@ public class MeshFunctions {
       // the cells of full dimension are only counted if the region stores them explicitly; a
       // BoundaryMeshRegion only knows about its boundary cells
       IAST fullDimensional = boundaryCells(meshRegion, embeddingDimension);
-      int maxDimension = fullDimensional.isPresent() && fullDimensional.argSize() > 0
-          ? embeddingDimension
-          : embeddingDimension - 1;
+      int maxDimension =
+          fullDimensional.isPresent() && fullDimensional.argSize() > 0 ? embeddingDimension
+              : embeddingDimension - 1;
       IASTAppendable result = F.ListAlloc(maxDimension + 1);
       for (int d = 0; d <= maxDimension; d++) {
         IAST cells = meshCells(meshRegion, d);
@@ -1215,8 +1435,8 @@ public class MeshFunctions {
 
   /**
    * <code>CantorMesh(n)</code> is the <code>n</code>th step of the Cantor set construction, which
-   * repeatedly removes the middle third of every remaining interval.
-   * <code>CantorMesh(n, d)</code> is the <code>d</code>-dimensional cartesian product of it.
+   * repeatedly removes the middle third of every remaining interval. <code>CantorMesh(n, d)</code>
+   * is the <code>d</code>-dimensional cartesian product of it.
    */
   private static class CantorMesh extends AbstractEvaluator {
 
@@ -1302,9 +1522,9 @@ public class MeshFunctions {
   }
 
   /**
-   * The Delaunay triangulation of a list of two dimensional points, computed with the
-   * Bowyer-Watson algorithm. The coordinates of the result are the given points, so they keep their
-   * exact values even though the triangulation itself is determined numerically.
+   * The Delaunay triangulation of a list of two dimensional points, computed with the Bowyer-Watson
+   * algorithm. The coordinates of the result are the given points, so they keep their exact values
+   * even though the triangulation itself is determined numerically.
    */
   private static class DelaunayMesh extends AbstractEvaluator {
 
@@ -1335,13 +1555,13 @@ public class MeshFunctions {
       }
       IASTAppendable cells = F.ListAlloc(triangles.size());
       for (int[] triangle : triangles) {
-        cells.append(
-            F.list(F.ZZ(triangle[0] + 1), F.ZZ(triangle[1] + 1), F.ZZ(triangle[2] + 1)));
+        cells.append(F.list(F.ZZ(triangle[0] + 1), F.ZZ(triangle[1] + 1), F.ZZ(triangle[2] + 1)));
       }
       IAST result = F.binaryAST2(S.MeshRegion, points, F.list(F.Polygon(cells)));
       if (exactCoordinates(points)) {
-        return F.ast(new IExpr[] {points, F.list(F.Polygon(cells)),
-            F.Rule(S.WorkingPrecision, F.CInfinity)}, S.MeshRegion);
+        return F.ast(
+            new IExpr[] {points, F.list(F.Polygon(cells)), F.Rule(S.WorkingPrecision, F.CInfinity)},
+            S.MeshRegion);
       }
       return result;
     }

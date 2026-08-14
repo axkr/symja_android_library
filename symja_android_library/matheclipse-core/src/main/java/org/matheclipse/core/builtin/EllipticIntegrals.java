@@ -436,7 +436,7 @@ public class EllipticIntegrals {
       super.setUp(newSymbol);
     }
   }
- 
+
   private static class EllipticE extends AbstractFunctionEvaluator {
 
     @Override
@@ -627,9 +627,9 @@ public class EllipticIntegrals {
 
     /**
      * <code>true</code> if the Weierstrass functions of
-     * {@link #weierstrassForm(IExpr, IExpr, IAST)} were reduced to a value. Returning the
-     * unreduced form would replace <code>EllipticExp</code> by two special functions which are no
-     * simpler, and returning <code>Indeterminate</code> would hide that no value is known.
+     * {@link #weierstrassForm(IExpr, IExpr, IAST)} were reduced to a value. Returning the unreduced
+     * form would replace <code>EllipticExp</code> by two special functions which are no simpler,
+     * and returning <code>Indeterminate</code> would hide that no value is known.
      *
      * @param expr the evaluated result of {@link #weierstrassForm(IExpr, IExpr, IAST)}
      */
@@ -649,7 +649,7 @@ public class EllipticIntegrals {
       return ImplementationStatus.EXPERIMENTAL;
     }
   }
- 
+
   private static class EllipticF extends AbstractFunctionEvaluator {
 
     @Override
@@ -834,8 +834,8 @@ public class EllipticIntegrals {
      */
     private static int principalSqrtSign(IExpr x, IExpr y, IExpr a, IExpr b, EvalEngine engine) {
       // Sqrt(x^3+a*x^2+b*x)
-      IExpr sqrt = engine
-          .evaluate(F.Sqrt(F.Plus(F.Power(x, F.C3), F.Times(a, F.Sqr(x)), F.Times(b, x))));
+      IExpr sqrt =
+          engine.evaluate(F.Sqrt(F.Plus(F.Power(x, F.C3), F.Times(a, F.Sqr(x)), F.Times(b, x))));
       if (sqrt.isZero()) {
         // {x,y} is a point of order 2, both signs give the same half period
         return y.isZero() ? 1 : 0;
@@ -2362,8 +2362,8 @@ public class EllipticIntegrals {
   }
 
   /**
-   * The parameters <code>{e3, e1-e3, (e2-e3)/(e1-e3)}</code> which express the Weierstrass functions
-   * of the invariants <code>{g2,g3}</code> by Jacobi elliptic functions, where
+   * The parameters <code>{e3, e1-e3, (e2-e3)/(e1-e3)}</code> which express the Weierstrass
+   * functions of the invariants <code>{g2,g3}</code> by Jacobi elliptic functions, where
    * <code>e1,e2,e3</code> are the roots of <code>4*t^3-g2*t-g3</code>. They are returned in this
    * reduced form, because the differences of the roots simplify much further than the roots
    * themselves. Available for the two families of invariants whose cubic factors:
@@ -2382,8 +2382,8 @@ public class EllipticIntegrals {
    *
    * @param g2 the first Weierstrass invariant
    * @param g3 the second Weierstrass invariant
-   * @return <code>F.NIL</code> if the roots of <code>4*t^3-g2*t-g3</code> aren't available in closed
-   *         form
+   * @return <code>F.NIL</code> if the roots of <code>4*t^3-g2*t-g3</code> aren't available in
+   *         closed form
    */
   private static IAST weierstrassJacobiParameters(IExpr g2, IExpr g3) {
     if (g2.isZero() && g3.isZero()) {
@@ -2441,8 +2441,7 @@ public class EllipticIntegrals {
         F.Power(F.JacobiSN(w, m), F.CN3));
   }
 
-  private static class WeierstrassP extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+  private static class WeierstrassP extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {

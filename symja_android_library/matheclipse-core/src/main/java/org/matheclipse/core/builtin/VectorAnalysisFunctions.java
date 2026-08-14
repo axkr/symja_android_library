@@ -650,10 +650,11 @@ public class VectorAnalysisFunctions {
           IExpr y = variables.arg2();
 
           // {{{D(f,x),(-g-h+D(f,y))/x},{D(g,x),(f-i+D(g,y))/x}},{{D(h,x),(f-i+D(h,y))/x},{D(i,x),(g+h+D(i,y))/x}}}
-          return F.list(F.list(
+          return F.list(
+              F.list(
                   F.list(F.D(f, x),
-                  F.Times(F.Power(x, F.CN1), F.Plus(F.Negate(g), F.Negate(h), F.D(f, y)))),
-              F.list(F.D(g, x), F.Times(F.Power(x, F.CN1), F.Plus(f, F.Negate(i), F.D(g, y))))),
+                      F.Times(F.Power(x, F.CN1), F.Plus(F.Negate(g), F.Negate(h), F.D(f, y)))),
+                  F.list(F.D(g, x), F.Times(F.Power(x, F.CN1), F.Plus(f, F.Negate(i), F.D(g, y))))),
               F.list(
                   F.list(F.D(h, x), F.Times(F.Power(x, F.CN1), F.Plus(f, F.Negate(i), F.D(h, y)))),
                   F.list(F.D(i, x), F.Times(F.Power(x, F.CN1), F.Plus(g, h, F.D(i, y))))));
@@ -1035,20 +1036,26 @@ public class VectorAnalysisFunctions {
 
       // ((-g+D(f,y))/x+(D(f,y)+D(g,{y,2}))/x+D(g,x))/x+(Csc(y)*((-Cot(y)*(Cos(y)*g+f*Sin(y)+D(h,z)))/x+(Csc(y)*(-Cos(y)*D(h,z)+D(g,{z,2})))/x+(Cos(y)*(f+D(g,y)))/x+Sin(y)*D(g,x)))/x+D(x,{x,2})
       IExpr result2 =
-          engine.evaluate(F.Plus(
-                      F.Times(F.Power(x, F.CN1),
-                  F.Plus(F.Times(F.Power(x, F.CN1), F.Plus(F.Negate(g), F.D(f, y))),
-                      F.Times(F.Power(x, F.CN1), F.Plus(F.D(f, y), F.D(g, F.list(y, F.C2)))),
-                      F.D(g, x))),
-              F.Times(F.Power(x, F.CN1), F.Csc(y),
+          engine
+              .evaluate(
                   F.Plus(
-                      F.Times(F.CN1, F.Power(x, F.CN1), F.Cot(y),
-                          F.Plus(F.Times(F.Cos(y), g), F.Times(f, F.Sin(y)), F.D(h, z))),
-                      F.Times(F.Power(x, F.CN1), F.Csc(y),
-                          F.Plus(F.Times(F.CN1, F.Cos(y), F.D(h, z)), F.D(g, F.list(z, F.C2)))),
-                      F.Times(F.Power(x, F.CN1), F.Cos(y), F.Plus(f, F.D(g, y))),
-                      F.Times(F.Sin(y), F.D(g, x)))),
-              F.D(x, F.list(x, F.C2))));
+                      F.Times(F.Power(x, F.CN1),
+                          F.Plus(F.Times(F.Power(x, F.CN1), F.Plus(F.Negate(g), F.D(f, y))),
+                              F.Times(F.Power(x, F.CN1),
+                                  F.Plus(F.D(f, y), F.D(g, F.list(y, F.C2)))),
+                              F.D(g, x))),
+                      F.Times(
+                          F.Power(x, F.CN1), F.Csc(y), F
+                              .Plus(
+                                  F.Times(F.CN1, F.Power(x, F.CN1), F.Cot(y),
+                                      F.Plus(F.Times(F.Cos(y), g), F.Times(f, F.Sin(y)),
+                                          F.D(h, z))),
+                                  F.Times(F.Power(x, F.CN1), F.Csc(y),
+                                      F.Plus(F.Times(F.CN1, F.Cos(y), F.D(h, z)),
+                                          F.D(g, F.list(z, F.C2)))),
+                                  F.Times(F.Power(x, F.CN1), F.Cos(y), F.Plus(f, F.D(g, y))),
+                                  F.Times(F.Sin(y), F.D(g, x)))),
+                      F.D(x, F.list(x, F.C2))));
 
       // (D(h,{y,2})/x+D(h,x))/x+(Csc(y)*((-h*Sin(y)+D(f,z))/x+(Cot(y)*(-Cos(y)*h+D(g,z)))/x+(Csc(y)*(Sin(y)*D(f,z)+Cos(y)*D(g,z)+D(h,{z,2})))/x+(Cos(y)*D(h,y))/x+Sin(y)*D(h,x)))/x+D(h,{x,2})
       IExpr result3 = engine.evaluate(F.Plus(
@@ -1340,7 +1347,8 @@ public class VectorAnalysisFunctions {
       }
       cos = engine.evaluate(F.Divide(projection, normV));
       conjugatedCos = engine.evaluate(F.Divide(
-          F.mapRange(S.Plus, 0, dim, k -> F.Times(a.get(k + 1), F.Conjugate(v.get(k + 1)))), normV));
+          F.mapRange(S.Plus, 0, dim, k -> F.Times(a.get(k + 1), F.Conjugate(v.get(k + 1)))),
+          normV));
       sin = engine.evaluate(F.Divide(normW, normV));
     }
     if (normW.isZero()) {
@@ -1380,8 +1388,8 @@ public class VectorAnalysisFunctions {
 
   /**
    * The <code>3 x 3</code> matrix of a counterclockwise rotation by the angle <code>theta</code>
-   * around the axis <code>axis</code>, see <a
-   * href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula">Wikipedia - Rodrigues'
+   * around the axis <code>axis</code>, see
+   * <a href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula">Wikipedia - Rodrigues'
    * rotation formula</a>:
    * <code>KroneckerDelta(i,j)*Cos(theta) + (1-Cos(theta))*u_i*Conjugate(u_j) - Sin(theta)*Sum(LeviCivita(i,j,k)*u_k)</code>
    * for the normalized axis <code>u = axis/Norm(axis)</code>, so that the <code>axis</code> doesn't

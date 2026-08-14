@@ -1018,8 +1018,8 @@ public final class Combinatoric {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr permList = ast.arg1();
       if (permList.isList()) {
-        return permList.isEmptyList() || CombinatoricUtil.isPermutationList((IAST) permList, true) != null ? S.True
-            : S.False;
+        return permList.isEmptyList()
+            || CombinatoricUtil.isPermutationList((IAST) permList, true) != null ? S.True : S.False;
       }
       return S.False;
     }

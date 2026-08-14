@@ -1048,9 +1048,9 @@ public class RootsFunctions {
    * Determine all complex roots of the univariate polynomial <code>polynomial</code> numerically.
    *
    * <p>
-   * In contrast to {@link #roots(IExpr, boolean, IAST, EvalEngine)} the roots are
-   * <b>not</b> collected in a set: a root of multiplicity <code>k</code> is returned
-   * <code>k</code> times, as <code>NSolve</code> and <code>Solve</code> do in
+   * In contrast to {@link #roots(IExpr, boolean, IAST, EvalEngine)} the roots are <b>not</b>
+   * collected in a set: a root of multiplicity <code>k</code> is returned <code>k</code> times, as
+   * <code>NSolve</code> and <code>Solve</code> do in
    * <a href="https://reference.wolfram.com/language/ref/NSolve.html">Wolfram Language</a>. The
    * roots are ordered by their real part and, for equal real parts, by their imaginary part.
    *
@@ -1183,8 +1183,8 @@ public class RootsFunctions {
       // normalize -0.0 to 0.0, so that it doesn't sort before 0.0
       return value == 0.0 ? 0.0 : value;
     }
-    return new java.math.BigDecimal(value)
-        .round(new java.math.MathContext(ROOT_ORDER_PRECISION)).doubleValue();
+    return new java.math.BigDecimal(value).round(new java.math.MathContext(ROOT_ORDER_PRECISION))
+        .doubleValue();
   }
 
   /**

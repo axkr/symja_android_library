@@ -106,8 +106,8 @@ public class QuantumPhysicsFunctions {
      * @return the {@code Piecewise} (or {@code 0}) result, or {@link F#NIL} if the pattern does not
      *         apply
      */
-    private static IExpr evaluateSymbolicProjection(IExpr j1, IExpr j2, IExpr j3, IExpr m1, IExpr m2,
-        IExpr m3, IAST ast) {
+    private static IExpr evaluateSymbolicProjection(IExpr j1, IExpr j2, IExpr j3, IExpr m1,
+        IExpr m2, IExpr m3, IAST ast) {
       // exactly one symbolic projection, the other two must be concrete real numbers
       IExpr var;
       IExpr forced;

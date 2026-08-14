@@ -997,8 +997,8 @@ public final class LinearAlgebra {
      * @return the number of rows and columns of the result matrix
      */
     private static int matrixSize(final IAST ast, int length, int offset) {
-      final long size = ast.size() > 3 ? Validate.checkIntType(ast, 3, 0)
-          : length + Math.abs((long) offset);
+      final long size =
+          ast.size() > 3 ? Validate.checkIntType(ast, 3, 0) : length + Math.abs((long) offset);
       if (size > Config.MAX_MATRIX_DIMENSION_SIZE) {
         ASTElementLimitExceeded.throwIt(size * size);
       }
@@ -1013,8 +1013,8 @@ public final class LinearAlgebra {
      * @param j the column index of the result matrix (Java convention starting with <code>0</code>)
      * @param offset the <code>k</code>-th diagonal on which the elements are placed
      * @param length the number of elements of the diagonal
-     * @return the index of the diagonal element (convention starting with <code>1</code>) or <code>-1</code> 
-     * if the position isn't on the <code>k</code>-th diagonal
+     * @return the index of the diagonal element (convention starting with <code>1</code>) or
+     *         <code>-1</code> if the position isn't on the <code>k</code>-th diagonal
      */
     private static int diagonalIndex(int i, int j, int offset, int length) {
       if ((long) j - i != offset) {
@@ -7216,8 +7216,8 @@ public final class LinearAlgebra {
   }
 
   /**
-   * Normalize every entry of the given <code>matrix</code> with {@link S#Together}. The entries of a
-   * matrix product are built with the plain {@link IExpr} field operations, which leave nested
+   * Normalize every entry of the given <code>matrix</code> with {@link S#Together}. The entries of
+   * a matrix product are built with the plain {@link IExpr} field operations, which leave nested
    * fractions unsimplified.
    *
    * @param matrix the matrix is modified in place

@@ -149,7 +149,7 @@ public class ContainsFunctions {
         evaledTrue = false;
         for (int j = 1; j < list2.size(); j++) {
           IExpr list2Arg = list2.get(j);
-            if (sameTest.test(list1Arg, list2Arg)) {
+          if (sameTest.test(list1Arg, list2Arg)) {
             evaledTrue = true;
             break;
           }

@@ -191,7 +191,7 @@ public class CompilerFunctions {
       }
       CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, engine);
       if (args == null) {
-        return F.NIL; 
+        return F.NIL;
       }
       String source = compilePrint(ast, args, engine);
       if (source != null) {
@@ -459,9 +459,9 @@ public class CompilerFunctions {
 
     // an integer-typed pure numeric result (all integer scalar arguments) should be returned as an
     // exact machine integer instead of a real, to match `Compile` semantics
-    boolean coerceToInteger = allIntegerScalarArgs && domain == S.Reals
-        && resultType == CompileAnalyzer.VarType.INTEGER
-        && expression.isNumericFunction(numericVars);
+    boolean coerceToInteger =
+        allIntegerScalarArgs && domain == S.Reals && resultType == CompileAnalyzer.VarType.INTEGER
+            && expression.isNumericFunction(numericVars);
 
     CompileFactory cf = new CompileFactory(numericVars, symbolicVars, args, domain,
         analyzer.getNodeTypes(), classBuilder);

@@ -385,10 +385,10 @@ public class ComputationalGeometryFunctions {
     IExpr n3 = x3.times(x3).plus(y3.times(y3));
     // expand the coordinates, so that they cancel out if the center is a simple point
     IExpr d = F.eval(F.Expand(F.C2.times(counterClockwise(p1, p2, p3))));
-    IExpr cx = F.eval(F.Expand(n1.times(y2.subtract(y3)).plus(n2.times(y3.subtract(y1)))
-        .plus(n3.times(y1.subtract(y2)))));
-    IExpr cy = F.eval(F.Expand(n1.times(x3.subtract(x2)).plus(n2.times(x1.subtract(x3)))
-        .plus(n3.times(x2.subtract(x1)))));
+    IExpr cx = F.eval(F.Expand(
+        n1.times(y2.subtract(y3)).plus(n2.times(y3.subtract(y1))).plus(n3.times(y1.subtract(y2)))));
+    IExpr cy = F.eval(F.Expand(
+        n1.times(x3.subtract(x2)).plus(n2.times(x1.subtract(x3))).plus(n3.times(x2.subtract(x1)))));
     return F.list(F.eval(cx.divide(d)), F.eval(cy.divide(d)));
   }
 
@@ -546,8 +546,7 @@ public class ComputationalGeometryFunctions {
         if (ccw.isNegative()) {
           return 1;
         }
-        return squaredDistance(pivotPoint, point1)
-            .compareTo(squaredDistance(pivotPoint, point2));
+        return squaredDistance(pivotPoint, point1).compareTo(squaredDistance(pivotPoint, point2));
       }
     });
 
@@ -646,8 +645,7 @@ public class ComputationalGeometryFunctions {
     IASTAppendable result = F.ast(S.BoundaryMeshRegion, 4);
     result.append(vertices);
     result.append(cells);
-    result.append(
-        F.Rule(S.Method, F.list(F.Rule(F.stringx("SeparateBoundaries"), S.False))));
+    result.append(F.Rule(S.Method, F.list(F.Rule(F.stringx("SeparateBoundaries"), S.False))));
     if (exact) {
       result.append(F.Rule(S.WorkingPrecision, F.CInfinity));
     }

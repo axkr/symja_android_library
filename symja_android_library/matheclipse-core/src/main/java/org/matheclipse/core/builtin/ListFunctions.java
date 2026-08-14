@@ -75,6 +75,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -4007,6 +4008,10 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1 instanceof IPatternObject) {
+        // a pattern object is an atom, count the elements of its FullForm structure
+        arg1 = ((IPatternObject) arg1).toFullFormAST();
+      }
       final int size = arg1.size();
       if (size > 0) {
         return F.ZZ(size - 1);
@@ -4369,8 +4374,7 @@ public final class ListFunctions {
               if (rightHandSide.equals(S.Automatic)) {
                 // {elem1, elem2,...} -> Automatic - return the positions of the nearest elements
                 values = IAST.range(elements.size());
-              } else if (rightHandSide.isList()
-                  && rightHandSide.argSize() == elements.argSize()) {
+              } else if (rightHandSide.isList() && rightHandSide.argSize() == elements.argSize()) {
                 // {elem1, elem2,...} -> {v1, v2,...} - return the value at the position of the
                 // nearest element
                 values = (IAST) rightHandSide;
@@ -7925,7 +7929,7 @@ public final class ListFunctions {
             }
           }
         } else if (arg1.isNumericFunction()) {
-        	arg1 = arg1.makeList();
+          arg1 = arg1.makeList();
         }
         arg1 = sparseArray.normal(false);
       }

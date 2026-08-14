@@ -35,6 +35,7 @@ public class WindowFunctions {
       new WindowFunction(WindowFunctions::parzenWindow, "ParzenWindow");
   public static final WindowFunction TUKEY =
       new WindowFunction(WindowFunctions::tukeyWindow, "TukeyWindow");
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>

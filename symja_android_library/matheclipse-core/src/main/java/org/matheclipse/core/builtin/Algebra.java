@@ -1111,10 +1111,10 @@ public class Algebra {
      * Expand numerator and denominator separately, if the denominator is a sum which
      * <code>ExpandDenominator</code> would expand. Distributing the numerator over such a
      * denominator would hide the expanded denominator again, e.g.
-     * <code>ExpandAll((1+a)^6/(x+y)^3, Modulus->3)</code> is
-     * <code>(1+2*a^3+a^6)/(x^3+y^3)</code> and not a sum of three fractions. For a denominator
-     * which isn't a sum the numerator is distributed as before, so that
-     * <code>ExpandAll((a+b)/c, Modulus->3)</code> stays <code>a/c+b/c</code>.
+     * <code>ExpandAll((1+a)^6/(x+y)^3, Modulus->3)</code> is <code>(1+2*a^3+a^6)/(x^3+y^3)</code>
+     * and not a sum of three fractions. For a denominator which isn't a sum the numerator is
+     * distributed as before, so that <code>ExpandAll((a+b)/c, Modulus->3)</code> stays
+     * <code>a/c+b/c</code>.
      * <p>
      * Only used for the <code>Modulus</code> option. Returning a quotient instead of a sum of
      * fractions from the general <code>ExpandAll()</code> sends <code>Factor()</code> and
@@ -2165,9 +2165,9 @@ public class Algebra {
      * produced by the Rubi/partial-fraction path of
      * <code>DSolve({a*f'(x)^2+f'''(x)==0, f'(0)==0}, f(x), x)</code> - has no such normal form:
      * every step grows the expression instead of reducing it, and the
-     * {@link ExprPolynomial#isZERO()} tests on the result run a full <code>PossibleZeroQ</code> over
-     * it. The pair is small (101 and 389 leaves) yet the extended Euclid never returns. Radicals of
-     * a plain number such as <code>Sqrt(2)</code> are fine and stay allowed.
+     * {@link ExprPolynomial#isZERO()} tests on the result run a full <code>PossibleZeroQ</code>
+     * over it. The pair is small (101 and 389 leaves) yet the extended Euclid never returns.
+     * Radicals of a plain number such as <code>Sqrt(2)</code> are fine and stay allowed.
      *
      * <p>
      * Rejecting here is not a failure - the caller falls back to
@@ -2175,8 +2175,8 @@ public class Algebra {
      * {@link #symbolicExtendedGCD} existed.
      */
     private static boolean isRationalCoefficientDomain(IExpr expr) {
-      return expr.isFree(
-          t -> t.isPower() && !t.exponent().isInteger() && !t.base().isNumber(), true);
+      return expr.isFree(t -> t.isPower() && !t.exponent().isInteger() && !t.base().isNumber(),
+          true);
     }
 
     private static IExpr polynomialExtendedExpr(IExpr expr1, IExpr expr2, IAST variables,
@@ -2573,8 +2573,8 @@ public class Algebra {
    * </pre>
    *
    * <p>
-   * Modulo a prime the arguments keep their leading coefficients, the result is not normalized to
-   * a monic polynomial:
+   * Modulo a prime the arguments keep their leading coefficients, the result is not normalized to a
+   * monic polynomial:
    *
    * <pre>
    * &gt;&gt; PolynomialLCM(2*x^2 + 2, x + 1, Modulus -&gt; 5)
@@ -2645,9 +2645,8 @@ public class Algebra {
             if (!evaled) {
               return ast.setAtCopy(0, S.Times, argSize + 1);
             }
-            IExpr lastFactored =
-                timesLastArgument(polyExpr, F.evalExpandAll(ast.get(argSize), engine),
-                    eVar.getVarList());
+            IExpr lastFactored = timesLastArgument(polyExpr,
+                F.evalExpandAll(ast.get(argSize), engine), eVar.getVarList());
             if (lastFactored.isPresent()) {
               return lastFactored;
             }
@@ -2732,13 +2731,13 @@ public class Algebra {
      * example.
      *
      * <p>
-     * Folds with <code>lcm(a, b) == (a / gcd(a, b)) * b</code> and keeps the last two factors apart,
-     * exactly as {@link #polynomialLCMModulus(IAST, int, IExpr, IAST)} does.
+     * Folds with <code>lcm(a, b) == (a / gcd(a, b)) * b</code> and keeps the last two factors
+     * apart, exactly as {@link #polynomialLCMModulus(IAST, int, IExpr, IAST)} does.
      *
      * <p>
      * {@link ExprPolynomial#gcd(ExprPolynomial)} normalizes to a leading coefficient of
-     * <code>1</code>, so a coefficient factor which both arguments carry is not part of the greatest
-     * common divisor and the fold would count it twice - <code>PolynomialLCM(Sqrt(2)*x,
+     * <code>1</code>, so a coefficient factor which both arguments carry is not part of the
+     * greatest common divisor and the fold would count it twice - <code>PolynomialLCM(Sqrt(2)*x,
      * Sqrt(2)*x)</code> would become <code>2*x</code>. That is exactly the case of a constant
      * cofactor, which is handled separately below.
      *
@@ -2829,7 +2828,8 @@ public class Algebra {
           if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
-          // no fallback over ExprPolynomial here: its coefficient domain is the symbolic one, so the
+          // no fallback over ExprPolynomial here: its coefficient domain is the symbolic one, so
+          // the
           // result would silently ignore the requested modulus
         }
       }

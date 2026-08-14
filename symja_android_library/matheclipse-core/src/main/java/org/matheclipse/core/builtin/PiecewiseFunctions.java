@@ -553,7 +553,7 @@ public class PiecewiseFunctions {
         }
         // The first argument `1` of `2` is not a list of pairs.
         return Errors.printMessage(ast.topHead(), "pairs", F.list(arg1, ast.topHead()), engine);
-      } 
+      }
       IAST matrix = (IAST) arg1;
       IExpr defaultValue = F.C0;
       if (ast.isAST1()) {

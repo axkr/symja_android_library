@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.DateGranularity;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
@@ -1288,7 +1289,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return DateObjectExpr.newInstance(LocalDateTime.now());
+      return DateObjectExpr.newInstance(LocalDateTime.now(), DateGranularity.INSTANT);
     }
 
     @Override
@@ -1302,8 +1303,9 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       LocalDateTime now = LocalDateTime.now();
-      return DateObjectExpr
-          .newInstance(LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0));
+      return DateObjectExpr.newInstance(
+          LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0),
+          DateGranularity.DAY);
     }
 
     @Override

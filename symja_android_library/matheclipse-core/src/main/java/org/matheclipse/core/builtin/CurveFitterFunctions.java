@@ -291,21 +291,21 @@ public class CurveFitterFunctions {
    * <blockquote>
    *
    * <p>
-   * find a fit (coefficient) vector <code>a</code> that minimizes <code>Norm(m.a - v)</code> for the
-   * design matrix <code>m</code> and the response vector <code>v</code> and return the best fit
+   * find a fit (coefficient) vector <code>a</code> that minimizes <code>Norm(m.a - v)</code> for
+   * the design matrix <code>m</code> and the response vector <code>v</code> and return the best fit
    * expression.
    *
    * </blockquote>
    *
    * <p>
-   * The option <code>WorkingPrecision</code> controls the arithmetic used to solve the least squares
-   * problem:
+   * The option <code>WorkingPrecision</code> controls the arithmetic used to solve the least
+   * squares problem:
    *
    * <ul>
    * <li><code>WorkingPrecision-&gt;Automatic</code> uses machine (double) precision (default)
    * <li><code>WorkingPrecision-&gt;Infinity</code> uses exact/symbolic arithmetic
-   * <li><code>WorkingPrecision-&gt;n</code> uses <code>n</code>-digit <code>Apfloat</code> arbitrary
-   * precision arithmetic
+   * <li><code>WorkingPrecision-&gt;n</code> uses <code>n</code>-digit <code>Apfloat</code>
+   * arbitrary precision arithmetic
    * </ul>
    *
    * <p>
@@ -416,10 +416,10 @@ public class CurveFitterFunctions {
      * <code>Apfloat</code> (<code>precision</code> digits) arithmetic.
      *
      * <p>
-     * The coefficients are computed by solving the normal equations
-     * <code>(X^T.X).a == X^T.y</code> with {@link S#LinearSolve}. Solving the normal equations
-     * directly keeps exact rational (or <code>Apfloat</code>) entries and avoids the square roots
-     * introduced by a QR decomposition, so e.g. an exact fit reduces to a simplified expression.
+     * The coefficients are computed by solving the normal equations <code>(X^T.X).a == X^T.y</code>
+     * with {@link S#LinearSolve}. Solving the normal equations directly keeps exact rational (or
+     * <code>Apfloat</code>) entries and avoids the square roots introduced by a QR decomposition,
+     * so e.g. an exact fit reduces to a simplified expression.
      *
      * @param data the list of data points (a matrix of <code>{x, y}</code> pairs or a vector of
      *        y-values)

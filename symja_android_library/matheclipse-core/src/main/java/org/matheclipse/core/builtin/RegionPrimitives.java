@@ -14,8 +14,8 @@ import org.matheclipse.core.interfaces.IInteger;
  * Argument parsing and closed form measures for the geometric region primitives which are shared
  * between {@link org.matheclipse.core.reflection.system.Volume},
  * {@link org.matheclipse.core.reflection.system.SurfaceArea},
- * {@link org.matheclipse.core.reflection.system.RegionMeasure} and the other
- * <code>Region*</code> functions.
+ * {@link org.matheclipse.core.reflection.system.RegionMeasure} and the other <code>Region*</code>
+ * functions.
  */
 public class RegionPrimitives {
 
@@ -54,8 +54,8 @@ public class RegionPrimitives {
    * X({theta,phi}, c, l)
    * </pre>
    *
-   * The <code>{theta,phi}</code> orientation does not change any of the measures, so it is
-   * accepted and ignored here.
+   * The <code>{theta,phi}</code> orientation does not change any of the measures, so it is accepted
+   * and ignored here.
    *
    * @return <code>null</code> if the arguments don't match one of the forms above or if the edge
    *         length is negative
@@ -134,12 +134,11 @@ public class RegionPrimitives {
         return engine.evaluate(F.Times(F.C1D3, F.Sqrt(F.C2), cube));
       case ID.Dodecahedron:
         // (15+7*Sqrt(5))/4 * a^3
-        return engine.evaluate(
-            F.Times(F.C1D4, F.Plus(F.ZZ(15), F.Times(F.C7, F.Sqrt(F.C5))), cube));
+        return engine
+            .evaluate(F.Times(F.C1D4, F.Plus(F.ZZ(15), F.Times(F.C7, F.Sqrt(F.C5))), cube));
       case ID.Icosahedron:
         // 5*(3+Sqrt(5))/12 * a^3
-        return engine
-            .evaluate(F.Times(F.QQ(5, 12), F.Plus(F.C3, F.Sqrt(F.C5)), cube));
+        return engine.evaluate(F.Times(F.QQ(5, 12), F.Plus(F.C3, F.Sqrt(F.C5)), cube));
     }
     return F.NIL;
   }
@@ -156,8 +155,8 @@ public class RegionPrimitives {
         return engine.evaluate(F.Times(F.C2, F.Sqrt(F.C3), sqr));
       case ID.Dodecahedron:
         // 3*Sqrt(5*(5+2*Sqrt(5))) * a^2
-        return engine.evaluate(F.Times(F.C3,
-            F.Sqrt(F.Times(F.C5, F.Plus(F.C5, F.Times(F.C2, F.Sqrt(F.C5))))), sqr));
+        return engine.evaluate(
+            F.Times(F.C3, F.Sqrt(F.Times(F.C5, F.Plus(F.C5, F.Times(F.C2, F.Sqrt(F.C5))))), sqr));
       case ID.Icosahedron:
         return engine.evaluate(F.Times(F.C5, F.Sqrt(F.C3), sqr));
     }
@@ -199,8 +198,8 @@ public class RegionPrimitives {
   }
 
   /**
-   * Parse <code>Torus()</code>, which is equivalent to
-   * <code>Torus({0,0,0}, {1/2, 1})</code>, and <code>Torus(c, {rInner, rOuter})</code>.
+   * Parse <code>Torus()</code>, which is equivalent to <code>Torus({0,0,0}, {1/2, 1})</code>, and
+   * <code>Torus(c, {rInner, rOuter})</code>.
    *
    * @return <code>null</code> if the arguments don't match one of those forms
    */
@@ -358,8 +357,7 @@ public class RegionPrimitives {
   }
 
   /**
-   * Bring <code>CapsuleShape</code> into the standard form
-   * <code>CapsuleShape({p1, p2}, r)</code>.
+   * Bring <code>CapsuleShape</code> into the standard form <code>CapsuleShape({p1, p2}, r)</code>.
    *
    * <pre>
    * CapsuleShape()      CapsuleShape({{-1,0,0}, {1,0,0}}, 1)
@@ -436,8 +434,7 @@ public class RegionPrimitives {
   }
 
   /**
-   * Bring <code>StadiumShape</code> into the standard form
-   * <code>StadiumShape({p1, p2}, r)</code>.
+   * Bring <code>StadiumShape</code> into the standard form <code>StadiumShape({p1, p2}, r)</code>.
    *
    * <pre>
    * StadiumShape()      StadiumShape({{-1,0}, {1,0}}, 1)
@@ -646,8 +643,7 @@ public class RegionPrimitives {
     for (int ki : k) {
       numerator = F.Times(numerator, F.Gamma(F.QQ(ki + 1, 2)));
     }
-    return engine
-        .evaluate(F.Divide(numerator, F.Gamma(F.Plus(F.C1, F.QQ(sum + k.length, 2)))));
+    return engine.evaluate(F.Divide(numerator, F.Gamma(F.Plus(F.C1, F.QQ(sum + k.length, 2)))));
   }
 
   /**
@@ -835,17 +831,15 @@ public class RegionPrimitives {
     for (int a = 0; a <= p; a++) {
       for (int b = 0; a + b <= p; b++) {
         long cx = factorial(p) / (factorial(p - a - b) * factorial(a) * factorial(b));
-        IExpr termX = F.Times(F.ZZ(cx), intPower(x1, p - a - b), intPower(ax, a),
-            intPower(bx, b));
+        IExpr termX = F.Times(F.ZZ(cx), intPower(x1, p - a - b), intPower(ax, a), intPower(bx, b));
         for (int c = 0; c <= q; c++) {
           for (int d = 0; c + d <= q; d++) {
             long cy = factorial(q) / (factorial(q - c - d) * factorial(c) * factorial(d));
-            IExpr termY = F.Times(F.ZZ(cy), intPower(y1, q - c - d), intPower(ay, c),
-                intPower(by, d));
+            IExpr termY =
+                F.Times(F.ZZ(cy), intPower(y1, q - c - d), intPower(ay, c), intPower(by, d));
             // Integrate(u^(a+c) * v^(b+d)) over the unit triangle
             long integral = factorial(a + c) * factorial(b + d);
-            sum.append(F.Times(termX, termY,
-                F.QQ(integral, factorial(a + c + b + d + 2))));
+            sum.append(F.Times(termX, termY, F.QQ(integral, factorial(a + c + b + d + 2))));
           }
         }
       }
@@ -906,8 +900,7 @@ public class RegionPrimitives {
   }
 
   /**
-   * <code>Indeterminate</code> repeated <code>n</code> times - the centroid of an unbounded
-   * region.
+   * <code>Indeterminate</code> repeated <code>n</code> times - the centroid of an unbounded region.
    */
   public static IAST indeterminateCentroid(int n) {
     return constantVector(S.Indeterminate, n);
