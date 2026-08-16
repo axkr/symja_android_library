@@ -495,8 +495,10 @@ public class QuantityTest extends ExprEvaluatorTestCase {
   public void testQuantityTeXForm() {
     check("TeXForm(Quantity(3, \"Kilometers\"))", //
         "3\\,\\text{km}");
+    // the exponent has to leave the text mode: a caret inside \text{} is not valid TeX and
+    // is rejected by a renderer instead of being shown as a superscript
     check("TeXForm(Quantity(9.8, \"Meters\"/\"Seconds\"^2))", //
-        "9.8\\,\\text{m/s^2}");
+        "9.8\\,\\text{m/s}^{2}");
   }
 
   @Test

@@ -351,12 +351,11 @@ public class TeXFormFactory {
           return true;
         }
       }
-      // if ((ast instanceof ASTRealMatrix) || ast.isEvalFlagOn(IAST.IS_MATRIX)) {
-      int[] dims = ast.isMatrix();
-      if (dims != null && dims[0] > 1 && dims[1] > 1) {
-        return convertMatrix(buffer, ast, dims);
-      }
-      // }
+      // A plain List is written as a list, even when its elements happen to have the shape of
+      // a matrix. isMatrix() is a structural test, so the rules coming back from
+      // Solve({x^2-11==y, x+y==-9}, {x,y}) used to be typeset as a 2x2 array. Only MatrixForm
+      // asks for an array - which is what Mathematica does, and what the MathML output and the
+      // OutputForm of the same expression have always done.
 
       if ((ast.getEvalFlags() & IAST.IS_VECTOR) == IAST.IS_VECTOR) {
         // create a LaTeX row vector
@@ -497,14 +496,13 @@ public class TeXFormFactory {
                   buffer.append(" & ");
                 }
               }
-              if (i < matrix.argSize()) {
-                buffer.append(" \\\\\n");
-              } else {
-                buffer.append(" \\\n");
-              }
+              // every row is closed the same way. The last one used to end in a single
+              // backslash followed by a "\\" of its own, which is not a row separator at
+              // all and stops a TeX renderer from parsing the matrix.
+              buffer.append(" \\\\\n");
             }
           }
-          buffer.append("\\\\\n\\end{array}\n\\right) ");
+          buffer.append("\\end{array}\n\\right) ");
         } else {
           buffer.append("\\begin{pmatrix}\n");
           IAST row;
@@ -1579,9 +1577,8 @@ public class TeXFormFactory {
             if (list.isAST2() && org.matheclipse.core.units.Units.isKnownUnit(list.arg2())) {
               // magnitude, thin space, upright unit abbreviation
               convertInternal(buf, list.arg1(), Precedence.TIMES, NO_PLUS_CALL);
-              buf.append("\\,\\text{");
-              buf.append(org.matheclipse.core.units.Units.renderUnit(list.arg2(), "Abbreviation"));
-              buf.append("}");
+              appendUnit(buf,
+                  org.matheclipse.core.units.Units.renderUnit(list.arg2(), "Abbreviation"));
               return;
             }
             break;
@@ -1952,18 +1949,125 @@ public class TeXFormFactory {
    *
    * '{': r'\{', '}': r'\}', '_': r'\_', '$': r'\$', '%': r'\%', '#': r'\#', '&': r'\&',7
    */
+  /**
+   * Escape the characters that TeX reads as markup, so that a symbol name such as
+   * <code>$Failed</code> or a module renamed variable such as <code>lf$8335</code> does not open
+   * math mode in the middle of the output.
+   */
+  private static String escapeTeXSpecials(String str) {
+    if (str.indexOf('$') < 0 && str.indexOf('\\') < 0 && str.indexOf('_') < 0
+        && str.indexOf('%') < 0 && str.indexOf('&') < 0 && str.indexOf('#') < 0
+        && str.indexOf('{') < 0 && str.indexOf('}') < 0) {
+      return str;
+    }
+    StringBuilder buf = new StringBuilder(str.length() + 8);
+    for (int i = 0; i < str.length(); i++) {
+      char ch = str.charAt(i);
+      switch (ch) {
+        case '\\':
+          buf.append("\\backslash ");
+          break;
+        case '$':
+        case '_':
+        case '%':
+        case '&':
+        case '#':
+        case '{':
+        case '}':
+          buf.append('\\').append(ch);
+          break;
+        default:
+          buf.append(ch);
+      }
+    }
+    return buf.toString();
+  }
+
+  /**
+   * Escape a string that is written inside <code>\text{...}</code> or
+   * <code>\textnormal{...}</code>. Every character TeX reads as markup gets a command of its own,
+   * so that arbitrary text - a file path, a unit such as <code>cm^2</code>, the output of
+   * <code>TeXForm</code> - survives being put into a formula.
+   */
+  public static String escapeTeXText(final String str) {
+    StringBuilder buf = new StringBuilder(str.length() + 8);
+    for (int i = 0; i < str.length(); i++) {
+      char ch = str.charAt(i);
+      switch (ch) {
+        case '\\':
+          buf.append("\\textbackslash ");
+          break;
+        case '^':
+          buf.append("\\textasciicircum ");
+          break;
+        case '~':
+          buf.append("\\textasciitilde ");
+          break;
+        case '<':
+          buf.append("$<$");
+          break;
+        case '>':
+          buf.append("$>$");
+          break;
+        case '$':
+        case '_':
+        case '%':
+        case '&':
+        case '#':
+        case '{':
+        case '}':
+          buf.append('\\').append(ch);
+          break;
+        default:
+          buf.append(ch);
+      }
+    }
+    return buf.toString();
+  }
+
+  /**
+   * Append a unit abbreviation as an upright unit after a thin space. An exponent in the
+   * abbreviation - <code>m/s^2</code> - becomes a real superscript rather than a literal caret,
+   * which is not allowed in the text mode of TeX at all.
+   */
+  private static void appendUnit(final StringBuilder buf, final String unit) {
+    buf.append("\\,");
+    StringBuilder text = new StringBuilder();
+    int i = 0;
+    while (i < unit.length()) {
+      char ch = unit.charAt(i);
+      if (ch == '^') {
+        int j = i + 1;
+        if (j < unit.length() && (unit.charAt(j) == '-' || unit.charAt(j) == '+')) {
+          j++;
+        }
+        while (j < unit.length() && Character.isDigit(unit.charAt(j))) {
+          j++;
+        }
+        if (j > i + 1) {
+          // leave the text for the exponent and come back for the rest of the unit
+          flushUnitText(buf, text);
+          buf.append("^{").append(unit, i + 1, j).append("}");
+          i = j;
+          continue;
+        }
+      }
+      text.append(escapeTeXText(String.valueOf(ch)));
+      i++;
+    }
+    flushUnitText(buf, text);
+  }
+
+  private static void flushUnitText(final StringBuilder buf, final StringBuilder text) {
+    if (text.length() > 0) {
+      buf.append("\\text{").append(text).append("}");
+      text.setLength(0);
+    }
+  }
+
   public void convertString(final StringBuilder buf, final String str) {
     buf.append("\\textnormal{");
-    String text = str.replaceAll("\\&", "\\\\&");
-    text = text.replaceAll("\\#", "\\\\#");
-    text = text.replaceAll("\\%", "\\\\%");
-    text = text.replace("$", "\\$");
-    text = text.replaceAll("\\_", "\\\\_");
-    text = text.replace("{", "\\{");
-    text = text.replace("}", "\\}");
-    text = text.replaceAll("\\<", "\\$<\\$");
-    text = text.replaceAll("\\>", "\\$>\\$");
-    buf.append(text);
+    buf.append(escapeTeXText(str));
     buf.append("}");
   }
 
@@ -1980,7 +2084,8 @@ public class TeXFormFactory {
   public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
     Context context = sym.getContext();
     if (context == Context.DUMMY || context == Context.FORMAL) {
-      buf.append(sym.getSymbolName());
+      // a renamed Module variable looks like lf$8335
+      buf.append(escapeTeXSpecials(sym.getSymbolName()));
       return;
     }
     String headStr = sym.getSymbolName();
@@ -2003,7 +2108,8 @@ public class TeXFormFactory {
       }
       final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
       if (convertedSymbol == null) {
-        buf.append(headStr);
+        // system symbols such as $Failed and $Aborted start with a dollar sign
+        buf.append(escapeTeXSpecials(headStr));
       } else {
         convertConstantSymbol(buf, sym, convertedSymbol);
       }

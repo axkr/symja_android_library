@@ -392,7 +392,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "{{x}_{1+2 \\cdot k},{x}^{\\left( 1+2 \\cdot k\\right) }}");
     check("TeXForm({a,b,c})", //
         "\\{a,b,c\\}");
+    // a plain list stays a list even when its elements have the shape of a matrix; only
+    // MatrixForm asks for an array
     check("TeXForm({{a, b, c}, {d, e, f}})", //
+        "\\{\\{a,b,c\\},\\{d,e,f\\}\\}");
+    check("TeXForm(MatrixForm({{a, b, c}, {d, e, f}}))", //
         "\\left(\n" //
             + "\\begin{array}{ccc}\n" //
             + "a & b & c \\\\\n" //
@@ -535,12 +539,9 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     StringWriter buf = new StringWriter();
     teXUtilities.toTeX(exprEvaluator.parse(input), buf);
     String latex = buf.toString();
-    assertEquals(latex, //
-        "\\text{MapIndexed}(f,\\left(\n" //
-            + "\\begin{array}{ccc}\n"//
-            + "a & b & c \\\\\n" //
-            + "x & y & z \\\\\n" //
-            + "\\end{array}\n" + "\\right) )");
+    // the nested list is a list, not a matrix
+    assertEquals("\\text{MapIndexed}(f,\\{\\{a,b,c\\},\\{x,y,z\\}\\})", //
+        latex);
   }
 
 
@@ -561,12 +562,15 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   public void testTeXFormMatrix() {
     check("TeXForm(Hold({{1^(1+1),1^(1+2)},\n" //
         + "     {1^(1+2),1^(2+2)}}))", //
-        "\\text{Hold}(\\left(\n" //
+        "\\text{Hold}(\\{\\{{1}^{\\left( 1 + 1\\right) },{1}^{\\left( 1 + 2\\right) }\\}," //
+            + "\\{{1}^{\\left( 1 + 2\\right) },{1}^{\\left( 2 + 2\\right) }\\}\\})");
+    check("TeXForm(MatrixForm({{a,b},{c,d}}))", //
+        "\\left(\n" //
             + "\\begin{array}{cc}\n" //
-            + "{1}^{\\left( 1 + 1\\right) } & {1}^{\\left( 1 + 2\\right) } \\\\\n" //
-            + "{1}^{\\left( 1 + 2\\right) } & {1}^{\\left( 2 + 2\\right) } \\\\\n" //
+            + "a & b \\\\\n" //
+            + "c & d \\\\\n" //
             + "\\end{array}\n" //
-            + "\\right) )");
+            + "\\right) ");
   }
 
   @Test
