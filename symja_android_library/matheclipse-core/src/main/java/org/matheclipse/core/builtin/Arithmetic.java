@@ -72,7 +72,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
-import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -1577,7 +1576,7 @@ public final class Arithmetic {
   private static final int MAX_GAMMA_FUNCTION_EXPAND = 256;
 
   private static final class Gamma extends AbstractFunctionEvaluator
-      implements IFunctionExpand, IMatch {
+      implements IFunctionExpand {
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -1879,18 +1878,6 @@ public final class Arithmetic {
         return F.Subtract(F.Gamma(a, z0), F.Gamma(a, z1));
       }
       return F.NIL;
-    }
-
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return GammaRules.match3(ast, engine);
-    }
-
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return GammaRules.match4(ast, engine);
     }
 
     @Override

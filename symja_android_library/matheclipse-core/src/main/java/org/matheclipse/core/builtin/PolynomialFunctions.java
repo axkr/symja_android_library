@@ -22,7 +22,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
-import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -2439,7 +2438,7 @@ public class PolynomialFunctions {
    * </pre>
    */
   private static final class LegendreP extends AbstractFunctionEvaluator
-      implements IMatch, IFunctionExpand {
+      implements IFunctionExpand {
     private static IExpr legendreP(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
       int ni = n.toIntDefault();
       if (F.isPresent(ni)) {
@@ -2602,12 +2601,6 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return LegendrePRules.match3(ast, engine);
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       int argSize = ast.argSize();
       if (argSize == 4) {
@@ -2679,7 +2672,7 @@ public class PolynomialFunctions {
    * </pre>
    */
   static final class LegendreQ extends AbstractFunctionEvaluator
-      implements IMatch, IFunctionExpand {
+      implements IFunctionExpand {
     private static IExpr legendreQ(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
       int ni = n.toIntDefault();
       if (F.isPresent(ni)) {
@@ -2907,12 +2900,6 @@ public class PolynomialFunctions {
         // }
       }
       return F.NIL;
-    }
-
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return LegendreQRules.match3(ast, engine);
     }
 
     @Override
@@ -3546,7 +3533,7 @@ public class PolynomialFunctions {
 
 
   private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
-      implements IMatch {
+ {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
@@ -3624,12 +3611,6 @@ public class PolynomialFunctions {
         }
       }
       return F.NIL;
-    }
-
-    @Override
-    public IExpr match5(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return SphericalHarmonicYRules.match5(ast, engine);
     }
 
     @Override

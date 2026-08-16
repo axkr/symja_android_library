@@ -31,7 +31,6 @@ import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
-import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -1119,13 +1118,7 @@ public class SpecialFunctions {
   }
 
 
-  private static class HurwitzLerchPhi extends AbstractFunctionEvaluator implements IMatch {
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return HurwitzLerchPhiRules.match4(ast, engine);
-    }
-
+  private static class HurwitzLerchPhi extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1480,12 +1473,7 @@ public class SpecialFunctions {
   }
 
 
-  private static class LerchPhi extends AbstractFunctionEvaluator implements IMatch {
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return LerchPhiRules.match4(ast, engine);
-    }
+  private static class LerchPhi extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1780,12 +1768,7 @@ public class SpecialFunctions {
 
 
   private static class PolyGamma extends AbstractFunctionEvaluator
-      implements IFunctionExpand, IMatch {
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return PolyGammaRules.match3(ast, engine);
-    }
+      implements IFunctionExpand {
 
     public IExpr e1ApfloatArg(Apfloat arg1) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
@@ -2008,13 +1991,7 @@ public class SpecialFunctions {
 
 
   private static class PolyLog extends AbstractFunctionEvaluator
-      implements IFunctionExpand, IMatch {
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return PolyLogRules.match3(ast, engine);
-    }
-
+      implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -2403,13 +2380,7 @@ public class SpecialFunctions {
   }
 
 
-  private static class StieltjesGamma extends AbstractFunctionEvaluator implements IMatch {
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return StieltjesGammaRules.match3(ast, engine);
-    }
-
+  private static class StieltjesGamma extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2440,12 +2411,7 @@ public class SpecialFunctions {
 
 
   private static final class StruveH extends AbstractFunctionEvaluator
-      implements IFunctionExpand, IMatch {
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return StruveHRules.match3(ast, engine);
-    }
+      implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -2553,12 +2519,7 @@ public class SpecialFunctions {
 
 
   private static final class StruveL extends AbstractFunctionEvaluator
-      implements IFunctionExpand, IMatch {
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return StruveLRules.match3(ast, engine);
-    }
+      implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {

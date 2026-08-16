@@ -2,6 +2,7 @@ package org.matheclipse.core.patternmatching;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -10,7 +11,6 @@ import java.util.TreeMap;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -19,11 +19,13 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats;
+import org.matheclipse.core.patternmatching.ruleindex.RuleFeatureIndex;
+import org.matheclipse.core.patternmatching.ruleindex.RuleIndexValidation;
 import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.parser.trie.TrieMatch;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -158,12 +160,6 @@ public final class RulesData implements Serializable {
   private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
   /**
-   * Pattern matcher for decision tree pattern matching (used for small IAST sizes only), defined by
-   * the experimental <code>org.matheclipse.core.decisiontree.RulesToDecionTree</code> class.
-   */
-  private transient IMatch fMatcher;
-
-  /**
    * List of pattern matchers which are defined with {@link S#Set} or {@link S#SetDelayed} function.
    * The corresponding priority is stored in <code>fPriorityDownRules
    * </code>.
@@ -174,6 +170,25 @@ public final class RulesData implements Serializable {
    * Sorted int array of the priorities of the corresponding <code>fPatternDownRules</code> matcher.
    */
   private IntArrayList fPriorityDownRules;
+
+  /**
+   * Prefilter for {@link #fPatternDownRules}, built lazily as soon as the list is longer than
+   * {@link Config#RULE_INDEX_MIN_RULES}. Invalidated by {@link #invalidateRuleIndex()} whenever the
+   * rule list changes, and never serialized - see {@link #initTransientState()}.
+   */
+  private transient volatile RuleFeatureIndex fRuleIndex;
+
+  /**
+   * <code>true</code> if building a {@link RuleFeatureIndex} for {@link #fPatternDownRules} was
+   * tried and did not produce a usable index; prevents rebuilding it on every dispatch.
+   */
+  private transient volatile boolean fRuleIndexUnusable;
+
+  /**
+   * Incremented by {@link #invalidateRuleIndex()}. A {@link RuleFeatureIndex} is only published if
+   * the epoch did not change while it was built.
+   */
+  private transient volatile int fRuleIndexEpoch;
 
   /**
    * Matches rules which contain no patterns and are defined with {@link S#UpSet} or
@@ -208,11 +223,6 @@ public final class RulesData implements Serializable {
   public RulesData(int[] sizes, IBuiltInSymbol head) {
     // this.context = context;
     clear();
-    IEvaluator evaluator = head.getEvaluator();
-    if (evaluator instanceof IMatch) {
-      fMatcher = (IMatch) evaluator;
-    }
-
     if (sizes.length > 0) {
       int capacity;
       if (sizes[0] > 0) {
@@ -330,6 +340,7 @@ public final class RulesData implements Serializable {
   }
 
   public void clear() {
+    invalidateRuleIndex();
     fEqualDownRules = null;
     fPatternDownRules = null;
     fPriorityDownRules = null;
@@ -580,86 +591,46 @@ public final class RulesData implements Serializable {
     try {
       engine.setEvalRHSMode(true);
 
-      if (fMatcher != null && expr.isAST() && expr.size() < 6) {
-        IExpr temp = evalDecisionTree(expr, engine);
-        if (temp.isPresent()) {
-          return temp;
-        }
-      }
-
       if (fPatternDownRules != null) {
         int patternHash = 0;
         if (expr.isASTOrAssociation()) {
           patternHash = ((IAST) expr).patternHashCode();
         }
-        final IExpr integrateVar =
-            expr.isAST(S.Integrate, 3) && expr.second().isSymbol() ? expr.second() : null;
         IEvalStepListener stepListener = engine.getStepListener();
         final boolean isTraceMode =
             Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
-        for (IPatternMatcher patternEvaluator : fPatternDownRules) {
-          // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-          // // System.out.println("Rule: " + patternEvaluator.getLHSPriority());
-          // // if (patternEvaluator.getLHSPriority() >= 7301) {
-          // // debug rule from here
-          // // rule 7301 is CannotIntegrate on 27th JAN 2024
-          // if (patternEvaluator.getLHSPriority() == 7301) {
-          // System.out.println("Rule " + patternEvaluator.getLHSPriority() + "found!\n"
-          // + patternEvaluator.toString());
-          // }
-          // }
-          if (patternEvaluator.isPatternHashAllowed(patternHash)) {
-            IExpr result = F.NIL;
-            if (isTraceMode) {
-              stepListener.setUp(expr, engine.getRecursionCounter(), expr);
-              try {
-                result = evalMatcher(patternEvaluator, expr, engine);
-                if (result.isPresent()) {
-                  return result;
-                }
-              } finally {
-                if (result.isPresent()) {
-                  stepListener.tearDown(result, engine.getRecursionCounter(), true, expr);
-                } else {
-                  stepListener.tearDown(F.NIL, engine.getRecursionCounter(), false, expr);
-                }
-              }
-              continue;
-            }
 
-            result = evalMatcher(patternEvaluator, expr, engine);
-
+        final List<IPatternMatcher> rules = fPatternDownRules;
+        final RuleFeatureIndex index = ruleIndex();
+        // rule sets below the index threshold are scanned linearly with or without the index, so
+        // they are excluded from the selectivity counter
+        final boolean indexable = rules.size() >= RuleFeatureIndex.INDEXABLE_RULES;
+        if (index == null || index.ruleCount() != rules.size()) {
+          RuleDispatchStats.dispatch(false);
+          for (IPatternMatcher patternEvaluator : rules) {
+            IExpr result = evalPatternDownRule(patternEvaluator, expr, engine, patternHash,
+                stepListener, isTraceMode, indexable);
             if (result.isPresent()) {
-              if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-                if (!expr.equals(result)) {
-                  return result;
-                }
-                boolean quietMode = engine.isQuietMode();
-                try {
-                  engine.setQuietMode(false);
-                  // Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching
-                  // rules.
-                  Errors.printMessage(S.Integrate, "rubiendless",
-                      F.list(expr, F.ZZ(patternEvaluator.getLHSPriority())), engine);
-                } finally {
-                  engine.setQuietMode(quietMode);
-                }
-                // The rule rewrote the integral to itself. Returning the unevaluated integral stops
-                // the search here. Trying the remaining rules instead lets the expression cycle
-                // through the evaluation loop until $IterationLimit is reached, which costs the
-                // same result but a multiple of the time.
-                return expr;
-              } else {
-                return result;
-              }
+              return result;
             }
-            // } catch (Exception ex) {
-            // // For Integrate:
-            // // org.matheclipse.core.eval.exception.TimeoutException
-            // System.out.println(ex.toString());
-            // ex.printStackTrace();
-            // throw ex;
-            // }
+          }
+        } else if (Config.RULE_INDEX_VALIDATE) {
+          IExpr result =
+              evalValidated(expr, engine, patternHash, stepListener, isTraceMode, index);
+          if (result.isPresent()) {
+            return result;
+          }
+        } else {
+          RuleDispatchStats.dispatch(true);
+          final RuleFeatureIndex.Cursor cursor = index.cursor(expr);
+          int ruleIndex;
+          while ((ruleIndex = cursor.next()) >= 0) {
+            IPatternMatcher patternEvaluator = rules.get(ruleIndex);
+            IExpr result = evalPatternDownRule(patternEvaluator, expr, engine, patternHash,
+                stepListener, isTraceMode, true);
+            if (result.isPresent()) {
+              return result;
+            }
           }
         }
       }
@@ -670,33 +641,147 @@ public final class RulesData implements Serializable {
   }
 
   /**
-   * Try matching the <code>expr</code> expression with the pattern-matching rules create with the
-   * <code>org.matheclipse.core.decisiontree.RulesToDecionTree</code> if a matching rule was found,
-   * return the evaluated right-hand-side of that matching rule, otherwise return {@link F#NIL}.
+   * Apply a single pattern down-rule to <code>expr</code>.
    *
-   * @param expr the expression which will be tested for matching an existing pattern-matching rule
-   * @param engine the evaluation engine
-   * @return {@link F#NIL} if no matching/evaluation was possible
+   * @return the rewritten expression, or {@link F#NIL} if this rule did not apply and the dispatch
+   *         should continue with the next rule
    */
-  private IExpr evalDecisionTree(final IExpr expr, EvalEngine engine) {
-    IExpr match = F.NIL;
-    switch (expr.size()) {
-      case 2:
-        match = fMatcher.match2((IAST) expr, engine);
-        break;
-      case 3:
-        match = fMatcher.match3((IAST) expr, engine);
-        break;
-      case 4:
-        match = fMatcher.match4((IAST) expr, engine);
-        break;
-      case 5:
-        match = fMatcher.match5((IAST) expr, engine);
-        break;
-      default:
-        break;
+  private IExpr evalPatternDownRule(IPatternMatcher patternEvaluator, final IExpr expr,
+      EvalEngine engine, int patternHash, IEvalStepListener stepListener, boolean isTraceMode,
+      boolean indexable) {
+    RuleDispatchStats.ruleVisited(indexable);
+    if (!patternEvaluator.isPatternHashAllowed(patternHash)) {
+      return F.NIL;
     }
-    return match;
+    RuleDispatchStats.matchAttempt();
+
+    if (isTraceMode) {
+      IExpr result = F.NIL;
+      stepListener.setUp(expr, engine.getRecursionCounter(), expr);
+      try {
+        result = evalMatcher(patternEvaluator, expr, engine);
+        return result;
+      } finally {
+        if (result.isPresent()) {
+          stepListener.tearDown(result, engine.getRecursionCounter(), true, expr);
+        } else {
+          stepListener.tearDown(F.NIL, engine.getRecursionCounter(), false, expr);
+        }
+      }
+    }
+
+    IExpr result = evalMatcher(patternEvaluator, expr, engine);
+    if (result.isPresent()) {
+      if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
+        if (!expr.equals(result)) {
+          return result;
+        }
+        boolean quietMode = engine.isQuietMode();
+        try {
+          engine.setQuietMode(false);
+          // Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.
+          Errors.printMessage(S.Integrate, "rubiendless",
+              F.list(expr, F.ZZ(patternEvaluator.getLHSPriority())), engine);
+        } finally {
+          engine.setQuietMode(quietMode);
+        }
+        // The rule rewrote the integral to itself. Returning the unevaluated integral stops the
+        // search here. Trying the remaining rules instead lets the expression cycle through the
+        // evaluation loop until $IterationLimit is reached, which costs the same result but a
+        // multiple of the time.
+        return expr;
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Dispatch with a full linear scan and verify that the {@link RuleFeatureIndex} would have
+   * reported the rule which fired. The linear scan determines the result, so an unsound index
+   * cannot change the outcome while this mode is enabled.
+   *
+   * @see Config#RULE_INDEX_VALIDATE
+   */
+  private IExpr evalValidated(final IExpr expr, EvalEngine engine, int patternHash,
+      IEvalStepListener stepListener, boolean isTraceMode, RuleFeatureIndex index) {
+    RuleDispatchStats.dispatch(true);
+    BitSet candidates = index.candidates(expr);
+    final int size = fPatternDownRules.size();
+    for (int i = 0; i < size; i++) {
+      IPatternMatcher patternEvaluator = fPatternDownRules.get(i);
+      IExpr result = evalPatternDownRule(patternEvaluator, expr, engine, patternHash, stepListener,
+          isTraceMode, true);
+      if (result.isPresent()) {
+        RuleIndexValidation.checked(candidates.get(i), expr, patternEvaluator);
+        return result;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The prefilter for {@link #fPatternDownRules}, built on first use.
+   *
+   * @return the index, or <code>null</code> if the rule list is too short to profit from one or no
+   *         rule requires any symbol
+   */
+  private RuleFeatureIndex ruleIndex() {
+    final List<IPatternMatcher> rules = fPatternDownRules;
+    if (rules == null || rules.size() < Config.RULE_INDEX_MIN_RULES) {
+      // checked before the cached index is returned, so that raising the threshold switches the
+      // index off even after it was built
+      return null;
+    }
+    RuleFeatureIndex index = fRuleIndex;
+    if (index != null) {
+      // a rule added or removed by another thread shifts the positions the index refers to; fall
+      // back to the linear scan until the index was rebuilt
+      return index.ruleCount() == rules.size() ? index : null;
+    }
+    if (fRuleIndexUnusable) {
+      return null;
+    }
+    final int epoch = fRuleIndexEpoch;
+    index = RuleFeatureIndex.build(rules);
+    if (index == null) {
+      fRuleIndexUnusable = true;
+      return null;
+    }
+    if (epoch != fRuleIndexEpoch || rules != fPatternDownRules
+        || index.ruleCount() != rules.size()) {
+      // the rule list changed while the index was built - use it for this dispatch only
+      return null;
+    }
+    fRuleIndex = index;
+    return index;
+  }
+
+  /** Number of pattern down-rules; for diagnostics and benchmarks. */
+  public int patternDownRulesSize() {
+    return fPatternDownRules == null ? 0 : fPatternDownRules.size();
+  }
+
+  /** The pattern down-rules in evaluation order; for diagnostics and benchmarks. */
+  public List<IPatternMatcher> patternDownRules() {
+    return fPatternDownRules == null ? java.util.Collections.<IPatternMatcher>emptyList()
+        : java.util.Collections.unmodifiableList(fPatternDownRules);
+  }
+
+  /**
+   * The rule index, built if necessary; for diagnostics and benchmarks.
+   *
+   * @return the index or <code>null</code> if this symbol does not use one
+   */
+  public RuleFeatureIndex diagnosticRuleIndex() {
+    return ruleIndex();
+  }
+
+  /** Discard the rule index; called by everything which changes {@link #fPatternDownRules}. */
+  private void invalidateRuleIndex() {
+    fRuleIndexEpoch++;
+    fRuleIndex = null;
+    fRuleIndexUnusable = false;
   }
 
   private static boolean isShowSteps(IPatternMatcher pmEvaluator) {
@@ -858,6 +943,7 @@ public final class RulesData implements Serializable {
     // IPatternMatcher.SET_DELAYED, leftHandSide, Suppliers.memoize(() -> rightHandSide), false,
     // patternHash);
     pmEvaluator.setLHSPriority(priority);
+    invalidateRuleIndex();
     if (fPatternDownRules == null) {
       fPatternDownRules = new ArrayList<IPatternMatcher>(8000);
       fPriorityDownRules = new IntArrayList(8000);
@@ -937,6 +1023,7 @@ public final class RulesData implements Serializable {
    * @param newPatternMatcher the new pattern matching rule
    */
   public final PatternMatcher insertMatcher(final PatternMatcher newPatternMatcher) {
+    invalidateRuleIndex();
     if (fPatternDownRules == null) {
       fPatternDownRules = new ArrayList<IPatternMatcher>();
       fPriorityDownRules = new IntArrayList();
@@ -1075,6 +1162,7 @@ public final class RulesData implements Serializable {
 
     boolean evaled = false;
     if (fPatternDownRules != null) {
+      invalidateRuleIndex();
       int i = 0;
       while (i < fPatternDownRules.size()) {
         IPatternMatcher pm = fPatternDownRules.get(i);

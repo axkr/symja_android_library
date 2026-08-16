@@ -253,6 +253,27 @@ public class Config {
 
   public static boolean TRACE_REWRITE_RULE = false;
 
+  /**
+   * Minimum number of pattern down-rules a symbol needs before a
+   * {@link org.matheclipse.core.patternmatching.ruleindex.RuleFeatureIndex} is built for it. Below
+   * this size a linear scan is cheaper than analyzing the expression which should be rewritten.
+   * Set to {@link Integer#MAX_VALUE} to switch the index off.
+   */
+  public static int RULE_INDEX_MIN_RULES =
+      Integer.getInteger("symja.ruleIndexMinRules", 16).intValue();
+
+  /**
+   * Set to <code>true</code> to check every rule index dispatch against a full linear scan. The
+   * linear scan determines the result, the index is only verified to contain the rule which fired.
+   * Mismatches are reported on <code>System.err</code> and counted in
+   * {@link org.matheclipse.core.patternmatching.ruleindex.RuleIndexValidation}. Slow - for testing
+   * only.
+   */
+  public static boolean RULE_INDEX_VALIDATE = false;
+
+  /** Set to <code>true</code> to collect rule dispatch counters. */
+  public static boolean RULE_DISPATCH_STATISTICS = false;
+
   /** Set to true if in fuzz testing mode */
   public static boolean FUZZ_TESTING = false;
 

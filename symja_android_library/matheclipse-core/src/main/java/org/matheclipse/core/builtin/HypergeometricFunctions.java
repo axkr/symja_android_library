@@ -19,7 +19,6 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
-import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -1065,7 +1064,7 @@ public class HypergeometricFunctions {
   }
 
   private static class Hypergeometric1F1 extends AbstractFunctionEvaluator
-      implements IMatch, IFunctionExpand {
+      implements IFunctionExpand {
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -1102,12 +1101,6 @@ public class HypergeometricFunctions {
 
       }
       return F.NIL;
-    }
-
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return Hypergeometric1F1Rules.match4(ast, engine);
     }
 
     @Override
@@ -1298,7 +1291,7 @@ public class HypergeometricFunctions {
 
 
   private static class Hypergeometric1F1Regularized extends AbstractFunctionEvaluator
-      implements IFunctionExpand, IMatch {
+      implements IFunctionExpand {
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -1387,12 +1380,7 @@ public class HypergeometricFunctions {
   }
 
 
-  private static class Hypergeometric2F1 extends AbstractFunctionEvaluator implements IMatch {
-    @Override
-    public IExpr match5(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return Hypergeometric2F1Rules.match5(ast, engine);
-    }
+  private static class Hypergeometric2F1 extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1640,12 +1628,7 @@ public class HypergeometricFunctions {
 
 
   private static class Hypergeometric2F1Regularized extends AbstractFunctionEvaluator
-      implements IMatch {
-    @Override
-    public IExpr match5(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return Hypergeometric2F1RegularizedRules.match5(ast, engine);
-    }
+ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1722,12 +1705,7 @@ public class HypergeometricFunctions {
   }
 
 
-  private static class HypergeometricPFQ extends AbstractFunctionEvaluator implements IMatch {
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return HypergeometricPFQRules.match4(ast, engine);
-    }
+  private static class HypergeometricPFQ extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1905,7 +1883,7 @@ public class HypergeometricFunctions {
 
 
   private static class HypergeometricU extends AbstractFunctionEvaluator
-      implements IMatch, IFunctionExpand {
+      implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -1968,12 +1946,6 @@ public class HypergeometricFunctions {
               F.Power(F.Factorial(F.Times(F.C2, n)), F.CN1),
               F.Plus(F.Times(F.CSqrtPi, F.Power(z, F.CN1D2), F.Exp(z), F.Erf(F.Sqrt(z)), sum1),
                   sum2)));
-    }
-
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return HypergeometricURules.match4(ast, engine);
     }
 
     @Override
@@ -2396,12 +2368,7 @@ public class HypergeometricFunctions {
   }
 
 
-  private static class WhittakerM extends AbstractFunctionEvaluator implements IMatch {
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return WhittakerMRules.match4(ast, engine);
-    }
+  private static class WhittakerM extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr numericFunction(IAST ast, EvalEngine engine) {
@@ -2464,7 +2431,7 @@ public class HypergeometricFunctions {
   }
 
 
-  private static class WhittakerW extends AbstractFunctionEvaluator implements IMatch {
+  private static class WhittakerW extends AbstractFunctionEvaluator {
     @Override
     public IExpr numericFunction(IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
@@ -2483,12 +2450,6 @@ public class HypergeometricFunctions {
         }
       }
       return F.NIL;
-    }
-
-    @Override
-    public IExpr match4(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return WhittakerWRules.match4(ast, engine);
     }
 
     @Override
