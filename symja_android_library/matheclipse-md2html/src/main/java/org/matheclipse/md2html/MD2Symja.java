@@ -17,6 +17,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.image.ImageInit;
 import com.google.common.io.CharSource;
@@ -102,8 +103,12 @@ public class MD2Symja {
         return;
       }
 
-      // Render the markdown content into the template
-      html = Errors.templateRender(templateContent, new String[] {html});
+      // Render the markdown content into the template, together with the WebGL renderer. The
+      // template carries the renderer itself so that the page works as a plain file with no
+      // server to fetch it from; passing only the content left that slot empty, so every 3D
+      // graphic on the page stayed blank while the rest of the page looked perfectly fine.
+      html = Errors.templateRender(templateContent,
+          new String[] {html, WebGLGraphics3D.rendererScript()});
 
       try {
         F.openHTMLOnDesktop(html);

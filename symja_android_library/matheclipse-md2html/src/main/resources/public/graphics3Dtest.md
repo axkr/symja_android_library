@@ -280,6 +280,22 @@ Graphics3D[{Cuboid[], GeometricTransformation[Cuboid[], {{1, 0, 0}, {0, 1, 0}, {
 Graphics3D[GeometricTransformation[Cuboid[], {2, 0, 0}]]
 ```
 
+## Named colors and mixed primitives
+
+The `Standard*` family reads on both light and dark backgrounds.
+
+```mma
+Graphics3D[{Blue, Cylinder[], Red, Sphere[{0, 0, 2}], StandardGray, Thick, Dashed, Line[{{-2, 0, 2}, {2, 0, 2}, {0, 0, 4}, {-2, 0, 2}}], Yellow, Polygon[{{-3, -3, -2}, {-3, 3, -2}, {3, 3, -2}, {3, -3, -2}}], Green, Opacity[.3], Cuboid[{-2, -2, -2}, {2, 2, -1}]}]
+```
+
+```mma
+Graphics3D[{StandardRed, Sphere[{-3, 0, 0}], StandardGreen, Sphere[{-1.5, 0, 0}], StandardBlue, Sphere[{0, 0, 0}], StandardYellow, Sphere[{1.5, 0, 0}], StandardPurple, Sphere[{3, 0, 0}]}]
+```
+
+```mma
+Graphics3D[{StandardGray, Polygon[{{-2, -2, 0}, {-2, 2, 0}, {2, 2, 0}, {2, -2, 0}}]}]
+```
+
 ## Sampling options
 
 How much of the surface is drawn, and how finely.

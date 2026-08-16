@@ -20,31 +20,71 @@
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/mathematica.min.js"></script>
     <script>hljs.highlightAll();</script>
     
-<script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
-    }
-  }
-</script>
-
 <script type="module">
-  import * as THREE_MODULE from 'three';
-  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  // three.js is looked for beside the page first and on the network second. A page served by the
+  // Symja servlet has its own copy and needs nothing from outside; a page opened as a plain file
+  // has nowhere to keep one and falls back to the public copy. Imported one at a time rather than
+  // declared up front, because a static import that cannot be resolved stops this whole script
+  // before it runs - which left every graphic on the page blank and said nothing about why.
+  const SOURCES = [
+    { three: '/media/js/three/three.module.js',
+      controls: '/media/js/three/jsm/controls/OrbitControls.js' },
+    { three: 'https://unpkg.com/three@0.182.0/build/three.module.js',
+      controls: 'https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js' }
+  ];
 
-  // 1. Convert the read-only module to a regular, mutable object
-  const THREE = { ...THREE_MODULE };
+  async function loadThree() {
+    for (const source of SOURCES) {
+      try {
+        // absolute, because the patched copy below is loaded from a blob and a blob has no
+        // address of its own for a relative path to be measured from
+        const threeUrl = new URL(source.three, location.href).href;
+        const module = await import(threeUrl);
+        // OrbitControls asks for "three" by name, which only means something to an import map.
+        // There can be one of those per page and it has to be written before anything is loaded,
+        // so it cannot say "this copy, or that one if the first is missing". Naming the copy that
+        // was actually found, in a rewritten copy of the file, settles it after the fact. The URL
+        // is the one just imported, so the module is reused rather than fetched a second time.
+        const text = await (await fetch(source.controls)).text();
+        const patched = text.replace(/from\s*['"]three['"]/g, "from '" + threeUrl + "'");
+        const blob = URL.createObjectURL(new Blob([patched], { type: 'text/javascript' }));
+        try {
+          const controls = await import(blob);
+          return { module: module, OrbitControls: controls.OrbitControls };
+        } finally {
+          URL.revokeObjectURL(blob);
+        }
+      } catch (error) {
+        // try the next place it might be
+      }
+    }
+    return null;
+  }
 
-  // 2. Now we can attach OrbitControls to it
-  THREE.OrbitControls = OrbitControls;
+  const loaded = await loadThree();
+  if (!loaded) {
+    // say so where it can be seen, rather than leaving a page of empty boxes
+    console.error('symja: three.js could not be loaded from ' 
+      + SOURCES.map(function (s) { return s.three; }).join(' or ')
+      + ', so the 3D graphics on this page cannot be drawn.');
+    document.querySelectorAll('[data-type="webgl"]').forEach(function (box) {
+      box.style.display = 'flex';
+      box.style.alignItems = 'center';
+      box.style.justifyContent = 'center';
+      box.style.color = '#a00';
+      box.style.font = '12px sans-serif';
+      box.textContent = '3D graphics need three.js, which could not be loaded.';
+    });
+  } else {
+    // a module is read only, so it is copied before OrbitControls is attached to it
+    const THREE = { ...loaded.module };
+    THREE.OrbitControls = loaded.OrbitControls;
+    window.THREE = THREE;
 
-  // 3. Expose it globally
-  window.THREE = THREE;
-
-  // 4. Render any graphic that was emitted while the page was still parsing
-  if (typeof window.drainSymjaWebGLQueue === 'function') {
+    // draw anything that was emitted while the page was still being parsed
+    if (typeof window.drainSymjaWebGLQueue === 'function') {
       window.drainSymjaWebGLQueue();
+    }
   }
 </script>
 
