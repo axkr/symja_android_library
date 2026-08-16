@@ -81,6 +81,12 @@ Sum(HarmonicNumber(k_)*k_^m_, {k_Symbol,1,Infinity}) := (1-m/2)*Zeta(1-m)-1/2*Su
 Sum(HarmonicNumber(k_,2)/k_^3, {k_Symbol,1,Infinity}) := 3*Zeta(2)*Zeta(3)-9/2*Zeta(5),
 Sum(HarmonicNumber(k_)^2/k_^2, {k_Symbol,1,Infinity}) := 17*Pi^4/360,
 
+(* partial sums of (generalized) harmonic numbers give hyperharmonic numbers *)
+Sum(HarmonicNumber(k_), {k_Symbol,1,n_Symbol}) := HyperHarmonicNumber(2, n)
+  /; FreeQ(n,k),
+Sum(HarmonicNumber(k_,m_), {k_Symbol,1,n_Symbol}) := HyperHarmonicNumber(2, n, m)
+  /; FreeQ({m,n},k),
+
 Sum(z_^i_ * i_^(-n_), {i_Symbol,1,Infinity}) := PolyLog(n,z)
   /; FreeQ({z,n},i) && (!NumericQ(z) || (z>(-1) && z<1)),
   
