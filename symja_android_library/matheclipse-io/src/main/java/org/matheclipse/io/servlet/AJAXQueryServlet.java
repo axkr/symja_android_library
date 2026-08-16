@@ -35,6 +35,7 @@ import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.manipulate.ManipulateSpec;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.io.IOInit;
@@ -53,7 +54,34 @@ import jakarta.servlet.http.HttpSession;
 public class AJAXQueryServlet extends HttpServlet {
   private static final long serialVersionUID = 6265703737413093134L;
 
-  static final Map<String, EvalEngine> ENGINES = new HashMap<String, EvalEngine>();
+  static final Map<String, EvalEngine> ENGINES =
+      java.util.Collections.synchronizedMap(new HashMap<String, EvalEngine>());
+
+  /**
+   * One lock per browser session, held for the whole of an evaluation.
+   *
+   * <p>
+   * The engine carries the entire session state and a Manipulate widget can post while a query is
+   * still running, so two evaluations must not enter it at once. The lock is deliberately NOT the
+   * engine itself: {@link EvalEngine#copy()} is synchronized, and an evaluation under a time budget
+   * - which is how Integrate runs its Rubi rules - copies the engine from its worker thread. Locking
+   * the engine here would leave that worker waiting for a monitor this thread holds until the
+   * request times out.
+   */
+  private static final Map<String, Object> SESSION_LOCKS =
+      java.util.Collections.synchronizedMap(new HashMap<String, Object>());
+
+  /** The evaluation lock of a session, created on first use. */
+  static Object sessionLock(String sessionID) {
+    synchronized (SESSION_LOCKS) {
+      Object lock = SESSION_LOCKS.get(sessionID);
+      if (lock == null) {
+        lock = new Object();
+        SESSION_LOCKS.put(sessionID, lock);
+      }
+      return lock;
+    }
+  }
 
   protected static final String VISJS_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
@@ -127,7 +155,7 @@ public class AJAXQueryServlet extends HttpServlet {
       String result = evaluate(req, value, numericModeValue, functionValue, 0);
       out.println(result);
     } catch (Exception e) {
-      LOGGER.error("{}.doPost() failed", getClass().getSimpleName(), e);
+      LOGGER.error("{}.doPost() failed", AJAXQueryServlet.class.getSimpleName(), e);
       String msg = e.getMessage();
       if (msg != null) {
         out.println(JSONBuilder.createJSONErrorString("Exception: " + msg));
@@ -172,7 +200,12 @@ public class AJAXQueryServlet extends HttpServlet {
         engine.setOutPrintStream(outs);
         engine.setErrorPrintStream(errors);
       }
-      result = calculateString(engine, expression, numericMode, function, outWriter, errorWriter);
+      // One evaluation per session at a time. The engine carries the whole session state, and a
+      // Manipulate widget can post while a query is still running; letting two evaluations into it
+      // at once corrupts that state.
+      synchronized (sessionLock(session.getId())) {
+        result = calculateString(engine, expression, numericMode, function, outWriter, errorWriter);
+      }
     } finally {
       // tear down associated ThreadLocal from EvalEngine
       EvalEngine.remove();
@@ -244,162 +277,12 @@ public class AJAXQueryServlet extends HttpServlet {
         StringBuilderWriter outBuffer = new StringBuilderWriter();
         IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
-          if (outExpr instanceof GraphExpr) {
-            GraphGraphics graphGraphics = new GraphGraphics(outExpr);
-            IAST graphics = graphGraphics.toGraphics();
-            if (graphics.isPresent()) {
-              outExpr = graphics;
-            }
+          // an interactive widget: keep the expression, hand the browser its controls
+          ManipulateSpec manipulateSpec = ManipulateSpec.parse(outExpr, engine);
+          if (manipulateSpec != null) {
+            return ManipulateSession.create(engine, manipulateSpec, outWriter, errorWriter);
           }
-          if (outExpr.isGraphicsObject()) {
-            StringBuilder buf = new StringBuilder();
-            // the converter emits its own <svg> root, sized from the ImageSize option; wrapping it
-            // in a second fixed size root here would override that
-            if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, true, engine)) {
-              return JSONBuilder.createJSONJavaScript(buf.toString());
-            }
-            // if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
-            // try {
-            // return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
-            // buf.toString());
-            // } catch (Exception ex) {
-            // LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-            // }
-            // }
-          } else if (WebGLGraphics3D.isRenderable(outExpr)) {
-            String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
-            // Return as a JSON JavaScript result (which creates a line in the output UI)
-            return JSONBuilder.createJSONJavaScript(webglSnippet);
-
-            // StringBuilder buf = new StringBuilder();
-            // if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
-            // try {
-            // return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
-            // buf.toString());
-            // } catch (Exception ex) {
-            // LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-            // }
-            // }
-          }
-          if (outExpr.isASTSizeGE(S.Show, 2)) {
-            IAST show = (IAST) outExpr;
-            return JSONBuilder.createJSONShow(engine, show);
-          } else if (outExpr instanceof GraphExpr) {
-            String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
-            if (javaScriptStr != null) {
-              String html = VISJS_IFRAME;
-              html = html.replace("`1`", javaScriptStr);
-              html = html.replace("`2`", //
-                  "  var options = { };\n" //
-              );
-              html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-            }
-          } else if (outExpr instanceof ImageExpr) {
-            ImageExpr imageExpr = (ImageExpr) outExpr;
-            // BufferedImage bImage = imageExpr.getBufferedImage();
-            byte[] data = imageExpr.toData();
-            if (data != null) {
-              // An image is inert content and needs no document of its own. Delivering it in an
-              // iframe gave it a fixed height, so a picture taller than that scrolled inside the
-              // frame instead of being shown; sent as an img it scales with the output column.
-              return JSONBuilder.createJSONJavaScript(
-                  "<img alt=\"image\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
-                      + imageExpr.toBase64EncodedString() + "\"/>");
-              // } else {
-              // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-              // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
-              // ImageIO.write(bImage, "png", b64);
-              // String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-              // String[] argsToRender = new String[3];
-              // argsToRender[0] = outputStream.toString();
-              // System.out.println(argsToRender[0]);
-              // html = IOFunctions.templateRender(html, argsToRender);
-              // html = StringEscapeUtils.escapeHtml4(html);
-              // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-              // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
-              // ></iframe>");
-              // }
-            }
-          } else if (outExpr instanceof ASTDataset) {
-            String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();
-            if (javaScriptStr != null) {
-              String htmlSnippet = javaScriptStr.trim();
-              return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
-            }
-          } else if (outExpr.isAST(S.JSFormData, 3)) {
-            IAST jsFormData = (IAST) outExpr;
-            String jsLibraryType = jsFormData.arg2().toString();
-            if (jsLibraryType.equals(JSBuilder.MATHCELL_STR)) {
-              try {
-                return JSONBuilder.createMathcellIFrame(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
-                    jsFormData.arg1().toString());
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
-            } else if (jsLibraryType.equals(JSBuilder.ECHARTS_STR)) {
-              try {
-                return JSONBuilder.createEChartsIFrame(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
-                    jsFormData.arg1().toString());
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
-            } else if (jsLibraryType.equals(JSBuilder.JSXGRAPH_STR)) {
-              try {
-                return JSONBuilder.createJSXGraphIFrame(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
-                    jsFormData.arg1().toString());
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
-            } else if (jsLibraryType.equals(JSBuilder.MERMAID_STR)) {
-              try {
-                return JSONBuilder.createMermaidIFrame(JSBuilder.MERMAID_IFRAME_TEMPLATE,
-                    jsFormData.arg1().toString());
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
-            } else if (jsLibraryType.equals(JSBuilder.PLOTLY_STR)) {
-              try {
-                return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
-                    jsFormData.arg1().toString());
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
-            } else if (jsLibraryType.equals(JSBuilder.TREEFORM_STR)) {
-              try {
-                String manipulateStr = jsFormData.arg1().toString();
-                String html = VISJS_IFRAME;
-                html = html.replace("`1`", manipulateStr);
-                html = html.replace("`2`", //
-                    "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
-                        + "                  type: 'cubicBezier',\n"
-                        + "                  forceDirection:  'vertical',\n"
-                        + "                  roundness: 0.4\n" + "              }\n"
-                        + "          },\n" + "          layout: {\n"
-                        + "              hierarchical: {\n"
-                        + "                  direction: \"UD\"\n" + "              }\n"
-                        + "          },\n" + "          nodes: {\n" + "            shape: 'box'\n"
-                        + "          },\n" + "          physics:false\n" + "      }; " //
-                );
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                    + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
-            }
-          } else if (outExpr.isString()) {
-            IStringX str = (IStringX) outExpr;
-            if (str.getMimeType() == IStringX.TEXT_HTML) {
-              String htmlSnippet = str.toString();
-              String htmlPage = HTML_IFRAME;
-              htmlPage = htmlPage.replace("`1`", htmlSnippet);
-              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-            }
-          }
-          return JSONBuilder.createJSONResult(engine, outExpr, outWriter, errorWriter);
+          return renderResult(engine, outExpr, outWriter, errorWriter);
         }
         return createOutput(outBuffer, null, engine, function);
 
@@ -422,7 +305,7 @@ public class AJAXQueryServlet extends HttpServlet {
       return JSONBuilder.createJSONError("IOException occured");
     } catch (Exception e) {
       // error message
-      LOGGER.error("{}.evaluateString() failed", getClass().getSimpleName(), e);
+      LOGGER.error("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), e);
       String msg = e.getMessage();
       if (msg != null) {
         return JSONBuilder.createJSONError("Error in evaluateString: " + msg);
@@ -430,6 +313,174 @@ public class AJAXQueryServlet extends HttpServlet {
       return JSONBuilder
           .createJSONError("Error in evaluateString: " + e.getClass().getSimpleName());
     }
+  }
+
+  /**
+   * Turn an evaluated result into the JSON the browser renders: a graphic, a piece of 3D geometry,
+   * an image, a dataset, an iframe or - for everything else - the MathML of the expression.
+   *
+   * <p>
+   * Shared with {@link AJAXManipulateServlet}, so the body of a <code>Manipulate</code> is shown the
+   * same way a plain result is and every kind of body works.
+   */
+  static String[] renderResult(EvalEngine engine, IExpr outExpr, StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) throws IOException {
+        if (outExpr instanceof GraphExpr) {
+          GraphGraphics graphGraphics = new GraphGraphics(outExpr);
+          IAST graphics = graphGraphics.toGraphics();
+          if (graphics.isPresent()) {
+            outExpr = graphics;
+          }
+        }
+        if (outExpr.isGraphicsObject()) {
+          StringBuilder buf = new StringBuilder();
+          // the converter emits its own <svg> root, sized from the ImageSize option; wrapping it
+          // in a second fixed size root here would override that
+          if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, true, engine)) {
+            return JSONBuilder.createJSONJavaScript(buf.toString());
+          }
+          // if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
+          // try {
+          // return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
+          // buf.toString());
+          // } catch (Exception ex) {
+          // LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+          // }
+          // }
+        } else if (WebGLGraphics3D.isRenderable(outExpr)) {
+          String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
+          // Return as a JSON JavaScript result (which creates a line in the output UI)
+          return JSONBuilder.createJSONJavaScript(webglSnippet);
+
+          // StringBuilder buf = new StringBuilder();
+          // if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
+          // try {
+          // return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
+          // buf.toString());
+          // } catch (Exception ex) {
+          // LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+          // }
+          // }
+        }
+        if (outExpr.isASTSizeGE(S.Show, 2)) {
+          IAST show = (IAST) outExpr;
+          return JSONBuilder.createJSONShow(engine, show);
+        } else if (outExpr instanceof GraphExpr) {
+          String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
+          if (javaScriptStr != null) {
+            String html = VISJS_IFRAME;
+            html = html.replace("`1`", javaScriptStr);
+            html = html.replace("`2`", //
+                "  var options = { };\n" //
+            );
+            html = StringEscapeUtils.escapeHtml4(html);
+            return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+          }
+        } else if (outExpr instanceof ImageExpr) {
+          ImageExpr imageExpr = (ImageExpr) outExpr;
+          // BufferedImage bImage = imageExpr.getBufferedImage();
+          byte[] data = imageExpr.toData();
+          if (data != null) {
+            // An image is inert content and needs no document of its own. Delivering it in an
+            // iframe gave it a fixed height, so a picture taller than that scrolled inside the
+            // frame instead of being shown; sent as an img it scales with the output column.
+            return JSONBuilder.createJSONJavaScript(
+                "<img alt=\"image\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
+                    + imageExpr.toBase64EncodedString() + "\"/>");
+            // } else {
+            // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
+            // ImageIO.write(bImage, "png", b64);
+            // String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
+            // String[] argsToRender = new String[3];
+            // argsToRender[0] = outputStream.toString();
+            // System.out.println(argsToRender[0]);
+            // html = IOFunctions.templateRender(html, argsToRender);
+            // html = StringEscapeUtils.escapeHtml4(html);
+            // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+            // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
+            // ></iframe>");
+            // }
+          }
+        } else if (outExpr instanceof ASTDataset) {
+          String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();
+          if (javaScriptStr != null) {
+            String htmlSnippet = javaScriptStr.trim();
+            return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
+          }
+        } else if (outExpr.isAST(S.JSFormData, 3)) {
+          IAST jsFormData = (IAST) outExpr;
+          String jsLibraryType = jsFormData.arg2().toString();
+          if (jsLibraryType.equals(JSBuilder.MATHCELL_STR)) {
+            try {
+              return JSONBuilder.createMathcellIFrame(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
+                  jsFormData.arg1().toString());
+            } catch (Exception ex) {
+              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+            }
+          } else if (jsLibraryType.equals(JSBuilder.ECHARTS_STR)) {
+            try {
+              return JSONBuilder.createEChartsIFrame(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
+                  jsFormData.arg1().toString());
+            } catch (Exception ex) {
+              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+            }
+          } else if (jsLibraryType.equals(JSBuilder.JSXGRAPH_STR)) {
+            try {
+              return JSONBuilder.createJSXGraphIFrame(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
+                  jsFormData.arg1().toString());
+            } catch (Exception ex) {
+              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+            }
+          } else if (jsLibraryType.equals(JSBuilder.MERMAID_STR)) {
+            try {
+              return JSONBuilder.createMermaidIFrame(JSBuilder.MERMAID_IFRAME_TEMPLATE,
+                  jsFormData.arg1().toString());
+            } catch (Exception ex) {
+              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+            }
+          } else if (jsLibraryType.equals(JSBuilder.PLOTLY_STR)) {
+            try {
+              return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
+                  jsFormData.arg1().toString());
+            } catch (Exception ex) {
+              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+            }
+          } else if (jsLibraryType.equals(JSBuilder.TREEFORM_STR)) {
+            try {
+              String manipulateStr = jsFormData.arg1().toString();
+              String html = VISJS_IFRAME;
+              html = html.replace("`1`", manipulateStr);
+              html = html.replace("`2`", //
+                  "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
+                      + "                  type: 'cubicBezier',\n"
+                      + "                  forceDirection:  'vertical',\n"
+                      + "                  roundness: 0.4\n" + "              }\n"
+                      + "          },\n" + "          layout: {\n"
+                      + "              hierarchical: {\n"
+                      + "                  direction: \"UD\"\n" + "              }\n"
+                      + "          },\n" + "          nodes: {\n" + "            shape: 'box'\n"
+                      + "          },\n" + "          physics:false\n" + "      }; " //
+              );
+              html = StringEscapeUtils.escapeHtml4(html);
+              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+            } catch (Exception ex) {
+              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+            }
+          }
+        } else if (outExpr.isString()) {
+          IStringX str = (IStringX) outExpr;
+          if (str.getMimeType() == IStringX.TEXT_HTML) {
+            String htmlSnippet = str.toString();
+            String htmlPage = HTML_IFRAME;
+            htmlPage = htmlPage.replace("`1`", htmlSnippet);
+            return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
+                + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+          }
+        }
+    return JSONBuilder.createJSONResult(engine, outExpr, outWriter, errorWriter);
   }
 
   private static IExpr evalTopLevel(EvalEngine engine, final StringBuilderWriter buf,
@@ -530,7 +581,7 @@ public class AJAXQueryServlet extends HttpServlet {
   //
   // }
   // } catch (Exception e) {
-  // LOGGER.debug("{}.getFromMemcache() failed", getClass().getSimpleName(), e);
+  // LOGGER.debug("{}.getFromMemcache() failed", AJAXQueryServlet.class.getSimpleName(), e);
   // }
   // return null;
   // }
@@ -553,7 +604,7 @@ public class AJAXQueryServlet extends HttpServlet {
   // return true;
   // }
   // } catch (Exception e) {
-  // LOGGER.debug("{}.putToMemcache() failed", getClass().getSimpleName(), e);
+  // LOGGER.debug("{}.putToMemcache() failed", AJAXQueryServlet.class.getSimpleName(), e);
   // }
   // return false;
   // }

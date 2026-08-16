@@ -12467,40 +12467,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // + "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
     // + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
 
-    if (Config.USE_MANIPULATE_JS) {
-      // Mathcell syntax / generate TeX for MathJAX
-      check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
-          "var parent = document.currentScript.parentNode;\n" //
-              + "var id = generateId();\n" //
-              + "parent.id = id;\n" //
-              + "MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n" //
-              + " ] );\n" //
-              + "\n" //
-              + "parent.update = function( id ) {\n" //
-              + "\n" //
-              + "var n = getVariable(id, 'n');\n" //
-              + "\n" //
-              + "\n" //
-              + "var expressions = [ '1 + x',\n" //
-              + "'1 + {x}^{2}',\n" //
-              + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2}\\\\\\\\right) ',\n" //
-              + "'1 + {x}^{4}',\n" //
-              + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2} - {x}^{3} + {x}^{4}\\\\\\\\right) ' ];\n" //
-              + "\n" //
-              + "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n" //
-              + "\n" //
-              + "  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" //
-              + "\n" //
-              + "  var config = {type: 'text', center: true };\n" //
-              + "\n" //
-              + "  evaluate( id, data, config );\n" //
-              + "\n" //
-              + "  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" //
-              + "\n" //
-              + "}\n" //
-              + "parent.update( id );\n" //
-              + "");
-    }
+    // Manipulate describes an interactive widget and has no JavaScript form of its own: it
+    // holds its arguments and a front end renders it. It used to be transpiled to mathcell
+    // JavaScript here, which only covered a fixed handful of body shapes.
+    check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
+        "JSForm(Manipulate(Factor(x^n+1),{n,1,5,1}))");
 
     // JSXGraph.org syntax
     // @Ignore Deactivate, because of change to Graphics output
@@ -15518,7 +15489,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\"Red\",\"Row\",\"Sec\",\"Set\",\"Sin\",\"Sow\",\"Sum\",\"Tan\",\"Top\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion}");
     check("Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers}");
     check("Names(\"IntegerPart\" )", //

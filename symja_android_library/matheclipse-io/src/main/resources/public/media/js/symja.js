@@ -71,7 +71,10 @@ function prepareText(text) {
 }
 
 function createLine(value, format) {
-	if (format == 'mathml') {
+	if (format == 'manipulate') {
+		// handled by setResult, which has the whole result object; never reached
+		return $E('div');
+	} else if (format == 'mathml') {
 		// every browser this page supports renders MathML itself, so the markup only has to
 		// be put into the document
 		var dom = $E('div', {'class': 'mathmlresult'});
@@ -148,7 +151,10 @@ function setResult(ul, results) {
 			li.appendChild(createLine(out.text, out.format));
 			resultUl.appendChild(li);
 		});
-		if (result.result != null) {
+		if (result.format == 'manipulate' && result.manipulate) {
+			var li = $E('li', {'class': 'result'}, createManipulate(result.manipulate));
+			resultUl.appendChild(li);
+		} else if (result.result != null) {
 			var li = $E('li', {'class': 'result'}, createLine(result.result, result.format));
 			resultUl.appendChild(li);
 		}

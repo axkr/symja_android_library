@@ -78,7 +78,8 @@ public class ServletServer {
           .addServlets(servlet("query", ajaxServlet).setLoadOnStartup(1).addMapping("/query/"),
               servlet("doc", AJAXDocServlet.class).addMapping("/doc/*"),
               servlet("search", AJAXSearchServlet.class).addMapping("/doc/search/"),
-              servlet("notebook", AJAXNotebookServlet.class).addMapping("/notebook/"));
+              servlet("notebook", AJAXNotebookServlet.class).addMapping("/notebook/"),
+              servlet("manipulate", AJAXManipulateServlet.class).addMapping("/manipulate/"));
 
       DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
       manager.deploy();

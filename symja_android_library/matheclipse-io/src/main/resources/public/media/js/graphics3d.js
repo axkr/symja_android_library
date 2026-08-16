@@ -168,7 +168,7 @@ function drawGraphics3D(container, data) {
   // data is decoded JSON data such as
   // {"elements": [{"coords": [[[1.0, 0.0, 0.0], null], [[1.0, 1.0, 1.0], null], [[0.0, 0.0, 1.0], null]], "type": "polygon", "faceColor": [0, 0, 0, 1]}], "axes": {}, "extent": {"zmax": 1.0, "ymax": 1.0, "zmin": 0.0, "xmax": 1.0, "xmin": 0.0, "ymin": 0.0}, "lighting": []}
   // The nulls are the "scaled" parts of coordinates that depend on the 
-  // size of the final graphics (see Mathematica's Scaled). TODO.
+  // size of the final graphics. TODO.
 
   // TODO: update the size of the container dynamically
   // (we also need some mechanism to update the enclosing <mspace>).

@@ -524,6 +524,127 @@ li.out {
   padding: 0;
 }
 
+/* ---- Manipulate widget ------------------------------------------------- */
+
+div.manipulate {
+  display: inline-block;
+  max-width: 100%;
+}
+div.manipulate.placement-left,
+div.manipulate.placement-right {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1em;
+}
+
+div.manipulatepanel {
+  background: #fbfbf7;
+  border: 1px solid #cccecb;
+  border-radius: 5px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-family: sans-serif;
+  font-size: 0.9em;
+}
+div.manipulatepanel.nopanel {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+div.manipulaterow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+span.manipulatelabel {
+  min-width: 5em;
+  color: #3f3f3f;
+  font-style: italic;
+}
+span.manipulatecontrol {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+span.manipulatevalue {
+  font-family: monospace;
+  color: navy;
+  min-width: 4em;
+}
+input.manipulateslider {
+  width: 180px;
+  vertical-align: middle;
+}
+div.manipulateheading {
+  font-weight: bold;
+  color: #3f3f3f;
+  padding: 4px 0 2px 0;
+}
+div.manipulatedelimiter {
+  border-top: 1px solid #cccecb;
+  margin: 5px 0;
+}
+input.manipulatesetter {
+  background: #fff;
+  border: 1px solid #cccecb;
+  border-radius: 3px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+input.manipulatesetter.selected {
+  background: #3f3f3f;
+  color: #fff;
+  border-color: #3f3f3f;
+}
+input.manipulatebutton {
+  background: #fff;
+  border: 1px solid #cccecb;
+  border-radius: 3px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+a.manipulateplay {
+  color: #3f3f3f;
+  text-decoration: none;
+  width: 1.2em;
+  text-align: center;
+}
+
+/* the pad of a 2D slider; the dot marks the bound point */
+div.manipulatepad {
+  position: relative;
+  background: #fff;
+  border: 1px solid #cccecb;
+  border-radius: 3px;
+  cursor: crosshair;
+}
+div.manipulatedot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #3366cc;
+}
+span.manipulatelocator span.manipulatepoint {
+  display: block;
+}
+
+div.manipulateoutput {
+  min-height: 1em;
+}
+div.manipulatemessage {
+  color: #cc0000;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
 /* ---- results: MathML rendered by the browser --------------------------- */
 
 div.mathmlresult {

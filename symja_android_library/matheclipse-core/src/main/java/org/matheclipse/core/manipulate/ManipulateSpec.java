@@ -1,0 +1,579 @@
+package org.matheclipse.core.manipulate;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+/**
+ * A parsed <code>Manipulate[body, controls..., options...]</code>.
+ *
+ * <p>
+ * The body is kept unevaluated. Nothing here renders anything: the front end builds the controls
+ * from {@link #toJSON(ObjectMapper)} and asks the server to evaluate the body again for each set of
+ * control values, so a body of any shape works - a plot, a piece of 3D graphics, a matrix, a
+ * symbolic result - instead of only the shapes a JavaScript transpiler happens to cover.
+ *
+ * <p>
+ * <code>Animate</code>, <code>ListAnimate</code> and <code>Animator</code> parse into the same
+ * object with {@link #isAnimated()} set.
+ */
+public class ManipulateSpec {
+
+  /** Names of the options that are understood; anything else is reported by the caller. */
+  private static final ISymbol[] KNOWN_OPTIONS = { //
+      S.AnimationDirection, S.AnimationRate, S.AnimationRepetitions, S.AnimationRunning,
+      S.Alignment, S.Appearance, S.AppearanceElements, S.AutoAction, S.AutorunSequencing,
+      S.BaseStyle, S.BaselinePosition, S.Bookmarks, S.ContentSize, S.ContinuousAction,
+      S.ControlPlacement, S.ControlType, S.DefaultDuration, S.Deinitialization, S.Deployed,
+      S.DisplayAllSteps, S.Enabled, S.Evaluator, S.Exclusions, S.FrameLabel, S.FrameMargins,
+      S.ImageMargins, S.ImageSize, S.Initialization, S.InterpolationOrder, S.LabelStyle,
+      S.LocalizeVariables, S.Method, S.Paneled, S.PreserveImageOptions, S.RefreshRate,
+      S.RotateLabel, S.SaveDefinitions, S.ShrinkingDelay, S.SynchronousInitialization,
+      S.SynchronousUpdating, S.TouchscreenAutoZoom, S.TrackedSymbols, S.UnsavedVariables,
+      S.UntrackedVariables};
+
+  private final IExpr body;
+
+  private final List<ManipulateControl> controls = new ArrayList<ManipulateControl>();
+
+  private final Map<ISymbol, IExpr> options = new HashMap<ISymbol, IExpr>();
+
+  /**
+   * <code>true</code> for <code>Animate</code>, <code>ListAnimate</code>, <code>Animator</code>.
+   */
+  private boolean animated = false;
+
+  /** The variable an animation advances, or <code>null</code> for the first continuous control. */
+  private String animationVariable = null;
+
+  private ManipulateSpec(IExpr body) {
+    this.body = body;
+  }
+
+  public IExpr getBody() {
+    return body;
+  }
+
+  public List<ManipulateControl> getControls() {
+    return controls;
+  }
+
+  public boolean isAnimated() {
+    return animated;
+  }
+
+  public IExpr getOption(ISymbol name) {
+    IExpr value = options.get(name);
+    return value == null ? F.NIL : value;
+  }
+
+  /** The <code>Initialization :&gt; ...</code> code, run once before the first rendering. */
+  public IExpr getInitialization() {
+    return getOption(S.Initialization);
+  }
+
+  public IExpr getDeinitialization() {
+    return getOption(S.Deinitialization);
+  }
+
+  /**
+   * The variables whose change re-runs the body, or <code>null</code> when everything is tracked.
+   */
+  public List<String> getTrackedSymbols() {
+    IExpr tracked = getOption(S.TrackedSymbols);
+    if (!tracked.isPresent() || tracked == S.All || tracked == S.True) {
+      return null;
+    }
+    List<String> names = new ArrayList<String>();
+    if (tracked.isList()) {
+      IAST list = (IAST) tracked;
+      for (int i = 1; i < list.size(); i++) {
+        if (list.get(i).isSymbol()) {
+          names.add(((ISymbol) list.get(i)).getSymbolName());
+        }
+      }
+    } else if (tracked.isSymbol()) {
+      names.add(((ISymbol) tracked).getSymbolName());
+    }
+    return names;
+  }
+
+  public ManipulateControl controlNamed(String name) {
+    for (ManipulateControl control : controls) {
+      if (control.bindsVariable() && control.getName().equals(name)) {
+        return control;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Parse a held <code>Manipulate</code> / <code>Animate</code> / <code>ListAnimate</code> /
+   * <code>Animator</code> expression.
+   *
+   * @return the specification, or <code>null</code> when the expression is not one of those heads
+   *         or carries no usable control
+   */
+  public static ManipulateSpec parse(IExpr expr, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return null;
+    }
+    IAST ast = (IAST) expr;
+    IExpr head = ast.head();
+    boolean animate = head == S.Animate || head == S.ListAnimate || head == S.Animator;
+    if (head != S.Manipulate && !animate) {
+      return null;
+    }
+    if (ast.size() < 2) {
+      return null;
+    }
+
+    ManipulateSpec spec = new ManipulateSpec(ast.arg1());
+    spec.animated = animate;
+
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (isOptionRule(arg)) {
+        spec.putOption((IAST) arg);
+        continue;
+      }
+      if (arg.isList() && arg.isAST() && allOptionRules((IAST) arg)) {
+        IAST list = (IAST) arg;
+        for (int j = 1; j < list.size(); j++) {
+          spec.putOption((IAST) list.get(j));
+        }
+        continue;
+      }
+      ManipulateControl control = parseControl(arg, engine);
+      if (control != null) {
+        spec.controls.add(control);
+      }
+    }
+
+    if (spec.controls.isEmpty()) {
+      return null;
+    }
+    if (animate) {
+      for (ManipulateControl control : spec.controls) {
+        if (ManipulateControl.SLIDER.equals(control.getKind())) {
+          spec.animationVariable = control.getName();
+          break;
+        }
+      }
+    }
+    // a control asked for by ControlType -> Trigger drives the animation instead
+    for (ManipulateControl control : spec.controls) {
+      if (ManipulateControl.TRIGGER.equals(control.getKind())) {
+        spec.animated = true;
+        spec.animationVariable = control.getName();
+        break;
+      }
+    }
+    return spec;
+  }
+
+  private void putOption(IAST rule) {
+    if (rule.arg1().isSymbol()) {
+      options.put((ISymbol) rule.arg1(), rule.arg2());
+    }
+  }
+
+  private static boolean isOptionRule(IExpr expr) {
+    return expr.isRule() || expr.isRuleDelayed();
+  }
+
+  private static boolean allOptionRules(IAST list) {
+    if (list.size() < 2) {
+      return false;
+    }
+    for (int i = 1; i < list.size(); i++) {
+      if (!isOptionRule(list.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Names of the options this implementation does not know. */
+  public List<String> unknownOptions() {
+    List<String> unknown = new ArrayList<String>();
+    for (ISymbol name : options.keySet()) {
+      boolean known = false;
+      for (ISymbol candidate : KNOWN_OPTIONS) {
+        if (candidate == name) {
+          known = true;
+          break;
+        }
+      }
+      if (!known) {
+        unknown.add(name.getSymbolName());
+      }
+    }
+    return unknown;
+  }
+
+  // ---------------------------------------------------------------- controls
+
+  private static ManipulateControl parseControl(IExpr spec, EvalEngine engine) {
+    if (spec == S.Delimiter) {
+      return ManipulateControl.delimiter();
+    }
+    if (spec.isString()) {
+      return ManipulateControl.heading(spec.toString());
+    }
+    if (spec.isAST(S.Style, 2, 4)) {
+      return ManipulateControl.heading(((IAST) spec).arg1().toString());
+    }
+    if (spec.isAST(S.Button, 3)) {
+      IAST button = (IAST) spec;
+      return ManipulateControl.button(labelOf(button.arg1()), button.arg2());
+    }
+    if (spec.isAST(S.Control, 2)) {
+      return parseControl(((IAST) spec).arg1(), engine);
+    }
+    if (!spec.isList() || spec.size() < 2) {
+      return null;
+    }
+    return parseListControl((IAST) spec, engine);
+  }
+
+  /**
+   * Parse the <code>{u, ...}</code> and <code>{{u, uinit, ulabel}, ...}</code> forms, in every
+   * combination for the second and later arguments of Manipulate.
+   */
+  private static ManipulateControl parseListControl(IAST spec, EvalEngine engine) {
+    IExpr first = spec.arg1();
+    ISymbol variable;
+    IExpr initial = F.NIL;
+    String label = null;
+
+    if (first.isSymbol()) {
+      variable = (ISymbol) first;
+    } else if (first.isList() && first.size() >= 2 && first.first().isSymbol()) {
+      IAST head = (IAST) first;
+      variable = (ISymbol) head.arg1();
+      if (head.size() >= 3) {
+        initial = head.arg2();
+      }
+      if (head.size() >= 4) {
+        label = labelOf(head.arg3());
+      }
+    } else {
+      return null;
+    }
+
+    // split the rest into positional arguments and per control options
+    List<IExpr> args = new ArrayList<IExpr>();
+    Map<ISymbol, IExpr> controlOptions = new HashMap<ISymbol, IExpr>();
+    for (int i = 2; i < spec.size(); i++) {
+      IExpr arg = spec.get(i);
+      if (isOptionRule(arg) && ((IAST) arg).arg1().isSymbol()) {
+        controlOptions.put((ISymbol) ((IAST) arg).arg1(), ((IAST) arg).arg2());
+      } else {
+        args.add(arg);
+      }
+    }
+
+    String controlType = typeName(controlOptions.get(S.ControlType));
+    ManipulateControl control = build(variable, args, initial, controlType, engine);
+    if (control == null) {
+      return null;
+    }
+    if (label != null) {
+      control.setLabel(label);
+    }
+    IExpr appearance = controlOptions.get(S.Appearance);
+    if (appearance != null) {
+      control.setAppearance(lowerName(typeName(appearance)));
+    }
+    IExpr enabled = controlOptions.get(S.Enabled);
+    if (enabled != null) {
+      control.setEnabledCondition(enabled);
+    }
+    IExpr placement = controlOptions.get(S.ControlPlacement);
+    if (placement != null) {
+      control.setPlacement(lowerName(typeName(placement)));
+    }
+    if (controlOptions.containsKey(S.LocatorAutoCreate)) {
+      control.setAutoCreate(!controlOptions.get(S.LocatorAutoCreate).isFalse());
+    }
+    return control;
+  }
+
+  private static ManipulateControl build(ISymbol variable, List<IExpr> args, IExpr initial,
+      String controlType, EvalEngine engine) {
+
+    // {u, {choices...}} - a choice out of a list
+    if (args.size() == 1 && args.get(0).isList()) {
+      return discrete(variable, (IAST) args.get(0), initial, controlType);
+    }
+
+    // {u, {xmin, ymin}, {xmax, ymax}} - a 2D slider over a rectangle
+    if (args.size() >= 2 && args.get(0).isList2() && args.get(1).isList2()) {
+      IAST low = (IAST) args.get(0);
+      IAST high = (IAST) args.get(1);
+      ManipulateControl control =
+          new ManipulateControl(kindOr(controlType, ManipulateControl.SLIDER2D), variable);
+      control.setRange(ManipulateControl.toDouble(low.arg1(), 0.0),
+          ManipulateControl.toDouble(high.arg1(), 1.0), Double.NaN);
+      control.setRangeY(ManipulateControl.toDouble(low.arg2(), 0.0),
+          ManipulateControl.toDouble(high.arg2(), 1.0));
+      control.setInitial(initial.isPresent() ? initial : F.list(low.arg1(), low.arg2()));
+      return control;
+    }
+
+    // {u, umin, umax} and {u, umin, umax, du}
+    if (args.size() >= 2) {
+      double min = ManipulateControl.toDouble(args.get(0), 0.0);
+      double max = ManipulateControl.toDouble(args.get(1), 1.0);
+      double step =
+          args.size() >= 3 ? ManipulateControl.toDouble(args.get(2), Double.NaN) : Double.NaN;
+
+      String kind = ManipulateControl.SLIDER;
+      if (controlType != null) {
+        if (isName(controlType, "Trigger") || isName(controlType, "Animator")) {
+          kind = ManipulateControl.TRIGGER;
+        } else if (isName(controlType, "IntervalSlider")) {
+          kind = ManipulateControl.INTERVAL;
+        } else if (isName(controlType, "Locator")) {
+          kind = ManipulateControl.LOCATOR;
+        } else if (isName(controlType, "InputField")) {
+          kind = ManipulateControl.INPUTFIELD;
+        } else if (isName(controlType, "None")) {
+          return null;
+        }
+      }
+      // an initial value that is a pair asks for an interval slider
+      if (ManipulateControl.SLIDER.equals(kind) && initial.isList2()) {
+        kind = ManipulateControl.INTERVAL;
+      }
+      ManipulateControl control = new ManipulateControl(kind, variable);
+      control.setRange(min, max, step);
+      control.setInitial(initial.isPresent() ? initial : F.num(min));
+      return control;
+    }
+
+    // {u} with an initial value only - a checkbox for a boolean, otherwise an input field
+    if (args.isEmpty()) {
+      if (initial.isTrue() || initial.isFalse()) {
+        ManipulateControl control =
+            new ManipulateControl(kindOr(controlType, ManipulateControl.CHECKBOX), variable);
+        control.setInitial(initial);
+        return control;
+      }
+      if (initial.isPresent()) {
+        ManipulateControl control =
+            new ManipulateControl(kindOr(controlType, ManipulateControl.INPUTFIELD), variable);
+        control.setInitial(initial);
+        return control;
+      }
+    }
+    return null;
+  }
+
+  private static ManipulateControl discrete(ISymbol variable, IAST choices, IExpr initial,
+      String controlType) {
+    List<IExpr> values = new ArrayList<IExpr>();
+    List<String> labels = new ArrayList<String>();
+    for (int i = 1; i < choices.size(); i++) {
+      IExpr choice = choices.get(i);
+      if (choice.isRule()) {
+        // value -> label
+        values.add(((IAST) choice).arg1());
+        labels.add(labelOf(((IAST) choice).arg2()));
+      } else {
+        values.add(choice);
+        labels.add(labelOf(choice));
+      }
+    }
+    if (values.isEmpty()) {
+      return null;
+    }
+
+    String kind = ManipulateControl.DISCRETE;
+    if (controlType != null) {
+      if (isName(controlType, "Checkbox") || isName(controlType, "Toggler")) {
+        kind = ManipulateControl.CHECKBOX;
+      } else if (isName(controlType, "None")) {
+        return null;
+      }
+    } else if (ManipulateControl.isBooleanPair(values)) {
+      kind = ManipulateControl.CHECKBOX;
+    }
+
+    ManipulateControl control = new ManipulateControl(kind, variable);
+    if (ManipulateControl.CHECKBOX.equals(kind)) {
+      control.setInitial(initial.isPresent() ? initial : S.True);
+      return control;
+    }
+    for (int i = 0; i < values.size(); i++) {
+      control.addValue(values.get(i), labels.get(i));
+    }
+    int index = 0;
+    if (initial.isPresent()) {
+      for (int i = 0; i < values.size(); i++) {
+        if (values.get(i).equals(initial)) {
+          index = i;
+          break;
+        }
+      }
+    }
+    control.setInitialIndex(index);
+    if (controlType != null) {
+      control.setAppearance(lowerName(controlType));
+    }
+    return control;
+  }
+
+  /** Map a <code>ControlType</code> name to the control kind it asks for. */
+  private static String kindOr(String controlType, String fallback) {
+    if (controlType == null) {
+      return fallback;
+    }
+    if (isName(controlType, "Checkbox") || isName(controlType, "Toggler")) {
+      return ManipulateControl.CHECKBOX;
+    }
+    if (isName(controlType, "ColorSetter") || isName(controlType, "ColorSlider")) {
+      return ManipulateControl.COLOR;
+    }
+    if (isName(controlType, "InputField")) {
+      return ManipulateControl.INPUTFIELD;
+    }
+    if (isName(controlType, "Locator")) {
+      return ManipulateControl.LOCATOR;
+    }
+    if (isName(controlType, "Slider2D")) {
+      return ManipulateControl.SLIDER2D;
+    }
+    if (isName(controlType, "IntervalSlider")) {
+      return ManipulateControl.INTERVAL;
+    }
+    if (isName(controlType, "Trigger") || isName(controlType, "Animator")) {
+      return ManipulateControl.TRIGGER;
+    }
+    return fallback;
+  }
+
+  /**
+   * Compare a name a user wrote with the one this code expects, ignoring case: with the relaxed
+   * Symja syntax the parser lowercases symbol names, so <code>ControlType -&gt; Trigger</code>
+   * arrives here as <code>trigger</code>.
+   */
+  private static boolean isName(String actual, String expected) {
+    return actual != null && actual.equalsIgnoreCase(expected);
+  }
+
+  private static String typeName(IExpr expr) {
+    if (expr == null || !expr.isPresent()) {
+      return null;
+    }
+    if (expr.isSymbol()) {
+      return ((ISymbol) expr).getSymbolName();
+    }
+    if (expr.isString()) {
+      return expr.toString();
+    }
+    if (expr.isAST() && expr.head().isSymbol()) {
+      return ((ISymbol) expr.head()).getSymbolName();
+    }
+    return null;
+  }
+
+  private static String lowerName(String name) {
+    return name == null ? null : name.toLowerCase();
+  }
+
+  private static String labelOf(IExpr expr) {
+    if (expr.isString()) {
+      return expr.toString();
+    }
+    if (expr.isAST(S.Style, 2, 4)) {
+      return labelOf(((IAST) expr).arg1());
+    }
+    return expr.toString();
+  }
+
+  // ---------------------------------------------------------------- output
+
+  public ObjectNode toJSON(ObjectMapper mapper) {
+    ObjectNode json = mapper.createObjectNode();
+    ArrayNode controlsNode = mapper.createArrayNode();
+    for (ManipulateControl control : controls) {
+      controlsNode.add(control.toJSON(mapper));
+    }
+    json.set("controls", controlsNode);
+
+    ObjectNode optionsNode = mapper.createObjectNode();
+    optionsNode.put("animated", animated);
+    if (animationVariable != null) {
+      optionsNode.put("animationVariable", animationVariable);
+    }
+    optionsNode.put("continuousAction", !getOption(S.ContinuousAction).isFalse());
+    optionsNode.put("animationRunning", !getOption(S.AnimationRunning).isFalse());
+    optionsNode.put("animationRate", ManipulateControl.toDouble(getOption(S.AnimationRate), 1.0));
+    optionsNode.put("animationDirection", directionSign());
+    optionsNode.put("animationRepetitions",
+        ManipulateControl.toDouble(getOption(S.AnimationRepetitions), Double.POSITIVE_INFINITY));
+    optionsNode.put("defaultDuration",
+        ManipulateControl.toDouble(getOption(S.DefaultDuration), 5.0));
+    optionsNode.put("paneled", !getOption(S.Paneled).isFalse());
+    optionsNode.put("deployed", getOption(S.Deployed).isTrue());
+    optionsNode.put("appearanceNone", isAppearanceNone());
+    String placement = lowerName(typeName(getOption(S.ControlPlacement)));
+    optionsNode.put("controlPlacement", placement == null ? "top" : placement);
+    IExpr imageSize = getOption(S.ImageSize);
+    if (imageSize.isPresent()) {
+      optionsNode.put("imageSize", imageSize.toString());
+    }
+    ArrayNode elements = mapper.createArrayNode();
+    IExpr appearanceElements = getOption(S.AppearanceElements);
+    if (appearanceElements.isList()) {
+      IAST list = (IAST) appearanceElements;
+      for (int i = 1; i < list.size(); i++) {
+        elements.add(list.get(i).toString());
+      }
+    }
+    optionsNode.set("appearanceElements", elements);
+
+    List<String> tracked = getTrackedSymbols();
+    if (tracked != null) {
+      ArrayNode trackedNode = mapper.createArrayNode();
+      for (String name : tracked) {
+        trackedNode.add(name);
+      }
+      optionsNode.set("trackedSymbols", trackedNode);
+    }
+    json.set("options", optionsNode);
+    return json;
+  }
+
+  /** <code>Appearance -&gt; None</code> hides the control rows. */
+  public boolean isAppearanceNone() {
+    IExpr appearance = getOption(S.Appearance);
+    return appearance == S.None;
+  }
+
+  private int directionSign() {
+    IExpr direction = getOption(S.AnimationDirection);
+    if (direction.isPresent()) {
+      String name = typeName(direction);
+      if (isName(name, "Backward")) {
+        return -1;
+      }
+      if (isName(name, "ForwardBackward")) {
+        return 2;
+      }
+    }
+    return 1;
+  }
+}

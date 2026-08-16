@@ -221,6 +221,7 @@ public final class FunctionDefinitions {
       S.MinimalPolynomial
           .setEvaluator(new org.matheclipse.core.reflection.system.MinimalPolynomial());
       S.N.setEvaluator(new org.matheclipse.core.reflection.system.N());
+      S.NCache.setEvaluator(new org.matheclipse.core.reflection.system.NCache());
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       S.NeighborhoodGraph
           .setEvaluator(new org.matheclipse.core.reflection.system.NeighborhoodGraph());

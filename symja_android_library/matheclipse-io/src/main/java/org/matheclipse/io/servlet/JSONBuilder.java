@@ -34,6 +34,43 @@ public class JSONBuilder {
   /** The string is an HTML snippet - an SVG, an image, an iframe or a WebGL container. */
   public static final String FORMAT_HTML = "html";
 
+  /** The result is an interactive widget: controls plus the first rendering of the body. */
+  public static final String FORMAT_MANIPULATE = "manipulate";
+
+  /**
+   * Wrap a <code>Manipulate</code> widget: its controls, its options and the rendering of the body
+   * for the initial control values.
+   *
+   * @param id the widget id, used by <code>/ajax/manipulate/</code> to find it again
+   * @param spec the parsed specification
+   * @param renderedBody the JSON that {@link AJAXQueryServlet#renderResult} produced for the body
+   */
+  public static String[] createJSONManipulate(String id,
+      org.matheclipse.core.manipulate.ManipulateSpec spec, String renderedBody) {
+    ObjectNode manipulate = spec.toJSON(JSON_OBJECT_MAPPER);
+    manipulate.put("id", id);
+    try {
+      manipulate.set("body", JSON_OBJECT_MAPPER.readTree(renderedBody));
+    } catch (Exception ex) {
+      manipulate.putNull("body");
+    }
+
+    ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    resultsJSON.put("line", 21);
+    resultsJSON.put("result", "");
+    resultsJSON.put("format", FORMAT_MANIPULATE);
+    resultsJSON.set("manipulate", manipulate);
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+    resultsJSON.putPOJO("out", temp);
+
+    temp = JSON_OBJECT_MAPPER.createArrayNode();
+    temp.add(resultsJSON);
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    json.putPOJO("results", temp);
+
+    return new String[] {FORMAT_MANIPULATE, json.toString()};
+  }
+
   /**
    * Add the messages that were printed while evaluating. These are prose, not mathematics, so they
    * travel as plain text; they used to be wrapped in <code>&lt;math&gt;&lt;mtext&gt;</code> only
@@ -45,7 +82,9 @@ public class JSONBuilder {
     addMessage(out, "Output", outWriter.toString());
   }
 
-  /** The plain <code>OutputForm</code> of an expression, or an empty string if it cannot be built. */
+  /**
+   * The plain <code>OutputForm</code> of an expression, or an empty string if it cannot be built.
+   */
   private static String outputForm(EvalEngine engine, IExpr expr) {
     if (expr == null || expr.equals(S.Null)) {
       return "";
@@ -179,12 +218,11 @@ public class JSONBuilder {
   }
 
   public static String[] createJSONResult(EvalEngine engine, IExpr outExpr,
-      StringBuilderWriter outWriter,
-      StringBuilderWriter errorWriter) {
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     // Results travel as MathML and are rendered by the browser itself. The built-in symbol
-    // names come out the way Mathematica writes them - Sin[x] with Mathematica syntax,
+    // names come out the way WMA writes them - Sin[x] with WMA syntax,
     // Sin(x) with the relaxed Symja syntax - because both servlets set
     // Config.MATHML_TRIG_LOWERCASE to false. KaTeX is not used here: it reads LaTeX, not
     // MathML. It renders the LaTeX of the documentation pages and of Markdown cells.
@@ -214,8 +252,7 @@ public class JSONBuilder {
   }
 
   public static String[] createJSONHTML(EvalEngine engine, String html,
-      StringBuilderWriter outWriter,
-      StringBuilderWriter errorWriter) {
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     // MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
