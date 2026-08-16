@@ -111,13 +111,12 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX012a() {
     check(F.MatrixForm(F.List(F.List(1, 2, 3), F.List(3, 4, 5))), //
-        "\\left(\n" + //
-            "\\begin{array}{ccc}\n" + //
-            "1 & 2 & 3 \\\\\n" + //
-            "3 & 4 & 5 \\\n" + //
-            "\\\\\n" + //
-            "\\end{array}\n" + //
-            "\\right) ");
+        "\\left(\n" //
+            + "\\begin{array}{ccc}\n" //
+            + "1 & 2 & 3 \\\\\n" //
+            + "3 & 4 & 5 \\\\\n" //
+            + "\\end{array}\n" //
+            + "\\right) "); //
   }
 
   @Test
@@ -339,12 +338,7 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX027() {
     check(new ASTRealMatrix(new double[][] {{1.0, 2.0, 3.0}, {3.3, 4.4, 5.5}}, false), //
-        "\\left(\n" //
-            + "\\begin{array}{ccc}\n"//
-            + "1.0 & 2.0 & 3.0 \\\\\n"//
-            + "3.3 & 4.4 & 5.5 \\\\\n"//
-            + "\\end{array}\n"//
-            + "\\right) ");
+        "\\{\\{1.0,2.0,3.0\\},\\{3.3,4.4,5.5\\}\\}");
   }
 
   @Test
@@ -377,13 +371,7 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX32() {
     check("{{a,b,c},{a,c,b},{c,a,b}}", //
-        "\\left(\n" //
-            + "\\begin{array}{ccc}\n" //
-            + "a & b & c \\\\\n" //
-            + "a & c & b \\\\\n" //
-            + "c & a & b \\\\\n" //
-            + "\\end{array}\n" //
-            + "\\right) ");
+        "\\{\\{a,b,c\\},\\{a,c,b\\},\\{c,a,b\\}\\}");
   }
 
   @Test
@@ -563,8 +551,13 @@ public class BasicTeXTestCase {
     IExpr expr = EvalEngine.get().evaluate(
         "SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}) // MatrixForm");
     check(expr, //
-        "\\left(\n" + "\\begin{array}{ccc}\n" + "1 & 0 & 4 \\\\\n" + "0 & 2 & 0 \\\\\n"
-            + "0 & 0 & 3 \\\n" + "\\\\\n" + "\\end{array}\n" + "\\right) ");
+        "\\left(\n"//
+            + "\\begin{array}{ccc}\n"//
+            + "1 & 0 & 4 \\\\\n"//
+            + "0 & 2 & 0 \\\\\n"//
+            + "0 & 0 & 3 \\\\\n"//
+            + "\\end{array}\n"//
+            + "\\right) ");
   }
 
   @Test
