@@ -103,6 +103,17 @@ public class AutomaticRules {
     defer(S.Purple, "RGBColorRules");
     defer(S.RGBColor, "RGBColorRules");
     defer(S.Red, "RGBColorRules");
+    defer(S.StandardBlue, "RGBColorRules");
+    defer(S.StandardBrown, "RGBColorRules");
+    defer(S.StandardCyan, "RGBColorRules");
+    defer(S.StandardGray, "RGBColorRules");
+    defer(S.StandardGreen, "RGBColorRules");
+    defer(S.StandardMagenta, "RGBColorRules");
+    defer(S.StandardOrange, "RGBColorRules");
+    defer(S.StandardPink, "RGBColorRules");
+    defer(S.StandardPurple, "RGBColorRules");
+    defer(S.StandardRed, "RGBColorRules");
+    defer(S.StandardYellow, "RGBColorRules");
     defer(S.White, "RGBColorRules");
     defer(S.Yellow, "RGBColorRules");
     defer(S.Sec, "SecRules");

@@ -2,6 +2,10 @@ package org.matheclipse.core.graphics;
 
 import java.awt.Color;
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.svg.TickGenerator;
 import org.matheclipse.core.graphics.webgl.Bounds3D;
@@ -127,6 +131,46 @@ public class WebGLGraphics3D {
     return expr.isASTSizeGE(S.Graphics3D, 2);
   }
 
+  /**
+   * {@code Prolog} and {@code Epilog} content, drawn as a flat picture to lay over the scene.
+   *
+   * <p>
+   * These are two dimensional graphics given in scaled coordinates: the drawing area runs from 0
+   * to 1 in each direction whatever the scene inside it contains. Nothing in the 3D pipeline can
+   * draw them, and there is no reason for it to learn how, so they are handed to the ordinary 2D
+   * renderer and the picture it returns is carried in the scene for the renderers to place. Both
+   * of them then show the same overlay, drawn by the same code as a plain {@code Graphics} would
+   * be.
+   *
+   * @return the SVG for the overlay, or {@code null} when there is nothing to draw
+   */
+  private static String overlay(IExpr content, double[] imageSize) {
+    if (content == null) {
+      return null;
+    }
+    try {
+      IAST flat = F.Graphics(content, F.Rule(S.PlotRange, F.List(F.List(F.C0, F.C1), //
+          F.List(F.C0, F.C1))), //
+          F.Rule(S.PlotRangePadding, F.C0), //
+          F.Rule(S.Axes, S.False), //
+          F.Rule(S.Frame, S.False), //
+          F.Rule(S.ImageSize, F.List(F.num(imageSize[0]), F.num(imageSize[1]))));
+      StringBuilder buf = new StringBuilder();
+      if (GraphicsUtil.renderGraphics2DSVG(buf, flat, true, EvalEngine.get())) {
+        // A picture of its own starts by painting its background over the whole canvas. An
+        // overlay must not do that: it is drawn on top of the scene, and a white sheet the size
+        // of the image would hide everything underneath it. Only the leading background rectangle
+        // is dropped; anything the content itself draws stays.
+        return buf.toString().replaceFirst(
+            "<rect width=\"100%\" height=\"100%\"[^>]*>(</rect>)?", "");
+      }
+    } catch (RuntimeException rex) {
+      // an overlay that cannot be drawn must not cost the scene it belongs to
+      Errors.rethrowsInterruptException(rex);
+    }
+    return null;
+  }
+
   public static ObjectNode buildScene(IAST graphics) {
     ObjectNode root = mapper.createObjectNode();
 
@@ -150,7 +194,12 @@ public class WebGLGraphics3D {
     ArrayNode elements = root.putArray("elements");
     PrimitiveCollector3D collector = new PrimitiveCollector3D(elements, options.scaling);
     if (target.argSize() >= 1) {
-      collector.collect(target.arg1(), new Style3D());
+      Style3D initial = new Style3D();
+      if (options.baseStyle != null) {
+        // BaseStyle is what the contents inherit before any directive of their own
+        collector.applyBaseStyle(options.baseStyle, initial);
+      }
+      collector.collect(target.arg1(), initial);
     }
 
     double[][] ranges = resolveRanges(collector.bounds, options);
@@ -176,7 +225,26 @@ public class WebGLGraphics3D {
         ranges[i] = options.plotRange[i].clone();
       }
     }
+    // PlotRangePadding widens what the box covers, so it is applied to the range rather than to
+    // the picture: the extra room is in the data's own coordinates and the axes count it too
+    for (int i = 0; i < 3; i++) {
+      double extent = ranges[i][1] - ranges[i][0];
+      if (options.plotRangePaddingScaled != null
+          && options.plotRangePaddingScaled[i] != null) {
+        ranges[i][0] -= options.plotRangePaddingScaled[i][0] * extent;
+        ranges[i][1] += options.plotRangePaddingScaled[i][1] * extent;
+      }
+      if (options.plotRangePadding != null && options.plotRangePadding[i] != null) {
+        ranges[i][0] -= options.plotRangePadding[i][0];
+        ranges[i][1] += options.plotRangePadding[i][1];
+      }
+    }
     return ranges;
+  }
+
+  /** Four insets, written as left, right, bottom, top. */
+  private static void putInsets(ObjectNode root, String name, double[] insets) {
+    root.putArray(name).add(insets[0]).add(insets[1]).add(insets[2]).add(insets[3]);
   }
 
   private static void writeScene(ObjectNode root, GraphicsOptions3D options, double[][] ranges,
@@ -243,7 +311,75 @@ public class WebGLGraphics3D {
       }
     }
 
-    root.putArray("imageSize").add(options.imageSize[0]).add(options.imageSize[1]);
+    String prologSvg = overlay(options.prolog, options.imageSize);
+    if (prologSvg != null) {
+      root.put("prolog", prologSvg);
+    }
+    String epilogSvg = overlay(options.epilog, options.imageSize);
+    if (epilogSvg != null) {
+      root.put("epilog", epilogSvg);
+    }
+
+    double height = options.imageSize[1];
+    if (!options.imageHeightGiven && Double.isFinite(options.aspectRatio)) {
+      // AspectRatio is the height as a fraction of the width, which only has anything to say when
+      // the height was not given outright
+      height = options.imageSize[0] * options.aspectRatio;
+    }
+    root.putArray("imageSize").add(options.imageSize[0]).add(height);
+    if (options.imagePadding != null) {
+      putInsets(root, "imagePadding", options.imagePadding);
+    }
+    if (options.imageMargins != null) {
+      putInsets(root, "imageMargins", options.imageMargins);
+    }
+    if (options.viewRange != null) {
+      root.putArray("viewRange").add(options.viewRange[0]).add(options.viewRange[1]);
+    }
+    if (options.viewTransform != null) {
+      ArrayNode t = root.putArray("viewTransform");
+      for (double v : options.viewTransform) {
+        t.add(v);
+      }
+      if (options.viewProjectionMatrix != null) {
+        ArrayNode pm = root.putArray("viewProjectionMatrix");
+        for (double v : options.viewProjectionMatrix) {
+          pm.add(v);
+        }
+      }
+    }
+    if (options.clipPlanes != null) {
+      ArrayNode planes = root.putArray("clipPlanes");
+      for (double[] plane : options.clipPlanes) {
+        planes.addArray().add(plane[0]).add(plane[1]).add(plane[2]).add(plane[3]);
+      }
+      if (options.clipPlanesStyle != null) {
+        // one entry per plane, so a renderer can take them in step with the planes themselves
+        ArrayNode styles = root.putArray("clipPlanesStyle");
+        for (int i = 0; i < options.clipPlanes.length; i++) {
+          IExpr style = options.clipPlanesStyle[Math.min(i, options.clipPlanesStyle.length - 1)];
+          Style3D resolved = new Style3D();
+          new PrimitiveCollector3D(mapper.createArrayNode(), options.scaling)
+              .applyBaseStyle(style, resolved);
+          ObjectNode node = styles.addObject();
+          node.put("color", rgb(resolved.effectiveFace()));
+          node.put("opacity", resolved.alphaOf(resolved.effectiveFace()));
+        }
+      }
+    }
+    if (options.plotRegion != null) {
+      ArrayNode region = root.putArray("plotRegion");
+      region.addArray().add(options.plotRegion[0][0]).add(options.plotRegion[0][1]);
+      region.addArray().add(options.plotRegion[1][0]).add(options.plotRegion[1][1]);
+    }
+    if (options.axesOrigin != null) {
+      root.putArray("axesOrigin").add(options.axesOrigin[0]).add(options.axesOrigin[1])
+          .add(options.axesOrigin[2]);
+    }
+    if (options.viewVector != null) {
+      root.putArray("viewVector").add(options.viewVector[0]).add(options.viewVector[1])
+          .add(options.viewVector[2]);
+    }
     root.putArray("viewPoint").add(options.viewPoint[0]).add(options.viewPoint[1])
         .add(options.viewPoint[2]);
     root.putArray("viewVertical").add(options.viewVertical[0]).add(options.viewVertical[1])

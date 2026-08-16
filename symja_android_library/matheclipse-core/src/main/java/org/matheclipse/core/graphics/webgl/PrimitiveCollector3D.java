@@ -65,6 +65,17 @@ public final class PrimitiveCollector3D {
     this.scaling = scaling;
   }
 
+  /**
+   * Apply a {@code BaseStyle} to the style the contents will start from.
+   *
+   * <p>
+   * It is only a starting point: a directive the contents carry themselves is applied afterwards
+   * and wins, which is what makes {@code BaseStyle} the default rather than an override.
+   */
+  public void applyBaseStyle(IExpr expr, Style3D style) {
+    applyDirective(expr, style);
+  }
+
   public void collect(IExpr expr, Style3D style) {
     process(expr, style, null, Transform3D.IDENTITY);
   }
@@ -262,6 +273,10 @@ public final class PrimitiveCollector3D {
               style.faceColor = c;
             }
           }
+          // FaceForm[front, back] gives the two sides of a surface their own colours, which is
+          // what makes the inside of an open shape read differently from the outside
+          style.backFaceColor =
+              ast.argSize() >= 2 ? GraphicsOptions3D.firstColor(ast.arg2()) : null;
         }
         return true;
       case ID.Specularity: {
@@ -293,6 +308,20 @@ public final class PrimitiveCollector3D {
           style.arrowheadSize = size;
         }
         return true;
+      }
+      case ID.Directive:
+      case ID.List: {
+        // A directive may hold another one. That happens whenever a plot has a style of its own to
+        // apply and the call supplied one too: the plot wraps both together, and the user's arrives
+        // as a Directive nested inside the plot's. Falling through to the default here dropped the
+        // inner one whole - so ContourStyle -> Directive[FaceForm[...], Specularity[...]] lost its
+        // FaceForm and the surface stayed the default white, while the plot's own specularity,
+        // sitting at the outer level, was the one that survived.
+        boolean applied = false;
+        for (int i = 1; i <= ast.argSize(); i++) {
+          applied |= applyDirective(ast.get(i), style);
+        }
+        return applied;
       }
       default:
         return false;
@@ -835,6 +864,9 @@ public final class PrimitiveCollector3D {
       node.put("edgeOpacity", style.edgeOpacity);
       node.put("edgeThickness", style.edgeThickness);
     }
+    if (style.backFaceColor != null) {
+      node.put("backColor", rgb(style.backFaceColor));
+    }
     if (!Double.isNaN(style.specularity)) {
       node.put("specularity", style.specularity);
       node.put("specularExponent", style.specularExponent);
@@ -1090,7 +1122,7 @@ public final class PrimitiveCollector3D {
     /** Complex vertex index to mesh vertex index, so shared vertices stay shared. */
     private final Map<Integer, Integer> byComplexIndex = new HashMap<>();
     /** Rounded coordinate key to mesh vertex index, used when there is no complex to index into. */
-    private final Map<Long, Integer> byCoordinate = new HashMap<>();
+    private final Map<String, Integer> byCoordinate = new HashMap<>();
     private boolean anyColor = false;
     private boolean anyNormal = false;
     private int localVertex = 0;
@@ -1151,7 +1183,7 @@ public final class PrimitiveCollector3D {
         return -1;
       }
       double[] scaled = applyScaling(point);
-      long key = coordinateKey(scaled);
+      String key = coordinateKey(scaled);
       Integer existing = byCoordinate.get(key);
       if (existing != null) {
         return existing;
@@ -1195,11 +1227,28 @@ public final class PrimitiveCollector3D {
       }
     }
 
-    private long coordinateKey(double[] p) {
+    /**
+     * The identity of a vertex position, so that a corner shared by two faces is stored once and
+     * the mesh stays seamless for lighting.
+     *
+     * <p>
+     * The three rounded coordinates are written out in full rather than mixed into a single
+     * number. The previous key combined them as
+     * {@code (x * 73856093) ^ (y * 19349663) ^ (z * 83492791)}, and an exclusive or of products
+     * collides whenever two points differ only by a sign flip that cancels: the corners
+     * {@code {-3,-3,-2}} and {@code {3,3,-2}} of a square hash the same, as do {@code {-3,3,-2}}
+     * and {@code {3,-3,-2}}. Both far corners were then welded onto the near ones, the fan
+     * triangulation collapsed into zero area triangles, and the polygon disappeared from the
+     * picture - along with its contribution to the plot range, so the box came out too small as
+     * well. Symmetric coordinates are ordinary in hand written graphics, so this was not a rare
+     * case. Rounding to a hundred thousandth is kept: welding near identical points is wanted,
+     * and only the way they were identified was wrong.
+     */
+    private String coordinateKey(double[] p) {
       long x = Math.round(p[0] * 1e5);
       long y = Math.round(p[1] * 1e5);
       long z = Math.round(p[2] * 1e5);
-      return (x * 73856093L) ^ (y * 19349663L) ^ (z * 83492791L);
+      return x + "_" + y + "_" + z;
     }
   }
 

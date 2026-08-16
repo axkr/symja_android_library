@@ -99,14 +99,16 @@ public class AST2Expr {
       "RoundingRadius", "RuntimeAttributes", "SameTest", "ScalingFunctions", "Second",
       "SeriesTermGoal", "SequenceHold", "SetSystemOptions", "Small", "StereochemistryElements",
       "SystemOptions", "SlotAbsent", "SpanFromAbove", "SpanFromBoth", "SpanFromLeft",
-      "SplineClosed", "SplineDegree", "SplineKnots", "SplineWeights", "StaticsVisible",
-      "StartOfLine", "StartOfString", "Strict", "String", "Symbol", "TableAlignments", "TableDepth",
-      "TableDirections", "TableHeadings", "TableSpacing", "TargetFunctions", "TestID", "Thick",
-      "Thin", "Ticks", "Tiny", "TicksStyle", "Today", "Tolerance", "TooLarge", "Top", "Transparent",
-      "Trig", "True", "Unknown", "UseTypeChecking", "Variable", "Vectors", "VertexLabels",
-      "VertexShapeFunction", "VertexSize", "VertexStyle", "ViewPoint", "White", "Whitespace",
-      "WhitespaceCharacter", "WignerD", "Word", "WordCharacter", "WordSeparators",
-      "WorkingPrecision", "Yellow", "ZeroSymmetric", "ZeroTest"};
+      "SplineClosed", "SplineDegree", "SplineKnots", "SplineWeights", "StandardBlue",
+      "StandardBrown", "StandardCyan", "StandardGray", "StandardGreen", "StandardMagenta",
+      "StandardOrange", "StandardPink", "StandardPurple", "StandardRed", "StandardYellow",
+      "StaticsVisible", "StartOfLine", "StartOfString", "Strict", "String", "Symbol",
+      "TableAlignments", "TableDepth", "TableDirections", "TableHeadings", "TableSpacing",
+      "TargetFunctions", "TestID", "Thick", "Thin", "Ticks", "Tiny", "TicksStyle", "Today",
+      "Tolerance", "TooLarge", "Top", "Transparent", "Trig", "True", "Unknown", "UseTypeChecking",
+      "Variable", "Vectors", "VertexLabels", "VertexShapeFunction", "VertexSize", "VertexStyle",
+      "ViewPoint", "White", "Whitespace", "WhitespaceCharacter", "WignerD", "Word", "WordCharacter",
+      "WordSeparators", "WorkingPrecision", "Yellow", "ZeroSymmetric", "ZeroTest"};
 
   // START_FUNCTION_SYMBOLS
 

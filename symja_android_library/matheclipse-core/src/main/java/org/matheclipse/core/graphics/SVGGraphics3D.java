@@ -84,7 +84,17 @@ public class SVGGraphics3D {
     }
   }
 
-  /** The camera, as the basis it projects onto. */
+  /**
+   * The camera: where it stands, which way it faces, and the frustum it sees through.
+   *
+   * <p>
+   * The picture used to be framed by projecting everything and then fitting the result to the
+   * canvas. That made a camera of sorts, but not one anything could be said about: a pan or a zoom
+   * was computed and then undone by the fit, so {@code ViewCenter}, {@code ViewAngle},
+   * {@code ViewRange} and the choice of projection had nothing to bite on, and the picture was
+   * always parallel-projected however the scene said it should be seen. The frustum here is the
+   * same one the interactive output builds, so the two frame a scene alike.
+   */
   private static final class View {
     Vector3 eye;
     Vector3 right;
@@ -92,16 +102,99 @@ public class SVGGraphics3D {
     /** From the camera towards the scene. */
     Vector3 forward;
 
-    /** Camera space: x to the right, y up, z towards the viewer. */
+    /** Whether distant things are drawn smaller. */
+    boolean perspective = true;
+    /** Vertical field of view in radians, for a perspective camera. */
+    double fieldOfView = Math.toRadians(35);
+    /** Half the height the frustum covers, for a parallel one. */
+    double halfHeight = 1;
+    /** Nothing nearer than this or further than that is drawn. */
+    double near = 0.01;
+    double far = Double.MAX_VALUE;
+
+    /**
+     * An explicit camera from {@code ViewMatrix}: the transformation, then the projection.
+     */
+    double[] transform = null;
+    double[] projection = null;
+
+    /** Camera space: x to the right, y up, z away from the viewer into the scene. */
     Vector3 project(Vector3 p) {
+      if (transform != null) {
+        // {x,y,z,1} through the transformation, then the projection, then divided by its own
+        // last component - which is what puts a point on the picture
+        double[] v = apply(transform, p.x, p.y, p.z, 1);
+        double depth = -v[2];
+        double[] q = projection == null ? v : apply(projection, v[0], v[1], v[2], v[3]);
+        double w = Math.abs(q[3]) < 1e-12 ? 1 : q[3];
+        return new Vector3(q[0] / w, q[1] / w, depth);
+      }
       Vector3 d = p.sub(eye);
       return new Vector3(d.dot(right), d.dot(up), d.dot(forward));
+    }
+
+    private static double[] apply(double[] m, double x, double y, double z, double w) {
+      return new double[] {m[0] * x + m[1] * y + m[2] * z + m[3] * w,
+          m[4] * x + m[5] * y + m[6] * z + m[7] * w, m[8] * x + m[9] * y + m[10] * z + m[11] * w,
+          m[12] * x + m[13] * y + m[14] * z + m[15] * w};
+    }
+
+    /**
+     * How far one unit at the given depth reaches across the picture, per unit of picture height.
+     *
+     * <p>
+     * A parallel camera covers the same height whatever the depth; a perspective one covers less
+     * the nearer it is, which is what makes distant things smaller.
+     */
+    double scaleAt(double depth, double pictureHeight) {
+      if (transform != null) {
+        // the matrices have already put the point on a picture running from -1 to 1
+        return pictureHeight / 2;
+      }
+      if (!perspective) {
+        return pictureHeight / (2 * halfHeight);
+      }
+      double reach = Math.max(1e-9, depth) * Math.tan(fieldOfView / 2);
+      return pictureHeight / (2 * reach);
     }
 
     /** A direction given in camera space, expressed in world space. */
     Vector3 fromCamera(Vector3 cameraSpace) {
       return right.scale(cameraSpace.x).add(up.scale(cameraSpace.y))
           .add(forward.scale(-cameraSpace.z));
+    }
+  }
+
+  /**
+   * How a surface takes the light: its colour, the colour of its far side, and its highlight.
+   *
+   * <p>
+   * This travels with the geometry because all three are wanted at the moment a face is shaded,
+   * and only the scene knows them. {@code FaceForm[front, back]} gives the two sides their own
+   * colours, and {@code Specularity} decides how strong and how tight the highlight is; both were
+   * being dropped here while the interactive output honoured them.
+   */
+  private static final class Surface {
+    final Color front;
+    /** The colour of a face being looked at from behind, or {@code null} to use the front one. */
+    final Color back;
+    final double specularity;
+    final double shininess;
+
+    Surface(Color front, Color back, double specularity, double shininess) {
+      this.front = front;
+      this.back = back;
+      this.specularity = specularity;
+      this.shininess = shininess;
+    }
+
+    Surface(Color front) {
+      this(front, null, DEFAULT_SPECULARITY, DEFAULT_SHININESS);
+    }
+
+    /** The same material in another colour, for the parts of a plot that carry their own. */
+    Surface with(Color other) {
+      return new Surface(other, back, specularity, shininess);
     }
   }
 
@@ -287,7 +380,7 @@ public class SVGGraphics3D {
     double diagonal =
         scene.has("diagonal") ? scene.get("diagonal").asDouble(size.length()) : size.length();
 
-    View view = camera(scene, center, maxDim);
+    View view = camera(scene, center, maxDim, size, dataScale);
     List<Light> lights = lights(scene, view);
 
     List<Renderable> renderables = new ArrayList<>();
@@ -296,10 +389,26 @@ public class SVGGraphics3D {
         collect(element, dataScale, view, lights, diagonal, renderables);
       }
     }
+    // the scene is cut before the box and the axes are added, so the frame stays whole
+    double[][] clip = clipPlanes(scene, view, dataScale);
+    if (clip != null) {
+      addClipPlaneSurfaces(scene, clip, min, max, view, lights, renderables);
+      renderables = clipAll(renderables, clip);
+    }
+    // Everything in front of the camera and, when ViewRange says so, behind a far limit. A
+    // perspective picture needs the near one whatever the call asked for: a face crossing the
+    // plane of the camera has no projection, and drawing it anyway throws it across the picture.
+    List<double[]> limits = new ArrayList<>(2);
+    limits.add(new double[] {0, 0, 1, -view.near});
+    if (view.far != Double.MAX_VALUE) {
+      limits.add(new double[] {0, 0, -1, view.far});
+    }
+    renderables = clipAll(renderables, limits.toArray(new double[0][]));
+
     addBox(scene, min, max, view, renderables);
     addAxes(scene, ranges, min, max, dataScale, view, maxDim, renderables);
 
-    return write(scene, renderables, width, height);
+    return write(scene, renderables, width, height, view);
   }
 
   /** The visible range per axis, as the converter resolved it. */
@@ -344,16 +453,84 @@ public class SVGGraphics3D {
    * The camera. {@code ViewPoint} is written in a box whose longest side is one, so the distance
    * scales with the box.
    */
-  private static View camera(ObjectNode scene, Vector3 center, double maxDim) {
+  private static View camera(ObjectNode scene, Vector3 center, double maxDim, Vector3 visualSize,
+      Vector3 dataScale) {
     Vector3 direction = vector(scene.get("viewPoint"), new Vector3(1.3, -2.4, 2.0));
     if (direction.length() == 0) {
       direction = new Vector3(1.3, -2.4, 2.0);
     }
     Vector3 vertical = vector(scene.get("viewVertical"), new Vector3(0, 0, 1));
 
+    // ViewCenter is the point put in the middle of the picture, in the data's own coordinates
+    if (scene.has("viewCenter")) {
+      Vector3 look = vector(scene.get("viewCenter"), null);
+      if (look != null) {
+        center = new Vector3(look.x * dataScale.x, look.y * dataScale.y, look.z * dataScale.z);
+      }
+    }
+
     View view = new View();
-    view.eye = center.add(direction.scale(maxDim));
+    view.perspective = !"Orthographic".equals(text(scene, "viewProjection"));
+    if (scene.has("viewAngle")) {
+      double degrees = scene.get("viewAngle").asDouble(35);
+      if (degrees > 0 && degrees < 180) {
+        view.fieldOfView = Math.toRadians(degrees);
+      }
+    }
+
+    // SphericalRegion fits the sphere around the scene rather than the scene itself, so the
+    // picture keeps its size however the scene is turned
+    boolean spherical = scene.has("sphericalRegion") && scene.get("sphericalRegion").asBoolean();
+    double radius = visualSize.length() / 2;
+    double distance = direction.length() * maxDim;
+    if (view.perspective) {
+      double fit = spherical ? radius / Math.sin(view.fieldOfView / 2)
+          : visualSize.length() / (2 * Math.tan(view.fieldOfView / 2));
+      distance = Math.max(distance, fit * 1.05);
+    } else {
+      view.halfHeight = (spherical ? radius : visualSize.length() * 0.6) * 1.05;
+    }
+
+    view.eye = center.add(direction.normalize().scale(distance));
+    // ViewVector places the camera outright rather than in units of the box
+    if (scene.has("viewVector")) {
+      Vector3 from = vector(scene.get("viewVector"), null);
+      if (from != null) {
+        view.eye = new Vector3(from.x * dataScale.x, from.y * dataScale.y, from.z * dataScale.z);
+      }
+    }
     view.forward = center.sub(view.eye).normalize();
+    // ViewMatrix says outright what the other view options describe, so it replaces them
+    if (scene.has("viewTransform")) {
+      view.transform = numbers(scene.get("viewTransform"), 16);
+      view.projection = scene.has("viewProjectionMatrix")
+          ? numbers(scene.get("viewProjectionMatrix"), 16) : null;
+      if (view.transform != null) {
+        // The lights are placed against the camera, so where the camera is looking has to come
+        // from the matrix as well. Otherwise the geometry obeys the matrix while the shading
+        // still follows ViewPoint, and the same view comes out lit two different ways.
+        double[] m = view.transform;
+        view.right = new Vector3(m[0], m[1], m[2]);
+        view.up = new Vector3(m[4], m[5], m[6]);
+        // a viewing matrix looks down its own negative z
+        view.forward = new Vector3(-m[8], -m[9], -m[10]);
+        double tx = m[3];
+        double ty = m[7];
+        double tz = m[11];
+        view.eye = view.right.scale(-tx).add(view.up.scale(-ty))
+            .add(view.forward.scale(tz));
+      }
+    }
+    view.near = Math.max(1e-6, maxDim * 0.01);
+    view.far = Double.MAX_VALUE;
+    // ViewRange keeps only what lies between two distances from the camera
+    if (scene.has("viewRange")) {
+      JsonNode range = scene.get("viewRange");
+      if (range.size() >= 2) {
+        view.near = Math.max(view.near, range.get(0).asDouble());
+        view.far = range.get(1).asDouble();
+      }
+    }
     Vector3 right = view.forward.cross(vertical);
     if (right.length() < 1e-9) {
       // looking straight along the vertical, so any perpendicular will do
@@ -374,6 +551,17 @@ public class SVGGraphics3D {
    * A light the converter marked as travelling with the camera has its position in camera space,
    * which is what keeps a surface shaded the same way whichever side of it is being looked at.
    */
+  /** The material an element is drawn with, as the scene describes it. */
+  private static Surface surfaceOf(JsonNode element) {
+    Color front = new Color(element.get("color").asInt());
+    Color back = element.has("backColor") ? new Color(element.get("backColor").asInt()) : null;
+    double specularity =
+        element.has("specularity") ? element.get("specularity").asDouble() : DEFAULT_SPECULARITY;
+    double shininess = element.has("specularExponent") ? element.get("specularExponent").asDouble()
+        : DEFAULT_SHININESS;
+    return new Surface(front, back, specularity, Math.max(1.0, shininess));
+  }
+
   private static List<Light> lights(ObjectNode scene, View view) {
     List<Light> lights = new ArrayList<>();
     if (!scene.has("lights")) {
@@ -405,28 +593,97 @@ public class SVGGraphics3D {
    * the surface at. The face is lit from whichever side is turned towards the viewer, because a
    * mathematical surface has no inside.
    */
-  private static Color shade(Color base, Vector3 normal, List<Light> lights, View view) {
+  /** The specular strength three.js gives a material that was not asked for a different one. */
+  private static final double DEFAULT_SPECULARITY = 0x11 / 255.0;
+
+  /** The matching shininess, which decides how tight the highlight is. */
+  private static final double DEFAULT_SHININESS = 20.0;
+
+  /**
+   * The colour a face ends up with under the scene's lights.
+   *
+   * <p>
+   * This has to agree with what the interactive output draws, because the two are meant to be the
+   * same picture. That one is three.js, which works in linear light: every colour it is given is
+   * taken out of sRGB first, the lighting is added up in linear, and the result is put back into
+   * sRGB on the way to the screen. Multiplying the sRGB numbers together directly instead - which
+   * is what this did - is not the same calculation and does not go wrong by a constant, it bends
+   * the whole range: mid tones came out too dark and saturated, so the same scene drawn statically
+   * and interactively did not match. A plain yellow floor is the easy one to see, coming out as
+   * gold here and yellow there.
+   *
+   * <p>
+   * The highlight is three.js's Blinn-Phong term with the same default specular colour and
+   * shininess. It is a small contribution, but it is what keeps a curved solid from reading as
+   * flatter here than it does in the interactive view.
+   */
+  private static Color shade(Surface surface, Vector3 normal, List<Light> lights, View view) {
     Vector3 n = normal.normalize();
-    if (n.dot(view.forward) > 0) {
+    // a face whose normal points away is being looked at from behind, which is the side
+    // FaceForm[front, back] gives its own colour to
+    boolean fromBehind = n.dot(view.forward) > 0;
+    if (fromBehind) {
       n = n.scale(-1);
     }
-    double r = 0;
-    double g = 0;
-    double b = 0;
+    Color base = fromBehind && surface.back != null ? surface.back : surface.front;
+    double specular = toLinear(surface.specularity);
+    double shininess = surface.shininess;
+    // from the surface towards the camera
+    Vector3 viewDir = view.forward.scale(-1).normalize();
+
+    double diffuseR = 0;
+    double diffuseG = 0;
+    double diffuseB = 0;
+    double specularR = 0;
+    double specularG = 0;
+    double specularB = 0;
     for (Light light : lights) {
-      double weight = 1.0;
-      if (!light.ambient) {
-        weight = Math.max(0.0, n.dot(light.direction));
-        if (weight == 0) {
-          continue;
-        }
+      double lr = toLinear(light.color.getRed() / 255.0);
+      double lg = toLinear(light.color.getGreen() / 255.0);
+      double lb = toLinear(light.color.getBlue() / 255.0);
+      if (light.ambient) {
+        diffuseR += lr;
+        diffuseG += lg;
+        diffuseB += lb;
+        continue;
       }
-      r += light.color.getRed() / 255.0 * weight;
-      g += light.color.getGreen() / 255.0 * weight;
-      b += light.color.getBlue() / 255.0 * weight;
+      double incidence = Math.max(0.0, n.dot(light.direction));
+      if (incidence == 0) {
+        continue;
+      }
+      diffuseR += lr * incidence;
+      diffuseG += lg * incidence;
+      diffuseB += lb * incidence;
+
+      // three.js: F_Schlick(specular, dot(view, half)) * G(0.25) * D(Blinn-Phong), with the
+      // reciprocal pi of the distribution cancelling the pi the light intensities carry
+      Vector3 half = light.direction.add(viewDir).normalize();
+      double highlight = Math.pow(Math.max(0.0, n.dot(half)), shininess);
+      double fresnel = specular
+          + (1.0 - specular) * Math.pow(1.0 - Math.max(0.0, viewDir.dot(half)), 5.0);
+      double weight = fresnel * 0.25 * (0.5 * shininess + 1.0) * highlight * incidence;
+      specularR += lr * weight;
+      specularG += lg * weight;
+      specularB += lb * weight;
     }
-    return new Color(clamp(base.getRed() / 255.0 * r), clamp(base.getGreen() / 255.0 * g),
-        clamp(base.getBlue() / 255.0 * b));
+
+    double r = toLinear(base.getRed() / 255.0) * diffuseR + specularR;
+    double g = toLinear(base.getGreen() / 255.0) * diffuseG + specularG;
+    double b = toLinear(base.getBlue() / 255.0) * diffuseB + specularB;
+    return new Color(clamp(toSRGB(r)), clamp(toSRGB(g)), clamp(toSRGB(b)));
+  }
+
+  /** sRGB to the linear light the lighting is added up in. */
+  private static double toLinear(double c) {
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+
+  /** Linear light back to the sRGB an SVG colour is written in. */
+  private static double toSRGB(double c) {
+    if (c <= 0.0) {
+      return 0.0;
+    }
+    return c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1.0 / 2.4) - 0.055;
   }
 
   // --------------------------------------------------------------- primitives
@@ -434,7 +691,7 @@ public class SVGGraphics3D {
   private static void collect(JsonNode element, Vector3 dataScale, View view, List<Light> lights,
       double diagonal, List<Renderable> out) {
     String type = element.get("type").asText();
-    Color color = new Color(element.get("color").asInt());
+    Surface color = surfaceOf(element);
     double opacity = element.has("opacity") ? element.get("opacity").asDouble(1) : 1;
     double[] matrix = matrix(element);
 
@@ -469,13 +726,13 @@ public class SVGGraphics3D {
       case "Arrow":
       case "BSplineCurve":
       case "BezierCurve":
-        curves(element, type, color, opacity, matrix, dataScale, view, lights, diagonal, out);
+        curves(element, type, color.front, opacity, matrix, dataScale, view, lights, diagonal, out);
         break;
       case "Point":
-        dots(element, color, opacity, matrix, dataScale, view, diagonal, out);
+        dots(element, color.front, opacity, matrix, dataScale, view, diagonal, out);
         break;
       case "Text":
-        text(element, color, opacity, matrix, dataScale, view, out);
+        text(element, color.front, opacity, matrix, dataScale, view, out);
         break;
       default:
         break;
@@ -483,7 +740,7 @@ public class SVGGraphics3D {
   }
 
   /** An indexed triangle mesh, one flat facet per triangle. */
-  private static void polygons(JsonNode element, Color color, double opacity, double[] matrix,
+  private static void polygons(JsonNode element, Surface color, double opacity, double[] matrix,
       Vector3 dataScale, View view, List<Light> lights, List<Renderable> out) {
     JsonNode pointData = element.get("points");
     JsonNode indices = element.get("indices");
@@ -496,6 +753,7 @@ public class SVGGraphics3D {
           pointData.get(i + 2).asDouble()), matrix, dataScale));
     }
     JsonNode vertexColors = element.get("vertexColors");
+    JsonNode vertexNormals = element.get("vertexNormals");
     Color edge = edgeColor(element);
     double edgeWidth = element.has("edgeThickness") ? element.get("edgeThickness").asDouble(1) : 1;
 
@@ -509,16 +767,48 @@ public class SVGGraphics3D {
       Vector3 pa = vertices.get(a);
       Vector3 pb = vertices.get(b);
       Vector3 pc = vertices.get(c);
-      Color base = color;
+      Surface base = color;
       if (vertexColors != null && vertexColors.size() >= (a + 1) * 3) {
         // one colour per facet, averaged over its corners, is as far as a flat fill can go
-        base = average(vertexColors, a, b, c);
+        base = color.with(average(vertexColors, a, b, c));
       }
-      addFace(out, view, lights, base, opacity, edge, edgeWidth, pa, pb, pc);
+      // A surface that was sampled smoothly carries a normal per vertex. Shading each facet by
+      // its own flat normal instead makes a curved surface look faceted, and turns a highlight
+      // into a scatter of bright triangles; averaging the three vertex normals follows the
+      // surface the sampling meant, which is what the interactive output shows.
+      Vector3 smooth = averageNormal(vertexNormals, a, b, c, matrix, dataScale);
+      addShadedFace(out, view, lights, base, opacity, edge, edgeWidth, smooth, pa, pb, pc);
     }
   }
 
-  private static void sphere(Vector3 centre, double radius, Color color, double opacity,
+  /** The averaged vertex normal of one facet, or {@code null} when the scene supplied none. */
+  private static Vector3 averageNormal(JsonNode normals, int a, int b, int c, double[] matrix,
+      Vector3 dataScale) {
+    if (normals == null || normals.size() < (Math.max(a, Math.max(b, c)) + 1) * 3) {
+      return null;
+    }
+    Vector3 sum = new Vector3(0, 0, 0);
+    for (int index : new int[] {a, b, c}) {
+      sum = sum.add(new Vector3(normals.get(index * 3).asDouble(),
+          normals.get(index * 3 + 1).asDouble(), normals.get(index * 3 + 2).asDouble()));
+    }
+    if (sum.length() == 0) {
+      return null;
+    }
+    if (matrix != null) {
+      // a direction is carried by the rotation part of the transformation only
+      sum = new Vector3(matrix[0] * sum.x + matrix[4] * sum.y + matrix[8] * sum.z,
+          matrix[1] * sum.x + matrix[5] * sum.y + matrix[9] * sum.z,
+          matrix[2] * sum.x + matrix[6] * sum.y + matrix[10] * sum.z);
+    }
+    // the box scaling stretches the geometry, so a normal follows its reciprocal
+    Vector3 scaled = new Vector3(dataScale.x == 0 ? sum.x : sum.x / dataScale.x,
+        dataScale.y == 0 ? sum.y : sum.y / dataScale.y,
+        dataScale.z == 0 ? sum.z : sum.z / dataScale.z);
+    return scaled.length() == 0 ? null : scaled.normalize();
+  }
+
+  private static void sphere(Vector3 centre, double radius, Surface color, double opacity,
       double[] matrix, Vector3 dataScale, View view, List<Light> lights, List<Renderable> out) {
     Vector3[][] grid = new Vector3[SPHERE_RINGS + 1][SPHERE_SEGMENTS + 1];
     for (int i = 0; i <= SPHERE_RINGS; i++) {
@@ -534,7 +824,8 @@ public class SVGGraphics3D {
   }
 
   /** A cylinder, or a cone when the far end is collapsed to a point. */
-  private static void barrel(Vector3 start, Vector3 end, double radius, boolean cone, Color color,
+  private static void barrel(Vector3 start, Vector3 end, double radius, boolean cone,
+      Surface color,
       double opacity, double[] matrix, Vector3 dataScale, View view, List<Light> lights,
       List<Renderable> out) {
     Vector3 axis = end.sub(start);
@@ -568,14 +859,14 @@ public class SVGGraphics3D {
     }
   }
 
-  private static void cap(List<Renderable> out, View view, List<Light> lights, Color color,
+  private static void cap(List<Renderable> out, View view, List<Light> lights, Surface color,
       double opacity, List<Vector3> rim, Vector3 centre) {
     for (int i = 0; i + 1 < rim.size(); i++) {
       addFace(out, view, lights, color, opacity, null, 0, centre, rim.get(i), rim.get(i + 1));
     }
   }
 
-  private static void cuboid(Vector3 min, Vector3 max, Color color, double opacity, double[] matrix,
+  private static void cuboid(Vector3 min, Vector3 max, Surface color, double opacity, double[] matrix,
       Vector3 dataScale, View view, List<Light> lights, List<Renderable> out) {
     Vector3[] corner = new Vector3[8];
     for (int i = 0; i < 8; i++) {
@@ -590,7 +881,7 @@ public class SVGGraphics3D {
     }
   }
 
-  private static void polyhedron(JsonNode element, Color color, double opacity, double[] matrix,
+  private static void polyhedron(JsonNode element, Surface color, double opacity, double[] matrix,
       Vector3 dataScale, View view, List<Light> lights, List<Renderable> out) {
     Vector3 centre = vector(element.get("center"), new Vector3(0, 0, 0));
     double scale = element.has("scale") ? element.get("scale").asDouble(1) : 1;
@@ -607,7 +898,7 @@ public class SVGGraphics3D {
     }
   }
 
-  private static void tube(JsonNode element, Color color, double opacity, double[] matrix,
+  private static void tube(JsonNode element, Surface color, double opacity, double[] matrix,
       Vector3 dataScale, View view, List<Light> lights, List<Renderable> out) {
     double radius = element.has("radius") ? element.get("radius").asDouble(0.02) : 0.02;
     for (List<Vector3> raw : polylines(element)) {
@@ -680,7 +971,9 @@ public class SVGGraphics3D {
       return;
     }
     Vector3 base = tip.sub(direction.normalize().scale(size));
-    barrel(base, tip, size * 0.35, true, color, opacity, matrix, dataScale, view, lights, out);
+    // an arrowhead is a solid cone, drawn in the line's own colour
+    barrel(base, tip, size * 0.35, true, new Surface(color), opacity, matrix, dataScale, view,
+        lights, out);
   }
 
   private static void dots(JsonNode element, Color color, double opacity, double[] matrix,
@@ -815,11 +1108,503 @@ public class SVGGraphics3D {
     return best;
   }
 
+  // ---------------------------------------------------------------- clipping
+
+  /**
+   * The clipping planes, moved into the space the geometry is already in.
+   *
+   * <p>
+   * A plane arrives in the data's own coordinates, but the geometry has been through two changes
+   * by the time it is here: the box scaling that squares the data up, and the camera. Both are
+   * applied to the planes instead of undone on every vertex. Scaling a point by {@code s} turns
+   * {@code n.p + d} into {@code (n/s).p' + d}, and the camera is a turn and a shift, so the normal
+   * is read off in the camera's own directions and the offset follows the eye.
+   *
+   * @return one {@code {a, b, c, d}} per plane, keeping the side where the value is positive
+   */
+  private static double[][] clipPlanes(ObjectNode scene, View view, Vector3 dataScale) {
+    if (!scene.has("clipPlanes")) {
+      return null;
+    }
+    JsonNode node = scene.get("clipPlanes");
+    List<double[]> planes = new ArrayList<>();
+    for (JsonNode plane : node) {
+      if (plane.size() < 4) {
+        continue;
+      }
+      Vector3 n = new Vector3(plane.get(0).asDouble() / (dataScale.x == 0 ? 1 : dataScale.x),
+          plane.get(1).asDouble() / (dataScale.y == 0 ? 1 : dataScale.y),
+          plane.get(2).asDouble() / (dataScale.z == 0 ? 1 : dataScale.z));
+      double d = plane.get(3).asDouble();
+      if (n.length() < 1e-12) {
+        continue;
+      }
+      Vector3 camera = new Vector3(n.dot(view.right), n.dot(view.up), n.dot(view.forward));
+      planes.add(new double[] {camera.x, camera.y, camera.z, n.dot(view.eye) + d});
+    }
+    return planes.isEmpty() ? null : planes.toArray(new double[0][]);
+  }
+
+  /**
+   * Draw the clipping planes themselves, which is what {@code ClipPlanesStyle} asks for.
+   *
+   * <p>
+   * A plane has no edges of its own, so each is drawn as a square big enough to cross the whole
+   * scene and then cut down by the box and by the other planes. Without a style it is not drawn at
+   * all, which is what {@code ClipPlanesStyle} defaults to.
+   */
+  private static void addClipPlaneSurfaces(ObjectNode scene, double[][] planes, Vector3 min,
+      Vector3 max, View view, List<Light> lights, List<Renderable> out) {
+    if (!scene.has("clipPlanesStyle")) {
+      return;
+    }
+    JsonNode styles = scene.get("clipPlanesStyle");
+    Vector3 centre = min.add(max).scale(0.5);
+    Vector3 cameraCentre = view.project(centre);
+    double reach = max.sub(min).length();
+
+    for (int i = 0; i < planes.length && i < styles.size(); i++) {
+      double[] plane = planes[i];
+      JsonNode style = styles.get(i);
+      Color color = new Color(style.get("color").asInt());
+      double opacity = style.has("opacity") ? style.get("opacity").asDouble(1) : 1;
+
+      // a pair of directions lying in the plane, to sweep the square out along
+      Vector3 normal = new Vector3(plane[0], plane[1], plane[2]).normalize();
+      Vector3 u = normal.cross(new Vector3(0, 0, 1));
+      if (u.length() < 1e-6) {
+        u = normal.cross(new Vector3(0, 1, 0));
+      }
+      u = u.normalize();
+      Vector3 v = normal.cross(u).normalize();
+      // the point of the plane nearest the middle of the scene
+      double distance = side(plane, cameraCentre);
+      Vector3 origin = cameraCentre.sub(normal.scale(distance));
+
+      List<Vector3> square = new ArrayList<>(4);
+      square.add(origin.add(u.scale(reach)).add(v.scale(reach)));
+      square.add(origin.add(u.scale(-reach)).add(v.scale(reach)));
+      square.add(origin.add(u.scale(-reach)).add(v.scale(-reach)));
+      square.add(origin.add(u.scale(reach)).add(v.scale(-reach)));
+
+      // keep it inside the scene's own box, and on the kept side of every other plane
+      for (int j = 0; j < planes.length; j++) {
+        if (j != i) {
+          square = clipPolygon(square, planes[j]);
+        }
+      }
+      for (double[] wall : boxPlanes(min, max, view)) {
+        square = clipPolygon(square, wall);
+      }
+      if (square.size() >= 3) {
+        // The plane lies exactly in the cut it made, so which of the two is nearer is a coin
+        // toss and the cut surface wins about half the time, leaving the plane in tatters. A
+        // nudge towards the camera settles it, the same way the interactive renderer offsets a
+        // mesh drawn over the surface it outlines.
+        double nudge = reach * 1e-3;
+        List<Vector3> lifted = new ArrayList<>(square.size());
+        for (Vector3 corner : square) {
+          lifted.add(new Vector3(corner.x, corner.y, corner.z - nudge));
+        }
+        out.add(new Face(lifted, color, opacity, null, 0));
+      }
+    }
+  }
+
+  /** The six sides of the scene's box, as inward facing half spaces in camera space. */
+  private static List<double[]> boxPlanes(Vector3 min, Vector3 max, View view) {
+    List<double[]> walls = new ArrayList<>(6);
+    Vector3[] normals = {new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 1, 0),
+        new Vector3(0, -1, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)};
+    Vector3[] points = {min, max, min, max, min, max};
+    for (int i = 0; i < 6; i++) {
+      Vector3 n = normals[i];
+      Vector3 camera = new Vector3(n.dot(view.right), n.dot(view.up), n.dot(view.forward));
+      Vector3 onPlane = view.project(points[i]);
+      walls.add(new double[] {camera.x, camera.y, camera.z, -camera.dot(onPlane)});
+    }
+    return walls;
+  }
+
+  private static double side(double[] plane, Vector3 p) {
+    return plane[0] * p.x + plane[1] * p.y + plane[2] * p.z + plane[3];
+  }
+
+  private static Vector3 crossing(Vector3 a, Vector3 b, double sa, double sb) {
+    double t = sa / (sa - sb);
+    return new Vector3(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
+  }
+
+  /** Cut everything down to the half spaces the planes leave. */
+  private static List<Renderable> clipAll(List<Renderable> renderables, double[][] planes) {
+    List<Renderable> kept = new ArrayList<>(renderables.size());
+    for (Renderable r : renderables) {
+      if (r instanceof Face) {
+        Face face = (Face) r;
+        List<Vector3> points = face.points;
+        for (double[] plane : planes) {
+          points = clipPolygon(points, plane);
+          if (points.size() < 3) {
+            break;
+          }
+        }
+        if (points.size() >= 3) {
+          kept.add(new Face(points, face.color, face.opacity, face.edgeColor, face.edgeWidth));
+        }
+      } else if (r instanceof Polyline) {
+        Polyline line = (Polyline) r;
+        for (List<Vector3> piece : clipPolyline(line.points, planes)) {
+          kept.add(new Polyline(piece, line.color, line.opacity, line.width, line.dashArray));
+        }
+      } else if (r instanceof Dot) {
+        if (inside(((Dot) r).point, planes)) {
+          kept.add(r);
+        }
+      } else if (r instanceof Label) {
+        if (inside(((Label) r).point, planes)) {
+          kept.add(r);
+        }
+      } else {
+        kept.add(r);
+      }
+    }
+    return kept;
+  }
+
+  private static boolean inside(Vector3 p, double[][] planes) {
+    for (double[] plane : planes) {
+      if (side(plane, p) < 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Sutherland and Hodgman: walk the edges, keeping what is inside and cutting what crosses. */
+  private static List<Vector3> clipPolygon(List<Vector3> points, double[] plane) {
+    List<Vector3> out = new ArrayList<>(points.size() + 2);
+    int n = points.size();
+    for (int i = 0; i < n; i++) {
+      Vector3 current = points.get(i);
+      Vector3 previous = points.get((i + n - 1) % n);
+      double sc = side(plane, current);
+      double sp = side(plane, previous);
+      if (sc >= 0) {
+        if (sp < 0) {
+          out.add(crossing(previous, current, sp, sc));
+        }
+        out.add(current);
+      } else if (sp >= 0) {
+        out.add(crossing(previous, current, sp, sc));
+      }
+    }
+    return out;
+  }
+
+  /** A polyline may come back in several pieces, wherever it left and re-entered. */
+  private static List<List<Vector3>> clipPolyline(List<Vector3> points, double[][] planes) {
+    List<List<Vector3>> pieces = new ArrayList<>();
+    List<Vector3> current = new ArrayList<>();
+    for (int i = 0; i + 1 < points.size(); i++) {
+      Vector3 a = points.get(i);
+      Vector3 b = points.get(i + 1);
+      double[] segment = clipSegment(a, b, planes);
+      if (segment == null) {
+        if (current.size() > 1) {
+          pieces.add(current);
+        }
+        current = new ArrayList<>();
+        continue;
+      }
+      Vector3 from = crossing(a, b, -segment[0], 1 - segment[0]);
+      Vector3 to = crossing(a, b, -segment[1], 1 - segment[1]);
+      if (current.isEmpty()) {
+        current.add(from);
+      }
+      current.add(to);
+      if (segment[1] < 1.0) {
+        if (current.size() > 1) {
+          pieces.add(current);
+        }
+        current = new ArrayList<>();
+      }
+    }
+    if (current.size() > 1) {
+      pieces.add(current);
+    }
+    return pieces;
+  }
+
+  /** The stretch of a segment that survives, as two fractions along it, or null if none does. */
+  private static double[] clipSegment(Vector3 a, Vector3 b, double[][] planes) {
+    double enter = 0.0;
+    double leave = 1.0;
+    for (double[] plane : planes) {
+      double sa = side(plane, a);
+      double sb = side(plane, b);
+      if (sa < 0 && sb < 0) {
+        return null;
+      }
+      if (sa < 0) {
+        enter = Math.max(enter, sa / (sa - sb));
+      } else if (sb < 0) {
+        leave = Math.min(leave, sa / (sa - sb));
+      }
+    }
+    return enter < leave ? new double[] {enter, leave} : null;
+  }
+
+  // ------------------------------------------------------------ depth sorting
+
+  /**
+   * Above this many faces the ordering is left to the depth sort alone.
+   *
+   * <p>
+   * The repair below compares every pair of faces that overlap on screen. That is affordable for a
+   * scene built from a few large shapes, which is exactly the scene the depth sort gets wrong. A
+   * finely sampled surface has thousands of faces, but they are all small, and the depth of a small
+   * face describes it well enough that there is nothing to repair.
+   */
+  private static final int MAX_REPAIR_FACES = 2000;
+
+  /** Distances below this fraction of the scene count as "on the plane" rather than either side. */
+  private static final double PLANE_TOLERANCE = 1e-6;
+
+  /**
+   * Puts faces the depth sort got the wrong way round back into order.
+   *
+   * <p>
+   * Faces are painted back to front, ordered by the depth of their middle. That describes a face
+   * only while the face is small. A floor drawn as two triangles across the whole picture has its
+   * middle nearer the camera than a small box standing on it, so the floor was painted last and
+   * covered the box: in the reference example a yellow wedge lay across the green cuboid.
+   *
+   * <p>
+   * The middle of a face is the wrong thing to compare. What settles the order for two faces that
+   * do not cut through each other is which side of the other's plane each lies on, and that answer
+   * does not care how big either one is. Every pair that overlaps on screen is asked that question
+   * here, and the answers are followed as an ordering. Nothing is cut up, so there are no new
+   * seams; faces that genuinely pass through each other give no answer and keep the order the depth
+   * sort gave them.
+   */
+  private static void repairOrder(List<Renderable> renderables) {
+    List<Face> faces = new ArrayList<>();
+    List<Integer> slots = new ArrayList<>();
+    for (int i = 0; i < renderables.size(); i++) {
+      if (renderables.get(i) instanceof Face) {
+        faces.add((Face) renderables.get(i));
+        slots.add(i);
+      }
+    }
+    int n = faces.size();
+    if (n < 2 || n > MAX_REPAIR_FACES) {
+      return;
+    }
+
+    double[][] box = new double[n][];
+    double[][] plane = new double[n][];
+    for (int i = 0; i < n; i++) {
+      box[i] = screenBox(faces.get(i));
+      plane[i] = planeOf(faces.get(i));
+    }
+    double tolerance = sceneSize(box) * PLANE_TOLERANCE;
+
+    // before[i] holds the faces that have to be painted before face i
+    List<List<Integer>> before = new ArrayList<>(n);
+    int[] waiting = new int[n];
+    for (int i = 0; i < n; i++) {
+      before.add(new ArrayList<>(2));
+    }
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        if (!overlaps(box[i], box[j])) {
+          continue;
+        }
+        int order = mustPaintFirst(faces.get(i), plane[i], faces.get(j), plane[j], tolerance);
+        if (order < 0) {
+          before.get(j).add(i);
+          waiting[j]++;
+        } else if (order > 0) {
+          before.get(i).add(j);
+          waiting[i]++;
+        }
+      }
+    }
+
+    // walk the faces in the order the depth sort gave, holding one back until everything that has
+    // to come before it has been placed; a face caught in a cycle keeps its original place
+    List<Integer> order = new ArrayList<>(n);
+    boolean[] placed = new boolean[n];
+    boolean progress = true;
+    while (order.size() < n && progress) {
+      progress = false;
+      for (int i = 0; i < n; i++) {
+        if (!placed[i] && waiting[i] == 0) {
+          placed[i] = true;
+          order.add(i);
+          progress = true;
+          for (int k = 0; k < n; k++) {
+            if (!placed[k] && before.get(k).contains(i)) {
+              waiting[k]--;
+            }
+          }
+        }
+      }
+    }
+    for (int i = 0; i < n; i++) {
+      if (!placed[i]) {
+        order.add(i);
+      }
+    }
+
+    for (int k = 0; k < n; k++) {
+      renderables.set(slots.get(k), faces.get(order.get(k)));
+    }
+  }
+
+  /** The screen rectangle a face covers, as {@code minX, minY, maxX, maxY}. */
+  private static double[] screenBox(Face face) {
+    double minX = Double.MAX_VALUE;
+    double minY = Double.MAX_VALUE;
+    double maxX = -Double.MAX_VALUE;
+    double maxY = -Double.MAX_VALUE;
+    for (Vector3 p : face.points) {
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x);
+      maxY = Math.max(maxY, p.y);
+    }
+    return new double[] {minX, minY, maxX, maxY};
+  }
+
+  private static double sceneSize(double[][] boxes) {
+    double minX = Double.MAX_VALUE;
+    double minY = Double.MAX_VALUE;
+    double maxX = -Double.MAX_VALUE;
+    double maxY = -Double.MAX_VALUE;
+    for (double[] b : boxes) {
+      minX = Math.min(minX, b[0]);
+      minY = Math.min(minY, b[1]);
+      maxX = Math.max(maxX, b[2]);
+      maxY = Math.max(maxY, b[3]);
+    }
+    return Math.max(maxX - minX, maxY - minY);
+  }
+
+  private static boolean overlaps(double[] a, double[] b) {
+    return a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3];
+  }
+
+  /** The plane of a face as {@code nx, ny, nz, d}, or {@code null} if it has no area. */
+  private static double[] planeOf(Face face) {
+    List<Vector3> p = face.points;
+    for (int i = 2; i < p.size(); i++) {
+      Vector3 normal = p.get(i - 1).sub(p.get(0)).cross(p.get(i).sub(p.get(0)));
+      if (normal.length() > 0) {
+        Vector3 unit = normal.normalize();
+        return new double[] {unit.x, unit.y, unit.z, unit.dot(p.get(0))};
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Which of two faces has to be painted first.
+   *
+   * <p>
+   * Camera space has the camera at the origin looking towards growing z, so of two things on the
+   * same line of sight the one with the larger z is the one further away and has to be painted
+   * first. A face that lies wholly on the far side of the other's plane is therefore the one that
+   * goes first, and the far side is the side the camera is not on.
+   *
+   * @return a negative number if the first face goes first, a positive one if the second does, and
+   *         zero when neither plane separates them - they cut through each other, or are coplanar
+   */
+  private static int mustPaintFirst(Face first, double[] firstPlane, Face second,
+      double[] secondPlane, double tolerance) {
+    int bySecond = sideOf(first, secondPlane, tolerance);
+    if (bySecond != 0) {
+      // the first face is wholly on one side of the second's plane
+      return bySecond < 0 ? -1 : 1;
+    }
+    int byFirst = sideOf(second, firstPlane, tolerance);
+    if (byFirst != 0) {
+      return byFirst < 0 ? 1 : -1;
+    }
+    // Neither plane separates them. When they are the same plane, one solid is resting exactly on
+    // another - a box standing on the floor it is drawn with - and there is no depth between them
+    // to sort by. What settles it then is that a see through face is a tint over whatever it
+    // covers, so the solid one has to be underneath it. Left to the depth order, the box's own
+    // half transparent underside was painted between the floor's two triangles: it tinted the
+    // first one green and the second was then painted over the top of that in solid yellow, and
+    // the join between the two showed as a hard diagonal across the floor.
+    if (coplanar(second, firstPlane, tolerance)) {
+      boolean firstSolid = first.opacity >= 1.0;
+      boolean secondSolid = second.opacity >= 1.0;
+      if (firstSolid != secondSolid) {
+        return firstSolid ? -1 : 1;
+      }
+    }
+    return 0;
+  }
+
+  /** Whether every corner of a face lies in the given plane. */
+  private static boolean coplanar(Face face, double[] plane, double tolerance) {
+    if (plane == null) {
+      return false;
+    }
+    for (Vector3 p : face.points) {
+      double distance = plane[0] * p.x + plane[1] * p.y + plane[2] * p.z - plane[3];
+      if (Math.abs(distance) > tolerance) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Whether a face lies wholly on the far side of a plane, wholly on the near side, or neither.
+   *
+   * @return -1 when every corner is further from the camera than the plane, 1 when every corner is
+   *         nearer, and 0 when the face straddles the plane or lies in it
+   */
+  private static int sideOf(Face face, double[] plane, double tolerance) {
+    if (plane == null) {
+      return 0;
+    }
+    // the camera sits at the origin of this space, so the sign of -d says which side it is on
+    double cameraSide = -plane[3];
+    if (Math.abs(cameraSide) <= tolerance) {
+      return 0;
+    }
+    boolean anyNear = false;
+    boolean anyFar = false;
+    for (Vector3 p : face.points) {
+      double distance = plane[0] * p.x + plane[1] * p.y + plane[2] * p.z - plane[3];
+      if (Math.abs(distance) <= tolerance) {
+        continue;
+      }
+      if (distance * cameraSide > 0) {
+        anyNear = true;
+      } else {
+        anyFar = true;
+      }
+    }
+    if (anyNear && !anyFar) {
+      return 1;
+    }
+    if (anyFar && !anyNear) {
+      return -1;
+    }
+    return 0;
+  }
+
   // -------------------------------------------------------------- SVG writing
 
   private static String write(ObjectNode scene, List<Renderable> renderables, double width,
-      double height) {
+      double height, View view) {
     Collections.sort(renderables);
+    repairOrder(renderables);
 
     List<Vector3> all = new ArrayList<>();
     for (Renderable r : renderables) {
@@ -849,16 +1634,42 @@ public class SVGGraphics3D {
       minY = -1;
       maxY = 1;
     }
-    double rangeX = maxX - minX <= 0 ? 1 : maxX - minX;
-    double rangeY = maxY - minY <= 0 ? 1 : maxY - minY;
-    double scale = Math.min((width - 2 * PADDING) / rangeX, (height - 2 * PADDING) / rangeY);
-    double shiftX = PADDING + (width - 2 * PADDING - rangeX * scale) / 2.0;
-    double shiftY = PADDING + (height - 2 * PADDING - rangeY * scale) / 2.0;
+    // ImagePadding is room kept inside the picture for whatever sticks out of the drawing, in
+    // printer's points; without one the renderer keeps its own modest allowance for tick labels
+    double[] padding = insets(scene, "imagePadding", PADDING);
+    // ImageMargins is room kept outside the picture, so the canvas grows by it and the drawing
+    // stays the size it was asked to be
+    double[] margins = insets(scene, "imageMargins", 0);
 
+    double areaLeft = margins[0] + padding[0];
+    double areaBottom = margins[2] + padding[2];
+    double areaWidth = Math.max(1.0, width - padding[0] - padding[1]);
+    double areaHeight = Math.max(1.0, height - padding[2] - padding[3]);
+
+    // PlotRegion narrows the drawing to a part of that area, in scaled coordinates of it
+    if (scene.has("plotRegion")) {
+      JsonNode region = scene.get("plotRegion");
+      double x0 = region.get(0).get(0).asDouble();
+      double x1 = region.get(0).get(1).asDouble();
+      double y0 = region.get(1).get(0).asDouble();
+      double y1 = region.get(1).get(1).asDouble();
+      areaLeft += x0 * areaWidth;
+      areaBottom += y0 * areaHeight;
+      areaWidth = Math.max(1.0, (x1 - x0) * areaWidth);
+      areaHeight = Math.max(1.0, (y1 - y0) * areaHeight);
+    }
+
+    double canvasHeight = height + margins[2] + margins[3];
+    double centreX = areaLeft + areaWidth / 2.0;
+    double centreY = areaBottom + areaHeight / 2.0;
+
+    // The camera decides how big things come out; the drawing area only says where the middle of
+    // the picture is and how much of it there is to fill.
     for (Vector3 p : all) {
-      p.x = (p.x - minX) * scale + shiftX;
+      double scale = view.scaleAt(p.z, areaHeight);
+      p.x = centreX + p.x * scale;
       // SVG counts y downwards
-      p.y = height - ((p.y - minY) * scale + shiftY);
+      p.y = canvasHeight - (centreY + p.y * scale);
     }
     // a dot's radius is a world length and has to follow the same scaling
     for (Renderable r : renderables) {
@@ -873,6 +1684,11 @@ public class SVGGraphics3D {
           .attr("height", format(height))
           .attr("fill", hex(new Color(scene.get("background").asInt()))));
     }
+    // Prolog is drawn under the scene and Epilog over it. Both arrive already drawn, as a
+    // complete SVG picture the size of this one, so the inner <svg> is placed on top of this one
+    // rather than having its contents merged in: it keeps its own coordinates that way, and the
+    // interactive output can lay the very same picture over its canvas.
+    addOverlay(scene, "prolog", width, height, content);
     for (Renderable r : renderables) {
       content.add(r.toSVG());
     }
@@ -884,8 +1700,42 @@ public class SVGGraphics3D {
                   scene.has("labelFontSize") ? scene.get("labelFontSize").asDouble(12) * 1.2 : 14))
               .with(new UnescapedText(escape(scene.get("plotLabel").asText()))));
     }
-    return tag("svg").with(content).attr("xmlns", "http://www.w3.org/2000/svg").attr("width", width)
-        .attr("height", height).attr("viewBox", "0 0 " + width + " " + height).render();
+    addOverlay(scene, "epilog", width, height, content);
+
+    double[] canvasMargins = insets(scene, "imageMargins", 0);
+    double canvasWidth = width + canvasMargins[0] + canvasMargins[1];
+    double canvasTotalHeight = height + canvasMargins[2] + canvasMargins[3];
+    return tag("svg").with(content).attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("width", canvasWidth).attr("height", canvasTotalHeight)
+        .attr("viewBox", "0 0 " + canvasWidth + " " + canvasTotalHeight).render();
+  }
+
+  /**
+   * Four insets from the scene as left, right, bottom, top, or the same default on every side.
+   */
+  private static double[] insets(ObjectNode scene, String name, double fallback) {
+    if (scene.has(name)) {
+      JsonNode node = scene.get(name);
+      if (node.size() >= 4) {
+        return new double[] {node.get(0).asDouble(), node.get(1).asDouble(),
+            node.get(2).asDouble(), node.get(3).asDouble()};
+      }
+    }
+    return new double[] {fallback, fallback, fallback, fallback};
+  }
+
+  /** Place a {@code Prolog} or {@code Epilog} picture over the drawing, at its own size. */
+  private static void addOverlay(ObjectNode scene, String name, double width, double height,
+      List<DomContent> content) {
+    if (!scene.has(name)) {
+      return;
+    }
+    String svg = scene.get(name).asText();
+    if (svg == null || svg.isEmpty()) {
+      return;
+    }
+    // the overlay is already a complete picture of the right size, so it goes in as it is
+    content.add(new UnescapedText(svg));
   }
 
   // ------------------------------------------------------------------ helpers
@@ -902,14 +1752,32 @@ public class SVGGraphics3D {
     return new Vector3(q.x * dataScale.x, q.y * dataScale.y, q.z * dataScale.z);
   }
 
-  private static void addFace(List<Renderable> out, View view, List<Light> lights, Color base,
+  private static void addFace(List<Renderable> out, View view, List<Light> lights, Surface base,
       double opacity, Color edge, double edgeWidth, Vector3... corners) {
+    addShadedFace(out, view, lights, base, opacity, edge, edgeWidth, null, corners);
+  }
+
+  /**
+   * Adds one face, lit by {@code shadingNormal} when the scene supplied one.
+   *
+   * <p>
+   * The shape of the face still comes from its corners; only the direction it is lit from is
+   * taken from the sampling, so that a smoothly sampled surface is shaded as the curve it stands
+   * for rather than as the flat triangles it is drawn with.
+   */
+  private static void addShadedFace(List<Renderable> out, View view, List<Light> lights,
+      Surface base, double opacity, Color edge, double edgeWidth, Vector3 shadingNormal,
+      Vector3... corners) {
     if (corners.length < 3) {
       return;
     }
     Vector3 normal = corners[1].sub(corners[0]).cross(corners[2].sub(corners[0]));
     if (normal.length() == 0) {
       return;
+    }
+    if (shadingNormal != null) {
+      // keep the side the flat face is facing, so a back face still takes the back colour
+      normal = shadingNormal.dot(normal) < 0 ? shadingNormal.scale(-1) : shadingNormal;
     }
     Color lit = shade(base, normal, lights, view);
     List<Vector3> projected = new ArrayList<>(corners.length);
@@ -920,7 +1788,7 @@ public class SVGGraphics3D {
   }
 
   /** Turn a grid of points into quads, as a tessellated sphere or tube produces. */
-  private static void quads(Vector3[][] grid, Color color, double opacity, View view,
+  private static void quads(Vector3[][] grid, Surface color, double opacity, View view,
       List<Light> lights, List<Renderable> out) {
     for (int i = 0; i + 1 < grid.length; i++) {
       for (int j = 0; j + 1 < grid[i].length; j++) {
@@ -1081,6 +1949,23 @@ public class SVGGraphics3D {
 
   private static double pick(int sign, double low, double high) {
     return sign > 0 ? high : low;
+  }
+
+  /** A fixed length run of numbers from the scene, or {@code null} when it is not there. */
+  private static double[] numbers(JsonNode node, int count) {
+    if (node == null || node.size() != count) {
+      return null;
+    }
+    double[] out = new double[count];
+    for (int i = 0; i < count; i++) {
+      out[i] = node.get(i).asDouble();
+    }
+    return out;
+  }
+
+  /** A string field of the scene, or {@code null}. */
+  private static String text(ObjectNode scene, String name) {
+    return scene.has(name) ? scene.get(name).asText() : null;
   }
 
   private static Vector3 vector(JsonNode node, Vector3 fallback) {

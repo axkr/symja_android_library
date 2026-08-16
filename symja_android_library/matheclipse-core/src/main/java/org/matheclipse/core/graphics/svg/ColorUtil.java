@@ -82,6 +82,29 @@ public final class ColorUtil {
         return rgb(0.94, 0.91, 0.88);
       case ID.LightGray:
         return rgb(0.85, 0.85, 0.85);
+      // the Standard* family, which reads on both light and dark backgrounds
+      case ID.StandardRed:
+        return rgb(0.93, 0.27, 0.27);
+      case ID.StandardGreen:
+        return rgb(0.14, 0.8, 0.14);
+      case ID.StandardBlue:
+        return rgb(0.4, 0.6, 1);
+      case ID.StandardGray:
+        return rgb(0.62, 0.62, 0.62);
+      case ID.StandardCyan:
+        return rgb(0, 0.74, 0.74);
+      case ID.StandardMagenta:
+        return rgb(0.95, 0.43, 0.96);
+      case ID.StandardYellow:
+        return rgb(1, 0.75, 0);
+      case ID.StandardBrown:
+        return rgb(0.67, 0.54, 0.42);
+      case ID.StandardOrange:
+        return rgb(0.98, 0.56, 0.17);
+      case ID.StandardPink:
+        return rgb(1, 0.51, 0.51);
+      case ID.StandardPurple:
+        return rgb(0.8, 0.3, 0.8);
       case ID.DarkGray:
         return rgb(0.25, 0.25, 0.25);
       case ID.Transparent:

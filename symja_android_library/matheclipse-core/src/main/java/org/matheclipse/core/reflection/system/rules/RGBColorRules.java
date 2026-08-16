@@ -19,7 +19,7 @@ public class RGBColorRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
    * </ul>
    */
-  final public static int[] SIZES = {24, 0};
+  final public static int[] SIZES = {35, 0};
 
   final public static IAST RULES = List(IInit(RGBColor, SIZES),
       // Black=RGBColor(0.0,0.0,0.0)
@@ -69,5 +69,27 @@ public class RGBColorRules {
       // LightRed=RGBColor(1.0,0.85,0.85)
       ISet(LightRed, RGBColor(CD1, num(0.85), num(0.85))),
       // LightYellow=RGBColor(1.0,1.0,0.85)
-      ISet(LightYellow, RGBColor(CD1, CD1, num(0.85))));
+      ISet(LightYellow, RGBColor(CD1, CD1, num(0.85))),
+      // StandardRed=RGBColor(0.93,0.27,0.27)
+      ISet(StandardRed, RGBColor(num(0.93), num(0.27), num(0.27))),
+      // StandardGreen=RGBColor(0.14,0.8,0.14)
+      ISet(StandardGreen, RGBColor(num(0.14), num(0.8), num(0.14))),
+      // StandardBlue=RGBColor(0.4,0.6,1.0)
+      ISet(StandardBlue, RGBColor(num(0.4), num(0.6), CD1)),
+      // StandardGray=RGBColor(0.62,0.62,0.62)
+      ISet(StandardGray, RGBColor(num(0.62), num(0.62), num(0.62))),
+      // StandardCyan=RGBColor(0.0,0.74,0.74)
+      ISet(StandardCyan, RGBColor(CD0, num(0.74), num(0.74))),
+      // StandardMagenta=RGBColor(0.95,0.43,0.96)
+      ISet(StandardMagenta, RGBColor(num(0.95), num(0.43), num(0.96))),
+      // StandardYellow=RGBColor(1.0,0.75,0.0)
+      ISet(StandardYellow, RGBColor(CD1, num(0.75), CD0)),
+      // StandardBrown=RGBColor(0.67,0.54,0.42)
+      ISet(StandardBrown, RGBColor(num(0.67), num(0.54), num(0.42))),
+      // StandardOrange=RGBColor(0.98,0.56,0.17)
+      ISet(StandardOrange, RGBColor(num(0.98), num(0.56), num(0.17))),
+      // StandardPink=RGBColor(1.0,0.51,0.51)
+      ISet(StandardPink, RGBColor(CD1, num(0.51), num(0.51))),
+      // StandardPurple=RGBColor(0.8,0.3,0.8)
+      ISet(StandardPurple, RGBColor(num(0.8), num(0.3), num(0.8))));
 }

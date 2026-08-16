@@ -1484,10 +1484,40 @@ public final class PrimitiveCollector {
     }
     if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
-      return new double[] {ColorUtil.dbl(list.arg1(), Double.NaN),
-          ColorUtil.dbl(list.arg2(), Double.NaN)};
+      return new double[] {coordinate(list.arg1(), true), coordinate(list.arg2(), false)};
     }
     return new double[] {Double.NaN, Double.NaN};
+  }
+
+  /**
+   * One coordinate of a position, which may be named rather than given as a number.
+   *
+   * <p>
+   * A corner of the drawing area can be written with the words for it: {@code {Right, Bottom}}
+   * means the same place as {@code {1, 0}} does in scaled coordinates. Read as a number those
+   * words are nothing, and anything positioned with them was quietly dropped.
+   *
+   * @param horizontal whether this is the first coordinate, since {@code Center} is the middle of
+   *        whichever direction it is used in and the other words only belong to one of them
+   */
+  private static double coordinate(IExpr expr, boolean horizontal) {
+    if (expr.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) expr).ordinal()) {
+        case ID.Left:
+        case ID.Bottom:
+          return 0.0;
+        case ID.Right:
+        case ID.Top:
+          return 1.0;
+        case ID.Center:
+          return 0.5;
+        case ID.Axis:
+          return horizontal ? 0.5 : 0.0;
+        default:
+          break;
+      }
+    }
+    return ColorUtil.dbl(expr, Double.NaN);
   }
 
   /** A flat list of coordinate pairs. */

@@ -65,6 +65,12 @@ public final class Style3D implements Cloneable {
    */
   public boolean colorSet = false;
 
+  /**
+   * The colour of a face seen from behind, as {@code FaceForm[front, back]} asks for, or
+   * {@code null} when the same colour is used whichever side is being looked at.
+   */
+  public Color backFaceColor = null;
+
   /** {@code FaceForm} override for filled primitives, or {@code null} when unset. */
   public Color faceColor = null;
 

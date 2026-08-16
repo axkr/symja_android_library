@@ -14532,6 +14532,36 @@ public class S {
       S.initFinalSymbol("StadiumShape", ID.StadiumShape);
 
   /**
+   * StandardBlue(x) - TODO describe `StandardBlue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardBlue.md">StandardBlue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardBlue =
+      S.initFinalSymbol("StandardBlue", ID.StandardBlue);
+
+  /**
+   * StandardBrown(x) - TODO describe `StandardBrown`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardBrown.md">StandardBrown
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardBrown =
+      S.initFinalSymbol("StandardBrown", ID.StandardBrown);
+
+  /**
+   * StandardCyan(x) - TODO describe `StandardCyan`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardCyan.md">StandardCyan
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardCyan =
+      S.initFinalSymbol("StandardCyan", ID.StandardCyan);
+
+  /**
    * StandardDeviation(list) - computes the standard deviation of `list`. `list` may consist of
    * numerical values or symbols. Numerical values may be real or complex.
    * 
@@ -14546,6 +14576,26 @@ public class S {
       S.initFinalSymbol("StandardForm", ID.StandardForm);
 
   /**
+   * StandardGray(x) - TODO describe `StandardGray`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardGray.md">StandardGray
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardGray =
+      S.initFinalSymbol("StandardGray", ID.StandardGray);
+
+  /**
+   * StandardGreen(x) - TODO describe `StandardGreen`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardGreen.md">StandardGreen
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardGreen =
+      S.initFinalSymbol("StandardGreen", ID.StandardGreen);
+
+  /**
    * Standardize(list-of-values) - shifts the `list-of-values` by `Mean(list-of-values)`and scales
    * by `StandardDeviation(list-of-values)`
    * 
@@ -14554,6 +14604,65 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Standardize = S.initFinalSymbol("Standardize", ID.Standardize);
+
+  /**
+   * StandardMagenta(x) - TODO describe `StandardMagenta`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardMagenta.md">StandardMagenta
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardMagenta =
+      S.initFinalSymbol("StandardMagenta", ID.StandardMagenta);
+
+  /**
+   * StandardOrange(x) - TODO describe `StandardOrange`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardOrange.md">StandardOrange
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardOrange =
+      S.initFinalSymbol("StandardOrange", ID.StandardOrange);
+
+  /**
+   * StandardPink(x) - TODO describe `StandardPink`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardPink.md">StandardPink
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardPink =
+      S.initFinalSymbol("StandardPink", ID.StandardPink);
+
+  /**
+   * StandardPurple(x) - TODO describe `StandardPurple`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardPurple.md">StandardPurple
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardPurple =
+      S.initFinalSymbol("StandardPurple", ID.StandardPurple);
+
+  /**
+   * StandardRed(x) - TODO describe `StandardRed`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardRed.md">StandardRed
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardRed = S.initFinalSymbol("StandardRed", ID.StandardRed);
+
+  /**
+   * StandardYellow(x) - TODO describe `StandardYellow`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardYellow.md">StandardYellow
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StandardYellow =
+      S.initFinalSymbol("StandardYellow", ID.StandardYellow);
 
   public final static IBuiltInSymbol Star = S.initFinalSymbol("Star", ID.Star);
 
