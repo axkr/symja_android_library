@@ -200,7 +200,21 @@
         } else {
             geometry.computeVertexNormals();
         }
-        var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
+        var material = surfaceMaterial(el);
+        var mesh;
+        if (typeof el.backColor === 'number') {
+            // FaceForm[front, back] gives the two sides of a surface their own colour. One
+            // material can only carry one, so the far side is drawn as a second mesh over the
+            // same geometry, each material limited to the side it is meant for.
+            material.side = THREE.FrontSide;
+            mesh = new THREE.Mesh(geometry, material);
+            var backMaterial = surfaceMaterial(el);
+            backMaterial.color = new THREE.Color(el.backColor);
+            backMaterial.side = THREE.BackSide;
+            mesh.add(new THREE.Mesh(geometry, backMaterial));
+        } else {
+            mesh = new THREE.Mesh(geometry, material);
+        }
         if (el.showMesh) {
             var edges = new THREE.EdgesGeometry(geometry, 1);
             var color = typeof el.edgeColor === 'number' ? el.edgeColor : 0x333333;
@@ -573,10 +587,118 @@
         observer.observe(container);
     }
 
+    /**
+     * Lay a Prolog or Epilog picture over the canvas.
+     *
+     * The converter has already drawn it, with the ordinary two dimensional renderer and at the
+     * size of this view, so there is nothing to interpret here: it is placed over the same box the
+     * canvas occupies. Clicks pass through it, so it never gets in the way of turning the scene.
+     */
+    function addFlatOverlay(container, svg, width, height) {
+        if (!svg) { return; }
+        var layer = document.createElement('div');
+        layer.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;'
+            + 'width:' + width + 'px;height:' + height + 'px;';
+        layer.innerHTML = svg;
+        var picture = layer.firstElementChild;
+        if (picture) {
+            // The overlay is drawn in scaled coordinates, so it belongs to the whole view however
+            // large that turns out to be. Left at the size it was drawn at it would sit in a
+            // corner of a bigger canvas, which is where the label ended up.
+            picture.removeAttribute('style');
+            picture.setAttribute('width', '100%');
+            picture.setAttribute('height', '100%');
+            picture.setAttribute('preserveAspectRatio', 'none');
+        }
+        container.appendChild(layer);
+    }
+
+    /** Four insets from the scene as left, right, bottom, top, or zero on every side. */
+    function insets(spec) {
+        if (spec && spec.length >= 4) { return spec; }
+        return [0, 0, 0, 0];
+    }
+
+    /** The six sides of the scene's box, as half spaces that keep what is inside it. */
+    function boxPlanes(visualMin, visualMax) {
+        var THREE = global.THREE;
+        return [
+            new THREE.Plane(new THREE.Vector3(1, 0, 0), -visualMin.x),
+            new THREE.Plane(new THREE.Vector3(-1, 0, 0), visualMax.x),
+            new THREE.Plane(new THREE.Vector3(0, 1, 0), -visualMin.y),
+            new THREE.Plane(new THREE.Vector3(0, -1, 0), visualMax.y),
+            new THREE.Plane(new THREE.Vector3(0, 0, 1), -visualMin.z),
+            new THREE.Plane(new THREE.Vector3(0, 0, -1), visualMax.z)
+        ];
+    }
+
+    /**
+     * Draw the clipping planes themselves, which is what ClipPlanesStyle asks for.
+     *
+     * Each plane is a square big enough to cross the scene, laid in the plane and cut down by
+     * the others, so what shows is the piece that fills the cut it made. Without a style nothing
+     * is drawn, which is what the option defaults to.
+     */
+    function addClipPlaneSurfaces(parent, data, clipPlanes, scaleVector, visualMin, visualMax) {
+        var THREE = global.THREE;
+        if (!data.clipPlanesStyle) { return; }
+        var size = new THREE.Vector3().subVectors(visualMax, visualMin);
+        var reach = size.length();
+        var centre = new THREE.Vector3().addVectors(visualMin, visualMax).multiplyScalar(0.5);
+        for (var i = 0; i < clipPlanes.length && i < data.clipPlanesStyle.length; i++) {
+            var style = data.clipPlanesStyle[i];
+            var material = new THREE.MeshBasicMaterial({
+                color: style.color,
+                transparent: style.opacity < 1.0,
+                opacity: typeof style.opacity === 'number' ? style.opacity : 1.0,
+                side: THREE.DoubleSide,
+                // cut by the other planes, but never by its own, and kept inside the box so it
+                // fills the cut it made rather than sweeping across the whole view
+                clippingPlanes: clipPlanes.filter(function (p, j) { return j !== i; })
+                    .concat(boxPlanes(visualMin, visualMax))
+            });
+            var quad = new THREE.Mesh(new THREE.PlaneGeometry(reach, reach), material);
+            var plane = clipPlanes[i];
+            // face along the plane's normal, and sit where it passes closest to the scene
+            quad.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal);
+            quad.position.copy(plane.projectPoint(centre, new THREE.Vector3()));
+            // the geometry is added to the scaled group, so undo that scaling for this square
+            quad.scale.set(1 / scaleVector.x, 1 / scaleVector.y, 1 / scaleVector.z);
+            parent.add(quad);
+        }
+    }
+
     function buildScene(container, data) {
         var THREE = global.THREE;
         var width = container.clientWidth || 360;
         var height = container.clientHeight || 360;
+
+        // ImageMargins is room kept outside the picture, so it is left around the whole box;
+        // ImagePadding is room kept inside it and PlotRegion narrows the drawing further. All
+        // three are worked out the same way here as they are for the static picture, so the two
+        // outputs frame the scene alike.
+        var margins = insets(data.imageMargins);
+        var padding = insets(data.imagePadding);
+        if (data.imageMargins) {
+            container.style.margin = margins[3] + 'px ' + margins[1] + 'px '
+                + margins[2] + 'px ' + margins[0] + 'px';
+        }
+        var areaLeft = padding[0];
+        var areaBottom = padding[2];
+        var areaWidth = Math.max(1, width - padding[0] - padding[1]);
+        var areaHeight = Math.max(1, height - padding[2] - padding[3]);
+        if (data.plotRegion && data.plotRegion.length >= 2) {
+            var rx = data.plotRegion[0];
+            var ry = data.plotRegion[1];
+            areaLeft += rx[0] * areaWidth;
+            areaBottom += ry[0] * areaHeight;
+            areaWidth = Math.max(1, (rx[1] - rx[0]) * areaWidth);
+            areaHeight = Math.max(1, (ry[1] - ry[0]) * areaHeight);
+        }
+        var inset = areaWidth !== width || areaHeight !== height;
+        if (inset && !container.style.position) { container.style.position = 'relative'; }
+        width = areaWidth;
+        height = areaHeight;
 
         var scene = new THREE.Scene();
         if (typeof data.background === 'number') {
@@ -589,7 +711,17 @@
         renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2));
         renderer.setSize(width, height);
         while (container.firstChild) { container.removeChild(container.firstChild); }
+        // the overlays are positioned against the container, so it has to be a positioned box
+        if (!container.style.position) { container.style.position = 'relative'; }
+        addFlatOverlay(container, data.prolog, width, height);
+        if (inset) {
+            renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.left = areaLeft + 'px';
+            // the drawing area is measured from the bottom, the page from the top
+            renderer.domElement.style.bottom = areaBottom + 'px';
+        }
         container.appendChild(renderer.domElement);
+        addFlatOverlay(container, data.epilog, width, height);
 
         // --- the data range, and the box the scene is drawn in
 
@@ -610,6 +742,25 @@
                 dataSize.y > 1e-12 ? (ratios[1] / maxRatio) * longest / dataSize.y : 1,
                 dataSize.z > 1e-12 ? (ratios[2] / maxRatio) * longest / dataSize.z : 1);
         }
+
+        // ClipPlanes cuts the contents down to a half space each. The planes are given in the
+        // data's own coordinates and the contents are drawn in a box that has been squared up, so
+        // the normals follow the same scaling: scaling a point by s turns n.p + d into
+        // (n/s).p' + d. They are applied to the contents alone, not through the renderer, so the
+        // box and the axes around the scene stay whole.
+        var clipPlanes = [];
+        if (data.clipPlanes) {
+            for (var ci = 0; ci < data.clipPlanes.length; ci++) {
+                var spec = data.clipPlanes[ci];
+                if (!spec || spec.length < 4) { continue; }
+                var normal = new THREE.Vector3(spec[0] / scaleVector.x, spec[1] / scaleVector.y,
+                    spec[2] / scaleVector.z);
+                var length = normal.length();
+                if (length < 1e-12) { continue; }
+                clipPlanes.push(new THREE.Plane(normal.divideScalar(length), spec[3] / length));
+            }
+        }
+        if (clipPlanes.length > 0) { renderer.localClippingEnabled = true; }
 
         var objects = new THREE.Group();
         objects.scale.copy(scaleVector);
@@ -681,6 +832,20 @@
                 objects.add(built);
             }
         }
+        if (clipPlanes.length > 0) {
+            // the contents are cut; the box and the axes are added elsewhere and stay whole
+            objects.traverse(function (node) {
+                if (node.material) {
+                    var materials = Array.isArray(node.material) ? node.material : [node.material];
+                    for (var mi = 0; mi < materials.length; mi++) {
+                        materials[mi].clippingPlanes = clipPlanes;
+                        materials[mi].clipShadows = true;
+                    }
+                }
+            });
+            addClipPlaneSurfaces(objects, data, clipPlanes, scaleVector, visualMin, visualMax);
+        }
+
         scene.add(objects);
         scene.add(markers);
 
@@ -700,28 +865,66 @@
                 .multiply(scaleVector)
             : center;
 
+        // SphericalRegion fits the sphere around the scene rather than the scene itself, so the
+        // picture keeps its size however the scene is turned
+        var spherical = data.sphericalRegion === true;
+        var radius = visualSize.length() / 2;
+
         var camera;
         if (orthographic) {
-            var half = visualSize.length() * 0.6;
+            var half = (spherical ? radius : visualSize.length() * 0.6) * 1.05;
             var aspect = width / height;
             camera = new THREE.OrthographicCamera(-half * aspect, half * aspect, half, -half,
                 0.01, distance * 100);
         } else {
             camera = new THREE.PerspectiveCamera(fov, width / height, maxDim * 0.01, maxDim * 100);
             // widen the distance if the box would not fit in the field of view
-            var fitDistance = visualSize.length() / (2 * Math.tan(fov * Math.PI / 360));
+            var fitDistance = spherical
+                ? radius / Math.sin(fov * Math.PI / 360)
+                : visualSize.length() / (2 * Math.tan(fov * Math.PI / 360));
             distance = Math.max(distance, fitDistance * 1.05);
+        }
+        // ViewRange keeps only what lies between two distances from the camera
+        if (data.viewRange && data.viewRange.length >= 2) {
+            camera.near = Math.max(1e-6, data.viewRange[0]);
+            camera.far = data.viewRange[1];
+            camera.updateProjectionMatrix();
         }
         camera.up.set(viewVertical[0], viewVertical[1], viewVertical[2]);
         camera.position.copy(target).add(direction.clone().normalize().multiplyScalar(distance));
         camera.lookAt(target);
         scene.add(camera);
 
+        // ViewMatrix says outright what the other view options describe. Wolfram writes its
+        // matrices a row at a time, which is the order Matrix4.set takes them in.
+        var fixedCamera = false;
+        if (data.viewTransform && data.viewTransform.length === 16) {
+            var t = data.viewTransform;
+            var view = new THREE.Matrix4().set(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7],
+                t[8], t[9], t[10], t[11], t[12], t[13], t[14], t[15]);
+            camera.matrixAutoUpdate = false;
+            camera.matrixWorldInverse.copy(view);
+            camera.matrixWorld.copy(view).invert();
+            camera.matrix.copy(camera.matrixWorld);
+            var p = data.viewProjectionMatrix;
+            if (p && p.length === 16) {
+                camera.projectionMatrix.set(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7],
+                    p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
+                camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+            }
+            fixedCamera = true;
+        }
+
         var controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.12;
         controls.target.copy(target);
-        controls.update();
+        if (fixedCamera) {
+            // turning the scene would undo the matrices the call gave
+            controls.enabled = false;
+        } else {
+            controls.update();
+        }
 
         // --- lights
 
