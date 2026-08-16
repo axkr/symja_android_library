@@ -21,6 +21,7 @@
 <link rel="stylesheet" type="text/css" media="print" href="/media/css/styles_print.css" />
  
 <link rel="stylesheet" type="text/css" href="/media/css/font-awesome.min.css" />
+<link rel="stylesheet" type="text/css" href="/media/js/katex/katex.min.css" />
 
 <link rel="shortcut icon" href="/favicon.ico" /> 
 <meta name="theme-color" content="#ffffff" />
@@ -55,7 +56,9 @@ import * as THREE_MODULE from 'three';
   }
 </script>
  
-<script type="text/javascript" src="/media/js/mathjax/MathJax.js?config=MML_HTMLorMML&amp;delayStartupUntil=configured"></script>
+<script type="text/javascript" src="/media/js/katex/katex.min.js"></script>
+<script type="text/javascript" src="/media/js/katex/auto-render.min.js"></script>
+<script type="text/javascript" src="/media/js/symja_katex.js"></script>
 
 <script type="text/javascript" src="/media/js/message.js"></script>
 <script type="text/javascript" src="/media/js/authentication.js"></script>
@@ -63,6 +66,7 @@ import * as THREE_MODULE from 'three';
 <script type="text/javascript" src="/media/js/utils.js"></script>
 <script type="text/javascript" src="/media/js/symja.js"></script> 
 <script type="text/javascript" src="/media/js/symja_webgl.js"></script>
+<script type="text/javascript" src="/media/js/notebook.js"></script>
 <script type="text/javascript" src="/media/js/doc.js"></script>
 
 
@@ -82,13 +86,13 @@ import * as THREE_MODULE from 'three';
 <header>
 <div id="headerleft"> 
   <img id="logo" class="load" src="/media/img/logo.png" height="32" alt="Logo" />
- <!--  <img id="logotext" class="load" src="/media/img/logo-text.svg" height="26" alt="Symja" />
+ <!--  <img id="logotext" class="load" src="/media/img/logo-text.svg" height="26" alt="Symja" /> -->
   <div class="menu">
-    <a href="javascript:showOpen()" title="Open"><i class="fa fa-file-text"></i></a>
-    <a href="javascript:showSave()" title="Save"><i class="fa fa-download"></i></a>
-    <a href="javascript:createLink()" title="Generate hash"><i class="fa fa-share-alt"></i></a>
+    <a href="javascript:openNotebook()" title="Open notebook (*.ipynb)"><i class="fa fa-folder-open-o"></i></a>
+    <a href="javascript:showSaveNotebook()" title="Save notebook (*.ipynb)"><i class="fa fa-floppy-o"></i></a>
+    <a href="javascript:insertTextCell()" title="Add text cell"><i class="fa fa-paragraph"></i></a>
+    <a href="javascript:runAllCells()" class="separate-left" title="Run all cells"><i class="fa fa-play"></i></a>
    </div>
-    -->
 </div>
 
 <div id="headerright">
@@ -99,6 +103,8 @@ import * as THREE_MODULE from 'three';
 <!-- Login -->
 <script type="text/javascript">
   var REQUIRE_LOGIN = false;
+  // this page is served by MMAServletServer / MMAAJAXQueryServlet, which parses Mathematica syntax
+  var SYMJA_SYNTAX = 'mma';
 </script>
 
 
@@ -112,7 +118,7 @@ import * as THREE_MODULE from 'three';
 <h1>Welcome to Symja computer algebra system!</h1>
 <p>Enter queries and evaluate them by pressing <code>Shift</code> + <code>Return</code>.</p>
 <p>See the <a href="javascript:showGalleryMMA()">gallery</a> for some examples or the <a href="javascript:showDoc()">documentation</a> for a full list of supported functions.</p>
-<p>Symja uses <a href="http://www.mathjax.org/" target="_blank">MathJax</a> to display beautiful math.
+<p>Symja uses <a href="https://katex.org/" target="_blank">KaTeX</a> to display beautiful math.
 Please contact us on <a href="https://discord.gg/tYknzr2qam" target="_blank">Discord Chat</a>.</p>
 <div style="position:absolute;right:0;bottom:-2.8em;">
   <p style="text-align:right;color:#3f3f3f;"><label><input type="checkbox" id="hideStartupMsg" />Do not show on startup.</label></p>
@@ -163,15 +169,15 @@ A new password will be sent to your e-mail address.</p></span></td></tr>
 </div>
 
 <div id="save" class="dialog" style="display: none">
-	<h1>Save worksheet</h1>
-	
+	<h1>Save notebook</h1>
+
 	<form id="saveForm" action="javascript:;">
 	<table>
-	<tr><th><label for="id_name">Name:</label></th><td><input id="id_name" maxlength="30" name="name" type="text" /><br /><span class="helptext"><p class="helptext">Worksheet names are not case-sensitive.</p></span></td></tr>
+	<tr><th><label for="id_name">File name:</label></th><td><input id="id_name" maxlength="120" name="name" type="text" /><br /><span class="helptext"><p class="helptext">The notebook is downloaded to your disk as a Jupyter <code>*.ipynb</code> file.</p></span></td></tr>
 	<tr>
 		<td class="submit" colspan="2">
-			<input type="button" class="submit" onclick="save()" value="Save" />
-			<input type="button" class="cancel" onclick="cancelSave()" value="Cancel" />
+			<input type="button" class="submit" onclick="saveNotebook()" value="Save" />
+			<input type="button" class="cancel" onclick="cancelSaveNotebook()" value="Cancel" />
 		</td>
 	</tr>
 	</table>
@@ -207,10 +213,5 @@ A new password will be sent to your e-mail address.</p></span></td></tr>
 	</div>
 </div>
  
-<div style="white-space: nowrap;" id="calc_all">
-<span class="calc_container" style="font-size: 0.90em; font-family: default;"></span><span class="calc_next"> </span><br />
-<span class="calc_below"> </span>
-</div> 
-
 </body>
 </html>

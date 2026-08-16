@@ -70,216 +70,29 @@ function prepareText(text) {
 	*/
 }
 
-function getDimensions(math, callback) {
-	var all = $('calc_all').cloneNode(true);
-	all.id = null;
-	var body = $$('body')[0];
-	body.appendChild(all);
-	var container = all.select('.calc_container')[0];
-	container.appendChild(translateDOMElement(math));
-	
-	MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
-	MathJax.Hub.Queue(function() {
-		var pos = container.cumulativeOffset();
-		var next = all.select('.calc_next')[0].cumulativeOffset();
-		var below = all.select('.calc_below')[0].cumulativeOffset();
-		var width = next.left - pos.left + 4;
-		var height = below.top - pos.top + 20;
-		body.removeChild(all);
-		callback(width, height);
-	});
-}
-
-function drawMeshGradient(ctx, points) {
-	function color(c, a) {
-		var result = 'rgba(' + Math.round(c[0]*255) + ', ' + Math.round(c[1]*255) + ', ' +
-			Math.round(c[2]*255) + ', ' + a + ')';
-		return result;
-	}
-	
-	var grad1 = ctx.createLinearGradient(0, 0, 0.5, 0.5);
-	grad1.addColorStop(0, color(points[0][1], 1));
-	grad1.addColorStop(1, color(points[0][1], 0));
-	var grad2 = ctx.createLinearGradient(1, 0, 0, 0);
-	grad2.addColorStop(0, color(points[1][1], 1));
-	grad2.addColorStop(1, color(points[1][1], 0));
-	var grad3 = ctx.createLinearGradient(0, 1, 0, 0);
-	grad3.addColorStop(0, color(points[2][1], 1));
-	grad3.addColorStop(1, color(points[2][1], 0));
-	
-	ctx.save();
-	ctx.setTransform(points[1][0][0]-points[0][0][0], points[1][0][1]-points[0][0][1],
-			points[2][0][0]-points[0][0][0], points[2][0][1]-points[0][0][1], points[0][0][0], points[0][0][1]);
-	
-	ctx.beginPath();
-	ctx.moveTo(0, 0);
-	ctx.lineTo(1, 0);
-	ctx.lineTo(0, 1);
-	ctx.closePath();
-
-	ctx.globalCompositeOperation = "lighter";
-	ctx.fillStyle = grad1;
-	ctx.fill();
-	ctx.fillStyle = grad2;
-	ctx.fill();
-	ctx.fillStyle = grad3;
-	ctx.fill();
-	ctx.restore();
-}
-
-function createMathNode(nodeName) {
-	if (['svg', 'g', 'rect', 'circle', 'polyline', 'polygon', 'path', 'ellipse', 'foreignObject'].include(nodeName))
-		return document.createElementNS("http://www.w3.org/2000/svg", nodeName);
-	else {
-		return document.createElement(nodeName);
-	}
-}
-
-var objectsPrefix = 'math_object_';
-var objectsCount = 0;
-var objects = {};
-
-function translateDOMElement(element, svg) {
-	if (element.nodeType == 3) {
-		var text = element.nodeValue;
-		return $T(text);
-	}
-	var dom = null;
-	var nodeName = element.nodeName;
-	if (nodeName != 'meshgradient' && nodeName != 'graphics3d') {
-		dom = createMathNode(element.nodeName);
-		for (var i = 0; i < element.attributes.length; ++i) {
-			var attr = element.attributes[i];
-			if (attr.nodeName != 'ox' && attr.nodeName != 'oy')
-				dom.setAttribute(attr.nodeName, attr.nodeValue);
-		}
-	}
-	if (nodeName == 'foreignObject') {
-		dom.setAttribute('width', svg.getAttribute('width'));
-		dom.setAttribute('height', svg.getAttribute('height'));
-		dom.setAttribute('style', dom.getAttribute('style') + '; text-align: left; padding-left: 2px; padding-right: 2px;');
-		var ox = parseFloat(element.getAttribute('ox'));
-		var oy = parseFloat(element.getAttribute('oy'));
-		dom.setAttribute('ox', ox);
-		dom.setAttribute('oy', oy);
-	}
-	if (nodeName == 'mo') {
-		var op = element.childNodes[0].nodeValue;
-		if (op == '[' || op == ']' || op == '{' || op == '}' || op == String.fromCharCode(12314) || op == String.fromCharCode(12315))
-			dom.setAttribute('maxsize', '3');
-	}
-	if (nodeName == 'meshgradient') {
-		if (!MathJax.Hub.Browser.isOpera) {
-			var data = element.getAttribute('data').evalJSON();
-			var div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-			var foreign = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
-			foreign.setAttribute('width', svg.getAttribute('width'));
-			foreign.setAttribute('height', svg.getAttribute('height'));
-			foreign.setAttribute('x', '0px');
-			foreign.setAttribute('y', '0px');
-			foreign.appendChild(div);
-			
-			var canvas = createMathNode('canvas');
-			canvas.setAttribute('width', svg.getAttribute('width'));
-			canvas.setAttribute('height', svg.getAttribute('height'));
-			div.appendChild(canvas);
-			
-			var ctx = canvas.getContext('2d');
-			for (var index = 0; index < data.length; ++index) {
-				var points = data[index];
-				if (points.length == 3) {
-					drawMeshGradient(ctx, points);
-				}
-			}
-			
-			dom = foreign;
-		}
-	}
-	var object = null;
-//	if (nodeName == 'graphics3d') {
-//		var data = element.getAttribute('data').evalJSON();
-//		var div = document.createElement('div');
-//		drawGraphics3D(div, data);
-//		dom = div;
-//	}
-	if (nodeName == 'svg') { //} || nodeName == 'graphics3d') {
-		// create <mspace> that will contain the graphics
-		object = createMathNode('mspace');
-		var width, height;
-		if (nodeName == 'svg') {
-			width = dom.getAttribute('width');
-			height = dom.getAttribute('height');
-		} else {
-			// TODO: calculate appropriate height and recalculate on every view change 
-			width = height = '400';
-		}
-		object.setAttribute('width', width  + 'px');
-		object.setAttribute('height', height + 'px');
-	}
-	if (nodeName == 'svg')
-		svg = dom;
-	var rows = [[]];
-	$A(element.childNodes).each(function(child) {
-		if (child.nodeName == 'mspace' && child.getAttribute('linebreak') == 'newline')
-			rows.push([]);
-		else
-			rows[rows.length - 1].push(child);
-	});
-	var childParent = dom;
-	if (nodeName == 'math') {
-		var mstyle = createMathNode('mstyle');
-		mstyle.setAttribute('displaystyle', 'true');
-		mstyle.setAttribute('mathvariant', 'sans-serif');
-		dom.appendChild(mstyle);
-		childParent = mstyle;
-	}
-	if (rows.length > 1) {
-		var mtable = createMathNode('mtable');
-		mtable.setAttribute('rowspacing', '0');
-		mtable.setAttribute('columnalign', 'left');
-		var nospace = 'cell-spacing: 0; cell-padding: 0; row-spacing: 0; row-padding: 0; border-spacing: 0; padding: 0; margin: 0';
-		mtable.setAttribute('style', nospace);
-		rows.each(function(row) {
-			var mtr = createMathNode('mtr');
-			mtr.setAttribute('style', nospace);
-			var mtd = createMathNode('mtd');
-			mtd.setAttribute('style', nospace);
-			row.each(function(element) {
-				var elmt = translateDOMElement(element, svg);
-				if (nodeName == 'mtext') {
-					// wrap element in mtext
-					var outer = createMathNode('mtext');
-					outer.appendChild(elmt);
-					elmt = outer;
-				}
-				mtd.appendChild(elmt);
-			});
-			mtr.appendChild(mtd);
-			mtable.appendChild(mtr);
-		});
-		if (nodeName == 'mtext') {
-			// no mtable inside mtext, but mtable instead of mtext
-			dom = mtable;
-		} else
-			childParent.appendChild(mtable);
-	} else
-		rows[0].each(function(element) {
-			childParent.appendChild(translateDOMElement(element, svg));
-		});
-	if (object) {
-		var id = objectsCount++;
-		object.setAttribute('id', objectsPrefix + id);
-		objects[id] = dom;
-		return object;
-	}
-	return dom;
-}
-
-function createLine(value) { 
-	if (value.startsWith('<math')) {
-		var dom = document.createElement('div');
+function createLine(value, format) {
+	if (format == 'mathml') {
+		// every browser this page supports renders MathML itself, so the markup only has to
+		// be put into the document
+		var dom = $E('div', {'class': 'mathmlresult'});
 		dom.updateDOM(value);
-		return translateDOMElement(dom.childNodes[0]);
+		return dom;
+	} else if (format == 'latex') {
+		// KaTeX renders synchronously, so the result is complete when this returns
+		return symjaRenderTeX(value, false);
+	} else if (format == 'code') {
+		var pre = $E('pre', {'class': 'codemessage'});
+		pre.appendChild($T(value));
+		return pre;
+	} else if (format == 'text') {
+		var lines = value.split('\n');
+		var p = $E('p');
+		for (var index = 0; index < lines.length; ++index) {
+			p.appendChild($T(prepareText(lines[index])));
+			if (index < lines.length - 1)
+				p.appendChild($E('br'));
+		}
+		return p;
 	} else if (value.startsWith('<svg')) {
 		var dom = document.createElement('div');
 		// The svg carries its own size and a viewBox, and asks to be scaled with
@@ -311,63 +124,18 @@ function createLine(value) {
         // The script inside 'value' will be executed by Prototype.js here
         dom.update(value); 
         return dom;
-	} else if (value.startsWith('<table')) {
+	} else {
 		var dom = document.createElement('div');
 		dom.updateDOM(value);
-		return translateDOMElement(dom.childNodes[0]);
-	} else {
-		var lines = value.split('\n');
-		var p = $E('p');
-		for (var index = 0; index < lines.length; ++index) {
-			p.appendChild($T(prepareText(lines[index])));
-			if (index < lines.length - 1)
-				p.appendChild($E('br'));
-		}
-		return p;
+		return dom;
 	}
 }
 
+/**
+ * Nothing left to do once the lines are in the document: KaTeX has already rendered them
+ * by the time createLine() returned. This used to drive the MathJax typesetting queue.
+ */
 function afterProcessResult(ul, command) {
-	// command is either 'Typeset' (default) or 'Rerender'
-	if (!command)
-		command = 'Typeset';
-	MathJax.Hub.Queue([command, MathJax.Hub, ul]);
-	MathJax.Hub.Queue(function() {
-		// inject SVG and other non-MathML objects into corresponding <mspace>s
-		ul.select('.mspace').each(function(mspace) {
-			var id = mspace.getAttribute('id').substr(objectsPrefix.length);
-			var object = objects[id];
-			mspace.appendChild(object);
-		});
-	});
-	if (!MathJax.Hub.Browser.isOpera) {
-		// Opera 11.01 Build 1190 on Mac OS X 10.5.8 crashes on this call for Plot[x,{x,0,1}]
-		// => leave inner MathML untouched
-		MathJax.Hub.Queue(['Typeset', MathJax.Hub, ul]);
-	}
-	MathJax.Hub.Queue(function() {
-		ul.select('foreignObject >span >nobr >span.math').each(function(math) {
-			var content = math.childNodes[0].childNodes[0].childNodes[0];
-			math.removeChild(math.childNodes[0]);
-			math.insertBefore(content, math.childNodes[0]);
-
-			if (command == 'Typeset') {
-				// recalculate positions of insets based on ox/oy properties
-				var foreignObject = math.parentNode.parentNode.parentNode;
-				var dimensions = math.getDimensions();
-				var w = dimensions.width + 4;
-				var h = dimensions.height + 4;
-				var x = parseFloat(foreignObject.getAttribute('x').substr());
-				var y = parseFloat(foreignObject.getAttribute('y'));
-				var ox = parseFloat(foreignObject.getAttribute('ox'));
-				var oy = parseFloat(foreignObject.getAttribute('oy'));
-				x = x - w/2.0 - ox*w/2.0;
-				y = y - h/2.0 + oy*h/2.0;
-				foreignObject.setAttribute('x', x + 'px');
-				foreignObject.setAttribute('y', y + 'px');
-			}
-		});
-	});
 }
 
 function setResult(ul, results) {
@@ -377,11 +145,11 @@ function setResult(ul, results) {
 			var li = $E('li', {'class': (out.message ? 'message' : 'print')});
 			if (out.message)
 				li.appendChild($T(out.prefix + ': '));
-			li.appendChild(createLine(out.text));
+			li.appendChild(createLine(out.text, out.format));
 			resultUl.appendChild(li);
 		});
 		if (result.result != null) {
-			var li = $E('li', {'class': 'result'}, createLine(result.result));
+			var li = $E('li', {'class': 'result'}, createLine(result.result, result.format));
 			resultUl.appendChild(li);
 		}
 		ul.appendChild($E('li', {'class': 'out'}, resultUl));
@@ -393,6 +161,9 @@ function submitQuery(textarea, onfinish) {
 	$('welcomeContainer').fade({duration: 0.5});
 	
 	textarea.li.addClassName('loading');
+	// the cell was loaded from a notebook and is being evaluated now, so it is no longer
+	// showing a request that this session has not seen
+	textarea.li.removeClassName('notrun');
 	new Ajax.Request('/ajax/query/', {
 		method: 'post',
 		parameters: {
@@ -435,6 +206,10 @@ function getSelection() {
 }
 
 function keyDown(event) {
+	var element = Event.element(event);
+	if (element && element.tagName == 'TEXTAREA' && $(element).hasClassName('textsource'))
+		// a Markdown or raw cell brings its own key handling
+		return;
 	var textarea = lastFocus;
 	if (!textarea)
 		return;
@@ -610,8 +385,10 @@ function documentClick(event) {
 	event = mouseDownEvent;
 	if (!event)
 		return;
-	if ($('queries').childElements().length == 1 && isEmpty($('queries').childElements()[0].textarea)) {
-		$('queries').childElements()[0].textarea.focus();
+	var first = $('queries').childElements()[0];
+	if ($('queries').childElements().length == 1 && first && !first.isTextCell &&
+			isEmpty(first.textarea)) {
+		first.textarea.focus();
 		return;
 	}
 	var offset = $('document').cumulativeOffset();
@@ -673,26 +450,8 @@ function globalKeyUp(event) {
 }
 
 function domLoaded() {
-	MathJax.Hub.Config({
-		"HTML-CSS": {
-			imageFont: null,
-	  	linebreaks: { automatic: true }
-	  },
-	  MMLorHTML: {
-	    //
-	    //  The output jax that is to be preferred when both are possible
-	    //  (set to "MML" for native MathML, "HTML" for MathJax's HTML-CSS output jax).
-	    //
-	    prefer: {
-	      MSIE:    "HTML",
-	      Firefox: "HTML",
-	      Opera:   "HTML",
-	      other:   "HTML"
-	    }
-	  }
-	});
-	MathJax.Hub.Configured();
-	
+	// KaTeX needs no startup configuration; see symja_katex.js for the options
+
 	if ($('welcomeBrowser'))
 		if (!(Prototype.Browser.WebKit || Prototype.Browser.MobileSafari || Prototype.Browser.Gecko))
 			$('welcomeBrowser').show();
@@ -725,8 +484,16 @@ function domLoaded() {
 		
 //		$(document).observe('keyup', globalKeyUp.bindAsEventListener($('document')));
 		
-		if (!loadLink())
-			createQuery();
+		if (!loadLink()) {
+			if (typeof loadStartupNotebook == 'function')
+				// a notebook named with the -notebook argument is shown, never evaluated
+				loadStartupNotebook(function(loaded) {
+					if (!loaded)
+						createQuery();
+				});
+			else
+				createQuery();
+		}
 	}
 }
 

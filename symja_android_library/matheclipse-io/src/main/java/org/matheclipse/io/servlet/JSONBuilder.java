@@ -7,8 +7,8 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,14 +19,68 @@ public class JSONBuilder {
 
   public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
+  /** The string is MathML and is rendered by the browser itself. */
+  public static final String FORMAT_MATHML = "mathml";
+
+  /** The string is LaTeX and is rendered in the browser by KaTeX. */
+  public static final String FORMAT_LATEX = "latex";
+
+  /** The string is plain text. */
+  public static final String FORMAT_TEXT = "text";
+
+  /** The string is plain text that has to keep its spacing, such as a syntax error marker. */
+  public static final String FORMAT_CODE = "code";
+
+  /** The string is an HTML snippet - an SVG, an image, an iframe or a WebGL container. */
+  public static final String FORMAT_HTML = "html";
+
+  /**
+   * Add the messages that were printed while evaluating. These are prose, not mathematics, so they
+   * travel as plain text; they used to be wrapped in <code>&lt;math&gt;&lt;mtext&gt;</code> only
+   * because everything went through a MathML renderer.
+   */
+  private static void addMessages(ArrayNode out, StringBuilderWriter errorWriter,
+      StringBuilderWriter outWriter) {
+    addMessage(out, "Error", errorWriter.toString());
+    addMessage(out, "Output", outWriter.toString());
+  }
+
+  /** The plain <code>OutputForm</code> of an expression, or an empty string if it cannot be built. */
+  private static String outputForm(EvalEngine engine, IExpr expr) {
+    if (expr == null || expr.equals(S.Null)) {
+      return "";
+    }
+    try {
+      StringBuilderWriter buf = new StringBuilderWriter();
+      OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, expr);
+      return buf.toString();
+    } catch (RuntimeException rex) {
+      return "";
+    }
+  }
+
+  private static void addMessage(ArrayNode out, String prefix, String message) {
+    if (message == null || message.length() == 0) {
+      return;
+    }
+    ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    messageJSON.put("prefix", prefix);
+    messageJSON.put("message", Boolean.TRUE);
+    messageJSON.put("tag", "evaluation");
+    messageJSON.put("symbol", "General");
+    messageJSON.put("format", FORMAT_TEXT);
+    messageJSON.put("text", message);
+    out.add(messageJSON);
+  }
+
   public static String createJSONErrorString(String str) {
     ObjectNode outJSON = JSON_OBJECT_MAPPER.createObjectNode();
     outJSON.put("prefix", "Error");
     outJSON.put("message", Boolean.TRUE);
     outJSON.put("tag", "syntax");
     outJSON.put("symbol", "General");
-    str = StringEscapeUtils.escapeHtml4(str);
-    outJSON.put("text", "<math><mrow><mtext>" + str + "</mtext></mrow></math>");
+    outJSON.put("format", FORMAT_TEXT);
+    outJSON.put("text", str);
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.putNull("line");
@@ -60,19 +114,9 @@ public class JSONBuilder {
     outJSON.put("message", Boolean.TRUE);
     outJSON.put("tag", "syntax");
     outJSON.put("symbol", "Syntax");
-    str = StringEscapeUtils.escapeHtml4(str);
-    str = str.replace(" ", "&nbsp;");
-    String[] strs = str.split("\\n");
-    StringBuilder mtext = new StringBuilder();
-    for (int i = 0; i < strs.length; i++) {
-      mtext.append("<mtext mathvariant=\"courier\">");
-      mtext.append(strs[i]);
-      mtext.append("</mtext>");
-      if (i < strs.length - 1) {
-        mtext.append("<mspace linebreak='newline' />");
-      }
-    }
-    outJSON.put("text", "<math><mrow>" + mtext + "</mrow></math>");
+    // a syntax error points at a column with a caret, so the spacing has to survive
+    outJSON.put("format", FORMAT_CODE);
+    outJSON.put("text", str);
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.putNull("line");
@@ -105,6 +149,7 @@ public class JSONBuilder {
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", 21);
     resultsJSON.put("result", script);
+    resultsJSON.put("format", FORMAT_HTML);
 
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     resultsJSON.putPOJO("out", temp);
@@ -114,21 +159,14 @@ public class JSONBuilder {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     json.putPOJO("results", temp);
 
-    return new String[] {"mathml", json.toString()};
+    return new String[] {"html", json.toString()};
   }
 
   public static String[] createJSONShow(EvalEngine engine, IAST show) {
-    StringBuilder stw = new StringBuilder();
-    stw.append("<math><mtable><mtr><mtd>");
-    // if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics, 2)) {
-    // StringBuilder buf = new StringBuilder(2048);
-    // GraphicsFunctions.graphicsToSVG((IAST) show.arg1(), stw);
-    // }
-    stw.append("</mtd></mtr></mtable></math>");
-
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", 21);
-    resultsJSON.put("result", stw.toString());
+    resultsJSON.put("result", "");
+    resultsJSON.put("format", FORMAT_HTML);
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     resultsJSON.putPOJO("out", temp);
 
@@ -137,7 +175,7 @@ public class JSONBuilder {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     json.putPOJO("results", temp);
 
-    return new String[] {"mathml", json.toString()};
+    return new String[] {"html", json.toString()};
   }
 
   public static String[] createJSONResult(EvalEngine engine, IExpr outExpr,
@@ -145,6 +183,11 @@ public class JSONBuilder {
       StringBuilderWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
+    // Results travel as MathML and are rendered by the browser itself. The built-in symbol
+    // names come out the way Mathematica writes them - Sin[x] with Mathematica syntax,
+    // Sin(x) with the relaxed Symja syntax - because both servlets set
+    // Config.MATHML_TRIG_LOWERCASE to false. KaTeX is not used here: it reads LaTeX, not
+    // MathML. It renders the LaTeX of the documentation pages and of Markdown cells.
     MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, false);
     StringBuilderWriter stw = new StringBuilderWriter();
     if (!outExpr.equals(S.Null) && !mathMLUtil.toMathML(outExpr, stw, true, true)) {
@@ -154,31 +197,12 @@ public class JSONBuilder {
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", 21);
     resultsJSON.put("result", stw.toString());
+    resultsJSON.put("format", FORMAT_MATHML);
+    // the ordinary OutputForm of the same result. A notebook saved as *.ipynb needs it for
+    // its "text/plain" output, and the browser cannot reconstruct it from the MathML.
+    resultsJSON.put("plaintext", outputForm(engine, outExpr));
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-
-    String message = errorWriter.toString();
-    if (message.length() > 0) {
-      message = MathMLFormFactory.mathMLMtext(message);
-      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      messageJSON.put("prefix", "Error");
-      messageJSON.put("message", Boolean.TRUE);
-      messageJSON.put("tag", "evaluation");
-      messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
-      temp.add(messageJSON);
-    }
-
-    message = outWriter.toString();
-    if (message.length() > 0) {
-      message = MathMLFormFactory.mathMLMtext(message);
-      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      messageJSON.put("prefix", "Output");
-      messageJSON.put("message", Boolean.TRUE);
-      messageJSON.put("tag", "evaluation");
-      messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
-      temp.add(messageJSON);
-    }
+    addMessages(temp, errorWriter, outWriter);
     resultsJSON.putPOJO("out", temp);
 
     temp = JSON_OBJECT_MAPPER.createArrayNode();
@@ -201,31 +225,9 @@ public class JSONBuilder {
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", 21);
     resultsJSON.put("result", html);
+    resultsJSON.put("format", FORMAT_HTML);
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-
-    String message = errorWriter.toString();
-    if (message.length() > 0) {
-      message = MathMLFormFactory.mathMLMtext(message);
-      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      messageJSON.put("prefix", "Error");
-      messageJSON.put("message", Boolean.TRUE);
-      messageJSON.put("tag", "evaluation");
-      messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
-      temp.add(messageJSON);
-    }
-
-    message = outWriter.toString();
-    if (message.length() > 0) {
-      message = MathMLFormFactory.mathMLMtext(message);
-      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      messageJSON.put("prefix", "Output");
-      messageJSON.put("message", Boolean.TRUE);
-      messageJSON.put("tag", "evaluation");
-      messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
-      temp.add(messageJSON);
-    }
+    addMessages(temp, errorWriter, outWriter);
     resultsJSON.putPOJO("out", temp);
 
     temp = JSON_OBJECT_MAPPER.createArrayNode();
@@ -233,7 +235,7 @@ public class JSONBuilder {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     json.putPOJO("results", temp);
 
-    return new String[] {"mathml", json.toString()};
+    return new String[] {"html", json.toString()};
   }
 
   public static String[] createJSONSVG(EvalEngine engine, String svgStr,
@@ -241,31 +243,9 @@ public class JSONBuilder {
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", 21);
     resultsJSON.put("result", svgStr);
+    resultsJSON.put("format", FORMAT_HTML);
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-
-    String message = errorWriter.toString();
-    if (message.length() > 0) {
-      message = MathMLFormFactory.mathMLMtext(message);
-      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      messageJSON.put("prefix", "Error");
-      messageJSON.put("message", Boolean.TRUE);
-      messageJSON.put("tag", "evaluation");
-      messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
-      temp.add(messageJSON);
-    }
-
-    message = outWriter.toString();
-    if (message.length() > 0) {
-      message = MathMLFormFactory.mathMLMtext(message);
-      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      messageJSON.put("prefix", "Output");
-      messageJSON.put("message", Boolean.TRUE);
-      messageJSON.put("tag", "evaluation");
-      messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
-      temp.add(messageJSON);
-    }
+    addMessages(temp, errorWriter, outWriter);
     resultsJSON.putPOJO("out", temp);
 
     temp = JSON_OBJECT_MAPPER.createArrayNode();
@@ -273,7 +253,7 @@ public class JSONBuilder {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     json.putPOJO("results", temp);
 
-    return new String[] {"mathml", json.toString()};
+    return new String[] {"html", json.toString()};
   }
 
   /**

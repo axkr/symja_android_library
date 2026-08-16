@@ -33,6 +33,8 @@ function showPage(response) {
 		setResult(test, data.results);
 	});
 
+	// the LaTeX that AJAXDocServlet wrote as \(...\) and \[...\]
+	symjaRenderMathIn($('doc'));
 }
 
 function loadDoc(page) {

@@ -115,6 +115,8 @@ function switchCode() {
 function getContent() {
 	var queries = [];
 	$('queries').childElements().each(function(query) {
+		if (query.isTextCell)
+			return; // Markdown and raw cells only live in *.ipynb notebooks
 		var item = {};
 		var textarea = query.select('textarea.request')[0];
 		item.request = textarea.value;
@@ -153,6 +155,8 @@ function setContent(content) {
 function createLink() {
 	var queries = new Array();
 	$('queries').childElements().each(function(query) {
+		if (query.isTextCell)
+			return;
 		var text = query.select('textarea.request')[0].getText();
 		queries[queries.length] = 'queries=' + encodeURIComponent(text);
 	});

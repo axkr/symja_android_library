@@ -524,6 +524,138 @@ li.out {
   padding: 0;
 }
 
+/* ---- results: MathML rendered by the browser --------------------------- */
+
+div.mathmlresult {
+  margin: 0;
+  padding: 0;
+}
+div.mathmlresult math {
+  font-size: 1.1em;
+}
+
+/* ---- KaTeX: documentation pages and Markdown cells --------------------- */
+
+span.symjamath {
+  display: inline-block;
+}
+/* a result is a line of its own, so it may break instead of running off the side */
+li.result span.symjamath .katex {
+  white-space: normal;
+}
+li.result span.symjamath .katex-display {
+  margin: 0.3em 0;
+  text-align: left;
+}
+/* a formula KaTeX could not parse is shown as its source */
+span.symjamath .katex-error {
+  font-family: monospace;
+  font-size: 0.9em;
+}
+/* a syntax error points at a column with a caret and has to keep its spacing */
+pre.codemessage {
+  margin: 0;
+  font-family: monospace;
+  font-size: 1em;
+  white-space: pre-wrap;
+}
+
+/* ---- notebook: Markdown and raw cells ---------------------------------- */
+
+li.query.textcell textarea.textsource {
+  width: 99%;
+  overflow: hidden;
+  border: none;
+  line-height: 17px;
+  color: #3f3f3f;
+  margin: 0;
+  font-family: monospace;
+  font-size: 1em;
+  background: #fbfbf7;
+  outline-style: none;
+  outline-width: 0px;
+  resize: none;
+}
+
+li.query.textcell div.textview {
+  font-family: sans-serif;
+  padding-right: 10px;
+  cursor: text;
+}
+li.query.textcell div.textview > *:first-child {
+  margin-top: 0;
+}
+li.query.textcell div.textview p.placeholder {
+  color: #999;
+  font-style: italic;
+}
+li.query.textcell div.textview pre {
+  background: #f6f6f6;
+  padding: 6px 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+/* #queries li switches list markers off for the cell list itself, so a Markdown list has
+   to switch them back on with at least the same specificity */
+#queries li.query.textcell div.textview ul,
+#queries li.query.textcell div.textview ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+#queries li.query.textcell div.textview ul > li {
+  list-style-type: disc;
+}
+#queries li.query.textcell div.textview ol > li {
+  list-style-type: decimal;
+}
+li.query.textcell div.textview blockquote {
+  margin: 0.5em 0;
+  padding-left: 10px;
+  border-left: 3px solid #cccecb;
+  color: #666;
+}
+li.query.textcell div.textview table {
+  border-collapse: collapse;
+}
+li.query.textcell div.textview th,
+li.query.textcell div.textview td {
+  border: 1px solid #cccecb;
+  padding: 2px 6px;
+}
+li.query.textcell div.textview img {
+  max-width: 100%;
+}
+li.query.textcell span.move {
+  border-color: #6b8;
+}
+
+/* a cell that came from a notebook and has not been evaluated in this session */
+li.query.notrun span.move {
+  border-style: dashed;
+  border-color: #cccecb;
+}
+
+#notebookNotice {
+  position: relative;
+  margin: 0 1.5em 1em 30px;
+  padding: 8px 30px 8px 12px;
+  background: #fbf7e3;
+  border: 1px solid #e6dfae;
+  border-radius: 5px;
+  color: #3f3f3f;
+  font-size: 0.9em;
+}
+#notebookNotice a.close {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  color: #999;
+  text-decoration: none;
+}
+#notebookNotice a.close:hover {
+  color: #3f3f3f;
+}
+
 #docContent ul.out,
 ul.out {
   list-style-type: none;

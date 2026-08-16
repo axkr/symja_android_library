@@ -5,6 +5,7 @@ import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
 import static io.undertow.servlet.Servlets.servlet;
 import java.awt.Desktop;
+import java.io.File;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.URI;
@@ -33,6 +34,14 @@ public class ServletServer {
 
   /** The port for running the Symja notebook interface. Default is 8080 */
   public static int PORT = 8080;
+
+  /**
+   * The <code>*.ipynb</code> notebook file which is opened in the browser page after startup, or
+   * <code>null</code> if the page should start with an empty input. Set with the
+   * <code>-notebook</code> command line argument. The notebook is only shown, never evaluated - see
+   * {@link AJAXNotebookServlet}.
+   */
+  public static String NOTEBOOK_FILE = null;
 
   public static final String MYAPP = "/";
 
@@ -68,7 +77,8 @@ public class ServletServer {
           .setContextPath(MMAServletServer.MYAPP).setDeploymentName(deploymentName)
           .addServlets(servlet("query", ajaxServlet).setLoadOnStartup(1).addMapping("/query/"),
               servlet("doc", AJAXDocServlet.class).addMapping("/doc/*"),
-              servlet("search", AJAXSearchServlet.class).addMapping("/doc/search/"));
+              servlet("search", AJAXSearchServlet.class).addMapping("/doc/search/"),
+              servlet("notebook", AJAXNotebookServlet.class).addMapping("/notebook/"));
 
       DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
       manager.deploy();
@@ -112,6 +122,20 @@ public class ServletServer {
         String portStr = args[i + 1];
         i++;
         PORT = Integer.parseInt(portStr);
+      } else if (arg.equals("-notebook") || arg.equals("-n")) {
+        if (i + 1 >= args.length) {
+          LOGGER.error("You must specify a file name when using the -notebook argument");
+          throw ReturnException.RETURN_FALSE;
+        }
+
+        String fileName = args[i + 1];
+        i++;
+        File file = new File(fileName);
+        if (!file.isFile() || !file.canRead()) {
+          LOGGER.error("Cannot read the notebook file: {}", fileName);
+          throw ReturnException.RETURN_FALSE;
+        }
+        NOTEBOOK_FILE = file.getAbsolutePath();
       } else if (arg.equals("-help") || arg.equals("-h")) {
         printUsage(serverClass);
         return -1;
@@ -144,6 +168,8 @@ public class ServletServer {
     msg.append("  -l or -localhost set the name to \"localhost\"" + lineSeparator);
     msg.append("         in the browser; the default is the IP address" + lineSeparator);
     msg.append("  -p or -port set the port (default port is 8080)" + lineSeparator);
+    msg.append("  -n or -notebook open the given *.ipynb notebook in the browser" + lineSeparator);
+    msg.append("         page; its cells are shown but not evaluated" + lineSeparator);
     msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
     System.out.println(msg.toString());
