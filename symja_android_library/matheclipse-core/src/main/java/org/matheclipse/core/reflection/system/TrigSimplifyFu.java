@@ -1774,12 +1774,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         symA = aCand;
         symB = bCand;
       } else {
-        if (!aCand.equals(symA) && !aCand.equals(symB)) {
-          return F.NIL;
-        }
-        if (!bCand.equals(symB) && !bCand.equals(symA)) {
-          return F.NIL;
-        }
+        return F.NIL;
       }
 
       boolean f1IsSin = f1.isSin();

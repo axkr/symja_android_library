@@ -249,9 +249,9 @@ public class MatrixPlot extends ListPlot {
     if (range <= 0)
       return ticks;
     double step = Math.pow(10, Math.floor(Math.log10(range / maxTicks)));
-    if (range / step < maxTicks / 2)
+    if (2.0 * range / step < maxTicks)
       step /= 2;
-    if (range / step < maxTicks / 2)
+    if (2.0 * range / step < maxTicks)
       step /= 2;
     else if (range / step > maxTicks * 2)
       step *= 2;

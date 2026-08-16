@@ -1,5 +1,7 @@
 package org.matheclipse.core.numerics.functions;
 
+import com.google.common.math.DoubleMath;
+
 /**
  * Bessel functions <code>J</code> and <code>Y</code> of arbitrary <b>real</b> order for
  * <code>double</code> arguments, by Steed's method and Temme's series.
@@ -150,8 +152,8 @@ public final class BesselJY {
     // A HALF-ODD-INTEGER negative order degenerates the other way: cos(v*pi) is zero in exact
     // arithmetic but 1e-16 in floating point, and it multiplies the huge Y. Use the exact
     // identities J_-(n+1/2) = (-1)^(n+1) Y_(n+1/2) and Y_-(n+1/2) = (-1)^n J_(n+1/2).
-    final double twiceAv = 2.0 * av;
-    if (Math.rint(twiceAv) == twiceAv) {
+    final double twiceAv = av + av;
+    if (DoubleMath.isMathematicalInteger(twiceAv)) {
       final long n = (long) Math.floor(av); // av = n + 1/2
       final double[] jyh = jy(av, x);
       final double sign = (n & 1L) == 0L ? 1.0 : -1.0;
