@@ -2020,44 +2020,26 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" //
-            + "  \"queryresult\" : {\n" //
-            + "    \"success\" : \"true\",\n" //
-            + "    \"numpods\" : 3,\n" //
-            + "    \"version\" : \"0.1\",\n" //
-            + "    \"pods\" : [ {\n" //
-            + "      \"title\" : \"Input\",\n" //
-            + "      \"scanner\" : \"Identity\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"plaintext\" : \"(a&amp;&amp;b)||c\",\n" //
-            + "        \"sinput\" : \"(a&amp;&amp;b)||c\",\n" //
-            + "        \"latex\" : \"\\\\left( a \\\\land b\\\\right)  \\\\lor c\"\n" //
-            + "      } ]\n" //
-            + "    }, {\n" //
-            + "      \"title\" : \"Truth table\",\n" //
-            + "      \"scanner\" : \"Boolean\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;th&gt;(a&amp;&amp;b)||c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n" //
-            + "        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&amp;&amp;b)||c),{a,b,c})\",\n" //
-            + "        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cccc}\\nTrue & True & True & True \\\\\\\\\\nTrue & True & False & True \\\\\\\\\\nTrue & False & True & True \\\\\\\\\\nTrue & False & False & False \\\\\\\\\\nFalse & True & True & True \\\\\\\\\\nFalse & True & False & False \\\\\\\\\\nFalse & False & True & True \\\\\\\\\\nFalse & False & False & False \\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\n" //
-            + "      } ]\n" //
-            + "    }, {\n" //
-            + "      \"title\" : \"Satisfiability instance\",\n" //
-            + "      \"scanner\" : \"Boolean\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n" //
-            + "        \"sinput\" : \"SatisfiabilityInstances((a&amp;&amp;b)||c,{a,b,c},1)\",\n" //
-            + "        \"latex\" : \"\\\\{\\\\{False,False,True\\\\}\\\\}\"\n" //
-            + "      } ]\n" //
-            + "    } ]\n" //
-            + "  }\n" //
-            + "}"); //
+        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
+            + "    \"numpods\" : 3,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
+            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
+            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"(a&amp;&amp;b)||c\",\n"
+            + "        \"sinput\" : \"(a&amp;&amp;b)||c\",\n"
+            + "        \"latex\" : \"\\\\left( a \\\\land b\\\\right)  \\\\lor c\"\n"
+            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Truth table\",\n"
+            + "      \"scanner\" : \"Boolean\",\n" + "      \"error\" : \"false\",\n"
+            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
+            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;th&gt;(a&amp;&amp;b)||c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n"
+            + "        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&amp;&amp;b)||c),{a,b,c})\",\n"
+            + "        \"latex\" : \"\\\\{\\\\{True,True,True,True\\\\},\\\\{True,True,False,True\\\\},\\\\{True,False,True,True\\\\},\\\\{True,False,False,False\\\\},\\\\{False,True,True,True\\\\},\\\\{False,True,False,False\\\\},\\\\{False,False,True,True\\\\},\\\\{False,False,False,False\\\\}\\\\}\"\n"
+            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Satisfiability instance\",\n"
+            + "      \"scanner\" : \"Boolean\",\n" + "      \"error\" : \"false\",\n"
+            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
+            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n"
+            + "        \"sinput\" : \"SatisfiabilityInstances((a&amp;&amp;b)||c,{a,b,c},1)\",\n"
+            + "        \"latex\" : \"\\\\{\\\\{False,False,True\\\\}\\\\}\"\n" + "      } ]\n"
+            + "    } ]\n" + "  }\n" + "}"); //
   }
 
   @Test
@@ -2070,44 +2052,26 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" //
-            + "  \"queryresult\" : {\n" //
-            + "    \"success\" : \"true\",\n" //
-            + "    \"numpods\" : 3,\n" //
-            + "    \"version\" : \"0.1\",\n" //
-            + "    \"pods\" : [ {\n" //
-            + "      \"title\" : \"Input\",\n" //
-            + "      \"scanner\" : \"Identity\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"plaintext\" : \"(a&amp;&amp;b)||c\",\n" //
-            + "        \"sinput\" : \"(a&amp;&amp;b)||c\",\n" //
-            + "        \"latex\" : \"\\\\left( a \\\\land b\\\\right)  \\\\lor c\"\n" //
-            + "      } ]\n" //
-            + "    }, {\n" //
-            + "      \"title\" : \"Truth table\",\n" //
-            + "      \"scanner\" : \"Boolean\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;th&gt;(a&amp;&amp;b)||c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n" //
-            + "        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&amp;&amp;b)||c),{a,b,c})\",\n" //
-            + "        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cccc}\\nTrue & True & True & True \\\\\\\\\\nTrue & True & False & True \\\\\\\\\\nTrue & False & True & True \\\\\\\\\\nTrue & False & False & False \\\\\\\\\\nFalse & True & True & True \\\\\\\\\\nFalse & True & False & False \\\\\\\\\\nFalse & False & True & True \\\\\\\\\\nFalse & False & False & False \\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\n" //
-            + "      } ]\n" //
-            + "    }, {\n" //
-            + "      \"title\" : \"Satisfiability instance\",\n" //
-            + "      \"scanner\" : \"Boolean\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n" //
-            + "        \"sinput\" : \"SatisfiabilityInstances((a&amp;&amp;b)||c,{a,b,c},1)\",\n" //
-            + "        \"latex\" : \"\\\\{\\\\{False,False,True\\\\}\\\\}\"\n" //
-            + "      } ]\n" //
-            + "    } ]\n" //
-            + "  }\n" //
-            + "}"); //
+        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
+            + "    \"numpods\" : 3,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
+            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
+            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"(a&amp;&amp;b)||c\",\n"
+            + "        \"sinput\" : \"(a&amp;&amp;b)||c\",\n"
+            + "        \"latex\" : \"\\\\left( a \\\\land b\\\\right)  \\\\lor c\"\n"
+            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Truth table\",\n"
+            + "      \"scanner\" : \"Boolean\",\n" + "      \"error\" : \"false\",\n"
+            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
+            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;th&gt;(a&amp;&amp;b)||c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n"
+            + "        \"sinput\" : \"BooleanTable(Append({a,b,c},(a&amp;&amp;b)||c),{a,b,c})\",\n"
+            + "        \"latex\" : \"\\\\{\\\\{True,True,True,True\\\\},\\\\{True,True,False,True\\\\},\\\\{True,False,True,True\\\\},\\\\{True,False,False,False\\\\},\\\\{False,True,True,True\\\\},\\\\{False,True,False,False\\\\},\\\\{False,False,True,True\\\\},\\\\{False,False,False,False\\\\}\\\\}\"\n"
+            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Satisfiability instance\",\n"
+            + "      \"scanner\" : \"Boolean\",\n" + "      \"error\" : \"false\",\n"
+            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
+            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;a&lt;/th&gt;&lt;th&gt;b&lt;/th&gt;&lt;th&gt;c&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;tr&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;F&lt;/td&gt;&lt;td&gt;T&lt;/td&gt;&lt;/tr&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n"
+            + "        \"sinput\" : \"SatisfiabilityInstances((a&amp;&amp;b)||c,{a,b,c},1)\",\n"
+            + "        \"latex\" : \"\\\\{\\\\{False,False,True\\\\}\\\\}\"\n" + "      } ]\n"
+            + "    } ]\n" + "  }\n" + "}"); //
   }
 
   @Test
@@ -3046,105 +3010,6 @@ public class TestPods {
   // + " \"latex\" : \"8.53973\"\n" + " } ]\n" + " } ]\n" + " }\n" + "}"); //
   // }
 
-  @Test
-  public void testCoshIntegral001() {
-    // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.resetModuleCounter4JUnit();
-    String s = System.getProperty("os.name");
-    ObjectNode messageJSON = TestPods.createJUnitResult( //
-        "CoshIntegral", //
-        formatsTEX);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-
-    final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
-
-    // assertEquals(jsonStr, //
-    // "{\n" //
-    // + " \"queryresult\" : {\n" //
-    // + " \"success\" : \"true\",\n" //
-    // + " \"error\" : \"false\",\n" //
-    // + " \"numpods\" : 3,\n" //
-    // + " \"version\" : \"0.1\",\n" //
-    // + " \"pods\" : [ {\n" //
-    // + " \"title\" : \"Input\",\n" //
-    // + " \"scanner\" : \"Identity\",\n" //
-    // + " \"error\" : \"false\",\n" //
-    // + " \"numsubpods\" : 1,\n" //
-    // + " \"subpods\" : [ {\n" //
-    // + " \"plaintext\" : \"CoshIntegral\",\n" //
-    // + " \"sinput\" : \"CoshIntegral\",\n" //
-    // + " \"latex\" : \"CoshIntegral\"\n" //
-    // + " } ]\n" //
-    // + " }, {\n" //
-    // + " \"title\" : \"Plot\",\n" //
-    // + " \"scanner\" : \"Plotter\",\n" //
-    // + " \"error\" : \"false\",\n" //
-    // + " \"numsubpods\" : 1,\n" //
-    // + " \"subpods\" : [ {\n" //
-    // + " \"sinput\" :
-    // \"Manipulate(Plot({Re(CoshIntegral(a*x)),Im(CoshIntegral(a*x))},{x,-2.0`,2.0`},PlotRange-&gt;{-5.0`,5.0`}),{a,1,10})\",\n"
-    // //
-    // + " \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot;
-    // encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n &quot;-//W3C//DTD XHTML 1.1
-    // plus MathML 2.0 plus SVG 1.1//EN&quot;\\n
-    // &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html
-    // xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin:
-    // 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta
-    // charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body
-    // style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link
-    // rel=&quot;stylesheet&quot; type=&quot;text/css&quot;
-    // href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script
-    // src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script
-    // src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script
-    // src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div
-    // id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%;
-    // height: 100%; margin: 0; flex-direction: column; overflow:
-    // hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox',
-    // {axis:true,boundingbox:[-2.75,6.05,2.75,-6.05]});\\nboard.suspendUpdate();\\nvar a =
-    // board.create('slider',[[-2.2,4.84],[2.2,4.84],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) {
-    // try { return [re(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;}
-    // }\\nfunction $f2(x) { try { return [im(coshIntegral(mul(a.Value(),x)))];} catch(e) { return
-    // Number.NaN;} }\\nboard.create('functiongraph',[$f1, -2.0,
-    // 2.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -2.0,
-    // 2.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form
-    // method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/'
-    // target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit'
-    // style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html'
-    // style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot;
-    // style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea
-    // name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox',
-    // {axis:true,boundingbox:[-2.75,6.05,2.75,-6.05]});\\nboard.suspendUpdate();\\nvar a =
-    // board.create('slider',[[-2.2,4.84],[2.2,4.84],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) {
-    // try { return [re(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;}
-    // }\\nfunction $f2(x) { try { return [im(coshIntegral(mul(a.Value(),x)))];} catch(e) { return
-    // Number.NaN;} }\\nboard.create('functiongraph',[$f1, -2.0,
-    // 2.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -2.0,
-    // 2.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea
-    // name='resources'
-    // style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\"
-    // style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
-    // + " } ]\n" //
-    // + " }, {\n" //
-    // + " \"title\" : \"Documentation\",\n" //
-    // + " \"scanner\" : \"help\",\n" //
-    // + " \"error\" : \"false\",\n" //
-    // + " \"numsubpods\" : 1,\n" //
-    // + " \"subpods\" : [ {\n" //
-    // + " \"markdown\" : \"## CoshIntegral\\n\\n```\\nCoshIntegral(expr)\\n```\\n\\n> returns the
-    // hyperbolic cosine integral of `expr`.\\n \\nSee\\n* [Wikipedia - Trigonometric
-    // integral](https://en.wikipedia.org/wiki/Trigonometric_integral)\\n\\n###
-    // Examples\\n\\n```\\n>> CoshIntegral(0)\\n-Infinity\\n```\\n \\n\\n### Github\\n\\n*
-    // [Implementation of
-    // CoshIntegral](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L237)
-    // \\n[Github
-    // master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L239)\\n\\n\"\n"
-    // //
-    // + " } ]\n" //
-    // + " } ]\n" //
-    // + " }\n" //
-    // + "}"); //
-  }
 
   @Test
   public void testPolynomial001() {
