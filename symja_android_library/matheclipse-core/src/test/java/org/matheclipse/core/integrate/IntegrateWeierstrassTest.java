@@ -6,7 +6,7 @@ import org.matheclipse.core.basic.Config;
 /**
  * M2 corpus test for the Weierstrass half-angle stage ({@link WeierstrassIntegration}), wired into
  * the {@code Integrate} Automatic cascade as a post-Rubi fallback and reachable via
- * {@code Integrate[f, x, Method -> "Weierstrass"]}. See {@code INTEGRATE_MATHILDA_PORT_PLAN.md} §6.
+ * {@code Integrate[f, x, Method -> "Weierstrass"]}.
  */
 public class IntegrateWeierstrassTest extends AbstractIntegrateCorpusTest {
 

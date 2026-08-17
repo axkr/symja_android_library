@@ -6,14 +6,14 @@ import org.matheclipse.core.basic.Config;
 /**
  * M1 corpus test for the derivative-divides (Geddes) u-substitution stage
  * ({@link DerivativeDivides}), now wired into the {@code Integrate} Automatic cascade ahead of the
- * Rubi rules. See {@code INTEGRATE_MATHILDA_PORT_PLAN.md} §6.
+ * Rubi rules.
  */
 public class IntegrateDerivativeDividesTest extends AbstractIntegrateCorpusTest {
 
   /**
    * Force the single {@code "DerivativeDivides"} stage. Every seed case is a genuine
-   * {@code c*f(u(x))*u'(x)} composite the stage must resolve and differentiate back (no regressions,
-   * no coverage gaps expected).
+   * {@code c*f(u(x))*u'(x)} composite the stage must resolve and differentiate back (no
+   * regressions, no coverage gaps expected).
    */
   @Test
   public void derivativeDividesForced() {

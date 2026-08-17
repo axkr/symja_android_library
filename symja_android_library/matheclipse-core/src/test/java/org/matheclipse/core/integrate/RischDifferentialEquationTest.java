@@ -9,7 +9,7 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 /**
  * Unit tests for the Risch differential equation core {@link RischDifferentialEquation} (the base
- * case of the transcendental Risch algorithm). See {@code INTEGRATE_MATHILDA_PORT_PLAN.md} tier T4.
+ * case of the transcendental Risch algorithm).
  */
 public class RischDifferentialEquationTest extends ExprEvaluatorTestCase {
 
@@ -23,8 +23,8 @@ public class RischDifferentialEquationTest extends ExprEvaluatorTestCase {
     IExpr matches = engine.evaluate(F.Together(F.Subtract(q, engine.parse(expectedY))));
     assertTrue(matches.isZero(), "solution " + q + " != " + expectedY);
     // Independently confirm it solves the RDE: D(q) + f*q - g == 0.
-    IExpr residual = engine.evaluate(F.Together(
-        F.Subtract(F.Plus(F.D(q, x), F.Times(engine.parse(f), q)), engine.parse(g))));
+    IExpr residual = engine.evaluate(
+        F.Together(F.Subtract(F.Plus(F.D(q, x), F.Times(engine.parse(f), q)), engine.parse(g))));
     assertTrue(residual.isZero(), "not a valid RDE solution: residual " + residual);
   }
 
@@ -53,7 +53,9 @@ public class RischDifferentialEquationTest extends ExprEvaluatorTestCase {
     assertNoRDE("3*x^2", "1");
   }
 
-  /** Assert {@code solveRationalRDE(f, g)} yields a rational function equal to {@code expectedY}. */
+  /**
+   * Assert {@code solveRationalRDE(f, g)} yields a rational function equal to {@code expectedY}.
+   */
   private void assertRationalRDE(String f, String g, String expectedY) {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = engine.parse("x");
@@ -62,8 +64,8 @@ public class RischDifferentialEquationTest extends ExprEvaluatorTestCase {
     assertTrue(y.isPresent(), "expected a rational solution for D(y) + (" + f + ")*y = " + g);
     IExpr matches = engine.evaluate(F.Together(F.Subtract(y, engine.parse(expectedY))));
     assertTrue(matches.isZero(), "solution " + y + " != " + expectedY);
-    IExpr residual = engine.evaluate(F.Together(
-        F.Subtract(F.Plus(F.D(y, x), F.Times(engine.parse(f), y)), engine.parse(g))));
+    IExpr residual = engine.evaluate(
+        F.Together(F.Subtract(F.Plus(F.D(y, x), F.Times(engine.parse(f), y)), engine.parse(g))));
     assertTrue(residual.isZero(), "not a valid RDE solution: residual " + residual);
   }
 
@@ -80,7 +82,8 @@ public class RischDifferentialEquationTest extends ExprEvaluatorTestCase {
   public void solvesRationalRDEs() {
     assertRationalRDE("1", "(x - 1)/x^2", "1/x"); // Integrate((x-1)/x^2*E^x) = E^x/x
     assertRationalRDE("1", "(x - 2)/(x - 1)^2", "1/(x - 1)");
-    assertRationalRDE("2*x", "(2*x^2 - 1)/x^2", "1/x"); // Integrate((2x^2-1)/x^2*E^(x^2)) = E^(x^2)/x
+    assertRationalRDE("2*x", "(2*x^2 - 1)/x^2", "1/x"); // Integrate((2x^2-1)/x^2*E^(x^2)) =
+                                                        // E^(x^2)/x
   }
 
   @Test

@@ -4,10 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 
 /**
- * M4 corpus test for the transcendental-Risch recogniser ({@link TranscendentalRisch}; currently the
- * Gaussian -> Erf family), wired into the {@code Integrate} Automatic cascade as a post-Rubi fallback
- * and reachable via {@code Integrate[f, x, Method -> "RischTranscendental"]}. See
- * {@code INTEGRATE_MATHILDA_PORT_PLAN.md} §6.
+ * M4 corpus test for the transcendental-Risch recogniser ({@link TranscendentalRisch}; currently
+ * the Gaussian -> Erf family), wired into the {@code Integrate} Automatic cascade as a post-Rubi
+ * fallback and reachable via {@code Integrate[f, x, Method -> "RischTranscendental"]}.
  */
 public class IntegrateTranscendentalRischTest extends AbstractIntegrateCorpusTest {
 

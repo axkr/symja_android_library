@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 
 /**
- * M1 corpus test for the Chebyshev binomial-differential stage ({@link ChebyshevIntegration}), wired
- * into the {@code Integrate} Automatic cascade as a post-Rubi fallback and reachable directly via
- * {@code Integrate[f, x, Method -> "Chebyshev"]}. See {@code INTEGRATE_MATHILDA_PORT_PLAN.md} §6.
+ * M1 corpus test for the Chebyshev binomial-differential stage ({@link ChebyshevIntegration}),
+ * wired into the {@code Integrate} Automatic cascade as a post-Rubi fallback and reachable directly
+ * via {@code Integrate[f, x, Method -> "Chebyshev"]}.
  */
 public class IntegrateChebyshevTest extends AbstractIntegrateCorpusTest {
 
@@ -19,7 +19,9 @@ public class IntegrateChebyshevTest extends AbstractIntegrateCorpusTest {
     runCorpusResource("/integrate/chebyshev_seed.txt", "Chebyshev");
   }
 
-  /** Same corpus through the full Automatic cascade. All must differentiate back to the integrand. */
+  /**
+   * Same corpus through the full Automatic cascade. All must differentiate back to the integrand.
+   */
   @Test
   public void chebyshevAutomatic() {
     runCorpusResource("/integrate/chebyshev_seed.txt", null);

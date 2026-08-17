@@ -6,7 +6,7 @@ import org.matheclipse.core.basic.Config;
 /**
  * M3 corpus test for the Risch-Norman heuristic stage ({@link RischNorman}), wired into the
  * {@code Integrate} Automatic cascade as a post-Rubi fallback and reachable via
- * {@code Integrate[f, x, Method -> "RischNorman"]}. See {@code INTEGRATE_MATHILDA_PORT_PLAN.md} §6.
+ * {@code Integrate[f, x, Method -> "RischNorman"]}.
  */
 public class IntegrateRischNormanTest extends AbstractIntegrateCorpusTest {
 
