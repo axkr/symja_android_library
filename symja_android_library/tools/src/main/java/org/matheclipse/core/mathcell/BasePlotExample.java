@@ -10,7 +10,6 @@ import javax.imageio.ImageIO;
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.ManipulateFunction;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -34,7 +33,6 @@ public abstract class BasePlotExample {
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
-    ManipulateFunction.AUTOSIZE = false;
     try {
       F.await();
     } catch (InterruptedException e) {
