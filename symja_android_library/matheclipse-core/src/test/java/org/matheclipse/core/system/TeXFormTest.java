@@ -559,6 +559,18 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testUnderscriptOverscriptAndUnderoverscript() {
+    // the underset and overset commands are what both LaTeX and KaTeX understand
+    check("TeXForm(Underscript(x,a))", //
+        "\\underset{a}{x}");
+    check("TeXForm(Overscript(x,a))", //
+        "\\overset{a}{x}");
+    // TeX has no single command placing both, so the two are nested
+    check("TeXForm(Underoverscript(x,a,b))", //
+        "\\underset{a}{\\overset{b}{x}}");
+  }
+
+  @Test
   public void testTeXFormMatrix() {
     check("TeXForm(Hold({{1^(1+1),1^(1+2)},\n" //
         + "     {1^(1+2),1^(2+2)}}))", //

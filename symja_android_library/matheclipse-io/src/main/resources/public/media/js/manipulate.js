@@ -59,6 +59,9 @@ function createManipulate(spec) {
 		dom.appendChild(widget.output);
 	}
 
+	if (spec.enabled)
+		applyManipulateEnabled(widget, spec.enabled);
+
 	showManipulateBody(widget, spec.body);
 
 	if (widget.options.animated && widget.options.animationRunning)
@@ -98,6 +101,7 @@ function buildManipulateRow(widget, control, index) {
 		return null;
 	row.appendChild(widgetElement);
 	control.row = row;
+	control.widgetElement = widgetElement;
 	return row;
 }
 
@@ -326,13 +330,20 @@ function buildLocator(widget, control) {
 			'step': (control.maxY - control.minY) / 100});
 		x.value = point[0];
 		y.value = point[1];
+		var readout = $E('span', {'class': 'manipulatevalue'},
+			$T('{' + formatManipulateNumber(point[0]) + ', '
+				+ formatManipulateNumber(point[1]) + '}'));
 		function update() {
-			widget.bindings[control.name][index] = [parseFloat(x.value), parseFloat(y.value)];
+			var px = parseFloat(x.value);
+			var py = parseFloat(y.value);
+			widget.bindings[control.name][index] = [px, py];
+			readout.setText('{' + formatManipulateNumber(px) + ', '
+				+ formatManipulateNumber(py) + '}');
 			requestManipulate(widget, control.name);
 		}
 		x.observe('input', update);
 		y.observe('input', update);
-		box.appendChild($E('span', {'class': 'manipulatepoint'}, x, y));
+		box.appendChild($E('span', {'class': 'manipulatepoint'}, x, y, readout));
 	});
 	return box;
 }
@@ -401,7 +412,7 @@ function manipulateIsTracked(widget, name) {
 	return tracked.indexOf(name) >= 0;
 }
 
-function postManipulate(widget, buttonIndex) {
+function postManipulate(widget, buttonIndex, bodyButtonIndex) {
 	widget.inflight = true;
 	widget.applied = widget.pending;
 	var parameters = {
@@ -410,6 +421,8 @@ function postManipulate(widget, buttonIndex) {
 	};
 	if (buttonIndex >= 0)
 		parameters.button = buttonIndex;
+	if (bodyButtonIndex != null && bodyButtonIndex >= 0)
+		parameters.bodyButton = bodyButtonIndex;
 
 	new Ajax.Request('/ajax/manipulate/', {
 		method: 'post',
@@ -424,6 +437,8 @@ function postManipulate(widget, buttonIndex) {
 			}
 			if (response.bindings)
 				applyManipulateBindings(widget, response.bindings);
+			if (response.enabled)
+				applyManipulateEnabled(widget, response.enabled);
 			showManipulateResponse(widget, response);
 			widget.inflight = false;
 			// a change that arrived while this request was on its way
@@ -462,6 +477,26 @@ function applyManipulateBindings(widget, bindings) {
 	});
 }
 
+/**
+ * Enabled -> cond: grey out the controls whose condition is currently False. The server
+ * resolves the conditions against the live control values, so one control can switch
+ * another one off.
+ */
+function applyManipulateEnabled(widget, flags) {
+	widget.controls.each(function(control, index) {
+		var on = flags[index] !== false;
+		if (control.enabled === on)
+			return;
+		control.enabled = on;
+		if (control.row)
+			control.row.setClassName('disabled', !on);
+		if (control.widgetElement)
+			control.widgetElement.select('input, select, button').each(function(input) {
+				input.disabled = !on;
+			});
+	});
+}
+
 function showManipulateResponse(widget, response) {
 	if (!response.results || response.results.length == 0)
 		return;
@@ -492,6 +527,52 @@ function showManipulateBody(widget, body) {
 	});
 	widget.dom.replaceChild(replacement, widget.output);
 	widget.output = replacement;
+	wireManipulateBodyButtons(widget);
+}
+
+/**
+ * Make the Button elements the body produced clickable. Their code stays on the server; the
+ * position in this rendering is all the browser holds, and pressing one runs that action
+ * against the live control values and re-renders.
+ */
+function wireManipulateBodyButtons(widget) {
+	widget.output.select('span.symjabutton').each(function(button) {
+		var action = button.readAttribute('data-action');
+		if (action == null)
+			return;
+		button.addClassName('active');
+		button.observe('click', function() {
+			postManipulate(widget, -1, parseInt(action, 10));
+		});
+	});
+}
+
+/**
+ * Release a widget whose cell the user deleted: the server drops it and runs its
+ * Deinitialization code, and any animation timer it owns is stopped here.
+ */
+function disposeManipulate(id) {
+	var widget = manipulateWidgets[id];
+	if (!widget)
+		return;
+	stopManipulateAnimation(widget);
+	delete manipulateWidgets[id];
+	new Ajax.Request('/ajax/manipulate/', {
+		method: 'post',
+		parameters: {id: id, dispose: 1}
+	});
+}
+
+/** Release every widget inside an element that is about to be removed. */
+function disposeManipulatesIn(element) {
+	if (!element || typeof element.select != 'function')
+		return;
+	element.select('div.manipulate').each(function(dom) {
+		$H(manipulateWidgets).each(function(pair) {
+			if (pair.value.dom == dom)
+				disposeManipulate(pair.key);
+		});
+	});
 }
 
 // ---------------------------------------------------------------- animation

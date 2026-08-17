@@ -29,7 +29,6 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
     ToggleFeature.COMPILE = true;
     ToggleFeature.COMPILE_PRINT = true;
     Config.UNPROTECT_ALLOWED = false;
-    Config.USE_MANIPULATE_JS = true;
     // disable threads for JAS only on google appengine
     Config.JAS_NO_THREADS = false;
     Config.BUILTIN_PROTECTED = ISymbol.NOATTRIBUTE;

@@ -71,6 +71,12 @@ public class AJAXQueryServlet extends HttpServlet {
   private static final Map<String, Object> SESSION_LOCKS =
       java.util.Collections.synchronizedMap(new HashMap<String, Object>());
 
+  /** Release the engine and the evaluation lock of a session that has ended. */
+  static void removeSession(String sessionID) {
+    ENGINES.remove(sessionID);
+    SESSION_LOCKS.remove(sessionID);
+  }
+
   /** The evaluation lock of a session, created on first use. */
   static Object sessionLock(String sessionID) {
     synchronized (SESSION_LOCKS) {
@@ -688,7 +694,6 @@ public class AJAXQueryServlet extends HttpServlet {
     ToggleFeature.COMPILE = true;
     ToggleFeature.COMPILE_PRINT = true;
     Config.UNPROTECT_ALLOWED = false;
-    Config.USE_MANIPULATE_JS = true;
     // disable threads for JAS only on google appengine
     Config.JAS_NO_THREADS = false;
     Config.JAVA_UNSAFE = true;

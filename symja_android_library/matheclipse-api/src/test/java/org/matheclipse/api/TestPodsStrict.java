@@ -22,7 +22,6 @@ public class TestPodsStrict {
     // ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     // Config.FUZZY_PARSER = true;
     // Config.UNPROTECT_ALLOWED = false;
-    // Config.USE_MANIPULATE_JS = true;
     // Config.JAS_NO_THREADS = false;
     // Config.MATHML_TRIG_LOWERCASE = false;
     // Config.MAX_AST_SIZE = 10000;

@@ -1,5 +1,6 @@
 package org.matheclipse.io.servlet;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +10,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.manipulate.ManipulateControl;
 import org.matheclipse.core.manipulate.ManipulateSpec;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,9 +39,22 @@ public class ManipulateSession {
   /** Counter for the widget ids; the id only has to be unique inside one session. */
   private static long widgetCounter = 0L;
 
+  /**
+   * The actions of the <code>Button</code> elements that the body itself produced, per widget.
+   *
+   * <p>
+   * A body may build its own buttons - <code>Manipulate[{x^2, Button["reset", x = 0]}, ...]</code>
+   * - and their code stays here rather than travelling to the browser and back as text: the browser
+   * only sends the position of the button it was told about. The list is replaced on every
+   * rendering, because the body may build different buttons each time.
+   */
+  private static final Map<String, List<IExpr>> BODY_ACTIONS =
+      new LinkedHashMap<String, List<IExpr>>();
+
   private ManipulateSession() {}
 
-  private static synchronized String store(String sessionID, ManipulateSpec spec) {
+  private static synchronized String store(EvalEngine engine, String sessionID,
+      ManipulateSpec spec) {
     Map<String, ManipulateSpec> widgets = SESSIONS.get(sessionID);
     if (widgets == null) {
       widgets = new LinkedHashMap<String, ManipulateSpec>(16, 0.75f, true) {
@@ -48,7 +62,12 @@ public class ManipulateSession {
 
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, ManipulateSpec> eldest) {
-          return size() > MAX_WIDGETS_PER_SESSION;
+          if (size() > MAX_WIDGETS_PER_SESSION) {
+            // the widget is gone from here on, so let it clean up after itself
+            deinitialize(EvalEngine.get(), eldest.getValue());
+            return true;
+          }
+          return false;
         }
       };
       SESSIONS.put(sessionID, widgets);
@@ -58,14 +77,107 @@ public class ManipulateSession {
     return id;
   }
 
+  /**
+   * Run a widget's <code>Deinitialization :&gt; ...</code> code. It will run when the widget goes
+   * away; here that is when its cell is deleted, when it drops out of the per session cache, or
+   * when the browser session ends.
+   */
+  /**
+   * Take the <code>Button</code> elements out of a rendered body: each action is kept here and the
+   * button is rewritten to carry its position, which is what the MathML output turns into a real
+   * button for the browser.
+   */
+  static synchronized IExpr registerBodyButtons(String widgetId, IExpr result) {
+    List<IExpr> actions = new ArrayList<IExpr>();
+    IExpr rewritten = rewriteButtons(result, actions);
+    if (actions.isEmpty()) {
+      BODY_ACTIONS.remove(widgetId);
+    } else {
+      BODY_ACTIONS.put(widgetId, actions);
+    }
+    return rewritten;
+  }
+
+  private static IExpr rewriteButtons(IExpr expr, List<IExpr> actions) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isAST(S.Button, 3)) {
+      actions.add(ast.arg2());
+      // the second argument becomes the position the browser sends back
+      return F.binaryAST2(S.Button, ast.arg1(), F.ZZ(actions.size() - 1));
+    }
+    IASTMutable copy = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr child = rewriteButtons(ast.get(i), actions);
+      if (child != ast.get(i)) {
+        if (!copy.isPresent()) {
+          copy = ast.copy();
+        }
+        copy.set(i, child);
+      }
+    }
+    return copy.isPresent() ? copy : expr;
+  }
+
+  private static void deinitialize(EvalEngine engine, ManipulateSpec spec) {
+    if (engine == null || spec == null) {
+      return;
+    }
+    IExpr deinitialization = spec.getDeinitialization();
+    if (!deinitialization.isPresent()) {
+      return;
+    }
+    try {
+      engine.evaluate(deinitialization);
+    } catch (RuntimeException rex) {
+      // a failing Deinitialization must not stop the widget from being released
+    }
+  }
+
+  /**
+   * Drop a single widget after running its <code>Deinitialization</code>, for a cell the user
+   * deleted.
+   *
+   * @return <code>true</code> if the widget was there
+   */
+  static synchronized boolean dispose(EvalEngine engine, String sessionID, String id) {
+    Map<String, ManipulateSpec> widgets = SESSIONS.get(sessionID);
+    if (widgets == null) {
+      return false;
+    }
+    ManipulateSpec spec = widgets.remove(id);
+    if (spec == null) {
+      return false;
+    }
+    BODY_ACTIONS.remove(id);
+    deinitialize(engine, spec);
+    return true;
+  }
+
   static synchronized ManipulateSpec lookup(String sessionID, String id) {
     Map<String, ManipulateSpec> widgets = SESSIONS.get(sessionID);
     return widgets == null ? null : widgets.get(id);
   }
 
-  /** Forget every widget of a session that has ended. */
-  public static synchronized void remove(String sessionID) {
-    SESSIONS.remove(sessionID);
+  /**
+   * Forget every widget of a session that has ended, running each one's
+   * <code>Deinitialization</code> first.
+   *
+   * @param engine the engine of that session, or <code>null</code> when it is already gone
+   */
+  public static synchronized void remove(EvalEngine engine, String sessionID) {
+    Map<String, ManipulateSpec> widgets = SESSIONS.remove(sessionID);
+    if (widgets == null || engine == null) {
+      return;
+    }
+    for (String widgetId : widgets.keySet()) {
+      BODY_ACTIONS.remove(widgetId);
+    }
+    for (ManipulateSpec spec : widgets.values()) {
+      deinitialize(engine, spec);
+    }
   }
 
   /**
@@ -75,7 +187,7 @@ public class ManipulateSession {
    */
   static String[] create(EvalEngine engine, ManipulateSpec spec, StringBuilderWriter outWriter,
       StringBuilderWriter errorWriter) throws java.io.IOException {
-    String id = store(engine.getSessionID(), spec);
+    String id = store(engine, engine.getSessionID(), spec);
 
     // Initialization :> ... runs once, before the first rendering. Its definitions stay in the
     // session engine, so every later evaluation of the body still sees them.
@@ -88,9 +200,11 @@ public class ManipulateSession {
       }
     }
 
-    IExpr result = evaluateBody(engine, spec, initialBindings(spec));
+    ObjectNode bindings = initialBindings(spec);
+    IExpr result = registerBodyButtons(id, evaluateBody(engine, spec, bindings));
     String[] rendered = AJAXQueryServlet.renderResult(engine, result, outWriter, errorWriter);
-    return JSONBuilder.createJSONManipulate(id, spec, rendered[1]);
+    return JSONBuilder.createJSONManipulate(id, spec, rendered[1],
+        resolveEnabled(engine, spec, bindings), spec.warnings());
   }
 
   /** The control values as the browser would first send them. */
@@ -136,19 +250,60 @@ public class ManipulateSession {
    * evaluation and a global symbol of the same name is left alone.
    */
   static IExpr evaluateBody(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
+    return engine.evaluate(F.Block(bindingList(engine, spec, bindings), spec.getBody()));
+  }
+
+  /**
+   * Resolve every control's <code>Enabled</code> condition against the control values the browser
+   * holds, so a control can be greyed out by the state of another one.
+   *
+   * @return one flag per control, in the order of {@link ManipulateSpec#getControls()}, or
+   *         <code>null</code> when no control carries a condition
+   */
+  static ArrayNode resolveEnabled(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
+    boolean any = false;
+    for (ManipulateControl control : spec.getControls()) {
+      if (control.getEnabledCondition().isPresent()) {
+        any = true;
+        break;
+      }
+    }
+    if (!any) {
+      return null;
+    }
+    IASTAppendable locals = bindingList(engine, spec, bindings);
+    ArrayNode flags = JSONBuilder.JSON_OBJECT_MAPPER.createArrayNode();
+    for (ManipulateControl control : spec.getControls()) {
+      IExpr condition = control.getEnabledCondition();
+      if (!condition.isPresent()) {
+        flags.add(true);
+        continue;
+      }
+      try {
+        IExpr value = engine.evaluate(F.Block(locals, condition));
+        // anything that is not explicitly False leaves the control usable
+        flags.add(!value.isFalse());
+      } catch (RuntimeException rex) {
+        flags.add(true);
+      }
+    }
+    return flags;
+  }
+
+  /** The <code>Block</code> local assignments for the control values the browser sent. */
+  private static IASTAppendable bindingList(EvalEngine engine, ManipulateSpec spec,
+      JsonNode bindings) {
     IASTAppendable locals = F.ListAlloc(spec.getControls().size());
     for (ManipulateControl control : spec.getControls()) {
       if (!control.bindsVariable()) {
         continue;
       }
-      ISymbol variable = control.getVariable();
       IExpr value = valueOf(control, bindings.get(control.getName()), engine);
       if (value.isPresent()) {
-        locals.append(F.Set(variable, value));
+        locals.append(F.Set(control.getVariable(), value));
       }
     }
-    IAST block = F.Block(locals, spec.getBody());
-    return engine.evaluate(block);
+    return locals;
   }
 
   /** Turn one control value from the browser into the expression its variable is bound to. */
@@ -177,6 +332,14 @@ public class ManipulateSession {
     }
     if (ManipulateControl.LOCATOR.equals(kind)) {
       if (node.isArray()) {
+        if (control.isSinglePoint()) {
+          // declared as one point, so the variable is that point rather than a list of one
+          JsonNode point = node.size() > 0 ? node.get(0) : null;
+          if (point != null && point.isArray() && point.size() >= 2) {
+            return F.list(F.num(point.get(0).asDouble()), F.num(point.get(1).asDouble()));
+          }
+          return F.NIL;
+        }
         IASTAppendable points = F.ListAlloc(node.size());
         for (JsonNode point : node) {
           if (point.isArray() && point.size() >= 2) {
@@ -255,19 +418,38 @@ public class ManipulateSession {
     if (!ManipulateControl.BUTTON.equals(button.getKind())) {
       return null;
     }
-    // Evaluate the action with the control variables bound, then read them back: an action such
-    // as "t = 0" has to move the slider it targets, not just run.
-    IASTAppendable locals = F.ListAlloc(controls.size());
-    for (ManipulateControl control : controls) {
-      if (control.bindsVariable()) {
-        IExpr value = valueOf(control, bindings.get(control.getName()), engine);
-        if (value.isPresent()) {
-          locals.append(F.Set(control.getVariable(), value));
-        }
-      }
+    return runAction(engine, spec, bindings, button.getAction());
+  }
+
+  /**
+   * Run the action of a <code>Button</code> that the body itself produced, such as the reset button
+   * of <code>Manipulate[{x^2, Button["reset", x = 0]}, {x, 0, 10}]</code>.
+   *
+   * @param widgetId the widget the button belongs to
+   * @param actionIndex the position of the button in the last rendering of that widget
+   */
+  static ObjectNode runBodyButtonAction(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
+      String widgetId, int actionIndex) {
+    List<IExpr> actions;
+    synchronized (ManipulateSession.class) {
+      actions = BODY_ACTIONS.get(widgetId);
     }
+    if (actions == null || actionIndex < 0 || actionIndex >= actions.size()) {
+      return null;
+    }
+    return runAction(engine, spec, bindings, actions.get(actionIndex));
+  }
+
+  /**
+   * Evaluate an action with the control variables bound, then read them back: an action such as
+   * <code>t = 0</code> has to move the slider it targets, not merely run.
+   */
+  private static ObjectNode runAction(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
+      IExpr action) {
+    List<ManipulateControl> controls = spec.getControls();
+    IASTAppendable locals = bindingList(engine, spec, bindings);
     IASTAppendable body = F.ast(S.CompoundExpression, 2);
-    body.append(button.getAction());
+    body.append(action);
     IASTAppendable readBack = F.ListAlloc(controls.size());
     for (ManipulateControl control : controls) {
       if (control.bindsVariable()) {
@@ -321,6 +503,15 @@ public class ManipulateSession {
       return;
     }
     if (ManipulateControl.LOCATOR.equals(kind)) {
+      if (control.isSinglePoint() && value.isList2() && !value.first().isList()) {
+        // a single point written back by an action; the browser always holds a list of rows
+        IAST point = (IAST) value;
+        ArrayNode node = updated.putArray(name);
+        ArrayNode pair = node.addArray();
+        pair.add(ManipulateControl.toDouble(point.arg1(), 0.0));
+        pair.add(ManipulateControl.toDouble(point.arg2(), 0.0));
+        return;
+      }
       if (value.isList()) {
         IAST points = (IAST) value;
         ArrayNode node = updated.putArray(name);

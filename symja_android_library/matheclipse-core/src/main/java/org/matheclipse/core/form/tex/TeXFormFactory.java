@@ -935,6 +935,65 @@ public class TeXFormFactory {
     }
   }
 
+  /**
+   * <code>Underscript[x, under]</code> as <code>&#92;underset{under}{x}</code>, which is what KaTeX and
+   * LaTeX both understand.
+   */
+  private static final class Underscript extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() != 3) {
+        return false;
+      }
+      buffer.append("\\underset{");
+      fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}{");
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}");
+      return true;
+    }
+  }
+
+  /** <code>Overscript[x, over]</code> as <code>&#92;overset{over}{x}</code>. */
+  private static final class Overscript extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() != 3) {
+        return false;
+      }
+      buffer.append("\\overset{");
+      fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}{");
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}");
+      return true;
+    }
+  }
+
+  /**
+   * <code>Underoverscript[x, under, over]</code>: the two are nested, since TeX has no single
+   * command that places both at once.
+   */
+  private static final class Underoverscript extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() != 4) {
+        return false;
+      }
+      buffer.append("\\underset{");
+      fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}{\\overset{");
+      fFactory.convertInternal(buffer, f.arg3(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}{");
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}}");
+      return true;
+    }
+  }
+
   private static final class Subsuperscript extends AbstractTeXConverter {
 
     @Override
@@ -2236,6 +2295,9 @@ public class TeXFormFactory {
     initTeXConverter(S.Style, new Style());
     initTeXConverter(S.Subscript, new Subscript());
     initTeXConverter(S.Subsuperscript, new Subsuperscript());
+    initTeXConverter(S.Underscript, new Underscript());
+    initTeXConverter(S.Overscript, new Overscript());
+    initTeXConverter(S.Underoverscript, new Underoverscript());
     initTeXConverter(S.Sum, new Sum());
     initTeXConverter(S.Superscript, new Superscript());
 

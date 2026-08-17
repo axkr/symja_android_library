@@ -3,6 +3,7 @@ package org.matheclipse.io.servlet;
 import static io.undertow.Handlers.resource;
 import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
+import static io.undertow.servlet.Servlets.listener;
 import static io.undertow.servlet.Servlets.servlet;
 import java.awt.Desktop;
 import java.io.File;
@@ -79,7 +80,9 @@ public class ServletServer {
               servlet("doc", AJAXDocServlet.class).addMapping("/doc/*"),
               servlet("search", AJAXSearchServlet.class).addMapping("/doc/search/"),
               servlet("notebook", AJAXNotebookServlet.class).addMapping("/notebook/"),
-              servlet("manipulate", AJAXManipulateServlet.class).addMapping("/manipulate/"));
+              servlet("manipulate", AJAXManipulateServlet.class).addMapping("/manipulate/"))
+          // frees the engine, the evaluation lock and the Manipulate widgets of an ended session
+          .addListener(listener(SymjaSessionListener.class));
 
       DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
       manager.deploy();

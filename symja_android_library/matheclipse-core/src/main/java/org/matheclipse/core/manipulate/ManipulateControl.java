@@ -15,10 +15,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * One row of a {@link ManipulateSpec} control area.
  *
  * <p>
- * A control is described here, not rendered: the browser builds the widget from {@link #toJSON()}
- * and sends the value the user picked back as a plain number, index or list. Turning that value
- * into the expression the body is evaluated with is {@link #binding(IExpr)}'s job, so no
- * user-visible expression has to travel through the browser as text.
+ * A control is described here, not rendered: the browser builds the widget from
+ * {@link #toJSON(ObjectMapper)} and sends the value the user picked back as a plain number, index
+ * or list. Turning that value into the expression the body is evaluated with is the job of
+ * <code>ManipulateSession#valueOf</code> in the servlet, so no user-visible expression has to
+ * travel through the browser as text.
  */
 public class ManipulateControl {
 
@@ -83,6 +84,17 @@ public class ManipulateControl {
   // locator
   private final List<double[]> points = new ArrayList<double[]>();
   private boolean autoCreate = false;
+
+  /**
+   * Whether this Locator was declared with a single point rather than a list of them.
+   *
+   * <p>
+   * The binding has to mirror the shape the user wrote: <code>{{p, {1, 1}}, Locator}</code> binds
+   * <code>p</code> to the point <code>{1, 1}</code>, so that a body such as
+   * <code>Line[{{0, 0}, p}]</code> works, while <code>{{pts, {{0, 0}, {1, 1}}}, Locator}</code>
+   * binds a list of points.
+   */
+  private boolean singlePoint = false;
 
   /** A <code>Button</code>'s action, held. */
   private IExpr action = F.NIL;
@@ -163,6 +175,54 @@ public class ManipulateControl {
     points.add(new double[] {x, y});
   }
 
+  /** Whether this Locator carries at least one point. Visible for tests. */
+  public boolean hasPointsForTest() {
+    return hasPoints();
+  }
+
+  /** Whether this Locator already carries at least one point. */
+  boolean hasPoints() {
+    return !points.isEmpty();
+  }
+
+  /** Whether the bound variable is one point rather than a list of them. */
+  public boolean isSinglePoint() {
+    return singlePoint;
+  }
+
+  void setSinglePoint(boolean singlePoint) {
+    this.singlePoint = singlePoint;
+  }
+
+  /**
+   * Widen the rectangle until every point of this Locator has room to move on all sides. Only used
+   * when the specification gave no rectangle of its own.
+   */
+  void growToFitPoints() {
+    if (points.isEmpty()) {
+      return;
+    }
+    double lowX = points.get(0)[0], highX = points.get(0)[0];
+    double lowY = points.get(0)[1], highY = points.get(0)[1];
+    for (double[] point : points) {
+      lowX = Math.min(lowX, point[0]);
+      highX = Math.max(highX, point[0]);
+      lowY = Math.min(lowY, point[1]);
+      highY = Math.max(highY, point[1]);
+    }
+    // a point on or outside an edge gets half the spread - at least half a unit - of room
+    if (lowX <= min || highX >= max) {
+      double margin = Math.max(highX - lowX, 1.0) / 2.0;
+      min = Math.min(min, lowX - margin);
+      max = Math.max(max, highX + margin);
+    }
+    if (lowY <= minY || highY >= maxY) {
+      double margin = Math.max(highY - lowY, 1.0) / 2.0;
+      minY = Math.min(minY, lowY - margin);
+      maxY = Math.max(maxY, highY + margin);
+    }
+  }
+
   void setAutoCreate(boolean autoCreate) {
     this.autoCreate = autoCreate;
   }
@@ -236,27 +296,6 @@ public class ManipulateControl {
       }
     }
     return fallback;
-  }
-
-  /**
-   * The expression to bind the control variable to for a value the browser sent back.
-   *
-   * @param value the value as it arrives from the browser: a number for a slider, an index for a
-   *        choice, a list for the paired controls
-   * @return the expression, or {@link F#NIL} when the value cannot be used
-   */
-  public IExpr binding(IExpr value) {
-    if (DISCRETE.equals(kind)) {
-      int index = value.toIntDefault();
-      if (index >= 0 && index < values.size()) {
-        return values.get(index);
-      }
-      return values.isEmpty() ? F.NIL : values.get(0);
-    }
-    if (INPUTFIELD.equals(kind)) {
-      return value;
-    }
-    return value;
   }
 
   /** The step to use when the specification did not give one. */

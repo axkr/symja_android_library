@@ -38,6 +38,8 @@ import jakarta.servlet.http.HttpSession;
  * id       the widget id handed out when the Manipulate was first evaluated
  * bindings a JSON object of control name to the value the browser holds
  * button   optional, the index of a Button control that was pressed
+ * bodyButton optional, the index of a Button the body itself produced
+ * dispose  optional, release the widget and run its Deinitialization code
  * </pre>
  *
  * The answer is the same JSON a plain evaluation produces, so the browser puts the body of a widget
@@ -71,6 +73,25 @@ public class AJAXManipulateServlet extends HttpServlet {
       return;
     }
 
+    // a cell that was deleted releases its widget, which runs its Deinitialization code
+    if (req.getParameter("dispose") != null) {
+      EvalEngine disposeEngine = AJAXQueryServlet.ENGINES.get(session.getId());
+      if (disposeEngine == null) {
+        ManipulateSession.dispose(null, session.getId(), id);
+      } else {
+        synchronized (AJAXQueryServlet.sessionLock(session.getId())) {
+          try {
+            EvalEngine.set(disposeEngine);
+            ManipulateSession.dispose(disposeEngine, session.getId(), id);
+          } finally {
+            EvalEngine.remove();
+          }
+        }
+      }
+      out.println("{\"disposed\": true}");
+      return;
+    }
+
     JsonNode bindings;
     try {
       String bindingsParameter = req.getParameter("bindings");
@@ -82,15 +103,9 @@ public class AJAXManipulateServlet extends HttpServlet {
       return;
     }
 
-    int buttonIndex = -1;
-    String buttonParameter = req.getParameter("button");
-    if (buttonParameter != null) {
-      try {
-        buttonIndex = Integer.parseInt(buttonParameter);
-      } catch (NumberFormatException nfe) {
-        buttonIndex = -1;
-      }
-    }
+    int buttonIndex = intParameter(req, "button");
+    // a Button the body itself produced, identified by its position in the last rendering
+    int bodyButtonIndex = intParameter(req, "bodyButton");
 
     final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
@@ -112,7 +127,8 @@ public class AJAXManipulateServlet extends HttpServlet {
       // see AJAXQueryServlet#sessionLock: one evaluation per session at a time, and never on the
       // engine's own monitor - a time budgeted evaluation copies the engine from its worker thread
       synchronized (AJAXQueryServlet.sessionLock(session.getId())) {
-        out.println(evaluate(engine, spec, bindings, buttonIndex, outWriter, errorWriter));
+        out.println(evaluate(engine, spec, bindings, buttonIndex, bodyButtonIndex, id, outWriter,
+            errorWriter));
       }
     } finally {
       EvalEngine.remove();
@@ -123,16 +139,32 @@ public class AJAXManipulateServlet extends HttpServlet {
    * Evaluate the body under a time limit, the same way the query servlet guards an evaluation: a
    * body that does not finish must not hold on to the request thread.
    */
+  private static int intParameter(HttpServletRequest req, String name) {
+    String value = req.getParameter(name);
+    if (value == null) {
+      return -1;
+    }
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException nfe) {
+      return -1;
+    }
+  }
+
   private static String evaluate(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
-      int buttonIndex, StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
+      int buttonIndex, int bodyButtonIndex, String widgetId, StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<String> task = executor.submit(() -> {
       try {
         EvalEngine.set(engine);
         ObjectNode updated = null;
         JsonNode effective = bindings;
-        if (buttonIndex >= 0) {
-          updated = ManipulateSession.runButtonAction(engine, spec, bindings, buttonIndex);
+        if (buttonIndex >= 0 || bodyButtonIndex >= 0) {
+          updated = buttonIndex >= 0
+              ? ManipulateSession.runButtonAction(engine, spec, bindings, buttonIndex)
+              : ManipulateSession.runBodyButtonAction(engine, spec, bindings, widgetId,
+                  bodyButtonIndex);
           if (updated != null) {
             // the action may have moved controls; render for the values it left behind
             ObjectNode merged = bindings.deepCopy();
@@ -140,10 +172,12 @@ public class AJAXManipulateServlet extends HttpServlet {
             effective = merged;
           }
         }
-        IExpr result = ManipulateSession.evaluateBody(engine, spec, effective);
+        IExpr result = ManipulateSession.registerBodyButtons(widgetId,
+            ManipulateSession.evaluateBody(engine, spec, effective));
         String[] rendered =
             AJAXQueryServlet.renderResult(engine, result, outWriter, errorWriter);
-        return withBindings(rendered[1], updated);
+        return withExtras(rendered[1], updated,
+            ManipulateSession.resolveEnabled(engine, spec, effective));
       } catch (AbortException ae) {
         String[] aborted =
             AJAXQueryServlet.renderResult(engine, S.$Aborted, outWriter, errorWriter);
@@ -165,19 +199,29 @@ public class AJAXManipulateServlet extends HttpServlet {
     }
   }
 
-  /** Add the control values a button action wrote to the result the browser gets back. */
-  private static String withBindings(String resultJSON, ObjectNode updated) {
-    if (updated == null || updated.isEmpty()) {
+  /**
+   * Add what the browser needs besides the rendering: the control values a button action wrote, and
+   * the resolved <code>Enabled</code> state of every control.
+   */
+  private static String withExtras(String resultJSON, ObjectNode updated,
+      com.fasterxml.jackson.databind.node.ArrayNode enabled) {
+    boolean hasBindings = updated != null && !updated.isEmpty();
+    if (!hasBindings && enabled == null) {
       return resultJSON;
     }
     try {
       JsonNode tree = JSONBuilder.JSON_OBJECT_MAPPER.readTree(resultJSON);
       if (tree instanceof ObjectNode) {
-        ((ObjectNode) tree).set("bindings", updated);
+        if (hasBindings) {
+          ((ObjectNode) tree).set("bindings", updated);
+        }
+        if (enabled != null) {
+          ((ObjectNode) tree).set("enabled", enabled);
+        }
         return tree.toString();
       }
     } catch (Exception ex) {
-      // fall through and answer without the binding update
+      // fall through and answer with the rendering alone
     }
     return resultJSON;
   }

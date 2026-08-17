@@ -44,11 +44,18 @@ public class JSONBuilder {
    * @param id the widget id, used by <code>/ajax/manipulate/</code> to find it again
    * @param spec the parsed specification
    * @param renderedBody the JSON that {@link AJAXQueryServlet#renderResult} produced for the body
+   * @param enabled one flag per control from a resolved <code>Enabled</code> option, or
+   *        <code>null</code> when no control carries one
+   * @param warnings messages to show above the widget, such as an option that is not understood
    */
   public static String[] createJSONManipulate(String id,
-      org.matheclipse.core.manipulate.ManipulateSpec spec, String renderedBody) {
+      org.matheclipse.core.manipulate.ManipulateSpec spec, String renderedBody,
+      ArrayNode enabled, java.util.List<String> warnings) {
     ObjectNode manipulate = spec.toJSON(JSON_OBJECT_MAPPER);
     manipulate.put("id", id);
+    if (enabled != null) {
+      manipulate.set("enabled", enabled);
+    }
     try {
       manipulate.set("body", JSON_OBJECT_MAPPER.readTree(renderedBody));
     } catch (Exception ex) {
@@ -61,6 +68,11 @@ public class JSONBuilder {
     resultsJSON.put("format", FORMAT_MANIPULATE);
     resultsJSON.set("manipulate", manipulate);
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+    if (warnings != null) {
+      for (String warning : warnings) {
+        addMessage(temp, "Warning", warning);
+      }
+    }
     resultsJSON.putPOJO("out", temp);
 
     temp = JSON_OBJECT_MAPPER.createArrayNode();

@@ -11,7 +11,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Tests MathML presentation function */
-public class MathMLPresentationTestCase  {
+public class MathMLPresentationTestCase {
 
   MathMLUtilities mathUtil;
 
@@ -432,6 +432,62 @@ public class MathMLPresentationTestCase  {
             + "poly[{x},C,2]");
     check(expr, //
         "<mrow><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>&#0183;</mo><msub><mi>C</mi><mrow><mo>{</mo><mrow><mn>2</mn></mrow><mo>}</mo></mrow></msub></mrow><mo>+</mo><mrow><mi>x</mi><mo>&#0183;</mo><msub><mi>C</mi><mrow><mo>{</mo><mrow><mn>1</mn></mrow><mo>}</mo></mrow></msub></mrow><mo>+</mo><msub><mi>C</mi><mrow><mo>{</mo><mrow><mn>0</mn></mrow><mo>}</mo></mrow></msub></mrow>");
+  }
+
+  @Test
+  public void testButton() {
+    // the markup sits inside mtext, which is an HTML integration point. A Manipulate rewrites the
+    // second argument to the position of the action it kept, and that becomes the data-action.
+    IExpr expr = EvalEngine.get().evaluate("Button(\"reset\", 0)");
+    check(expr, //
+        "<mtext><span class=\"symjabutton\" data-action=\"0\">reset</span></mtext>");
+    // an action that is not a kept position leaves the button inert: no front end can run it
+    expr = EvalEngine.get().evaluate("Button(\"press me\", doSomething(x))");
+    check(expr, //
+        "<mtext><span class=\"symjabutton\">press me</span></mtext>");
+  }
+
+  @Test
+  public void testUnderscriptOverscriptAndUnderoverscript() {
+    IExpr expr = EvalEngine.get().evaluate("Underscript(x,a)");
+    check(expr, //
+        "<munder><mi>x</mi><mi>a</mi></munder>");
+    expr = EvalEngine.get().evaluate("Overscript(x,a)");
+    check(expr, //
+        "<mover><mi>x</mi><mi>a</mi></mover>");
+    expr = EvalEngine.get().evaluate("Underoverscript(x,a,b)");
+    check(expr, //
+        "<munderover><mi>x</mi><mi>a</mi><mi>b</mi></munderover>");
+  }
+
+  @Test
+  public void testSubsuperscript() {
+    IExpr expr = EvalEngine.get().evaluate("Subsuperscript(x,a,b)");
+    check(expr, //
+        "<msubsup><mi>x</mi><mi>a</mi><mi>b</mi></msubsup>");
+    expr = EvalEngine.get().evaluate("Nest(Subsuperscript(#,#,#)&,x,1)");
+    check(expr, //
+        "<msubsup><mi>x</mi><mi>x</mi><mi>x</mi></msubsup>");
+  }
+
+  @Test
+  public void testStyle() {
+    // a size directive
+    IExpr expr = EvalEngine.get().evaluate("Style(x,Small)");
+    check(expr, //
+        "<mstyle mathsize=\"0.8em\"><mi>x</mi></mstyle>");
+    // a colour: a named colour evaluates to RGBColor
+    expr = EvalEngine.get().evaluate("Style(x,Red)");
+    check(expr, //
+        "<mstyle mathcolor=\"#ff0000\"><mi>x</mi></mstyle>");
+    // several directives at once
+    expr = EvalEngine.get().evaluate("Style(x,Large,Bold)");
+    check(expr, //
+        "<mstyle mathsize=\"1.4em\" style=\"font-weight:bold;\"><mi>x</mi></mstyle>");
+    // a directive that is not understood must not swallow the expression
+    expr = EvalEngine.get().evaluate("Style(x,SomethingUnknown)");
+    check(expr, //
+        "<mi>x</mi>");
   }
 
   @Test

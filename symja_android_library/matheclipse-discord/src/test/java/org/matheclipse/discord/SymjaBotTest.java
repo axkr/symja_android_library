@@ -31,7 +31,6 @@ public class SymjaBotTest {
     Config.FILESYSTEM_ENABLED = false;
     Config.FUZZY_PARSER = true;
     Config.UNPROTECT_ALLOWED = false;
-    Config.USE_MANIPULATE_JS = true;
     Config.JAS_NO_THREADS = true;
     Config.MATHML_TRIG_LOWERCASE = false;
     Config.MAX_AST_SIZE = 20000;

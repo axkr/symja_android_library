@@ -839,6 +839,269 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
   }
 
+  /**
+   * <code>Button[label, action]</code> as a real button.
+   *
+   * <p>
+   * The markup goes inside an <code>mtext</code>, which is an HTML integration point: an HTML
+   * element there is parsed as HTML rather than as MathML. The interactive front end replaces the
+   * second argument with the position of the action it kept, so a button of a Manipulate body
+   * carries that position and one written anywhere else stays inert.
+   */
+  private static final class Button extends MMLOperator {
+
+    public Button() {
+      super(0, "mtext", "");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 3) {
+        return false;
+      }
+      // only a plain integer is the position of a kept action; anything else is the action
+      // itself, which no front end can run, so that button stays inert
+      int action = f.arg2().isInteger() ? f.arg2().toIntDefault() : -1;
+      fFactory.tagStart(buf, "mtext");
+      buf.append("<span class=\"symjabutton\"");
+      if (action >= 0) {
+        buf.append(" data-action=\"").append(action).append("\"");
+      }
+      buf.append(">");
+      buf.append(escapeHtml(labelText(f.arg1())));
+      buf.append("</span>");
+      fFactory.tagEnd(buf, "mtext");
+      return true;
+    }
+
+    private static String labelText(IExpr label) {
+      return label.isString() ? label.toString() : label.toString();
+    }
+
+    private static String escapeHtml(String text) {
+      return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+          .replace("\"", "&quot;");
+    }
+  }
+
+  /** <code>Underscript[x, under]</code> as the MathML <code>munder</code> element. */
+  private static final class Underscript extends MMLOperator {
+
+    public Underscript() {
+      super(0, "munder", "");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 3) {
+        return false;
+      }
+      fFactory.tagStart(buf, "munder");
+      fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
+      fFactory.convertInternal(buf, f.arg2(), fPrecedence, false);
+      fFactory.tagEnd(buf, "munder");
+      return true;
+    }
+  }
+
+  /** <code>Overscript[x, over]</code> as the MathML <code>mover</code> element. */
+  private static final class Overscript extends MMLOperator {
+
+    public Overscript() {
+      super(0, "mover", "");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 3) {
+        return false;
+      }
+      fFactory.tagStart(buf, "mover");
+      fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
+      fFactory.convertInternal(buf, f.arg2(), fPrecedence, false);
+      fFactory.tagEnd(buf, "mover");
+      return true;
+    }
+  }
+
+  /**
+   * <code>Underoverscript[x, under, over]</code> as the MathML <code>munderover</code> element.
+   */
+  private static final class Underoverscript extends MMLOperator {
+
+    public Underoverscript() {
+      super(0, "munderover", "");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      // munderover takes exactly a base, an underscript and an overscript
+      if (f.size() != 4) {
+        return false;
+      }
+      fFactory.tagStart(buf, "munderover");
+      fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
+      fFactory.convertInternal(buf, f.arg2(), fPrecedence, false);
+      fFactory.convertInternal(buf, f.arg3(), fPrecedence, false);
+      fFactory.tagEnd(buf, "munderover");
+      return true;
+    }
+  }
+
+  /** <code>Subsuperscript[x, sub, sup]</code> as the MathML <code>msubsup</code> element. */
+  private static final class Subsuperscript extends MMLOperator {
+
+    public Subsuperscript() {
+      super(0, "msubsup", "");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      // msubsup takes exactly a base, a subscript and a superscript
+      if (f.size() != 4) {
+        return false;
+      }
+      fFactory.tagStart(buf, "msubsup");
+      fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
+      fFactory.convertInternal(buf, f.arg2(), fPrecedence, false);
+      fFactory.convertInternal(buf, f.arg3(), fPrecedence, false);
+      fFactory.tagEnd(buf, "msubsup");
+      return true;
+    }
+  }
+
+  /**
+   * <code>Style[expr, directives...]</code> as an <code>mstyle</code> element.
+   *
+   * <p>
+   * A directive that is not understood is skipped rather than making the whole conversion fail:
+   * the expression itself still has to be shown. Without this the browser would print the literal
+   * <code>Style[3.14159, Small]</code> instead of the number.
+   */
+  private static final class Style extends MMLOperator {
+
+    public Style() {
+      super(0, "mstyle", "");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      StringBuilder attributes = new StringBuilder();
+      StringBuilder css = new StringBuilder();
+      for (int i = 2; i < f.size(); i++) {
+        appendStyleDirective(attributes, css, f.get(i));
+      }
+      if (css.length() > 0) {
+        attributes.append(" style=\"").append(css).append("\"");
+      }
+
+      if (attributes.length() == 0) {
+        // nothing to apply: show the expression on its own
+        fFactory.convertInternal(buf, f.arg1(), precedence, false);
+        return true;
+      }
+      fFactory.tagStart(buf, "mstyle", attributes.toString().trim());
+      fFactory.convertInternal(buf, f.arg1(), Precedence.NO_PRECEDENCE, false);
+      fFactory.tagEnd(buf, "mstyle");
+      return true;
+    }
+
+    /** Translate one <code>Style</code> directive into MathML attributes or CSS. */
+    private static void appendStyleDirective(StringBuilder attributes, StringBuilder css,
+        IExpr directive) {
+      String color = colorOf(directive);
+      if (color != null) {
+        attributes.append(" mathcolor=\"").append(color).append("\"");
+        return;
+      }
+      if (directive.isSymbol()) {
+        String name = ((ISymbol) directive).getSymbolName();
+        String size = fontSizeOf(name);
+        if (size != null) {
+          attributes.append(" mathsize=\"").append(size).append("\"");
+          return;
+        }
+        // MathML Core dropped the general mathvariant, so the face is set with CSS
+        if (name.equalsIgnoreCase("Bold")) {
+          css.append("font-weight:bold;");
+        } else if (name.equalsIgnoreCase("Italic")) {
+          css.append("font-style:italic;");
+        } else if (name.equalsIgnoreCase("Plain")) {
+          css.append("font-weight:normal;font-style:normal;");
+        } else if (name.equalsIgnoreCase("Underlined")) {
+          css.append("text-decoration:underline;");
+        }
+        return;
+      }
+      if (directive.isReal()) {
+        // a bare number is a font size in printer's points
+        attributes.append(" mathsize=\"").append(directive.evalf()).append("pt\"");
+        return;
+      }
+      if (directive.isAST(S.FontSize, 2) || directive.isRule()) {
+        IExpr value = ((IAST) directive).arg2();
+        if (directive.isRule() && ((IAST) directive).arg1() != S.FontSize) {
+          return;
+        }
+        if (value.isReal()) {
+          attributes.append(" mathsize=\"").append(value.evalf()).append("pt\"");
+        }
+      }
+    }
+
+    /** The named sizes, as a length: MathML Core no longer knows "small" and "big". */
+    private static String fontSizeOf(String name) {
+      if (name.equalsIgnoreCase("Tiny")) {
+        return "0.6em";
+      }
+      if (name.equalsIgnoreCase("Small")) {
+        return "0.8em";
+      }
+      if (name.equalsIgnoreCase("Medium")) {
+        return "1em";
+      }
+      if (name.equalsIgnoreCase("Large")) {
+        return "1.4em";
+      }
+      if (name.equalsIgnoreCase("Huge")) {
+        return "1.8em";
+      }
+      return null;
+    }
+  }
+
+  /**
+   * The <code>#rrggbb</code> form of a colour directive, or <code>null</code> when the expression is
+   * not a colour. Colours reach this point as <code>RGBColor</code>, because a named colour such as
+   * <code>Red</code> evaluates to one.
+   */
+  private static String colorOf(IExpr expr) {
+    if (expr.isAST(S.RGBColor, 4, 5)) {
+      IAST rgb = (IAST) expr;
+      return hexColor(rgb.arg1(), rgb.arg2(), rgb.arg3());
+    }
+    if (expr.isAST(S.GrayLevel, 2)) {
+      IExpr level = ((IAST) expr).arg1();
+      return hexColor(level, level, level);
+    }
+    return null;
+  }
+
+  private static String hexColor(IExpr red, IExpr green, IExpr blue) {
+    if (!red.isReal() || !green.isReal() || !blue.isReal()) {
+      return null;
+    }
+    return String.format("#%02x%02x%02x", channel(red), channel(green), channel(blue));
+  }
+
+  private static int channel(IExpr value) {
+    int scaled = (int) Math.round(value.evalf() * 255.0);
+    return scaled < 0 ? 0 : (scaled > 255 ? 255 : scaled);
+  }
+
   private static final class Superscript extends MMLOperator {
 
     public Superscript() {
@@ -2592,8 +2855,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.Set, new MMLOperator(Precedence.SET, "="));
     CONVERTERS.put(S.SetDelayed, new MMLOperator(Precedence.SETDELAYED, ":="));
     CONVERTERS.put(S.Sqrt, new Sqrt());
+    CONVERTERS.put(S.Button, new Button());
+    CONVERTERS.put(S.Overscript, new Overscript());
+    CONVERTERS.put(S.Style, new Style());
     CONVERTERS.put(S.Subscript, new Subscript());
+    CONVERTERS.put(S.Subsuperscript, new Subsuperscript());
     CONVERTERS.put(S.Superscript, new Superscript());
+    CONVERTERS.put(S.Underscript, new Underscript());
+    CONVERTERS.put(S.Underoverscript, new Underoverscript());
     CONVERTERS.put(S.Sum, new Sum());
     CONVERTERS.put(S.Surd, new Surd());
     CONVERTERS.put(S.Times, new Times());

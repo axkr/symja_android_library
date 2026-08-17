@@ -967,3 +967,31 @@ div.filelist table a {
 div.filelist table a:hover {
   color: #33c;
 }
+
+/* a control switched off by Enabled -> cond */
+div.manipulaterow.disabled {
+  opacity: 0.45;
+}
+div.manipulaterow.disabled span.manipulatelabel {
+  color: #999;
+}
+
+/* a Button the Manipulate body produced, rendered inside the MathML output */
+span.symjabutton {
+  display: inline-block;
+  background: #fff;
+  border: 1px solid #cccecb;
+  border-radius: 3px;
+  padding: 1px 8px;
+  font-family: sans-serif;
+  font-size: 0.9em;
+  color: #3f3f3f;
+}
+span.symjabutton.active {
+  cursor: pointer;
+}
+span.symjabutton.active:hover {
+  background: #3f3f3f;
+  color: #fff;
+  border-color: #3f3f3f;
+}

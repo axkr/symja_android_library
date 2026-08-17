@@ -56,6 +56,9 @@ public class ManipulateSpec {
   /** The variable an animation advances, or <code>null</code> for the first continuous control. */
   private String animationVariable = null;
 
+  /** Options that are not understood, collected while parsing and reported to the user. */
+  private final List<String> unknownControlOptions = new ArrayList<String>();
+
   private ManipulateSpec(IExpr body) {
     this.body = body;
   }
@@ -154,7 +157,7 @@ public class ManipulateSpec {
         }
         continue;
       }
-      ManipulateControl control = parseControl(arg, engine);
+      ManipulateControl control = parseControl(arg, engine, spec.unknownControlOptions);
       if (control != null) {
         spec.controls.add(control);
       }
@@ -204,9 +207,23 @@ public class ManipulateSpec {
     return true;
   }
 
-  /** Names of the options this implementation does not know. */
+  /** The options that may be given on a single control rather than on the Manipulate itself. */
+  private static final ISymbol[] KNOWN_CONTROL_OPTIONS =
+      {S.Appearance, S.AppearanceElements, S.BaseStyle, S.ControlPlacement, S.ControlType,
+          S.ContinuousAction, S.Enabled, S.ImageSize, S.LabelStyle, S.LocatorAutoCreate, S.Method};
+
+  private static boolean isKnownControlOption(ISymbol name) {
+    for (ISymbol candidate : KNOWN_CONTROL_OPTIONS) {
+      if (candidate == name) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Names of the options this implementation does not know, on the Manipulate or on a control. */
   public List<String> unknownOptions() {
-    List<String> unknown = new ArrayList<String>();
+    List<String> unknown = new ArrayList<String>(unknownControlOptions);
     for (ISymbol name : options.keySet()) {
       boolean known = false;
       for (ISymbol candidate : KNOWN_OPTIONS) {
@@ -215,16 +232,29 @@ public class ManipulateSpec {
           break;
         }
       }
-      if (!known) {
+      if (!known && !unknown.contains(name.getSymbolName())) {
         unknown.add(name.getSymbolName());
       }
     }
     return unknown;
   }
 
+  /**
+   * The messages to show above the widget: one per option that is not understood, in the shape we
+   * use for an unknown option.
+   */
+  public List<String> warnings() {
+    List<String> messages = new ArrayList<String>();
+    for (String name : unknownOptions()) {
+      messages.add("Manipulate: " + name + " is not a known option and was ignored.");
+    }
+    return messages;
+  }
+
   // ---------------------------------------------------------------- controls
 
-  private static ManipulateControl parseControl(IExpr spec, EvalEngine engine) {
+  private static ManipulateControl parseControl(IExpr spec, EvalEngine engine,
+      List<String> unknown) {
     if (spec == S.Delimiter) {
       return ManipulateControl.delimiter();
     }
@@ -239,19 +269,20 @@ public class ManipulateSpec {
       return ManipulateControl.button(labelOf(button.arg1()), button.arg2());
     }
     if (spec.isAST(S.Control, 2)) {
-      return parseControl(((IAST) spec).arg1(), engine);
+      return parseControl(((IAST) spec).arg1(), engine, unknown);
     }
     if (!spec.isList() || spec.size() < 2) {
       return null;
     }
-    return parseListControl((IAST) spec, engine);
+    return parseListControl((IAST) spec, engine, unknown);
   }
 
   /**
    * Parse the <code>{u, ...}</code> and <code>{{u, uinit, ulabel}, ...}</code> forms, in every
    * combination for the second and later arguments of Manipulate.
    */
-  private static ManipulateControl parseListControl(IAST spec, EvalEngine engine) {
+  private static ManipulateControl parseListControl(IAST spec, EvalEngine engine,
+      List<String> unknown) {
     IExpr first = spec.arg1();
     ISymbol variable;
     IExpr initial = F.NIL;
@@ -278,13 +309,21 @@ public class ManipulateSpec {
     for (int i = 2; i < spec.size(); i++) {
       IExpr arg = spec.get(i);
       if (isOptionRule(arg) && ((IAST) arg).arg1().isSymbol()) {
-        controlOptions.put((ISymbol) ((IAST) arg).arg1(), ((IAST) arg).arg2());
+        ISymbol optionName = (ISymbol) ((IAST) arg).arg1();
+        if (!isKnownControlOption(optionName)) {
+          unknown.add(optionName.getSymbolName());
+        }
+        controlOptions.put(optionName, ((IAST) arg).arg2());
       } else {
         args.add(arg);
       }
     }
 
     String controlType = typeName(controlOptions.get(S.ControlType));
+    if (controlType == null) {
+      // the control may also be named positionally, as in {{p, {0, 0}}, Locator}
+      controlType = takePositionalControlType(args);
+    }
     ManipulateControl control = build(variable, args, initial, controlType, engine);
     if (control == null) {
       return null;
@@ -310,8 +349,39 @@ public class ManipulateSpec {
     return control;
   }
 
+  /** The control heads that may stand among the positional arguments instead of after a rule. */
+  private static final String[] POSITIONAL_CONTROL_TYPES = {"Locator", "Slider", "Slider2D",
+      "IntervalSlider", "VerticalSlider", "Manipulator", "Checkbox", "Toggler", "TogglerBar",
+      "SetterBar", "RadioButtonBar", "PopupMenu", "Setter", "RadioButton", "Trigger", "Animator",
+      "InputField", "ColorSetter", "ColorSlider", "ProgressIndicator"};
+
+  /**
+   * Take a bare control head out of the positional arguments, as in
+   * <code>{{p, {0, 0}}, Locator}</code>, and return its name.
+   */
+  private static String takePositionalControlType(List<IExpr> args) {
+    for (int i = 0; i < args.size(); i++) {
+      IExpr arg = args.get(i);
+      if (!arg.isSymbol()) {
+        continue;
+      }
+      String name = ((ISymbol) arg).getSymbolName();
+      for (String candidate : POSITIONAL_CONTROL_TYPES) {
+        if (name.equalsIgnoreCase(candidate)) {
+          args.remove(i);
+          return candidate;
+        }
+      }
+    }
+    return null;
+  }
+
   private static ManipulateControl build(ISymbol variable, List<IExpr> args, IExpr initial,
       String controlType, EvalEngine engine) {
+
+    if (isName(controlType, "Locator")) {
+      return locator(variable, args, initial);
+    }
 
     // {u, {choices...}} - a choice out of a list
     if (args.size() == 1 && args.get(0).isList()) {
@@ -379,6 +449,61 @@ public class ManipulateSpec {
       }
     }
     return null;
+  }
+
+  /**
+   * A <code>Locator</code> control: one or more draggable points.
+   *
+   * <p>
+   * The initial value is either a single point <code>{x, y}</code> or a list of them; the optional
+   * <code>{xmin, ymin}, {xmax, ymax}</code> arguments give the rectangle they move in, defaulting
+   * to the unit square the way <code>LocatorPane</code> does.
+   */
+  private static ManipulateControl locator(ISymbol variable, List<IExpr> args, IExpr initial) {
+    ManipulateControl control = new ManipulateControl(ManipulateControl.LOCATOR, variable);
+
+    double xMin = 0.0, yMin = 0.0, xMax = 1.0, yMax = 1.0;
+    boolean explicitRectangle = args.size() >= 2 && args.get(0).isList2() && args.get(1).isList2();
+    if (explicitRectangle) {
+      IAST low = (IAST) args.get(0);
+      IAST high = (IAST) args.get(1);
+      xMin = ManipulateControl.toDouble(low.arg1(), 0.0);
+      yMin = ManipulateControl.toDouble(low.arg2(), 0.0);
+      xMax = ManipulateControl.toDouble(high.arg1(), 1.0);
+      yMax = ManipulateControl.toDouble(high.arg2(), 1.0);
+    }
+    control.setRange(xMin, xMax, Double.NaN);
+    control.setRangeY(yMin, yMax);
+
+    if (initial.isList2() && !initial.first().isList()) {
+      // a single point: the variable is bound to that point, not to a list of one
+      IAST point = (IAST) initial;
+      control.setSinglePoint(true);
+      control.addPoint(ManipulateControl.toDouble(point.arg1(), xMin),
+          ManipulateControl.toDouble(point.arg2(), yMin));
+    } else if (initial.isList()) {
+      IAST points = (IAST) initial;
+      for (int i = 1; i < points.size(); i++) {
+        if (points.get(i).isList2()) {
+          IAST point = (IAST) points.get(i);
+          control.addPoint(ManipulateControl.toDouble(point.arg1(), xMin),
+              ManipulateControl.toDouble(point.arg2(), yMin));
+        }
+      }
+    }
+    if (!control.hasPoints()) {
+      // no initial position given: one point, in the middle of the rectangle
+      control.setSinglePoint(true);
+      control.addPoint((xMin + xMax) / 2.0, (yMin + yMax) / 2.0);
+    }
+    if (!explicitRectangle) {
+      // The unit square is only a fallback. A point sitting on its edge - which is what
+      // {{p, {1, 1}}, Locator} gives - could then only be dragged inwards, so the box is grown
+      // until every point has room to move on all sides.
+      control.growToFitPoints();
+    }
+    control.setInitial(initial);
+    return control;
   }
 
   private static ManipulateControl discrete(ISymbol variable, IAST choices, IExpr initial,

@@ -636,8 +636,6 @@ public class Config {
   // public static Function<IInteger, IAST> FACTOR_INTEGER = Primality::factorIInteger;
   public static IPrimality PRIME_FACTORS = new Primality();
 
-  /** Use JavaScript libraries for the <code>Manipulate()</code> function */
-  public static boolean USE_MANIPULATE_JS = true;
 
   /** Use visjs.org JavaScript library for visualizing graph theory objects */
   public static boolean USE_VISJS = false;

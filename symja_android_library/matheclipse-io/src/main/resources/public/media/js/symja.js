@@ -256,6 +256,9 @@ function deleteMouseDown(event) {
 }
 
 function deleteClick(event) {
+	// a Manipulate in this cell has state on the server; let it go before the cell does
+	if (typeof disposeManipulatesIn == 'function')
+		disposeManipulatesIn(this.li);
 	if (lastFocus == this.li.textarea)
 		lastFocus = null;
 	this.li.deleteElement();
