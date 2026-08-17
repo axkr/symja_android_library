@@ -701,7 +701,7 @@ class TeXSegmentParser {
       }
     }
     if (x == null) {
-      return F.unaryAST1(S.Integrate, DUMMY_SUB_SLOT);
+      return F.Integrate(DUMMY_SUB_SLOT);
       // throw new AbortException();
     }
 

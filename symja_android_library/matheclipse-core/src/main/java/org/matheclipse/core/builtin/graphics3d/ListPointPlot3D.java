@@ -196,7 +196,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       stems.append(F.List(F.ZZ(from), F.ZZ(to)));
     }
     builder.addPrimitive(fillingStyle.equals(S.Automatic) ? pointStyle : fillingStyle);
-    builder.addPrimitive(F.unaryAST1(S.Line, stems));
+    builder.addPrimitive(F.Line(stems));
     // the points are drawn after the stems again, so they keep their own colour
     builder.addPrimitive(pointStyle);
   }

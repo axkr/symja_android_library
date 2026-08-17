@@ -103,7 +103,7 @@ public class PrimeNu extends AbstractFunctionOptionEvaluator implements IntUnary
     } else {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
-        return F.unaryAST1(S.PrimeNu, negExpr);
+        return F.PrimeNu(negExpr);
       }
     }
 

@@ -938,13 +938,13 @@ public class WL {
         } else {
           if (pat.isNullSequence()) {
             if (condition != null) {
-              writeAST2(S.Pattern, pat.getSymbol(), F.unaryAST1(S.BlankNullSequence, condition));
+              writeAST2(S.Pattern, pat.getSymbol(), F.BlankNullSequence(condition));
             } else {
               writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.BlankNullSequence));
             }
           } else {
             if (condition != null) {
-              writeAST2(S.Pattern, pat.getSymbol(), F.unaryAST1(S.BlankSequence, condition));
+              writeAST2(S.Pattern, pat.getSymbol(), F.BlankSequence(condition));
             } else {
               writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.BlankSequence));
             }
@@ -962,7 +962,7 @@ public class WL {
           pat = F.$p(pat.getSymbol());
           writeAST1(S.Optional, pat);
         } else if (condition != null) {
-          writeAST2(S.Pattern, pat.getSymbol(), F.unaryAST1(S.Blank, condition));
+          writeAST2(S.Pattern, pat.getSymbol(), F.Blank(condition));
         } else {
           writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.Blank));
         }

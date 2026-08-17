@@ -195,7 +195,7 @@ public class ComplexPlot extends ListPlot {
       return F.NIL;
     }
     double argument = scaling ? (phase + Math.PI) / (2.0 * Math.PI) : phase;
-    IExpr function = spec.isString() ? F.unaryAST1(S.ColorData, spec) : spec;
+    IExpr function = spec.isString() ? F.ColorData(spec) : spec;
     return evalColor(F.unaryAST1(function, F.num(argument)), engine);
   }
 

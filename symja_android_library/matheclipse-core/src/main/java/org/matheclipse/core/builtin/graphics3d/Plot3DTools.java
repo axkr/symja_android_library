@@ -390,7 +390,7 @@ public final class Plot3DTools {
   }
 
   private static IExpr segment(double[] from, double[] to) {
-    return F.unaryAST1(S.Line, F.List(//
+    return F.Line(F.List(//
         F.List(F.num(from[0]), F.num(from[1]), F.num(from[2])), //
         F.List(F.num(to[0]), F.num(to[1]), F.num(to[2]))));
   }
@@ -423,7 +423,7 @@ public final class Plot3DTools {
     // two crossings is a segment; four means the level passes through twice and the cell is too
     // coarse to say how, so it is left out rather than guessed at
     if (crossings.argSize() == 2) {
-      lines.append(F.unaryAST1(S.Line, crossings));
+      lines.append(F.Line(crossings));
     }
   }
 
@@ -498,12 +498,12 @@ public final class Plot3DTools {
   public static IExpr chartFaceStyle(int index, IExpr plotStyle) {
     IExpr base = chartStyle(index, plotStyle);
     if (!base.isAST(S.RGBColor, 4)) {
-      return F.binaryAST2(S.Directive, base, F.unaryAST1(S.Opacity, F.num(CHART_FACE_OPACITY)));
+      return F.binaryAST2(S.Directive, base, F.Opacity(F.num(CHART_FACE_OPACITY)));
     }
     IAST color = (IAST) base;
     IAST lightened = F.RGBColor(lighten(color.arg1().evalfNaN()), lighten(color.arg2().evalfNaN()),
         lighten(color.arg3().evalfNaN()));
-    return F.binaryAST2(S.Directive, lightened, F.unaryAST1(S.Opacity, F.num(CHART_FACE_OPACITY)));
+    return F.binaryAST2(S.Directive, lightened, F.Opacity(F.num(CHART_FACE_OPACITY)));
   }
 
   private static double lighten(double channel) {
@@ -529,7 +529,7 @@ public final class Plot3DTools {
     // the polygons themselves never carry edges. Outlining each quad puts one line per sample,
     // which at the default sampling covers the surface in a dark grid; draws about
     // fifteen lines each way whatever the sampling is.
-    builder.setStyle(style, F.unaryAST1(S.EdgeForm, S.None));
+    builder.setStyle(style, F.EdgeForm(S.None));
   }
 
   /** Whether a {@code Mesh} option value asks for mesh lines. */
@@ -582,7 +582,7 @@ public final class Plot3DTools {
     }
     boolean scaled = colorFunctionScaling == null || !colorFunctionScaling.isFalse();
     final IExpr function =
-        colorFunction.isString() ? F.unaryAST1(S.ColorData, colorFunction) : colorFunction;
+        colorFunction.isString() ? F.ColorData(colorFunction) : colorFunction;
     return new ColorMap(function, scaled, engine);
   }
 

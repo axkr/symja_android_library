@@ -5416,7 +5416,7 @@ public final class NumberTheory {
       } else {
         IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
         if (negExpr.isPresent()) {
-          return F.unaryAST1(S.PrimeOmega, negExpr);
+          return F.PrimeOmega(negExpr);
         }
       }
       return F.NIL;

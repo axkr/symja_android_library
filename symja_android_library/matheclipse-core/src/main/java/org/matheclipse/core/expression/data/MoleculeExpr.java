@@ -57,7 +57,7 @@ public class MoleculeExpr extends DataExpr<IAST> implements Externalizable {
     if (fData == null) {
       return F.NIL;
     }
-    return F.unaryAST1(S.Molecule, fData);
+    return F.Molecule(fData);
   }
 
   @Override

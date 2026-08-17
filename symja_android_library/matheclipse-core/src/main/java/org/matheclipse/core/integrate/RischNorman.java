@@ -143,7 +143,7 @@ public class RischNorman {
     // polynomials of Tan/Tanh kernels
     Set<IExpr> logCandidates = new LinkedHashSet<>();
     if (!denom.isOne()) {
-      IExpr factored = engine.evaluate(F.unaryAST1(S.FactorList, denom));
+      IExpr factored = engine.evaluate(F.FactorList(denom));
       if (factored.isList()) {
         for (IExpr pair : (IAST) factored) {
           if (pair.isList2()) {

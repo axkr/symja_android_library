@@ -55,8 +55,8 @@ public class RSolve extends AbstractFunctionEvaluator {
     ISymbol xSym = F.Dummy("x");
     IPattern xPat = F.$p(xSym);
 
-    IExpr fibX = F.unaryAST1(S.Fibonacci, xSym);
-    IExpr lucasX = F.unaryAST1(S.LucasL, xSym);
+    IExpr fibX = F.Fibonacci(xSym);
+    IExpr lucasX = F.LucasL(xSym);
 
     // Identity: phi^n = 1/2 * L_n + Sqrt(5)/2 * F_n
     // Identity: psi^n = 1/2 * L_n - Sqrt(5)/2 * F_n
@@ -813,7 +813,7 @@ public class RSolve extends AbstractFunctionEvaluator {
 
     IExpr res = engine.evaluate(F.subst(expr, rules));
     res = engine.evaluate(F.ExpandAll(res));
-    IExpr cPattern = F.unaryAST1(S.C, F.$b());
+    IExpr cPattern = F.C(F.$b());
     res = engine.evaluate(F.Collect(res, cPattern));
 
     return res;
@@ -1194,7 +1194,7 @@ public class RSolve extends AbstractFunctionEvaluator {
 
         if (rules.argSize() > 0) {
           cleanInverse = engine.evaluate(F.ExpandAll(cleanInverse));
-          IExpr cPattern = F.unaryAST1(S.C, F.$b());
+          IExpr cPattern = F.C(F.$b());
           cleanInverse = engine.evaluate(F.Collect(cleanInverse, cPattern));
         }
 

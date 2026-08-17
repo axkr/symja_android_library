@@ -88,7 +88,7 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
         if (seriesRes.isPresent()) {
           IExpr normalPoly = engine.evaluate(seriesRes.normal(false));
           // Collect constants to get canonical grouping: (1+2*x+2*x^2)*C(1)
-          IExpr cPattern = F.unaryAST1(S.C, F.$b());
+          IExpr cPattern = F.C(F.$b());
           return engine.evaluate(F.Collect(normalPoly, cPattern));
         }
       }
@@ -197,7 +197,7 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
         finalSeries = engine.evaluate(F.subst(finalSeries, finalRules));
       }
 
-      IExpr cPattern = F.unaryAST1(S.C, F.$b());
+      IExpr cPattern = F.C(F.$b());
       finalSeries = engine.evaluate(F.Collect(finalSeries, cPattern));
 
       return engine.evaluate(finalSeries);

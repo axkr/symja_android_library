@@ -545,7 +545,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       double yMinNum = Double.POSITIVE_INFINITY;
       double yMaxNum = Double.NEGATIVE_INFINITY;
       for (Double c : roots) {
-        IAST rootExpr = F.unaryAST1(S.Root, F.list(pureFunction, F.num(c)));
+        IAST rootExpr = F.Root(F.list(pureFunction, F.num(c)));
         IExpr yCandidate = engine.evaluate(F.subst(function, x, rootExpr));
         double yNum = engine.evaluate(F.N(yCandidate)).evalfNaN();
         if (Double.isNaN(yNum) || Double.isInfinite(yNum)) {

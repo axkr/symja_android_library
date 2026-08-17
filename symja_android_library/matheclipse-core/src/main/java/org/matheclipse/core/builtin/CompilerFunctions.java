@@ -132,7 +132,7 @@ public class CompilerFunctions {
           // The number of arguments `1` does not match the length `2` of the argument template.
           Errors.printMessage(S.CompiledFunction, "cfct",
               F.List(F.ZZ(ast.argSize()), F.ZZ(variables.argSize())), engine);
-          return F.unaryAST1(S.CompiledFunction, variables);
+          return F.CompiledFunction(variables);
         }
 
         int attributes = compiledFunction.getAttributes();

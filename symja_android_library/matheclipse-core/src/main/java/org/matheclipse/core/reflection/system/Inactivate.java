@@ -64,7 +64,7 @@ public class Inactivate extends AbstractFunctionOptionEvaluator {
         if (EXCLUDED_HEADS.contains(sym)) {
           newHead = sym;
         } else if (matcher.test(sym)) {
-          newHead = F.unaryAST1(S.Inactive, sym);
+          newHead = F.Inactive(sym);
         }
       }
 

@@ -145,7 +145,7 @@ public class BarnesG extends AbstractFunctionEvaluator {
     // Closed forms for G(1/4) involve Catalan's constant and are quite complex/non-standard
     // in basic simplification unless specifically requested.
     // We return the symbolic function call for the reduced base.
-    return F.unaryAST1(S.BarnesG, base);
+    return F.BarnesG(base);
   }
 
   /**

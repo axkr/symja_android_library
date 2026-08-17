@@ -178,7 +178,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         IExpr color = defaultColors[colorIdx];
         primitives.append(useThinLineStyle || pointsOnly ? color : faceColors[colorIdx]);
         if (!useThinLineStyle && !pointsOnly) {
-          primitives.append(F.unaryAST1(S.EdgeForm, S.None));
+          primitives.append(F.EdgeForm(S.None));
         }
 
         List<PlotData> data = new ArrayList<>();
@@ -332,7 +332,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         // nearest thing to here
         double size = toDouble(list.arg2(), 0.0);
         if (size > 0.0) {
-          primitives.append(F.unaryAST1(S.PointSize, F.num(Math.min(0.05, size / 400.0))));
+          primitives.append(F.PointSize(F.num(Math.min(0.05, size / 400.0))));
         }
         marker = list.arg1();
       } else if (list.argSize() > 0) {
@@ -367,7 +367,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       for (PlotData pd : data) {
         points.append(F.List(F.num(pd.x), F.num(pd.y), F.num(pd.z)));
       }
-      primitives.append(F.unaryAST1(S.Line, points));
+      primitives.append(F.Line(points));
       return;
     }
     appendLanes(primitives, data, true);
@@ -382,7 +382,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     }
     for (IASTAppendable lane : lanes.values()) {
       if (lane.argSize() > 1) {
-        primitives.append(F.unaryAST1(S.Line, lane));
+        primitives.append(F.Line(lane));
       }
     }
   }

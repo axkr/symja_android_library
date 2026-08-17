@@ -69,7 +69,7 @@ public class TestResultObjectExpr extends DataExpr<IAssociation> implements Exte
 
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
-    return F.unaryAST1(S.TestResultObject, fData.normal(false));
+    return F.TestResultObject(fData.normal(false));
   }
 
   @Override

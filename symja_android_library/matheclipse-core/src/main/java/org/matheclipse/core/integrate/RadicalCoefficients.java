@@ -148,7 +148,7 @@ public class RadicalCoefficients {
     for (int strategy = 0; strategy < 2; strategy++) {
       IExpr candidate = strategy == 0 //
           ? timeConstrained(F.Simplify(square), engine)
-          : timeConstrained(F.unaryAST1(S.ToRadicals, F.unaryAST1(S.RootReduce, square)), engine);
+          : timeConstrained(F.ToRadicals(F.RootReduce(square)), engine);
       // The square has to land in the quadratic field: a candidate that still nests radicals is
       // just the coefficient rewritten, and Sqrt() would collapse straight back to it.
       if (candidate.isNIL() || !candidate.isFreeAST(S.Root) || !candidate.isNumericFunction(true)

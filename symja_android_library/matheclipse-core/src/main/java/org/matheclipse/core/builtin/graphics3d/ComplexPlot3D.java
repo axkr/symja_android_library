@@ -182,7 +182,7 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     for (int j = m - 2; j >= 0; j--) {
       points.append(point(grid[0][j]));
     }
-    return F.unaryAST1(S.Line, points);
+    return F.Line(points);
   }
 
   private static IAST point(double[] xyz) {

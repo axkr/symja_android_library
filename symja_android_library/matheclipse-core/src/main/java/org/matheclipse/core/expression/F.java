@@ -931,12 +931,12 @@ public class F extends S {
       CThrowFalse = new B1.Throw(False);
       CThrowTrue = new B1.Throw(True);
 
-      CInfinity = unaryAST1(DirectedInfinity, C1).functionEvaled();
+      CInfinity = DirectedInfinity(C1).functionEvaled();
       oo = CInfinity;
-      CNInfinity = unaryAST1(DirectedInfinity, CN1).functionEvaled();
+      CNInfinity = DirectedInfinity(CN1).functionEvaled();
       Noo = CNInfinity;
-      CIInfinity = unaryAST1(DirectedInfinity, CI).functionEvaled();
-      CNIInfinity = unaryAST1(DirectedInfinity, CNI).functionEvaled();
+      CIInfinity = DirectedInfinity(CI).functionEvaled();
+      CNIInfinity = DirectedInfinity(CNI).functionEvaled();
       CComplexInfinity = headAST0(DirectedInfinity).functionEvaled();
 
       CNPi = new B2.Times(CN1, Pi).functionEvaled();
@@ -1412,6 +1412,10 @@ public class F extends S {
     return new AST2(AbsoluteCorrelation, a0, a1);
   }
 
+  public static IAST AbsoluteThickness(final IExpr a0) {
+    return new AST1(AbsoluteThickness, a0);
+  }
+
   public static IASTMutable AddSides(final IExpr equationOrInequality, final IExpr a1) {
     return new AST2(AddSides, equationOrInequality, a1);
   }
@@ -1757,6 +1761,10 @@ public class F extends S {
 
   public static IAST ArcTanh(final IExpr z) {
     return new AST1(ArcTanh, z);
+  }
+
+  public static IAST Area(final IExpr a0) {
+    return new AST1(Area, a0);
   }
 
   public static IAST Arg(final IExpr z) {
@@ -2360,9 +2368,43 @@ public class F extends S {
     return quinary(BinormalDistribution, a0, a1, a2, a1, a2);
   }
 
+  /**
+   * <code>Blank(head)</code> - the <code>Blank</code> expression as an {@link IAST}.
+   *
+   * In contrast to {@link #$b(IExpr)}, which creates an {@link IPattern} atom, this method
+   * creates the ordinary <code>Blank(head)</code> function expression.
+   *
+   * @param head
+   */
+  public static IAST Blank(final IExpr head) {
+    return new AST1(Blank, head);
+  }
+
+  /**
+   * <code>BlankNullSequence(head)</code> as an ordinary {@link IAST}.
+   *
+   * In contrast to {@link #$bns(IExpr)}, which creates a pattern-sequence atom.
+   *
+   * @param head
+   */
+  public static IAST BlankNullSequence(final IExpr head) {
+    return new AST1(BlankNullSequence, head);
+  }
+
 
   public static IAST BlankSequence() {
     return new AST0(BlankSequence);
+  }
+
+  /**
+   * <code>BlankSequence(head)</code> as an ordinary {@link IAST}.
+   *
+   * In contrast to {@link #$bs(IExpr)}, which creates a pattern-sequence atom.
+   *
+   * @param head
+   */
+  public static IAST BlankSequence(final IExpr head) {
+    return new AST1(BlankSequence, head);
   }
 
   public static IAST Block(final IExpr a0, final IExpr a1) {
@@ -2470,6 +2512,10 @@ public class F extends S {
     return new AST3(BrownianBridgeProcess, a0, a1, a2);
   }
 
+  public static IAST BSplineCurve(final IExpr listOfPoints) {
+    return new AST1(BSplineCurve, listOfPoints);
+  }
+
   /**
    * <code>C(n)</code> - represents the `n`-th constant in a solution to a differential equation or
    * {@link S#ConditionalExpression}.
@@ -2478,6 +2524,16 @@ public class F extends S {
    */
   public static IAST C(final int n) {
     return new AST1(C, ZZ(n));
+  }
+
+  /**
+   * <code>C(n)</code> - represents the `n`-th constant in a solution to a differential
+   * equation or {@link S#ConditionalExpression}.
+   *
+   * @param n
+   */
+  public static IAST C(final IExpr n) {
+    return new AST1(C, n);
   }
 
   public static IAST Cancel(final IExpr a) {
@@ -2814,6 +2870,10 @@ public class F extends S {
     return new AST2(Colon, a0, a1);
   }
 
+  public static IAST ColorData(final IExpr a0) {
+    return new AST1(ColorData, a0);
+  }
+
   public static int compareTo(IExpr a, IExpr b) throws UnsupportedOperationException {
     if (a instanceof IReal && b instanceof IReal) {
       return a.compareTo(b);
@@ -2879,6 +2939,10 @@ public class F extends S {
 
   public static IAST Compile(final IExpr a0, final IExpr a1) {
     return new AST2(Compile, a0, a1);
+  }
+
+  public static IAST CompiledFunction(final IExpr a0) {
+    return new AST1(CompiledFunction, a0);
   }
 
   public static IAST CompilePrint(final IExpr a0, final IExpr a1) {
@@ -3514,6 +3578,15 @@ public class F extends S {
     return function(Derivative, a);
   }
 
+  /**
+   * <code>Derivative(n)</code> - the derivative operator of order <code>n</code>.
+   *
+   * @param n
+   */
+  public static IAST Derivative(final IExpr n) {
+    return new AST1(Derivative, n);
+  }
+
   public static IAST DesignMatrix(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(DesignMatrix, a0, a1, a2);
   }
@@ -3853,6 +3926,10 @@ public class F extends S {
     return new AST3(Dot, a, b, c);
   }
 
+  public static IAST DownValues(final IExpr a0) {
+    return new AST1(DownValues, a0);
+  }
+
   public static IAST Drop(final IExpr list, final IExpr a1) {
     return new AST2(Drop, list, a1);
   }
@@ -3949,6 +4026,10 @@ public class F extends S {
     return symbol;
   }
 
+  public static IAST Echo(final IExpr a0) {
+    return new AST1(Echo, a0);
+  }
+
   public static IAST EdgeForm(final IExpr a0) {
     return new AST1(EdgeForm, a0);
   }
@@ -4014,6 +4095,10 @@ public class F extends S {
 
   public static IAST EllipticPi(final IExpr n, final IExpr phi, final IExpr m) {
     return new AST3(EllipticPi, n, phi, m);
+  }
+
+  public static IAST EmptyRegion(final IExpr dimension) {
+    return new AST1(EmptyRegion, dimension);
   }
 
   public static IAST Equal(final IExpr... a) {
@@ -4562,6 +4647,10 @@ public class F extends S {
     return new AST1(FactorInteger, a0);
   }
 
+  public static IAST FactorList(final IExpr a0) {
+    return new AST1(FactorList, a0);
+  }
+
   public static IAST FactorSquareFree(final IExpr a) {
     return new AST1(FactorSquareFree, a);
   }
@@ -4609,6 +4698,10 @@ public class F extends S {
 
   public static IAST FindInstance(final IExpr f, final IExpr a, IExpr b, IExpr c) {
     return quaternary(FindInstance, f, a, b, c);
+  }
+
+  public static IAST FindLinearRecurrence(final IExpr list) {
+    return new AST1(FindLinearRecurrence, list);
   }
 
   public static IAST FindMaximum(final IExpr f, final IExpr x) {
@@ -5024,6 +5117,10 @@ public class F extends S {
 
   public static IAST GeometricMean(final IExpr a0) {
     return new AST1(GeometricMean, a0);
+  }
+
+  public static IAST GeoPosition(final IExpr a0) {
+    return new AST1(GeoPosition, a0);
   }
 
   public static IAST Get(final IExpr a0) {
@@ -5502,6 +5599,10 @@ public class F extends S {
     return new AST1(Increment, a);
   }
 
+  public static IAST IndependentUnit(final IExpr unit) {
+    return new AST1(IndependentUnit, unit);
+  }
+
   public static IAST Inequality(final IExpr... a) {
     return function(Inequality, a);
   }
@@ -5559,6 +5660,10 @@ public class F extends S {
    */
   public static IAST InexactNumberQ(final IExpr a) {
     return new AST1(InexactNumberQ, a);
+  }
+
+  public static IAST InfiniteLine(final IExpr listOfPoints) {
+    return new AST1(InfiniteLine, listOfPoints);
   }
 
   public static IAST Information(final IExpr a) {
@@ -5751,6 +5856,15 @@ public class F extends S {
    */
   public static IAST IntegerQ(final IExpr expr) {
     return new B1.IntegerQ(expr);
+  }
+
+  /**
+   * <code>Integrate(f)</code> - the one argument form of the indefinite integral.
+   *
+   * @param f
+   */
+  public static IAST Integrate(final IExpr f) {
+    return new AST1(Integrate, f);
   }
 
   /**
@@ -8045,6 +8159,14 @@ public class F extends S {
     return new AST1(MissingQ, a0);
   }
 
+  public static IAST MixedMagnitude(final IExpr magnitudes) {
+    return new AST1(MixedMagnitude, magnitudes);
+  }
+
+  public static IAST MixedUnit(final IExpr units) {
+    return new AST1(MixedUnit, units);
+  }
+
   public static IAST mod(IExpr a, Integer i) {
     return Mod(a, ZZ(i.longValue()));
   }
@@ -8086,6 +8208,10 @@ public class F extends S {
 
   public static IAST Moment(final IExpr a0, final int r) {
     return new AST2(Moment, a0, F.ZZ(r));
+  }
+
+  public static IAST Molecule(final IExpr a0) {
+    return new AST1(Molecule, a0);
   }
 
   public static IAST Molecule(final IExpr a0, final IExpr a1) {
@@ -8499,6 +8625,10 @@ public class F extends S {
 
   public static IAST Opacity(final double d) {
     return new AST1(Opacity, F.num(d));
+  }
+
+  public static IAST Opacity(final IExpr a0) {
+    return new AST1(Opacity, a0);
   }
 
   public static String openHTMLOnDesktop(String html) throws IOException {
@@ -9112,6 +9242,15 @@ public class F extends S {
     return new B1.Point(list);
   }
 
+  /**
+   * <code>Point(point)</code> - a graphics primitive for the given point or list of points.
+   *
+   * @param point
+   */
+  public static IAST Point(final IExpr point) {
+    return new B1.Point(point);
+  }
+
   public static IAST PointSize(final double value) {
     return new AST1(PointSize, F.num(value));
   }
@@ -9323,6 +9462,10 @@ public class F extends S {
 
   public static IAST Prime(final IExpr a0) {
     return new AST1(Prime, a0);
+  }
+
+  public static IAST PrimeNu(final IExpr a0) {
+    return new AST1(PrimeNu, a0);
   }
 
   public static IAST PrimeOmega(final IExpr a0) {
@@ -9618,6 +9761,10 @@ public class F extends S {
     return new AST2(QuantityMagnitude, quantity, unit);
   }
 
+  public static IAST QuantityUnit(final IExpr a0) {
+    return new AST1(QuantityUnit, a0);
+  }
+
   public static IAST Quartiles(final IExpr a0) {
     return new AST1(Quartiles, a0);
   }
@@ -9817,6 +9964,10 @@ public class F extends S {
     return new AST2(ReflectionTransform, a0, a1);
   }
 
+  public static IAST RegionCentroid(final IExpr region) {
+    return new AST1(RegionCentroid, region);
+  }
+
   public static IAST RegionMember(final IExpr a0, final IExpr a1) {
     return new AST2(RegionMember, a0, a1);
   }
@@ -9951,12 +10102,28 @@ public class F extends S {
     return new AST1(RomanNumeral, a);
   }
 
+  /**
+   * <code>Root(listOfFunctionAndIndex)</code> - the one argument form of {@link S#Root},
+   * where the argument is the list <code>{function, k}</code>.
+   *
+   * See {@link #Root(IExpr, IExpr)} for the two argument form.
+   *
+   * @param listOfFunctionAndIndex
+   */
+  public static IAST Root(final IExpr listOfFunctionAndIndex) {
+    return new AST1(Root, listOfFunctionAndIndex);
+  }
+
   public static IAST Root(final IExpr function, final IExpr k) {
     return new AST2(Root, function, k);
   }
 
   public static IAST Root(final IExpr function, final int k) {
     return new AST2(Root, function, F.ZZ(k));
+  }
+
+  public static IAST RootReduce(final IExpr a0) {
+    return new AST1(RootReduce, a0);
   }
 
   public static IAST Roots(final IExpr a0) {
@@ -10558,6 +10725,10 @@ public class F extends S {
    */
   public static ISparseArray sparseArray(final IAST arrayRulesList, int[] dimension) {
     return SparseArrayExpr.newArrayRules(arrayRulesList, dimension, 0, C0);
+  }
+
+  public static IAST SparseArray(final IExpr arrayRules) {
+    return new AST1(SparseArray, arrayRules);
   }
 
   /**
@@ -11634,6 +11805,14 @@ public class F extends S {
     return new AST3(head, arg1, arg2, arg3);
   }
 
+  public static IAST TestReportObject(final IExpr a0) {
+    return new AST1(TestReportObject, a0);
+  }
+
+  public static IAST TestResultObject(final IExpr a0) {
+    return new AST1(TestResultObject, a0);
+  }
+
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TeXForm.md">TeXForm</a>
@@ -11924,6 +12103,10 @@ public class F extends S {
     return new AST1(ToPolarCoordinates, a0);
   }
 
+  public static IAST ToRadicals(final IExpr a0) {
+    return new AST1(ToRadicals, a0);
+  }
+
   public static IAST ToSphericalCoordinates(final IExpr a0) {
     return new AST1(ToSphericalCoordinates, a0);
   }
@@ -11978,6 +12161,10 @@ public class F extends S {
    */
   public static IAST TrigExpand(final IExpr expr) {
     return new AST1(TrigExpand, expr);
+  }
+
+  public static IAST TrigFactor(final IExpr a0) {
+    return new AST1(TrigFactor, a0);
   }
 
   /**
@@ -12095,6 +12282,10 @@ public class F extends S {
     return new AST1(Unique, a0);
   }
 
+  public static IAST UnitBox(final IExpr a0) {
+    return new AST1(UnitBox, a0);
+  }
+
   /**
    * Convert the <code>quantity</code> to the base unit.
    *
@@ -12124,8 +12315,20 @@ public class F extends S {
     return new AST2(UnitConvert, quantity, unit);
   }
 
+  public static IAST UnitDimensions(final IExpr quantity) {
+    return new AST1(UnitDimensions, quantity);
+  }
+
+  public static IAST UnitSimplify(final IExpr quantity) {
+    return new AST1(UnitSimplify, quantity);
+  }
+
   public static IAST UnitStep(final IExpr a0) {
     return new AST1(UnitStep, a0);
+  }
+
+  public static IAST UnitTriangle(final IExpr a0) {
+    return new AST1(UnitTriangle, a0);
   }
 
   /**

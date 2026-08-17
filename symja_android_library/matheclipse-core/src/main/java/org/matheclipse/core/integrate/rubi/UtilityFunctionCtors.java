@@ -426,7 +426,7 @@ public class UtilityFunctionCtors {
    * rules in {@code FixIntRules[]}.
    */
   public static IAST DownValues(final IExpr a0) {
-    return F.unaryAST1(S.DownValues, a0);
+    return F.DownValues(a0);
   }
 
   public static IAST EasyDQ(final IExpr a0, final IExpr a1) {

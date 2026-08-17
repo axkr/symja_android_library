@@ -19,6 +19,6 @@ public interface IDataExpr<T> extends IExpr {
   default IAST normal(boolean nilIfUnevaluated) {
     // Function `1` not implemented for `2`.
     Errors.printMessage(S.General, "zznotimpl2", F.List(S.Normal, this));
-    return nilIfUnevaluated ? F.NIL : F.Hold(F.unaryAST1(S.Normal, this));
+    return nilIfUnevaluated ? F.NIL : F.Hold(F.Normal(this));
   }
 }

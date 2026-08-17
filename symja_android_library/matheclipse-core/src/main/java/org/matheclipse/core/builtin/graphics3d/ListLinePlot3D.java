@@ -186,7 +186,7 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
       }
       if (points.argSize() > 0) {
         lineList.append(Plot3DTools.curveStyle(lineColorNumber++, plotStyle));
-        lineList.append(F.unaryAST1(S.Line, points));
+        lineList.append(F.Line(points));
       }
     }
     return lineList;

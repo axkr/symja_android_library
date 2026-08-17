@@ -709,7 +709,7 @@ public class QuantityFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return arg1.mapThread(F.unaryAST1(S.QuantityUnit, F.Slot1), 1);
+        return arg1.mapThread(F.QuantityUnit(F.Slot1), 1);
       }
       if (arg1.isQuantity()) {
         return ((IAST) arg1).arg2();
@@ -766,7 +766,7 @@ public class QuantityFunctions {
       try {
         IExpr arg1 = ast.arg1();
         if (arg1.isList()) {
-          IAST template = ast.isAST1() ? F.unaryAST1(S.UnitConvert, F.Slot1)
+          IAST template = ast.isAST1() ? F.UnitConvert(F.Slot1)
               : F.binaryAST2(S.UnitConvert, F.Slot1, ast.arg2());
           return arg1.mapThread(template, 1);
         }
@@ -876,7 +876,7 @@ public class QuantityFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return arg1.mapThread(F.unaryAST1(S.UnitDimensions, F.Slot1), 1);
+        return arg1.mapThread(F.UnitDimensions(F.Slot1), 1);
       }
       IExpr unit = unitOf(arg1);
       if (unit.isNIL()) {
@@ -907,7 +907,7 @@ public class QuantityFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return arg1.mapThread(F.unaryAST1(S.UnitSimplify, F.Slot1), 1);
+        return arg1.mapThread(F.UnitSimplify(F.Slot1), 1);
       }
       IAST quantity;
       if (arg1.isQuantity()) {
@@ -1361,7 +1361,7 @@ public class QuantityFunctions {
     @Override
     public IExpr skewness(IAST qd) {
       // a shape statistic is dimensionless
-      return EvalEngine.get().evaluate(F.unaryAST1(S.Skewness, inner(qd)));
+      return EvalEngine.get().evaluate(F.Skewness(inner(qd)));
     }
 
     @Override

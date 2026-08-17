@@ -30,7 +30,7 @@ public class DawsonF extends AbstractFunctionEvaluator implements IFunctionExpan
     }
     IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg);
     if (negExpr.isPresent()) {
-      return F.Times(F.CN1, F.unaryAST1(S.DawsonF, negExpr));
+      return F.Times(F.CN1, F.DawsonF(negExpr));
     }
     return F.NIL;
   }

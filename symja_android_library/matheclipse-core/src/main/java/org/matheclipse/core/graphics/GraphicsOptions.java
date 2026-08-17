@@ -381,7 +381,7 @@ public class GraphicsOptions {
     if (spec == null || spec == S.Automatic || spec.isNone()) {
       return fallback;
     }
-    final IExpr function = spec.isString() ? F.unaryAST1(S.ColorData, spec) : spec;
+    final IExpr function = spec.isString() ? F.ColorData(spec) : spec;
     return t -> {
       try {
         IExpr color = engine.evaluate(F.unaryAST1(function, F.num(t)));
@@ -576,7 +576,7 @@ public class GraphicsOptions {
   public static IAST plotStyleDirective(int functionColorNumber, IAST plotStyle,
       double absoluteThickness) {
     return F.Directive(plotStyleColorExpr(functionColorNumber, plotStyle),
-        F.unaryAST1(S.AbsoluteThickness, F.num(absoluteThickness)));
+        F.AbsoluteThickness(F.num(absoluteThickness)));
   }
 
   /** The colour a chart element takes from the chart cycle. */
@@ -926,7 +926,7 @@ public class GraphicsOptions {
       return F.NIL;
     }
     if (interpolationOrder >= 2) {
-      return F.unaryAST1(S.BSplineCurve, points);
+      return F.BSplineCurve(points);
     }
     // order zero: hold each value until the next point's position
     IASTAppendable steps = F.ListAlloc(points.argSize() * 2);
@@ -1125,7 +1125,7 @@ public class GraphicsOptions {
 
   private IExpr evalColor(double u, double v) {
     IExpr function =
-        colorFunction.isString() ? F.unaryAST1(S.ColorData, colorFunction) : colorFunction;
+        colorFunction.isString() ? F.ColorData(colorFunction) : colorFunction;
     if (!colorFunction.isString()) {
       // a function of the position gets both coordinates when it can take them
       IExpr both = tryColor(F.binaryAST2(function, F.num(u), F.num(v)));
@@ -1180,7 +1180,7 @@ public class GraphicsOptions {
 
     IASTAppendable lines = F.ListAlloc(verticals + horizontals + 2);
     lines.append(F.RGBColor(0.5, 0.5, 0.5));
-    lines.append(F.unaryAST1(S.AbsoluteThickness, F.num(0.5)));
+    lines.append(F.AbsoluteThickness(F.num(0.5)));
     for (int i = 0; i <= verticals; i++) {
       double x = x0 + (x1 - x0) * i / verticals;
       lines.append(F.Line(F.List(F.List(F.num(x), F.num(y0)), F.List(F.num(x), F.num(y1)))));

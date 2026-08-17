@@ -308,7 +308,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     ISymbol x = F.Dummy("x");
-    IExpr factorList = engine.evaluate(F.unaryAST1(S.FactorList, F.subst(body, F.Slot1, x)));
+    IExpr factorList = engine.evaluate(F.FactorList(F.subst(body, F.Slot1, x)));
     if (!factorList.isList()) {
       return F.NIL;
     }

@@ -64,7 +64,7 @@ public class Convolve extends AbstractFunctionEvaluator {
     // 2. UnitBox(x) (*) UnitBox(x) == UnitTriangle(y)
     if (f.isAST(S.UnitBox, 2) && f.first().equals(x) //
         && g.isAST(S.UnitBox, 2) && g.first().equals(x)) {
-      return F.unaryAST1(S.UnitTriangle, y);
+      return F.UnitTriangle(y);
     }
 
     // 3. one-sided convolution of two causal signals f0(x)*UnitStep(x) and g0(x)*UnitStep(x):

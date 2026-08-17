@@ -1762,7 +1762,7 @@ public class SimplifyUtil extends VisitorExpr {
           // contracts a trigonometric sum into a product, which neither TrigReduce nor TrigExpand
           // reaches: 3*Cos(x)^2*Sin(x)^2+Sin(x)^4 becomes (2+Cos(2*x))*Sin(x)^2.
           // STRICT for the same reason as the fraction candidates above.
-          ctx.result.checkLess(ctx.util.eval(F.unaryAST1(S.TrigFactor, ctx.expr)));
+          ctx.result.checkLess(ctx.util.eval(F.TrigFactor(ctx.expr)));
         }
       }), //
       new Step("TogetherAndFractionParts", CatchPolicy.VALIDATE, ctx -> {

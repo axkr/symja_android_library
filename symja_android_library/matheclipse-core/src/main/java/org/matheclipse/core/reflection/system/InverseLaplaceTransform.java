@@ -506,7 +506,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
           } else {
             // DiracDelta^(n)(t) represented as Derivative[n][DiracDelta][t]
             result.append(F.Times(nc[i], F.unaryAST1(
-                F.unaryAST1(F.unaryAST1(S.Derivative, F.ZZ(derivOrder)), S.DiracDelta), t)));
+                F.unaryAST1(F.Derivative(F.ZZ(derivOrder)), S.DiracDelta), t)));
           }
         }
       }
@@ -583,7 +583,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
   private static IExpr trySimpleRules(IExpr f, IExpr s, IExpr t, EvalEngine engine) {
     // Rule: f == s => DiracDelta'(t)
     if (f.equals(s)) {
-      return F.unaryAST1(F.unaryAST1(F.unaryAST1(S.Derivative, F.C1), S.DiracDelta), t);
+      return F.unaryAST1(F.unaryAST1(F.Derivative(F.C1), S.DiracDelta), t);
     }
 
     // Rule: f == 1/s^b => t^(b-1) / Gamma(b), where b is free of s
@@ -598,7 +598,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
       // Negative exponent means s^n for positive n => DiracDelta derivatives
       if (negB.isInteger() && ((IInteger) negB).isPositive()) {
         int n = negB.toIntDefault();
-        return F.unaryAST1(F.unaryAST1(S.Derivative, F.ZZ(n)), S.DiracDelta).apply(t);
+        return F.unaryAST1(F.Derivative(F.ZZ(n)), S.DiracDelta).apply(t);
       }
     }
 

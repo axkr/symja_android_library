@@ -110,7 +110,7 @@ public class Root extends AbstractFunctionEvaluator {
         if (!Double.isNaN(cVal) && !Double.isNaN(rVal)) {
           if (Math.abs(rVal - cVal) > Config.SPECIAL_FUNCTIONS_TOLERANCE
               * Math.max(1.0, Math.abs(cVal))) {
-            return F.unaryAST1(S.Root, F.list(f, refined));
+            return F.Root(F.list(f, refined));
           }
         }
       }

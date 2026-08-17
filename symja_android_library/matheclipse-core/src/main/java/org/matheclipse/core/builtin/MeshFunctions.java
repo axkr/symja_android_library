@@ -116,20 +116,20 @@ public class MeshFunctions {
       for (int i = 1; i <= n; i++) {
         if (!points.get(i).isList2()) {
           // the points aren't 2D coordinates
-          return F.unaryAST1(S.EmptyRegion, F.C2);
+          return F.EmptyRegion(F.C2);
         }
         x[i - 1] = points.get(i).first().evalfNaN();
         y[i - 1] = points.get(i).second().evalfNaN();
         if (Double.isNaN(x[i - 1]) || Double.isNaN(y[i - 1])) {
           // the coordinates aren't numeric
-          return F.unaryAST1(S.EmptyRegion, F.C2);
+          return F.EmptyRegion(F.C2);
         }
       }
 
       double[] bounds = ast.isAST2() ? boundsOption(ast.arg2()) : boundingBox(x, y);
       if (bounds == null) {
         // a single point or a degenerated bounding box has no Voronoi mesh
-        return F.unaryAST1(S.EmptyRegion, F.C2);
+        return F.EmptyRegion(F.C2);
       }
 
       // the coordinates of the cell corners, shared between the cells
@@ -148,7 +148,7 @@ public class MeshFunctions {
         cells.append(F.Polygon(indices));
       }
       if (cells.argSize() == 0) {
-        return F.unaryAST1(S.EmptyRegion, F.C2);
+        return F.EmptyRegion(F.C2);
       }
 
       IASTAppendable coordinates = F.ListAlloc(corners.size());
@@ -753,7 +753,7 @@ public class MeshFunctions {
     }
     IASTAppendable sum = F.PlusAlloc(faces.size());
     for (IAST face : faces) {
-      sum.append(F.unaryAST1(S.Area, F.Polygon(face)));
+      sum.append(F.Area(F.Polygon(face)));
     }
     return engine.evaluate(sum);
   }
@@ -767,8 +767,8 @@ public class MeshFunctions {
     IASTAppendable areaSum = F.PlusAlloc(faces.size());
     IASTAppendable weighted = F.PlusAlloc(faces.size());
     for (IAST face : faces) {
-      IExpr area = engine.evaluate(F.unaryAST1(S.Area, F.Polygon(face)));
-      IExpr centroid = engine.evaluate(F.unaryAST1(S.RegionCentroid, F.Polygon(face)));
+      IExpr area = engine.evaluate(F.Area(F.Polygon(face)));
+      IExpr centroid = engine.evaluate(F.RegionCentroid(F.Polygon(face)));
       if (!centroid.isList2()) {
         return F.NIL;
       }
@@ -1348,7 +1348,7 @@ public class MeshFunctions {
         }
       }
       if (!any) {
-        return F.unaryAST1(S.EmptyRegion, F.C1);
+        return F.EmptyRegion(F.C1);
       }
       int[] indexOf = new int[n + 1];
       IASTAppendable coordinates = F.ListAlloc(n + 1);
@@ -1395,7 +1395,7 @@ public class MeshFunctions {
         }
       }
       if (!any) {
-        return F.unaryAST1(S.EmptyRegion, F.C2);
+        return F.EmptyRegion(F.C2);
       }
       int[][] indexOf = new int[rows + 1][columns + 1];
       IASTAppendable coordinates = F.ListAlloc((rows + 1) * (columns + 1));

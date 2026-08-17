@@ -443,7 +443,7 @@ public class Derivative extends AbstractFunctionEvaluator {
           IExpr exponent = arg1.exponent();
           if (arg1.base().equals(F.Slot1) && exponent.isFree(F.Slot1)) {
             return F.Times(exponent, createDerivative(n - 1,
-                F.unaryAST1(S.Function, engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
+                F.Function(engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
           }
         }
       }

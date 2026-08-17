@@ -369,7 +369,7 @@ public class Pattern extends Blank {
   public IAST toFullFormAST() {
     if (fDefault) {
       // "x_." is Optional(Pattern(x, Blank()))
-      return F.unaryAST1(S.Optional, F.$p(fSymbol, fHeadTest, false));
+      return F.Optional(F.$p(fSymbol, fHeadTest, false));
     }
     return F.binaryAST2(S.Pattern, fSymbol, fHeadTest == null ? F.$b() : F.$b(fHeadTest));
   }

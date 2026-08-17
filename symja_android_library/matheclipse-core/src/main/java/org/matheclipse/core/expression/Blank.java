@@ -364,9 +364,9 @@ public class Blank implements IPattern {
   public IAST toFullFormAST() {
     if (fDefault) {
       // "_." is Optional(Blank())
-      return F.unaryAST1(S.Optional, fHeadTest == null ? F.$b() : F.$b(fHeadTest));
+      return F.Optional(fHeadTest == null ? F.$b() : F.$b(fHeadTest));
     }
-    return fHeadTest == null ? F.headAST0(S.Blank) : F.unaryAST1(S.Blank, fHeadTest);
+    return fHeadTest == null ? F.headAST0(S.Blank) : F.Blank(fHeadTest);
   }
 
   @Override

@@ -5319,6 +5319,8 @@ public final class Arithmetic {
       }
       IExpr factored = engine.evaluate(F.Factor(poly));
       if (factored.isTimes() && factored.size() > 2) {
+        // don't use F.Sqrt() here; the `mapThread()` template has to be a `Sqrt(#1)` expression and
+        // not a `Power(#1, 1/2)` expression
         return ((IAST) factored).mapThread(F.unaryAST1(S.Sqrt, F.Slot1), 1);
       }
       return F.NIL;

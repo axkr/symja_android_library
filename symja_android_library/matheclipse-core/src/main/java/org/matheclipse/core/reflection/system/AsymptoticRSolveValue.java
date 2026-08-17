@@ -144,7 +144,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
               && normalPoly.isFreeAST(S.Product) //
               && normalPoly.isSpecialsFree()) {
             // Collect arbitrary constants to match canonical grouping: (1+2/n+...)*C(1)
-            IExpr cPattern = F.unaryAST1(S.C, F.$b());
+            IExpr cPattern = F.C(F.$b());
             return S.Collect.funEval(engine, normalPoly, cPattern);
           }
         } else if (exactSol.isFreeAST(S.Sum) && exactSol.isFreeAST(S.Product)
@@ -152,7 +152,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
           // Series of the exact solution failed - special sequences (Fibonacci, LucasL) and
           // exponentially growing solutions have no asymptotic power series. The exact
           // solution itself is the sharpest asymptotic answer, so return it directly.
-          IExpr cPattern = F.unaryAST1(S.C, F.$b());
+          IExpr cPattern = F.C(F.$b());
           return S.Collect.funEval(engine, exactSol, cPattern);
         }
       }
@@ -296,7 +296,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
             finalSeries = engine.evaluate(F.subst(finalSeries, finalRules));
           }
 
-          IExpr cPattern = F.unaryAST1(S.C, F.$b());
+          IExpr cPattern = F.C(F.$b());
           finalSeries = engine.evaluate(F.Collect(finalSeries, cPattern));
 
           return engine.evaluate(finalSeries);

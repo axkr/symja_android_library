@@ -159,7 +159,7 @@ public class NumberLinePlot extends ListPlot {
             ? GraphicsOptions.plotStyleColorExpr(i - 1, F.NIL)
             : GraphicsOptions.getPlotStyle(plotStyle, i - 1);
         IAST styleDirective = F.Directive(color, F.PointSize(pointSize),
-            F.unaryAST1(S.AbsoluteThickness, F.num(lineThickness)));
+            F.AbsoluteThickness(F.num(lineThickness)));
 
         IASTAppendable levelPrimitives = F.ListAlloc();
         levelPrimitives.append(styleDirective);

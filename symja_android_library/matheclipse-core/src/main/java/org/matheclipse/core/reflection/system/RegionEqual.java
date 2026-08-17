@@ -70,7 +70,7 @@ public class RegionEqual extends AbstractFunctionEvaluator {
     }
     switch (((IBuiltInSymbol) head).ordinal()) {
       case ID.Point:
-        return reg.argSize() == 1 ? F.unaryAST1(S.Point, reg.arg1()) : F.NIL;
+        return reg.argSize() == 1 ? F.Point(reg.arg1()) : F.NIL;
       case ID.Interval:
         return reg;
       case ID.Disk:
@@ -127,12 +127,12 @@ public class RegionEqual extends AbstractFunctionEvaluator {
     }
     IAST points = (IAST) reg.arg1();
     if (points.argSize() != 2) {
-      return F.unaryAST1(S.Line, points);
+      return F.Line(points);
     }
     if (points.arg2().compareTo(points.arg1()) < 0) {
-      return F.unaryAST1(S.Line, F.list(points.arg2(), points.arg1()));
+      return F.Line(F.list(points.arg2(), points.arg1()));
     }
-    return F.unaryAST1(S.Line, points);
+    return F.Line(points);
   }
 
   /** An axis aligned rectangle is the polygon through its four corner points. */
@@ -180,7 +180,7 @@ public class RegionEqual extends AbstractFunctionEvaluator {
         }
       }
     }
-    return F.unaryAST1(S.Polygon, best);
+    return F.Polygon(best);
   }
 
   @Override

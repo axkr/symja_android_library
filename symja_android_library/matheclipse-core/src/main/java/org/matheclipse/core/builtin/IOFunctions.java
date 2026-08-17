@@ -213,7 +213,7 @@ public class IOFunctions {
         final int size = ast.head().size();
         switch (size) {
           case 1:
-            return F.unaryAST1(S.Echo, ast.arg1());
+            return F.Echo(ast.arg1());
           case 2:
             return echo(ast.arg1(), ast.head().first(), engine);
           case 3:

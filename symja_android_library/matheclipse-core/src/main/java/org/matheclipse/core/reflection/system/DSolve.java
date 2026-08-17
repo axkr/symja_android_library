@@ -1448,7 +1448,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 
         // Homogeneous Riccati reduction yields one redundant arbitrary constant. Let's strictly
         // absorb.
-        IExpr cVarsList = engine.evaluate(F.Cases(ySol, F.unaryAST1(S.C, F.$b()), F.Infinity));
+        IExpr cVarsList = engine.evaluate(F.Cases(ySol, F.C(F.$b()), F.Infinity));
         cVarsList = engine.evaluate(F.DeleteDuplicates(cVarsList));
 
         if (cVarsList.isList() && ((IAST) cVarsList).argSize() >= 1) {
@@ -1692,8 +1692,8 @@ public class DSolve extends AbstractFunctionEvaluator {
         IExpr arg = engine.evaluate(F.Simplify(F.Times(qPow, xVar)));
 
         // Return the raw algebraic expression, NOT wrapped in F.Rule
-        return F.Plus(F.Times(C1, F.unaryAST1(S.AiryAi, arg)),
-            F.Times(C2, F.unaryAST1(S.AiryBi, arg)));
+        return F.Plus(F.Times(C1, F.AiryAi(arg)),
+            F.Times(C2, F.AiryBi(arg)));
       }
     }
 
@@ -1716,8 +1716,8 @@ public class DSolve extends AbstractFunctionEvaluator {
           IExpr nuSquared = engine.evaluate(F.Simplify(F.Negate(minusNuSquared)));
 
           // Use PowerExpand to gracefully simplify Sqrt(a^2) -> a and Sqrt(4*a^2) -> 2*a
-          IExpr nu = engine.evaluate(F.Simplify(F.unaryAST1(S.PowerExpand, F.Sqrt(nuSquared))));
-          IExpr a = engine.evaluate(F.Simplify(F.unaryAST1(S.PowerExpand, F.Sqrt(aSquared))));
+          IExpr nu = engine.evaluate(F.Simplify(F.PowerExpand(F.Sqrt(nuSquared))));
+          IExpr a = engine.evaluate(F.Simplify(F.PowerExpand(F.Sqrt(aSquared))));
           IExpr arg = engine.evaluate(F.Simplify(F.Times(a, xVar)));
 
           return F.Plus(F.Times(C1, F.binaryAST2(S.BesselJ, nu, arg)),

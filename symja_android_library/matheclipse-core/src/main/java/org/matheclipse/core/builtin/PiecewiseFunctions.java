@@ -1092,7 +1092,7 @@ public class PiecewiseFunctions {
       // multiple arguments are treated as a Product
       // UnitBox(x, y) becomes UnitBox(x) * UnitBox(y)
       if (ast.size() > 2) {
-        IAST result = ast.mapThread(x -> F.unaryAST1(S.UnitBox, x));
+        IAST result = ast.mapThread(x -> F.UnitBox(x));
         return result.apply(S.Times);
       }
 
@@ -1136,7 +1136,7 @@ public class PiecewiseFunctions {
       // multiple arguments are treated as a Product
       // UnitTriangle(x, y) becomes UnitTriangle(x) * UnitTriangle(y)
       if (ast.size() > 2) {
-        IAST result = ast.mapThread(x -> F.unaryAST1(S.UnitTriangle, x));
+        IAST result = ast.mapThread(x -> F.UnitTriangle(x));
         return result.apply(S.Times);
       }
 

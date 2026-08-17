@@ -271,7 +271,7 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
     if (from.isNIL() || to.isNIL()) {
       return F.NIL;
     }
-    return F.unaryAST1(S.InfiniteLine, F.List(from, to));
+    return F.InfiniteLine(F.List(from, to));
   }
 
   /**

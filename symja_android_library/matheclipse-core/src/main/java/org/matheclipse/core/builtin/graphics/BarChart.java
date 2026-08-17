@@ -237,10 +237,10 @@ public class BarChart extends ListPlot {
       group.append(rectangle);
       // a translucent white band over the lower part of the bar reads as a highlight
       double mid = bar.base + (bar.value - bar.base) * 0.45;
-      group.append(F.unaryAST1(S.Opacity, F.num(0.25)));
+      group.append(F.Opacity(F.num(0.25)));
       group.append(S.White);
       group.append(GraphicsOptions.barRectangle(barOrigin, bar.from, bar.to, bar.base, mid));
-      group.append(F.unaryAST1(S.Opacity, F.C1));
+      group.append(F.Opacity(F.C1));
       return;
     }
     if (elementFunction != null && !elementFunction.isString() && elementFunction.isPresent()

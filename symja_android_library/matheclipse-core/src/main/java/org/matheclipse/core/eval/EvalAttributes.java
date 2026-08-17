@@ -622,6 +622,7 @@ public class EvalAttributes {
         result.set(j, subResult);
       }
     }
+    // don't use F.SparseArray() here; an IASTMutable has to be returned
     return (listHead == S.SparseArray) ? F.unaryAST1(S.SparseArray, result) : result;
   }
 

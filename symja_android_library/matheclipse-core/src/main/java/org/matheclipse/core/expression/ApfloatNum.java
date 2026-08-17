@@ -123,6 +123,7 @@ public class ApfloatNum implements INum {
       }
     }
     if (base == S.E && exponent.isNumericFunction()) {
+      // don't use F.Exp() here; it creates a `Power(E, exponent)` expression again
       return F.unaryAST1(S.Exp, exponent);
     }
     return F.NIL;

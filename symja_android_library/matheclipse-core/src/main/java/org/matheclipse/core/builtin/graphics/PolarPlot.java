@@ -126,7 +126,7 @@ public class PolarPlot extends Plot {
 
     IASTAppendable out = F.ListAlloc(32);
     out.append(F.RGBColor(0.6, 0.6, 0.6));
-    out.append(F.unaryAST1(S.AbsoluteThickness, F.num(0.5)));
+    out.append(F.AbsoluteThickness(F.num(0.5)));
 
     java.util.List<org.matheclipse.core.graphics.svg.TickGenerator.Tick> ticks =
         org.matheclipse.core.graphics.svg.TickGenerator.linear(0, radius);
@@ -149,7 +149,7 @@ public class PolarPlot extends Plot {
 
     if (axes) {
       out.append(F.RGBColor(0.3, 0.3, 0.3));
-      out.append(F.unaryAST1(S.AbsoluteThickness, F.num(1.0)));
+      out.append(F.AbsoluteThickness(F.num(1.0)));
       out.append(F.Line(F.List(F.List(F.num(-radius), F.C0), F.List(F.num(radius), F.C0))));
       out.append(F.Line(F.List(F.List(F.C0, F.num(-radius)), F.List(F.C0, F.num(radius)))));
       out.append(S.Black);

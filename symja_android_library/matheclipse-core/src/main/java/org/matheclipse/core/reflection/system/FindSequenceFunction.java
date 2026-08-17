@@ -401,7 +401,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
     for (int i = 0; i < m; i++) {
       list.append(sequence[i]);
     }
-    IExpr recurrence = engine.evaluate(F.unaryAST1(S.FindLinearRecurrence, list));
+    IExpr recurrence = engine.evaluate(F.FindLinearRecurrence(list));
     if (!recurrence.isList() || recurrence.isEmptyList()) {
       return F.NIL;
     }

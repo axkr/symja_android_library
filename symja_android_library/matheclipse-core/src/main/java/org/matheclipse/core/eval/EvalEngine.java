@@ -1417,6 +1417,8 @@ public class EvalEngine implements Serializable {
         if (isDoubleMode() && ast.isPower()) {
           IExpr temp = ApfloatNum.intPowerFractionNumeric(ast, this);
           if (temp.isPresent()) {
+            // we need to get an IASTMutable back; so we use a unary `Power` expression instead of
+            // the variable itself
             return F.unaryAST1(S.Power, temp);
           }
         }
@@ -1516,6 +1518,7 @@ public class EvalEngine implements Serializable {
           && ast.isNumericArgument(true)) {
         // one of the arguments is a numeric value
         if (ast.isPower() && ast.base() == S.E) {
+          // don't use F.Exp() here; it creates a `Power(E, exponent)` expression again
           return F.unaryAST1(S.Exp, ast.exponent());
         }
         return evalArgs(ast, attributes, isNumericFunction);

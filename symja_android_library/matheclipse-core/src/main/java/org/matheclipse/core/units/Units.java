@@ -68,7 +68,7 @@ public final class Units {
       return unit == null ? F.NIL : unit;
     }
     if (spec.isAST(S.IndependentPhysicalQuantity, 2) && spec.first().isString()) {
-      return F.unaryAST1(S.IndependentUnit, spec.first());
+      return F.IndependentUnit(spec.first());
     }
     if (spec.isPower()) {
       IAST power = (IAST) spec;
@@ -280,7 +280,7 @@ public final class Units {
           normalized.set(i, component);
         }
       }
-      return normalized.isPresent() ? F.unaryAST1(S.MixedUnit, normalized) : unitExpr;
+      return normalized.isPresent() ? F.MixedUnit(normalized) : unitExpr;
     }
     return F.NIL;
   }
@@ -736,7 +736,7 @@ public final class Units {
       }
       units.append(ordered[i]);
     }
-    return F.Quantity(F.unaryAST1(S.MixedMagnitude, magnitudes), F.unaryAST1(S.MixedUnit, units));
+    return F.Quantity(F.MixedMagnitude(magnitudes), F.MixedUnit(units));
   }
 
   // ------------------------------------------------------------------ display
