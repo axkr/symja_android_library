@@ -750,6 +750,39 @@
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
 					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<version>3.7.1</version>
+						<configuration>
+							<descriptorRefs>
+								<!-- Triggers the built-in source ZIP generation -->
+								<descriptorRef>src</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>src-backup</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<version>3.7.1</version>
+						<!-- Stop child modules from inheriting and crashing -->
+						<inherited>false</inherited>
+						<configuration>
+							<descriptors>
+								<!-- Point to the file you created -->
+								<descriptor>src-backup.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>

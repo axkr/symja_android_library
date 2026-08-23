@@ -1,0 +1,24 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 http://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>source-archive</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}</directory>
+            <useDefaultExcludes>true</useDefaultExcludes>
+            <includes>
+                <include>**/src/**</include>
+                <include>**/pom.xml</include>
+            </includes>
+            <excludes>
+                <exclude>**/target/**</exclude>
+                <exclude>**/bin/**</exclude>
+                <exclude>**/.git/**</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+</assembly>
