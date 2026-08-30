@@ -351,26 +351,22 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public boolean equals(final Object obj) {
     if (Config.FUZZ_TESTING) {
-      if (obj instanceof ISymbol) {
-        if (fSymbolName.equals(((ISymbol) obj).getSymbolName())
-            && getContext().equals(((ISymbol) obj).getContext())) {
-          if (this != obj) {
-            throw new NullPointerException();
-          }
-        }
+      // Two distinct instances sharing a name mean the interning of symbols broke, which is worth
+      // flagging while fuzzing. Unlike Symbol#equals there is no DUMMY-context exception to make
+      // here: getContext() is hardcoded to Context.DUMMY for every BuiltInDummy, so excluding that
+      // context would disable the check completely and comparing contexts at all is vacuous. The
+      // name alone carries the invariant - every producer of a BuiltInDummy either interns it in
+      // F.HIDDEN_SYMBOLS_MAP, holds it in a static final field, or names it through
+      // EvalEngine.uniqueName(). The test is restricted to BuiltInDummy because F.Dummy() hands
+      // out Symbol instances in the same DUMMY context which are supposed to differ.
+      if (obj instanceof BuiltInDummy && this != obj
+          && fSymbolName.equals(((BuiltInDummy) obj).fSymbolName)) {
+        // named rather than thrown bare: a report of this reads "Message: null" otherwise, and the
+        // expression it names is only whatever was being evaluated when the two were compared
+        throw new IllegalStateException("duplicate symbol instance " + fSymbolName);
       }
     }
-    if (this == obj) {
-      return true;
-    }
-    if (obj instanceof BuiltInDummy) {
-      // BuiltInDummy symbol = (BuiltInDummy) obj;
-      // if (hashCode() != symbol.hashCode()) {
-      // return false;
-      // }
-      return fSymbolName.equals(((BuiltInDummy) obj).fSymbolName);
-    }
-    return false;
+    return this == obj;
   }
 
   /** {@inheritDoc} */

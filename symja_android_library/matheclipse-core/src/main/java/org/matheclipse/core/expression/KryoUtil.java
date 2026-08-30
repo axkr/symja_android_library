@@ -539,7 +539,7 @@ public class KryoUtil {
     kryo.register(java.util.HashMap.class);
     kryo.register(java.util.TreeMap.class);
     kryo.register(org.matheclipse.core.eval.util.OpenIntToIExprHashMap.class);
-    kryo.register(it.unimi.dsi.fastutil.ints.IntArrayList.class);
+    kryo.register(org.matheclipse.external.fastutil.ints.IntArrayList.class);
     // kryo.register(org.matheclipse.core.patternmatching.RulesData.class);
     kryo.register(org.matheclipse.core.patternmatching.RulesData.class, new RulesDataSerializer());
     kryo.register(org.matheclipse.core.patternmatching.PatternMatcherEquals.class);

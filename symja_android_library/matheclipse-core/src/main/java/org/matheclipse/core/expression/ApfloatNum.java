@@ -17,6 +17,7 @@ import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
@@ -177,8 +178,39 @@ public class ApfloatNum implements INum {
    * @param value
    * @return
    */
+
+  /**
+   * An {@link Apfloat} for a machine double, refusing one that cannot be represented.
+   *
+   * <p>
+   * Apfloat has no representation for an infinity or a NaN and answers a
+   * {@link NumberFormatException} for either, which none of the arithmetic below expects: it
+   * escapes the built-in that asked for the operation instead of being reported. A Symja exception
+   * is turned into a message and an unevaluated result by
+   * {@code EvalEngine#evalASTBuiltinFunction}. This mirrors {@code DMath#apfloatOf(double)}.
+   *
+   * @param value the machine double to convert
+   * @return the value as an arbitrary precision number
+   */
+  private static Apfloat apfloatOf(final double value) {
+    if (!Double.isFinite(value)) {
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
+    return new Apfloat(value);
+  }
+
   public static ApfloatNum valueOf(final double value) {
-    return valueOf(new Apfloat(value));
+    if (!Double.isFinite(value)) {
+      // Apfloat has no representation for an infinity or a NaN, and answers a NumberFormatException
+      // which none of the paths reaching here expect - arithmetic between an ApfloatNum and a
+      // machine Num mostly, as in ApfloatNum#times. Raising it as a Symja exception instead means
+      // EvalEngine#evalASTBuiltinFunction turns it into a message and an unevaluated result, the
+      // same treatment Num#apfloatValue() already gets.
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
+    return valueOf(apfloatOf(value));
   }
 
   public static ApfloatNum valueOf(final String value, long precision) {
@@ -244,7 +276,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr add(double value) {
-    return valueOf(EvalEngine.getApfloat().add(fApfloat, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().add(fApfloat, apfloatOf(value)));
   }
 
   @Override
@@ -630,8 +662,19 @@ public class ApfloatNum implements INum {
       if (expr.isReal()) {
         try {
           return fApfloat.compareTo(((IReal) expr).apfloatValue());
-        } catch (NumberFormatException nfe) {
-          return IExpr.compareHierarchy(this, expr);
+        } catch (NumberFormatException | SymjaMathException ex) {
+          // An infinity or a NaN has no arbitrary precision representation; Num#apfloatValue()
+          // reports that as a SymjaMathException and Apfloat itself as a NumberFormatException.
+          // Sorting must not fail either way, because Orderless sorts arguments before any
+          // built-in sees them, so a throw here escapes the whole evaluation rather than the
+          // function that could have handled it.
+          //
+          // Comparing as doubles rather than falling back to the expression hierarchy is what
+          // keeps the two directions symmetric: Num#compareTo answers Double.compare for the same
+          // pair, and a comparator that calls a pair equal while its mirror image calls it smaller
+          // leaves the Orderless sort without a fixed point, which shows up as an iteration limit
+          // rather than as an ordering bug.
+          return Double.compare(doubleValue(), ((IReal) expr).doubleValue());
         }
       }
       int c = this.compareTo(((INumber) expr).re());
@@ -673,7 +716,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr copySign(double d) {
-    return valueOf(EvalEngine.getApfloat().copySign(fApfloat, new Apfloat(d)));
+    return valueOf(EvalEngine.getApfloat().copySign(fApfloat, apfloatOf(d)));
   }
 
   @Override
@@ -750,7 +793,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum divide(double value) {
-    return valueOf(EvalEngine.getApfloat().divide(fApfloat, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().divide(fApfloat, apfloatOf(value)));
   }
 
   @Override
@@ -883,7 +926,14 @@ public class ApfloatNum implements INum {
     final long precision = fApfloat.precision();
     if (precision != Apfloat.INFINITE && engine.getNumericPrecision() < precision
         && engine.isNumericMode()) {
-      return valueOf(EvalEngine.getApfloat().valueOf(fApfloat));
+      // Only when the conversion actually lowers the precision. It does not always reach the
+      // engine's: converting a 30 digit value here answers one of 255 digits, so the test above
+      // stays true for ever and evalLoop() is told the expression changed on every pass. That is
+      // an endless loop rather than a wrong answer - UnitStep(-0.8`30 + 1.2`30*I) never returned.
+      ApfloatNum reduced = valueOf(EvalEngine.getApfloat().valueOf(fApfloat));
+      if (reduced.fApfloat.precision() < precision) {
+        return reduced;
+      }
     }
     return F.NIL;
   }
@@ -1794,12 +1844,12 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum multiply(double value) {
-    return valueOf(EvalEngine.getApfloat().multiply(fApfloat, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().multiply(fApfloat, apfloatOf(value)));
   }
 
   @Override
   public IExpr multiply(int value) {
-    return valueOf(EvalEngine.getApfloat().multiply(fApfloat, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().multiply(fApfloat, apfloatOf(value)));
   }
 
   @Override
@@ -1810,7 +1860,11 @@ public class ApfloatNum implements INum {
   /** @return */
   @Override
   public ApfloatNum negate() {
-    return valueOf(EvalEngine.getApfloat().negate(fApfloat));
+    // Not through EvalEngine.getApfloat(): that helper works at Config.MAX_PRECISION_APFLOAT - 1,
+    // so it raised the precision of a sign flip from 30 to 255. Negation cannot gain or lose
+    // significant digits, and Apfloat#negate() keeps the ones it has. Reparsing a printed number
+    // depended on this: -3.1415`30 came back as -3.1415`255.
+    return valueOf(fApfloat.negate());
   }
 
   @Override
@@ -1947,7 +2001,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum pow(double value) {
-    return valueOf(EvalEngine.getApfloat().pow(fApfloat, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().pow(fApfloat, apfloatOf(value)));
   }
 
   @Override
@@ -2009,7 +2063,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum remainder(double value) {
-    return valueOf(EvalEngine.getApfloat().mod(fApfloat, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().mod(fApfloat, apfloatOf(value)));
   }
 
   @Override
@@ -2132,7 +2186,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum subtract(double value) {
-    return valueOf(EvalEngine.getApfloat().subtract(fApfloat, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().subtract(fApfloat, apfloatOf(value)));
   }
 
   @Override

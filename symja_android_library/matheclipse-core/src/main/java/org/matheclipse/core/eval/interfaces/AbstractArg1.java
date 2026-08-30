@@ -25,6 +25,15 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     final IExpr arg1 = ast.arg1();
+    if (org.matheclipse.core.builtin.AroundFunctions.isAround(arg1)) {
+      // f(Around(x, delta)) is Around(f(x), Abs(f'(x))*delta) - the first-order propagation of an
+      // uncertainty through any unary function that lands here
+      IExpr aroundResult =
+          org.matheclipse.core.builtin.AroundFunctions.mapFunction(ast.head(), (IAST) arg1, engine);
+      if (aroundResult.isPresent()) {
+        return aroundResult;
+      }
+    }
     final IExpr result = e1ObjArg(arg1);
     if (result.isPresent()) {
       return result;

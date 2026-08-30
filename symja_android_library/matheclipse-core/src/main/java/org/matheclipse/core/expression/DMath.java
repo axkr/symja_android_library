@@ -1,6 +1,8 @@
 package org.matheclipse.core.expression;
 
 import org.apfloat.Apfloat;
+import org.matheclipse.core.eval.exception.SymjaMathException;
+import org.apfloat.LossOfPrecisionException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.numerics.functions.BesselIK;
@@ -8,6 +10,29 @@ import org.matheclipse.core.numerics.functions.ComplexGamma;
 import org.matheclipse.core.numerics.functions.BesselJY;
 
 public class DMath {
+
+  /**
+   * A double as an {@link Apfloat}, declining the ones it has no representation for.
+   *
+   * <p>
+   * {@code new Apfloat(Double.POSITIVE_INFINITY)} answers a {@code NumberFormatException} saying
+   * "Infinity is not a valid number", which escaped from whichever special function was being
+   * evaluated - {@code HankelH2(2, Infinity)} and {@code BesselJ(2, Infinity)} among them. Raised
+   * as a Symja exception instead, {@code EvalEngine.evalASTBuiltinFunction} catches it and the
+   * expression comes back unevaluated with a message, which is what every function here wants when
+   * its argument has no arbitrary precision value. Functions with a known limit at infinity handle
+   * it before reaching this point, as {@link #airyAi(double)} does.
+   *
+   * @param value the argument to convert
+   * @return the value as an {@link Apfloat}
+   */
+  private static Apfloat apfloatOf(double value) {
+    if (!Double.isFinite(value)) {
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
+    return new Apfloat(value);
+  }
 
   // --- Missing Arc- and Hyperbolic Trig Functions ---
 
@@ -74,27 +99,79 @@ public class DMath {
   // --- Existing Special Functions ---
 
   public static double agm(double a, double b) {
-    return EvalEngine.getApfloatDouble().agm(new Apfloat(a), new Apfloat(b)).doubleValue();
+    return EvalEngine.getApfloatDouble().agm(apfloatOf(a), apfloatOf(b)).doubleValue();
   }
 
+  /**
+   * <code>AiryAi(x)</code> as a machine double, answering <code>0.0</code> where an accurate value
+   * is out of reach.
+   *
+   * <p>
+   * Apfloat raises a {@link LossOfPrecisionException} from about <code>|x| = 10^10</code> upwards.
+   * For positive <code>x</code> the function has decayed like
+   * <code>exp(-2/3*x^(3/2))</code> long before that and underflowed to zero anyway - it is already
+   * <code>2.6*10^-291</code> at <code>x = 100</code>. For negative <code>x</code> it oscillates
+   * with amplitude <code>|x|^(-1/4)/sqrt(Pi)</code> and a phase of <code>2/3*|x|^(3/2)</code>,
+   * which is exactly the quantity that has outrun the resolution of a double by the point apfloat
+   * gives up, so the centre of the oscillation is the best available answer. Mathematica answers
+   * <code>0.</code> at either end, with an underflow message for the positive one.
+   */
   public static double airyAi(double value) {
-    return EvalEngine.getApfloatDouble().airyAi(new Apfloat(value)).doubleValue();
+    try {
+      return EvalEngine.getApfloatDouble().airyAi(apfloatOf(value)).doubleValue();
+    } catch (LossOfPrecisionException lpe) {
+      return 0.0;
+    }
   }
 
+  /**
+   * <code>AiryAi'(x)</code> as a machine double, answering <code>0.0</code> where an accurate value
+   * is out of reach, for the reasons given on {@link #airyAi(double)}. Mathematica answers
+   * <code>0</code> with an underflow message at <code>1.79*10^308</code>.
+   */
   public static double airyAiPrime(double value) {
-    return EvalEngine.getApfloatDouble().airyAiPrime(new Apfloat(value)).doubleValue();
+    try {
+      return EvalEngine.getApfloatDouble().airyAiPrime(apfloatOf(value)).doubleValue();
+    } catch (LossOfPrecisionException lpe) {
+      return 0.0;
+    }
   }
 
+  /**
+   * <code>AiryBi(x)</code> as a machine double, answering the limit where an accurate value is out
+   * of reach.
+   *
+   * <p>
+   * Apfloat raises a {@link LossOfPrecisionException} from about <code>|x| = 10^10</code> upwards,
+   * the same point at which {@link #airyAi(double)} gives up, but the two ends behave differently
+   * here. For positive <code>x</code> the function grows like <code>exp(2/3*x^(3/2))</code> and has
+   * long outrun what a double can hold, so an infinity is the honest answer and the caller turns it
+   * into <code>Overflow()</code>. For negative <code>x</code> it oscillates about zero with
+   * amplitude <code>|x|^(-1/4)/sqrt(Pi)</code>, exactly as AiryAi does, so the centre of the
+   * oscillation is the best available value.
+   */
   public static double airyBi(double value) {
-    return EvalEngine.getApfloatDouble().airyBi(new Apfloat(value)).doubleValue();
+    try {
+      return EvalEngine.getApfloatDouble().airyBi(apfloatOf(value)).doubleValue();
+    } catch (LossOfPrecisionException lpe) {
+      return value > 0.0 ? Double.POSITIVE_INFINITY : 0.0;
+    }
   }
 
+  /**
+   * <code>AiryBi'(x)</code> as a machine double, answering the limit where an accurate value is out
+   * of reach, for the reasons given on {@link #airyBi(double)}.
+   */
   public static double airyBiPrime(double value) {
-    return EvalEngine.getApfloatDouble().airyBiPrime(new Apfloat(value)).doubleValue();
+    try {
+      return EvalEngine.getApfloatDouble().airyBiPrime(apfloatOf(value)).doubleValue();
+    } catch (LossOfPrecisionException lpe) {
+      return value > 0.0 ? Double.POSITIVE_INFINITY : 0.0;
+    }
   }
 
   public static double angerJ(double v, double z) {
-    return EvalEngine.getApfloatDouble().angerJ(new Apfloat(v), new Apfloat(z)).doubleValue();
+    return EvalEngine.getApfloatDouble().angerJ(apfloatOf(v), apfloatOf(z)).doubleValue();
   }
 
   /**
@@ -108,7 +185,7 @@ public class DMath {
         return result;
       }
     }
-    return EvalEngine.getApfloatDouble().besselI(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().besselI(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   /**
@@ -128,7 +205,7 @@ public class DMath {
         return result;
       }
     }
-    return EvalEngine.getApfloatDouble().besselJ(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().besselJ(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   /**
@@ -142,7 +219,7 @@ public class DMath {
         return result;
       }
     }
-    return EvalEngine.getApfloatDouble().besselK(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().besselK(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   /**
@@ -156,7 +233,7 @@ public class DMath {
         return result;
       }
     }
-    return EvalEngine.getApfloatDouble().besselY(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().besselY(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   /**
@@ -178,33 +255,33 @@ public class DMath {
         return re;
       }
     }
-    return EvalEngine.getApfloatDouble().beta(new Apfloat(a), new Apfloat(b)).doubleValue();
+    return EvalEngine.getApfloatDouble().beta(apfloatOf(a), apfloatOf(b)).doubleValue();
   }
 
   public static double beta(double x, double a, double b) {
-    return EvalEngine.getApfloatDouble().beta(new Apfloat(x), new Apfloat(a), new Apfloat(b))
+    return EvalEngine.getApfloatDouble().beta(apfloatOf(x), apfloatOf(a), apfloatOf(b))
         .doubleValue();
   }
 
   public static double beta(double x1, double x2, double a, double b) {
     return EvalEngine.getApfloatDouble()
-        .beta(new Apfloat(x1), new Apfloat(x2), new Apfloat(a), new Apfloat(b)).doubleValue();
+        .beta(apfloatOf(x1), apfloatOf(x2), apfloatOf(a), apfloatOf(b)).doubleValue();
   }
 
   public static double chebyshevT(double v, double x) {
-    return EvalEngine.getApfloatDouble().chebyshevT(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().chebyshevT(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   public static double chebyshevU(double v, double x) {
-    return EvalEngine.getApfloatDouble().chebyshevU(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().chebyshevU(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   public static double ellipticE(double value) {
-    return EvalEngine.getApfloatDouble().ellipticE(new Apfloat(value)).doubleValue();
+    return EvalEngine.getApfloatDouble().ellipticE(apfloatOf(value)).doubleValue();
   }
 
   public static double ellipticK(double value) {
-    return EvalEngine.getApfloatDouble().ellipticK(new Apfloat(value)).doubleValue();
+    return EvalEngine.getApfloatDouble().ellipticK(apfloatOf(value)).doubleValue();
   }
 
   public static double erf(double value) {
@@ -216,19 +293,19 @@ public class DMath {
   }
 
   public static double erfi(double value) {
-    return EvalEngine.getApfloatDouble().erfi(new Apfloat(value)).doubleValue();
+    return EvalEngine.getApfloatDouble().erfi(apfloatOf(value)).doubleValue();
   }
 
   public static double fibonacci(double n, double x) {
-    return EvalEngine.getApfloatDouble().fibonacci(new Apfloat(n), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().fibonacci(apfloatOf(n), apfloatOf(x)).doubleValue();
   }
 
   public static double fresnelC(double value) {
-    return EvalEngine.getApfloatDouble().fresnelC(new Apfloat(value)).doubleValue();
+    return EvalEngine.getApfloatDouble().fresnelC(apfloatOf(value)).doubleValue();
   }
 
   public static double fresnelS(double value) {
-    return EvalEngine.getApfloatDouble().fresnelS(new Apfloat(value)).doubleValue();
+    return EvalEngine.getApfloatDouble().fresnelS(apfloatOf(value)).doubleValue();
   }
 
   public static double gamma(double value) {
@@ -236,55 +313,55 @@ public class DMath {
   }
 
   public static double gamma(double a, double x) {
-    return EvalEngine.getApfloatDouble().gamma(new Apfloat(a), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().gamma(apfloatOf(a), apfloatOf(x)).doubleValue();
   }
 
   public static double gamma(double a, double x0, double x1) {
-    return EvalEngine.getApfloatDouble().gamma(new Apfloat(a), new Apfloat(x0), new Apfloat(x1))
+    return EvalEngine.getApfloatDouble().gamma(apfloatOf(a), apfloatOf(x0), apfloatOf(x1))
         .doubleValue();
   }
 
   public static double gegenbauerC(double n, double x) {
-    return EvalEngine.getApfloatDouble().gegenbauerC(new Apfloat(n), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().gegenbauerC(apfloatOf(n), apfloatOf(x)).doubleValue();
   }
 
   public static double gegenbauerC(double n, double m, double x) {
-    return EvalEngine.getApfloatDouble().gegenbauerC(new Apfloat(n), new Apfloat(m), new Apfloat(x))
+    return EvalEngine.getApfloatDouble().gegenbauerC(apfloatOf(n), apfloatOf(m), apfloatOf(x))
         .doubleValue();
   }
 
   public static double harmonicNumber(double value) {
-    return EvalEngine.getApfloatDouble().harmonicNumber(new Apfloat(value)).doubleValue();
+    return EvalEngine.getApfloatDouble().harmonicNumber(apfloatOf(value)).doubleValue();
   }
 
   public static double harmonicNumber(double value, double r) {
-    return EvalEngine.getApfloatDouble().harmonicNumber(new Apfloat(value), new Apfloat(r))
+    return EvalEngine.getApfloatDouble().harmonicNumber(apfloatOf(value), apfloatOf(r))
         .doubleValue();
   }
 
   public static double hermiteH(double v, double x) {
-    return EvalEngine.getApfloatDouble().hermiteH(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().hermiteH(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   public static double hypergeometric0F1Regularized(double a, double b) {
     return EvalEngine.getApfloatDouble()
-        .hypergeometric0F1Regularized(new Apfloat(a), new Apfloat(b)).doubleValue();
+        .hypergeometric0F1Regularized(apfloatOf(a), apfloatOf(b)).doubleValue();
   }
 
   public static double hypergeometric1F1Regularized(double a, double b, double c) {
     return EvalEngine.getApfloatDouble()
-        .hypergeometric1F1Regularized(new Apfloat(a), new Apfloat(b), new Apfloat(c)).doubleValue();
+        .hypergeometric1F1Regularized(apfloatOf(a), apfloatOf(b), apfloatOf(c)).doubleValue();
   }
 
   public static double hypergeometric2F1(double a, double b, double c, double d) {
     return EvalEngine.getApfloatDouble()
-        .hypergeometric2F1(new Apfloat(a), new Apfloat(b), new Apfloat(c), new Apfloat(d))
+        .hypergeometric2F1(apfloatOf(a), apfloatOf(b), apfloatOf(c), apfloatOf(d))
         .doubleValue();
   }
 
   public static double hypergeometric2F1Regularized(double a, double b, double c, double d) {
-    return EvalEngine.getApfloatDouble().hypergeometric2F1Regularized(new Apfloat(a),
-        new Apfloat(b), new Apfloat(c), new Apfloat(d)).doubleValue();
+    return EvalEngine.getApfloatDouble().hypergeometric2F1Regularized(apfloatOf(a),
+        apfloatOf(b), apfloatOf(c), apfloatOf(d)).doubleValue();
   }
 
   public static double inverseErf(double value) {
@@ -297,33 +374,33 @@ public class DMath {
 
   public static double jacobiP(double n, double a, double b, double x) {
     return EvalEngine.getApfloatDouble()
-        .jacobiP(new Apfloat(n), new Apfloat(a), new Apfloat(b), new Apfloat(x)).doubleValue();
+        .jacobiP(apfloatOf(n), apfloatOf(a), apfloatOf(b), apfloatOf(x)).doubleValue();
   }
 
   public static double laguerreL(double n, double x) {
-    return EvalEngine.getApfloatDouble().laguerreL(new Apfloat(n), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().laguerreL(apfloatOf(n), apfloatOf(x)).doubleValue();
   }
 
   public static double laguerreL(double n, double a, double x) {
-    return EvalEngine.getApfloatDouble().laguerreL(new Apfloat(n), new Apfloat(a), new Apfloat(x))
+    return EvalEngine.getApfloatDouble().laguerreL(apfloatOf(n), apfloatOf(a), apfloatOf(x))
         .doubleValue();
   }
 
   public static double legendreP(double v, double x) {
-    return EvalEngine.getApfloatDouble().legendreP(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().legendreP(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   public static double legendreP(double v, double m, double x) {
-    return EvalEngine.getApfloatDouble().legendreP(new Apfloat(v), new Apfloat(m), new Apfloat(x))
+    return EvalEngine.getApfloatDouble().legendreP(apfloatOf(v), apfloatOf(m), apfloatOf(x))
         .doubleValue();
   }
 
   public static double legendreQ(double v, double x) {
-    return EvalEngine.getApfloatDouble().legendreQ(new Apfloat(v), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().legendreQ(apfloatOf(v), apfloatOf(x)).doubleValue();
   }
 
   public static double legendreQ(double v, double m, double x) {
-    return EvalEngine.getApfloatDouble().legendreQ(new Apfloat(v), new Apfloat(m), new Apfloat(x))
+    return EvalEngine.getApfloatDouble().legendreQ(apfloatOf(v), apfloatOf(m), apfloatOf(x))
         .doubleValue();
   }
 
@@ -332,11 +409,11 @@ public class DMath {
   }
 
   public static double logisticSigmoid(double value) {
-    return EvalEngine.getApfloatDouble().logisticSigmoid(new Apfloat(value)).doubleValue();
+    return EvalEngine.getApfloatDouble().logisticSigmoid(apfloatOf(value)).doubleValue();
   }
 
   public static double pochhammer(double x, double n) {
-    return EvalEngine.getApfloatDouble().pochhammer(new Apfloat(x), new Apfloat(n)).doubleValue();
+    return EvalEngine.getApfloatDouble().pochhammer(apfloatOf(x), apfloatOf(n)).doubleValue();
   }
 
   public static double polyGamma(double value) {
@@ -344,11 +421,11 @@ public class DMath {
   }
 
   public static double polyGamma(long n, double x) {
-    return EvalEngine.getApfloatDouble().polygamma(n, new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().polygamma(n, apfloatOf(x)).doubleValue();
   }
 
   public static double polyLog(double n, double x) {
-    return EvalEngine.getApfloatDouble().polylog(new Apfloat(n), new Apfloat(x)).doubleValue();
+    return EvalEngine.getApfloatDouble().polylog(apfloatOf(n), apfloatOf(x)).doubleValue();
   }
 
   private DMath() {}

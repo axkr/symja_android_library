@@ -594,4 +594,5 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   private Object writeReplace() {
     return optional();
   }
+
 }

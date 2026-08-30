@@ -24,6 +24,16 @@ public class FileExpr extends DataExpr<File> implements Externalizable {
     return new FileExpr(file);
   }
 
+  /**
+   * The form the built-ins use, so that the file name goes through
+   * {@link org.matheclipse.core.io.FileSandbox} first.
+   *
+   * @param file an already resolved file
+   */
+  public static FileExpr newInstance(final File file) {
+    return new FileExpr(file);
+  }
+
   protected FileExpr(final File value) {
     super(S.File, value);
   }

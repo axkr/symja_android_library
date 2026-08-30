@@ -285,6 +285,14 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
     try {
       if (ast.size() == 2 || ast.size() == 3) {
         if (ast.size() != 3) {
+          if (org.matheclipse.core.builtin.AroundFunctions.isAround(ast.arg1())) {
+            // f(Around(x, delta)) is Around(f(x), Abs(f'(x))*delta)
+            IExpr aroundResult = org.matheclipse.core.builtin.AroundFunctions
+                .mapFunction(ast.head(), (IAST) ast.arg1(), engine);
+            if (aroundResult.isPresent()) {
+              return aroundResult;
+            }
+          }
           return unaryOperator(ast.arg1());
         }
         return binaryOperator(ast, ast.arg1(), ast.arg2());

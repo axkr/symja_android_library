@@ -144,12 +144,12 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
   public static Predicate<IExpr> optionZeroTest(final IAST ast, EvalEngine engine,
       IExpr zeroTestOption, IExpr toleranceOption) {
     // Explicit ZeroTest -> always wins
-    if (zeroTestOption.isPresent() && !zeroTestOption.equals(S.Automatic)) {
+    if (zeroTestOption.isPresent() && zeroTestOption != S.Automatic) {
       return Predicates.isZeroTest(engine, zeroTestOption);
     }
     // Determine effective numeric tolerance
     double tolerance = Config.SPECIAL_FUNCTIONS_TOLERANCE;
-    if (toleranceOption.isPresent() && !toleranceOption.equals(S.Automatic)) {
+    if (toleranceOption.isPresent() && toleranceOption != S.Automatic) {
       double t = toleranceOption.toDoubleDefault(Double.NaN);
       if (!Double.isNaN(t) && t > 0.0) {
         tolerance = t;

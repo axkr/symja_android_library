@@ -153,7 +153,7 @@ public class TimeObjectExpr extends DataExpr<LocalTime> implements Externalizabl
       if ("Granularity".equals(name)) {
         return F.stringx(fGranularity.getName());
       }
-      return org.matheclipse.core.builtin.DateTimeFunctions.dateElement(name,
+      return org.matheclipse.core.expression.data.DateObjectExpr.dateElement(name,
           java.time.LocalDateTime.of(java.time.LocalDate.of(2000, 1, 1), fData), null, false);
     }
     return F.NIL;

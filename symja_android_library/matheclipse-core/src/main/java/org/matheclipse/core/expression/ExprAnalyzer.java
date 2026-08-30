@@ -438,13 +438,17 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
       IExpr var = lhs.arg2();
       if (base.isFree(Predicates.in(fListOfVariables), true)
           && !var.isFree(Predicates.in(fListOfVariables), true)) {
-        Errors.printIfunMessage(S.InverseFunction);
+        if (!Errors.allowInverseFunctions(S.InverseFunction, fEngine)) {
+          return F.NIL;
+        }
         return fEngine.evaluate(F.Subtract(var, F.Power(base, rhs)));
       }
     } else if (lhs.isPower() && lhs.base().isSymbol() && lhs.exponent().isNumber()) {
       int position = fListOfVariables.indexOf(lhs.base());
       if (position > 0) {
-        Errors.printIfunMessage(S.InverseFunction);
+        if (!Errors.allowInverseFunctions(S.InverseFunction, fEngine)) {
+          return F.NIL;
+        }
         IExpr inverseFunction = F.Power(rhs, lhs.exponent().inverse());
         return fEngine.evaluate(F.Subtract(lhs.base(), inverseFunction));
       }
@@ -482,7 +486,9 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     IASTAppendable inverseFunction =
         InverseFunction.getUnaryInverseFunction(functionToInvert, true);
     if (inverseFunction.isPresent()) {
-      Errors.printIfunMessage(S.InverseFunction);
+      if (!Errors.allowInverseFunctions(S.InverseFunction, fEngine)) {
+        return F.NIL;
+      }
       // rewrite fNumer
       inverseFunction.append(F.Divide(rhs, numericPart));
       return fEngine.evaluate(F.Subtract(arg1, inverseFunction));
@@ -569,7 +575,9 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
           int position = fListOfVariables.indexOf(function.arg2());
           if (position > 0 && function.arg1().isFree(fListOfVariables)
               && temp.isFree(fListOfVariables)) {
-            Errors.printIfunMessage(S.InverseFunction);
+            if (!Errors.allowInverseFunctions(S.InverseFunction, fEngine)) {
+              return F.NIL;
+            }
             return fEngine.evaluate(F.InverseGammaRegularized(function.arg1(), temp.negate()));
           }
         }

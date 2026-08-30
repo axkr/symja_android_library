@@ -31,6 +31,15 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+    if (org.matheclipse.core.builtin.AroundFunctions.isAround(ast.arg1())) {
+      // f(Around(x, delta)) is Around(f(x), Abs(f'(x))*delta). This override bypasses
+      // AbstractArg1#evaluate, so the hook has to be repeated here.
+      IExpr aroundResult = org.matheclipse.core.builtin.AroundFunctions.mapFunction(ast.head(),
+          (IAST) ast.arg1(), engine);
+      if (aroundResult.isPresent()) {
+        return aroundResult;
+      }
+    }
     return evaluateArg1(ast.arg1(), engine);
   }
 

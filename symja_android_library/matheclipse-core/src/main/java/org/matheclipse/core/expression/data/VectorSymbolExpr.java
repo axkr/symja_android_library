@@ -127,7 +127,7 @@ public class VectorSymbolExpr extends DataExpr<Object> implements IArraySymbol {
     IASTAppendable appendable = F.ast(S.VectorSymbol);
     appendable.append(fName);
     appendable.append(fDimension);
-    if (!fDomain.equals(S.Reals)) {
+    if (fDomain != S.Reals) {
       appendable.append(fDomain);
     }
     return appendable;
@@ -140,7 +140,7 @@ public class VectorSymbolExpr extends DataExpr<Object> implements IArraySymbol {
     sb.append(fName.toString());
     sb.append(", ");
     sb.append(fDimension.toString());
-    if (!fDomain.equals(S.Reals)) {
+    if (fDomain != S.Reals) {
       sb.append(", ");
       sb.append(fDomain.toString());
     }
