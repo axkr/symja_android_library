@@ -1,4 +1,4 @@
-package org.matheclipse.core.eval;
+package org.matheclipse.core.eval.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
@@ -115,7 +117,7 @@ public class PackageUtil {
     }
 
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parsePackage(builder.toString());
+    final List<ASTNode> node = parser.parseScript(builder.toString());
     return node;
   }
 
@@ -136,7 +138,7 @@ public class PackageUtil {
    */
   public static List<ASTNode> parseReader(final String reader, final EvalEngine engine) {
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parsePackage(reader);
+    final List<ASTNode> node = parser.parseScript(reader);
     return node;
   }
 
