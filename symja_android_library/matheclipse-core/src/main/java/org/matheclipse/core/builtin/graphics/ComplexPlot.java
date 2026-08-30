@@ -82,9 +82,9 @@ public class ComplexPlot extends ListPlot {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
-        if (key.equals(S.PlotPoints)) {
+        if (key == S.PlotPoints) {
           plotPoints = val.toIntDefault(100);
-        } else if (key.equals(S.ColorFunction)) {
+        } else if (key == S.ColorFunction) {
           colorFunction = val.toString().replace("\"", "");
         }
       }
@@ -148,7 +148,7 @@ public class ComplexPlot extends ListPlot {
     graphicsOptions.setBoundingBox(new double[] {x0, x1, y0, y1});
 
     // Ensure AspectRatio -> Automatic (1:1) is default for ComplexPlot unless overridden
-    if (graphicsOptions.aspectRatio().equals(S.Automatic)) {
+    if (graphicsOptions.aspectRatio() == S.Automatic) {
       graphicsOptions.setAspectRatio(F.C1);
     }
 

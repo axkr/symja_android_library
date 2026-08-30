@@ -24,13 +24,14 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -41,7 +42,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import com.baeldung.algorithms.romannumerals.RomanArabicConverter;
-import com.github.freva.asciitable.AsciiTable;
 // import com.ibm.icu.text.NumberFormat;
 // import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -54,8 +54,11 @@ public final class OutputFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.AccountingForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.ACCOUNTING));
       S.BaseForm.setEvaluator(new BaseForm());
       S.CForm.setEvaluator(new CForm());
+      S.DecimalForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.DECIMAL));
+      S.EngineeringForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.ENGINEERING));
       S.FromRomanNumeral.setEvaluator(new FromRomanNumeral());
       S.FullForm.setEvaluator(new FullForm());
       S.HoldForm.setEvaluator(new HoldForm());
@@ -65,14 +68,16 @@ public final class OutputFunctions {
       S.JavaForm.setEvaluator(new JavaForm());
       S.JSForm.setEvaluator(new JSForm());
       S.MathMLForm.setEvaluator(new MathMLForm());
+      S.NumberForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.NUMBER));
       S.OutputForm.setEvaluator(new OutputForm());
+      S.PaddedForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.PADDED));
       S.Prefix.setEvaluator(new PrefixEvaluator());
       S.Postfix.setEvaluator(new PostfixEvaluator());
       S.RomanNumeral.setEvaluator(new RomanNumeral());
       S.Row.setEvaluator(new Row());
       S.TableForm.setEvaluator(new TableForm());
       S.TeXForm.setEvaluator(new TeXForm());
-      S.ScientificForm.setEvaluator(new ScientificForm());
+      S.ScientificForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.SCIENTIFIC));
     }
   }
 
@@ -699,8 +704,8 @@ public final class OutputFunctions {
         if (arg1.isDataset()) {
           return F.$str(((IASTDataset) arg1).datasetToJSForm(), IStringX.TEXT_HTML);
         }
-        if (arg1 instanceof GraphExpr) {
-          return F.$str(((GraphExpr) arg1).graphToJSForm(), IStringX.APPLICATION_JAVASCRIPT);
+        if (arg1 instanceof IGraphExpr) {
+          return F.$str(((IGraphExpr) arg1).graphToJSForm(), IStringX.APPLICATION_JAVASCRIPT);
         }
 
         return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
@@ -805,10 +810,23 @@ public final class OutputFunctions {
     }
   }
 
+  /**
+   * <code>Row[{e1, e2, ...}]</code> - the elements side by side - and
+   * <code>Row[{...}, separator]</code>.
+   *
+   * <p>
+   * With a string separator the row is joined into one string here, because that is a value rather
+   * than a layout. Every other form is a layout object and stays unevaluated for a front end to
+   * lay out; <code>Row[{"moves: ", Dynamic[moves]}]</code>, the usual way to write a live read-out,
+   * is the commonest of them.
+   */
   private static class Row extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        return F.NIL;
+      }
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isList() && arg2.isString()) {
@@ -834,83 +852,29 @@ public final class OutputFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_1_2;
     }
   }
 
+  /**
+   * <code>TableForm(expr)</code> is a display wrapper: like <code>MatrixForm</code> it stays in the
+   * expression tree and only the printed representation changes. That is why
+   * <code>evaluate()</code> always returns {@link F#NIL} - the text table is laid out by
+   * {@link org.matheclipse.core.form.output.OutputFormFactory} and the TeX and MathML factories
+   * render it as an array.
+   */
   private static class TableForm extends AbstractFunctionOptionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
-      if (argSize >= 1) {
-        // IExpr tableHeadings = option[0];
-        IExpr arg1 = ast.arg1().normal(false);
-
-        final String[][] tableData;
-        if (arg1.isList()) {
-          IAST list = (IAST) arg1;
-          tableData = new String[list.argSize()][];
-          for (int i = 1; i < list.size(); i++) {
-            IExpr element = list.get(i);
-            if (element.isList()) {
-              IAST subList = (IAST) element;
-              tableData[i - 1] = new String[subList.argSize()];
-              for (int j = 1; j < subList.size(); j++) {
-                IExpr subElement = subList.get(j);
-                tableData[i - 1][j - 1] = subElement.toString();
-              }
-            } else {
-              tableData[i - 1] = new String[1];
-              tableData[i - 1][0] = element.toString();;
-            }
-          }
-
-        } else {
-          tableData = new String[1][1];
-          tableData[0][0] = arg1.toString();
-        }
-
-        String[] headers = {};
-        String[] footers = {};
-        String asciiTable = AsciiTable.builder()//
-            .lineSeparator("\n")//
-            .border(AsciiTable.NO_BORDERS) //
-            .header(headers) //
-            .footer(footers) //
-            .data(tableData)//
-            .asString();
-        return F.stringx(asciiTable, IStringX.TEXT_PLAIN);
-
-
-        // StringBuilder tableForm = new StringBuilder();
-        // if (plaintextTable(tableForm, arg1, " ", x -> x.toString(), true)) {
-        // return F.stringx(tableForm.toString(), IStringX.TEXT_PLAIN);
-        // }
-        // if (arg1.isList()) {
-        // IAST list = (IAST) arg1;
-        // StringBuilder sb = new StringBuilder();
-        // for (int i = 1; i < list.size(); i++) {
-        // sb.append(list.get(i).toString());
-        // sb.append("\n");
-        // }
-        // return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
-        // }
-        // int dim = arg1.isVector();
-        // if (dim >= 0) {
-        // FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-        // if (vector != null) {
-        // StringBuilder sb = new StringBuilder();
-        // for (int i = 0; i < dim; i++) {
-        // sb.append(vector.getEntry(i).toString());
-        // sb.append("\n");
-        // }
-        // return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
-        // }
-        // }
-        // return F.stringx(arg1.toString(), IStringX.TEXT_PLAIN);
-      }
+      // the wrapper must survive evaluation - it is resolved by the output factories
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -975,31 +939,107 @@ public final class OutputFunctions {
     }
   }
 
-  private static class ScientificForm extends AbstractCoreFunctionEvaluator {
+  /**
+   * The <code>ScientificForm, EngineeringForm, NumberForm, AccountingForm, PaddedForm,
+   * DecimalForm</code> display wrappers.
+   *
+   * <p>
+   * These heads stay in the expression tree unevaluated - <code>evaluate()</code> only validates
+   * the precision specification and always returns {@link F#NIL}. The actual formatting happens in
+   * the output factories, which recognize the head and install a
+   * {@link org.matheclipse.core.form.NumberFormatter} for the wrapped subtree. That is why
+   * <code>FullForm(ScientificForm(2.5))</code> still shows <code>ScientificForm(2.5)</code>.
+   */
+  private static class NumberFormEvaluator extends AbstractFunctionOptionEvaluator {
+
+    private final NumberFormatter.FormKind kind;
+
+    /** Index of {@link S#DigitBlock} in this wrapper's option array. */
+    private int digitBlockIndex = -1;
+
+    private NumberFormEvaluator(NumberFormatter.FormKind kind) {
+      this.kind = kind;
+    }
+
+    /**
+     * The option symbols this wrapper accepts. The forms differ: only
+     * <code>NumberForm, PaddedForm, DecimalForm</code> take <code>DefaultPrintPrecision</code>,
+     * only <code>PaddedForm</code> takes <code>ScientificNotationThreshold</code>, and
+     * <code>DecimalForm</code> takes none of the exponent related options because it never uses
+     * scientific notation.
+     */
+    private IBuiltInSymbol[] optionSymbolsFor(NumberFormatter.FormKind kind) {
+      switch (kind) {
+        case DECIMAL:
+          return new IBuiltInSymbol[] {S.DefaultPrintPrecision, S.DigitBlock, S.NumberPadding,
+              S.NumberPoint, S.NumberSeparator, S.NumberSigns, S.SignPadding};
+        case NUMBER:
+          return new IBuiltInSymbol[] {S.DefaultPrintPrecision, S.DigitBlock, S.ExponentFunction,
+              S.ExponentStep, S.NumberFormat, S.NumberMultiplier, S.NumberPadding, S.NumberPoint,
+              S.NumberSeparator, S.NumberSigns, S.SignPadding};
+        case PADDED:
+          return new IBuiltInSymbol[] {S.DefaultPrintPrecision, S.DigitBlock, S.ExponentFunction,
+              S.ExponentStep, S.NumberFormat, S.NumberMultiplier, S.NumberPadding, S.NumberPoint,
+              S.NumberSeparator, S.NumberSigns, S.ScientificNotationThreshold, S.SignPadding};
+        default:
+          return new IBuiltInSymbol[] {S.DigitBlock, S.ExponentFunction, S.ExponentStep,
+              S.NumberFormat, S.NumberMultiplier, S.NumberPadding, S.NumberPoint, S.NumberSeparator,
+              S.NumberSigns, S.SignPadding};
+      }
+    }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        IExpr arg2 = engine.evaluate(ast.arg2());
-        int n = arg2.toMachineInt();
-        if (n > 0) {
-
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize >= 2) {
+        IExpr arg2 = ast.arg2();
+        if (arg2.isRule()) {
+          // a rule that survived option stripping names an option this form does not accept
+          // Unknown option `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "optx", F.list(arg2, ast.topHead()), engine);
         }
-        return F.NIL;
+        if (arg2.isList()) {
+          if (arg2.size() != 3 || !isPositiveOrZero(arg2.first()) || !isPositiveOrZero(arg2.second())) {
+            // Positive machine-sized integer expected at position `2` in `1`.
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+          }
+        } else if (!isPositive(arg2)) {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+        }
       }
-      if (ast.isAST1()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-
-
-        return F.NIL;
+      IExpr digitBlock = digitBlockIndex >= 0 && digitBlockIndex < option.length
+          ? option[digitBlockIndex]
+          : null;
+      if (digitBlock != null && digitBlock.isPresent() && !digitBlock.isInfinity()
+          && !isPositive(digitBlock) && !isDigitBlockPair(digitBlock)) {
+        // Value of option `1` should be a non-negative integer or Infinity.
+        return Errors.printMessage(ast.topHead(), "iopnf", F.list(F.Rule(S.DigitBlock, digitBlock)),
+            engine);
       }
+      // the wrapper must survive evaluation - it is resolved by the output factories
       return F.NIL;
+    }
+
+    private static boolean isPositive(IExpr expr) {
+      int value = expr.toIntDefault();
+      return value != Integer.MIN_VALUE && value > 0;
+    }
+
+    private static boolean isPositiveOrZero(IExpr expr) {
+      int value = expr.toIntDefault();
+      return value != Integer.MIN_VALUE && value >= 0;
+    }
+
+    private static boolean isDigitBlockPair(IExpr expr) {
+      return expr.isList() && expr.size() == 3
+          && (expr.first().isInfinity() || isPositive(expr.first()))
+          && (expr.second().isInfinity() || isPositive(expr.second()));
     }
 
     @Override
     public int status() {
-      return ImplementationStatus.NO_SUPPORT;
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1009,7 +1049,60 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      IBuiltInSymbol[] lhsOptionSymbols = optionSymbolsFor(kind);
+      IExpr[] rhsValues = new IExpr[lhsOptionSymbols.length];
+      for (int i = 0; i < lhsOptionSymbols.length; i++) {
+        rhsValues[i] = defaultValue(lhsOptionSymbols[i]);
+        if (lhsOptionSymbols[i] == S.DigitBlock) {
+          digitBlockIndex = i;
+        }
+      }
+      setOptions(newSymbol, lhsOptionSymbols, rhsValues);
+    }
+
+    private IExpr defaultValue(IBuiltInSymbol optionSymbol) {
+      switch (optionSymbol.ordinal()) {
+        case ID.DigitBlock:
+          return F.CInfinity;
+        case ID.ExponentStep:
+          return F.ZZ(kind == NumberFormatter.FormKind.ENGINEERING ? 3 : 1);
+        case ID.NumberMultiplier:
+          return F.stringx("×");
+        case ID.NumberPadding:
+          return numberPaddingDefault();
+        case ID.NumberPoint:
+          return kind == NumberFormatter.FormKind.DECIMAL ? S.Automatic : F.stringx(".");
+        case ID.NumberSeparator:
+          return F.list(F.stringx(","), F.stringx(""));
+        case ID.NumberSigns:
+          return numberSignsDefault();
+        case ID.ScientificNotationThreshold:
+          return F.list(F.ZZ(-5), F.ZZ(6));
+        case ID.SignPadding:
+          return S.False;
+        default:
+          // DefaultPrintPrecision, ExponentFunction, NumberFormat
+          return S.Automatic;
+      }
+    }
+
+    private IExpr numberPaddingDefault() {
+      switch (kind) {
+        case PADDED:
+          return F.list(F.stringx(" "), F.stringx("0"));
+        case NUMBER:
+        case DECIMAL:
+          return F.list(F.stringx(""), F.stringx("0"));
+        default:
+          return F.list(F.stringx(""), F.stringx(""));
+      }
+    }
+
+    private IExpr numberSignsDefault() {
+      if (kind == NumberFormatter.FormKind.ACCOUNTING) {
+        return F.list(F.list(F.stringx("("), F.stringx(")")), F.stringx(""));
+      }
+      return F.list(F.stringx("-"), F.stringx(""));
     }
   }
 
@@ -1073,7 +1166,7 @@ public final class OutputFunctions {
           if (headTest == null) {
             return false;
           }
-          if (headTest.equals(S.Integer) || headTest.equals(S.Complex) || headTest.equals(S.Real)) {
+          if (headTest == S.Integer || headTest == S.Complex || headTest == S.Real) {
             // allowed machine-sized types
           } else {
             headTest = null;

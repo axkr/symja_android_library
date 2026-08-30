@@ -33,12 +33,12 @@ import java.util.zip.GZIPOutputStream;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -52,6 +52,7 @@ import org.matheclipse.core.expression.data.NumericArrayExpr.TypeException;
 import org.matheclipse.core.expression.data.OutputStreamExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -151,7 +152,12 @@ public class FileFunctions {
 
       if (Config.isFileSystemEnabled(engine)) {
         for (int j = 2; j < ast.size(); j++) {
-          try (FileInputStream fis = new FileInputStream(ast.get(j).toString());
+          File packageFile =
+              FileSandbox.resolveRead(S.BeginPackage, ast.get(j).toString(), engine);
+          if (packageFile == null) {
+            continue;
+          }
+          try (FileInputStream fis = new FileInputStream(packageFile);
               Reader r = new InputStreamReader(fis, StandardCharsets.UTF_8);
               BufferedReader reader =
                   new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));) {
@@ -321,6 +327,11 @@ public class FileFunctions {
 
       // Convert expression to string in InputForm
       String inputForm = IStringX.inputForm(expr);
+      if (inputForm == null) {
+        // inputForm() answers null when the output converter declines the expression, having
+        // reported why itself. Compressing that is a NullPointerException out of the built-in.
+        return F.NIL;
+      }
 
       // Compress and Encode
       try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
@@ -357,7 +368,11 @@ public class FileFunctions {
             Path tempDir = Files.createTempDirectory("");
             return F.stringx(tempDir.toString());
           } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
-            Path path = Paths.get(ast.arg1().toString());
+            Path path =
+                FileSandbox.resolveWritePath(S.CreateDirectory, ast.arg1().toString(), engine);
+            if (path == null) {
+              return F.NIL;
+            }
             if (!Files.exists(path)) {
               Files.createDirectory(path);
             }
@@ -526,7 +541,8 @@ public class FileFunctions {
         try {
           IExpr arg1 = ast.arg1();
           if (arg1.isString()) {
-            return FileExpr.newInstance(arg1.toString());
+            File file = FileSandbox.resolveRead(S.File, arg1.toString(), engine);
+            return file == null ? F.NIL : FileExpr.newInstance(file);
           }
         } catch (RuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
@@ -583,7 +599,11 @@ public class FileFunctions {
         IExpr arg1 = ast.arg1();
 
         if (arg1.isString()) {
-          try (BufferedReader br = new BufferedReader(new FileReader(arg1.toString()))) {
+          File printFile = FileSandbox.resolveRead(S.FilePrint, arg1.toString(), engine);
+          if (printFile == null) {
+            return F.NIL;
+          }
+          try (BufferedReader br = new BufferedReader(new FileReader(printFile))) {
             final PrintStream stream = engine.getOutPrintStream();
             String line;
             int numberOfLines = Integer.MAX_VALUE;
@@ -730,6 +750,30 @@ public class FileFunctions {
 
 
 
+    /**
+     * Look for a package in the directories of <code>$Path</code>.
+     *
+     * @return the first readable match, or <code>null</code>
+     */
+    private static Path searchPath(String fileName, EvalEngine engine) {
+      if (FileSandbox.isAbsolutePath(fileName)) {
+        return null;
+      }
+      for (Path directory : FileSandbox.searchPath(engine)) {
+        Path candidate = directory.resolve(fileName);
+        if (!Files.isRegularFile(candidate)) {
+          continue;
+        }
+        // Go back through the sandbox: a $Path entry must not become a way around it.
+        Path allowed =
+            FileSandbox.resolveReadPath(S.Get, candidate.toAbsolutePath().toString(), engine);
+        if (allowed != null && Files.isRegularFile(allowed)) {
+          return allowed;
+        }
+      }
+      return null;
+    }
+
     private static IExpr getFile(Path file, IAST ast, String arg1Str, EvalEngine engine) {
       boolean packageMode = engine.isPackageMode();
       String input = engine.get$Input();
@@ -783,7 +827,10 @@ public class FileFunctions {
             URL url = new URL(arg1Str);
             return getURL(url, ast, arg1Str, engine);
           }
-          Path file = Path.of(arg1Str);
+          Path file = FileSandbox.resolveReadPath(S.Get, arg1Str, engine);
+          if (file == null) {
+            return F.NIL;
+          }
           if (Files.isRegularFile(file)) {
             return getFile(file, ast, arg1Str, engine);
           } else {
@@ -791,6 +838,13 @@ public class FileFunctions {
             if (Files.isRegularFile(file)) {
               return getFile(file, ast, arg1Str, engine);
             }
+          }
+          // Not found where it was named, so look through $Path, as the Wolfram Language
+          // does. Only a relative name is searched: an absolute path that does not exist is
+          // a mistake, not an invitation to load some other file of the same name.
+          Path onSearchPath = searchPath(arg1Str, engine);
+          if (onSearchPath != null) {
+            return getFile(onSearchPath, ast, arg1Str, engine);
           }
           Validate.checkContextName(ast, 1);
         } catch (ValidateException ve) {
@@ -823,7 +877,8 @@ public class FileFunctions {
         try {
           IExpr arg1 = ast.arg1();
           if (arg1.isString()) {
-            return InputStreamExpr.newInstance(arg1.toString(), "String");
+            File file = FileSandbox.resolveRead(S.InputStream, arg1.toString(), engine);
+            return file == null ? F.NIL : InputStreamExpr.newInstance(file, "String");
           }
         } catch (FileNotFoundException | RuntimeException ex) {
           Errors.printMessage(S.InputStream, ex);
@@ -870,7 +925,8 @@ public class FileFunctions {
           if (ast.isAST1()) {
             IExpr arg1 = ast.arg1();
             if (arg1.isString()) {
-              return InputStreamExpr.newInstance(arg1.toString(), "String");
+              File file = FileSandbox.resolveRead(S.OpenRead, arg1.toString(), engine);
+              return file == null ? F.NIL : InputStreamExpr.newInstance(file, "String");
             }
           }
         } catch (FileNotFoundException | RuntimeException ex) {
@@ -914,7 +970,9 @@ public class FileFunctions {
           if (ast.isAST1()) {
             IExpr arg1 = ast.arg1();
             if (arg1.isString()) {
-              return OutputStreamExpr.newInstance(arg1.toString(), append);
+              File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite,
+                  arg1.toString(), engine);
+              return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append);
             }
           }
         } catch (IOException | RuntimeException ex) {
@@ -943,7 +1001,8 @@ public class FileFunctions {
         try {
           IExpr arg1 = ast.arg1();
           if (arg1.isString()) {
-            return OutputStreamExpr.newInstance(arg1.toString(), false);
+            File file = FileSandbox.resolveWrite(S.OutputStream, arg1.toString(), engine);
+            return file == null ? F.NIL : OutputStreamExpr.newInstance(file, false);
           }
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OutputStream, ex);
@@ -1015,7 +1074,11 @@ public class FileFunctions {
             buf.append('\n');
           }
         }
-        try (FileWriter writer = new FileWriter(fileName.toString())) {
+        File outFile = FileSandbox.resolveWrite(S.Put, fileName.toString(), engine);
+        if (outFile == null) {
+          return F.NIL;
+        }
+        try (FileWriter writer = new FileWriter(outFile)) {
           writer.write(buf.toString());
         } catch (IOException ex) {
           Errors.printMessage(S.Put, ex);
@@ -1417,7 +1480,10 @@ public class FileFunctions {
             return Errors.printMessage(S.ReadString, ex);
           }
         }
-        Path file = Path.of(arg1);
+        Path file = FileSandbox.resolveReadPath(S.ReadString, arg1, engine);
+        if (file == null) {
+          return F.NIL;
+        }
         if (Files.isRegularFile(file)) {
           try {
             String str = Files.readString(file, Charset.defaultCharset());
@@ -1530,7 +1596,11 @@ public class FileFunctions {
         }
         if (symbolsList.isPresent()) {
           String str = ISymbol.fullDefinitionListToString(symbolsList);
-          try (FileWriter writer = new FileWriter(fileName.toString())) {
+          File outFile = FileSandbox.resolveWrite(S.Save, fileName.toString(), engine);
+          if (outFile == null) {
+            return F.NIL;
+          }
+          try (FileWriter writer = new FileWriter(outFile)) {
             writer.write(str);
           } catch (IOException ex) {
             return Errors.printMessage(S.Save, ex);
@@ -1653,8 +1723,14 @@ public class FileFunctions {
         return F.NIL;
       }
       String inputString = ast.arg1().toString();
-      String decoded = URLDecoder.decode(inputString, StandardCharsets.UTF_8);
-      return F.stringx(decoded);
+      try {
+        return F.stringx(URLDecoder.decode(inputString, StandardCharsets.UTF_8));
+      } catch (IllegalArgumentException iae) {
+        // a percent that does not introduce two hex digits is not an escape at all, and
+        // URLDecoder throws over it. There is nothing to decode, so the string stands as written;
+        // Mathematica answers URLDecode["%s"] with "%s".
+        return F.stringx(inputString);
+      }
     }
 
     @Override
@@ -1799,7 +1875,11 @@ public class FileFunctions {
         }
         IStringX fileName = (IStringX) ast.arg1();
         IStringX str = (IStringX) ast.arg2();
-        try (FileWriter writer = new FileWriter(fileName.toString())) {
+        File outFile = FileSandbox.resolveWrite(S.WriteString, fileName.toString(), engine);
+        if (outFile == null) {
+          return F.NIL;
+        }
+        try (FileWriter writer = new FileWriter(outFile)) {
           writer.write(str.toString());
         } catch (IOException ex) {
           return Errors.printMessage(S.WriteString, ex);

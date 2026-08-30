@@ -20,6 +20,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.JavaClassExpr;
 import org.matheclipse.core.expression.data.JavaObjectExpr;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -57,8 +58,10 @@ public class JavaFunctions {
         for (int i = 1; i < ast.size(); i++) {
           IExpr arg = ast.get(i);
           if (arg.isString()) {
-            String path = arg.toString();
-            File file = new File(path);
+            File file = FileSandbox.resolveRead(S.AddToClassPath, arg.toString(), engine);
+            if (file == null) {
+              return F.NIL;
+            }
             child = new URLClassLoader(new URL[] {file.toURI().toURL()}, child);
           }
         }

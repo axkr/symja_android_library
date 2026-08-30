@@ -193,7 +193,7 @@ public class DensityPlot extends ListPlot {
    * Interpolates colors to match the "Sunset" density gradient. Maps t [0..1] -> [Deep Purple ...
    * Yellow]
    */
-  private IExpr getDensityColor(double t) {
+  protected IExpr getDensityColor(double t) {
     if (t < 0)
       t = 0;
     if (t > 1)

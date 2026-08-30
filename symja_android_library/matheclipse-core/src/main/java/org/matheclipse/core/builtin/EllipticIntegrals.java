@@ -671,7 +671,7 @@ public class EllipticIntegrals {
         // EllipticF(Pi/2, m) = EllipticK(m)
         return F.EllipticK(m);
       }
-      if (z.isTimes() && z.second().equals(S.Pi) && z.first().isRational()) {
+      if (z.isTimes() && z.second() == S.Pi && z.first().isRational()) {
         IRational k = ((IRational) z.first()).multiply(F.C2).normalize();
         if (k.isInteger()) {
           // EllipticF(k*Pi/2, m) = k*EllipticK(m) /; IntegerQ(k)

@@ -78,9 +78,9 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     IExpr extentOption = options[0]; // ExtentSize
     if (extentOption.isNone()) {
       pointsOnly = true;
-    } else if (extentOption.equals(S.Automatic)) {
+    } else if (extentOption == S.Automatic) {
       useThinLineStyle = true;
-    } else if (extentOption.equals(S.Full) || extentOption.equals(S.All)) {
+    } else if (extentOption == S.Full || extentOption == S.All) {
       // the bars meet their neighbours, which is what the defaults above already say
     } else if (extentOption.isAST(S.Scaled, 2)) {
       IExpr scaled = extentOption.first();
@@ -166,7 +166,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         extentY = extentFractionY * sampleSpacing(jValues == null ? iValues : jValues) / 2.0;
       }
 
-      boolean autoPlotRange = options[1].equals(S.Automatic);
+      boolean autoPlotRange = options[1] == S.Automatic;
 
       for (int funcIdx = 1; funcIdx < functions.size(); funcIdx++) {
         IExpr f = functions.get(funcIdx);
@@ -343,7 +343,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       return;
     }
     if (marker.isString()) {
-      primitives.append(F.binaryAST2(S.Text, marker, position));
+      primitives.append(F.Text(marker, position));
       return;
     }
     primitives.append(F.Point(position));

@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.positions.FlattenPositions;
 import org.matheclipse.core.eval.util.positions.MapPositions;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -47,7 +48,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.visit.IndexedLevel;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 public class StructureFunctions {
 
@@ -190,7 +191,9 @@ public class StructureFunctions {
       boolean includeHeads = option[0].isTrue();
 
       IExpr arg1 = evaledAST.arg1();
-      IExpr arg2 = evaledAST.arg2();
+      // Apply replaces the head of its argument, which a Dataset has no way to do: setAtCopy threw
+      // and the evaluation aborted. Its rows are what a head can be applied to.
+      IExpr arg2 = IASTDataset.normalizeDataset(evaledAST.arg2());
       IExpr level = F.C0;
       if (lastIndex == 3) {
         level = evaledAST.get(3);
@@ -486,6 +489,12 @@ public class StructureFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1.isDataset()) {
+        // a dataset is already flat - it is rows of named cells, not a nested list - and the
+        // reference gives it straight back. Flattening the rows would strip the names off the
+        // values and leave Dataset(1, 2, 3, ...), which is the shape this whole family had wrong.
+        return arg1;
+      }
       if (ast.isAST1()) {
         if (arg1.isSparseArray()) {
           ISparseArray sparseArray = (ISparseArray) arg1;
@@ -879,7 +888,7 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Function)) {
+      if (ast.head() == S.Function) {
         if (!validateArgs(engine, ast)) {
           return F.NIL;
         }
@@ -1158,7 +1167,8 @@ public class StructureFunctions {
         final EvalEngine engine, IAST originalAST) {
       boolean includeHeads = option[0].isTrue();
       IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
+      // a Dataset walks as rows, not as a structure - see IASTDataset#normalizeDataset
+      IExpr arg2 = IASTDataset.normalizeDataset(ast.arg2());
       if (ast.isAST2()) {
         if (arg2.isSparseArray()) {
           return ((ISparseArray) arg2).map(x -> F.unaryAST1(arg1, x));
@@ -1228,7 +1238,7 @@ public class StructureFunctions {
             final IExpr arg1 = ast.arg1();
             java.util.function.Function<IExpr, IExpr> function = x -> F.unaryAST1(arg1, x);
             IExpr arg3 = ast.arg3();
-            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)
+            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3 == S.All
                 || arg3.isAST(S.Span, 3, 4)) {
               arg3 = F.list(arg3);
             }
@@ -1287,7 +1297,7 @@ public class StructureFunctions {
             final IExpr arg2 = ast.arg2();
             java.util.function.Function<IExpr, IExpr> function = Functors.rules(arg2, engine);
             IExpr arg3 = ast.arg3();
-            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)
+            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3 == S.All
                 || arg3.isAST(S.Span, 3, 4)) {
               arg3 = F.list(arg3);
             }
@@ -1376,6 +1386,9 @@ public class StructureFunctions {
       if (arg2.isSparseArray()) {
         arg2 = arg2.normal(false);
       }
+      // as for a sparse array: the level visitor walks the rows, not the dataset object, which it
+      // used to read as a structure and map over into nonsense
+      arg2 = IASTDataset.normalizeDataset(arg2);
       // if (arg2.isAssociation()) {
       // // `1` currently not supported in `2`.
       // return Errors.printMessage(ast.topHead(), "unsupported",
@@ -1847,12 +1860,26 @@ public class StructureFunctions {
         }
       }
 
-      IASTAppendable result = ((IAST) arg2).copyAppendable();
+      // A series cannot hold a copy of itself, so copyAppendable() answers NIL for one - and
+      // applying a new head is exactly what Operate does, which leaves a series no longer a
+      // series. Carry on with the plain expression it is equivalent to, which is what the answer
+      // has to be anyway; without this the NIL reaches head.head() below.
+      IAST operand = (arg2 instanceof ASTSeriesData) ? ((ASTSeriesData) arg2).toPlainAST()
+          : (IAST) arg2;
+      IASTAppendable result = operand.copyAppendable();
+      if (result.isNIL()) {
+        return F.NIL;
+      }
       IASTAppendable last = result;
       IASTAppendable head = result;
 
       for (int i = 1; i < headDepth; i++) {
-        head = ((IAST) head.head()).copyAppendable();
+        IExpr nextHead = head.head();
+        IASTAppendable copy = nextHead.isAST() ? ((IAST) nextHead).copyAppendable() : F.NIL;
+        if (copy.isNIL()) {
+          return F.NIL;
+        }
+        head = copy;
         last.set(0, head);
         last = head;
       }
@@ -2148,12 +2175,25 @@ public class StructureFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg2 = F.NIL;
-      IsBinaryFalse isBinaryFalse = null;
+      Comparator<IExpr> comparator = null;
       if (ast.isAST2()) {
         arg2 = ast.arg2();
-        isBinaryFalse = new Predicates.IsBinaryFalse(arg2);
+        comparator = new Predicates.IsBinaryFalse(arg2);
       }
-      return sortByComparator(isBinaryFalse, ast, engine);
+      IExpr arg1 = IASTDataset.normalizeDataset(ast.arg1());
+      if (comparator == null && arg1.isList() && !arg1.isAssociation()
+          && ((IAST) arg1).exists(x -> x.isQuantity())) {
+        // quantities order by magnitude, not canonically - see Comparators.QuantityComparator.
+        // Scanning for one first keeps every other Sort on its existing fast path.
+        comparator = new Comparators.QuantityComparator(engine);
+      }
+      if (arg1 != ast.arg1()) {
+        // a Dataset walks as rows, not as a structure, and gives a Dataset back - see
+        // IASTDataset#normalizeDataset and IASTDataset#restoreDataset
+        return IASTDataset
+            .restoreDataset(sortByComparator(comparator, ast.setAtCopy(1, arg1), engine));
+      }
+      return sortByComparator(comparator, ast, engine);
     }
 
     protected static IExpr sortByComparator(Comparator<IExpr> comparator, final IAST ast,
@@ -2251,9 +2291,13 @@ public class StructureFunctions {
           if (ast.arg1().isDataset()) {
             List<String> listOfStrings = Convert.toStringList(ast.arg2());
             if (listOfStrings != null) {
+              // column names: sort the dataset on those columns and stay a dataset
               return ((IASTDataset) ast.arg1()).groupBy(listOfStrings);
             }
-            return F.NIL;
+            // anything else is a function to sort the rows by, and this used to give up here.
+            // A Dataset back, as the column-name form above gives - see IASTDataset#restoreDataset
+            return IASTDataset.restoreDataset(engine.evaluate(
+                F.binaryAST2(S.SortBy, ((IASTDataset) ast.arg1()).normal(false), ast.arg2())));
           }
           if (ast.arg1().isASTOrAssociation()) {
             final IAST arg1 = (IAST) ast.arg1();
@@ -2538,7 +2582,7 @@ public class StructureFunctions {
       }
 
       IASTAppendable result;
-      if (head.equals(S.List)) {
+      if (head == S.List) {
         result = F.ListAlloc(listLength);
       } else {
         result = F.ast(head, listLength);

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
@@ -24,9 +25,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Plot extends ListPlot {
 
   final static double NUMBER_OF_PIXELS = 1200.0;
-
-  /** Constructor for the singleton */
-  public static final Plot CONST = new Plot();
 
   public Plot() {}
 
@@ -128,8 +126,14 @@ public class Plot extends ListPlot {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
     final ISymbol x = (ISymbol) rangeList.arg1();
-    final IExpr xMin = engine.evalN(rangeList.arg2());
-    final IExpr xMax = engine.evalN(rangeList.arg3());
+    final IExpr plotTargetUnits = GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic);
+    // a quantity valued range is stripped to magnitudes; the plot variable stays a plain number
+    IAST quantityRange = QuantityFunctions.quantityPlotRange(engine.evaluate(rangeList.arg2()),
+        engine.evaluate(rangeList.arg3()), plotTargetUnits, engine);
+    final IExpr xMin = engine
+        .evalN(quantityRange.isPresent() ? quantityRange.arg1() : rangeList.arg2());
+    final IExpr xMax = engine
+        .evalN(quantityRange.isPresent() ? quantityRange.arg2() : rangeList.arg3());
     if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || xMin.equals(xMax)) {
       // Endpoints in `1` must be distinct machine-size real numbers.
       return Errors.printMessage(ast.topHead(), "plld", F.List(x, rangeList), engine);
@@ -154,8 +158,12 @@ public class Plot extends ListPlot {
       scale = "Linear";
     }
 
+    final IExpr targetUnits = plotTargetUnits;
+    final IAST samplePoint = F.List(F.Rule(x, F.num((xMinD + xMaxD) / 2.0)));
     for (int i = 1; i < size; i++) {
-      IExpr function = list.get(i);
+      // a quantity valued function is plotted by its magnitude
+      IExpr function =
+          QuantityFunctions.quantityPlotFunction(list.get(i), samplePoint, targetUnits, engine);
       double[][] data = null;
       final UnaryNumerical hun = new UnaryNumerical(function, x, Double.NaN, engine);
       // WorkingPrecision only matters where machine arithmetic loses the answer

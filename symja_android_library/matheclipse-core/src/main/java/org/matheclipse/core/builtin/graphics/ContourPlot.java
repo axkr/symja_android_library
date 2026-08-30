@@ -167,7 +167,7 @@ public class ContourPlot extends ListPlot {
     }
 
     // Default shading to None for equations unless specified
-    if (isEquation && contourShading.equals(S.Automatic)) {
+    if (isEquation && contourShading == S.Automatic) {
       contourShading = S.None;
     }
 
@@ -222,7 +222,7 @@ public class ContourPlot extends ListPlot {
     }
 
     // 3. Shading (Polygons)
-    if (!contourShading.equals(S.None) && !contourShading.isFalse()) {
+    if (contourShading != S.None && !contourShading.isFalse()) {
       for (int k = -1; k < levels.length; k++) {
         double level = (k == -1) ? minZ - 1.0 : levels[k];
 
@@ -259,13 +259,13 @@ public class ContourPlot extends ListPlot {
     }
 
     // 4. Contour Lines
-    if (contourLines && !contourStyle.equals(S.None) && !contourStyle.isFalse()) {
+    if (contourLines && contourStyle != S.None && !contourStyle.isFalse()) {
       for (int k = 0; k < levels.length; k++) {
         double level = levels[k];
         IASTAppendable lineSegments = F.ListAlloc();
 
         IExpr currentStyle = contourStyle;
-        if (currentStyle.equals(S.Automatic)) {
+        if (currentStyle == S.Automatic) {
           // Single plot default: Gray
           // Multi plot default: Passed in via argument (handled in evaluate loop)
           currentStyle = isMulti ? contourStyle : (isEquation ? S.Black : F.GrayLevel(0.5));

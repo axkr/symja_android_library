@@ -1760,7 +1760,7 @@ public class ExpTrigsFunctions {
       if (ast.argSize() >= 1) {
         IExpr x = ast.arg1();
         if (x.isRealResult()) {
-          if (x.equals(S.Pi)) {
+          if (x == S.Pi) {
             return false;
           }
           if (x.isTimes()) {
@@ -2120,7 +2120,7 @@ public class ExpTrigsFunctions {
       if (ast.argSize() >= 1) {
         IExpr x = ast.arg1();
         if (x.isRealResult()) {
-          if (x.equals(S.Pi)) {
+          if (x == S.Pi) {
             return false;
           }
           if (x.isTimes()) {

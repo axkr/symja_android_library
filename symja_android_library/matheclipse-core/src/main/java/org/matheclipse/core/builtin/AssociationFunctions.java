@@ -596,7 +596,8 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      // a Dataset walks as rows, not as a structure - see IASTDataset#normalizeDataset
+      IExpr arg1 = IASTDataset.normalizeDataset(ast.arg1());
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         Map<IExpr, MutableInt> histogram = MutableInt.createHistogram(list);
@@ -748,13 +749,20 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back, of the keys of each row - see IASTDataset#onDatasetRows.
+      // This used to answer with the column names instead, once, as a bare list: the reference
+      // gives Keys[dataset] as Dataset[{{"a","b"}, {"a","b"}, …}], one entry per row, which is
+      // what Keys of the rows already produces. The old answer also leaked the storage on a
+      // dataset whose rows are named, where the key column is called "".
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr arg1 = ast.arg1();
       final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
       if (arg1.isAssociation()) {
         IASTMutable list = ((IAssociation) arg1).keys();
         return mapHeadIfPresent(list, head);
-      } else if (arg1.isDataset()) {
-        return ((IASTDataset) arg1).columnNames();
       } else if (arg1.isRuleAST()) {
         if (head.isPresent()) {
           return F.unaryAST1(head, arg1.first());
@@ -1054,6 +1062,12 @@ public class AssociationFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1.isDataset()) {
+        // Lookup holds its arguments, so the dataset is only here once arg1 is evaluated - the
+        // call still carries the unevaluated one, which is what onDatasetRows would look at
+        return IASTDataset.restoreDataset(
+            engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
+      }
       if (arg1.isList()) {
         if (ast.size() > 2) {
           if (arg1.isListOfRules(true)) {
@@ -1125,6 +1139,11 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         Map<IExpr, IASTAppendable> map = new LinkedHashMap<>();
@@ -1231,13 +1250,88 @@ public class AssociationFunctions {
    */
   private static class Query extends AbstractEvaluator {
 
+    /**
+     * The operators for which <code>MissingBehavior -&gt; Automatic</code> ignores what is not
+     * there. The reference describes these as "statistical functions like <code>Mean</code>,
+     * <code>Total</code>, etc."; everything else sees the level as it stands, so
+     * <code>Query(Length)</code> still counts a missing element.
+     */
+    private static boolean ignoresMissing(IExpr operator) {
+      return operator == S.Total || operator == S.Mean || operator == S.Median
+          || operator == S.Min || operator == S.Max || operator == S.Variance
+          || operator == S.StandardDeviation || operator == S.Quantile
+          || operator == S.GeometricMean || operator == S.HarmonicMean;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.head().isAST(S.Query)) {
         // the operator form Query(levelspec1, levelspec2, ...)[expr]
-        return query((IAST) ast.head(), 1, ast.arg1(), engine);
+        IAST levelSpecs = (IAST) ast.head();
+
+        // MissingBehavior is an option of Query, not a level specification, so it comes off the
+        // end before the specifications are read
+        boolean ignoreMissing = true;
+        int specCount = levelSpecs.argSize();
+        while (specCount >= 1 && levelSpecs.get(specCount).isRuleAST()
+            && levelSpecs.get(specCount).first() == S.MissingBehavior) {
+          ignoreMissing = levelSpecs.get(specCount).second() != S.None;
+          specCount--;
+        }
+        if (specCount < levelSpecs.argSize()) {
+          levelSpecs = levelSpecs.copyUntil(specCount + 1);
+        }
+
+        IExpr arg1 = ast.arg1();
+        if (arg1.isDataset()) {
+          // Query[op1, op2, …][dataset] is dataset[op1, op2, …]. A dataset answers its own
+          // queries - that is what the dataset[…] syntax is - and answers with a dataset, which
+          // walking it as a plain expression here does not
+          if (specCount == 0) {
+            return arg1;
+          }
+          IASTAppendable datasetQuery = F.ast(arg1, specCount);
+          datasetQuery.appendArgs(levelSpecs);
+          return engine.evaluate(datasetQuery);
+        }
+        return query(levelSpecs, 1, arg1, ignoreMissing, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * The collection without the values that are not there, which is what
+     * <code>MissingBehavior -&gt; Automatic</code> asks of an aggregate. A collection with nothing
+     * left has no value to give, and the reference answers
+     * <code>Missing("Indeterminate")</code>.
+     */
+    private static IExpr withoutMissing(IExpr expr) {
+      if (expr.isAssociation()) {
+        IAssociation assoc = (IAssociation) expr;
+        IAssociation result = F.assoc();
+        for (int i = 1; i < assoc.size(); i++) {
+          IAST rule = assoc.getRule(i);
+          if (!isMissing(rule.second())) {
+            result.appendRule(rule);
+          }
+        }
+        return result.argSize() == 0 ? F.Missing(F.$str("Indeterminate")) : result;
+      }
+      if (expr.isList()) {
+        IAST list = (IAST) expr;
+        IASTAppendable result = F.ListAlloc(list.argSize());
+        for (int i = 1; i < list.size(); i++) {
+          if (!isMissing(list.get(i))) {
+            result.append(list.get(i));
+          }
+        }
+        return result.argSize() == 0 ? F.Missing(F.$str("Indeterminate")) : result;
+      }
+      return expr;
+    }
+
+    private static boolean isMissing(IExpr expr) {
+      return expr.isAST(S.Missing) || expr == S.Missing;
     }
 
     /**
@@ -1252,14 +1346,15 @@ public class AssociationFunctions {
      * @param engine the evaluation engine
      * @return {@link F#NIL} if the query couldn't be applied
      */
-    private static IExpr query(IAST levelSpecs, int position, IExpr expr, EvalEngine engine) {
+    private static IExpr query(IAST levelSpecs, int position, IExpr expr, boolean ignoreMissing,
+        EvalEngine engine) {
       if (position >= levelSpecs.size()) {
         // no more level specifications - the current level is the result
         return expr;
       }
       final IExpr levelSpec = levelSpecs.get(position);
-      if (levelSpec.equals(S.All)) {
-        return queryLevel(levelSpecs, position + 1, expr, engine);
+      if (levelSpec == S.All) {
+        return queryLevel(levelSpecs, position + 1, expr, ignoreMissing, engine);
       }
       if (isPartSpecification(levelSpec)) {
         if (!isApplicablePart(levelSpec, expr)) {
@@ -1271,15 +1366,23 @@ public class AssociationFunctions {
           // the part couldn't be extracted
           return F.NIL;
         }
-        return query(levelSpecs, position + 1, part, engine);
+        return query(levelSpecs, position + 1, part, ignoreMissing, engine);
       }
       // an operator - descend into the parts of this level first and apply the operator to the
       // result of the deeper levels
       IExpr result = expr;
       if (position + 1 < levelSpecs.size()) {
-        result = queryLevel(levelSpecs, position + 1, expr, engine);
+        result = queryLevel(levelSpecs, position + 1, expr, ignoreMissing, engine);
         if (result.isNIL()) {
           return F.NIL;
+        }
+      }
+      if (ignoreMissing && ignoresMissing(levelSpec)) {
+        result = withoutMissing(result);
+        if (isMissing(result)) {
+          // nothing left to aggregate: the answer is that it is not there, rather than the
+          // operator applied to a missing value
+          return result;
         }
       }
       return engine.evaluate(F.unaryAST1(levelSpec, result));
@@ -1296,12 +1399,13 @@ public class AssociationFunctions {
      * @param engine the evaluation engine
      * @return {@link F#NIL} if <code>expr</code> has no parts to descend into
      */
-    private static IExpr queryLevel(IAST levelSpecs, int position, IExpr expr, EvalEngine engine) {
+    private static IExpr queryLevel(IAST levelSpecs, int position, IExpr expr,
+        boolean ignoreMissing, EvalEngine engine) {
       if (expr.isAssociation()) {
         IAssociation assoc = (IAssociation) expr;
         IAssociation result = assoc.copy();
         for (int i = 1; i < assoc.size(); i++) {
-          IExpr value = query(levelSpecs, position, assoc.getValue(i), engine);
+          IExpr value = query(levelSpecs, position, assoc.getValue(i), ignoreMissing, engine);
           if (value.isNIL()) {
             return F.NIL;
           }
@@ -1313,7 +1417,7 @@ public class AssociationFunctions {
         IAST list = (IAST) expr;
         IASTAppendable result = list.copyAppendable();
         for (int i = 1; i < list.size(); i++) {
-          IExpr value = query(levelSpecs, position, list.get(i), engine);
+          IExpr value = query(levelSpecs, position, list.get(i), ignoreMissing, engine);
           if (value.isNIL()) {
             return F.NIL;
           }
@@ -1565,6 +1669,12 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows. The values were already
+      // the right ones; they were simply handed back as a bare list
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr arg1 = ast.arg1();
       final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
       if (arg1.isAssociation()) {
