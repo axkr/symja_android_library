@@ -2,3 +2,4 @@ out/
 *.iml
 .idea/
 gen/
+/.claude/
