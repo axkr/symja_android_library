@@ -78,7 +78,7 @@ public class PiecewiseUtil {
           if (argSize == 1) {
             IExpr x = function.arg1();
             int ordinal = ((IBuiltInSymbol) head).ordinal();
-            if (ordinal == ID.RealAbs || domain.equals(S.Reals) || x.isRealResult()) {
+            if (ordinal == ID.RealAbs || domain == S.Reals || x.isRealResult()) {
               return F.Piecewise(F.list(F.list(F.Negate(x), F.Less(x, F.C0))), x);
             }
           }
@@ -87,7 +87,7 @@ public class PiecewiseUtil {
         case ID.Arg: {
           if (argSize == 1) {
             IExpr x = function.arg1();
-            if ((domain.equals(S.Reals) || x.isRealResult())) {
+            if ((domain == S.Reals || x.isRealResult())) {
               return F.Piecewise(F.list(F.list(S.Pi, F.Less(x, F.C0))), F.C0);
             }
           }
@@ -98,7 +98,7 @@ public class PiecewiseUtil {
           if (argSize == 1) {
             IExpr x = function.arg1();
             int ordinal = ((IBuiltInSymbol) head).ordinal();
-            if (ordinal == ID.RealSign || domain.equals(S.Reals) || x.isRealResult()) {
+            if (ordinal == ID.RealSign || domain == S.Reals || x.isRealResult()) {
               return F.Piecewise(
                   F.list(F.list(F.CN1, F.Less(x, F.C0)), F.list(F.C1, F.Greater(x, F.C0))), F.C0);
             }

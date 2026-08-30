@@ -35,6 +35,17 @@ public final class Style2D implements Cloneable {
   /** {@code Opacity} directive, multiplied into the colour alpha at render time. */
   public double opacity = 1.0;
 
+  /**
+   * The transparency of the edge an {@code EdgeForm} draws, which is its own and not the face's.
+   *
+   * <p>
+   * {@code Opacity} tints a face and leaves the outline around it alone, so
+   * {@code {Opacity[0.2], EdgeForm[Black], Rectangle[]}} is a solid black frame around a barely
+   * visible fill. Only an {@code Opacity} written inside the {@code EdgeForm} itself fades the
+   * edge.
+   */
+  public double edgeOpacity = 1.0;
+
   /** Radius of a {@code Point} in pixels. */
   public double pointRadius = 3.0;
 
@@ -68,6 +79,16 @@ public final class Style2D implements Cloneable {
    * empty list means {@code Arrowheads[None]}, which draws none at all.
    */
   public List<ArrowHead> arrowHeads = null;
+
+  /**
+   * The label of an enclosing {@code Tooltip}, or {@code null} when there is none.
+   *
+   * <p>
+   * A tooltip scopes like a directive rather than wrapping a single primitive: everything collected
+   * inside it carries the label, which is what lets a cell built from several primitives answer as
+   * one.
+   */
+  public String tooltip = null;
 
   public String fontFamily = "sans-serif";
   public double fontSize = 12.0;

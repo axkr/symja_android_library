@@ -176,11 +176,20 @@ public final class PrimitiveCollector {
       case ID.Mouseover:
       case ID.StatusArea:
       case ID.Legended:
-      case ID.Tooltip:
         if (ast.argSize() >= 1) {
           collect(ast.arg1(), style.clone());
         }
         break;
+      case ID.Tooltip: {
+        if (ast.argSize() >= 1) {
+          Style2D scoped = style.clone();
+          if (ast.argSize() >= 2) {
+            scoped.tooltip = tooltipLabel(ast.arg2());
+          }
+          collect(ast.arg1(), scoped);
+        }
+        break;
+      }
 
       // ---- transformations ----
       case ID.Rotate:
@@ -526,9 +535,12 @@ public final class PrimitiveCollector {
       style.edgeColor = null;
       return;
     }
-    // an edge form carries its own little style; start from black rather than the fill colour
+    // an edge form carries its own little style; start from black rather than the fill colour,
+    // and opaque rather than at the face's transparency — an Opacity outside the EdgeForm tints
+    // the face alone, and only one written inside it fades the outline
     Style2D edge = style.clone();
     edge.setColor(Color.BLACK);
+    edge.opacity = 1.0;
     List<IExpr> items = new ArrayList<>();
     if (arg.isList()) {
       IAST list = (IAST) arg;
@@ -544,6 +556,7 @@ public final class PrimitiveCollector {
       collectDirectiveOnly(item, edge);
     }
     style.edgeColor = edge.strokeColor;
+    style.edgeOpacity = edge.opacity;
     style.strokeWidth = edge.strokeWidth;
     style.dashArray = edge.dashArray;
   }
@@ -1161,7 +1174,7 @@ public final class PrimitiveCollector {
         break;
       }
       IExpr head = wrapper.head();
-      if (head.equals(S.Framed)) {
+      if (head == S.Framed) {
         frame = Color.BLACK;
         IExpr bg = optionValue(wrapper, S.Background);
         if (bg != null) {
@@ -1177,7 +1190,7 @@ public final class PrimitiveCollector {
           }
         }
         content = wrapper.arg1();
-      } else if (head.equals(S.Style)) {
+      } else if (head == S.Style) {
         for (int i = 2; i <= wrapper.argSize(); i++) {
           collectDirectiveOnly(wrapper.get(i), textStyle);
         }
@@ -1624,6 +1637,15 @@ public final class PrimitiveCollector {
 
   static String unquote(String s) {
     return s.replace("\"", "");
+  }
+
+  /** The text a {@code Tooltip} label shows, or {@code null} when it has nothing to say. */
+  private static String tooltipLabel(IExpr label) {
+    if (label == null || !label.isPresent() || label.isNone()) {
+      return null;
+    }
+    String text = unquote(label.toString());
+    return text.isEmpty() ? null : text;
   }
 
   private static String fmtDash(double[] values) {

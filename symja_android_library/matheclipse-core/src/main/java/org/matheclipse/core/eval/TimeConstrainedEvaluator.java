@@ -109,7 +109,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
         writer.write('\n');
       }
 
-      if (fEvaluationResult.isPresent() && !fEvaluationResult.equals(S.Null)) {
+      if (fEvaluationResult.isPresent() && fEvaluationResult != S.Null) {
         if (!OutputFormFactory.get(fRelaxedSyntax).convert(writer, fEvaluationResult)) {
           // TODO define error message?
         }

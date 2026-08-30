@@ -9,8 +9,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ITensorAccess;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 public class LinearAlgebraUtil {
 

@@ -109,7 +109,9 @@ public enum ColorDataGradients implements ColorDataGradient {
   /** yellow, orange, red, magenta */
   NEON,
   /** dark-gray, dark-yellow, magenta */
-  AURORA;
+  AURORA,
+  /** red, blue, cyan, green, yellow, orange, each followed by a paler band of the same hue */
+  BRIGHT_BANDS;
 
   private final ColorDataGradient colorDataGradient;
 

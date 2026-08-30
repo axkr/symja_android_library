@@ -1,7 +1,7 @@
 package org.matheclipse.core.manipulate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
@@ -46,7 +46,7 @@ public class ManipulateSpec {
 
   private final List<ManipulateControl> controls = new ArrayList<ManipulateControl>();
 
-  private final Map<ISymbol, IExpr> options = new HashMap<ISymbol, IExpr>();
+  private final Map<ISymbol, IExpr> options = new IdentityHashMap<ISymbol, IExpr>();
 
   /**
    * <code>true</code> for <code>Animate</code>, <code>ListAnimate</code>, <code>Animator</code>.
@@ -157,6 +157,13 @@ public class ManipulateSpec {
         }
         continue;
       }
+      // a PaneSelector argument is a whole panel of controls per pane, only one of which is on
+      // screen at a time; when its panes hold no controls it is prose, and falls through to be
+      // read as an ordinary argument below
+      if (arg.isAST(S.PaneSelector) && arg.size() >= 3
+          && spec.addPaneSelector((IAST) arg, engine)) {
+        continue;
+      }
       ManipulateControl control = parseControl(arg, engine, spec.unknownControlOptions);
       if (control != null) {
         spec.controls.add(control);
@@ -183,6 +190,97 @@ public class ManipulateSpec {
       }
     }
     return spec;
+  }
+
+  /**
+   * Add the controls of every pane of a <code>PaneSelector[{v1 -&gt; ..., ...}, sel]</code> argument.
+   *
+   * <p>
+   * All of them are added, each carrying the test that says whether its own pane is the one
+   * showing. Adding only the visible pane's would mean rebuilding the panel whenever the selector
+   * moved, and would leave the hidden panes' variables unbound - so the body could not refer to
+   * them, which it regularly does.
+   *
+   * <p>
+   * A pane holds either one control specification of its own, or any arrangement of
+   * <code>Control[...]</code> wrappers. That is the only way to tell a pane holding several
+   * controls from a single control written as a list, since both are lists of lists; a pane with
+   * more than one control has to name each with <code>Control</code>.
+   *
+   * @return <code>true</code> when the selector contributed at least one control, and so has been
+   *         dealt with here
+   */
+  private boolean addPaneSelector(IAST paneSelector, EvalEngine engine) {
+    if (!paneSelector.arg1().isList()) {
+      return false;
+    }
+    IExpr selector = Dynamics.release(paneSelector.arg2());
+    IAST panes = (IAST) paneSelector.arg1();
+    List<ManipulateControl> added = new ArrayList<ManipulateControl>();
+    for (int i = 1; i < panes.size(); i++) {
+      IExpr pane = panes.get(i);
+      if (!pane.isRule() && !pane.isRuleDelayed()) {
+        continue;
+      }
+      IExpr value = ((IAST) pane).arg1();
+      IExpr content = ((IAST) pane).arg2();
+      IExpr condition = F.Equal(selector, value);
+      for (ManipulateControl control : paneControls(content, engine)) {
+        control.setVisibleCondition(condition);
+        added.add(control);
+      }
+    }
+    controls.addAll(added);
+    return !added.isEmpty();
+  }
+
+  /** The controls one pane declares. */
+  private List<ManipulateControl> paneControls(IExpr content, EvalEngine engine) {
+    List<ManipulateControl> found = new ArrayList<ManipulateControl>();
+    if (containsControlWrapper(content)) {
+      collectControlWrappers(content, engine, found);
+      return found;
+    }
+    ManipulateControl single = parseControl(content, engine, unknownControlOptions);
+    if (single != null && single.bindsVariable()) {
+      found.add(single);
+    }
+    return found;
+  }
+
+  private static boolean containsControlWrapper(IExpr expr) {
+    if (expr.isAST(S.Control, 2)) {
+      return true;
+    }
+    if (!expr.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) expr;
+    for (int i = 1; i < ast.size(); i++) {
+      if (containsControlWrapper(ast.get(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void collectControlWrappers(IExpr expr, EvalEngine engine,
+      List<ManipulateControl> found) {
+    if (expr.isAST(S.Control, 2)) {
+      ManipulateControl control =
+          parseControl(((IAST) expr).arg1(), engine, unknownControlOptions);
+      if (control != null) {
+        found.add(control);
+      }
+      return;
+    }
+    if (!expr.isAST()) {
+      return;
+    }
+    IAST ast = (IAST) expr;
+    for (int i = 1; i < ast.size(); i++) {
+      collectControlWrappers(ast.get(i), engine, found);
+    }
   }
 
   private void putOption(IAST rule) {
@@ -261,9 +359,6 @@ public class ManipulateSpec {
     if (spec.isString()) {
       return ManipulateControl.heading(spec.toString());
     }
-    if (spec.isAST(S.Style, 2, 4)) {
-      return ManipulateControl.heading(((IAST) spec).arg1().toString());
-    }
     if (spec.isAST(S.Button, 3)) {
       IAST button = (IAST) spec;
       return ManipulateControl.button(labelOf(button.arg1()), button.arg2());
@@ -271,10 +366,20 @@ public class ManipulateSpec {
     if (spec.isAST(S.Control, 2)) {
       return parseControl(((IAST) spec).arg1(), engine, unknown);
     }
-    if (!spec.isList() || spec.size() < 2) {
-      return null;
+    if (spec.isList() && spec.size() >= 2) {
+      return parseListControl((IAST) spec, engine, unknown);
     }
-    return parseListControl((IAST) spec, engine, unknown);
+    // An argument that carries a Dynamic is a live read-out, not a control and not a static
+    // heading: Manipulate[..., Row[{"moves: ", Dynamic[moves]}]] has to follow the moves it
+    // counts. Taking its text once - which is what the heading below does - would freeze it at
+    // whatever the first frame happened to show.
+    if (Dynamics.containsDynamic(spec)) {
+      return ManipulateControl.display(spec);
+    }
+    if (spec.isAST(S.Style, 2, 4)) {
+      return ManipulateControl.heading(((IAST) spec).arg1().toString());
+    }
+    return null;
   }
 
   /**
@@ -305,7 +410,7 @@ public class ManipulateSpec {
 
     // split the rest into positional arguments and per control options
     List<IExpr> args = new ArrayList<IExpr>();
-    Map<ISymbol, IExpr> controlOptions = new HashMap<ISymbol, IExpr>();
+    Map<ISymbol, IExpr> controlOptions = new IdentityHashMap<ISymbol, IExpr>();
     for (int i = 2; i < spec.size(); i++) {
       IExpr arg = spec.get(i);
       if (isOptionRule(arg) && ((IAST) arg).arg1().isSymbol()) {
@@ -315,7 +420,9 @@ public class ManipulateSpec {
         }
         controlOptions.put(optionName, ((IAST) arg).arg2());
       } else {
-        args.add(arg);
+        // a bound written {t, 0, Dynamic[period]} follows another control; the wrapper is not
+        // part of the number, so it comes off before the range is read
+        args.add(Dynamics.release(arg));
       }
     }
 
@@ -337,7 +444,9 @@ public class ManipulateSpec {
     }
     IExpr enabled = controlOptions.get(S.Enabled);
     if (enabled != null) {
-      control.setEnabledCondition(enabled);
+      // Enabled -> Dynamic[cond] is how a demonstration greys one control out from the state of
+      // another; the condition is resolved against the live values, so the wrapper adds nothing
+      control.setEnabledCondition(Dynamics.release(enabled));
     }
     IExpr placement = controlOptions.get(S.ControlPlacement);
     if (placement != null) {

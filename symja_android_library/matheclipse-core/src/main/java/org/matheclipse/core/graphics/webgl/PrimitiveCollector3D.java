@@ -240,9 +240,13 @@ public final class PrimitiveCollector3D {
         style.opacity = clamp01(ColorUtil.dbl(ast.arg1(), 1.0));
         return true;
       }
-      case ID.Thickness:
-        style.thickness = Style3D.Size.ofScaled(ColorUtil.dbl(ast.arg1(), 0.002));
+      case ID.Thickness: {
+        double points = GraphicsOptions3D.namedThicknessPoints(ast.arg1());
+        style.thickness = Double.isNaN(points)
+            ? Style3D.Size.ofScaled(ColorUtil.dbl(ast.arg1(), 0.002))
+            : Style3D.Size.ofAbsolute(points);
         return true;
+      }
       case ID.AbsoluteThickness:
         style.thickness = Style3D.Size.ofAbsolute(ColorUtil.dbl(ast.arg1(), 1.0));
         return true;
@@ -374,7 +378,9 @@ public final class PrimitiveCollector3D {
 
   private static void applyEdgeForm(IAST ast, Style3D style) {
     if (ast.argSize() == 0) {
-      style.showEdges = true;
+      // EdgeForm[] means "no edge", the same as in 2D - it is how a plotted surface asks for a
+      // clean skin
+      style.showEdges = false;
       return;
     }
     IExpr arg = ast.arg1();
@@ -383,10 +389,18 @@ public final class PrimitiveCollector3D {
       return;
     }
     style.showEdges = true;
+    // the user asked for the edges themselves, not just the shape's creases
+    style.edgeAngle = Style3D.EXPLICIT_EDGE_ANGLE;
     Color c = GraphicsOptions3D.firstColor(arg);
     if (c != null) {
       style.edgeColor = c;
       style.edgeOpacity = c.getAlpha() / 255.0;
+    }
+    // an Opacity written inside the EdgeForm fades the outline; one outside it tints the face
+    // and leaves the outline alone
+    double o = GraphicsOptions3D.firstOpacity(arg);
+    if (!Double.isNaN(o)) {
+      style.edgeOpacity = clamp01(o);
     }
     double t = GraphicsOptions3D.firstThickness(arg);
     if (!Double.isNaN(t)) {
@@ -863,6 +877,7 @@ public final class PrimitiveCollector3D {
       }
       node.put("edgeOpacity", style.edgeOpacity);
       node.put("edgeThickness", style.edgeThickness);
+      node.put("edgeAngle", style.edgeAngle);
     }
     if (style.backFaceColor != null) {
       node.put("backColor", rgb(style.backFaceColor));

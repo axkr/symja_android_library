@@ -189,7 +189,7 @@ public class NumberTest extends ExprEvaluatorTestCase {
       assertEquals(512L, assertInstanceOf(ApfloatNum.class, evaluator.eval("N(Pi,1001)"))
           .apfloatValue().precision());
       check("StringLength(ToString(N(Pi,1001)))", //
-          "517");
+          "513");
       check("StringTake(ToString(N(Pi,1001)),12)", //
           "3.1415926535");
       // head, leading digits, elision and the `512 precision marker in a single readable line

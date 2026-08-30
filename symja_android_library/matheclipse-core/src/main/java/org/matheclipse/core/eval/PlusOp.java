@@ -138,7 +138,7 @@ public final class PlusOp {
         map.remove(key);
         return true;
       }
-    } else if (temp.head().equals(S.Plus)) {
+    } else if (temp.head() == S.Plus) {
       if (!(temp instanceof IASTAppendable)) {
         temp = ((IAST) temp).copyAppendable();
       }

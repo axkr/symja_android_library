@@ -136,7 +136,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Power) ? S.True : S.False;
+        return arg1.head() == S.Power ? S.True : S.False;
       }
       return S.False;
     }
@@ -147,7 +147,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Times) ? S.True : S.False;
+        return arg1.head() == S.Times ? S.True : S.False;
       }
       return S.False;
     }
@@ -158,7 +158,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Plus) ? S.True : S.False;
+        return arg1.head() == S.Plus ? S.True : S.False;
       }
       return S.False;
     }
@@ -168,7 +168,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Plus) ? S.False : S.True;
+        return arg1.head() == S.Plus ? S.False : S.True;
       }
       return S.False;
     }

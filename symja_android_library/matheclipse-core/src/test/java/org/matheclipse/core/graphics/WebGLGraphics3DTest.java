@@ -1,6 +1,7 @@
 package org.matheclipse.core.graphics;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
@@ -607,5 +608,58 @@ public class WebGLGraphics3DTest {
     assertTrue(script.contains("renderSymjaWebGL"),
         "symja_webgl.js was not found next to the converter");
     assertTrue(script.length() > 10000, "the renderer looks truncated: " + script.length());
+  }
+
+  // --------------------------------------------------------------- outline
+
+  /**
+   * A face is outlined whether or not an {@code EdgeForm} asked for it, and the crease angle says
+   * how much of the shape the outline follows: the whole mesh when the user named an
+   * {@code EdgeForm}, only the creases of the shape when nobody did.
+   */
+  @Test
+  public void everyFaceAsksForAnOutline() {
+    JsonNode plain = element(scene("Graphics3D[Cuboid[]]"), "Cuboid");
+    assertTrue(plain.get("showMesh").asBoolean(), "a bare Cuboid is outlined");
+    assertEquals(30.0, plain.get("edgeAngle").asDouble(), 1e-9, "creases only");
+
+    JsonNode asked = element(scene("Graphics3D[{EdgeForm[Black],Cuboid[]}]"), "Cuboid");
+    assertEquals(1.0, asked.get("edgeAngle").asDouble(), 1e-9, "an EdgeForm means the mesh");
+    assertEquals(0, asked.get("edgeColor").asInt());
+
+    for (String off : new String[] {"Graphics3D[{EdgeForm[],Cuboid[]}]",
+        "Graphics3D[{EdgeForm[None],Cuboid[]}]"}) {
+      assertFalse(element(scene(off), "Cuboid").get("showMesh").asBoolean(),
+          off + " draws no edge");
+    }
+  }
+
+  /** {@code Opacity} tints the face; the outline keeps its own transparency. */
+  @Test
+  public void opacityDoesNotReachTheOutline() {
+    JsonNode faded = element(scene("Graphics3D[{Opacity[0.3],EdgeForm[Black],Cuboid[]}]"), "Cuboid");
+    assertEquals(0.3, faded.get("opacity").asDouble(), 1e-9);
+    assertEquals(1.0, faded.get("edgeOpacity").asDouble(), 1e-9, "the outline stays opaque");
+
+    JsonNode wireframe = element(scene("Graphics3D[{Opacity[0],Cuboid[]}]"), "Cuboid");
+    assertEquals(0.0, wireframe.get("opacity").asDouble(), 1e-9);
+    assertEquals(1.0, wireframe.get("edgeOpacity").asDouble(), 1e-9);
+
+    // an Opacity inside the EdgeForm, in either of the two forms it can take, does fade it
+    for (String input : new String[] {"Graphics3D[{EdgeForm[Opacity[0.5,Black]],Cuboid[]}]",
+        "Graphics3D[{EdgeForm[{Opacity[0.5],Black}],Cuboid[]}]"}) {
+      assertEquals(0.5, element(scene(input), "Cuboid").get("edgeOpacity").asDouble(), 0.01, input);
+    }
+  }
+
+  /** A plotted surface carries an explicit {@code EdgeForm[None]}, so the default cannot reach it. */
+  @Test
+  public void aPlottedSurfaceKeepsItsCleanSkin() {
+    for (String input : new String[] {"Plot3D[Sin[x y],{x,-1,1},{y,-1,1},PlotPoints->4]",
+        "ParametricPlot3D[{Cos[t],Sin[t],u},{t,0,Pi},{u,0,1},PlotPoints->4]",
+        "ListPlot3D[{{1,2},{3,4}}]"}) {
+      assertFalse(element(scene(input), "Polygon").get("showMesh").asBoolean(),
+          input + " must not outline every facet");
+    }
   }
 }

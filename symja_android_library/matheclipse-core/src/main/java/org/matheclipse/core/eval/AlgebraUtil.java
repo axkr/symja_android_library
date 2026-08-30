@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -13,13 +14,14 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
+import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -35,24 +37,34 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import com.google.common.math.LongMath;
+import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
+import edu.jas.arith.ModLong;
+import edu.jas.arith.ModLongRing;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrderByName;
+import edu.jas.ps.PolynomialTaylorFunction;
+import edu.jas.ps.TaylorFunction;
+import edu.jas.ps.UnivPowerSeries;
+import edu.jas.ps.UnivPowerSeriesRing;
 import edu.jas.structure.RingElem;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.FactorFactory;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
+import edu.jas.ufd.SquarefreeAbstract;
+import edu.jas.ufd.SquarefreeFactory;
 
 public class AlgebraUtil {
   private static class DistributeAlgorithm {
@@ -685,12 +697,17 @@ public class AlgebraUtil {
         return F.list(F.C1, c);
       });
 
+  private static void addSquareFreeFactor(Map<IExpr, Long> factorMap, IExpr factor, long exponent) {
+    factorMap.merge(factor, exponent, Long::sum);
+  }
+
   private static boolean appendPlus(IASTAppendable ast, IExpr expr) {
-    if (ast.head().equals(S.Plus) && expr.head().equals(S.Plus)) {
+    if (ast.head() == S.Plus && expr.head() == S.Plus) {
       return ast.appendArgs((IAST) expr);
     }
     return ast.append(expr);
   }
+
 
   public static void calculateNumeratorGCD(IExpr arg, int position, IASTAppendable numeratorPlus,
       IInteger gcd, boolean[] error) {
@@ -727,7 +744,6 @@ public class AlgebraUtil {
       error[0] = true;
     }
   }
-
 
   /**
    * Return the result divided by the gcd value.
@@ -1156,6 +1172,49 @@ public class AlgebraUtil {
   }
 
   /**
+   * Recursively walk the multiplicative structure of <code>expr</code> and collect its square-free
+   * polynomial factors into <code>factorMap</code> (factor to exponent) and the numeric content
+   * into <code>content</code>.
+   *
+   * @param multiplier the product of all enclosing integer exponents
+   * @return <code>false</code> if a fatal conversion problem occurred; otherwise <code>true</code>
+   */
+  private static boolean collectSquareFreeFactors(IExpr expr, long multiplier, VariablesSet eVar,
+      Map<IExpr, Long> factorMap, IRational[] content, boolean[] anyPolynomial, EvalEngine engine) {
+    if (expr.isTimes()) {
+      boolean result = true;
+      IAST times = (IAST) expr;
+      for (int i = 1; i < times.size(); i++) {
+        result &= collectSquareFreeFactors(times.get(i), multiplier, eVar, factorMap, content,
+            anyPolynomial, engine);
+      }
+      return result;
+    }
+    if (expr.isPower()) {
+      int exponent = expr.exponent().toIntDefault();
+      if (exponent > 0) {
+        return collectSquareFreeFactors(expr.base(), multiplier * exponent, eVar, factorMap,
+            content, anyPolynomial, engine);
+      }
+      // a non-positive-integer exponent (e.g. a denominator or a root): keep as an opaque factor
+      addSquareFreeFactor(factorMap, expr, multiplier);
+      return true;
+    }
+    if (expr.isRational()) {
+      content[0] = content[0].multiply(((IRational) expr).powerRational(multiplier));
+      return true;
+    }
+    if (expr.isPlus()) {
+      return squareFreeLeaf((IAST) expr, multiplier, eVar, factorMap, content, anyPolynomial,
+          engine);
+    }
+    // a symbol or a non-polynomial sub-expression like Sin(x): treat it as an opaque factor
+    addSquareFreeFactor(factorMap, expr, multiplier);
+    return true;
+  }
+
+
+  /**
    * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code> gives
    * <code>Sin[x]</code>.
    *
@@ -1184,6 +1243,37 @@ public class AlgebraUtil {
     return F.NIL;
   }
 
+
+  /**
+   * Builds a holonomic-sequence {@code DifferenceRoot} object with the recurrence and initial
+   * conditions embedded as equations:
+   *
+   * <pre>
+   * DifferenceRoot(Function({y, k}, {recurrence, y(0) == v0, y(1) == v1, ...}))[n]
+   * </pre>
+   *
+   * <p>
+   * This is the shared representation used by both {@code RSolve} and {@code SeriesCoefficient} so
+   * that both functions emit identical objects for non-closed-form linear recurrences.
+   *
+   * @param recurrence the recurrence equation expressed in terms of {@code y} and {@code k}
+   * @param y the sequence function symbol used in {@code recurrence}
+   * @param k the index symbol used in {@code recurrence}
+   * @param initialConditions the values {@code v0, v1, ...} for {@code y(0), y(1), ...}
+   * @param n the index at which the sequence is evaluated
+   * @return the {@code DifferenceRoot(...)[n]} expression
+   */
+  public static IExpr differenceRoot(IExpr recurrence, ISymbol y, ISymbol k,
+      List<IExpr> initialConditions, IExpr n) {
+    IASTAppendable equations = F.ListAlloc(initialConditions.size() + 1);
+    equations.append(recurrence);
+    for (int i = 0; i < initialConditions.size(); i++) {
+      equations.append(F.Equal(F.unaryAST1(y, F.ZZ(i)), initialConditions.get(i)));
+    }
+    IAST diffRootFunc = F.Function(F.List(y, k), equations);
+    return F.unaryAST1(F.DifferenceRoot(diffRootFunc), n);
+  }
+
   /**
    * Call the distribute algorithm <code>F.Distribute(expr, head)</code>
    * 
@@ -1206,6 +1296,59 @@ public class AlgebraUtil {
     return list;
   }
 
+  private static IExpr distributeLaurentDenominator(IExpr numeratorFact, IExpr denominatorFact,
+      Set<ISymbol> varSet, EvalEngine engine) {
+    IASTAppendable newFactors = F.TimesAlloc(numeratorFact.isTimes() ? numeratorFact.argSize() : 2);
+    Map<ISymbol, IExpr> totalPowers = new HashMap<>();
+    for (ISymbol v : varSet) {
+      totalPowers.put(v, F.C0);
+    }
+
+    if (numeratorFact.isTimes()) {
+      for (int i = 1; i <= numeratorFact.argSize(); i++) {
+        IExpr factor = numeratorFact.get(i);
+        IExpr base = factor.isPower() ? factor.base() : factor;
+        IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
+
+        IExpr newBase = base;
+        for (ISymbol v : varSet) {
+          IExpr degree = engine.evaluate(F.Exponent(newBase, v));
+          if (degree.isInteger() && !degree.isZero()) {
+            IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
+            newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
+            totalPowers.put(v,
+                engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
+          }
+        }
+        newFactors.append(engine.evaluate(F.Power(newBase, exp)));
+      }
+    } else {
+      IExpr factor = numeratorFact;
+      IExpr base = factor.isPower() ? factor.base() : factor;
+      IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
+
+      IExpr newBase = base;
+      for (ISymbol v : varSet) {
+        IExpr degree = engine.evaluate(F.Exponent(newBase, v));
+        if (degree.isInteger() && !degree.isZero()) {
+          IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
+          newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
+          totalPowers.put(v, engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
+        }
+      }
+      newFactors.append(engine.evaluate(F.Power(newBase, exp)));
+    }
+
+    IExpr newDenominator = denominatorFact;
+    for (ISymbol v : varSet) {
+      IExpr tp = totalPowers.get(v);
+      if (!tp.isZero()) {
+        newDenominator =
+            engine.evaluate(F.Expand(F.Times(newDenominator, F.Power(v, tp.negate()))));
+      }
+    }
+    return engine.evaluate(F.Divide(newFactors.oneIdentity1(), newDenominator));
+  }
 
   /**
    * Call the distribute algorithm for a <code>Times(...)</code> {@link IAST}, which contains
@@ -1220,7 +1363,6 @@ public class AlgebraUtil {
     }
     return expr;
   }
-
 
   /**
    * Expand the given <code>ast</code> expression.
@@ -1331,6 +1473,26 @@ public class AlgebraUtil {
       return setAllExpanded(temp, expandNegativePowers, distributePlus);
     }
     return setAllExpanded(result[0], expandNegativePowers, distributePlus);
+  }
+
+  /**
+   * Helper to extract coefficient, base, and exponent from a fractional power term. Returns
+   * [coefficient, base, exponent] or null.
+   */
+  private static IExpr[] extractFractionalPower(IExpr expr) {
+    if (expr.isPower() && expr.exponent().isFraction()) {
+      return new IExpr[] {F.C1, expr.base(), expr.exponent()};
+    }
+    if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      int powerIndex = times.indexOf(x -> x.isPower() && x.exponent().isFraction());
+      if (powerIndex > 0) {
+        IExpr power = times.get(powerIndex);
+        IExpr coeff = times.removeAtCopy(powerIndex).oneIdentity1();
+        return new IExpr[] {coeff, power.base(), power.exponent()};
+      }
+    }
+    return null;
   }
 
   public static IExpr factor(IAST ast, IExpr arg1, VariablesSet eVar, boolean squareFree,
@@ -1459,148 +1621,9 @@ public class AlgebraUtil {
     return F.NIL;
   }
 
-  /**
-   * Square-free factorization for the <code>FactorSquareFree</code> built-in. In contrast to
-   * {@link #factor(IAST, VariablesSet, boolean, boolean, boolean, EvalEngine)} this method
-   * preserves the multiplicative structure of the input (it does not expand a product of coprime
-   * factors), normalizes every square-free polynomial factor to a positive leading coefficient and
-   * collects the overall numeric content and sign into a single leading factor.
-   *
-   * <p>
-   * The result is a regular (evaluated) expression. Symja normalizes an even power of a polynomial
-   * with a negative constant term to a positive constant term (e.g. <code>(-1+x)^2</code> becomes
-   * <code>(1-x)^2</code>); that canonical form is kept so the result stays usable by other
-   * functions.
-   *
-   * @param arg1 the (already evaluated) argument of <code>FactorSquareFree</code>
-   * @param eVar the variables contained in <code>arg1</code>
-   * @param engine the evaluation engine
-   * @return the factored expression or {@link F#NIL} if nothing polynomial could be factored
-   */
-  public static IExpr factorSquareFree(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
-    LinkedHashMap<IExpr, Long> factorMap = new LinkedHashMap<IExpr, Long>();
-    IRational[] content = new IRational[] {F.C1};
-    boolean[] anyPolynomial = new boolean[] {false};
-    if (!collectSquareFreeFactors(arg1, 1L, eVar, factorMap, content, anyPolynomial, engine)
-        || !anyPolynomial[0]) {
-      return F.NIL;
-    }
-
-    IASTAppendable times = F.TimesAlloc(factorMap.size() + 1);
-    if (!content[0].isOne()) {
-      times.append(content[0]);
-    }
-    for (Map.Entry<IExpr, Long> entry : factorMap.entrySet()) {
-      long exponent = entry.getValue();
-      times.append(exponent == 1L ? entry.getKey() : F.Power(entry.getKey(), F.ZZ(exponent)));
-    }
-    return engine.evaluate(times);
-  }
-
-  /**
-   * Recursively walk the multiplicative structure of <code>expr</code> and collect its square-free
-   * polynomial factors into <code>factorMap</code> (factor to exponent) and the numeric content
-   * into <code>content</code>.
-   *
-   * @param multiplier the product of all enclosing integer exponents
-   * @return <code>false</code> if a fatal conversion problem occurred; otherwise <code>true</code>
-   */
-  private static boolean collectSquareFreeFactors(IExpr expr, long multiplier, VariablesSet eVar,
-      Map<IExpr, Long> factorMap, IRational[] content, boolean[] anyPolynomial, EvalEngine engine) {
-    if (expr.isTimes()) {
-      boolean result = true;
-      IAST times = (IAST) expr;
-      for (int i = 1; i < times.size(); i++) {
-        result &= collectSquareFreeFactors(times.get(i), multiplier, eVar, factorMap, content,
-            anyPolynomial, engine);
-      }
-      return result;
-    }
-    if (expr.isPower()) {
-      int exponent = expr.exponent().toIntDefault();
-      if (exponent > 0) {
-        return collectSquareFreeFactors(expr.base(), multiplier * exponent, eVar, factorMap,
-            content, anyPolynomial, engine);
-      }
-      // a non-positive-integer exponent (e.g. a denominator or a root): keep as an opaque factor
-      addSquareFreeFactor(factorMap, expr, multiplier);
-      return true;
-    }
-    if (expr.isRational()) {
-      content[0] = content[0].multiply(((IRational) expr).powerRational(multiplier));
-      return true;
-    }
-    if (expr.isPlus()) {
-      return squareFreeLeaf((IAST) expr, multiplier, eVar, factorMap, content, anyPolynomial,
-          engine);
-    }
-    // a symbol or a non-polynomial sub-expression like Sin(x): treat it as an opaque factor
-    addSquareFreeFactor(factorMap, expr, multiplier);
-    return true;
-  }
-
-  /**
-   * Compute the square-free factorization of a single polynomial (a {@link S#Plus} expression) with
-   * JAS, normalize each factor to a positive leading coefficient and accumulate the result into
-   * <code>factorMap</code> / <code>content</code>.
-   */
-  @SuppressWarnings("unchecked")
-  private static boolean squareFreeLeaf(IAST plus, long multiplier, VariablesSet eVar,
-      Map<IExpr, Long> factorMap, IRational[] content, boolean[] anyPolynomial, EvalEngine engine) {
-    JASConvert<BigRational> jas =
-        new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO, TermOrderByName.INVLEX);
-    GenPolynomial<BigRational> polyRat;
-    try {
-      polyRat = jas.expr2JAS(plus, false);
-    } catch (JASConversionException e) {
-      addSquareFreeFactor(factorMap, plus, multiplier);
-      return true;
-    }
-    if (polyRat == null || polyRat.length() <= 1) {
-      addSquareFreeFactor(factorMap, plus, multiplier);
-      return true;
-    }
-    Object[] objects = jas.factorTerms(polyRat);
-    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-    try {
-      GenPolynomial<edu.jas.arith.BigInteger> poly =
-          (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-      FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
-          FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-      map = factorAbstract.squarefreeFactors(poly);
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      addSquareFreeFactor(factorMap, plus, multiplier);
-      return true;
-    }
-    java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-    java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-    IRational leafContent = F.C1;
-    if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-      leafContent = F.fraction(gcd, lcm).normalize();
-    }
-    anyPolynomial[0] = true;
-    for (Map.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
-      GenPolynomial<edu.jas.arith.BigInteger> poly = entry.getKey();
-      long exponent = entry.getValue();
-      if (poly.isONE() && exponent == 1L) {
-        continue;
-      }
-      if (poly.leadingBaseCoefficient().signum() < 0) {
-        // normalize to a positive leading coefficient; fold the sign into the numeric content
-        poly = poly.negate();
-        if ((exponent & 1L) == 1L) {
-          leafContent = leafContent.negate();
-        }
-      }
-      addSquareFreeFactor(factorMap, jas.integerPoly2Expr(poly), exponent * multiplier);
-    }
-    content[0] = content[0].multiply(leafContent.powerRational(multiplier));
-    return true;
-  }
-
-  private static void addSquareFreeFactor(Map<IExpr, Long> factorMap, IExpr factor, long exponent) {
-    factorMap.merge(factor, exponent, Long::sum);
+  public static IExpr factor(IExpr arg1, EvalEngine engine) {
+    VariablesSet eVar = new VariablesSet(arg1);
+    return factor(F.Factor(arg1), arg1, eVar, false, false, true, false, engine);
   }
 
   /**
@@ -1669,7 +1692,7 @@ public class AlgebraUtil {
         if (polyRat == null) {
           return expr;
         }
-        return Algebra.factorRational(polyRat, jas, head);
+        return AlgebraUtil.factorRational(polyRat, jas, head);
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -1731,6 +1754,129 @@ public class AlgebraUtil {
     return expr;
   }
 
+  public static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
+      IExpr option) throws JASConversionException {
+    try {
+      // found "Modulus" option => use ModIntegerRing
+      ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
+      JASModInteger jas = new JASModInteger(varList, modIntegerRing);
+      GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
+  
+      return AlgebraUtil.factorModulus(jas, modIntegerRing, poly, factorSquareFree);
+    } catch (ArithmeticException ae) {
+      // toInt() conversion failed
+      // LOGGER.debug("Algebra.factorModulus() failed", ae);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * @param jas
+   * @param modIntegerRing
+   * @param poly
+   * @param factorSquareFree
+   * @return {@link F#NIL} if evaluation is impossible.
+   */
+  public static IAST factorModulus(JASModInteger jas, ModLongRing modIntegerRing,
+      GenPolynomial<ModLong> poly, boolean factorSquareFree) {
+    SortedMap<GenPolynomial<ModLong>, Long> map;
+    try {
+      FactorAbstract<ModLong> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
+      if (factorSquareFree) {
+        map = factorAbstract.squarefreeFactors(poly);
+      } else {
+        map = factorAbstract.factors(poly);
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      // JAS may throw RuntimeExceptions
+      return F.NIL;
+    }
+    IASTAppendable result = F.TimesAlloc(map.size());
+    for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {
+      final GenPolynomial<ModLong> singleFactor = entry.getKey();
+      final Long val = entry.getValue();
+      result.append(F.Power(jas.modLongPoly2Expr(singleFactor), F.ZZ(val)));
+    }
+    return result;
+  }
+
+
+  public static IAST factorRational(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
+      ISymbol head) {
+    if (polyRat.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
+      // Exponent ist out of bounds for function `1`.
+      return Errors.printMessage(S.Factor, "lrgexp", F.List(S.Factor));
+    }
+    Object[] objects = jas.factorTerms(polyRat);
+    GenPolynomial<edu.jas.arith.BigInteger> poly =
+        (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+    FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
+        FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+    map = factorAbstract.factors(poly);
+    // if (map.size() == 1 && original != null) {
+    // return F.unaryAST1(head, original);
+    // }
+    IASTAppendable result = F.ast(head, map.size() + 1);
+    java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+    java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+    if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+      result.append(F.fraction(gcd, lcm));
+    }
+    for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
+      final GenPolynomial<BigInteger> key = entry.getKey();
+      final Long value = entry.getValue();
+      if (key.isONE() && value.equals(1L)) {
+        continue;
+      }
+      if (value == 1L) {
+        result.append(jas.integerPoly2Expr(key));
+      } else {
+        result.append(F.Power(jas.integerPoly2Expr(key), F.ZZ(value)));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Square-free factorization for the <code>FactorSquareFree</code> built-in. In contrast to
+   * {@link #factor(IAST, VariablesSet, boolean, boolean, boolean, EvalEngine)} this method
+   * preserves the multiplicative structure of the input (it does not expand a product of coprime
+   * factors), normalizes every square-free polynomial factor to a positive leading coefficient and
+   * collects the overall numeric content and sign into a single leading factor.
+   *
+   * <p>
+   * The result is a regular (evaluated) expression. Symja normalizes an even power of a polynomial
+   * with a negative constant term to a positive constant term (e.g. <code>(-1+x)^2</code> becomes
+   * <code>(1-x)^2</code>); that canonical form is kept so the result stays usable by other
+   * functions.
+   *
+   * @param arg1 the (already evaluated) argument of <code>FactorSquareFree</code>
+   * @param eVar the variables contained in <code>arg1</code>
+   * @param engine the evaluation engine
+   * @return the factored expression or {@link F#NIL} if nothing polynomial could be factored
+   */
+  public static IExpr factorSquareFree(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
+    LinkedHashMap<IExpr, Long> factorMap = new LinkedHashMap<IExpr, Long>();
+    IRational[] content = new IRational[] {F.C1};
+    boolean[] anyPolynomial = new boolean[] {false};
+    if (!collectSquareFreeFactors(arg1, 1L, eVar, factorMap, content, anyPolynomial, engine)
+        || !anyPolynomial[0]) {
+      return F.NIL;
+    }
+
+    IASTAppendable times = F.TimesAlloc(factorMap.size() + 1);
+    if (!content[0].isOne()) {
+      times.append(content[0]);
+    }
+    for (Map.Entry<IExpr, Long> entry : factorMap.entrySet()) {
+      long exponent = entry.getValue();
+      times.append(exponent == 1L ? entry.getKey() : F.Power(entry.getKey(), F.ZZ(exponent)));
+    }
+    return engine.evaluate(times);
+  }
+
   public static Optional<IRational> factorTermsGCD(IAST plusAST, EvalEngine engine) {
     IRational gcd1 = null;
     if (plusAST.arg1().isRational()) {
@@ -1784,60 +1930,6 @@ public class AlgebraUtil {
       return F.Times(rationalGCD, F.Expand(F.Times(rationalGCD.inverse(), plusAST))).eval(engine);
     }
     return F.NIL;
-  }
-
-  private static IExpr distributeLaurentDenominator(IExpr numeratorFact, IExpr denominatorFact,
-      Set<ISymbol> varSet, EvalEngine engine) {
-    IASTAppendable newFactors = F.TimesAlloc(numeratorFact.isTimes() ? numeratorFact.argSize() : 2);
-    Map<ISymbol, IExpr> totalPowers = new HashMap<>();
-    for (ISymbol v : varSet) {
-      totalPowers.put(v, F.C0);
-    }
-
-    if (numeratorFact.isTimes()) {
-      for (int i = 1; i <= numeratorFact.argSize(); i++) {
-        IExpr factor = numeratorFact.get(i);
-        IExpr base = factor.isPower() ? factor.base() : factor;
-        IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
-
-        IExpr newBase = base;
-        for (ISymbol v : varSet) {
-          IExpr degree = engine.evaluate(F.Exponent(newBase, v));
-          if (degree.isInteger() && !degree.isZero()) {
-            IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
-            newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
-            totalPowers.put(v,
-                engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
-          }
-        }
-        newFactors.append(engine.evaluate(F.Power(newBase, exp)));
-      }
-    } else {
-      IExpr factor = numeratorFact;
-      IExpr base = factor.isPower() ? factor.base() : factor;
-      IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
-
-      IExpr newBase = base;
-      for (ISymbol v : varSet) {
-        IExpr degree = engine.evaluate(F.Exponent(newBase, v));
-        if (degree.isInteger() && !degree.isZero()) {
-          IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
-          newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
-          totalPowers.put(v, engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
-        }
-      }
-      newFactors.append(engine.evaluate(F.Power(newBase, exp)));
-    }
-
-    IExpr newDenominator = denominatorFact;
-    for (ISymbol v : varSet) {
-      IExpr tp = totalPowers.get(v);
-      if (!tp.isZero()) {
-        newDenominator =
-            engine.evaluate(F.Expand(F.Times(newDenominator, F.Power(v, tp.negate()))));
-      }
-    }
-    return engine.evaluate(F.Divide(newFactors.oneIdentity1(), newDenominator));
   }
 
   public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar, boolean trig,
@@ -1904,7 +1996,6 @@ public class AlgebraUtil {
 
     return expr;
   }
-
 
   /**
    * Determine common factors in a <code>Plus(...)</code> expression. Index <code>[0]</code>
@@ -2277,6 +2368,62 @@ public class AlgebraUtil {
   }
 
   /**
+   * Generates the optimal closed-form expression for the linear recurrence y_n = a * y_{n-1} - b *
+   * y_{n-2} with initial conditions y_0 = 0, y_1 = 1. (Note: For generating functions 1/(1 - ax +
+   * bx^2), pass n = n + 1).
+   *
+   * <p>
+   * By default the canonical sequence identities (Fibonacci, ChebyshevU) are used when they match.
+   */
+  public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine) {
+    return generalizedBinet(a, b, n, engine, true);
+  }
+
+  /**
+   * Generates the optimal closed-form expression for the linear recurrence y_n = a * y_{n-1} - b *
+   * y_{n-2} with initial conditions y_0 = 0, y_1 = 1. (Note: For generating functions 1/(1 - ax +
+   * bx^2), pass n = n + 1).
+   *
+   * @param useCanonicalForms if {@code true} the canonical sequence identities (Fibonacci,
+   *        ChebyshevU) are returned when they match; if {@code false} the explicit universal Binet
+   *        formula is always returned (used by {@code RSolve}, which canonicalizes special
+   *        sequences in a later pass).
+   */
+  public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine,
+      boolean useCanonicalForms) {
+    if (a == null || b == null || n == null) {
+      return F.NIL;
+    }
+
+    // 1. Canonical Sequence Identities
+    if (useCanonicalForms) {
+      if (b.equals(F.CN1) && a.isOne()) {
+        return F.Fibonacci(n);
+      }
+      if (b.isOne()) {
+        IExpr t = engine.evaluate(F.Times(a, F.C1D2));
+        return F.ChebyshevU(F.Subtract(n, F.C1), t);
+      }
+    }
+
+    // 2. Universal Binet Formula for Generic Roots
+    IExpr delta = engine.evaluate(F.Sqrt(F.Subtract(F.Sqr(a), F.Times(F.C4, b))));
+
+    // r1 = a + delta, r2 = a - delta
+    IExpr r1 = engine.evaluate(F.Plus(a, delta));
+    IExpr r2 = engine.evaluate(F.Subtract(a, delta));
+
+    // (r1^n - r2^n) / (2^n * delta)
+    IExpr term1 = engine.evaluate(F.Power(r1, n));
+    IExpr term2 = engine.evaluate(F.Power(r2, n));
+
+    IExpr numBinet = engine.evaluate(F.Subtract(term1, term2));
+    IExpr denBinet = engine.evaluate(F.Times(F.Power(F.C2, n), delta));
+
+    return engine.evaluate(F.Together(F.Divide(numBinet, denBinet)));
+  }
+
+  /**
    * Polynomials of the form <code>x^(2*p) + x^p + 1</code> have exactly two factors for all primes
    * <code>p != 3</code>. One is <code>x^2 + x + 1</code>, and its cofactor is a polynomial whose
    * coefficients are all <code>1, 0, or −1</code>.
@@ -2395,6 +2542,163 @@ public class AlgebraUtil {
   }
 
   /**
+   * Create an iterative partial fraction decomposition of the expression numerator / Times( ... )
+   * for the given variable. * Example: Apart(1 / ((x - 1) * (x - 2)))
+   *
+   * @param numerator the numerator of the fraction expression
+   * @param denominatorTimes the Times( ... ) expression of the denominator of the fraction
+   *        expression
+   * @param variable the variable to decompose over
+   * @param engine the evaluation engine
+   * @return the partial fraction decomposition if possible, otherwise F.NIL
+   */
+  public static IExpr partialFractionDecomposition(IExpr numerator, IExpr denominatorTimes,
+      IExpr variable, EvalEngine engine) {
+    if (!denominatorTimes.isTimes()) {
+      return S.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
+    }
+  
+    IAST denomAST = (IAST) denominatorTimes;
+    int argSize = denomAST.argSize();
+  
+    // Allocate a flat Plus buffer to collect the decomposed terms
+    IASTAppendable resultPlus = F.PlusAlloc(argSize + 1);
+  
+    IExpr currentNumerator = numerator;
+    IExpr currentFirst = denomAST.arg1();
+    IExpr currentRest = denomAST.splice(1).oneIdentity0();
+  
+    for (int i = 1; i <= argSize; i++) {
+      if (currentFirst.isFree(variable)) {
+        // Factor is constant with respect to the variable, pull it into the numerator
+        currentNumerator = S.Times.of(engine, currentNumerator, F.Power(currentFirst, -1));
+      } else {
+        IExpr v1 = S.Expand.of(engine, currentFirst);
+        IExpr v2 = S.Expand.of(engine, currentRest);
+        IExpr peGCD = S.PolynomialExtendedGCD.of(engine, v1, v2, variable);
+  
+        if (peGCD.isList() && peGCD.second().isList()) {
+          IAST s = (IAST) peGCD.second();
+          IExpr A = s.arg1();
+          IExpr B = s.arg2();
+  
+          IExpr u1 = S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(B, currentNumerator)), v1,
+              variable);
+          if (u1.isPresent()) {
+            IExpr u2 = S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(A, currentNumerator)),
+                v2, variable);
+            if (u2.isPresent()) {
+              // Append the resolved partial fraction term
+              resultPlus.append(S.Times.of(engine, u1, F.Power(currentFirst, -1)));
+              // Carry the remaining numerator forward
+              currentNumerator = u2;
+            } else {
+              return F.NIL;
+            }
+          } else {
+            return F.NIL;
+          }
+        } else {
+          return F.NIL;
+        }
+      }
+  
+      // Advance to the next factor in the denominator
+      if (!currentRest.isTimes()) {
+        // Base case: we have reached the last factor.
+        // Append the final term and terminate the loop.
+        resultPlus.append(S.Times.of(engine, currentNumerator, F.Power(currentRest, -1)));
+        break;
+      } else {
+        IAST restAST = (IAST) currentRest;
+        currentFirst = restAST.arg1();
+        currentRest = restAST.splice(1).oneIdentity0();
+      }
+    }
+  
+    return engine.evaluate(resultPlus);
+  }
+
+  /**
+   * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition
+   * of the numerator and denominator parts.
+   *
+   * @param pf partial fraction generator
+   * @param parts
+   * @param variableList a list of variable
+   * @return {@link F#NIL} if the partial fraction decomposition wasn't constructed
+   */
+  public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf,
+      IExpr[] parts, IAST variableList) {
+    try {
+      IExpr exprNumerator = F.evalExpandAll(parts[0]);
+      IExpr exprDenominator = F.evalExpandAll(parts[1]);
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
+      GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+      if (numerator == null) {
+        return F.NIL;
+      }
+      GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+      if (denominator == null) {
+        return F.NIL;
+      }
+      // get factors
+      FactorAbstract<BigRational> factorAbstract =
+          FactorFactory.getImplementation(BigRational.ZERO);
+      SortedMap<GenPolynomial<BigRational>, Long> sfactors =
+          factorAbstract.baseFactors(denominator);
+  
+      List<GenPolynomial<BigRational>> D =
+          new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
+  
+      SquarefreeAbstract<BigRational> sqf = SquarefreeFactory.getImplementation(BigRational.ZERO);
+      List<List<GenPolynomial<BigRational>>> Ai = sqf.basePartialFraction(numerator, sfactors);
+      // returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
+      // A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
+  
+      if (Ai.size() > 0) {
+        // IAST result = F.Plus();
+        pf.allocPlus(Ai.size() * 2);
+        pf.setJAS(jas);
+        if (!Ai.get(0).get(0).isZERO()) {
+          pf.addNonFractionalPart(Ai.get(0).get(0));
+        }
+        for (int i = 1; i < Ai.size(); i++) {
+          final List<GenPolynomial<BigRational>> list = Ai.get(i);
+          int j = 0;
+          for (GenPolynomial<BigRational> genPolynomial : list) {
+            if (!genPolynomial.isZERO()) {
+              final GenPolynomial<BigRational> Di_1 = D.get(i - 1);
+              pf.addSinglePartialFraction(genPolynomial, Di_1, j);
+            }
+            j++;
+          }
+        }
+        return pf.getResult();
+      }
+    } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      // JAS may throw JASConversionException and RuntimeExceptions
+      // LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition
+   * of the numerator and denominator parts.
+   *
+   * @param pf partial fraction generator
+   * @param parts
+   * @param variable a variable
+   * @return {@link F#NIL} if the partial fraction decomposition wasn't constructed
+   */
+  public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf,
+      IExpr[] parts, IExpr variable) {
+    return partialFractionDecompositionRational(pf, parts, F.list(variable));
+  }
+
+  /**
    * If possible returns an AST with head Plus, which contains the partial fraction decomposition of
    * the numerator and denominator parts.
    *
@@ -2405,7 +2709,7 @@ public class AlgebraUtil {
    *         numerator and denominator parts. Otherwise return F.NIL
    */
   public static IExpr partsApart(IExpr[] parts, IExpr variable, EvalEngine engine) {
-    IExpr temp = Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
+    IExpr temp = AlgebraUtil.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
         variable);
     if (temp.isPresent()) {
       return temp;
@@ -2413,9 +2717,69 @@ public class AlgebraUtil {
     temp = S.Factor.of(engine, parts[1]);
     if (temp.isTimes()) {
       // The iterative method no longer requires a 'count' recursion tracker.
-      return Algebra.partialFractionDecomposition(parts[0], temp, variable, engine);
+      return AlgebraUtil.partialFractionDecomposition(parts[0], temp, variable, engine);
     }
     return F.NIL;
+  }
+
+  public static IExpr polynomialTaylorSeries(IExpr[] parts, IExpr x, IExpr x0, int n,
+      int expDenominator) {
+    try {
+      IExpr exprNumerator = F.evalExpandAll(parts[0]);
+      IExpr exprDenominator = F.evalExpandAll(parts[1]);
+  
+      final UnivPowerSeries<BigRational> ps = AlgebraUtil.quotientPS(exprNumerator, exprDenominator, x);
+      if (ps != null && !ps.isZERO()) {
+        ASTSeriesData seriesData = new ASTSeriesData(x, x0, 0, n + expDenominator, expDenominator);
+        // reversed order seems to be a bit faster
+        for (int i = n; i >= 0; i--) {
+          BigRational coefficient = ps.coefficient(i);
+          seriesData.setCoeff(i, F.fraction(coefficient.numerator(), coefficient.denominator()));
+        }
+        return seriesData;
+      }
+    } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      // JAS may throw JASConversionException and RuntimeExceptions
+      // LOGGER.debug("Algebra.polynomialTaylorSeries() failed", e);
+    }
+    return F.NIL;
+  }
+
+  public static UnivPowerSeries<BigRational> quotientPS(IExpr exprNumerator, IExpr exprDenominator,
+      IExpr x) {
+    JASConvert<BigRational> jas = new JASConvert<BigRational>(x.makeList(), BigRational.ZERO);
+    GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+    if (numerator == null) {
+      return null;
+    }
+    final UnivPowerSeries<BigRational> ps;
+    BigRational cfac = BigRational.ONE;
+    UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(cfac);
+    TaylorFunction<BigRational> FN = new PolynomialTaylorFunction<BigRational>(numerator);
+    if (exprNumerator.isOne()) {
+      GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+      if (denominator == null) {
+        return null;
+      }
+      TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
+      UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
+      ps = psD.inverse();
+    } else {
+      if (exprDenominator.isOne()) {
+        ps = fac.seriesOfTaylor(FN, BigRational.ZERO);
+      } else {
+        GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+        if (denominator == null) {
+          return null;
+        }
+        TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
+        UnivPowerSeries<BigRational> psN = fac.seriesOfTaylor(FN, BigRational.ZERO);
+        UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
+        ps = psN.divide(psD);
+      }
+    }
+    return ps;
   }
 
   public static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
@@ -2689,6 +3053,66 @@ public class AlgebraUtil {
       }
     }
     return map.size() != 0;
+  }
+
+  /**
+   * Compute the square-free factorization of a single polynomial (a {@link S#Plus} expression) with
+   * JAS, normalize each factor to a positive leading coefficient and accumulate the result into
+   * <code>factorMap</code> / <code>content</code>.
+   */
+  @SuppressWarnings("unchecked")
+  private static boolean squareFreeLeaf(IAST plus, long multiplier, VariablesSet eVar,
+      Map<IExpr, Long> factorMap, IRational[] content, boolean[] anyPolynomial, EvalEngine engine) {
+    JASConvert<BigRational> jas =
+        new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO, TermOrderByName.INVLEX);
+    GenPolynomial<BigRational> polyRat;
+    try {
+      polyRat = jas.expr2JAS(plus, false);
+    } catch (JASConversionException e) {
+      addSquareFreeFactor(factorMap, plus, multiplier);
+      return true;
+    }
+    if (polyRat == null || polyRat.length() <= 1) {
+      addSquareFreeFactor(factorMap, plus, multiplier);
+      return true;
+    }
+    Object[] objects = jas.factorTerms(polyRat);
+    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+    try {
+      GenPolynomial<edu.jas.arith.BigInteger> poly =
+          (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+      FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
+          FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+      map = factorAbstract.squarefreeFactors(poly);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      addSquareFreeFactor(factorMap, plus, multiplier);
+      return true;
+    }
+    java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+    java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+    IRational leafContent = F.C1;
+    if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+      leafContent = F.fraction(gcd, lcm).normalize();
+    }
+    anyPolynomial[0] = true;
+    for (Map.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
+      GenPolynomial<edu.jas.arith.BigInteger> poly = entry.getKey();
+      long exponent = entry.getValue();
+      if (poly.isONE() && exponent == 1L) {
+        continue;
+      }
+      if (poly.leadingBaseCoefficient().signum() < 0) {
+        // normalize to a positive leading coefficient; fold the sign into the numeric content
+        poly = poly.negate();
+        if ((exponent & 1L) == 1L) {
+          leafContent = leafContent.negate();
+        }
+      }
+      addSquareFreeFactor(factorMap, jas.integerPoly2Expr(poly), exponent * multiplier);
+    }
+    content[0] = content[0].multiply(leafContent.powerRational(multiplier));
+    return true;
   }
 
   public static IExpr together(IAST ast, EvalEngine engine) {
@@ -3127,114 +3551,8 @@ public class AlgebraUtil {
     return F.NIL;
   }
 
-  /**
-   * Helper to extract coefficient, base, and exponent from a fractional power term. Returns
-   * [coefficient, base, exponent] or null.
-   */
-  private static IExpr[] extractFractionalPower(IExpr expr) {
-    if (expr.isPower() && expr.exponent().isFraction()) {
-      return new IExpr[] {F.C1, expr.base(), expr.exponent()};
-    }
-    if (expr.isTimes()) {
-      IAST times = (IAST) expr;
-      int powerIndex = times.indexOf(x -> x.isPower() && x.exponent().isFraction());
-      if (powerIndex > 0) {
-        IExpr power = times.get(powerIndex);
-        IExpr coeff = times.removeAtCopy(powerIndex).oneIdentity1();
-        return new IExpr[] {coeff, power.base(), power.exponent()};
-      }
-    }
-    return null;
-  }
-
   private AlgebraUtil() {
     // private constructor to avoid instantiation
-  }
-
-  /**
-   * Generates the optimal closed-form expression for the linear recurrence y_n = a * y_{n-1} - b *
-   * y_{n-2} with initial conditions y_0 = 0, y_1 = 1. (Note: For generating functions 1/(1 - ax +
-   * bx^2), pass n = n + 1).
-   *
-   * <p>
-   * By default the canonical sequence identities (Fibonacci, ChebyshevU) are used when they match.
-   */
-  public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine) {
-    return generalizedBinet(a, b, n, engine, true);
-  }
-
-  /**
-   * Generates the optimal closed-form expression for the linear recurrence y_n = a * y_{n-1} - b *
-   * y_{n-2} with initial conditions y_0 = 0, y_1 = 1. (Note: For generating functions 1/(1 - ax +
-   * bx^2), pass n = n + 1).
-   *
-   * @param useCanonicalForms if {@code true} the canonical sequence identities (Fibonacci,
-   *        ChebyshevU) are returned when they match; if {@code false} the explicit universal Binet
-   *        formula is always returned (used by {@code RSolve}, which canonicalizes special
-   *        sequences in a later pass).
-   */
-  public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine,
-      boolean useCanonicalForms) {
-    if (a == null || b == null || n == null) {
-      return F.NIL;
-    }
-
-    // 1. Canonical Sequence Identities
-    if (useCanonicalForms) {
-      if (b.equals(F.CN1) && a.isOne()) {
-        return F.Fibonacci(n);
-      }
-      if (b.isOne()) {
-        IExpr t = engine.evaluate(F.Times(a, F.C1D2));
-        return F.ChebyshevU(F.Subtract(n, F.C1), t);
-      }
-    }
-
-    // 2. Universal Binet Formula for Generic Roots
-    IExpr delta = engine.evaluate(F.Sqrt(F.Subtract(F.Sqr(a), F.Times(F.C4, b))));
-
-    // r1 = a + delta, r2 = a - delta
-    IExpr r1 = engine.evaluate(F.Plus(a, delta));
-    IExpr r2 = engine.evaluate(F.Subtract(a, delta));
-
-    // (r1^n - r2^n) / (2^n * delta)
-    IExpr term1 = engine.evaluate(F.Power(r1, n));
-    IExpr term2 = engine.evaluate(F.Power(r2, n));
-
-    IExpr numBinet = engine.evaluate(F.Subtract(term1, term2));
-    IExpr denBinet = engine.evaluate(F.Times(F.Power(F.C2, n), delta));
-
-    return engine.evaluate(F.Together(F.Divide(numBinet, denBinet)));
-  }
-
-  /**
-   * Builds a holonomic-sequence {@code DifferenceRoot} object with the recurrence and initial
-   * conditions embedded as equations:
-   *
-   * <pre>
-   * DifferenceRoot(Function({y, k}, {recurrence, y(0) == v0, y(1) == v1, ...}))[n]
-   * </pre>
-   *
-   * <p>
-   * This is the shared representation used by both {@code RSolve} and {@code SeriesCoefficient} so
-   * that both functions emit identical objects for non-closed-form linear recurrences.
-   *
-   * @param recurrence the recurrence equation expressed in terms of {@code y} and {@code k}
-   * @param y the sequence function symbol used in {@code recurrence}
-   * @param k the index symbol used in {@code recurrence}
-   * @param initialConditions the values {@code v0, v1, ...} for {@code y(0), y(1), ...}
-   * @param n the index at which the sequence is evaluated
-   * @return the {@code DifferenceRoot(...)[n]} expression
-   */
-  public static IExpr differenceRoot(IExpr recurrence, ISymbol y, ISymbol k,
-      List<IExpr> initialConditions, IExpr n) {
-    IASTAppendable equations = F.ListAlloc(initialConditions.size() + 1);
-    equations.append(recurrence);
-    for (int i = 0; i < initialConditions.size(); i++) {
-      equations.append(F.Equal(F.unaryAST1(y, F.ZZ(i)), initialConditions.get(i)));
-    }
-    IAST diffRootFunc = F.Function(F.List(y, k), equations);
-    return F.unaryAST1(F.DifferenceRoot(diffRootFunc), n);
   }
 
 }

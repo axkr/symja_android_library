@@ -1,9 +1,12 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 
 public class IntegrateTest extends ExprEvaluatorTestCase {
@@ -18,6 +21,41 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+  }
+
+  /**
+   * A non-finite machine number as the integrand used to reach
+   * {@code AbstractFractionSym.rationalize} and fail there with a Hipparchus "cannot convert
+   * infinite value", before Integrate ever looked at what it was being asked to integrate over.
+   * Nothing about such an argument is rationalizable, so it is left alone and the second argument
+   * is judged on its own merits, which is what Mathematica reports for this input as well:
+   * {@code Integrate::ilim Invalid integration variable or limit(s) in 2.}
+   *
+   * <p>
+   * The expressions are built rather than parsed. Integrate holds its arguments, so the integrand
+   * has to be a machine number by the time it arrives, and a parsed <code>Infinity`</code> is not
+   * one: it reads back as a symbol, which takes an entirely different route through the evaluator.
+   */
+  @Test
+  public void testIntegrateNonFiniteIntegrand() {
+    // Invalid integration variable or limit(s) in 2.
+    assertEquals(
+        EvalEngine.get().evaluate(F.Integrate(F.num(Double.NEGATIVE_INFINITY), F.C2)).toString(),
+        "Integrate(-Infinity,2)");
+    assertEquals(
+        EvalEngine.get().evaluate(F.Integrate(F.num(Double.POSITIVE_INFINITY), F.C2)).toString(),
+        "Integrate(Infinity,2)");
+    // an indeterminate integrand is answered by Integrate's own rule for it, before the second
+    // argument matters at all
+    assertEquals(EvalEngine.get().evaluate(F.Integrate(F.num(Double.NaN), F.C2)).toString(),
+        "Indeterminate");
+    // with a genuine variable the non-finite constant integrates the way any constant does
+    assertEquals(
+        EvalEngine.get().evaluate(F.Integrate(F.num(Double.POSITIVE_INFINITY), F.x)).toString(),
+        "Infinity*x");
+    // and rationalizing a finite integrand is untouched
+    check("Integrate(1.5, x)", //
+        "3/2*x");
   }
 
   @Test
@@ -1003,6 +1041,45 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // Complex variables
     check("Integrate(I*E^(I*x)/x^2, x)", //
         "I*(-E^(I*x)/x+I*ExpIntegralEi(I*x))");
+  }
+
+  @Test
+  public void testDefiniteIntegralOfSqrtOfSquare() {
+    // Sqrt(f^2) is Abs(f). Its antiderivative -Cot(u)*Sqrt(Sin(u)^2) is only piecewise continuous:
+    // it is Indeterminate at the ends of the range, so the Newton-Leibniz step falls back to a
+    // one-sided Limit, and it jumps wherever Sin(u) changes sign, so the range has to be split
+    // there. Both used to go wrong and the integral came out as 0.
+    check("Integrate(Sqrt(Sin(u)^2), {u,0,Pi})", //
+        "2");
+    check("Integrate(Sqrt(Sin(u)^2), {u,Pi,2*Pi})", //
+        "2");
+    // the interior zero of Sin(u) at Pi splits the range
+    check("Integrate(Sqrt(Sin(u)^2), {u,0,2*Pi})", //
+        "4");
+    check("Integrate(Sqrt(Sin(u)^2), {u,-Pi,Pi})", //
+        "4");
+    check("Integrate(Sqrt(Sin(u)^2), {u,0,3*Pi/2})", //
+        "3");
+    check("Integrate(Sqrt(Cos(u)^2), {u,0,Pi/2})", //
+        "1");
+    check("Integrate(Sqrt(Cos(u)^2), {u,0,Pi})", //
+        "2");
+    check("Integrate(Sqrt(Cos(u)^2), {u,0,2*Pi})", //
+        "4");
+
+    // the polynomial radical was already right and stays right
+    check("Integrate(Sqrt(x^2), {x,-1,1})", //
+        "1");
+    check("Integrate(Sqrt(x^2), {x,-2,3})", //
+        "13/2");
+    check("Integrate(Sqrt(x^2), x)", //
+        "1/2*x*Sqrt(x^2)");
+
+    // a genuinely divergent integral must still be reported as such rather than split away
+    check("Integrate(1/x, {x,-1,1})", //
+        "Integrate(1/x,{x,-1,1})");
+    check("Integrate(1/x^2, {x,-1,1})", //
+        "Integrate(1/x^2,{x,-1,1})");
   }
 
 }

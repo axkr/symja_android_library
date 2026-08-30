@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
@@ -328,7 +329,13 @@ public class EvalAttributes {
    * @return return the sorted copy
    */
   public static final IAST copySort(final IAST ast) {
-    final IASTMutable sortedList = ast.copy();
+    // A series cannot hold its fields in any other order - the coefficients are a map and the last
+    // arguments machine integers - so sorting the copy threw from deep inside it. What a sorted
+    // series is, is the plain expression it stands for with its arguments rearranged, which is
+    // also what Mathematica answers: Intersection of one series sorts and deduplicates its six
+    // arguments into a five argument SeriesData, then reports that as no series at all.
+    final IASTMutable sortedList =
+        ast instanceof ASTSeriesData ? ((ASTSeriesData) ast).toPlainAST() : ast.copy();
     sort(sortedList);
     return sortedList;
   }
@@ -648,20 +655,19 @@ public class EvalAttributes {
       assocResult.put(assoc.getRule(i).arg1(), subResult);
     }
     for (int j = 1; j < listLength + 1; j++) {
+      final IASTMutable ruleRHS = assocResult.get(assoc.getRule(j).arg1());
       for (int i = 1; i < listSize; i++) {
-        IASTMutable ruleRHS = assocResult.get(assoc.getRule(j).arg1());
-        if (ast.get(i).isAssociation() && listHead == S.Association) {
-          final IAssociation arg = (IAssociation) ast.get(i);
-          IAST rule = arg.getRule(j);
-          ruleRHS.set(i, rule.arg2());
-        } else if (ast.get(i).isList() && listHead == S.List) {
-          final IAST arg = (IAST) ast.get(i);
-          ruleRHS.set(i, arg.get(j));
-        } else if (ast.get(i).isSparseArray() && listHead == S.SparseArray) {
-          final ISparseArray arg = (ISparseArray) ast.get(i);
-          ruleRHS.set(i, arg.get(j));
+        final IExpr argument = ast.get(i);
+        if (argument.isAssociation() && listHead == S.Association) {
+          ruleRHS.set(i, ((IAssociation) argument).getRule(j).arg2());
+        } else if (argument.isList() && listHead == S.List) {
+          ruleRHS.set(i, ((IAST) argument).get(j));
+        } else if (argument.isSparseArray() && listHead == S.SparseArray) {
+          ruleRHS.set(i, ((ISparseArray) argument).get(j));
         } else {
-          ruleRHS.set(i, ast.get(i));
+          // an argument of another container type is threaded unchanged into every value and
+          // threads on the re-evaluation of that value
+          ruleRHS.set(i, argument);
         }
       }
     }

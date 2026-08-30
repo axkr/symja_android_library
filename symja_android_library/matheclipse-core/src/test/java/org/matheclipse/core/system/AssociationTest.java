@@ -9,11 +9,23 @@ public class AssociationTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testThreadAssociation() {
+    // the value of a RuleDelayed is held and is never re-evaluated, so Plus has to drop its
+    // identity element 0 before threading: the first element is <|s1->0,s2:>1|> and not
+    // <|s1->0,s2:>0+1|>
     check("{0,1,2,3}+<|s1->0,s2:>1|>", //
-        "{<|s1->0,s2:>0+1|>,<|s1->1,s2:>1+1|>,<|s1->2,s2:>2+1|>,<|s1->3,s2:>3+1|>}");
+        "{<|s1->0,s2:>1|>,<|s1->1,s2:>1+1|>,<|s1->2,s2:>2+1|>,<|s1->3,s2:>3+1|>}");
     check("Factor({0,1,2,3}+<|s1->0,s2:>1|>)", //
-        "{<|s1->0,s2:>Factor(0+1)|>,<|s1->1,s2:>Factor(1+1)|>,<|s1->2,s2:>Factor(2+1)|>,<|s1->\n" //
+        "{<|s1->0,s2:>Factor(1)|>,<|s1->1,s2:>Factor(1+1)|>,<|s1->2,s2:>Factor(2+1)|>,<|s1->\n" //
             + "3,s2:>Factor(3+1)|>}");
+    check("0 + <|s2:>a|>", //
+        "<|s2:>a|>");
+    check("1 * <|s2:>a|>", //
+        "<|s2:>a|>");
+    // 0 is the absorbing element of Times, not its identity element, so it isn't dropped
+    check("0 * <|s2:>a|>", //
+        "<|s2:>0*a|>");
+    check("1 + <|s2:>a|>", //
+        "<|s2:>1+a|>");
   }
 
   @Test
@@ -237,6 +249,97 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "f(10,12)");
   }
 
+  /**
+   * <code>MissingBehavior</code> is an option of <code>Query</code>: under the default
+   * <code>Automatic</code> a statistical operator ignores what is not there, and under
+   * <code>None</code> it sees the level as it stands.
+   */
+  @Test
+  public void testQueryMissingBehavior() {
+    // "Missing elements are dropped or ignored in aggregation functions"
+    check("Query(Total)[{1, 2, 3, Missing()}]", //
+        "6");
+    check("Query(Mean)[{1, 2, 3, Missing()}]", //
+        "2");
+    check("Query(Total)[<|\"a\" -> 1, \"b\" -> Missing()|>]", //
+        "1");
+    // one level down, per element
+    check("Query(All, Total)[{{1, Missing()}, {2, 3}}]", //
+        "{1,5}");
+
+    // "Empty lists yield Missing[Indeterminate]" - and a level with nothing left is empty
+    check("Query(Total)[{Missing(), Missing()}]", //
+        "Missing(Indeterminate)");
+    check("Query(Mean)[{}]", //
+        "Missing(Indeterminate)");
+
+    // None asks for the ordinary behaviour
+    check("Query(Total, MissingBehavior -> None)[{1, 2, 3, Missing()}]", //
+        "6+Missing()");
+
+    // only the statistical operators ignore it. Length counts what is there, missing or not
+    check("Query(Length)[{1, 2, Missing()}]", //
+        "3");
+
+    // and a query with nothing missing is what it always was
+    check("Query(Total)[{1, 2, 3}]", //
+        "6");
+    check("Query(1)[{10, 20}]", //
+        "10");
+    check("Query(Select(Function(# > 1)))[{1, 2, 3}]", //
+        "{2,3}");
+  }
+
+  /**
+   * Associations order by their rules. They used to order by nothing at all: the inherited
+   * comparison reaches its element by element branch only for something that answers
+   * <code>True</code> to <code>AtomQ</code>'s opposite - and an association reports itself as not
+   * an <code>AST</code> - so every pair fell through to comparing hierarchies, which is the same
+   * number for all of them. Everything that orders canonically then saw every association as equal
+   * to every other.
+   */
+  @Test
+  public void testAssociationOrder() {
+    check("Order(<|a->1|>, <|a->2|>)", //
+        "1");
+    check("Order(<|a->2|>, <|a->1|>)", //
+        "-1");
+    check("Order(<|a->1|>, <|a->1|>)", //
+        "0");
+    // the key orders before the value
+    check("Order(<|a->2|>, <|b->1|>)", //
+        "1");
+    // fewer rules orders first
+    check("Order(<|a->1|>, <|a->1,b->2|>)", //
+        "1");
+
+    // Union dedupes by that order, so it used to keep one row out of any number
+    check("Union({<|a->1|>, <|a->2|>, <|a->3|>})", //
+        "{<|a->1|>,<|a->2|>,<|a->3|>}");
+    check("Union({<|a->1|>, <|a->1|>})", //
+        "{<|a->1|>}");
+    check("Union({<|a->1|>}, {<|a->2|>})", //
+        "{<|a->1|>,<|a->2|>}");
+    check("Length(Union({<|\"a\"->1,\"b\"->\"x\"|>, <|\"a\"->2,\"b\"->\"y\"|>,"
+        + "<|\"a\"->3,\"b\"->\"x\"|>}))", //
+        "3");
+
+    // ... and Sort left them where they lay
+    check("Sort({<|a->3|>, <|a->1|>, <|a->2|>})", //
+        "{<|a->1|>,<|a->2|>,<|a->3|>}");
+    check("Sort({<|b->1|>, <|a->2|>})", //
+        "{<|a->2|>,<|b->1|>}");
+
+    // DeleteDuplicates compares with SameQ and was right all along
+    check("DeleteDuplicates({<|a->1|>, <|a->2|>})", //
+        "{<|a->1|>,<|a->2|>}");
+
+    // an association against something that is not one goes through the inherited comparison,
+    // which orders by the heads: Association before f
+    check("Order(<|a->1|>, f(1))", //
+        "1");
+  }
+
   @Test
   public void testAssociationMap() {
     check("AssociationMap(Reverse,<|a->1,b->2|>)", //
@@ -389,7 +492,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     check("r = {beta -> 4, alpha -> 2, x -> 4, z -> 2, w -> 0.8};", //
         "");
     check("KeySelect(r, MatchQ(#,alpha|x)&)", //
-        "<|alpha->2,x->4|>");
+        "<|Alpha->2,x->4|>");
     check("KeySelect(<|1 -> a, 2 -> b, 3 -> c|>, OddQ)", //
         "<|1->a,3->c|>");
     check("KeySelect(<|1 -> a, 2 -> b, 3 -> c|>, <|1 -> False, 2 -> True,  3 -> True|>)", //
@@ -506,7 +609,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     check("r = {beta -> 4, alpha -> 2, x -> 4, z -> 2, w -> 0.8};", //
         "");
     check("KeyTake(r, {alpha,x})", //
-        "<|alpha->2,x->4|>");
+        "<|Alpha->2,x->4|>");
 
     // operator form
     check("KeyTake({a, e})[<|a -> b, c -> d, e -> f, g -> h|>]", //
