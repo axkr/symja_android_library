@@ -720,7 +720,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             if (ast.argSize() == 2) {
               IExpr base = ast.base();
               IExpr exponent = ast.exponent();
-              if (base.equals(S.E)) {
+              if (base == S.E) {
                 if (!expLog && !exponent.isFree(variable, true)
                     && exponent.has(t -> t.isLog(), true)
                     && exponent.isFree(
@@ -985,7 +985,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (!limitAbove.isFree(x -> x.isInterval() || x.isIntervalData(), true)) {
         return S.Indeterminate;
       }
-      if (limitAbove.equals(S.ComplexInfinity)) {
+      if (limitAbove == S.ComplexInfinity) {
         return F.NIL;
       }
       // COMPLEX PRINCIPAL BRANCH PHASE CHECK
@@ -1509,7 +1509,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // only
       // a clean result (thesis 8.14).
       if ((limit.isInfinity() || limit.isNegativeInfinity()) && DOMINANT_TERM_DEPTH.get() < 2
-          && function.isPower() && function.base().equals(S.E) && function.exponent().isPlus()
+          && function.isPower() && function.base() == S.E && function.exponent().isPlus()
           && function.exponent().argSize() == 2 && ((IAST) function.exponent()).count(
               t -> t.has(p -> p.isPower() && !p.exponent().isFree(symbol, true), true)) >= 2) {
         int towerDepth = DOMINANT_TERM_DEPTH.get();
@@ -2040,7 +2040,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (expr.isTimes() && expr.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
         expr = engine.evalQuiet(F.Simplify(expr));
       }
-      if (expr.isFree(v -> v.equals(S.D) || v.equals(S.Derivative), true)) {
+      if (expr.isFree(v -> v == S.D || v == S.Derivative, true)) {
         return evalLimit(expr, data, engine);
       }
     } catch (RecursionLimitExceeded rle) {
@@ -2507,7 +2507,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
     IExpr mapLimit = data.mapLimit(plusAST);
     if (mapLimit.isPresent() && !mapLimit.isIndeterminate()) {
-      if (mapLimit.isFree(x -> x.equals(S.Limit), true)) {
+      if (mapLimit.isFree(x -> x == S.Limit, true)) {
         IExpr temp = F.eval(mapLimit);
         if (temp.isIndeterminate() && plusAST.isPlus()) {
           int indexOf = plusAST.indexOf(x -> isSqrtExpression(x));
@@ -2784,7 +2784,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (ast.argSize() == 2) {
             IExpr base = ast.arg1();
             IExpr exp = ast.arg2();
-            if (base.equals(S.E) && containsBoundedHead(exp) && exp.isAST(S.Sin, 2)) {
+            if (base == S.E && containsBoundedHead(exp) && exp.isAST(S.Sin, 2)) {
               return S.E;
             }
             // Generalize the bound through powers (e.g. Abs(base)^exp)
@@ -3184,7 +3184,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * mrv machinery.
    */
   private static boolean hasDivergentExpFactor(IExpr term, ISymbol x) {
-    return term.has(p -> p.isPower() && p.base().equals(S.E) && !p.exponent().isFree(x, true),
+    return term.has(p -> p.isPower() && p.base() == S.E && !p.exponent().isFree(x, true),
         true);
   }
 
@@ -3260,7 +3260,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * is fine - it does not change the exponential order.
    */
   private static IExpr divergentExpExponent(IExpr term, ISymbol x) {
-    if (term.isPower() && term.base().equals(S.E) && !term.exponent().isFree(x, true)) {
+    if (term.isPower() && term.base() == S.E && !term.exponent().isFree(x, true)) {
       return term.exponent();
     }
     if (term.isTimes()) {
@@ -3268,7 +3268,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IExpr exponent = F.NIL;
       for (int i = 1; i < times.size(); i++) {
         IExpr f = times.get(i);
-        if (f.isPower() && f.base().equals(S.E) && !f.exponent().isFree(x, true)) {
+        if (f.isPower() && f.base() == S.E && !f.exponent().isFree(x, true)) {
           if (exponent.isPresent()) {
             return F.NIL; // two E^(x-dependent) factors - not a single clean exponential
           }
@@ -3521,19 +3521,103 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * @return the rewritten expression
    */
   private static IExpr rewriteAbsForDirection(IExpr expr, IExpr variable, Direction direction,
-      IExpr limitValue) {
+      IExpr limitValue, EvalEngine engine) {
+    if (!variable.isSymbol()) {
+      return F.NIL;
+    }
+    if (direction == Direction.TWO_SIDED) {
+      // A two sided limit has to keep the kink: it is exactly the disagreement of the two sides
+      // which makes Abs(x)/x Indeterminate rather than 1.
+      //
+      // RealAbs cannot keep it on its own. It carries the derivative rule x/RealAbs(x), so the
+      // Taylor expansion of RealAbs(x) starts with x and RealAbs(x)/x comes out as 1, while
+      // Abs'(0) stays unevaluated and Abs answers honestly. The two functions agree on the reals,
+      // which is where a limit with a Direction lives, so normalize to the honest one.
+      IExpr asAbs = F.subst(expr, y -> {
+        if (y.isAST(S.RealAbs, 2) && !y.first().isFree(variable, true)) {
+          return F.Abs(y.first());
+        }
+        return F.NIL;
+      });
+      return asAbs.equals(expr) ? F.NIL : asAbs;
+    }
     if (limitValue.isZero()) {
-      if (direction == Direction.FROM_ABOVE) {
-        return F.subst(expr,
-            x -> (x.isAST(S.RealAbs, 2) || x.isAST(S.Abs, 2)) && x.first().equals(variable),
-            variable);
-      } else if (direction == Direction.FROM_BELOW) {
-        return F.subst(expr,
-            x -> (x.isAST(S.RealAbs, 2) || x.isAST(S.Abs, 2)) && x.first().equals(variable),
-            variable.negate());
+      // the plain Abs(x) at zero, without asking signViaApproach
+      IExpr shortcut = F.subst(expr,
+          x -> (x.isAST(S.RealAbs, 2) || x.isAST(S.Abs, 2)) && x.first().equals(variable),
+          direction == Direction.FROM_ABOVE ? variable : variable.negate());
+      if (!shortcut.equals(expr)) {
+        return shortcut;
       }
     }
-    return F.NIL;
+    // The general rewrite decides the sign of the argument with signViaApproach, which probes
+    // limitValue -/+ 1/w and ranks growth. That is only meaningful at a concrete real point: at a
+    // symbolic one the constant term cannot be ranked and the sign of the vanishing 1/w term is
+    // reported instead, which turned Integrate(RealSign(x),{x,a,b}) into a-b.
+    if (!limitValue.isRealResult() || !limitValue.isNumericFunction()) {
+      return F.NIL;
+    }
+    ISymbol x = (ISymbol) variable;
+    IExpr rewritten = F.subst(expr, y -> {
+      if (!y.isAST(S.Abs, 2) && !y.isAST(S.RealAbs, 2)) {
+        return F.NIL;
+      }
+      IExpr argument = y.first();
+      if (argument.isFree(x, true)) {
+        // a constant Abs() is not in the way of the limit
+        return F.NIL;
+      }
+      int sign = signViaApproach(argument, x, limitValue, direction, engine);
+      if (sign > 0) {
+        return argument;
+      }
+      if (sign < 0) {
+        return argument.negate();
+      }
+      return F.NIL;
+    });
+    return rewritten.equals(expr) ? F.NIL : rewritten;
+  }
+
+  /**
+   * Rewrite <code>Sqrt(f^2)</code> as <code>Abs(f)</code>, which is the same function for a real
+   * <code>f</code> but the form the limit machinery reasons about correctly.
+   *
+   * <p>
+   * The series expansion flattens <code>(f^2)^(1/2)</code> to <code>f^(2*1/2) == f</code>, which
+   * silently picks the positive branch: <code>Limit(Sqrt(x^2)/x, x->0)</code> came out as
+   * <code>1</code> where <code>Limit(Abs(x)/x, x->0)</code> correctly stays
+   * <code>Indeterminate</code>, and a definite integral built on such an antiderivative returned a
+   * wrong value. Normalizing into <code>Abs</code> hands the expression to
+   * {@link #rewriteAbsForDirection}, which resolves the branch per direction instead of guessing
+   * one.
+   *
+   * @return {@link F#NIL} if <code>expr</code> contains no such radical
+   */
+  private static IExpr normalizeSqrtOfSquare(IExpr expr, IExpr variable) {
+    if (!expr.has(y -> y.isPower() && y.exponent().isNumEqualRational(F.C1D2), true)) {
+      return F.NIL;
+    }
+    IExpr rewritten = F.subst(expr, y -> {
+      if (!y.isPower() || !y.exponent().isNumEqualRational(F.C1D2)) {
+        return F.NIL;
+      }
+      IExpr radicand = y.base();
+      if (!radicand.isPower() || !radicand.exponent().isNumEqualRational(F.C2)) {
+        return F.NIL;
+      }
+      IExpr inner = radicand.base();
+      if (inner.isFree(variable, true)) {
+        // a constant radical does not need the case distinction
+        return F.NIL;
+      }
+      if (!inner.isFree(y2 -> y2.isComplex() || y2.isComplexNumeric(), true)) {
+        // Sqrt(z^2) is not Abs(z) off the real axis
+        return F.NIL;
+      }
+      return F.Abs(inner);
+    });
+    return rewritten.equals(expr) ? F.NIL : rewritten;
   }
 
   /**
@@ -4045,7 +4129,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           direction = Direction.FROM_BELOW;
         } else if (directionOption.isMinusOne() || directionOption.isString("FromAbove")) {
           direction = Direction.FROM_ABOVE;
-        } else if (directionOption.equals(S.Automatic) || directionOption.equals(S.Reals)
+        } else if (directionOption == S.Automatic || directionOption == S.Reals
             || directionOption.isString("TwoSided")) {
           direction = Direction.TWO_SIDED;
         } else {
@@ -4075,8 +4159,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      if (arg1.has(S.Abs, true)) {
-        IExpr rewritten = rewriteAbsForDirection(arg1, rule.arg1(), direction, rule.arg2());
+      // Sqrt(f^2) is Abs(f) - normalize it first so that the Abs rewrite below resolves the
+      // branch per direction instead of the series silently picking the positive one
+      IExpr normalized = normalizeSqrtOfSquare(arg1, rule.arg1());
+      if (normalized.isPresent()) {
+        arg1 = normalized;
+      }
+      // RealAbs is the real valued twin of Abs which substAbs() and the derivative of Abs
+      // produce, so it has to reach the same rewrite - rewriteAbsForDirection handles both heads
+      if (arg1.has(S.Abs, true) || arg1.has(S.RealAbs, true)) {
+        IExpr rewritten = rewriteAbsForDirection(arg1, rule.arg1(), direction, rule.arg2(), engine);
         if (rewritten.isPresent()) {
           // Compute the limit on the rewritten expression (without Abs)
           arg1 = rewritten;

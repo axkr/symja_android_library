@@ -488,6 +488,32 @@ public class DSolve extends AbstractFunctionEvaluator {
   }
 
   /**
+   * Put a particular solution over a common denominator.
+   *
+   * <p>
+   * Substituting the integration constants of a general solution leaves the fractions they came
+   * with nested inside each other: the general <code>1/(-x^2/2-C(1))</code> becomes
+   * <code>1/(1/2-x^2/2)</code> for <code>y(0)==2</code>, where <code>2/(1-x^2)</code> is meant. The
+   * result is only used if it isn't more complicated than the input, which leaves solutions
+   * containing exponentials or unevaluated integrals alone.
+   *
+   * @param expr a solution expression, or a list of them, or a rule mapping onto one
+   */
+  private static IExpr togetherSolution(IExpr expr, EvalEngine engine) {
+    if (expr.isList()) {
+      return ((IAST) expr).map(x -> togetherSolution(x, engine), 1);
+    }
+    if (expr.isRule()) {
+      return F.Rule(expr.first(), togetherSolution(expr.second(), engine));
+    }
+    IExpr together = S.Together.of(engine, expr);
+    if (together.isPresent() && together.leafCount() <= expr.leafCount()) {
+      return together;
+    }
+    return expr;
+  }
+
+  /**
    * Evaluates boundary conditions against the generated homogeneous constants
    */
   private IExpr applySystemBCs(IExpr roots, IAST listOfVariables, IExpr xVar, IAST bcs,
@@ -539,7 +565,7 @@ public class DSolve extends AbstractFunctionEvaluator {
     IExpr cSols = engine.evaluate(F.Solve(evaluatedBCsEqualZero, cVars));
     if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
       IAST cSol = (IAST) ((IAST) cSols).arg1();
-      return engine.evaluate(F.subst(roots, cSol));
+      return togetherSolution(engine.evaluate(F.subst(roots, cSol)), engine);
     } else if (cSols.isEmptyList()) {
       return Errors.printMessage(S.DSolve, "bvfail", F.CEmptyList);
     }
@@ -599,12 +625,21 @@ public class DSolve extends AbstractFunctionEvaluator {
       return F.Equal(t, F.C0);
     });
 
-    IExpr cSols = engine.evaluate(F.Solve(evaluatedBCsEqualZero, cVars));
+    final boolean quietMode = engine.isQuietMode();
+    IExpr cSols;
+    try {
+      // Solving a boundary condition for the integration constants inverts the general solution, so
+      // for a root like `-Sqrt(x^2-C(1))` this reports an `InverseFunction` warning. The caller
+      // hands every branch of the general solution to this method and keeps the ones which can be
+      // solved, so a branch failing here is a step of the algorithm and not something to report.
+      engine.setQuietMode(true);
+      cSols = engine.evaluate(F.Solve(evaluatedBCsEqualZero, cVars));
+    } finally {
+      engine.setQuietMode(quietMode);
+    }
     if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
       IAST cSol = (IAST) ((IAST) cSols).arg1();
-      return engine.evaluate(F.subst(root, cSol));
-    } else if (cSols.isEmptyList()) {
-      return Errors.printMessage(S.DSolve, "bvfail", F.CEmptyList);
+      return togetherSolution(engine.evaluate(F.subst(root, cSol)), engine);
     }
     return F.NIL;
   }
@@ -878,6 +913,31 @@ public class DSolve extends AbstractFunctionEvaluator {
           .evaluate(F.Plus(C_1, F.Expand(F.Integrate(F.Times(F.CN1, coefficient0, pInt), xVar))));
       return F.Expand(F.Divide(qInt, pInt)).eval(engine);
     }
+  }
+
+  /**
+   * Undo the Bernoulli substitution <code>u == y^(1-n)</code>, i.e. return the solutions of
+   * <code>y^oneMinusN == uSol</code> for <code>y</code>.
+   *
+   * <p>
+   * For an even exponent both signs of the root solve that equation and only the boundary
+   * conditions can tell them apart, so both branches are returned: <code>y'(x)==x/y(x)</code> has
+   * the branches <code>-Sqrt(x^2-C(1))</code> and <code>Sqrt(x^2-C(1))</code>, of which
+   * <code>y(0)==-1</code> selects the negative one. For an odd exponent the real root is unique.
+   *
+   * <p>
+   * {@link S#Solve} isn't used for this, because it would return the complex roots as well
+   * (<code>y^3==u</code> gives three) and those aren't solutions of the differential equation.
+   *
+   * @param uSol the solution of the linear ODE in <code>u</code>
+   * @param oneMinusN the exponent <code>1-n</code> of the Bernoulli substitution
+   */
+  private static IExpr bernoulliRoots(IExpr uSol, IExpr oneMinusN, EvalEngine engine) {
+    IExpr root = engine.evaluate(F.Power(uSol, F.Divide(F.C1, oneMinusN)));
+    if (oneMinusN.isEven()) {
+      return F.list(engine.evaluate(F.Negate(root)), root);
+    }
+    return root;
   }
 
   /**
@@ -1601,7 +1661,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 
             IExpr uSol = linearODE(p_u, q_u, xVar, cConstant, engine);
             if (uSol.isPresent()) {
-              return engine.evaluate(F.Power(uSol, F.Divide(F.C1, oneMinusN)));
+              return bernoulliRoots(uSol, oneMinusN, engine);
             }
           }
         }
@@ -1720,8 +1780,8 @@ public class DSolve extends AbstractFunctionEvaluator {
           IExpr a = engine.evaluate(F.Simplify(F.PowerExpand(F.Sqrt(aSquared))));
           IExpr arg = engine.evaluate(F.Simplify(F.Times(a, xVar)));
 
-          return F.Plus(F.Times(C1, F.binaryAST2(S.BesselJ, nu, arg)),
-              F.Times(C2, F.binaryAST2(S.BesselY, nu, arg)));
+          return F.Plus(F.Times(C1, F.BesselJ(nu, arg)),
+              F.Times(C2, F.BesselY(nu, arg)));
         }
       }
     }
@@ -2206,6 +2266,7 @@ public class DSolve extends AbstractFunctionEvaluator {
           // Wrap in a list if it's a single root to uniformize processing
           IAST roots = temp.makeList();
           IASTAppendable resultList = F.ListAlloc();
+          boolean bcUnsatisfiable = false;
 
           for (int r = 1; r <= roots.argSize(); r++) {
             IExpr root = roots.get(r);
@@ -2216,7 +2277,11 @@ public class DSolve extends AbstractFunctionEvaluator {
             if (boundaryConditions.argSize() > 0) {
               root = applyUnaryBCs(root, uFunction1Arg, xVar, boundaryConditions, engine);
               if (!root.isPresent()) {
-                continue; // Skip this root branch if the BCs cannot be satisfied
+                // Skip this root branch if the BCs cannot be satisfied. A general solution with
+                // more than one branch normally has branches which the conditions rule out, so this
+                // is only worth reporting once none of them is left.
+                bcUnsatisfiable = true;
+                continue;
               }
             }
 
@@ -2227,7 +2292,13 @@ public class DSolve extends AbstractFunctionEvaluator {
             }
           }
 
-          return resultList.argSize() > 0 ? resultList : F.NIL;
+          if (resultList.argSize() > 0) {
+            return resultList;
+          }
+          if (bcUnsatisfiable) {
+            return Errors.printMessage(S.DSolve, "bvfail", F.CEmptyList);
+          }
+          return F.NIL;
         }
       } finally {
         engine.decConstantCounter();

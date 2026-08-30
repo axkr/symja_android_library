@@ -60,6 +60,7 @@ public class Volume extends AbstractFunctionEvaluator {
           case ID.CapsuleShape:
             return RegionPrimitives.capsuleShapeVolume(reg, engine);
           case ID.HalfSpace:
+          case ID.FullRegion:
             return unboundedVolume(reg, engine);
           case ID.Torus:
           case ID.FilledTorus:

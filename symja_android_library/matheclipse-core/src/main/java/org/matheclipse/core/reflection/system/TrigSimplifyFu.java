@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -387,7 +387,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    */
   private static IExpr tr0(IExpr expr) {
     if (expr.isAST()) {
-      IExpr factor = Algebra.factor(expr, EvalEngine.get());
+      IExpr factor = AlgebraUtil.factor(expr, EvalEngine.get());
       return F.eval(F.Expand(factor));
     }
     return F.eval(expr);

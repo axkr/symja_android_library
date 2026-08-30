@@ -158,7 +158,7 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
         return;
       }
       // If the base is a numeric constant, treat the entire Power as a single algebraic generator
-      if (base.isNumber() || base.equals(S.E) || base.equals(S.Pi) || base.equals(S.I)) {
+      if (base.isNumber() || base == S.E || base == S.Pi || base == S.I) {
         result.append(F.List(arg, F.C1));
       } else {
         result.append(F.List(base, exponent));

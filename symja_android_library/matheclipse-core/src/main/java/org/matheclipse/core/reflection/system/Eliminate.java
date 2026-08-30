@@ -309,6 +309,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     }
     if (arg.isEqual()) {
       IAST equalAST = (IAST) arg;
+      IAST components = Validate.splitListRelation(equalAST);
+      if (components.isPresent()) {
+        // a relation between two lists holds componentwise, e.g. `{x,y} == {1,2}` is the system
+        // `x == 1` and `y == 2`
+        return F.mapList(components, t -> F.Equal(F.evalExpandAll(t.first(), engine),
+            F.evalExpandAll(t.second(), engine)));
+      }
       return F.list(F.Equal(F.evalExpandAll(equalAST.arg1(), engine),
           F.evalExpandAll(equalAST.arg2(), engine)));
       // return equalList;
@@ -591,7 +598,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             IExpr result = zeroPlusMatcher().apply(elimZeroPlus);
             if (result.isPresent()) {
               if (result.isEqual()) {
-                printIfunMessage(engine);
+                if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
+                  return F.NIL;
+                }
                 return result;
               }
               return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
@@ -602,7 +611,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           IExpr result = inverseMatcher().apply(elimInverse);
           if (result.isPresent()) {
             if (result.isEqual()) {
-              printIfunMessage(engine);
+              if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
+                return F.NIL;
+              }
               return result;
             }
             return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
@@ -690,8 +701,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           if (exponent.isFree(predicate, true)) {
             // f(x) ^ a
             IExpr reversedPower = exponent.inverse();
-            if (!reversedPower.isMathematicalIntegerNonNegative()) {
-              printIfunMessage(engine);
+            if (!reversedPower.isMathematicalIntegerNonNegative()
+                && !Errors.allowInverseFunctions(S.InverseFunction, engine)) {
+              return F.NIL;
             }
             IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
             IExpr res1 = extractVariableRecursive(base, value, predicate, variable, multipleValues,
@@ -810,9 +822,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    *
    * @param engine
    */
-  private static void printIfunMessage(EvalEngine engine) {
-    Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
-  }
+
 
   private static IExpr resultAsAndEquations(IAST result) {
     if (result.isList()) {
@@ -837,7 +847,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    */
   private static IExpr resultWithIfunMessage(IExpr result, IExpr subExpr, IExpr replacementExpr,
       boolean multipleValues, EvalEngine engine) {
-    printIfunMessage(engine);
+    if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
+      return F.NIL;
+    }
     IExpr expr = F.subst(result, subExpr, replacementExpr);
     if (!multipleValues && expr.isList() && expr.size() > 1) {
       return expr.first();
@@ -937,7 +949,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
         if (result.isListOfLists()) {
           // Inverse functions are being used. Values may be lost for multivalued inverses.
-          Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+          if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
+            return F.NIL;
+          }
           return listOfRulesToValues(result, variable, multipleValues);
         }
       }
@@ -970,7 +984,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
       if (result.isListOfLists()) {
         // Inverse functions are being used. Values may be lost for multivalued inverses.
-        Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+        if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
+          return F.NIL;
+        }
         return listOfRulesToValues(result, variable, multipleValues);
       }
     }

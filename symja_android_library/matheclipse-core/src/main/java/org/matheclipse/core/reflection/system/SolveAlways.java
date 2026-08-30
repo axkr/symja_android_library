@@ -13,7 +13,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -145,8 +144,6 @@ public class SolveAlways extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.GenerateConditions, S.MaxRoots};
-    IExpr[] optionValues = new IExpr[] {S.True, F.C1000};
-    setOptions(newSymbol, optionKeys, optionValues);
+    setOptions(newSymbol, SolveOptions.SOLVE_ALWAYS_KEYS, SolveOptions.SOLVE_ALWAYS_DEFAULTS);
   }
 }

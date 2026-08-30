@@ -258,7 +258,7 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
             lowerLimitOfCoins = (IInteger) arg2.first();
             if (arg2.second().isInteger()) {
               upperLimitOfCoins = (IInteger) arg2.second();
-            } else if (arg2.second().equals(S.Infinity) || arg2.second().equals(S.All)) {
+            } else if (arg2.second() == S.Infinity || arg2.second() == S.All) {
               upperLimitOfCoins = F.ZZ(Integer.MAX_VALUE);
             } else {
               return F.NIL;
@@ -368,7 +368,7 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
 
         if (ast.isAST3()) {
           IExpr kspec = ast.arg2();
-          if (ast.arg3().equals(S.All)) {
+          if (ast.arg3() == S.All) {
             if (n < 0)
               return F.CEmptyList;
             return F.IntegerPartitions(F.ZZ(n), kspec);

@@ -382,8 +382,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       ast.set(2, arg2);
       final IExpr x = ast.arg2();
       if (!x.isVariable()) {
-        // `1` is not a valid variable.
-        return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
+        // Invalid integration variable or limit(s) in `1`. This is "ilim" rather than the general
+        // "ivar" because that is the message Mathematica answers Integrate[f, 2] with, and the two
+        // read differently: what is wrong is the place being integrated over, not a variable.
+        return Errors.printMessage(ast.topHead(), "ilim", F.list(x), engine);
       }
       if (arg1.isNumber()) {
         // Integrate[x_?NumberQ,y_Symbol] -> x*y
@@ -919,9 +921,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   private static IExpr integrateAbs(IAST function, final IExpr x) {
     if (function.isAST1() && function.first().equals(x)) {
       IExpr head = function.head();
-      if (head.equals(S.RealAbs)) {
+      if (head == S.RealAbs) {
         return F.Times(F.C1D2, x, F.RealAbs(x));
-      } else if (head.equals(S.RealSign)) {
+      } else if (head == S.RealSign) {
         return F.RealAbs(x);
       }
     }
@@ -1036,7 +1038,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     if (expr.isAST()) {
-      IExpr result = engine.evaluate(F.binaryAST2(S.FunctionSingularities, expr, x)).makeList();
+      IExpr result = engine.evaluate(F.binaryAST2(S.FunctionSingularities, expr, x));
+      if (result.isOr()) {
+        // Several conditions are reported as one Or. Solve cannot handle the disjunction as a
+        // constraint, so hand it the branches one by one - otherwise an antiderivative like
+        // Cot(x)*Sqrt(Sin(x)^2), whose singularities come back as Sin(x)==0||Sin(x)^2==0, is not
+        // split at all and Newton-Leibniz runs across the jump.
+        return ((IAST) result).setAtCopy(0, S.List);
+      }
+      result = result.makeList();
       if (result.isList()) {
         return (IAST) result;
       }
