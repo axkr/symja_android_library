@@ -2,6 +2,7 @@ package org.matheclipse.core.form.tex;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +25,8 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
+import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.OperatorMarkup;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -42,6 +45,7 @@ import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
+import org.matheclipse.parser.client.operator.OperatorTable;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.TrieMatch;
 
@@ -242,6 +246,31 @@ public class TeXFormFactory {
     }
   }
 
+  /**
+   * Renders the <code>ScientificForm, EngineeringForm, NumberForm, AccountingForm, PaddedForm,
+   * DecimalForm</code> display wrappers by installing a {@link NumberFormatter} for the wrapped
+   * subtree.
+   */
+  private static final class NumberForm extends AbstractTeXConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      NumberFormatter formatter = NumberFormatter.of(f, EvalEngine.get());
+      NumberFormatter previous = fFactory.fNumberFormatter;
+      fFactory.fNumberFormatter = formatter;
+      try {
+        fFactory.convertInternal(buffer, f.arg1(), precedence, NO_PLUS_CALL);
+      } finally {
+        fFactory.fNumberFormatter = previous;
+      }
+      return true;
+    }
+  }
+
   private static final class HarmonicNumber extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
@@ -354,8 +383,8 @@ public class TeXFormFactory {
       // A plain List is written as a list, even when its elements happen to have the shape of
       // a matrix. isMatrix() is a structural test, so the rules coming back from
       // Solve({x^2-11==y, x+y==-9}, {x,y}) used to be typeset as a 2x2 array. Only MatrixForm
-      // asks for an array - which is what Mathematica does, and what the MathML output and the
-      // OutputForm of the same expression have always done.
+      // asks for an array, and what the MathML output and the OutputForm of the same expression
+      // have always done.
 
       if ((ast.getEvalFlags() & IAST.IS_VECTOR) == IAST.IS_VECTOR) {
         // create a LaTeX row vector
@@ -936,8 +965,8 @@ public class TeXFormFactory {
   }
 
   /**
-   * <code>Underscript[x, under]</code> as <code>&#92;underset{under}{x}</code>, which is what KaTeX and
-   * LaTeX both understand.
+   * <code>Underscript[x, under]</code> as <code>&#92;underset{under}{x}</code>, which is what KaTeX
+   * and LaTeX both understand.
    */
   private static final class Underscript extends AbstractTeXConverter {
 
@@ -1313,7 +1342,7 @@ public class TeXFormFactory {
    * {@link Map}
    */
   private final Map<ISymbol, AbstractTeXConverter> symbolToConverterMap =
-      new HashMap<ISymbol, AbstractTeXConverter>(199);
+      new IdentityHashMap<ISymbol, AbstractTeXConverter>(199);
 
   public static final boolean USE_IDENTIFIERS = false;
 
@@ -1324,6 +1353,11 @@ public class TeXFormFactory {
   private int exponentFigures;
 
   private int significantFigures;
+
+  /**
+   * Installed while converting the argument of a number form wrapper; <code>null</code> otherwise.
+   */
+  NumberFormatter fNumberFormatter = null;
 
   private TexFormSymbolOptions symbolOptions = new TexFormSymbolOptions();
 
@@ -1444,11 +1478,45 @@ public class TeXFormFactory {
   }
 
   private String convertApfloatToFormattedString(Apfloat value) {
+    if (fNumberFormatter != null) {
+      String formatted =
+          assembleFormattedNumber(fNumberFormatter.format(value, significantFigures));
+      if (formatted != null) {
+        return formatted;
+      }
+    }
     StringBuilder buf = new StringBuilder();
     int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
     ApfloatToMMA.apfloatToTeX(buf, value, numericPrecision, numericPrecision,
         useSignificantFigures);
     return buf.toString();
+  }
+
+  /**
+   * Assemble a {@link NumberFormatter.FormattedNumber} in TeX notation.
+   *
+   * @return <code>null</code> if the value could not be formatted and the caller should fall back
+   *         to the default formatting
+   */
+  private String assembleFormattedNumber(NumberFormatter.FormattedNumber formatted) {
+    if (formatted == null) {
+      return null;
+    }
+    if (formatted.custom.isPresent()) {
+      StringBuilder sb = new StringBuilder();
+      NumberFormatter previous = fNumberFormatter;
+      fNumberFormatter = null;
+      try {
+        convertInternal(sb, formatted.custom, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+        return sb.toString();
+      } finally {
+        fNumberFormatter = previous;
+      }
+    }
+    if (!formatted.scientific) {
+      return formatted.mantissa;
+    }
+    return formatted.mantissa + "\\times {10}^{" + formatted.exponent + "}";
   }
 
 
@@ -1524,7 +1592,11 @@ public class TeXFormFactory {
     if (o instanceof IReal) {
       IReal number = (IReal) o;
       boolean isNegative = number.isNegative();
-      if (isNegative) {
+      // while a number form wrapper is active its NumberSigns option owns the sign, so keep the
+      // value signed and let the formatter write it - that is what turns AccountingForm(-2.5) into
+      // "(2.5)" instead of "-2.5"
+      final boolean signedByFormatter = fNumberFormatter != null;
+      if (isNegative && !signedByFormatter) {
         number = number.negate();
       }
       final boolean setBraces = isNegative && precedence > Precedence.PLUS;
@@ -1532,26 +1604,31 @@ public class TeXFormFactory {
         buf.append("\\left( ");
       }
       if (isNegative) {
-        buf.append("-");
+        if (!signedByFormatter) {
+          buf.append("-");
+        }
       } else if (caller) {
         buf.append("+");
       }
+      // the outer \left( \right) is already written here, so do not let the inner conversion add a
+      // second pair
+      final int innerPrecedence = signedByFormatter ? Precedence.NO_PRECEDENCE : precedence;
       if (number instanceof IInteger) {
-        convertInteger(buf, (IInteger) number, precedence);
+        convertInteger(buf, (IInteger) number, innerPrecedence);
         if (setBraces) {
           buf.append("\\right) ");
         }
         return true;
       }
       if (number instanceof IFraction) {
-        convertFraction(buf, (IFraction) number, precedence);
+        convertFraction(buf, (IFraction) number, innerPrecedence);
         if (setBraces) {
           buf.append("\\right) ");
         }
         return true;
       }
       if (number instanceof INum) {
-        convertDouble(buf, (INum) number, precedence);
+        convertDouble(buf, (INum) number, innerPrecedence);
         if (setBraces) {
           buf.append("\\right) ");
         }
@@ -1932,6 +2009,13 @@ public class TeXFormFactory {
   }
 
   protected String convertDoubleToFormattedString(double dValue) {
+    if (fNumberFormatter != null) {
+      String formatted =
+          assembleFormattedNumber(fNumberFormatter.format(dValue, significantFigures));
+      if (formatted != null) {
+        return formatted;
+      }
+    }
     if (significantFigures > 0) {
       try {
         StringBuilder buf = new StringBuilder();
@@ -1998,6 +2082,14 @@ public class TeXFormFactory {
     // if (i.isNegative() && precedence > Precedence.PLUS) {
     // buf.append("\\left( ");
     // }
+    if (fNumberFormatter != null) {
+      // exact integers only pick up DigitBlock, padding and sign options - never an exponent
+      String formatted = assembleFormattedNumber(fNumberFormatter.format(i.toBigNumerator()));
+      if (formatted != null) {
+        buf.append(formatted);
+        return;
+      }
+    }
     buf.append(i.toBigNumerator().toString());
     // if (i.isNegative() && precedence > Precedence.PLUS) {
     // buf.append("\\right) ");
@@ -2275,6 +2367,14 @@ public class TeXFormFactory {
     // initTeXConverter(S.$RealVector, new List());
 
     initTeXConverter(S.MatrixForm, new MatrixForm());
+
+    NumberForm numberForm = new NumberForm();
+    initTeXConverter(S.AccountingForm, numberForm);
+    initTeXConverter(S.DecimalForm, numberForm);
+    initTeXConverter(S.EngineeringForm, numberForm);
+    initTeXConverter(S.NumberForm, numberForm);
+    initTeXConverter(S.PaddedForm, numberForm);
+    initTeXConverter(S.ScientificForm, numberForm);
     initTeXConverter(S.TableForm, new TableForm());
     initTeXConverter(S.Parenthesis, new Parenthesis());
     initTeXConverter(S.Part, new Part());
@@ -2474,6 +2574,58 @@ public class TeXFormFactory {
     CONSTANT_EXPRS.put(S.Pi, "\\pi");
     CONSTANT_EXPRS.put(F.CInfinity, "\\infty");
     CONSTANT_EXPRS.put(F.CNInfinity, "-\\infty");
+
+    initOperatorTableConverters();
+  }
+
+  /**
+   * Give every operator {@link OperatorTable} prints as an operator the matching LaTeX, unless it
+   * already has a converter of its own.
+   *
+   * <p>
+   * The table decides which heads are operators at all, how tightly they bind and in which
+   * position, so this cannot drift from what {@code OutputFormFactory} prints: an operator gains a
+   * TeX form by gaining a row, not by anyone remembering to add a line here. Only
+   * {@link OperatorMarkup} is per-format, and only because the table lives in the parser module,
+   * which knows nothing about LaTeX.
+   *
+   * <p>
+   * Registered last so that it never displaces a hand-written converter: {@code Union} is printed
+   * with <code>\cup</code> rather than the <code>\bigcup</code> its token would suggest, and
+   * {@code Colon} as <code>\text{:}</code>. Both readings are deliberate.
+   */
+  private void initOperatorTableConverters() {
+    for (OperatorTable.Row row : OperatorTable.ROWS) {
+      if (!row.outputForm) {
+        // Parse-only: the head has no operator form to print, in any format.
+        continue;
+      }
+      String latex = OperatorMarkup.latex(row.head);
+      if (latex == null) {
+        continue;
+      }
+      Integer id = ID.STRING_TO_ID_MAP.get(row.head);
+      if (id == null) {
+        // A sentinel head such as "//" or PreMinus, which is not a symbol at all.
+        continue;
+      }
+      ISymbol head = S.symbol(id);
+      if (symbolToConverterMap.containsKey(head)) {
+        continue;
+      }
+      // A macro has to be separated from what follows it, so each position pads its own side.
+      switch (row.affix) {
+        case PREFIX:
+          initTeXConverter(head, new TeXFormPrefixOperator(this, row.precedence, latex + " "));
+          break;
+        case POSTFIX:
+          initTeXConverter(head, new UnaryFunction("", " " + latex));
+          break;
+        default:
+          initTeXConverter(head, new TeXFormOperator(this, row.precedence, " " + latex + " "));
+          break;
+      }
+    }
   }
 
   public void initTeXConverter(ISymbol key, AbstractTeXConverter value) {
