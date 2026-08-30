@@ -226,7 +226,7 @@ class ParserTestCase {
   @Test
   void testParser26() {
     Parser p = new Parser(false, true);
-    List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\n" + "			  v=!=0 && \n"
+    List<ASTNode> obj = p.parseScript("	SumSimplerAuxQ[u_,v_] :=\n" + "			  v=!=0 && \n"
         + "			  NonnumericFactors[u]===NonnumericFactors[v] &&\n"
         + "			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\n"
         + "\n" + "");
@@ -238,7 +238,7 @@ class ParserTestCase {
   @Test
   void testParser27() {
     Parser p = new Parser(false, true);
-    List<ASTNode> obj = p.parsePackage("\n" + "TryTanhSubst[u_,x_Symbol] :=\n"
+    List<ASTNode> obj = p.parseScript("\n" + "TryTanhSubst[u_,x_Symbol] :=\n"
         + "  FalseQ[FunctionOfLinear[u,x]] &&\n"
         + "  Not[MatchQ[u,r_.*(s_+t_)^n_. /; IntegerQ[n] && n>0]] &&\n"
         + "(*Not[MatchQ[u,Log[f_[x]^2] /; SinhCoshQ[f]]]  && *)\n"
@@ -261,7 +261,7 @@ class ParserTestCase {
   @Test
   void testParser28() {
     Parser p = new Parser(false, true);
-    List<ASTNode> list = p.parsePackage("\n" + "TrigSimplifyAux[u_] := u\n" + "\n" + "\n"
+    List<ASTNode> list = p.parseScript("\n" + "TrigSimplifyAux[u_] := u\n" + "\n" + "\n"
         + "(* ::Section::Closed:: *)\n" + "(*Factoring functions*)\n" + "\n" + "\n"
         + "(* ::Subsection::Closed:: *)\n" + "(*ContentFactor*)\n" + "\n" + "\n"
         + "(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)\n"

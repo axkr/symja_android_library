@@ -99,9 +99,15 @@ public abstract class Scanner {
   protected static final int TT_DERIVATIVE = 147;
 
   /**
-   * New line token for character '\n'. This token will only be scanned, if {@link #fPackageMode} is
+   * New line token for character '\n'. This token will only be scanned, if {@link #fScriptMode} is
    * <code>true</code> and the recursion depth {@link #fRecursionDepth} of the already parsed AST
    * nodes has depth <code>0</code>. Otherwise the newline is scanned like a whitespace character.
+   *
+   * <p>
+   * The depth is the recursion depth of the parser rather than a count of open brackets, which is
+   * what makes a newline continue the expression in both of the cases where it has to: inside
+   * <code>(</code>, <code>[</code>, <code>{</code>, <code>[[</code> or <code>&lt;|</code>, and
+   * part-way through an operator, as in a line ending in <code>+</code> or <code>:=</code>.
    */
   protected static final int TT_NEWLINE = 150;
 
@@ -368,8 +374,16 @@ public abstract class Scanner {
   /** Row counter for reporting the row where a syntax error occurred. */
   protected int fRowCounter;
 
-  /** Is true if the parser is parsing a <code>package</code>. */
-  protected boolean fPackageMode = false;
+  /**
+   * Read the input as a script: several expressions, separated by newlines, rather than one
+   * expression.
+   *
+   * <p>
+   * This is a property of the syntax and has nothing to do with <code>BeginPackage</code> - or with
+   * {@link org.matheclipse.core.eval.EvalEngine}'s own package mode, which is about what a
+   * definition is allowed to overwrite while a package loads. The two flags are independent.
+   */
+  protected boolean fScriptMode = false;
 
   /** Current rows start position for reporting syntax errors */
   protected int fCurrentColumnStartPosition;
@@ -399,8 +413,8 @@ public abstract class Scanner {
   protected final boolean fExplicitTimes;
 
   /** Initialize Scanner without a math-expression */
-  protected Scanner(boolean packageMode, boolean explicitTimes) {
-    fPackageMode = packageMode;
+  protected Scanner(boolean scriptMode, boolean explicitTimes) {
+    fScriptMode = scriptMode;
     fExplicitTimes = explicitTimes;
     initializeNullScanner();
   }
@@ -609,6 +623,24 @@ public abstract class Scanner {
   }
 
   protected String getJavaDoubleString() throws SyntaxError {
+    String number = getJavaDoubleStringWithoutToken();
+    getNextToken();
+    return number;
+  }
+
+  /**
+   * Read the digits of a number without going on to read the token after it.
+   *
+   * <p>
+   * {@link #getJavaDoubleString()} finishes with {@link #getNextToken()}, which is right for a
+   * caller that wants to carry on parsing but wrong for one that must first look at the characters
+   * that follow - a number's precision suffix may be followed by <code>*^</code> and the exponent
+   * belongs to the same number. On return {@link #fCurrentPosition} is the index of the first
+   * character after the digits.
+   *
+   * @return the digits read
+   */
+  protected String getJavaDoubleStringWithoutToken() throws SyntaxError {
     int startPosition = fCurrentPosition - 1;
     getChar();
     boolean decimalPoint = false;
@@ -624,7 +656,6 @@ public abstract class Scanner {
     int endPosition = fCurrentPosition--;
 
     String number = new String(fInputString, startPosition, (--endPosition) - startPosition);
-    getNextToken();
     return number;
     // double doubleValue = 0;
     // try {
@@ -702,7 +733,7 @@ public abstract class Scanner {
         if (fCurrentChar == '\n') {
           fRowCounter++;
           fCurrentColumnStartPosition = fCurrentPosition;
-          if (fPackageMode && fRecursionDepth == 0) {
+          if (fScriptMode && fRecursionDepth == 0) {
             fToken = TT_NEWLINE;
             return;
           }
