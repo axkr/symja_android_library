@@ -4,7 +4,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.ParserConfig;
@@ -51,15 +50,16 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
     // engine.setPackageMode(true);
 
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+    // on only while IOInit registers the evaluators that gate on it; the permission is per session
+    // from then on - see AJAXQueryServlet#initialization
     Config.FILESYSTEM_ENABLED = true;
     F.initSymja();
     IOInit.init();
+    Config.FILESYSTEM_ENABLED = false;
+    SessionSandbox.sweepOrphans();
     engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
     engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
 
-    S.Plot.setEvaluator(org.matheclipse.core.builtin.graphics.Plot.CONST);
-    S.Plot3D.setEvaluator(org.matheclipse.core.builtin.graphics3d.Plot3D.CONST);
-    // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     // MMAAJAXQueryServlet.log.info(servlet + " initialized");
     System.out.println("Symja version " + Config.VERSION + " initialized");

@@ -14,12 +14,19 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalControlledCallable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.util.InitFileLoader;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -74,6 +81,12 @@ public class Console {
   // private File fFile;
 
   private String fDefaultSystemRulesFilename;
+
+  /** <code>-noinit</code>: skip <code>Kernel/init.m</code> and the <code>Autoload</code> directories. */
+  private boolean fNoInit = false;
+
+  /** Extra files named with <code>-initfile</code> (and the older <code>-default</code>). */
+  private final List<String> fInitFiles = new ArrayList<String>();
 
   private static int COUNTER = 1;
 
@@ -260,7 +273,13 @@ public class Console {
     msg.append("  -f or -function <function> -args arg1 arg2  run the function" + lineSeparator);
     // msg.append(" -file <filename> use given file as input script" + lineSeparator);
     msg.append(
-        "  -d or -default <filename>                   use given textfile for an initial package script"
+        "  -initfile <filename>                        evaluate an extra file at start-up (repeatable)"
+            + lineSeparator);
+    msg.append(
+        "  -noinit                                     skip Kernel/init.m and the Autoload directories"
+            + lineSeparator);
+    msg.append(
+        "  -d or -default <filename>                   older spelling of -initfile"
             + lineSeparator);
     // msg.append(" -pp enable pretty printer" + lineSeparator);
     msg.append("To stop the program type: /exit<RETURN>" + lineSeparator);
@@ -315,6 +334,7 @@ public class Console {
     evalEngine.setErrorPrintStream(System.err);
     evalEngine.setOutPrintStream(System.out);
     fOutputFactory = OutputFormFactory.get(true, false, 5, 7);
+    fOutputFactory.setGraphicsPlaceholder(true);
     fEvaluator.getEvalEngine().setFileSystemEnabled(true);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory = OutputFormFactory.get(true, false, 5, 7);
@@ -334,8 +354,61 @@ public class Console {
    *
    * @param args the arguments of the program
    */
+
+  /**
+   * Evaluate the start-up files before anything the command line asked for, so an
+   * <code>init.m</code> can define what <code>-code</code> or the session then uses.
+   *
+   * <p>
+   * The same shape <code>symjascript</code> uses, and for the same reason: reading files out of a
+   * user's home directory at start-up is right for a command-line tool and wrong for a server, so
+   * {@link InitFileLoader} is opt-in and it is a tool like this one that opts in. The servlets in
+   * this module deliberately do not.
+   */
+  private void runStartupFiles() {
+    EvalEngine engine = fEvaluator.getEvalEngine();
+    BiConsumer<Path, Throwable> onError =
+        (file, problem) -> stdout.println("%s: %s".formatted(file, problem.getMessage()));
+    if (!fNoInit) {
+      InitFileLoader.loadStartupFiles(engine, onError);
+    }
+    if (!fInitFiles.isEmpty()) {
+      List<Path> extra = new ArrayList<Path>(fInitFiles.size());
+      for (String name : fInitFiles) {
+        Path file = Paths.get(name);
+        if (!Files.isRegularFile(file)) {
+          stdout.println("no such init file: " + name);
+          continue;
+        }
+        extra.add(file);
+      }
+      InitFileLoader.load(extra, engine, onError);
+    }
+    stdout.flush();
+  }
+
+  /**
+   * Collect the start-up options before the main loop runs, because that loop evaluates
+   * <code>-code</code> and <code>-function</code> as it meets them - and an init file has to be in
+   * place before either of those.
+   */
+  private void collectStartupOptions(final String args[]) {
+    for (int i = 0; i < args.length; i++) {
+      String arg = args[i];
+      if (arg.equals("-noinit")) {
+        fNoInit = true;
+      } else if ((arg.equals("-initfile") || arg.equals("-default") || arg.equals("-d"))
+          && i + 1 < args.length) {
+        fInitFiles.add(args[i + 1]);
+        i++;
+      }
+    }
+  }
+
   private void setArgs(final String args[]) {
     Config.setScriptCommandLine(args);
+    collectStartupOptions(args);
+    runStartupFiles();
 
     String function = null;
     for (int i = 0; i < args.length; i++) {
@@ -394,7 +467,9 @@ public class Console {
         }
       } else if (arg.equals("-help") || arg.equals("-h")) {
         printUsage();
-        return;
+        // not a plain return: that ends setArgs only, and main would carry on into the REPL. The
+        // caller catches ReturnException and stops, which is how -code and -function end too.
+        throw ReturnException.RETURN_TRUE;
         // } else if (arg.equals("-debug")) {
         // Config.DEBUG = true;
       } else if (arg.equals("-file")) {
@@ -409,6 +484,17 @@ public class Console {
         fEvaluator.eval(F.Get(args[i + 1]));
         i++;
 
+      } else if (arg.equals("-noinit")) {
+        // read by collectStartupOptions before this loop
+      } else if (arg.equals("-initfile")) {
+        if (i + 1 >= args.length) {
+          final String msg = "You must specify a file when using the -initfile argument";
+          stdout.println(msg);
+          stdout.flush();
+          throw ReturnException.RETURN_FALSE;
+        }
+        // read by collectStartupOptions before this loop
+        i++;
       } else if (arg.equals("-default") || arg.equals("-d")) {
         if (i + 1 >= args.length) {
           final String msg = "You must specify a file when using the -d argument";
@@ -416,8 +502,8 @@ public class Console {
           stdout.flush();
           throw ReturnException.RETURN_FALSE;
         }
+        // already evaluated by runStartupFiles, before this loop began
         fDefaultSystemRulesFilename = args[i + 1];
-        fEvaluator.eval(F.Get(args[i + 1]));
         i++;
 
         // } else if (arg.equals("-pp")) {
@@ -427,7 +513,7 @@ public class Console {
         final String msg = "Unknown arg: " + arg;
         stdout.println(msg);
         printUsage();
-        return;
+        throw ReturnException.RETURN_FALSE;
       }
     }
     printUsage();
@@ -482,7 +568,7 @@ public class Console {
   }
 
   private String printResult(IExpr result) {
-    if (result.equals(S.Null)) {
+    if (result == S.Null) {
       return "";
     }
     switch (fUsedForm) {

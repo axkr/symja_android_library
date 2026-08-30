@@ -15,7 +15,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.tensor.img.ColorFormat;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 /**
  * ImageFormat uses the data alignment of {@link BufferedImage}.

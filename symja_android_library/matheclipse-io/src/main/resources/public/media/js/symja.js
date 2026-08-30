@@ -154,6 +154,9 @@ function setResult(ul, results) {
 		if (result.format == 'manipulate' && result.manipulate) {
 			var li = $E('li', {'class': 'result'}, createManipulate(result.manipulate));
 			resultUl.appendChild(li);
+		} else if (result.format == 'dynamic' && result.dynamic) {
+			var li = $E('li', {'class': 'result'}, createDynamic(result.dynamic));
+			resultUl.appendChild(li);
 		} else if (result.result != null) {
 			var li = $E('li', {'class': 'result'}, createLine(result.result, result.format));
 			resultUl.appendChild(li);
@@ -256,9 +259,12 @@ function deleteMouseDown(event) {
 }
 
 function deleteClick(event) {
-	// a Manipulate in this cell has state on the server; let it go before the cell does
+	// a Manipulate or a live Dynamic in this cell has state on the server; let it go before
+	// the cell does
 	if (typeof disposeManipulatesIn == 'function')
 		disposeManipulatesIn(this.li);
+	if (typeof disposeDynamicsIn == 'function')
+		disposeDynamicsIn(this.li);
 	if (lastFocus == this.li.textarea)
 		lastFocus = null;
 	this.li.deleteElement();

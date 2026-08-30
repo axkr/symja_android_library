@@ -25,6 +25,7 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.Servlet;
 
 public class ServletServer {
@@ -80,8 +81,18 @@ public class ServletServer {
               servlet("doc", AJAXDocServlet.class).addMapping("/doc/*"),
               servlet("search", AJAXSearchServlet.class).addMapping("/doc/search/"),
               servlet("notebook", AJAXNotebookServlet.class).addMapping("/notebook/"),
-              servlet("manipulate", AJAXManipulateServlet.class).addMapping("/manipulate/"))
-          // frees the engine, the evaluation lock and the Manipulate widgets of an ended session
+              servlet("manipulate", AJAXManipulateServlet.class).addMapping("/manipulate/"),
+              servlet("dynamic", AJAXDynamicServlet.class).addMapping("/dynamic/"),
+              // a browser session cannot hand the kernel a path into its own file system, so a
+              // file is carried across instead: upload writes into the session's sandbox
+              // directory, download reads back out of it
+              servlet("upload", AJAXUploadServlet.class).addMapping("/upload/")
+                  // the deployment is built programmatically, so the @MultipartConfig annotation
+                  // on the servlet is never scanned and the limits have to be set here
+                  .setMultipartConfig(new MultipartConfigElement("", SessionSandbox.MAX_FILE_BYTES,
+                      SessionSandbox.MAX_FILE_BYTES + 1024L * 1024L, 1024 * 1024)),
+              servlet("download", AJAXDownloadServlet.class).addMapping("/download/"))
+          // frees the engine, the evaluation lock and the live widgets of an ended session
           .addListener(listener(SymjaSessionListener.class));
 
       DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);

@@ -3,7 +3,7 @@ package org.matheclipse.io.builtin;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -40,9 +41,9 @@ public class FileIOFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST0()) {
-          String userDirectory = Paths.get("").toAbsolutePath().toString();
-          File sourceLocation = new File(userDirectory);
-          final String[] files = sourceLocation.list();
+          // under a sandbox this is the session's own directory, not the server's working
+          // directory
+          final String[] files = FileSandbox.workingDirectory(engine).toFile().list();
           if (files != null) {
             IASTAppendable result = F.ListAlloc(files.length);
             for (int i = 0; i < files.length; i++) {
@@ -67,15 +68,15 @@ public class FileIOFunctions {
             }
           }
 
-          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+          Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
           java.util.regex.Pattern pattern =
               IStringX.toRegexPattern(arg1, true, ignoreCase, ast, groups, engine);
           if (pattern == null) {
             return F.NIL;
           }
-          String userDirectory = Paths.get("").toAbsolutePath().toString();
-          File sourceLocation = new File(userDirectory);
-          final String[] files = sourceLocation.list();
+          // under a sandbox this is the session's own directory, not the server's working
+          // directory
+          final String[] files = FileSandbox.workingDirectory(engine).toFile().list();
           if (files != null) {
             IASTAppendable result = F.ListAlloc(files.length);
             for (int i = 0; i < files.length; i++) {
