@@ -3839,6 +3839,16 @@ public class S {
   public final static IBuiltInSymbol ConstantArray =
       S.initFinalSymbol("ConstantArray", ID.ConstantArray);
 
+  /**
+   * ConstantRegionQ(x) - TODO describe `ConstantRegionQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConstantRegionQ.md">ConstantRegionQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ConstantRegionQ =
+      S.initFinalSymbol("ConstantRegionQ", ID.ConstantRegionQ);
+
   public final static IBuiltInSymbol Constants = S.initFinalSymbol("Constants", ID.Constants);
 
   /**
@@ -6340,6 +6350,15 @@ public class S {
       S.initFinalSymbol("EntityProperty", ID.EntityProperty);
 
   /**
+   * EntityValue(x) - TODO describe `EntityValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EntityValue.md">EntityValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EntityValue = S.initFinalSymbol("EntityValue", ID.EntityValue);
+
+  /**
    * Entropy(list) - return the base `E` (Shannon) information entropy of the elements in `list`.
    * 
    * @see <a href=
@@ -7875,6 +7894,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol FullMoon = S.initFinalSymbol("FullMoon", ID.FullMoon);
+
+  /**
+   * FullRegion(x) - TODO describe `FullRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FullRegion.md">FullRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FullRegion = S.initFinalSymbol("FullRegion", ID.FullRegion);
 
   /**
    * FullSimplify(expr) - works like `Simplify` but additionally tries some `FunctionExpand` rule
@@ -9673,6 +9701,16 @@ public class S {
       S.initFinalSymbol("ImageValuePositions", ID.ImageValuePositions);
 
   public final static IBuiltInSymbol ImplicitD = S.initFinalSymbol("ImplicitD", ID.ImplicitD);
+
+  /**
+   * ImplicitRegion(x) - TODO describe `ImplicitRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ImplicitRegion.md">ImplicitRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ImplicitRegion =
+      S.initFinalSymbol("ImplicitRegion", ID.ImplicitRegion);
 
   /**
    * Implies(arg1, arg2) - Logical implication.
@@ -12821,6 +12859,15 @@ public class S {
   public final static IBuiltInSymbol MemoryInUse = S.initFinalSymbol("MemoryInUse", ID.MemoryInUse);
 
   /**
+   * MenuView(x) - TODO describe `MenuView`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MenuView.md">MenuView
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MenuView = S.initFinalSymbol("MenuView", ID.MenuView);
+
+  /**
    * Merge(list-of-rules-or-associations, function) - use the `function` to merge right-hand-side
    * values with the left-hand-side key in the `list-of-rules-or-associations`.
    * 
@@ -13152,6 +13199,16 @@ public class S {
   public final static IBuiltInSymbol MinusPlus = S.initFinalSymbol("MinusPlus", ID.MinusPlus);
 
   public final static IBuiltInSymbol Missing = S.initFinalSymbol("Missing", ID.Missing);
+
+  /**
+   * MissingBehavior(x) - TODO describe `MissingBehavior`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MissingBehavior.md">MissingBehavior
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MissingBehavior =
+      S.initFinalSymbol("MissingBehavior", ID.MissingBehavior);
 
   /**
    * MissingQ(expr) - returns `True` if `expr` is a `Missing()` expression.
@@ -13548,6 +13605,15 @@ public class S {
    */
   public final static IBuiltInSymbol MoyalDistribution =
       S.initFinalSymbol("MoyalDistribution", ID.MoyalDistribution);
+
+  /**
+   * Multicolumn(x) - TODO describe `Multicolumn`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Multicolumn.md">Multicolumn
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Multicolumn = S.initFinalSymbol("Multicolumn", ID.Multicolumn);
 
   /**
    * Multinomial(n1, n2, ...) - gives the multinomial coefficient `(n1+n2+...)!/(n1! n2! ...)`.
@@ -15286,6 +15352,16 @@ public class S {
 
   public final static IBuiltInSymbol ParametricPlot3D =
       S.initFinalSymbol("ParametricPlot3D", ID.ParametricPlot3D);
+
+  /**
+   * ParametricRegion(x) - TODO describe `ParametricRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParametricRegion.md">ParametricRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ParametricRegion =
+      S.initFinalSymbol("ParametricRegion", ID.ParametricRegion);
 
   /**
    * Parenthesis(expr) - print `expr` with parenthesis surrounded in output forms.
@@ -17163,6 +17239,16 @@ public class S {
   public final static IBuiltInSymbol RegionCentroid =
       S.initFinalSymbol("RegionCentroid", ID.RegionCentroid);
 
+  /**
+   * RegionDifference(x) - TODO describe `RegionDifference`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionDifference.md">RegionDifference
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionDifference =
+      S.initFinalSymbol("RegionDifference", ID.RegionDifference);
+
   public final static IBuiltInSymbol RegionDimension =
       S.initFinalSymbol("RegionDimension", ID.RegionDimension);
 
@@ -17191,11 +17277,31 @@ public class S {
   public final static IBuiltInSymbol RegionFunction =
       S.initFinalSymbol("RegionFunction", ID.RegionFunction);
 
+  /**
+   * RegionIntersection(x) - TODO describe `RegionIntersection`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionIntersection.md">RegionIntersection
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionIntersection =
+      S.initFinalSymbol("RegionIntersection", ID.RegionIntersection);
+
   public final static IBuiltInSymbol RegionMeasure =
       S.initFinalSymbol("RegionMeasure", ID.RegionMeasure);
 
   public final static IBuiltInSymbol RegionMember =
       S.initFinalSymbol("RegionMember", ID.RegionMember);
+
+  /**
+   * RegionMemberFunction(x) - TODO describe `RegionMemberFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionMemberFunction.md">RegionMemberFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionMemberFunction =
+      S.initFinalSymbol("RegionMemberFunction", ID.RegionMemberFunction);
 
   /**
    * RegionMoment(x) - TODO describe `RegionMoment`.
@@ -17230,6 +17336,25 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol RegionQ = S.initFinalSymbol("RegionQ", ID.RegionQ);
+
+  /**
+   * RegionSymmetricDifference(x) - TODO describe `RegionSymmetricDifference`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionSymmetricDifference.md">RegionSymmetricDifference
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionSymmetricDifference =
+      S.initFinalSymbol("RegionSymmetricDifference", ID.RegionSymmetricDifference);
+
+  /**
+   * RegionUnion(x) - TODO describe `RegionUnion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionUnion.md">RegionUnion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionUnion = S.initFinalSymbol("RegionUnion", ID.RegionUnion);
 
   public final static IBuiltInSymbol RegionWithin =
       S.initFinalSymbol("RegionWithin", ID.RegionWithin);
@@ -17430,6 +17555,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Resolve = S.initFinalSymbol("Resolve", ID.Resolve);
+
+  /**
+   * ResourceData(x) - TODO describe `ResourceData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ResourceData.md">ResourceData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ResourceData =
+      S.initFinalSymbol("ResourceData", ID.ResourceData);
 
   /**
    * Rest(expr) - returns `expr` with the first element removed.
@@ -19959,6 +20094,15 @@ public class S {
   public final static IBuiltInSymbol TableView = S.initFinalSymbol("TableView", ID.TableView);
 
   /**
+   * TabView(x) - TODO describe `TabView`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TabView.md">TabView
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TabView = S.initFinalSymbol("TabView", ID.TabView);
+
+  /**
    * TagSet(f, expr, value) - assigns the evaluated `value` to `expr` and associates the
    * corresponding rule with the symbol `f`.
    * 
@@ -21860,6 +22004,25 @@ public class S {
       S.initFinalSymbol("WeaklyConnectedGraphQ", ID.WeaklyConnectedGraphQ);
 
   public final static IBuiltInSymbol WeberE = S.initFinalSymbol("WeberE", ID.WeberE);
+
+  /**
+   * WebImageSearch(x) - TODO describe `WebImageSearch`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WebImageSearch.md">WebImageSearch
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WebImageSearch =
+      S.initFinalSymbol("WebImageSearch", ID.WebImageSearch);
+
+  /**
+   * WebSearch(x) - TODO describe `WebSearch`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WebSearch.md">WebSearch
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WebSearch = S.initFinalSymbol("WebSearch", ID.WebSearch);
 
   public final static IBuiltInSymbol Wedge = S.initFinalSymbol("Wedge", ID.Wedge);
 
