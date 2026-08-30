@@ -30,6 +30,7 @@ import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
+import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -53,7 +54,8 @@ import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
-import it.unimi.dsi.fastutil.ints.IntList;
+import com.github.freva.asciitable.AsciiTable;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public class OutputFormFactory {
@@ -107,7 +109,22 @@ public class OutputFormFactory {
   private int fSignificantFigures;
 
   /**
-   * 
+   * Installed while converting the argument of a <code>ScientificForm, EngineeringForm,
+   * NumberForm, AccountingForm, PaddedForm, DecimalForm</code> wrapper; <code>null</code>
+   * otherwise.
+   */
+  private NumberFormatter fNumberFormatter = null;
+
+  /**
+   * Show <code>Graphics</code> and <code>Graphics3D</code> as the placeholder
+   * <code>-Graphics-</code>. Off by default, because {@link org.matheclipse.core.interfaces.IExpr#toString()}
+   * is a developer's view of an expression and has to keep the contents of a picture; the printers
+   * which show a result to a user - a console, <code>ToString</code> - turn it on.
+   */
+  private boolean fGraphicsPlaceholder = false;
+
+  /**
+   *
    * @param relaxedSyntax if <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis
    *        for function arguments; otherwise use &quot;[&quot; and &quot;]&quot;
    * @param plusReversed write the arguments of a {@link S#Plus} expression in reversed order
@@ -140,6 +157,14 @@ public class OutputFormFactory {
     this.fExponentFigures = exponentFigures;
     this.fSignificantFigures = significantFigures;
     this.fComplexReImI = complexReImI;
+  }
+
+  /**
+   * Show <code>Graphics</code> and <code>Graphics3D</code> as <code>-Graphics-</code> rather than
+   * writing the whole picture out. See {@link #fGraphicsPlaceholder}.
+   */
+  public void setGraphicsPlaceholder(boolean graphicsPlaceholder) {
+    this.fGraphicsPlaceholder = graphicsPlaceholder;
   }
 
   /**
@@ -289,7 +314,98 @@ public class OutputFormFactory {
         false);
   }
 
+  /**
+   * Lay out a <code>TableForm</code> wrapper as the plain text table it displays as.
+   *
+   * <p>
+   * <code>TableForm</code> is a display wrapper - it stays in the expression tree, so that
+   * <code>Head(TableForm({{a,b}}))</code> is <code>TableForm</code> and the TeX and MathML
+   * factories can render it as an array. This is where the text representation is built.
+   */
+  private void convertTableForm(final Appendable buf, final IAST list) throws IOException {
+    IExpr arg1 = list.arg1().normal(false);
+    final String[][] tableData;
+    if (arg1.isList()) {
+      IAST rows = (IAST) arg1;
+      tableData = new String[rows.argSize()][];
+      for (int i = 1; i < rows.size(); i++) {
+        IExpr row = rows.get(i);
+        if (row.isList()) {
+          IAST cells = (IAST) row;
+          tableData[i - 1] = new String[cells.argSize()];
+          for (int j = 1; j < cells.size(); j++) {
+            tableData[i - 1][j - 1] = cells.get(j).toString();
+          }
+        } else {
+          tableData[i - 1] = new String[] {row.toString()};
+        }
+      }
+    } else {
+      tableData = new String[][] {{arg1.toString()}};
+    }
+    buf.append(AsciiTable.builder() //
+        .lineSeparator("\n") //
+        .border(AsciiTable.NO_BORDERS) //
+        .header(new String[] {}) //
+        .footer(new String[] {}) //
+        .data(tableData) //
+        .asString());
+  }
+
+  /**
+   * Convert the argument of a number form wrapper with the wrapper's
+   * {@link NumberFormatter} installed, so that every real number in the subtree is reformatted.
+   */
+  private void convertNumberForm(final Appendable buf, final IAST list, final int precedence)
+      throws IOException {
+    NumberFormatter formatter = NumberFormatter.of(list, EvalEngine.get());
+    NumberFormatter previous = fNumberFormatter;
+    // a formatter of null simply leaves the default formatting in place
+    fNumberFormatter = formatter;
+    try {
+      convert(buf, list.arg1(), precedence, false);
+    } finally {
+      fNumberFormatter = previous;
+    }
+  }
+
+  /**
+   * Assemble a {@link NumberFormatter.FormattedNumber} in <code>OutputForm</code> notation.
+   *
+   * @return <code>null</code> if the value could not be formatted and the caller should fall back
+   *         to the default formatting
+   */
+  private String assembleFormattedNumber(NumberFormatter.FormattedNumber formatted) {
+    if (formatted == null) {
+      return null;
+    }
+    if (formatted.custom.isPresent()) {
+      StringBuilder sb = new StringBuilder();
+      NumberFormatter previous = fNumberFormatter;
+      fNumberFormatter = null;
+      try {
+        convert(sb, formatted.custom, Integer.MIN_VALUE, false);
+        return sb.toString();
+      } catch (IOException ioex) {
+        return null;
+      } finally {
+        fNumberFormatter = previous;
+      }
+    }
+    if (!formatted.scientific) {
+      return formatted.mantissa;
+    }
+    return formatted.mantissa + fNumberFormatter.getMultiplier() + "10^" + formatted.exponent;
+  }
+
   private String convertApfloatToFormattedString(Apfloat value) {
+    if (fNumberFormatter != null) {
+      String formatted =
+          assembleFormattedNumber(fNumberFormatter.format(value, fSignificantFigures));
+      if (formatted != null) {
+        return formatted;
+      }
+    }
     StringBuilder buf = new StringBuilder();
     int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
     if (fUseSignificantFiguresInApfloat) {
@@ -303,6 +419,13 @@ public class OutputFormFactory {
   }
 
   private String convertDoubleToFormattedString(double dValue) {
+    if (fNumberFormatter != null) {
+      String formatted =
+          assembleFormattedNumber(fNumberFormatter.format(dValue, fSignificantFigures));
+      if (formatted != null) {
+        return formatted;
+      }
+    }
     if (fSignificantFigures > 0) {
       StringBuilder buf = new StringBuilder();
       DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, fRelaxedSyntax);
@@ -550,6 +673,17 @@ public class OutputFormFactory {
   public void convertInteger(final Appendable buf, IInteger i, final int precedence, boolean caller)
       throws IOException {
     final boolean isNegative = i.isNegative();
+    if (fNumberFormatter != null) {
+      // exact integers only pick up DigitBlock, padding and sign options - never an exponent
+      String formatted = assembleFormattedNumber(fNumberFormatter.format(i.toBigNumerator()));
+      if (formatted != null) {
+        if (!isNegative && caller == PLUS_CALL) {
+          append(buf, fInputForm ? " + " : "+");
+        }
+        convertDoubleString(buf, formatted, precedence, isNegative);
+        return;
+      }
+    }
     if (!isNegative && caller == PLUS_CALL) {
       append(buf, fInputForm ? " + " : "+");
     }
@@ -1420,6 +1554,49 @@ public class OutputFormFactory {
                 return;
               }
               break;
+            case ID.Graphics:
+            case ID.Graphics3D:
+              if (fGraphicsPlaceholder && !fInputForm) {
+                // a picture has no text representation - OutputForm shows a placeholder, while
+                // InputForm still writes the whole expression so that it can be read back
+                append(buf, functionID == ID.Graphics3D ? "-Graphics3D-" : "-Graphics-");
+                return;
+              }
+              break;
+            case ID.Style:
+              if (!fInputForm && list.size() > 1) {
+                // Style only changes how an expression looks, so OutputForm shows the expression
+                convert(buf, list.arg1(), precedence, false);
+                return;
+              }
+              break;
+            case ID.Row:
+              if (!fInputForm && list.isAST1() && list.arg1().isList()) {
+                // Row places its elements side by side without a separator
+                IAST row = (IAST) list.arg1();
+                for (int i = 1; i < row.size(); i++) {
+                  convert(buf, row.get(i), Integer.MIN_VALUE, false);
+                }
+                return;
+              }
+              break;
+            case ID.TableForm:
+              if (list.size() > 1) {
+                convertTableForm(buf, list);
+                return;
+              }
+              break;
+            case ID.AccountingForm:
+            case ID.DecimalForm:
+            case ID.EngineeringForm:
+            case ID.NumberForm:
+            case ID.PaddedForm:
+            case ID.ScientificForm:
+              if (list.size() > 1) {
+                convertNumberForm(buf, list, precedence);
+                return;
+              }
+              break;
             case ID.Out:
               if (list.isAST1() && list.arg1().isInteger()) {
                 int lineNumber = list.arg1().toIntDefault();
@@ -1661,14 +1838,14 @@ public class OutputFormFactory {
     }
     if ((operator instanceof InfixOperator) && (list.size() > 2)) {
       InfixOperator infixOperator = (InfixOperator) operator;
-      if (head.equals(S.Plus)) {
+      if (head == S.Plus) {
         IAST plusAST = list;
         if (fPlusReversed) {
           plusAST = plusAST.reverse(F.NIL);
         }
         convertPlusOperator(buf, plusAST, infixOperator, precedence);
         return true;
-      } else if (head.equals(S.Times)) {
+      } else if (head == S.Times) {
         convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
         return true;
       } else if (list.isPower()) {

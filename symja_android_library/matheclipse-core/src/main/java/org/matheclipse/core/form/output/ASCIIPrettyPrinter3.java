@@ -141,7 +141,7 @@ public class ASCIIPrettyPrinter3 {
       }
       IAST ast = (IAST) expr;
       ISymbol head = (ISymbol) ast.head();
-      if (head.equals(S.List)) {
+      if (head == S.List) {
         print("{");
       } else {
         print(head.toString() + "(");
@@ -153,7 +153,7 @@ public class ASCIIPrettyPrinter3 {
         }
         convert(ast.get(i), Precedence.NO_PRECEDENCE, false);
       }
-      if (head.equals(S.List)) {
+      if (head == S.List) {
         print("}");
       } else {
         print(")");

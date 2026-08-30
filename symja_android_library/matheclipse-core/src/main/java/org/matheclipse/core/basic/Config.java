@@ -274,6 +274,35 @@ public class Config {
   /** Set to <code>true</code> to collect rule dispatch counters. */
   public static boolean RULE_DISPATCH_STATISTICS = false;
 
+  /**
+   * Set to <code>true</code> to collect counters for the
+   * {@link org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher} dispatch of
+   * <code>Plus(...)</code> and <code>Times(...)</code> in
+   * {@link org.matheclipse.core.patternmatching.ruleindex.OrderlessHashStats}. Slow - for
+   * measurement only.
+   */
+  public static boolean ORDERLESS_HASH_STATISTICS =
+      Boolean.getBoolean("symja.orderlessHashStatistics");
+
+  /**
+   * Set to <code>true</code> to prefilter the argument pairs of the
+   * {@link org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher} with an
+   * {@link org.matheclipse.core.patternmatching.ruleindex.OrderlessPairIndex}.
+   */
+  public static boolean ORDERLESS_PAIR_INDEX =
+      !"false".equals(System.getProperty("symja.orderlessPairIndex"));
+
+  /**
+   * Set to <code>true</code> to check every dispatch of the
+   * {@link org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher} against a full pair
+   * scan. The scan determines the result, the {@link
+   * org.matheclipse.core.patternmatching.ruleindex.OrderlessPairIndex} is only verified to keep
+   * every pair which is rewritten. Mismatches are reported on <code>System.err</code> and counted
+   * in {@link org.matheclipse.core.patternmatching.ruleindex.OrderlessIndexValidation}. Slow - for
+   * testing only.
+   */
+  public static boolean ORDERLESS_PAIR_INDEX_VALIDATE = false;
+
   /** Set to true if in fuzz testing mode */
   public static boolean FUZZ_TESTING = false;
 
@@ -624,6 +653,25 @@ public class Config {
   /** Default package mode with which the EvalEngines initially can be started */
   public static boolean PACKAGE_MODE = true;
 
+  /**
+   * Let {@link org.matheclipse.core.generic.UnaryNumerical} compile the sampled function to JVM
+   * bytecode when an {@link org.matheclipse.core.compile.IExprCompiler} is installed, i.e. when the
+   * <code>matheclipse-compile</code> module is on the classpath.
+   *
+   * <p>
+   * A numerical integration samples its integrand ten-thousands of times, so this is where
+   * compiling pays. It is <b>off by default</b> on purpose: the compiled and the interpreted path
+   * differ in real ways at the edges - <code>Abs</code> of a complex intermediate,
+   * <code>Indeterminate</code> versus <code>NaN</code>, integer overflow - and the compiled path is
+   * only ever a fast path, never the authority. <code>UnaryNumerical</code> falls back to
+   * interpreted evaluation whenever the compiled code produces no real value, and stops using it
+   * for that instance once the two disagree.
+   *
+   * <p>
+   * Flip this only with numbers in hand; see COMPILE_MODULE_PLAN.md section 4.2.
+   */
+  public static boolean COMPILE_NUMERIC_FUNCTIONS = false;
+
   public static Consumer<IExpr> PRINT_OUT = x -> {
   };
 
@@ -916,16 +964,44 @@ public class Config {
   /** Global dynamic classloader */
   public static ClassLoader URL_CLASS_LOADER = null;
 
+  /**
+   * Set <code>$ScriptCommandLine</code> from a raw argument vector.
+   *
+   * <p>
+   * The list used to start with <code>java.home</code>, which does not belong there:
+   * <code>$ScriptCommandLine</code> starts with the name of the script. Prefer
+   * {@link #setScriptCommandLine(String, java.util.List)}, which builds the documented form
+   * from the script name and the arguments meant for it, rather than from everything on the
+   * command line.
+   */
   public static void setScriptCommandLine(final String[] args) {
-    IASTAppendable commandLine = F.ListAlloc(args.length + 1);
-    String javaHome = System.getProperty("java.home");
-    if (javaHome != null) {
-      commandLine.append(javaHome);
-    } else {
-      commandLine.append("");
-    }
+    IASTAppendable commandLine = F.ListAlloc(args.length);
     for (int i = 0; i < args.length; i++) {
       commandLine.append(args[i]);
+    }
+    SCRIPT_COMMAND_LINE = commandLine;
+  }
+
+  /**
+   * Set <code>$ScriptCommandLine</code> to the documented form: the name of the script
+   * followed by the arguments passed to it. The options that started the interpreter are not
+   * part of it, so a script sees the same list however it was launched - through
+   * <code>-file</code> or through a <code>#!</code> line.
+   *
+   * @param scriptName the script being run, or <code>null</code> when no script is running,
+   *        which makes <code>$ScriptCommandLine</code> the empty list
+   * @param arguments the arguments meant for the script
+   */
+  public static void setScriptCommandLine(final String scriptName,
+      final java.util.List<String> arguments) {
+    if (scriptName == null) {
+      SCRIPT_COMMAND_LINE = F.CEmptyList;
+      return;
+    }
+    IASTAppendable commandLine = F.ListAlloc(arguments.size() + 1);
+    commandLine.append(scriptName);
+    for (String argument : arguments) {
+      commandLine.append(argument);
     }
     SCRIPT_COMMAND_LINE = commandLine;
   }

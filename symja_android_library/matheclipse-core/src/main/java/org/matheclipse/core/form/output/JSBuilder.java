@@ -183,10 +183,16 @@ public class JSBuilder {
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Image</title>\n"//
           + "</head>\n" + "<body>\n"
           + "<div id=\"image\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
-          + "    <img src=\"data:image/png;base64, `1`\"/> \n" //
+          + "    <img src=\"data:image/png;base64, `1`\"`2`/> \n" //
           + "</div>\n" //
           + "</body>"; //
 
+  /**
+   * <code>`1`</code> is the base64 encoded png and <code>`2`</code> is the <code>style</code>
+   * attribute the image's <code>ImageSize</code>, <code>ImageResolution</code> and
+   * <code>Magnification</code> options come to - empty where they ask for nothing in particular and
+   * the image is shown pixel for pixel.
+   */
   public static final String IMAGE_TEMPLATE = //
       "<html>\n" //
           + "<head>\n" //
@@ -195,7 +201,7 @@ public class JSBuilder {
           + "</head>\n" //
           + "<body>\n" //
           + "<div id=\"image\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n" //
-          + "    <img src=\"data:image/png;base64, `1`\"/> \n" //
+          + "    <img src=\"data:image/png;base64, `1`\"`2`/> \n" //
           + "</div>\n" //
           + "</body>\n" + "</html>"; //
 
