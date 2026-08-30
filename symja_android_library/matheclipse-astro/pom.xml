@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>3.3.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>matheclipse-astro</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Symja astronomy module, implemented on top of the Orekit
+		space flight dynamics library</description>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+
+	<properties>
+		<!-- Orekit 14.x is compiled for Java 21 and uses records, so this module
+		and every module which depends on it cannot use the release 11 default
+		of the parent POM. matheclipse-core stays on 11 and is unaffected. -->
+		<maven.compiler.release>21</maven.compiler.release>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-external</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- logging dependencies -->
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.orekit</groupId>
+			<artifactId>orekit</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hipparchus</groupId>
+			<artifactId>hipparchus-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hipparchus</groupId>
+			<artifactId>hipparchus-geometry</artifactId>
+		</dependency>
+
+		<!-- test dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-script</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>
