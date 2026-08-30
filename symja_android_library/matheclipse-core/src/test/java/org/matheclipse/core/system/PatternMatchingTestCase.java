@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -80,7 +81,7 @@ public class PatternMatchingTestCase {
         ASTNode node = parser.parse(strEval);
         IExpr inExpr = new AST2Expr(false, engine).convert(node);
         result = util.evaluate(inExpr);
-        if ((result != null) && !result.equals(F.Null)) {
+        if ((result != null) && result != S.Null) {
           OutputFormFactory off = OutputFormFactory.get(relaxedSyntax);
           off.setIgnoreNewLine(true);
           off.convert(buf, result);

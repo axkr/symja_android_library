@@ -10,6 +10,7 @@ import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.WildPattern;
 import org.matheclipse.core.interfaces.IAST;
@@ -337,7 +338,7 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
   private Map<IExpr, IExpr> matchCommutative(IAST patAST, IAST exprAST, Map<IExpr, IExpr> replDict,
       EvalEngine engine, boolean allowPartialExponent) {
 
-    boolean isPlus = patAST.head().equals(F.Plus);
+    boolean isPlus = patAST.head() == S.Plus;
     IExpr identity = isPlus ? F.C0 : F.C1;
 
     // Separate pattern terms into pure wildcards (bare IPatternObject) and all others
