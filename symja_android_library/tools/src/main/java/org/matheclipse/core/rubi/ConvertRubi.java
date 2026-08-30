@@ -63,7 +63,7 @@ public class ConvertRubi {
     }
     String inputString = buff.toString();
     Parser p = new Parser(RubiASTNodeFactory.RUBI_STYLE_FACTORY, false, true);
-    return p.parsePackage(inputString);
+    return p.parseScript(inputString);
   }
 
   public static void writeFile(Path file, StringBuffer buffer) throws IOException {
