@@ -1,6 +1,5 @@
 package org.matheclipse.image.expression.data;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,22 +9,16 @@ import java.lang.ref.SoftReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.imageio.ImageIO;
-import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.graphics.SVGGraphics;
+import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.io.Extension;
-import org.matheclipse.core.reflection.system.Export;
-import org.matheclipse.core.tensor.img.ColorFormat;
-import org.matheclipse.core.tensor.img.ImageFormat;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 /**
  * Represent a BufferedImage by the PNG byte array.
@@ -37,15 +30,29 @@ final public class ImageExpr extends DataExpr<byte[]> {
 
   private final IAST matrix;
 
+  private final ImageOptions options;
+
   private transient SoftReference<BufferedImage> buffer;
 
   /**
    * Represent a BufferedImage by the PNG byte array.
-   * 
+   *
    * @param buffer buffered image which was drawn by a java method
    * @param matrix
    */
   public ImageExpr(final BufferedImage buffer, IAST matrix) {
+    this(buffer, matrix, ImageOptions.DEFAULT);
+  }
+
+  /**
+   * Represent a BufferedImage by the PNG byte array, remembering the options it was built with.
+   *
+   * @param buffer buffered image which was drawn by a java method
+   * @param matrix the pixel matrix the image was built from, or <code>null</code> where there is
+   *        none or where it no longer describes the image's pixels
+   * @param options never <code>null</code>; use {@link ImageOptions#DEFAULT}
+   */
+  public ImageExpr(final BufferedImage buffer, IAST matrix, ImageOptions options) {
     super(S.Image, null);
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
@@ -56,6 +63,18 @@ final public class ImageExpr extends DataExpr<byte[]> {
     }
     this.buffer = new SoftReference(buffer);
     this.matrix = matrix;
+    this.options = options;
+  }
+
+  /**
+   * Share the encoded bytes of an image that is already built, which is what makes
+   * {@link #withOptions(ImageOptions)} free rather than another trip through the png encoder.
+   */
+  private ImageExpr(ImageExpr original, IAST matrix, ImageOptions options) {
+    super(S.Image, original.fData);
+    this.buffer = original.buffer;
+    this.matrix = matrix;
+    this.options = options;
   }
 
   @Override
@@ -78,6 +97,28 @@ final public class ImageExpr extends DataExpr<byte[]> {
     return matrix;
   }
 
+  /** The options this image carries; never <code>null</code>. */
+  public ImageOptions getOptions() {
+    return options;
+  }
+
+  /**
+   * The same picture with different options. The pixels are untouched, so this shares the encoded
+   * bytes rather than drawing the image again.
+   */
+  public ImageExpr withOptions(ImageOptions newOptions) {
+    return newOptions.equals(options) ? this : new ImageExpr(this, matrix, newOptions);
+  }
+
+  /**
+   * The same picture with a different record of the data it came from - the samples written on the
+   * scale <code>Image[data, type]</code> asked for, say. The pixels are untouched, so this shares
+   * the encoded bytes too.
+   */
+  public ImageExpr withMatrix(IAST newMatrix) {
+    return newMatrix == matrix ? this : new ImageExpr(this, newMatrix, options);
+  }
+
   @Override
   public int hierarchy() {
     return IMAGEID;
@@ -89,7 +130,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
     BufferedImage newBufferedImage = new BufferedImage(oldBufferedImage.getWidth(),
         oldBufferedImage.getHeight(), oldBufferedImage.getType());
     newBufferedImage.setData(oldBufferedImage.getRaster());
-    return new ImageExpr(newBufferedImage, matrix);
+    return new ImageExpr(newBufferedImage, matrix, options);
   }
 
   public BufferedImage getBufferedImage() {
@@ -116,14 +157,36 @@ final public class ImageExpr extends DataExpr<byte[]> {
     return new String(fData, StandardCharsets.UTF_8);
   }
 
+  /** Create an <code>ImageExpr</code> from a pixel matrix or a graphics object. */
   public static ImageExpr toImageExpr(IAST imageData) {
-    return toImageExpr(imageData, "Automatic");
+    return toImageExpr(imageData, ImageOptions.DEFAULT);
   }
 
   /**
-   * Create an <code>ImageExpr</code> from the image data with a specific ColorSpace.
+   * Create an <code>ImageExpr</code> from a pixel matrix, reading the samples in the given colour
+   * space.
+   *
+   * @param colorSpace the <code>ColorSpace</code> option value, or <code>"Automatic"</code>
    */
   public static ImageExpr toImageExpr(IAST imageData, String colorSpace) {
+    return toImageExpr(imageData,
+        ImageOptions.DEFAULT.withColorSpace(colorSpace == null ? S.Automatic : //
+            F.stringx(colorSpace)));
+  }
+
+  /**
+   * Create an <code>ImageExpr</code> from a pixel matrix, a <code>Graphics</code> or a
+   * <code>Graphics3D</code> object.
+   *
+   * <p>
+   * A rasterized graphics object has no pixel matrix to remember, and neither has an image whose
+   * samples had to be interpreted through a colour space, so only a matrix that still describes the
+   * pixels is kept for <code>ImageData</code> to hand back losslessly - see
+   * {@link Pixels#describesPixels(String, int)}.
+   *
+   * @return <code>null</code> if <code>imageData</code> is neither
+   */
+  public static ImageExpr toImageExpr(IAST imageData, ImageOptions options) {
     if (imageData.isGraphicsObject()) {
       int rowSize = 600;
       int colSize = 400;
@@ -131,7 +194,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
       String svgContent = converter.toSVG(imageData);
       BufferedImage bufferedImage = SVG2BufferedImage.createBufferedImage(svgContent);
       if (bufferedImage != null) {
-        return new ImageExpr(bufferedImage, null);
+        return new ImageExpr(bufferedImage, null, options);
       }
       return null;
     }
@@ -141,154 +204,46 @@ final public class ImageExpr extends DataExpr<byte[]> {
       String svgContent = SVGGraphics3D.toSVG(imageData);
       BufferedImage bufferedImage = SVG2BufferedImage.createBufferedImage(svgContent);
       if (bufferedImage != null) {
-        return new ImageExpr(bufferedImage, null);
+        return new ImageExpr(bufferedImage, null, options);
       }
       return null;
     }
 
-    IntArrayList dimensions = LinearAlgebraUtil.dimensions(imageData);
-    if (dimensions != null) {
-      int rows = dimensions.getInt(0);
-      int cols = dimensions.getInt(1);
-
-      // Handle Color Space Conversions manually if not RGB
-      if ("HSB".equalsIgnoreCase(colorSpace) && dimensions.size() == 3) {
-        return createFromHSB(imageData, rows, cols);
-      } else if ("CMYK".equalsIgnoreCase(colorSpace) && dimensions.size() == 3) {
-        return createFromCMYK(imageData, rows, cols);
-      } else if ("Grayscale".equalsIgnoreCase(colorSpace)) {
-        // Force Grayscale interpretation
-        return createGrayscale(imageData, rows, cols);
-      }
-
-      // Default RGB / Automatic Handling
-      BufferedImage bufferedImage = null;
-      if (dimensions.size() == 2) {
-        bufferedImage = ImageFormat.toIntARGB(imageData);
-      } else if (dimensions.size() == 3) {
-        bufferedImage = ImageFormat.toIntFormat(imageData, BufferedImage.TYPE_INT_ARGB);
-      }
-
-      if (bufferedImage != null) {
-        return new ImageExpr(bufferedImage, imageData);
-      }
+    String space = options.colorSpaceName();
+    // the shape of the data is read once here, because how many channels it had is what decides
+    // whether the matrix is worth keeping
+    Pixels.Samples samples = Pixels.samplesOf(imageData, options.interleaved());
+    if (samples == null) {
+      return null;
     }
-    return null;
+    BufferedImage bufferedImage = Pixels.toBufferedImage(samples, space,
+        Pixels.scaleOf(Pixels.imageTypeOf(imageData)));
+    if (bufferedImage == null) {
+      return null;
+    }
+    if (!Pixels.describesPixels(space, samples.channels())) {
+      return new ImageExpr(bufferedImage, null, options);
+    }
+    // mark it for the matrix layout of OutputForm, so that ImageData prints one row per line
+    imageData.isMatrix(true);
+    return new ImageExpr(bufferedImage, imageData, options);
   }
 
   /**
-   * Converts HSB data {{{h,s,b},...},...} to RGB BufferedImage
+   * The <code>style</code> attribute that shows the image at the size its options ask for, or the
+   * empty string where they ask for nothing and it is shown pixel for pixel.
    */
-  private static ImageExpr createFromHSB(IAST data, int rows, int cols) {
-    BufferedImage image = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_ARGB);
-    for (int y = 0; y < rows; y++) {
-      IAST row = (IAST) data.get(y + 1);
-      for (int x = 0; x < cols; x++) {
-        IAST pixel = (IAST) row.get(x + 1);
-        float h = (float) pixel.get(1).evalDouble();
-        float s = (float) pixel.get(2).evalDouble();
-        float b = (float) pixel.get(3).evalDouble();
-        // Optional: Alpha
-
-        // Java HSBtoRGB expects 0..1
-        int rgb = Color.HSBtoRGB(h, s, b);
-        image.setRGB(x, y, rgb);
-      }
+  private String styleAttribute(BufferedImage image) {
+    double[] size = options.displaySize(image.getWidth(), image.getHeight());
+    if (size == null) {
+      return "";
     }
-    return new ImageExpr(image, data);
+    return " style=\"width:" + cssPixels(size[0]) + "px; height:" + cssPixels(size[1]) + "px\"";
   }
 
-  /**
-   * Converts CMYK data {{{c,m,y,k},...},...} to RGB BufferedImage Using simple subtraction method:
-   * R = (1-C)*(1-K), etc.
-   */
-  private static ImageExpr createFromCMYK(IAST data, int rows, int cols) {
-    BufferedImage image = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_ARGB);
-    for (int y = 0; y < rows; y++) {
-      IAST row = (IAST) data.get(y + 1);
-      for (int x = 0; x < cols; x++) {
-        IAST pixel = (IAST) row.get(x + 1);
-        double c = pixel.get(1).evalDouble();
-        double m = pixel.get(2).evalDouble();
-        double yellow = pixel.get(3).evalDouble();
-        double k = pixel.get(4).evalDouble();
-
-        double r = (1.0 - c) * (1.0 - k);
-        double g = (1.0 - m) * (1.0 - k);
-        double b = (1.0 - yellow) * (1.0 - k);
-
-        int ir = (int) (r * 255);
-        int ig = (int) (g * 255);
-        int ib = (int) (b * 255);
-        int rgb = (255 << 24) | (ir << 16) | (ig << 8) | ib;
-
-        image.setRGB(x, y, rgb);
-      }
-    }
-    return new ImageExpr(image, data);
-  }
-
-  /**
-   * Forces data to be interpreted as Grayscale. Useful if data is {rows, cols} or {rows, cols, 1}
-   */
-  private static ImageExpr createGrayscale(IAST data, int rows, int cols) {
-    BufferedImage image = new BufferedImage(cols, rows, BufferedImage.TYPE_BYTE_GRAY);
-    for (int y = 0; y < rows; y++) {
-      IAST row = (IAST) data.get(y + 1);
-      for (int x = 0; x < cols; x++) {
-        IExpr valExpr = row.get(x + 1);
-        double val;
-        if (valExpr.isList()) {
-          // Handle {0.5} case
-          val = ((IAST) valExpr).arg1().evalDouble();
-        } else {
-          val = valExpr.evalDouble();
-        }
-        int gray = (int) (val * 255);
-        if (gray > 255)
-          gray = 255;
-        if (gray < 0)
-          gray = 0;
-
-        // Set RGB (Gray) - standard packing
-        int rgb = (255 << 24) | (gray << 16) | (gray << 8) | gray;
-        image.setRGB(x, y, rgb);
-      }
-    }
-    return new ImageExpr(image, data);
-  }
-
-  private static ImageExpr createColoredImageExpr(BufferedImage bufferedImage, int rowSize,
-      int colSize) {
-    IAST byteMatrix = ImageFormat.from(bufferedImage);
-    IAST resultMatrix = F.matrix((i, j) -> {
-      IAST part = (IAST) byteMatrix.getPart(i + 1, j + 1);
-      RGBColor color = ColorFormat.toColor(part);
-      float[] floatValues = color.getColorComponents(null);
-      return F.List(F.num(floatValues[0]), F.num(floatValues[1]), F.num(floatValues[2]));
-    }, rowSize, colSize);
-    Extension format = Extension.PNG;
-    try (OutputStream outputStream = new ByteArrayOutputStream()) {
-      Export.exportImage(outputStream, resultMatrix, format);
-      return new ImageExpr(bufferedImage, resultMatrix);
-    } catch (IOException e) {
-      // e.printStackTrace();
-    }
-    return null;
-  }
-
-  private static ImageExpr createImageExpr(BufferedImage buffer, int rowSize, int colSize) {
-    final IAST byteMatrix = ImageFormat.from(buffer);
-    IAST resultMatrix = F.matrix(
-        (i, j) -> F.num((byteMatrix.getPart(i + 1, j + 1).evalfNaN()) / 255.0), rowSize, colSize);
-    Extension format = Extension.PNG;
-    try (OutputStream outputStream = new ByteArrayOutputStream()) {
-      Export.exportImage(outputStream, resultMatrix, format);
-      return new ImageExpr(buffer, resultMatrix);
-    } catch (IOException e) {
-      // e.printStackTrace();
-    }
-    return null;
+  /** A css length, never rounded away to nothing. */
+  private static String cssPixels(double value) {
+    return Long.toString(Math.max(1L, Math.round(value)));
   }
 
   @Override
@@ -301,6 +256,8 @@ final public class ImageExpr extends DataExpr<byte[]> {
       String html = JSBuilder.IMAGE_TEMPLATE;
       String[] argsToRender = new String[3];
       argsToRender[0] = outputStream.toString();
+      argsToRender[1] = styleAttribute(bImage);
+      argsToRender[2] = "";
       return Errors.templateRender(html, argsToRender);
     } catch (IOException ioex) {
       return "IOException";
