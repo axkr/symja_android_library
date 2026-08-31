@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.parser.client.Parser;
@@ -547,13 +546,14 @@ class ParserTestCase {
 
   @Test
   void testParser63() {
-    assumeTrue(System.getProperty("os.name").contains("Windows"));
+    // \[DifferentialD] is a prefix operator, so it cannot be followed by "= 4".
+    // Mathematica reports the same situation with the `sntxf` message.
     Exception e = assertThrows(Exception.class, () -> {
       PARSE_UNRELAXED.parse("\\[DifferentialD] = 4");
     });
-    assertEquals(e.getMessage(),
-        "Syntax error in line: 1 - unexpected (named unicode) character: '\\[DifferentialD]'\n"
-            + " = 4\n" + "^");
+    assertEquals(
+        "Syntax error in line: 1 - Operator: = is no prefix operator.\n" + "\uF74C = 4\n" + "  ^",
+        e.getMessage());
   }
 
   @Test
