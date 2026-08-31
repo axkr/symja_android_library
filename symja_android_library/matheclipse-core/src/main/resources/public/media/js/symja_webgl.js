@@ -5,7 +5,7 @@
  * using Three.js. Requires three.module.js and OrbitControls.js to have been loaded and exposed as
  * window.THREE.
  *
- * The converter decides everything that depends on Wolfram semantics: the visible range, where the
+ * The converter decides everything: the visible range, where the
  * ticks go and what they read, which lights are installed. This file turns that into geometry and
  * keeps the parts that can only be known once the scene is on screen - how big a pixel is, which
  * box edges face the viewer - up to date as the camera moves.
@@ -24,13 +24,12 @@
     var MIN_TUBE_RADIUS = 0.0025;
 
     /**
-     * Light intensities arrive in Wolfram's units, where a light of colour c contributes c times
+     * Light intensities arrive in units, where a light of colour c contributes c times
      * the cosine of the incidence angle. Three.js divides the diffuse term by pi, as a physically
-     * normalised Lambert lobe does, so an intensity of pi is what reproduces the value Wolfram
-     * would have drawn. Without it every default lit surface comes out at about a third of its
+     * normalised Lambert lobe does. Without it every default lit surface comes out at about a third of its
      * brightness, which reads as a muddy brown rather than the warm gold it should be.
      */
-    var WOLFRAM_LIGHT_INTENSITY = Math.PI;
+    var LIGHT_INTENSITY = Math.PI;
 
     // ------------------------------------------------------------------ maths
 
@@ -181,6 +180,34 @@
         return new THREE.LineBasicMaterial(params);
     }
 
+    /**
+     * The outline drawn around a face.
+     *
+     * <p>It follows the shape rather than the tessellation: `edgeAngle` is the dihedral angle
+     * above which the join between two facets counts as a crease, so a box shows its twelve
+     * edges, a cylinder the circles where its caps meet the barrel, and a sphere nothing at all.
+     * An explicit `EdgeForm` lowers the angle to a hair above zero and the whole mesh appears.
+     *
+     * <p>The outline keeps its own opacity: `Opacity` tints a face and leaves the outline around
+     * it alone, which is what makes `{Opacity[0], Cuboid[]}` a wireframe box.
+     */
+    function addOutline(mesh, geometry, el) {
+        var THREE = global.THREE;
+        if (!mesh || !el.showMesh) { return mesh; }
+        var angle = typeof el.edgeAngle === 'number' ? el.edgeAngle : 30;
+        var edges = new THREE.EdgesGeometry(geometry, angle);
+        if (edges.getAttribute('position').count === 0) {
+            edges.dispose();
+            return mesh;
+        }
+        var color = typeof el.edgeColor === 'number' ? el.edgeColor : 0x333333;
+        var opacity = typeof el.edgeOpacity === 'number' ? el.edgeOpacity : 1.0;
+        mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
+            color: color, transparent: opacity < 1.0, opacity: opacity
+        })));
+        return mesh;
+    }
+
     // ------------------------------------------------------------- primitives
 
     function buildPolygon(el) {
@@ -215,15 +242,7 @@
         } else {
             mesh = new THREE.Mesh(geometry, material);
         }
-        if (el.showMesh) {
-            var edges = new THREE.EdgesGeometry(geometry, 1);
-            var color = typeof el.edgeColor === 'number' ? el.edgeColor : 0x333333;
-            var opacity = typeof el.edgeOpacity === 'number' ? el.edgeOpacity : 0.6;
-            mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
-                color: color, transparent: opacity < 1.0, opacity: opacity
-            })));
-        }
-        return mesh;
+        return addOutline(mesh, geometry, el);
     }
 
     /**
@@ -309,9 +328,11 @@
         if (count === 1) {
             var mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(flat[0], flat[1], flat[2]);
-            group.add(mesh);
+            group.add(addOutline(mesh, geometry, el));
             return;
         }
+        // a field of spheres is drawn as one instanced mesh, which carries a single geometry and
+        // so cannot hold an outline per instance; a sphere has no crease to outline anyway
         var instanced = new THREE.InstancedMesh(geometry, material, count);
         var matrix = new THREE.Matrix4();
         for (var i = 0; i < count; i++) {
@@ -340,7 +361,7 @@
         geometry.translate(0, height / 2, 0);
         var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         orientAlong(mesh, start, end);
-        return mesh;
+        return addOutline(mesh, geometry, el);
     }
 
     function buildCone(el) {
@@ -351,7 +372,7 @@
         geometry.translate(0, height / 2, 0);
         var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         orientAlong(mesh, start, end);
-        return mesh;
+        return addOutline(mesh, geometry, el);
     }
 
     function buildCuboid(el) {
@@ -359,9 +380,10 @@
         var w = el.max[0] - el.min[0];
         var h = el.max[1] - el.min[1];
         var d = el.max[2] - el.min[2];
-        var mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), surfaceMaterial(el));
+        var geometry = new THREE.BoxGeometry(w, h, d);
+        var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         mesh.position.set(el.min[0] + w / 2, el.min[1] + h / 2, el.min[2] + d / 2);
-        return mesh;
+        return addOutline(mesh, geometry, el);
     }
 
     function buildPolyhedron(el) {
@@ -377,7 +399,7 @@
         }
         var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         mesh.position.set(el.center[0], el.center[1], el.center[2]);
-        return mesh;
+        return addOutline(mesh, geometry, el);
     }
 
     function buildTube(el) {
@@ -397,7 +419,7 @@
         }
         if (!path) { return null; }
         var geometry = new THREE.TubeGeometry(path, 128, el.radius, 16, !!el.closed);
-        return new THREE.Mesh(geometry, surfaceMaterial(el));
+        return addOutline(new THREE.Mesh(geometry, surfaceMaterial(el)), geometry, el);
     }
 
     function buildCurve(el, diagonal, group, curve) {
@@ -461,7 +483,7 @@
     // ------------------------------------------------------------------- text
 
     /**
-     * A text sprite whose size stays constant on screen, which is how Wolfram draws labels in 3D.
+     * A text sprite whose size stays constant on screen draws labels in 3D.
      * The device pixel ratio is baked into the canvas so the glyphs stay sharp when zoomed.
      */
     function makeTextSprite(text, options) {
@@ -895,7 +917,7 @@
         camera.lookAt(target);
         scene.add(camera);
 
-        // ViewMatrix says outright what the other view options describe. Wolfram writes its
+        // ViewMatrix says outright what the other view options describe. Symja writes its
         // matrices a row at a time, which is the order Matrix4.set takes them in.
         var fixedCamera = false;
         if (data.viewTransform && data.viewTransform.length === 16) {
@@ -933,7 +955,7 @@
                 var spec = data.lights[li];
                 var light = null;
                 var intensity = (typeof spec.intensity === 'number' ? spec.intensity : 1)
-                    * WOLFRAM_LIGHT_INTENSITY;
+                    * LIGHT_INTENSITY;
                 // The colour is passed as written, so three.js reads it the same way it reads a
                 // surface colour. Taking the value as a linear coefficient instead washes the
                 // shading out: the face that should be a deep magenta comes back pale lavender.
@@ -970,7 +992,7 @@
                 if (!light) { continue; }
                 if (spec.fixedToCamera) {
                     // the light travels with the camera so a surface keeps its shading while it is
-                    // being rotated, which is what Wolfram's automatic lighting does
+                    // being rotated, which is what the automatic lighting does
                     camera.add(light);
                     if (light.isDirectionalLight) {
                         // a directional light points from its position at its target, and the
@@ -1022,7 +1044,7 @@
         }
 
         /**
-         * Choose which of the four parallel box edges an axis is drawn on. Wolfram re-chooses as
+         * Choose which of the four parallel box edges an axis is drawn on. Symja re-chooses as
          * the scene turns so the axis stays on the silhouette and never runs through the middle of
          * the object; x and y take the edge that sits lowest on screen, z the leftmost one.
          */
