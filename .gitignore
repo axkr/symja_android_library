@@ -3,3 +3,4 @@ out/
 .idea/
 gen/
 /.claude/
+*_PLAN.md

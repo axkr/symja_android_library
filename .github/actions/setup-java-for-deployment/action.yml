@@ -13,7 +13,7 @@ runs:
       uses: actions/setup-java@v4
       with:
         # Also generates a corresponding Maven toolchains.xml
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
         cache: 'maven' # Cache Maven dependencies between workflow runs
         # Properties for deployment to Maven Central Portal:
