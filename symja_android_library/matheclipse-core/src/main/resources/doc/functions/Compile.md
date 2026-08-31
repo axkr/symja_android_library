@@ -22,8 +22,23 @@ Compile the expression into a `CompiledFunction` and assign it to `f`:
 >> f(4)
 ```
 
+### Options
+
+| option | default | |
+|---|---|---|
+| [RuntimeAttributes](RuntimeAttributes.md) | `{}` | attributes the compiled function is evaluated with |
+| [RuntimeOptions](RuntimeOptions.md) | `Automatic` | how the compiled function behaves while it runs |
+| [CompilationOptions](CompilationOptions.md) | `Automatic` | how the expression is compiled; inlines calls to other compiled functions |
+| [CompilationTarget](CompilationTarget.md) | `"WVM"` | accepted and ignored |
+| [Parallelization](Parallelization.md) | `Automatic` | accepted and ignored |
+
+```
+>> Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable}, RuntimeOptions -> "Speed")[3.]
+9.0
+```
+
 ### Related terms 
-[CompiledFunction](CompiledFunction.md), [CompilePrint](CompilePrint.md), [OptimizeExpression](OptimizeExpression.md)
+[CompiledFunction](CompiledFunction.md), [CompilePrint](CompilePrint.md), [OptimizeExpression](OptimizeExpression.md), [CompilationOptions](CompilationOptions.md), [CompilationTarget](CompilationTarget.md), [Parallelization](Parallelization.md), [RuntimeAttributes](RuntimeAttributes.md), [RuntimeOptions](RuntimeOptions.md)
 
 
 
