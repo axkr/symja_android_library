@@ -394,6 +394,23 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     // aborted the whole evaluation) while cancelling the gcd of this multivariate combination
     check("Together(1/(1+x) + 1/(1+x+x^5))", //
         "(2+2*x+x^5)/((1+x)*(1+x+x^2)*(1-x^2+x^3))");
+    // regression: a Gaussian integer coefficient makes the JAS BigRational conversion fail, so the
+    // denominator was factored through PolynomialHomogenization. That path used to rebalance every
+    // factor by x^(-degree/2), which kept the value but shifted all exponents by a half-integer
+    check("Together(1/(1-I*x)-1)", //
+        "(I*x)/(1-I*x)");
+    check("Together(-1+2/(1-I*x))", //
+        "(1+I*x)/(1-I*x)");
+    check("Together(1/(1-I*x^2)-1)", //
+        "(I*x^2)/(1-I*x^2)");
+    check("Together(1/(1-I*x-x^2)-1)", //
+        "(I*x+x^2)/(1-I*x-x^2)");
+    check("Together(1/(2-I*x)-1)", //
+        "(-1+I*x)/(2-I*x)");
+    check("Together((1+I)/(1-I*x)-1)", //
+        "(I+I*x)/(1-I*x)");
+    check("Together(1/(1-I*x-x)-1)", //
+        "-x/(-1/2+I*1/2+x)");
     check("Together(1+x/y)", //
         "(x+y)/y");
     check("Together(x*(1/x + 1/y))", //
@@ -427,29 +444,40 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testApartGaussianDenominator() {
-    // JAS only decomposes over the rationals, so a Gaussian-integer denominator falls back to the
-    // Bezout iteration in AlgebraUtil.partialFractionDecomposition(). Both factors below contain
-    // x+I, so PolynomialExtendedGCD returns the gcd I+x rather than 1 and the split
-    // n/(v1*v2) == n*B/v1 + n*A/v2 does not hold. The fallback used to apply it anyway and
-    // returned a wrong value; declining is the correct answer.
+    // JAS decomposes over BigRational only, so a Gaussian-integer denominator used to fall back to
+    // the Bezout iteration in AlgebraUtil.partialFractionDecomposition(). All three denominators
+    // below are -I*(x-I)*(x+I)^2 up to a unit, and a repeated factor is something that iteration
+    // cannot express at all - it returned a wrong value for each of them. They now go through
+    // AlgebraUtil.partialFractionDecompositionComplexRational(), which redoes the same JAS
+    // algorithm over ComplexRing<BigRational>. Values verified against Mathematica.
     check("Apart(1/((1-I*x)*(1+x^2)))", //
-        "1/((1-I*x)*(1+x^2))");
+        "(-I*1/4)/(-I+x)-1/(2*(I+x)^2)+(I*1/4)/(I+x)");
     check("Apart(x/((1-I*x)*(1+x^2)))", //
-        "x/((1-I*x)*(1+x^2))");
+        "1/(4*(-I+x))+(I*1/2)/(I+x)^2-1/(4*(I+x))");
     check("Apart(1/((I+x)*(1+x^2)))", //
-        "1/((I+x)*(1+x^2))");
+        "-1/(4*(-I+x))+(I*1/2)/(I+x)^2+1/(4*(I+x))");
     // this one collapsed all the way to 0, which is what made Simplify() pick 0 as its
-    // "simplest" candidate and lose a PolyLog term from Integrate(Log(x^2/(1+x^2))/(1+x^2),x)
+    // "simplest" candidate and lose a PolyLog term from Integrate(Log(x^2/(1+x^2))/(1+x^2),x).
+    // The fraction cancels to the constant -I.
     check("Apart(((I-x)*(I+x)^2)/((1-I*x)*(1+x^2)))", //
-        "((I-x)*(I+x)^2)/((1-I*x)*(1+x^2))");
+        "-I");
 
-    // coprime factors still decompose
+    // a real irreducible quadratic is NOT split into complex linear factors - the complex ring is
+    // only reached after the rational decomposition declined
+    check("Apart(1/(1+x^2))", //
+        "1/(1+x^2)");
+
+    // coprime factors decompose too, with the denominators normalized to monic linear factors
     check("Apart(1/((1-I*x)*(2+x)))", //
-        "(2/5+I*1/5)/(1-I*x)+(1/5-I*2/5)/(2+x)");
-    // ... and an improper fraction keeps its polynomial part: the fallback dropped the quotients
-    // of the two Bezout divisions, so the "I*x" and the constant used to be missing
+        "(-1/5+I*2/5)/(I+x)+(1/5-I*2/5)/(2+x)");
+    // ... and an improper fraction keeps its polynomial part
     check("Apart(x^3/((1-I*x)*(2+x)))", //
-        "1-I*2+(-1/5+I*2/5)/(1-I*x)+I*x+(-8/5+I*16/5)/(2+x)");
+        "1-I*2+(-2/5-I*1/5)/(I+x)+I*x+(-8/5+I*16/5)/(2+x)");
+
+    // an irrational coefficient reaches neither JAS ring and still uses the Bezout fallback, which
+    // used to drop the quotients of its two divisions - i.e. the polynomial part
+    check("Together(Apart(x^3/((1-Sqrt(2)*x)*(2+x))) - x^3/((1-Sqrt(2)*x)*(2+x)))", //
+        "0");
   }
 
 }

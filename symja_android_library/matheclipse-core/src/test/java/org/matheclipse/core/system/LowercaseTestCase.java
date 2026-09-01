@@ -4712,8 +4712,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{5/3,4/3},{4/3,5/3}}");
     // which is what the machine-precision path answers for the same data
     check("Covariance({{1.,2.},{3.,5.},{4.,4.},{2.,3.}})", //
-        "{{1.66667,1.33333},\n"
-            + " {1.33333,1.66667}}");
+        "{{1.66667,1.33333},\n" + " {1.33333,1.66667}}");
     // the diagonal is the variance of each column, and the off-diagonal the pairwise covariance
     check("Covariance({{1,2},{3,5},{4,4},{2,3}})[[1,1]] == Variance({1,3,4,2})", //
         "True");
@@ -6803,7 +6802,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testDynamic() {
     // Dynamic describes what a front end should keep up to date. There is none here, so the
-    // expression is its own result - the same thing wolframscript prints.
+    // expression is its own result.
     check("Dynamic(1+1)", //
         "Dynamic(1+1)");
     check("x=5; Dynamic(x)", //
@@ -8189,8 +8188,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Factor(3*Tan(3*x)-Tan(x)+2,Trig->True)", //
     // "((Cos(2*x)+I*Sin(2*x))*(-2+4*Cos(2*x)+4*Sin(2*x)))/(1-Cos(2*x)+Cos(4*x)-I*Sin(2*x)+I*Sin(\n"
     // + "4*x))");
+    // Cos(2*x)+3*Sin(x)-2 == -2*Sin(x)^2+3*Sin(x)-1 == (1-Sin(x))*(2*Sin(x)-1). The factors used to
+    // be rebalanced by Sin(x)^(-degree/2), which kept the value but pushed a Sqrt(Sin(x)) into
+    // every factor
     check("Factor(Cos(2*x)+3*Sin(x)-2,Trig->True)", //
-        "(1/Sqrt(Sin(x))-Sqrt(Sin(x)))*(-1/Sqrt(Sin(x))+2*Sqrt(Sin(x)))*Sin(x)");
+        "(1-Sin(x))*(-1+2*Sin(x))");
     check("Factor(1+x^2, Extension->I)", //
         "(-I+x)*(I+x)");
 
@@ -8460,9 +8462,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "I*2*x)))");
 
     // example from paper
+    // TODO 3*Sech(x)^2+4*Tanh(x)+1 == -3*Tanh(x)^2+4*Tanh(x)+4 == (2-Tanh(x))*(2+3*Tanh(x)), but
+    // PolynomialHomogenization substitutes Sech(x) and Tanh(x) as independent variables, so the
+    // identity Sech(x)^2 == 1-Tanh(x)^2 is never applied and the polynomial stays irreducible.
+    // Factor(-3*Tanh(x)^2+4*Tanh(x)+4,Trig->True) does give the factorization.
     System.out.print('.');
     check("Factor(3*Sech(x)^2+4*Tanh(x)+1,Trig->True)", //
-        "Sech(x)*(Cosh(x)/Sqrt(Tanh(x))+(3*Sech(x))/Sqrt(Tanh(x))+4*Cosh(x)*Sqrt(Tanh(x)))*Sqrt(Tanh(x))");
+        "1+3*Sech(x)^2+4*Tanh(x)");
     System.out.print('.');
     check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
         "1+12/(E^(-x)+E^x)^2+4*(-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x))");
@@ -15857,8 +15863,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{foo`f}");
     check("sysnames = Names(\"System`*\");", //
         "");
-    // The three n-ary bitwise operations carry {Flat, Listable, OneIdentity, Orderless} as they do
-    // in Mathematica. BitNot, BitLength, BitSet and the rest are unary or positional and keep
+    // The three n-ary bitwise operations carry {Flat, Listable, OneIdentity, Orderless}. BitNot,
+    // BitLength, BitSet and the rest are unary or positional and keep
     // Listable alone, so they are absent from this list.
     check("Select(sysnames, MemberQ(Attributes(#), OneIdentity) &) // InputForm", //
         "{\"And\",\"BitAnd\",\"BitOr\",\"BitXor\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"KroneckerProduct\",\"Max\",\"Min\",\"NonCommutativeMultiply\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
@@ -21241,11 +21247,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
 
     // the same seed gives the same choices, weighted or not
-    check("SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2,3}->{a,b,c}, 8);"
-        + "SeedRandom(7, Method -> \"Legacy\"); x === RandomChoice({1,2,3}->{a,b,c}, 8)", //
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2,3}->{a,b,c}, 8);"
+            + "SeedRandom(7, Method -> \"Legacy\"); x === RandomChoice({1,2,3}->{a,b,c}, 8)", //
         "True");
-    check("SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2}->{a,b}, {2,3});"
-        + "SeedRandom(7, Method -> \"Legacy\"); x === RandomChoice({1,2}->{a,b}, {2,3})", //
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2}->{a,b}, {2,3});"
+            + "SeedRandom(7, Method -> \"Legacy\"); x === RandomChoice({1,2}->{a,b}, {2,3})", //
         "True");
     // ... and a different generator gives different ones
     check("SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2,3}->{a,b,c}, 8);"
@@ -21254,8 +21262,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // with replacement, which is what tells RandomChoice from RandomSample: 320 draws at 1:10:5,
     // so 20, 200 and 100 are expected
-    check("SeedRandom(1, Method -> \"Legacy\"); s = RandomChoice({1,10,5}->{a,b,c}, 320);"
-        + "{Count(s, a), Count(s, b), Count(s, c)}", //
+    check(
+        "SeedRandom(1, Method -> \"Legacy\"); s = RandomChoice({1,10,5}->{a,b,c}, 320);"
+            + "{Count(s, a), Count(s, b), Count(s, c)}", //
         "{24,196,100}");
     // a weight of zero is never drawn
     check("SeedRandom(2, Method -> \"Legacy\"); RandomChoice({0,1}->{a,b}, 4)", //
@@ -21413,14 +21422,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "RandomSample[{e1,e2,…},n] never samples any of the ei more than once"
     check("SeedRandom(5, Method -> \"Legacy\"); Sort(RandomSample(Range(200))) === Range(200)", //
         "True");
-    check("SeedRandom(5, Method -> \"Legacy\"); Length(DeleteDuplicates(RandomSample(Range(50), 20)))", //
+    check(
+        "SeedRandom(5, Method -> \"Legacy\"); Length(DeleteDuplicates(RandomSample(Range(50), 20)))", //
         "20");
 
     // "RandomSample[{e1,e2,…},n] samples each of the ei with equal probability" - 200 draws of one
     // from five, so each is expected 40 times and none is anywhere near starved. The seed makes
     // the counts exact rather than merely likely, so this cannot come and go
-    check("SeedRandom(1, Method -> \"Legacy\"); s = Table(RandomSample(Range(5), 1)[[1]], {200});"
-        + "{Min(Table(Count(s, k), {k, 5})), Max(Table(Count(s, k), {k, 5}))}", //
+    check(
+        "SeedRandom(1, Method -> \"Legacy\"); s = Table(RandomSample(Range(5), 1)[[1]], {200});"
+            + "{Min(Table(Count(s, k), {k, 5})), Max(Table(Count(s, k), {k, 5}))}", //
         "{34,45}");
 
     // "RandomSample[{e1,e2,…},UpTo[n]] gives a sample of n of the ei, or as many as are available"
@@ -21450,11 +21461,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // then gone
     check("SeedRandom(1, Method -> \"Legacy\"); Sort(RandomSample({1,2,3}->{a,b,c}))", //
         "{a,b,c}");
-    check("SeedRandom(2, Method -> \"Legacy\"); Length(DeleteDuplicates(RandomSample(Range(20)->Range(20), 20)))", //
+    check(
+        "SeedRandom(2, Method -> \"Legacy\"); Length(DeleteDuplicates(RandomSample(Range(20)->Range(20), 20)))", //
         "20");
     // 200 draws of one from two at nine to one, so the heavy one is expected 180 times
-    check("SeedRandom(1, Method -> \"Legacy\"); s = Table(RandomSample({9,1}->{a,b}, 1)[[1]], {200});"
-        + "{Count(s, a), Count(s, b)}", //
+    check(
+        "SeedRandom(1, Method -> \"Legacy\"); s = Table(RandomSample({9,1}->{a,b}, 1)[[1]], {200});"
+            + "{Count(s, a), Count(s, b)}", //
         "{179,21}");
     // a weight of zero is never drawn while anything with weight is left ...
     check("SeedRandom(3, Method -> \"Legacy\"); RandomSample({0,0,1}->{a,b,c}, 1)", //
@@ -21480,26 +21493,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // "RandomSample gives a different sequence ... You can start with a particular seed using
     // SeedRandom"
-    check("SeedRandom(7, Method -> \"Legacy\"); a = RandomSample(Range(20), 5);"
-        + "SeedRandom(7, Method -> \"Legacy\"); a === RandomSample(Range(20), 5)", //
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); a = RandomSample(Range(20), 5);"
+            + "SeedRandom(7, Method -> \"Legacy\"); a === RandomSample(Range(20), 5)", //
         "True");
     // the weighted draw goes through the same generator, so it is seeded like any other
-    check("SeedRandom(7, Method -> \"Legacy\"); a = RandomSample({1,2,3,4}->{a,b,c,d}, 3);"
-        + "SeedRandom(7, Method -> \"Legacy\"); a === RandomSample({1,2,3,4}->{a,b,c,d}, 3)", //
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); a = RandomSample({1,2,3,4}->{a,b,c,d}, 3);"
+            + "SeedRandom(7, Method -> \"Legacy\"); a === RandomSample({1,2,3,4}->{a,b,c,d}, 3)", //
         "True");
 
     // "A Method option to SeedRandom can be given to specify the pseudorandom generator used" -
     // the same seed through a different generator is a different sample ...
-    check("SeedRandom(7, Method -> \"Legacy\"); a = RandomSample(Range(50), 6);"
-        + "SeedRandom(7, Method -> \"MersenneTwister\"); a === RandomSample(Range(50), 6)", //
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); a = RandomSample(Range(50), 6);"
+            + "SeedRandom(7, Method -> \"MersenneTwister\"); a === RandomSample(Range(50), 6)", //
         "False");
     // ... and reproducible in its own right
-    check("SeedRandom(7, Method -> \"MersenneTwister\"); a = RandomSample(Range(50), 6);"
-        + "SeedRandom(7, Method -> \"MersenneTwister\"); a === RandomSample(Range(50), 6)", //
+    check(
+        "SeedRandom(7, Method -> \"MersenneTwister\"); a = RandomSample(Range(50), 6);"
+            + "SeedRandom(7, Method -> \"MersenneTwister\"); a === RandomSample(Range(50), 6)", //
         "True");
     // Legacy and Congruential both name the generator everything draws from by default
-    check("SeedRandom(3, Method -> \"Legacy\"); a = RandomSample(Range(50), 6);"
-        + "SeedRandom(3, Method -> \"Congruential\"); a === RandomSample(Range(50), 6)", //
+    check(
+        "SeedRandom(3, Method -> \"Legacy\"); a = RandomSample(Range(50), 6);"
+            + "SeedRandom(3, Method -> \"Congruential\"); a === RandomSample(Range(50), 6)", //
         "True");
     // a method with no counterpart here is declined rather than quietly answered with another
     check("SeedRandom(3, Method -> \"MKL\") // Head", //
@@ -21508,8 +21526,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "SeedRandom");
 
     // the seed reaches every generator, not only the one RandomSample uses
-    check("SeedRandom(4, Method -> \"MersenneTwister\"); a = RandomInteger(100);"
-        + "SeedRandom(4, Method -> \"MersenneTwister\"); a === RandomInteger(100)", //
+    check(
+        "SeedRandom(4, Method -> \"MersenneTwister\"); a = RandomInteger(100);"
+            + "SeedRandom(4, Method -> \"MersenneTwister\"); a === RandomInteger(100)", //
         "True");
 
     // the generator a Method selects stays selected, so put the default back rather than leave it
@@ -21520,9 +21539,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   /**
    * A range which cannot be generated is not an empty range. Both used to answer the empty list, so
-   * <code>Range(x)</code> was indistinguishable from <code>Range(0)</code>. Mathematica reports the
-   * specification, and the message was already here - it was simply never reached, because a bound
-   * that is not a number produces no rows rather than throwing.
+   * <code>Range(x)</code> was indistinguishable from <code>Range(0)</code>.
    *
    * <p>
    * Bounds which are not numbers can still describe a range: the step count is what has to be
@@ -24848,7 +24865,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    * <code>ShiftRegisterSequence</code> takes the top exponent of its polynomial as the width of the
    * register and sizes its arrays with it. A reciprocal parses to an exponent of -1 and reached
    * <code>new int[-1]</code>; the existing check for a non-positive width came after the
-   * allocation. Mathematica requires a degree above 1 and says so, which is now what happens.
+   * allocation. WMA requires a degree above 1 and says so, which is now what happens.
    */
   @Test
   public void testStackAndShiftRegisterArgumentErrors() {
@@ -26912,7 +26929,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    * A series is not a collection of terms. It answers a size of seven and serves every position, so
    * the level visitor read its variable, expansion point, coefficient list, exponents and
    * denominator as elements and added them up - <code>Total(SeriesData(x,0,{1},0,3,1))</code> came
-   * out as <code>{5+x}</code>. Mathematica leaves it alone, and so does this now.
+   * out as <code>{5+x}</code>.
    */
   @Test
   public void testTotalOfSeriesData() {

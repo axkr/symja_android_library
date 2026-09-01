@@ -1296,60 +1296,6 @@ public class AlgebraUtil {
     return list;
   }
 
-  private static IExpr distributeLaurentDenominator(IExpr numeratorFact, IExpr denominatorFact,
-      Set<ISymbol> varSet, EvalEngine engine) {
-    IASTAppendable newFactors = F.TimesAlloc(numeratorFact.isTimes() ? numeratorFact.argSize() : 2);
-    Map<ISymbol, IExpr> totalPowers = new HashMap<>();
-    for (ISymbol v : varSet) {
-      totalPowers.put(v, F.C0);
-    }
-
-    if (numeratorFact.isTimes()) {
-      for (int i = 1; i <= numeratorFact.argSize(); i++) {
-        IExpr factor = numeratorFact.get(i);
-        IExpr base = factor.isPower() ? factor.base() : factor;
-        IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
-
-        IExpr newBase = base;
-        for (ISymbol v : varSet) {
-          IExpr degree = engine.evaluate(F.Exponent(newBase, v));
-          if (degree.isInteger() && !degree.isZero()) {
-            IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
-            newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
-            totalPowers.put(v,
-                engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
-          }
-        }
-        newFactors.append(engine.evaluate(F.Power(newBase, exp)));
-      }
-    } else {
-      IExpr factor = numeratorFact;
-      IExpr base = factor.isPower() ? factor.base() : factor;
-      IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
-
-      IExpr newBase = base;
-      for (ISymbol v : varSet) {
-        IExpr degree = engine.evaluate(F.Exponent(newBase, v));
-        if (degree.isInteger() && !degree.isZero()) {
-          IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
-          newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
-          totalPowers.put(v, engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
-        }
-      }
-      newFactors.append(engine.evaluate(F.Power(newBase, exp)));
-    }
-
-    IExpr newDenominator = denominatorFact;
-    for (ISymbol v : varSet) {
-      IExpr tp = totalPowers.get(v);
-      if (!tp.isZero()) {
-        newDenominator =
-            engine.evaluate(F.Expand(F.Times(newDenominator, F.Power(v, tp.negate()))));
-      }
-    }
-    return engine.evaluate(F.Divide(newFactors.oneIdentity1(), newDenominator));
-  }
-
   /**
    * Call the distribute algorithm for a <code>Times(...)</code> {@link IAST}, which contains
    * <code>Plus(...)</code> terms. If <code>expr.isTimes() == false</code> return <code>expr</code>
@@ -1948,35 +1894,23 @@ public class AlgebraUtil {
     IExpr factorization = F.NIL;
 
     if (subsPolynomial.isAST()) {
-      Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
-      eVar.addAll(varSet);
+      eVar.addAll(substitutions.substitutedVariablesSet());
 
       // Support Laurent polynomials (negative exponents) by converting them to a rational
       // expression first
       IExpr[] fractionParts = numeratorDenominator((IAST) subsPolynomial, true, engine);
 
+      IExpr numeratorFact =
+          factorComplex(fractionParts[0], eVar.getVarList(), S.Times, gaussianIntegers, engine);
       if (!fractionParts[1].isOne()) {
-        IExpr numeratorFact =
-            factorComplex(fractionParts[0], eVar.getVarList(), S.Times, gaussianIntegers, engine);
         if (numeratorFact.isPresent()) {
           IExpr denominatorFact =
               factorComplex(fractionParts[1], eVar.getVarList(), S.Times, gaussianIntegers, engine);
           IExpr denom = denominatorFact.isPresent() ? denominatorFact : fractionParts[1];
-
-          if (trig && !varSet.isEmpty()) {
-            factorization = distributeLaurentDenominator(numeratorFact, denom, varSet, engine);
-          } else {
-            factorization = engine.evaluate(F.Divide(numeratorFact, denom));
-          }
+          factorization = engine.evaluate(F.Divide(numeratorFact, denom));
         }
       } else {
-        IExpr numeratorFact =
-            factorComplex(fractionParts[0], eVar.getVarList(), S.Times, gaussianIntegers, engine);
-        if (trig && !varSet.isEmpty() && numeratorFact.isPresent()) {
-          factorization = distributeLaurentDenominator(numeratorFact, F.C1, varSet, engine);
-        } else {
-          factorization = numeratorFact.isPresent() ? numeratorFact : fractionParts[0];
-        }
+        factorization = numeratorFact.isPresent() ? numeratorFact : fractionParts[0];
       }
     } else {
       factorization =
@@ -2576,13 +2510,11 @@ public class AlgebraUtil {
         IExpr v1 = S.Expand.of(engine, currentFirst);
         IExpr v2 = S.Expand.of(engine, currentRest);
         IExpr peGCD = S.PolynomialExtendedGCD.of(engine, v1, v2, variable);
-
+  
         if (peGCD.isList() && peGCD.second().isList()) {
           // PolynomialExtendedGCD returns {g, {A, B}} with A*v1 + B*v2 == g. Splitting
           // n/(v1*v2) into n*B/v1 + n*A/v2 needs g to be a unit; when g still contains the
-          // variable, v1 and v2 share a root and that split denotes n*g/(v1*v2) instead. That is
-          // how Apart(1/((1-I*x)*(1+x^2))) - both factors contain x+I - used to return a wrong
-          // value, and Apart(((I-x)*(I+x)^2)/((1-I*x)*(1+x^2))) collapsed to 0.
+          // variable, v1 and v2 share a root and that split denotes n*g/(v1*v2) instead.
           IExpr gcd = peGCD.first();
           if (!gcd.isFree(variable) || gcd.isZero()) {
             return F.NIL;
@@ -2602,7 +2534,7 @@ public class AlgebraUtil {
             if (qr2.isList2()) {
               // n*B/v1 == q1 + u1/v1 and n*A/v2 == q2 + u2/v2. The quotients carry the polynomial
               // part of an improper fraction and cancel each other for a proper one, so keeping
-              // them is what makes Apart(x^3/((1-I*x)*(2+x))) keep its x.
+              // them is what makes Apart(x^3/((1-Sqrt(2)*x)*(2+x))) keep its polynomial part.
               resultPlus.append(qr1.first());
               resultPlus.append(qr2.first());
               // Append the resolved partial fraction term
@@ -2716,6 +2648,109 @@ public class AlgebraUtil {
   }
 
   /**
+   * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition
+   * of the numerator and denominator parts over the Gaussian rationals.
+   *
+   * <p>
+   * {@link #partialFractionDecompositionRational(IPartialFractionGenerator, IExpr[], IAST)} works
+   * over {@link BigRational} only and {@link JASConvert} cannot represent a Gaussian integer in
+   * that ring, so every fraction carrying an <code>I</code> fell through to the pairwise Bezout
+   * iteration of {@link #partialFractionDecomposition(IExpr, IExpr, IExpr, EvalEngine)} - which
+   * cannot express a repeated denominator factor at all. Running the same JAS algorithm over
+   * <code>ComplexRing&lt;BigRational&gt;</code> decomposes those completely, which is what
+   * <code>Apart(1/((1-I*x)*(1+x^2)))</code> needs: its denominator is <code>-I*(x-I)*(x+I)^2</code>.
+   *
+   * <p>
+   * Only call this after the rational decomposition declined. A real irreducible quadratic must not
+   * be split into complex linear factors, because <code>Apart(1/(1+x^2))</code> stays
+   * <code>1/(1+x^2)</code>.
+   *
+   * @param parts numerator and denominator parts
+   * @param variableList a list of variable
+   * @return {@link F#NIL} if the partial fraction decomposition wasn't constructed
+   */
+  public static IExpr partialFractionDecompositionComplexRational(IExpr[] parts,
+      IAST variableList) {
+    try {
+      IExpr exprNumerator = F.evalExpandAll(parts[0]);
+      IExpr exprDenominator = F.evalExpandAll(parts[1]);
+      ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
+      JASConvert<Complex<BigRational>> jas =
+          new JASConvert<Complex<BigRational>>(variableList, cfac);
+      GenPolynomial<Complex<BigRational>> numerator = jas.expr2JAS(exprNumerator, false);
+      if (numerator == null) {
+        return F.NIL;
+      }
+      GenPolynomial<Complex<BigRational>> denominator = jas.expr2JAS(exprDenominator, false);
+      if (denominator == null) {
+        return F.NIL;
+      }
+      // get factors
+      FactorAbstract<Complex<BigRational>> factorAbstract = FactorFactory.getImplementation(cfac);
+      SortedMap<GenPolynomial<Complex<BigRational>>, Long> sfactors =
+          factorAbstract.baseFactors(denominator);
+
+      List<GenPolynomial<Complex<BigRational>>> D =
+          new ArrayList<GenPolynomial<Complex<BigRational>>>(sfactors.keySet());
+
+      SquarefreeAbstract<Complex<BigRational>> sqf =
+          SquarefreeFactory.<Complex<BigRational>>getImplementation(cfac);
+      List<List<GenPolynomial<Complex<BigRational>>>> Ai =
+          sqf.basePartialFraction(numerator, sfactors);
+      // returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
+      // A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
+
+      if (Ai.size() > 0) {
+        IASTAppendable result = F.PlusAlloc(Ai.size() * 2);
+        if (!Ai.get(0).get(0).isZERO()) {
+          appendPartialFraction(result, F.eval(jas.complexPoly2Expr(Ai.get(0).get(0))));
+        }
+        for (int i = 1; i < Ai.size(); i++) {
+          final List<GenPolynomial<Complex<BigRational>>> list = Ai.get(i);
+          int j = 0;
+          for (GenPolynomial<Complex<BigRational>> genPolynomial : list) {
+            if (!genPolynomial.isZERO()) {
+              // the leading coefficient of the denominator shows up as a degree 0 factor, its
+              // numerator is 0 and gets skipped here
+              final GenPolynomial<Complex<BigRational>> Di_1 = D.get(i - 1);
+              IExpr numeratorExpr = jas.complexPoly2Expr(genPolynomial);
+              IExpr temp = (j == 0) //
+                  ? F.eval(numeratorExpr)
+                  : F.eval(F.Times(numeratorExpr,
+                      F.Power(jas.complexPoly2Expr(Di_1), F.ZZ(j * (-1L)))));
+              appendPartialFraction(result, temp);
+            }
+            j++;
+          }
+        }
+        return result;
+      }
+    } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      // JAS may throw JASConversionException and RuntimeExceptions
+      // LOGGER.debug("Algebra.partialFractionDecompositionComplexRational() failed", e);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Append one term of a partial fraction decomposition and mark it as decomposed, so that
+   * <code>Integrate</code> doesn't run the decomposition again on its own result.
+   *
+   * @param result the <code>Plus(...)</code> collector
+   * @param term a single term of the decomposition
+   */
+  private static void appendPartialFraction(IASTAppendable result, IExpr term) {
+    if (term.isZERO()) {
+      return;
+    }
+    if (term.isAST()) {
+      ((IAST) term).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+    }
+    result.append(term);
+  }
+
+  /**
    * If possible returns an AST with head Plus, which contains the partial fraction decomposition of
    * the numerator and denominator parts.
    *
@@ -2728,6 +2763,13 @@ public class AlgebraUtil {
   public static IExpr partsApart(IExpr[] parts, IExpr variable, EvalEngine engine) {
     IExpr temp = AlgebraUtil.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
         variable);
+    if (temp.isPresent()) {
+      return temp;
+    }
+    // the rational ring declined - for a Gaussian integer coefficient that's only because
+    // JASConvert cannot represent it there, so retry over the Gaussian rationals before falling
+    // back to the Bezout iteration, which cannot handle a repeated denominator factor
+    temp = AlgebraUtil.partialFractionDecompositionComplexRational(parts, F.list(variable));
     if (temp.isPresent()) {
       return temp;
     }
