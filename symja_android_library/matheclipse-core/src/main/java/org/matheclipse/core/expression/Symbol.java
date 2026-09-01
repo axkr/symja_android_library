@@ -493,6 +493,10 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       return F.NIL;
     }
+    if (Config.RULE_DISPATCH_STATISTICS) {
+      org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats.symbolDispatch(fSymbolName,
+          fRulesData.patternDownRulesSize());
+    }
     return fRulesData.evalDownRule(expression, engine);
   }
 

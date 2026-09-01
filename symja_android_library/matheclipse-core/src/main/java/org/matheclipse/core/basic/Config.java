@@ -275,6 +275,29 @@ public class Config {
   public static boolean RULE_DISPATCH_STATISTICS = false;
 
   /**
+   * Substitute the right-hand-side of a rewrite rule with a precompiled
+   * {@link org.matheclipse.core.patternmatching.SubstitutionPlan} instead of walking the whole
+   * expression with a generic visitor.
+   * <p>
+   * Set <code>-Dsymja.substitutionPlan=false</code> to fall back to
+   * {@link org.matheclipse.core.patternmatching.IPatternMap#substituteSymbols(org.matheclipse.core.interfaces.IExpr, org.matheclipse.core.interfaces.IExpr)}
+   * everywhere. Both paths produce the same result, so this only trades speed for a smaller amount
+   * of machinery on the hot path.
+   */
+  public static boolean SUBSTITUTION_PLAN =
+      !"false".equalsIgnoreCase(System.getProperty("symja.substitutionPlan"));
+
+  /**
+   * Set to <code>true</code> to check every planned substitution against the generic one. The
+   * generic result is the one which is returned, so an incorrect plan cannot change a result while
+   * this mode is enabled; differences are counted in
+   * {@link org.matheclipse.core.patternmatching.ruleindex.SubstitutionPlanStats} and reported on
+   * <code>System.err</code>. Slow - for testing only.
+   */
+  public static boolean SUBSTITUTION_PLAN_VALIDATE =
+      Boolean.getBoolean("symja.substitutionPlanValidate");
+
+  /**
    * Set to <code>true</code> to collect counters for the
    * {@link org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher} dispatch of
    * <code>Plus(...)</code> and <code>Times(...)</code> in
