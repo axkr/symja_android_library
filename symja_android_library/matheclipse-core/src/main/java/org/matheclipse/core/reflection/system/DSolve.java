@@ -185,13 +185,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 
       // N - d/dY(intM)
       IExpr dIntMdy = engine.evaluate(F.D(intM, yDummy));
-      // Simplify before integrating: for an exact equation g'(Y) is free of `x`, but it is not
-      // necessarily in that form yet - Integrate() may return the antiderivative of M as a power
-      // of the linear factor (for example Integrate(Y^2+2*x*Y, x) as Y*(2*x+Y)^2/4), and
-      // integrating the unexpanded difference over Y then adds an `x` dependent term to g(Y)
-      // (here -2/3*x^3), which is not a constant of the Y integration and breaks the implicit
-      // solution.
-      IExpr gPrime = engine.evaluate(F.Simplify(F.Subtract(nDummy, dIntMdy)));
+      IExpr gPrime = engine.evaluate(F.Subtract(nDummy, dIntMdy));
 
       // g(Y) = Integrate(gPrime, Y)
       IExpr gy = engine.evaluate(F.Integrate(gPrime, yDummy));

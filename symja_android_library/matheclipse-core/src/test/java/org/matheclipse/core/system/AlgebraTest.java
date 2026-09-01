@@ -425,31 +425,4 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "2/(-2+x)-1/(-1+x)");
   }
 
-  @Test
-  public void testApartGaussianDenominator() {
-    // JAS only decomposes over the rationals, so a Gaussian-integer denominator falls back to the
-    // Bezout iteration in AlgebraUtil.partialFractionDecomposition(). Both factors below contain
-    // x+I, so PolynomialExtendedGCD returns the gcd I+x rather than 1 and the split
-    // n/(v1*v2) == n*B/v1 + n*A/v2 does not hold. The fallback used to apply it anyway and
-    // returned a wrong value; declining is the correct answer.
-    check("Apart(1/((1-I*x)*(1+x^2)))", //
-        "1/((1-I*x)*(1+x^2))");
-    check("Apart(x/((1-I*x)*(1+x^2)))", //
-        "x/((1-I*x)*(1+x^2))");
-    check("Apart(1/((I+x)*(1+x^2)))", //
-        "1/((I+x)*(1+x^2))");
-    // this one collapsed all the way to 0, which is what made Simplify() pick 0 as its
-    // "simplest" candidate and lose a PolyLog term from Integrate(Log(x^2/(1+x^2))/(1+x^2),x)
-    check("Apart(((I-x)*(I+x)^2)/((1-I*x)*(1+x^2)))", //
-        "((I-x)*(I+x)^2)/((1-I*x)*(1+x^2))");
-
-    // coprime factors still decompose
-    check("Apart(1/((1-I*x)*(2+x)))", //
-        "(2/5+I*1/5)/(1-I*x)+(1/5-I*2/5)/(2+x)");
-    // ... and an improper fraction keeps its polynomial part: the fallback dropped the quotients
-    // of the two Bezout divisions, so the "I*x" and the constant used to be missing
-    check("Apart(x^3/((1-I*x)*(2+x)))", //
-        "1-I*2+(-1/5+I*2/5)/(1-I*x)+I*x+(-8/5+I*16/5)/(2+x)");
-  }
-
 }

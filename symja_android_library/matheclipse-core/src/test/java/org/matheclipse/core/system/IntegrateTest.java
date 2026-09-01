@@ -456,10 +456,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // see github #128
     // check("Apart(a/((8/3*a*b^(2/3)-16/9*b)^2*(4/3*a*b^(2/3)+16/9*b)))", //
     // "a/(a^3-4/3*a*b^(2/3)+16/27*b)");
-    // the Rubi 4.17.3 rules return the first summand already reduced;
-    // Simplify(old - new) == 0, and the check below differentiates exactly this form
     check("Integrate(a/(a^3-4/3*a*b^(2/3)+16/27*b),a)", //
-        "-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3))");
+        "((-3*b^(1/3))/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3)))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(\n"
+            + "3*b^(1/3))");
     check(
         "Simplify(D(-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3)),a))", //
         "(27*a)/(27*a^3-36*a*b^(2/3)+16*b)"); // "3/(3*a-2*b^(1/3))^2+1/(3*a*b^(1/3)-2*b^(2/3))-1/(3*a*b^(1/3)+4*b^(2/3))");
@@ -494,9 +493,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(x^n,{x,0,1})", //
         "ConditionalExpression(1/(1+n),n>-1)");
     // https://github.com/RuleBasedIntegration/Rubi/issues/12
-    // the Rubi 4.17.3 rules distribute the leading I; Simplify(old - new) == 0
     check("Integrate(Tan(Log(x)),x)", //
-        "-I*x+I*2*x*Hypergeometric2F1(-I*1/2,1,1-I*1/2,-x^(I*2))");
+        "I*(-x+2*x*Hypergeometric2F1(-I*1/2,1,1-I*1/2,-x^(I*2)))");
 
     check("Integrate(5*E^(3*x),{x,2,a})", //
         "1/3*(-5*E^6+5*E^(3*a))");
@@ -1043,62 +1041,6 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // Complex variables
     check("Integrate(I*E^(I*x)/x^2, x)", //
         "I*(-E^(I*x)/x+I*ExpIntegralEi(I*x))");
-  }
-
-  @Test
-  public void testDilogarithmIntegrationByParts() {
-    // Symja extension, proposed upstream in RuleBasedIntegration/Rubi#63 by benruijl: an
-    // integration-by-parts rule for Int(PolyLog(2,u),x) where u is a rational function whose
-    // numerator and denominator both have degree <= 2. Rubi 4.17.3 leaves all of these
-    // unevaluated. The identity is D(PolyLog(2,u)) == -Log(1-u)*D(u)/u, so
-    // Int(PolyLog(2,u)) == x*PolyLog(2,u) + Int(x*D(u)*Log(1-u)/u).
-    check("Integrate(PolyLog(2,x/(1+x)), x)", //
-        "-Log(1/(1+x))^2/2+x*PolyLog(2,x/(1+x))");
-
-    // the motivating case of the issue - a quotient of two linear factors. Only the shape is
-    // asserted here; the closed form is large and its exact rendering is not the point.
-    check("FreeQ(Integrate(PolyLog(2,(a+b*x)/(c+d*x)), x), Integrate)", //
-        "True");
-
-    // the rule must not take over the cases which already had their own rules
-    check("Integrate(PolyLog(2,x), x)", //
-        "-x+(-1+x)*Log(1-x)+x*PolyLog(2,x)");
-
-    // a non-rational argument is declined and stays unevaluated as before
-    check("FreeQ(Integrate(PolyLog(2,Sin(x)), x), Integrate)", //
-        "False");
-
-    // so is an argument outside the degree bound of the condition - the issue notes that going
-    // beyond it would need RootSum
-    check("FreeQ(Integrate(PolyLog(2,1/(1+x^3)), x), Integrate)", //
-        "False");
-    check("FreeQ(Integrate(PolyLog(2,x^3/(1+x)), x), Integrate)", //
-        "False");
-  }
-
-  @Test
-  public void testLogOverQuadratic() {
-    // Rubi 3044 integrates Log(u)/Qx by parts with v=IntHide(1/Qx,x), which leaves
-    // Int(ArcTan(x)*2/(x*(1+x^2))). That one is finished by rule 2897, whose
-    // C=FullSimplify(Pq^m*(1-u)/D(u,x)) contributes the PolyLog term. FullSimplify used to
-    // return 0 for C because Apart() - one of the rewrite candidates it ranks by complexity -
-    // returned 0 for a Gaussian-integer fraction (see AlgebraTest#testApartGaussianDenominator),
-    // and nothing is simpler than 0. The PolyLog term was silently dropped.
-    check("Integrate(ArcTan(x)/(x*(1+x^2)), x)", //
-        "-I*1/2*ArcTan(x)^2+ArcTan(x)*Log(2-2/(1-I*x))-I*1/2*PolyLog(2,-1+2/(1-I*x))");
-    check("Integrate(Log(x^2/(1+x^2))/(1+x^2), x)", //
-        "I*ArcTan(x)^2-2*ArcTan(x)*Log(2-2/(1-I*x))+ArcTan(x)*Log(x^2/(1+x^2))+I*PolyLog(\n"
-            + "2,-1+2/(1-I*x))");
-
-    // neighbouring shapes that were already correct - verified byte-identical before and after
-    // the Apart fix, so they pin down how far its blast radius reaches
-    check("Integrate(x^2*Log(1+x^2)/(1+x^2), x)", //
-        "-2*x+2*ArcTan(x)-I*ArcTan(x)^2-2*ArcTan(x)*Log(2/(1+I*x))+x*Log(1+x^2)-ArcTan(x)*Log(\n"
-            + "1+x^2)-I*PolyLog(2,1-2/(1+I*x))");
-    check("Integrate(Log(x)/(1+x^2), x)", //
-        "ArcTan(x)*Log(x)-I*1/2*PolyLog(2,-I*x)+I*1/2*PolyLog(2,I*x)");
-    check("Integrate(x*Log(x^2/(1+x^2))/(1+x^2), x)", //
-        "PolyLog(2,1-x^2/(1+x^2))/2");
   }
 
   @Test

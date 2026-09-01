@@ -16,7 +16,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.ruleindex.SubstitutionPlanStats;
 
 /**
  * A specialized <b>Pattern Matcher</b> that holds a Right-Hand Side (RHS) expression for immediate
@@ -103,64 +102,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    */
   protected transient IExpr fSubstitutedMatch = F.NIL;
 
-  /**
-   * Precompiled substitution of {@link #fRightHandSide}, built on the first substitution. All its
-   * fields are final, so the benign race of two threads building it publishes safely.
-   *
-   * @see SubstitutionPlan
-   */
-  private transient SubstitutionPlan fRightHandSidePlan;
-
-  /**
-   * <code>true</code> if {@link SubstitutionPlan#build(IExpr, IPatternMap)} declined this
-   * right-hand-side, so it is not attempted again.
-   */
-  private transient boolean fRightHandSidePlanRefused;
-
-  /**
-   * Substitute the pattern values into the right-hand-side of this rule.
-   *
-   * <p>
-   * Uses a {@link SubstitutionPlan} compiled from the right-hand-side, which rebuilds only the
-   * nodes on a path to a replaced symbol instead of walking the whole expression. Falls back to
-   * {@link IPatternMap#substituteSymbols(IExpr, IExpr)} for a right-hand-side the plan builder does
-   * not model.
-   *
-   * @param patternMap the values to substitute
-   * @param nilOrEmptySequence value of an unassigned pattern, see
-   *        {@link SubstitutionPlan#substitute(IPatternMap, IExpr)}
-   */
-  private IExpr substituteRightHandSide(IPatternMap patternMap, IExpr nilOrEmptySequence) {
-    if (Config.SUBSTITUTION_PLAN && !fRightHandSidePlanRefused) {
-      SubstitutionPlan plan = fRightHandSidePlan;
-      if (plan == null) {
-        // a benign race can compile this twice; SubstitutionPlan is deeply final, so either
-        // instance publishes safely and both describe the same right-hand-side
-        plan = SubstitutionPlan.build(fRightHandSide, patternMap);
-        if (plan == null) {
-          fRightHandSidePlanRefused = true;
-        } else {
-          fRightHandSidePlan = plan;
-        }
-      }
-      if (plan != null) {
-        IExpr planned = plan.substitute(patternMap, nilOrEmptySequence).orElse(fRightHandSide);
-        if (Config.SUBSTITUTION_PLAN_VALIDATE) {
-          // the generic result is the one which is returned, so an incorrect plan cannot change a
-          // result while this mode is on
-          IExpr generic = patternMap.substituteSymbols(fRightHandSide, nilOrEmptySequence);
-          SubstitutionPlanStats.checked(SubstitutionPlan.equalWithFlags(planned, generic), planned,
-              generic);
-          return generic;
-        }
-        SubstitutionPlanStats.plannedSubstitution();
-        return planned;
-      }
-    }
-    SubstitutionPlanStats.genericSubstitution();
-    return patternMap.substituteSymbols(fRightHandSide, nilOrEmptySequence);
-  }
-
   public PatternMatcherAndEvaluator() {
     fRightHandSide = F.NIL;
     fSubstitutedMatch = F.NIL;
@@ -212,10 +153,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     v.fSetFlags = fSetFlags;
     v.fPatterHash = fPatterHash;
     v.fRightHandSide = fRightHandSide;
-    // the plan depends only on the right-hand-side and the slot layout, and IPatternMap#copy()
-    // preserves that layout - so the copy can use the same plan
-    v.fRightHandSidePlan = fRightHandSidePlan;
-    v.fRightHandSidePlanRefused = fRightHandSidePlanRefused;
     // like in clone() - fReturnResult is per-match state and must not leak into the copy
     v.fReturnResult = F.NIL;
     return v;
@@ -234,22 +171,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return true;
     }
 
-    // from here on the guard is really evaluated: the right-hand-side is substituted and run
-    org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats.rhsConditionEvaluation();
     boolean matched = false;
+    IExpr rhs = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
+    engine.pushOptionsStack();
     IEvalStepListener stepListener = engine.getStepListener();
     final boolean isTraceMode =
         Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
-
-    // Note: substituting only the `test` of a `body /; test` right-hand-side first, and the body
-    // only once the test holds, was implemented and measured here. 95% of the conditions of the
-    // Rubi rules fail, so it does remove real work - but it changed the wall clock by less than the
-    // run to run drift. The reason is that the time "inside checkRHSCondition" is dominated by the
-    // *successful* conditions, whose body evaluation recursively integrates again; the substitution
-    // of a body which is then thrown away is a small slice. Do not re-add it without a measurement
-    // which separates the recursive evaluation from the local substitution.
-    IExpr rhs = substituteRightHandSide(patternMap, F.CEmptySequence);
-    engine.pushOptionsStack();
     try {
       engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
       if (isTraceMode) {
@@ -278,9 +205,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       engine.popOptionsStack();
     }
     patternMap.setRHSEvaluated(matched);
-    if (matched) {
-      org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats.rhsConditionHeld();
-    }
     return matched;
   }
 
@@ -381,7 +305,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       if (fRightHandSide == DUMMY_SUBSET_CASES) {
         fSubstitutedMatch = patternMap.substitutePatterns(fLhsPatternExpr, F.CEmptySequence);
       } else {
-        fSubstitutedMatch = substituteRightHandSide(patternMap, F.CEmptySequence);
+        fSubstitutedMatch = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
       }
       IExpr result = fSubstitutedMatch;
       if (evaluate) {

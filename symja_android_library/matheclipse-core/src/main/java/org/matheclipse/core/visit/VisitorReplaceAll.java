@@ -126,10 +126,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
   @Override
   public IExpr visit(IASTMutable ast) {
-    // no orElseGet(() -> visitAST(ast)) here: this method runs for every AST node of every
-    // substituted expression, and the capturing lambda would be allocated on each of them
-    IExpr temp = fFunction.apply(ast);
-    return temp.isPresent() ? temp : visitAST(ast);
+    return fFunction.apply(ast).orElseGet(() -> visitAST(ast));
   }
 
   /** @return <code>F.NIL</code>, if no evaluation is possible */
