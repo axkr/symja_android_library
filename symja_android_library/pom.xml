@@ -122,7 +122,7 @@
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
 		<guava.minimal.version>32.0</guava.minimal.version>
-		<cdk.version>2.12</cdk.version>
+		<cdk.version>2.13</cdk.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
