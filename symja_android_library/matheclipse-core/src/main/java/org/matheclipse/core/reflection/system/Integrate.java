@@ -206,7 +206,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
 
     private static void getRuleASTStatic() {
-      INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7000});
+      INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7500});
       UtilityFunctionCtors.getRuleASTRubi45();
     }
   }

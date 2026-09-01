@@ -2576,22 +2576,39 @@ public class AlgebraUtil {
         IExpr v1 = S.Expand.of(engine, currentFirst);
         IExpr v2 = S.Expand.of(engine, currentRest);
         IExpr peGCD = S.PolynomialExtendedGCD.of(engine, v1, v2, variable);
-  
+
         if (peGCD.isList() && peGCD.second().isList()) {
+          // PolynomialExtendedGCD returns {g, {A, B}} with A*v1 + B*v2 == g. Splitting
+          // n/(v1*v2) into n*B/v1 + n*A/v2 needs g to be a unit; when g still contains the
+          // variable, v1 and v2 share a root and that split denotes n*g/(v1*v2) instead. That is
+          // how Apart(1/((1-I*x)*(1+x^2))) - both factors contain x+I - used to return a wrong
+          // value, and Apart(((I-x)*(I+x)^2)/((1-I*x)*(1+x^2))) collapsed to 0.
+          IExpr gcd = peGCD.first();
+          if (!gcd.isFree(variable) || gcd.isZero()) {
+            return F.NIL;
+          }
           IAST s = (IAST) peGCD.second();
           IExpr A = s.arg1();
           IExpr B = s.arg2();
-  
-          IExpr u1 = S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(B, currentNumerator)), v1,
+          // dividing by the constant g makes the cofactors satisfy A*v1 + B*v2 == 1
+          IExpr n = gcd.isOne() ? currentNumerator
+              : S.Times.of(engine, currentNumerator, F.Power(gcd, -1));
+
+          IExpr qr1 = S.PolynomialQuotientRemainder.ofNIL(engine, F.Expand(F.Times(B, n)), v1,
               variable);
-          if (u1.isPresent()) {
-            IExpr u2 = S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(A, currentNumerator)),
-                v2, variable);
-            if (u2.isPresent()) {
+          if (qr1.isList2()) {
+            IExpr qr2 = S.PolynomialQuotientRemainder.ofNIL(engine, F.Expand(F.Times(A, n)), v2,
+                variable);
+            if (qr2.isList2()) {
+              // n*B/v1 == q1 + u1/v1 and n*A/v2 == q2 + u2/v2. The quotients carry the polynomial
+              // part of an improper fraction and cancel each other for a proper one, so keeping
+              // them is what makes Apart(x^3/((1-I*x)*(2+x))) keep its x.
+              resultPlus.append(qr1.first());
+              resultPlus.append(qr2.first());
               // Append the resolved partial fraction term
-              resultPlus.append(S.Times.of(engine, u1, F.Power(currentFirst, -1)));
+              resultPlus.append(S.Times.of(engine, qr1.second(), F.Power(currentFirst, -1)));
               // Carry the remaining numerator forward
-              currentNumerator = u2;
+              currentNumerator = qr2.second();
             } else {
               return F.NIL;
             }
