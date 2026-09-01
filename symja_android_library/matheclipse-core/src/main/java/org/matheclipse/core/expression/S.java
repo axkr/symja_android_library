@@ -7347,6 +7347,15 @@ public class S {
   public final static IBuiltInSymbol FindThreshold =
       S.initFinalSymbol("FindThreshold", ID.FindThreshold);
 
+  /**
+   * FindVertexColoring(graph) - finds a coloring with a minimal number of colors for the vertices
+   * of `graph`. The result is a list of integers, one per vertex, in the order of
+   * `VertexList(graph)`, with different values for the two endpoints of every edge.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindVertexColoring.md">FindVertexColoring
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindVertexColoring =
       S.initFinalSymbol("FindVertexColoring", ID.FindVertexColoring);
 
@@ -21772,6 +21781,17 @@ public class S {
       S.initFinalSymbol("VerifySolutions", ID.VerifySolutions);
 
   public final static IBuiltInSymbol VertexAdd = S.initFinalSymbol("VertexAdd", ID.VertexAdd);
+
+  /**
+   * VertexChromaticNumber(graph) - gives the smallest number of colors that can be assigned to the
+   * vertices of `graph` such that no two adjacent vertices have the same color.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexChromaticNumber.md">VertexChromaticNumber
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexChromaticNumber =
+      S.initFinalSymbol("VertexChromaticNumber", ID.VertexChromaticNumber);
 
   public final static IBuiltInSymbol VertexColors =
       S.initFinalSymbol("VertexColors", ID.VertexColors);
