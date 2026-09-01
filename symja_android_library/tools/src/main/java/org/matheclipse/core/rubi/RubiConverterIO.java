@@ -10,6 +10,9 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -206,8 +209,8 @@ public final class RubiConverterIO {
     if (!Files.isRegularFile(file)) {
       return -1;
     }
-    Pattern pattern = Pattern.compile("^\\s*(?:IAST\\s+)?\\w+\\s*=\\s*"
-        + "org\\.matheclipse\\.core\\.integrate\\.rubi\\." + classNamePrefix + "\\d+\\.RULES;");
+    Pattern pattern = Pattern.compile("^\\s*org\\.matheclipse\\.core\\.integrate\\.rubi\\."
+        + classNamePrefix + "\\d+\\.RULES\\s*=\\s*null;");
     try (Stream<String> lines = Files.lines(file, StandardCharsets.UTF_8)) {
       return (int) lines.filter(line -> pattern.matcher(line).find()).count();
     } catch (IOException e) {
@@ -216,56 +219,105 @@ public final class RubiConverterIO {
   }
 
   /**
-   * Build the body of a {@code UtilityFunctionCtors} registration method for {@code fileCount}
-   * generated classes.
+   * Collect capturing group 1 of every match of {@code pattern} across the generated
+   * {@code <classNamePrefix>NNN.java} files in {@code outputDirectory}.
    *
-   * @param methodName for example {@code getRuleASTRubi45}
-   * @param variableDeclaration the declaration of the local variable, for example {@code IAST init}
-   * @param variableName the name of the local variable, for example {@code init}
-   * @param classNamePrefix for example {@code IntRules}
+   * @param outputDirectory the directory the converters write to
+   * @param classNamePrefix for example {@code IntRules} or {@code UtilityFunctions}
+   * @param pattern a pattern with at least one capturing group
+   * @return the distinct captured values, sorted
    */
-  public static String registrationMethod(String methodName, String variableDeclaration,
-      String variableName, String classNamePrefix, int fileCount) {
-    StringBuilder buf = new StringBuilder(fileCount * 80);
-    buf.append("  public static void ").append(methodName).append("() {\n");
+  public static Set<String> scanGeneratedSources(Path outputDirectory, String classNamePrefix,
+      Pattern pattern) throws IOException {
+    Set<String> found = new TreeSet<>();
+    Pattern fileName = Pattern.compile(Pattern.quote(classNamePrefix) + "\\d+\\.java");
+    try (DirectoryStream<Path> files = Files.newDirectoryStream(outputDirectory,
+        entry -> fileName.matcher(entry.getFileName().toString()).matches())) {
+      for (Path file : files) {
+        Matcher matcher = pattern.matcher(Files.readString(file, StandardCharsets.UTF_8));
+        while (matcher.find()) {
+          found.add(matcher.group(1));
+        }
+      }
+    }
+    return found;
+  }
+
+  /** Start of the block which {@link #writeRegistration} rewrites, plus the class name prefix. */
+  private static final String BEGIN_MARKER = "// <generated registration: ";
+
+  /** End of the block which {@link #writeRegistration} rewrites. */
+  private static final String END_MARKER = "// </generated registration>";
+
+  /**
+   * Build the assignments of a {@code UtilityFunctionCtors} registration method.
+   *
+   * <p>
+   * Reading {@code RULES} forces the class initializer of one generated class, which registers its
+   * rules as a side effect; assigning {@code null} then drops the duplicate reference.
+   *
+   * @param classNamePrefix for example {@code IntRules}
+   * @param fileCount the number of generated classes
+   * @param indent the indentation of the surrounding method body
+   */
+  public static String registrationBody(String classNamePrefix, int fileCount, String indent) {
+    StringBuilder buf = new StringBuilder(fileCount * 70);
     for (int i = 0; i < fileCount; i++) {
       if (i > 0 && i % 10 == 0) {
         buf.append('\n');
       }
-      buf.append("    ").append(i == 0 ? variableDeclaration : variableName)
-          .append(" = org.matheclipse.core.integrate.rubi.").append(classNamePrefix).append(i)
-          .append(".RULES;\n");
+      buf.append(indent).append("org.matheclipse.core.integrate.rubi.").append(classNamePrefix)
+          .append(i).append(".RULES = null;\n");
     }
-    buf.append("  }\n");
     return buf.toString();
   }
 
   /**
-   * Compare the number of generated files with the number of classes registered in
-   * {@code UtilityFunctionCtors.java} and write the matching registration method next to the
-   * generated sources if they differ.
+   * Rewrite the registration of the generated classes in {@code UtilityFunctionCtors.java} so that
+   * converting a new Rubi release needs no hand editing.
    *
    * <p>
-   * The method is <em>not</em> patched into {@code UtilityFunctionCtors.java} automatically,
-   * because entries there may be commented out on purpose.
+   * The block to replace is delimited by {@code // <generated registration: <prefix>>} and
+   * {@code // </generated registration>}. When the markers are missing - because someone commented
+   * an entry out on purpose, or the file was reorganised - nothing is touched and the replacement
+   * is written next to the generated sources for review instead.
+   *
+   * @param outputDirectory the directory holding {@code UtilityFunctionCtors.java}
+   * @param classNamePrefix for example {@code IntRules}
+   * @param fileCount the number of generated classes
+   * @param methodName the registration method, used for the fall back file name
    */
-  public static void reportRegisteredClasses(Path outputDirectory, String classNamePrefix,
-      int fileCount, String methodName, String variableDeclaration, String variableName)
-      throws IOException {
-    int registered = countRegisteredClasses(outputDirectory, classNamePrefix);
+  public static void writeRegistration(Path outputDirectory, String classNamePrefix, int fileCount,
+      String methodName) throws IOException {
     System.out.println(">>>>> Generated " + fileCount + " " + classNamePrefix + "*.java file(s)");
-    if (registered < 0 || registered == fileCount) {
+    Path file = outputDirectory.resolve(OUTPUT_DIR_MARKER);
+    String source = Files.isRegularFile(file) ? Files.readString(file, StandardCharsets.UTF_8) : null;
+    String begin = BEGIN_MARKER + classNamePrefix + ">";
+
+    int from = source == null ? -1 : source.indexOf(begin);
+    int to = from < 0 ? -1 : source.indexOf(END_MARKER, from);
+    if (from < 0 || to < 0) {
+      Path fallback = outputDirectory.resolve(methodName + ".txt");
+      writeFile(fallback, "// No '" + begin + "' ... '" + END_MARKER + "' block in "
+          + OUTPUT_DIR_MARKER + ", so " + methodName + "() was not rewritten.\n"
+          + "// Replace its body with:\n\n" + registrationBody(classNamePrefix, fileCount, "    "));
+      System.out.println(">>>>> WARNING: no registration markers for " + classNamePrefix + " in "
+          + OUTPUT_DIR_MARKER + "; replacement written to " + fallback);
       return;
     }
-    String snippet = registrationMethod(methodName, variableDeclaration, variableName,
-        classNamePrefix, fileCount);
-    Path file = outputDirectory.resolve(methodName + ".txt");
-    writeFile(file, "// " + fileCount + " generated " + classNamePrefix + "*.java file(s), but "
-        + registered + " class(es) registered in " + OUTPUT_DIR_MARKER + ".\n"
-        + "// Replace " + methodName + "() in " + OUTPUT_DIR_MARKER + " with:\n\n" + snippet);
-    System.out.println(">>>>> WARNING: " + OUTPUT_DIR_MARKER + "#" + methodName + "() registers "
-        + registered + " class(es) but " + fileCount + " file(s) were generated.");
-    System.out.println(">>>>>          Replacement method written to " + file);
+
+    int bodyStart = source.indexOf('\n', from) + 1;
+    int lineStart = source.lastIndexOf('\n', to) + 1;
+    String indent = source.substring(lineStart, to);
+    String updated = source.substring(0, bodyStart)
+        + registrationBody(classNamePrefix, fileCount, indent) + source.substring(lineStart);
+    if (updated.equals(source)) {
+      System.out.println(">>>>> " + methodName + "() already registers " + fileCount + " class(es)");
+      return;
+    }
+    Files.writeString(file, updated, StandardCharsets.UTF_8);
+    System.out.println(">>>>> Rewrote " + methodName + "() in " + OUTPUT_DIR_MARKER + " for "
+        + fileCount + " " + classNamePrefix + "*.java class(es)");
   }
 
   private static boolean isCleanEnabled() {

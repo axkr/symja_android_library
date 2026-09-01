@@ -53,6 +53,13 @@ public class ConvertRubiUtilityFunctions {
 
   public static List<ASTNode> parseFileToList(Path file) throws IOException {
     final StringBuffer buff = new StringBuffer(1024);
+    appendFile(buff, file);
+    String inputString = buff.toString();
+    Parser p = new Parser(RubiASTNodeFactory.RUBI_STYLE_FACTORY, false, true);
+    return p.parseScript(inputString);
+  }
+
+  private static void appendFile(StringBuffer buff, Path file) throws IOException {
     try (BufferedReader f = RubiConverterIO.newReader(file)) {
       String line;
       while ((line = f.readLine()) != null) {
@@ -60,9 +67,6 @@ public class ConvertRubiUtilityFunctions {
         buff.append('\n');
       }
     }
-    String inputString = buff.toString();
-    Parser p = new Parser(RubiASTNodeFactory.RUBI_STYLE_FACTORY, false, true);
-    return p.parseScript(inputString);
   }
 
   public static void writeFile(Path file, StringBuffer buffer) throws IOException {
@@ -199,8 +203,8 @@ public class ConvertRubiUtilityFunctions {
         fcnt++;
       }
 
-      RubiConverterIO.reportRegisteredClasses(outputDirectory, "UtilityFunctions", fcnt,
-          "getUtilityFunctionsRuleASTRubi45", "IAST ast", "ast");
+      RubiConverterIO.writeRegistration(outputDirectory, "UtilityFunctions", fcnt,
+          "getUtilityFunctionsRuleASTRubi45");
 
       buffer = new StringBuffer(100000);
       for (String str : functionSet) {

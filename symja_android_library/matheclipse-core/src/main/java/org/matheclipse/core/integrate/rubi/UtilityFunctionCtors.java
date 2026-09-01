@@ -198,6 +198,43 @@ public class UtilityFunctionCtors {
         }
       });
 
+  /**
+   * <code>FractionalPowerFactorQ[u]</code> - <code>True</code> if <code>u</code> is complex, is a
+   * fractional power, or is a product with such a factor.
+   *
+   * <p>
+   * Called by 8 of the Rubi 4.17.3 rules, for example rule 477. The 4.16 utility source Symja
+   * generates {@code UtilityFunctions*.java} from does not define it, and the file a generated
+   * definition would land in is deliberately not registered (it holds only Rubi's
+   * {@code FixIntRule}/{@code FixRhsIntRule} rule-loading preprocessors, which Symja does not run),
+   * so it is implemented here instead - the same way {@link #FractionalPowerQ} and
+   * {@link #IntegerPowerQ} are. Without it the head is renamed to
+   * {@code §fractionalpowerfactorq}, which compiles but never evaluates, leaving those rules dead.
+   */
+  public static ISymbol FractionalPowerFactorQ =
+      F.$rubi("FractionalPowerFactorQ", new AbstractCoreFunctionEvaluator() {
+        @Override
+        public IExpr evaluate(IAST ast, EvalEngine engine) {
+          if (ast.argSize() == 1) {
+            return F.booleSymbol(fractionalPowerFactorQ(engine.evaluate(ast.arg1())));
+          }
+          return S.False;
+        }
+      });
+
+  private static boolean fractionalPowerFactorQ(IExpr u) {
+    if (u.isAtom()) {
+      return u.isComplex() || u.isComplexNumeric();
+    }
+    if (u.isPower()) {
+      return u.exponent().isFraction();
+    }
+    if (u.isTimes()) {
+      return ((IAST) u).exists(factor -> fractionalPowerFactorQ(factor), 1);
+    }
+    return false;
+  }
+
   public static IAST F(final IExpr a0) {
     return F.unaryAST1(F.FSymbol, a0);
   }
@@ -727,6 +764,10 @@ public class UtilityFunctionCtors {
 
   public static IAST FractionalPowerQ(final IExpr a0) {
     return F.unaryAST1(FractionalPowerQ, a0);
+  }
+
+  public static IAST FractionalPowerFactorQ(final IExpr a0) {
+    return F.unaryAST1(FractionalPowerFactorQ, a0);
   }
 
   public static IAST FractionalPowerSubexpressionQ(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -2385,6 +2426,10 @@ public class UtilityFunctionCtors {
     // its rules in the Integrate() RulesData as a side effect of building the RULES list. The
     // field is then set to null so the rule ASTs are not retained a second time (the matchers
     // live in RulesData) - nobody reads RULES after this point.
+    //
+    // ConvertRubi rewrites everything between the markers, so converting a new Rubi release does
+    // not need this list to be edited by hand. Remove a marker to opt out.
+    // <generated registration: IntRules>
     org.matheclipse.core.integrate.rubi.IntRules0.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules1.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules2.RULES = null;
@@ -2787,10 +2832,12 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules363.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules364.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules365.RULES = null;
+    // </generated registration>
   }
 
   public static void getUtilityFunctionsRuleASTRubi45() {
     // see getRuleASTRubi45(): force the class initializers, then drop the duplicate rule ASTs
+    // <generated registration: UtilityFunctions>
     org.matheclipse.core.integrate.rubi.UtilityFunctions0.RULES = null;
     org.matheclipse.core.integrate.rubi.UtilityFunctions1.RULES = null;
     org.matheclipse.core.integrate.rubi.UtilityFunctions2.RULES = null;

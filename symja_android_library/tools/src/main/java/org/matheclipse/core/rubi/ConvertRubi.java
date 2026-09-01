@@ -2,9 +2,15 @@ package org.matheclipse.core.rubi;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -278,6 +284,17 @@ public class ConvertRubi {
       // Int[u_, {x_Symbol, a_, b_}] := Limit[...] - Integrate#evaluate() dispatches an
       // Integrate(f, {x,a,b}) to its own definiteIntegral()
       return "definite integration form; Symja implements Integrate(f, {x,a,b}) natively";
+    }
+    if (!ast.arg2().isFree(x -> normalizedName(x.topHead().toString()).equals("substpower"), true)) {
+      // Int[Fx_*x^m_, x] := With[{k=Denominator[m]}, k*Subst[Int[x^(k*(m+1)-1)*SubstPower[Fx,x,k],
+      // x], x, x^(1/k)]] and its duplicate. Fx_*x^m_ matches almost every integrand with a power of
+      // x, so once SubstPower has a definition these two fire constantly and each one pays a
+      // substitution plus a recursive integration: enabling them took IntegrateTest from 19s to
+      // 922s. Symja's own RadicalSubstitution and Chebyshev stages already integrate the
+      // fractional-power integrands they target - Sqrt(x)/(1+x), x^(1/3)/(1+x),
+      // x^(1/2)/(1+x+x^2) are all correct without them - so the rules are dropped rather than
+      // given a working SubstPower.
+      return "generic SubstPower substitution; Symja's native radical stages cover it far cheaper";
     }
     IExpr rhs = ast.arg2();
     if (!rhs.isCondition() && rhs.isAST() && rhs.size() == 3
@@ -990,6 +1007,116 @@ public class ConvertRubi {
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("ZeroQ", Context.RUBI_STR + "ZeroQ");
 
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("Dist", Context.RUBI_STR + "Dist");
+
+    addUtilityFunctionCtorSymbols();
+  }
+
+  /**
+   * Register every Rubi utility function which {@link UtilityFunctionCtors} exposes as a
+   * constructor, on top of the literal table above.
+   *
+   * <p>
+   * A name known here keeps its spelling and is emitted as a plain Java call, {@code IntHide(u,x)};
+   * a name missing from it is renamed to <code>$($s("§name"), ...)</code> by
+   * {@link RubiASTNodeFactory}, which compiles but never evaluates. Deriving the entries from the
+   * constructors means adding a utility function to {@code UtilityFunctionCtors} is enough to make
+   * the next Rubi release use it - the literal table no longer has to be edited by hand. It is kept
+   * because 23 of its entries (for example {@code ZeroQ}, {@code PositiveQ}, {@code SinQ}) have no
+   * constructor; those are unused by the current rules, and leaving them registered keeps a future
+   * use of one a loud {@code javac} error rather than a silently dead rule.
+   *
+   * @return the number of names which the literal table did not already cover
+   */
+  /** A <code>§name</code> applied as a function head, i.e. <code>$($s("§name"), ...)</code>. */
+  private static final Pattern APPLIED_RUBI_HEAD =
+      Pattern.compile("\\$\\(\\$s\\(\"(§[^\"]+)\"\\)");
+
+  /**
+   * Any mention of a <code>§name</code> in the utility function sources.
+   *
+   * <p>
+   * Being <i>defined</i> is not the criterion. Rubi's inert trigonometric markers ({@code §sin} and
+   * friends) deliberately have no definition - they are matched structurally inside other rules,
+   * for example {@code Power($($s("§sin"), v_), n_DEFAULT)}, and turned back into real functions by
+   * {@code ActivateTrig}. What matters is whether the utility layer knows the symbol at all.
+   */
+  private static final Pattern KNOWN_RUBI_HEAD = Pattern.compile("\\$s\\(\"(§[^\"]+)\"\\)");
+
+  /**
+   * Abort the conversion when a generated rule applies a <code>§name</code> which nothing defines.
+   *
+   * <p>
+   * A Rubi symbol missing from {@link #addPredefinedSymbols()} is renamed to {@code §name} by
+   * {@link RubiASTNodeFactory} and emitted as <code>$($s("§name"), ...)</code>. That compiles, so
+   * nothing downstream complains, but the symbol has no definition and never evaluates - a rule
+   * whose condition calls it can never fire. Rubi 4.17.3 shipped 10 rules dead this way
+   * ({@code FractionalPowerFactorQ} in 8 rules, {@code SubstPower} in 2).
+   *
+   * <p>
+   * Only an <i>applied</i> head is a problem. Rubi's polynomial and function slots ({@code Px},
+   * {@code Qx}, {@code Pq}, {@code Fx}, ...) are renamed the same way on purpose and appear as
+   * {@code $p("§px")} or {@code $s("§px")} patterns, never as a head, so they are not reported.
+   *
+   * @param outputDirectory the directory holding the generated {@code IntRules*.java} and the
+   *        {@code UtilityFunctions*.java} which know the legitimate {@code §} heads
+   */
+  private static void failOnUndefinedRubiHeads(Path outputDirectory) throws IOException {
+    Set<String> applied =
+        RubiConverterIO.scanGeneratedSources(outputDirectory, "IntRules", APPLIED_RUBI_HEAD);
+    Set<String> known = RubiConverterIO.scanGeneratedSources(outputDirectory, "UtilityFunctions",
+        KNOWN_RUBI_HEAD);
+    Set<String> missing = new TreeSet<>(applied);
+    missing.removeAll(known);
+
+    System.out.println(">>>>> Rubi '§' heads applied by the rules: " + applied.size() + ", of which "
+        + (applied.size() - missing.size()) + " known to UtilityFunctions*.java");
+    if (missing.isEmpty()) {
+      return;
+    }
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>> " + missing.size() + " undefined Rubi function(s). Every rule whose"
+        + " condition calls one can never fire:");
+    for (String name : missing) {
+      System.out.println(">>>>>   " + name);
+    }
+    System.out.println(">>>>> Add a constructor to UtilityFunctionCtors.java so the name keeps its"
+        + " spelling, and a definition to the utility function sources, then convert again.");
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
+    throw new IllegalStateException("undefined Rubi function(s): " + String.join(", ", missing));
+  }
+
+  private static int addUtilityFunctionCtorSymbols() {
+    Set<String> names = new TreeSet<>();
+    for (Method method : UtilityFunctionCtors.class.getDeclaredMethods()) {
+      int modifiers = method.getModifiers();
+      if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)
+          && IAST.class.isAssignableFrom(method.getReturnType())) {
+        names.add(method.getName());
+      }
+    }
+    for (Field field : UtilityFunctionCtors.class.getDeclaredFields()) {
+      int modifiers = field.getModifiers();
+      if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)
+          && ISymbol.class.isAssignableFrom(field.getType())) {
+        names.add(field.getName());
+      }
+    }
+
+    int added = 0;
+    for (String name : names) {
+      if (name.length() < 2 || !Character.isUpperCase(name.charAt(0))) {
+        // a one character name is returned unchanged by RubiASTNodeFactory anyway
+        continue;
+      }
+      if (name.equals(AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name.toLowerCase(Locale.US)))) {
+        // already resolves as a Symja built-in or Rubi alias of the same spelling, e.g. Int
+        continue;
+      }
+      if (F.PREDEFINED_INTERNAL_FORM_STRINGS.putIfAbsent(name, Context.RUBI_STR + name) == null) {
+        added++;
+      }
+    }
+    return added;
   }
 
   /**
@@ -1077,8 +1204,14 @@ public class ConvertRubi {
       }
     }
 
-    RubiConverterIO.reportRegisteredClasses(outputDirectory, "IntRules", fcnt, "getRuleASTRubi45",
-        "IAST init", "init");
+    RubiConverterIO.writeRegistration(outputDirectory, "IntRules", fcnt, "getRuleASTRubi45");
+
+    Set<String> renamed = RubiASTNodeFactory.unresolvedSymbols();
+    if (!renamed.isEmpty()) {
+      System.out.println(">>>>> Renamed to '§name' (Rubi slots and unknown symbols): "
+          + String.join(", ", renamed));
+    }
+    failOnUndefinedRubiHeads(outputDirectory);
 
     // which built-in symbols are used how often?
     for (Map.Entry<String, Integer> entry : AST2Expr.RUBI_STATISTICS_MAP.entrySet()) {

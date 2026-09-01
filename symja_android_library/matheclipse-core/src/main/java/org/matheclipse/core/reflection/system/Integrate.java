@@ -206,7 +206,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
 
     private static void getRuleASTStatic() {
-      INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7500});
+      // Only sizes[0] is read, as the initial capacity of the equal-rules HashMap; a 0 leaves that
+      // map unallocated. It is not a rule count and does not have to grow with a new Rubi release.
+      INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0});
       UtilityFunctionCtors.getRuleASTRubi45();
     }
   }

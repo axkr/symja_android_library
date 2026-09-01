@@ -22,7 +22,7 @@ IIntegrate(1082,Integrate(Power(Plus(a_,Times(b_DEFAULT,x_),Times(c_DEFAULT,Sqr(
 IIntegrate(1083,Integrate(Power(Plus(a_,Times(b_DEFAULT,x_),Times(c_DEFAULT,Sqr(x_))),CN1),x_Symbol),
     Condition(Simp(Dist(CN2,Subst(Integrate(Power(Simp(Subtract(Subtract(Sqr(b),Times(C4,a,c)),Sqr(x)),x),CN1),x),x,Plus(b,Times(C2,c,x))),x),x),FreeQ(list(a,b,c),x))),
 IIntegrate(1084,Integrate(Power(Plus(a_,Times(b_DEFAULT,x_),Times(c_DEFAULT,Sqr(x_))),p_),x_Symbol),
-    Condition(With(list(Set(q,Rt(Subtract(Sqr(b),Times(C4,a,c)),C2))),Condition(Simp(Dist(Power(Power(c,p),CN1),Integrate(ExpandIntegrand(Times(Power(Plus(Times(C1D2,b),Times(CN1,C1D2,q),Times(c,x)),p),Power(Plus(Times(C1D2,b),Times(C1D2,q),Times(c,x)),p)),x),x),x),x),Not($($s("§fractionalpowerfactorq"),q)))),And(FreeQ(list(a,b,c),x),IntegerQ(p),NiceSqrtQ(Subtract(Sqr(b),Times(C4,a,c)))))),
+    Condition(With(list(Set(q,Rt(Subtract(Sqr(b),Times(C4,a,c)),C2))),Condition(Simp(Dist(Power(Power(c,p),CN1),Integrate(ExpandIntegrand(Times(Power(Plus(Times(C1D2,b),Times(CN1,C1D2,q),Times(c,x)),p),Power(Plus(Times(C1D2,b),Times(C1D2,q),Times(c,x)),p)),x),x),x),x),Not(FractionalPowerFactorQ(q)))),And(FreeQ(list(a,b,c),x),IntegerQ(p),NiceSqrtQ(Subtract(Sqr(b),Times(C4,a,c)))))),
 IIntegrate(1085,Integrate(Power(Plus(a_DEFAULT,Times(b_DEFAULT,x_),Times(c_DEFAULT,Sqr(x_))),p_),x_Symbol),
     Condition(Integrate(ExpandIntegrand(Power(Plus(a,Times(b,x),Times(c,Sqr(x))),p),x),x),And(FreeQ(list(a,b,c),x),IntegerQ(p),Or(GtQ(p,C0),EqQ(a,C0))))),
 IIntegrate(1086,Integrate(Power(Plus(a_DEFAULT,Times(b_DEFAULT,x_),Times(c_DEFAULT,Sqr(x_))),p_),x_Symbol),
