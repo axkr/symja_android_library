@@ -3015,9 +3015,6 @@ public class S {
    */
   public final static IBuiltInSymbol Chop = S.initFinalSymbol("Chop", ID.Chop);
 
-  public final static IBuiltInSymbol ChromaticNumber =
-      S.initFinalSymbol("ChromaticNumber", ID.ChromaticNumber);
-
   public final static IBuiltInSymbol ChromaticPolynomial =
       S.initFinalSymbol("ChromaticPolynomial", ID.ChromaticPolynomial);
 
@@ -5986,6 +5983,17 @@ public class S {
    */
   public final static IBuiltInSymbol Dt = S.initFinalSymbol("Dt", ID.Dt);
 
+  /**
+   * DualPlanarGraph(graph) - gives the dual of the planar `graph`: one vertex for each face,
+   * and an edge for each pair of faces separated from each other by an edge.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DualPlanarGraph.md">DualPlanarGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DualPlanarGraph =
+      S.initFinalSymbol("DualPlanarGraph", ID.DualPlanarGraph);
+
   public final static IBuiltInSymbol DuplicateFreeQ =
       S.initFinalSymbol("DuplicateFreeQ", ID.DuplicateFreeQ);
 
@@ -6063,8 +6071,29 @@ public class S {
    */
   public final static IBuiltInSymbol EdgeCount = S.initFinalSymbol("EdgeCount", ID.EdgeCount);
 
+  /**
+   * EdgeChromaticNumber(graph) - gives the smallest number of colors that can be assigned to
+   * the edges of `graph` such that no two edges sharing an endpoint have the same color.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeChromaticNumber.md">EdgeChromaticNumber
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeChromaticNumber =
+      S.initFinalSymbol("EdgeChromaticNumber", ID.EdgeChromaticNumber);
+
   public final static IBuiltInSymbol EdgeContract =
       S.initFinalSymbol("EdgeContract", ID.EdgeContract);
+
+  /**
+   * EdgeCoverQ(graph, edges) - yields `True` if the edge list `edges` is an edge cover of
+   * `graph`, and `False` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeCoverQ.md">EdgeCoverQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeCoverQ = S.initFinalSymbol("EdgeCoverQ", ID.EdgeCoverQ);
 
   public final static IBuiltInSymbol EdgeDelete = S.initFinalSymbol("EdgeDelete", ID.EdgeDelete);
 
@@ -7087,6 +7116,16 @@ public class S {
       S.initFinalSymbol("FindAstroEvent", ID.FindAstroEvent);
 
   /**
+   * FindClique(graph) - finds a largest clique of `graph` - a set of vertices every two of
+   * which are joined by an edge.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindClique.md">FindClique
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindClique = S.initFinalSymbol("FindClique", ID.FindClique);
+
+  /**
    * FindClusters(list-of-data-points, k) - Clustering algorithm based on David Arthur and Sergei
    * Vassilvitski k-means++ algorithm. Create `k` number of clusters to split the
    * `list-of-data-points` into.
@@ -7117,6 +7156,26 @@ public class S {
   public final static IBuiltInSymbol FindDistributionParameters =
       S.initFinalSymbol("FindDistributionParameters", ID.FindDistributionParameters);
 
+  /**
+   * FindEdgeColoring(graph) - finds a coloring with a minimal number of colors for the edges of
+   * `graph`. The result is a list of integers, one per edge, in the order of `EdgeList(graph)`, with
+   * different values for any two edges that share an endpoint.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEdgeColoring.md">FindEdgeColoring
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindEdgeColoring =
+      S.initFinalSymbol("FindEdgeColoring", ID.FindEdgeColoring);
+
+  /**
+   * FindEdgeCover(graph) - finds an edge cover of `graph` with a minimum number of edges - a set
+   * of edges touching every vertex.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEdgeCover.md">FindEdgeCover
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindEdgeCover =
       S.initFinalSymbol("FindEdgeCover", ID.FindEdgeCover);
 
@@ -7177,9 +7236,27 @@ public class S {
   public final static IBuiltInSymbol FindHamiltonianCycle =
       S.initFinalSymbol("FindHamiltonianCycle", ID.FindHamiltonianCycle);
 
+  /**
+   * FindIndependentEdgeSet(graph) - finds an independent edge set of `graph` with a maximum number
+   * of edges - a set of edges no two of which are incident to the same vertex.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindIndependentEdgeSet.md">FindIndependentEdgeSet
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindIndependentEdgeSet =
       S.initFinalSymbol("FindIndependentEdgeSet", ID.FindIndependentEdgeSet);
 
+  /**
+   * FindIndependentVertexSet(graph) - finds an independent vertex set of `graph` with a maximum
+   * number of vertices - a set of vertices no two of which are joined by an edge.
+   * FindIndependentVertexSet(graph, nspec, s) gives up to `s` of them, and `All` in place of `s`
+   * gives every one.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindIndependentVertexSet.md">FindIndependentVertexSet
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindIndependentVertexSet =
       S.initFinalSymbol("FindIndependentVertexSet", ID.FindIndependentVertexSet);
 
@@ -7193,6 +7270,49 @@ public class S {
    */
   public final static IBuiltInSymbol FindInstance =
       S.initFinalSymbol("FindInstance", ID.FindInstance);
+
+  /**
+   * FindKClan(graph, k) - finds a largest k-clan of `graph` - a k-clique whose induced
+   * subgraph has diameter at most `k`. FindKClan(graph, k, nspec, s) gives up to `s` of them, and
+   * `All` in place of `s` gives every one.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClan.md">FindKClan
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindKClan = S.initFinalSymbol("FindKClan", ID.FindKClan);
+
+  /**
+   * FindKClique(graph, k) - finds a largest k-clique of `graph` - a maximal set of vertices
+   * that are at a distance no greater than `k` from each other. FindKClique(graph, k, nspec, s)
+   * gives up to `s` of them, and `All` in place of `s` gives every one.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClique.md">FindKClique
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindKClique = S.initFinalSymbol("FindKClique", ID.FindKClique);
+
+  /**
+   * FindKClub(graph, k) - finds a largest k-club of `graph` - a maximal set of vertices
+   * whose induced subgraph has diameter at most `k`. FindKClub(graph, k, nspec, s) gives up to `s`
+   * of them, and `All` in place of `s` gives every one.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClub.md">FindKClub
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindKClub = S.initFinalSymbol("FindKClub", ID.FindKClub);
+
+  /**
+   * FindKPlex(graph, k) - finds a largest k-plex of `graph` - a maximal set of vertices in
+   * which every vertex is adjacent to all but `k` of the members.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKPlex.md">FindKPlex
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindKPlex = S.initFinalSymbol("FindKPlex", ID.FindKPlex);
 
   /**
    * FindLinearRecurrence(list) - compute a minimal linear recurrence which returns list.
@@ -7259,6 +7379,28 @@ public class S {
    */
   public final static IBuiltInSymbol FindPermutation =
       S.initFinalSymbol("FindPermutation", ID.FindPermutation);
+
+  /**
+   * FindPlanarColoring(graph) - finds a coloring with a minimal number of colors for the faces
+   * of the planar `graph`, so that two faces sharing an edge get different colors.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindPlanarColoring.md">FindPlanarColoring
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindPlanarColoring =
+      S.initFinalSymbol("FindPlanarColoring", ID.FindPlanarColoring);
+
+  /**
+   * FindPostmanTour(graph) - finds a Chinese postman tour of `graph` - a shortest closed walk
+   * traversing every edge at least once.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindPostmanTour.md">FindPostmanTour
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindPostmanTour =
+      S.initFinalSymbol("FindPostmanTour", ID.FindPostmanTour);
 
   /**
    * FindRoot(f, {x, xmin, xmax}) - searches for a numerical root of `f` for the variable `x`, in
@@ -7351,6 +7493,15 @@ public class S {
    * FindVertexColoring(graph) - finds a coloring with a minimal number of colors for the vertices
    * of `graph`. The result is a list of integers, one per vertex, in the order of
    * `VertexList(graph)`, with different values for the two endpoints of every edge.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindVertexColoring.md">FindVertexColoring
+   *      documentation</a>
+   */
+  /**
+   * FindVertexColoring(graph) - finds a coloring with a minimal number of colors for the vertices of
+   * `graph`. The result is a list of integers, one per vertex, in the order of `VertexList(graph)`,
+   * with different values for the two endpoints of every edge.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindVertexColoring.md">FindVertexColoring
@@ -9803,6 +9954,13 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IncludeQuantities.md">IncludeQuantities
    *      documentation</a>
    */
+  /**
+   * IncludeOuterFace - an option for `PlanarFaceList`, specifying whether the unbounded outer
+   * face of a planar graph is part of the result.
+   */
+  public final static IBuiltInSymbol IncludeOuterFace =
+      S.initFinalSymbol("IncludeOuterFace", ID.IncludeOuterFace);
+
   public final static IBuiltInSymbol IncludeQuantities =
       S.initFinalSymbol("IncludeQuantities", ID.IncludeQuantities);
 
@@ -9814,6 +9972,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Increment = S.initFinalSymbol("Increment", ID.Increment);
+
+  /**
+   * IndependentEdgeSetQ(graph, edges) - yields `True` if the edge list `edges` is an
+   * independent edge set of `graph`, and `False` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IndependentEdgeSetQ.md">IndependentEdgeSetQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol IndependentEdgeSetQ =
+      S.initFinalSymbol("IndependentEdgeSetQ", ID.IndependentEdgeSetQ);
 
   /**
    * IndependentPhysicalQuantity(x) - TODO describe `IndependentPhysicalQuantity`.
@@ -9844,6 +10013,17 @@ public class S {
    */
   public final static IBuiltInSymbol IndependentUnitDimension =
       S.initFinalSymbol("IndependentUnitDimension", ID.IndependentUnitDimension);
+
+  /**
+   * IndependentVertexSetQ(graph, vertices) - yields `True` if the vertex list `vertices` is an
+   * independent vertex set of `graph`, and `False` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IndependentVertexSetQ.md">IndependentVertexSetQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol IndependentVertexSetQ =
+      S.initFinalSymbol("IndependentVertexSetQ", ID.IndependentVertexSetQ);
 
   /**
    * Indeterminate - represents an indeterminate result.
@@ -10795,6 +10975,17 @@ public class S {
    */
   public final static IBuiltInSymbol KaryTree = S.initFinalSymbol("KaryTree", ID.KaryTree);
 
+  /**
+   * KCoreComponents(graph, k) - gives the k-core components of `graph` - the maximal weakly
+   * connected subgraphs in which every vertex has degree at least `k`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KCoreComponents.md">KCoreComponents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KCoreComponents =
+      S.initFinalSymbol("KCoreComponents", ID.KCoreComponents);
+
   public final static IBuiltInSymbol KelvinBei = S.initFinalSymbol("KelvinBei", ID.KelvinBei);
 
   public final static IBuiltInSymbol KelvinBer = S.initFinalSymbol("KelvinBer", ID.KelvinBer);
@@ -11023,6 +11214,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol LaguerreL = S.initFinalSymbol("LaguerreL", ID.LaguerreL);
+
+  /**
+   * LambdaComponents(graph) - gives the lambda components of `graph` - sets of vertices
+   * joined to each other by more edge-independent paths than to any vertex outside the set.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LambdaComponents.md">LambdaComponents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LambdaComponents =
+      S.initFinalSymbol("LambdaComponents", ID.LambdaComponents);
 
   public final static IBuiltInSymbol LambertW = S.initFinalSymbol("LambertW", ID.LambertW);
 
@@ -12325,6 +12527,18 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol LucasL = S.initFinalSymbol("LucasL", ID.LucasL);
+
+  /**
+   * LuccioSamiComponents(graph) - gives the Luccio-Sami components of `graph` - sets of
+   * vertices in which every proper subset has more ties to the rest of the set than to
+   * anything outside it.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LuccioSamiComponents.md">LuccioSamiComponents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LuccioSamiComponents =
+      S.initFinalSymbol("LuccioSamiComponents", ID.LuccioSamiComponents);
 
   /**
    * LUDecomposition(matrix) - calculate the LUP-decomposition of a square `matrix`.
@@ -15734,6 +15948,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol PlanarAngle = S.initFinalSymbol("PlanarAngle", ID.PlanarAngle);
+
+  /**
+   * PlanarFaceList(graph) - gives the list of faces of the planar `graph`. Each face is the
+   * list of vertices bounding it, and the outer face is included.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlanarFaceList.md">PlanarFaceList
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PlanarFaceList =
+      S.initFinalSymbol("PlanarFaceList", ID.PlanarFaceList);
 
   public final static IBuiltInSymbol PlanarGraph = S.initFinalSymbol("PlanarGraph", ID.PlanarGraph);
 
@@ -21104,6 +21329,17 @@ public class S {
   public final static IBuiltInSymbol TrueQ = S.initFinalSymbol("TrueQ", ID.TrueQ);
 
   /**
+   * TruncatedDistribution({min, max}, distribution) - a distribution which is conditioned on the
+   * interval `min <= x <= max`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TruncatedDistribution.md">TruncatedDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TruncatedDistribution =
+      S.initFinalSymbol("TruncatedDistribution", ID.TruncatedDistribution);
+
+  /**
    * TTest(real-vector) - Returns the *observed significance level*, or *p-value*, associated with a
    * one-sample, two-tailed t-test comparing the mean of the input vector with the constant
    * <code>0.0</code>.
@@ -21790,6 +22026,14 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexChromaticNumber.md">VertexChromaticNumber
    *      documentation</a>
    */
+  /**
+   * VertexChromaticNumber(graph) - gives the smallest number of colors that can be assigned to the
+   * vertices of `graph` such that no two adjacent vertices have the same color.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexChromaticNumber.md">VertexChromaticNumber
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol VertexChromaticNumber =
       S.initFinalSymbol("VertexChromaticNumber", ID.VertexChromaticNumber);
 
@@ -21810,6 +22054,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol VertexCount = S.initFinalSymbol("VertexCount", ID.VertexCount);
+
+  /**
+   * VertexCoverQ(graph, vertices) - yields `True` if the vertex list `vertices` is a vertex
+   * cover of `graph`, and `False` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexCoverQ.md">VertexCoverQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexCoverQ =
+      S.initFinalSymbol("VertexCoverQ", ID.VertexCoverQ);
 
   public final static IBuiltInSymbol VertexDegree =
       S.initFinalSymbol("VertexDegree", ID.VertexDegree);
@@ -21990,6 +22245,16 @@ public class S {
       S.initFinalSymbol("ViewVertical", ID.ViewVertical);
 
   public final static IBuiltInSymbol Volume = S.initFinalSymbol("Volume", ID.Volume);
+
+  /**
+   * VonMisesDistribution(x) - TODO describe `VonMisesDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VonMisesDistribution.md">VonMisesDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VonMisesDistribution =
+      S.initFinalSymbol("VonMisesDistribution", ID.VonMisesDistribution);
 
   /**
    * VoronoiMesh(x) - TODO describe `VoronoiMesh`.
