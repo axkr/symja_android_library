@@ -1570,6 +1570,18 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   }
 
   /**
+   * Evaluate the arguments with the head {@link S#Evaluate}, i.e. <code>
+   * f(a, ... , Evaluate(x), ...)</code>, so that they escape the <code>Hold*</code> attributes of
+   * the head. Expressions with the {@link ISymbol#HOLDALLCOMPLETE} attribute are not rewritten.
+   *
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if no argument has the head {@link S#Evaluate}
+   */
+  default IExpr evalEvaluate(EvalEngine engine) {
+    return F.NIL;
+  }
+
+  /**
    * Test if one of the arguments of this expression needs one of the special treatments of the
    * evaluation loop, i.e. has the head {@link S#Unevaluated}, {@link S#Sequence},
    * {@link S#ConditionalExpression} or <code>Rubi`Dist</code>, or is the symbol

@@ -700,6 +700,28 @@ public final class PatternMatching {
    * HoldFirst, HoldRest, HoldAll</code> are set for the function head.
    *
    * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <p>
+   * This also releases the local variable specification of a scoping construct, so that the list of
+   * local variables can be computed:
+   *
+   * <pre>
+   * <code>&gt;&gt; vars = {a, b}; Module(Evaluate(vars), a = 1; b = 2; a + b)
+   * 3
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * An <code>Evaluate</code> nested inside the list is not released - only a whole argument of the
+   * held function is:
+   *
+   * <pre>
+   * <code>&gt;&gt; Module({Evaluate(a)}, a)
+   * Module({Evaluate(a)},a)
+   * </code>
+   * </pre>
    */
   private static final class Evaluate extends AbstractCoreFunctionEvaluator {
 

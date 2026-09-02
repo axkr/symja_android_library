@@ -762,6 +762,11 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 2) {
+        // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
+        // declared `expectedArgSize` has to be enforced here before the arguments are read
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
       try {
         final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
         ast.forEach2((x, i) -> iterList.add(Iterator.create((IAST) x, i, engine)));
@@ -1141,6 +1146,11 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 3 || ast.argSize() > 4) {
+        // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
+        // declared `expectedArgSize` has to be enforced here before the arguments are read
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
       // use EvalEngine's iterationLimit only for evaluation control
       final int iterationLimit = engine.getIterationLimit();
       int iterationCounter = 1;
@@ -1263,6 +1273,11 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 2 || ast.argSize() > 4) {
+        // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
+        // declared `expectedArgSize` has to be enforced here before the arguments are read
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
       final IExpr temp = engine.evaluate(ast.arg1());
       if (temp.isUndefined()) {
         return F.NIL;
@@ -1529,6 +1544,11 @@ public final class Programming {
     /** */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.isAST2()) {
+        // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
+        // declared `expectedArgSize` has to be enforced here before the arguments are read
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
       final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
       if (moduleVariablesList.isPresent()) {
         IExpr temp = moduleSubstVariables(moduleVariablesList, ast.arg2(), engine);
@@ -3238,6 +3258,11 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 1 || ast.argSize() > 2) {
+        // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
+        // declared `expectedArgSize` has to be enforced here before the arguments are read
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
       // While(test, body)
       final IExpr test = ast.arg1();
       final IExpr body = ast.isAST2() ? ast.arg2() : F.NIL;
@@ -3289,6 +3314,11 @@ public final class Programming {
       implements IFastFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 2) {
+        // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
+        // declared `expectedArgSize` has to be enforced here before the arguments are read
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
       final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
       if (moduleVariablesList.isPresent()) {
         IExpr lastArg;

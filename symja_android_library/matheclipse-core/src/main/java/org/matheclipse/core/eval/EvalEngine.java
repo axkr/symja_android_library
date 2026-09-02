@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
@@ -92,7 +90,6 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 import edu.jas.kern.PreemptingException;
@@ -2699,9 +2696,25 @@ public class EvalEngine implements Serializable {
 
       final IExpr head = expr.head();
       if (head instanceof IBuiltInSymbol) {
-        final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+        final IBuiltInSymbol headSymbol = (IBuiltInSymbol) head;
+        final IEvaluator evaluator = headSymbol.getEvaluator();
         if (evaluator instanceof IFastFunctionEvaluator) {
-          return ((IFastFunctionEvaluator) evaluator).evaluate((IAST) expr, this);
+          // the fast path doesn't run AbstractAST#evaluate(EvalEngine), so the two argument
+          // rewritings of the evaluation loop have to be done here: splice a Sequence(...)
+          // argument and release an argument with the head `Evaluate` from the Hold* attributes
+          // of the head. Both re-enter the loop, because the rewritten expression still has to be
+          // evaluated; returning it directly would leave `Module({a,b}, body)` unevaluated.
+          if ((headSymbol.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+            final IExpr flattened = F.flattenSequence(ast);
+            if (flattened.isPresent()) {
+              return evalWithoutNumericReset(flattened);
+            }
+          }
+          final IExpr released = ast.evalEvaluate(this);
+          if (released.isPresent()) {
+            return evalWithoutNumericReset(released);
+          }
+          return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
         }
       }
     } else if (expr instanceof NILPointer || expr == null) {
@@ -2737,7 +2750,7 @@ public class EvalEngine implements Serializable {
           }
           final IExpr temp = result.evaluate(this);
           if (temp.isPresent()) {
-            if (Thread.interrupted()) {
+            if (Thread.currentThread().isInterrupted()) {
               throw TimeoutException.TIMED_OUT;
             }
             // the cheap head test first: equals() compares the expressions structurally and this is
@@ -2788,7 +2801,7 @@ public class EvalEngine implements Serializable {
         stackPop();
         // fTraceStack.tearDown(iterationCounter == 0 ? F.NIL : result, fRecursionCounter, true);
         fRecursionCounter--;
-        if (Thread.interrupted()) {
+        if (Thread.currentThread().isInterrupted()) {
           throw TimeoutException.TIMED_OUT;
         }
       }
@@ -2836,7 +2849,7 @@ public class EvalEngine implements Serializable {
             }
             temp = result.evaluate(this);
             if (temp.isPresent()) {
-              if (Thread.interrupted()) {
+              if (Thread.currentThread().isInterrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
               if (Config.DEBUG) {
@@ -2875,7 +2888,7 @@ public class EvalEngine implements Serializable {
     } finally {
       stackPop();
       fRecursionCounter--;
-      if (Thread.interrupted()) {
+      if (Thread.currentThread().isInterrupted()) {
         throw TimeoutException.TIMED_OUT;
       }
     }
@@ -3448,9 +3461,9 @@ public class EvalEngine implements Serializable {
    *         longer than <code>seconds</code>.
    */
   public IExpr evalTimeConstrained(final IExpr expr, IExpr defaultValue, long seconds) {
-    ExecutorService executorService = Executors.newSingleThreadExecutor(Config.THREAD_FACTORY);
+    TimeConstrainedExecutor executor = TimeConstrainedExecutor.create();
     try {
-      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
+      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor.service());
       EvalControlledCallable work = new EvalControlledCallable(this);
       seconds = setSeconds(seconds);
       work.setExpr(expr, seconds);
@@ -3495,8 +3508,7 @@ public class EvalEngine implements Serializable {
       }
       return S.Null;
     } finally {
-      if (!MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS)) {
-      }
+      executor.dispose();
     }
   }
 
@@ -3927,7 +3939,7 @@ public class EvalEngine implements Serializable {
   }
 
   public int getIterationLimit() {
-    if (Thread.interrupted()) {
+    if (Thread.currentThread().isInterrupted()) {
       throw TimeoutException.TIMED_OUT;
     }
     return fIterationLimit;
@@ -4031,7 +4043,7 @@ public class EvalEngine implements Serializable {
   }
 
   public int getRecursionCounter() {
-    if (Thread.interrupted()) {
+    if (Thread.currentThread().isInterrupted()) {
       throw TimeoutException.TIMED_OUT;
     }
     return fRecursionCounter;
@@ -4043,7 +4055,7 @@ public class EvalEngine implements Serializable {
    * @return the maximum recursion depth
    */
   public int getRecursionLimit() {
-    if (Thread.interrupted()) {
+    if (Thread.currentThread().isInterrupted()) {
       throw TimeoutException.TIMED_OUT;
     }
     return fRecursionLimit;
