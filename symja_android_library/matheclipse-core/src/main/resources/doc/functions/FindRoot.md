@@ -31,6 +31,44 @@ FindRoot({f(x1,x2,...), g(x1,x2,...), ...}, {{x1, initialValue1}, {x2, initialVa
 
 > searches a multivariate root with Newton's iteration method for a differentiable, multivariate, vector-valued function.
 
+```
+FindRoot({f(x1,x2,...), g(x1,x2,...), ...}, {x1, initialValue1}, {x2, initialValue2}, ...)
+```
+
+> the same search, with each start specification written as its own argument.
+
+A start specification may name a second value, `{x, initialValue, secondValue}`. For the bracketing methods listed below it is the other end of the interval to search; otherwise it sets the width of the first step of the difference quotient described below, and the later steps determine their own width.
+
+```
+>> FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x, 0.1, 0.2}, {y, 0.1, 0.2})
+
+{x->0.75,y->0.25}
+```
+
+The default method differentiates the equations. A function which is only defined for numeric arguments - one guarded by `NumericQ`, or one which wraps a numerical solver like `NDSolve` - has no derivative to differentiate, so the difference quotient is used instead: for one variable that is the secant method, and for several it is a jacobian matrix built by finite differences once and then kept up to date with the rank one updates of [Broyden's method](https://en.wikipedia.org/wiki/Broyden%27s_method) - one evaluation of the equations per step, where a fresh finite difference matrix would cost one per entry. This matters when evaluating the equations is expensive. Steps are halved until they make the residual smaller. Complex start values keep the differentiated jacobian matrix.
+
+```
+>> f(a_?NumericQ) := a^2-2;FindRoot(f(x)==0, {x, 1, 1.2})
+
+{x->1.41421}
+```
+
+```
+>> f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})
+
+{x->1.41421,y->1.58579}
+```
+
+The same iteration takes over when the derivative is not a finite number at the start value, where Newton's method could not take a step:
+
+```
+>> FindRoot(Sqrt(x)-2, {x, 0})
+
+{x->4.0}
+```
+
+If `MaxIterations` is used up before the search converges, `FindRoot` reports it and returns the best point it reached.
+
 See
 * [Wikipedia - Zero of a function](https://en.wikipedia.org/wiki/Zero_of_a_function)
 * [Wikipedia - Root-finding algorithm](https://en.wikipedia.org/wiki/Root-finding_algorithm)

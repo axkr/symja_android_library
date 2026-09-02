@@ -4,6 +4,7 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ODEState;
@@ -19,6 +20,8 @@ import org.hipparchus.ode.nonstiff.AdamsMoultonIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.hipparchus.ode.sampling.ODEStateInterpolator;
+import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -256,7 +259,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (method == null) {
         return F.NIL;
       }
-      return integrate(system, tMin, tMax, method, engine, ruleForm);
+      return integrate(ast.topHead(), system, tMin, tMax, method, engine, ruleForm);
     } catch (LimitException le) {
       throw le;
     } catch (RuntimeException rex) {
@@ -443,6 +446,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   /**
    * Integrate the system and assemble the solution.
    *
+   * @param head <code>NDSolve</code> or <code>NDSolveValue</code>, for the messages
    * @param system the reduced first order system
    * @param tMin the start of the requested range
    * @param tMax the end of the requested range
@@ -451,14 +455,16 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
    *        <code>false</code> for the interpolating function itself
    * @return the solution
    */
-  private static IExpr integrate(FirstOrderSystem system, double tMin, double tMax,
+  private static IExpr integrate(ISymbol head, FirstOrderSystem system, double tMin, double tMax,
       MethodSettings method, EvalEngine engine, boolean ruleForm) {
     // The initial conditions are given at t0, which need not be the start of the requested range.
     // An interior t0 is propagated twice, once in each direction, because a dense output model runs
     // in one direction only - DenseOutputModel.append rejects a model of the opposite direction
     // with a propagation direction mismatch.
-    DenseOutputModel forward = (tMax > system.t0) ? propagate(system, tMax, method, engine) : null;
-    DenseOutputModel backward = (tMin < system.t0) ? propagate(system, tMin, method, engine) : null;
+    DenseOutputModel forward =
+        (tMax > system.t0) ? propagate(head, system, tMax, method, engine) : null;
+    DenseOutputModel backward =
+        (tMin < system.t0) ? propagate(head, system, tMin, method, engine) : null;
     if (forward == null && backward == null) {
       // the range is the single point t0, which is not something to integrate over
       return F.NIL;
@@ -496,15 +502,6 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Integrate the system from its initial point to <code>target</code>, keeping the continuous
-   * extension the integrator builds as it steps.
-   *
-   * @param system the reduced first order system
-   * @param target the time to integrate to, which may lie below <code>system.t0</code>
-   * @param engine the evaluation engine
-   * @return the dense output model covering the interval between the two times
-   */
-  /**
    * Where a propagation ended: the point an event stopped it at, or the requested bound when it ran
    * the whole way.
    *
@@ -524,17 +521,70 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     return (Math.abs(actual - requested) <= slack) ? requested : actual;
   }
 
-  private static DenseOutputModel propagate(FirstOrderSystem system, double target,
+  /**
+   * Integrate the system from its initial point to <code>target</code>, keeping the continuous
+   * extension the integrator builds as it steps.
+   *
+   * @param head <code>NDSolve</code> or <code>NDSolveValue</code>, for the messages
+   * @param system the reduced first order system
+   * @param target the time to integrate to, which may lie below <code>system.t0</code>
+   * @param engine the evaluation engine
+   * @return the dense output model covering the interval between the two times, which is the
+   *         stretch which could be integrated when the stepping gave up before
+   *         <code>target</code>
+   */
+  private static DenseOutputModel propagate(ISymbol head, FirstOrderSystem system, double target,
       MethodSettings method, EvalEngine engine) {
     AbstractIntegrator integrator = method.createIntegrator();
     integrator.setMaxEvaluations(MAX_EVALUATIONS);
     DenseOutputModel model = new DenseOutputModel();
     integrator.addStepHandler(model);
+    LastStepRecorder recorder = new LastStepRecorder();
+    integrator.addStepHandler(recorder);
     method.addEventDetectors(integrator, system, engine);
-    // clone, so that the two directions both start from the initial conditions
-    integrator.integrate(new FirstODE(engine, system),
-        new ODEState(system.t0, system.initialState.clone()), target);
+    try {
+      // clone, so that the two directions both start from the initial conditions
+      integrator.integrate(new FirstODE(engine, system),
+          new ODEState(system.t0, system.initialState.clone()), target);
+    } catch (MathRuntimeException mre) {
+      // The stepping gave up before the requested time was reached - the step size collapsed at a
+      // singularity, the state went to NaN, or the evaluation budget ran out. That is the ordinary
+      // outcome of a shooting method whose current guess sends the trajectory to infinity well
+      // short of the endpoint, so the stretch which was integrated is thrown away only if there is
+      // none: `integrate` reads the domain of the solution back off the model rather than from the
+      // requested range, so a model which stops early becomes a solution defined on the shorter
+      // interval instead of no solution at all.
+      if (recorder.lastState == null) {
+        // not one step was taken, so there is nothing to hand back
+        throw mre;
+      }
+      // `DenseOutputModel` learns its final time and the index it interpolates from in `finish`,
+      // which only a completed integration calls - `init` left the final time at the target which
+      // was never reached. Close the model here with the last state which was actually stepped to.
+      model.finish(recorder.lastState);
+      // At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.
+      Errors.printMessage(head, "ndsz",
+          F.list(system.timeVar, F.num(recorder.lastState.getTime())), engine);
+    }
     return model;
+  }
+
+  /**
+   * Remembers the last step an integrator completed.
+   *
+   * <p>
+   * A {@link DenseOutputModel} keeps every step, but does not say where the stepping stopped until
+   * it is closed, and it is only closed by an integration which reached its target. This records
+   * the state to close it with when one does not.
+   */
+  private static final class LastStepRecorder implements ODEStepHandler {
+    /** The state at the end of the last completed step, or <code>null</code> if there was none. */
+    private ODEStateAndDerivative lastState = null;
+
+    @Override
+    public void handleStep(ODEStateInterpolator interpolator) {
+      lastState = interpolator.getCurrentState();
+    }
   }
 
   /**

@@ -273,6 +273,8 @@ public class Errors {
       "invidx2", "Index `1` should be a machine sized integer between `2` and `3`.", //
       "invrl", "The argument `1` is not a valid Association or a list of rules.", //
       "iopnf", "Value of option `1` should be a non-negative integer or Infinity.", //
+      "ioppfa",
+      "The value of the option MaxIterations -> `1` should be a positive integer, Infinity or Automatic.", //
       "ipnf", "Positive integer or Infinity expected at position `1` in `2`.", //
       "iseqs", "Cannot take list `1` of sequence specifications at level `2` of `3`.", //
       "iterb", "Iterator does not have appropriate bounds.", //
@@ -342,6 +344,8 @@ public class Errors {
       "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
+      "ndsz",
+      "At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.", //
       "nlim", "`1` = `2` is not a valid limit of integration.", //
       "neql", "Lists `1` and `2` have different lengths.", //
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
