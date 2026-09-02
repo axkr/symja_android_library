@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -59,6 +60,8 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr fillingStyle = options[Plot3DTools.X_FILLING_STYLE];
     IAST datasets = isMultiDataset ? listData : F.List(listData);
 
+    RegionFunctionFilter region =
+        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
     boolean any = false;
     for (int i = 1; i < datasets.size(); i++) {
@@ -69,9 +72,9 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       IASTAppendable indices = F.ListAlloc(dataset.argSize());
       List<double[]> coordinates = new ArrayList<>();
       if (isHeightMap) {
-        addHeightMap(builder, dataset, dataRange, indices, coordinates);
+        addHeightMap(builder, dataset, dataRange, indices, coordinates, region);
       } else {
-        addCoordinates(builder, dataset, indices, coordinates);
+        addCoordinates(builder, dataset, indices, coordinates, region);
       }
       if (indices.argSize() > 0) {
         IExpr style = Plot3DTools.curveStyle(i - 1, plotStyle);
@@ -99,7 +102,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
    * was not square in the wrong place.
    */
   private static void addHeightMap(GraphicsComplexBuilder builder, IAST rows, IExpr dataRange,
-      IASTAppendable indices, List<double[]> coordinates) {
+      IASTAppendable indices, List<double[]> coordinates, RegionFunctionFilter region) {
     int rowCount = rows.argSize();
     int colCount = 0;
     for (int r = 1; r <= rowCount; r++) {
@@ -134,6 +137,9 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
         }
         double px = colCount > 1 ? x[0] + (c - 1) * (x[1] - x[0]) / (colCount - 1) : x[0];
         double py = rowCount > 1 ? y[0] + (r - 1) * (y[1] - y[0]) / (rowCount - 1) : y[0];
+        if (region != null && !region.accepts(px, py, z)) {
+          continue;
+        }
         indices.append(F.ZZ(builder.addVertex(px, py, z, null, null)));
         coordinates.add(new double[] {px, py, z});
       }
@@ -141,7 +147,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private static void addCoordinates(GraphicsComplexBuilder builder, IAST dataset,
-      IASTAppendable indices, List<double[]> coordinates) {
+      IASTAppendable indices, List<double[]> coordinates, RegionFunctionFilter region) {
     for (int k = 1; k < dataset.size(); k++) {
       IExpr point = dataset.get(k);
       if (!point.isList3()) {
@@ -151,7 +157,8 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       double y = point.second().evalfNaN();
       double z = point.last().evalfNaN();
       // a point that cannot be evaluated is left out; it used to abandon the whole plot
-      if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
+      if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)
+          && (region == null || region.accepts(x, y, z))) {
         indices.append(F.ZZ(builder.addVertex(x, y, z, null, null)));
         coordinates.add(new double[] {x, y, z});
       }

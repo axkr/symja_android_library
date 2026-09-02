@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
@@ -10,6 +11,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -61,7 +63,8 @@ public class PolarPlot extends Plot {
       final IAST listOfLines = polarPlotToListPoints(function, rangeList, ast, graphicsOptions,
           engine,
           GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic).toIntDefault(-1),
-          GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1));
+          GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1),
+          GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
 
       if (listOfLines.isNIL()) {
         return F.NIL;
@@ -167,7 +170,7 @@ public class PolarPlot extends Plot {
 
   private static IAST polarPlotToListPoints(IExpr functionOrListOfFunctions, final IAST rangeList,
       final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine, int plotPoints,
-      int maxRecursion) {
+      int maxRecursion, IExpr regionFunction) {
     if (!rangeList.arg1().isSymbol()) {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
@@ -194,6 +197,7 @@ public class PolarPlot extends Plot {
     final IASTAppendable listOfLines = F.ListAlloc(size - 1);
 
     final IExpr targetUnits = GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic);
+    final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
     final IAST samplePoint = F.List(F.Rule(theta, F.num((tMinD + tMaxD) / 2.0)));
     for (int i = 1; i < size; i++) {
       // a quantity valued radius is plotted by its magnitude
@@ -202,10 +206,27 @@ public class PolarPlot extends Plot {
       double[][] data = null;
       // Use standard Plot sampler to get theta vs radius
       final UnaryNumerical hun = new UnaryNumerical(function, theta, Double.NaN, engine);
-      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, tMinD, tMaxD, "Linear",
-          plotPoints, maxRecursion);
+      // The region is tested inside the sampler, so the adaptive sampler - which refines wherever
+      // it meets a value that is not a number - resolves the edge of the region. RegionFunction is
+      // given the point both ways round: as the cartesian point that is drawn, and as the polar
+      // coordinates it was computed from.
+      DoubleUnaryOperator sampled = hun;
+      if (region != null) {
+        sampled = th -> {
+          double r = hun.applyAsDouble(th);
+          if (!Double.isFinite(r)) {
+            return r;
+          }
+          return region.accepts(r * Math.cos(th), r * Math.sin(th), th, r) ? r : Double.NaN;
+        };
+      }
+      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(sampled, data, tMinD, tMaxD,
+          "Linear", plotPoints, maxRecursion);
 
       if (data != null) {
+        // one curve is a list of the polylines it is made of, which is how a curve broken by a
+        // region or a pole keeps a single colour instead of being read as several curves
+        IASTAppendable segments = F.ListAlloc(4);
         IASTAppendable linePoints = F.ListAlloc(data[0].length);
         double[] xData = data[0]; // Theta
         double[] yData = data[1]; // Radius (r)
@@ -217,10 +238,20 @@ public class PolarPlot extends Plot {
             double x = r * Math.cos(th);
             double y = r * Math.sin(th);
             linePoints.append(graphicsOptions.point(x, y));
+          } else {
+            // the curve is broken where it has no value rather than jumped across, which is what
+            // leaves a gap where a RegionFunction ends instead of a chord across it
+            if (linePoints.argSize() > 1) {
+              segments.append(linePoints);
+            }
+            linePoints = F.ListAlloc(data[0].length);
           }
         }
-        if (linePoints.size() > 1) {
-          listOfLines.append(linePoints);
+        if (linePoints.argSize() > 1) {
+          segments.append(linePoints);
+        }
+        if (segments.argSize() > 0) {
+          listOfLines.append(segments);
         }
       }
     }

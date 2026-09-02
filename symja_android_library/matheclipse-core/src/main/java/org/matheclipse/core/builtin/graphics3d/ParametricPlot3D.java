@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -50,6 +51,8 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr plotStyle = options[Plot3DTools.X_PLOT_STYLE];
     IExpr meshOption = options[Plot3DTools.X_MESH];
     IASTAppendable graphicsList = F.ListAlloc(functions.size());
+    RegionFunctionFilter region =
+        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
 
     if (isSurface) {
       if (!ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
@@ -66,10 +69,14 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       for (int i = 0; i < functions.size(); i++) {
         GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colorMap != null);
         Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(i, plotStyle), meshOption);
-        if (createSurfaceGeometry(functions.get(i), uRange, vRange, samples[0], samples[1], engine,
-            builder, colorMap, meshOption, options[Plot3DTools.X_MESH_STYLE],
-            options[Plot3DTools.X_EVALUATION_MONITOR])) {
-          IExpr complex = builder.build();
+        double[][][] grid =
+            createSurfaceGeometry(functions.get(i), uRange, vRange, samples[0], samples[1], engine,
+                builder, colorMap, meshOption, options[Plot3DTools.X_MESH_STYLE],
+                options[Plot3DTools.X_EVALUATION_MONITOR], region);
+        if (grid != null) {
+          // the rim of the surface, and the rim of every hole a RegionFunction cut in it
+          IExpr complex = Plot3DTools.withBoundary(builder.build(), grid,
+              options[Plot3DTools.X_BOUNDARY_STYLE]);
           if (complex.isPresent()) {
             graphicsList.append(complex);
           }
@@ -88,7 +95,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         // a curve is a line: no mesh, no edge form, and the ordinary plot colours
         builder.setStyle(Plot3DTools.curveStyle(i, plotStyle));
         createCurveGeometry(functions.get(i), range, samples[0], engine, builder,
-            options[Plot3DTools.X_EVALUATION_MONITOR]);
+            options[Plot3DTools.X_EVALUATION_MONITOR], region);
         IExpr complex = builder.build();
         if (complex.isPresent()) {
           graphicsList.append(complex);
@@ -106,7 +113,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private void createCurveGeometry(IExpr func, IAST range, int pointsCount, EvalEngine engine,
-      GraphicsComplexBuilder builder, IExpr monitor) {
+      GraphicsComplexBuilder builder, IExpr monitor, RegionFunctionFilter region) {
     ISymbol uVar = (ISymbol) range.arg1();
     double uMin = range.arg2().evalfNaN();
     double uMax = range.arg3().evalfNaN();
@@ -119,6 +126,11 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     for (int i = 0; i < pointsCount; i++) {
       double u = uMin + i * step;
       double[] point = evaluatePoint(func, engine, F.List(F.Rule(uVar, F.num(u))), monitor);
+      if (point != null && region != null && !region.accepts(point[0], point[1], point[2], u)) {
+        // a point outside the region is not part of the curve, the same way one the
+        // parametrisation has no value at is not
+        point = null;
+      }
       if (point != null) {
         currentLine.append(F.ZZ(builder.addVertex(point[0], point[1], point[2], null, null)));
       } else if (currentLine.argSize() > 0) {
@@ -137,9 +149,10 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     }
   }
 
-  private boolean createSurfaceGeometry(IExpr func, IAST uRange, IAST vRange, int uCount,
+  /** The sampled grid, or {@code null} when the parametrisation gave nothing to draw. */
+  private double[][][] createSurfaceGeometry(IExpr func, IAST uRange, IAST vRange, int uCount,
       int vCount, EvalEngine engine, GraphicsComplexBuilder builder, Plot3DTools.ColorMap colorMap,
-      IExpr meshOption, IExpr meshStyle, IExpr monitor) {
+      IExpr meshOption, IExpr meshStyle, IExpr monitor, RegionFunctionFilter region) {
     ISymbol uVar = (ISymbol) uRange.arg1();
     double uMin = uRange.arg2().evalfNaN();
     double uMax = uRange.arg3().evalfNaN();
@@ -148,7 +161,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     double vMax = vRange.arg3().evalfNaN();
     if (Double.isNaN(uMin) || Double.isNaN(uMax) || Double.isNaN(vMin) || Double.isNaN(vMax)
         || uMax <= uMin || vMax <= vMin) {
-      return false;
+      return null;
     }
     double uStep = (uMax - uMin) / (uCount - 1);
     double vStep = (vMax - vMin) / (vCount - 1);
@@ -161,12 +174,17 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         double v = vMin + j * vStep;
         double[] point = evaluatePoint(func, engine,
             F.List(F.Rule(uVar, F.num(u)), F.Rule(vVar, F.num(v))), monitor);
+        if (point != null && region != null
+            && !region.accepts(point[0], point[1], point[2], u, v)) {
+          // a hole in the surface: addSurface skips every quad that touches it
+          point = null;
+        }
         grid[i][j] = point;
         any |= point != null;
       }
     }
     if (!any) {
-      return false;
+      return null;
     }
 
     IExpr[][] colors = null;
@@ -192,7 +210,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     boolean wrapU = closes(grid, true);
     boolean wrapV = closes(grid, false);
     Plot3DTools.addSurface(builder, grid, wrapU, wrapV, colors, true, meshOption, meshStyle);
-    return true;
+    return grid;
   }
 
   /** Whether the grid's first and last row (or column) coincide, as a periodic surface's do. */

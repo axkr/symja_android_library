@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.graphics.MarchingCubesTables;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -67,7 +68,8 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
 
     int points = plotPoints(options[Plot3DTools.X_PLOT_POINTS]);
     double[][][] grid =
-        sample(expr, vars, min, max, options[Plot3DTools.X_EVALUATION_MONITOR], points, engine);
+        sample(expr, vars, min, max, options[Plot3DTools.X_EVALUATION_MONITOR], points, engine,
+            RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
     if (grid == null) {
       return F.NIL;
     }
@@ -114,7 +116,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
 
   /** Sample the function on a regular grid, through the compiled numeric path. */
   private static double[][][] sample(IExpr expr, ISymbol[] vars, double[] min, double[] max,
-      IExpr monitor, int points, EvalEngine engine) {
+      IExpr monitor, int points, EvalEngine engine, RegionFunctionFilter region) {
     final MultiVariateNumerical function;
     try {
       function = new MultiVariateNumerical(expr, F.List(vars[0], vars[1], vars[2]));
@@ -136,7 +138,13 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
           at[2] = min[2] + k * step[2];
           Plot3DTools.monitor(monitor, engine);
           double value = function.value(at);
-          grid[i][j][k] = Double.isFinite(value) ? value : Double.NaN;
+          if (!Double.isFinite(value)
+              || (region != null && !region.accepts(at[0], at[1], at[2], value))) {
+            // a sample the region rejects is treated as one the function has no value at, and
+            // marchingCubes leaves out every cube that touches it
+            value = Double.NaN;
+          }
+          grid[i][j][k] = value;
         }
       }
     }

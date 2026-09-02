@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -57,11 +58,14 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
     if (treatAsCoordinates) {
       return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt, meshOpt, plotStyleOpt,
-          originalAST, argSize);
+          originalAST, argSize,
+          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
     } else {
       if (isRectangularArray(listData)) {
         return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt,
-            plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize);
+            plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
+            RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
+            options[Plot3DTools.X_BOUNDARY_STYLE]);
       }
     }
 
@@ -72,7 +76,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
    * Processes a list of {x,y,z} coordinates using Delaunay Triangulation.
    */
   private IExpr processCoordinateList(IAST data, IExpr boxRatiosOpt, IExpr plotRangeOpt,
-      IExpr meshOpt, IExpr plotStyleOpt, IAST originalAST, int argSize) {
+      IExpr meshOpt, IExpr plotStyleOpt, IAST originalAST, int argSize,
+      RegionFunctionFilter region) {
     int n = data.argSize();
     if (n < 3)
       return F.NIL; // Need at least 3 points for a surface
@@ -92,7 +97,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       double z = row.arg3().evalfNaN();
 
       if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z) && !Double.isInfinite(x)
-          && !Double.isInfinite(y) && !Double.isInfinite(z)) {
+          && !Double.isInfinite(y) && !Double.isInfinite(z)
+          && (region == null || region.accepts(x, y, z))) {
         int idx = builder.addVertex(x, y, z, null, null);
         points.add(new PointXYZ(x, y, z, idx));
       }
@@ -122,7 +128,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
    */
   private IExpr processHeightMap(IAST heightData, IExpr dataRangeOpt, IExpr boxRatiosOpt,
       IExpr plotRangeOpt, IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST,
-      int argSize) {
+      int argSize, RegionFunctionFilter region, IExpr boundaryStyle) {
     int rows = heightData.argSize();
     IExpr firstRow = heightData.arg1();
     int cols = ((IAST) firstRow).argSize();
@@ -169,7 +175,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       for (int j = 1; j <= cols; j++) {
         double x = (cols > 1) ? xMin + (j - 1) * (xMax - xMin) / (cols - 1.0) : xMin;
         double z = row.get(j).evalfNaN();
-        if (Double.isFinite(z)) {
+        if (Double.isFinite(z) && (region == null || region.accepts(x, y, z))) {
           grid[i - 1][j - 1] = new double[] {x, y, z};
         }
       }
@@ -180,6 +186,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     if (graphicsComplex.equals(F.NIL)) {
       return F.NIL;
     }
+    // the rim of the surface, and the rim of every hole a RegionFunction or a datum without a
+    // value left in it
+    graphicsComplex = Plot3DTools.withBoundary(graphicsComplex, grid, boundaryStyle);
 
     return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
         new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),

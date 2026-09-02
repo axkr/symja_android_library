@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -114,6 +115,12 @@ public class ListDensityPlot extends DensityPlot {
     if (gridData == null || gridData.minZ == Double.MAX_VALUE) {
       return F.NIL;
     }
+    boolean[][] defined = ListContourPlot.applyRegionFunction(gridData, RegionFunctionFilter
+        .of(GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine));
+    if (gridData.minZ > gridData.maxZ) {
+      // the region left nothing to paint, which is the same as data with no value in it
+      return F.NIL;
+    }
 
     // zGrid is indexed [x][y], and holds the values at the grid nodes rather than in its cells
     int nodesX = gridData.zGrid.length;
@@ -167,6 +174,8 @@ public class ListDensityPlot extends DensityPlot {
     if (meshLines.isPresent()) {
       primitives.append(meshLines);
     }
+    ContourPlot.appendBoundary(primitives, defined, gridData.xMin, gridData.yMin, gridData.stepX,
+        gridData.stepY, GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic));
 
     graphicsOptions.setBoundingBox(new double[] {xRange[0], xRange[1], yRange[0], yRange[1]});
 

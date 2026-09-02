@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -7,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,13 +29,16 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
       // the loops below do
       IExpr plotStyle = options[Plot3DTools.X_PLOT_STYLE];
       IExpr dataRange = options[Plot3DTools.X_DATA_RANGE];
+      RegionFunctionFilter region =
+          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
 
       // case 1: single line heights
       // e.g.: ListLinePlot3D[{1, 2, 3, 4, 5}]
       if (ast.arg1().isASTSizeGE(S.List, 2)) {
         // only a numeric first height identifies this case; otherwise fall through
         if (!Double.isNaN(((IAST) ast.arg1()).arg1().evalfNaN())) {
-          IExpr heightLinePlot = heightLinePlot(F.list(ast.arg1()), plotStyle, dataRange, engine);
+          IExpr heightLinePlot =
+              heightLinePlot(F.list(ast.arg1()), plotStyle, dataRange, engine, region);
           if (heightLinePlot.isPresent()) {
             return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
                 new IExpr[] {F.Rule(S.Axes, S.True),
@@ -49,8 +55,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
       // case 2: single line coordinates
       // e.g.: ListLinePlot3D[{{x_1, y_1, z_1}, {x_2, y_2, z_2}}]
       if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
-        return Plot3DTools.graphics3D(coordinateLinePlot(F.list(ast.arg1()), plotStyle, engine),
-            ast, 1,
+        return Plot3DTools.graphics3D(
+            coordinateLinePlot(F.list(ast.arg1()), plotStyle, engine, region), ast, 1,
             new IExpr[] {F.Rule(S.Axes, S.True),
                 F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
                 F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
@@ -61,7 +67,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
       if (ast.arg1().isASTSizeGE(S.List, 2) && ((IAST) ast.arg1()).arg1().isASTSizeGE(S.List, 2)) {
         // only a numeric first height identifies this case; otherwise fall through
         if (!Double.isNaN(((IAST) ((IAST) ast.arg1()).arg1()).arg1().evalfNaN())) {
-          IExpr heightLinePlot = heightLinePlot((IAST) ast.arg1(), plotStyle, dataRange, engine);
+          IExpr heightLinePlot =
+              heightLinePlot((IAST) ast.arg1(), plotStyle, dataRange, engine, region);
           if (heightLinePlot.isPresent()) {
             return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
                 new IExpr[] {F.Rule(S.Axes, S.True),
@@ -76,8 +83,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         // case 4: multiple line coordinates
         // e.g.: ListLinePlot3D[{{coord1, coord2}, {coord3, coord4}}]
         if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
-          return Plot3DTools.graphics3D(coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine),
-              ast, 1,
+          return Plot3DTools.graphics3D(
+              coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine, region), ast, 1,
               new IExpr[] {F.Rule(S.Axes, S.True),
                   F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
                   F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
@@ -99,7 +106,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
    * heights divided by a zero range and gave up with a division error. The shape of the picture is
    * the business of {@code BoxRatios}, which is how the other plots in this package do it.
    */
-  private IExpr heightLinePlot(IAST heights, IExpr plotStyle, IExpr dataRange, EvalEngine engine) {
+  private IExpr heightLinePlot(IAST heights, IExpr plotStyle, IExpr dataRange, EvalEngine engine,
+      RegionFunctionFilter region) {
     final int valuesSize = heights.size();
     IASTAppendable resultList = F.NIL;
 
@@ -127,8 +135,11 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         IAST rowList = (IAST) heights.get(i);
         final int rowListSize = rowList.size();
 
-        IASTAppendable lineList = F.ListAlloc(rowListSize);
         final int rowLength = rowList.argSize();
+        // one row may fall apart into several lines where the region cuts it, rather than being
+        // drawn straight across the gap
+        List<IASTAppendable> segments = new ArrayList<IASTAppendable>();
+        IASTAppendable lineList = F.ListAlloc(rowListSize);
 
         for (int j = 1; j < rowListSize; j++) {
           double value = rowList.get(j).evalfNaN();
@@ -141,7 +152,20 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
               : xRange[0];
           double y = rowLength > 1 ? yRange[0] + (j - 1) * (yRange[1] - yRange[0]) / (rowLength - 1)
               : yRange[0];
+          if (region != null && !region.accepts(x, y, value)) {
+            if (lineList.argSize() > 1) {
+              segments.add(lineList);
+            }
+            lineList = F.ListAlloc(rowListSize);
+            continue;
+          }
           lineList.append(F.List(F.num(x), F.num(y), F.num(value)));
+        }
+        if (lineList.argSize() > 1 || (region == null && lineList.argSize() > 0)) {
+          segments.add(lineList);
+        }
+        if (segments.isEmpty()) {
+          continue;
         }
 
         final IExpr color = Plot3DTools.curveStyle(lineColorNumber++, plotStyle);
@@ -149,8 +173,15 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
           resultList = F.ListAlloc(valuesSize);
         }
         resultList.append(color);
-        resultList.append(F.Line(lineList));
+        for (IASTAppendable segment : segments) {
+          resultList.append(F.Line(segment));
+        }
       }
+    }
+    if (resultList.isNIL() && region != null) {
+      // a region that keeps nothing draws nothing; the data was valid, so this is an empty
+      // picture rather than the "not a valid dataset" the caller would otherwise be told about
+      return F.CEmptyList;
     }
     return resultList;
   }
@@ -162,7 +193,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
    * As with the heights above, the points used to be divided down into a fixed 2.5 by 2.5 by 1 box;
    * they are now left alone, so the axes carry the numbers that were plotted.
    */
-  private IExpr coordinateLinePlot(IAST coordinates, IExpr plotStyle, EvalEngine engine) {
+  private IExpr coordinateLinePlot(IAST coordinates, IExpr plotStyle, EvalEngine engine,
+      RegionFunctionFilter region) {
     IASTAppendable lineList = F.ListAlloc(coordinates.size() * 2);
     int lineColorNumber = 0;
     for (int i = 1; i <= coordinates.argSize(); i++) {
@@ -170,6 +202,7 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         continue;
       }
       IAST line = (IAST) coordinates.get(i);
+      List<IASTAppendable> segments = new ArrayList<IASTAppendable>();
       IASTAppendable points = F.ListAlloc(line.argSize());
       for (int j = 1; j <= line.argSize(); j++) {
         IExpr coordinate = line.get(j);
@@ -181,12 +214,25 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         double z = coordinate.last().evalfNaN();
         // a point that cannot be evaluated is left out rather than abandoning the whole line
         if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
+          if (region != null && !region.accepts(x, y, z)) {
+            // the line is broken where the region ends rather than drawn across the gap
+            if (points.argSize() > 1) {
+              segments.add(points);
+            }
+            points = F.ListAlloc(line.argSize());
+            continue;
+          }
           points.append(F.List(F.num(x), F.num(y), F.num(z)));
         }
       }
-      if (points.argSize() > 0) {
+      if (points.argSize() > 1 || (region == null && points.argSize() > 0)) {
+        segments.add(points);
+      }
+      if (!segments.isEmpty()) {
         lineList.append(Plot3DTools.curveStyle(lineColorNumber++, plotStyle));
-        lineList.append(F.Line(points));
+        for (IASTAppendable segment : segments) {
+          lineList.append(F.Line(segment));
+        }
       }
     }
     return lineList;

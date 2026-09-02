@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -98,6 +99,10 @@ public class DensityPlot extends ListPlot {
     ISymbol xVar = (ISymbol) ((IAST) xIter).arg1();
     ISymbol yVar = (ISymbol) ((IAST) yIter).arg1();
 
+    RegionFunctionFilter region = RegionFunctionFilter.of(
+        GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
+    IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
+
     // 3. Generate Grid
     int gridX = plotPoints;
     int gridY = plotPoints;
@@ -107,6 +112,7 @@ public class DensityPlot extends ListPlot {
 
     double minZ = Double.MAX_VALUE;
     double maxZ = -Double.MAX_VALUE;
+    boolean[][] defined = new boolean[gridX + 1][gridY + 1];
 
     for (int i = 0; i <= gridX; i++) {
       double xVal = xRange[0] + i * stepX;
@@ -128,7 +134,14 @@ public class DensityPlot extends ListPlot {
           z = Double.NaN;
         }
 
+        // a sample the RegionFunction rejects is dropped before the colour scale is chosen, so
+        // the shading describes what is drawn rather than the whole rectangle
+        if (region != null && Double.isFinite(z) && !region.accepts(xVal, yVal, z)) {
+          z = Double.NaN;
+        }
+
         zGrid[i][j] = z;
+        defined[i][j] = Double.isFinite(z);
         if (Double.isFinite(z)) {
           if (z < minZ)
             minZ = z;
@@ -185,6 +198,8 @@ public class DensityPlot extends ListPlot {
     if (meshLines.isPresent()) {
       primitives.append(meshLines);
     }
+    ContourPlot.appendBoundary(primitives, defined, xRange[0], yRange[0], stepX, stepY,
+        boundaryStyle);
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }

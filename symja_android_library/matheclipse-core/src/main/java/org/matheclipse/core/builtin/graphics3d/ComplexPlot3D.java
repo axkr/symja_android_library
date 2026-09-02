@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -62,6 +63,10 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[Plot3DTools.X_COLOR_FUNCTION],
         options[Plot3DTools.X_COLOR_FUNCTION_SCALING], engine);
 
+    // RegionFunction is given the sample point and the value there, both complex, which is what
+    // lets a predicate be written as Function({z, f}, Abs(z) < 2) or Function({z, f}, Abs(f) < 2)
+    RegionFunctionFilter region =
+        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
     double[][][] grid = new double[rows][cols][];
     IExpr[][] colors = new IExpr[rows][cols];
     double[] heights = new double[rows * cols];
@@ -73,9 +78,11 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
         double re = minRe + j * dRe;
         double height = Double.NaN;
         double arg = 0.0;
+        IExpr zVal = F.complexNum(re, im);
+        IExpr value = F.NIL;
         try {
           Plot3DTools.monitor(options[Plot3DTools.X_EVALUATION_MONITOR], engine);
-          IExpr value = engine.evalN(F.subst(function, F.Rule(zVar, F.complexNum(re, im))));
+          value = engine.evalN(F.subst(function, F.Rule(zVar, zVal)));
           if (value instanceof INumber) {
             IComplexNum cn = toComplex(value);
             height = cn.dabs();
@@ -83,6 +90,11 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
+        }
+        if (region != null && !region.accepts(zVal, value)) {
+          // a hole in the surface: addSurface skips every quad that touches it, and the rim of
+          // the hole is what BoundaryStyle then outlines
+          continue;
         }
         if (Double.isFinite(height)) {
           heights[finiteCount++] = height;
@@ -107,6 +119,9 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
 
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
+        if (grid[i][j] == null) {
+          continue;
+        }
         double h = grid[i][j][2];
         if (!Double.isFinite(h) || h > maxHeight) {
           grid[i][j][2] = maxHeight;
@@ -127,8 +142,12 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     // than being shaded like the surface underneath it
     IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
     if (!boundaryStyle.isNone() && grid.length > 1 && grid[0].length > 1) {
+      // A region punches holes in the rectangle, so the rim is no longer one closed line round it.
+      // The shared outline follows the edge of whatever was drawn, holes included, which is the
+      // edge the region cut.
+      IExpr outline = region == null ? boundaryLine(grid) : Plot3DTools.surfaceBoundary(grid);
       graphicsComplex = F.List(graphicsComplex,
-          boundaryStyle == S.Automatic ? S.Black : boundaryStyle, boundaryLine(grid));
+          boundaryStyle == S.Automatic ? S.Black : boundaryStyle, outline);
     }
 
     return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,

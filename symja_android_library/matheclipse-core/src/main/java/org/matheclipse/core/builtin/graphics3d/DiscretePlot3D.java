@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -182,6 +183,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         }
 
         List<PlotData> data = new ArrayList<>();
+        RegionFunctionFilter region = RegionFunctionFilter.of(options[X_REGION_FUNCTION], engine);
 
         // Generate data dynamically assigning iterators using Block to support HoldAll semantics
         for (INumber iv : iValues) {
@@ -197,7 +199,11 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
               if (result.isNumber()) {
                 double z = result.evalDouble();
-                data.add(new PlotData(iv.evalDouble(), jv.evalDouble(), z, color));
+                double px = iv.evalDouble();
+                double py = jv.evalDouble();
+                if (region == null || region.accepts(px, py, z)) {
+                  data.add(new PlotData(px, py, z, color));
+                }
               }
             }
           } else {
@@ -211,7 +217,9 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
               double px = ((IAST) result).arg1().evalDouble();
               double py = ((IAST) result).arg2().evalDouble();
               double pz = ((IAST) result).arg3().evalDouble();
-              data.add(new PlotData(px, py, pz, color));
+              if (region == null || region.accepts(px, py, pz)) {
+                data.add(new PlotData(px, py, pz, color));
+              }
             }
           }
         }
@@ -473,6 +481,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private static final int X_PLOT_STYLE = Plot3DTools.indexOf(optionSet(), S.PlotStyle);
+  private static final int X_REGION_FUNCTION = Plot3DTools.indexOf(optionSet(), S.RegionFunction);
   private static final int X_EVALUATION_MONITOR =
       Plot3DTools.indexOf(optionSet(), S.EvaluationMonitor);
   private static final int X_JOINED = Plot3DTools.indexOf(optionSet(), S.Joined);

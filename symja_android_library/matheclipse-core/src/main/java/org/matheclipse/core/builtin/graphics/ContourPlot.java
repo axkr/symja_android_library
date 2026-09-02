@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -115,6 +116,10 @@ public class ContourPlot extends ListPlot {
 
     IASTAppendable primitives = F.ListAlloc();
 
+    RegionFunctionFilter region = RegionFunctionFilter.of(
+        GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
+    IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
+
     if (functionArg.isList()) {
       // Multiple functions/equations
       IAST list = (IAST) functionArg;
@@ -133,14 +138,14 @@ public class ContourPlot extends ListPlot {
 
         generateContours(primitives, func, xRange, yRange, xVar, yVar, plotPoints, numberOfContours,
             style, contourShading, colorFunctionScaling, colorFunctionOpt, engine, true,
-            contourLines, contourLabels);
+            contourLines, contourLabels, region, boundaryStyle);
         count++;
       }
     } else {
       // Single function/equation
       generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, plotPoints,
           numberOfContours, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
-          engine, false, contourLines, contourLabels);
+          engine, false, contourLines, contourLabels, region, boundaryStyle);
     }
 
     IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, xRange[0], yRange[0], xRange[1], yRange[1],
@@ -156,7 +161,7 @@ public class ContourPlot extends ListPlot {
       double[] yRange, ISymbol xVar, ISymbol yVar, int plotPoints, int numberOfContours,
       IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
       IExpr colorFunctionOpt, EvalEngine engine, boolean isMulti, boolean contourLines,
-      boolean contourLabels) {
+      boolean contourLabels, RegionFunctionFilter region, IExpr boundaryStyle) {
     java.util.function.DoubleFunction<IExpr> colorMap =
         GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getShadingColor);
 
@@ -181,6 +186,7 @@ public class ContourPlot extends ListPlot {
     double maxZ = -Double.MAX_VALUE;
 
     // 1. Compute Grid
+    boolean[][] defined = new boolean[gridX + 1][gridY + 1];
     for (int i = 0; i <= gridX; i++) {
       double xVal = xRange[0] + i * stepX;
       for (int j = 0; j <= gridY; j++) {
@@ -196,7 +202,14 @@ public class ContourPlot extends ListPlot {
           z = Double.NaN;
         }
 
+        // a sample the RegionFunction rejects is dropped before the levels are chosen, so the
+        // contours describe what is drawn rather than the whole rectangle
+        if (region != null && Double.isFinite(z) && !region.accepts(xVal, yVal, z)) {
+          z = Double.NaN;
+        }
+
         zGrid[i][j] = z;
+        defined[i][j] = Double.isFinite(z);
         if (Double.isFinite(z)) {
           if (z < minZ)
             minZ = z;
@@ -304,6 +317,31 @@ public class ContourPlot extends ListPlot {
         }
       }
     }
+
+    appendBoundary(primitives, defined, xRange[0], yRange[0], stepX, stepY, boundaryStyle);
+  }
+
+  /**
+   * Draws the outline of what was plotted, when {@code BoundaryStyle} asks for one.
+   *
+   * <p>
+   * That is the rim of the sampled rectangle, and the rim of every hole in it - so it is also the
+   * edge a {@code RegionFunction} cuts, without the option having to know a region was given.
+   */
+  static void appendBoundary(IASTAppendable primitives, boolean[][] defined, double x0, double y0,
+      double stepX, double stepY, IExpr boundaryStyle) {
+    if (boundaryStyle == null || !boundaryStyle.isPresent() || boundaryStyle.isAutomatic()
+        || boundaryStyle.isNone()) {
+      return;
+    }
+    IAST boundary = GraphicsOptions.gridBoundary(defined, x0, y0, stepX, stepY);
+    if (boundary.argSize() == 0) {
+      return;
+    }
+    IASTAppendable group = F.ListAlloc(boundary.size() + 1);
+    group.append(boundaryStyle);
+    group.appendArgs(boundary);
+    primitives.append(group);
   }
 
   /**
@@ -360,6 +398,14 @@ public class ContourPlot extends ListPlot {
 
   private void processCellPolygon(IASTAppendable out, double x, double y, double dx, double dy,
       double v0, double v1, double v2, double v3, double level) {
+    if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
+        || !Double.isFinite(v3)) {
+      // A corner without a value is not "below the level": comparing NaN with >= says false, which
+      // would classify the cell as filled up to that corner and then interpolate across the edge,
+      // producing a polygon with NaN coordinates. An incomplete cell has no interior to shade -
+      // that is what leaves a hole where a RegionFunction cuts, or where the function has no value.
+      return;
+    }
     int index = 0;
     if (v0 >= level)
       index |= 1;
@@ -493,6 +539,11 @@ public class ContourPlot extends ListPlot {
 
   private void processCellLine(IASTAppendable out, double x, double y, double dx, double dy,
       double v0, double v1, double v2, double v3, double level) {
+    if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
+        || !Double.isFinite(v3)) {
+      // an incomplete cell has no contour to trace; see processCellPolygon
+      return;
+    }
 
     int index = 0;
     if (v0 >= level)

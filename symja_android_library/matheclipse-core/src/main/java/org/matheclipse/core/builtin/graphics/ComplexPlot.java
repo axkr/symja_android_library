@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -111,6 +112,10 @@ public class ComplexPlot extends ListPlot {
     IASTAppendable primitives = F.ListAlloc();
     // the grid becomes a single raster rather than one rectangle per cell
     IExpr[][] cells = new IExpr[plotPoints][plotPoints];
+    // RegionFunction is given the sample point and the value there, both complex, which is what
+    // lets a predicate be written as Function({z, f}, Abs(z) < 2) or Function({z, f}, Abs(f) < 2)
+    RegionFunctionFilter region = RegionFunctionFilter.of(
+        GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
 
     // Generate the colour grid
     for (int i = 0; i < plotPoints; i++) {
@@ -123,6 +128,11 @@ public class ComplexPlot extends ListPlot {
           // Evaluate f[z]
           IExpr valExpr = f.replaceAll(F.List(F.Rule(zVar, zVal)));
           IExpr res = engine.evaluate(valExpr);
+          if (region != null && !region.accepts(zVal, res)) {
+            // a cell the region rejects stays transparent, the same way one whose value is not a
+            // number does
+            continue;
+          }
 
           IExpr rgb = F.NIL;
           if (namedScheme) {

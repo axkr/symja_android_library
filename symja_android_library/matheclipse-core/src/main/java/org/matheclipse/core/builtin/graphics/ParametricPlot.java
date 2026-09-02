@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -70,7 +71,8 @@ public class ParametricPlot extends Plot {
 
         // Generate GraphicsComplex for the region
         IExpr graphicsComplex = parametricRegionToGraphicsComplex(function, rangeList1, rangeList2,
-            graphicsOptions, engine);
+            graphicsOptions, engine,
+            GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
 
         if (graphicsComplex.isNIL()) {
           return F.NIL;
@@ -98,7 +100,8 @@ public class ParametricPlot extends Plot {
         IAST listOfLines = parametricPlotToListPoints(function, rangeList1, ast, graphicsOptions,
             engine,
             GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic).toIntDefault(-1),
-            GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1));
+            GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1),
+            GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
 
         if (listOfLines.isNIL()) {
           return F.NIL;
@@ -132,7 +135,8 @@ public class ParametricPlot extends Plot {
    * pt2, ...}, Polygon[{{id1, id2, id3, id4}, ...}]]
    */
   private static IExpr parametricRegionToGraphicsComplex(IExpr functionOrListOfFunctions,
-      final IAST rangeU, final IAST rangeV, GraphicsOptions graphicsOptions, EvalEngine engine) {
+      final IAST rangeU, final IAST rangeV, GraphicsOptions graphicsOptions, EvalEngine engine,
+      IExpr regionFunction) {
 
     // 1. Validate Ranges
     if (!rangeU.arg1().isSymbol() || !rangeV.arg1().isSymbol()) {
@@ -184,12 +188,13 @@ public class ParametricPlot extends Plot {
     IExpr[] rawGrid = new IExpr[(steps + 1) * (steps + 1)];
     int gridWidth = steps + 1;
 
+    final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
     int counter = 0;
     for (int i = 0; i <= steps; i++) {
       double u = uMin + i * uStep;
       for (int j = 0; j <= steps; j++) {
         double v = vMin + j * vStep;
-        rawGrid[counter++] = evalPoint(fx, fy, uSym, vSym, u, v, graphicsOptions, engine);
+        rawGrid[counter++] = evalPoint(fx, fy, uSym, vSym, u, v, region, graphicsOptions, engine);
       }
     }
 
@@ -242,7 +247,7 @@ public class ParametricPlot extends Plot {
   }
 
   private static IExpr evalPoint(IExpr fx, IExpr fy, ISymbol uSym, ISymbol vSym, double u, double v,
-      GraphicsOptions graphicsOptions, EvalEngine engine) {
+      RegionFunctionFilter region, GraphicsOptions graphicsOptions, EvalEngine engine) {
     try {
       // Use F.subst for clean substitution
       IAST rules = F.List(F.Rule(uSym, F.num(u)), F.Rule(vSym, F.num(v)));
@@ -253,6 +258,11 @@ public class ParametricPlot extends Plot {
       double y = engine.evalDouble(yExpr);
 
       if (Double.isFinite(x) && Double.isFinite(y)) {
+        // a point the region rejects is left out the same way one the parametrisation has no
+        // value at is: the quads that touch it are simply not built
+        if (region != null && !region.accepts(x, y, u, v)) {
+          return F.NIL;
+        }
         return F.List(F.num(x), F.num(y));
       }
     } catch (RuntimeException e) {
@@ -263,7 +273,7 @@ public class ParametricPlot extends Plot {
 
   private static IAST parametricPlotToListPoints(IExpr functionOrListOfFunctions,
       final IAST rangeList, final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine,
-      int plotPoints, int maxRecursion) {
+      int plotPoints, int maxRecursion, IExpr regionFunction) {
     if (!rangeList.arg1().isSymbol()) {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
@@ -307,6 +317,7 @@ public class ParametricPlot extends Plot {
     }
 
     final IASTAppendable listOfLines = F.ListAlloc(curveList.size());
+    final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
 
     for (IExpr curveSpec : curveList) {
       if (!curveSpec.isList() || ((IAST) curveSpec).size() < 3)
@@ -319,6 +330,9 @@ public class ParametricPlot extends Plot {
       IExpr fy = QuantityFunctions.quantityPlotFunction(((IAST) curveSpec).arg2(), samplePoint,
           targetUnits, 2, 2, engine);
 
+      // one curve is a list of the polylines it is made of, which is how a curve broken by a
+      // region or a pole keeps a single colour instead of being read as several curves
+      IASTAppendable segments = F.ListAlloc(4);
       IASTAppendable linePoints = F.ListAlloc(steps);
 
       for (int i = 0; i <= steps; i++) {
@@ -327,18 +341,32 @@ public class ParametricPlot extends Plot {
         IExpr xExpr = F.subst(fx, F.Rule(tSym, tVal));
         IExpr yExpr = F.subst(fy, F.Rule(tSym, tVal));
 
+        boolean drawn = false;
         try {
           double x = engine.evalDouble(xExpr);
           double y = engine.evalDouble(yExpr);
-          if (Double.isFinite(x) && Double.isFinite(y)) {
+          if (Double.isFinite(x) && Double.isFinite(y)
+              && (region == null || region.accepts(x, y, t))) {
             linePoints.append(graphicsOptions.point(x, y));
+            drawn = true;
           }
         } catch (RuntimeException e) {
           // Ignore
         }
+        if (!drawn) {
+          // the curve is broken where it has no value, or where the region ends, rather than
+          // jumped across
+          if (linePoints.argSize() > 1) {
+            segments.append(linePoints);
+          }
+          linePoints = F.ListAlloc(steps);
+        }
       }
-      if (linePoints.size() > 1) {
-        listOfLines.append(linePoints);
+      if (linePoints.argSize() > 1) {
+        segments.append(linePoints);
+      }
+      if (segments.argSize() > 0) {
+        listOfLines.append(segments);
       }
     }
 

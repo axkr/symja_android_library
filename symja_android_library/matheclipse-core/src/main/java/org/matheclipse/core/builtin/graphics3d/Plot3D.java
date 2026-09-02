@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -235,7 +236,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     }
 
     IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
-    if (boundaryStyle != S.Automatic && !boundaryStyle.isNone()) {
+    if (Plot3DTools.drawsBoundary(boundaryStyle)) {
       IAST boundary = Plot3DTools.surfaceBoundary(grid);
       if (boundary.argSize() > 0) {
         decorated.append(boundaryStyle);
@@ -337,8 +338,8 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
    */
   private static void applyRegionFunction(double[][] z, double xMin, double xStep, double yMin,
       double yStep, int nx, int ny, IExpr regionFunction, EvalEngine engine) {
-    if (regionFunction.isNone() || regionFunction == S.Automatic
-        || !regionFunction.isPresent()) {
+    RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
+    if (region == null) {
       return;
     }
     for (int i = 0; i < nx; i++) {
@@ -347,10 +348,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         if (!Double.isFinite(z[i][j])) {
           continue;
         }
-        double y = yMin + j * yStep;
-        IExpr inside =
-            engine.evaluate(F.ternaryAST3(regionFunction, F.num(x), F.num(y), F.num(z[i][j])));
-        if (!inside.isTrue()) {
+        if (!region.accepts(x, yMin + j * yStep, z[i][j])) {
           z[i][j] = Double.NaN;
         }
       }

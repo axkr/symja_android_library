@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -136,6 +137,8 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     double[] u = perpendicular(axis);
     double[] w = cross(axis, u);
 
+    RegionFunctionFilter region =
+        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
     double[][][] grid = new double[nT][nTheta][];
     boolean any = false;
     double zMin = Double.MAX_VALUE;
@@ -157,6 +160,11 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
         double[] point = new double[3];
         for (int c = 0; c < 3; c++) {
           point[c] = radius * (cos * u[c] + sin * w[c]) + height * axis[c];
+        }
+        if (region != null
+            && !region.accepts(point[0], point[1], point[2], tValue, angle, radius)) {
+          // a point the region rejects leaves a hole; addSurface skips the quads that touch it
+          continue;
         }
         grid[i][j] = point;
         zMin = Math.min(zMin, point[2]);
@@ -190,7 +198,9 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     boolean wrapTheta = Math.abs((theta[1] - theta[0]) - 2 * Math.PI) < 1e-9;
     Plot3DTools.addSurface(builder, grid, false, wrapTheta, colors, true,
         options[Plot3DTools.X_MESH], options[Plot3DTools.X_MESH_STYLE]);
-    return builder.build();
+    // the rim of the surface, and the rim of every hole a RegionFunction cut in it
+    return Plot3DTools.withBoundary(builder.build(), grid,
+        options[Plot3DTools.X_BOUNDARY_STYLE]);
   }
 
   /**

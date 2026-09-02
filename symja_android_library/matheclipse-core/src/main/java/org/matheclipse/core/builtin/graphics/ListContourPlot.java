@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -102,6 +103,13 @@ public class ListContourPlot extends ContourPlot {
       return Errors.printMessage(S.ListContourPlot, "arrayerr", F.List(dataArg), engine);
     }
 
+    boolean[][] defined = applyRegionFunction(gridData, RegionFunctionFilter
+        .of(GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine));
+    if (gridData.minZ > gridData.maxZ) {
+      // the region left nothing to contour, which is the same as data with no value in it
+      return F.NIL;
+    }
+
     graphicsOptions
         .setBoundingBox(new double[] {gridData.xMin, gridData.xMax, gridData.yMin, gridData.yMax});
 
@@ -120,6 +128,8 @@ public class ListContourPlot extends ContourPlot {
     if (meshLines.isPresent()) {
       primitives.append(meshLines);
     }
+    ContourPlot.appendBoundary(primitives, defined, gridData.xMin, gridData.yMin, gridData.stepX,
+        gridData.stepY, GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic));
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
@@ -138,6 +148,47 @@ public class ListContourPlot extends ContourPlot {
     public GridData(int width, int height) {
       zGrid = new double[width][height];
     }
+  }
+
+  /**
+   * Punches out every grid node the {@code RegionFunction} does not accept, and reports which nodes
+   * are left.
+   *
+   * <p>
+   * The predicate is given the node as {@code region[x, y, f]}, which is what {@code ContourPlot}
+   * and {@code DensityPlot} pass. A rejected node becomes {@code Double.NaN}, exactly what a datum
+   * that is not a number already is, so the marching squares and the raster resampling both leave a
+   * hole there without knowing a region was asked for. The z range is recomputed from what is left,
+   * so the contour levels and the colour scale describe the visible part of the data.
+   *
+   * @return which nodes carry a value, indexed {@code [x][y]} like {@code zGrid}
+   */
+  static boolean[][] applyRegionFunction(GridData gd, RegionFunctionFilter region) {
+    int nx = gd.zGrid.length;
+    int ny = nx > 0 ? gd.zGrid[0].length : 0;
+    boolean[][] defined = new boolean[nx][ny];
+    double minZ = Double.MAX_VALUE;
+    double maxZ = -Double.MAX_VALUE;
+    for (int i = 0; i < nx; i++) {
+      double x = gd.xMin + i * gd.stepX;
+      for (int j = 0; j < ny; j++) {
+        double z = gd.zGrid[i][j];
+        if (region != null && Double.isFinite(z) && !region.accepts(x, gd.yMin + j * gd.stepY, z)) {
+          z = Double.NaN;
+          gd.zGrid[i][j] = z;
+        }
+        defined[i][j] = Double.isFinite(z);
+        if (defined[i][j]) {
+          minZ = Math.min(minZ, z);
+          maxZ = Math.max(maxZ, z);
+        }
+      }
+    }
+    if (region != null) {
+      gd.minZ = minZ;
+      gd.maxZ = maxZ;
+    }
+    return defined;
   }
 
   /**
@@ -440,6 +491,14 @@ public class ListContourPlot extends ContourPlot {
 
   private void processCellPolygon(IASTAppendable out, double x, double y, double dx, double dy,
       double v0, double v1, double v2, double v3, double level) {
+    if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
+        || !Double.isFinite(v3)) {
+      // A corner without a value is not "below the level": comparing NaN with >= says false, which
+      // would classify the cell as filled up to that corner and then interpolate across the edge,
+      // producing a polygon with NaN coordinates. An incomplete cell has no interior to shade -
+      // that is what leaves a hole where a RegionFunction cuts, or where the data has no value.
+      return;
+    }
     int index = 0;
     if (v0 >= level)
       index |= 1;
@@ -584,6 +643,11 @@ public class ListContourPlot extends ContourPlot {
 
   private void processCellLine(IASTAppendable out, double x, double y, double dx, double dy,
       double v0, double v1, double v2, double v3, double level) {
+    if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
+        || !Double.isFinite(v3)) {
+      // an incomplete cell has no contour to trace; see processCellPolygon
+      return;
+    }
 
     int index = 0;
     if (v0 >= level)

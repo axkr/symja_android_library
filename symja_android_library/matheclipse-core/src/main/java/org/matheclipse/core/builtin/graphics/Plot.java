@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -74,7 +75,8 @@ public class Plot extends ListPlot {
                         .toIntDefault(-1),
                     GraphicsOptions.optionValue(originalAST, S.Exclusions, S.Automatic),
                     GraphicsOptions.optionValue(originalAST, S.WorkingPrecision, S.MachinePrecision)
-                        .toIntDefault(-1));
+                        .toIntDefault(-1),
+                    GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
             if (listOfLines.isNIL()) {
               return F.NIL;
             }
@@ -120,7 +122,7 @@ public class Plot extends ListPlot {
 
   private static IAST plotToListPoints(IExpr functionOrListOfFunctions, final IAST rangeList,
       final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine, int plotPoints,
-      int maxRecursion, IExpr exclusions, int workingPrecision) {
+      int maxRecursion, IExpr exclusions, int workingPrecision, IExpr regionFunction) {
     if (!rangeList.arg1().isSymbol()) {
       // `1` is not a valid variable.
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
@@ -159,6 +161,7 @@ public class Plot extends ListPlot {
     }
 
     final IExpr targetUnits = plotTargetUnits;
+    final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
     final IAST samplePoint = F.List(F.Rule(x, F.num((xMinD + xMaxD) / 2.0)));
     for (int i = 1; i < size; i++) {
       // a quantity valued function is plotted by its magnitude
@@ -168,8 +171,19 @@ public class Plot extends ListPlot {
       final UnaryNumerical hun = new UnaryNumerical(function, x, Double.NaN, engine);
       // WorkingPrecision only matters where machine arithmetic loses the answer
       hun.setPrecision(workingPrecision);
-      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, xMinD, xMaxD, scale,
-          plotPoints, maxRecursion);
+      // The region is tested inside the sampler rather than on the finished data, so the adaptive
+      // sampler - which refines wherever it meets a value that is not a number - resolves the edge
+      // of the region for us. Downstream, a rejected sample is indistinguishable from one the
+      // function has no value at, so plotLine already breaks the curve there.
+      DoubleUnaryOperator sampled = hun;
+      if (region != null) {
+        sampled = xValue -> {
+          double yValue = hun.applyAsDouble(xValue);
+          return region.accepts(xValue, yValue) ? yValue : Double.NaN;
+        };
+      }
+      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(sampled, data, xMinD, xMaxD,
+          scale, plotPoints, maxRecursion);
       if (data != null) {
         dataList.add(data);
         GraphicsUtil.automaticPlotRange2D(//

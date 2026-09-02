@@ -339,7 +339,8 @@ public class GraphicsOptions {
   /** Options of the polar plots. */
   public static OptionSet polarExtras(OptionSet set) {
     return set.add(S.Automatic, S.PolarAxes, S.PolarGridLines, S.PolarTicks, S.PlotPoints,
-        S.MaxRecursion, S.MeshStyle, S.PlotTheme, S.LabelStyle).add(S.None, S.Mesh);
+        S.MaxRecursion, S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction)
+        .add(S.None, S.Mesh);
   }
 
   /** Options of {@code WordCloud}. */
@@ -412,6 +413,64 @@ public class GraphicsOptions {
 
   /** Fully transparent, used for cells a raster has no value for. */
   private static final IAST TRANSPARENT_CELL = F.RGBColor(F.C0, F.C0, F.C0, F.C0);
+
+  /**
+   * The outline of a sampled rectangle: its rim, and the rim of every hole in it.
+   *
+   * <p>
+   * This is what {@code BoundaryStyle} draws for the plots that sample a grid. A grid edge is on
+   * the outline when both of its ends carry a value but the drawing stops there - either because
+   * the edge is on the border of the sampled rectangle, or because one of the two cells beside it
+   * is missing a corner. That covers the edge a {@code RegionFunction} cuts and the hole a function
+   * without a value leaves without either of them having to say so. It is the two dimensional twin
+   * of {@code Plot3DTools.surfaceBoundary}.
+   *
+   * @param defined which grid nodes carry a value, indexed {@code [x][y]}
+   * @param x0 the x coordinate of node {@code 0}
+   * @param y0 the y coordinate of node {@code 0}
+   * @param stepX the x distance between neighbouring nodes
+   * @param stepY the y distance between neighbouring nodes
+   */
+  public static IASTAppendable gridBoundary(boolean[][] defined, double x0, double y0, double stepX,
+      double stepY) {
+    int nx = defined.length;
+    int ny = nx > 0 ? defined[0].length : 0;
+    IASTAppendable lines = F.ListAlloc(Math.max(4, nx + ny));
+    if (nx < 2 || ny < 2) {
+      return lines;
+    }
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (!defined[i][j]) {
+          continue;
+        }
+        if (i + 1 < nx && defined[i + 1][j] //
+            && (!cellComplete(defined, i, j - 1) || !cellComplete(defined, i, j))) {
+          lines.append(gridSegment(x0, y0, stepX, stepY, i, j, i + 1, j));
+        }
+        if (j + 1 < ny && defined[i][j + 1] //
+            && (!cellComplete(defined, i - 1, j) || !cellComplete(defined, i, j))) {
+          lines.append(gridSegment(x0, y0, stepX, stepY, i, j, i, j + 1));
+        }
+      }
+    }
+    return lines;
+  }
+
+  /** Whether the cell whose lower corner is {@code (i, j)} exists and has all four corners. */
+  private static boolean cellComplete(boolean[][] defined, int i, int j) {
+    if (i < 0 || j < 0 || i + 1 >= defined.length || j + 1 >= defined[0].length) {
+      return false;
+    }
+    return defined[i][j] && defined[i + 1][j] && defined[i][j + 1] && defined[i + 1][j + 1];
+  }
+
+  private static IExpr gridSegment(double x0, double y0, double stepX, double stepY, int i1, int j1,
+      int i2, int j2) {
+    return F.Line(F.List(//
+        F.List(F.num(x0 + i1 * stepX), F.num(y0 + j1 * stepY)), //
+        F.List(F.num(x0 + i2 * stepX), F.num(y0 + j2 * stepY))));
+  }
 
   /**
    * Resolve a {@code ColorFunction} option into a mapping from a value in 0..1 to a colour.

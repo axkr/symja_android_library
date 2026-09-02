@@ -355,6 +355,43 @@ public final class Plot3DTools {
    * the edge a {@code RegionFunction} cuts and the seam an {@code Exclusions} curve opens without
    * either of them having to say so.
    */
+  /**
+   * Whether {@code BoundaryStyle} asks for an outline at all.
+   *
+   * <p>
+   * {@code Automatic} means no outline: a surface is read by its shading, and a rim drawn round
+   * every plot that never asked for one would be noise. {@code None} says the same thing
+   * explicitly. Anything else is a style to draw the outline in.
+   */
+  public static boolean drawsBoundary(IExpr boundaryStyle) {
+    return boundaryStyle != null && boundaryStyle.isPresent() && boundaryStyle != S.Automatic
+        && !boundaryStyle.isAutomatic() && !boundaryStyle.isNone();
+  }
+
+  /**
+   * The surface with its outline appended, when {@code BoundaryStyle} asks for one.
+   *
+   * <p>
+   * The outline is kept outside the {@code GraphicsComplex} so that it carries its own colour
+   * rather than being shaded along with the surface it lies on. When nothing is to be drawn the
+   * surface is returned exactly as it came in, so a plot that was never given a
+   * {@code BoundaryStyle} keeps the shape its callers already expect.
+   *
+   * @param complex the built surface
+   * @param grid the sampled points the surface was built from, {@code null} where it has none
+   * @param boundaryStyle the {@code BoundaryStyle} option value
+   */
+  public static IExpr withBoundary(IExpr complex, double[][][] grid, IExpr boundaryStyle) {
+    if (complex.isNIL() || grid == null || !drawsBoundary(boundaryStyle)) {
+      return complex;
+    }
+    IAST boundary = surfaceBoundary(grid);
+    if (boundary.argSize() == 0) {
+      return complex;
+    }
+    return F.List(complex, boundaryStyle, boundary);
+  }
+
   public static IASTAppendable surfaceBoundary(double[][][] grid) {
     int nx = grid.length;
     int ny = nx > 0 ? grid[0].length : 0;

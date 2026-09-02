@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -99,6 +100,8 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     double thetaStep = (theta[1] - theta[0]) / (nTheta - 1);
     double phiStep = (phi[1] - phi[0]) / (nPhi - 1);
 
+    RegionFunctionFilter region =
+        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
     double[][][] grid = new double[nTheta][nPhi][];
     double[][] radii = new double[nTheta][nPhi];
     double rMin = Double.MAX_VALUE;
@@ -122,10 +125,17 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
         if (!Double.isFinite(r)) {
           continue;
         }
+        double px = r * sinT * Math.cos(p);
+        double py = r * sinT * Math.sin(p);
+        double pz = r * cosT;
+        if (region != null && !region.accepts(px, py, pz, t, p, r)) {
+          // a point the region rejects leaves a hole, the same way a radius without a value does
+          continue;
+        }
         radii[i][j] = r;
         rMin = Math.min(rMin, r);
         rMax = Math.max(rMax, r);
-        grid[i][j] = new double[] {r * sinT * Math.cos(p), r * sinT * Math.sin(p), r * cosT};
+        grid[i][j] = new double[] {px, py, pz};
         any = true;
       }
     }
@@ -157,7 +167,9 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     boolean wrapPhi = Math.abs((phi[1] - phi[0]) - 2 * Math.PI) < 1e-9;
     Plot3DTools.addSurface(builder, grid, false, wrapPhi, colors, true, options[Plot3DTools.X_MESH],
         options[Plot3DTools.X_MESH_STYLE]);
-    return builder.build();
+    // the rim of the surface, and the rim of every hole a RegionFunction cut in it
+    return Plot3DTools.withBoundary(builder.build(), grid,
+        options[Plot3DTools.X_BOUNDARY_STYLE]);
   }
 
   @Override
