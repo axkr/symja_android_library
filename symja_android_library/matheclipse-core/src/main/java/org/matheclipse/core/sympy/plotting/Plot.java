@@ -1,7 +1,7 @@
 package org.matheclipse.core.sympy.plotting;
 
 import java.util.SortedSet;
-import org.matheclipse.core.generic.UnaryNumerical;
+import java.util.function.DoubleUnaryOperator;
 
 public class Plot {
   final static int MAXIMUM_DEPTH = 12;
@@ -27,15 +27,16 @@ public class Plot {
   /**
    * Compute the plot data for a given numerical unary function over a range.
    *
-   * @param hun numerical function wrapper
+   * @param hun the sampled function; a sample it has no value for comes back as
+   *        {@code Double.NaN}
    * @param data preallocated data array (ignored and replaced when non-empty sampling is returned)
    * @param xMin minimum x value
    * @param xMax maximum x value
    * @param xScale x-axis scale ("Log", "Log10", "Log2" or empty)
    * @return a 2xN array with x coordinates in row 0 and y coordinates in row 1
    */
-  public static double[][] computePlot(final UnaryNumerical hun, double[][] data, final double xMin,
-      final double xMax, String xScale) {
+  public static double[][] computePlot(final DoubleUnaryOperator hun, double[][] data,
+      final double xMin, final double xMax, String xScale) {
     return computePlot(hun, data, xMin, xMax, xScale, -1, -1);
   }
 
@@ -47,8 +48,8 @@ public class Plot {
    * @param maxRecursion how deep the adaptive sampler may subdivide, or a value below 1 for the
    *        default depth
    */
-  public static double[][] computePlot(final UnaryNumerical hun, double[][] data, final double xMin,
-      final double xMax, String xScale, int plotPoints, int maxRecursion) {
+  public static double[][] computePlot(final DoubleUnaryOperator hun, double[][] data,
+      final double xMin, final double xMax, String xScale, int plotPoints, int maxRecursion) {
     // An explicit PlotPoints asks for that many samples, which is a uniform sweep rather than the
     // adaptive refinement; MaxRecursion only bounds the adaptive one.
     int depth = maxRecursion >= 1 ? Math.min(maxRecursion, 20) : MAXIMUM_DEPTH;

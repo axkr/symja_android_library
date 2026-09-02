@@ -5,8 +5,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.internal.BackingStorageException;
@@ -29,7 +27,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 import edu.jas.kern.PreemptingException;
@@ -500,7 +497,7 @@ public class ExprEvaluator {
     if (inputExpression != null) {
       // F.join();
       EvalEngine.setReset(fEngine);
-      ExecutorService executorService = Executors.newSingleThreadExecutor(Config.THREAD_FACTORY);
+      TimeConstrainedExecutor executor = TimeConstrainedExecutor.create();
       try {
         fExpr = fEngine.parse(inputExpression);
         if (fExpr != null) {
@@ -508,7 +505,7 @@ public class ExprEvaluator {
           work.setExpr(fExpr);
           try {
             F.await();
-            TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService);
+            TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor.service());
             return interruptible //
                 ? timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit)
                 : timeLimiter.callUninterruptiblyWithTimeout(work, timeoutDuration, timeUnit);
@@ -527,7 +524,7 @@ public class ExprEvaluator {
           }
         }
       } finally {
-        MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
+        executor.dispose();
         EvalEngine.remove();
       }
     }

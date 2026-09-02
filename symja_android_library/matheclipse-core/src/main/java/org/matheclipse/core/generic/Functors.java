@@ -12,9 +12,11 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
@@ -775,18 +777,51 @@ public class Functors {
   }
 
   /**
+   * Map the keys of an association onto their values. The keys of an association are looked up
+   * literally: a key which contains a pattern is <b>not</b> matched as a pattern, so
+   * <code>Replace(f(a), &lt;|f(x_)-&gt;x^2|&gt;)</code> is <code>f(a)</code> and not
+   * <code>a^2</code>, although <code>Replace(f(a), {f(x_)-&gt;x^2})</code> is <code>a^2</code>. An
+   * association is a lookup table, not a list of rules.
+   *
+   * @param assoc the association whose rules are mapped
+   * @return the keys of <code>assoc</code> mapped onto their values
+   */
+  private static Map<IExpr, IExpr> associationRules(IAssociation assoc) {
+    final int argsSize = assoc.argSize();
+    final Map<IExpr, IExpr> equalRules = (argsSize > 0 && argsSize <= 5) //
+        ? new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1)
+        : new HashMap<IExpr, IExpr>();
+    for (int i = 1; i < assoc.size(); i++) {
+      IAST rule = assoc.getRule(i);
+      if (rule.isPresent()) {
+        equalRules.put(rule.arg1(), rule.arg2());
+      }
+    }
+    return equalRules;
+  }
+
+  /**
    * Create a functor from the given rules. If <code>astRules</code> is a <code>List[]</code>
    * object, the elements of the list are taken as the rules of the form <code>Rule[lhs, rhs]</code>
-   * , otherwise the <code>astRules</code> itself is taken as the <code>Rule[lhs, rhs]</code>.
+   * , otherwise the <code>astRules</code> itself is taken as the <code>Rule[lhs, rhs]</code>. An
+   * {@link IAssociation} is used as a lookup table of its keys - see {@link #associationRules} -
+   * and a {@link org.matheclipse.core.expression.data.DispatchExpr} is returned unchanged.
    *
    * @param astRules a possibly nested list of rules of the form <code>x-&gt;y</code> or <code>
-   *     x:&gt;y</code>
+   *     x:&gt;y</code>, an association <code>&lt;|x-&gt;y,...|&gt;</code> or a dispatch table
    * @param engine the evaluation engine
    */
   public static Function<IExpr, IExpr> rules(IExpr astRules, EvalEngine engine) {
     final Map<IExpr, IExpr> equalRules;
     IAST rule;
     List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
+    if (astRules instanceof DispatchExpr) {
+      // a dispatch table already is a Function<IExpr, IExpr> returning F.NIL if no rule matches
+      return (DispatchExpr) astRules;
+    }
+    if (astRules.isAssociation()) {
+      return rules(associationRules((IAssociation) astRules));
+    }
     if (astRules.isList()) {
       return rulesFromNestedList((IAST) astRules, engine, matchers);
     } else {
@@ -795,8 +830,9 @@ public class Functors {
         equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
         addRuleToCollection(equalRules, matchers, rule);
       } else {
-        throw new ArgumentTypeException(
-            "rule expression (x->y or x:>y) expected instead of " + astRules.toString());
+        // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
+        // used for replacing.
+        throw new ArgumentTypeException("reps", F.list(astRules));
       }
       if (matchers.size() > 0) {
         return new RulesPatternFunctor(equalRules, matchers, engine);
@@ -877,6 +913,9 @@ public class Functors {
       EvalEngine engine) {
     final Map<IExpr, IExpr> equalRules;
     List<PatternMatcherList> matchers = new ArrayList<PatternMatcherList>();
+    if (astRules.isAssociation()) {
+      return listRules(associationRules((IAssociation) astRules), result);
+    }
     if (astRules.isList()) {
       if (astRules.size() > 1) {
         // assuming multiple rules in a list
@@ -905,8 +944,9 @@ public class Functors {
         equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
         createPatternMatcherList(equalRules, matchers, astRules);
       } else {
-        throw new ArgumentTypeException(
-            "rule expression (x->y or x:>y) expected instead of " + astRules.toString());
+        // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
+        // used for replacing.
+        throw new ArgumentTypeException("reps", F.list(astRules));
       }
     }
     if (matchers.size() > 0) {

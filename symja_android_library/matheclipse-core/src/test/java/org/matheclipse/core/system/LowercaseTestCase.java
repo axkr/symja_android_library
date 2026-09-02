@@ -2194,6 +2194,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBlock() {
+    check("vars={a,b}; Block(Evaluate(vars), a=1; b=2; a+b)", //
+        "3");
+    check("vars={a}; {Block(Evaluate(vars), a=1;a)}", //
+        "{1}");
+    check("{Block(Sequence({a}), a=1;a)}", //
+        "{1}");
+    // the Wolfram Demonstrations idiom this was reported for
+    check("Block(Evaluate({f,g}), HoldForm(f(g(1))))", //
+        "f(g(1))");
 
     // Rubi rules use Block variable names in "sub-rules":
     check("Integrate(E^(E^x + x), x)", //
@@ -2902,6 +2911,52 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Clip({-2, 0, 2})", //
         "{-1,0,1}");
 
+    // Infinity is a valid bound, which is how a one sided range is written
+    check("Clip(5,{0,Infinity})", //
+        "5");
+    check("Clip(-5,{0,Infinity})", //
+        "0");
+    check("Clip(-5,{-Infinity,0})", //
+        "-5");
+    check("Clip(5,{-Infinity,0})", //
+        "0");
+    check("Clip({-5,1,3.5},{0,Infinity})", //
+        "{0,1,3.5}");
+    check("Clip(Infinity,{0,Infinity})", //
+        "Infinity");
+    check("Clip(-Infinity,{-Infinity,0})", //
+        "-Infinity");
+    // a symbolic value is not known to be real, so Clip stays unevaluated even for a range that
+    // clips nothing
+    check("Clip(x,{-Infinity,Infinity})", //
+        "Clip(x,{-Infinity,Infinity})");
+
+    // a malformed bound list is not mapped over the first argument
+    check("Clip({1,2},5)", //
+        "Clip({1,2},5)");
+    check("Clip({1,2},{0,1},7)", //
+        "Clip({1,2},{0,1},7)");
+
+    // Clip maps over the bounds of an interval
+    check("Clip(Interval({-3,5}))", //
+        "Interval({-1,1})");
+    check("Clip(Interval({-1/2,1/2}))", //
+        "Interval({-1/2,1/2})");
+    check("Clip(Interval({-Infinity,5}))", //
+        "Interval({-1,1})");
+    check("Clip(Interval({-3,5}),{0,2})", //
+        "Interval({0,2})");
+    check("Clip(Interval({6,7}),{0,2})", //
+        "Interval({2,2})");
+
+    // the bounds may be quantities as long as they are comparable to the value
+    check("Clip(Quantity(3,\"Meters\"),{Quantity(0,\"Meters\"),Quantity(2,\"Meters\")})", //
+        "Quantity(2,\"Meters\")");
+
+    check("Clip(2-3*I)", //
+        "Clip(2-I*3)");
+    check("Clip(SparseArray({1->5,3->-4},{5}))", //
+        "{1,0,-1,0,0}");
   }
 
   @Test
@@ -6670,6 +6725,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDo() {
+    // `Evaluate(...)` escapes the HoldAll attribute of `Do`, so the iterator specification is
+    // evaluated before `Do` reads it
+    check("it={i,1,3}; Reap(Do(Sow(i), Evaluate(it)))[[2,1]]", //
+        "{1,2,3}");
+    // message: Do: Do called with 0 arguments; 2 or more arguments are expected.
+    check("{Do()}", //
+        "{Do()}");
     check("Do(marray(i,10-i+1)=1, {i,1,10});marray(1,10)", //
         "1");
     check("Do(Print(i0),{})", //
@@ -6817,6 +6879,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDynamicModule() {
+    check("vars={a,b}; DynamicModule(Evaluate(vars), a=1; b=2; a+b)", //
+        "3");
     // the localization of DynamicModule lasts as long as the object it produced is displayed;
     // with nothing displaying it, that leaves it doing exactly what Module does
     check("DynamicModule({x = 2}, x^2)", //
@@ -9457,6 +9521,77 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x->6.28319}");
     check("FindRoot(Sin(x)==2,{x,I})", //
         "{x->1.5708+I*1.31696}");
+
+    // the multivariate form Mathematica documents, where each start specification is its own
+    // argument instead of an element of one list
+    check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x, 0.1}, {y, 0.1})", //
+        "{x->0.75,y->0.25}");
+    // a second start value is allowed in the multivariate forms as well, where it sets the width of
+    // the first step of a numerical jacobian matrix
+    check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x, 0.1, 0.2}, {y, 0.1, 0.2})", //
+        "{x->0.75,y->0.25}");
+    check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {{x, 0.1, 0.2}, {y, 0.1, 0.2}})", //
+        "{x->0.75,y->0.25}");
+    check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x, 0.1, 0.2}, {y, 0.1, 0.2},"
+        + "MaxIterations->500)", //
+        "{x->0.75,y->0.25}");
+    // Message FindRoot: Search specification {x,1,2,3} should be a list with 1 to 3 elements.
+    check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x,1,2,3}, {y,1})", //
+        "FindRoot({x+y==1,x-y==0.5},{x,1,2,3},{y,1})");
+
+    // A function which is only defined for numeric arguments has no derivative to differentiate
+    // either, so Newton's method cannot run at all on it - it would spend its whole budget on a
+    // derivative which is never a number, without ever sampling the function. The difference
+    // quotient iteration takes over.
+    check("f(a_?NumericQ) := a^2-2;FindRoot(f(x)==0, {x, 1, 1.2})", //
+        "{x->1.41421}");
+    check("f(a_?NumericQ) := a^2-2;FindRoot(f(x)==0, {x, 1})", //
+        "{x->1.41421}");
+    checkNumeric("f(a_?NumericQ) := a^2-2;x /. FindRoot(f(x)==0, {x, 1, 1.2})", //
+        "1.4142135623730951");
+    // the same fallback covers a derivative which is not a finite number at the start value
+    check("FindRoot(Sqrt(x)-2, {x, 0})", //
+        "{x->4.0}");
+    check("FindRoot(Abs(x)-1, {x, 0})", //
+        "{x->1.0}");
+
+    // A function which is only defined for numeric arguments has no derivative to differentiate, so
+    // the jacobian matrix is determined numerically and kept up to date with Broyden's method.
+    check("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+        + "FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
+        "{x->1.41421,y->1.58579}");
+    checkNumeric("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+        + "x /. FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
+        "1.4142135623730951");
+    checkNumeric("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+        + "y /. FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
+        "1.5857864376269049");
+    // without a second start value the width of the first difference is determined from the point
+    check("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+        + "FindRoot({f(x)==0, g(x,y)==0}, {x,1}, {y,1})", //
+        "{x->1.41421,y->1.58579}");
+
+    // MaxIterations is used up: report it and settle on the best point which was reached, rather
+    // than aborting the whole evaluation. One Newton step from x==y==10 lands on 5.1 and 5.15.
+    // Message FindRoot: Failed to converge to the requested accuracy or precision within 1
+    // iterations.
+    check("FindRoot({x^2-2==0, y^2-3==0}, {x,10}, {y,10}, MaxIterations->1)", //
+        "{x->5.1,y->5.15}");
+    check("FindRoot({x^2-2==0, y^2-3==0}, {x,10}, {y,10})", //
+        "{x->1.41421,y->1.73205}");
+
+    check("FindRoot(Cos(x)==x,{x,0},MaxIterations->Automatic)", //
+        "{x->0.739085}");
+    check("FindRoot(Cos(x)==x,{x,0},MaxIterations->Infinity)", //
+        "{x->0.739085}");
+    // Message FindRoot: The value of the option MaxIterations -> -1 should be a positive integer,
+    // Infinity or Automatic.
+    check("FindRoot(Cos(x)==x,{x,0},MaxIterations->-1)", //
+        "FindRoot(Cos(x)==x,{x,0},MaxIterations->-1)");
+    check("FindRoot(Cos(x)==x,{x,0},MaxIterations->2.5)", //
+        "FindRoot(Cos(x)==x,{x,0},MaxIterations->2.5)");
+    check("FindRoot(Cos(x)==x,{x,0},MaxIterations->bogus)", //
+        "FindRoot(Cos(x)==x,{x,0},MaxIterations->bogus)");
     // TODO
     // check("FindRoot(Zeta(1/2 + I*t), {t, 12})", //
     // " ");
@@ -12739,6 +12874,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JSForm(Clip(x, {-2, 4}))", //
         "\n" + " (function() {\n" + "if (x<-2) { return -2;}\n" + "if (x>4) { return 4;}\n"
             + " return x;})()\n" + "");
+    check("JSForm(Clip(x, {-2, 4}, {a, b}))", //
+        "\n" + " (function() {\n" + "if (x<-2) { return a;}\n" + "if (x>4) { return b;}\n"
+            + " return x;})()\n" + "");
 
     check("JSForm(E^3-Cos(Pi^2/x))", //
         "20.085536923187668-Math.cos(9.869604401089358/x)");
@@ -14454,6 +14592,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("ReplaceAt({a, a, a, a}, a -> xx, 2)", //
         "{a,xx,a,a}");
+    // an association or a dispatch table can be used like a list of rules
+    check("ReplaceAt({a, b}, <|a -> 1|>, 1)", //
+        "{1,b}");
+    check("ReplaceAt({a, b}, Dispatch({a -> 1}), 1)", //
+        "{1,b}");
     check("ReplaceAt({a, a, a, a}, a -> xx, {{1}, {4}})", //
         "{xx,a,a,xx}");
     check("ReplaceAt({{a, a}, {a, a}}, a -> xx, {2, 1})", //
@@ -15414,6 +15557,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testModule() {
+    // `Evaluate(...)` escapes the HoldAll attribute of `Module`, so the local variable
+    // specification is evaluated before it is validated
+    check("vars={a,b}; Module(Evaluate(vars), a=1; b=2; a+b)", //
+        "3");
+    // ...also when `Module` isn't the top level expression
+    check("vars={a}; {Module(Evaluate(vars), a=1;a)}", //
+        "{1}");
+    check("vars={a}; f(Module(Evaluate(vars), a=1;a))", //
+        "f(1)");
+    // an `Evaluate(...)` nested inside the list is not released
+    // message: Module: Local variable specification {Evaluate(a)} contains Evaluate(a) which is
+    // not a symbol or an assignment to a symbol.
+    check("Module({Evaluate(a)}, a)", //
+        "Module({Evaluate(a)},a)");
+    // `Hold` and `HoldComplete` still hold
+    check("vars={a}; Hold(Module(Evaluate(vars), a))", //
+        "Hold(Module(Evaluate(vars),a))");
+    check("vars={a}; HoldComplete(Module(Evaluate(vars), a))", //
+        "HoldComplete(Module(Evaluate(vars),a))");
+    // message: Module: Local variable specification notalist is not a List.
+    check("vars=notalist; Module(Evaluate(vars), 1)", //
+        "Module(notalist,1)");
+    // a `Sequence(...)` argument is spliced
+    check("{Module(Sequence({a}), a=1;a)}", //
+        "{1}");
+    // a wrong number of arguments prints a message instead of throwing IndexOutOfBoundsException
+    // message: Module: Module called with 1 argument; 2 arguments are expected.
+    check("{Module({a})}", //
+        "{Module({a})}");
     // message: Module: Duplicate local variable x found in local variable specification {x=a,x=b}.
     check("Module({x = a, x=b}, x^2)", //
         "Module({x=a,x=b},x^2)");
@@ -18284,6 +18456,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{-1,x<-1},{1,x>1}},x)");
     check("PiecewiseExpand(Clip(x,{-7,5}))", //
         "Piecewise({{-7,x<-7},{5,x>5}},x)");
+    check("PiecewiseExpand(Clip(x,{-7,5},{a,b}))", //
+        "Piecewise({{a,x<-7},{b,x>5}},x)");
 
     // Conditionals
     check("PiecewiseExpand(If(x, y, z))", //
@@ -28153,6 +28327,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testWith() {
+    // `Evaluate(...)` escapes the HoldAll attribute of `With`. A `With` that succeeds this way
+    // isn't expressible - evaluating the specification would perform the `Set` before `With` sees
+    // it - but the specification does reach the validation now.
+    // message: With: Variable q in local variable specification {q} requires assigning a value
+    check("vars={q}; With(Evaluate(vars), q^3)", //
+        "With({q},q^3)");
+    // message: With: With called with 0 arguments; 2 or more arguments are expected.
+    check("{With()}", //
+        "{With()}");
     // message: With: Duplicate local variable x found in local variable specification {x=a,x=b}.
     check("With({x = a, x=b}, x^2)", //
         "With({x=a,x=b},x^2)");

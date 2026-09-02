@@ -431,6 +431,42 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "Replace({1,3,2},{{1,2,3}->1,{1,3,2}->2,{2,1,3}->3,{2,3,1}->4,{3,1,2}->5,{3,2,1}->6,_->0})", //
         "2");
 
+    // an association can be used like its list of rules
+    check("Replace(\"a\", <|\"a\" -> 1, \"b\" -> 2|>)", //
+        "1");
+    check("Replace(\"c\", <|\"a\" -> 1, \"b\" -> 2|>)", //
+        "c");
+    check("Replace(\"a\", <|\"a\" -> 1|>, {0})", //
+        "1");
+    check("Replace(x, <||>)", //
+        "x");
+    check("Replace(a, <|a :> 1|>)", //
+        "1");
+    // the keys of an association are looked up literally - a key which contains a pattern is not
+    // matched as a pattern, although the same rule in a list is
+    check("Replace(f(a), <|f(x_) -> x^2|>)", //
+        "f(a)");
+    check("Replace(f(a), {f(x_) -> x^2})", //
+        "a^2");
+    check("Replace(a + b, <|x_ + y_ :> {x, y}|>)", //
+        "a+b");
+    // a list of associations threads like a list of lists of rules
+    check("Replace(a, {<|a -> 1|>, <|a -> 2|>})", //
+        "{1,2}");
+    check("Replace(a, {{a -> 1}, <|a -> 2|>})", //
+        "{1,2}");
+    check("Replace(a, {a -> 1, a -> 2})", //
+        "1");
+    // a dispatch table is accepted in the 2-argument form too
+    check("Replace(1, Dispatch({1 -> a, 3 -> b}))", //
+        "a");
+    check("Replace({1, 2}, Dispatch({1 -> a, 3 -> b}))", //
+        "{1,2}");
+    // Replace: (42) is neither a list of replacement rules nor a valid dispatch table and cannot
+    // be used for replacing.
+    check("Replace(\"a\", 42)", //
+        "Replace(a,42)");
+
     check("Replace(<| key -> <|a -> 1, b -> 2|>|>, <|k_ -> v_, y___|> -> {k, v,  y}, {1})", //
         "<|Key->{a,1,b->2}|>");
     check("f( <|key_ -> val_|> ) := <|val -> key|>", //
@@ -553,6 +589,18 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{a,2}");
     check("{1, 2} /. <|4 -> a, 2 -> b|>", //
         "{1,b}");
+    check("\"a\" /. <|\"a\" -> 1, \"b\" -> 2|>", //
+        "1");
+    check("\"a\" //. <|\"a\" -> 1, \"b\" -> 2|>", //
+        "1");
+    check("ReplaceRepeated(a, <|a -> b, b -> c|>)", //
+        "c");
+    check("f(a) /. <|f(x_) -> x^2|>", //
+        "f(a)");
+    check("a /. {<|a -> 1|>, <|a -> 2|>}", //
+        "{1,2}");
+    check("a //. {<|a -> 1|>, <|a -> 2|>}", //
+        "{1,2}");
 
     check("{{}, {a, a}, {a, b}, {a, a, a}, {a}} /. {a ..} -> x", //
         "{{},x,{a,b},x,x}");
@@ -756,6 +804,23 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   public void testReplaceList() {
     check("ReplaceList(a,b->x)", //
         "{}");
+
+    // an association can be used like its list of rules
+    check("ReplaceList(\"a\", <|\"a\" -> 1, \"b\" -> 2|>)", //
+        "{1}");
+    // the keys of an association are looked up literally, so the pattern key never matches
+    check("ReplaceList(a+b, <|x_ + y_ :> {x, y}|>)", //
+        "{}");
+    check("ReplaceList(a+b, {x_ + y_ :> {x, y}})", //
+        "{{a,b},{b,a}}");
+    check("ReplaceList(a, <||>)", //
+        "{}");
+    check("ReplaceList(1, Dispatch({1 -> a, 1 -> b}))", //
+        "{a,b}");
+    // ReplaceList: (42) is neither a list of replacement rules nor a valid dispatch table and
+    // cannot be used for replacing.
+    check("ReplaceList(\"a\", 42)", //
+        "ReplaceList(a,42)");
     // ReplaceList: Non-negative integer or Infinity expected at position 3 in
     // ReplaceList(a+b+c+d+e+f,x_+y_+z_:>{{x},{y},{z}},-1).
     check("ReplaceList(a+b+c+d+e+f,(x_+y_+z_) :> {{x},{y},{z}},-1)", //

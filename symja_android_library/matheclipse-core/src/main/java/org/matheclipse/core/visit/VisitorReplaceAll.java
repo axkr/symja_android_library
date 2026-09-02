@@ -49,6 +49,15 @@ public class VisitorReplaceAll extends VisitorExpr {
     this(ast, 0);
   }
 
+  /**
+   * Create a visitor from the list of rules <code>Normal(assoc)</code> of the given association, so
+   * that a key which contains a pattern <i>is</i> matched as a pattern. That is not how an
+   * association used as the rules argument of a replacement function behaves - there the keys are
+   * looked up literally, see {@link Functors#rules(IExpr, EvalEngine)}. Only {@code Dispatch} uses
+   * this constructor.
+   *
+   * @param assoc the association whose normalized list of rules is used
+   */
   public VisitorReplaceAll(IAssociation assoc) {
     this(assoc.normal(false), 0);
   }
@@ -273,7 +282,8 @@ public class VisitorReplaceAll extends VisitorExpr {
     } else if (arg.isListOfRules(false) || arg.isRuleAST()) {
       return new VisitorReplaceAll((IAST) arg);
     } else if (arg.isAssociation()) {
-      return new VisitorReplaceAll((IAST) arg.normal(false));
+      // an association is a lookup table of its keys, not a list of rules
+      return new VisitorReplaceAll((IAST) arg);
     } else {
       // (`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for
       // replacing.

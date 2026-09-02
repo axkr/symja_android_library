@@ -5564,6 +5564,29 @@ public final class ListFunctions {
     }
   }
 
+  /**
+   * Test if <code>rules</code> is a list of rule sets in which at least one element is an
+   * {@link IAssociation}, so that the replacement threads over the elements like it does for a
+   * list of lists of rules. <code>{{x -> a}, &lt;|x -> b|&gt;}</code> is such a list,
+   * <code>{x -> a, x -> b}</code> - a plain list of rules - is not.
+   *
+   * @param rules the second argument of a replacement function
+   */
+  private static boolean isListOfRuleSets(IExpr rules) {
+    if (rules.isList() && rules.size() > 1) {
+      boolean containsAssociation = false;
+      for (IExpr element : (IAST) rules) {
+        if (element.isAssociation()) {
+          containsAssociation = true;
+        } else if (!element.isList()) {
+          return false;
+        }
+      }
+      return containsAssociation;
+    }
+    return false;
+  }
+
   private static final class Replace extends AbstractEvaluator {
 
     private static final class ReplaceFunction implements Function<IExpr, IExpr> {
@@ -5601,11 +5624,13 @@ public final class ListFunctions {
           }
           return input;
         } else if (rules.isAssociation()) {
-          return replaceRule(input, (IAST) rules.normal(false), engine);
+          // an association is a lookup table of its keys, not a list of rules
+          return replaceRule(input, (IAST) rules, engine);
         }
 
-        throw new ArgumentTypeException(
-            "rule expressions (x->y) expected instead of " + rules.toString());
+        // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
+        // used for replacing.
+        throw new ArgumentTypeException("reps", F.list(rules));
       }
 
       public void setRule(IExpr rules) {
@@ -5615,6 +5640,15 @@ public final class ListFunctions {
 
     private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules,
         final EvalEngine engine) {
+      final IExpr originalRules = rules;
+      if (rules instanceof DispatchExpr) {
+        IExpr temp = ((DispatchExpr) rules).apply(arg1);
+        return temp.isPresent() ? temp : arg1;
+      }
+      if (rules.isAssociation()) {
+        // an association is a lookup table of its keys, not a list of rules
+        return replaceRule(arg1, (IAST) rules, engine);
+      }
       if (rules.isList()) {
         for (IExpr element : (IAST) rules) {
           if (element.isRuleAST()) {
@@ -5625,8 +5659,9 @@ public final class ListFunctions {
               return temp;
             }
           } else {
-            throw new ArgumentTypeException(
-                "rule expressions (x->y) expected instead of " + element.toString());
+            // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot
+            // be used for replacing.
+            throw new ArgumentTypeException("reps", F.list(originalRules));
           }
         }
         return arg1;
@@ -5634,8 +5669,9 @@ public final class ListFunctions {
       if (rules.isRuleAST()) {
         return replaceRule(arg1, (IAST) rules, engine);
       }
-      throw new ArgumentTypeException(
-          "rule expressions (x->y) expected instead of " + rules.toString());
+      // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
+      // used for replacing.
+      throw new ArgumentTypeException("reps", F.list(originalRules));
     }
 
     private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules,
@@ -5672,7 +5708,7 @@ public final class ListFunctions {
       }
       IExpr arg1 = ast.arg1();
       IExpr rules = ast.arg2();
-      if (rules.isListOfLists()) {
+      if (rules.isListOfLists() || isListOfRuleSets(rules)) {
         return rules.mapThread(ast, 2);
       }
 
@@ -5730,8 +5766,27 @@ public final class ListFunctions {
    * </blockquote>
    *
    * <pre>
+   * expr /. &lt;|i1 -&gt; new1, i2 -&gt; new2, ... |&gt;
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * an association is used as a lookup table: its keys are matched literally, so a key which
+   * contains a pattern is <i>not</i> matched as a pattern. A <code>Dispatch</code> table is
+   * accepted as well.
+   *
+   * </blockquote>
+   *
+   * <pre>
    * &gt;&gt; f(a) + f(b) /. f(x_) -&gt; x^2
    * a^2+b^2
+   *
+   * &gt;&gt; "a" /. &lt;|"a" -&gt; 1, "b" -&gt; 2|&gt;
+   * 1
+   *
+   * &gt;&gt; f(a) /. &lt;|f(x_) -&gt; x^2|&gt;
+   * f(a)
    * </pre>
    */
   private static class ReplaceAll extends AbstractEvaluator {
@@ -5742,7 +5797,7 @@ public final class ListFunctions {
       if (ast.size() == 3) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
-        if (arg2.isListOfLists()) {
+        if (arg2.isListOfLists() || isListOfRuleSets(arg2)) {
           return arg2.mapThread(ast, 2);
         }
 
@@ -5785,11 +5840,28 @@ public final class ListFunctions {
    *
    * </blockquote>
    *
+   * <pre>
+   * <code>ReplaceList(expr, &lt;|lhs1 -&gt; rhs1, lhs2 -&gt; rhs2, ... |&gt;)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * an association is used as a lookup table: its keys are matched literally, so a key which
+   * contains a pattern is <i>not</i> matched as a pattern. A <code>Dispatch</code> table is
+   * accepted as well.
+   *
+   * </blockquote>
+   *
    * <h3>Examples</h3>
    *
    * <pre>
    * <code>&gt;&gt; ReplaceList(a+b+c,(x_+y_) :&gt; {{x},{y}})
    * {{{a},{b+c}},{{b},{a+c}},{{c},{a+b}},{{a+b},{c}},{{a+c},{b}},{{b+c},{a}}}
+   *
+   * &gt;&gt; ReplaceList("a", &lt;|"a" -&gt; 1, "b" -&gt; 2|&gt;)
+   * {1}
    * </code>
    * </pre>
    */
@@ -5797,6 +5869,16 @@ public final class ListFunctions {
 
     private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, IASTAppendable result,
         int maxNumberOfResults, final EvalEngine engine) {
+      final IExpr originalRules = rules;
+      if (rules instanceof DispatchExpr) {
+        rules = ((DispatchExpr) rules).normal(false);
+      }
+      if (rules.isAssociation()) {
+        // an association is a lookup table of its keys, not a list of rules
+        Function<IExpr, IExpr> function = Functors.listRules((IAST) rules, result, engine);
+        function.apply(arg1);
+        return result;
+      }
       if (rules.isList()) {
         IAST rulesList = (IAST) rules;
         for (IExpr element : rulesList) {
@@ -5806,8 +5888,9 @@ public final class ListFunctions {
             // https://errorprone.info/bugpattern/ReturnValueIgnored
             IExpr temp = function.apply(arg1);
           } else {
-            throw new ArgumentTypeException(
-                "rule expressions (x->y) expected instead of " + element.toString());
+            // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot
+            // be used for replacing.
+            throw new ArgumentTypeException("reps", F.list(originalRules));
           }
         }
 
@@ -5823,8 +5906,9 @@ public final class ListFunctions {
           return temp;
         }
       } else {
-        throw new ArgumentTypeException(
-            "rule expressions (x->y) expected instead of " + rules.toString());
+        // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
+        // used for replacing.
+        throw new ArgumentTypeException("reps", F.list(originalRules));
       }
       return result;
     }
@@ -5954,7 +6038,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
-      if (arg2.isListOfLists()) {
+      if (arg2.isListOfLists() || isListOfRuleSets(arg2)) {
         return arg2.mapThread(ast, 2);
       }
 
