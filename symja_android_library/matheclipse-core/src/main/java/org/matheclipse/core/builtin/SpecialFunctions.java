@@ -15,6 +15,7 @@ import static org.matheclipse.core.expression.F.Zeta;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
@@ -23,6 +24,7 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
@@ -53,6 +55,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.GammaJS;
+import org.matheclipse.core.numerics.functions.InverseGammaBetaJS;
 
 public class SpecialFunctions {
 
@@ -1349,62 +1352,122 @@ public class SpecialFunctions {
   }
 
 
-  private static class InverseBetaRegularized extends AbstractFunctionEvaluator {
+  /**
+   * Test for the value <code>0</code> without the {@link Config#DOUBLE_TOLERANCE} slack that
+   * {@link IExpr#isZero()} applies to machine numbers. A probability as small as
+   * <code>10^-16</code> is a perfectly good argument of the inverse regularized functions and must
+   * not collapse the result to <code>0</code>.
+   *
+   * @param z the expression to test
+   * @return <code>true</code> if <code>z</code> is exactly zero
+   */
+  private static boolean isExactlyZero(IExpr z) {
+    if (z.isInexactNumber()) {
+      return z.isReal() && ((IReal) z).apfloatValue().signum() == 0;
+    }
+    return z.isZero();
+  }
+
+  /**
+   * Test for the value <code>1</code> without the {@link Config#DOUBLE_TOLERANCE} slack that
+   * {@link IExpr#isOne()} applies to machine numbers.
+   *
+   * @param z the expression to test
+   * @return <code>true</code> if <code>z</code> is exactly one
+   */
+  private static boolean isExactlyOne(IExpr z) {
+    if (z.isInexactNumber()) {
+      return z.isReal() && ((IReal) z).apfloatValue().compareTo(Apfloat.ONE) == 0;
+    }
+    return z.isOne();
+  }
+
+
+  private static class InverseBetaRegularized extends AbstractFunctionEvaluator
+      implements INumeric {
+
+    @Override
+    public double evalReal(final double[] stack, final int top, final int size) {
+      try {
+        if (size == 3) {
+          return InverseGammaBetaJS.invRegularizedBeta(stack[top], stack[top + 1], stack[top + 2]);
+        }
+        if (size == 4) {
+          return InverseGammaBetaJS.invRegularizedBeta(stack[top], stack[top + 1], stack[top + 2],
+              stack[top + 3]);
+        }
+      } catch (ArgumentTypeException ate) {
+        // arguments out of range
+      }
+      throw new UnsupportedOperationException();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST3()) {
-          IExpr z = ast.arg1();
-          IExpr a = ast.arg2();
-          IExpr b = ast.arg3();
-          return inverseBetaRegularized3(z, a, b, engine.isDoubleMode()).eval(engine);
-        } else {
-          IExpr z1 = ast.arg1();
-          IExpr z2 = ast.arg2();
-          IExpr a = ast.arg3();
-          IExpr b = ast.arg4();
-          return inverseBetaRegularized2(z1, z2, a, b).eval(engine);
+      if (ast.isAST3()) {
+        IExpr z = ast.arg1();
+        IExpr a = ast.arg2();
+        IExpr b = ast.arg3();
+        if (a.isPositiveResult()) {
+          if (isExactlyZero(z)) {
+            return engine.isNumericMode() ? F.CD0 : F.C0;
+          }
+          if (isExactlyOne(z)) {
+            return engine.isNumericMode() ? F.CD1 : F.C1;
+          }
         }
-      } catch (MathIllegalArgumentException miae) {
-        return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
-            F.list(F.stringx(miae.getMessage()), ast), engine);
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
-            F.list(F.stringx(rex.getMessage()), ast), engine);
+        return numericInverseBeta(engine, z, a, b);
       }
-    }
 
-    private static IExpr inverseBetaRegularized2(IExpr z1, IExpr z2, IExpr a, IExpr b) {
-      if (z2.isZero()) {
+      IExpr z1 = ast.arg1();
+      IExpr z2 = ast.arg2();
+      IExpr a = ast.arg3();
+      IExpr b = ast.arg4();
+      if (isExactlyZero(z2)) {
         return z1;
       }
-      if (z1.isZero()) {
+      if (isExactlyZero(z1)) {
         return F.InverseBetaRegularized(z2, a, b);
+      }
+      return numericInverseBeta(engine, z1, z2, a, b);
+    }
+
+    /** <code>InverseBetaRegularized(z, a, b)</code> for real numbers. */
+    private static IExpr numericInverseBeta(EvalEngine engine, IExpr z, IExpr a, IExpr b) {
+      if (!engine.isNumericMode() || !z.isReal() || !a.isReal() || !b.isReal()) {
+        return F.NIL;
+      }
+      try {
+        if (engine.isArbitraryMode()) {
+          long precision = engine.getNumericPrecision();
+          return F.num(InverseGammaBetaJS.invRegularizedBeta(((IReal) z).apfloatValue(),
+              ((IReal) a).apfloatValue(), ((IReal) b).apfloatValue(), precision));
+        }
+        return F.num(InverseGammaBetaJS.invRegularizedBeta(((IReal) z).doubleValue(),
+            ((IReal) a).doubleValue(), ((IReal) b).doubleValue()));
+      } catch (ArgumentTypeException | ArithmeticException | ApfloatRuntimeException rex) {
+        // arguments outside of the domain - WMA leaves the expression unevaluated
       }
       return F.NIL;
     }
 
-    private static IExpr inverseBetaRegularized3(IExpr z, IExpr a, IExpr b, boolean doubleMode) {
-      if (a.isPositiveResult()) {
-        if (z.isZero()) {
-          return F.C0;
-        }
-        if (z.isOne()) {
-          return F.C1;
-        }
+    /** <code>InverseBetaRegularized(z1, z2, a, b)</code> for real numbers. */
+    private static IExpr numericInverseBeta(EvalEngine engine, IExpr z1, IExpr z2, IExpr a,
+        IExpr b) {
+      if (!engine.isNumericMode() || !z1.isReal() || !z2.isReal() || !a.isReal() || !b.isReal()) {
+        return F.NIL;
       }
-      if (doubleMode && (z.isNumericFunction(true) && a.isNumericFunction(true)
-          && b.isNumericFunction(true))) {
-        double aDouble = a.evalfNaN();
-        double bDouble = b.evalfNaN();
-        double zDouble = z.evalfNaN();
-        if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(zDouble)) {
-          org.hipparchus.distribution.continuous.BetaDistribution beta = //
-              new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble);
-          return F.num(beta.inverseCumulativeProbability(zDouble));
+      try {
+        if (engine.isArbitraryMode()) {
+          long precision = engine.getNumericPrecision();
+          return F.num(InverseGammaBetaJS.invRegularizedBeta(((IReal) z1).apfloatValue(),
+              ((IReal) z2).apfloatValue(), ((IReal) a).apfloatValue(), ((IReal) b).apfloatValue(),
+              precision));
         }
+        return F.num(InverseGammaBetaJS.invRegularizedBeta(((IReal) z1).doubleValue(),
+            ((IReal) z2).doubleValue(), ((IReal) a).doubleValue(), ((IReal) b).doubleValue()));
+      } catch (ArgumentTypeException | ArithmeticException | ApfloatRuntimeException rex) {
+        // arguments outside of the domain - WMA leaves the expression unevaluated
       }
       return F.NIL;
     }
@@ -1427,7 +1490,24 @@ public class SpecialFunctions {
   }
 
 
-  private static class InverseGammaRegularized extends AbstractFunctionEvaluator {
+  private static class InverseGammaRegularized extends AbstractFunctionEvaluator
+      implements INumeric {
+
+    @Override
+    public double evalReal(final double[] stack, final int top, final int size) {
+      try {
+        if (size == 2) {
+          return InverseGammaBetaJS.invRegularizedGammaQ(stack[top], stack[top + 1]);
+        }
+        if (size == 3) {
+          return InverseGammaBetaJS.invRegularizedGamma(stack[top], stack[top + 1],
+              stack[top + 2]);
+        }
+      } catch (ArgumentTypeException ate) {
+        // arguments out of range
+      }
+      throw new UnsupportedOperationException();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1440,29 +1520,68 @@ public class SpecialFunctions {
           // (a,Infinity,z2) => InverseGammaRegularized(a, -z2))
           return F.InverseGammaRegularized(a, z2.negate());
         }
-      } else {
-        IExpr z = ast.arg2();
-        if (a.isPositiveResult()) {
-          if (z.isZero()) {
-            return F.CInfinity;
-          } else if (z.isOne()) {
-            return F.C0;
-          }
-        }
-        if (a.isOne() && z.isRealResult()) {
-          if (a.isOne() && z.isReal()) {
-            // fast path
-            IReal q = (IReal) z;
-            if (q.isGT(F.C0) && q.isLT(F.C1)) {
-              return F.Negate(F.Log(z));
-            }
-          }
-          // Clamp the real domain: if q >= 1, it returns 0.
-          if (engine.evalTrue(F.GreaterEqual(z, F.C1))) {
-            return F.C0;
-          }
+        return numericInverseGamma(engine, a, z1, z2);
+      }
 
+      IExpr z = ast.arg2();
+      if (a.isPositiveResult()) {
+        if (isExactlyZero(z)) {
+          return F.CInfinity;
+        } else if (isExactlyOne(z)) {
+          return F.C0;
         }
+      }
+      if (a.isOne() && z.isRealResult()) {
+        if (a.isOne() && z.isReal()) {
+          // fast path
+          IReal q = (IReal) z;
+          if (q.isGT(F.C0) && q.isLT(F.C1)) {
+            return F.Negate(F.Log(z));
+          }
+        }
+        // Clamp the real domain: if q >= 1, it returns 0.
+        if (engine.evalTrue(F.GreaterEqual(z, F.C1))) {
+          return F.C0;
+        }
+
+      }
+      return numericInverseGamma(engine, a, z);
+    }
+
+    /** <code>InverseGammaRegularized(a, z)</code> - the upper tail - for real numbers. */
+    private static IExpr numericInverseGamma(EvalEngine engine, IExpr a, IExpr z) {
+      if (!engine.isNumericMode() || !a.isReal() || !z.isReal()) {
+        return F.NIL;
+      }
+      try {
+        if (engine.isArbitraryMode()) {
+          long precision = engine.getNumericPrecision();
+          return F.num(InverseGammaBetaJS.invRegularizedGammaQ(((IReal) a).apfloatValue(),
+              ((IReal) z).apfloatValue(), precision));
+        }
+        return F.num(InverseGammaBetaJS.invRegularizedGammaQ(((IReal) a).doubleValue(),
+            ((IReal) z).doubleValue()));
+      } catch (ArgumentTypeException | ArithmeticException | ApfloatRuntimeException rex) {
+        // arguments outside of the domain - WMA leaves the expression unevaluated
+      }
+      return F.NIL;
+    }
+
+    /** <code>InverseGammaRegularized(a, z1, z2)</code> for real numbers. */
+    private static IExpr numericInverseGamma(EvalEngine engine, IExpr a, IExpr z1, IExpr z2) {
+      if (!engine.isNumericMode() || !a.isReal() || !z1.isReal() || !z2.isReal()) {
+        return F.NIL;
+      }
+      try {
+        if (engine.isArbitraryMode()) {
+          long precision = engine.getNumericPrecision();
+          return F.num(InverseGammaBetaJS.invRegularizedGamma(((IReal) a).apfloatValue(),
+              ((IReal) z1).apfloatValue(), ((IReal) z2).apfloatValue(), precision));
+        }
+        return F.num(InverseGammaBetaJS.invRegularizedGamma(((IReal) a).doubleValue(),
+            ((IReal) z1).doubleValue(), ((IReal) z2).doubleValue()));
+      } catch (ArgumentTypeException | ArithmeticException | ApfloatRuntimeException rex) {
+        // arguments outside of the domain - WMA leaves the expression unevaluated
       }
       return F.NIL;
     }

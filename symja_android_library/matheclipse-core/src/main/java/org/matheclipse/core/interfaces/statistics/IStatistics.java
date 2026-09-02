@@ -25,9 +25,40 @@ public interface IStatistics {
   /**
    * The <code>n</code>-th raw moment <code>E[X^n]</code> of the distribution.
    *
+   * <p>
+   * The default derives the first three raw moments from {@link #mean(IAST)},
+   * {@link #variance(IAST)} and {@link #skewness(IAST)}, so a distribution only has to override
+   * this for a general <code>n</code> or for a form which is simpler than the generic one.
+   *
    * @return {@link F#NIL} if no closed form is implemented
    */
   default IExpr moment(IAST distribution, IExpr n) {
+    switch (n.toIntDefault()) {
+      case 1:
+        return mean(distribution);
+      case 2: {
+        IExpr mean = mean(distribution);
+        IExpr variance = variance(distribution);
+        if (mean.isPresent() && variance.isPresent()) {
+          // E[X^2] == Variance + Mean^2
+          return F.Plus(variance, F.Sqr(mean));
+        }
+        break;
+      }
+      case 3: {
+        IExpr mean = mean(distribution);
+        IExpr variance = variance(distribution);
+        IExpr skewness = skewness(distribution);
+        if (mean.isPresent() && variance.isPresent() && skewness.isPresent()) {
+          // E[X^3] == Skewness*Variance^(3/2) + 3*Mean*Variance + Mean^3
+          return F.Plus(F.Times(skewness, F.Power(variance, F.QQ(3L, 2L))),
+              F.Times(F.C3, mean, variance), F.Power(mean, F.C3));
+        }
+        break;
+      }
+      default:
+        break;
+    }
     return F.NIL;
   }
 

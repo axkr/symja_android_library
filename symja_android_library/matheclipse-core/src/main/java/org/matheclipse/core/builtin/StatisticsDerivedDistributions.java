@@ -22,7 +22,8 @@ import org.matheclipse.core.interfaces.statistics.IStatistics;
  * Distributions which are derived from other distributions or from an explicit density:
  * {@link S#ProbabilityDistribution}, {@link S#TransformedDistribution},
  * {@link S#MixtureDistribution}, {@link S#ParameterMixtureDistribution},
- * {@link S#ProductDistribution} and {@link S#CensoredDistribution}.
+ * {@link S#ProductDistribution}, {@link S#CensoredDistribution} and
+ * {@link S#TruncatedDistribution}.
  */
 public class StatisticsDerivedDistributions {
 
@@ -35,6 +36,7 @@ public class StatisticsDerivedDistributions {
       S.ProbabilityDistribution.setEvaluator(new ProbabilityDistribution());
       S.ProductDistribution.setEvaluator(new ProductDistribution());
       S.TransformedDistribution.setEvaluator(new TransformedDistribution());
+      S.TruncatedDistribution.setEvaluator(new TruncatedDistribution());
       S.DataDistribution.setEvaluator(new DataDistribution());
       S.EmpiricalDistribution.setEvaluator(new EmpiricalDistribution());
       S.HistogramDistribution.setEvaluator(new HistogramDistribution());
@@ -573,6 +575,217 @@ public class StatisticsDerivedDistributions {
       }
       return engine.evaluate(F.Plus(F.Times(min, lower), middle, F.Times(max, upper)));
     }
+  }
+
+
+  /**
+   * <code>TruncatedDistribution({min, max}, dist)</code> - <code>dist</code> conditioned on the
+   * interval <code>min &lt;= x &lt;= max</code>, i.e. its density restricted to that interval and
+   * renormalized by <code>CDF(dist,max) - CDF(dist,min)</code>.
+   *
+   * <p>
+   * Only a continuous <code>dist</code> is supported - for a discrete one the normalization has to
+   * include the probability of <code>min</code> itself, and the wrapper would have to report itself
+   * as a discrete distribution, which it cannot do per instance.
+   */
+  public static final class TruncatedDistribution extends AbstractEvaluator
+      implements IContinuousDistribution, ICDF, IPDF, IStatistics, IRandomVariate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2() && ast.arg1().isList2() && ast.arg2().isAST()) {
+        // canonicalize the inner distribution, e.g. NormalDistribution() -> NormalDistribution(0,1)
+        IExpr distribution = engine.evaluate(ast.arg2());
+        IDistribution evaluator =
+            distribution.isAST() ? ((IAST) distribution).headInstanceOf(IDistribution.class) : null;
+        if (evaluator != null) {
+          IAST checked = evaluator.checkParameters((IAST) distribution);
+          if (checked.isPresent() && !checked.equals(ast.arg2())) {
+            return F.binaryAST2(S.TruncatedDistribution, ast.arg1(), checked);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    /**
+     * @return <code>{min, max, dist}</code> or <code>null</code> if this isn't a truncation of a
+     *         continuous distribution
+     */
+    private static IExpr[] parts(IAST dist) {
+      if (dist.isAST2() && dist.arg1().isList2() && dist.arg2().isContinuousDistribution()) {
+        IAST bounds = (IAST) dist.arg1();
+        return new IExpr[] {bounds.arg1(), bounds.arg2(), dist.arg2()};
+      }
+      return null;
+    }
+
+    /**
+     * @return <code>CDF(dist, bound)</code>, shortcut to <code>0</code> or <code>1</code> for an
+     *         infinite bound, or {@link F#NIL}
+     */
+    private static IExpr cdfAt(IExpr distribution, IExpr bound, boolean upper, EvalEngine engine) {
+      if (bound.isNegativeInfinity()) {
+        return upper ? F.NIL : F.C0;
+      }
+      if (bound.isInfinity()) {
+        return upper ? F.C1 : F.NIL;
+      }
+      return S.CDF.ofNIL(engine, distribution, bound);
+    }
+
+    /**
+     * @return the probability mass <code>CDF(dist,max) - CDF(dist,min)</code> which the truncation
+     *         renormalizes by, or {@link F#NIL}
+     */
+    private static IExpr normalization(IExpr distribution, IExpr min, IExpr max,
+        EvalEngine engine) {
+      IExpr lower = cdfAt(distribution, min, false, engine);
+      IExpr upper = cdfAt(distribution, max, true, engine);
+      if (lower.isNIL() || upper.isNIL()) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Subtract(upper, lower));
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr[] parts = parts(dist);
+      if (parts == null) {
+        return F.NIL;
+      }
+      IExpr density = S.PDF.ofNIL(engine, parts[2], k);
+      IExpr z = normalization(parts[2], parts[0], parts[1], engine);
+      if (density.isNIL() || z.isNIL()) {
+        return F.NIL;
+      }
+      // Piecewise({{PDF(dist,k)/z, min <= k <= max}}, 0)
+      return F.Piecewise(
+          F.list(F.list(F.Divide(density, z), F.LessEqual(parts[0], k, parts[1]))), F.C0);
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr[] parts = parts(dist);
+      if (parts == null) {
+        return F.NIL;
+      }
+      IExpr lower = cdfAt(parts[2], parts[0], false, engine);
+      IExpr z = normalization(parts[2], parts[0], parts[1], engine);
+      IExpr cumulative = S.CDF.ofNIL(engine, parts[2], k);
+      if (lower.isNIL() || z.isNIL() || cumulative.isNIL()) {
+        return F.NIL;
+      }
+      // Piecewise({{0, k < min}, {(CDF(dist,k)-CDF(dist,min))/z, min <= k < max}}, 1)
+      return F.Piecewise(F.list(//
+          F.list(F.C0, F.Less(k, parts[0])), //
+          F.list(F.Divide(F.Subtract(cumulative, lower), z),
+              F.And(F.LessEqual(parts[0], k), F.Less(k, parts[1])))), //
+          F.C1);
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr[] parts = parts(dist);
+      if (parts == null) {
+        return F.NIL;
+      }
+      IExpr lower = cdfAt(parts[2], parts[0], false, engine);
+      IExpr z = normalization(parts[2], parts[0], parts[1], engine);
+      if (lower.isNIL() || z.isNIL()) {
+        return F.NIL;
+      }
+      // InverseCDF(dist, CDF(dist,min) + k*z)
+      return S.InverseCDF.ofNIL(engine, parts[2], F.Plus(lower, F.Times(k, z)));
+    }
+
+    /**
+     * <code>Integrate(x^n*PDF(dist,x), {x,min,max})/z</code>
+     *
+     * @return {@link F#NIL} if the integral doesn't evaluate
+     */
+    private static IExpr rawMoment(IAST dist, int n, EvalEngine engine) {
+      IExpr[] parts = parts(dist);
+      if (parts == null) {
+        return F.NIL;
+      }
+      ISymbol x = F.Dummy("x");
+      IExpr density = S.PDF.ofNIL(engine, parts[2], x);
+      IExpr z = normalization(parts[2], parts[0], parts[1], engine);
+      if (density.isNIL() || z.isNIL() || z.isZero()) {
+        return F.NIL;
+      }
+      IExpr integral = engine.evaluate(F.Integrate(F.Times(F.Power(x, F.ZZ(n)), density),
+          F.list(x, parts[0], parts[1])));
+      if (!integral.isFree(S.Integrate, true) || !integral.isFree(x, true)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Divide(integral, z));
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      return rawMoment(dist, 1, EvalEngine.get());
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      EvalEngine engine = EvalEngine.get();
+      IExpr firstMoment = rawMoment(dist, 1, engine);
+      IExpr secondMoment = rawMoment(dist, 2, engine);
+      if (firstMoment.isNIL() || secondMoment.isNIL()) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Subtract(secondMoment, F.Sqr(firstMoment)));
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return inverseCDF(dist, F.C1D2, EvalEngine.get());
+    }
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+      EvalEngine engine = EvalEngine.get();
+      IExpr[] parts = parts(dist);
+      if (parts == null) {
+        return F.NIL;
+      }
+      IExpr lower = cdfAt(parts[2], parts[0], false, engine);
+      IExpr z = normalization(parts[2], parts[0], parts[1], engine);
+      if (lower.isNIL() || z.isNIL()) {
+        return F.NIL;
+      }
+      double lowerDouble = engine.evalN(lower).evalfNaN();
+      double zDouble = engine.evalN(z).evalfNaN();
+      if (!Double.isFinite(lowerDouble) || !Double.isFinite(zDouble) || zDouble <= 0.0) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(size);
+      for (int i = 0; i < size; i++) {
+        // inverse transform sampling on the truncated probability window
+        IExpr probability = F.num(lowerDouble + random.nextDouble() * zDouble);
+        IExpr variate = engine.evalN(S.InverseCDF.ofNIL(engine, parts[2], probability));
+        if (!variate.isReal()) {
+          return F.NIL;
+        }
+        result.append(variate);
+      }
+      return result;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
 

@@ -1747,6 +1747,12 @@ public class StatisticsFunctions {
   }
 
   private static class NExpectation extends AbstractFunctionOptionEvaluator {
+    /**
+     * Tail probability which is cut off on each side when a numeric expectation falls back to the
+     * effective support of the distribution.
+     */
+    private static final double EFFECTIVE_SUPPORT_TAIL = 1.0e-13;
+
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
@@ -1862,6 +1868,16 @@ public class StatisticsFunctions {
           if (result.isPresent()) {
             return result;
           }
+        } else {
+          IExpr full = engine
+              .evaluate(F.NIntegrate(F.Times(xExpr, pdf), F.list(x, F.CNInfinity, F.CInfinity)));
+          if (full.isFree(S.NIntegrate, true)) {
+            return full;
+          }
+          IExpr result = integrateOverEffectiveSupport(xExpr, x, distribution, pdf, engine);
+          if (result.isPresent()) {
+            return result;
+          }
         }
         return F.NIntegrate(F.Times(xExpr, pdf), F.list(x, F.CNInfinity, F.CInfinity));
       }
@@ -1870,7 +1886,53 @@ public class StatisticsFunctions {
       if (result.isPresent()) {
         return result;
       }
+      if (booleRegion.isNIL()) {
+        result = integrateOverEffectiveSupport(xExpr, x, distribution, pdf, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
       return F.NIntegrate(F.Times(xExpr, pdf), F.list(x, F.CNInfinity, F.CInfinity));
+    }
+
+    /**
+     * Integrate <code>expr*pdf</code> over the interval which carries the probability mass of the
+     * distribution instead of over its full - possibly infinite - support.
+     *
+     * <p>
+     * An infinite integration bound forces the quadrature to sample the far tail of the density,
+     * where the density is numerically <code>0</code> but its evaluation can overflow. Replacing
+     * the bounds by the {@code EFFECTIVE_SUPPORT_TAIL} and
+     * <code>1-{@code EFFECTIVE_SUPPORT_TAIL}</code> quantiles avoids that. This is only used as a
+     * fallback after the quadrature over the full support didn't return a number.
+     *
+     * @return {@link F#NIL} if the quantiles are not finite real numbers or the quadrature still
+     *         doesn't return a number
+     */
+    private static IExpr integrateOverEffectiveSupport(IExpr xExpr, IExpr x, IExpr distribution,
+        IExpr pdf, EvalEngine engine) {
+      IExpr min = numericQuantile(distribution, F.num(EFFECTIVE_SUPPORT_TAIL), engine);
+      IExpr max = numericQuantile(distribution, F.num(1.0 - EFFECTIVE_SUPPORT_TAIL), engine);
+      if (min.isNIL() || max.isNIL() || !engine.evalGreater(max, min)) {
+        return F.NIL;
+      }
+      IExpr result =
+          engine.evaluate(F.NIntegrate(F.Times(xExpr, pdf), F.list(x, min, max)));
+      return result.isFree(S.NIntegrate, true) ? result : F.NIL;
+    }
+
+    /**
+     * @return the numeric <code>InverseCDF(distribution, probability)</code> or {@link F#NIL} if it
+     *         is not a finite real number
+     */
+    private static IExpr numericQuantile(IExpr distribution, IExpr probability, EvalEngine engine) {
+      IExpr quantile = S.InverseCDF.ofNIL(engine, distribution, probability);
+      if (quantile.isNIL()) {
+        return F.NIL;
+      }
+      quantile = engine.evalN(quantile);
+      double value = quantile.evalfNaN();
+      return Double.isFinite(value) ? F.num(value) : F.NIL;
     }
 
     /**
@@ -4061,7 +4123,13 @@ public class StatisticsFunctions {
                   }
                   return F.NIL;
                 }
-                return variate.randomVariate(random, dist, 1);
+                // RandomVariate(dist) without a size specification.
+                // Dimensions(RandomVariate(dist,spec)) == Join(spec,componentShape), with
+                // componentShape {} for a univariate and {n} for a multivariate distribution. The
+                // empty specification therefore drops the outermost axis of a 1 element sample:
+                // a univariate distribution returns a number and a multivariate one a vector.
+                IExpr sample = variate.randomVariate(random, dist, 1);
+                return sample.isList1() ? sample.first() : sample;
               } else if (!(evaluator instanceof IDistribution)) {
                 return printMessageUdist(head, ast, dist, engine);
               }
@@ -4467,6 +4535,10 @@ public class StatisticsFunctions {
           if (result.isPresent()) {
             return result;
           }
+          result = Variance.numericVariance(dist, engine);
+          if (result.isPresent()) {
+            return F.Sqrt(result);
+          }
         }
         return standardDeviation(arg1);
       } else if (arg1.isNumber()) {
@@ -4789,7 +4861,11 @@ public class StatisticsFunctions {
               IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
               if (evaluator instanceof IStatistics) {
                 IStatistics distribution = (IStatistics) evaluator;
-                return distribution.variance(dist);
+                IExpr variance = distribution.variance(dist);
+                if (variance.isPresent()) {
+                  return variance;
+                }
+                return numericVariance(dist, engine);
               }
             }
           }
@@ -4808,6 +4884,30 @@ public class StatisticsFunctions {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * <code>NExpectation((x-Mean(dist))^2, x \[Distributed] dist)</code> for a distribution which
+     * has no closed form variance.
+     *
+     * <p>
+     * Only used in numeric mode, so a distribution with symbolic parameters keeps returning
+     * unevaluated instead of a number which its parameters don't justify.
+     *
+     * @return {@link F#NIL} if the mean or the quadrature doesn't produce a real number
+     */
+    private static IExpr numericVariance(IAST dist, EvalEngine engine) {
+      if (!engine.isNumericMode()) {
+        return F.NIL;
+      }
+      IExpr mean = engine.evalN(S.Mean.ofNIL(engine, dist));
+      if (!mean.isReal()) {
+        return F.NIL;
+      }
+      ISymbol x = F.Dummy("x");
+      IExpr result = engine.evaluate(F.binaryAST2(S.NExpectation, F.Sqr(F.Subtract(x, mean)),
+          F.Distributed(x, dist)));
+      return result.isReal() ? result : F.NIL;
     }
 
     @Override

@@ -605,6 +605,243 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRandomVariateShape() {
+    // Dimensions(RandomVariate(dist,spec)) == Join(spec,componentShape), where componentShape is
+    // {} for a univariate and {n} for a multivariate distribution. Without a size specification
+    // only the component itself is returned - a number, not a list of one number.
+    check("Head(RandomVariate(NormalDistribution(0,1)))", //
+        "Real");
+    check("Head(RandomVariate(BinomialDistribution(10,1/2)))", //
+        "Integer");
+    check("Head(RandomVariate(PoissonDistribution(3)))", //
+        "Integer");
+    check("Dimensions(RandomVariate(NormalDistribution(0,1),1))", //
+        "{1}");
+    check("Dimensions(RandomVariate(NormalDistribution(0,1),0))", //
+        "{0}");
+    check("Dimensions(RandomVariate(NormalDistribution(0,1),{3}))", //
+        "{3}");
+    // a multivariate distribution keeps its component axis
+    check("Dimensions(RandomVariate(MultinormalDistribution({0,0},IdentityMatrix(2))))", //
+        "{2}");
+    check("Dimensions(RandomVariate(MultinormalDistribution({0,0},IdentityMatrix(2)),3))", //
+        "{3,2}");
+    check("Dimensions(RandomVariate(MultinormalDistribution({0,0},IdentityMatrix(2)),{2,3}))", //
+        "{2,3,2}");
+    check("Dimensions(RandomVariate(BinormalDistribution(1/2)))", //
+        "{2}");
+    check("Dimensions(RandomVariate(BinormalDistribution(1/2),3))", //
+        "{3,2}");
+  }
+
+  @Test
+  public void testGompertzMakehamDistributionRandomVariate() {
+    // RandomVariate() has to draw `size` deviates, not a single one
+    check("Length(RandomVariate(GompertzMakehamDistribution(2,3), 20))", //
+        "20");
+    check("Dimensions(RandomVariate(GompertzMakehamDistribution(2,3), {2,3}))", //
+        "{2,3}");
+    check("Length(RandomVariate(GompertzMakehamDistribution(2,3), 0))", //
+        "0");
+    // the distribution is supported on x >= 0
+    check("Min(RandomVariate(GompertzMakehamDistribution(2,3), 100))>=0", //
+        "True");
+    check("Head(RandomVariate(GompertzMakehamDistribution(2,3)))", //
+        "Real");
+  }
+
+  @Test
+  public void testVonMisesDistribution() {
+    // Mathematica: Piecewise[{{E^(2*Cos[1-x])/(2*Pi*BesselI[0,2]), 1-Pi <= x <= 1+Pi}}, 0]
+    check("PDF(VonMisesDistribution(m,k),x)", //
+        "Piecewise({{E^(k*Cos(m-x))/(2*Pi*BesselI(0,k)),m-Pi<=x<=m+Pi}},0)");
+    check("Mean(VonMisesDistribution(m,k))", //
+        "m");
+    check("Median(VonMisesDistribution(m,k))", //
+        "m");
+    // the density is symmetric around the mean direction
+    check("Skewness(VonMisesDistribution(m,k))", //
+        "0");
+    check("N(PDF(VonMisesDistribution(1,2),1.5))", //
+        "0.403853");
+    // outside m-Pi < x < m+Pi the density is 0
+    check("N(PDF(VonMisesDistribution(1,2),5.0))", //
+        "0.0");
+    // no closed form CDF - the quadrature has to agree with integrating the density
+    check("N(CDF(VonMisesDistribution(1,2),1))", //
+        "0.5");
+    check("N(CDF(VonMisesDistribution(1,2),1.5))", //
+        "0.738192");
+    check("N(NIntegrate(PDF(VonMisesDistribution(1,2),x),{x,1-Pi,1.5}))", //
+        "0.738192");
+    check("N(NIntegrate(PDF(VonMisesDistribution(1,2),x),{x,1-Pi,1+Pi}))", //
+        "1.0");
+    check("N(InverseCDF(VonMisesDistribution(1,2),1/2))", //
+        "1.0");
+    // the inverse round trips, also for a sharply concentrated distribution
+    check("N(CDF(VonMisesDistribution(1,2), InverseCDF(VonMisesDistribution(1,2), 0.3)))", //
+        "0.3");
+    check("N(CDF(VonMisesDistribution(0,50), InverseCDF(VonMisesDistribution(0,50), 0.75)))", //
+        "0.75");
+    check("Length(RandomVariate(VonMisesDistribution(1,2),100))", //
+        "100");
+    check("Module({s=RandomVariate(VonMisesDistribution(1,2),2000)},"
+        + " {Min(s)>1-Pi, Max(s)<1+Pi})", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testVarianceNumericFallback() {
+    // VonMisesDistribution has no closed form variance, so it is integrated against the density.
+    // Pi^2/3 + 4*Sum((-1)^j*BesselI(j,k)/(j^2*BesselI(0,k)),{j,1,Infinity}) gives 0.764456 for k==2
+    check("N(Variance(VonMisesDistribution(1,2)))", //
+        "0.764462");
+    check("N(StandardDeviation(VonMisesDistribution(1,2)))", //
+        "0.874335");
+    // for a small concentration it approaches the uniform distribution with variance Pi^2/3
+    check("N(Variance(VonMisesDistribution(0,1/100)))", //
+        "3.26988");
+    check("N(Pi^2/3)", //
+        "3.28987");
+    // symbolic parameters keep returning unevaluated instead of a number
+    check("N(Variance(VonMisesDistribution(m,k)))", //
+        "Variance(VonMisesDistribution(m,k))");
+    // Mathematica leaves this unevaluated for exact parameters too - only N(...) integrates
+    check("Variance(VonMisesDistribution(1,2))", //
+        "Variance(VonMisesDistribution(1,2))");
+    // a closed form always wins over the fallback
+    check("Variance(NormalDistribution(m,s))", //
+        "s^2");
+    check("StandardDeviation(NormalDistribution(m,s))", //
+        "s");
+    check("Variance(BinomialDistribution(10,1/2))", //
+        "5/2");
+  }
+
+  @Test
+  public void testTruncatedDistribution() {
+    check("TruncatedDistribution({0,1}, NormalDistribution())", //
+        "TruncatedDistribution({0,1},NormalDistribution(0,1))");
+    // the density is renormalized by CDF(dist,max)-CDF(dist,min) == 0.341345
+    check("N(PDF(TruncatedDistribution({0,1}, NormalDistribution(0,1)), 0.5))", //
+        "1.03141");
+    check("N(CDF(TruncatedDistribution({0,1}, NormalDistribution(0,1)), 0.5))", //
+        "0.560906");
+    check("N(CDF(TruncatedDistribution({0,1}, NormalDistribution(0,1)), -1))", //
+        "0.0");
+    check("N(CDF(TruncatedDistribution({0,1}, NormalDistribution(0,1)), 2))", //
+        "1.0");
+    check("N(NIntegrate(PDF(TruncatedDistribution({0,1}, NormalDistribution(0,1)), x), {x,0,1}))", //
+        "1.0");
+    check("Mean(TruncatedDistribution({0,1}, NormalDistribution(0,1)))", //
+        "(1/Sqrt(2*Pi)-1/Sqrt(2*E*Pi))/(-1/2+Erfc(-1/Sqrt(2))/2)");
+    check("N(Mean(TruncatedDistribution({0,1}, NormalDistribution(0,1))))", //
+        "0.459862");
+    check("N(Variance(TruncatedDistribution({0,1}, NormalDistribution(0,1))))", //
+        "0.0796518");
+    check("N(Median(TruncatedDistribution({0,1}, NormalDistribution(0,1))))", //
+        "0.441771");
+    check("N(InverseCDF(TruncatedDistribution({0,1}, NormalDistribution(0,1)), 1/2))", //
+        "0.441771");
+    // an infinite bound is allowed: truncating a normal at the mean gives -PDF(0)/(1/2)
+    check("N(Mean(TruncatedDistribution({-Infinity,0}, NormalDistribution(0,1))))", //
+        "-0.797885");
+    // the exponential distribution is memoryless, so truncating from below shifts it by 1
+    check("NExpectation(x, Distributed(x, TruncatedDistribution({1,Infinity}, ExponentialDistribution(2))))", //
+        "1.5");
+    check("NExpectation(x, Distributed(x, TruncatedDistribution({0,Infinity}, ExponentialDistribution(2))))", //
+        "0.5");
+    check("NExpectation(x, Distributed(x, TruncatedDistribution({0,1}, NormalDistribution(0,1))))", //
+        "0.459862");
+    check("Length(RandomVariate(TruncatedDistribution({0,1}, NormalDistribution(0,1)), 50))", //
+        "50");
+    check("Module({s=RandomVariate(TruncatedDistribution({0,1},NormalDistribution(0,1)),200)},"
+        + " {Min(s)>=0, Max(s)<=1})", //
+        "{True,True}");
+    // a discrete distribution isn't supported and stays unevaluated instead of being wrong
+    check("PDF(TruncatedDistribution({1,5}, PoissonDistribution(3)), x)", //
+        "PDF(TruncatedDistribution({1,5},PoissonDistribution(3)),x)");
+  }
+
+  @Test
+  public void testExpectationFromMoments() {
+    // a distribution which only provides Mean/Variance/Skewness gets its first three raw moments
+    // generically - it doesn't need the symbolic Integrate of expr*pdf to succeed
+    check("Expectation(x, Distributed(x, GompertzMakehamDistribution(2,3)))", //
+        "1/2*E^3*Gamma(0,3)");
+    check("Expectation(x, Distributed(x, GumbelDistribution(2,3)))", //
+        "2-3*EulerGamma");
+    check("Expectation(x, Distributed(x, FrechetDistribution(3,2)))", //
+        "2*Gamma(2/3)");
+    // the distributions which bring their own Moment() are unaffected
+    check("Expectation(x, Distributed(x, NormalDistribution(m,s)))", //
+        "m");
+    check("Expectation(x^2, Distributed(x, NormalDistribution(m,s)))", //
+        "m^2+s^2");
+  }
+
+  @Test
+  public void testNExpectationEffectiveSupport() {
+    // the density decays doubly exponentially, so quadrature over the full support samples the
+    // far tail where the density evaluates to Overflow() instead of 0 - fall back to the interval
+    // which carries the probability mass. Reference values from quadrature of the density:
+    // 0.131041870128, 0.0289120734266, 0.00836207937093
+    check("NExpectation(x, Distributed(x, GompertzMakehamDistribution(2,3)))", //
+        "0.131042");
+    check("NExpectation(x^2, Distributed(x, GompertzMakehamDistribution(2,3)))", //
+        "0.0289121");
+    check("NExpectation(x^3, Distributed(x, GompertzMakehamDistribution(2,3)))", //
+        "0.00836208");
+    // a non polynomial expression has no moment shortcut and needs the quadrature
+    check("NExpectation(Sin(x), Distributed(x, GompertzMakehamDistribution(2,3)))", //
+        "0.129658");
+    check("NExpectation(x, Distributed(x, GumbelDistribution(2,3)))", //
+        "0.268353");
+    check("NExpectation(x, Distributed(x, FrechetDistribution(3,2)))", //
+        "2.70824");
+    // quadrature over the full support still runs first where it works
+    check("NExpectation(x, Distributed(x, NormalDistribution(0,1)))", //
+        "0.0");
+    check("NExpectation(x^2, Distributed(x, NormalDistribution(0,1)))", //
+        "1.0");
+    check("NExpectation(x, Distributed(x, ExponentialDistribution(2)))", //
+        "0.5");
+  }
+
+  @Test
+  public void testGompertzMakehamDistributionSkewness() {
+    check("Skewness(GompertzMakehamDistribution(m,n))", //
+        "(2*E^(3*n)*Gamma(0,n)^3-3*E^(2*n)*Gamma(0,n)*(Pi^2/6-2*n*HypergeometricPFQ({1,1,\n"
+            + "1},{2,2,2},-n)+(EulerGamma+Log(n))^2)+E^n*(6*n*HypergeometricPFQ({1,1,1,1},{2,2,\n"
+            + "2,2},-n)+1/2*Pi^2*(-EulerGamma-Log(n))-(EulerGamma+Log(n))^3-2*Zeta(3)))/(-E^(2*n)*Gamma(\n"
+            + "0,n)^2+E^n*(Pi^2/6-2*n*HypergeometricPFQ({1,1,1},{2,2,2},-n)+(EulerGamma+Log(n))^\n"
+            + "2))^(3/2)");
+    // the rate parameter is a pure scale parameter and cancels
+    check("FreeQ(Skewness(GompertzMakehamDistribution(m,n)), m)", //
+        "True");
+    // quadrature of the density gives 1.17643568158 for m=2, n=3
+    check("N(Skewness(GompertzMakehamDistribution(2,3)),25)", //
+        "1.176435681574901827291913");
+    check("N(Skewness(GompertzMakehamDistribution(2,3)))", //
+        "1.17644");
+    // the skewness is negative for a small shape parameter (-0.351639884786 from quadrature)
+    check("N(Skewness(GompertzMakehamDistribution(1,0.05)))", //
+        "-0.35164");
+  }
+
+  @Test
+  public void testGompertzMakehamDistributionNumericMoments() {
+    // the closed forms contain HypergeometricPFQ({1,..,1},{2,..,2},-n), which is summed numerically
+    check("N(Mean(GompertzMakehamDistribution(2,3)))", //
+        "0.131042");
+    // 0.0117398 from quadrature of the density
+    check("N(Variance(GompertzMakehamDistribution(2,3)))", //
+        "0.0117401");
+    check("N(StandardDeviation(GompertzMakehamDistribution(2,3)))", //
+        "0.108352");
+  }
+
+  @Test
   public void testGumbelDistribution() {
     check("Mean(GumbelDistribution())", //
         "-EulerGamma");

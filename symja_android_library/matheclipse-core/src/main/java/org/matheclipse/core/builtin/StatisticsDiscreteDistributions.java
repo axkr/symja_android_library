@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Random;
+import java.util.function.LongToDoubleFunction;
 import org.hipparchus.random.RandomDataGenerator;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -22,8 +23,90 @@ import org.matheclipse.core.interfaces.statistics.IGeneratingFunction;
 import org.matheclipse.core.interfaces.statistics.IPDF;
 import org.matheclipse.core.interfaces.statistics.IRandomVariate;
 import org.matheclipse.core.interfaces.statistics.IStatistics;
+import org.matheclipse.core.interfaces.IReal;
 
 public class StatisticsDiscreteDistributions {
+
+  /**
+   * The quantile of a discrete distribution: the smallest integer <code>k</code> in
+   * <code>[lo, hi]</code> whose cumulative distribution function reaches <code>q</code>.
+   *
+   * <p>
+   * The caller supplies an initial guess from a continuous approximation; from there the bracket
+   * is widened by doubling and then bisected, so a guess which is off by a few units costs a
+   * handful of CDF evaluations and a badly wrong one still terminates in <code>O(log)</code>
+   * steps. The search is exact at a tie, which is what makes
+   * <code>Quantile(BinomialDistribution(10, 1/2), 1/2)</code> come out as <code>5</code>.
+   * </p>
+   *
+   * @param q the probability, strictly between <code>0</code> and <code>1</code>
+   * @param guess a starting point, not required to be inside <code>[lo, hi]</code>
+   * @param lo the lowest value of the support
+   * @param hi the highest value of the support
+   * @param cdf the cumulative distribution function of the distribution
+   * @return the smallest <code>k</code> with <code>cdf(k) >= q</code>
+   */
+  private static long discreteQuantile(double q, long guess, long lo, long hi,
+      LongToDoubleFunction cdf) {
+    // invariant: cdf(lower) < q <= cdf(upper), with lo-1 and hi as the virtual end points
+    long lower = lo - 1;
+    long upper = hi;
+    long k = Math.max(lo, Math.min(hi, guess));
+    long step = 1;
+    if (cdf.applyAsDouble(k) >= q) {
+      upper = k;
+      while (upper > lo) {
+        long next = Math.max(lo, upper - step);
+        if (cdf.applyAsDouble(next) < q) {
+          lower = next;
+          break;
+        }
+        upper = next;
+        step <<= 1;
+      }
+    } else {
+      lower = k;
+      while (lower < hi) {
+        long next = Math.min(hi, lower + step);
+        if (cdf.applyAsDouble(next) >= q) {
+          upper = next;
+          break;
+        }
+        lower = next;
+        step <<= 1;
+      }
+    }
+    while (upper - lower > 1) {
+      long mid = lower + (upper - lower) / 2;
+      if (cdf.applyAsDouble(mid) >= q) {
+        upper = mid;
+      } else {
+        lower = mid;
+      }
+    }
+    return upper;
+  }
+
+  /**
+   * Cornish-Fisher expansion of the quantile of a distribution with the given first three moments,
+   * used only as the starting point of {@link #discreteQuantile}.
+   */
+  /**
+   * Upper end of the {@link #discreteQuantile} search for the unbounded Poisson support. The
+   * bracket is found by doubling from the Cornish-Fisher guess, so this only bounds the runtime of
+   * a pathological input.
+   */
+  private static final long POISSON_QUANTILE_LIMIT = 1L << 62;
+
+  private static long cornishFisherGuess(double q, double mean, double sd, double skewness) {
+    double z = org.hipparchus.util.FastMath.sqrt(2.0) * org.hipparchus.special.Erf.erfInv(2.0 * q - 1.0);
+    double x = mean + sd * z + skewness * (z * z - 1.0) / 6.0;
+    if (!Double.isFinite(x)) {
+      return Math.round(mean);
+    }
+    return (long) org.hipparchus.util.FastMath.floor(x + 0.5);
+  }
+
   /**
    *
    *
@@ -442,7 +525,44 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr n = dist.arg1();
+        IExpr m = dist.arg2();
+        if (!n.isReal() || !m.isReal() || !k.isReal()) {
+          return F.NIL;
+        }
+        double trials = ((IReal) n).doubleValue();
+        double p = ((IReal) m).doubleValue();
+        double q = ((IReal) k).doubleValue();
+        if (!(trials >= 0.0) || trials != Math.rint(trials) || !(p >= 0.0) || !(p <= 1.0)
+            || !(q >= 0.0) || !(q <= 1.0)) {
+          return F.NIL;
+        }
+        long count = (long) trials;
+        if (q == 0.0) {
+          return F.C0;
+        }
+        if (q == 1.0) {
+          return F.ZZ(count);
+        }
+        double sd = Math.sqrt(trials * p * (1.0 - p));
+        double skewness = sd > 0.0 ? (1.0 - 2.0 * p) / sd : 0.0;
+        long guess = cornishFisherGuess(q, trials * p, sd, skewness);
+        return F.ZZ(discreteQuantile(q, guess, 0L, count, //
+            j -> binomialCDF(j, trials, p)));
+      }
       return F.NIL;
+    }
+
+    /** <code>BetaRegularized(1-p, n-j, 1+j)</code>, the CDF used by {@link #cdf}. */
+    private static double binomialCDF(long j, double trials, double p) {
+      if (j < 0) {
+        return 0.0;
+      }
+      if (j >= trials) {
+        return 1.0;
+      }
+      return org.hipparchus.special.Beta.regularizedBeta(1.0 - p, trials - j, 1.0 + j);
     }
 
     @Override
@@ -1471,7 +1591,40 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+        IExpr p = dist.arg1();
+        if (p.isReal() && !p.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(p, F.C1, dist));
+        }
+        if (!p.isReal() || !k.isReal()) {
+          return F.NIL;
+        }
+        double lambda = ((IReal) p).doubleValue();
+        double q = ((IReal) k).doubleValue();
+        if (!(lambda > 0.0) || !(q >= 0.0) || !(q <= 1.0)) {
+          return F.NIL;
+        }
+        if (q == 0.0) {
+          return F.C0;
+        }
+        if (q == 1.0) {
+          return F.CInfinity;
+        }
+        double sd = Math.sqrt(lambda);
+        long guess = cornishFisherGuess(q, lambda, sd, 1.0 / sd);
+        return F.ZZ(discreteQuantile(q, guess, 0L, POISSON_QUANTILE_LIMIT, //
+            j -> poissonCDF(j, lambda)));
+      }
       return F.NIL;
+    }
+
+    /** <code>GammaRegularized(1+j, lambda)</code>, the CDF used by {@link #cdf}. */
+    private static double poissonCDF(long j, double lambda) {
+      if (j < 0) {
+        return 0.0;
+      }
+      return org.hipparchus.special.Gamma.regularizedGammaQ(1.0 + j, lambda);
     }
 
     @Override

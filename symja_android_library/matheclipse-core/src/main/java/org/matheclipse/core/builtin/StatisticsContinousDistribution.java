@@ -95,22 +95,6 @@ public class StatisticsContinousDistribution {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode() && //
-            (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double aDouble = a.evalfNaN();
-          double bDouble = b.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F
-                  .num(new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble) //
-                      .inverseCumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
-        }
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{InverseBetaRegularized(#, a, b), 0 < # < 1},
             // {0, # <=
@@ -676,21 +660,6 @@ public class StatisticsContinousDistribution {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
-        if (!engine.isArbitraryMode() && //
-            (v.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double vDouble = v.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(vDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F
-                  .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(vDouble) //
-                      .inverseCumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
-        }
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{2*InverseGammaRegularized(v/2, 0, #), 0 < # <
             // 1}, {0,
@@ -1390,22 +1359,6 @@ public class StatisticsContinousDistribution {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode() && //
-            (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double nDouble = n.evalfNaN();
-          double mDouble = m.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F
-                  .num(new org.hipparchus.distribution.continuous.FDistribution(nDouble, mDouble) //
-                      .inverseCumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
-        }
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{(m*(-1 + 1/InverseBetaRegularized(1, -#, m/2,
             // n/2)))/n, 0 < # < 1}, {0, # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
@@ -1447,7 +1400,7 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // [$ (m*(-1 + 1/InverseBetaRegularized(1, -(1/2), m/2, n/2)))/n $]
-        F.Times(m, F.Power(n, F.CN1),
+        return F.Times(m, F.Power(n, F.CN1),
             F.Plus(F.CN1,
                 F.Power(
                     F.InverseBetaRegularized(F.C1, F.CN1D2, F.Times(F.C1D2, m), F.Times(F.C1D2, n)),
@@ -1835,22 +1788,6 @@ public class StatisticsContinousDistribution {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode() && //
-            (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double aDouble = a.evalfNaN();
-          double bDouble = b.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(aDouble) && !Double.isNaN(bDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F.num(
-                  new org.hipparchus.distribution.continuous.GammaDistribution(aDouble, bDouble) //
-                      .inverseCumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
-        }
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{b*InverseGammaRegularized(a, 0, #), 0 < # <
             // 1}, {0, #
@@ -2163,10 +2100,15 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(lambda) || Double.isNaN(xi)) {
           return F.NIL;
         }
-        double reference = random.nextDouble();
-        double uniform = Math.nextUp(reference);
-        double result = Math.log((xi - Math.log(uniform)) / xi) / lambda;
-        return F.num(result);
+        // inverse transform sampling with the quantile function
+        // Log(1 - Log(1 - #)/xi)/lambda, where 1 - # is uniform on (0, 1] as well
+        double[] vector = new double[size];
+        for (int i = 0; i < size; i++) {
+          double reference = random.nextDouble();
+          double uniform = Math.nextUp(reference);
+          vector[i] = Math.log((xi - Math.log(uniform)) / xi) / lambda;
+        }
+        return new ASTRealVector(vector, false);
       }
       return F.NIL;
     }
@@ -2177,8 +2119,33 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
-        IExpr n = dist.arg1();
-        IExpr m = dist.arg2();
+        // The rate parameter dist.arg1() is a pure scale parameter, so it cancels in the
+        // skewness and only the shape parameter n is left.
+        //
+        // With W exponentially distributed the quantile function gives X == Log(1 + W/n)/m, so the
+        // raw moments are Moment(k) == E^n*d(k)/m^k where
+        // d(1) == Gamma(0,n)
+        // d(2) == g^2 + Pi^2/6 - 2*n*HypergeometricPFQ({1,1,1},{2,2,2},-n)
+        // d(3) == -g^3 - (Pi^2*g)/2 - 2*Zeta(3) + 6*n*HypergeometricPFQ({1,1,1,1},{2,2,2,2},-n)
+        // for g == EulerGamma + Log(n). d(2) is the form already used in variance() below.
+        IExpr n = dist.arg2();
+        IExpr g = F.Plus(F.EulerGamma, F.Log(n));
+        IExpr d1 = F.Gamma(F.C0, n);
+        IExpr d2 = F.Plus(F.Sqr(g), F.Times(F.QQ(1L, 6L), F.Sqr(F.Pi)),
+            F.Times(F.CN2, n, F.HypergeometricPFQ(F.list(F.C1, F.C1, F.C1),
+                F.list(F.C2, F.C2, F.C2), F.Negate(n))));
+        IExpr d3 = F.Plus(F.Negate(F.Power(g, F.C3)), F.Times(F.CN1D2, F.Sqr(F.Pi), g),
+            F.Times(F.CN2, F.Zeta(F.C3)),
+            F.Times(F.C6, n, F.HypergeometricPFQ(F.List(F.C1, F.C1, F.C1, F.C1),
+                F.List(F.C2, F.C2, F.C2, F.C2), F.Negate(n))));
+        IExpr e1 = F.Exp(n);
+        IExpr e2 = F.Exp(F.Times(F.C2, n));
+        IExpr e3 = F.Exp(F.Times(F.C3, n));
+        // CentralMoment(3)/Variance^(3/2), with the m^(-3) of both parts cancelled
+        return F.Divide(
+            F.Plus(F.Times(e1, d3), F.Times(F.CN3, e2, d1, d2),
+                F.Times(F.C2, e3, F.Power(d1, F.C3))),
+            F.Power(F.Subtract(F.Times(e1, d2), F.Times(e2, F.Sqr(d1))), F.QQ(3L, 2L)));
       }
       return F.NIL;
     }
@@ -2514,6 +2481,7 @@ public class StatisticsContinousDistribution {
       S.ParetoDistribution.setEvaluator(new ParetoDistribution());
       S.StudentTDistribution.setEvaluator(new StudentTDistribution());
       S.UniformDistribution.setEvaluator(new UniformDistribution());
+      S.VonMisesDistribution.setEvaluator(new VonMisesDistribution());
       S.WeibullDistribution.setEvaluator(new WeibullDistribution());
       S.LaplaceDistribution.setEvaluator(new LaplaceDistribution());
       S.LogisticDistribution.setEvaluator(new LogisticDistribution());
@@ -3349,22 +3317,6 @@ public class StatisticsContinousDistribution {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode() && //
-            (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double nDouble = n.evalfNaN();
-          double mDouble = m.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F.num(
-                  new org.hipparchus.distribution.continuous.NakagamiDistribution(nDouble, mDouble) //
-                      .inverseCumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
-        }
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{Sqrt((m*InverseGammaRegularized(n, 0, #))/n),
             // 0 < # <
@@ -4419,20 +4371,6 @@ public class StatisticsContinousDistribution {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        if (!engine.isArbitraryMode() && //
-            (n.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double nDouble = n.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(nDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F.num(new org.hipparchus.distribution.continuous.TDistribution(nDouble) //
-                  .inverseCumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
-        }
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{(-Sqrt(n))*Sqrt(-1 +
             // 1/InverseBetaRegularized(2*#,
@@ -4466,24 +4404,6 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg1();
         IExpr s = dist.arg2();
         IExpr v = dist.arg3();
-        if (!engine.isArbitraryMode() && //
-            (m.isNumericArgument(true) || s.isNumericArgument(true) || v.isNumericArgument(true)
-                || k.isNumericArgument(true))) {
-          double mDouble = m.evalfNaN();
-          double sDouble = s.evalfNaN();
-          double vDouble = v.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(mDouble) && !Double.isNaN(sDouble) && !Double.isNaN(vDouble)
-              && !Double.isNaN(kDouble)) {
-            try {
-              return F.num(mDouble
-                  + sDouble * new org.hipparchus.distribution.continuous.TDistribution(vDouble) //
-                      .inverseCumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-            }
-          }
-        }
         IExpr function =
             F.Function(F.ConditionalExpression(
                 F.Piecewise(F.List(
@@ -4990,6 +4910,205 @@ public class StatisticsContinousDistribution {
    * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
+  /**
+   * <code>VonMisesDistribution(m, k)</code> - the circular normal distribution with mean direction
+   * <code>m</code> and concentration <code>k</code>, supported on
+   * <code>m-Pi &lt;= x &lt;= m+Pi</code>.
+   *
+   * <p>
+   * Neither the CDF nor the variance have an elementary closed form - the CDF is evaluated by
+   * quadrature of the density once all parameters are numbers, and the variance is left to the
+   * numeric fallback of {@link S#Variance}.
+   */
+  private static final class VonMisesDistribution extends AbstractEvaluator
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr m = dist.arg1();
+        IExpr n = dist.arg2();
+        // Piecewise({{E^(n*Cos(k-m))/(2*Pi*BesselI(0,n)), m-Pi <= k <= m+Pi}}, 0)
+        return F.Piecewise(F.list(F.list(//
+            F.Divide(F.Exp(F.Times(n, F.Cos(F.Subtract(k, m)))),
+                F.Times(F.C2, F.Pi, F.BesselI(F.C0, n))),
+            F.LessEqual(F.Subtract(m, F.Pi), k, F.Plus(m, F.Pi)))), F.C0);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * <code>Integrate(E^(k*(Cos(u)-1)), {u, from, to})</code> by Simpson's rule.
+     *
+     * <p>
+     * The <code>E^-k</code> factor keeps the integrand in <code>(0,1]</code> for every
+     * concentration; it cancels in {@link #cdfDouble(double, double, double)}. The density is
+     * peaked around <code>0</code> with a width of about <code>1/Sqrt(k)</code>, so the number of
+     * panels grows with <code>Sqrt(k)</code>.
+     */
+    private static double shiftedIntegral(double concentration, double from, double to) {
+      int panels = (int) Math.max(1000, 400.0 * Math.sqrt(concentration));
+      panels += panels & 1; // Simpson needs an even number of panels
+      double h = (to - from) / panels;
+      double sum = 0.0;
+      for (int i = 0; i <= panels; i++) {
+        double weight = (i == 0 || i == panels) ? 1.0 : (((i & 1) == 1) ? 4.0 : 2.0);
+        sum += weight * Math.exp(concentration * (Math.cos(from + i * h) - 1.0));
+      }
+      return sum * h / 3.0;
+    }
+
+    /** @return the CDF of <code>VonMisesDistribution(m, concentration)</code> at <code>x</code> */
+    private static double cdfDouble(double m, double concentration, double x) {
+      double z = x - m;
+      if (z <= -Math.PI) {
+        return 0.0;
+      }
+      if (z >= Math.PI) {
+        return 1.0;
+      }
+      return shiftedIntegral(concentration, -Math.PI, z)
+          / shiftedIntegral(concentration, -Math.PI, Math.PI);
+    }
+
+    /**
+     * @return the three parameters as doubles or <code>null</code> if any of them isn't a real
+     *         number or the concentration isn't positive
+     */
+    private static double[] doubleParameters(IAST dist, IExpr k) {
+      if (!dist.isAST2()) {
+        return null;
+      }
+      double m = dist.arg1().evalfNaN();
+      double concentration = dist.arg2().evalfNaN();
+      double x = k.evalfNaN();
+      if (Double.isNaN(m) || Double.isNaN(concentration) || Double.isNaN(x)
+          || concentration <= 0.0) {
+        return null;
+      }
+      return new double[] {m, concentration, x};
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2() && k.isNumericFunction(true) && dist.arg1().isNumericFunction(true)
+          && dist.arg2().isNumericFunction(true)) {
+        // no elementary closed form - integrate the density
+        double[] parameters = doubleParameters(dist, k);
+        if (parameters != null) {
+          return F.num(cdfDouble(parameters[0], parameters[1], parameters[2]));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2() && k.isNumericFunction(true) && dist.arg1().isNumericFunction(true)
+          && dist.arg2().isNumericFunction(true)) {
+        double[] parameters = doubleParameters(dist, k);
+        if (parameters == null) {
+          return F.NIL;
+        }
+        double m = parameters[0];
+        double concentration = parameters[1];
+        double probability = parameters[2];
+        if (probability < 0.0 || probability > 1.0) {
+          return F.NIL;
+        }
+        if (probability == 0.0) {
+          return F.num(m - Math.PI);
+        }
+        if (probability == 1.0) {
+          return F.num(m + Math.PI);
+        }
+        // the CDF is strictly increasing on the support, so bisection converges
+        double total = shiftedIntegral(concentration, -Math.PI, Math.PI);
+        double low = -Math.PI;
+        double high = Math.PI;
+        for (int i = 0; i < 200 && high - low > 1.0e-15 * (1.0 + Math.abs(low)); i++) {
+          double middle = 0.5 * (low + high);
+          if (shiftedIntegral(concentration, -Math.PI, middle) / total < probability) {
+            low = middle;
+          } else {
+            high = middle;
+          }
+        }
+        return F.num(m + 0.5 * (low + high));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      return dist.isAST2() ? dist.arg1() : F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return dist.isAST2() ? dist.arg1() : F.NIL;
+    }
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      // the density is symmetric around the mean direction
+      return dist.isAST2() ? F.C0 : F.NIL;
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      // Integrate((x-m)^2*pdf) has no elementary closed form
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        // see exception handling in RandomVariate() function
+        double m = dist.arg1().evalfNaN();
+        double n = dist.arg2().evalfNaN();
+        if (Double.isNaN(m) || Double.isNaN(n) || n <= 0.0) {
+          return F.NIL;
+        }
+        // rejection sampling after Best and Fisher
+        final double a = 1.0 + Math.sqrt(1.0 + 4.0 * n * n);
+        final double b = (a - Math.sqrt(2.0 * a)) / (2.0 * n);
+        final double r = (1.0 + b * b) / (2.0 * b);
+        double[] vector = new double[size];
+        for (int i = 0; i < size; i++) {
+          double f;
+          while (true) {
+            double z = Math.cos(Math.PI * random.nextDouble());
+            f = (1.0 + r * z) / (r + z);
+            double c = n * (r - f);
+            double u = random.nextDouble();
+            if (c * (2.0 - c) > u || Math.log(c / u) + 1.0 - c >= 0.0) {
+              break;
+            }
+          }
+          double angle = Math.acos(Math.max(-1.0, Math.min(1.0, f)));
+          vector[i] = m + (random.nextDouble() < 0.5 ? -angle : angle);
+        }
+        return new ASTRealVector(vector, false);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+
   private static final class WeibullDistribution extends AbstractEvaluator
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
