@@ -14,6 +14,7 @@ import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -276,12 +277,31 @@ public class Num implements INum {
 
   @Override
   public IExpr airyBi() {
-    return F.num(DMath.airyBi(value));
+    return overflowed(S.AiryBi, DMath.airyBi(value));
   }
 
   @Override
   public IExpr airyBiPrime() {
-    return F.num(DMath.airyBiPrime(value));
+    return overflowed(S.AiryBiPrime, DMath.airyBiPrime(value));
+  }
+
+  /**
+   * Report a machine result that has run out of range. AiryBi and its derivative grow like
+   * <code>exp(2/3*x^(3/2))</code>, so a perfectly finite argument can have a value no double can
+   * hold. Mathematica answers <code>Overflow()</code> with an <code>ovfl</code> message for those
+   * rather than an infinity, which would claim the function has a pole there.
+   *
+   * @param symbol the function to report the message against
+   * @param result what the machine computation answered
+   * @return <code>result</code> as a number, or <code>Overflow()</code> if it left the range of a
+   *         double while the argument was still inside it
+   */
+  private IExpr overflowed(ISymbol symbol, double result) {
+    if (Double.isFinite(result) || !Double.isFinite(value)) {
+      return F.num(result);
+    }
+    Errors.printMessage(symbol, "ovfl", F.List());
+    return F.Overflow();
   }
 
   @Override
@@ -322,11 +342,26 @@ public class Num implements INum {
 
   @Override
   public ApfloatNum apfloatNumValue() {
-    return ApfloatNum.valueOf(value);
+    // through apfloatValue(), like apcomplexNumValue() and apcomplexValue(): ApfloatNum#valueOf
+    // would otherwise hand an infinity or a NaN straight to Apfloat, whose NumberFormatException
+    // escapes the built-in that asked for the conversion
+    return ApfloatNum.valueOf(apfloatValue());
   }
 
   @Override
   public Apfloat apfloatValue() {
+    if (!Double.isFinite(value)) {
+      // Apfloat has no representation for an infinity or a NaN, and its constructor answers a
+      // NumberFormatException that nothing in the arbitrary precision paths expects. Well over a
+      // hundred methods on this class reach here - digamma, the Bessel and Fresnel family, the
+      // elliptic integrals - and each of them wants the same thing when the value cannot be
+      // represented: leave the expression alone. Raising it as a Symja exception gets that for all
+      // of them at once, because EvalEngine.evalASTBuiltinFunction already turns one into a
+      // message and an unevaluated result. Where a function has a known limit at infinity it is
+      // handled before reaching here, as FresnelS and AiryAi are.
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
     return new Apfloat(value);
   }
 
@@ -1041,8 +1076,32 @@ public class Num implements INum {
         return valueOf(fresnelC);
       }
     }
-    Apfloat fresnelC = EvalEngine.getApfloatDouble().fresnelC(apfloatValue());
-    return F.num(fresnelC.doubleValue());
+    try {
+      Apfloat fresnelC = EvalEngine.getApfloatDouble().fresnelC(apfloatValue());
+      return F.num(fresnelC.doubleValue());
+    } catch (LossOfPrecisionException lpe) {
+      return valueOf(fresnelLimit(value));
+    }
+  }
+
+  /**
+   * The value a Fresnel integral has once its oscillating part can no longer be placed.
+   *
+   * <p>
+   * Both integrals are <code>&plusmn;1/2 - trig(Pi*x^2/2)/(Pi*x) + O(x^-3)</code>, so they
+   * approach <code>1/2</code> from above and below as <code>x</code> grows. Apfloat answers a
+   * {@link LossOfPrecisionException} once it cannot produce an accurate digit, which for these is
+   * the same condition as the phase <code>Pi*x^2/2</code> being undetermined: <code>x^2</code> has
+   * outrun the resolution of a double, so the sign of the correction is unknowable and the centre
+   * of the oscillation is the best available answer. This is not a discontinuity bolted on at the
+   * failure point. Symja already answers exactly <code>0.5</code> below it, from
+   * <code>|x| = 10^6</code> upwards, and Mathematica answers <code>0.5</code> above it.
+   *
+   * @param x the argument, whose sign the limit follows
+   * @return <code>0.5</code> or <code>-0.5</code>
+   */
+  private static double fresnelLimit(double x) {
+    return x < 0.0 ? -0.5 : 0.5;
   }
 
   @Override
@@ -1054,8 +1113,12 @@ public class Num implements INum {
         return valueOf(fresnelS);
       }
     }
-    Apfloat fresnelS = EvalEngine.getApfloatDouble().fresnelS(apfloatValue());
-    return F.num(fresnelS.doubleValue());
+    try {
+      Apfloat fresnelS = EvalEngine.getApfloatDouble().fresnelS(apfloatValue());
+      return F.num(fresnelS.doubleValue());
+    } catch (LossOfPrecisionException lpe) {
+      return valueOf(fresnelLimit(value));
+    }
   }
 
   /** {@inheritDoc} */

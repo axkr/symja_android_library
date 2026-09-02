@@ -13,19 +13,32 @@ import org.matheclipse.core.tensor.img.ImageCrop;
 
 public class ImageTest extends AbstractTestCase {
 
+  /**
+   * The plots come from <code>matheclipse-core</code> even with this module on the classpath.
+   *
+   * <p>
+   * They used to be replaced here by versions that returned a bitmap, so the same call gave a
+   * different picture depending on the classpath. Anything that installs a second evaluator for a
+   * plot symbol again turns these back into <code>Image(...)</code>.
+   */
   @Test
-  public void testArrayPlot001() {
-    // TODO throws exception
-    // check("ArrayPlot({{1, 0, 0, 0.3}, {1, 1, 0, 0.3}, {1, 0, 1, 0.7}})", //
-    // "");
+  public void testPlotsAreGraphicsNotBitmaps() {
+    check("Head(ArrayPlot({{1, 2}, {3, 4}}))", //
+        "Graphics");
+    check("Head(ListDensityPlot({{1, 2}, {3, 4}}))", //
+        "Graphics");
   }
 
   @Test
   public void testArrayPlot() {
-    check("i=ArrayPlot(SparseArray({{1, 1} -> 0, {2, 2} -> 0} ))", //
-        "Image(Dimensions: 600,480 Transparency: 3)");
+    check("Head(ArrayPlot(SparseArray({{1, 1} -> 0, {2, 2} -> 0} )))", //
+        "Graphics");
+    // a graphic still becomes a bitmap on request, which is how the callers that need pixels get
+    // them now that no plot returns them on its own
+    check("i=Image(ArrayPlot({{1, 0}, {0, 1}}))", //
+        "Image(Dimensions: 600,594 Transparency: 3)");
     check("ImageDimensions(i)", //
-        "{600,480}");
+        "{600,594}");
   }
 
   @Test
@@ -50,7 +63,9 @@ public class ImageTest extends AbstractTestCase {
   public void testImageRGB001() {
     check(
         "i=Image({{{0.1,0.6,0.0},{0.4,0.1,0.8},{0.7,0.9,0.7}}, {{1.0,0.0,0.9},{0.6,0.6,1.0},{1.0,0.8,0.3}}},ColorSpace->\"RGB\")",
-        "Image(Dimensions: 3,2 Transparency: 3)");
+        // an RGB image without an alpha channel is opaque - it used to be stored as TYPE_INT_ARGB
+        // whatever the data said, which made ImageChannels report 4 channels for a 3 channel matrix
+        "Image(Dimensions: 3,2 Transparency: 1)");
     check("ImageDimensions(i)", //
         "{3,2}");
     check("d=ImageData(i);Dimensions(d)", //
@@ -62,7 +77,7 @@ public class ImageTest extends AbstractTestCase {
   @Test
   public void testImageRGB002() {
     check("Image(RandomReal(1, {4, 5, 3}))", //
-        "Image(Dimensions: 5,4 Transparency: 3)");
+        "Image(Dimensions: 5,4 Transparency: 1)");
   }
 
   @Test

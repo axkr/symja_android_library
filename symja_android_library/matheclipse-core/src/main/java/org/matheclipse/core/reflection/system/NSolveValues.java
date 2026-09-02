@@ -5,9 +5,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -63,7 +61,8 @@ public class NSolveValues extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    long precision = Solve.workingPrecision(ast, options[2], engine);
+    SolveOptions solveOptions = SolveOptions.of(SolveOptions.NSOLVE_KEYS, options);
+    long precision = Solve.workingPrecision(ast, solveOptions.workingPrecision(), engine);
     if (precision == Solve.INVALID_PRECISION) {
       return F.NIL;
     }
@@ -74,7 +73,8 @@ public class NSolveValues extends AbstractFunctionOptionEvaluator {
     // the shape of the result is determined by the variables argument the user wrote down, before
     // Solve turns a single variable into a list of variables
     IExpr variables = ast.arg2();
-    return Solve.solutionValues(NSolve.solveNumeric(options, ast, precision, engine), variables);
+    return Solve.solutionValues(NSolve.solveNumeric(solveOptions, ast, precision, engine),
+        variables);
   }
 
   @Override
@@ -89,9 +89,6 @@ public class NSolveValues extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IBuiltInSymbol[] optionKeys =
-        new IBuiltInSymbol[] {S.GenerateConditions, S.MaxRoots, S.WorkingPrecision};
-    IExpr[] optionValues = new IExpr[] {S.False, F.C1000, S.Automatic};
-    setOptions(newSymbol, optionKeys, optionValues);
+    setOptions(newSymbol, SolveOptions.NSOLVE_KEYS, SolveOptions.NSOLVE_DEFAULTS);
   }
 }

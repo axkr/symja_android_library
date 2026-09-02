@@ -51,18 +51,48 @@
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-stat</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>it.unimi.dsi</groupId>
-			<artifactId>fastutil-core</artifactId>
-		</dependency>
 
 		<dependency>
     			<groupId>com.github.weisj</groupId>
     			<artifactId>jsvg</artifactId> 
 		</dependency>
+
+		<!-- The image processing engine. Everything that talks to BoofCV goes
+		through org.matheclipse.image.algo, and the BoofCvDependencyTest in
+		matheclipse-io keeps it that way. boofcv-feature (Canny, Hough,
+		watershed, SIFT) is added when the detection functions land. -->
 		<dependency>
-			<groupId>org.jfree</groupId>
-			<artifactId>jfreechart</artifactId>
+			<groupId>org.boofcv</groupId>
+			<artifactId>boofcv-ip</artifactId>
+		</dependency>
+
+		<!-- Extra javax.imageio readers/writers - TIFF, WebP, PNM and better
+		CMYK/progressive JPEG handling. Discovered through the ServiceLoader,
+		so no class here references them. -->
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-jpeg</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-bmp</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-tiff</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-webp</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-pnm</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- test dependencies -->

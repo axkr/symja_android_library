@@ -39,6 +39,16 @@ public class Product extends ListFunctions.Table implements ProductRules {
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr iterator = ast.get(i);
+      if (!iterator.isList() && !iterator.isSymbol()) {
+        // An iterator is either a list, {i, imax} or {i, imin, imax}, or the bare symbol of an
+        // indefinite product. A number is neither: Product inherits its unrolling from Table,
+        // where a count is a valid specification - Table[x, 3] is {x, x, x} - and so answered
+        // Product(x, 3) with x^3. Mathematica leaves it alone.
+        return F.NIL;
+      }
+    }
     IExpr arg1 = ast.arg1();
     if (arg1.isAST()) {
       arg1 = F.expand(arg1, false, false, false);

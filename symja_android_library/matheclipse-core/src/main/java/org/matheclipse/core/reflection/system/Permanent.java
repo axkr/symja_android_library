@@ -76,7 +76,7 @@ public class Permanent extends AbstractFunctionOptionEvaluator {
     ITensorAccess matrixTensor = (ITensorAccess) matrix;
 
     // Validate integer requirement for Modulus
-    if (modulus.isPresent() && !modulus.equals(S.None) && !modulus.equals(S.Automatic)) {
+    if (modulus.isPresent() && modulus != S.None && modulus != S.Automatic) {
       boolean allIntegers = true;
       for (int i = 1; i <= n; i++) {
         IAST row = (IAST) matrixTensor.get(i);
@@ -133,7 +133,7 @@ public class Permanent extends AbstractFunctionOptionEvaluator {
     result = engine.evaluate(F.Expand(result));
 
     // Apply modulus if specified
-    if (modulus.isPresent() && !modulus.equals(S.None) && !modulus.equals(S.Automatic)) {
+    if (modulus.isPresent() && modulus != S.None && modulus != S.Automatic) {
       result = engine.evaluate(F.Mod(result, modulus));
     }
 

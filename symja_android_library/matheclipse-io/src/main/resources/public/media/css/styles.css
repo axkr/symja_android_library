@@ -590,6 +590,11 @@ div.manipulatedelimiter {
   border-top: 1px solid #cccecb;
   margin: 5px 0;
 }
+/* a control panel row that shows an expression instead of offering a control */
+div.manipulatedisplay {
+  padding: 3px 0;
+  color: #3f3f3f;
+}
 input.manipulatesetter {
   background: #fff;
   border: 1px solid #cccecb;
@@ -994,4 +999,28 @@ span.symjabutton.active:hover {
   background: #3f3f3f;
   color: #fff;
   border-color: #3f3f3f;
+}
+
+/* where a control object the body drew - Slider[Dynamic[x]] and friends - puts its widget */
+span.symjacontrol {
+  display: inline-block;
+  vertical-align: middle;
+  font-family: sans-serif;
+  font-size: 0.9em;
+}
+
+/* ---- live Dynamic cell ------------------------------------------------- */
+
+div.dynamiccell {
+  display: inline-block;
+  max-width: 100%;
+}
+div.dynamicmessage {
+  color: #a00;
+  font-family: sans-serif;
+  font-size: 0.9em;
+}
+div.dynamicprint {
+  font-family: sans-serif;
+  font-size: 0.9em;
 }

@@ -31,9 +31,6 @@ import org.apfloat.Apcomplex;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.jgrapht.GraphType;
-import org.jgrapht.graph.DefaultGraphType;
-import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
@@ -55,13 +52,13 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
-import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.JavaClassExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
+import org.matheclipse.core.interfaces.EdgeListType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -97,7 +94,7 @@ import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 public abstract class AbstractAST implements IASTMutable, Cloneable {
 
@@ -758,7 +755,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
-    public final GraphType isListOfEdges() {
+    public final EdgeListType isListOfEdges() {
       return null;
     }
 
@@ -1652,6 +1649,24 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return ast;
   }
 
+  /**
+   * Reset the cached hash value and drop the eval flags which memoize a property of the arguments
+   * of this expression, because an argument is going to be added or replaced.
+   * <p>
+   * Call this instead of assigning <code>hashValue = 0</code> in every method which appends or
+   * replaces an argument. Methods which only remove or reorder arguments don't have to call it.
+   *
+   * @see IAST#IS_LISTABLE_THREADED
+   */
+  protected final void argumentsChanged() {
+    hashValue = 0;
+    // an appended or replaced argument may be a S.List, S.Association or S.SparseArray, so
+    // EvalEngine#threadASTListArgs() has to scan the arguments again
+    // an appended or replaced argument may be one of the expressions IAST#hasSpecialArg() looks
+    // for, so the arguments have to be scanned again
+    fEvalFlags &= ~(IAST.IS_LISTABLE_THREADED | IAST.CONTAINS_NO_SPECIAL_ARG);
+  }
+
   @Override
   public IASTAppendable apply(final IExpr head) {
     return setAtClone(0, head);
@@ -1717,10 +1732,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public Object asType(Class<?> clazz) {
     if (clazz.equals(Boolean.class)) {
       IExpr temp = F.eval(this);
-      if (temp.equals(S.True)) {
+      if (temp == S.True) {
         return Boolean.TRUE;
       }
-      if (temp.equals(S.False)) {
+      if (temp == S.False) {
         return Boolean.FALSE;
       }
     } else if (clazz.equals(Integer.class)) {
@@ -2415,6 +2430,45 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return false;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>
+   * Overridden to read and write {@link #fEvalFlags} directly and to avoid the lambda of the
+   * default implementation, because this is called for every evaluated expression.
+   */
+  @Override
+  public final boolean hasSpecialArg() {
+    if ((fEvalFlags & IAST.CONTAINS_NO_SPECIAL_ARG) == IAST.CONTAINS_NO_SPECIAL_ARG) {
+      return false;
+    }
+    final IExpr dist = RubiDist.DIST;
+    final int size = size();
+    for (int i = 1; i < size; i++) {
+      final IExpr arg = get(i);
+      final IExpr head = arg.head();
+      if (head == S.Unevaluated || head == S.Sequence || head == S.ConditionalExpression
+          || head == dist || arg == S.Nothing) {
+        return true;
+      }
+    }
+    fEvalFlags |= IAST.CONTAINS_NO_SPECIAL_ARG;
+    return false;
+  }
+
+  /**
+   * Lazily resolved <code>Rubi`Dist</code> symbol.
+   * <p>
+   * {@link EvalEngine#evalAttributes(IAST, int, ISymbol, int)} calls
+   * <code>UtilityFunctionCtors.evalRubiDistPlus()/evalRubiDistTimes()</code> for every
+   * {@link S#Plus} and {@link S#Times}, and both can only do something if one of the arguments is a
+   * <code>Dist(u,v,x)</code>. Resolving the symbol through a holder class keeps the initialization
+   * of {@link F} and {@link AbstractAST} independent of each other.
+   */
+  private static final class RubiDist {
+    static final IExpr DIST = F.$rubi("Dist");
+  }
+
   @Override
   public boolean existsValue(Predicate<? super IExpr> predicate) {
     return existsValue(predicate, 0);
@@ -2449,6 +2503,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       IASTMutable copy = copy();
       copy.set(1, conditionalExpr.arg1());
       return conditionalExpr.setAtCopy(1, copy);
+    }
+    if (!hasSpecialArg()) {
+      // no argument is a ConditionalExpression(...), so the search below cannot find one
+      return F.NIL;
     }
     IExpr head = head();
     if (head.isSymbol()) {
@@ -2917,22 +2975,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return F.NIL;
   }
 
-  @Override
-  public final IExpr getPart(final IntList positions) {
-    IExpr expr = this;
-    int size = positions.size();
-    for (int i = 0; i < size; i++) {
-      if (!expr.isAST()) {
-        break;
-      }
-      expr = ((IAST) expr).get(positions.getInt(i));
-      if (i == (size - 1)) {
-        return expr;
-      }
-    }
-    return null;
-  }
-
   /**
    * Returns the value to which the specified property is mapped, or <code>null</code> if this map
    * contains no mapping for the property.
@@ -2974,7 +3016,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (predicate.test(this)) {
       return true;
     }
-    return exists(x -> x.has(predicate, heads), heads ? 0 : 1);
+    // this is the loop body of exists(Predicate, int), written out instead of calling exists() with
+    // a `x -> x.has(predicate, heads)` lambda. The lambda captured both the predicate and the flag,
+    // so it could not be cached and the recursion went through two virtual calls per element
+    // instead of one. Measured ~16% faster on an isFree()-saturated workload; use get(i), not
+    // getRule(i), because that is what exists() tests and the two differ for an IAssociation.
+    final int size = size();
+    for (int i = heads ? 0 : 1; i < size; i++) {
+      if (get(i).has(predicate, heads)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean hasExpectedArgSize(final ISymbol header) {
@@ -3175,7 +3228,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       Function<ISymbol, ? extends CharSequence> variables) {
     final String sep = ",";
     final IExpr temp = head();
-    if ((temp.equals(S.HoldForm) && size() == 2) || (temp.equals(S.Hold) && size() == 2)) {
+    if ((temp == S.HoldForm && size() == 2) || (temp == S.Hold && size() == 2)) {
       return arg1().internalJavaString(properties, depth, variables);
     }
     String prefix = SourceCodeProperties.getPrefixF(properties);
@@ -3194,10 +3247,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (this.equals(F.Slot2)) {
       return prefix + "Slot2";
     }
-    if (temp.equals(S.Inequality) && size() >= 4) {
+    if (temp == S.Inequality && size() >= 4) {
       return CompareUtil.inequality2And(this).internalJavaString(properties, depth, variables);
     }
-    if (temp.equals(S.Rational) && size() == 3) {
+    if (temp == S.Rational && size() == 3) {
       if (arg1().isInteger() && arg2().isInteger()) {
         return F.QQ((IInteger) arg1(), (IInteger) arg2()).internalJavaString(properties, depth,
             variables);
@@ -3242,7 +3295,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     if (isTimes2()) {
-      if (arg2().equals(S.Pi)) {
+      if (arg2() == S.Pi) {
         if (equals(F.CNPi)) {
           return prefix + "CNPi";
         } else if (equals(F.CN2Pi)) {
@@ -4052,7 +4105,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isIntegerResult() {
-    if (S.True.equals(AbstractAssumptions.assumeInteger(this))) {
+    if (AbstractAssumptions.assumeInteger(this) == S.True) {
       return true;
     }
     if (isFunctionID(ID.Ceiling, ID.Floor, ID.IntegerPart)) {
@@ -4165,6 +4218,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public ISymbol listableContainerHead() {
+    // subclasses which represent a S.Association or S.SparseArray override this method
+    return isList() ? S.List : null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isList() {
     return head() == S.List;
   }
@@ -4261,12 +4321,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public GraphType isListOfEdges() {
+  public EdgeListType isListOfEdges() {
     if (S.List == head()) {
       boolean hasDirected = false;
       boolean hasUndirected = false;
       for (int i = 1; i < size(); i++) {
-        IExpr temp = GraphExpr.unwrapEdge(get(i));
+        IExpr temp = EdgeUtil.unwrapEdge(get(i));
         if (temp.argSize() == 2 && temp.isBuiltInFunction()) {
           IBuiltInSymbol symbol = (IBuiltInSymbol) temp.head();
           if (symbol == S.DirectedEdge || symbol == S.Rule) {
@@ -4283,15 +4343,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
       }
 
-      Builder builder = new DefaultGraphType.Builder();
       if (hasDirected && hasUndirected) {
-        // a mixed graph has no JGraphT counterpart, see GraphExpr#createMixedGraph()
-        return builder.mixed().allowSelfLoops(true).allowMultipleEdges(true).build();
+        return EdgeListType.MIXED;
       }
-      if (hasUndirected) {
-        return builder.undirected().build();
-      }
-      return builder.directed().build();
+      return hasUndirected ? EdgeListType.UNDIRECTED : EdgeListType.DIRECTED;
     }
     return null;
   }
@@ -5014,7 +5069,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final boolean isRationalResult() {
     ISymbol symbol = topHead();
-    if (symbol.equals(S.Floor) || symbol.equals(S.Ceiling) || symbol.equals(S.IntegerPart)) {
+    if (symbol == S.Floor || symbol == S.Ceiling || symbol == S.IntegerPart) {
       return true;
     }
     if (isPowerInteger() && exponent().isPositive()) {
@@ -5023,7 +5078,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       return false;
     }
-    if (isPlus() || isTimes() || symbol.equals(S.Binomial) || symbol.equals(S.Factorial)) {
+    if (isPlus() || isTimes() || symbol == S.Binomial || symbol == S.Factorial) {
       // TODO add more functions
       // check if all arguments are &quot;rational functions&quot;
       for (int i = 1; i < size(); i++) {
@@ -5104,7 +5159,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isRealResult() {
-    if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
+    if (AbstractAssumptions.assumeReal(this) == S.True) {
       return true;
     }
     INumber e = evalNumber();
@@ -5310,7 +5365,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       int index1 = Validate.checkIntType(this, 1, Config.INVALID_INT);
       int index2;
-      if (arg2().equals(S.All)) {
+      if (arg2() == S.All) {
         index2 = size - 1;
         if (step < 0) {
           int tempIndx = index1;

@@ -1300,6 +1300,16 @@
       "aliases": ["dalton", "Da"]
     },
     {
+      "name": "AtomicMassUnit",
+      "coefficient": "41513476723/25000000000000000000000000000000000000",
+      "factors": {
+        "Kilograms": 1
+      },
+      "abbrev": "u",
+      "prefixable": false,
+      "aliases": ["AtomicMassUnits", "atomic mass unit", "amu"]
+    },
+    {
       "name": "Darcies",
       "pintName": "darcy",
       "provisional": true,
@@ -3293,6 +3303,19 @@
       "abbrev": "M",
       "prefixable": true,
       "aliases": ["molar", "M"]
+    },
+    {
+      "name": "MolarElectronvolts",
+      "coefficient": "120606665154137523/1250000000000",
+      "factors": {
+        "Kilograms": 1,
+        "Meters": 2,
+        "Seconds": -2,
+        "Moles": -1
+      },
+      "abbrev": "eV/mol",
+      "prefixable": false,
+      "aliases": ["MolarElectronvolt"]
     },
     {
       "name": "Moles",

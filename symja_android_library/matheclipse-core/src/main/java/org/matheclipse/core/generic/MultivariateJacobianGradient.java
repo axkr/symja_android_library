@@ -14,7 +14,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import org.matheclipse.external.fastutil.objects.Object2IntOpenHashMap;
 
 /**
  * A class for functions that compute a vector of values and can compute their derivatives (Jacobian

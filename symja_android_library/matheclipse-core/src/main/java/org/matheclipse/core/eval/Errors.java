@@ -2,6 +2,7 @@ package org.matheclipse.core.eval;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -70,6 +72,7 @@ public class Errors {
       "accg", "Value of option `1` is not Automatic or a machine-sized integer.", //
       "affind", "`1` should be a list of `2` or more affinely independent points.", //
       "aord", "Approximation order specification `1` should be a positive integer.", //
+      "aggspec", "`1` is not a known aggregator.", //
       "argillegal", "Illegal arguments: \"`1`\" in `2`", //
       "argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
       "argct", "`1` called with `2` arguments. `3`", //
@@ -80,12 +83,32 @@ public class Errors {
       "argx", "`1` called with `2` arguments; 1 argument is expected.", //
       "args", "`1` called with invalid parameters.", //
       "argt", "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
+      "arrayerr", "`1` must be a valid array.", //
       "argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
       "argtype",
       "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
       "arg1", "The first argument `1` is expected to be `2`.", //
       "arg2", "Cannot divide sides of an equation or inequality by 0.", //
       "asm", "The sum of angles `1` and `2` should be less than `3`.", //
+      "astrobody", "`1` is not a supported celestial body in `2`.", //
+      "astrocenter", "Value of option `1` -> `2` is not a position, a body name or Automatic.", //
+      "astrocsys", "`1` is not a supported celestial system in `2`.", //
+      "astrodms", "`1` in `2` is not a sexagesimal angle.", //
+      "astroevent", "`1` is not a supported astronomical event in `2`.", //
+      "astroframe", "Value of option `1` -> `2` is not a usable reference frame; a horizon frame also needs a location.", //
+      "astroloc", "`1` in `2` needs an observer location.", //
+      "astromethod", "`1` is not a supported computation method in `2`.", //
+      "astronotimpl", "`1` is not implemented.", //
+      "astrophase", "`1` in `2` is not a supported Moon phase specification.", //
+      "astroproj", "`1` is not a supported projection in `2`.", //
+      "astroprop", "`1` is not a supported property in `2`.", //
+      "astrostar", "`1` in `2` is not a star in the bundled catalogue.", //
+      "astrostarprop", "`1` needs data which is not bundled: `2`.", //
+      "astrorange", "Value of option `1` -> `2` is not an angle or Automatic.", //
+      "astrorefalt", "Value of option ReferenceAltitude -> `1` in `2` is not Automatic, an angle, {angle,limb}, \"Civil\", \"Nautical\" or \"Astronomical\".", //
+      "astrotimesys", "`1` is not a supported time system in `2`.", //
+      "astrotimetype", "`1` is not a supported sidereal time type in `2`.", //
+      "astrotimezone", "`1` in `2` is not a time zone offset or an IANA time zone name.", //
       "attnf", "`1` is not a known attribute.", //
       "base", "Requested base `1` in `2` should be between 2 and `3`.", //
       "bbrac",
@@ -93,6 +116,28 @@ public class Errors {
       "bdmtd",
       "Value of option `1` is not Automatic, SymbolDefinitionsPresent, OwnValuesPresent or TrialEvaluation.", //
       "bdmtrc", "`1` does not define a metric in `2` dimensions.", //
+      "bioaa", "`1` is not a letter of the sequence alphabet.", //
+      "biocirc", "A sequence of type `1` cannot be made circular.", //
+      "biogap", "`1` is not a valid GapPenalty value.", //
+      "biogtt", "`1` is not a known genetic code translation table.", //
+      "biomatrix", "`1` is not a known similarity matrix.", //
+      "biomax", "The result has more than `1` elements; increase the option `2`.", //
+      "biomethod", "`1` is not a known alignment Method.", //
+      "bionuc", "`1` is not a nucleotide sequence.", //
+      "bioop", "`1` is not a known BioSequenceModify operation.", //
+      "biopept", "`1` is not a peptide sequence.", //
+      "biorules", "`1` is not a valid SimilarityRules value.", //
+      "bioseq", "`1` is not a valid biomolecular sequence.", //
+      "biostart", "The sequence `1` contains no start codon.", //
+      "biotype", "`1` is not a known BioSequence type.", //
+      "chem3d", "Cannot generate 3D coordinates for `1`.", //
+      "chembal", "Cannot balance the reaction `1`.", //
+      "chemfmt", "`1` is not a known chemical format.", //
+      "chemmod", "`1` is not a known MoleculeModify operation.", //
+      "chemsmarts", "`1` is not a valid SMARTS pattern.", //
+      "elemdent", "`1` does not name a chemical element or a class of elements.", //
+      "elemdprop", "`1` is not a known ElementData property.", //
+      "elemdrepl", "The ElementData property `1` was replaced by `2`.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
       "bset",
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
@@ -103,8 +148,14 @@ public class Errors {
       "bspec", "`1` is not a valid `2` specification.", //
       "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
       "cas", "Warning contradictory assumption(s) `1` encountered.", //
+      "cfco",
+      "Value of option CompilationOptions -> `1` should be Automatic, a rule or a list of rules.", //
       "cfct", "The number of arguments `1` does not match the length `2` of the argument template.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
+      "cfrec", "The compiled function `1` calls itself; the call is not expanded.", //
+      "cfro",
+      "Value of option RuntimeOptions -> `1` should be Automatic, \"Speed\", \"Quality\", a rule or a list of rules.", //
+      "cfsa", "Argument `1` at position `2` should be a machine-size `3`.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
@@ -115,6 +166,7 @@ public class Errors {
       "cxt", "`1` is not a valid context name.", //
       "ctnc", "The constraint `1` is not convex.", //
       "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //
+      "date", "Expression `1` cannot be interpreted as a date specification.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
@@ -133,6 +185,7 @@ public class Errors {
       "dpvar", "The variable `1` has been specified more than once.", //
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
       "dsdelim", "The delimiter specification is not valid.", //
+      "dsdims", "The data has dimensions `1` which `2` does not allow.", //
       "dstlms",
       "The requested number of elements `1` is greater than the number of distinct elements `2`. Only `2` elements will be returned.", //
       "dup", "Duplicate local variable `1` found in local variable specification `2`.", //
@@ -155,7 +208,9 @@ public class Errors {
       "fdguess", "Form of start specification `1` supports only one start value for a variable.",
       "fdss", "Search specification `1` should be a list with 1 to 3 elements.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
+      "filetype", "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
       "fnand", "The function `1` is not analytic or defined at `2`.", //
+      "fsandbox", "Cannot open `1`: the path is outside this session's directory.", //
       "fitc", "The number of coordinates (`1`) is not equal to the number of variables (`2`).", //
       "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
       "flrl",
@@ -182,6 +237,9 @@ public class Errors {
       "incom",
       "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
       "ilim", "Invalid integration variable or limit(s) in `1`.", //
+      "imgcs", "`1` is not a valid setting for ColorSpace.", //
+      "imgcsc", "ColorSpace -> `1` cannot read image data with `2` channels.", //
+      "imgtype", "`1` is not a valid image type; Bit, Byte, Bit16, Real32 or Real64 expected.", //
       "incomp", "Expressions `1` and `2` have incompatible shapes.", //
       "incompCF", "Warning: `1` terminated before `2` terms.", //
       "incpt", "incompatible elements in `1` cannot be joined.", //
@@ -224,7 +282,10 @@ public class Errors {
       "itendless", "Endless iteration detected in `1` in evaluation loop.", //
       "intnz", "Nonzero integer expected at position `1` in `2`.", //
       "itraw", "Raw object `1` cannot be used as an iterator.", //
+      "input",
+      "Argument `1` at position `2` is not a 2x2 or larger numerica matrix of real values.", //
       "ivar", "`1` is not a valid variable.", //
+      "jointype", "`1` is not a known join type. Use \"Inner\", \"Left\", \"Right\" or \"Outer\".", //
       "ldata", "`1` is not a valid dataset or a list of datasets.", //
       "ldir",
       "Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided or a list of these.", //
@@ -294,6 +355,8 @@ public class Errors {
       "nnumeq",
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
+      "nupi",
+      "`1` is not a univariate polynomial function with integer coefficients of degree greater than 1.", //
       "nodim", "Invalid dimension specification `1`.", //
       "naqs", "`1` is not a quantified system of equations and inequalities.", //
       "nofirst", "`1` has zero length and no first element.", //
@@ -302,6 +365,7 @@ public class Errors {
       "nonegs", "Surd is not defined for even roots of negative values.", //
       "nolast", "`1` has zero length and no last element.", //
       "nomost", "Cannot take Most of expression `1` with length zero.", //
+      "nojoin", "The datasets have no column in common to join on.", //
       "nonn1",
       "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
       "nonopt",
@@ -328,6 +392,13 @@ public class Errors {
       "nquan",
       "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
       "nrnum", "The Function value `1` is not a real number at `2`=`3`.", //
+      "nresbc",
+      "The integrand `1` does not appear to be analytic on the contour of radius `2` around `3`; a branch cut seems to cross it and the result is unreliable.", //
+      "nrescnv",
+      "Failed to converge to the requested accuracy on the contour of radius `1` around `2` after `3` sample points; the result may be inaccurate.", //
+      "nresnum",
+      "The integrand `1` could not be evaluated to a number on the contour around `2`.", //
+      "nresopt", "Value of option `1` -> `2` is not valid; the default value is used.", //
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
       "nspecnl",
       "Rule specification `1` should be an integer, a List, a pure Boolean function, a String or an Association.", //
@@ -398,6 +469,8 @@ public class Errors {
       "mcell", "`1` is not a valid mesh cell specification.", //
       "ptype",
       "The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater equal 1 for p-norms, or \"Frobenius\" for matrix norms.",
+      "parm",
+      "The parameters `1` in `2` should be given as a 2x2 matrix of real numbers {{a,b},{c,d}} or as a pair of real plot point parameters {a,b}.", //
       "range", "Range specification in `1` does not have appropriate bounds.", //
       "rapp", "Root approximation `1` is not a number.", //
       "invrt", "`1` is not equal to a root of `2`.", //
@@ -428,8 +501,12 @@ public class Errors {
       "Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.", //
       "sandbox", "The operation `1` is not allowed in sandbox mode.", //
       "sclr", "The scalar expression `1` does not have a `2`.", //
+      "sdatc", "Coefficient specification `1` in `2` is not a list.", //
+      "sdatd",
+      "Power denominator specification `1` in `2` is not a positive machine-sized integer.", //
       "sdmint",
       "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
+      "seedm", "The method `1` is not one of \"Congruential\", \"Legacy\" or \"MersenneTwister\".", //
       "seq", //
       "Position `1` of `2` must be All, None an integer, or a list of 1,2 or 3 integers, with the third (if present) nonzero.", //
       "seqs", //
@@ -440,6 +517,7 @@ public class Errors {
       "setps", "`1` in the part assignment is not a symbol.", //
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shapespec", "Shape specification `1` is invalid.", //
+      "smplen", "The elements of `1` are not compatible with the sample size `2`.", //
       "shlen", "The argument `1` should have at least `2` elements.", //
       "sing", "Matrix `1` is singular.", //
       "sing1", "The matrix `1` is singular; a factorization will not be saved.", //
@@ -468,6 +546,7 @@ public class Errors {
       "tri", "`1` is not triangular.", //
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "underdet", "The system is underdetermined.", //
+      "unitsys", "Cannot set `1` to `2`; value must be \"Metric\" or \"Imperial\".", //
       "unkds",
       "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
@@ -480,6 +559,7 @@ public class Errors {
       "The argument `1` at position `2` should be a vector of real numbers with length equal to the vector given at position `3`.", //
       "vloc",
       "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
+      "vecmat1", "Argument `1` is neither a nonempty vector nor a nonempty matrix.", //
       "vector", "Argument `1` at position `2` is not a non-empty vector.", //
       "vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
       "vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
@@ -551,8 +631,16 @@ public class Errors {
       // `1` called with `2` arguments; `3` or more arguments are expected.
       return printMessage(topHead, "argm", F.list(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
-    // `1` called with `2` arguments; `3` or `4` arguments are expected.
-    return printMessage(topHead, "argt",
+    if (expected[1] == expected[0] + 1) {
+      // `1` called with `2` arguments; `3` or `4` arguments are expected.
+      return printMessage(topHead, "argt",
+          F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
+    }
+    // "or" only reads correctly for two adjacent counts. For a wider range it names two of the
+    // several that are allowed and silently excludes the rest - "3 or 6 arguments are expected"
+    // for a function taking 3 to 6. Mathematica reports that range as argb.
+    // `1` called with `2` arguments; between `3` and `4` arguments are expected.
+    return printMessage(topHead, "argb",
         F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
   }
 
@@ -630,6 +718,29 @@ public class Errors {
   public static void printIfunMessage(ISymbol symbol) {
     // Inverse functions are being used. Values may be lost for multivalued inverses.
     printMessage(symbol, "ifun", F.CEmptyList, EvalEngine.get());
+  }
+
+  /**
+   * Test if a symbolic inverse function may be applied, and warn about the branches it may lose.
+   *
+   * <p>
+   * This is the gate of the {@link S#InverseFunctions} option: it returns <code>false</code> for
+   * {@link S#False}, so that the caller falls back on a method which doesn't need an inverse, and
+   * it prints the &quot;values may be lost&quot; message only for {@link S#Automatic} - a caller
+   * which asked for {@link S#True} knows what it requested.
+   *
+   * @param symbol the symbol which reports the message
+   * @param engine the evaluation engine
+   * @return <code>false</code> if the inverse function must not be applied
+   */
+  public static boolean allowInverseFunctions(ISymbol symbol, EvalEngine engine) {
+    if (!engine.isUseInverseFunctions()) {
+      return false;
+    }
+    if (engine.isWarnInverseFunctions()) {
+      printMessage(symbol, "ifun", F.CEmptyList, engine);
+    }
+    return true;
   }
 
   /**
@@ -796,6 +907,12 @@ public class Errors {
    * @param expr
    * @return
    */
+  /**
+   * Maximum number of nodes {@link #shorten(IExpr, int)} walks before it gives up on rendering an
+   * expression and describes it structurally instead.
+   */
+  private static final int MAX_SHORTEN_NODES = 10000;
+
   public static String shorten(IExpr expr) {
     return shorten(expr, Config.SHORTEN_STRING_LENGTH);
   }
@@ -810,8 +927,49 @@ public class Errors {
    * @return
    */
   public static String shorten(IExpr expr, int maximumLength) {
-    String str = expr.toString();
-    return shorten(str, maximumLength);
+    if (isOversized(expr, MAX_SHORTEN_NODES)) {
+      // Rendering first and trimming afterwards cannot bound anything: nested toString() calls
+      // re-render shared sub-expressions, so the string can grow exponentially in the number of
+      // nodes and a message can end up costing far more than the evaluation it reports on. Such an
+      // expression cannot fit into maximumLength anyway, so name it structurally instead.
+      IExpr head = expr.head();
+      return (head.isSymbol() ? head.toString() : "") + "[<<SHORT>>]";
+    }
+    return shorten(expr.toString(), maximumLength);
+  }
+
+  /**
+   * Walk <code>expr</code> and stop as soon as more than <code>maximumNodes</code> nodes have been
+   * visited. Shared sub-expressions are visited once per occurrence, so the number of visits
+   * estimates what rendering the expression would cost, not how many distinct nodes it has.
+   *
+   * @param expr
+   * @param maximumNodes the number of nodes after which the walk gives up
+   * @return <code>true</code> if the walk was stopped by <code>maximumNodes</code>
+   */
+  private static boolean isOversized(IExpr expr, int maximumNodes) {
+    ArrayDeque<IExpr> stack = new ArrayDeque<IExpr>();
+    stack.push(expr);
+    int visited = 0;
+    while (!stack.isEmpty()) {
+      if (++visited > maximumNodes) {
+        return true;
+      }
+      IExpr current = stack.pop();
+      if (current.isAST()) {
+        IAST ast = (IAST) current;
+        for (int i = 0; i < ast.size(); i++) {
+          stack.push(ast.get(i));
+        }
+      } else if (current instanceof IDataExpr) {
+        // DataExpr#toString() renders the wrapped expression, so it has to be walked as well
+        Object data = ((IDataExpr<?>) current).toData();
+        if (data instanceof IExpr) {
+          stack.push((IExpr) data);
+        }
+      }
+    }
+    return false;
   }
 
   /**

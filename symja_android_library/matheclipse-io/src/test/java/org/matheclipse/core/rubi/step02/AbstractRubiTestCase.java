@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ParserConfig;
@@ -38,7 +39,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
     // if (result.equals(F.Null)) {
     // return "";
     // }
-    if (result.equals(F.$Aborted)) {
+    if (result == S.$Aborted) {
       return "TIMEOUT";
     }
 

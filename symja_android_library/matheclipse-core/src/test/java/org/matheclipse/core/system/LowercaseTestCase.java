@@ -868,6 +868,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a+ArcTan(1/3)+7*ArcTan(1/2)");
     check("Simplify(ArcTan(1/3) + ArcTan(1/7))", //
         "ArcTan(1/2)");
+    // the general rational addition formula ArcTan((x+y)/(1-x*y)), with a Pi correction for
+    // x*y > 1 - see the rules in SimplifyUtil
+    check("Simplify(ArcTan(1/7)+ArcTan(1/9))", //
+        "ArcTan(8/31)");
+    check("Simplify(ArcTan(1/4)+ArcTan(3/5))", //
+        "Pi/4");
+    check("Simplify(ArcTan(2)+ArcTan(1/3))", //
+        "ArcTan(7)");
+    check("Simplify(ArcTan(2)+ArcTan(3))", //
+        "3/4*Pi");
+    check("Simplify(-ArcTan(2)-ArcTan(3))", //
+        "-3/4*Pi");
+    check("Simplify(-ArcTan(1/2)-ArcTan(1/3))", //
+        "-Pi/4");
+    check("Simplify(ArcTan(2)+ArcTan(1/2))", //
+        "Pi/2");
+    check("Simplify(ArcTan(x)+ArcTan(y))", //
+        "ArcTan(x)+ArcTan(y)");
 
     check("ArcTan(a, -a)", //
         "ArcTan(a,-a)");
@@ -2676,14 +2694,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testCheck() {
     check("Check(0^(-42), failure)", //
-        "failure");
+        "Failure");
 
     check("Check(2^(3), failure)", //
         "8");
     check("Check(0^(-42), failure)", //
-        "failure");
+        "Failure");
     check("Check(0^0, failure)", //
-        "failure");
+        "Failure");
   }
 
   @Test
@@ -4247,9 +4265,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ConvexHullRegion({{5,5}})", //
         "Point({5,5})");
 
-    // one dimensional points give an Interval
+    // one dimensional points give the Line between the two extremes
     check("ConvexHullRegion({{3},{1},{7}})", //
-        "Interval({1,7})");
+        "Line({{1},{7}})");
+    check("ConvexHullRegion({{0},{3},{1}})", //
+        "Line({{0},{3}})");
+
+    // ConvexHullRegion(region): a convex region is its own hull, a polytope is the hull of its
+    // corner points
+    check("ConvexHullRegion(Disk())", //
+        "Disk({0,0})");
+    check("ConvexHullRegion(Ellipsoid({0,0},{2,3}))", //
+        "Ellipsoid({0,0},{2,3})");
+    check("ConvexHullRegion(Polygon({{0,0},{2,0},{1,1},{2,2},{0,2}}))", //
+        "Polygon({{0,0},{2,0},{2,2},{0,2}},{1,2,3,4})");
+    check("ConvexHullRegion(Triangle({{0,0},{1,0},{0,1}}))", //
+        "Polygon({{0,0},{1,0},{0,1}},{1,2,3})");
+    check("ConvexHullRegion(Simplex(2))", //
+        "Polygon({{0,0},{1,0},{0,1}},{1,2,3})");
+    check("ConvexHullRegion(Rectangle({0,0},{2,3}))", //
+        "Polygon({{0,0},{2,0},{2,3},{0,3}},{1,2,3,4})");
+    check("ConvexHullRegion(Line({{0,0},{1,1},{2,0}}))", //
+        "Polygon({{0,0},{2,0},{1,1}},{1,2,3})");
+    // a disk sector is not convex, so it isn't returned unchanged
+    check("ConvexHullRegion(Disk({0,0},1,{0,Pi/2}))", //
+        "ConvexHullRegion(Disk({0,0},1,{0,Pi/2}))");
 
     // three dimensional points give a Polyhedron with the corners in input order, co-planar
     // points give a Polygon
@@ -4541,6 +4581,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
     check("Sin(x)*Cot(x)", //
         "Cos(x)");
+    check("Cot(x)*Sec(x)", //
+        "Csc(x)");
+    check("Cot(x)^2*Sec(x)^2", //
+        "Csc(x)^2");
+    check("Cot(x)^3*Sec(x)^2", //
+        "Cot(x)*Csc(x)^2");
+    check("Cot(x)*Sec(y)", //
+        "Cot(x)*Sec(y)");
     // check("Sin(x)^2*Cot(x)^2", "Cos(x)^2");
     // check("Sin(x)^2*Cot(x)^4", "Cos(x)^2*Cot(x)^2");
     // check("Sin(x)^4*Cot(x)^2", "Cos(x)^2*Sin(x)^2");
@@ -4657,6 +4705,28 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCovariance() {
+
+    // exact data keeps exact answers. Only the machine-precision path existed before: the
+    // symbolic matrixEval returned NIL, so an integer matrix was left unevaluated.
+    check("Covariance({{1,2},{3,5},{4,4},{2,3}})", //
+        "{{5/3,4/3},{4/3,5/3}}");
+    // which is what the machine-precision path answers for the same data
+    check("Covariance({{1.,2.},{3.,5.},{4.,4.},{2.,3.}})", //
+        "{{1.66667,1.33333},\n" + " {1.33333,1.66667}}");
+    // the diagonal is the variance of each column, and the off-diagonal the pairwise covariance
+    check("Covariance({{1,2},{3,5},{4,4},{2,3}})[[1,1]] == Variance({1,3,4,2})", //
+        "True");
+    check("Covariance({{1,2},{3,5},{4,4},{2,3}})[[1,2]] == Covariance({1,3,4,2},{2,5,4,3})", //
+        "True");
+    check("Covariance({{1,2,3},{4,5,7},{2,2,2},{6,1,4}})", //
+        "{{59/12,-1/6,7/3},{-1/6,3,3},{7/3,3,14/3}}");
+    // a single column is just that column's variance
+    check("Covariance({{1},{2},{3}})", //
+        "{{1}}");
+    // symbolic data conjugates the second argument, as the two-vector form does
+    check("Covariance({{a,b},{c,d}})", //
+        "{{1/2*(a-c)*(Conjugate(a)-Conjugate(c)),1/2*(a-c)*(Conjugate(b)-Conjugate(d))},{\n"
+            + "1/2*(b-d)*(Conjugate(a)-Conjugate(c)),1/2*(b-d)*(Conjugate(b)-Conjugate(d))}}");
 
     check("Covariance({{0.25,0.33,0.45}})", //
         "Covariance(\n" //
@@ -6730,6 +6800,61 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDynamic() {
+    // Dynamic describes what a front end should keep up to date. There is none here, so the
+    // expression is its own result.
+    check("Dynamic(1+1)", //
+        "Dynamic(1+1)");
+    check("x=5; Dynamic(x)", //
+        "Dynamic(x)");
+    // HoldFirst, not HoldAll: the displayed expression is kept so a control knows what to write
+    // to, while the setter that follows it is an ordinary value
+    check("Attributes(Dynamic)", //
+        "{HoldFirst,Protected,ReadProtected}");
+    check("Dynamic(x, (x = Max(0, #1))&)", //
+        "Dynamic(x,(x=Max(0,#1))&)");
+  }
+
+  @Test
+  public void testDynamicModule() {
+    // the localization of DynamicModule lasts as long as the object it produced is displayed;
+    // with nothing displaying it, that leaves it doing exactly what Module does
+    check("DynamicModule({x = 2}, x^2)", //
+        "4");
+    check("DynamicModule({a}, a = 3; a + 1)", //
+        "4");
+    check("a = 99; DynamicModule({a}, a = 3); a", //
+        "99");
+    check("q = 1; DynamicModule({q = 5}, q) + q", //
+        "6");
+  }
+
+  @Test
+  public void testLocatorPane() {
+    // a pane describes a picture with points to move on it, which only a front end can show, so
+    // it stays unevaluated here
+    check("LocatorPane(Dynamic(p), Graphics({Point(p)}))", //
+        "LocatorPane(Dynamic(p),-Graphics-)");
+  }
+
+  @Test
+  public void testPaneSelector() {
+    // likewise a selector keeps every pane and leaves the choosing to a front end
+    check("PaneSelector({1 -> \"one\", 2 -> \"two\"}, Dynamic(k))", //
+        "PaneSelector({1->one,2->two},Dynamic(k))");
+  }
+
+  @Test
+  public void testRefresh() {
+    // Refresh only says when a surrounding Dynamic should look again; its value is always the
+    // expression it wraps
+    check("Refresh(1 + 2, UpdateInterval -> 1)", //
+        "3");
+    check("Refresh(2^10, None)", //
+        "1024");
+  }
+
+  @Test
   public void testEasterSunday() {
     check("EasterSunday(2000)", //
         "{2000,4,23}");
@@ -6859,68 +6984,166 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ElementData(117, \"MeltingPoint\")", //
         "Missing(NotAvailable)");
     check("ElementData(\"F\", \"SoundSpeed\")", //
-        "Missing(NotAvailable)");
+        "ElementData(F,SoundSpeed)");
     check("ElementData(74)", //
-        "Tungsten");
-    check("ElementData(\"He\", \"AbsoluteBoilingPoint\")", //
-        "4.22");
+        "Entity(Element,Tungsten)");
+    check("ElementData(\"He\", \"BoilingPoint\")", //
+        "Quantity(-268.93,\"DegreesCelsius\")");
+    // a measured property is a Quantity, and the reference implementation reports ionization
+    // energies in molar electronvolts rather than the kilojoules per mole the table records
     check("ElementData(\"Carbon\", \"IonizationEnergies\")", //
-        "{1086.5,2352.6,4620.5,6222.7,37831,47277.0}");
-    check("ElementData(16, \"ElectronConfigurationString\")", //
+        "{Quantity(11.26078,\"MolarElectronvolts\"),Quantity(24.38298,\"MolarElectronvolts\"),"
+            + "Quantity(47.88811,\"MolarElectronvolts\"),Quantity(64.49374,\"MolarElectronvolts\"),"
+            + "Quantity(392.0907,\"MolarElectronvolts\"),Quantity(489.9916,\"MolarElectronvolts\")}");
+    check("ElementData(16, \"ShortElectronicConfiguration\")", //
         "[Ne] 3s2 3p4");
-    check("ElementData(73, \"ElectronConfiguration\")", //
+    check("ElementData(73, \"ElectronicConfiguration\")", //
         "{{2},{2,6},{2,6,10},{2,6,10,14},{2,6,3},{2}}");
 
-    check("ElementData(\"He\", \"ElectroNegativity\")", //
+    check("ElementData(\"He\", \"Electronegativity\")", //
         "Missing(NotApplicable)");
     check("ElementData(\"Tc\", \"SpecificHeat\")", //
         "Missing(NotAvailable)");
     check("ElementData(\"Properties\")", //
-        "{StandardName,AtomicNumber,Abbreviation,AbsoluteBoilingPoint,AbsoluteMeltingPoint,AtomicRadius,AtomicWeight,Block,BoilingPoint,BrinellHardness,BulkModulus,CovalentRadius,CrustAbundance,Density,DiscoveryYear,ElectroNegativity,ElectronAffinity,ElectronConfiguration,ElectronConfigurationString,ElectronShellConfiguration,FusionHeat,Group,IonizationEnergies,LiquidDensity,MeltingPoint,MohsHardness,Name,Period,PoissonRatio,Series,ShearModulus,SpecificHeat,ThermalConductivity,VanDerWaalsRadius,VaporizationHeat,VickersHardness,YoungModulus}");
+        "{EntityProperty(Element,AtomicMass),EntityProperty(Element,AtomicNumber),"
+            + "EntityProperty(Element,AtomicRadius),EntityProperty(Element,AtomicSymbol),"
+            + "EntityProperty(Element,Block),EntityProperty(Element,BoilingPoint),"
+            + "EntityProperty(Element,BrinellHardness),EntityProperty(Element,BulkModulus),"
+            + "EntityProperty(Element,CovalentRadius),EntityProperty(Element,CrustAbundance),"
+            + "EntityProperty(Element,DiscoveryDate),EntityProperty(Element,ElectronAffinity),"
+            + "EntityProperty(Element,ElectronCount),EntityProperty(Element,"
+            + "ElectronShellConfiguration),EntityProperty(Element,Electronegativity),"
+            + "EntityProperty(Element,ElectronicConfiguration),EntityProperty(Element,FusionHeat),"
+            + "EntityProperty(Element,Group),EntityProperty(Element,IonizationEnergies),"
+            + "EntityProperty(Element,IsotopeAbundances),EntityProperty(Element,KnownIsotopes),"
+            + "EntityProperty(Element,LiquidDensity),EntityProperty(Element,MassDensity),"
+            + "EntityProperty(Element,MeltingPoint),EntityProperty(Element,MohsHardness),"
+            + "EntityProperty(Element,MolarMass),EntityProperty(Element,Name),EntityProperty(Element,"
+            + "NeutronCount),EntityProperty(Element,Period),EntityProperty(Element,Phase),"
+            + "EntityProperty(Element,PoissonRatio),"
+            + "EntityProperty(Element,ProtonCount),EntityProperty(Element,Series),"
+            + "EntityProperty(Element,ShearModulus),EntityProperty(Element,"
+            + "ShortElectronicConfiguration),EntityProperty(Element,SpecificHeat),"
+            + "EntityProperty(Element,ThermalConductivity),EntityProperty(Element,"
+            + "ValenceElectronCount),EntityProperty(Element,VanDerWaalsRadius),EntityProperty(Element,"
+            + "VaporizationHeat),EntityProperty(Element,VickersHardness),EntityProperty(Element,"
+            + "YoungModulus)}");
 
-    check("ElementData(6)", "Carbon");
+    // the phase at standard conditions is read off the two temperatures at which an element
+    // changes state, which gives the eleven gases and the two liquids of the periodic table
+    check("ElementData(\"Carbon\", \"Phase\")", //
+        "Solid");
+    check("ElementData(\"He\", \"Phase\")", //
+        "Gas");
+    check("ElementData(\"Br\", \"Phase\")", //
+        "Liquid");
+    check("ElementData(80, \"Phase\")", //
+        "Liquid");
+    check("Count(Table(ElementData(z, \"Phase\"), {z, 118}), \"Gas\")", //
+        "11");
+    check("Count(Table(ElementData(z, \"Phase\"), {z, 118}), \"Liquid\")", //
+        "2");
+    // the fifteen heaviest elements have neither temperature, so neither has a phase to report
+    check("ElementData(118, \"Phase\")", //
+        "Missing(NotAvailable)");
+
+    check("ElementData(6)", //
+        "Entity(Element,Carbon)");
     check("ElementData(\"Carbon\", \"Name\")", //
-        "carbon");
-    check("ElementData(79, \"Abbreviation\")", //
+        "Carbon");
+    check("ElementData(79, \"AtomicSymbol\")", //
         "Au");
-    check("ElementData(\"Au\", \"StandardName\")", //
+    check("ElementData(\"Au\", \"Name\")", //
         "Gold");
     check("ElementData(\"Gold\", \"AtomicNumber\")", //
         "79");
+
+    // The four superheavy elements IUPAC named in 2016; the table used to carry the placeholder
+    // names it was compiled with.
+    check("ElementData(113)", //
+        "Entity(Element,Nihonium)");
+    check("ElementData(115, \"AtomicSymbol\")", //
+        "Mc");
+    check("ElementData(\"Ts\", \"Name\")", //
+        "Tennessine");
+    check("ElementData(118)", //
+        "Entity(Element,Oganesson)");
+
+    // spellings follow the reference implementation
+    check("ElementData(\"Aluminum\", \"AtomicNumber\")", //
+        "13");
+    check("ElementData(\"Cesium\", \"AtomicNumber\")", //
+        "55");
+
+    // An empty cell in the middle of a row used to be skipped rather than recorded as missing
+    // data, which shifted every later column of that row along by one. Phosphorus has no Mohs
+    // hardness, and so reported its van der Waals radius as its atomic radius and its ionization
+    // energies as its covalent radius.
+    check("ElementData(15, \"MohsHardness\")", //
+        "Missing(NotAvailable)");
+    check("ElementData(15, \"AtomicRadius\")", //
+        "Quantity(100.0,\"Picometers\")");
+    check("ElementData(15, \"VanDerWaalsRadius\")", //
+        "Quantity(180.0,\"Picometers\")");
+    check("ElementData(15, \"CovalentRadius\")", //
+        "Quantity(106.0,\"Picometers\")");
+    // caesium was shifted the same way, from its missing shear modulus onwards
+    check("ElementData(\"Cs\", \"ShearModulus\")", //
+        "Missing(NotAvailable)");
+    check("ElementData(\"Cs\", \"ElectronShellConfiguration\")", //
+        "{2,8,18,18,8,1}");
+
+    // densities are recorded in kilograms per cubic metre and reported in grams per cubic
+    // centimetre, as the reference implementation does
+    check("ElementData(\"Tungsten\", \"MassDensity\")", //
+        "Quantity(19.25,\"Centimeters\"^(-3)*\"Grams\")");
+    check("ElementData(\"Tungsten\", \"AtomicMass\")", //
+        "Quantity(183.84,\"AtomicMassUnit\")");
+    // a quantity converts like any other
+    check("UnitConvert(ElementData(\"Tungsten\", \"MeltingPoint\"), \"Kelvins\")", //
+        "Quantity(3680.15,\"Kelvins\")");
+    // counts, scales and ratios are not measurements and carry no unit
+    check("ElementData(\"Tungsten\", \"AtomicNumber\")", //
+        "74");
+    check("ElementData(\"Tungsten\", \"Electronegativity\")", //
+        "2.36");
+    check("ElementData(\"Iron\", \"MohsHardness\")", //
+        "4");
     check("ElementData(\"Carbon\", \"AtomicNumber\")", //
         "6");
     check("ElementData(\"He\", \"AtomicNumber\")", //
         "2");
 
     check("ElementData(\"Chlorine\", \"BoilingPoint\")", //
-        "-34.04");
-    check("ElementData(\"C\", \"AtomicWeight\")", //
-        "12.01");
-    check("ElementData(117, \"AtomicWeight\")", //
-        "294");
+        "Quantity(-34.04,\"DegreesCelsius\")");
+    check("ElementData(\"C\", \"AtomicMass\")", //
+        "Quantity(12.01,\"AtomicMassUnit\")");
+    check("ElementData(117, \"AtomicMass\")", //
+        "Quantity(294.0,\"AtomicMassUnit\")");
 
     // check("ElementData(\"Pd\", \"AtomicRadius\")", "140");
     check("ElementData(\"Pd\", \"VanDerWaalsRadius\")", //
-        "163");
+        "Quantity(163.0,\"Picometers\")");
     // check("ElementData(\"Pd\", \"CovalentRadius\")", "131");
     check("ElementData(\"Pd\", \"IonizationEnergies\")", //
-        "{804.4,1870,3177}");
+        "{Quantity(8.33702,\"MolarElectronvolts\"),Quantity(19.38118,\"MolarElectronvolts\"),"
+            + "Quantity(32.92728,\"MolarElectronvolts\")}");
 
     check("ElementData(\"Pd\", \"ElectronAffinity\")", //
-        "54.24");
+        "Quantity(54.24,\"Kilojoules\"*\"Moles\"^(-1))");
     check("ElementData(\"Pd\", \"ThermalConductivity\")", //
-        "71.8");
+        "Quantity(71.8,\"Kelvins\"^(-1)*\"Meters\"^(-1)*\"Watts\")");
     check("ElementData(\"Pd\", \"YoungModulus\")", //
-        "121");
+        "Quantity(121.0,\"Gigapascals\")");
     check("ElementData(\"Pd\", \"PoissonRatio\")", //
         "0.39");
     check("ElementData(\"Pd\", \"BulkModulus\")", //
-        "180");
+        "Quantity(180.0,\"Gigapascals\")");
     check("ElementData(\"Pd\", \"ShearModulus\")", //
-        "44");
-    check("ElementData(\"Pd\", \"ElectronConfiguration\")", //
+        "Quantity(44.0,\"Gigapascals\")");
+    check("ElementData(\"Pd\", \"ElectronicConfiguration\")", //
         "{{2},{2,6},{2,6,10},{2,6,10}}");
-    check("ElementData(\"Pd\", \"ElectronConfigurationString\")", //
+    check("ElementData(\"Pd\", \"ShortElectronicConfiguration\")", //
         "[Kr] 4d10");
     check("ElementData(\"Pd\", \"ElectronShellConfiguration\")", //
         "{2,8,18,18}");
@@ -6929,6 +7152,62 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "Missing(NotApplicable)");
     // check("ElementData(\"Tungsten\", \"ThermalConductivity\")", "173");
 
+
+    // an element is an entity, as it is in the reference implementation
+    check("Length(ElementData())", //
+        "118");
+    check("ElementData()[[74]]", //
+        "Entity(Element,Tungsten)");
+    check("ElementData(\"Carbon\")", //
+        "Entity(Element,Carbon)");
+    // and an entity identifies one, as does an EntityProperty a property
+    check("ElementData(Entity(\"Element\", \"Tungsten\"), \"AtomicMass\")", //
+        "Quantity(183.84,\"AtomicMassUnit\")");
+    check("ElementData(74, EntityProperty(\"Element\", \"MassDensity\"))", //
+        "Quantity(19.25,\"Centimeters\"^(-3)*\"Grams\")");
+    check("Take(ElementData(\"Properties\"), 2)", //
+        "{EntityProperty(Element,AtomicMass),EntityProperty(Element,AtomicNumber)}");
+    check("Length(ElementData(\"Properties\"))", //
+        "42");
+
+    // properties worked out from the table rather than stored in it
+    check("ElementData(\"Carbon\", \"ProtonCount\")", //
+        "6");
+    check("ElementData(\"Carbon\", \"ElectronCount\")", //
+        "6");
+    check("ElementData(\"Carbon\", \"MolarMass\")", //
+        "Quantity(12.01,\"Grams\"*\"Moles\"^(-1))");
+    // the outermost shell, plus an unfilled d one shell in: carbon four, iron eight, tungsten six
+    check("ElementData(\"Carbon\", \"ValenceElectronCount\")", //
+        "4");
+    check("ElementData(\"Iron\", \"ValenceElectronCount\")", //
+        "8");
+    check("ElementData(\"Tungsten\", \"ValenceElectronCount\")", //
+        "6");
+    // the isotope properties are answered by matheclipse-chem, which core does not depend on
+    check("ElementData(\"Carbon\", \"NeutronCount\")", //
+        "Missing(NotAvailable)");
+    check("ElementData(\"Carbon\", \"KnownIsotopes\")", //
+        "Missing(NotAvailable)");
+
+    // Name is the name, not a lower-cased one; StandardName is gone
+    check("ElementData(\"W\", \"Name\")", //
+        "Tungsten");
+    // a property that moved says where it went and stays unevaluated, rather than answering
+    // with missing data
+    check("ElementData(\"Tungsten\", \"Density\")", //
+        "ElementData(Tungsten,Density)");
+    check("ElementData(\"Tungsten\", \"StandardName\")", //
+        "ElementData(Tungsten,StandardName)");
+    // the absolute temperatures went with the units: convert instead
+    check("ElementData(\"Tungsten\", \"AbsoluteMeltingPoint\")", //
+        "ElementData(Tungsten,AbsoluteMeltingPoint)");
+
+    // the element entities follow the table
+    check("Length(EntityList(\"Element\"))", //
+        "118");
+    check("EntityList(\"Element\")[[13]]", //
+        "Entity(Element,Aluminum)");
   }
 
   @Test
@@ -7792,6 +8071,39 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
+  /**
+   * Three arguments that never reach a value.
+   *
+   * <p>
+   * An operator form takes exactly one argument - <code>Extract(spec)</code> applied to it becomes
+   * <code>Extract(argument, spec)</code>. Applied to any other number it fell through to the arity
+   * check, which reads the count against the direct form and let it pass, so
+   * <code>Extract(spec)[a, b, c]</code> was evaluated as the three argument Extract and failed
+   * inside Part.
+   *
+   * <p>
+   * <code>FindRoot</code> makes the iterator variables the keys of a substitution map, so two pairs
+   * naming the same non-variable collided in the map builder rather than saying what was wrong.
+   * <code>Convergents</code> left a local function with no argument at all, and reading one that is
+   * not there answers null, which travelled into the operator behind it.
+   */
+  @Test
+  public void testOperatorFormAndArgumentErrors() {
+    // Extract: `1` called with `2` arguments; 1 argument is expected.
+    check("Extract(OptionValue(y))[{{-1/2,-2,3},-2,3},{{1,0},{}},2]",
+        "Extract(OptionValue(y))[{{-1/2,-2,3},-2,3},{{1,0},{}},2]");
+    check("Extract({2})[{a,b,c},{1}]", "Extract({2})[{a,b,c},{1}]");
+    // the operator form applied to one argument, and the direct form, are unaffected
+    check("Extract({2})[{a,b,c}]", "b");
+    check("Extract({a,b,c},{2})", "b");
+    check("Extract({a,b,c},2)", "b");
+    // FindRoot: `1` is not a valid variable.
+    check("FindRoot({x,1+Sqrt(2)},{{1,1},{1,1}})", "FindRoot({x,1+Sqrt(2)},{{1,1},{1,1}})");
+    check("FindRoot(Cos(x)-x,{x,1})", "{x->0.739085}");
+    // Convergents no longer hands a null into a local function
+    check("Convergents({1,1,1,1})", "{1,2,3/2,5/3}");
+  }
+
   @Test
   public void testExtract() {
 
@@ -7876,8 +8188,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Factor(3*Tan(3*x)-Tan(x)+2,Trig->True)", //
     // "((Cos(2*x)+I*Sin(2*x))*(-2+4*Cos(2*x)+4*Sin(2*x)))/(1-Cos(2*x)+Cos(4*x)-I*Sin(2*x)+I*Sin(\n"
     // + "4*x))");
+    // Cos(2*x)+3*Sin(x)-2 == -2*Sin(x)^2+3*Sin(x)-1 == (1-Sin(x))*(2*Sin(x)-1). The factors used to
+    // be rebalanced by Sin(x)^(-degree/2), which kept the value but pushed a Sqrt(Sin(x)) into
+    // every factor
     check("Factor(Cos(2*x)+3*Sin(x)-2,Trig->True)", //
-        "(1/Sqrt(Sin(x))-Sqrt(Sin(x)))*(-1/Sqrt(Sin(x))+2*Sqrt(Sin(x)))*Sin(x)");
+        "(1-Sin(x))*(-1+2*Sin(x))");
     check("Factor(1+x^2, Extension->I)", //
         "(-I+x)*(I+x)");
 
@@ -8147,9 +8462,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "I*2*x)))");
 
     // example from paper
+    // TODO 3*Sech(x)^2+4*Tanh(x)+1 == -3*Tanh(x)^2+4*Tanh(x)+4 == (2-Tanh(x))*(2+3*Tanh(x)), but
+    // PolynomialHomogenization substitutes Sech(x) and Tanh(x) as independent variables, so the
+    // identity Sech(x)^2 == 1-Tanh(x)^2 is never applied and the polynomial stays irreducible.
+    // Factor(-3*Tanh(x)^2+4*Tanh(x)+4,Trig->True) does give the factorization.
     System.out.print('.');
     check("Factor(3*Sech(x)^2+4*Tanh(x)+1,Trig->True)", //
-        "Sech(x)*(Cosh(x)/Sqrt(Tanh(x))+(3*Sech(x))/Sqrt(Tanh(x))+4*Cosh(x)*Sqrt(Tanh(x)))*Sqrt(Tanh(x))");
+        "1+3*Sech(x)^2+4*Tanh(x)");
     System.out.print('.');
     check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
         "1+12/(E^(-x)+E^x)^2+4*(-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x))");
@@ -10712,9 +11031,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4.56079359657056");
   }
 
-  // GeoDistance is implemented in the matheclipse-orekit module and is therefore not registered
+  // GeoDistance is implemented in the matheclipse-astro module and is therefore not registered
   // in a matheclipse-core only build. Its tests live in
-  // org.matheclipse.orekit.GeoDistanceTest.
+  // org.matheclipse.astro.GeoDistanceTest.
 
   @Test
   public void testGeodesyData() {
@@ -11480,7 +11799,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "ImportString( \"[\\\"Association\\\",[\\\"Rule\\\",\\\"'x'\\\",\\\"1\\\"],[\\\"Rule\\\",\\\"'y'\\\",\\\"2\\\"],[\\\"Rule\\\",\\\"'z'\\\",\\\"3\\\"]]\", \"ExpressionJSON\") // InputForm", //
         "<|\"x\"->1,\"y\"->2,\"z\"->3|>");
-    check(
+    checkGraphics(
         "ImportString(\"[\\\"Graphics3D\\\", [\\\"Line\\\",[\\\"List\\\", [\\\"List\\\",1.0,1.0,-1.0], [\\\"List\\\",2.0,2.0,1.0], [\\\"List\\\",3.0,3.0,-1.0], [\\\"List\\\",4.0,4.0,1.0]] ] ]\", \"ExpressionJSON\")", //
         "Graphics3D(Line({{1.0,1.0,-1.0},{2.0,2.0,1.0},{3.0,3.0,-1.0},{4.0,4.0,1.0}}))");
 
@@ -13450,6 +13769,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{f(1,4),f(2,4),f(3,4)}");
     check("{{1, 2}, {3, 4}} + {5, 6}", //
         "{{6,7},{9,10}}");
+
+    // a single SparseArray argument keeps the sparse representation: the function is threaded into
+    // the stored values and into the default value, instead of expanding into a dense list
+    check("ArrayRules(SparseArray({1->4}, 3) + 1)", //
+        "{{1}->5,{_}->1}");
+    check("Normal(SparseArray({1->4}, 3) + 1)", //
+        "{5,1,1}");
+    // the number of stored entries must not grow with the dimension of the sparse array
+    check("Length(ArrayRules(SparseArray({1->4}, 100000) + 1))", //
+        "2");
+    check("ArrayRules(Sin(SparseArray({1->Pi/2}, 5)))", //
+        "{{1}->1,{_}->0}");
+    // two SparseArray arguments still use the generic threading path
+    check("Normal(SparseArray({1->4}, 3) + SparseArray({3->2}, 3))", //
+        "{4,0,2}");
+
+    // an Association argument is threaded on the re-evaluation of each list element, so the list
+    // and the association lengths don't have to match
+    check("{0,1,2,3}+<|s1->0,s2:>1|>", //
+        "{<|s1->0,s2:>1|>,<|s1->1,s2:>1+1|>,<|s1->2,s2:>2+1|>,<|s1->3,s2:>3+1|>}");
   }
 
   @Test
@@ -13542,9 +13881,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Log(1000, 10)", //
         "1/3");
     check("Log(9) / Log(27)", //
-        "Log(9)/Log(27)");
+        "2/3");
     check("Log(27) / Log(9)", //
-        "Log(27)/Log(9)");
+        "3/2");
 
     check("Log(Interval({1/3, E}))", //
         "Interval({-Log(3),1})");
@@ -13599,6 +13938,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
     check("Log(1000) / Log(10)", //
         "3");
+    // rational quotient over the common base 2 respectively 3
+    check("Log(8)/Log(4)", //
+        "3/2");
+    check("Log(4)/Log(8)", //
+        "2/3");
+    check("Log(32)/Log(8)", //
+        "5/3");
+    check("Log(2^30)/Log(4^10)", //
+        "3/2");
+    // no common base
+    check("Log(6)/Log(4)", //
+        "Log(6)/Log(4)");
+    check("Log(10)/Log(2)", //
+        "Log(10)/Log(2)");
     check("Log(1.4)", //
         "0.336472");
     checkNumeric("Log(Exp(1.4))", //
@@ -14443,6 +14796,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("MatchQ(x, ( a_. + b_. ) )", //
         "True");
+  }
+
+  /**
+   * MathML needs no per-operator table: {@code convertAST} already resolves any head the operator
+   * table knows, so these operators gained a MathML form together with their row. Parse-only heads
+   * have no row to resolve and stay in function form.
+   */
+  @Test
+  public void testMathMLFormOperatorTable() {
+    check("MathMLForm(Proportional(a,b))", //
+        "<?xml version=\"1.0\"?>\n" //
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" //
+            + "<math mode=\"display\">\n" //
+            + "<mrow><mi>a</mi><mo>\u221d</mo><mi>b</mi></mrow></math>");
+    check("MathMLForm(CirclePlus(a,b,c))", //
+        "<?xml version=\"1.0\"?>\n" //
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" //
+            + "<math mode=\"display\">\n" //
+            + "<mrow><mi>a</mi><mo>\u2295</mo><mi>b</mi><mo>\u2295</mo><mi>c</mi></mrow></math>");
+    // a prefix operator, and no parentheses around it at the top level
+    check("MathMLForm(Del(f))", //
+        "<?xml version=\"1.0\"?>\n" //
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" //
+            + "<math mode=\"display\">\n" //
+            + "<mrow><mo>\u2207</mo><mi>f</mi></mrow></math>");
+    // Xnor is spelled only with a private-use character, so it has no operator form
+    check("MathMLForm(Xnor(a,b))", //
+        "<?xml version=\"1.0\"?>\n" //
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" //
+            + "<math mode=\"display\">\n" //
+            + "<mrow><mi>Xnor</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi><mo>,</mo>"
+            + "<mi>b</mi></mrow><mo>)</mo></mrow></mrow></math>");
   }
 
   @Test
@@ -15478,18 +15863,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{foo`f}");
     check("sysnames = Names(\"System`*\");", //
         "");
+    // The three n-ary bitwise operations carry {Flat, Listable, OneIdentity, Orderless}. BitNot,
+    // BitLength, BitSet and the rest are unary or positional and keep
+    // Listable alone, so they are absent from this list.
     check("Select(sysnames, MemberQ(Attributes(#), OneIdentity) &) // InputForm", //
-        "{\"And\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"KroneckerProduct\",\"Max\",\"Min\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
+        "{\"And\",\"BitAnd\",\"BitOr\",\"BitXor\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"KroneckerProduct\",\"Max\",\"Min\",\"NonCommutativeMultiply\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
     check("Names(\"System`\" ~~ _ ~~ _) // InputForm", //
         "{\"Do\",\"Dt\",\"If\",\"Im\",\"In\",\"ND\",\"On\",\"Or\",\"Pi\",\"Re\",\"Tr\"}");
     check("Names(RegularExpression(\"System`...\")) // InputForm", //
-        "{\"Abs\",\"All\",\"And\",\"Arg\",\"CDF\",\"Cos\",\"Cot\",\"Csc\",\"Det\",\"Div\",\"Dot\","//
-            + "\"End\",\"Erf\",\"Exp\",\"Fit\",\"For\",\"GCD\",\"Get\",\"Hue\",\"Key\",\"LCM\",\"Log\","//
-            + "\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\",\"Now\",\"Off\",\"Out\",\"PDF\",\"Put\","//
-            + "\"Red\",\"Row\",\"Sec\",\"Set\",\"Sin\",\"Sow\",\"Sum\",\"Tan\",\"Top\",\"Vee\",\"Xor\"}");
+        "{\"Abs\",\"All\",\"And\",\"Arg\",\"Cap\",\"CDF\",\"Cos\",\"Cot\",\"Csc\",\"Cup\",\"Del\","//
+            + "\"Det\",\"Div\",\"Dot\",\"End\",\"Erf\",\"Exp\",\"Fit\",\"For\",\"GCD\",\"Get\","//
+            + "\"Hue\",\"Key\",\"LCM\",\"Log\",\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\","//
+            + "\"Now\",\"Off\",\"Out\",\"PDF\",\"Put\",\"Red\",\"Row\",\"Sec\",\"Set\",\"Sin\","//
+            + "\"Sow\",\"Sum\",\"Tan\",\"Top\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,Interleaving,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion}");
     check("Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers}");
     check("Names(\"IntegerPart\" )", //
@@ -15505,9 +15894,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Nand(2+2)", //
         "!4");
     check("Nand(x,y,z)", //
-        "Nand(x,y,z)");
+        "x⊼y⊼z");
     check("Nand(x,True,z)", //
-        "Nand(x,z)");
+        "x⊼z");
     check("Nand(x,False,z)", //
         "True");
     check("Nand(True,False)", //
@@ -16142,6 +16531,39 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("NonCommutativeMultiply(a)", //
         "NonCommutativeMultiply(a)");
+
+    check("Attributes(NonCommutativeMultiply)", //
+        "{Flat,OneIdentity,Protected}");
+
+    // Flat - instances are flattened, but no other simplification is performed
+    check("a ** b ** c // FullForm", //
+        "NonCommutativeMultiply(a, b, c)");
+    check("NonCommutativeMultiply(NonCommutativeMultiply(a, b))", //
+        "a**b");
+    check("NonCommutativeMultiply()", //
+        "NonCommutativeMultiply()");
+
+    // OneIdentity - only used in structural pattern-matching, NonCommutativeMultiply(a) itself
+    // isn't rewritten
+    check("a ** b ** c /. x_ ** y_ :> {x, y}", //
+        "{a,b**c}");
+    check("MatchQ(a ** b, x_ ** y_)", //
+        "True");
+    check("MatchQ(a, x_ ** y_)", //
+        "False");
+
+    // not Listable - NonCommutativeMultiply doesn't thread over lists
+    check("{a, b} ** {c, d}", //
+        "{a,b}**{c,d}");
+    check("a ** {b, c}", //
+        "a**{b,c}");
+
+    // Expand() doesn't distribute NonCommutativeMultiply over Plus
+    check("Expand((a + b) ** c - a*c)", //
+        "-a*c+(a+b)**c");
+    // ... Distribute() can be used for that
+    check("Distribute(NonCommutativeMultiply(a + b, c), Plus, NonCommutativeMultiply)", //
+        "a**c+b**c");
   }
 
   @Test
@@ -16158,7 +16580,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("NoneTrue({1, 3, 5, 7}, EvenQ)", //
         "True");
     check("NoneTrue({12, 16, x, 14, y}, # < 10 &)", //
-        "Nor(x<10,y<10)");
+        "x<10⊽y<10");
     check("NoneTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", //
         "True");
     check("NoneTrue(f(1, 7, 3), OddQ)", //
@@ -16211,11 +16633,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Nor(True,False)", //
         "False");
     check("Nor(x,y,z)", //
-        "Nor(x,y,z)");
+        "x⊽y⊽z");
     check("Nor(x,True,z)", //
         "False");
     check("Nor(x,False,z)", //
-        "Nor(x,z)");
+        "x⊽z");
     check("BooleanConvert(Nor(p, q, r))", //
         "!p&&!q&&!r");
     check("BooleanConvert(! Nor(p, q, r))", //
@@ -17928,6 +18350,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("-7*Cosh(x)^2+2*Sinh(x)^2", //
         "-2-5*Cosh(x)^2");
 
+    check("Sec(Log(3))^2-Tan(Log(3))^2", //
+        "1");
+    check("Sec(x)^2+Tan(x)^2", //
+        "Sec(x)^2+Tan(x)^2");
+    check("Sec(x)^2-Tan(x)^2", //
+        "1");
+    check("Sec(x)^2-Tan(y)^2", //
+        "Sec(x)^2-Tan(y)^2");
+    check("-Sec(x)^2+Tan(x)^2", //
+        "-1");
+    check("5*Sec(x)^2-5*Tan(x)^2", //
+        "5");
+    check("7*Sec(x)^2-2*Tan(x)^2", //
+        "2+5*Sec(x)^2");
+    check("2*Sec(x)^2-5*Tan(x)^2", //
+        "2-3*Tan(x)^2");
+    check("a+Sec(x)^2-Tan(x)^2+b", //
+        "1+a+b");
+
+    check("Coth(Log(2))^2-Csch(Log(2))^2", //
+        "1");
+    check("Coth(x)^2+Csch(x)^2", //
+        "Coth(x)^2+Csch(x)^2");
+    check("Coth(x)^2-Csch(x)^2", //
+        "1");
+    check("-Coth(x)^2+Csch(x)^2", //
+        "-1");
+    check("3*Coth(x)^2-3*Csch(x)^2", //
+        "3");
+    check("7*Coth(x)^2-2*Csch(x)^2", //
+        "2+5*Coth(x)^2");
+    check("2*Coth(x)^2-5*Csch(x)^2", //
+        "2-3*Csch(x)^2");
+
     check("x+1/(3!*E)-Infinity+1/(5!*E)+1/(6!*E)", //
         "-Infinity+x");
     check("Refine(Infinity+x, x>0)", //
@@ -18667,6 +19123,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialReduce001() {
+    check("PolynomialReduce(x^2 + 1, {x^3 + 1}, x)", //
+        "{{0},1+x^2}");
     check("PolynomialReduce(0,-2)", //
         "{{0},0}");
 
@@ -19837,8 +20295,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPrincipleComponents() {
     // message SparseArray: Input matrix contains an indeterminate entry.
+    // the Listable Power threads into the default value 0, so 0^(I*Pi/3) becomes the new default
+    // value and no entry has to be stored at all
     check("PrincipalComponents(SparseArray({{0,0},{0,0}},0) ^ (I*1/3*Pi))", //
-        "PrincipalComponents(SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0))");
+        "PrincipalComponents(SparseArray(Number of elements: 0 Dimensions: {2,2} Default value: Indeterminate))");
     check("PrincipalComponents({{0.25,0.33,0.45,0.01}},Method->\"Correlation\")", //
         "{{0.0,0.0,0.0,0.0}}");
     check("PrincipalComponents({{0.25,0.33,0.01}} )", //
@@ -20290,21 +20750,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ProductLog(E)", //
         "1");
 
-    String s = System.getProperty("os.name");
-    if (s.contains("Windows")) {
-      // TODO fix apfloat output for "exponential" format
-      check("ProductLog(-1.5)", //
-          "-0.0327837+I*1.54964");
-      check("ProductLog({0.2, 0.5, 0.8})", //
-          "{0.168916,0.351734,0.490068}");
-      check("ProductLog(2.5 + 2*I)", //
-          "1.05617+I*0.352561");
-      check("N(ProductLog(4/10),50)", //
-          "0.29716775067313854677972696224702134190445810155012");
+    check("ProductLog(-1.5)", //
+        "-0.0327837+I*1.54964");
+    check("ProductLog({0.2, 0.5, 0.8})", //
+        "{0.168916,0.351734,0.490068}");
+    check("ProductLog(2.5 + 2*I)", //
+        "1.05617+I*0.352561");
+    check("N(ProductLog(4/10),50)", //
+        "0.29716775067313854677972696224702134190445810155012");
 
-      check("N(ProductLog(-1),20)", //
-          "-0.3181315052047641353+I*1.3372357014306894089");
-    }
+    check("N(ProductLog(-1),20)", //
+        "-0.3181315052047641353+I*1.3372357014306894089");
 
     check("ProductLog(-Pi/2)", //
         "I*1/2*Pi");
@@ -20350,6 +20806,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{(a*(x*Conjugate(a)+y*Conjugate(b)))/(a*Conjugate(a)+b*Conjugate(b)),(b*(x*Conjugate(a)+y*Conjugate(b)))/(a*Conjugate(a)+b*Conjugate(b))}");
     check("ip(p1_, p2_) := Integrate(p1*p2, {x, -1, 1}); Projection(x^2, LegendreP(2, x), ip)", //
         "2/3*(-1/2+3/2*x^2)");
+  }
+
+  @Test
+  public void testProportional() {
+    check("Proportional(a, b)", "a∝b");
+    check("Head(Proportional(a, b))", "Proportional");
+    // the operator form parses back to the same expression
+    check("FullForm(a ∝ b)", "Proportional(a, b)");
   }
 
   @Test
@@ -20707,25 +21171,113 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  /**
+   * <code>Multicolumn</code> lays a flat list out in a grid, reading <b>down the columns</b>. The
+   * result is a <code>Grid</code> of the arrangement: the arrangement is the whole of what
+   * <code>Multicolumn</code> says, and a <code>Grid</code> of the same cells says it already.
+   */
+  @Test
+  public void testMulticolumn() {
+    // the first column is filled, then the second
+    check("Multicolumn({1, 2, 3, 4, 5, 6}, 3)", //
+        "Grid({{1,3,5},{2,4,6}})");
+    // Appearance -> "Horizontal" reads across the rows instead
+    check("Multicolumn({1, 2, 3, 4, 5, 6}, 3, Appearance -> \"Horizontal\")", //
+        "Grid({{1,2,3},{4,5,6}})");
+
+    // a short last column is padded, so every row is the same width
+    check("Multicolumn({1, 2, 3, 4, 5}, 3)", //
+        "Grid({{1,3,5},{2,4,}})");
+    check("Multicolumn({1, 2}, 5)", //
+        "Grid({{1,2,,,}})");
+
+    // no count at all is a roughly square arrangement
+    check("Multicolumn({1, 2, 3, 4})", //
+        "Grid({{1,3},{2,4}})");
+    check("Dimensions(Multicolumn(Range(50))[[1]])", //
+        "{7,8}");
+
+    // {rows, Automatic} fixes the rows and takes as many columns as that needs
+    check("Multicolumn(Range(6), {2, Automatic})", //
+        "Grid({{1,3,5},{2,4,6}})");
+    // both given
+    check("Multicolumn(Range(6), {3, 2})", //
+        "Grid({{1,4},{2,5},{3,6}})");
+    // ... and when both cannot hold the list, the arrangement widens rather than dropping
+    // elements: losing what the caller passed in is worse than not honouring a number
+    check("Sort(DeleteCases(Flatten(Multicolumn(Range(10), {2, 2})[[1]]), \"\")) === Range(10)", //
+        "True");
+
+    // nothing is laid out as nothing, and is still a Grid
+    check("Multicolumn({}, 2)", //
+        "Grid({})");
+
+    // every element survives, once
+    check("Dimensions(Multicolumn(Range(50), 6)[[1]])", //
+        "{9,6}");
+    check("Sort(DeleteCases(Flatten(Multicolumn(Range(50), 6)[[1]]), \"\")) === Range(50)", //
+        "True");
+
+    // anything that is not a list is left alone, as is a count that is not a count
+    check("Head(Multicolumn(x, 2))", //
+        "Multicolumn");
+    check("Head(Multicolumn(Range(3), 0))", //
+        "Multicolumn");
+  }
+
+  /**
+   * These were all commented out, and had to be: a weighted choice drew from a generator of
+   * hipparchus's own that <code>SeedRandom</code> cannot reach, so there was no seed that would
+   * make one come out the same way twice. It draws from the engine's generator now, like the
+   * unweighted choice beside it always did.
+   */
   @Test
   public void testRandomChoice() {
-    // check(
-    // "RandomChoice({1, 10, 5} -> {a, b, c}, {3,3})", //
-    // "{c,a,a,b,c,c,b,b,a,c,b,b,c,b,b,c,b,b,b,b}");
-    // check(
-    // "RandomChoice({1, 10, 5} -> {a, b, c}, 20)", //
-    // "{c,a,a,b,c,c,b,b,a,c,b,b,c,b,b,c,b,b,b,b}");
-    // check(
-    // "RandomChoice({a,b,c}, {5,2})", //
-    // "{{b,c},{c,c},{a,c},{a,c},{c,b}}");
-    // check("Table(StringJoin(RandomChoice(CharacterRange(\"a\", \"z\"), 5)), {10}) // InputForm",
-    // //
-    // "{\"jbuhp\",\"uneaw\",\"icixu\",\"vsrsy\",\"ycxsx\",\"atfvl\",\"kivvj\",\"xjllp\",\"xtwms\",\"ixwuk\"}");
+    check("SeedRandom(1, Method -> \"Legacy\"); RandomChoice({1,10,5}->{a,b,c})", //
+        "c");
+    check("SeedRandom(1, Method -> \"Legacy\"); RandomChoice({1,10,5}->{a,b,c}, 12)", //
+        "{c,b,b,b,c,a,c,c,c,c,b,b}");
+    check("SeedRandom(1, Method -> \"Legacy\"); RandomChoice({1,10,5}->{a,b,c}, {3,3})", //
+        "{{c,b,b},{b,c,a},{c,c,c}}");
+    check("SeedRandom(1, Method -> \"Legacy\"); RandomChoice({a,b,c}, {5,2})", //
+        "{{b,b},{a,c},{b,c},{b,b},{b,b}}");
+    check("SeedRandom(1, Method -> \"Legacy\"); RandomChoice({1,2,3,4,5,6,7}, 10)", //
+        "{5,5,2,1,7,7,1,2,4,7}");
+    check("SeedRandom(1, Method -> \"Legacy\"); RandomChoice({False,True})", //
+        "True");
 
-    // check("RandomChoice({1,2,3,4,5,6,7},11.0)", "{2,1,5,3,5,7,4,5,5,6,5}");
-    // check("RandomChoice({1,2,3,4,5,6,7},10)", "{3,7,3,6,2,7,4,1,1,4}");
-    // check("RandomChoice({False, True})", "True");
-    // check("RandomChoice({1,2,3,4,5,6,7})", "3");
+    // the same seed gives the same choices, weighted or not
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2,3}->{a,b,c}, 8);"
+            + "SeedRandom(7, Method -> \"Legacy\"); x === RandomChoice({1,2,3}->{a,b,c}, 8)", //
+        "True");
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2}->{a,b}, {2,3});"
+            + "SeedRandom(7, Method -> \"Legacy\"); x === RandomChoice({1,2}->{a,b}, {2,3})", //
+        "True");
+    // ... and a different generator gives different ones
+    check("SeedRandom(7, Method -> \"Legacy\"); x = RandomChoice({1,2,3}->{a,b,c}, 8);"
+        + "SeedRandom(7, Method -> \"MersenneTwister\"); x === RandomChoice({1,2,3}->{a,b,c}, 8)", //
+        "False");
+
+    // with replacement, which is what tells RandomChoice from RandomSample: 320 draws at 1:10:5,
+    // so 20, 200 and 100 are expected
+    check(
+        "SeedRandom(1, Method -> \"Legacy\"); s = RandomChoice({1,10,5}->{a,b,c}, 320);"
+            + "{Count(s, a), Count(s, b), Count(s, c)}", //
+        "{24,196,100}");
+    // a weight of zero is never drawn
+    check("SeedRandom(2, Method -> \"Legacy\"); RandomChoice({0,1}->{a,b}, 4)", //
+        "{b,b,b,b}");
+
+    // weights that are not usable leave the choice unevaluated rather than throwing out of
+    // hipparchus, which a negative weight used to do
+    check("RandomChoice({1,-2}->{a,b}) // Head", //
+        "RandomChoice");
+    check("RandomChoice({0,0}->{a,b}) // Head", //
+        "RandomChoice");
+    check("RandomChoice({1,x}->{a,b}) // Head", //
+        "RandomChoice");
   }
 
   @Test
@@ -20861,12 +21413,153 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
   }
 
+  /**
+   * Every bullet of the reference's Details section. Seeded throughout, so that a function whose
+   * whole point is to be unpredictable can still be asserted on exactly.
+   */
   @Test
   public void testRandomSample() {
-    // check("RandomSample(f(1,2,3,4,5),3)", //
-    // "f(3,4,1)");
-    // check("RandomSample(f(1,2,3,4,5))", //
-    // "f(3,4,5,1,2)");
+    // "RandomSample[{e1,e2,…},n] never samples any of the ei more than once"
+    check("SeedRandom(5, Method -> \"Legacy\"); Sort(RandomSample(Range(200))) === Range(200)", //
+        "True");
+    check(
+        "SeedRandom(5, Method -> \"Legacy\"); Length(DeleteDuplicates(RandomSample(Range(50), 20)))", //
+        "20");
+
+    // "RandomSample[{e1,e2,…},n] samples each of the ei with equal probability" - 200 draws of one
+    // from five, so each is expected 40 times and none is anywhere near starved. The seed makes
+    // the counts exact rather than merely likely, so this cannot come and go
+    check(
+        "SeedRandom(1, Method -> \"Legacy\"); s = Table(RandomSample(Range(5), 1)[[1]], {200});"
+            + "{Min(Table(Count(s, k), {k, 5})), Max(Table(Count(s, k), {k, 5}))}", //
+        "{34,45}");
+
+    // "RandomSample[{e1,e2,…},UpTo[n]] gives a sample of n of the ei, or as many as are available"
+    check("SeedRandom(1, Method -> \"Legacy\"); Length(RandomSample(Range(10), UpTo(4)))", //
+        "4");
+    check("SeedRandom(1, Method -> \"Legacy\"); Sort(RandomSample(Range(3), UpTo(10)))", //
+        "{1,2,3}");
+    check("SeedRandom(1, Method -> \"Legacy\"); RandomSample({}, UpTo(2))", //
+        "{}");
+    // ... which is the only form that may ask for more than there is. A plain count that cannot be
+    // met is reported: sampling without replacement has no answer to give
+    check("RandomSample(Range(3), 5) // Head", //
+        "RandomSample");
+
+    // "RandomSample[i;;j;;k,n] may be used to sample the Span from i to j in steps of k"
+    check("SeedRandom(1, Method -> \"Legacy\"); Sort(RandomSample(1;;10;;2))", //
+        "{1,3,5,7,9}");
+    check("SeedRandom(1, Method -> \"Legacy\"); Length(RandomSample(1;;10;;2, 3))", //
+        "3");
+    check("SeedRandom(1, Method -> \"Legacy\"); Complement(RandomSample(1;;10;;2, 3), {1,3,5,7,9})", //
+        "{}");
+    check("SeedRandom(1, Method -> \"Legacy\"); Sort(RandomSample(1;;4, 4))", //
+        "{1,2,3,4}");
+
+    // RandomSample[{w1,w2,…}->{e1,e2,…},n] draws by the weights, and still without replacement:
+    // an element is taken with probability proportional to its weight among those left, and is
+    // then gone
+    check("SeedRandom(1, Method -> \"Legacy\"); Sort(RandomSample({1,2,3}->{a,b,c}))", //
+        "{a,b,c}");
+    check(
+        "SeedRandom(2, Method -> \"Legacy\"); Length(DeleteDuplicates(RandomSample(Range(20)->Range(20), 20)))", //
+        "20");
+    // 200 draws of one from two at nine to one, so the heavy one is expected 180 times
+    check(
+        "SeedRandom(1, Method -> \"Legacy\"); s = Table(RandomSample({9,1}->{a,b}, 1)[[1]], {200});"
+            + "{Count(s, a), Count(s, b)}", //
+        "{179,21}");
+    // a weight of zero is never drawn while anything with weight is left ...
+    check("SeedRandom(3, Method -> \"Legacy\"); RandomSample({0,0,1}->{a,b,c}, 1)", //
+        "{c}");
+    // ... but it is still part of the sample when the sample is everything
+    check("SeedRandom(3, Method -> \"Legacy\"); Sort(RandomSample({0,0,1}->{a,b,c}, 3))", //
+        "{a,b,c}");
+    // and weights that are all zero tell nothing apart rather than refusing a sample
+    check("SeedRandom(3, Method -> \"Legacy\"); Sort(RandomSample({0,0}->{a,b}, 2))", //
+        "{a,b}");
+    // UpTo and the size check read the elements, not the weights
+    check("SeedRandom(1, Method -> \"Legacy\"); Sort(RandomSample({1,2}->{a,b}, UpTo(9)))", //
+        "{a,b}");
+    check("RandomSample({1,2}->{a,b}, 9) // Head", //
+        "RandomSample");
+    // weights that are not usable leave the sample unevaluated rather than guessing at them
+    check("RandomSample({1,-2}->{a,b}, 1) // Head", //
+        "RandomSample");
+    check("RandomSample({1,x}->{a,b}, 1) // Head", //
+        "RandomSample");
+    check("RandomSample({1,2,3}->{a,b}, 1) // Head", //
+        "RandomSample");
+
+    // "RandomSample gives a different sequence ... You can start with a particular seed using
+    // SeedRandom"
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); a = RandomSample(Range(20), 5);"
+            + "SeedRandom(7, Method -> \"Legacy\"); a === RandomSample(Range(20), 5)", //
+        "True");
+    // the weighted draw goes through the same generator, so it is seeded like any other
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); a = RandomSample({1,2,3,4}->{a,b,c,d}, 3);"
+            + "SeedRandom(7, Method -> \"Legacy\"); a === RandomSample({1,2,3,4}->{a,b,c,d}, 3)", //
+        "True");
+
+    // "A Method option to SeedRandom can be given to specify the pseudorandom generator used" -
+    // the same seed through a different generator is a different sample ...
+    check(
+        "SeedRandom(7, Method -> \"Legacy\"); a = RandomSample(Range(50), 6);"
+            + "SeedRandom(7, Method -> \"MersenneTwister\"); a === RandomSample(Range(50), 6)", //
+        "False");
+    // ... and reproducible in its own right
+    check(
+        "SeedRandom(7, Method -> \"MersenneTwister\"); a = RandomSample(Range(50), 6);"
+            + "SeedRandom(7, Method -> \"MersenneTwister\"); a === RandomSample(Range(50), 6)", //
+        "True");
+    // Legacy and Congruential both name the generator everything draws from by default
+    check(
+        "SeedRandom(3, Method -> \"Legacy\"); a = RandomSample(Range(50), 6);"
+            + "SeedRandom(3, Method -> \"Congruential\"); a === RandomSample(Range(50), 6)", //
+        "True");
+    // a method with no counterpart here is declined rather than quietly answered with another
+    check("SeedRandom(3, Method -> \"MKL\") // Head", //
+        "SeedRandom");
+    check("SeedRandom(3, Foo -> \"x\") // Head", //
+        "SeedRandom");
+
+    // the seed reaches every generator, not only the one RandomSample uses
+    check(
+        "SeedRandom(4, Method -> \"MersenneTwister\"); a = RandomInteger(100);"
+            + "SeedRandom(4, Method -> \"MersenneTwister\"); a === RandomInteger(100)", //
+        "True");
+
+    // the generator a Method selects stays selected, so put the default back rather than leave it
+    // to whatever runs next
+    check("SeedRandom(1, Method -> \"Legacy\")", //
+        "1");
+  }
+
+  /**
+   * A range which cannot be generated is not an empty range. Both used to answer the empty list, so
+   * <code>Range(x)</code> was indistinguishable from <code>Range(0)</code>.
+   *
+   * <p>
+   * Bounds which are not numbers can still describe a range: the step count is what has to be
+   * determinable, not the bounds, so <code>Range(a,b,(b-a)/Pi)</code> has four elements. The
+   * question is therefore only asked where nothing was generated.
+   */
+  @Test
+  public void testRangeWithoutBounds() {
+    check("Range(x)", "Range(x)");
+    check("Range(a)", "Range(a)");
+    check("Range(1,x)", "Range(1,x)");
+    check("Range(SeriesData(x,0,{1},0,3,1))", "Range(1+O(x)^3)");
+    // ranges which really are empty stay empty
+    check("Range(0)", "{}");
+    check("Range(-1)", "{}");
+    check("Range(5,1)", "{}");
+    // and the symbolic range whose step count is determinable still generates
+    check("Range(a,b,(-a+b)/Pi)", "{a,a+(-a+b)/Pi,a+(2*(-a+b))/Pi,a+(3*(-a+b))/Pi}");
+    check("Range(5)", "{1,2,3,4,5}");
+    check("Range(0,1,1/4)", "{0,1/4,1/2,3/4,1}");
   }
 
   @Test
@@ -20895,8 +21588,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     byte[] b0Array = new byte[] {0};
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
     IAST range = F.Range(F.CNI, b0a, F.Quantity(F.num(1.2), F.stringx("m")));
+    // none of -I, a byte array and a quantity is a bound, so this describes no range at all. The
+    // empty list used to be answered for it, which reads as an empty range rather than an
+    // unanswerable one.
+    // Range: Range specification in `1` does not have appropriate bounds.
     check(range, //
-        "{}");
+        "Range[-I,ByteArray[1 Bytes],Quantity(1.2,\"Meters\")]");
 
     check("Range(-Infinity,0.5)", //
         "Range(-Infinity,0.5)");
@@ -22477,7 +23174,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRGBColor() {
     check("Yellow", //
-        "RGBColor(1.0,1.0,0.0)");
+        "RGBColor(1,1,0)");
     check("Purple", //
         "RGBColor(0.5,0.0,0.5)");
 
@@ -23126,9 +23823,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("myOpts(func_, target_) := {o1 -> Thick,  If(func === target, o2 -> 0, Sequence @@ {})}", //
         "");
     check("myOpts(x^2,x^2)", //
-        "{o1->Thick,o2->0}");
+        "{o1->Thickness(Large),o2->0}");
     check("myOpts(3*x,x^2)", //
-        "{o1->Thick}");
+        "{o1->Thickness(Large)}");
 
     check("f(x, Sequence(a, b), y)", //
         "f(x,a,b,y)");
@@ -24155,6 +24852,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{2421,19083},{5436,18948},{10200,18072},{13322,16630}}");
   }
 
+
+  /**
+   * Two arguments that never reach a value.
+   *
+   * <p>
+   * <code>Stack</code> walked the engine's own stack while testing each entry against a pattern,
+   * and testing a pattern evaluates, which pushes onto that very stack - the walk invalidated its
+   * own iterator. A snapshot is taken first.
+   *
+   * <p>
+   * <code>ShiftRegisterSequence</code> takes the top exponent of its polynomial as the width of the
+   * register and sizes its arrays with it. A reciprocal parses to an exponent of -1 and reached
+   * <code>new int[-1]</code>; the existing check for a non-positive width came after the
+   * allocation. WMA requires a degree above 1 and says so, which is now what happens.
+   */
+  @Test
+  public void testStackAndShiftRegisterArgumentErrors() {
+    check("Stack({{{1,0},{2,3}},{{4,a},{1}}})", "{}");
+    check("Stack()", "{}");
+    check("Stack(_)", "{}");
+    // ShiftRegisterSequence: `1` is not a univariate polynomial function with integer
+    // coefficients of degree greater than 1.
+    check("ShiftRegisterSequence(1/All)", "ShiftRegisterSequence(1/All)");
+    check("ShiftRegisterSequence(1/x)", "ShiftRegisterSequence(1/x)");
+    check("ShiftRegisterSequence(x)", "ShiftRegisterSequence(x)");
+    // the specifications which do describe a register are unaffected
+    check("ShiftRegisterSequence(1+x^2+x^3)", "{0,0,1,1,1,0,1}");
+    check("ShiftRegisterSequence(3)", "{0,0,1,0,1,1,1}");
+    check("ShiftRegisterSequence({4,{1,4}})", "{0,0,1,1,0,1,0,1,1,1,1,0,0,0,1}");
+  }
 
   @Test
   public void testStack() {
@@ -25347,8 +26074,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     if (!Config.TIMECONSTRAINED_NO_THREAD) {
       // Config.FUZZ_TESTING = true;
       try {
+        // Beta() no longer spends any time on an argument this large - it is bounded and answers
+        // unevaluated at once - so there is nothing here for TimeConstrained to abort. The abort
+        // path is exercised by the Do() below.
         check("TimeConstrained( Beta(I*1/2,1.5707963267948966,2147483647), 2)", //
-            "$Aborted");
+            "Beta(I*0.5,1.5707963267948966,2147483647)");
 
         check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
             "$Aborted");
@@ -25394,6 +26124,87 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimes() {
+    // the Pythagorean quotient family of the Times hash matcher, both directions each. The
+    // denominators of the reversed quotients arrive canonicalized as reciprocal functions
+    // (1/Sin(x)^2 == Csc(x)^2, 1/Cos(2*x) == Sec(2*x)), which is what the rules match.
+    check("Sin(x)^2/(1-Cos(x)^2)", //
+        "1");
+    check("(1-Cos(x)^2)/Sin(x)^2", //
+        "1");
+    check("Cos(x)^2/(1-Sin(x)^2)", //
+        "1");
+    check("(1-Sin(x)^2)/Cos(x)^2", //
+        "1");
+    check("Sec(x)^2/(1+Tan(x)^2)", //
+        "1");
+    check("(1+Tan(x)^2)/Sec(x)^2", //
+        "1");
+    check("Csc(x)^2/(1+Cot(x)^2)", //
+        "1");
+    check("(1+Cot(x)^2)/Csc(x)^2", //
+        "1");
+    check("Tan(x)^2/(-1+Sec(x)^2)", //
+        "1");
+    check("(-1+Sec(x)^2)/Tan(x)^2", //
+        "1");
+    check("Cot(x)^2/(-1+Csc(x)^2)", //
+        "1");
+    check("(-1+Csc(x)^2)/Cot(x)^2", //
+        "1");
+    check("Cos(2*x)/(1-2*Sin(x)^2)", //
+        "1");
+    check("(1-2*Sin(x)^2)/Cos(2*x)", //
+        "1");
+    check("Cos(2*x)/(-1+2*Cos(x)^2)", //
+        "1");
+    check("(-1+2*Cos(x)^2)/Cos(2*x)", //
+        "1");
+    check("Sech(x)^2/(1-Tanh(x)^2)", //
+        "1");
+    check("(1-Tanh(x)^2)/Sech(x)^2", //
+        "1");
+    check("Tanh(x)^2/(1-Sech(x)^2)", //
+        "1");
+    check("(1-Sech(x)^2)/Tanh(x)^2", //
+        "1");
+    check("Sinh(x)^2/(-1+Cosh(x)^2)", //
+        "1");
+    check("(-1+Cosh(x)^2)/Sinh(x)^2", //
+        "1");
+    check("Cosh(x)^2/(1+Sinh(x)^2)", //
+        "1");
+    check("(1+Sinh(x)^2)/Cosh(x)^2", //
+        "1");
+    check("Coth(x)^2/(1+Csch(x)^2)", //
+        "1");
+    check("(1+Csch(x)^2)/Coth(x)^2", //
+        "1");
+    check("Csch(x)^2/(-1+Coth(x)^2)", //
+        "1");
+    check("(-1+Coth(x)^2)/Csch(x)^2", //
+        "1");
+    check("Cosh(2*x)/(1+2*Sinh(x)^2)", //
+        "1");
+    check("(1+2*Sinh(x)^2)/Cosh(2*x)", //
+        "1");
+    check("Cosh(2*x)/(-1+2*Cosh(x)^2)", //
+        "1");
+    check("(-1+2*Cosh(x)^2)/Cosh(2*x)", //
+        "1");
+    // embedded in a larger product
+    check("a*Tan(x)^2/(-1+Sec(x)^2)", //
+        "a");
+    check("3*Cosh(2*x)/(-1+2*Cosh(x)^2)", //
+        "3");
+    // wrong sign, wrong function or mismatched arguments must not fire
+    check("Tan(x)^2/(1+Sec(x)^2)", //
+        "Tan(x)^2/(1+Sec(x)^2)");
+    check("Cosh(x)^2/(-1+Sinh(x)^2)", //
+        "Cosh(x)^2/(-1+Sinh(x)^2)");
+    check("Sinh(x)^2/(-1+Cosh(y)^2)", //
+        "Sinh(x)^2/(-1+Cosh(y)^2)");
+    check("Cosh(2*x)/(1+2*Sinh(y)^2)", //
+        "Cosh(2*x)/(1+2*Sinh(y)^2)");
 
     // (-1 + 2*Pi*I) * Infinity → DirectedInfinity[(-1 + 2*I*Pi)/Sqrt[1 + 4*Pi^2]]
     check("(-1 + 2*Pi*I)*Infinity", //
@@ -25712,8 +26523,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(6/5*c*f+6/5*b*g+2/5*c*f*m+1/5*b*g*m+2/5*c*f*n+3/5*b*g*n)", //
         "1/5*(6*c*f+6*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)");
 
+    // the Listable Plus threads into the stored values and into the default value of the sparse
+    // array, so only the 2 non-default entries are stored and the default value becomes Sqrt(2)
     check("Together(Sqrt(2)+SparseArray({{0,1},{1,0}}))", //
-        "SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0)");
+        "SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: Sqrt(2))");
+    check("Normal(Together(Sqrt(2)+SparseArray({{0,1},{1,0}})))", //
+        "{{Sqrt(2),1+Sqrt(2)},{1+Sqrt(2),Sqrt(2)}}");
 
     check("Together(1+(b*x)/a)", //
         "(a+b*x)/a");
@@ -25936,7 +26751,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Csch(ArcTanh(x))", //
         "Sqrt(1-x^2)/x");
     check("ToString(Sqrt(1-1/x^2))", //
-        "Sqrt(1 - 1/x^2)");
+        "Sqrt(1-1/x^2)");
 
     // ToString(expr, form) gives the string which form(expr) prints
     check("ToString(1/2, InputForm)", //
@@ -25951,30 +26766,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToString(a+b, Blubb)", //
         "ToString(a+b,blubb)");
     String expected = String.join("\n", //
-        "       -1+Sin(x)^2 == -Cos(x)^2 ", //
-        "     1+Sin(x)^2 == 1 + Sin(x)^2 ", //
-        "       -1+Cos(x)^2 == -Sin(x)^2 ", //
-        "     1+Cos(x)^2 == 1 + Cos(x)^2 ", //
-        "   -1+Tan(x)^2 == -1 + Tan(x)^2 ", //
-        "         1+Tan(x)^2 == Sec(x)^2 ", //
-        "   -1+Cot(x)^2 == -1 + Cot(x)^2 ", //
-        "         1+Cot(x)^2 == Csc(x)^2 ", //
-        "        -1+Sec(x)^2 == Tan(x)^2 ", //
-        "     1+Sec(x)^2 == 1 + Sec(x)^2 ", //
-        "        -1+Csc(x)^2 == Cot(x)^2 ", //
-        "     1+Csc(x)^2 == 1 + Csc(x)^2 ", //
-        " -1+Sinh(x)^2 == -1 + Sinh(x)^2 ", //
-        "       1+Sinh(x)^2 == Cosh(x)^2 ", //
-        "      -1+Cosh(x)^2 == Sinh(x)^2 ", //
-        "   1+Cosh(x)^2 == 1 + Cosh(x)^2 ", //
-        "     -1+Tanh(x)^2 == -Sech(x)^2 ", //
-        "   1+Tanh(x)^2 == 1 + Tanh(x)^2 ", //
-        "      -1+Coth(x)^2 == Csch(x)^2 ", //
-        "   1+Coth(x)^2 == 1 + Coth(x)^2 ", //
-        "     -1+Sech(x)^2 == -Tanh(x)^2 ", //
-        "   1+Sech(x)^2 == 1 + Sech(x)^2 ", //
-        " -1+Csch(x)^2 == -1 + Csch(x)^2 ", //
-        "       1+Csch(x)^2 == Coth(x)^2 ");
+        "     -1+Sin(x)^2 == -Cos(x)^2 ", //
+        "     1+Sin(x)^2 == 1+Sin(x)^2 ", //
+        "     -1+Cos(x)^2 == -Sin(x)^2 ", //
+        "     1+Cos(x)^2 == 1+Cos(x)^2 ", //
+        "   -1+Tan(x)^2 == -1+Tan(x)^2 ", //
+        "       1+Tan(x)^2 == Sec(x)^2 ", //
+        "   -1+Cot(x)^2 == -1+Cot(x)^2 ", //
+        "       1+Cot(x)^2 == Csc(x)^2 ", //
+        "      -1+Sec(x)^2 == Tan(x)^2 ", //
+        "     1+Sec(x)^2 == 1+Sec(x)^2 ", //
+        "      -1+Csc(x)^2 == Cot(x)^2 ", //
+        "     1+Csc(x)^2 == 1+Csc(x)^2 ", //
+        " -1+Sinh(x)^2 == -1+Sinh(x)^2 ", //
+        "     1+Sinh(x)^2 == Cosh(x)^2 ", //
+        "    -1+Cosh(x)^2 == Sinh(x)^2 ", //
+        "   1+Cosh(x)^2 == 1+Cosh(x)^2 ", //
+        "   -1+Tanh(x)^2 == -Sech(x)^2 ", //
+        "   1+Tanh(x)^2 == 1+Tanh(x)^2 ", //
+        "    -1+Coth(x)^2 == Csch(x)^2 ", //
+        "   1+Coth(x)^2 == 1+Coth(x)^2 ", //
+        "   -1+Sech(x)^2 == -Tanh(x)^2 ", //
+        "   1+Sech(x)^2 == 1+Sech(x)^2 ", //
+        " -1+Csch(x)^2 == -1+Csch(x)^2 ", //
+        "     1+Csch(x)^2 == Coth(x)^2 ");
     check(
         "Outer((ToString(#2) <> \"+\" <> ToString(#1) <> \"(x)^2 == \" <> ToString( Simplify( #2 + (#1(x)^2))) )&," //
             + "{Sin,Cos,Tan,Cot,Sec,Csc,Sinh,Cosh,Tanh,Coth,Sech,Csch}," //
@@ -25982,30 +26797,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Flatten // TableForm ", //
         expected);
     expected = String.join("\n", //
-        "   -1-f(x)-Sin(x)^2+y+z == -2 + y + z + Cos(x)^2 - f(x) ", //
-        "         1-f(x)-Sin(x)^2+y+z == y + z + Cos(x)^2 - f(x) ", //
-        "   -1-f(x)-Cos(x)^2+y+z == -2 + y + z - f(x) + Sin(x)^2 ", //
-        "         1-f(x)-Cos(x)^2+y+z == y + z - f(x) + Sin(x)^2 ", //
-        "        -1-f(x)-Tan(x)^2+y+z == y + z - f(x) - Sec(x)^2 ", //
-        "     1-f(x)-Tan(x)^2+y+z == 1 + y + z - f(x) - Tan(x)^2 ", //
-        "        -1-f(x)-Cot(x)^2+y+z == y + z - Csc(x)^2 - f(x) ", //
-        "     1-f(x)-Cot(x)^2+y+z == 1 + y + z - Cot(x)^2 - f(x) ", //
-        "   -1-f(x)-Sec(x)^2+y+z == -1 + y + z - f(x) - Sec(x)^2 ", //
-        "         1-f(x)-Sec(x)^2+y+z == y + z - f(x) - Tan(x)^2 ", //
-        "   -1-f(x)-Csc(x)^2+y+z == -1 + y + z - Csc(x)^2 - f(x) ", //
-        "         1-f(x)-Csc(x)^2+y+z == y + z - Cot(x)^2 - f(x) ", //
-        "      -1-f(x)-Sinh(x)^2+y+z == y + z - Cosh(x)^2 - f(x) ", //
-        "   1-f(x)-Sinh(x)^2+y+z == 1 + y + z - f(x) - Sinh(x)^2 ", //
-        " -1-f(x)-Cosh(x)^2+y+z == -1 + y + z - Cosh(x)^2 - f(x) ", //
-        "       1-f(x)-Cosh(x)^2+y+z == y + z - f(x) - Sinh(x)^2 ", //
-        " -1-f(x)-Tanh(x)^2+y+z == -1 + y + z - f(x) - Tanh(x)^2 ", //
-        "       1-f(x)-Tanh(x)^2+y+z == y + z - f(x) + Sech(x)^2 ", //
-        " -1-f(x)-Coth(x)^2+y+z == -1 + y + z - Coth(x)^2 - f(x) ", //
-        "       1-f(x)-Coth(x)^2+y+z == y + z - Csch(x)^2 - f(x) ", //
-        " -1-f(x)-Sech(x)^2+y+z == -1 + y + z - f(x) - Sech(x)^2 ", //
-        "       1-f(x)-Sech(x)^2+y+z == y + z - f(x) + Tanh(x)^2 ", //
-        "      -1-f(x)-Csch(x)^2+y+z == y + z - Coth(x)^2 - f(x) ", //
-        "   1-f(x)-Csch(x)^2+y+z == 1 + y + z - Csch(x)^2 - f(x) ");
+        "   -1-f(x)-Sin(x)^2+y+z == -2+y+z+Cos(x)^2-f(x) ", //
+        "       1-f(x)-Sin(x)^2+y+z == y+z+Cos(x)^2-f(x) ", //
+        "   -1-f(x)-Cos(x)^2+y+z == -2+y+z-f(x)+Sin(x)^2 ", //
+        "       1-f(x)-Cos(x)^2+y+z == y+z-f(x)+Sin(x)^2 ", //
+        "      -1-f(x)-Tan(x)^2+y+z == y+z-f(x)-Sec(x)^2 ", //
+        "     1-f(x)-Tan(x)^2+y+z == 1+y+z-f(x)-Tan(x)^2 ", //
+        "      -1-f(x)-Cot(x)^2+y+z == y+z-Csc(x)^2-f(x) ", //
+        "     1-f(x)-Cot(x)^2+y+z == 1+y+z-Cot(x)^2-f(x) ", //
+        "   -1-f(x)-Sec(x)^2+y+z == -1+y+z-f(x)-Sec(x)^2 ", //
+        "       1-f(x)-Sec(x)^2+y+z == y+z-f(x)-Tan(x)^2 ", //
+        "   -1-f(x)-Csc(x)^2+y+z == -1+y+z-Csc(x)^2-f(x) ", //
+        "       1-f(x)-Csc(x)^2+y+z == y+z-Cot(x)^2-f(x) ", //
+        "    -1-f(x)-Sinh(x)^2+y+z == y+z-Cosh(x)^2-f(x) ", //
+        "   1-f(x)-Sinh(x)^2+y+z == 1+y+z-f(x)-Sinh(x)^2 ", //
+        " -1-f(x)-Cosh(x)^2+y+z == -1+y+z-Cosh(x)^2-f(x) ", //
+        "     1-f(x)-Cosh(x)^2+y+z == y+z-f(x)-Sinh(x)^2 ", //
+        " -1-f(x)-Tanh(x)^2+y+z == -1+y+z-f(x)-Tanh(x)^2 ", //
+        "     1-f(x)-Tanh(x)^2+y+z == y+z-f(x)+Sech(x)^2 ", //
+        " -1-f(x)-Coth(x)^2+y+z == -1+y+z-Coth(x)^2-f(x) ", //
+        "     1-f(x)-Coth(x)^2+y+z == y+z-Csch(x)^2-f(x) ", //
+        " -1-f(x)-Sech(x)^2+y+z == -1+y+z-f(x)-Sech(x)^2 ", //
+        "     1-f(x)-Sech(x)^2+y+z == y+z-f(x)+Tanh(x)^2 ", //
+        "    -1-f(x)-Csch(x)^2+y+z == y+z-Coth(x)^2-f(x) ", //
+        "   1-f(x)-Csch(x)^2+y+z == 1+y+z-Csch(x)^2-f(x) ");
     check(
         "Outer((ToString(#2) <> \"-f(x)-\" <> ToString(#1) <> \"(x)^2+y+z == \" <> ToString( Simplify( #2 - f(x) - (#1(x)^2)+y+z)) )&," //
             + "{Sin,Cos,Tan,Cot,Sec,Csc,Sinh,Cosh,Tanh,Coth,Sech,Csch}," //
@@ -26110,6 +26925,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Times(Rational(1,2), d)");
   }
 
+  /**
+   * A series is not a collection of terms. It answers a size of seven and serves every position, so
+   * the level visitor read its variable, expansion point, coefficient list, exponents and
+   * denominator as elements and added them up - <code>Total(SeriesData(x,0,{1},0,3,1))</code> came
+   * out as <code>{5+x}</code>.
+   */
+  @Test
+  public void testTotalOfSeriesData() {
+    check("Total(SeriesData(x,0,{1},0,3,1))", "Total(1+O(x)^3)");
+    check("Total(Series(Exp(x),{x,0,3}))", "Total(1+x+x^2/2+x^3/6+O(x)^4)");
+    // every other shape Total accepts is unaffected
+    check("Total({1,2,3})", "6");
+    check("Total(f(1,2,3))", "6");
+    check("Total({{1,2},{3,4}})", "{4,6}");
+    check("Total({{1,2},{3,4}},2)", "10");
+  }
+
   @Test
   public void testTotal() {
     // TODO only add up elements inside List, Association, SparseArray,...
@@ -26168,8 +27000,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTreeForm() {
-    check("TreeForm(a+b)", //
-        "Graphics({RGBColor(0.5,0.5,0.5),Line({{1.25,0.0},{0.5,-2.0}}),Line({{1.25,0.0},{2.0,-2.0}}),RGBColor(0.0,0.0,0.0),Tooltip(Text(Framed(Plus,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{1.25,0.0},{\n" //
+    checkGraphics("TreeForm(a+b)", //
+        "Graphics({RGBColor(0.5,0.5,0.5),Line({{1.25,0.0},{0.5,-2.0}}),Line({{1.25,0.0},{2.0,-2.0}}),RGBColor(\n" //
+            + "0,0,0),Tooltip(Text(Framed(Plus,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{1.25,0.0},{\n" //
             + "0,0}),a+b),Tooltip(Text(Framed(a,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{0.5,-2.0},{\n" //
             + "0,0}),a),Tooltip(Text(Framed(b,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{2.0,-2.0},{\n" //
             + "0,0}),b)},{AspectRatio->Automatic})");
@@ -26751,7 +27584,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Union({1,2,2,4},{2,3,4,5})", "{1,2,3,4,5}");
 
     check("Union(#1,#1*#2)", //
-        "Union(#1,#1*#2)");
+        "#1⋃#1*#2");
     check("Union(#1, #2)", //
         "Slot(1,2)");
 
@@ -27084,38 +27917,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x");
   }
 
-  @Test
-  public void testVertexList() {
-    check("VertexList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
-        "{1,2,3,4}");
-    check(
-        "VertexList(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
-        "{1,2,3}");
-    check("VertexList(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
-        "{1,2,3}");
-  }
 
-  @Test
-  public void testVertexEccentricity() {
-    check("VertexEccentricity({1 -> 2, 2 -> 3, 3 -> 1, 3 -> 4, 4 -> 5, 5 -> 3}, 1)", //
-        "4");
-
-    check(
-        "VertexEccentricity(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
-            + "{EdgeWeight->{1.6,1.4,0.62,1.9,2.1}}), 4)", //
-        "2.22");
-    check(
-        "VertexEccentricity({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, 4)", //
-        "2");
-  }
-
-  @Test
-  public void testVertexQ() {
-    check("VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),3)", //
-        "True");
-    check("VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),5)", //
-        "False");
-  }
 
   @Test
   public void testWeierstrassHalfPeriods() {

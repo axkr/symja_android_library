@@ -408,6 +408,13 @@ public class PiecewiseFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.size();
+      if (ast.head() != S.KroneckerDelta) {
+        // KroneckerDelta has no operator form in Mathematica, which leaves KroneckerDelta(x)[1,2]
+        // alone. Evaluation arrives here because AbstractAST#evaluate() dispatches on topHead(),
+        // which looks through nested heads; without this the outer arguments are compared as
+        // though the head were the plain symbol, answering 0.
+        return F.NIL;
+      }
       if (size == 1) {
         return F.C1;
       }

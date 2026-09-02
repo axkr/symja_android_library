@@ -38,8 +38,8 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.RationalizeNumericsVisitor;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
+import org.matheclipse.external.fastutil.ints.Int2IntMap;
+import org.matheclipse.external.fastutil.ints.Int2IntRBTreeMap;
 
 /**
  * Abstract base class for FractionSym and BigFractionSym

@@ -660,6 +660,7 @@ public class Functors {
       IExpr powerArg = arg.base();
       IASTMutable nestedPower = F.NIL;
       for (int i = expTimes.argSize(); i > 0; i--) {
+        // don't use F.Power() here; an IASTMutable has to be returned
         nestedPower = F.binaryAST2(S.Power, powerArg, expTimes.get(i));
         powerArg = nestedPower;
       }

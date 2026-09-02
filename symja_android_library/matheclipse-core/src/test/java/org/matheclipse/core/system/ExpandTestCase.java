@@ -271,7 +271,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testExpand003() {
-    IAST ast = F.binaryAST2(S.Power, Plus(x, y), C3);
+    IAST ast = F.Power(Plus(x, y), C3);
     IExpr temp = AlgebraUtil.expandAll(ast, null, false, false, false, EvalEngine.get());
     assertEquals(temp.toString(), "x^3+y^3+3*x^2*y+3*x*y^2");
   }
@@ -301,7 +301,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExpand006() {
     // (3*x^2+2)^2
-    IAST ast = F.binaryAST2(S.Power, Plus(C2, Times(C3, Power(x, 2))), C2);
+    IAST ast = F.Power(Plus(C2, Times(C3, Power(x, 2))), C2);
     IExpr temp = AlgebraUtil.expand(ast, null, true, false, true);
     if (temp == null) {
       temp = ast;
@@ -324,7 +324,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExpandPerformance001() {
     // ExpandAll((a+b+2*c+x+y+3*z)^6)
-    IAST ast = F.binaryAST2(S.Power, Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(6));
+    IAST ast = F.Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(6));
     IAST temp = (IAST) AlgebraUtil.expand(ast, null, false, false, false);
     EvalEngine engine = EvalEngine.get();
     temp = (IAST) engine.evaluate(temp);
@@ -336,7 +336,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExpandPerformance002() {
     // Expand((a+b+2*c+x+y+3*z)^12)
-    IAST ast = F.binaryAST2(S.Power, Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(12));
+    IAST ast = F.Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(12));
     IAST temp = (IAST) AlgebraUtil.expand(ast, null, false, false, false);
     EvalEngine engine = EvalEngine.get();
     temp = (IAST) engine.evaluate(temp);
@@ -352,7 +352,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
       // about 1.1 s
       // ExpandAll((a+b+2*c+x+y+3*z)^24)
       IAST ast =
-          F.binaryAST2(S.Power, Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(24));
+          F.Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(24));
       IAST temp = (IAST) AlgebraUtil.expandAll(ast, null, false, false, false, EvalEngine.get());
       EvalEngine engine = EvalEngine.get();
       temp = (IAST) engine.evaluate(temp);

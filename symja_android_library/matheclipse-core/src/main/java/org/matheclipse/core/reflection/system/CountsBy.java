@@ -13,6 +13,11 @@ public class CountsBy extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+    IExpr onRows = org.matheclipse.core.interfaces.IASTDataset.onDatasetRows(ast, engine);
+    if (onRows.isPresent()) {
+      return onRows;
+    }
     if (ast.isAST2()) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -58,6 +63,9 @@ public class CountsBy extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_2;
+    // the third entry declares the operator form: CountsBy[f][list] is CountsBy[list, f], and
+    // EvalEngine#checkBuiltinArguments does the rewrite. A two entry specification means the
+    // opposite - that there is no operator form - and refuses to dispatch one at all
+    return ARGS_2_2_1;
   }
 }

@@ -24,7 +24,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.BesselJS;
@@ -120,10 +122,19 @@ public class BesselFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (z.isReal() && Math.abs(z.evalf()) > MAX_ANGERJ_ARGUMENT) {
+          // The cost is driven by the second argument, not the order: AngerJ(0.0, -1000) takes
+          // under a second, AngerJ(0.0, -5000) does not return, and AngerJ(0.0, -2147483648) -
+          // the one the fuzzer found - never did.
+          return F.NIL;
+        }
         return n.angerJ(z);
       }
       return F.NIL;
     }
+
+    /** Largest second argument handed to the arbitrary precision routine. */
+    private static final int MAX_ANGERJ_ARGUMENT = 1000;
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -439,6 +450,19 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
+  /**
+   * Highest order {@link BesselY} expands. The work there rises linearly with the order - a
+   * million takes seconds - so 2147483647 would take hours.
+   *
+   * <p>
+   * There is no companion bound for a non-integer order, although one is badly needed:
+   * BesselY(10.5, x) takes thirteen seconds and BesselY(20.5, x) never returns, and the same holds
+   * for BesselJ. A half-integer order is rewritten by the generated rules in BesselJRules /
+   * BesselYRules, which run in evalDownRule() before any evaluator, so a test placed here is never
+   * reached. Bounding those needs a change to the rule definitions.
+   */
+  private static final int MAX_INTEGER_BESSEL_ORDER = 1000000;
+
   private static final class BesselJ extends AbstractFunctionEvaluator {
 
     /**
@@ -564,7 +588,7 @@ public class BesselFunctions {
             }
           } catch (LossOfPrecisionException lpe) {
             // Complete loss of accurate digits (apfloat).
-            return Errors.printMessage(S.HankelH1, "zzapfloatcld", F.List());
+            return Errors.printMessage(S.BesselJ, "zzapfloatcld", F.List());
           } catch (org.apfloat.OverflowException ofe) {
             // Overflow occurred in computation.
             return Errors.printMessage(S.BesselJ, "ovfl", F.List());
@@ -927,6 +951,11 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      if (n.isReal() && Math.abs(n.evalf()) > MAX_INTEGER_BESSEL_ORDER) {
+        // Unlike BesselJ, the work here rises with the order even when it is an integer - linearly,
+        // so a million takes seconds and 2147483647 would take hours.
+        return F.NIL;
+      }
       return besselY(n, z, engine.isNumericMode()).eval(engine);
     }
 
@@ -1117,6 +1146,21 @@ public class BesselFunctions {
     }
   }
 
+  /**
+   * @return <code>true</code> if <code>expr</code> is a machine number that apfloat cannot be
+   *         handed, which is to say an infinity or a {@code NaN} in either of its parts
+   */
+  private static boolean isNonFiniteNumber(IExpr expr) {
+    if (expr instanceof INum) {
+      return !Double.isFinite(((INum) expr).doubleValue());
+    }
+    if (expr instanceof IComplexNum) {
+      IComplexNum number = (IComplexNum) expr;
+      return !Double.isFinite(number.getRealPart()) || !Double.isFinite(number.getImaginaryPart());
+    }
+    return false;
+  }
+
   private static final class HankelH2 extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -1133,6 +1177,12 @@ public class BesselFunctions {
       IExpr z = ast.arg2();
       if (z.isZero()) {
         return F.CComplexInfinity;
+      }
+      if (isNonFiniteNumber(n) || isNonFiniteNumber(z)) {
+        // apfloat has no representation for these and answers a NumberFormatException from its
+        // constructor, which is not one of the failures caught below. Mathematica leaves
+        // HankelH2[2, Infinity] unevaluated.
+        return F.NIL;
       }
       if (n.isNumber() && z.isNumber()) {
         // if (engine.isDoubleMode()) {
@@ -1171,7 +1221,7 @@ public class BesselFunctions {
           }
         } catch (LossOfPrecisionException lpe) {
           // Complete loss of accurate digits (apfloat).
-          return Errors.printMessage(S.HankelH1, "zzapfloatcld", F.List());
+          return Errors.printMessage(S.HankelH2, "zzapfloatcld", F.List());
         } catch (org.apfloat.OverflowException ofe) {
           // Overflow occurred in computation.
           return Errors.printMessage(S.HankelH2, "ovfl", F.List());

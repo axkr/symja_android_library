@@ -61,7 +61,7 @@ public class CentralFeature extends AbstractFunctionOptionEvaluator {
 
     // Determine the distance metric
     IExpr distFunc = S.EuclideanDistance;
-    if (options[0].equals(S.Automatic)) {
+    if (options[0] == S.Automatic) {
       IExpr first = dataList.arg1();
       if (first.isString()) {
         distFunc = S.EditDistance;

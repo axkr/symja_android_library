@@ -42,7 +42,7 @@ public class QuadraticSolveTest extends ExprEvaluatorTestCase {
   public void testTraceQuarticSolve001() {
     // x^2 +2*x -3
     String input = "QuarticSolve(1,2,-3)";
-    checkJSON(input, x -> x.equals(S.QuarticSolve), //
+    checkJSON(input, x -> x == S.QuarticSolve, //
         "{1,-3}");
   }
 
@@ -50,7 +50,7 @@ public class QuadraticSolveTest extends ExprEvaluatorTestCase {
   public void testTraceQuarticSolve002() {
     // x^2 - 4*x -3
     String input = "QuarticSolve(1,-4,-3)";
-    checkJSON(input, x -> x.equals(S.QuarticSolve), //
+    checkJSON(input, x -> x == S.QuarticSolve, //
         "{1/2*(4+2*Sqrt(7)),1/2*(4-2*Sqrt(7))}");
   }
 
@@ -74,7 +74,7 @@ public class QuadraticSolveTest extends ExprEvaluatorTestCase {
   public void testTraceQuarticSolve004() {
     // x^2 - 5*x -150
     String input = "QuarticSolve(2,5,-150)";
-    checkJSON(input, x -> x.equals(S.QuarticSolve), //
+    checkJSON(input, x -> x == S.QuarticSolve, //
         "{15/2,-10}");
   }
 
@@ -82,7 +82,7 @@ public class QuadraticSolveTest extends ExprEvaluatorTestCase {
   public void testTraceQuarticSolve005() {
     // x^2 - 2*x -4
     String input = "QuarticSolve(1,2,-4)";
-    checkJSON(input, x -> x.equals(S.QuarticSolve), //
+    checkJSON(input, x -> x == S.QuarticSolve, //
         "{1/2*(-2+2*Sqrt(5)),1/2*(-2-2*Sqrt(5))}");
   }
 
@@ -90,7 +90,7 @@ public class QuadraticSolveTest extends ExprEvaluatorTestCase {
   public void testTraceQuarticSolve006() {
     // 2*x^2 - 150
     String input = "QuarticSolve(2,0,-150)";
-    checkJSON(input, x -> x.equals(S.QuarticSolve), //
+    checkJSON(input, x -> x == S.QuarticSolve, //
         "{5*Sqrt(3),-5*Sqrt(3)}");
   }
 
@@ -98,7 +98,7 @@ public class QuadraticSolveTest extends ExprEvaluatorTestCase {
   public void testTraceQuarticSolve007() {
     // 2*x^2 - 5*x
     String input = "QuarticSolve(2,-5,0)";
-    checkJSON(input, x -> x.equals(S.QuarticSolve), //
+    checkJSON(input, x -> x == S.QuarticSolve, //
         "{5/2,0}");
   }
 }

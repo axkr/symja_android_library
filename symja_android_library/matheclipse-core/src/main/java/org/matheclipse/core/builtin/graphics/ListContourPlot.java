@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -94,6 +95,12 @@ public class ListContourPlot extends ContourPlot {
     if (gridData == null) {
       return F.NIL;
     }
+    if (gridData.zGrid.length == 0 || gridData.zGrid[0].length == 0) {
+      // data that is not a matrix, and not a list of {x,y,z} triples either, leaves an empty grid
+      // behind rather than a null one, and every use of it below indexes the first row
+      // `1` must be a valid array.
+      return Errors.printMessage(S.ListContourPlot, "arrayerr", F.List(dataArg), engine);
+    }
 
     graphicsOptions
         .setBoundingBox(new double[] {gridData.xMin, gridData.xMax, gridData.yMin, gridData.yMax});
@@ -117,8 +124,11 @@ public class ListContourPlot extends ContourPlot {
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
-  // Internal class to hold processed grid data
-  private static class GridData {
+  /**
+   * Internal class to hold processed grid data. Package visible so that
+   * {@link ListDensityPlot} can paint the same grid without repeating the data parsing.
+   */
+  static class GridData {
     double[][] zGrid;
     double xMin, xMax, yMin, yMax;
     double stepX, stepY;
@@ -130,7 +140,18 @@ public class ListContourPlot extends ContourPlot {
     }
   }
 
-  private GridData prepareGridData(IExpr data, IExpr dataRange, int gridRes, EvalEngine engine) {
+  /**
+   * Read the argument of a list plot into a rectangular grid of z values.
+   *
+   * <p>
+   * Both a matrix of values and a list of <code>{x, y, z}</code> triples are accepted; the latter
+   * is resampled onto a regular grid by inverse distance weighting.
+   *
+   * @param dataRange the {@code DataRange} option value, which also forces the matrix reading
+   * @param gridRes the resolution the scattered case is resampled at
+   * @return <code>null</code> if the argument is not data this can be read
+   */
+  static GridData prepareGridData(IExpr data, IExpr dataRange, int gridRes, EvalEngine engine) {
     if (!data.isList())
       return null;
     IAST list = (IAST) data;
@@ -150,7 +171,7 @@ public class ListContourPlot extends ContourPlot {
 
     boolean potentialTriples = (cols == 3);
 
-    if (!potentialTriples || (dataRange.isPresent() && !dataRange.equals(S.Automatic))) {
+    if (!potentialTriples || (dataRange.isPresent() && dataRange != S.Automatic)) {
       return processMatrixData(list, rows, cols, dataRange);
     }
 
@@ -161,7 +182,7 @@ public class ListContourPlot extends ContourPlot {
     }
   }
 
-  private GridData processMatrixData(IAST list, int rows, int cols, IExpr dataRange) {
+  private static GridData processMatrixData(IAST list, int rows, int cols, IExpr dataRange) {
     GridData gd = new GridData(cols, rows);
     gd.xMin = 1.0;
     gd.xMax = cols;
@@ -218,7 +239,7 @@ public class ListContourPlot extends ContourPlot {
     return gd;
   }
 
-  private GridData processIrregularData(IAST list, int gridRes, EvalEngine engine) {
+  private static GridData processIrregularData(IAST list, int gridRes, EvalEngine engine) {
     int n = list.argSize();
     double[] x = new double[n];
     double[] y = new double[n];
@@ -312,7 +333,7 @@ public class ListContourPlot extends ContourPlot {
     if (contoursOption.isList()) {
       IAST list = (IAST) contoursOption;
       // Check for {Automatic, n}
-      if (list.size() >= 2 && list.arg1().equals(S.Automatic) && list.arg2().isInteger()) {
+      if (list.size() >= 2 && list.arg1() == S.Automatic && list.arg2().isInteger()) {
         numberOfContours = list.arg2().toIntDefault(10);
       } else {
         // Explicit Values
@@ -336,7 +357,7 @@ public class ListContourPlot extends ContourPlot {
     int gridY = gd.zGrid[0].length - 1;
 
     // 1. Shading (Polygons)
-    if (!contourShading.equals(S.None) && !contourShading.isFalse()) {
+    if (contourShading != S.None && !contourShading.isFalse()) {
       for (int k = -1; k < levels.length; k++) {
         double level = (k == -1) ? gd.minZ - 1.0 : levels[k];
 
@@ -372,13 +393,13 @@ public class ListContourPlot extends ContourPlot {
     }
 
     // 2. Contour Lines
-    if (contourLines && !contourStyle.equals(S.None) && !contourStyle.isFalse()) {
+    if (contourLines && contourStyle != S.None && !contourStyle.isFalse()) {
       for (int k = 0; k < levels.length; k++) {
         double level = levels[k];
         IASTAppendable lineSegments = F.ListAlloc();
 
         IExpr currentStyle = contourStyle;
-        if (currentStyle.equals(S.Automatic)) {
+        if (currentStyle == S.Automatic) {
           currentStyle = F.GrayLevel(0.5);
         } else if (currentStyle.isList()) {
           currentStyle = GraphicsOptions.getPlotStyle(currentStyle, k);

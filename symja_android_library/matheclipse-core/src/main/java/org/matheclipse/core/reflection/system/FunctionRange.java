@@ -330,7 +330,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
    */
   private static boolean isFiniteRealValue(IExpr v) {
     if (v.isInfinity() || v.isNegativeInfinity() || v.isComplexInfinity() || v.isDirectedInfinity()
-        || v.equals(S.Indeterminate)) {
+        || v == S.Indeterminate) {
       return false;
     }
     return v.isRealResult();
@@ -432,7 +432,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         IExpr result = engine.evaluate(f);
         if (result.isInterval1()) {
           return convertInterval(result, y);
-        } else if (domain.equals(S.Reals)) {
+        } else if (domain == S.Reals) {
           IExpr temp = result;
           while (temp.isPresent()) {
             temp = temp.accept(new FunctionRangeRealsVisitor());
@@ -781,7 +781,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     }
     IExpr v = witness.second();
     if (v.isInfinity() || v.isNegativeInfinity() || v.isComplexInfinity()
-        || v.equals(S.Indeterminate) || v.isAST(S.Limit) || v.isAST(S.DirectedInfinity)) {
+        || v == S.Indeterminate || v.isAST(S.Limit) || v.isAST(S.DirectedInfinity)) {
       return false;
     }
     return true;

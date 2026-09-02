@@ -77,11 +77,11 @@ public class Parser extends Scanner {
    * parser</a> for the idea, how to parse the operators depending on their precedence.
    *
    * @param relaxedSyntax if <code>true</code>, use '('...')' as brackets for function arguments
-   * @param packageMode parse in &quot;package mode&quot; and initialize an internal list of
-   *        ASTNodes
+   * @param scriptMode parse several expressions, separated by newlines, into an internal list of
+   *        ASTNodes, instead of one expression
    */
-  public Parser(final boolean relaxedSyntax, boolean packageMode) {
-    this(ASTNodeFactory.MMA_STYLE_FACTORY, relaxedSyntax, packageMode);
+  public Parser(final boolean relaxedSyntax, boolean scriptMode) {
+    this(ASTNodeFactory.MMA_STYLE_FACTORY, relaxedSyntax, scriptMode);
   }
 
   /**
@@ -109,14 +109,14 @@ public class Parser extends Scanner {
    *
    * @param factory a parser factory
    * @param relaxedSyntax if <code>true</code>, use '('...')' as brackets for function arguments
-   * @param packageMode parse in &quot;package mode&quot; and initialize an internal list of
-   *        ASTNodes
+   * @param scriptMode parse several expressions, separated by newlines, into an internal list of
+   *        ASTNodes, instead of one expression
    */
-  public Parser(INodeParserFactory factory, final boolean relaxedSyntax, boolean packageMode) {
-    super(packageMode, ParserConfig.EXPLICIT_TIMES_OPERATOR);
+  public Parser(INodeParserFactory factory, final boolean relaxedSyntax, boolean scriptMode) {
+    super(scriptMode, ParserConfig.EXPLICIT_TIMES_OPERATOR);
     this.fRelaxedSyntax = relaxedSyntax;
     this.fFactory = factory;
-    if (packageMode) {
+    if (scriptMode) {
       fNodeList = new ArrayList<ASTNode>(256);
     }
   }
@@ -719,10 +719,16 @@ public class Parser extends Scanner {
     try {
       scanNumber();
       numberStr = fNumberString;
-      final int numFormat = fNumberFormat;
+      int numFormat = fNumberFormat;
       String exponentStr = fNumberExponent;
       if (negative) {
         numberStr = '-' + numberStr;
+      }
+      if (numFormat == 10 && fCurrentChar == '`') {
+        // an integer mantissa carrying a precision suffix is still a float - 8`30 - and without
+        // this the backtick falls through to the identifier scanner, which reports it as the start
+        // of a named unicode character. ExprParser in matheclipse-core already does this.
+        numFormat = -1;
       }
       if (numFormat < 0) {
         if (fCurrentChar == '`' && isValidPosition()) {
@@ -753,7 +759,11 @@ public class Parser extends Scanner {
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
-              String precisionStr = getJavaDoubleString();
+              // Without the token, so that a *^ exponent following the precision can still be
+              // seen: getJavaDoubleString() would read past the '*' and leave the '^' standing
+              // alone, which is why 1.5`20*^3 answered "Operator: ^ is no prefix operator" even
+              // though 1.5*^3 parses. This is the form InputForm and FullForm print.
+              String precisionStr = getJavaDoubleStringWithoutToken();
               double doublePrecision = 0;
               try {
                 doublePrecision = Double.parseDouble(precisionStr);
@@ -765,7 +775,32 @@ public class Parser extends Scanner {
                 doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
                 precisionStr = "" + ParserConfig.MACHINE_PRECISION;
               }
-              return fFactory.createDouble(numberStr + "`" + precisionStr);
+              String mantissaStr = numberStr;
+              if (isValidPosition() && fInputString[fCurrentPosition] == '*'
+                  && fCurrentPosition + 1 < fInputString.length
+                  && fInputString[fCurrentPosition + 1] == '^') {
+                int beforeExponent = fCurrentPosition;
+                fCurrentPosition += 2;
+                int exponentStart = fCurrentPosition;
+                if (isValidPosition() && (fInputString[fCurrentPosition] == '+'
+                    || fInputString[fCurrentPosition] == '-')) {
+                  fCurrentPosition++;
+                }
+                int digits = 0;
+                while (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
+                  fCurrentPosition++;
+                  digits++;
+                }
+                if (digits > 0) {
+                  mantissaStr = numberStr + "E"
+                      + new String(fInputString, exponentStart, fCurrentPosition - exponentStart);
+                } else {
+                  // a '*' that begins something else, e.g. 1.5`20*x - leave it to the parser
+                  fCurrentPosition = beforeExponent;
+                }
+              }
+              getNextToken();
+              return fFactory.createDouble(mantissaStr + "`" + precisionStr);
             } else {
               getNextToken();
               return fFactory.createDouble(numberStr);
@@ -974,7 +1009,7 @@ public class Parser extends Scanner {
         return infixOperator.createFunction(fFactory, lhs,
             fFactory.createSymbol(IConstantOperators.Null));
       }
-      if (fPackageMode && fRecursionDepth < 1) {
+      if (fScriptMode && fRecursionDepth < 1) {
         return infixOperator.createFunction(fFactory, lhs,
             fFactory.createSymbol(IConstantOperators.Null));
       }
@@ -1170,7 +1205,7 @@ public class Parser extends Scanner {
         }
         if (!foldEqualPrecedence) {
           // A ';' at the top level of a package ends the statement, with an implicit Null after it.
-          if (infixOperator.isOperator(";") && fPackageMode && fRecursionDepth < 1) {
+          if (infixOperator.isOperator(";") && fScriptMode && fRecursionDepth < 1) {
             return infixOperator.createFunction(fFactory, lhs,
                 fFactory.createSymbol(IConstantOperators.Null));
           }
@@ -1328,7 +1363,7 @@ public class Parser extends Scanner {
    * @return
    * @throws SyntaxError
    */
-  public List<ASTNode> parsePackage(final String expression) throws SyntaxError {
+  public List<ASTNode> parseScript(final String expression) throws SyntaxError {
     String input = expression.trim();
     initialize(input);
     if (fToken == TT_EOF) {

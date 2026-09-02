@@ -22,7 +22,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
@@ -122,8 +122,8 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) result);
           html.raw(webglSnippet);
           return true;
-        } else if (result instanceof GraphExpr) {
-          String javaScriptStr = ((GraphExpr) result).graphToJSForm();
+        } else if (result instanceof IGraphExpr) {
+          String javaScriptStr = ((IGraphExpr) result).graphToJSForm();
           if (javaScriptStr != null) {
             String htmlStr = JSBuilder.VISJS_IFRAME;
             htmlStr = StringUtils.replace(htmlStr, "`1`", javaScriptStr);

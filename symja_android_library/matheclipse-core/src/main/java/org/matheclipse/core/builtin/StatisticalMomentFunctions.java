@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
 import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.statistics.IGeneratingFunction;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class StatisticalMomentFunctions {
   private static class Initializer {
@@ -672,7 +672,7 @@ public class StatisticalMomentFunctions {
    * <code>Log(E^(t*m+t^2*s^2/2))</code>.
    */
   private static IExpr logGeneratingFunction(IExpr mgf) {
-    if (mgf.isPower() && mgf.base().equals(S.E)) {
+    if (mgf.isPower() && mgf.base() == S.E) {
       return mgf.exponent();
     }
     if (mgf.isTimes()) {

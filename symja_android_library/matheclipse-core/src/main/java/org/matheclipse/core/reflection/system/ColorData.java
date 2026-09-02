@@ -107,12 +107,9 @@ public class ColorData extends AbstractFunctionEvaluator {
       return createColorDataFunction(g.name(), "Gradients", F.List(F.C0, F.C1));
     } catch (IllegalArgumentException e) {
       // Attempt to match insensitive and ignoring underscores
-      String search = name.replace(" ", "").replace("_", "").toUpperCase(Locale.US);
-      for (ColorDataGradients g : ColorDataGradients.values()) {
-        String gName = g.name().replace("_", "");
-        if (gName.equals(search)) {
-          return createColorDataFunction(g.name(), "Gradients", F.List(F.C0, F.C1));
-        }
+      ColorDataGradients g = gradientNamed(name);
+      if (g != null) {
+        return createColorDataFunction(g.name(), "Gradients", F.List(F.C0, F.C1));
       }
     }
 
@@ -125,6 +122,36 @@ public class ColorData extends AbstractFunctionEvaluator {
     }
 
     return F.NIL;
+  }
+
+  /**
+   * The gradient a name asks for, ignoring case, spaces and underscores.
+   *
+   * <p>
+   * A trailing <code>Colors</code> is dropped when nothing matches with it, because several schemes
+   * are named both ways - <code>AvocadoColors</code> and <code>Avocado</code> are the same scheme.
+   *
+   * @return the gradient, or <code>null</code> when no scheme goes by that name
+   */
+  private static ColorDataGradients gradientNamed(String name) {
+    String search = name.replace(" ", "").replace("_", "").toUpperCase(Locale.US);
+    ColorDataGradients found = gradientMatching(search);
+    if (found == null && search.endsWith("COLORS")) {
+      found = gradientMatching(search.substring(0, search.length() - "COLORS".length()));
+    }
+    return found;
+  }
+
+  private static ColorDataGradients gradientMatching(String search) {
+    if (search.isEmpty()) {
+      return null;
+    }
+    for (ColorDataGradients g : ColorDataGradients.values()) {
+      if (g.name().replace("_", "").equals(search)) {
+        return g;
+      }
+    }
+    return null;
   }
 
   private IExpr getAllGradients() {

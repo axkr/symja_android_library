@@ -28,6 +28,7 @@ public class ListPolarPlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }

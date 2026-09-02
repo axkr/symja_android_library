@@ -113,7 +113,7 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
 
     // Prepare Window Weights (Numeric)
     IExpr windowWeights = F.NIL;
-    if (!wfun.equals(F.DirichletWindow) && !wfun.equals(F.C1)) {
+    if (wfun != S.DirichletWindow && !wfun.equals(F.C1)) {
       if (wfun.isList()) {
         windowWeights = engine.evalN(wfun);
       } else {

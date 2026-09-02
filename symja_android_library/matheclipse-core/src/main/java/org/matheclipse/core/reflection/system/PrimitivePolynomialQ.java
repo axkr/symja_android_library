@@ -53,7 +53,7 @@ public class PrimitivePolynomialQ extends AbstractFunctionEvaluator {
     }
 
     // Reduce coefficients modulo p.
-    IExpr polyModP = engine.evaluate(F.binaryAST2(S.PolynomialMod, poly, p));
+    IExpr polyModP = engine.evaluate(F.PolynomialMod(poly, p));
     if (!polyModP.isPresent() || polyModP.isZero()) {
       return S.False;
     }
@@ -76,7 +76,7 @@ public class PrimitivePolynomialQ extends AbstractFunctionEvaluator {
 
     // Leading coefficient (mod p).
     IExpr lc =
-        engine.evaluate(F.binaryAST2(S.PolynomialMod, F.Coefficient(polyModP, var, nInt), p));
+        engine.evaluate(F.PolynomialMod(F.Coefficient(polyModP, var, nInt), p));
     if (!lc.isInteger() || lc.isZero()) {
       return S.False;
     }
@@ -89,7 +89,7 @@ public class PrimitivePolynomialQ extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       monicPoly =
-          engine.evaluate(F.binaryAST2(S.PolynomialMod, F.Expand(F.Times(lcInv, polyModP)), p));
+          engine.evaluate(F.PolynomialMod(F.Expand(F.Times(lcInv, polyModP)), p));
       if (!monicPoly.isPresent()) {
         return F.NIL;
       }
@@ -208,7 +208,7 @@ public class PrimitivePolynomialQ extends AbstractFunctionEvaluator {
     if (!rem.isPresent() || rem.isAST(S.PolynomialRemainder)) {
       return F.NIL;
     }
-    IExpr modded = engine.evaluate(F.binaryAST2(S.PolynomialMod, rem, p));
+    IExpr modded = engine.evaluate(F.PolynomialMod(rem, p));
     if (!modded.isPresent() || modded.isAST(S.PolynomialMod)) {
       return F.NIL;
     }

@@ -5,9 +5,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
@@ -23,7 +21,8 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    long precision = Solve.workingPrecision(ast, options[2], engine);
+    SolveOptions solveOptions = SolveOptions.of(SolveOptions.NSOLVE_KEYS, options);
+    long precision = Solve.workingPrecision(ast, solveOptions.workingPrecision(), engine);
     if (precision == Solve.INVALID_PRECISION) {
       return F.NIL;
     }
@@ -31,7 +30,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
       // the working precision was given as the fourth argument
       ast = ast.copyUntil(4);
     }
-    return solveNumeric(options, ast, precision, engine);
+    return solveNumeric(solveOptions, ast, precision, engine);
   }
 
   /**
@@ -53,7 +52,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    * @param engine the evaluation engine
    * @return the list of solution lists
    */
-  static IExpr solveNumeric(IExpr[] options, IAST ast, long precision, EvalEngine engine) {
+  static IExpr solveNumeric(SolveOptions options, IAST ast, long precision, EvalEngine engine) {
     if (precision == Solve.MACHINE_PRECISION_REQUESTED) {
       return new SolveData(options).of(ast, true, true, engine);
     }
@@ -77,15 +76,8 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
     return IFunctionEvaluator.ARGS_1_4;
   }
 
-  private static IExpr[] defaultOptionValues() {
-    return new IExpr[] {S.False, F.C1000, S.Automatic};
-  }
-
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IBuiltInSymbol[] optionKeys =
-        new IBuiltInSymbol[] {S.GenerateConditions, S.MaxRoots, S.WorkingPrecision};
-    IExpr[] optionValues = defaultOptionValues();
-    setOptions(newSymbol, optionKeys, optionValues);
+    setOptions(newSymbol, SolveOptions.NSOLVE_KEYS, SolveOptions.NSOLVE_DEFAULTS);
   }
 }

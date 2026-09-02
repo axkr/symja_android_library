@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
@@ -925,7 +924,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       if (numeratorDenominatorParts.isPresent()) {
         IExpr[] parts = numeratorDenominatorParts.get();
         if (x0.isZero() && parts[0].isPolynomial(x) && parts[1].isPolynomial(x)) {
-          IExpr sd = Algebra.polynomialTaylorSeries(parts, x, x0, n, denominator);
+          IExpr sd = AlgebraUtil.polynomialTaylorSeries(parts, x, x0, n, denominator);
           if (sd.isPresent()) {
             result = (ASTSeriesData) sd;
           }
@@ -1871,12 +1870,60 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   @Override
   public IASTAppendable copyAppendable() {
-    return F.NIL;
+    // An appendable copy is asked for in order to write into it, and a series cannot hold
+    // arbitrary contents: the coefficients are a map rather than a list. So the copy has to be
+    // the plain expression this series is equivalent to, exactly as setAtCopy() below falls back
+    // to it for the same reason. Answering NIL instead broke the contract every caller assumes -
+    // Operate, Map, MapAll, Rest, Most, Append, Prepend, Delete and Insert all wrote into the
+    // result without testing it and leaked the NIL into an expression.
+    return toPlainAST().copyAppendable();
+  }
+
+  /**
+   * The plain expression this series is equivalent to,
+   * <code>SeriesData(variable, point, coefficients, min, order, denominator)</code>.
+   *
+   * <p>
+   * A series answers a {@link #size()} of seven and serves every one of those positions from
+   * {@link #get(int)}, so the generic parts of the engine treat it as an ordinary six argument
+   * expression - they apply a new head to it, replace an argument, sort it. It cannot actually
+   * hold the result of any of those: the coefficients are a map rather than a list, and the last
+   * three arguments are machine integers. Where a write does not fit, the series gives up being a
+   * series rather than refusing the write, and this is what it becomes.
+   */
+  public IASTMutable toPlainAST() {
+    return F.function(head(), arg1(), arg2(), arg3(), arg4(), arg5(), F.ZZ(puiseuxDenominator));
+  }
+
+  /**
+   * A copy with one element replaced.
+   *
+   * <p>
+   * The inherited version copies and writes into the copy, and a series copy is another series,
+   * which throws for anything it cannot store - an {@code IndexOutOfBoundsException} escaping from
+   * <code>Apply(0, SeriesData(...))</code> and <code>Total(SeriesData(...))</code> among others.
+   * Replacing the head, or an argument with something of the wrong kind, simply means the answer
+   * is no longer a series.
+   */
+  @Override
+  public IASTMutable setAtCopy(int i, IExpr expr) {
+    if (i > 0 && i < size()) {
+      try {
+        ASTSeriesData series = copy();
+        series.set(i, expr);
+        return series;
+      } catch (IndexOutOfBoundsException iobe) {
+        // does not fit the series representation, fall through to the plain expression
+      }
+    }
+    IASTMutable plain = toPlainAST();
+    plain.set(i, expr);
+    return plain;
   }
 
   @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
-    return copyAppendable();
+    return toPlainAST().copyAppendable(additionalCapacity);
   }
 
   /**

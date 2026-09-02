@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.graphics;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -267,8 +268,12 @@ public class ParametricPlot extends Plot {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
     final ISymbol tSym = (ISymbol) rangeList.arg1();
-    final IExpr tMin = engine.evalN(rangeList.arg2());
-    final IExpr tMax = engine.evalN(rangeList.arg3());
+    // a quantity valued range is stripped to magnitudes; the variable stays a plain number
+    IAST tRange = QuantityFunctions.quantityPlotRange(engine.evaluate(rangeList.arg2()),
+        engine.evaluate(rangeList.arg3()), GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic),
+        engine);
+    final IExpr tMin = engine.evalN(tRange.isPresent() ? tRange.arg1() : rangeList.arg2());
+    final IExpr tMax = engine.evalN(tRange.isPresent() ? tRange.arg2() : rangeList.arg3());
     if ((!(tMin instanceof INum)) || (!(tMax instanceof INum)) || tMin.equals(tMax)) {
       return Errors.printMessage(ast.topHead(), "plld", F.List(tSym, rangeList), engine);
     }
@@ -306,8 +311,13 @@ public class ParametricPlot extends Plot {
     for (IExpr curveSpec : curveList) {
       if (!curveSpec.isList() || ((IAST) curveSpec).size() < 3)
         continue;
-      IExpr fx = ((IAST) curveSpec).arg1();
-      IExpr fy = ((IAST) curveSpec).arg2();
+      // quantity valued components are plotted by their magnitudes, one unit per axis
+      final IAST samplePoint = F.List(F.Rule(tSym, F.num((tMinD + tMaxD) / 2.0)));
+      IExpr targetUnits = GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic);
+      IExpr fx = QuantityFunctions.quantityPlotFunction(((IAST) curveSpec).arg1(), samplePoint,
+          targetUnits, 1, 2, engine);
+      IExpr fy = QuantityFunctions.quantityPlotFunction(((IAST) curveSpec).arg2(), samplePoint,
+          targetUnits, 2, 2, engine);
 
       IASTAppendable linePoints = F.ListAlloc(steps);
 

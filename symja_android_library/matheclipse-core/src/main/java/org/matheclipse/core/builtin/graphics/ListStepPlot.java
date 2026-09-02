@@ -31,6 +31,7 @@ public class ListStepPlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
     if (argSize < 1) {
       return F.NIL;
     }

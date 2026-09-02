@@ -22,7 +22,6 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.FieldSinhCosh;
-import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.CompareUtil;
@@ -307,6 +306,13 @@ public interface IExpr
   public static final int MARIXSYMBOLID = DATAID + 26;
 
   public static final int VECTORSYMBOLID = DATAID + 27;
+
+  /**
+   * A chemical structure. The wrapping <code>MoleculeExpr</code> lives in the
+   * <code>matheclipse-chem</code> module; only the id is owned here, like
+   * {@link #BIOSEQUENCEID}.
+   */
+  public static final int MOLECULEID = DATAID + 28;
 
   /**
    * Compares {@code a} expressions {@link #hierarchy()} number with the {@link #hierarchy()} number
@@ -2876,7 +2882,7 @@ public interface IExpr
    * @see #isRealResult()
    */
   default boolean isBooleanResult() {
-    if (S.True.equals(AbstractAssumptions.assumeBoolean(this))) {
+    if (AbstractAssumptions.assumeBoolean(this) == S.True) {
       return true;
     }
     return isBooleanFormula();
@@ -3575,7 +3581,7 @@ public interface IExpr
    * @see #isRealResult()
    */
   default boolean isIntegerResult() {
-    if (S.True.equals(AbstractAssumptions.assumeInteger(this))) {
+    if (AbstractAssumptions.assumeInteger(this) == S.True) {
       return true;
     }
     return this instanceof IInteger;
@@ -3743,10 +3749,10 @@ public interface IExpr
   /**
    * Test if this expression is a list of DirectedEdge or UndirectedEdge expressions
    *
-   * @return <code>true</code>, if the given expression is a list of DirectedEdge or UndirectedEdge
-   *         expressions
+   * @return the kind of graph the edges describe, or <code>null</code> if this expression is not a
+   *         list of edges
    */
-  default GraphType isListOfEdges() {
+  default EdgeListType isListOfEdges() {
     return null;
   }
 
@@ -3841,6 +3847,21 @@ public interface IExpr
    */
   default boolean isListOrAssociation() {
     return isList();
+  }
+
+  /**
+   * Determine the container type over which a function with the {@link ISymbol#LISTABLE} attribute
+   * threads this expression, if this expression appears as one of its arguments.
+   * <p>
+   * This is a single virtual call which replaces the {@link #isList()}, {@link #isAssociation()}
+   * and {@link #isSparseArray()} sequence in
+   * {@link org.matheclipse.core.eval.EvalEngine#threadASTListArgs(IAST, ISymbol, String)}.
+   *
+   * @return {@link S#List}, {@link S#Association} or {@link S#SparseArray}; <code>null</code> if
+   *         this expression is not threaded over by a {@link ISymbol#LISTABLE} function
+   */
+  default ISymbol listableContainerHead() {
+    return null;
   }
 
   /**
@@ -4857,7 +4878,7 @@ public interface IExpr
    * @see #isRealResult()
    */
   default boolean isRationalResult() {
-    if (S.True.equals(AbstractAssumptions.assumeRational(this))) {
+    if (AbstractAssumptions.assumeRational(this) == S.True) {
       return true;
     }
     return this instanceof IRational;
@@ -4934,7 +4955,7 @@ public interface IExpr
    * @see #isIntegerResult
    */
   default boolean isRealResult() {
-    if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
+    if (AbstractAssumptions.assumeReal(this) == S.True) {
       return true;
     }
     return this instanceof IReal;

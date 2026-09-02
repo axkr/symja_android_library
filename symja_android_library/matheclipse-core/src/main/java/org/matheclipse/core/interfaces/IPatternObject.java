@@ -45,7 +45,7 @@ import org.matheclipse.core.patternmatching.IPatternMap;
  * </p>
  * <ul>
  * <li><b>Head Test:</b> A constraint on the head of the expression being matched (e.g.,
- * {@code _Integer} matches only if {@code expr.head().equals(S.Integer)}).</li>
+ * {@code _Integer} matches only if {@code expr.head() == S.Integer}).</li>
  * <li><b>Condition:</b> An arbitrary boolean test that must pass for the match to succeed.</li>
  * <li><b>Default Value:</b> A value to use if the pattern is optional (e.g., {@code x_.}).</li>
  * </ul>

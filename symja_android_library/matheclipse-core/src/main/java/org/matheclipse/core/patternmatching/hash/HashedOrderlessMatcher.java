@@ -1,12 +1,16 @@
 package org.matheclipse.core.patternmatching.hash;
 
 import java.util.List;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.ruleindex.OrderlessHashStats;
+import org.matheclipse.core.patternmatching.ruleindex.OrderlessIndexValidation;
+import org.matheclipse.core.patternmatching.ruleindex.OrderlessPairIndex;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 /** Match two arguments of an <code>Orderless</code> AST into a new resulting expression. */
@@ -20,6 +24,17 @@ public class HashedOrderlessMatcher {
 
   protected OpenIntToList<AbstractHashedPatternRules> fHashRuleMap;
   protected OpenIntToList<AbstractHashedPatternRules> fPatternHashRuleMap;
+
+  /**
+   * Prefilters for the two rule maps, built on demand and dropped whenever a rule is added.
+   * <code>null</code> means "not built yet", {@link #NO_INDEX} means "not indexable".
+   */
+  private volatile OrderlessPairIndex fHashRuleIndex;
+
+  private volatile OrderlessPairIndex fPatternHashRuleIndex;
+
+  /** Marker for a rule map which cannot be indexed. */
+  private static final OrderlessPairIndex NO_INDEX = OrderlessPairIndex.noIndex();
 
   public HashedOrderlessMatcher() {
     this.fHashRuleMap = new OpenIntToList<AbstractHashedPatternRules>();
@@ -40,6 +55,7 @@ public class HashedOrderlessMatcher {
 
   public void defineHashRule(AbstractHashedPatternRules hashRule) {
     fHashRuleMap.put(hashRule.hashCode(), hashRule);
+    fHashRuleIndex = null;
   }
 
   /**
@@ -56,6 +72,7 @@ public class HashedOrderlessMatcher {
     AbstractHashedPatternRules hashRule =
         new HashedPatternRules(lhs1, lhs2, rhs, false, condition, true);
     fHashRuleMap.put(hashRule.hashCode(), hashRule);
+    fHashRuleIndex = null;
   }
 
   /**
@@ -98,6 +115,7 @@ public class HashedOrderlessMatcher {
     AbstractHashedPatternRules hashRule =
         new HashedPatternRules(lhs1, lhs2, rhs, false, condition, false);
     fPatternHashRuleMap.put(hashRule.hashCode(), hashRule);
+    fPatternHashRuleIndex = null;
   }
 
   /**
@@ -115,6 +133,7 @@ public class HashedOrderlessMatcher {
     AbstractHashedPatternRules hashRule =
         new HashedPatternRules(lhs1, lhs2, rhs, lhsNegate, condition, false);
     fPatternHashRuleMap.put(hashRule.hashCode(), hashRule);
+    fPatternHashRuleIndex = null;
   }
 
   /**
@@ -129,6 +148,10 @@ public class HashedOrderlessMatcher {
    */
   public IAST evaluateRepeated(final IAST orderlessAST, EvalEngine engine) {
     if (orderlessAST.isEvalFlagOn(IAST.IS_HASH_EVALED)) {
+      if (Config.ORDERLESS_HASH_STATISTICS) {
+        OrderlessHashStats.call(orderlessAST.head());
+        OrderlessHashStats.hashEvaledSkip(orderlessAST.head());
+      }
       return F.NIL;
     }
 
@@ -145,6 +168,9 @@ public class HashedOrderlessMatcher {
    * @see HashedPatternRules
    */
   public IAST evaluateRepeatedNoCache(final IAST orderlessAST, EvalEngine engine) {
+    if (Config.ORDERLESS_HASH_STATISTICS) {
+      OrderlessHashStats.call(orderlessAST.head());
+    }
     if (exists2ASTArguments(orderlessAST)) {
       IAST temp = orderlessAST;
       boolean evaled = false;
@@ -184,6 +210,8 @@ public class HashedOrderlessMatcher {
       if (evaled) {
         return setIsHashEvaledFlag(temp);
       }
+    } else if (Config.ORDERLESS_HASH_STATISTICS) {
+      OrderlessHashStats.gateReject(orderlessAST.head());
     }
     orderlessAST.addEvalFlags(IAST.IS_HASH_EVALED);
     return F.NIL;
@@ -208,8 +236,14 @@ public class HashedOrderlessMatcher {
    * @return
    */
   protected static boolean exists2ASTArguments(IAST ast) {
-    final int[] counter = {0};
-    return ast.exists(x -> x.isAST() && x.size() < MAX_AST_SIZE_ARGUMENT && ++counter[0] == 2);
+    int counter = 0;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isAST() && arg.size() < MAX_AST_SIZE_ARGUMENT && ++counter == 2) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -254,11 +288,56 @@ public class HashedOrderlessMatcher {
 
   protected IAST evaluateHashedValues(final IAST orderlessAST,
       OpenIntToList<AbstractHashedPatternRules> hashRuleMap, int[] hashValues, EvalEngine engine) {
+    final IExpr statsHead = Config.ORDERLESS_HASH_STATISTICS ? orderlessAST.head() : null;
+    if (statsHead != null) {
+      OrderlessHashStats.scan(statsHead, hashValues.length);
+    }
+    // while validating, the features are computed but not applied, so that the pair loop runs
+    // exactly like it did before the index existed and every rewrite can be checked against it
+    final boolean validate = Config.ORDERLESS_PAIR_INDEX_VALIDATE;
+    final OrderlessPairIndex index =
+        (Config.ORDERLESS_PAIR_INDEX || validate) ? ruleIndex(hashRuleMap) : null;
+    final int[] features = index == null ? null : new int[hashValues.length];
+    if (index != null) {
+      long present = 0L;
+      int known = 0;
+      for (int i = 0; i < hashValues.length; i++) {
+        int feature = -1;
+        if (hashValues[i] != 0 && orderlessAST.get(i + 1).size() < MAX_AST_SIZE_ARGUMENT) {
+          feature = index.featureId(hashValues[i]);
+        }
+        features[i] = feature;
+        if (feature >= 0) {
+          present |= 1L << feature;
+          known++;
+        }
+      }
+      if (known < 2) {
+        // no rule can select two of these arguments
+        if (statsHead != null) {
+          OrderlessHashStats.indexReject(statsHead);
+        }
+        if (!validate) {
+          return F.NIL;
+        }
+      }
+      // an argument whose rule partners are all absent cannot be part of any pair
+      for (int i = 0; i < features.length; i++) {
+        if (features[i] >= 0 && (index.pairedWith(features[i]) & present) == 0L) {
+          features[i] = -1;
+        }
+      }
+    }
+    final boolean filter = index != null && !validate;
     boolean evaled = false;
-    IASTAppendable result = orderlessAST.copyHead();
+    IASTAppendable result = null;
     for (int i = 0; i < hashValues.length - 1; i++) {
       if (hashValues[i] == 0 || orderlessAST.get(i + 1).size() >= MAX_AST_SIZE_ARGUMENT) {
         // already used entry OR size() of expression to big
+        continue;
+      }
+      if (filter && features[i] < 0) {
+        // no rule can select this argument
         continue;
       }
       evaled: for (int j = i + 1; j < hashValues.length; j++) {
@@ -266,9 +345,24 @@ public class HashedOrderlessMatcher {
           // already used entry OR size() of expression to big
           continue;
         }
+        if (filter && !index.pairPossible(features[i], features[j])) {
+          // no rule pairs these two arguments
+          continue;
+        }
+        if (statsHead != null) {
+          OrderlessHashStats.pair(statsHead);
+        }
         final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap
             .get(AbstractHashedPatternRules.calculateHashcode(hashValues[i], hashValues[j]));
         if (hashRuleList != null) {
+          if (statsHead != null) {
+            OrderlessHashStats.probeHit(statsHead, hashRuleList.size());
+          }
+          if (result == null) {
+            // the arguments which are not rewritten are appended after the loop; allocating here
+            // keeps the allocation out of the many scans which never reach a rule
+            result = orderlessAST.copyHead();
+          }
           for (AbstractHashedPatternRules hashRule : hashRuleList) {
 
             if (!hashRule.isPattern1() && !hashRule.isPattern2()) {
@@ -278,14 +372,16 @@ public class HashedOrderlessMatcher {
                   continue;
                 }
 
-                if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i, engine)) {
+                if (tryRule(result, orderlessAST, hashRule, hashValues, j, i, engine, statsHead,
+                    index, features)) {
                   evaled = true;
                   break evaled;
                 }
                 continue;
               }
 
-              if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j, engine)) {
+              if (tryRule(result, orderlessAST, hashRule, hashValues, i, j, engine, statsHead,
+                  index, features)) {
                 evaled = true;
                 break evaled;
               }
@@ -295,19 +391,22 @@ public class HashedOrderlessMatcher {
                 continue;
               }
 
-              if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i, engine)) {
+              if (tryRule(result, orderlessAST, hashRule, hashValues, j, i, engine, statsHead,
+                  index, features)) {
                 evaled = true;
                 break evaled;
               }
               continue;
             }
 
-            if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j, engine)) {
+            if (tryRule(result, orderlessAST, hashRule, hashValues, i, j, engine, statsHead, index,
+                features)) {
               evaled = true;
               break evaled;
             }
 
-            if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i, engine)) {
+            if (tryRule(result, orderlessAST, hashRule, hashValues, j, i, engine, statsHead, index,
+                features)) {
               evaled = true;
               break evaled;
             }
@@ -326,6 +425,55 @@ public class HashedOrderlessMatcher {
       return result;
     }
     return F.NIL;
+  }
+
+  /**
+   * The prefilter for a rule map, built on first use and dropped whenever a rule is added.
+   *
+   * @return the index, or <code>null</code> if the map cannot be indexed and every pair has to be
+   *         looked up
+   */
+  private OrderlessPairIndex ruleIndex(OpenIntToList<AbstractHashedPatternRules> hashRuleMap) {
+    final boolean patternMap = hashRuleMap == fPatternHashRuleMap;
+    OrderlessPairIndex index = patternMap ? fPatternHashRuleIndex : fHashRuleIndex;
+    if (index == null) {
+      index = OrderlessPairIndex.build(hashRuleMap);
+      if (index == null) {
+        index = NO_INDEX;
+      }
+      if (patternMap) {
+        fPatternHashRuleIndex = index;
+      } else {
+        fHashRuleIndex = index;
+      }
+    }
+    return index == NO_INDEX ? null : index;
+  }
+
+  /**
+   * Try one rule and, if the counters or the dual run check are enabled, record the attempt.
+   *
+   * @param statsHead the head to count the attempt for, or <code>null</code>
+   * @param index the prefilter of the rule map, or <code>null</code> if there is none
+   * @param features the index features of the arguments, or <code>null</code>
+   */
+  private boolean tryRule(IASTAppendable result, final IAST orderlessAST,
+      AbstractHashedPatternRules hashRule, int[] hashValues, int i, int j, EvalEngine engine,
+      IExpr statsHead, OrderlessPairIndex index, int[] features) {
+    final boolean validate = Config.ORDERLESS_PAIR_INDEX_VALIDATE;
+    final IExpr arg1 = validate ? orderlessAST.get(i + 1) : F.NIL;
+    final IExpr arg2 = validate ? orderlessAST.get(j + 1) : F.NIL;
+    final boolean fired =
+        updateHashValues(result, orderlessAST, hashRule, hashValues, i, j, engine);
+    if (statsHead != null) {
+      OrderlessHashStats.downRule(statsHead, fired);
+    }
+    if (fired && validate) {
+      // the pair was rewritten - the index must not have excluded it
+      boolean kept = index == null || index.pairPossible(features[i], features[j]);
+      OrderlessIndexValidation.checked(kept, orderlessAST, arg1, arg2, hashRule);
+    }
+    return fired;
   }
 
   protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST,

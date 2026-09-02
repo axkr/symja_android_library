@@ -91,6 +91,9 @@ public class SpecialFunctions {
 
   private static class Beta extends AbstractFunctionEvaluator implements IFunctionExpand {
 
+    /** Largest argument magnitude handed to the arbitrary precision routine. */
+    private static final double MAX_BETA_ARGUMENT = 1.0e6;
+
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       int argSize = ast.argSize();
@@ -358,6 +361,15 @@ public class SpecialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr argument = ast.get(i);
+        if (argument.isReal() && Math.abs(argument.evalf()) > MAX_BETA_ARGUMENT) {
+          // The arbitrary precision routine works through the magnitude of its arguments: 10^6
+          // takes under three seconds, 10^12 does not return, and the 1.7976931348623157*10^308
+          // the fuzzer found never did.
+          return F.NIL;
+        }
+      }
       if (ast.isAST2()) {
         // beta:
         IInexactNumber a = (IInexactNumber) ast.arg1();
@@ -1475,6 +1487,12 @@ public class SpecialFunctions {
 
   private static class LerchPhi extends AbstractFunctionEvaluator {
 
+    /** Highest {@code n} in {@code LerchPhi(z,-n,a)} expanded for a numeric {@code a}. */
+    private static final int MAX_NUMERIC_LERCH_ORDER = 256;
+
+    /** Highest {@code n} expanded when {@code a} is symbolic, where the growth is far steeper. */
+    private static final int MAX_SYMBOLIC_LERCH_ORDER = 10;
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
@@ -1555,6 +1573,24 @@ public class SpecialFunctions {
       if (s.isInteger() && ((IInteger) s).isNegative()) {
         try {
           int n = -((IInteger) s).toInt();
+          // The loop below runs n times and calls Together() on the result of each step, so what
+          // it costs is decided by how fast that rational function grows - which depends on a.
+          if (a.isNumber()) {
+            if (n > MAX_NUMERIC_LERCH_ORDER) {
+              // the coefficients stay numbers, so this is merely slow rather than explosive:
+              // n = 101 takes about three seconds, n = 1009 does not finish
+              return F.NIL;
+            }
+          } else if (!a.isSymbol() && !a.isAST()) {
+            // A string, or any other atom that is not algebraic. Together() still tries polynomial
+            // arithmetic on it, gets nowhere - "+x-*x is not a polynomial" - and does it again on
+            // a larger expression every step. LerchPhi(-13,-2,"") already never returned.
+            return F.NIL;
+          } else if (n > MAX_SYMBOLIC_LERCH_ORDER) {
+            // a is symbolic, so every step raises the degree in a as well as in x and the
+            // expression grows on both axes: n = 10 takes under a second, n = 15 does not finish
+            return F.NIL;
+          }
           // LerchPhi(z, -n, a) = (z d/dz + a)^n (1/(1-z))
           ISymbol x = F.Dummy("x");
           // Base case n=0: 1 / (1 - x)

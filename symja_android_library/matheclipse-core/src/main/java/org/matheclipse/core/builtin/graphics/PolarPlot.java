@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -171,8 +172,12 @@ public class PolarPlot extends Plot {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
     final ISymbol theta = (ISymbol) rangeList.arg1();
-    final IExpr tMin = engine.evalN(rangeList.arg2());
-    final IExpr tMax = engine.evalN(rangeList.arg3());
+    // a quantity valued range is stripped to magnitudes; the variable stays a plain number
+    IAST thetaRange = QuantityFunctions.quantityPlotRange(engine.evaluate(rangeList.arg2()),
+        engine.evaluate(rangeList.arg3()), GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic),
+        engine);
+    final IExpr tMin = engine.evalN(thetaRange.isPresent() ? thetaRange.arg1() : rangeList.arg2());
+    final IExpr tMax = engine.evalN(thetaRange.isPresent() ? thetaRange.arg2() : rangeList.arg3());
     if ((!(tMin instanceof INum)) || (!(tMax instanceof INum)) || tMin.equals(tMax)) {
       return Errors.printMessage(ast.topHead(), "plld", F.List(theta, rangeList), engine);
     }
@@ -188,8 +193,12 @@ public class PolarPlot extends Plot {
     int size = list.size();
     final IASTAppendable listOfLines = F.ListAlloc(size - 1);
 
+    final IExpr targetUnits = GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic);
+    final IAST samplePoint = F.List(F.Rule(theta, F.num((tMinD + tMaxD) / 2.0)));
     for (int i = 1; i < size; i++) {
-      IExpr function = list.get(i);
+      // a quantity valued radius is plotted by its magnitude
+      IExpr function =
+          QuantityFunctions.quantityPlotFunction(list.get(i), samplePoint, targetUnits, engine);
       double[][] data = null;
       // Use standard Plot sampler to get theta vs radius
       final UnaryNumerical hun = new UnaryNumerical(function, theta, Double.NaN, engine);

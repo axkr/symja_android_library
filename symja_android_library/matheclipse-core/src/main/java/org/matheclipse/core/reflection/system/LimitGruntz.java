@@ -202,10 +202,10 @@ public class LimitGruntz {
       boolean childChanged = false;
       for (int i = 1; i <= times.argSize(); i++) {
         IExpr arg = combineExponentials(times.get(i), engine);
-        if (arg.isPower() && arg.base().equals(S.E)) {
+        if (arg.isPower() && arg.base() == S.E) {
           eExponents.append(arg.exponent());
           combinedExp = true;
-        } else if (arg.equals(S.E)) {
+        } else if (arg == S.E) {
           eExponents.append(F.C1);
           combinedExp = true;
         } else {
@@ -231,7 +231,7 @@ public class LimitGruntz {
     if (expr.isPower()) {
       IExpr base = combineExponentials(expr.base(), engine);
       IExpr exp = combineExponentials(expr.exponent(), engine);
-      if (base.isPower() && base.base().equals(S.E)) {
+      if (base.isPower() && base.base() == S.E) {
         return F.Power(S.E, engine.evaluate(F.Expand(F.Times(base.exponent(), exp))));
       }
       if (base.equals(expr.base()) && exp.equals(expr.exponent())) {
@@ -1436,7 +1436,7 @@ public class LimitGruntz {
         // (c*w^v)^k = c^k * w^(v*k) (valid on the positive real branch used by Gruntz)
         return new IExpr[] {F.Times(b[0], exponent), F.Power(b[1], exponent)};
       }
-      if (base.equals(S.E)) {
+      if (base == S.E) {
         // E^f: only a plain w-power analysis survives if f converges as w->0+
         IExpr[] f = leadingWPower(exponent, w, engine);
         if (f == null) {
@@ -1595,7 +1595,7 @@ public class LimitGruntz {
             IExpr base = ast.base();
             IExpr exponent = ast.exponent();
 
-            if (base.equals(S.E)) {
+            if (base == S.E) {
               IExpr argMrv = mrv(exponent, x, engine);
               // Gruntz restriction: Exp(f) is only rapidly varying if f diverges - see
               // mrvExponentLimit for how that limit is computed.
@@ -1801,7 +1801,7 @@ public class LimitGruntz {
       IExpr head = ast.head();
 
       // Match Log(Gamma(...)), Log(Factorial(...)), Log(Pochhammer(...))
-      if (head.equals(S.Log) && ast.arg1().isAST()) {
+      if (head == S.Log && ast.arg1().isAST()) {
         IAST innerAst = (IAST) ast.arg1();
         switch (innerAst.validHeadID()) {
           case ID.Factorial: {
@@ -1828,13 +1828,13 @@ public class LimitGruntz {
             return stirlingLogGamma(arg, engine);
           }
         }
-      } else if (head.equals(S.LogGamma)) {
+      } else if (head == S.LogGamma) {
         IExpr arg = replaceLogStirling(ast.arg1(), x, engine);
         if (!divergesAtInfinity(arg, x)) {
           return F.LogGamma(arg);
         }
         return stirlingLogGamma(arg, engine);
-      } else if (head.equals(S.PolyGamma) && ast.argSize() == 2 && ast.arg1().isZero()) {
+      } else if (head == S.PolyGamma && ast.argSize() == 2 && ast.arg1().isZero()) {
         // Digamma: PolyGamma(0, z) ~ Log(z) - 1/(2z) for a divergent argument free of
         // nested PolyGamma (the arg was already recursed, so psi(psi(x)) arrives here
         // with the inner level expanded; Log-bearing args are fine - see mrv PolyGamma)
@@ -1934,8 +1934,8 @@ public class LimitGruntz {
       IAST ast = (IAST) expr;
       IExpr head = ast.head();
 
-      if (head.equals(S.Limit) || head.equals(S.Derivative) || head.equals(S.Integrate)
-          || head.equals(S.Sum) || head.equals(S.Product) || head.equals(S.O)) {
+      if (head == S.Limit || head == S.Derivative || head == S.Integrate
+          || head == S.Sum || head == S.Product || head == S.O) {
         return expr;
       }
 

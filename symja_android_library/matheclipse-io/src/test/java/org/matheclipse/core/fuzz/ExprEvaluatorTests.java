@@ -121,7 +121,7 @@ public class ExprEvaluatorTests {
    * package of top-level expressions.
    *
    * <p>
-   * Each input line is followed by two extra newlines so that {@link Parser#parsePackage(String)}
+   * Each input line is followed by two extra newlines so that {@link Parser#parseScript(String)}
    * reliably treats consecutive lines as the start of a new rule. The file is parsed with
    * {@link ASTNodeFactory#RELAXED_STYLE_FACTORY relaxed syntax} so that both {@code f(x)} and
    * {@code f[x]} forms are accepted.
@@ -148,8 +148,8 @@ public class ExprEvaluatorTests {
       f.close();
       String inputString = buff.toString();
       Parser p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true, true);
-      return p.parsePackage(inputString);
-      // return p.parsePackage(inputString);
+      return p.parseScript(inputString);
+      // return p.parseScript(inputString);
 
       // assertEquals(obj.toString(),
       // "Plus[Plus[Times[-1, a], Times[-1, Times[b, Factorial2[c]]]], d]");

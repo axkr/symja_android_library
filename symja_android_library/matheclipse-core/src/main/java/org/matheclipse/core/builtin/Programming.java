@@ -76,6 +76,7 @@ public final class Programming {
       S.Interrupt.setEvaluator(new Interrupt());
       S.List.setEvaluator(new ListFunction());
       S.Module.setEvaluator(new Module());
+      S.DynamicModule.setEvaluator(new DynamicModule());
       S.Nest.setEvaluator(new Nest());
       S.NestList.setEvaluator(new NestList());
       S.NestWhile.setEvaluator(new NestWhile());
@@ -1553,6 +1554,61 @@ public final class Programming {
    *
    *
    * <pre>
+   * DynamicModule({list_of_local_variables}, expr )
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by renaming local
+   * variables, the way <code>Module</code> does.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * What <code>DynamicModule</code> adds in a notebook is how long the localization lasts: its
+   * variables belong to the interactive object it produced and survive for as long as that object
+   * is on screen, rather than only for the one evaluation. That is a property of the displayed
+   * object, so where there is nothing displaying it the two are the same thing - which is what
+   * makes <code>DynamicModule[{x = 0}, x^2]</code> answer <code>0</code> here.
+   *
+   * <p>
+   * Options such as <code>Initialization</code> may follow the body and are ignored.
+   */
+  private static final class DynamicModule extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
+      if (moduleVariablesList.isPresent()) {
+        IExpr temp = moduleSubstVariables(moduleVariablesList, ast.arg2(), engine);
+        if (temp.isPresent()) {
+          return engine.evaluate(temp);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
    * Nest(f, expr, n)
    * </pre>
    *
@@ -1830,7 +1886,7 @@ public final class Programming {
       IExpr test = ast.arg3();
       int m = 1;
       if (ast.argSize() >= 4) {
-        if (ast.arg4().equals(S.All)) {
+        if (ast.arg4() == S.All) {
           m = -1;
         } else {
           int tmpInt = ast.arg4().toMachineInt();
@@ -2179,7 +2235,7 @@ public final class Programming {
       }
 
       IExpr arg1 = ast.first();
-      if (ast.isAST2() && ast.second().equals(S.Unique)) {
+      if (ast.isAST2() && ast.second() == S.Unique) {
         IdentityHashMap<ISymbol, ISymbol> map = null;
         enableOnOffTrace(arg1, map, engine);
         engine.setOnOffMode(true, map, true);
@@ -2194,7 +2250,7 @@ public final class Programming {
     private void enableOnOffTrace(IExpr arg1, IdentityHashMap<ISymbol, ISymbol> map,
         EvalEngine engine) {
 
-      if (!arg1.equals(S.All)) {
+      if (arg1 != S.All) {
         IAST list = F.list(arg1);
         if (arg1.isList()) {
           list = (IAST) arg1;
@@ -2584,8 +2640,26 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       Deque<IExpr> stack = engine.getStack();
-      java.util.Iterator<IExpr> iter = stack.descendingIterator();
-      IASTAppendable result = F.ListAlloc(stack.size());
+      // Iterate a snapshot rather than the engine's own stack. Testing a pattern against an entry
+      // evaluates, and evaluating pushes onto that very stack, so the walk below invalidated its
+      // own iterator, and Stack({{{1,0},{2,3}},{{4,a},{1}}}) answered a
+      // ConcurrentModificationException instead of the entries. toArray gives them oldest first,
+      // the reverse of what descendingIterator walks.
+      IExpr[] entries = stack.toArray(new IExpr[stack.size()]);
+      java.util.Iterator<IExpr> iter = new java.util.Iterator<IExpr>() {
+        private int index = entries.length;
+
+        @Override
+        public boolean hasNext() {
+          return index > 0;
+        }
+
+        @Override
+        public IExpr next() {
+          return entries[--index];
+        }
+      };
+      IASTAppendable result = F.ListAlloc(entries.length);
       if (ast.isAST1()) {
         IExpr pattern = ast.arg1();
         if (pattern.isBlank()) {

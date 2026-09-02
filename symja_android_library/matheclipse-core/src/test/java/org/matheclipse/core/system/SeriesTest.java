@@ -5,6 +5,32 @@ import org.matheclipse.core.basic.Config;
 
 public class SeriesTest extends ExprEvaluatorTestCase {
 
+  /**
+   * A series is an object, not a six element collection, but it answers a size of seven and serves
+   * every position, so the generic parts of the engine rearrange and rebuild it. What comes out is
+   * then no series at all, and saying so is better than throwing from inside the representation.
+   *
+   * <p>
+   * Mathematica reports the same two complaints, word for word, and returns the malformed
+   * expression rather than a value.
+   */
+  @Test
+  public void testMalformedSeriesData() {
+    // the power denominator was read through whatever toMachineInt answered and became part of the
+    // exponents: this used to evaluate to 1+1/O(x)^(3/2147483648)
+    check("Activate(SeriesData(x,0,{1},0,3,Undefined))", "SeriesData(x,0,{1},0,3,Undefined)");
+    check("SeriesData(x,0,{1},0,3,Undefined)", "SeriesData(x,0,{1},0,3,Undefined)");
+    check("SeriesData(x,0,{1},0,3,0)", "SeriesData(x,0,{1},0,3,0)");
+    check("SeriesData(x,0,{1},0,3,-1)", "SeriesData(x,0,{1},0,3,-1)");
+    // a coefficient specification which is not a list
+    check("SeriesData(x,0,3,0,3,1)", "SeriesData(x,0,3,0,3,1)");
+    // sorting a series yields the plain expression it stands for; this used to throw
+    check("Intersection(SeriesData(x,0,{1},0,3,1))", "{0,1,3,x,{1}}");
+    // and a well formed series is unaffected
+    check("SeriesData(x,0,{1},0,3,1)", "1+O(x)^3");
+    check("Series(Exp(x),{x,0,3})", "1+x+x^2/2+x^3/6+O(x)^4");
+  }
+
   @Test
   public void testComposeSeries() {
     check("ComposeSeries(Series(1/(1-y), {y, 0, 2}), Series(x^2, {x, 0, 5})) // InputForm", //

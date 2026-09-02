@@ -513,6 +513,18 @@ public class PolynomialFunctions {
         }
       }
 
+      if (argSize >= 2) {
+        // Only a list the caller passed is checked. The one derived from Variables() below holds
+        // whatever the expression actually contains, which is by construction a variable.
+        for (int i = 1; i < varList.size(); i++) {
+          IExpr variable = varList.get(i);
+          if (!variable.isVariable()) {
+            // `1` is not a valid variable.
+            return Errors.printMessage(S.CoefficientArrays, "ivar", F.List(variable), engine);
+          }
+        }
+      }
+
       int numVars = varList.argSize();
       int numPolys = polyList.argSize();
 
@@ -532,7 +544,11 @@ public class PolynomialFunctions {
             if (deg > maxDegree) {
               maxDegree = deg;
             }
-          } catch (JASConversionException rex) {
+          } catch (JASConversionException | ArithmeticException rex) {
+            // ExprPolynomialRing#create answers an ArithmeticException rather than a
+            // JASConversionException for an exponent it cannot use - a negative one as in
+            // 1/$Aborted, or a rational one - and it means the same thing here: the argument is
+            // not a polynomial.
             return Errors.printMessage(S.CoefficientArrays, "poly", F.List(ast.arg1()), engine);
           }
         }
@@ -621,7 +637,11 @@ public class PolynomialFunctions {
               }
               rules.append(F.Rule(keyList, coeff));
             }
-          } catch (JASConversionException rex) {
+          } catch (JASConversionException | ArithmeticException rex) {
+            // ExprPolynomialRing#create answers an ArithmeticException rather than a
+            // JASConversionException for an exponent it cannot use - a negative one as in
+            // 1/$Aborted, or a rational one - and it means the same thing here: the argument is
+            // not a polynomial.
             return Errors.printMessage(S.CoefficientArrays, "poly", F.List(ast.arg1()), engine);
           }
         }
@@ -2673,6 +2693,18 @@ public class PolynomialFunctions {
    */
   static final class LegendreQ extends AbstractFunctionEvaluator
       implements IFunctionExpand {
+    /**
+     * @param n a Legendre degree, whatever numeric type it arrived as
+     * @return {@code true} if it is an even integer
+     */
+    private static boolean isEvenLegendreDegree(IInexactNumber n) {
+      if (!n.isReal()) {
+        return false;
+      }
+      double degree = n.evalf();
+      return degree == Math.rint(degree) && degree % 2.0 == 0.0;
+    }
+
     private static IExpr legendreQ(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
       int ni = n.toIntDefault();
       if (F.isPresent(ni)) {
@@ -2910,11 +2942,21 @@ public class PolynomialFunctions {
         IExpr temp = F.NIL;
         if (ast.isAST2()) {
           z = (IInexactNumber) ast.arg2();
+          if (z.isZero() && isEvenLegendreDegree(n)) {
+            // Q(n, 0) is zero for an even n, which the exact path already answers for
+            // LegendreQ(2, 0). The arbitrary precision routine does not converge at exactly this
+            // point for an even degree - LegendreQ(2, 0.0), (4, 0.0) and (6, 0.0) never returned -
+            // although either side of it is fine: Q(2, +/-10^-7) is -/+2*10^-7.
+            return F.CD0;
+          }
           temp = n.legendreQ(z);
         } else {
           final IInexactNumber m = (IInexactNumber) ast.arg2();
           z = (IInexactNumber) ast.arg3();
           if (m.isZero()) {
+            if (z.isZero() && isEvenLegendreDegree(n)) {
+              return F.CD0;
+            }
             temp = n.legendreQ(z);
           } else {
             temp = n.legendreQ(m, z);
@@ -3433,7 +3475,7 @@ public class PolynomialFunctions {
         if (size <= 0) {
           // 0x0 determinant by convention
           result.append(
-              useMod ? engine.evaluate(F.binaryAST2(S.PolynomialMod, F.C1, modulus)) : F.C1);
+              useMod ? engine.evaluate(F.PolynomialMod(F.C1, modulus)) : F.C1);
           continue;
         }
         // rows: the top (n-j) shift-rows of the first polynomial and the top (m-j) shift-rows of
@@ -3457,7 +3499,7 @@ public class PolynomialFunctions {
         // normalizes it
         IExpr det = engine.evaluate(F.Expand(F.Det(matrix)));
         if (useMod) {
-          det = engine.evaluate(F.binaryAST2(S.PolynomialMod, det, modulus));
+          det = engine.evaluate(F.PolynomialMod(det, modulus));
           det = signedSwapRepresentative(det, m, n, j, modulus, engine);
         }
         result.append(det);
@@ -3493,7 +3535,7 @@ public class PolynomialFunctions {
      * Reduce every coefficient of <code>coefficientList</code> modulo <code>modulus</code>.
      */
     private static IAST polynomialModList(IAST coefficientList, IExpr modulus, EvalEngine engine) {
-      return coefficientList.mapThread(F.binaryAST2(S.PolynomialMod, F.Slot1, modulus), 1)
+      return coefficientList.mapThread(F.PolynomialMod(F.Slot1, modulus), 1)
           .mapThread(engine::evaluate);
     }
 
@@ -3534,6 +3576,9 @@ public class PolynomialFunctions {
 
   private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
  {
+    /** Highest degree summed over; 5000 already takes five seconds. */
+    private static final int MAX_SPHERICAL_DEGREE = 5000;
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
@@ -3541,6 +3586,13 @@ public class PolynomialFunctions {
       IExpr m = ast.arg2();
       IExpr t = ast.arg3();
       IExpr p = ast.arg4();
+
+      if (l.isReal() && Math.abs(l.evalf()) > MAX_SPHERICAL_DEGREE) {
+        // The sum below runs over the degree and reaches LegendreP with it, which at a degree this
+        // large asks apfloat for numbers big enough that it wants to page them to disk. A degree of
+        // 5000 already takes five seconds and 20000 does not return.
+        return F.NIL;
+      }
 
       IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
       if (temp.isPresent()) {
@@ -3620,6 +3672,11 @@ public class PolynomialFunctions {
         IInexactNumber m = (IInexactNumber) ast.arg2();
         IInexactNumber t = (IInexactNumber) ast.arg3();
         IInexactNumber p = (IInexactNumber) ast.arg4();
+        if (l.isReal() && Math.abs(l.evalf()) > MAX_SPHERICAL_DEGREE) {
+          // The same bound as in evaluate() above. In numeric mode this method is what runs, so a
+          // guard placed only there never sees a call like SphericalHarmonicY(20000, 1, 0.5, 0.5).
+          return F.NIL;
+        }
         IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
         if (temp.isPresent()) {
           return temp;

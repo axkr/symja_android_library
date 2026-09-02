@@ -1097,9 +1097,34 @@ public class SeriesFunctions {
     private static final ThreadLocal<java.util.Set<IExpr>> HOLONOMIC_GUARD =
         ThreadLocal.withInitial(java.util.HashSet::new);
 
+    /**
+     * Whether {@code spec} names a variable to expand in: either the variable itself, or a
+     * <code>{x, x0, n}</code> list whose first element is one.
+     *
+     * @param spec one of the arguments after the expression
+     * @return {@code true} if a series can be taken with respect to it
+     */
+    private static boolean isSeriesSpecification(IExpr spec) {
+      if (spec.isVariable()) {
+        return true;
+      }
+      return spec.isList3() && ((IAST) spec).arg1().isVariable();
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() > 2) {
+        // Every specification has to be one before any folding starts. One that is not - an
+        // Interval, a Rule, a pattern - does not evaluate, so the fold wraps the whole expression
+        // in another unevaluated SeriesCoefficient and carries on, and the nesting deepens with
+        // each argument. A later argument that *is* a specification then expands that nest, and
+        // the result grows about elevenfold per level: depth 1 answers 28 characters, depth 3
+        // answers 28531, and the nine argument calls the fuzzer found never returned at all.
+        for (int i = 2; i <= ast.argSize(); i++) {
+          if (!isSeriesSpecification(ast.get(i))) {
+            return F.NIL;
+          }
+        }
         IExpr currentExpr = ast.arg1();
         for (int i = 2; i <= ast.argSize(); i++) {
           currentExpr = engine.evaluate(F.SeriesCoefficient(currentExpr, ast.get(i)));
@@ -1160,6 +1185,14 @@ public class SeriesFunctions {
 
           IAST list = (IAST) ast.arg2();
           IExpr x = list.arg1();
+          if (!x.isVariable()) {
+            // Everything below builds substitution rules keyed on x. A literal there gives a rule
+            // that matches in places it was never meant to and rewrites them into something that
+            // matches again, so the substitution never reaches a fixed point and runs out of
+            // stack rather than answering.
+            // `1` is not a valid variable.
+            return Errors.printMessage(S.SeriesCoefficient, "ivar", F.List(x), engine);
+          }
           IExpr x0 = list.arg2();
 
           IExpr n = list.arg3();
@@ -2017,6 +2050,15 @@ public class SeriesFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int denominator = 1;
       if (ast.size() == 6 || ast.size() == 7) {
+        if (ast.arg3().isVector() < 0 || !ast.arg3().isAST()) {
+          // Before the numeric first argument below, which is how Mathematica orders the two: an
+          // argument list that does not describe a series at all is reported as such rather than
+          // read as a request to evaluate one somewhere. Dropping an argument from a series -
+          // Rest() or Delete() of one - shifts a number into this position, and the "evaluate at
+          // a number" path then answered Indeterminate where Mathematica answers sdatc.
+          // Coefficient specification `1` in `2` is not a list.
+          return Errors.printMessage(S.SeriesData, "sdatc", F.List(ast.arg3(), ast), engine);
+        }
         if (ast.arg1().isNumber()) {
           // Attempt to evaluate a series at the number `1`. Returning Indeterminate.
           Errors.printMessage(S.SeriesData, "ssdn", F.List(), engine);
@@ -2025,9 +2067,6 @@ public class SeriesFunctions {
         IExpr x = ast.arg1();
         IExpr x0 = ast.arg2();
 
-        if (ast.arg3().isVector() < 0 || !ast.arg3().isAST()) {
-          return F.NIL;
-        }
         IAST coefficients = (IAST) ast.arg3();
         final int nMin = ast.arg4().toMachineInt();
         if (F.isNotPresent(nMin)) {
@@ -2039,10 +2078,25 @@ public class SeriesFunctions {
         }
         if (ast.size() == 7) {
           denominator = ast.get(6).toMachineInt();
+          if (F.isNotPresent(denominator) || denominator < 1) {
+            // The exponents of a Puiseux series are divided by this, so anything but a positive
+            // machine integer describes no series at all. It was read straight through, and
+            // SeriesData(x,0,{1},0,3,Undefined) became 1+1/O(x)^(3/2147483648) - the denominator
+            // silently taken from what toMachineInt answers when it cannot convert.
+            // Power denominator specification `1` in `2` is not a positive machine-sized integer.
+            return Errors.printMessage(S.SeriesData, "sdatd", F.List(ast.get(6), ast), engine);
+          }
         }
         return new ASTSeriesData(x, x0, coefficients, nMin, truncate, denominator);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // Without a declared arity nothing checked the count, so Append() of a series produced a
+      // seven argument SeriesData that was simply left standing. Mathematica reports argb.
+      return ARGS_3_6;
     }
 
     @Override

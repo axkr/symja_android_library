@@ -149,7 +149,7 @@ public class DifferentialTower {
       collector.add(ast);
       return;
     }
-    if (ast.isPower() && ast.base().equals(S.E) && !ast.exponent().isFree(x, true)) {
+    if (ast.isPower() && ast.base() == S.E && !ast.exponent().isFree(x, true)) {
       collectMonomials(ast.exponent(), x, collector);
       collector.add(ast);
       return;

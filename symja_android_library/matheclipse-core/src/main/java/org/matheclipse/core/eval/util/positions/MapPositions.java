@@ -91,7 +91,7 @@ public class MapPositions {
 
   protected IAST mapAtRecursive(IAST ast) {
     IExpr position = positions.get(level);
-    if (position.equals(S.All)) {
+    if (position == S.All) {
       return mapAtRecursiveSpan(ast, 1, ast.size(), 1);
     }
     if (position.isAST(S.Span, 3, 4)) {

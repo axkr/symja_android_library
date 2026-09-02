@@ -43,6 +43,7 @@ public class RegionDimension extends AbstractFunctionEvaluator {
           case ID.Circle:
           case ID.HalfLine:
           case ID.InfiniteLine:
+          case ID.Interval:
             return 1;
           case ID.Triangle:
           case ID.Polygon:
@@ -51,6 +52,7 @@ public class RegionDimension extends AbstractFunctionEvaluator {
           case ID.Annulus:
           case ID.Torus:
           case ID.Parallelogram:
+          case ID.RegularPolygon:
           case ID.HalfPlane:
           case ID.InfinitePlane:
           case ID.StadiumShape:
@@ -60,11 +62,17 @@ public class RegionDimension extends AbstractFunctionEvaluator {
             return ast.argSize() == 3 ? 2 : -1;
           case ID.FilledTorus:
           case ID.SphericalShell:
-          case ID.CapsuleShape:
             return 3;
-          case ID.HalfSpace:
-            // a half-space is full dimensional
+          case ID.CapsuleShape:
+            // a capsule is full dimensional - in the plane it is a stadium
             return RegionEmbeddingDimension.getEmbeddingDimension(ast);
+          case ID.HalfSpace:
+          case ID.FullRegion:
+            // a half-space and the whole space are full dimensional
+            return RegionEmbeddingDimension.getEmbeddingDimension(ast);
+          case ID.ParametricRegion:
+            // ParametricRegion({x1,...}, {params}) is swept out by its parameters
+            return ast.argSize() == 2 && ast.arg2().isList() ? ast.arg2().argSize() : -1;
           case ID.Cylinder:
           case ID.Cone:
           case ID.Tetrahedron:

@@ -42,7 +42,6 @@ public class SymjaBotTest {
     Config.PRIME_FACTORS = new BigIntegerPrimality();
     EvalEngine.get().setPackageMode(true);
     F.initSymbols();
-    SymjaBot.initFunctions();
   }
 
   @Test

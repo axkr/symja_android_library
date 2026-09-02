@@ -12,11 +12,24 @@ import j2html.tags.ContainerTag;
 public final class SvgRenderer2D {
 
   /**
-   * Upper bound on the number of rectangles a single raster may emit. The renderer that turns this
-   * SVG back into a bitmap caps a document at 100000 elements, so a raster is downsampled rather
-   * than allowed to blow past that on its own.
+   * Upper bound on the number of rectangles a single raster may emit. A raster that would need more
+   * than this is drawn as an embedded bitmap instead.
+   *
+   * <p>
+   * The limit is low because a rectangle costs about eighty characters while a pixel of a
+   * compressed bitmap costs well under one: past a few hundred shapes the bitmap is smaller by an
+   * order of magnitude and looks the same, since it is drawn unsmoothed at the resolution of the
+   * cells. What the rectangles are still better at is the small flat picture, which stays crisp at
+   * any zoom and costs almost nothing either way.
    */
-  private static final int MAX_RASTER_RECTS = 20000;
+  private static final int MAX_RASTER_RECTS = 1000;
+
+  /**
+   * Upper bound on the number of pixels the embedded bitmap may hold. Only a raster with more cells
+   * than this loses any of them, which no plot produces on its own: it is a guard against an
+   * arbitrarily large {@code Raster} written out by hand.
+   */
+  private static final int MAX_RASTER_PIXELS = 4_000_000;
 
   private final Viewport2D viewport;
   private final GraphicsOptions2D options;
@@ -44,14 +57,39 @@ public final class SvgRenderer2D {
   // --------------------------------------------------------------- styling
 
   /**
+   * Apply fill and stroke to an element whose stroke is the outline of a filled shape.
+   *
+   * <p>
+   * An outline keeps its own transparency: {@code Opacity} tints the face and leaves the frame
+   * around it alone.
+   */
+  private void paintEdged(ContainerTag<?> tag, Style2D style, Color fill, Color stroke) {
+    paint(tag, style, fill, stroke, true);
+  }
+
+  /**
    * Apply fill and stroke to an element.
    *
    * @param fill the fill colour, or {@code null} for no fill
    * @param stroke the stroke colour, or {@code null} for no stroke
    */
   private void paint(ContainerTag<?> tag, Style2D style, Color fill, Color stroke) {
+    paint(tag, style, fill, stroke, false);
+  }
+
+  /**
+   * Apply fill and stroke to an element.
+   *
+   * @param fill the fill colour, or {@code null} for no fill
+   * @param stroke the stroke colour, or {@code null} for no stroke
+   * @param strokeIsEdge whether the stroke is an {@code EdgeForm} outline rather than the
+   *        primitive's own line, which decides whose transparency it takes
+   */
+  private void paint(ContainerTag<?> tag, Style2D style, Color fill, Color stroke,
+      boolean strokeIsEdge) {
     double fillAlpha = ColorUtil.alphaOf(fill, style.opacity);
-    double strokeAlpha = ColorUtil.alphaOf(stroke, style.opacity);
+    double strokeAlpha =
+        ColorUtil.alphaOf(stroke, strokeIsEdge ? style.edgeOpacity : style.opacity);
     tag.attr("fill", fill == null ? "none" : ColorUtil.css(fill));
     if (fill != null && fillAlpha < 1.0) {
       tag.attr("fill-opacity", fmt(fillAlpha));
@@ -89,7 +127,16 @@ public final class SvgRenderer2D {
   public void draw(List<Prim2D> primitives, ContainerTag<?> parent) {
     for (Prim2D p : primitives) {
       try {
-        p.render(this, parent);
+        String tooltip = p.style.tooltip;
+        if (tooltip == null || tooltip.isEmpty()) {
+          p.render(this, parent);
+        } else {
+          // an SVG <title> is what a viewer shows on hover, and it has to be a child of the
+          // element it describes - so the primitive gets a group of its own to hang it on
+          ContainerTag<?> group = tag("g").with(tag("title").withText(tooltip));
+          p.render(this, group);
+          parent.with(group);
+        }
       } catch (RuntimeException rex) {
         // one primitive failing must not cost the rest of the picture
       }
@@ -163,7 +210,7 @@ public final class SvgRenderer2D {
     if (!prim.holes.isEmpty()) {
       path.attr("fill-rule", "evenodd");
     }
-    paint(path, prim.style, prim.style.effectiveFill(), edgeStroke(prim.style));
+    paintEdged(path, prim.style, prim.style.effectiveFill(), edgeStroke(prim.style));
     parent.with(path);
   }
 
@@ -187,7 +234,7 @@ public final class SvgRenderer2D {
     }
     Color stroke = edgeStroke(prim.style);
     Color fill = prim.style.effectiveFill();
-    paint(rect, prim.style, fill, stroke);
+    paintEdged(rect, prim.style, fill, stroke);
     if (stroke == null && fill != null && fill.getAlpha() > 0) {
       // abutting cells of a matrix plot otherwise show hairline seams
       rect.attr("shape-rendering", "crispEdges");
@@ -223,7 +270,7 @@ public final class SvgRenderer2D {
         ellipse.attr("transform", String.format(Locale.US, "rotate(%.4f %s %s)",
             -Math.toDegrees(prim.rotation), fmt(cx), fmt(cy)));
       }
-      paint(ellipse, prim.style, fill, stroke);
+      paint(ellipse, prim.style, fill, stroke, prim.filled);
       parent.with(ellipse);
       return;
     }
@@ -240,7 +287,7 @@ public final class SvgRenderer2D {
       path.attr("transform", String.format(Locale.US, "rotate(%.4f %s %s)",
           -Math.toDegrees(prim.rotation), fmt(cx), fmt(cy)));
     }
-    paint(path, prim.style, fill, stroke);
+    paint(path, prim.style, fill, stroke, prim.filled);
     parent.with(path);
   }
 
@@ -252,7 +299,7 @@ public final class SvgRenderer2D {
       return;
     }
     ContainerTag<?> path = tag("path").attr("d", d.toString().trim());
-    paint(path, prim.style, fill, stroke);
+    paint(path, prim.style, fill, stroke, prim.filled);
     parent.with(path);
   }
 
@@ -566,7 +613,7 @@ public final class SvgRenderer2D {
     }
     ContainerTag<?> path = tag("path").attr("d", d.toString().trim());
     paint(path, prim.style, prim.filled ? prim.style.effectiveFill() : null,
-        prim.filled ? edgeStroke(prim.style) : prim.style.strokeColor);
+        prim.filled ? edgeStroke(prim.style) : prim.style.strokeColor, prim.filled);
     parent.with(path);
   }
 
@@ -585,7 +632,7 @@ public final class SvgRenderer2D {
     }
     ContainerTag<?> path = tag("path").attr("d", d.toString().trim());
     paint(path, prim.style, prim.filled ? prim.style.effectiveFill() : null,
-        prim.filled ? edgeStroke(prim.style) : prim.style.strokeColor);
+        prim.filled ? edgeStroke(prim.style) : prim.style.strokeColor, prim.filled);
     parent.with(path);
   }
 
@@ -603,48 +650,128 @@ public final class SvgRenderer2D {
     if (cols == 0) {
       return;
     }
-    // downsample rather than emit more rectangles than a consuming renderer will accept
-    int rowStep = 1;
-    int colStep = 1;
-    while ((long) (rows / rowStep) * (cols / colStep) > MAX_RASTER_RECTS) {
-      if (rows / rowStep >= cols / colStep) {
-        rowStep++;
-      } else {
-        colStep++;
-      }
+    // A cell grid is cheapest as rectangles while equal neighbours can be merged into one, which
+    // is what the plots that paint a few flat regions produce. A gradient merges into nothing, so
+    // it is the run count and not the cell count that decides: a large two colour array still
+    // draws as a handful of rectangles, and only a picture that genuinely needs one shape per cell
+    // is handed to the bitmap.
+    if (rasterRuns(prim.cells, rows, cols) > MAX_RASTER_RECTS) {
+      drawRasterImage(prim, parent, rows, cols);
+      return;
     }
 
     double x0 = viewport.mapX(prim.x1);
     double x1 = viewport.mapX(prim.x2);
     double y0 = viewport.mapY(prim.y1);
     double y1 = viewport.mapY(prim.y2);
-    double cellW = (x1 - x0) / (cols / (double) colStep);
-    double cellH = (y0 - y1) / (rows / (double) rowStep);
+    double cellW = (x1 - x0) / cols;
+    double cellH = (y0 - y1) / rows;
     if (!Double.isFinite(cellW) || !Double.isFinite(cellH)) {
       return;
     }
 
     ContainerTag<?> group = tag("g").attr("shape-rendering", "crispEdges");
-    int outRow = 0;
-    for (int r = 0; r < rows; r += rowStep, outRow++) {
+    for (int r = 0; r < rows; r++) {
       Color[] row = prim.cells[r];
-      int outCol = 0;
       // merge runs of equal colour into one rectangle
       int runStart = 0;
       Color runColor = null;
-      for (int c = 0; c <= cols; c += colStep, outCol++) {
+      for (int c = 0; c <= cols; c++) {
         Color color = c < cols && c < row.length ? row[c] : null;
         if (runColor != null && (color == null || !runColor.equals(color))) {
-          emitRasterRun(group, x0, y0, cellW, cellH, runStart, outCol, outRow, runColor);
+          emitRasterRun(group, x0, y0, cellW, cellH, runStart, c, r, runColor);
           runColor = null;
         }
         if (color != null && runColor == null) {
-          runStart = outCol;
+          runStart = c;
           runColor = color;
         }
       }
     }
     parent.with(group);
+  }
+
+  /** The number of rectangles {@link #drawRaster} would emit for these cells. */
+  private static int rasterRuns(Color[][] cells, int rows, int cols) {
+    int runs = 0;
+    for (int r = 0; r < rows; r++) {
+      Color[] row = cells[r];
+      Color runColor = null;
+      for (int c = 0; c <= cols; c++) {
+        Color color = c < cols && c < row.length ? row[c] : null;
+        if (runColor != null && (color == null || !runColor.equals(color))) {
+          // a fully transparent run is not drawn, so it does not count against the budget
+          if (runColor.getAlpha() != 0) {
+            runs++;
+            if (runs > MAX_RASTER_RECTS) {
+              return runs;
+            }
+          }
+          runColor = null;
+        }
+        if (color != null && runColor == null) {
+          runColor = color;
+        }
+      }
+    }
+    return runs;
+  }
+
+  /**
+   * Draw the cells as one embedded bitmap.
+   *
+   * <p>
+   * This is what keeps a plot of a smooth function to a readable size: every cell of such a raster
+   * has its own colour, so as rectangles it is both enormous and past the element limit of the
+   * rasterizer, while as a PNG it is an image that compresses. It also draws every cell, where the
+   * rectangles used to be thinned out once there were too many of them.
+   */
+  private void drawRasterImage(Prim2D.RasterPrim prim, ContainerTag<?> parent, int rows,
+      int cols) {
+    int rowStep = 1;
+    int colStep = 1;
+    while ((long) (rows / rowStep) * (cols / colStep) > MAX_RASTER_PIXELS) {
+      if (rows / rowStep >= cols / colStep) {
+        rowStep++;
+      } else {
+        colStep++;
+      }
+    }
+    int width = Math.max(1, cols / colStep);
+    int height = Math.max(1, rows / rowStep);
+
+    int[] argb = new int[width * height];
+    for (int y = 0; y < height; y++) {
+      // the cells are given bottom row first, a bitmap is written top row first
+      Color[] row = prim.cells[rows - 1 - y * rowStep];
+      int at = y * width;
+      for (int x = 0; x < width; x++) {
+        int c = x * colStep;
+        Color color = c < row.length ? row[c] : null;
+        argb[at + x] = color == null ? 0 : color.getRGB();
+      }
+    }
+
+    double xa = viewport.mapX(prim.x1);
+    double xb = viewport.mapX(prim.x2);
+    double ya = viewport.mapY(prim.y1);
+    double yb = viewport.mapY(prim.y2);
+    double boxWidth = Math.abs(xb - xa);
+    double boxHeight = Math.abs(ya - yb);
+    if (!(boxWidth > 0) || !(boxHeight > 0)) {
+      return;
+    }
+
+    parent.with(tag("image") //
+        .attr("x", fmt(Math.min(xa, xb))) //
+        .attr("y", fmt(Math.min(ya, yb))) //
+        .attr("width", fmt(boxWidth)) //
+        .attr("height", fmt(boxHeight)) //
+        // the cells are square in data coordinates, not on screen, and a raster is a grid of
+        // values rather than a photograph, so it is stretched to the box and left unsmoothed
+        .attr("preserveAspectRatio", "none") //
+        .attr("image-rendering", "pixelated") //
+        .attr("href", PngEncoder.dataUri(argb, width, height)));
   }
 
   private void emitRasterRun(ContainerTag<?> group, double x0, double y0, double cellW,
@@ -689,7 +816,7 @@ public final class SvgRenderer2D {
     if (prim.full) {
       ContainerTag<?> rect = tag("rect").attr("x", fmt(x1)).attr("y", fmt(y1))
           .attr("width", fmt(x2 - x1)).attr("height", fmt(y2 - y1));
-      paint(rect, prim.style, prim.style.effectiveFill(), edgeStroke(prim.style));
+      paintEdged(rect, prim.style, prim.style.effectiveFill(), edgeStroke(prim.style));
       parent.with(rect);
       return;
     }
@@ -732,7 +859,7 @@ public final class SvgRenderer2D {
         fmt(ax) + "," + fmt(ay) + " " + fmt(bx) + "," + fmt(by) + " " + fmt(bx + nx * reach) + ","
             + fmt(by + ny * reach) + " " + fmt(ax + nx * reach) + "," + fmt(ay + ny * reach);
     ContainerTag<?> poly = tag("polygon").attr("points", points);
-    paint(poly, prim.style, prim.style.effectiveFill(), edgeStroke(prim.style));
+    paintEdged(poly, prim.style, prim.style.effectiveFill(), edgeStroke(prim.style));
     parent.with(poly);
   }
 }

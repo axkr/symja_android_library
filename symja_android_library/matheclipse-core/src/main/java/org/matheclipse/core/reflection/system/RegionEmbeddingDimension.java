@@ -114,8 +114,20 @@ public class RegionEmbeddingDimension extends AbstractFunctionEvaluator {
             }
             return firstVectorSize(ast.arg1());
           case ID.EmptyRegion:
-            // EmptyRegion(n) is the empty subset of the n-dimensional space
+          case ID.FullRegion:
+            // EmptyRegion(n) and FullRegion(n) live in the n-dimensional space
             return ast.argSize() == 1 ? ast.arg1().toIntDefault(-1) : -1;
+          case ID.ImplicitRegion:
+            // ImplicitRegion(cond, {x,y,...}) has one coordinate per variable
+            return ast.argSize() == 2 && ast.arg2().isList() ? ast.arg2().argSize() : -1;
+          case ID.ParametricRegion:
+            // ParametricRegion({x1,...,xn}, {params}) maps into n coordinates
+            return ast.argSize() == 2 && ast.arg1().isList() ? ast.arg1().argSize() : -1;
+          case ID.RegionUnion:
+          case ID.RegionIntersection:
+          case ID.RegionDifference:
+          case ID.RegionSymmetricDifference:
+            return combinedEmbeddingDimension(ast);
           case ID.HalfSpace:
             // HalfSpace(normalVector, c)
             if (ast.argSize() >= 1 && ast.arg1().isList()) {
@@ -131,6 +143,28 @@ public class RegionEmbeddingDimension extends AbstractFunctionEvaluator {
       }
     }
     return -1;
+  }
+
+  /**
+   * All the parts of a Boolean combination of regions have to live in the same space, otherwise the
+   * combination is not a region.
+   *
+   * @return <code>-1</code> if the parts disagree or if one of them has no embedding dimension
+   */
+  private static int combinedEmbeddingDimension(IAST ast) {
+    int dimension = -1;
+    for (int i = 1; i < ast.size(); i++) {
+      int part = getEmbeddingDimension(ast.get(i));
+      if (part < 0) {
+        return -1;
+      }
+      if (dimension < 0) {
+        dimension = part;
+      } else if (dimension != part) {
+        return -1;
+      }
+    }
+    return dimension;
   }
 
   /**

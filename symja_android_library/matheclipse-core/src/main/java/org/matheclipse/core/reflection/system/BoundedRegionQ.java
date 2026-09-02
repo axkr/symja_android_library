@@ -74,6 +74,7 @@ public class BoundedRegionQ extends AbstractFunctionEvaluator {
           case ID.HalfPlane:
           case ID.InfinitePlane:
           case ID.HalfSpace:
+          case ID.FullRegion:
             return S.False;
         }
       }

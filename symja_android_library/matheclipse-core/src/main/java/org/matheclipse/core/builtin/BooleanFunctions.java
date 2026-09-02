@@ -70,8 +70,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 import org.matheclipse.parser.client.math.MathException;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import org.matheclipse.external.fastutil.objects.Object2IntArrayMap;
+import org.matheclipse.external.fastutil.objects.Object2IntMap;
 
 public final class BooleanFunctions {
 
@@ -1692,7 +1692,7 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.exists(x -> x.equals(S.Undefined))) {
+      if (ast.exists(x -> x == S.Undefined)) {
         return S.Undefined;
       }
 
@@ -2610,16 +2610,16 @@ public final class BooleanFunctions {
 
     private static int getCompSign(IExpr e) {
       if (e.isSymbol()) {
-        if (e.equals(S.Less) || e.equals(S.LessEqual)) {
+        if (e == S.Less || e == S.LessEqual) {
           return LESS_OR_LESSEQUAL;
         }
-        if (e.equals(S.Equal)) {
+        if (e == S.Equal) {
           return EQUAL;
         }
-        if (e.equals(S.Greater) || e.equals(S.GreaterEqual)) {
+        if (e == S.Greater || e == S.GreaterEqual) {
           return GREATER_OR_GREATEREQUAL;
         }
-        if (e.equals(S.Unequal)) {
+        if (e == S.Unequal) {
           return UNEQUAL;
         }
       }
@@ -3289,6 +3289,11 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isQuantity()) {
+        // the sign of a quantity is the sign of its magnitude
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
+            S.Negative, engine);
+      }
       if (arg1.isNegativeResult()) {
         return S.True;
       }
@@ -3386,6 +3391,11 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isQuantity()) {
+        // the sign of a quantity is the sign of its magnitude
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
+            S.NonNegative, engine);
+      }
       if (arg1.isNonNegativeResult()) {
         return S.True;
       }
@@ -3444,6 +3454,11 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isQuantity()) {
+        // the sign of a quantity is the sign of its magnitude
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
+            S.NonPositive, engine);
+      }
       if (arg1.isNegativeResult() || arg1.isZero() || arg1.isNonPositiveResult()) {
         return S.True;
       }
@@ -3682,6 +3697,11 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isQuantity()) {
+        // the sign of a quantity is the sign of its magnitude
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
+            S.Positive, engine);
+      }
       if (arg1.isPositiveResult()) {
         return S.True;
       }
@@ -3806,7 +3826,7 @@ public final class BooleanFunctions {
       if (argSize > 1) {
         IExpr argN = ast.last();
         if (!argN.isRule()) {
-          if (argN.equals(S.All)) {
+          if (argN == S.All) {
             maxChoices = Integer.MAX_VALUE;
             argSize--;
           } else if (argN.isNumber()) {
@@ -4028,7 +4048,7 @@ public final class BooleanFunctions {
   private static final class Unequal extends Equal {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.exists(x -> x.equals(S.Undefined))) {
+      if (ast.exists(x -> x == S.Undefined)) {
         return S.Undefined;
       }
       if (ast.size() > 2) {

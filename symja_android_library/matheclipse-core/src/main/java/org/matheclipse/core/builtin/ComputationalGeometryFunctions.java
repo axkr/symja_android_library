@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.tensor.opt.qh3.ConvexHull3D;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class ComputationalGeometryFunctions {
   /**
@@ -916,13 +916,160 @@ public class ComputationalGeometryFunctions {
    * <code>ConvexHullMesh</code> this also handles the degenerate cases where the hull isn't full
    * dimensional.
    */
+  /**
+   * A region which is convex by construction and therefore already its own convex hull. Only the
+   * smooth bodies are listed here - a polytope is rebuilt from its corner points instead, so that
+   * redundant vertices are dropped and the result is a canonical <code>Polygon</code> or
+   * <code>Polyhedron</code>.
+   */
+  private static boolean isConvexRegion(IAST reg) {
+    int headID = reg.headID();
+    switch (headID) {
+      case ID.Ball:
+      case ID.Ellipsoid:
+        return true;
+      case ID.Disk:
+        // a full disk or ellipse is convex, a sector of it is not
+        return reg.argSize() <= 2;
+      case ID.HalfSpace:
+      case ID.HalfPlane:
+      case ID.InfinitePlane:
+      case ID.FullRegion:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * The corner points of a polytope, which the convex hull is then computed from.
+   *
+   * @return {@link F#NIL} if the corner points of <code>reg</code> are not available
+   */
+  private static IAST regionVertices(IAST reg) {
+    int headID = reg.headID();
+    switch (headID) {
+      case ID.Point:
+      case ID.Line:
+      case ID.Polygon:
+        if (reg.argSize() == 1 && reg.arg1().isListOfLists()) {
+          return (IAST) reg.arg1();
+        }
+        if (reg.isAST(S.Point, 2) && reg.arg1().isList()) {
+          // a single point
+          return F.list(reg.arg1());
+        }
+        return F.NIL;
+      case ID.Triangle:
+        if (reg.argSize() == 0) {
+          return F.list(F.CListC0C0, F.List(F.C1, F.C0), F.List(F.C0, F.C1));
+        }
+        return reg.argSize() == 1 && reg.arg1().isListOfLists() ? (IAST) reg.arg1() : F.NIL;
+      case ID.Simplex:
+        return RegionPrimitives.verticesOfSimplex(reg);
+      case ID.Rectangle:
+      case ID.Cuboid:
+        return boxVertices(reg);
+      case ID.Parallelogram:
+      case ID.Parallelepiped:
+        return parallelepipedVertices(reg);
+      case ID.Polyhedron:
+        return reg.argSize() == 2 && reg.arg1().isListOfLists() ? (IAST) reg.arg1() : F.NIL;
+      default:
+        return F.NIL;
+    }
+  }
+
+  /** The <code>2^n</code> corners of an axis aligned box. */
+  private static IAST boxVertices(IAST reg) {
+    IAST corners = RegionPrimitives.boxCorners(reg);
+    if (corners.isNIL()) {
+      return F.NIL;
+    }
+    IAST lower = (IAST) corners.arg1();
+    IAST upper = (IAST) corners.arg2();
+    int n = lower.argSize();
+    if (n > 20) {
+      // 2^n corners - refuse to build a list which cannot be handled anyway
+      return F.NIL;
+    }
+    int count = 1 << n;
+    IASTAppendable vertices = F.ListAlloc(count);
+    for (int mask = 0; mask < count; mask++) {
+      IASTAppendable corner = F.ListAlloc(n);
+      for (int i = 1; i <= n; i++) {
+        corner.append(((mask >> (i - 1)) & 1) == 0 ? lower.get(i) : upper.get(i));
+      }
+      vertices.append(corner);
+    }
+    return vertices;
+  }
+
+  /** The <code>2^n</code> corners of a parallelepiped: the base plus every subset sum. */
+  private static IAST parallelepipedVertices(IAST reg) {
+    IExpr base;
+    IAST vectors;
+    if (reg.isAST(S.Parallelogram)) {
+      RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(reg);
+      if (spec == null) {
+        return F.NIL;
+      }
+      base = spec.base;
+      vectors = spec.vectors;
+    } else if (reg.argSize() == 2 && reg.arg1().isList() && reg.arg2().isListOfLists()) {
+      base = reg.arg1();
+      vectors = (IAST) reg.arg2();
+    } else {
+      return F.NIL;
+    }
+    int n = vectors.argSize();
+    if (n < 1 || n > 20) {
+      return F.NIL;
+    }
+    EvalEngine engine = EvalEngine.get();
+    int count = 1 << n;
+    IASTAppendable vertices = F.ListAlloc(count);
+    for (int mask = 0; mask < count; mask++) {
+      IASTAppendable sum = F.PlusAlloc(n + 1);
+      sum.append(base);
+      for (int i = 1; i <= n; i++) {
+        if (((mask >> (i - 1)) & 1) != 0) {
+          sum.append(vectors.get(i));
+        }
+      }
+      IExpr corner = engine.evaluate(sum);
+      if (!corner.isList()) {
+        return F.NIL;
+      }
+      vertices.append(corner);
+    }
+    return vertices;
+  }
+
   private static class ConvexHullRegion extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      // Unwrap Region display wrapper if present
+      if (arg1.isAST(S.Region, 1)) {
+        arg1 = arg1.first();
+      }
       if (MeshFunctions.isMeshRegion(arg1)) {
         arg1 = MeshFunctions.meshCoordinates((IAST) arg1);
+      }
+      if (!arg1.isListOfLists() && arg1.isAST()) {
+        // ConvexHullRegion(region): a convex region is its own hull, a polytope is the hull of its
+        // corner points
+        IAST reg = (IAST) arg1;
+        if (isConvexRegion(reg)) {
+          return reg;
+        }
+        IAST vertices = regionVertices(reg);
+        if (vertices.isNIL()) {
+          return F.NIL;
+        }
+        arg1 = vertices;
       }
       if (!arg1.isListOfLists()) {
         return F.NIL;
@@ -941,9 +1088,9 @@ public class ComputationalGeometryFunctions {
       }
       switch (dimensions.getInt(1)) {
         case 1: {
+          // the hull of a set of points on a line is the segment between the two extremes
           int[] extremes = extremeIndices(listOfPoints, candidates);
-          return F.Interval(F.list(((IAST) listOfPoints.get(extremes[0])).arg1(),
-              ((IAST) listOfPoints.get(extremes[1])).arg1()));
+          return F.Line(selectPoints(listOfPoints, extremes));
         }
         case 2: {
           int[] hull = hullIndices2D(listOfPoints, false);
@@ -1860,7 +2007,7 @@ public class ComputationalGeometryFunctions {
       }
 
       IAST center;
-      if (ast.argSize() >= 2 && !ast.arg2().equals(S.Automatic)) {
+      if (ast.argSize() >= 2 && ast.arg2() != S.Automatic) {
         if (!ast.arg2().isList2()) {
           return F.NIL;
         }

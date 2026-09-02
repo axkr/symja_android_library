@@ -37,12 +37,13 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.TrieNode;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 /**
  * A sparse array implementation using a Trie data structure to store non-default elements. This
@@ -2167,7 +2168,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       int[] partIndex = new int[dims.length];
       for (int i = startPosition; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
-        if (arg.equals(S.All) || arg.isBlank()) {
+        if (arg == S.All || arg.isBlank()) {
           partIndex[i - startPosition] = ALL_POSITIONS;
         } else {
           int idx = arg.toIntDefault(Integer.MIN_VALUE);
@@ -2253,6 +2254,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public boolean isSparseArray() {
     return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public ISymbol listableContainerHead() {
+    return S.SparseArray;
   }
 
   @Override
@@ -2435,7 +2442,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         IAST endAst = (IAST) arg2;
         for (int i = 1; i <= depth; i++) {
           IExpr ei = endAst.get(i);
-          if (ei.equals(S.Automatic)) {
+          if (ei == S.Automatic) {
             endAutomatic[i - 1] = true;
             end[i - 1] =
                 (dimension != null && dimension[i - 1] > 0) ? dimension[i - 1] : Integer.MAX_VALUE;
@@ -2450,7 +2457,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
             }
           }
         }
-      } else if (arg2.equals(S.Automatic)) {
+      } else if (arg2 == S.Automatic) {
         for (int i = 0; i < depth; i++) {
           endAutomatic[i] = true;
           end[i] = (dimension != null && dimension[i] > 0) ? dimension[i] : Integer.MAX_VALUE;
@@ -2903,7 +2910,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   public IExpr total(IExpr head) {
     long totalElements = totalSize(fDimension);
 
-    if (head.equals(S.Plus)) {
+    if (head == S.Plus) {
       // Fast path: O(k) mathematical summation for ANY default value
       IASTAppendable plus = F.PlusAlloc(fData.size());
       for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {

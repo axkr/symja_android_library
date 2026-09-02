@@ -8,15 +8,14 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.matheclipse.core.builtin.CompilerFunctions;
-import org.matheclipse.core.compile.CompiledFunctionArg;
+import org.matheclipse.core.compile.ICompiledFunction;
+import org.matheclipse.core.compile.IExprCompiler;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -28,9 +27,11 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
   /** only use for information */
   final IExpr fUnaryFunction;
   /**
-   * Maybe <code>null</code>
+   * The compiled function, or <code>null</code> when no {@link IExprCompiler} is installed (no
+   * <code>matheclipse-compile</code> on the classpath) or when the expression could not be
+   * compiled. Every use has to fall back to interpreted evaluation.
    */
-  final CompiledFunctionExpr fUnaryCompiled;
+  final ICompiledFunction fUnaryCompiled;
   final ISymbol fVariable;
   final EvalEngine fEngine;
 
@@ -88,20 +89,20 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
     fVariable = variable;
     fUnaryFunction = unaryFunction;
     fEngine = engine;
-    CompiledFunctionArg[] cf = new CompiledFunctionArg[1];
-    cf[0] = new CompiledFunctionArg(fVariable, S.Real);
+    IExprCompiler compiler = IExprCompiler.get();
     fUnaryCompiled =
-        CompilerFunctions.compile(F.Compile(F.NIL, fUnaryFunction), cf, F.CEmptyList, engine);
-    if (fUnaryCompiled != null) {
-      if (firstDerivative) {
-        IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));
-        fFirstDerivative = new UnaryCompiled(temp, fVariable, engine, false);
-      }
+        compiler == null ? null : compiler.compileReal(fUnaryFunction, fVariable, engine);
+    if (firstDerivative) {
+      IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));
+      fFirstDerivative = new UnaryCompiled(temp, fVariable, engine, false);
     }
   }
 
   @Override
   public IExpr apply(final IExpr value) {
+    if (fUnaryCompiled == null) {
+      return fEngine.evalNumericFunction(F.subst(fUnaryFunction, fVariable, value));
+    }
     return fUnaryCompiled.evaluate(F.List(value), fEngine);
   }
 
@@ -147,10 +148,10 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
   @Override
   public double value(double value) {
     try {
-      IExpr evaluated = fUnaryCompiled.evaluate(F.unaryAST1(fUnaryCompiled, F.num(value)), fEngine);
-      if (evaluated.isPresent()) {
-        return evaluated.evalfNaN();
+      if (fUnaryCompiled == null) {
+        return F.subst(fUnaryFunction, fVariable, F.num(value)).evalfNaN();
       }
+      return fUnaryCompiled.evalDouble(value, fEngine);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
 

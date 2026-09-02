@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -20,10 +21,11 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 /** Plot a list of Points */
 public class ListPlot extends AbstractFunctionOptionEvaluator {
@@ -42,8 +44,40 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   public ListPlot() {}
 
+  /**
+   * The call with a <code>Dataset</code> first argument replaced by its rows, and the call itself
+   * otherwise.
+   *
+   * <p>
+   * For the one-column dataset these plots are usually handed -
+   * <code>planets[All, "radius"]</code> - the rows are already the bare list of numbers
+   * <code>checkList</code> is looking for, and without this that check rejects the dataset before
+   * anything else runs. Deliberately not applied to an <code>Association</code>, which this family
+   * already plots its own way.
+   */
+  protected static IAST withDatasetRows(IAST ast) {
+    IExpr rows = IASTDataset.normalizeDataset(ast.arg1());
+    return rows == ast.arg1() ? ast : ast.setAtCopy(1, rows);
+  }
+
+  /**
+   * Replace quantity data by its magnitudes before the plotting pipeline sees it.
+   *
+   * <p>
+   * That pipeline reaches {@code toDoubleVectorIgnore}, which cannot turn a quantity into a
+   * machine number and drops it in silence, so plotting a list of quantities produced a
+   * <code>Graphics</code> holding no <code>Line</code> at all. See
+   * {@link QuantityFunctions#quantityPlotMagnitudes}.
+   */
+  protected static IAST withQuantityMagnitudes(IAST ast, IAST originalAST, EvalEngine engine) {
+    IExpr data = QuantityFunctions.quantityPlotMagnitudes(ast.arg1(),
+        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
+    return data == ast.arg1() ? ast : ast.setAtCopy(1, data);
+  }
+
   public IExpr evaluateECharts(IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST) {
+    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
@@ -169,6 +203,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
     IExpr arg1 = ast.arg1();
     if (!checkList(engine, arg1)) {
       return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
@@ -212,7 +247,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       if (hasCurveLabels) {
         arg1 = newData;
         ast = ast.setAtCopy(1, arg1);
-        if (options[GraphicsOptions.X_PLOTLEGENDS].equals(S.None)) {
+        if (options[GraphicsOptions.X_PLOTLEGENDS] == S.None) {
           graphicsOptions.setPlotLegends(legends);
         }
       }
@@ -938,15 +973,15 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
       ISymbol head = ast.topHead();
-      if (head.equals(S.Line)) {
+      if (head == S.Line) {
         if (ast.arg1().isList()) {
           curves.add(new CurveData((IAST) ast.arg1(), currentColor, false));
         }
-      } else if (head.equals(S.Point)) {
+      } else if (head == S.Point) {
         if (ast.arg1().isList()) {
           curves.add(new CurveData((IAST) ast.arg1(), currentColor, true));
         }
-      } else if (head.equals(S.Style)) {
+      } else if (head == S.Style) {
         IExpr newColor = currentColor;
         for (int i = 2; i <= ast.size(); i++) {
           IExpr arg = ast.get(i);
@@ -955,8 +990,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           }
         }
         extractCurvesRecursive(ast.arg1(), curves, newColor);
-      } else if (head.equals(S.GraphicsGroup) || head.equals(S.Annotation)
-          || head.equals(S.Tooltip)) {
+      } else if (head == S.GraphicsGroup || head == S.Annotation
+          || head == S.Tooltip) {
         extractCurvesRecursive(ast.arg1(), curves, currentColor);
       }
     }
@@ -964,10 +999,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   private static boolean isColor(IExpr e) {
     return e.isAST(S.RGBColor) || e.isAST(S.Hue) || e.isAST(S.GrayLevel) || e.isAST(S.CMYKColor)
-        || e.isSymbol() && (e.equals(S.Red) || e.equals(S.Green) || e.equals(S.Blue)
-            || e.equals(S.Black) || e.equals(S.White) || e.equals(S.Gray) || e.equals(S.Yellow)
-            || e.equals(S.Cyan) || e.equals(S.Magenta) || e.equals(S.Orange) || e.equals(S.Pink)
-            || e.equals(S.Purple) || e.equals(S.Brown));
+        || e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue
+            || e == S.Black || e == S.White || e == S.Gray || e == S.Yellow
+            || e == S.Cyan || e == S.Magenta || e == S.Orange || e == S.Pink
+            || e == S.Purple || e == S.Brown);
   }
 
   private static IExpr createStemsToBottom(IAST pts, double yBottom) {
@@ -1044,7 +1079,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         out.append(F.List(styleToUse,
             createPolygonBetween(srcCurve.points, curves.get(targetIndex).points)));
       }
-    } else if (target.equals(S.Axis) || target.equals(S.Bottom)) {
+    } else if (target == S.Axis || target == S.Bottom) {
       if (srcCurve.isPoint) {
         out.append(F.List(styleToUse, createStemsToBottom(srcCurve.points, baseline)));
       } else {
@@ -1130,7 +1165,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr key = ((IAST) opt).arg1();
           IExpr val = ((IAST) opt).arg2();
 
-          if ((key.equals(S.PlotLegends) || key.equals(S.PlotLabels))
+          if ((key == S.PlotLegends || key == S.PlotLabels)
               && val.toString().equalsIgnoreCase("Expressions")) {
             expressionsRequested = true;
             continue;

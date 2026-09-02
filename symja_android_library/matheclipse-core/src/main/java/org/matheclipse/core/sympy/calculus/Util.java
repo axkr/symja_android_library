@@ -135,7 +135,7 @@ public class Util {
         // period = lcim([period_real, period_imag])
       }
 
-      if (f.isPower() && !f.base().equals(S.E)) {
+      if (f.isPower() && f.base() != S.E) {
         IExpr base = f.base();
         IExpr expo = f.exponent();
         boolean base_has_sym = base.has(symbol);

@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.Locale;
 import org.apache.commons.lang3.NotImplementedException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.OptionsPattern;
@@ -41,13 +42,20 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @return
    */
   private static int determineArgumentOptions(IExpr[] options, IAST ast, int argSize,
-      int[] expectedArgSize, IBuiltInSymbol[] optionSymbol) {
+      int[] expectedArgSize, IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
     int minNumberOfArgs = 1;
+    // the number of arguments past which nothing can be positional any more. A function which
+    // takes any number of arguments keeps Integer.MAX_VALUE here, which is what stops the scan
+    // below from ever deciding that a trailing rule "has to be" an option.
+    int maxNumberOfArgs = Integer.MAX_VALUE;
     if (expectedArgSize != null) {
       // the ast function must at least contain the minimum number of arguments
       minNumberOfArgs = expectedArgSize[0];
       if (minNumberOfArgs < 0) {
         minNumberOfArgs = 0;
+      }
+      if (expectedArgSize.length > 1) {
+        maxNumberOfArgs = expectedArgSize[1];
       }
     } else if (optionSymbol.length > 0) {
       throw new NotImplementedException("If default options like " + F.List(optionSymbol).toString()
@@ -76,6 +84,16 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
             evaled = true;
             break;
           }
+        }
+        if (!evaled && argSize > maxNumberOfArgs) {
+          // This argument sits past the last positional one, so it cannot be anything but an
+          // option, and stopping here would leave every option written in front of it unread -
+          // the function would then be reported as called with too many arguments because of one
+          // misspelled option name. Report the name and carry on instead.
+          // Unknown option `1` in `2`.
+          Errors.printMessage(ast.topHead(), "optx", F.list(arg, ast.topHead()), engine);
+          argSize--;
+          evaled = true;
         }
       } else if (arg.isListOfRules(true) && !arg.isEmptyList()) {
         IAST listOfRules = (IAST) arg;
@@ -151,7 +169,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    */
   public static int determineOptions(IExpr[] options, IAST ast, int argSize, int[] expectedArgSize,
       IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
-    argSize = determineArgumentOptions(options, ast, argSize, expectedArgSize, optionSymbol);
+    argSize =
+        determineArgumentOptions(options, ast, argSize, expectedArgSize, optionSymbol, engine);
 
     determineDefaultOptions(options, ast, optionSymbol, engine);
     return argSize;
@@ -700,12 +719,12 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     IRational k = null;
     for (int i = 1; i < plusAST.size(); i++) {
       IExpr temp = plusAST.get(i);
-      if (temp.equals(S.Pi)) {
+      if (temp == S.Pi) {
         k = F.C1;
         break;
       }
       if (temp.isTimes2()) {
-        if (temp.first().isRational() && temp.second().equals(S.Pi)) {
+        if (temp.first().isRational() && temp.second() == S.Pi) {
           k = (IRational) temp.first();
           break;
         }
@@ -759,7 +778,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     IExpr k = null;
     for (int i = 1; i < plusAST.size(); i++) {
       IExpr temp = plusAST.get(i);
-      if (temp.equals(S.Pi)) {
+      if (temp == S.Pi) {
         k = F.C1;
         return k;
       }

@@ -48,8 +48,8 @@ public class ReduceVariableEqual {
    *
    * @param engine
    */
-  private static void printIfunMessage(EvalEngine engine) {
-    Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+  private static boolean allowInverseFunctions(EvalEngine engine) {
+    return Errors.allowInverseFunctions(S.InverseFunction, engine);
   }
 
   // /**
@@ -321,12 +321,16 @@ public class ReduceVariableEqual {
             }
             // the right hand side is non-negative or of unknown sign (e.g. a symbolic
             // parameter): invert as usual, giving u == -rhs and u == rhs
-            Errors.printMessage("ifun", F.List());
+            if (!allowInverseFunctions(engine)) {
+              return F.NIL;
+            }
             inverseFunction.append(exprWithoutVariable);
             return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
                 multipleValues);
           } else {
-            Errors.printMessage("ifun", F.List());
+            if (!allowInverseFunctions(engine)) {
+              return F.NIL;
+            }
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
             return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
@@ -438,8 +442,9 @@ public class ReduceVariableEqual {
           if (exponent.isFree(predicate, true)) {
             // f(x) ^ a
             IExpr reversedPower = exponent.inverse();
-            if (!reversedPower.isMathematicalIntegerNonNegative()) {
-              printIfunMessage(engine);
+            if (!reversedPower.isMathematicalIntegerNonNegative()
+                && !allowInverseFunctions(engine)) {
+              return F.NIL;
             }
             IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
             return extractVariableRecursive(base, value, predicate, variable, multipleValues);

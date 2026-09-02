@@ -25,7 +25,6 @@ import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
-import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
  * Interface for an <b>Abstract Syntax Tree (AST)</b>, representing a function or operation in the
@@ -223,6 +222,26 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /** NO_FLAG ACTIVATED */
   public static final int NO_FLAG = 0x0000;
+
+  /**
+   * Is set, if the arguments of this expression were scanned and none of them is one of the few
+   * expressions the evaluation loop has to look for: {@link S#Unevaluated}, {@link S#Sequence},
+   * {@link S#ConditionalExpression}, <code>Rubi`Dist</code> or the symbol {@link S#Nothing}.
+   * <p>
+   * Evaluating one expression used to scan its arguments for these separately and repeatedly -
+   * {@link EvalEngine#evalArgs(IAST, int, boolean)},
+   * {@link EvalEngine#evalRules(ISymbol, IAST)}, {@code evalNoAttributes()},
+   * {@link F#flattenSequence(IAST)} and {@code extractConditionalExpression(false)} - although all
+   * of them are extremely rare (measured over the test suite: 7 {@link S#Sequence} and 393
+   * {@link S#ConditionalExpression} arguments in tens of millions of scans). One scan now answers
+   * all of them and the result is memoized here.
+   * <p>
+   * The flag is dropped again in {@code AbstractAST#argumentsChanged()} whenever an argument is
+   * appended or replaced.
+   *
+   * @see #hasSpecialArg()
+   */
+  public static final int CONTAINS_NO_SPECIAL_ARG = 0x0010;
 
   public static final int NUMERIC_ARBITRARY_EVALED = 0x08000000;
 
@@ -1310,15 +1329,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public IExpr getPart(final int... positions) throws IndexOutOfBoundsException;
 
-  /**
-   * Returns the element at the specified positions in the nested ASTs.
-   *
-   * @param positions index of the element to return
-   * @return the element at the specified positions in this nested AST
-   * @throws IndexOutOfBoundsException if one of the positions are out of range
-   */
-  public IExpr getPart(final IntList positions);
-
   public Object getProperty(PROPERTY key);
 
   /**
@@ -1556,6 +1566,35 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return
    */
   default boolean isUniform() {
+    return false;
+  }
+
+  /**
+   * Test if one of the arguments of this expression needs one of the special treatments of the
+   * evaluation loop, i.e. has the head {@link S#Unevaluated}, {@link S#Sequence},
+   * {@link S#ConditionalExpression} or <code>Rubi`Dist</code>, or is the symbol
+   * {@link S#Nothing}.
+   * <p>
+   * The result is memoized in the {@link #CONTAINS_NO_SPECIAL_ARG} eval flag. The test is
+   * intentionally coarse - it ignores the number of arguments of those expressions - so that a
+   * negative result can be used by every caller; a positive result only means that the caller has
+   * to run its own precise test.
+   *
+   * @return <code>false</code> if none of the arguments needs any of those treatments
+   */
+  default boolean hasSpecialArg() {
+    if (isEvalFlagOn(CONTAINS_NO_SPECIAL_ARG)) {
+      return false;
+    }
+    final IExpr dist = F.$rubi("Dist");
+    if (exists(x -> {
+      final IExpr head = x.head();
+      return head == S.Unevaluated || head == S.Sequence || head == S.ConditionalExpression
+          || head == dist || x == S.Nothing;
+    })) {
+      return true;
+    }
+    addEvalFlags(CONTAINS_NO_SPECIAL_ARG);
     return false;
   }
 

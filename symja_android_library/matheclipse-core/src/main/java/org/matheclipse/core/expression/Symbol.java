@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.CollationKey;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.matheclipse.core.basic.Config;
@@ -465,10 +468,19 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public boolean equals(Object obj) {
     if (Config.FUZZ_TESTING) {
-      if (obj instanceof ISymbol && fSymbolName.equals(((ISymbol) obj).getSymbolName())
+      // Two distinct instances sharing a name and a context mean the interning of symbols broke,
+      // which is worth flagging while fuzzing. The DUMMY context is the exception rather than a
+      // violation: F.Dummy() exists precisely to hand out a fresh symbol each time it is called,
+      // so its instances are supposed to differ. Without this the check reports every expression
+      // that happens to be evaluated while two dummies are compared, which is not a defect and
+      // names an expression that has nothing to do with it.
+      if (obj instanceof ISymbol && fContext != Context.DUMMY
+          && fSymbolName.equals(((ISymbol) obj).getSymbolName())
           && fContext.equals(((ISymbol) obj).getContext()) && this != obj) {
-        System.out.println(fContext + ":" + fSymbolName);
-        throw new NullPointerException();
+        // named rather than thrown bare: a report of this reads "Message: null" otherwise, and the
+        // expression it names is only whatever was being evaluated when the two were compared
+        throw new IllegalStateException(
+            "duplicate symbol instance " + fContext + fSymbolName);
       }
     }
     return this == obj;
@@ -480,6 +492,10 @@ public class Symbol implements ISymbol, Serializable {
     ensureRulesLoaded();
     if (fRulesData == null) {
       return F.NIL;
+    }
+    if (Config.RULE_DISPATCH_STATISTICS) {
+      org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats.symbolDispatch(fSymbolName,
+          fRulesData.patternDownRulesSize());
     }
     return fRulesData.evalDownRule(expression, engine);
   }
@@ -833,6 +849,15 @@ public class Symbol implements ISymbol, Serializable {
     return false;
   }
 
+  /**
+   * The symbols whose assigned value this thread is already asking
+   * {@link #isNumericFunction(boolean)} about, so that a value which refers back to its own symbol
+   * is answered rather than followed. Identity based, because two symbols of the same name in
+   * different contexts are different symbols.
+   */
+  private static final ThreadLocal<Set<ISymbol>> NUMERIC_FUNCTION_GUARD =
+      ThreadLocal.withInitial(() -> Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>()));
+
   /** {@inheritDoc} */
   @Override
   public boolean isNonNegative() {
@@ -852,7 +877,24 @@ public class Symbol implements ISymbol, Serializable {
     }
     if (hasAssignedSymbolValue()) {
       IExpr temp = assignedValue();
-      return temp != null && temp != this && temp.isNumericFunction(true);
+      if (temp == null || temp == this) {
+        return false;
+      }
+      // A value that leads back to this symbol - directly as in cyc = {cyc, 1}, or around a chain
+      // of symbols - makes the walk below cycle. The temp != this test above only sees the case
+      // where the value *is* the symbol, not the far more common one where it merely contains it,
+      // and this query descends into lists and numeric-function arguments. Unlike an evaluation,
+      // it has no recursion counter watching it, so the cycle ends as a StackOverflowError rather
+      // than as a $RecursionLimit message.
+      Set<ISymbol> visiting = NUMERIC_FUNCTION_GUARD.get();
+      if (!visiting.add(this)) {
+        return false;
+      }
+      try {
+        return temp.isNumericFunction(true);
+      } finally {
+        visiting.remove(this);
+      }
     }
     return false;
   }

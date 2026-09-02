@@ -297,8 +297,15 @@ public class ASTNodeFactory implements INodeParserFactory {
       fHeadToOperators = new java.util.HashMap<>();
       for (OperatorTable.Row row : OperatorTable.ROWS) {
         final Operator operator = createOperator(row);
-        addOperator(fOperatorMap, fOperatorTokenStartSet, row.token, row.head, operator);
-        fHeadToOperators.computeIfAbsent(row.head, k -> new ArrayList<>(2)).add(operator);
+        if (row.outputForm) {
+          addOperator(fOperatorMap, fOperatorTokenStartSet, row.token, row.head, operator);
+          fHeadToOperators.computeIfAbsent(row.head, k -> new ArrayList<>(2)).add(operator);
+        } else {
+          // A parse-only row is registered under its token only, exactly as an alias is: it stays
+          // out of the two maps keyed by head, which is what makes its head keep printing in
+          // function form. See OperatorTable.Row#outputForm.
+          addUnicodeOperator(fOperatorMap, fOperatorTokenStartSet, row.token, operator);
+        }
         appendOperatorCharacters(operatorCharacters, row.token);
         for (String alias : row.aliases) {
           // The same instance under every spelling - the parser decides whether a chain flattens by

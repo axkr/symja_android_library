@@ -3,6 +3,7 @@ package org.matheclipse.io.builtin;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Desktop;
+import java.io.File;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -63,13 +64,13 @@ public class SwingFunctions {
         if (Config.FILESYSTEM_ENABLED) {
           S.Button.setEvaluator(new Button());
           S.DefaultButton.setEvaluator(new DefaultButton());
-          S.Dynamic.setEvaluator(new Dynamic());
           S.CancelButton.setEvaluator(new CancelButton());
           S.DialogInput.setEvaluator(new DialogInput());
           S.DialogReturn.setEvaluator(new DialogReturn());
           S.Input.setEvaluator(new Input());
           S.InputString.setEvaluator(new InputString());
           S.SystemDialogInput.setEvaluator(new SystemDialogInput());
+          S.FileNameSetter.setEvaluator(new FileNameSetter());
         }
       }
     }
@@ -112,24 +113,6 @@ public class SwingFunctions {
   }
 
   private static class DefaultButton extends AbstractCoreFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.NIL;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.NO_SUPPORT;
-    }
-  }
-
-  private static class Dynamic extends AbstractCoreFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -208,6 +191,75 @@ public class SwingFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
+    }
+  }
+
+  /**
+   * <code>FileNameSetter()</code>, <code>FileNameSetter(type)</code> - a Browse button, where
+   * <code>type</code> is <code>"Open"</code> (the default), <code>"OpenList"</code>,
+   * <code>"Save"</code> or <code>"Directory"</code>. Returns the chosen path, a list of paths for
+   * <code>"OpenList"</code>, or {@link F#NIL} if the dialog was cancelled.
+   *
+   * <p>
+   * The reference says of its own <code>FileNameSetter</code> that it "is intended primarily for
+   * use with local kernels", and that is exactly the limit here: this opens a dialog on the machine
+   * the kernel runs on. Under the servlets there is no such machine to open it on - the kernel is
+   * answering HTTP and lives in a directory of its own - so this returns {@link F#NIL} there, and
+   * the upload button in the notebook toolbar is what puts a file within reach of
+   * <code>Import</code> instead.
+   */
+  private static final class FileNameSetter extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.isAST0() && ast.arg1().isAST(S.Dynamic)) {
+        // FileNameSetter(Dynamic(f)) is a control object, not a call: it has to reach the browser
+        // unevaluated so that the live cell machinery can draw it. See ControlObject.
+        return F.NIL;
+      }
+      if (!Desktop.isDesktopSupported()) {
+        return F.NIL;
+      }
+      String type = ast.isAST0() ? "open" : ast.arg1().toString().toLowerCase(Locale.US);
+      JFileChooser chooser =
+          new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+      switch (type) {
+        case "open":
+          chooser.setApproveButtonText("Open");
+          break;
+        case "openlist":
+          chooser.setApproveButtonText("Open");
+          chooser.setMultiSelectionEnabled(true);
+          break;
+        case "save":
+          chooser.setApproveButtonText("Save");
+          break;
+        case "directory":
+          chooser.setApproveButtonText("Select");
+          chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+          break;
+        default:
+          // `1` is not a known file dialog type.
+          return Errors.printMessage(S.FileNameSetter, "filetype", F.list(ast.arg1()), engine);
+      }
+      if (chooser.showDialog(null, null) != JFileChooser.APPROVE_OPTION) {
+        return F.NIL;
+      }
+      if (type.equals("openlist")) {
+        File[] files = chooser.getSelectedFiles();
+        return F.mapRange(0, files.length, i -> F.stringx(files[i].getAbsolutePath()));
+      }
+      return F.stringx(chooser.getSelectedFile().getAbsolutePath());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IFunctionEvaluator.ARGS_0_1;
     }
 
     @Override

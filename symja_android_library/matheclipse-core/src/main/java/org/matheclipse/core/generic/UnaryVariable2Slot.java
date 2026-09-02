@@ -35,7 +35,7 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
         if (((ISymbol) firstArg).hasOrderlessAttribute()) {
           return F.NIL;
         }
-        if (firstArg.equals(S.Print)) {
+        if (firstArg == S.Print) {
           // Print function has "side-effects"
           return F.NIL;
         }

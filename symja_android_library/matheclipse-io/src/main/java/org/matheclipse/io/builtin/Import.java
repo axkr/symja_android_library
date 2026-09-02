@@ -13,11 +13,6 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.nio.ImportException;
-import org.jgrapht.nio.dot.DOTImporter;
-import org.jgrapht.nio.graphml.GraphMLImporter;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Convert;
@@ -31,12 +26,13 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
-import org.matheclipse.core.expression.data.ExprEdge;
-import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.io.FileSandbox;
+import org.matheclipse.core.io.ImageFormatIO;
+import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.io.tensor.io.ImageFormat;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -87,29 +83,80 @@ public class Import extends AbstractEvaluator {
     FileReader reader = null;
     String fileName = pathName.toString();
     try {
-      File file = dataFile != null ? dataFile : new File(fileName);
+      File file;
+      if (dataFile != null) {
+        // an already resolved file from an internal caller
+        file = dataFile;
+      } else {
+        file = FileSandbox.resolveRead(S.Import, fileName, engine);
+        if (file == null) {
+          return F.NIL;
+        }
+      }
       switch (format) {
         case BMP:
         case GIF:
+        case ICO:
         case JPEG:
         case PNG:
-          reader = new FileReader(fileName);
-          try (InputStream inputStream = //
-              ReaderInputStream.builder()//
-                  .setReader(reader)//
-                  .get()) {
+        case PNM:
+        case PSD:
+        case TGA:
+        case TIFF:
+        case WEBP:
+          // note that this reads bytes, where it used to wrap a FileReader in a ReaderInputStream
+          // and so pushed the file through the platform charset on the way in
+          try (InputStream inputStream = new FileInputStream(file)) {
+            ImageFormatIO imageFormatIO = ImageFormatIO.get();
+            if (imageFormatIO != null && imageFormatIO.canImport(format)) {
+              IExpr image = imageFormatIO.importImage(inputStream, format);
+              if (image.isPresent()) {
+                return image;
+              }
+              return F.NIL;
+            }
+          }
+          // without matheclipse-image the reader falls back to a matrix of pixel values
+          try (InputStream inputStream = new FileInputStream(file)) {
             return ImageFormat.from(ImageIO.read(inputStream));
           }
         case CSV:
-          reader = new FileReader(fileName);
+        case TSV:
+          // with matheclipse-dataset on the classpath these read as a Dataset, which is what the
+          // reference does; without it they fall back to the nested list Convert.fromCSV builds.
+          // TABLE below is deliberately left alone, so that Import(..., "Table") and
+          // Export(..., "Table") stay a matched pair for plain matrices.
+          try (InputStream inputStream = new FileInputStream(file)) {
+            TableFormatIO tableFormatIO = TableFormatIO.get();
+            if (tableFormatIO != null && tableFormatIO.canImport(format)) {
+              IExpr dataset = tableFormatIO.importTable(inputStream, format, F.NIL);
+              if (dataset.isPresent()) {
+                return dataset;
+              }
+            }
+          }
+          reader = new FileReader(file);
           return Convert.fromCSV(reader);
+        case XLSX:
+          // no fallback: reading a workbook needs matheclipse-dataset
+          try (InputStream inputStream = new FileInputStream(file)) {
+            TableFormatIO tableFormatIO = TableFormatIO.get();
+            if (tableFormatIO != null && tableFormatIO.canImport(format)) {
+              return tableFormatIO.importTable(inputStream, format, F.NIL);
+            }
+          }
+          return F.NIL;
         case DOT:
         case GRAPHML:
           // graph Format
-          reader = new FileReader(fileName);
-          return graphImport(reader, format, engine);
+          reader = new FileReader(file);
+          return org.matheclipse.graphtheory.io.GraphImport.fromReader(reader, format, engine);
         case EXPRESSIONJSON:
           return expressionJSONImport(fileName);
+        case FASTA:
+          return org.matheclipse.bio.io.BioSequenceImport.importFASTA(file, false);
+        case GENBANK:
+          return org.matheclipse.bio.io.BioSequenceImport.importGenBank(file, false);
         case JSON:
           if (dataFile != null) {
             return jsonImport(dataFile, false);
@@ -122,10 +169,8 @@ public class Import extends AbstractEvaluator {
             return Mat5Symja.importMAT(inputStream, file.getName());
           }
         case TABLE:
-          reader = new FileReader(fileName);
+          reader = new FileReader(file);
           return Convert.fromCSV(reader);
-        // Table table = Table.read().csv(file);
-        // return ASTDataset.newTablesawTable(table);
         case RAWJSON:
           if (dataFile != null) {
             return jsonImport(dataFile, true);
@@ -242,27 +287,4 @@ public class Import extends AbstractEvaluator {
     return F.stringx(str);
   }
 
-  private static IExpr graphImport(Reader reader, Extension format, EvalEngine engine)
-      throws ImportException {
-    Graph<IExpr, ExprEdge> result;
-    switch (format) {
-      case DOT:
-        DOTImporter<IExpr, ExprEdge> dotImporter = new DOTImporter<IExpr, ExprEdge>();
-        dotImporter.setVertexFactory(label -> engine.parse(label));
-        result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        dotImporter.importGraph(result, reader);
-        return GraphExpr.newInstance(result);
-      case GRAPHML:
-        result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        // Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
-        // Map<ExprEdge, Map<String, Attribute>> edgeAttributes =
-        // new HashMap<ExprEdge, Map<String, Attribute>>();
-        GraphMLImporter<IExpr, ExprEdge> graphMLImporter = new GraphMLImporter<IExpr, ExprEdge>();
-        graphMLImporter.setVertexFactory(label -> engine.parse(label));
-        graphMLImporter.importGraph(result, reader);
-        return GraphExpr.newInstance(result);
-      default:
-    }
-    return F.NIL;
-  }
 }

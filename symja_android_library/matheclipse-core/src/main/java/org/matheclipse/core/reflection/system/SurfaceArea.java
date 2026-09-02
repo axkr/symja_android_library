@@ -144,7 +144,7 @@ public class SurfaceArea extends AbstractFunctionEvaluator {
   /** <code>2*Pi*r*h + 4*Pi*r^2</code> for the cylinder and the two hemispherical caps. */
   private IExpr capsuleShape(IAST reg, EvalEngine engine) {
     RegionPrimitives.CapsuleSpec spec = RegionPrimitives.parseCapsuleShape(reg);
-    if (spec == null) {
+    if (spec == null || RegionPrimitives.capsuleDimension(spec) != 3) {
       return F.NIL;
     }
     IExpr h = RegionPrimitives.distance(spec.p1, spec.p2, engine);

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.matheclipse.core.convert.RGBColor;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -19,6 +21,9 @@ public final class LegendRenderer {
 
   /** Width reserved at the right edge of the image for a legend. */
   public static final double LEGEND_WIDTH = 100.0;
+
+  /** How many colours a bar legend's gradient is built from. */
+  private static final int GRADIENT_STOPS = 16;
 
   private final Viewport2D viewport;
   private final GraphicsOptions2D options;
@@ -68,6 +73,7 @@ public final class LegendRenderer {
     }
     List<String> labels = new ArrayList<>();
     IExpr markerSource = spec;
+    boolean swatch = spec.isAST(S.SwatchLegend);
     if (spec.isAST() && spec.head().isBuiltInSymbol()) {
       int id = ((IBuiltInSymbol) spec.head()).ordinal();
       if (id == ID.LineLegend || id == ID.PointLegend || id == ID.SwatchLegend) {
@@ -91,10 +97,11 @@ public final class LegendRenderer {
     if (labels.isEmpty()) {
       return;
     }
-    drawListLegend(labels, markerSource, parent);
+    drawListLegend(labels, markerSource, swatch, parent);
   }
 
-  private void drawListLegend(List<String> labels, IExpr markerSource, ContainerTag<?> parent) {
+  private void drawListLegend(List<String> labels, IExpr markerSource, boolean swatch,
+      ContainerTag<?> parent) {
     int count = labels.size();
     double lineHeight = 18;
     double xBase = options.imageSize[0] - LEGEND_WIDTH + 10;
@@ -109,7 +116,13 @@ public final class LegendRenderer {
     for (int i = 0; i < count; i++) {
       Color color = legendColor(markerSource, i);
       double y = yBase + i * lineHeight;
-      if (options.joined) {
+      if (swatch) {
+        // a SwatchLegend names areas rather than curves or points, so its marker is the area
+        parent.with(tag("rect").attr("x", SvgRenderer2D.fmt(xBase + 2))
+            .attr("y", SvgRenderer2D.fmt(y - 11)).attr("width", "11").attr("height", "11")
+            .attr("fill", ColorUtil.css(color)).attr("stroke", "#666666")
+            .attr("stroke-width", "0.5"));
+      } else if (options.joined) {
         parent.with(
             tag("line").attr("x1", SvgRenderer2D.fmt(xBase)).attr("y1", SvgRenderer2D.fmt(y - 4))
                 .attr("x2", SvgRenderer2D.fmt(xBase + 18)).attr("y2", SvgRenderer2D.fmt(y - 4))
@@ -173,19 +186,71 @@ public final class LegendRenderer {
             .attr("style", style).withText(TickGenerator.trim(min)));
   }
 
-  /** The gradient definition a bar legend paints itself with. */
-  public static ContainerTag<?> barGradient(String gradientId) {
+  /**
+   * The gradient definition a bar legend paints itself with.
+   *
+   * <p>
+   * The stops come from the colour function the legend was given, so the bar reads as the scale the
+   * picture was actually drawn on. Only when there is none, or it cannot be sampled, does it fall
+   * back to a fixed scheme.
+   *
+   * @param spec the {@code PlotLegends} setting, from which the colour function is taken
+   */
+  public static ContainerTag<?> barGradient(String gradientId, IExpr spec) {
     ContainerTag<?> gradient = tag("linearGradient").attr("id", gradientId).attr("x1", "0%")
         .attr("y1", "100%").attr("x2", "0%").attr("y2", "0%");
-    double[][] colors = GraphicsOptions.SUNSET_COLORS;
-    int last = colors.length - 1;
-    for (int i = 0; i < colors.length; i++) {
-      String color = String.format(Locale.US, "rgb(%d,%d,%d)", (int) (colors[i][0] * 255),
-          (int) (colors[i][1] * 255), (int) (colors[i][2] * 255));
+    List<Color> colors = sampleColorFunction(colorFunctionOf(spec), GRADIENT_STOPS);
+    int last = colors.size() - 1;
+    for (int i = 0; i < colors.size(); i++) {
       gradient.with(
           tag("stop").attr("offset", String.format(Locale.US, "%.1f%%", (double) i / last * 100.0))
-              .attr("style", "stop-color:" + color + ";stop-opacity:1"));
+              .attr("style", "stop-color:" + ColorUtil.css(colors.get(i)) + ";stop-opacity:1"));
     }
     return gradient;
+  }
+
+  /** The colour function of {@code BarLegend[colorFunction, range]}, or {@link F#NIL}. */
+  private static IExpr colorFunctionOf(IExpr spec) {
+    if (spec != null && spec.isAST(S.BarLegend) && ((IAST) spec).argSize() >= 1) {
+      return ((IAST) spec).arg1();
+    }
+    return F.NIL;
+  }
+
+  /**
+   * {@code count} colours evenly spaced along {@code colorFunction}, or the fixed fallback scheme
+   * when it is absent or does not answer with colours.
+   */
+  private static List<Color> sampleColorFunction(IExpr colorFunction, int count) {
+    List<Color> colors = new ArrayList<>(count);
+    IExpr function = colorFunction;
+    if (function.isPresent() && function.isString()) {
+      // a scheme named as a string, the way ColorFunction -> "Sunset" gives it
+      function = EvalEngine.get().evaluate(F.ColorData(function));
+    }
+    if (function.isPresent() && !function.isString()) {
+      EvalEngine engine = EvalEngine.get();
+      for (int i = 0; i < count; i++) {
+        double t = count == 1 ? 0.0 : (double) i / (count - 1);
+        Color color = null;
+        try {
+          color = ColorUtil.parse(engine.evaluate(F.unaryAST1(function, F.num(t))));
+        } catch (RuntimeException rex) {
+          color = null;
+        }
+        if (color == null) {
+          colors.clear();
+          break;
+        }
+        colors.add(color);
+      }
+    }
+    if (colors.isEmpty()) {
+      double[][] fallback = GraphicsOptions.SUNSET_COLORS;
+      for (int i = 0; i < fallback.length; i++) {
+        colors.add(new Color((float) fallback[i][0], (float) fallback[i][1], (float) fallback[i][2]));
+      }
+    }
+    return colors;
   }
 }

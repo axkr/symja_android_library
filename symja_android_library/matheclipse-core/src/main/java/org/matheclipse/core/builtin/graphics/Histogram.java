@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics;
 
 import java.util.Arrays;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -31,15 +32,20 @@ public class Histogram extends ListPlot {
       return F.NIL;
     }
 
-    IExpr dataArg = engine.evaluate(ast.arg1());
+    // a Dataset plots its rows and an Association its values, labelled by its keys
+    IASTAppendable keyLabels = F.ListAlloc();
+    IExpr dataArg = GraphicsOptions.chartData(engine.evaluate(ast.arg1()), keyLabels);
     if (!dataArg.isList()) {
       return F.NIL;
     }
+    dataArg = QuantityFunctions.quantityPlotMagnitudes(dataArg,
+        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     IExpr chartStyle = GraphicsOptions.optionValue(originalAST, S.ChartStyle, S.Automatic);
-    IExpr chartLabels = GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None);
+    IExpr chartLabels = GraphicsOptions.chartLabels(
+        GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None), keyLabels);
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     IExpr layout = GraphicsOptions.optionValue(originalAST, S.ChartLayout, S.Automatic);

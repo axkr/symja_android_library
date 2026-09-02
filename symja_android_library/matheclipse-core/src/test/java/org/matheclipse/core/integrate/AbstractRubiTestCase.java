@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -45,7 +46,7 @@ public abstract class AbstractRubiTestCase {
     // if (result.equals(F.Null)) {
     // return "";
     // }
-    if (result.equals(F.$Aborted)) {
+    if (result == S.$Aborted) {
       return "TIMEOUT";
     }
 

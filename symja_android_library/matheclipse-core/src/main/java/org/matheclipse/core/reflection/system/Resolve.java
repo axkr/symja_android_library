@@ -4,7 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -39,7 +39,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * If none of the strategies applies, the expression is returned unevaluated.
  */
-public class Resolve extends AbstractEvaluator {
+public class Resolve extends AbstractFunctionOptionEvaluator {
 
   /** Sample values used by the witness search. */
   private static final IExpr[] SAMPLE_POINTS =
@@ -74,7 +74,17 @@ public class Resolve extends AbstractEvaluator {
   public Resolve() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine, IAST originalAST) {
+    SolveOptions solveOptions = SolveOptions.of(SolveOptions.RESOLVE_KEYS, options);
+    if (argSize > 0 && argSize < ast.argSize()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
+    long precision = Solve.workingPrecision(ast, solveOptions.workingPrecision(), engine);
+    if (precision == Solve.INVALID_PRECISION) {
+      return F.NIL;
+    }
+
     ISymbol domain = null;
     if (ast.isAST2()) {
       IExpr arg2 = ast.arg2();
@@ -83,12 +93,22 @@ public class Resolve extends AbstractEvaluator {
       }
       domain = (ISymbol) arg2;
     }
+    IExpr result;
     try {
-      return resolve(ast.arg1(), domain, engine);
+      result = resolve(ast.arg1(), domain, engine);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
     }
+    if (result.isNIL()) {
+      return F.NIL;
+    }
+    if (precision != Solve.MACHINE_PRECISION_REQUESTED) {
+      // the quantifier elimination itself is exact; the requested precision is applied to its
+      // result
+      result = engine.evaluate(F.N(result, F.ZZ(precision)));
+    }
+    return result;
   }
 
   /**
@@ -182,9 +202,84 @@ public class Resolve extends AbstractEvaluator {
     if (forAll) {
       IExpr negated = engine.evaluate(F.Not(condition));
       IExpr existence = exists(boundVars, negated, quantifierDomain, engine);
-      return existence.isPresent() ? engine.evaluate(F.Not(existence)) : F.NIL;
+      if (existence.isPresent()) {
+        return engine.evaluate(F.Not(existence));
+      }
+    } else {
+      IExpr existence = exists(boundVars, condition, quantifierDomain, engine);
+      if (existence.isPresent()) {
+        return existence;
+      }
     }
-    return exists(boundVars, condition, quantifierDomain, engine);
+    return decideBySolutionSet(forAll, boundVars, condition, quantifierDomain, engine);
+  }
+
+  /**
+   * Decide a quantifier from the solution set which {@link S#Reduce} computes for its condition. A
+   * {@link S#ForAll} holds if the solution set covers the whole domain, an {@link S#Exists} holds if
+   * the solution set names an attained value.
+   *
+   * <p>
+   * This is the fallback for the quantifiers which the {@link #exists(IAST, IExpr, ISymbol,
+   * EvalEngine)} analysis above cannot decide.
+   *
+   * @param forAll <code>true</code> for {@link S#ForAll}, <code>false</code> for {@link S#Exists}
+   * @param boundVars the quantified variables
+   * @param condition the quantified condition, with nested quantifiers already eliminated
+   * @param domain the domain of the quantified variables
+   * @param engine the evaluation engine
+   * @return {@link S#True}, {@link S#False} or {@link F#NIL} if the quantifier stays undecided
+   */
+  private static IExpr decideBySolutionSet(boolean forAll, IAST boundVars, IExpr condition,
+      ISymbol domain, EvalEngine engine) {
+    IExpr reduced = engine.evaluate(F.Reduce(condition, boundVars, domain));
+    if (reduced.isTrue()) {
+      return S.True;
+    }
+    if (reduced.isFalse()) {
+      return S.False;
+    }
+    if (forAll) {
+      // holds for every value iff the solution set is the whole domain
+      return isFullDomain(reduced, boundVars) ? S.True : F.NIL;
+    }
+    // Exists: the solution set has to name a value which the variables actually attain
+    return reduced.isFree(S.Reduce) && isAttainedSolution(reduced) ? S.True : F.NIL;
+  }
+
+  /**
+   * Test whether a solution set names values which the variables actually attain. {@code Reduce}
+   * also returns limit-like solutions, for example <code>E^x == 0</code> over the reals reduces to
+   * <code>ConditionalExpression(x == -Infinity + I*2*Pi*C(1), C(1) ∈ Integers)</code>. Such a
+   * solution set proves no existence.
+   */
+  private static boolean isAttainedSolution(IExpr reduced) {
+    return reduced.isFree(S.ConditionalExpression) //
+        && reduced.isFree(S.DirectedInfinity) //
+        && reduced.isFree(S.Indeterminate);
+  }
+
+  /**
+   * Test whether a solution set covers the whole domain of the given variables.
+   */
+  private static boolean isFullDomain(IExpr reduced, IAST vars) {
+    if (reduced.isTrue()) {
+      return true;
+    }
+    if (reduced.isAST(S.Element, 3)) {
+      IExpr domain = reduced.second();
+      return (domain == S.Reals || domain == S.Complexes) && vars.contains(reduced.first());
+    }
+    if (reduced.isAnd()) {
+      IAST and = (IAST) reduced;
+      for (int i = 1; i < and.size(); i++) {
+        if (!isFullDomain(and.get(i), vars)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -749,6 +844,6 @@ public class Resolve extends AbstractEvaluator {
 
   @Override
   public void setUp(ISymbol newSymbol) {
-    //
+    setOptions(newSymbol, SolveOptions.RESOLVE_KEYS, SolveOptions.RESOLVE_DEFAULTS);
   }
 }

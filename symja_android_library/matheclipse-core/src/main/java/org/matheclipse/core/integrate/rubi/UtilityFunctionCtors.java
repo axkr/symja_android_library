@@ -136,7 +136,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Power) ? S.True : S.False;
+        return arg1.head() == S.Power ? S.True : S.False;
       }
       return S.False;
     }
@@ -147,7 +147,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Times) ? S.True : S.False;
+        return arg1.head() == S.Times ? S.True : S.False;
       }
       return S.False;
     }
@@ -158,7 +158,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Plus) ? S.True : S.False;
+        return arg1.head() == S.Plus ? S.True : S.False;
       }
       return S.False;
     }
@@ -168,7 +168,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(S.Plus) ? S.False : S.True;
+        return arg1.head() == S.Plus ? S.False : S.True;
       }
       return S.False;
     }
@@ -2395,6 +2395,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules7.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules8.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules9.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules10.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules11.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules12.RULES = null;
@@ -2405,6 +2406,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules17.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules18.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules19.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules20.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules21.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules22.RULES = null;
@@ -2415,6 +2417,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules27.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules28.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules29.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules30.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules31.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules32.RULES = null;
@@ -2425,6 +2428,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules37.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules38.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules39.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules40.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules41.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules42.RULES = null;
@@ -2435,6 +2439,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules47.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules48.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules49.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules50.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules51.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules52.RULES = null;
@@ -2445,6 +2450,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules57.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules58.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules59.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules60.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules61.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules62.RULES = null;
@@ -2455,6 +2461,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules67.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules68.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules69.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules70.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules71.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules72.RULES = null;
@@ -2465,6 +2472,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules77.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules78.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules79.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules80.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules81.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules82.RULES = null;
@@ -2475,6 +2483,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules87.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules88.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules89.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules90.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules91.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules92.RULES = null;
@@ -2485,6 +2494,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules97.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules98.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules99.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules100.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules101.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules102.RULES = null;
@@ -2495,6 +2505,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules107.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules108.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules109.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules110.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules111.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules112.RULES = null;
@@ -2505,6 +2516,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules117.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules118.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules119.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules120.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules121.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules122.RULES = null;
@@ -2515,6 +2527,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules127.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules128.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules129.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules130.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules131.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules132.RULES = null;
@@ -2525,6 +2538,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules137.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules138.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules139.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules140.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules141.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules142.RULES = null;
@@ -2535,6 +2549,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules147.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules148.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules149.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules150.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules151.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules152.RULES = null;
@@ -2545,6 +2560,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules157.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules158.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules159.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules160.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules161.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules162.RULES = null;
@@ -2555,6 +2571,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules167.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules168.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules169.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules170.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules171.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules172.RULES = null;
@@ -2565,6 +2582,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules177.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules178.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules179.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules180.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules181.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules182.RULES = null;
@@ -2575,6 +2593,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules187.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules188.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules189.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules190.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules191.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules192.RULES = null;
@@ -2585,6 +2604,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules197.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules198.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules199.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules200.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules201.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules202.RULES = null;
@@ -2595,6 +2615,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules207.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules208.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules209.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules210.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules211.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules212.RULES = null;
@@ -2605,6 +2626,7 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules217.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules218.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules219.RULES = null;
+
     org.matheclipse.core.integrate.rubi.IntRules220.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules221.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules222.RULES = null;
@@ -2734,7 +2756,37 @@ public class UtilityFunctionCtors {
     org.matheclipse.core.integrate.rubi.IntRules335.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules336.RULES = null;
     org.matheclipse.core.integrate.rubi.IntRules337.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules338.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules339.RULES = null;
 
+    org.matheclipse.core.integrate.rubi.IntRules340.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules341.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules342.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules343.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules344.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules345.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules346.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules347.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules348.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules349.RULES = null;
+
+    org.matheclipse.core.integrate.rubi.IntRules350.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules351.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules352.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules353.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules354.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules355.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules356.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules357.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules358.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules359.RULES = null;
+
+    org.matheclipse.core.integrate.rubi.IntRules360.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules361.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules362.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules363.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules364.RULES = null;
+    org.matheclipse.core.integrate.rubi.IntRules365.RULES = null;
   }
 
   public static void getUtilityFunctionsRuleASTRubi45() {

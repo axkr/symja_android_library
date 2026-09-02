@@ -409,7 +409,7 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
         return;
       }
 
-      IExpr modelWithVar = F.subst(template.model, e -> e.equals(S.x), var);
+      IExpr modelWithVar = F.subst(template.model, e -> e == S.x, var);
 
       try {
         EvalEngine subEngine = engine.copyInit();

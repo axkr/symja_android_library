@@ -108,7 +108,7 @@ public class PeriodogramArray extends AbstractFunctionEvaluator {
     IExpr windowWeights = F.NIL;
     double squaredWindowSum = n; // Default for rectangular window (sum of 1^2 * n)
 
-    if (!wfun.equals(F.DirichletWindow) && !wfun.equals(F.C1)) {
+    if (wfun != S.DirichletWindow && !wfun.equals(F.C1)) {
       if (wfun.isList()) {
         windowWeights = engine.evalN(wfun);
       } else {
