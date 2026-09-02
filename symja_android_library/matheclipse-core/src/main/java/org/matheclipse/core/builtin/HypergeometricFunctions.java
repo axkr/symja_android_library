@@ -8,6 +8,10 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -33,6 +37,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class HypergeometricFunctions {
 
@@ -1706,6 +1711,12 @@ public class HypergeometricFunctions {
 
 
   private static class HypergeometricPFQ extends AbstractFunctionEvaluator {
+    /**
+     * Largest <code>Abs(z)</code> for which
+     * <code>HypergeometricPFQ({1,...,1},{2,...,2},z)</code> is summed term by term.
+     */
+    private static final double MAX_ONES_TWOS_ABS_Z = 10000.0;
+
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1839,8 +1850,88 @@ public class HypergeometricFunctions {
       return engine.evaluate(sum);
     }
 
+    /**
+     * Numerically evaluate <code>HypergeometricPFQ({1,...,1},{2,...,2},z)</code> for <code>p</code>
+     * ones and <code>p</code> twos, which is the entire function
+     * <code>Sum(z^k/((k+1)^p*k!), {k,0,Infinity})</code>.
+     *
+     * <p>
+     * Because the function is entire the <code>Abs(z)<=1</code> restriction of the generic
+     * {@link HypergeometricJS#hypergeometricPFQ(double[], double[], double)} doesn't apply here.
+     * For <code>z</code> far below <code>0</code> the summands grow to about <code>E^Abs(z)</code>
+     * before they cancel, so the sum is accumulated with about <code>Abs(z)/Log(10)</code> guard
+     * digits.
+     *
+     * @param p the number of <code>1</code> parameters, which equals the number of <code>2</code>
+     *        parameters
+     * @param z the argument of the hypergeometric function
+     * @return {@link F#NIL} if no numerical result can be calculated
+     */
+    private static IExpr onesTwosPFQ(int p, INumber z, EvalEngine engine) {
+      Apcomplex zc = z.apcomplexValue();
+      double absZ = ApcomplexMath.abs(zc).doubleValue();
+      if (!Double.isFinite(absZ)) {
+        return F.NIL;
+      }
+      if (absZ > MAX_ONES_TWOS_ABS_Z) {
+        // beyond this the term-by-term summation would need thousands of guard digits, an
+        // asymptotic expansion would be needed instead
+        return F.NIL;
+      }
+      final long targetPrecision =
+          engine.isArbitraryMode() ? engine.getNumericPrecision() : ParserConfig.MACHINE_PRECISION;
+      final long guardDigits = (long) (absZ / Math.log(10.0)) + 10L;
+      final long workPrecision = targetPrecision + guardDigits;
+      // The summands grow until k is about Abs(z) and decrease at least geometrically from k ==
+      // 2*Abs(z) on, so this is an upper bound for the number of summands that can contribute.
+      final long maxIterations = 2L * (long) absZ + 4L * workPrecision + 100L;
+
+      zc = zc.precision(workPrecision);
+      // summand of index 0 is 1
+      Apcomplex term = new Apcomplex(new Apfloat(1, workPrecision));
+      Apcomplex sum = term;
+      Apfloat maxAbs = Apfloat.ONE;
+      // relative to the largest summand, not to the result: the guard digits above are chosen so
+      // that maxAbs*10^(-workPrecision) is already below the last requested digit of the result
+      Apfloat epsilon = ApfloatMath.pow(new Apfloat(10, workPrecision), -workPrecision);
+      for (int k = 1;; k++) {
+        if (k > maxIterations) {
+          // cannot happen for a converging summand sequence - don't return a truncated sum
+          return F.NIL;
+        }
+        // term == z^k/k!
+        term = term.multiply(zc).divide(new Apfloat(k, workPrecision));
+        Apcomplex summand = term.divide(ApfloatMath.pow(new Apfloat(k + 1, workPrecision), p));
+        sum = sum.add(summand);
+        Apfloat absSummand = ApcomplexMath.abs(summand);
+        if (absSummand.compareTo(maxAbs) > 0) {
+          maxAbs = absSummand;
+        } else if (k > absZ && absSummand.compareTo(maxAbs.multiply(epsilon)) < 0) {
+          // past the largest summand and below the requested precision - the remaining tail
+          // decreases factorially and cannot reach the returned digits anymore
+          break;
+        }
+      }
+
+      boolean realResult = zc.imag().signum() == 0;
+      if (engine.isArbitraryMode()) {
+        return realResult ? F.num(sum.real().precision(targetPrecision))
+            : F.complexNum(sum.precision(targetPrecision));
+      }
+      return realResult ? F.num(sum.real().doubleValue())
+          : F.complexNum(sum.real().doubleValue(), sum.imag().doubleValue());
+    }
+
     private static IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
       try {
+        if (c.isNumber() && a.isList() && b.isList() && a.argSize() > 0
+            && b.argSize() == a.argSize() && a.forAll(x -> x.isOne())
+            && b.forAll(x -> x.isNumEqualInteger(F.C2))) {
+          IExpr result = onesTwosPFQ(a.argSize(), (INumber) c, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
         double A[] = a.toDoubleVector();
         double B[] = b.toDoubleVector();
         double cDouble = c.evalfNaN();

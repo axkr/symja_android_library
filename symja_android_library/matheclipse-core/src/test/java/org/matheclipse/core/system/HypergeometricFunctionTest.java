@@ -458,6 +458,31 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHypergeometricPFQOnesTwos() {
+    // pFp({1,...,1},{2,...,2},z) is entire, so it is summed for every argument instead of running
+    // into the Abs(z)<=1 restriction of the generic numeric code
+    check("HypergeometricPFQ({1,1,1},{2,2,2},-3.0)", //
+        "0.741263");
+    check("N(HypergeometricPFQ({1,1,1},{2,2,2},-3),30)", //
+        "0.741262601218041034045588563878");
+    check("N(HypergeometricPFQ({1,1,1,1},{2,2,2,2},-3),30)", //
+        "0.854650998256107980666813679965");
+    // Abs(z) large enough that the summands grow to about E^Abs(z) before they cancel
+    check("HypergeometricPFQ({1,1,1},{2,2,2},-200.0)", //
+        "0.0904171");
+    check("N(HypergeometricPFQ({1,1,1},{2,2,2},-1000),30)", //
+        "0.028834862048815511462593732774");
+    check("HypergeometricPFQ({1,1,1},{2,2,2},2.0+3.0*I)", //
+        "1.01312+I*0.557074");
+    // exact arguments stay symbolic
+    check("HypergeometricPFQ({1,1,1},{2,2,2},-3)", //
+        "HypergeometricPFQ({1,1,1},{2,2,2},-3)");
+    // message HypergeometricPFQ: general hypergeometric argument currently restricted.
+    check("N(HypergeometricPFQ({1,1,1},{2,2,2},-10001))", //
+        "HypergeometricPFQ({1,1,1},{2,2,2},-10001.0)");
+  }
+
+  @Test
   public void testHypergeometricU() {
     check("HypergeometricU({3,1},{2,4},{7,8})", //
         "{HypergeometricU(3,2,7),41/256}");
