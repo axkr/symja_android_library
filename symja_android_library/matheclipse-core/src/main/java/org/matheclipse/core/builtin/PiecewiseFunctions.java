@@ -4,13 +4,14 @@ import java.util.function.DoubleFunction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -146,107 +147,185 @@ public class PiecewiseFunctions {
    * &gt;&gt; Clip(Tan(-2*E), {-1/2,1/2}, {a,b})
    * b
    * </pre>
+   *
+   * <p>
+   * A bound may be infinite, which is how a one sided range is written:
+   *
+   * <pre>
+   * &gt;&gt; Clip(-5, {0, Infinity})
+   * 0
+   *
+   * &gt;&gt; Clip({-5, 1, 3.5}, {0, Infinity})
+   * {0,1,3.5}
+   * </pre>
+   *
+   * <p>
+   * <code>Clip</code> maps over a list in its first argument, and over the bounds of an
+   * <code>Interval</code> or <code>IntervalData</code>:
+   *
+   * <pre>
+   * &gt;&gt; Clip({-2, 0, 2})
+   * {-1,0,1}
+   *
+   * &gt;&gt; Clip(Interval({-3, 5}))
+   * Interval({-1,1})
+   *
+   * &gt;&gt; Clip(IntervalData({-3, Less, Less, 5}))
+   * IntervalData({-1,LessEqual,LessEqual,1})
+   * </pre>
    */
   private static final class Clip extends AbstractFunctionEvaluator {
 
-    private static IExpr clipX(IExpr x) {
-      if (x.isReal()) {
-        IReal real = (IReal) x;
-        if (real.isGT(F.C1)) {
-          return F.C1;
-        }
-        if (real.isLT(F.CN1)) {
-          return F.CN1;
-        }
-        return x;
+    /**
+     * Map <code>Clip</code> over an {@link S#Interval}. <code>Clip</code> is continuous and non
+     * decreasing, so the image of an interval is the interval between the images of its bounds.
+     *
+     * @return {@link F#NIL} if a bound cannot be clipped
+     */
+    private static IExpr clipInterval(IAST interval, IExpr min, IExpr max) {
+      IAST normalized = IntervalSym.normalize(interval);
+      if (normalized.isNIL()) {
+        return F.NIL;
       }
-      IReal real = x.evalReal();
-      if (real != null) {
-        if (real.isGT(F.C1)) {
-          return F.C1;
+      IASTAppendable result = F.IntervalAlloc(normalized.argSize());
+      for (int i = 1; i < normalized.size(); i++) {
+        IExpr sub = normalized.get(i);
+        if (!sub.isList2()) {
+          return F.NIL;
         }
-        if (real.isLT(F.CN1)) {
-          return F.CN1;
+        IAST bounds = (IAST) sub;
+        IExpr lower = Arithmetic.clip(bounds.arg1(), min, max);
+        IExpr upper = Arithmetic.clip(bounds.arg2(), min, max);
+        if (lower.isNIL() || upper.isNIL()) {
+          return F.NIL;
         }
-        return x;
+        result.append(F.list(lower, upper));
       }
-      if (x.isInfinity()) {
-        return F.C1;
+      return result;
+    }
+
+    /**
+     * Map <code>Clip</code> over an {@link S#IntervalData}, whose bounds can be open.
+     *
+     * <p>
+     * The bound relations do not simply carry across, because <code>Clip</code> saturates: every
+     * point of <code>(-5,-1)</code> is clipped onto <code>-1</code>, so <code>-1</code> belongs to
+     * the image even though neither bound of the domain does. A mapped bound is therefore closed
+     * if the original bound was closed <i>or</i> the bound was saturated. When both mapped bounds
+     * land on the same value the two flags describe one point and have to agree - otherwise
+     * <code>Clip(IntervalData({-5,Less,Less,-1}))</code> would produce
+     * <code>IntervalData({-1,LessEqual,Less,-1})</code>, which normalizes to the empty set and
+     * loses the value.
+     *
+     * @return {@link F#NIL} if a bound cannot be clipped
+     */
+    private static IExpr clipIntervalData(IAST intervalData, IExpr min, IExpr max) {
+      if (intervalData.isAST0()) {
+        // the empty interval set
+        return F.NIL;
       }
-      if (x.isNegativeInfinity()) {
-        return F.CN1;
+      IAST normalized;
+      try {
+        normalized = IntervalDataSym.normalize(intervalData);
+      } catch (ArgumentTypeException atex) {
+        return F.NIL;
       }
-      return F.NIL;
+      if (normalized.isNIL()) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.IntervalDataAlloc(normalized.argSize());
+      for (int i = 1; i < normalized.size(); i++) {
+        IExpr sub = normalized.get(i);
+        if (!sub.isList4()) {
+          return F.NIL;
+        }
+        IAST bounds = (IAST) sub;
+        IExpr lower = bounds.arg1();
+        IExpr upper = bounds.arg4();
+        IExpr clippedLower = Arithmetic.clip(lower, min, max);
+        IExpr clippedUpper = Arithmetic.clip(upper, min, max);
+        if (clippedLower.isNIL() || clippedUpper.isNIL()) {
+          // a symbolic bound - which side of the range it falls on must not be guessed
+          return F.NIL;
+        }
+        boolean lowerClosed = bounds.arg2() == S.LessEqual || !clippedLower.equals(lower);
+        boolean upperClosed = bounds.arg3() == S.LessEqual || !clippedUpper.equals(upper);
+        if (clippedLower.equals(clippedUpper)) {
+          lowerClosed = lowerClosed || upperClosed;
+          upperClosed = lowerClosed;
+        }
+        result.append(F.List(clippedLower, //
+            lowerClosed ? S.LessEqual : S.Less, //
+            upperClosed ? S.LessEqual : S.Less, //
+            clippedUpper));
+      }
+      return result;
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr x = ast.first();
+      IExpr min = F.CN1;
+      IExpr max = F.C1;
+      IExpr vMin = F.CN1;
+      IExpr vMax = F.C1;
+      if (ast.size() >= 3) {
+        IExpr arg2 = ast.arg2();
+        if (!arg2.isList2()) {
+          // { min, max } as 2nd argument expected
+          return F.NIL;
+        }
+        min = arg2.first();
+        max = arg2.second();
+        vMin = min;
+        vMax = max;
+        if (ast.size() == 4) {
+          IExpr arg3 = ast.arg3();
+          if (!arg3.isList2()) {
+            // { vMin, vMax } as 3rd argument expected
+            return F.NIL;
+          }
+          vMin = arg3.first();
+          vMax = arg3.second();
+        }
+      }
+
+      IExpr x = ast.arg1();
       if (x.isSparseArray()) {
         x = x.normal(false);
       }
       if (x.isList()) {
+        // Clip maps over a list in its first argument, but only when every element can be
+        // clipped - a list holding a symbolic element stays unevaluated as a whole. This is not
+        // the LISTABLE attribute, which would thread the { min, max } bounds list as well.
         IAST list = (IAST) x;
-        IAST result = list.map(a -> {
-          IASTMutable copy = ast.copy();
-          copy.set(1, a);
-          IExpr temp = evaluate(copy, engine);
-          if (temp.isPresent()) {
-            return temp;
+        IASTAppendable result = F.ListAlloc(list.argSize());
+        for (int i = 1; i < list.size(); i++) {
+          IExpr temp = evaluate(ast.setAtCopy(1, list.get(i)), engine);
+          if (temp.isNIL()) {
+            return F.NIL;
           }
-          ArgumentTypeStopException.throwNIL();
-          return F.NIL;
-        });
+          result.append(temp);
+        }
         return result;
       }
 
-      if (ast.size() == 2) {
-        try {
-          return clipX(x);
-        } catch (ArgumentTypeStopException atsex) {
-          return F.NIL;
+      if (vMin.equals(min) && vMax.equals(max)) {
+        // mapping the bounds of an interval is only sound while Clip is non decreasing, i.e.
+        // while it saturates onto its own range and not onto arbitrary vMin/vMax values
+        if (x.isInterval()) {
+          IExpr mapped = clipInterval((IAST) x, min, max);
+          if (mapped.isPresent()) {
+            return mapped;
+          }
+        } else if (x.isIntervalData()) {
+          IExpr mapped = clipIntervalData((IAST) x, min, max);
+          if (mapped.isPresent()) {
+            return mapped;
+          }
         }
       }
 
-      IExpr vMin = null;
-      IExpr vMax = null;
-      if (ast.size() == 4) {
-        IExpr arg3 = ast.arg3();
-        if (arg3.isList2()) {
-          // { vMin, vMax } as 3rd argument expected
-          vMin = arg3.first();
-          vMax = arg3.second();
-        } else {
-          return F.NIL;
-        }
-      }
-      if (ast.size() >= 3) {
-        IExpr arg2 = ast.arg2();
-        if (arg2.isList2()) {
-          // { min, max } as 2nd argument expected
-          IExpr min = arg2.first();
-          IExpr max = arg2.second();
-          if (ast.size() == 3) {
-            vMin = min;
-            vMax = max;
-          }
-          try {
-            if (min.isReal() && max.isReal()) {
-              return Arithmetic.clip(x, (IReal) min, (IReal) max, vMin, vMax);
-            }
-            IReal minEvaled = min.evalReal();
-            if (minEvaled != null) {
-              IReal maxEvaled = max.evalReal();
-              if (maxEvaled != null) {
-                return Arithmetic.clip(x, minEvaled, maxEvaled, vMin, vMax);
-              }
-            }
-          } catch (ArgumentTypeStopException atsex) {
-            return F.NIL;
-          }
-        }
-      }
-      return F.NIL;
+      return Arithmetic.clip(x, min, max, vMin, vMax);
     }
 
     @Override

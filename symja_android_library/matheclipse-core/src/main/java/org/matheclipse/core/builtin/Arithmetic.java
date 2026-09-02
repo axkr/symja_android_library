@@ -58,7 +58,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -7751,7 +7750,7 @@ public final class Arithmetic {
    * @param min
    * @param max
    */
-  public static IExpr clip(IExpr x, IReal min, IReal max) {
+  public static IExpr clip(IExpr x, IExpr min, IExpr max) {
     return clip(x, min, max, min, max);
   }
 
@@ -7759,55 +7758,49 @@ public final class Arithmetic {
    * Gives <code>vMin</code> for <code>x&lt;min</code> and <code>vMax</code> for
    * <code>x&gt;max</code>.
    *
+   * <p>
+   * The bounds are ordinary expressions, not only {@link IReal} values, so that a one sided range
+   * like <code>{0, Infinity}</code> works: <code>Infinity</code> has no {@link IReal}
+   * representation, and requiring one is what used to leave <code>Clip(x, {0, Infinity})</code>
+   * unevaluated for every <code>x</code>.
+   *
    * @param x the expression value
    * @param min minimum value
    * @param max maximum value
    * @param vMin value for x less than minimum
    * @param vMax value for x greater than minimum
    * @return x if x is in the range min to max. Return vMin if x is less than min.Return vMax if x
-   *         is greater than max.
+   *         is greater than max. Return {@link F#NIL} if the comparison against a bound cannot be
+   *         decided.
    */
-  public static IExpr clip(IExpr x, IReal min, IReal max, IExpr vMin, IExpr vMax) {
-    if (x.isSparseArray()) {
-      x = x.normal(false);
-    }
-    if (x.isList()) {
-      IAST list = (IAST) x;
-      IAST result = list.map(a -> {
-        IExpr temp = clip(a, min, max, vMin, vMax);
-        if (temp.isPresent()) {
-          return temp;
+  public static IExpr clip(IExpr x, IExpr min, IExpr max, IExpr vMin, IExpr vMax) {
+    IReal xReal = x.evalReal();
+    if (xReal != null) {
+      IReal minReal = min.evalReal();
+      IReal maxReal = max.evalReal();
+      if (minReal != null && maxReal != null) {
+        if (xReal.isGT(maxReal)) {
+          return vMax;
         }
-        ArgumentTypeStopException.throwNIL();
-        return F.NIL;
-      });
-      return result;
+        if (xReal.isLT(minReal)) {
+          return vMin;
+        }
+        return x;
+      }
     }
-    if (x.isReal()) {
-      IReal real = (IReal) x;
-      if (real.isGT(max)) {
-        return vMax;
-      }
-      if (real.isLT(min)) {
-        return vMin;
-      }
-      return x;
-    }
-    IReal real = x.evalReal();
-    if (real != null) {
-      if (real.isGT(max)) {
-        return vMax;
-      }
-      if (real.isLT(min)) {
-        return vMin;
-      }
-      return x;
-    }
-    if (x.isInfinity() && x.greater(min).isTrue()) { // S.Greater.ofQ(x, max)) {
+    // an infinite, quantity or interval operand has no IReal, so decide the two comparisons
+    // ternary. greaterThan()/lessThan() answer F.NIL for "undecidable", where greater()/less()
+    // would answer an unevaluated Greater(...) and S.Greater#ofQ would collapse it to false.
+    IExpr greaterMax = x.greaterThan(max);
+    if (greaterMax.isTrue()) {
       return vMax;
     }
-    if (x.isNegativeInfinity() && x.less(min).isTrue()) { // S.Less.ofQ(x, min)) {
+    IExpr lessMin = x.lessThan(min);
+    if (lessMin.isTrue()) {
       return vMin;
+    }
+    if (greaterMax.isFalse() && lessMin.isFalse()) {
+      return x;
     }
     return F.NIL;
   }

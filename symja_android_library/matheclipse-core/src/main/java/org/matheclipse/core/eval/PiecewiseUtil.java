@@ -154,6 +154,14 @@ public class PiecewiseUtil {
             IExpr high = function.arg2().second();
             return F.Piecewise(
                 F.list(F.list(low, F.Less(x, low)), F.list(high, F.Greater(x, high))), x);
+          } else if (argSize == 3 && function.arg2().isList2() && function.arg3().isList2()) {
+            IExpr x = function.arg1();
+            IExpr low = function.arg2().first();
+            IExpr high = function.arg2().second();
+            IExpr vLow = function.arg3().first();
+            IExpr vHigh = function.arg3().second();
+            return F.Piecewise(
+                F.list(F.list(vLow, F.Less(x, low)), F.list(vHigh, F.Greater(x, high))), x);
           }
           return F.NIL;
         }

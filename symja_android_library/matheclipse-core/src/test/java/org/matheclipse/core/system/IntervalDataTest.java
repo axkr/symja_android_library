@@ -1061,4 +1061,51 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({0,Less,LessEqual,2})");
   }
 
+  /**
+   * <code>Clip</code> is continuous and non decreasing, so the image of an interval is an
+   * interval. The bound relations do not simply carry across, because <code>Clip</code> saturates:
+   * a bound that is excluded from the domain can still be attained in the image.
+   */
+  @Test
+  public void testIntervalDataClip() {
+    // both bounds saturate, so the image reaches -1 and 1 even though the domain is open
+    check("Clip(IntervalData({-3,Less,Less,5}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    // nothing saturates, so the open bounds stay open
+    check("Clip(IntervalData({-1/2,Less,Less,1/2}))", //
+        "IntervalData({-1/2,Less,Less,1/2})");
+    // -1 sits exactly on the clipping bound and does not saturate, so it stays excluded
+    check("Clip(IntervalData({-1,Less,Less,5}))", //
+        "IntervalData({-1,Less,LessEqual,1})");
+    check("Clip(IntervalData({-1,LessEqual,Less,5}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    check("Clip(IntervalData({-Infinity,Less,Less,Infinity}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    // the whole open interval is clipped onto the single point -1, which it therefore attains
+    check("Clip(IntervalData({-5,Less,Less,-1}))", //
+        "IntervalData({-1,LessEqual,LessEqual,-1})");
+    check("Clip(IntervalData({-5,Less,LessEqual,-1}))", //
+        "IntervalData({-1,LessEqual,LessEqual,-1})");
+    // fully saturated ranges stay intervals, they do not collapse to a number
+    check("Clip(IntervalData({3,LessEqual,LessEqual,5}))", //
+        "IntervalData({1,LessEqual,LessEqual,1})");
+    check("Clip(IntervalData({-5,Less,Less,-2},{3,Less,Less,7}))", //
+        "IntervalData({-1,LessEqual,LessEqual,-1},{1,LessEqual,LessEqual,1})");
+
+    check("Clip(IntervalData({-3,Less,Less,5}),{0,2})", //
+        "IntervalData({0,LessEqual,LessEqual,2})");
+    check("Clip(IntervalData({-3,Less,Less,5}),{0,Infinity})", //
+        "IntervalData({0,LessEqual,Less,5})");
+
+    // which side of the range a symbolic bound falls on must not be guessed
+    check("Clip(IntervalData({a,LessEqual,LessEqual,b}))", //
+        "Clip(IntervalData({a,LessEqual,LessEqual,b}))");
+    check("Clip(IntervalData())", //
+        "Clip(IntervalData())");
+
+    // with vMin/vMax of its own Clip is no longer monotonic, so the bounds are not mapped
+    check("Clip(IntervalData({3,LessEqual,LessEqual,5}),{-1,1},{a,b})", //
+        "b");
+  }
+
 }

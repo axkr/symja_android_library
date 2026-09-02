@@ -2846,6 +2846,10 @@ public class F extends S {
     return new AST2(Clip, a0, a1);
   }
 
+  public static IAST Clip(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Clip, a0, a1, a2);
+  }
+
   public static IAST Coefficient(final IExpr a0, final IExpr a1) {
     return new AST2(Coefficient, a0, a1);
   }
