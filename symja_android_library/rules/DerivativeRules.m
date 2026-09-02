@@ -130,6 +130,9 @@ Derivative(1,0)[Erf] = -2/(E^(#^2)*Sqrt(Pi))&,
 Derivative(0,1)[InverseErf] = 1/2*E^InverseErf(#,#2)^2*Sqrt(Pi)&,
 Derivative(1,0)[InverseErf] = E^(InverseErf[#,#2]^2-#^2)&,
 
+Derivative(1,0,0)[InverseBetaRegularized] = Beta(#2,#3)*(1-InverseBetaRegularized(#,#2,#3))^(1-#3)*InverseBetaRegularized(#,#2,#3)^(1-#2)&,
+Derivative(0,1)[InverseGammaRegularized] = (-E^InverseGammaRegularized(#,#2))*Gamma(#)*InverseGammaRegularized(#,#2)^(1-#)&,
+
 Derivative(0,1)[Gamma] = (-E^(-#2))*#2^(-1+#) &,
 Derivative(1,0)[Gamma] = Gamma(#, #2)*Log(#2)+MeijerG({{},{1, 1}},{{0, 0, #},{}},#2) &,
 Derivative(0,0,1)[Gamma] = #3^(-1+#)/E^#3 &,

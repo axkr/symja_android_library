@@ -1117,8 +1117,35 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0.891295");
     check("InverseBetaRegularized(0.8, 1, 2)", //
         "0.552786");
+    // the last iterate of Range(0,1,0.1) is 0.9999999999999999, not 1.0, and the inverse is
+    // steep enough there that the difference shows in the sixth digit
     check("Table(InverseBetaRegularized(s, 2, 3), {s, 0, 1,0.1})", //
-        "{0.0,0.142559,0.212317,0.272384,0.329167,0.385728,0.4445,0.508405,0.582454,0.679539,1.0}");
+        "{0.0,0.142559,0.212317,0.272384,0.329167,0.385728,0.4445,0.508405,0.582454,0.679539,0.999997}");
+    check("InverseBetaRegularized(1.0, 2, 3)", //
+        "1.0");
+    // a probability below Config.DOUBLE_TOLERANCE is still a probability
+    check("InverseBetaRegularized(1.0*10^-16, 2, 3)", //
+        "4.08248*10^-9");
+    // tails - a generic bracketing solve over the CDF returns 0.0 here
+    check("InverseBetaRegularized(0.001, 0.1, 0.1)", //
+        "8.86928*10^-28");
+    check("N(InverseBetaRegularized(10^-12, 1/10, 1/10), 20)", //
+        "8.8692806555502133423*10^-118");
+    check("N(InverseBetaRegularized(3/10, 1/1000, 1/1000), 20)", //
+        "1.4142853421408959618*10^-222");
+    check("N(InverseBetaRegularized(1-10^-9, 2, 3), 20)", //
+        "0.99936994021558308635");
+    check("N(InverseBetaRegularized(1/2, 2, 3), 20)", //
+        "0.38572756813238954827");
+    check("N(InverseBetaRegularized(1/2, 1000, 1000), 20)", //
+        "0.5");
+    // generalized four argument form
+    check("InverseBetaRegularized(0.3, 0.6, 2, 3)", //
+        "0.748375");
+    check("N(InverseBetaRegularized(1, -1/2, 3/2, 1), 20)", //
+        "0.62996052494743658238");
+    check("N(InverseBetaRegularized(1/4, 1/2, 3/2, 2), 20)", //
+        "0.61925995372896806701");
     check("InverseBetaRegularized(0,42,b)", //
         "0");
     check("InverseBetaRegularized(1,47.11,b)", //
@@ -1221,6 +1248,28 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "Infinity");
     check("InverseGammaRegularized(10,1)", //
         "0");
+    check("InverseGammaRegularized(2, 0.5)", //
+        "1.67835");
+    check("N(InverseGammaRegularized(2, 1/2), 20)", //
+        "1.6783469900166606534");
+    check("InverseGammaRegularized(0.5, 0.9)", //
+        "0.00789539");
+    check("N(InverseGammaRegularized(1/100, 10^-10), 20)", //
+        "15.645562889940677986");
+    // the upper tail must not be inverted through 1 - q
+    check("N(InverseGammaRegularized(2, 1-10^-12), 20)", //
+        "0.0000014142142290401938365");
+    check("GammaRegularized(2, InverseGammaRegularized(2, 0.001))", //
+        "0.001");
+    // three argument form; (a, 0, z) is the lower tail inverse
+    check("InverseGammaRegularized(2, 0, 0.5)", //
+        "1.67835");
+    check("N(InverseGammaRegularized(3/2, 0, 1/2), 20)", //
+        "1.182986942187669133");
+    check("N(InverseGammaRegularized(5, 3, 1/10), 20)", //
+        "3.5537267447504255425");
+    check("InverseGammaRegularized(2, 0, {0.2,0.5,0.8})", //
+        "{0.824388,1.67835,2.99431}");
   }
 
   @Test

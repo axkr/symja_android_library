@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 164, 0 };
+  final public static int[] SIZES = { 166, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -356,6 +356,12 @@ public class DerivativeRules {
     // Derivative(1,0)[InverseErf]=E^(InverseErf(#1,#2)^2-#1^2)&
     ISet($(Derivative(C1,C0),InverseErf),
       Function(Exp(Subtract(Sqr(InverseErf(Slot1,Slot2)),Sqr(Slot1)))), true),
+    // Derivative(1,0,0)[InverseBetaRegularized]=Beta(#2,#3)*(1-InverseBetaRegularized(#1,#2,#3))^(1-#3)*InverseBetaRegularized(#1,#2,#3)^(1-#2)&
+    ISet($(Derivative(C1,C0,C0),InverseBetaRegularized),
+      Function(Times(Beta(Slot2,Slot(C3)),Power(Subtract(C1,InverseBetaRegularized(Slot1,Slot2,Slot(C3))),Subtract(C1,Slot(C3))),Power(InverseBetaRegularized(Slot1,Slot2,Slot(C3)),Subtract(C1,Slot2)))), true),
+    // Derivative(0,1)[InverseGammaRegularized]=-E^InverseGammaRegularized(#1,#2)*Gamma(#1)*InverseGammaRegularized(#1,#2)^(1-#1)&
+    ISet($(Derivative(C0,C1),InverseGammaRegularized),
+      Function(Times(CN1,Exp(InverseGammaRegularized(Slot1,Slot2)),Gamma(Slot1),Power(InverseGammaRegularized(Slot1,Slot2),Subtract(C1,Slot1)))), true),
     // Derivative(0,1)[Gamma]=-E^(-#2)/#2^(1-#1)&
     ISet($(Derivative(C0,C1),Gamma),
       Function(Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))), true),
