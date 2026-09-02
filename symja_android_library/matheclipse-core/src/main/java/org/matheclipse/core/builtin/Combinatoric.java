@@ -247,7 +247,7 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Cycles)) {
+      if (ast.head() == S.Cycles) {
         if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           return F.NIL;
         }
@@ -1070,25 +1070,6 @@ public final class Combinatoric {
    */
   public static final class PermutationReplace extends AbstractFunctionEvaluator {
 
-    public static IInteger replaceSingleElement(IAST mainList, IInteger intArg1) {
-      IInteger result = intArg1;
-      for (int j = 1; j < mainList.size(); j++) {
-        IAST list = (IAST) mainList.get(j);
-        for (int i = 1; i < list.size(); i++) {
-          IInteger arg = (IInteger) list.get(i);
-          if (arg.equals(result)) {
-            if (i < list.size() - 1) {
-              result = (IInteger) list.get(i + 1);
-            } else {
-              result = (IInteger) list.arg1();
-            }
-            return result;
-          }
-        }
-      }
-      return result;
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -1108,7 +1089,7 @@ public final class Combinatoric {
           IAST mainList = (IAST) cycles.arg1();
           if (arg1.isInteger()) {
             IInteger intArg1 = (IInteger) arg1;
-            return replaceSingleElement(mainList, intArg1);
+            return CombinatoricUtil.replaceSingleElement(mainList, intArg1);
           } else if (arg1.isList()) {
             IAST list1 = (IAST) ast.arg1();
             if (arg1.isListOfLists()) {

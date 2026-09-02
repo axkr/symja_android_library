@@ -799,8 +799,8 @@ public abstract class DoubleFormFactory {
       append(buf, "(");
     }
     if (list.size() > 3 && //
-        (head.equals(S.Equal) || head.equals(S.Unequal) || head.equals(S.Greater)
-            || head.equals(S.GreaterEqual) || head.equals(S.Less) || head.equals(S.LessEqual))) {
+        (head == S.Equal || head == S.Unequal || head == S.Greater
+            || head == S.GreaterEqual || head == S.Less || head == S.LessEqual)) {
       convertInternal(buf, list.arg1(), oper.getPrecedence(), false, true);
       for (int i = 2; i < list.size(); i++) {
         append(buf, oper.getOperatorString());
@@ -948,14 +948,14 @@ public abstract class DoubleFormFactory {
     }
     if ((operator instanceof InfixOperator) && (list.size() > 2)) {
       InfixOperator infixOperator = (InfixOperator) operator;
-      if (head.equals(S.Plus)) {
+      if (head == S.Plus) {
         if (fPlusReversed) {
           convertPlusOperatorReversed(buf, list, infixOperator, precedence);
         } else {
           convertPlusOperator(buf, list, infixOperator, precedence);
         }
         return true;
-      } else if (head.equals(S.Times)) {
+      } else if (head == S.Times) {
         convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
         return true;
       } else if (list.isPower()) {

@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +25,9 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.output.NumberFormPrinter;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -41,6 +45,7 @@ import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import com.google.common.base.CharMatcher;
 import com.univocity.parsers.csv.CsvFormat;
@@ -1115,7 +1120,7 @@ public final class StringFunctions {
           for (int i = 1; i < list.size(); i++) {
             IExpr arg = list.get(i);
 
-            Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+            Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
             java.util.regex.Pattern pattern =
                 IStringX.toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
             if (pattern == null) {
@@ -1183,7 +1188,7 @@ public final class StringFunctions {
         if (arg1.isString() && !ast.arg2().isRuleAST()) {
           IExpr arg2 = ast.arg2();
 
-          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+          Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
           java.util.regex.Pattern pattern =
               IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
           if (pattern == null) {
@@ -1259,7 +1264,7 @@ public final class StringFunctions {
           for (int i = 1; i < list.size(); i++) {
             IExpr arg = list.get(i);
 
-            Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+            Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
             java.util.regex.Pattern pattern =
                 IStringX.toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
             if (pattern == null) {
@@ -1447,7 +1452,7 @@ public final class StringFunctions {
 
     private static IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
         EvalEngine engine) {
-      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+      Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
       java.util.regex.Pattern pattern =
           IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
       if (pattern == null) {
@@ -1807,7 +1812,7 @@ public final class StringFunctions {
         }
         IExpr arg2 = ast.arg2();
 
-        Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+        Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
         java.util.regex.Pattern pattern =
             IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
         if (pattern == null) {
@@ -1918,7 +1923,7 @@ public final class StringFunctions {
     private static IExpr stringPosition(IAST ast, IExpr arg1, IExpr arg2, int maxOccurences,
         boolean ignoreCase, IASTAppendable result, EvalEngine engine) {
 
-      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+      Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
       java.util.regex.Pattern pattern =
           IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
       if (pattern == null) {
@@ -2186,7 +2191,7 @@ public final class StringFunctions {
           final IExpr ruleRHS = rule.arg2();
 
           // see github #221 - use Java regex - named capturing groups
-          Map<ISymbol, String> namedRegexGroups = new HashMap<ISymbol, String>();
+          Map<ISymbol, String> namedRegexGroups = new IdentityHashMap<ISymbol, String>();
           if (ruleLHS.isCondition()) {
             final IAST condition = (IAST) ruleLHS;
             final IExpr conditionPattern = condition.arg1();
@@ -2423,7 +2428,7 @@ public final class StringFunctions {
             arg2 = ((IAST) arg2).setAtCopy(0, S.Alternatives);
           }
         }
-        Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+        Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
         java.util.regex.Pattern pattern =
             IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
         if (pattern == null) {
@@ -2521,7 +2526,7 @@ public final class StringFunctions {
             }
             upTo = s.length() > upTo ? upTo : s.length();
             return F.$str(s.substring(0, upTo));
-          } else if (arg2.equals(S.All)) {
+          } else if (arg2 == S.All) {
             return arg1;
           } else if (arg2.isList()) {
             // int[][] sequ =
@@ -2715,7 +2720,7 @@ public final class StringFunctions {
           }
           String str = ast.arg1().toString();
           try {
-            Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+            Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
             String regex = IStringX.toRegexString(ast.arg2(), true, ast, IStringX.REGEX_LONGEST,
                 groups, engine);
             if (regex != null) {
@@ -3027,9 +3032,9 @@ public final class StringFunctions {
         ISymbol form = S.InputForm;
         if (ast.argSize() >= 2) {
           IExpr arg2 = ast.arg2();
-          if (arg2.equals(S.InputForm)) {
+          if (arg2 == S.InputForm) {
             form = S.InputForm;
-          } else if (arg2.equals(S.TeXForm)) {
+          } else if (arg2 == S.TeXForm) {
             form = S.TeXForm;
           } else {
             return F.NIL;
@@ -3039,14 +3044,14 @@ public final class StringFunctions {
           head = ast.arg3();
         }
         try {
-          if (form.equals(S.InputForm)) {
+          if (form == S.InputForm) {
             ExprParser parser = new ExprParser(engine);
             IExpr temp = parser.parse(arg1.toString());
             if (head.isPresent()) {
               return F.unaryAST1(head, temp);
             }
             return temp;
-          } else if (form.equals(S.TeXForm)) {
+          } else if (form == S.TeXForm) {
             IExpr temp = TeXParser.convert(arg1.toString());
             if (head.isPresent()) {
               return F.unaryAST1(head, temp);
@@ -3130,10 +3135,32 @@ public final class StringFunctions {
       if (ast.isAST2()) {
         return toStringForm(ast.arg1(), ast.arg2(), engine);
       }
-      if (ast.arg1().isString()) {
-        return ast.arg1();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isString()) {
+        return arg1;
       }
-      return F.stringx(IStringX.inputForm(ast.arg1()));
+      if (arg1.isAST() && NumberFormatter.formKind(arg1.head()) != null) {
+        // a number form wrapper prints the number it formats, not the wrapper itself
+        String formatted = NumberFormPrinter.print((IAST) arg1, engine);
+        if (formatted != null) {
+          return F.stringx(formatted);
+        }
+      }
+      // ToString(expr) is ToString(expr, OutputForm) - the display wrappers Style, Row and
+      // Graphics show what they format rather than themselves
+      return F.stringx(outputForm(arg1));
+    }
+
+    /** Print <code>expr</code> the way the console shows it. */
+    private static String outputForm(IExpr expr) {
+      StringBuilder buf = new StringBuilder();
+      int significantFigures = EvalEngine.get().getSignificantFigures();
+      OutputFormFactory factory =
+          OutputFormFactory.get(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS, false, true,
+              significantFigures - 1, significantFigures + 1);
+      factory.setIgnoreNewLine(true);
+      factory.setGraphicsPlaceholder(true);
+      return factory.convert(buf, expr) ? buf.toString() : IStringX.inputForm(expr);
     }
 
     /**

@@ -12,6 +12,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.manipulate.Dynamics;
+import org.matheclipse.core.manipulate.Interactions;
 import org.matheclipse.core.manipulate.ManipulateControl;
 import org.matheclipse.core.manipulate.ManipulateSpec;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,6 +54,18 @@ public class ManipulateSession {
   private static final Map<String, List<IExpr>> BODY_ACTIONS =
       new LinkedHashMap<String, List<IExpr>>();
 
+  /**
+   * The controls the body itself drew, per widget - <code>Slider[Dynamic[x]]</code> and its
+   * relatives, written inside the body rather than given as a control specification.
+   *
+   * <p>
+   * They are kept for the same reason the button actions are: the browser only learns each
+   * control's position and the description of the widget to build, never the expression it writes
+   * to. Replaced on every rendering, because the body may draw different controls each time.
+   */
+  private static final Map<String, List<ManipulateControl>> BODY_CONTROLS =
+      new LinkedHashMap<String, List<ManipulateControl>>();
+
   private ManipulateSession() {}
 
   private static synchronized String store(EvalEngine engine, String sessionID,
@@ -87,38 +102,100 @@ public class ManipulateSession {
    * button is rewritten to carry its position, which is what the MathML output turns into a real
    * button for the browser.
    */
-  static synchronized IExpr registerBodyButtons(String widgetId, IExpr result) {
-    List<IExpr> actions = new ArrayList<IExpr>();
-    IExpr rewritten = rewriteButtons(result, actions);
-    if (actions.isEmpty()) {
+  /**
+   * Take the interactive parts out of a rendered body and keep them here.
+   *
+   * <p>
+   * Both kinds are rebuilt on every rendering, because the body may produce different ones each
+   * time: <code>If[showExtra, Slider[Dynamic[k]]]</code> is a control on some frames and nothing on
+   * others.
+   *
+   * <p>
+   * The controls are read against the bindings of the frame they were drawn in, so a control the
+   * body aimed at one of the widget's own variables shows the position that frame used rather than
+   * whatever the session holds for a symbol of the same name.
+   */
+  static synchronized IExpr registerBodyInteractions(EvalEngine engine, ManipulateSpec spec,
+      JsonNode bindings, String widgetId, IExpr result) {
+    Interactions interactions = new Interactions(engine, bindingList(engine, spec, bindings));
+    IExpr rewritten = interactions.rewrite(result);
+    if (interactions.getActions().isEmpty()) {
       BODY_ACTIONS.remove(widgetId);
     } else {
-      BODY_ACTIONS.put(widgetId, actions);
+      BODY_ACTIONS.put(widgetId, interactions.getActions());
+    }
+    if (interactions.getControls().isEmpty()) {
+      BODY_CONTROLS.remove(widgetId);
+    } else {
+      BODY_CONTROLS.put(widgetId, interactions.getControls());
     }
     return rewritten;
   }
 
-  private static IExpr rewriteButtons(IExpr expr, List<IExpr> actions) {
-    if (!expr.isAST()) {
-      return expr;
+  /**
+   * The description of every control the body drew, for the browser to build widgets from, or
+   * <code>null</code> when it drew none.
+   */
+  static synchronized ArrayNode bodyControlsJSON(String widgetId) {
+    List<ManipulateControl> controls = BODY_CONTROLS.get(widgetId);
+    if (controls == null) {
+      return null;
     }
-    IAST ast = (IAST) expr;
-    if (ast.isAST(S.Button, 3)) {
-      actions.add(ast.arg2());
-      // the second argument becomes the position the browser sends back
-      return F.binaryAST2(S.Button, ast.arg1(), F.ZZ(actions.size() - 1));
+    ArrayNode json = JSONBuilder.JSON_OBJECT_MAPPER.createArrayNode();
+    for (ManipulateControl control : controls) {
+      json.add(control.toJSON(JSONBuilder.JSON_OBJECT_MAPPER));
     }
-    IASTMutable copy = F.NIL;
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr child = rewriteButtons(ast.get(i), actions);
-      if (child != ast.get(i)) {
-        if (!copy.isPresent()) {
-          copy = ast.copy();
-        }
-        copy.set(i, child);
+    return json;
+  }
+
+  /**
+   * Write a value the user produced with a control the body drew.
+   *
+   * <p>
+   * Where it goes depends on what the <code>Dynamic</code> points at. A control aimed at one of the
+   * widget's own variables - <code>Manipulate[{Slider[Dynamic[k]], ...}, {k, 0, 10}]</code>, a
+   * second way to move the same slider - has to move the panel, so its value is answered back as a
+   * binding. A control aimed at anything else writes through to the session, where it stays after
+   * the frame is gone.
+   *
+   * @return the panel bindings the write moved, empty when it moved none, or <code>null</code> when
+   *         there is no such control
+   */
+  static ObjectNode applyBodyControl(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
+      String widgetId, int controlIndex, JsonNode value) {
+    ManipulateControl control;
+    synchronized (ManipulateSession.class) {
+      List<ManipulateControl> controls = BODY_CONTROLS.get(widgetId);
+      if (controls == null || controlIndex < 0 || controlIndex >= controls.size()) {
+        return null;
       }
+      control = controls.get(controlIndex);
     }
-    return copy.isPresent() ? copy : expr;
+    if (control.isReadOnly() || !control.getDynamic().isAST()) {
+      return JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
+    }
+    IAST dynamic = (IAST) control.getDynamic();
+    IExpr written = valueOf(control, value, engine);
+    if (!written.isPresent()) {
+      return JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
+    }
+
+    IExpr target = Dynamics.target(dynamic);
+    ManipulateControl panelControl = target.isSymbol()
+        ? spec.controlNamed(((ISymbol) target).getSymbolName())
+        : null;
+    if (panelControl != null) {
+      // the control drives one of the widget's own variables: the write has to land in the
+      // binding set the next frame is rendered with, not in the session
+      IASTAppendable locals = bindingList(engine, spec, bindings);
+      IExpr result = engine.evaluate(F.Block(locals,
+          F.CompoundExpression(F.Set(target, written), target)));
+      ObjectNode updated = JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
+      putBinding(updated, panelControl, result);
+      return updated;
+    }
+    Dynamics.assign(dynamic, written, engine);
+    return JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
   }
 
   private static void deinitialize(EvalEngine engine, ManipulateSpec spec) {
@@ -152,6 +229,7 @@ public class ManipulateSession {
       return false;
     }
     BODY_ACTIONS.remove(id);
+    BODY_CONTROLS.remove(id);
     deinitialize(engine, spec);
     return true;
   }
@@ -174,6 +252,7 @@ public class ManipulateSession {
     }
     for (String widgetId : widgets.keySet()) {
       BODY_ACTIONS.remove(widgetId);
+      BODY_CONTROLS.remove(widgetId);
     }
     for (ManipulateSpec spec : widgets.values()) {
       deinitialize(engine, spec);
@@ -201,10 +280,13 @@ public class ManipulateSession {
     }
 
     ObjectNode bindings = initialBindings(spec);
-    IExpr result = registerBodyButtons(id, evaluateBody(engine, spec, bindings));
+    IExpr result = registerBodyInteractions(engine, spec, bindings, id,
+        evaluateBody(engine, spec, bindings));
     String[] rendered = AJAXQueryServlet.renderResult(engine, result, outWriter, errorWriter);
     return JSONBuilder.createJSONManipulate(id, spec, rendered[1],
-        resolveEnabled(engine, spec, bindings), spec.warnings());
+        resolveEnabled(engine, spec, bindings), resolveVisible(engine, spec, bindings),
+        renderDisplays(engine, spec, bindings, outWriter, errorWriter), bodyControlsJSON(id),
+        spec.warnings());
   }
 
   /** The control values as the browser would first send them. */
@@ -250,7 +332,51 @@ public class ManipulateSession {
    * evaluation and a global symbol of the same name is left alone.
    */
   static IExpr evaluateBody(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
-    return engine.evaluate(F.Block(bindingList(engine, spec, bindings), spec.getBody()));
+    IExpr result = engine.evaluate(
+        F.Block(bindingList(engine, spec, bindings), Dynamics.releaseAll(spec.getBody())));
+    // the wrappers of the body itself came off before it ran; this catches one the evaluation
+    // produced, from a definition such as caption[] := Dynamic[k]
+    return Dynamics.resolve(result, engine);
+  }
+
+  /**
+   * Render the rows of the control panel that show an expression instead of offering a control.
+   *
+   * <p>
+   * They go through exactly the path the body does, so a read-out may be anything the body may be -
+   * a number, a grid, a small plot. Only the rows that are displays are rendered, and each is keyed
+   * by its position among the controls so the browser can put it back where it belongs.
+   *
+   * @return the renderings by control index, or <code>null</code> when the widget has no display
+   *         row
+   */
+  static ObjectNode renderDisplays(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
+    List<ManipulateControl> controls = spec.getControls();
+    ObjectNode displays = null;
+    IASTAppendable locals = F.NIL;
+    for (int i = 0; i < controls.size(); i++) {
+      ManipulateControl control = controls.get(i);
+      if (!ManipulateControl.DISPLAY.equals(control.getKind())) {
+        continue;
+      }
+      if (!locals.isPresent()) {
+        locals = bindingList(engine, spec, bindings);
+      }
+      if (displays == null) {
+        displays = JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
+      }
+      try {
+        IExpr value =
+            engine.evaluate(F.Block(locals, Dynamics.releaseAll(control.getDisplay())));
+        String[] rendered = AJAXQueryServlet.renderResult(engine, value, outWriter, errorWriter);
+        displays.set(Integer.toString(i), JSONBuilder.JSON_OBJECT_MAPPER.readTree(rendered[1]));
+      } catch (Exception ex) {
+        // a read-out that fails leaves its row as it was rather than taking the frame with it
+        displays.putNull(Integer.toString(i));
+      }
+    }
+    return displays;
   }
 
   /**
@@ -261,9 +387,32 @@ public class ManipulateSession {
    *         <code>null</code> when no control carries a condition
    */
   static ArrayNode resolveEnabled(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
+    return resolveConditions(engine, spec, bindings, true);
+  }
+
+  /**
+   * Resolve which control rows are on screen, for a widget whose controls came from the panes of a
+   * <code>PaneSelector</code>.
+   *
+   * @return one flag per control, or <code>null</code> when every row is always shown
+   */
+  static ArrayNode resolveVisible(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
+    return resolveConditions(engine, spec, bindings, false);
+  }
+
+  /**
+   * One flag per control, from either the <code>Enabled</code> conditions or the pane conditions.
+   *
+   * <p>
+   * Both are resolved the same way and for the same reason: the answer depends on the values the
+   * browser currently holds, so it can only be worked out here, with the frame's bindings in place.
+   */
+  private static ArrayNode resolveConditions(EvalEngine engine, ManipulateSpec spec,
+      JsonNode bindings, boolean enabled) {
+    List<ManipulateControl> controls = spec.getControls();
     boolean any = false;
-    for (ManipulateControl control : spec.getControls()) {
-      if (control.getEnabledCondition().isPresent()) {
+    for (ManipulateControl control : controls) {
+      if (conditionOf(control, enabled).isPresent()) {
         any = true;
         break;
       }
@@ -273,21 +422,25 @@ public class ManipulateSession {
     }
     IASTAppendable locals = bindingList(engine, spec, bindings);
     ArrayNode flags = JSONBuilder.JSON_OBJECT_MAPPER.createArrayNode();
-    for (ManipulateControl control : spec.getControls()) {
-      IExpr condition = control.getEnabledCondition();
+    for (ManipulateControl control : controls) {
+      IExpr condition = conditionOf(control, enabled);
       if (!condition.isPresent()) {
         flags.add(true);
         continue;
       }
       try {
         IExpr value = engine.evaluate(F.Block(locals, condition));
-        // anything that is not explicitly False leaves the control usable
+        // anything that is not explicitly False leaves the control usable, or on screen
         flags.add(!value.isFalse());
       } catch (RuntimeException rex) {
         flags.add(true);
       }
     }
     return flags;
+  }
+
+  private static IExpr conditionOf(ManipulateControl control, boolean enabled) {
+    return enabled ? control.getEnabledCondition() : control.getVisibleCondition();
   }
 
   /** The <code>Block</code> local assignments for the control values the browser sent. */
@@ -306,8 +459,15 @@ public class ManipulateSession {
     return locals;
   }
 
-  /** Turn one control value from the browser into the expression its variable is bound to. */
-  private static IExpr valueOf(ManipulateControl control, JsonNode node, EvalEngine engine) {
+  /**
+   * Turn one control value from the browser into the expression its variable is bound to.
+   *
+   * <p>
+   * Shared with {@link DynamicSession}: a control is the same widget sending the same shape of
+   * value whether it belongs to a <code>Manipulate</code> panel or to a dynamic cell of its own,
+   * and only where the value then goes differs.
+   */
+  static IExpr valueOf(ManipulateControl control, JsonNode node, EvalEngine engine) {
     String kind = control.getKind();
     if (node == null || node.isNull()) {
       IExpr initial = fromInitial(control);
@@ -321,8 +481,27 @@ public class ManipulateSession {
       }
       return values.isEmpty() ? F.NIL : values.get(0);
     }
+    if (ManipulateControl.MULTI.equals(kind)) {
+      // the browser sends the positions that are switched on; the variable holds the values
+      List<IExpr> values = control.getValues();
+      IASTAppendable chosen = F.ListAlloc(node.size());
+      if (node.isArray()) {
+        for (JsonNode index : node) {
+          int i = index.asInt(-1);
+          if (i >= 0 && i < values.size()) {
+            chosen.append(values.get(i));
+          }
+        }
+      }
+      return chosen;
+    }
     if (ManipulateControl.CHECKBOX.equals(kind)) {
       return node.asBoolean(false) ? S.True : S.False;
+    }
+    if (ManipulateControl.FILE.equals(kind)) {
+      // the name the file was stored under in this session's directory, which is what Import takes
+      String name = node.asText("");
+      return name.isEmpty() ? F.NIL : F.$str(name);
     }
     if (ManipulateControl.SLIDER2D.equals(kind) || ManipulateControl.INTERVAL.equals(kind)) {
       if (node.isArray() && node.size() >= 2) {

@@ -2,3 +2,5 @@ out/
 *.iml
 .idea/
 gen/
+/.claude/
+*_PLAN.md

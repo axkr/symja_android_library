@@ -15,6 +15,7 @@ import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -80,7 +81,12 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
     if (argSize >= 1) {
-      IExpr data = ast.arg1();
+      // a Dataset becomes its rows; an Association becomes the rule list parseData already reads,
+      // which is the shape the chapter's Association @@ Catenate[...] builds
+      IExpr data = IASTDataset.normalizeDataset(ast.arg1());
+      if (data.isAssociation()) {
+        data = data.normal(false);
+      }
       List<WordItem> items = parseData(data, engine);
 
       if (items == null || items.isEmpty()) {

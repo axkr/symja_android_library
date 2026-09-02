@@ -720,7 +720,7 @@ public class IntervalDataSym {
         if (list.arg1().equals(list.arg4())//
             && list.arg2() == S.LessEqual//
             && list.arg3() == S.LessEqual) {
-          andArg.append(F.binaryAST2(S.Equal, variable, list.arg1()));
+          andArg.append(F.Equal(variable, list.arg1()));
         } else {
           //
           // let's write the variable on the left-hand-side for normalization

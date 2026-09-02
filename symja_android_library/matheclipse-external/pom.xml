@@ -26,21 +26,6 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>io.pebbletemplates</groupId>
-			<artifactId>pebble</artifactId>
-		</dependency>
-		
-		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
@@ -50,6 +35,13 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-logging</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- only used to differential-test the slim replacements in
+				org.matheclipse.external.fastutil against the original implementation -->
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -532,7 +532,7 @@ public class ASTRRBTree extends AbstractAST
    */
   @Override
   public IExpr set(int location, IExpr expr) {
-    hashValue = 0;
+    argumentsChanged();
     if (location != 0 && uniformTypeFlags != UniformFlags.UNKNOWN) {
       uniformTypeFlags &= expr.uniformFlags();
     }
@@ -587,7 +587,7 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public boolean append(IExpr expr) {
-    hashValue = 0;
+    argumentsChanged();
     if (size() > 0) {
       if (size() == 1) {
         // first argument
@@ -604,7 +604,7 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public void append(int location, IExpr expr) {
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     if (location >= 0 && location <= size()) {
       if (location == size()) {
@@ -620,7 +620,7 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public boolean appendAll(Collection<? extends IExpr> collection) {
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     rrbTree.addAll(collection);
     return true;
@@ -628,7 +628,7 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
       rrbTree.append(F.Rule(entry.getKey(), entry.getValue()));
@@ -639,7 +639,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(IAST ast, int startPosition, int endPosition) {
     if (ast.size() > 0 && startPosition < endPosition) {
-      hashValue = 0;
+      argumentsChanged();
       if (startPosition >= 1) {
         // a subset of the arguments of a uniform list is uniform as well
         mergeUniformTypeFlags(HMArrayList.argumentTypeFlags(ast), size());
@@ -657,7 +657,7 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     final int size = rrbTree.size();
     if (location < 0 || location > size) {
@@ -683,7 +683,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
     if (list.size() > 0 && startPosition < endPosition) {
-      hashValue = 0;
+      argumentsChanged();
       uniformTypeFlags = UniformFlags.UNKNOWN;
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(list.get(i));
@@ -696,7 +696,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
     if (args.length > 0 && startPosition < endPosition) {
-      hashValue = 0;
+      argumentsChanged();
       uniformTypeFlags = UniformFlags.UNKNOWN;
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(args[i]);
@@ -714,7 +714,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendArgs(IAST ast, int untilPosition) {
     if (untilPosition > 1) {
-      hashValue = 0;
+      argumentsChanged();
       // only arguments of ast are appended here; a subset of the arguments of a uniform list is
       // uniform as well
       mergeUniformTypeFlags(HMArrayList.argumentTypeFlags(ast), size());
@@ -732,7 +732,7 @@ public class ASTRRBTree extends AbstractAST
     if (start >= end) {
       return this;
     }
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     for (int i = start; i < end; i++) {
       IExpr temp = function.apply(i);

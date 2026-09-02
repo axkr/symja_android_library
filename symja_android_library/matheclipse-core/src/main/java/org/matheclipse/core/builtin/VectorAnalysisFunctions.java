@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class VectorAnalysisFunctions {
 

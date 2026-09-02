@@ -516,8 +516,8 @@ public abstract class ComplexFormFactory {
       append(buf, "(");
     }
     if (list.size() > 3 && //
-        (head.equals(S.Equal) || head.equals(S.Unequal) || head.equals(S.Greater)
-            || head.equals(S.GreaterEqual) || head.equals(S.Less) || head.equals(S.LessEqual))) {
+        (head == S.Equal || head == S.Unequal || head == S.Greater
+            || head == S.GreaterEqual || head == S.Less || head == S.LessEqual)) {
       convertInternal(buf, list.arg1(), oper.getPrecedence(), false);
       for (int i = 2; i < list.size(); i++) {
         append(buf, oper.getOperatorString());
@@ -648,14 +648,14 @@ public abstract class ComplexFormFactory {
     }
     if ((operator instanceof InfixOperator) && (list.size() > 2)) {
       InfixOperator infixOperator = (InfixOperator) operator;
-      if (head.equals(S.Plus)) {
+      if (head == S.Plus) {
         if (fPlusReversed) {
           convertInfixOperatorReversed(buf, list, "add");
         } else {
           convertInfixOperator(buf, list, "add");
         }
         return true;
-      } else if (head.equals(S.Times)) {
+      } else if (head == S.Times) {
         convertInfixOperator(buf, list, "multiply");
         return true;
       } else if (list.isPower()) {

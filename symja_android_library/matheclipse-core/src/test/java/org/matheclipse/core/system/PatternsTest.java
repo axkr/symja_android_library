@@ -35,6 +35,27 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     check(evaluator, evalString, expectedResult, "", -1);
   }
 
+  /**
+   * A pattern head that leaves its pattern alone answers <code>NIL</code>, which is the other way
+   * of saying that nothing changed. <code>HoldPattern</code> only compared the result by identity,
+   * so for an <code>Optional</code> argument it wrapped the sentinel and produced
+   * <code>HoldPattern(NIL)</code> - a <code>NIL</code> leaking into a result, which nothing may
+   * ever do. Mathematica answers <code>HoldPattern[x_:1]</code> here.
+   */
+  @Test
+  public void testHoldPatternOptional() {
+    check("HoldPattern(x_:1)", "HoldPattern(x_:1)");
+    check("HoldPattern(Optional(x_,1))", "HoldPattern(x_:1)");
+    check("FullForm(HoldPattern(x_:1))", "HoldPattern(Optional(Pattern(x, Blank()), 1))");
+    // the pattern heads that already worked have to keep working
+    check("HoldPattern(x_)", "HoldPattern(x_)");
+    check("HoldPattern(x__)", "HoldPattern(x__)");
+    check("HoldPattern(x_Integer)", "HoldPattern(x_Integer)");
+    check("HoldPattern(f(x_))", "HoldPattern(f(x_))");
+    // and it still matches what it is for
+    check("MatchQ(1, HoldPattern(x_:1))", "True");
+  }
+
   @Test
   public void testPriority001() {
 

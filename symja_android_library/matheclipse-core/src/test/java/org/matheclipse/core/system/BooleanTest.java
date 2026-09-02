@@ -1022,7 +1022,7 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("LogicalExpand(x == a && y == b || x == a || y == b)", //
         "x==a||y==b");
     check("e1=Implies(Xor(a, b, c), (a || b) && c)", //
-        "Xor(a,b,c)⇒(a||b)&&c");
+        "a⊻b⊻c⇒(a||b)&&c");
     check("e2=LogicalExpand(Implies(Xor(a, b, c), (a || b) && c))", //
         "(a&&b)||(a&&c)||(b&&c)||(!a&&!b&&!c)");
     check("Table(e1 == e2, {a, {True, False}}, {b, {True, False}}, {c, {True, False}})", //
@@ -1404,9 +1404,9 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("Xor(True, True)", //
         "False");
     check("Xor(a, False, b)", //
-        "Xor(a,b)");
+        "a⊻b");
     check("Xor(a, b)", //
-        "Xor(a,b)");
+        "a⊻b");
 
     check("Xor()", //
         "False");
@@ -1419,9 +1419,9 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("Xor(a,a)", //
         "False");
     check("Xor(a,a,a,b)", //
-        "Xor(a,b)");
+        "a⊻b");
     check("Xor(a,c,a,b)", //
-        "Xor(b,c)");
+        "b⊻c");
     check("Xor(True, False, False)", //
         "True");
     check("Xor(True, True, True)", //

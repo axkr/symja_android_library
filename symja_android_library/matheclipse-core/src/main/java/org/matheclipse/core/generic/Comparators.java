@@ -270,6 +270,49 @@ public final class Comparators {
   }
 
   /**
+   * Orders {@link S#Quantity} objects by magnitude and everything else canonically.
+   *
+   * <p>
+   * A quantity's canonical order is structural - <code>Quantity(3,"Feet")</code> orders by the
+   * atoms <code>3</code> and <code>"Feet"</code> - which is not the order {@link S#Sort} and
+   * {@link S#Ordering} report: <code>Sort({Quantity(3,"Feet"), Quantity(9,"Inches"),
+   * Quantity(1,"Meters")})</code> puts the nine inches first.
+   *
+   * <p>
+   * Comparing magnitudes needs a unit conversion, which is why this is not folded into
+   * {@link IExpr#compareTo(IExpr)}. Canonical order is also what <code>Orderless</code> uses to
+   * canonicalize <code>Plus</code> and <code>Times</code>, and there two quantities of equal
+   * magnitude in different units must stay distinguishable - a comparator that called them equal
+   * would break the total order those rely on.
+   *
+   * <p>
+   * Quantities in incompatible units, quantities whose magnitudes are not comparable reals, and
+   * equal magnitudes in different units all fall back to canonical order, so this stays a total
+   * order.
+   */
+  public static final class QuantityComparator implements Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = 4471051930384421067L;
+
+    final EvalEngine engine;
+
+    public QuantityComparator(EvalEngine engine) {
+      this.engine = engine;
+    }
+
+    @Override
+    public final int compare(final IExpr o1, final IExpr o2) {
+      if (o1.isQuantity() && o2.isQuantity()) {
+        int result = org.matheclipse.core.units.QuantityOps.compare((IAST) o1, (IAST) o2, engine);
+        if (result != org.matheclipse.core.units.QuantityOps.INCOMPARABLE && result != 0) {
+          return result;
+        }
+      }
+      return o1.compareTo(o2);
+    }
+  }
+
+  /**
    * Compares an expression with another expression for order. Returns a negative integer, zero, or
    * a positive integer if this expression is canonical less than, equal to, or greater than the
    * specified expression.

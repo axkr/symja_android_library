@@ -18,10 +18,10 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
-import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -587,7 +587,7 @@ public class WL {
           writeAST2(S.Complex, ((IComplexNum) arg1).re(), ((IComplexNum) arg1).im());
           return;
         case IExpr.GRAPHEXPRID:
-          writeGraphExpr((GraphExpr) arg1);
+          writeAST(((IGraphExpr) arg1).fullForm());
           return;
         case IExpr.BYTEARRAYID:
           writeBinaryString((ByteArrayExpr) arg1);
@@ -736,27 +736,6 @@ public class WL {
       stream.write((byte) ((bits >> 24) & 0x000000ff));
     }
 
-    private void writeGraphExpr(GraphExpr arg1) throws IOException {
-      GraphExpr graph = arg1;
-      IAST fullForm = graph.fullForm();
-      writeAST(fullForm);
-      // stream.write(WXF_CONSTANTS.Function);
-      // stream.write(3);
-      // write(fullForm.head());
-      // write(fullForm.arg1());
-      // write(fullForm.arg2());
-      // if (fullForm.isAST3()) {
-      // try {
-      // NumericArrayExpr numericArray =
-      // NumericArrayExpr.newList((IAST) fullForm.arg3(), INumericArray.Real64);
-      // writeNumericArray(numericArray);
-      // } catch (RangeException e) {
-      // e.printStackTrace();
-      // } catch (TypeException e) {
-      // e.printStackTrace();
-      // }
-      // }
-    }
 
     private void writeInteger(IExpr arg1) throws IOException {
       IInteger s = (IInteger) arg1;

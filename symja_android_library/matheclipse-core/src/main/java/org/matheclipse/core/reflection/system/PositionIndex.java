@@ -14,6 +14,11 @@ public class PositionIndex extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+    IExpr onRows = org.matheclipse.core.interfaces.IASTDataset.onDatasetRows(ast, engine);
+    if (onRows.isPresent()) {
+      return onRows;
+    }
     if (ast.isAST1()) {
       IExpr arg1 = ast.arg1();
 

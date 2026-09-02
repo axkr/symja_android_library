@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -26,7 +27,22 @@ import org.matheclipse.parser.client.ast.ASTNode;
  * Integration Reduction Rules</a>
  */
 public class ConvertRubi {
+  /**
+   * The Rubi {@code DownValue} number of the rule which is currently converted. Every parsed rule
+   * consumes one number, including the rules which {@link #excludedRuleReason(IAST)} excludes, so
+   * that the {@code IIntegrate(n, ...)} number of a generated rule is the line number of its
+   * definition in the {@code .m} input file.
+   */
   private static int GLOBAL_COUNTER = 0;
+
+  /** Number of rules actually written to the generated sources. */
+  private static int GENERATED_COUNTER = 0;
+
+  /** Number of {@code Star[u,v]} operators rewritten to {@code Dist[u,v,x]}. */
+  private static int STAR_COUNTER = 0;
+
+  /** Number of one argument {@code Simp[u]} calls rewritten to {@code Simp[u,x]}. */
+  private static int SIMP1_COUNTER = 0;
   private static final String HEADER = "package org.matheclipse.core.integrate.rubi;\n" + "\n"
       + "\n" + "import static org.matheclipse.core.expression.F.*;\n"
       + "import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;\n"
@@ -43,8 +59,7 @@ public class ConvertRubi {
   private static int NUMBER_OF_RULES_PER_FILE = 20;
 
   /** Default Rubi input file inside the {@code Rubi} directory. */
-  // private static final String DEFAULT_INPUT_FILE_NAME = "RubiRules_4.17.3.0_FullLHS.m";
-  private static final String DEFAULT_INPUT_FILE_NAME = "RubiRules4.16.0_FullLHS.m";
+  private static final String DEFAULT_INPUT_FILE_NAME = "RubiRules_4.17.3.0_FullLHS.m";
 
   /** The generated files which are deleted before a new conversion is started. */
   private static final Pattern GENERATED_FILE_PATTERN = Pattern.compile("IntRules\\d+\\.java");
@@ -63,7 +78,7 @@ public class ConvertRubi {
     }
     String inputString = buff.toString();
     Parser p = new Parser(RubiASTNodeFactory.RUBI_STYLE_FACTORY, false, true);
-    return p.parsePackage(inputString);
+    return p.parseScript(inputString);
   }
 
   public static void writeFile(Path file, StringBuffer buffer) throws IOException {
@@ -136,14 +151,20 @@ public class ConvertRubi {
 
   public static void appendSetDelayedToBuffer(IAST ast, StringBuffer buffer, boolean last,
       IASTAppendable listOfRules) {
-    if (ast.get(1).topHead().toString().equalsIgnoreCase("Int")) {
-      IAST integrate = (IAST) ast.get(1);
-      if (integrate.get(1).isPlus()) {
-        System.out.println(ast.toString());
-        return;
-      }
+    // every parsed rule owns its Rubi DownValue number, whether it is emitted or not - an
+    // excluded rule reserves its number so that IIntegrate(n, ...) stays aligned with the
+    // line numbers of the .m input and with Rubi's DownValues order
+    GLOBAL_COUNTER++;
+
+    String excludedReason = excludedRuleReason(ast);
+    if (excludedReason != null) {
+      System.out.println(
+          ">>>>> Excluded rule " + GLOBAL_COUNTER + " (number reserved): " + excludedReason);
+      System.out.println(">>>>>   " + ast.toString());
+      return;
     }
 
+    GENERATED_COUNTER++;
     IExpr leftHandSide = ast.get(1);
     IExpr rightHandSide = ast.arg2();
     boolean isIIntegrate = false;
@@ -152,7 +173,6 @@ public class ConvertRubi {
     // System.out.println("IGNORED: " + ast.toString());
     // } else {
 
-    GLOBAL_COUNTER++;
     // System.out.println(leftHandSide.toString());
     if (ast.get(1).isAST()) {
       // leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, EvalEngine.get());
@@ -177,7 +197,7 @@ public class ConvertRubi {
     } else {
       buffer.append("ISetDelayed(" + GLOBAL_COUNTER + ",");
     }
-    buffer.append(leftHandSide.internalFormString(true, 0));
+    buffer.append(foldNumericConstants(leftHandSide).internalFormString(true, 0));
     buffer.append(",\n    ");
 
     // if (rightHandSide.topHead().toString().equalsIgnoreCase("CompoundExpression")) {
@@ -188,11 +208,14 @@ public class ConvertRubi {
     if (temp.isPresent()) {
       rightHandSide = temp;
     }
+    IExpr integrationVariable = integrationVariable(leftHandSide);
+    rightHandSide = starToDist(rightHandSide, integrationVariable);
+    rightHandSide = simpWithVariable(rightHandSide, integrationVariable);
     // for Rubi patternExpression must be set to true in internalFormString() for right-hand-side
     if (isIIntegrate) {
       buffer.append("((Supplier<IExpr>) () -> \n");
     }
-    buffer.append(rightHandSide.internalFormString(true, 0));
+    buffer.append(foldNumericConstants(rightHandSide).internalFormString(true, 0));
     if (last) {
       if (isIIntegrate) {
         buffer.append("))\n");
@@ -208,6 +231,228 @@ public class ConvertRubi {
     }
     // }
     listOfRules.append(F.List(leftHandSide, rightHandSide));
+  }
+
+  /**
+   * Decide whether a parsed rule is excluded from the generated {@code IntRules*.java} sources.
+   *
+   * <p>
+   * An excluded rule still consumes its {@link #GLOBAL_COUNTER} number (the caller increments
+   * before this test), so the {@code IIntegrate(n, ...)} numbers of all following rules stay
+   * aligned with the line numbers of the {@code .m} input file and therefore with Rubi's
+   * {@code DownValues} order.
+   *
+   * <p>
+   * The exclusions keep the generated rule set a pure indefinite-integration rewrite system, the
+   * same shape the previously generated 4.16 rule set had: Symja's {@code Integrate()} evaluator
+   * owns sum splitting, definite integration, list threading and the not-integrable fallback, so
+   * the corresponding Rubi API level rules must not enter the {@code RulesData} dispatch.
+   *
+   * @param ast the parsed {@code SetDelayed(lhs, rhs)} rule
+   * @return the reason for the exclusion, or {@code null} if the rule is generated
+   */
+  private static String excludedRuleReason(IAST ast) {
+    if (!ast.get(1).topHead().toString().equalsIgnoreCase("Int")) {
+      return null;
+    }
+    IAST integrate = (IAST) ast.get(1);
+    if (integrate.size() == 4) {
+      // Int[e_, x_, flag : (Stats | Step | Steps)] := ... Message[Int::oldFlag, ...]
+      return "legacy 3-argument Int flag rule; Symja has no $ShowSteps flags";
+    }
+    if (integrate.size() != 3) {
+      return null;
+    }
+    if (integrate.get(1).isPlus()) {
+      // Int[g_[x_]*Derivative[1][f_][x_] + f_[x_]*Derivative[1][g_][x_], x_Symbol] := f[x]*g[x]
+      // Symja's Integrate() splits sums by linearity before the Rubi rules run, so a
+      // Plus-integrand pattern can never match
+      return "Plus integrand (reverse product rule); unreachable behind Symja's linearity split";
+    }
+    if (integrate.get(1).isList()) {
+      // Int[{u__}, x_Symbol] := Map[Int[#1, x]&, {u}]
+      // Integrate#evaluate() threads over a list integrand itself
+      return "list integrand; Symja threads Integrate over a list of integrands natively";
+    }
+    if (integrate.get(2).isList()) {
+      // Int[u_, {x_Symbol, a_, b_}] := Limit[...] - Integrate#evaluate() dispatches an
+      // Integrate(f, {x,a,b}) to its own definiteIntegral()
+      return "definite integration form; Symja implements Integrate(f, {x,a,b}) natively";
+    }
+    IExpr rhs = ast.arg2();
+    if (!rhs.isCondition() && rhs.isAST() && rhs.size() == 3
+        && normalizedName(rhs.topHead().toString()).equals("cannotintegrate")) {
+      // Int[u_, x_] := CannotIntegrate[u, x] - Rubi's terminal catch-all, which matches every
+      // integrand no rule above it matched. Integrate#evaluate() already maps a CannotIntegrate
+      // result back to an unevaluated Integrate() and continues with its own stages, so the rule
+      // adds no answer; it only guarantees a match at the end of every rule scan and makes the
+      // recursive Integrate() calls inside the rule right-hand-sides return CannotIntegrate()
+      // instead of an unevaluated integral
+      return "CannotIntegrate catch-all; Integrate() maps it back to an unevaluated integral anyway";
+    }
+    return null;
+  }
+
+  /** Lower case letters only, so {@code Rubi`CannotIntegrate} and {@code §cannotintegrate} compare equal. */
+  private static String normalizedName(String symbolName) {
+    StringBuilder buf = new StringBuilder(symbolName.length());
+    for (int i = 0; i < symbolName.length(); i++) {
+      char c = symbolName.charAt(i);
+      if (Character.isLetter(c)) {
+        buf.append(Character.toLowerCase(c));
+      } else {
+        buf.setLength(0);
+      }
+    }
+    return buf.toString();
+  }
+
+  /**
+   * The symbol which the integration variable pattern of a rule binds, for example {@code x} for a
+   * left-hand-side {@code Int[u_, x_Symbol]}.
+   *
+   * @return the bound symbol, or {@link F#NIL} if the left-hand-side has no pattern there
+   */
+  private static IExpr integrationVariable(IExpr leftHandSide) {
+    if (leftHandSide.isAST() && leftHandSide.size() == 3) {
+      IExpr variable = ((IAST) leftHandSide).arg2();
+      if (variable instanceof org.matheclipse.core.interfaces.IPatternObject) {
+        ISymbol symbol = ((org.matheclipse.core.interfaces.IPatternObject) variable).getSymbol();
+        if (symbol != null) {
+          return symbol;
+        }
+      }
+      return variable;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Rewrite Rubi's {@code Star[u, v]} display operator into {@code Dist[u, v, x]}.
+   *
+   * <p>
+   * The Rubi 4.17.3 rule export writes the distribution of a factor over an integral with the
+   * {@code U+22C6} operator, which parses as {@code Star[u, v]}; the 4.16 export wrote
+   * {@code Dist[u, v, x]} for the same thing. Rubi defines {@code Star[u,v] := u*v} unless
+   * {@code $ShowSteps} is set (see the {@code Star} section of
+   * {@code IntegrationUtilityFunctions.m}), so the operator only exists to render a step
+   * derivation; {@code Dist} is the operation Symja implements and optimizes for.
+   *
+   * <p>
+   * Nested {@code Star} expressions are rewritten from the inside out, so {@code Star[u, Star[v,
+   * w]]} becomes {@code Dist[u, Dist[v, w, x], x]}.
+   *
+   * @param expr the right-hand-side of a rule
+   * @param x the integration variable of the rule, {@link F#NIL} if it has none
+   */
+  private static IExpr starToDist(IExpr expr, IExpr x) {
+    if (!(expr instanceof IAST) || expr instanceof org.matheclipse.core.interfaces.IPatternObject) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable changed = null;
+    for (int i = 0; i < ast.size(); i++) {
+      IExpr part = i == 0 ? ast.head() : ast.get(i);
+      IExpr mapped = starToDist(part, x);
+      if (mapped != part) {
+        if (changed == null) {
+          changed = ast.copy();
+        }
+        changed.set(i, mapped);
+      }
+    }
+    IAST current = changed != null ? changed : ast;
+    if (current.size() == 3 && x.isPresent()
+        && normalizedName(current.head().toString()).equals("star")) {
+      STAR_COUNTER++;
+      return F.ternaryAST3(UtilityFunctionCtors.Dist, current.arg1(), current.arg2(), x);
+    }
+    return current;
+  }
+
+  /**
+   * Rewrite Rubi's one argument {@code Simp[u]} into the two argument {@code Simp[u, x]}.
+   *
+   * <p>
+   * Rubi 4.17.3 documents both forms as "simplifies and returns u" and defines the one argument
+   * form as {@code Simp[u_] := Simplify[u]} plus six power combining special cases. Symja keeps the
+   * 4.16 utility functions - they are the ones which define {@code Dist}, which 4.17.3 replaced by
+   * its display operator {@code Star} (see {@link #starToDist(IExpr, IExpr)}) and which Symja's
+   * evaluator is built around - and those define {@code Simp[u, x]} only. A one argument
+   * {@code Simp} would therefore stay unevaluated and show up inside the antiderivative.
+   *
+   * <p>
+   * The rules only use the one argument form for factors of the integrand, where the integration
+   * variable of the rule is the variable to simplify for, so the two argument form of the same
+   * function is the faithful replacement and needs no new definition.
+   *
+   * @param expr the right-hand-side of a rule
+   * @param x the integration variable of the rule, {@link F#NIL} if it has none
+   */
+  private static IExpr simpWithVariable(IExpr expr, IExpr x) {
+    if (!(expr instanceof IAST) || expr instanceof org.matheclipse.core.interfaces.IPatternObject) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable changed = null;
+    for (int i = 0; i < ast.size(); i++) {
+      IExpr part = i == 0 ? ast.head() : ast.get(i);
+      IExpr mapped = simpWithVariable(part, x);
+      if (mapped != part) {
+        if (changed == null) {
+          changed = ast.copy();
+        }
+        changed.set(i, mapped);
+      }
+    }
+    IAST current = changed != null ? changed : ast;
+    if (current.size() == 2 && x.isPresent()
+        && normalizedName(current.head().toString()).equals("simp")) {
+      SIMP1_COUNTER++;
+      return F.binaryAST2(UtilityFunctionCtors.Simp, current.arg1(), x);
+    }
+    return current;
+  }
+
+  /**
+   * Evaluate numeric constant subexpressions like {@code -2^(-1)} to {@code -1/2}.
+   *
+   * <p>
+   * The 4.17.3 export writes some rational constants as unevaluated arithmetic
+   * ({@code Times[-1, Power[2, -1]]}). Loading a generated rule would evaluate them on first use
+   * anyway; folding them here keeps the generated sources canonical. Only {@code Plus},
+   * {@code Times} and {@code Power} expressions whose arguments are all numbers are folded, and
+   * only if the result is a plain number again - patterns and symbolic structure are never
+   * touched.
+   */
+  private static IExpr foldNumericConstants(IExpr expr) {
+    if (!(expr instanceof IAST) || expr instanceof org.matheclipse.core.interfaces.IPatternObject) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable changed = null;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr folded = foldNumericConstants(ast.get(i));
+      if (folded != ast.get(i)) {
+        if (changed == null) {
+          changed = ast.copy();
+        }
+        changed.set(i, folded);
+      }
+    }
+    IAST current = changed != null ? changed : ast;
+    if ((current.isPlus() || current.isTimes() || current.isPower()) && current.argSize() > 0
+        && current.forAll(x -> x.isNumber())) {
+      try {
+        IExpr value = EvalEngine.get().evaluate(current);
+        if (value.isNumber()) {
+          return value;
+        }
+      } catch (RuntimeException rex) {
+        // keep the unfolded original
+      }
+    }
+    return current;
   }
 
   public static void addPredefinedSymbols() {
@@ -819,8 +1064,17 @@ public class ConvertRubi {
         cnt = 0;
       }
       System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
-      System.out.println(">>>>> Number of entries: " + list.size());
+      System.out.println(">>>>> Number of entries:  " + list.size());
+      System.out.println(">>>>> Rule numbers used:  1.." + GLOBAL_COUNTER);
+      System.out.println(">>>>> Rules generated:    " + GENERATED_COUNTER);
+      System.out.println(">>>>> Rules excluded:     " + (GLOBAL_COUNTER - GENERATED_COUNTER));
+      System.out.println(">>>>> Star -> Dist:       " + STAR_COUNTER);
+      System.out.println(">>>>> Simp[u] -> Simp[u,x]: " + SIMP1_COUNTER);
       System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
+      if (GLOBAL_COUNTER != list.size()) {
+        System.out.println(">>>>> WARNING: " + list.size() + " parsed entries but " + GLOBAL_COUNTER
+            + " rule numbers - the generated numbers are NOT aligned with the input file lines.");
+      }
     }
 
     RubiConverterIO.reportRegisteredClasses(outputDirectory, "IntRules", fcnt, "getRuleASTRubi45",

@@ -165,7 +165,7 @@ public class QuantityFunctions {
         spec = F.stringx(canonical);
       }
       if (ast.isAST2() && ast.arg2().isString() && ast.arg2().toString().equals("Entity")) {
-        return F.binaryAST2(S.Entity, F.stringx("PhysicalQuantity"), spec);
+        return F.Entity(F.stringx("PhysicalQuantity"), spec);
       }
       return spec;
     }
@@ -336,6 +336,237 @@ public class QuantityFunctions {
   /** Expands {@code QuantityArray(...)} to an array of quantities; used by {@code Normal}. */
   public static IExpr quantityArrayNormal(IAST quantityArray) {
     return QuantityArray.normal(quantityArray);
+  }
+
+  /**
+   * A {@code QuantityArray} as its array of quantities, or {@code expr} unchanged.
+   *
+   * <p>
+   * {@code QuantityArray(mags, unit)} is a plain two argument expression, so anything measuring it
+   * structurally sees a length of two rather than the array it stands for: {@code Dimensions} of a
+   * four element one reported <code>{2}</code>, and {@code MatrixQ} of a 2x2 one was
+   * <code>False</code>.
+   *
+   * <p>
+   * This is applied by the functions that only <i>inspect</i> an array - Dimensions, ArrayDepth,
+   * TensorRank, Length, ArrayQ, MatrixQ, VectorQ. It is deliberately NOT applied inside
+   * {@link org.matheclipse.core.eval.LinearAlgebraUtil#dimensions}: dozens of callers take those
+   * dimensions and then index the expression as a nested list, and on a QuantityArray position 2
+   * is the unit, not a row.
+   */
+  /**
+   * Plot data with every {@link S#Quantity} replaced by its magnitude.
+   *
+   * <p>
+   * A flat list of quantities is the value axis. A list of rows is handled per column, so a list
+   * of <code>{x,y}</code> pairs keeps a separate unit per axis - the only coherent reading, since
+   * a single row mixes the two dimensions.
+   *
+   * <p>
+   * <code>targetUnits</code> is the {@link S#TargetUnits} option: {@link S#Automatic} keeps each
+   * column in the unit of its own first element; a single unit names the value axis (y in 2D, z in
+   * 3D); a list of units is positional, one per column. Only the CONVERSION half of TargetUnits is
+   * implemented - the axis is not relabelled with the unit.
+   *
+   * <p>
+   * Without this the plotting pipeline reaches {@code toDoubleVectorIgnore}, which cannot turn a
+   * quantity into a machine number and drops it in silence: plotting a list of quantities produced
+   * a <code>Graphics</code> with no <code>Line</code> primitive at all.
+   *
+   * @return the data with magnitudes substituted, or <code>data</code> unchanged - including when
+   *         a unit is incompatible, so that nothing is silently mixed
+   */
+  public static IExpr quantityPlotMagnitudes(IExpr data, IExpr targetUnits, EvalEngine engine) {
+    IExpr normalized = normalizeQuantityArray(data);
+    if (!normalized.isList() || normalized.argSize() == 0) {
+      return data;
+    }
+    IAST list = (IAST) normalized;
+    if (list.forAll(x -> x.isQuantity())) {
+      IExpr magnitudes =
+          magnitudesInUnit(list, targetUnitFor(targetUnits, 0, 0), engine);
+      return magnitudes.isPresent() ? magnitudes : data;
+    }
+    // a list of rows: convert column by column
+    final int width = list.arg1().argSize();
+    if (width > 0 && list.forAll(x -> x.isList() && x.argSize() == width)
+        && list.exists(row -> ((IAST) row).exists(x -> x.isQuantity()))) {
+      IAST firstRow = (IAST) list.arg1();
+      IASTAppendable rows = F.ListAlloc(list.argSize());
+      for (int row = 1; row < list.size(); row++) {
+        IAST source = (IAST) list.get(row);
+        IASTAppendable rowValues = F.ListAlloc(width);
+        for (int column = 1; column <= width; column++) {
+          IExpr value = source.get(column);
+          if (value.isQuantity()) {
+            IExpr target = targetUnitFor(targetUnits, column, width);
+            IExpr reference = target.isPresent() ? referenceQuantity(target, engine)
+                : (firstRow.get(column).isQuantity() ? firstRow.get(column) : F.NIL);
+            if (reference.isNIL()) {
+              return data;
+            }
+            IExpr magnitude = org.matheclipse.core.units.QuantityOps
+                .magnitudeInFirstUnit((IAST) reference, (IAST) value, engine);
+            if (magnitude.isNIL()) {
+              // incompatible units in one column: leave the data alone rather than mix them
+              return data;
+            }
+            value = magnitude;
+          }
+          rowValues.append(value);
+        }
+        rows.append(rowValues);
+      }
+      return rows;
+    }
+    return data;
+  }
+
+  /**
+   * A plot function rewritten to yield plain magnitudes, when it turns out to be quantity valued.
+   *
+   * <p>
+   * Probing is the only way to tell. A function that returns quantities is usually not
+   * syntactically a {@link S#Quantity} until its variable is bound: with
+   * {@code f(t_) := Quantity(t,"Meters")}, the expression {@code f(x)} is just an unevaluated
+   * {@code f(x)}. So the function is evaluated once at {@code samplePoint}, and only if that
+   * yields a quantity is it wrapped in {@link S#QuantityMagnitude} - which also performs the
+   * {@link S#TargetUnits} conversion, since it takes the target unit as its second argument.
+   *
+   * <p>
+   * Without this the plot samples a quantity, {@code evalfNaN} cannot turn it into a machine
+   * number, and every point is dropped: the picture came back empty.
+   *
+   * @param samplePoint rules binding each plot variable to a value inside its range
+   * @return the rewritten function, or <code>function</code> unchanged when it is not quantity
+   *         valued
+   */
+  public static IExpr quantityPlotFunction(IExpr function, IAST samplePoint, IExpr targetUnits,
+      EvalEngine engine) {
+    return quantityPlotFunction(function, samplePoint, targetUnits, 0, 0, engine);
+  }
+
+  /**
+   * As {@link #quantityPlotFunction(IExpr, IAST, IExpr, EvalEngine)}, for one component of a
+   * parametric curve, whose components carry a unit each.
+   *
+   * @param component the 1-based component, or <code>0</code> for a value-axis function
+   * @param componentCount the number of components, or <code>0</code> for a value-axis function
+   */
+  public static IExpr quantityPlotFunction(IExpr function, IAST samplePoint, IExpr targetUnits,
+      int component, int componentCount, EvalEngine engine) {
+    IExpr probe;
+    try {
+      probe = engine.evaluate(F.subst(function, samplePoint));
+    } catch (RuntimeException rex) {
+      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+      return function;
+    }
+    if (!probe.isQuantity()) {
+      return function;
+    }
+    IExpr target = targetUnitFor(targetUnits, component, componentCount);
+    return F.QuantityMagnitude(function, target.isPresent() ? target : ((IAST) probe).arg2());
+  }
+
+  /**
+   * A pair of plot range endpoints reduced to plain magnitudes.
+   *
+   * <p>
+   * Mathematica binds the plot variable to a plain number, not to a quantity:
+   * {@code Plot[Quantity[x^2,"Meters"], {x, Quantity[0,"Seconds"], Quantity[2,"Seconds"]}]} draws
+   * y == x squared over x from 0 to 2, which it could not if {@code x} carried the second. So the
+   * range is simply stripped, both endpoints expressed in the first one's unit.
+   *
+   * @return <code>{min, max}</code> as magnitudes, or {@link F#NIL} unless both endpoints are
+   *         quantities in compatible units
+   */
+  public static IAST quantityPlotRange(IExpr min, IExpr max, IExpr targetUnits,
+      EvalEngine engine) {
+    if (!min.isQuantity() || !max.isQuantity()) {
+      return F.NIL;
+    }
+    // the range is the x axis, which is the first entry of a TargetUnits list
+    IExpr target = targetUnitFor(targetUnits, 1, 2);
+    IExpr reference = target.isPresent() ? referenceQuantity(target, engine) : min;
+    if (reference.isNIL()) {
+      return F.NIL;
+    }
+    IExpr minMagnitude = org.matheclipse.core.units.QuantityOps
+        .magnitudeInFirstUnit((IAST) reference, (IAST) min, engine);
+    IExpr maxMagnitude = org.matheclipse.core.units.QuantityOps
+        .magnitudeInFirstUnit((IAST) reference, (IAST) max, engine);
+    if (minMagnitude.isNIL() || maxMagnitude.isNIL()) {
+      return F.NIL;
+    }
+    return F.List(minMagnitude, maxMagnitude);
+  }
+
+  /**
+   * The {@link S#TargetUnits} entry that applies to one column of plot data.
+   *
+   * @param column the 1-based column, or <code>0</code> for a flat list of values
+   * @param width the number of columns, or <code>0</code> for a flat list
+   * @return the unit that column should be converted to, or {@link F#NIL} to keep the data's own
+   */
+  private static IExpr targetUnitFor(IExpr targetUnits, int column, int width) {
+    if (targetUnits.isNIL() || targetUnits == S.Automatic) {
+      return F.NIL;
+    }
+    if (targetUnits.isList()) {
+      IAST units = (IAST) targetUnits;
+      if (units.argSize() == 0) {
+        return F.NIL;
+      }
+      // a flat list IS the value axis, which is the last entry of the specification
+      return width == 0 ? units.last() : (column <= units.argSize() ? units.get(column) : F.NIL);
+    }
+    // a single unit names the value axis: y in 2D, z in 3D
+    return (width == 0 || column == width) ? targetUnits : F.NIL;
+  }
+
+  /**
+   * A {@code Quantity(1, unit)} to convert against, or {@link F#NIL} if the unit is not known.
+   * Evaluating it is what resolves an alias or a prefix to its canonical name.
+   */
+  private static IExpr referenceQuantity(IExpr unit, EvalEngine engine) {
+    IExpr reference = engine.evaluate(F.Quantity(F.C1, unit));
+    return reference.isQuantity() ? reference : F.NIL;
+  }
+
+  /**
+   * The magnitudes of a list of quantities, in <code>targetUnit</code> or - when that is
+   * {@link F#NIL} - in the first element's unit.
+   *
+   * @return {@link F#NIL} if any element is in an incompatible unit
+   */
+  private static IExpr magnitudesInUnit(IAST quantities, IExpr targetUnit, EvalEngine engine) {
+    IExpr reference =
+        targetUnit.isPresent() ? referenceQuantity(targetUnit, engine) : quantities.arg1();
+    if (reference.isNIL()) {
+      return F.NIL;
+    }
+    IASTAppendable magnitudes = F.ListAlloc(quantities.argSize());
+    for (int i = 1; i < quantities.size(); i++) {
+      IExpr magnitude = org.matheclipse.core.units.QuantityOps
+          .magnitudeInFirstUnit((IAST) reference, (IAST) quantities.get(i), engine);
+      if (magnitude.isNIL()) {
+        return F.NIL;
+      }
+      magnitudes.append(magnitude);
+    }
+    return magnitudes;
+  }
+
+
+  public static IExpr normalizeQuantityArray(IExpr expr) {
+    if (expr.isAST(S.QuantityArray, 3)) {
+      IExpr normal = quantityArrayNormal((IAST) expr);
+      if (normal.isPresent()) {
+        return normal;
+      }
+    }
+    return expr;
   }
 
   /** Converts a single-unit QuantityArray to a target unit, element-wise (affine-safe). */
@@ -767,7 +998,7 @@ public class QuantityFunctions {
         IExpr arg1 = ast.arg1();
         if (arg1.isList()) {
           IAST template = ast.isAST1() ? F.UnitConvert(F.Slot1)
-              : F.binaryAST2(S.UnitConvert, F.Slot1, ast.arg2());
+              : F.UnitConvert(F.Slot1, ast.arg2());
           return arg1.mapThread(template, 1);
         }
         if (arg1.isAST(S.QuantityArray, 3)) {
@@ -843,6 +1074,15 @@ public class QuantityFunctions {
       String name = target.toString();
       if (name.equals("SIBase") || name.equals("SI")) {
         return Units.toBaseQuantity(sourceMagnitude, sourceUnit, engine);
+      }
+      if (name.equals("Metric") || name.equals("Imperial")) {
+        // a unit system, not a unit: look up that system's preferred unit for this kind of
+        // quantity. A compound unit has none and is returned unchanged, as Mathematica does.
+        IExpr systemUnit = Units.systemUnit(sourceUnit, name);
+        if (systemUnit.isNIL()) {
+          return F.Quantity(sourceMagnitude, sourceUnit);
+        }
+        target = systemUnit;
       }
     }
     if (target.isQuantity()) {
@@ -952,7 +1192,7 @@ public class QuantityFunctions {
     private static IAST unityDimensionsOption(IAST ast, EvalEngine engine) {
       for (int i = 2; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
-        if (arg.isRuleAST() && arg.first().equals(S.UnityDimensions)) {
+        if (arg.isRuleAST() && arg.first() == S.UnityDimensions) {
           IExpr value = engine.evaluate(arg.second());
           if (value == S.Automatic) {
             return F.list(F.stringx("AngleUnit"), F.stringx("SolidAngleUnit"));
@@ -1049,7 +1289,7 @@ public class QuantityFunctions {
       for (int i = 2; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         if (arg.isRuleAST()) {
-          if (arg.first().equals(S.IncludeQuantities) && arg.second().isList()) {
+          if (arg.first() == S.IncludeQuantities && arg.second().isList()) {
             pool.appendArgs((IAST) arg.second());
           }
           continue;
@@ -1220,7 +1460,7 @@ public class QuantityFunctions {
       for (int i = 4; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         if (arg.isRuleAST()) {
-          if (arg.first().equals(S.GeneratedQuantityMagnitudes) && arg.second().isSymbol()) {
+          if (arg.first() == S.GeneratedQuantityMagnitudes && arg.second().isSymbol()) {
             magnitudes = (ISymbol) arg.second();
           }
           continue;
@@ -1366,7 +1606,7 @@ public class QuantityFunctions {
 
     @Override
     public IExpr moment(IAST qd, IExpr n) {
-      IExpr magnitude = EvalEngine.get().evaluate(F.binaryAST2(S.Moment, inner(qd), n));
+      IExpr magnitude = EvalEngine.get().evaluate(F.Moment(inner(qd), n));
       if (magnitude.isNIL() || !n.isInteger()) {
         return F.NIL;
       }
@@ -1376,19 +1616,19 @@ public class QuantityFunctions {
     @Override
     public IExpr cdf(IAST qd, IExpr x, EvalEngine engine) {
       IExpr magnitude = magnitudeIn(x, qd, engine);
-      return magnitude.isNIL() ? F.NIL : engine.evaluate(F.binaryAST2(S.CDF, inner(qd), magnitude));
+      return magnitude.isNIL() ? F.NIL : engine.evaluate(F.CDF(inner(qd), magnitude));
     }
 
     @Override
     public IExpr survivalFunction(IAST qd, IExpr x, EvalEngine engine) {
       IExpr magnitude = magnitudeIn(x, qd, engine);
       return magnitude.isNIL() ? F.NIL
-          : engine.evaluate(F.binaryAST2(S.SurvivalFunction, inner(qd), magnitude));
+          : engine.evaluate(F.SurvivalFunction(inner(qd), magnitude));
     }
 
     @Override
     public IExpr inverseCDF(IAST qd, IExpr p, EvalEngine engine) {
-      return withUnit(engine.evaluate(F.binaryAST2(S.InverseCDF, inner(qd), p)), qd, 1);
+      return withUnit(engine.evaluate(F.InverseCDF(inner(qd), p)), qd, 1);
     }
 
     @Override
@@ -1397,7 +1637,7 @@ public class QuantityFunctions {
       if (magnitude.isNIL()) {
         return F.NIL;
       }
-      IExpr density = engine.evaluate(F.binaryAST2(S.PDF, inner(qd), magnitude));
+      IExpr density = engine.evaluate(F.PDF(inner(qd), magnitude));
       if (density.isNIL()) {
         return F.NIL;
       }

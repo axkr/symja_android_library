@@ -28,7 +28,7 @@ import org.matheclipse.core.patternmatching.ruleindex.RuleFeatureIndex;
 import org.matheclipse.core.patternmatching.ruleindex.RuleIndexValidation;
 import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.parser.trie.TrieMatch;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 /**
  * Container for the <b>Transformation Rules</b> associated with a specific {@link ISymbol}.
@@ -194,6 +194,30 @@ public final class RulesData implements Serializable {
    * Matches rules which contain no patterns and are defined with {@link S#UpSet} or
    * {@link S#UpSetDelayed} function
    */
+  /**
+   * <code>true</code> as soon as one up-value was installed anywhere in this JVM.
+   * <p>
+   * Up-values are created exclusively by {@link S#UpSet}, {@link S#UpSetDelayed}, {@link S#TagSet}
+   * and {@link S#TagSetDelayed}, which all end up in {@link #putUpRule(int, boolean, IAST, IExpr)}
+   * - none of the built-in symbols defines one. As long as this stays <code>false</code>,
+   * {@link EvalEngine#evalUpRules(IAST)} cannot find anything and does not have to look at the
+   * arguments at all.
+   * <p>
+   * The flag is never reset: a stale <code>true</code> only costs the up-value lookup which would
+   * have been done anyway, while a stale <code>false</code> would silently drop a rule.
+   */
+  private static volatile boolean UP_RULES_DEFINED = false;
+
+  /**
+   * Test if any up-value was installed since this JVM started.
+   *
+   * @return <code>false</code> if no symbol anywhere can have an up-value
+   * @see #UP_RULES_DEFINED
+   */
+  public static boolean isUpRulesDefined() {
+    return UP_RULES_DEFINED;
+  }
+
   private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 
   /**
@@ -789,12 +813,12 @@ public final class RulesData implements Serializable {
     if (head.isSymbol() && ((ISymbol) head).isContext(Context.RUBI)) {
       return true;
     }
-    return head.equals(S.Integrate);
+    return head == S.Integrate;
   }
 
   private static boolean isShowPriority(IPatternMatcher pmEvaluator) {
     IExpr head = pmEvaluator.getLHS().head();
-    return head.equals(S.Integrate);
+    return head == S.Integrate;
   }
 
   /**
@@ -1121,6 +1145,8 @@ public final class RulesData implements Serializable {
 
   public IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
       final IAST leftHandSide, final IExpr rightHandSide) {
+    // the only place where fEqualUpRules / fSimplePatternUpRules become non-null
+    UP_RULES_DEFINED = true;
     if (equalRule) {
       fEqualUpRules = getEqualUpRules();
       PatternMatcherEquals pmEquals =

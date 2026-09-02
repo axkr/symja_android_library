@@ -17,6 +17,7 @@ public class ListLogLinearPlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
     if (ToggleFeature.JS_ECHARTS) {
       return evaluateECharts(ast, argSize, options, engine, originalAST);
     }

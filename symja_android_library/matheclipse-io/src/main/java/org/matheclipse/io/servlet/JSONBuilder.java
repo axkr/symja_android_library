@@ -38,6 +38,12 @@ public class JSONBuilder {
   public static final String FORMAT_MANIPULATE = "manipulate";
 
   /**
+   * The result is a live cell: a rendering that follows the symbols it mentions, and that may
+   * carry controls of its own that change them.
+   */
+  public static final String FORMAT_DYNAMIC = "dynamic";
+
+  /**
    * Wrap a <code>Manipulate</code> widget: its controls, its options and the rendering of the body
    * for the initial control values.
    *
@@ -46,15 +52,31 @@ public class JSONBuilder {
    * @param renderedBody the JSON that {@link AJAXQueryServlet#renderResult} produced for the body
    * @param enabled one flag per control from a resolved <code>Enabled</code> option, or
    *        <code>null</code> when no control carries one
+   * @param visible one flag per control saying whether its <code>PaneSelector</code> pane is the
+   *        one showing, or <code>null</code> when every row is always shown
+   * @param displays the rendering of every control row that shows an expression, by control index,
+   *        or <code>null</code> when the widget has no such row
+   * @param bodyControls the description of every control the body itself drew, or
+   *        <code>null</code> when it drew none
    * @param warnings messages to show above the widget, such as an option that is not understood
    */
   public static String[] createJSONManipulate(String id,
       org.matheclipse.core.manipulate.ManipulateSpec spec, String renderedBody,
-      ArrayNode enabled, java.util.List<String> warnings) {
+      ArrayNode enabled, ArrayNode visible, ObjectNode displays, ArrayNode bodyControls,
+      java.util.List<String> warnings) {
     ObjectNode manipulate = spec.toJSON(JSON_OBJECT_MAPPER);
     manipulate.put("id", id);
     if (enabled != null) {
       manipulate.set("enabled", enabled);
+    }
+    if (visible != null) {
+      manipulate.set("visible", visible);
+    }
+    if (displays != null) {
+      manipulate.set("displays", displays);
+    }
+    if (bodyControls != null) {
+      manipulate.set("bodyControls", bodyControls);
     }
     try {
       manipulate.set("body", JSON_OBJECT_MAPPER.readTree(renderedBody));
@@ -84,6 +106,40 @@ public class JSONBuilder {
   }
 
   /**
+   * Wrap a live <code>Dynamic</code> cell: its first rendering and what the browser needs to keep
+   * it up to date.
+   *
+   * @param id the cell id, used by <code>/ajax/dynamic/</code> to find it again
+   * @param rendering the body and controls from {@link DynamicSession#render}
+   * @param updateInterval seconds between refreshes asked for by <code>UpdateInterval</code>, or
+   *        {@link Double#POSITIVE_INFINITY} to only follow changes
+   * @param generation the session's write count as of this rendering
+   */
+  public static String[] createJSONDynamic(String id, ObjectNode rendering, double updateInterval,
+      long generation) {
+    ObjectNode dynamic = JSON_OBJECT_MAPPER.createObjectNode();
+    dynamic.put("id", id);
+    dynamic.put("generation", generation);
+    if (!Double.isInfinite(updateInterval)) {
+      dynamic.put("updateInterval", updateInterval);
+    }
+    dynamic.setAll(rendering);
+
+    ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    resultsJSON.put("line", 21);
+    resultsJSON.put("result", "");
+    resultsJSON.put("format", FORMAT_DYNAMIC);
+    resultsJSON.set("dynamic", dynamic);
+    resultsJSON.putPOJO("out", JSON_OBJECT_MAPPER.createArrayNode());
+
+    ArrayNode results = JSON_OBJECT_MAPPER.createArrayNode();
+    results.add(resultsJSON);
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    json.putPOJO("results", results);
+    return new String[] {FORMAT_DYNAMIC, json.toString()};
+  }
+
+  /**
    * Add the messages that were printed while evaluating. These are prose, not mathematics, so they
    * travel as plain text; they used to be wrapped in <code>&lt;math&gt;&lt;mtext&gt;</code> only
    * because everything went through a MathML renderer.
@@ -98,7 +154,7 @@ public class JSONBuilder {
    * The plain <code>OutputForm</code> of an expression, or an empty string if it cannot be built.
    */
   private static String outputForm(EvalEngine engine, IExpr expr) {
-    if (expr == null || expr.equals(S.Null)) {
+    if (expr == null || expr == S.Null) {
       return "";
     }
     try {
@@ -240,7 +296,7 @@ public class JSONBuilder {
     // MathML. It renders the LaTeX of the documentation pages and of Markdown cells.
     MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, false);
     StringBuilderWriter stw = new StringBuilderWriter();
-    if (!outExpr.equals(S.Null) && !mathMLUtil.toMathML(outExpr, stw, true, true)) {
+    if (outExpr != S.Null && !mathMLUtil.toMathML(outExpr, stw, true, true)) {
       return createJSONError("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
     }
 

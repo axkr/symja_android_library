@@ -134,7 +134,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         }
 
         // Use a robust check: If Series evaluates successfully, it drops the S.Series head
-        if (seriesRes.isPresent() && !seriesRes.equals(S.$Aborted) && !seriesRes.isAST(S.Series)) {
+        if (seriesRes.isPresent() && seriesRes != S.$Aborted && !seriesRes.isAST(S.Series)) {
           IExpr normalPoly = engine.evaluate(seriesRes.normal(false));
 
           // Rejects "exact" solutions that are effectively unresolved summations or products, or
@@ -222,7 +222,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
             // If Series initially fails, attempt a simplification first
             IExpr simplified =
                 engine.evalTimeConstrained(F.Simplify(subbed), SERIES_BUDGET_SECONDS);
-            if (simplified.equals(S.$Aborted) || simplified.isNIL()) {
+            if (simplified == S.$Aborted || simplified.isNIL()) {
               return F.NIL;
             }
             subbed = simplified;
@@ -236,7 +236,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
 
         // Catch unevaluated/failed/aborted Series expansions involving non-polynomial
         // limits (e.g. Sin(n*C))
-        if (seriesN.isNIL() || seriesN.equals(S.$Aborted) || seriesN.isAST(S.Series)) {
+        if (seriesN.isNIL() || seriesN == S.$Aborted || seriesN.isAST(S.Series)) {
           return F.NIL;
         }
 

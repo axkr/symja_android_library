@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedInts;
 import com.google.common.primitives.UnsignedLong;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 /**
  * Representation of a numeric array expression.

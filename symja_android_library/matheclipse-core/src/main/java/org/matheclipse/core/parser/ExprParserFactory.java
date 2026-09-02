@@ -169,6 +169,7 @@ public class ExprParserFactory implements IParserFactory {
 
 
         if (lhs.equals(F.C1)) {
+          // don't use F.Power() here; an IASTMutable has to be returned
           return F.binaryAST2(S.Power, rhs, F.CN1);
         }
         if (rhs.isPower() && rhs.exponent().isNumber()) {
@@ -195,12 +196,14 @@ public class ExprParserFactory implements IParserFactory {
           PatternNested pn = (PatternNested) rhs;
           IExpr subPattern = pn.getPatternExpr();
           if (subPattern instanceof PatternNested && pn.getSymbol() != null) {
+            // don't use F.Optional() here; an IASTMutable has to be returned
             return F.binaryAST2(S.Optional, F.binaryAST2(S.Pattern, lhs, pn.getSymbol()),
                 subPattern);
           }
         }
         return F.binaryAST2(S.Pattern, lhs, rhs);
       }
+      // don't use F.Optional() here; an IASTMutable has to be returned
       return F.binaryAST2(S.Optional, lhs, rhs);
     }
   }
@@ -315,7 +318,13 @@ public class ExprParserFactory implements IParserFactory {
       StringBuilder operatorCharacters = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
       for (OperatorTable.Row row : OperatorTable.ROWS) {
         final Operator operator = createOperator(row);
-        addOperator(fOperatorMap, fOperatorTokenStartSet, row.token, row.head, operator);
+        if (row.outputForm) {
+          addOperator(fOperatorMap, fOperatorTokenStartSet, row.token, row.head, operator);
+        } else {
+          // A parse-only row is registered under its token only, exactly as an alias is, so it
+          // never wins the head key. See OperatorTable.Row#outputForm.
+          addUnicodeOperator(fOperatorMap, fOperatorTokenStartSet, row.token, operator);
+        }
         appendOperatorCharacters(operatorCharacters, row.token);
         for (String alias : row.aliases) {
           // The same instance under every spelling: the parser decides whether a chain flattens by

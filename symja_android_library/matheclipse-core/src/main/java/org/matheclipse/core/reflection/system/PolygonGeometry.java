@@ -199,7 +199,7 @@ public final class PolygonGeometry {
    * @return <code>1..n</code>, {@link #ALL_VERTICES} or {@link #INVALID_VERTEX}
    */
   public static int vertexIndex(IExpr vertexSpec, IAST points) {
-    if (vertexSpec.isNIL() || vertexSpec.equals(S.All)) {
+    if (vertexSpec.isNIL() || vertexSpec == S.All) {
       return ALL_VERTICES;
     }
     if (vertexSpec.isInteger()) {

@@ -139,18 +139,19 @@ public class Derivative extends AbstractFunctionEvaluator {
             result = functions;
           }
           if (result.size() >= 2) {
-            int n = nTimes.toIntDefault();
-            if (n >= 0 || nTimes.isFree(num -> num.isNumber(), false)) {
-              IAST fullDerivative = derivativeAST[2];
-              return evaluateDIfPossible(derivativeHead, functions, fullDerivative, engine);
+            if (isInvalidDerivativeOrder(nTimes)) {
+              // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
+              // symbolic expression or a non-negative integer.
+              return Errors.printMessage(ast.topHead(), "dvar", F.list(F.list(F.Slot(i), nTimes)),
+                  engine);
             }
-            // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
-            // symbolic expression or a non-negative integer.
-            return Errors.printMessage(ast.topHead(), "dvar", F.list(F.list(F.Slot1, nTimes)),
-                engine);
           }
         }
         if (result.isPresent()) {
+          if (result.size() >= 2) {
+            IAST fullDerivative = derivativeAST[2];
+            return evaluateDIfPossible(derivativeHead, functions, fullDerivative, engine);
+          }
           return result;
         }
       }
@@ -174,6 +175,21 @@ public class Derivative extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Test if <code>n</code> cannot be used as the order of a derivative.
+   *
+   * <p>
+   * Valid orders are non-negative integers and symbolic expressions which don't evaluate to an
+   * explicit number (for example <code>n</code>, <code>-1+n</code> or <code>2*n</code>). This is
+   * the same test which {@link D} uses for the <code>{variable, n}</code> specifier.
+   *
+   * @param n the order of the derivative
+   * @return <code>true</code> if <code>n</code> is an explicit negative or non-integer number
+   */
+  private static boolean isInvalidDerivativeOrder(IExpr n) {
+    return n.isNegativeResult() || (!n.isInteger() && n.isNumericFunction());
   }
 
   /**

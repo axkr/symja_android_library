@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ITensorAccess;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 public class Symmetrize extends AbstractFunctionEvaluator {
 
@@ -62,9 +62,9 @@ public class Symmetrize extends AbstractFunctionEvaluator {
           boolean isAnti = false;
 
           // Parse the symmetry specification
-          if (sym.equals(S.Symmetric)) {
+          if (sym == S.Symmetric) {
             indicesList = (IAST) engine.evaluate(F.Range(F.C1, F.ZZ(rank)));
-          } else if (sym.equals(S.Antisymmetric)) {
+          } else if (sym == S.Antisymmetric) {
             indicesList = (IAST) engine.evaluate(F.Range(F.C1, F.ZZ(rank)));
             isAnti = true;
           } else if (sym.isAST(S.Symmetric, 2) && ((IAST) sym).arg1().isList()) {

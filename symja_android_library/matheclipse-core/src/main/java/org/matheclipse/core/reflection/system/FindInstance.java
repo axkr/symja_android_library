@@ -118,7 +118,8 @@ public class FindInstance extends Solve {
       }
 
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
-      SolveData solveData = new Solve.SolveData(options);
+      SolveData solveData =
+          new Solve.SolveData(SolveOptions.of(SolveOptions.FIND_INSTANCE_KEYS, options));
       return solveData.solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, false,
           engine);
     } catch (final ValidateException ve) {
@@ -246,6 +247,6 @@ public class FindInstance extends Solve {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, S.GenerateConditions, S.False);
+    setOptions(newSymbol, SolveOptions.FIND_INSTANCE_KEYS[0], SolveOptions.FIND_INSTANCE_DEFAULTS[0]);
   }
 }

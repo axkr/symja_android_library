@@ -14,6 +14,8 @@ public enum Extension {
   BASE64,
   /** uncompressed loss-less image format, no alpha channel */
   BMP, //
+  /** Windows icon image format */
+  ICO, //
   /** table */
   CSV, //
   /** Data */
@@ -22,6 +24,10 @@ public enum Extension {
   DOT, //
   /** ExpressionJSON */
   EXPRESSIONJSON, //
+  /** FASTA biomolecular sequence format */
+  FASTA, //
+  /** GenBank biomolecular sequence format */
+  GENBANK, //
   /** animation format */
   GIF, //
   /** graph (theory) format */
@@ -36,8 +42,12 @@ public enum Extension {
   M, //
   /** MATLAB *.mat file */
   MAT, //
+  /** Portable Any/Bit/Gray/Pixmap image formats */
+  PNM, //
   /** compressed image format with alpha channel */
   PNG, //
+  /** Adobe Photoshop image format */
+  PSD, //
   /** RawJSON */
   RAWJSON, //
   /** text format */
@@ -46,12 +56,23 @@ public enum Extension {
   SVG,
   /** table format */
   TABLE,
+  /** Truevision TGA image format */
+  TGA, //
+  /** loss-less image format with several compression schemes */
+  TIFF, //
   /** Tab-Separated Values */
   TSV, //
   /** plain text format */
   TXT,
+  /** compressed image format from Google */
+  WEBP, //
   /** WXF format */
-  WXF;
+  WXF,
+  /**
+   * Excel workbook. Read only - the vendored Tablesaw fork in <code>matheclipse-dataset</code> has
+   * an <code>XlsxReader</code> but no writer.
+   */
+  XLSX;
 
   public static boolean isAllowedExtension(String extensionString) {
     try {
@@ -86,6 +107,15 @@ public enum Extension {
         if (ucExtension.equals("JPG")) {
           return JPEG;
         }
+        if (ucExtension.equals("TIF")) {
+          return TIFF;
+        }
+        if (ucExtension.equals("PBM") || ucExtension.equals("PGM") || ucExtension.equals("PPM")) {
+          return PNM;
+        }
+        if (ucExtension.equals("XLS")) {
+          return XLSX;
+        }
         return valueOf(ucExtension);
       }
     } catch (RuntimeException rex) {
@@ -112,6 +142,15 @@ public enum Extension {
       }
       if (ucExtension.equals("JPG")) {
         return JPEG;
+      }
+      if (ucExtension.equals("TIF")) {
+        return TIFF;
+      }
+      if (ucExtension.equals("PBM") || ucExtension.equals("PGM") || ucExtension.equals("PPM")) {
+        return PNM;
+      }
+      if (ucExtension.equals("XLS")) {
+        return XLSX;
       }
       return valueOf(extensionString.toUpperCase(Locale.US));
     } catch (RuntimeException rex) {
@@ -141,6 +180,16 @@ public enum Extension {
         if (extensionString.equals("JSON")) {
           return JSON;
         }
+        if (extensionString.equals("TIF")) {
+          return TIFF;
+        }
+        if (extensionString.equals("PBM") || extensionString.equals("PGM")
+            || extensionString.equals("PPM")) {
+          return PNM;
+        }
+        if (extensionString.equals("XLS")) {
+          return XLSX;
+        }
         return valueOf(extensionString);
       }
     } catch (RuntimeException rex) {
@@ -158,7 +207,20 @@ public enum Extension {
    */
   public static Extension importExtension(String extensionString) {
     try {
-      return valueOf(extensionString.toUpperCase(Locale.US));
+      String ucExtension = extensionString.toUpperCase(Locale.US);
+      if (ucExtension.equals("JPG")) {
+        return JPEG;
+      }
+      if (ucExtension.equals("TIF")) {
+        return TIFF;
+      }
+      if (ucExtension.equals("PBM") || ucExtension.equals("PGM") || ucExtension.equals("PPM")) {
+        return PNM;
+      }
+      if (ucExtension.equals("XLS")) {
+        return XLSX;
+      }
+      return valueOf(ucExtension);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }

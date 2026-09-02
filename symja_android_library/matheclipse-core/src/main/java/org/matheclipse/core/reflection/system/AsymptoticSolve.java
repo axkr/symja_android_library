@@ -102,7 +102,7 @@ public class AsymptoticSolve extends AbstractFunctionOptionEvaluator {
     // ==============================================================================
     // STRATEGY 1: EXACT SOLUTION -> SERIES EXPANSION
     // ==============================================================================
-    IAST solveCall = domain.equals(S.Reals) ? F.Solve(eqns, yVars, domain) : F.Solve(eqns, yVars);
+    IAST solveCall = domain == S.Reals ? F.Solve(eqns, yVars, domain) : F.Solve(eqns, yVars);
     IExpr solveRes = engine.evaluate(solveCall);
 
     if (solveRes.isList() && !solveRes.isAST(S.Solve)) {

@@ -3,8 +3,8 @@ package org.matheclipse.core.builtin;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +51,7 @@ import org.matheclipse.core.eval.util.positions.DeletePositions;
 import org.matheclipse.core.eval.util.positions.InsertPositions;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.DefaultDict;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -177,7 +178,7 @@ public final class ListFunctions {
         IExpr temp = F.subst(fValue, x -> x.equals(variables[0]), index[0]);
         return fEngine.evaluate(temp);
       }
-      HashMap<ISymbol, IExpr> map = new HashMap<ISymbol, IExpr>();
+      Map<ISymbol, IExpr> map = new IdentityHashMap<ISymbol, IExpr>();
       for (int i = 0; i < variables.length; i++) {
         ISymbol variable = variables[i];
         if (variable != null) {
@@ -409,7 +410,7 @@ public final class ListFunctions {
         if (iter.setUp()) {
           try {
             final int index = fIndex++;
-            if (fPrototypeList.head().equals(S.Plus) || fPrototypeList.head().equals(S.Times)) {
+            if (fPrototypeList.head() == S.Plus || fPrototypeList.head() == S.Times) {
               if (iter.hasNext()) {
                 fCurrentIndex[index] = iter.next();
                 fCurrentVariable[index] = iter.getVariable();
@@ -418,7 +419,7 @@ public final class ListFunctions {
                   temp = fDefaultValue;
                 }
                 if (temp.isNumber()) {
-                  if (fPrototypeList.head().equals(S.Plus)) {
+                  if (fPrototypeList.head() == S.Plus) {
                     return tablePlus((INumber) temp, iter, index);
                   } else {
                     return tableTimes((INumber) temp, iter, index);
@@ -457,7 +458,7 @@ public final class ListFunctions {
           if (iter.setUpThrow()) {
             final int index = fIndex++;
             if (iter.hasNext()) {
-              if (fPrototypeList.head().equals(S.Plus) || fPrototypeList.head().equals(S.Times)) {
+              if (fPrototypeList.head() == S.Plus || fPrototypeList.head() == S.Times) {
 
                 fCurrentIndex[index] = iter.next();
                 fCurrentVariable[index] = iter.getVariable();
@@ -466,7 +467,7 @@ public final class ListFunctions {
                   temp = fDefaultValue;
                 }
                 if (temp.isNumber()) {
-                  if (fPrototypeList.head().equals(S.Plus)) {
+                  if (fPrototypeList.head() == S.Plus) {
                     return tablePlus((INumber) temp, iter, index);
                   } else {
                     return tableTimes((INumber) temp, iter, index);
@@ -712,6 +713,12 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1.isDataset()) {
+        // Append holds its arguments, so the dataset is only here once arg1 is evaluated - the
+        // call still carries the unevaluated one, which is what onDatasetRows would look at
+        return IASTDataset.restoreDataset(
+            engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
+      }
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
       if (arg1AST.isNIL()) {
         return F.NIL;
@@ -1408,6 +1415,13 @@ public final class ListFunctions {
           // ast = ast.most();
           // }
           final IExpr arg1 = engine.evaluate(ast.arg1());
+          if (arg1.isDataset()) {
+            // Cases holds its arguments, so the dataset is only here once arg1 is evaluated - the
+            // call itself still carries the unevaluated first argument, and onDatasetRows looks at
+            // that. Ask the rows, and give a Dataset back - see IASTDataset#onDatasetRows
+            return IASTDataset.restoreDataset(
+                engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
+          }
           if (arg1.isASTOrAssociation()) {
             final IExpr arg2 = engine.evalPattern(ast.arg2());
             if (argSize >= 3) {
@@ -1525,8 +1539,10 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
+      // a Dataset is a collection of rows - see IASTDataset#normalizeDataset
+      IExpr arg1 = IASTDataset.normalizeDataset(ast.arg1());
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
         int[] calculatedAllocSize = {1};
         if (list.forAll(isListOrAssociation(calculatedAllocSize))) {
           IASTAppendable resultList = F.ast(S.List, calculatedAllocSize[0]);
@@ -1816,11 +1832,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Composition)) {
+      if (ast.head() == S.Composition) {
         if (ast.isAST0()) {
           return S.Identity;
         }
-        IAST removed = ast.remove(x -> x.equals(S.Identity));
+        IAST removed = ast.remove(x -> x == S.Identity);
         IExpr composed = composeTransformationFunctions(removed.orElse(ast));
         if (composed.isPresent()) {
           return composed;
@@ -2113,6 +2129,12 @@ public final class ListFunctions {
         if (ast.isAST1()) {
           return F.NIL;
         }
+        // a Dataset counts its rows - see IASTDataset#onDatasetRows. The count is a number, so
+        // restoreDataset leaves it bare
+        IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+        if (onRows.isPresent()) {
+          return onRows;
+        }
         final IExpr arg1 = ast.arg1();
         final VisitorLevelSpecification level;
         CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
@@ -2188,6 +2210,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
 
@@ -2375,12 +2402,18 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr test = S.Equal;
       if (ast.isAST2()) {
         test = ast.arg2();
       }
-      if (ast.arg1().isListOrAssociation()) {
-        IAST list = (IAST) ast.arg1();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isListOrAssociation()) {
+        IAST list = (IAST) arg1;
 
         BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
         int size = list.size();
@@ -2456,6 +2489,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       if (ast.isAST1()) {
         if (ast.arg1().isList()) {
           IAST list = (IAST) ast.arg1();
@@ -2598,6 +2636,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       final IExpr arg1 = ast.arg1();
       if (!arg1.isASTOrAssociation() && !arg1.isSparseArray()) {
         // Nonatomic expression expected at position `1` in `2`.
@@ -3477,10 +3520,25 @@ public final class ListFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  /** A column name or a list of them, which is a dataset's own way of naming what to group on. */
+  private static boolean isColumnSpecification(IExpr expr) {
+    return expr.isString() || (expr.isList() && ((IAST) expr).forAll(x -> x.isString()));
+  }
+
   private static final class GroupBy extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows - but only when the
+      // grouping key is a function. A string names a *column*, and grouping a dataset on one of
+      // its columns is something only matheclipse-dataset can do, through dataset[GroupBy[name]];
+      // taking the rows here would hand that name over as a function of a row instead
+      if (ast.size() >= 3 && !isColumnSpecification(ast.arg2())) {
+        IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+        if (onRows.isPresent()) {
+          return onRows;
+        }
+      }
       if (ast.size() >= 3) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
@@ -3532,7 +3590,7 @@ public final class ListFunctions {
         }
         if (last.isPresent()) {
           IExpr temp = engine.evaluate(F.unaryAST1(last, arg));
-          if (rhs.isAssociation() || rhs.head().equals(S.Association)) {
+          if (rhs.isAssociation() || rhs.head() == S.Association) {
             rhs.appendRule(F.Rule(rule.first(), temp));
           } else {
             rhs.append(temp);
@@ -3637,7 +3695,7 @@ public final class ListFunctions {
                   F.List(expr.head(), head1, F.ZZ(i), F.C1), engine);
             }
 
-            if (option[0].equals(S.Automatic)) {
+            if (option[0] == S.Automatic) {
               result = intersection(head1, result, expr);
             } else {
               result = intersection(head1, result, expr, sameTest);
@@ -3670,6 +3728,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       if (ast.isAST3()) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
@@ -3773,7 +3836,20 @@ public final class ListFunctions {
   private static final class Join extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // Join takes several, so every one of them is unwrapped, and a Dataset first argument makes
+      // the result one - see IASTDataset#onDatasetRows
+      boolean anyDataset = false;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr rows = IASTDataset.normalizeDataset(ast.get(i));
+        if (rows != ast.get(i)) {
+          anyDataset = true;
+          ast = ast.setAtCopy(i, rows);
+        }
+      }
+      if (anyDataset) {
+        return IASTDataset.restoreDataset(engine.evaluate(ast));
+      }
       int index = ast.indexOf(x -> x.isAtom() && !x.isAssociation() && !x.isSparseArray());
       if (index > 0) {
         // Nonatomic expression expected at position `1` in `2`.
@@ -4012,6 +4088,8 @@ public final class ListFunctions {
         // a pattern object is an atom, count the elements of its FullForm structure
         arg1 = ((IPatternObject) arg1).toFullFormAST();
       }
+      // a QuantityArray is as long as the array it stands for, not as its two arguments
+      arg1 = QuantityFunctions.normalizeQuantityArray(arg1);
       final int size = arg1.size();
       if (size > 0) {
         return F.ZZ(size - 1);
@@ -4174,10 +4252,15 @@ public final class ListFunctions {
   private static final class Level extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
       boolean includeHeads = option[0].isTrue();
+      // a Dataset walks as rows, not as a structure - see IASTDataset#normalizeDataset
+      IExpr levelArg1 = IASTDataset.normalizeDataset(ast.arg1());
+      if (levelArg1 != ast.arg1()) {
+        ast = ast.setAtCopy(1, levelArg1);
+      }
 
       if (ast.arg1().isASTOrAssociation()) {
         final IAST arg1 = (IAST) ast.arg1();
@@ -4297,6 +4380,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr arg1 = ast.arg1();
       if (arg1.size() > 0) {
         if (arg1.size() == 1) {
@@ -4353,7 +4441,7 @@ public final class ListFunctions {
                 }
                 countSpec = countSpec.first();
               }
-              if (countSpec.equals(S.All)) {
+              if (countSpec == S.All) {
                 n = Integer.MAX_VALUE;
               } else {
                 n = countSpec.toMachineInt();
@@ -4371,7 +4459,7 @@ public final class ListFunctions {
               }
               elements = (IAST) listArg1.first();
               IExpr rightHandSide = listArg1.second();
-              if (rightHandSide.equals(S.Automatic)) {
+              if (rightHandSide == S.Automatic) {
                 // {elem1, elem2,...} -> Automatic - return the positions of the nearest elements
                 values = IAST.range(elements.size());
               } else if (rightHandSide.isList() && rightHandSide.argSize() == elements.argSize()) {
@@ -4979,6 +5067,11 @@ public final class ListFunctions {
       if (ast.size() < 3) {
         return F.NIL;
       }
+      // a Dataset walks as rows, not as a structure - see IASTDataset#normalizeDataset
+      IExpr positionArg1 = IASTDataset.normalizeDataset(ast.arg1());
+      if (positionArg1 != ast.arg1()) {
+        ast = ast.setAtCopy(1, positionArg1);
+      }
 
       int maxResults = Integer.MAX_VALUE;
       if (ast.size() >= 5) {
@@ -5310,7 +5403,6 @@ public final class ListFunctions {
       if (ast.arg1().isEmptyList()) {
         return ast.arg1();
       }
-
       if (ast.isAST1() && ast.arg1().isReal()) {
         int size = ast.arg1().toIntDefault();
         if (F.isPresent(size)) {
@@ -5333,7 +5425,22 @@ public final class ListFunctions {
         }
       }
 
-      return evaluateTable(ast, F.List(), engine);
+      IExpr result = evaluateTable(ast, F.List(), engine);
+      if (result.isEmptyList()) {
+        // An empty result means one of two different things. Range(0), Range(-1) and Range(5,1)
+        // really are empty ranges. Range(x) is not: the generator could make no rows of it and the
+        // empty list was answered for both, so an unanswerable specification looked like an empty
+        // one. Bounds that are not numbers can still describe a range - Range(a,b,(b-a)/Pi) has
+        // four elements, because the step count is what has to be determinable, not the bounds -
+        // so this asks the question only where nothing was generated.
+        for (int i = 1; i < ast.size(); i++) {
+          if (!ast.get(i).isNumericFunction(true)) {
+            // Range specification in `1` does not have appropriate bounds.
+            return Errors.printMessage(S.Range, "range", F.list(ast), engine);
+          }
+        }
+      }
+      return result;
     }
 
     public IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
@@ -5911,6 +6018,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr arg1 = ast.arg1();
       if (arg1.size() > 0) {
         if (arg1.size() == 1) {
@@ -5969,6 +6081,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       IExpr arg1 = ast.arg1();
       if (!arg1.isASTOrAssociation()) {
         // Nonatomic expression expected at position `1` in `2`.
@@ -6038,11 +6155,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.RightComposition)) {
+      if (ast.head() == S.RightComposition) {
         if (ast.isAST0()) {
           return S.Identity;
         }
-        return ast.remove(x -> x.equals(S.Identity));
+        return ast.remove(x -> x == S.Identity);
       }
       if (ast.head().isAST()) {
 
@@ -7014,11 +7131,13 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.arg1().isListOrAssociation()) {
+      // a Dataset walks as rows, not as a structure - see IASTDataset#normalizeDataset
+      final IExpr tallyArg1 = IASTDataset.normalizeDataset(ast.arg1());
+      if (!tallyArg1.isListOrAssociation()) {
         // List expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "list", F.list(F.C1, ast), engine);
       }
-      IAST list = (IAST) ast.arg1();
+      IAST list = (IAST) tallyArg1;
       if (list.isPresent()) {
         int size = ast.size();
         if (size == 2) {
@@ -7139,7 +7258,12 @@ public final class ListFunctions {
   private static final class Take extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
+      }
       // IAST evaledAST = (IAST) engine.evalAttributes(S.Take, ast);
       // if (evaledAST.isNIL()) {
       // evaledAST = ast;
@@ -7163,7 +7287,20 @@ public final class ListFunctions {
           final IAST normal = sparseArray.normal(false);
           IAST take = take(normal, 0, sequ);
           try {
-            return F.sparseArray(take, sparseArray.getDefaultValue());
+            ISparseArray result = F.sparseArray(take, sparseArray.getDefaultValue());
+            if (result == null) {
+              // F#sparseArray answers null rather than throwing when the dense list has no sparse
+              // representation, which an empty one never has. Returning that straight to the
+              // engine is what made Take answer null instead of an expression.
+              if (take.size() <= 1) {
+                // Cannot take positions `1` through `2` in `3`.
+                return Errors.printMessage(S.Take, "take",
+                    F.List(F.ZZ(sequ[0].getStart()), F.ZZ(sequ[0].getEnd() - 1), ast.arg1()),
+                    engine);
+              }
+              return F.NIL;
+            }
+            return result;
           } catch (RuntimeException rex) {
             return F.NIL;
           }
@@ -7360,6 +7497,13 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
+        // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows. Asked before anything
+        // else because the cleaning below reads a dataset as a plain AST and hands N something it
+        // cannot make a number of, which aborted the evaluation rather than declining it
+        IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+        if (onRows.isPresent()) {
+          return onRows;
+        }
         try {
           if (ast.arg1().isASTOrAssociation()) {
             IAST cleanedList = cleanList((IAST) ast.arg1());
@@ -7410,11 +7554,10 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        ast = F.operatorForm1Append(ast);
-        if (ast.isNIL()) {
-          return F.NIL;
-        }
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
       }
       if (ast.isAST3()) {
         try {
@@ -7460,7 +7603,10 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_0;
+      // the third entry declares the operator form: TakeLargestBy[f, n][list] becomes
+      // TakeLargestBy[list, f, n], rewritten by EvalEngine#checkBuiltinArguments. The guard that
+      // used to stand in for this asked isAST2(), which F#operatorForm1Append can never accept
+      return ARGS_2_3_1;
     }
 
     @Override
@@ -7680,6 +7826,13 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
+        // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows. Asked before anything
+        // else because the cleaning below reads a dataset as a plain AST and hands N something it
+        // cannot make a number of, which aborted the evaluation rather than declining it
+        IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+        if (onRows.isPresent()) {
+          return onRows;
+        }
         try {
           if (ast.arg1().isASTOrAssociation()) {
             IAST cleanedList = cleanList((IAST) ast.arg1());
@@ -7730,11 +7883,10 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        ast = F.operatorForm1Append(ast);
-        if (ast.isNIL()) {
-          return F.NIL;
-        }
+      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
+      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+      if (onRows.isPresent()) {
+        return onRows;
       }
       if (ast.isAST3()) {
         try {
@@ -7778,7 +7930,10 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_0;
+      // the third entry declares the operator form: TakeSmallestBy[f, n][list] becomes
+      // TakeSmallestBy[list, f, n], rewritten by EvalEngine#checkBuiltinArguments. The guard that
+      // used to stand in for this asked isAST2(), which F#operatorForm1Append can never accept
+      return ARGS_2_3_1;
     }
 
     @Override
@@ -7933,6 +8088,17 @@ public final class ListFunctions {
         }
         arg1 = sparseArray.normal(false);
       }
+      // the rows of a Dataset are what there is to total; the level visitor below cannot walk the
+      // dataset itself - see IASTDataset#normalizeDataset
+      arg1 = IASTDataset.normalizeDataset(arg1);
+      if (arg1 instanceof ASTSeriesData) {
+        // A series answers a size of seven and serves every position, so the level visitor below
+        // reads its variable, expansion point, coefficient list, exponents and denominator as if
+        // they were elements of a collection and adds them together - Total(SeriesData(x,0,{1},0,
+        // 3,1)) came out as {5+x}. They are the fields of an object, not a list of terms, and
+        // there is no total of a series to give; Mathematica leaves this alone as well.
+        return F.NIL;
+      }
       if (arg1.isASTOrAssociation()) {
         // increment level because we select only subexpressions
         level.incCurrentLevel();
@@ -7941,7 +8107,7 @@ public final class ListFunctions {
           try {
             if (temp.isListableAST() && temp.exists(x -> x.isList())) {
               IAST total = (IAST) temp;
-              IAST resultList = engine.threadASTListArgs(total, S.Total, "tllen");
+              IExpr resultList = engine.threadASTListArgs(total, S.Total, "tllen");
               if (resultList.isPresent()) {
                 return engine.evaluate(resultList);
               } else {
@@ -8002,6 +8168,12 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize > 0) {
+        // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows, which takes the rows of
+        // every dataset argument so that Union[dataset1, dataset2] works as well as Union[dataset]
+        IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
+        if (onRows.isPresent()) {
+          return onRows;
+        }
         final BiPredicate<IExpr, IExpr> test = Predicates.sameTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         if (argSize == 1) {
@@ -8030,7 +8202,7 @@ public final class ListFunctions {
               return Errors.printMessage(S.Union, "heads2",
                   F.List(expr.head(), head1, F.ZZ(i), F.ZZ(1)), engine);
             }
-            if (option[0].equals(S.Automatic)) {
+            if (option[0] == S.Automatic) {
               result = union(head1, result, expr);
             } else {
               result = union(head1, result, expr, sameTest);
@@ -8234,8 +8406,8 @@ public final class ListFunctions {
    * @return
    */
   private static IAST cleanList(IAST list) {
-    return list.select(
-        x -> !(x.isIndeterminate() || x.equals(S.Null) || x.equals(S.None) || x.isAST(S.Missing)));
+    return list
+        .select(x -> !(x.isIndeterminate() || x == S.Null || x == S.None || x.isAST(S.Missing)));
   }
 
   private static int determinePaddingLevel(IExpr expr) {
@@ -8289,7 +8461,7 @@ public final class ListFunctions {
     boolean[] isLeftArr;
     boolean explicitDims = true;
 
-    if (nExpr.isNIL() || nExpr.equals(S.Automatic)) {
+    if (nExpr.isNIL() || nExpr == S.Automatic) {
       java.util.List<Integer> maxDimsList = new java.util.ArrayList<>();
       determineMaxDimensions(list, 0, maxDimsList);
       dims = new int[maxDimsList.size()];

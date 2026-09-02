@@ -508,7 +508,7 @@ public class D extends AbstractFunctionOptionEvaluator {
             }
             if (n >= 2 && fx.isAST1() && fx.head().isSymbol() && !fx.first().isFree(x, true)) {
               IExpr head = fx.head();
-              if (head.equals(S.Boole)) {
+              if (head == S.Boole) {
                 return F.C0;
               }
               IExpr gx = fx.first();
@@ -734,7 +734,7 @@ public class D extends AbstractFunctionOptionEvaluator {
                 IExpr newForm = F.Function(r, dFormR);
                 // Force evaluation of the new RootSum so we return the resultant-resolved Rational
                 // function
-                IExpr rootSumResult = engine.evaluate(F.binaryAST2(S.RootSum, f, newForm));
+                IExpr rootSumResult = engine.evaluate(F.RootSum(f, newForm));
                 return engine.addEvaluatedTraceStep(ast, rootSumResult, "RootSumRule");
               }
             }
@@ -1148,7 +1148,7 @@ public class D extends AbstractFunctionOptionEvaluator {
         boolean hasOption = false;
         for (int i = 1; i < node.size(); i++) {
           IExpr arg = node.get(i);
-          if (i > 1 && arg.isRuleAST() && arg.first().equals(S.NonConstants)) {
+          if (i > 1 && arg.isRuleAST() && arg.first() == S.NonConstants) {
             hasOption = true;
             dResult.append(F.Rule(S.NonConstants, nonConstantsList));
           } else {

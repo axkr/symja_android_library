@@ -45,7 +45,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import org.matheclipse.external.fastutil.ints.Int2IntOpenHashMap;
 
 /**
  * Convert <code>IExpr</code> expressions from and to

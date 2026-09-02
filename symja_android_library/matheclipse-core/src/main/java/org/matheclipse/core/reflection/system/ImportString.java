@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -54,6 +55,16 @@ public class ImportString extends AbstractEvaluator {
           return JSONConvert.importJSON(str1, false);
         case EXPRESSIONJSON:
           return ExpressionJSONConvert.importExpressionJSON(str1);
+        case CSV:
+        case TSV:
+          // a Dataset when matheclipse-dataset is on the classpath, and nothing at all without it -
+          // ImportString never handled CSV before, so there is no older shape to fall back to. Note
+          // that TABLE below deliberately stays a nested list.
+          TableFormatIO tableFormatIO = TableFormatIO.get();
+          if (tableFormatIO != null && tableFormatIO.canImport(format)) {
+            return tableFormatIO.importTable(str1, format, F.NIL);
+          }
+          return F.NIL;
         case TABLE:
           AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
           final Parser parser = new Parser(engine.isRelaxedSyntax(), true);

@@ -54,6 +54,12 @@
 		<module>matheclipse-gpl</module>
 		<module>matheclipse-image</module>
 		<module>matheclipse-nlp</module>
+		<module>matheclipse-astro</module>
+		<module>matheclipse-bio</module>
+		<module>matheclipse-chem</module>
+		<module>matheclipse-graphtheory</module>
+		<module>matheclipse-compile</module>
+		<module>matheclipse-dataset</module>
 		<!-- 		<module>matheclipse-llm</module> -->
 		<module>matheclipse-api</module>
 		<module>matheclipse-io</module>
@@ -116,6 +122,7 @@
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
 		<guava.minimal.version>32.0</guava.minimal.version>
+		<cdk.version>2.13</cdk.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -127,12 +134,12 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>2.22.1</version>
+				<version>2.22.2</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.datatype</groupId>
 				<artifactId>jackson-datatype-jsr310</artifactId>
-				<version>2.22.1</version>
+				<version>2.22.2</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.wnameless.json</groupId>
@@ -147,7 +154,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.6.0-jre</version>
+				<version>33.7.1-jre</version>
 			</dependency>
 			<dependency>
 				<groupId>com.ibm.icu</groupId>
@@ -172,7 +179,7 @@
 			<dependency>
 				<groupId>io.undertow</groupId>
 				<artifactId>undertow-core</artifactId>
-				<version>2.4.2.Final</version>
+				<version>2.4.3.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.undertow</groupId>
@@ -261,6 +268,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-filtering</artifactId>
+				<version>4.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
 				<version>4.1-SNAPSHOT</version>
 			</dependency>
@@ -288,6 +300,14 @@
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-io</artifactId>
 				<version>1.5.3</version>
+			</dependency>
+			<!-- Orekit is only used by the matheclipse-astro module. It is
+			compiled for Java 21, which is why that module and everything
+			depending on it raise maven.compiler.release to 21. -->
+			<dependency>
+				<groupId>org.orekit</groupId>
+				<artifactId>orekit</artifactId>
+				<version>14.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jsoup</groupId>
@@ -345,6 +365,61 @@
 				<version>7.2.6</version>
 			</dependency>
 			<dependency>
+				<groupId>org.biojava</groupId>
+				<artifactId>biojava-aa-prop</artifactId>
+				<version>7.2.6</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-core</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-silent</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-standard</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-smiles</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-smarts</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-formula</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-isomorphism</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-ctab</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-sdg</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openscience.cdk</groupId>
+				<artifactId>cdk-builder3d</artifactId>
+				<version>${cdk.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-api</artifactId>
 				<version>2.26.1</version>
@@ -373,11 +448,6 @@
 				<groupId>com.esotericsoftware</groupId>
 				<artifactId>kryo</artifactId>
 				<version>5.6.2</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jfree</groupId>
-				<artifactId>jfreechart</artifactId>
-				<version>1.5.6</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.freva</groupId>
@@ -426,15 +496,56 @@
 				<artifactId>jsvg</artifactId>
 				<version>2.1.0</version>
 			</dependency>
+			<!-- BoofCV is the image processing engine of matheclipse-image.
+			Apache-2.0, pure Java, no native binaries and compiled for release
+			11, which is why it was picked over an OpenCV binding. boofcv-io is
+			deliberately absent: the only class worth having there is
+			ConvertBufferedImage, and it drags boofcv-geo, boofcv-sfm,
+			boofcv-recognition, boofcv-reconstruction and snakeyaml along with
+			it. org.matheclipse.image.algo.Boof does that conversion instead. -->
+			<dependency>
+				<groupId>org.boofcv</groupId>
+				<artifactId>boofcv-ip</artifactId>
+				<version>1.5.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.boofcv</groupId>
+				<artifactId>boofcv-feature</artifactId>
+				<version>1.4.0</version>
+			</dependency>
+			<!-- TwelveMonkeys plugs extra formats into javax.imageio through
+			the ServiceLoader, so nothing references it at compile time. -->
+			<dependency>
+				<groupId>com.twelvemonkeys.imageio</groupId>
+				<artifactId>imageio-jpeg</artifactId>
+				<version>3.14.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.twelvemonkeys.imageio</groupId>
+				<artifactId>imageio-bmp</artifactId>
+				<version>3.14.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.twelvemonkeys.imageio</groupId>
+				<artifactId>imageio-tiff</artifactId>
+				<version>3.14.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.twelvemonkeys.imageio</groupId>
+				<artifactId>imageio-webp</artifactId>
+				<version>3.14.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.twelvemonkeys.imageio</groupId>
+				<artifactId>imageio-pnm</artifactId>
+				<version>3.14.0</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
-		<dependency>
-			<groupId>com.tngtech.archunit</groupId>
-			<artifactId>archunit-junit5</artifactId>
-			<version>1.5.0</version>
-			<scope>test</scope>
-		</dependency>
+		<!-- Everything in this block is inherited by every module. archunit is deliberately not
+		here: matheclipse-io is the only module with architecture rules, and it declares the
+		dependency itself. -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -650,7 +761,7 @@
 								</requireMavenVersion>
 								<banDuplicatePomDependencyVersions />
 								<requireJavaVersion>
-									<version>[17,)</version>
+									<version>[21,)</version>
 								</requireJavaVersion>
 							</rules>
 						</configuration>
@@ -668,7 +779,7 @@
 										releases!</message>
 								</requireSnapshotVersion>
 								<requireJavaVersion>
-									<version>[17,)</version>
+									<version>[21,)</version>
 								</requireJavaVersion>
 							</rules>
 						</configuration>
@@ -749,7 +860,7 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-					</plugin>
+					</plugin> 
 
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>

@@ -671,7 +671,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
             eventAction = rhs;
             break;
           case "Direction":
-            direction = rhs.equals(S.All) ? 0 : rhs.toIntDefault();
+            direction = rhs == S.All ? 0 : rhs.toIntDefault();
             if (direction != 0 && direction != 1 && direction != -1) {
               Errors.printMessage(ast.topHead(), "optx", F.List(entry, ast), engine);
               return false;

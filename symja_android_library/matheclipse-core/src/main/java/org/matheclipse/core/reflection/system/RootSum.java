@@ -443,7 +443,7 @@ public class RootSum extends AbstractFunctionEvaluator {
         // PolynomialExtendedGCD failed to evaluate symbolically.
         return F.NIL;
       }
-      if (inverse.equals(S.ComplexInfinity)) {
+      if (inverse == S.ComplexInfinity) {
         // A root of the denominator coincides with a root of the polynomial: pole.
         return S.ComplexInfinity;
       }

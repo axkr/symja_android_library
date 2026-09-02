@@ -95,7 +95,7 @@ public class DiskMatrix extends AbstractFunctionEvaluator {
 
       // Parse the radius value
       IExpr evalR = engine.evaluate(rExpr);
-      if (evalR.equals(S.All)) {
+      if (evalR == S.All) {
         rIsAll[i] = true;
         rArr[i] = -1.0;
       } else {
@@ -114,7 +114,7 @@ public class DiskMatrix extends AbstractFunctionEvaluator {
         wArr[i] = -1;
       } else {
         IExpr evalW = engine.evaluate(wExpr);
-        if (evalW.equals(S.All)) {
+        if (evalW == S.All) {
           wArr[i] = -1;
         } else {
           wArr[i] = evalW.toIntDefault(-1);

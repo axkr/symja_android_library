@@ -3,7 +3,6 @@ package org.matheclipse.core.eval;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -352,7 +351,7 @@ public class CombinatoricUtil {
       IExpr arg = list1.get(i);
       if (arg.isInteger()) {
         IInteger element =
-            Combinatoric.PermutationReplace.replaceSingleElement(mainList, (IInteger) arg);
+            CombinatoricUtil.replaceSingleElement(mainList, (IInteger) arg);
         if (!element.equals(arg)) {
           result.set(i, element);
           changed = true;
@@ -418,5 +417,24 @@ public class CombinatoricUtil {
 
   private CombinatoricUtil() {
     // private constructor to avoid instantiation
+  }
+
+  public static IInteger replaceSingleElement(IAST mainList, IInteger intArg1) {
+    IInteger result = intArg1;
+    for (int j = 1; j < mainList.size(); j++) {
+      IAST list = (IAST) mainList.get(j);
+      for (int i = 1; i < list.size(); i++) {
+        IInteger arg = (IInteger) list.get(i);
+        if (arg.equals(result)) {
+          if (i < list.size() - 1) {
+            result = (IInteger) list.get(i + 1);
+          } else {
+            result = (IInteger) list.arg1();
+          }
+          return result;
+        }
+      }
+    }
+    return result;
   }
 }

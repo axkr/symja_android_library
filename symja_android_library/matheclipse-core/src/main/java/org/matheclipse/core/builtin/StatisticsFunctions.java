@@ -37,6 +37,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -59,8 +60,8 @@ import org.matheclipse.core.interfaces.statistics.IPDF;
 import org.matheclipse.core.interfaces.statistics.IRandomVariate;
 import org.matheclipse.core.interfaces.statistics.IStatistics;
 import org.matheclipse.core.reflection.system.NSum;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 public class StatisticsFunctions {
 
@@ -323,7 +324,7 @@ public class StatisticsFunctions {
   /** Monte carlo estimate of <code>E[function(x)]</code> based on {@link S#RandomVariate}. */
   private static IExpr monteCarloExpectation(IExpr function, IExpr x, IExpr distribution,
       int samples, EvalEngine engine) {
-    IExpr list = engine.evaluate(F.binaryAST2(S.RandomVariate, distribution, F.ZZ(samples)));
+    IExpr list = engine.evaluate(F.RandomVariate(distribution, F.ZZ(samples)));
     if (list.isList() && list.argSize() == samples) {
       DoubleUnaryOperator compiled = DistributionRegion.compile(function, x, engine);
       if (compiled == null) {
@@ -351,7 +352,7 @@ public class StatisticsFunctions {
   /** Monte carlo estimate of <code>P(predicate)</code> based on {@link S#RandomVariate}. */
   private static IExpr monteCarloProbability(IExpr predicate, IExpr x, IExpr distribution,
       int samples, EvalEngine engine) {
-    IExpr list = engine.evaluate(F.binaryAST2(S.RandomVariate, distribution, F.ZZ(samples)));
+    IExpr list = engine.evaluate(F.RandomVariate(distribution, F.ZZ(samples)));
     if (list.isList() && list.argSize() == samples) {
       IAST values = (IAST) list;
       int trueCounter = 0;
@@ -1224,6 +1225,16 @@ public class StatisticsFunctions {
           }
         } catch (RuntimeException rex) {
         }
+        int[] dimension = ast.arg1().isMatrix();
+        if (dimension != null && dimension[0] > 1 && dimension[1] > 0
+            && !ast.arg1().isRealMatrix()) {
+          // exact or symbolic data. The numeric path stays with realMatrixEval below, which uses
+          // Hipparchus and answers machine numbers; this one keeps 5/3 as 5/3.
+          IExpr normal = ast.arg1().normal(false);
+          if (normal.isList()) {
+            return columnCovariances((IAST) normal, dimension, engine);
+          }
+        }
         return super.evaluate(ast, engine);
       }
 
@@ -1265,6 +1276,46 @@ public class StatisticsFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The covariance matrix of the columns of <code>matrix</code>: entry <code>(i,j)</code> is the
+     * covariance of column <code>i</code> with column <code>j</code>, so the diagonal holds the
+     * variances of the columns.
+     *
+     * <p>
+     * Each entry is the two-vector <code>Covariance</code> that this class already computes, which
+     * is the sample form dividing by <code>n-1</code> - matching <code>Variance</code> on the
+     * diagonal.
+     *
+     * @return {@link F#NIL} if any pair of columns cannot be handled
+     */
+    private static IExpr columnCovariances(IAST matrix, int[] dimension, EvalEngine engine) {
+      int rows = dimension[0];
+      int columns = dimension[1];
+      IASTAppendable columnVectors = F.ListAlloc(columns);
+      for (int c = 1; c <= columns; c++) {
+        IASTAppendable column = F.ListAlloc(rows);
+        for (int r = 1; r <= rows; r++) {
+          column.append(matrix.get(r).getAt(c));
+        }
+        columnVectors.append(column);
+      }
+
+      IASTAppendable result = F.ListAlloc(columns);
+      for (int i = 1; i <= columns; i++) {
+        IASTAppendable row = F.ListAlloc(columns);
+        for (int j = 1; j <= columns; j++) {
+          IExpr entry = evaluateArg2((IAST) columnVectors.get(i), (IAST) columnVectors.get(j),
+              engine);
+          if (entry.isNIL()) {
+            return F.NIL;
+          }
+          row.append(engine.evaluate(entry));
+        }
+        result.append(row);
+      }
+      return result;
     }
 
     private static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2,
@@ -1583,7 +1634,7 @@ public class StatisticsFunctions {
               if (nonLinearRest.isZero()) {
                 IExpr base = factor.base();
                 // b^(a*x) == E^(a*Log(b)*x)
-                IExpr rate = base.equals(S.E) ? a : F.Times(a, F.Log(base));
+                IExpr rate = base == S.E ? a : F.Times(a, F.Log(base));
                 exponentialRate = exponentialRate.isNIL() ? rate : F.Plus(exponentialRate, rate);
                 if (!d.isZero()) {
                   coefficient.append(F.Power(base, d));
@@ -2129,14 +2180,46 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      int length = arg1.isVector();
-      if (length > 0) {
-        IExpr resultQuartiles = engine.evaluate(F.Quartiles(arg1));
+      IExpr arg1 = normalizeData(ast.arg1());
+      if (isQuantityVector(arg1)) {
+        // a message from here is the whole answer; do not fall through to the gate as well
+        return quantityStatistic(ast.setAtCopy(1, arg1), engine);
+      }
+      // InterquartileRange(data, {{a,b},{c,d}}) uses that parameterization for both quartiles
+      IExpr parameter = ast.isAST2() ? ast.arg2() : F.NIL;
+
+      if (arg1.isAST(S.WeightedData, 3) && arg1.first().isList() && arg1.second().isList()) {
+        // the empirical distribution, not the data list - see Median#weightedQuartile
+        IExpr lower = Median.weightedQuantile((IAST) arg1, F.C1D4, engine);
+        IExpr upper = Median.weightedQuantile((IAST) arg1, F.C3D4, engine);
+        return lower.isPresent() && upper.isPresent() ? F.Subtract(upper, lower) : F.NIL;
+      }
+
+      final IntList dimensions =
+          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() >= 2) {
+        // columnwise, like every other head in this family. This has to come before the vector
+        // branch below: the quartiles of a 3-column matrix are themselves a 3-list, which that
+        // branch would otherwise read as one vector's {q1,q2,q3}.
+        if (dimensions.size() == 2) {
+          final IExpr param = parameter;
+          return arg1.mapMatrixColumns(dimensions.toIntArray(),
+              x -> param.isNIL() ? F.InterquartileRange(x)
+                  : F.binaryAST2(S.InterquartileRange, x, param))
+              .normal(false);
+        }
+        return F.ArrayReduce(F.Function(ast.setAtCopy(1, F.Slot1)), arg1, F.C1);
+      }
+      if (dimensions.size() == 1) {
+        IExpr resultQuartiles = parameter.isNIL() //
+            ? engine.evaluate(F.Quartiles(arg1))
+            : engine.evaluate(F.binaryAST2(S.Quartiles, arg1, parameter));
         if (resultQuartiles.isList3()) {
           return F.Subtract(resultQuartiles.getAt(3), resultQuartiles.getAt(1));
         }
-      } else if (arg1.isDistribution()) {
+        return F.NIL;
+      }
+      if (arg1.isDistribution() && parameter.isNIL()) {
         return F.Subtract(F.Quantile(arg1, F.C3D4), F.Quantile(arg1, F.C1D4));
       }
       return F.NIL;
@@ -2144,7 +2227,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
@@ -2469,7 +2552,9 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public IExpr evaluateArg1(final IExpr argument, EvalEngine engine) {
+      // the mean of a dataset is the mean of its rows - see IASTDataset#normalizeDataset
+      final IExpr arg1 = IASTDataset.normalizeDataset(argument);
       try {
         if (arg1.isRealVector()) {
           double[] values = arg1.toDoubleVector();
@@ -2726,7 +2811,12 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      // an Association contributes its values, a Dataset its rows - see #normalizeData
+      IExpr arg1 = normalizeData(ast.arg1());
+      if (isQuantityVector(arg1)) {
+        // a message from here is the whole answer; do not fall through to the gate as well
+        return quantityStatistic(ast.setAtCopy(1, arg1), engine);
+      }
 
       final IntList dimensions =
           LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
@@ -2772,7 +2862,12 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      // an Association contributes its values, a Dataset its rows - see #normalizeData
+      IExpr arg1 = normalizeData(ast.arg1());
+      if (isQuantityVector(arg1)) {
+        // a message from here is the whole answer; do not fall through to the gate as well
+        return quantityStatistic(ast.setAtCopy(1, arg1), engine);
+      }
 
       final IntList dimensions =
           LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
@@ -2780,17 +2875,21 @@ public class StatisticsFunctions {
         switch (dimensions.size()) {
           case 1:
             int length = dimensions.getInt(0);
+            if (length == 0) {
+              // Argument `1` is neither a nonempty vector nor a nonempty matrix.
+              return Errors.printMessage(ast.topHead(), "vecmat1", F.list(ast.arg1()), engine);
+            }
             if (arg1.isRealVector()) {
               double[] values = arg1.toDoubleVector();
               if (values == null) {
                 return F.NIL;
               }
-              double mean = StatUtils.mean(values);
+              double dataMean = StatisticsFunctions.mean(values);
               double[] newValues = new double[length];
               for (int i = 0; i < length; i++) {
-                newValues[i] = Math.abs(values[i] - mean);
+                newValues[i] = Math.abs(values[i] - dataMean);
               }
-              return F.num(StatUtils.mean(newValues));
+              return F.num(StatisticsFunctions.mean(newValues));
             }
             arg1 = arg1.normal(false);
             if (arg1.isList()) {
@@ -2946,30 +3045,33 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public IExpr evaluateArg1(final IExpr argument, EvalEngine engine) {
+      // an Association contributes its values, a Dataset its rows - see #normalizeData
+      final IExpr arg1 = normalizeData(argument);
+      if (isQuantityVector(arg1)) {
+        // a message from here is the whole answer; do not fall through to the gate as well
+        return quantityStatistic(F.unaryAST1(S.Median, arg1), engine);
+      }
       if (arg1.isRealVector()) {
         double[] values = arg1.toDoubleVector();
-        if (values == null) {
+        if (values == null || values.length == 0) {
           return F.NIL;
         }
-        return F.num(StatUtils.percentile(values, 50));
+        return F.num(StatisticsFunctions.median(values));
       }
       if (arg1.isAST(S.WeightedData, 3) && arg1.first().isList() && arg1.second().isList()) {
-        return median((IAST) arg1, engine);
+        return weightedQuantile((IAST) arg1, F.C1D2, engine);
       }
       final IntList dimensions =
           LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() > 0) {
         // Rectangular array of real numbers is expected at position `1` in `2`.
-        if (!arg1.forAllLeaves(x -> x.isRealResult())) {
+        if (!isRealOrQuantityData(arg1)) {
           return Errors.printMessage(S.Median, "rectn", F.List(F.C1, F.Median(arg1)), engine);
         }
         if (dimensions.size() >= 2) {
           IExpr result = engine.evaluate(F.ArrayReduce(S.Median, arg1, F.C1));
           return result.normal(false);
-        }
-        if (dimensions.size() == 2) {
-          return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.Median(x)).normal(false);
         }
         if (dimensions.size() == 1) {
           IExpr normal = arg1.normal(false);
@@ -2984,12 +3086,6 @@ public class StatisticsFunctions {
 
       if (arg1.isDistribution()) {
         return getDistribution(arg1).median((IAST) arg1);
-      }
-      if (arg1.isAssociation()) {
-        final IAST list = ((IAST) arg1).apply(S.Plus);
-        if (list.size() > 1) {
-          return medianList(list);
-        }
       }
       return F.NIL;
     }
@@ -3013,7 +3109,20 @@ public class StatisticsFunctions {
      * @return <code>F.NIL</code> if the input <code>data, weight</code> lists aren't of the same
      *         length.
      */
-    private static IExpr median(final IAST weightedData, EvalEngine engine) {
+    /**
+     * The <code>q</code>-quantile of a <code>WeightedData</code>: the smallest data point whose
+     * cumulative weight fraction reaches <code>q</code>, which is the inverse of the underlying
+     * empirical CDF.
+     *
+     * <p>
+     * A <code>WeightedData</code> quantile is NOT the quantile of its data list. Mathematica gives
+     * <code>Quartiles[WeightedData[{1,2,3,4},{1,1,1,1}]]</code> as <code>{1,2,3}</code>, not the
+     * <code>{3/2,5/2,7/2}</code> that the same numbers as a plain list produce, because the
+     * parameterization never enters - the empirical distribution does.
+     *
+     * @param q the quantile, expected to lie in <code>[0,1]</code>
+     */
+    private static IExpr weightedQuantile(final IAST weightedData, IExpr q, EvalEngine engine) {
       IAST data = (IAST) weightedData.arg1();
       IAST weights = (IAST) weightedData.arg2();
       final int size = data.size();
@@ -3022,6 +3131,11 @@ public class StatisticsFunctions {
         data = res[0];
         weights = res[1];
 
+        if (q.isZero()) {
+          // no cumulative fraction is < 0, so the loop below would select nothing; the inverse
+          // CDF at 0 is the smallest data point
+          return data.arg1();
+        }
         IExpr denominator = engine.evaluate(weights.apply(S.Plus));
         IASTAppendable result = F.PlusAlloc(size);
         for (int i = 1; i < size; i++) {
@@ -3030,9 +3144,8 @@ public class StatisticsFunctions {
             rhs.append(F.Divide(weights.get(j), denominator));
           }
           IExpr lhs = rhs.splice(rhs.argSize());
-          // Boole( Inequality(lhs < 1/2 <= rhs) );
-          IExpr boole =
-              engine.evaluate(F.Boole(F.Inequality(lhs, S.Less, F.C1D2, S.LessEqual, rhs)));
+          // Boole( Inequality(lhs < q <= rhs) );
+          IExpr boole = engine.evaluate(F.Boole(F.Inequality(lhs, S.Less, q, S.LessEqual, rhs)));
           if (boole.isOne()) {
             result.append(data.get(i));
           } else if (!boole.isZero()) {
@@ -3696,13 +3809,28 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      IExpr arg1 = normalizeData(ast.arg1());
+      if (isQuantityVector(arg1)) {
+        // a message from here is the whole answer; do not fall through to the gate as well
+        return quantityStatistic(ast.setAtCopy(1, arg1), engine);
+      }
+      if (ast.argSize() == 2 && arg1.isAST(S.WeightedData, 3) && arg1.first().isList()
+          && arg1.second().isList()) {
+        IExpr q = ast.arg2();
+        if (q.isList()) {
+          return ((IAST) q).mapThread(ast, 2);
+        }
+        if (q.isReal() && ((IReal) q).isRange(F.C0, F.C1)) {
+          return Median.weightedQuantile((IAST) arg1, q, engine);
+        }
+        return F.NIL;
+      }
       if (ast.argSize() > 1) {
         final IntList dimensions =
             LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
         if (dimensions.size() > 0) {
           // Rectangular array of real numbers is expected at position `1` in `2`.
-          if (!arg1.forAllLeaves(x -> x.isRealResult())) {
+          if (!isRealOrQuantityData(arg1)) {
             return Errors.printMessage(S.Quantile, "rectn", F.List(F.C1, ast), engine);
           }
           if (dimensions.size() > 2) {
@@ -3728,22 +3856,23 @@ public class StatisticsFunctions {
             IExpr c = F.C1;
             IExpr d = F.C0;
             if (ast.size() == 4) {
-              IExpr arg3 = ast.arg3();
-              int[] dimParameters = arg3.isMatrix();
-              if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
-                return F.NIL;
+              IAST parameters = quantileParameters(ast.arg3());
+              if (parameters.isNIL()) {
+                // The parameters `1` in `2` should be given as a 2x2 matrix ...
+                return Errors.printMessage(ast.topHead(), "parm", F.list(ast.arg3(), ast), engine);
               }
-              a = arg3.first().first();
-              b = arg3.first().second();
-              c = arg3.second().first();
-              d = arg3.second().second();
+              a = parameters.arg1();
+              b = parameters.arg2();
+              c = parameters.arg3();
+              d = parameters.arg4();
             }
 
             int dim1 = list.argSize();
             try {
               if (dim1 == 0) {
-                // Argument `1` should be a non-empty list.
-                return Errors.printMessage(ast.topHead(), "empt", F.list(list), engine);
+                // no message: an empty list leaves Median, Quartiles and InterquartileRange
+                // unevaluated in silence too
+                return F.NIL;
               }
               if (dim1 > 0 && ast.size() >= 3) {
 
@@ -3760,7 +3889,10 @@ public class StatisticsFunctions {
                     return Errors.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1),
                         engine);
                   }
-                  return vector.mapThread(ast, 2);
+                  // all quantiles share the one sorted copy above; only a q this cannot compute
+                  // - a symbolic one, say - falls back to re-entering Quantile per element
+                  IAST points = quantilePoints(s, length, vector, a, b, c, d, engine);
+                  return points.isPresent() ? points : vector.mapThread(ast, 2);
                 } else {
                   if (q.isReal()) {
                     IReal qi = (IReal) q;
@@ -3770,45 +3902,7 @@ public class StatisticsFunctions {
                       return Errors.printMessage(ast.topHead(), "nquan", F.list(qi, F.C0, F.C1),
                           engine);
                     }
-                    // x = a + (length + b) * q
-                    IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
-                    if (x.isNumIntValue()) {
-                      int index = x.toIntDefault();
-                      if (F.isPresent(index)) {
-                        if (index < 1) {
-                          index = 1;
-                        } else if (index > s.argSize()) {
-                          index = s.argSize();
-                        }
-                        return s.get(index);
-                      }
-                    }
-                    if (x.isReal()) {
-                      IReal xi = (IReal) x;
-                      int xFloor = xi.floorFraction().toIntDefault();
-                      int xCeiling = xi.ceilFraction().toIntDefault();
-                      if (F.isPresent(xFloor) && F.isPresent(xCeiling)) {
-                        if (xFloor < 1) {
-                          xFloor = 1;
-                        }
-                        if (xFloor > s.argSize()) {
-                          xFloor = s.argSize();
-                        }
-                        if (xCeiling < 1) {
-                          xCeiling = 1;
-                        }
-                        if (xCeiling > s.argSize()) {
-                          xCeiling = s.argSize();
-                        }
-                        // factor = c + d * FractionalPart(x);
-                        IExpr factor = d.isZero() || xi.isZero() ? c
-                            : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
-                        // s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
-                        // FractionalPart(x))
-                        return F.Plus(s.get(xFloor), //
-                            F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
-                      }
-                    }
+                    return quantilePoint(s, length, qi, a, b, c, d, engine);
                   }
                 }
               }
@@ -3849,16 +3943,29 @@ public class StatisticsFunctions {
 
     private static final IAST Q = F.list(F.C1D4, F.C1D2, F.C3D4);
 
+    /** the default parameterization, in the form the user writes it */
     private static final IAST PARAMETER = F.list(F.list(F.C1D2, F.C0), F.list(F.C0, F.C1));
+
+    /** the same defaults, flattened to <code>{a,b,c,d}</code> - see #quantileParameters */
+    private static final IAST PARAMETERS = F.List(F.C1D2, F.C0, F.C0, F.C1);
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      IExpr arg1 = normalizeData(ast.arg1());
+      if (isQuantityVector(arg1)) {
+        // a message from here is the whole answer; do not fall through to the gate as well
+        return quantityStatistic(ast.setAtCopy(1, arg1), engine);
+      }
+      if (ast.isAST1() && arg1.isAST(S.WeightedData, 3) && arg1.first().isList()
+          && arg1.second().isList()) {
+        // the empirical distribution, not the data list - see Median#weightedQuantile
+        return Q.map(q -> Median.weightedQuantile((IAST) arg1, q, engine), 1);
+      }
       final IntList dimensions =
           LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() > 0) {
         // Rectangular array of real numbers is expected at position `1` in `2`.
-        if (!arg1.forAllLeaves(x -> x.isRealResult())) {
+        if (!isRealOrQuantityData(arg1)) {
           return Errors.printMessage(S.Quartiles, "rectn", F.List(F.C1, ast), engine);
         }
         if (dimensions.size() > 2) {
@@ -3873,15 +3980,29 @@ public class StatisticsFunctions {
 
       if (arg1.isNonEmptyList()) {
         IAST list = (IAST) arg1;
+        IAST parameters = PARAMETERS;
+        IExpr parameter = PARAMETER;
         if (ast.size() == 3) {
-          IExpr arg2 = ast.arg2();
-          int[] dimParameters = arg2.isMatrix();
-          if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
-            return F.NIL;
+          parameter = ast.arg2();
+          parameters = quantileParameters(parameter);
+          if (parameters.isNIL()) {
+            // The parameters `1` in `2` should be given as a 2x2 matrix ...
+            return Errors.printMessage(ast.topHead(), "parm", F.list(parameter, ast), engine);
           }
-          return engine.evaluate(F.Quantile(list, Q, arg2));
         }
-        return engine.evaluate(F.Quantile(list, Q, PARAMETER));
+        if (dimensions.size() == 1) {
+          // a flat list, already past the real-number gate above: sort it once and read all
+          // three quartiles off that copy. Handing the job to Quantile instead would sort and
+          // re-gate once per quartile. Anything else - a matrix, a ragged list - keeps the
+          // Quantile path below, which is where the columnwise and threading rules live.
+          final IAST s = EvalAttributes.copySortLess(list);
+          IAST points = quantilePoints(s, F.ZZ(s.argSize()), Q, parameters.arg1(),
+              parameters.arg2(), parameters.arg3(), parameters.arg4(), engine);
+          if (points.isPresent()) {
+            return points;
+          }
+        }
+        return engine.evaluate(F.Quantile(list, Q, parameter));
       }
       return F.NIL;
     }
@@ -4712,6 +4833,342 @@ public class StatisticsFunctions {
   // }
   // return out;
   // }
+
+  /**
+   * Interpolate between two neighbouring order statistics without forming a difference that can
+   * overflow.
+   *
+   * <p>
+   * The textbook form <code>lo + w*(hi-lo)</code> is an identity in exact arithmetic but not in
+   * machine arithmetic. When <code>lo</code> and <code>hi</code> straddle zero near the top of the
+   * <code>double</code> range, <code>hi-lo</code> rounds to <code>Infinity</code>, and that
+   * infinity survives the multiply and the add: <code>Quantile({-1.0*10^308, 1.0*10^308}, 1/2,
+   * {{1/2,0},{0,1}})</code> returned <code>Infinity</code> where the answer is <code>0.0</code>. At
+   * <code>w == 0</code> the same expression produces <code>0*Infinity</code>, that is
+   * <code>Indeterminate</code>, instead of the element it is supposed to select.
+   *
+   * <p>
+   * For a weight in the unit interval this uses the convex combination
+   * <code>(1-w)*lo + w*hi</code>, which never forms a quantity larger in magnitude than the two
+   * values it interpolates between, and selects the named element outright at either endpoint.
+   * Outside the unit interval - which a user supplied <code>{{a,b},{c,d}}</code> permits, though no
+   * standard quantile type uses it - the convex form is the unsafe one, because <code>(1-w)</code>
+   * and <code>w</code> then have opposite signs and the two products can overflow independently
+   * into <code>Infinity + (-Infinity)</code>; the difference form is kept there. Neither form is
+   * safe everywhere, so each is used only where it is.
+   *
+   * <p>
+   * Symbolic <code>lo</code>, <code>hi</code> or <code>w</code> also keep the difference form: they
+   * cannot overflow, and rewriting them would only churn the printed form of symbolic results.
+   *
+   * @param lo the lower order statistic
+   * @param hi the upper order statistic
+   * @param w the interpolation weight
+   */
+  public static IExpr interpolate(IExpr lo, IExpr hi, IExpr w) {
+    if (w.isReal() && lo.isReal() && hi.isReal() && ((IReal) w).isRange(F.C0, F.C1)) {
+      if (w.isZero()) {
+        return lo;
+      }
+      if (w.isOne()) {
+        return hi;
+      }
+      return F.Plus(F.Times(F.Subtract(F.C1, w), lo), F.Times(w, hi));
+    }
+    return F.Plus(lo, F.Times(F.Subtract(hi, lo), w));
+  }
+
+  /**
+   * The values a statistics function should operate on, as an expression it can walk.
+   *
+   * <p>
+   * An <code>Association</code> contributes its values and drops its keys, a
+   * <code>SparseArray</code> its dense form, and a <code>Dataset</code> its rows. Anything else is
+   * returned unchanged, so an evaluator can normalize once at its entry and then test for a list
+   * without knowing which container it was handed.
+   */
+  public static IExpr normalizeData(IExpr arg) {
+    if (arg.isAssociation()) {
+      return ((IAssociation) arg).values();
+    }
+    if (arg.isSparseArray()) {
+      return arg.normal(false);
+    }
+    if (arg.isAST(S.QuantityArray, 3)) {
+      // an array of quantities, which is what the wrapper below and the columnwise branches
+      // already know how to walk. A QuantityArray with one unit per column becomes a matrix whose
+      // columns are each uniform, so the columnwise recursion handles the units for free.
+      IExpr normal = QuantityFunctions.quantityArrayNormal((IAST) arg);
+      if (normal.isPresent()) {
+        return normal;
+      }
+    }
+    return IASTDataset.normalizeDataset(arg);
+  }
+
+  /**
+   * Whether every leaf is real-valued, or every leaf is a {@link S#Quantity}.
+   *
+   * <p>
+   * Mixing the two is data this family cannot make sense of, and Mathematica agrees:
+   * <code>Median({Quantity(1,"Meters"), 2})</code> reports <code>rectn</code>.
+   */
+  private static boolean isRealOrQuantityData(IExpr data) {
+    return data.forAllLeaves(x -> x.isRealResult()) || isQuantityArray(data);
+  }
+
+  /**
+   * Whether <code>data</code> is a (possibly nested) array whose elements are all quantities.
+   *
+   * <p>
+   * This cannot use <code>forAllLeaves</code>: a <code>Quantity</code> is an AST, so that walk
+   * descends past it and tests its magnitude and unit string instead. Here a quantity IS the leaf.
+   */
+  private static boolean isQuantityArray(IExpr data) {
+    if (data.isQuantity()) {
+      return true;
+    }
+    return data.isList() && ((IAST) data).forAll(x -> isQuantityArray(x));
+  }
+
+  /** Whether <code>data</code> is a non-empty flat list of quantities. */
+  public static boolean isQuantityVector(IExpr data) {
+    return data.isList() && data.argSize() > 0 && ((IAST) data).forAll(x -> x.isQuantity());
+  }
+
+  /**
+   * Evaluate a statistics function on quantity data by converting to one common unit, computing on
+   * the plain magnitudes, and re-attaching the unit to the result.
+   *
+   * <p>
+   * Every head in this family answers in the unit of its data - unlike <code>Variance</code>,
+   * whose result is squared - so re-attaching a single unit is enough. The magnitudes then travel
+   * the ordinary real-number path, which is what keeps the overflow-safe interpolation and the
+   * shared sort in play without any of them having to know about units. The result is reported in
+   * the unit of the FIRST element, the convention <code>Plus</code> already uses here:
+   * <code>Median({Quantity(1,"Meters"), Quantity(300,"Centimeters"), Quantity(2,"Meters")})</code>
+   * is <code>Quantity(2,"Meters")</code>.
+   *
+   * <p>
+   * Only a flat list of quantities is handled here. A matrix is left to the columnwise branch of
+   * each evaluator, which re-enters this method once per column - which is also what makes a
+   * <code>QuantityArray</code> carrying one unit per column come out right.
+   *
+   * @return {@link F#NIL} when <code>ast.arg1()</code> is not a non-empty flat list of quantities
+   */
+  public static IExpr quantityStatistic(IAST ast, EvalEngine engine) {
+    if (!isQuantityVector(ast.arg1())) {
+      return F.NIL;
+    }
+    IAST data = (IAST) ast.arg1();
+    IAST first = (IAST) data.arg1();
+    IExpr unit = first.arg2();
+    IASTAppendable magnitudes = F.ListAlloc(data.argSize());
+    for (int i = 1; i < data.size(); i++) {
+      IAST quantity = (IAST) data.get(i);
+      IExpr magnitude = org.matheclipse.core.units.QuantityOps.magnitudeInFirstUnit(first,
+          quantity, engine);
+      if (magnitude.isNIL()) {
+        // `1` and `2` are incompatible units
+        return Errors.printMessage(S.Quantity, "compat", F.list(unit, quantity.arg2()), engine);
+      }
+      magnitudes.append(magnitude);
+    }
+
+    IExpr result = engine.evaluate(ast.setAtCopy(1, magnitudes));
+    if (result.isList()) {
+      IAST list = (IAST) result.normal(false);
+      IASTAppendable quantities = F.ListAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        quantities.append(F.Quantity(list.get(i), unit));
+      }
+      return quantities;
+    }
+    // anything else - an unevaluated head, say - is not a magnitude to re-attach a unit to
+    return result.isNumber() ? F.Quantity(result, unit) : F.NIL;
+  }
+
+  /**
+   * The four numbers of a quantile parameterization.
+   *
+   * <p>
+   * Both spellings are accepted: the 2x2 matrix <code>{{a,b},{c,d}}</code>, and the two-element
+   * "plot point" form <code>{a,b}</code>, which means <code>{{a,b},{0,1}}</code> - the
+   * linear-interpolation family. The pair form is absent from the <code>Quantile</code> reference
+   * page and named only in the message text for a malformed specification; it was pinned against
+   * Mathematica by <code>Quantile[Range[10],3/10,{1,2}] == 23/5</code> and
+   * <code>Quantile[Range[10],7/20,{0,0}] == 7/2</code>, which rule out reading <code>{a,b}</code>
+   * as a constant weight - the other reading that fits <code>Quartiles[{1,2,3},{1,2}]</code>.
+   *
+   * @return <code>{a,b,c,d}</code>, or {@link F#NIL} if <code>spec</code> is neither form
+   */
+  private static IAST quantileParameters(IExpr spec) {
+    int[] dimension = spec.isMatrix();
+    if (dimension != null) {
+      if (dimension[0] == 2 && dimension[1] == 2) {
+        return F.List(spec.first().first(), spec.first().second(), spec.second().first(),
+            spec.second().second());
+      }
+      return F.NIL;
+    }
+    if (spec.isList2()) {
+      return F.List(spec.first(), spec.second(), F.C0, F.C1);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The quantile of an ascending-sorted list under the parameterization
+   * <code>{{a,b},{c,d}}</code>: with <code>h = a + (n+b)*q</code> and
+   * <code>w = c + d*FractionalPart(h)</code> the result is <code>s[[Floor(h)]]</code>
+   * interpolated toward <code>s[[Ceiling(h)]]</code> by <code>w</code>, both indices clamped to
+   * the list. At an integer <code>h</code> the two neighbours coincide and the element is selected
+   * outright.
+   *
+   * <p>
+   * The result is returned unevaluated, for the engine to evaluate as it does for any other
+   * evaluator result.
+   *
+   * @param s the data, sorted ascending
+   * @param length the number of data points
+   * @param q the quantile, already checked to lie in <code>[0,1]</code>
+   * @return {@link F#NIL} when the point is not computable, for instance when a symbolic
+   *         parameter leaves <code>h</code> non-real
+   */
+  private static IExpr quantilePoint(IAST s, IInteger length, IReal q, IExpr a, IExpr b, IExpr c,
+      IExpr d, EvalEngine engine) {
+    // x = a + (length + b) * q
+    IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
+    if (x.isNumIntValue()) {
+      int index = x.toIntDefault();
+      if (F.isPresent(index)) {
+        if (index < 1) {
+          index = 1;
+        } else if (index > s.argSize()) {
+          index = s.argSize();
+        }
+        return s.get(index);
+      }
+    }
+    if (x.isReal()) {
+      IReal xi = (IReal) x;
+      int xFloor = xi.floorFraction().toIntDefault();
+      int xCeiling = xi.ceilFraction().toIntDefault();
+      if (F.isPresent(xFloor) && F.isPresent(xCeiling)) {
+        if (xFloor < 1) {
+          xFloor = 1;
+        }
+        if (xFloor > s.argSize()) {
+          xFloor = s.argSize();
+        }
+        if (xCeiling < 1) {
+          xCeiling = 1;
+        }
+        if (xCeiling > s.argSize()) {
+          xCeiling = s.argSize();
+        }
+        // factor = c + d * FractionalPart(x);
+        IExpr factor =
+            d.isZero() || xi.isZero() ? c : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
+        // s[[Floor(x)]] interpolated toward s[[Ceiling(x)]] by factor
+        return interpolate(s.get(xFloor), s.get(xCeiling), factor);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The quantile points of one sorted list at every <code>q</code> in <code>qList</code>.
+   *
+   * <p>
+   * Sorting the data and walking its real-number gate dominate the cost of a quantile, and both
+   * are independent of <code>q</code>. Re-entering <code>Quantile</code> once per element repeats
+   * them: <code>Quartiles</code> used to pay for three sorts and four gate walks to produce three
+   * numbers, and <code>InterquartileRange</code> for a fifth gate walk on top of that.
+   *
+   * @return {@link F#NIL} unless every point is computable, so that a caller can fall back to its
+   *         own per-element path without having to reason about a partial result
+   */
+  private static IAST quantilePoints(IAST s, IInteger length, IAST qList, IExpr a, IExpr b,
+      IExpr c, IExpr d, EvalEngine engine) {
+    IASTAppendable result = F.ListAlloc(qList.argSize());
+    for (int i = 1; i < qList.size(); i++) {
+      IExpr q = qList.get(i);
+      if (!q.isReal()) {
+        return F.NIL;
+      }
+      IExpr point = quantilePoint(s, length, (IReal) q, a, b, c, d, engine);
+      if (point.isNIL()) {
+        return F.NIL;
+      }
+      result.append(point);
+    }
+    return result;
+  }
+
+  /**
+   * The median of <code>values</code>, which is sorted in place.
+   *
+   * <p>
+   * Replaces Hipparchus <code>StatUtils#percentile(values, 50)</code>, which interpolates the
+   * even-length case as <code>lo + 0.5*(hi-lo)</code> and so returned <code>Infinity</code> for
+   * <code>Median({-1.0*10^308, 1.0*10^308})</code>. That also left the machine-precision path
+   * disagreeing with the exact path through {@link #interpolate(IExpr, IExpr, IExpr)} on the same
+   * data.
+   *
+   * @return the median, or <code>Double.NaN</code> for an empty array
+   */
+  public static double median(double[] values) {
+    Arrays.sort(values);
+    return medianOfSorted(values);
+  }
+
+  /**
+   * The median of an already ascending-sorted array. See {@link #median(double[])}.
+   *
+   * @return the median, or <code>Double.NaN</code> for an empty array
+   */
+  public static double medianOfSorted(double[] sorted) {
+    int n = sorted.length;
+    if (n == 0) {
+      return Double.NaN;
+    }
+    int half = n >> 1;
+    if ((n & 1) == 1) {
+      return sorted[half];
+    }
+    // the convex combination, not (sorted[half - 1] + sorted[half]) / 2.0, which overflows
+    return 0.5 * sorted[half - 1] + 0.5 * sorted[half];
+  }
+
+  /**
+   * The arithmetic mean of <code>values</code>, falling back to an incremental algorithm when
+   * summation overflows.
+   *
+   * <p>
+   * The Hipparchus corrected two-pass mean is the more accurate of the two and is used whenever it
+   * works, but its first pass forms the plain sum. For
+   * <code>MeanDeviation({-1.0*10^308, 1.0*10^308})</code> the deviations are both
+   * <code>1.0*10^308</code>, their sum is <code>Infinity</code>, the correction term is then
+   * <code>-Infinity</code>, and the result is <code>NaN</code> where the answer is
+   * <code>1.0*10^308</code>. Overflow always shows up as a non-finite result, so the fallback runs
+   * only on data the fast path has already failed on and accurate results are returned unchanged.
+   * Data that is genuinely non-finite yields the same non-finite value from either algorithm.
+   *
+   * @return the mean, or <code>Double.NaN</code> for an empty array
+   */
+  public static double mean(double[] values) {
+    double result = StatUtils.mean(values);
+    if (Double.isFinite(result) || values.length == 0) {
+      return result;
+    }
+    // no partial mean ever exceeds the range of the data, so this cannot overflow
+    double incremental = 0.0;
+    for (int i = 0; i < values.length; i++) {
+      incremental += (values[i] - incremental) / (i + 1);
+    }
+    return incremental;
+  }
 
   public static void initialize() {
     Initializer.init();

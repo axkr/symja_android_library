@@ -599,7 +599,7 @@ public final class AST3 extends AST2 {
    */
   @Override
   public IExpr set(int location, IExpr object) {
-    hashValue = 0;
+    argumentsChanged();
     IExpr result;
     switch (location) {
       case 0:

@@ -10,6 +10,12 @@
 
 	<artifactId>matheclipse-io</artifactId>
 	<packaging>jar</packaging>
+
+	<properties>
+		<!-- Depends on matheclipse-astro, which is compiled for Java 21 because
+		of Orekit. matheclipse-core stays on the release 11 default. -->
+		<maven.compiler.release>21</maven.compiler.release>
+	</properties>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>The Symja io module</description>
 
@@ -39,6 +45,12 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-astro</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-gpl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -49,62 +61,40 @@
 		</dependency>
 
 		<dependency>
-			<groupId>it.unimi.dsi</groupId>
-			<artifactId>fastutil</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.commonmark</groupId>
 			<artifactId>commonmark-ext-gfm-tables</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.roaringbitmap</groupId>
-			<artifactId>RoaringBitmap</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-bio</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-chem</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-graphtheory</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-compile</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- the Dataset object and the vendored tech.tablesaw fork it is built
+		on; moved out of this module together with fastutil, RoaringBitmap,
+		classgraph, jsoup, jackson-datatype-jsr310, json-flattener, poi-ooxml
+		and arrow, which were here only for that fork -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-dataset</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>io.github.classgraph</groupId>
-			<artifactId>classgraph</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.wnameless.json</groupId>
-			<artifactId>json-flattener</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.biojava</groupId>
-			<artifactId>biojava-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.biojava</groupId>
-			<artifactId>biojava-alignment</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.arrow</groupId>
-			<artifactId>arrow-vector</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.arrow</groupId>
-			<artifactId>arrow-memory-netty</artifactId>
-		</dependency>
 		<!-- logging dependencies -->
 
 		<dependency>

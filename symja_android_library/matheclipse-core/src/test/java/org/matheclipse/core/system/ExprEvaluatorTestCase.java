@@ -60,6 +60,20 @@ public abstract class ExprEvaluatorTestCase {
     check(evaluator, evalString, expectedResult, "", -1);
   }
 
+  /**
+   * Like {@link #check(String, String)}, but writes a <code>Graphics</code> out in full instead of
+   * showing the <code>-Graphics-</code> placeholder, for tests which check what a picture contains.
+   */
+  public void checkGraphics(String evalString, String expectedResult) {
+    try {
+      IExpr result = evaluator.eval(evalString);
+      assertEquals(expectedResult, result == S.Null ? "" : result.toString());
+    } catch (Exception e) {
+      e.printStackTrace();
+      assertEquals("", "1");
+    }
+  }
+
   public void check(String evalString, String expectedResult, String strException) {
     check(evaluator, evalString, expectedResult, strException, -1);
   }
@@ -448,7 +462,7 @@ public abstract class ExprEvaluatorTestCase {
   }
 
   private String printResult(IExpr result, boolean relaxedSyntax) {
-    if (result.equals(S.Null)) {
+    if (result == S.Null) {
       return "";
     }
     final StringWriter buf = new StringWriter();
@@ -458,6 +472,7 @@ public abstract class ExprEvaluatorTestCase {
     int significantFigures = engine.getSignificantFigures();
     off =
         OutputFormFactory.get(relaxedSyntax, false, significantFigures - 1, significantFigures + 1);
+    off.setGraphicsPlaceholder(true);
 
     if (off.convert(buf, result)) {
       // print the result in the console
@@ -474,7 +489,7 @@ public abstract class ExprEvaluatorTestCase {
   }
 
   private String printResultNumeric(IExpr result, boolean relaxedSyntax) {
-    if (result.equals(S.Null)) {
+    if (result == S.Null) {
       return "";
     }
     final StringWriter buf = new StringWriter();

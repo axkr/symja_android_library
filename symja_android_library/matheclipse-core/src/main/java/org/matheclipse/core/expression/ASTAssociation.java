@@ -21,6 +21,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -30,7 +31,7 @@ import org.organicdesign.fp.collections.RrbTree;
 import org.organicdesign.fp.collections.UnmodIterator;
 import org.organicdesign.fp.collections.UnmodListIterator;
 import org.organicdesign.fp.collections.UnmodMap.UnEntry;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
@@ -69,6 +70,39 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public IExpr accept(IVisitor visitor) {
     return visitor.visit(this);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>
+   * Two associations compare by their rules, in order. The inherited comparison cannot do it: it
+   * reaches the element by element branch only for something that answers <code>true</code> to
+   * {@link #isAST()}, and an association answers <code>false</code> - so every pair of associations
+   * fell through to comparing hierarchies, which is {@link IExpr#ASTID} for all of them and
+   * therefore always <code>0</code>. Everything ordering by the canonical order then saw each
+   * association as equal to every other: <code>Union</code> of three distinct rows gave one row,
+   * and <code>Sort</code> left them where they lay.
+   */
+  @Override
+  public int compareTo(final IExpr rhsExpr) {
+    if (rhsExpr instanceof IAssociation) {
+      IAssociation rhs = (IAssociation) rhsExpr;
+      final int lhsSize = size();
+      final int rhsSize = rhs.size();
+      if (lhsSize != rhsSize) {
+        return lhsSize > rhsSize ? 1 : -1;
+      }
+      for (int i = 1; i < lhsSize; i++) {
+        // the whole rule, so that the key orders before the value: <|a->2|> before <|b->1|>
+        int cp = getRule(i).compareTo(rhs.getRule(i));
+        if (cp != 0) {
+          return cp;
+        }
+      }
+      return 0;
+    }
+    return super.compareTo(rhsExpr);
   }
 
   @Override
@@ -501,6 +535,12 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public boolean isAssociation() {
     return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public ISymbol listableContainerHead() {
+    return S.Association;
   }
 
   @Override

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -42,6 +43,9 @@ public class DiscretePlot extends ListPlot {
           tableValues = S.Table.ofNIL(engine, F.List(variable, function), iteratorList);
         }
         if (tableValues.isList()) {
+          // Table produced {x, y} pairs; a quantity valued y is plotted by its magnitude
+          tableValues = QuantityFunctions.quantityPlotMagnitudes(tableValues,
+              GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
           GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
           // PlotMarkers and Mesh are family options appended after the positional block, so they
           // are read from the call rather than by index

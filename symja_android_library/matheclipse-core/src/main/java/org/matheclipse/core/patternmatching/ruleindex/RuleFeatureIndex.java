@@ -2,8 +2,8 @@ package org.matheclipse.core.patternmatching.ruleindex;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,9 +30,9 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
  * requiredBy[feature] = bit set of all rules which require this symbol
  * </pre>
  *
- * and a query is a sequence of <code>candidates &amp;= ~requiredBy[absentFeature]</code> operations.
- * The bit sets are processed one 64 bit word at a time by {@link Cursor}, so a rule that matches
- * early stops the computation and nothing is allocated for the rules behind it.
+ * and a query is a sequence of <code>candidates &amp;= ~requiredBy[absentFeature]</code>
+ * operations. The bit sets are processed one 64 bit word at a time by {@link Cursor}, so a rule
+ * that matches early stops the computation and nothing is allocated for the rules behind it.
  *
  * <p>
  * Features are sorted by descending number of rules requiring them, which lets the inner loop of
@@ -117,7 +117,7 @@ public final class RuleFeatureIndex {
       return null;
     }
     List<Set<ISymbol>> required = new ArrayList<Set<ISymbol>>(ruleCount);
-    Map<ISymbol, int[]> counter = new HashMap<ISymbol, int[]>();
+    Map<ISymbol, int[]> counter = new IdentityHashMap<ISymbol, int[]>();
     int[] maxFactors = new int[ruleCount];
     boolean anyFactorBound = false;
     for (int i = 0; i < ruleCount; i++) {
@@ -170,7 +170,7 @@ public final class RuleFeatureIndex {
     });
 
     final int featureCount = ordered.size();
-    Map<ISymbol, Integer> featureOf = new HashMap<ISymbol, Integer>(featureCount * 2);
+    Map<ISymbol, Integer> featureOf = new IdentityHashMap<ISymbol, Integer>(featureCount * 2);
     int maxOrdinal = -1;
     for (int f = 0; f < featureCount; f++) {
       ISymbol symbol = ordered.get(f);
@@ -184,7 +184,7 @@ public final class RuleFeatureIndex {
     for (int i = 0; i < builtinFeature.length; i++) {
       builtinFeature[i] = -1;
     }
-    Map<ISymbol, Integer> otherFeature = new HashMap<ISymbol, Integer>();
+    Map<ISymbol, Integer> otherFeature = new IdentityHashMap<ISymbol, Integer>();
     for (Map.Entry<ISymbol, Integer> entry : featureOf.entrySet()) {
       int ordinal = entry.getKey().ordinal();
       if (ordinal >= 0) {
@@ -231,12 +231,27 @@ public final class RuleFeatureIndex {
     return RuleFeatureAnalyzer.maxTopLevelFactors(ast.arg1());
   }
 
-  /** The number of factors of the expression's first argument, clamped to the indexed buckets. */
+  /**
+   * The number of factors of the expression's first argument, clamped to the indexed buckets.
+   *
+   * <p>
+   * Bucket <code>b</code> holds the rules whose first argument can match a product of
+   * <code>b + 1</code> factors, so the index of a subject is one less than its factor count. An
+   * empty product has none, which no bucket describes: <code>Sum(Times(), 2)</code> arrives here
+   * with a first argument of <code>Times()</code>, and the arithmetic answered <code>-1</code>,
+   * which the caller then read as an array index.
+   *
+   * @return the bucket index, or <code>-1</code> when no bucket describes {@code subject} and the
+   *         filter has to be skipped
+   */
   private static int factorBucketOf(IExpr subject) {
     if (!subject.isAST() || subject.size() < 2) {
       return 0;
     }
     int factors = RuleFeatureAnalyzer.topLevelFactors(((IAST) subject).arg1());
+    if (factors < 1) {
+      return -1;
+    }
     return Math.min(factors, FACTOR_BUCKETS) - 1;
   }
 
@@ -306,7 +321,10 @@ public final class RuleFeatureIndex {
           }
         }
         this.absentCount = count;
-        this.factorMask = factorBucket == null ? null : factorBucket[factorBucketOf(subject)];
+        // a null mask means every rule stays a candidate. This is a prefilter, so declining to
+        // narrow can only cost a little time, never a match.
+        int bucket = factorBucket == null ? -1 : factorBucketOf(subject);
+        this.factorMask = bucket < 0 ? null : factorBucket[bucket];
       } else {
         // the expression could not be scanned completely - report every rule as a candidate
         this.absentCount = 0;

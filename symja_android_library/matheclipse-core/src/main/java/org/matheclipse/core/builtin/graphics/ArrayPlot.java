@@ -32,7 +32,11 @@ public class ArrayPlot extends ListPlot {
 
     IExpr dataArg = engine.evaluate(ast.arg1());
     if (!dataArg.isList()) {
-      return F.NIL;
+      // a SparseArray or a packed numeric matrix is not a list until it is expanded into one
+      dataArg = dataArg.normal(false);
+      if (!dataArg.isList()) {
+        return F.NIL;
+      }
     }
     // MaxPlotPoints paints a large array from a sample of it rather than from every cell
     IAST thinned = GraphicsOptions.downsampleMatrix((IAST) dataArg,
@@ -111,7 +115,11 @@ public class ArrayPlot extends ListPlot {
       IExpr rowExpr = list.get(r + 1);
       if (rowExpr.isList()) {
         IAST rowAst = (IAST) rowExpr;
-        for (int c = 0; c < Math.min(cols, rowAst.size()); c++) {
+        // argSize(), not size(): the loop indexes get(c + 1), so a row shorter than the widest
+        // one would otherwise read one position past its last argument. The cells a ragged row
+        // leaves unset stay null and are skipped when drawing, which is what Mathematica shows
+        // for them as well - transparent, rather than the default value of the array.
+        for (int c = 0; c < Math.min(cols, rowAst.argSize()); c++) {
           IExpr val = rowAst.get(c + 1);
           grid[r][c] = val;
 
@@ -135,6 +143,13 @@ public class ArrayPlot extends ListPlot {
     // one raster rather than one rectangle per cell
     java.util.function.DoubleFunction<IExpr> colorMap =
         GraphicsOptions.colorFunction(colorFunctionOpt, engine, t -> F.GrayLevel(1.0 - t));
+    // the two colour scales below are not the same one, so which is in use has to be known here.
+    // This is the test colorFunction() itself makes to decide between the caller's function and
+    // the grey scale.
+    boolean automaticColors = colorFunctionOpt == S.Automatic || colorFunctionOpt.isNone();
+    // the value the grey scale reaches black at: the extreme furthest from zero on whichever side
+    // the data lies, which is the maximum unless every value is negative
+    double greyLimit = max > 0.0 ? max : min;
     IExpr[][] cells = new IExpr[rows][cols];
 
     // Draw cells
@@ -147,7 +162,7 @@ public class ArrayPlot extends ListPlot {
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         IExpr val = grid[r][c];
-        if (val == null || val.equals(S.None) || val.isAST(S.Missing))
+        if (val == null || val == S.None || val.isAST(S.Missing))
           continue;
 
         IExpr color = F.NIL;
@@ -160,24 +175,30 @@ public class ArrayPlot extends ListPlot {
           try {
             double d = val.evalDouble();
             if (Double.isFinite(d)) {
-              double t = 0.0;
-              if (colorFunctionScaling && max > min) {
+              double t;
+              if (!colorFunctionScaling) {
+                // the value is the position on the scale, and is not rescaled at all
+                t = d;
+              } else if (automaticColors) {
+                // The grey scale runs from white at zero to black at the largest value, rather
+                // than from white at the smallest value: ArrayPlot[{{1, 2, 3}}] is three greys
+                // with no white among them, and ArrayPlot[{{-1, 0, 1}}] paints -1 and 0 alike
+                // because everything below zero is off the white end of the scale. That is the
+                // reference behaviour; only this default scale has it, the scale a ColorFunction
+                // is given is the usual one over the whole range of the data.
+                t = greyLimit == 0.0 ? 0.0 : d / greyLimit;
+              } else if (max > min) {
                 t = (d - min) / (max - min);
               } else {
-                // If not scaling, assume 0..1 range or clip
-                t = d;
+                t = 0.0;
               }
               if (t < 0)
                 t = 0;
               if (t > 1)
                 t = 1;
 
-              // ArrayPlot Default: Grayscale, Min->White(1), Max->Black(0)??
-              // Mma: 0 is White, 1 is Black.
-              // Wait, standard grayscale: 0 is Black, 1 is White.
-              // Mma ArrayPlot[{0,1}] -> 0 is White, 1 is Black.
-              // So we invert: GrayLevel[1 - t]
-              // ArrayPlot's own scale runs white at 0 to black at 1
+              // the grey scale is inverted against the usual one: zero is white and the largest
+              // value is black
               color = colorMap.apply(t);
             }
           } catch (Exception e) {
@@ -220,13 +241,13 @@ public class ArrayPlot extends ListPlot {
   private boolean isColor(IExpr e) {
     if (e.isAST()) {
       IExpr head = e.head();
-      return head.equals(S.RGBColor) || head.equals(S.Hue) || head.equals(S.GrayLevel)
-          || head.equals(S.CMYKColor);
+      return head == S.RGBColor || head == S.Hue || head == S.GrayLevel
+          || head == S.CMYKColor;
     }
-    return e.isSymbol() && (e.equals(S.Red) || e.equals(S.Green) || e.equals(S.Blue)
-        || e.equals(S.Black) || e.equals(S.White) || e.equals(S.Gray) || e.equals(S.Yellow)
-        || e.equals(S.Cyan) || e.equals(S.Magenta) || e.equals(S.Orange) || e.equals(S.Pink)
-        || e.equals(S.Purple) || e.equals(S.Brown));
+    return e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue
+        || e == S.Black || e == S.White || e == S.Gray || e == S.Yellow
+        || e == S.Cyan || e == S.Magenta || e == S.Orange || e == S.Pink
+        || e == S.Purple || e == S.Brown);
   }
 
   @Override

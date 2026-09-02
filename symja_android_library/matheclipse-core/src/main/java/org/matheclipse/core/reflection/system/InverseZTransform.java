@@ -67,7 +67,7 @@ public class InverseZTransform extends AbstractFunctionEvaluator {
         }
       }
 
-      if (expTerm.isPower() && expTerm.first().equals(S.E)) {
+      if (expTerm.isPower() && expTerm.first() == S.E) {
         IExpr exponent = expTerm.second();
         IExpr aParam = F.C1;
         IExpr pPow = F.C0;

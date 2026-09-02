@@ -21,6 +21,7 @@ import org.matheclipse.core.expression.data.ArraySymbolExpr;
 import org.matheclipse.core.expression.data.MatrixSymbolExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.expression.data.VectorSymbolExpr;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -36,7 +37,7 @@ import org.matheclipse.core.interfaces.ISymbolicArray;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.trie.Trie;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 public class TensorFunctions {
   /**
@@ -236,7 +237,7 @@ public class TensorFunctions {
       } else {
         // flatten lists
         VisitorLevelSpecification levelSpec = new VisitorLevelSpecification(
-            x -> F.binaryAST2(S.Apply, S.Sequence, x), iDepth - 1, false);
+            x -> F.Apply(S.Sequence, x), iDepth - 1, false);
         reduced = (IAST) reduced.accept(levelSpec);
       }
       if (level == 1) {
@@ -800,7 +801,7 @@ public class TensorFunctions {
       SparseArrayExpr sparseArray = new SparseArrayExpr(trie, dimension, F.C0, false);
 
       // Handle the optional dense list format request: LeviCivitaTensor(n, List)
-      if (ast.isAST2() && ast.second().equals(S.List)) {
+      if (ast.isAST2() && ast.second() == S.List) {
         return sparseArray.normal(false);
       }
 
@@ -1187,6 +1188,10 @@ public class TensorFunctions {
           IExpr comparatorFunction = ast.arg3();
           comparator =
               new PredicateComparator(list, new Predicates.IsBinaryFalse(comparatorFunction));
+        } else if (list.exists(x -> x.isQuantity())) {
+          // quantities order by magnitude, not canonically - see Comparators.QuantityComparator
+          comparator =
+              new PredicateComparator(list, new Comparators.QuantityComparator(engine));
         } else {
           // use the default IExpr#compareTo() method
           comparator = new ArrayIndexComparator(list);
@@ -1196,7 +1201,7 @@ public class TensorFunctions {
         int n = indexes.length;
         if (ast.size() >= 3) {
           IExpr arg2 = ast.arg2();
-          if (arg2.equals(S.All)) {
+          if (arg2 == S.All) {
           } else if (arg2.isReal()) {
             IReal sn = (IReal) arg2;
             n = sn.toIntDefault();
@@ -1638,7 +1643,8 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      // a QuantityArray ranks as the array it stands for, not as its two arguments
+      IExpr arg1 = QuantityFunctions.normalizeQuantityArray(ast.arg1());
 
       // Bypass redundant evaluation cycle for scalar multipliers/addends
       if (arg1.isTimes2() || arg1.isPlus2()) {

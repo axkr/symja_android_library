@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import java.io.File;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
@@ -32,48 +33,62 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "2");
   }
 
+  /**
+   * The separator as it has to be written inside a Symja string literal. On Windows that is a
+   * backslash, which the Symja parser reads as an escape, so it is doubled there.
+   */
+  private static String sepIn() {
+    return File.separatorChar == '\\' ? "\\\\" : "/";
+  }
+
+  /** The separator as it comes back out in the result. */
+  private static String sepOut() {
+    return File.separator;
+  }
+
+  /**
+   * <code>FileNameDrop</code> splits on {@link File#separatorChar}, so both the input and the
+   * expected result are built from the platform's own separator. Hard coded backslashes are why
+   * this used to sit behind an <code>os.name</code> check and run on Windows only.
+   */
   @Test
   public void testFileNameDrop() {
-    String s = System.getProperty("os.name");
-    if (s.contains("Windows")) {
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\")", //
-          "\\a\\b");
+    final String i = sepIn();
+    final String o = sepOut();
+    final String path = "\"" + i + "a" + i + "b" + i + "c\"";
 
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 2)", //
-          "b\\c");
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 3)", //
-          "c");
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 4)", //
-          "");
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -1)", //
-          "\\a\\b");
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -2)", //
-          "\\a");
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -3)", //
-          "\\");
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -4)", //
-          "");
-      check("FileNameDrop({\"\\\\a\\\\b\\\\c\", \"\\\\a\\\\b\\\\c\"}, 2)", //
-          "{b\\c,b\\c}");
-    }
+    check("FileNameDrop(" + path + ")", //
+        o + "a" + o + "b");
+
+    check("FileNameDrop(" + path + ", 2)", //
+        "b" + o + "c");
+    check("FileNameDrop(" + path + ", 3)", //
+        "c");
+    check("FileNameDrop(" + path + ", 4)", //
+        "");
+    check("FileNameDrop(" + path + ", -1)", //
+        o + "a" + o + "b");
+    check("FileNameDrop(" + path + ", -2)", //
+        o + "a");
+    check("FileNameDrop(" + path + ", -3)", //
+        o);
+    check("FileNameDrop(" + path + ", -4)", //
+        "");
+    check("FileNameDrop({" + path + ", " + path + "}, 2)", //
+        "{b" + o + "c,b" + o + "c}");
   }
 
   @Test
   public void testFileNameJoin() {
-    String s = System.getProperty("os.name");
-    if (s.contains("Windows")) {
-      check("FileNameJoin({\"a\",\"b\",\"c\"})", //
-          "a\\b\\c");
-    }
+    check("FileNameJoin({\"a\",\"b\",\"c\"})", //
+        "a" + sepOut() + "b" + sepOut() + "c");
   }
 
+  /** <code>FileNameTake</code> tries "/" before the platform separator, so this is platform free. */
   @Test
   public void testFileNameTake() {
-    String s = System.getProperty("os.name");
-    if (s.contains("Windows")) {
-      check("FileNameTake(\"/a/b/c.txt\")", //
-          "c.txt");
-    }
+    check("FileNameTake(\"/a/b/c.txt\")", //
+        "c.txt");
   }
 
   @Test

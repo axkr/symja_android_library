@@ -101,12 +101,12 @@ public class FuzzyParser extends Scanner {
     this(engine, factory, false, ParserConfig.EXPLICIT_TIMES_OPERATOR);
   }
 
-  public FuzzyParser(final EvalEngine engine, IParserFactory factory, boolean packageMode,
+  public FuzzyParser(final EvalEngine engine, IParserFactory factory, boolean scriptMode,
       boolean explicitTimes) {
-    super(packageMode, explicitTimes);
+    super(scriptMode, explicitTimes);
     this.fFactory = factory;
     this.fEngine = engine;
-    // if (packageMode) {
+    // if (scriptMode) {
     // fNodeList = new ArrayList<IExpr>(256);
     // }
   }
@@ -1189,7 +1189,7 @@ public class FuzzyParser extends Scanner {
         // return infixOperator.createFunction(fFactory, rhs,
         // fFactory.createSymbol("Null"));
       }
-      // if (fPackageMode && fRecursionDepth < 1) {
+      // if (fScriptMode && fRecursionDepth < 1) {
       // return createInfixFunction(infixOperator, rhs, F.Null);
       // }
     }
@@ -1268,10 +1268,10 @@ public class FuzzyParser extends Scanner {
       if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN)
           || (fToken == TT_ASSOCIATION_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
           || (fToken == TT_DIGIT) || (fToken == TT_SLOT) || (fToken == TT_SLOTSEQUENCE)) {
-        // if (fPackageMode && fRecursionDepth < 1) {
+        // if (fScriptMode && fRecursionDepth < 1) {
         // return lhs;
         // }
-        // if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar ==
+        // if (fScriptMode && fToken == TT_IDENTIFIER && fLastChar ==
         // '\n') {
         // return lhs;
         // }
@@ -1467,7 +1467,7 @@ public class FuzzyParser extends Scanner {
                   && (infixOperator.getGrouping() == FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE))) {
             // if (infixOperator.isOperator(";")) {
             // rhs = F.Null;
-            // if (fPackageMode && fRecursionDepth < 1) {
+            // if (fScriptMode && fRecursionDepth < 1) {
             // return createInfixFunction(infixOperator, lhs,
             // rhs);
             // }
@@ -1517,7 +1517,7 @@ public class FuzzyParser extends Scanner {
     return expr;
   }
 
-  public void parsePackage(final String expression) throws SyntaxError {
+  public void parseScript(final String expression) throws SyntaxError {
     initialize(expression);
     while (fToken == TT_NEWLINE) {
       getNextToken();

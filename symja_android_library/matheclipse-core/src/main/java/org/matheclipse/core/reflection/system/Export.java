@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -14,17 +15,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.nio.Attribute;
-import org.jgrapht.nio.DefaultAttribute;
-import org.jgrapht.nio.ExportException;
-import org.jgrapht.nio.GraphExporter;
-import org.jgrapht.nio.csv.CSVExporter;
-import org.jgrapht.nio.dot.DOTExporter;
-import org.jgrapht.nio.graphml.GraphMLExporter;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -32,12 +25,15 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
-import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.io.ImageFormatIO;
+import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.core.tensor.img.ImageFormat;
 
 /** Export some data from file system. */
@@ -52,8 +48,12 @@ public class Export extends AbstractEvaluator {
         return F.NIL;
       }
       IStringX arg1 = (IStringX) ast.arg1();
-      String filename = arg1.toString();
-      Extension format = Extension.exportFilename(filename);
+      File outFile = FileSandbox.resolveWrite(S.Export, arg1.toString(), engine);
+      if (outFile == null) {
+        return F.NIL;
+      }
+      String filename = outFile.getPath();
+      Extension format = Extension.exportFilename(arg1.toString());
       if (ast.size() == 4) {
         if (!(ast.arg3() instanceof IStringX)) {
           return F.NIL;
@@ -64,32 +64,68 @@ public class Export extends AbstractEvaluator {
 
       IExpr arg2 = ast.arg2();
 
-      if (format.equals(Extension.GIF) || format.equals(Extension.PNG)) {
-        // if (arg1 instanceof ImageExpr) {
-        //
-        // }
-        // int[] dimensions = arg1.isMatrix();
-        // if (dimensions != null && dimensions.length >= 2 && arg2.isAST()) {
+      ImageFormatIO imageFormatIO = ImageFormatIO.get();
+      if (imageFormatIO != null && imageFormatIO.canExport(format)) {
+        // matheclipse-image is on the classpath, so Export writes whatever javax.imageio has a
+        // writer for and accepts an Image object rather than only a matrix of pixel values
+        try (OutputStream outputStream = new FileOutputStream(filename)) {
+          if (imageFormatIO.exportImage(outputStream, arg2, format)) {
+            return arg1;
+          }
+        } catch (IOException ioe) {
+          return Errors.printMessage(S.Export, ioe, engine);
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.Export, rex, engine);
+        }
+        // an image format never falls through to the text writer below, which would truncate the
+        // file that was just written
+        return F.NIL;
+      } else if (format.equals(Extension.GIF) || format.equals(Extension.PNG)) {
+        // core on its own can still write a matrix of pixel values
         try {
-          if (exportImage(filename, (IAST) arg2, format)) {
+          if (arg2.isAST() && exportImage(filename, (IAST) arg2, format)) {
             return arg1;
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           rex.printStackTrace();
         }
-        // }
-        // return F.NIL;
+      }
+
+      if (format.equals(Extension.SVG)) {
+        // Written here rather than through the text writer below: without this branch the
+        // writer creates the file, finds no handler for SVG and leaves it empty.
+        String svgString = SVGGraphics.svgDocument(arg2);
+        if (svgString == null) {
+          // Not a graphic: stay unevaluated, and in particular do not fall through to the
+          // text writer, which would leave an empty .svg file behind.
+          return F.NIL;
+        }
+        try (FileWriter writer = new FileWriter(filename)) {
+          writer.write(svgString);
+          return arg1;
+        } catch (IOException ioe) {
+          return Errors.printMessage(S.Export, ioe, engine);
+        }
       }
 
       try (FileWriter writer = new FileWriter(filename)) {
-        if (arg2 instanceof GraphExpr) {
-          graphExport(((GraphExpr<DefaultEdge>) arg2).toData(), writer, format);
+        if (arg2 instanceof IGraphExpr) {
+          ((IGraphExpr) arg2).graphExport(writer, format);
           return arg1;
         }
 
         if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
           if (arg2.isDataset()) {
+            // matheclipse-dataset writes the format's own separator - a tab for TSV - where the
+            // IASTDataset fallback below always writes commas
+            TableFormatIO tableFormatIO = TableFormatIO.get();
+            if (tableFormatIO != null && tableFormatIO.canExport(format)) {
+              if (tableFormatIO.exportTable(writer, arg2, format, F.NIL)) {
+                return arg1;
+              }
+            }
             ((IASTDataset) arg2).csv(writer);
             return arg1;
           }
@@ -115,6 +151,16 @@ public class Export extends AbstractEvaluator {
             return arg1;
           } else {
             if (arg2.isList()) {
+            }
+          }
+        } else if (format.equals(Extension.FASTA)) {
+          org.matheclipse.core.io.BioSequenceFormat bio =
+              org.matheclipse.core.io.BioSequenceFormat.get();
+          if (bio != null) {
+            try (java.io.OutputStream out = new java.io.FileOutputStream(filename)) {
+              if (bio.exportFASTA(out, arg2)) {
+                return arg1;
+              }
             }
           }
         } else if (format.equals(Extension.DAT)) {
@@ -158,38 +204,7 @@ public class Export extends AbstractEvaluator {
     return false;
   }
 
-  private static final Function<IExpr, String> nameProvider = v -> String.valueOf(v);
 
-  void graphExport(Graph<IExpr, DefaultEdge> g, Writer writer, Extension format)
-      throws ExportException {
-    switch (format) {
-      case DOT:
-        DOTExporter<IExpr, DefaultEdge> dotExporter = new DOTExporter<>(); // new
-                                                                           // IntegerComponentNameProvider<>(),
-                                                                           // null, null, null,
-                                                                           // null);
-        // dotExporter.putGraphAttribute("overlap", "false");
-        // dotExporter.putGraphAttribute("splines", "true");
-        dotExporter.setGraphAttributeProvider(() -> {
-          Map<String, Attribute> map = new LinkedHashMap<>();
-          map.put("overlap", DefaultAttribute.createAttribute("false"));
-          map.put("splines", DefaultAttribute.createAttribute("true"));
-          return map;
-        });
-        dotExporter.exportGraph(g, writer);
-        return;
-      case GRAPHML:
-        GraphExporter<IExpr, DefaultEdge> graphMLExporter = new GraphMLExporter<>();
-        graphMLExporter.exportGraph(g, writer);
-        return;
-      default:
-    }
-
-    // DEFAULT: return CSV file
-    CSVExporter<IExpr, DefaultEdge> exporter = new CSVExporter<IExpr, DefaultEdge>(nameProvider,
-        org.jgrapht.nio.csv.CSVFormat.EDGE_LIST, ';');
-    exporter.exportGraph(g, writer);
-  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {

@@ -78,17 +78,40 @@ public final class Style3D implements Cloneable {
   public double opacity = 1.0;
 
   /**
-   * Whether polygon edges are drawn. Draws no edges on a bare {@code Polygon} in 3D, but every
-   * surface Symja's plot builtins emit carries an explicit {@code EdgeForm}, so the default here is
-   * "off" and the mesh appears only when asked for.
+   * Whether polygon edges are drawn.
+   *
+   * <p>
+   * Wolfram outlines a face whether or not an {@code EdgeForm} was asked for - a bare
+   * {@code Polygon} and each of a {@code Cuboid}'s quads come with a dark outline - so the default
+   * is "on". Every surface Symja's plot builtins emit carries an explicit {@code EdgeForm[None]},
+   * which is what keeps a plotted surface clean; its mesh is drawn as {@code Line} primitives
+   * instead.
    */
-  public boolean showEdges = false;
+  public boolean showEdges = true;
 
   /** {@code EdgeForm} colour, or {@code null} to let the renderer pick a contrasting default. */
   public Color edgeColor = null;
 
   /** {@code EdgeForm} opacity. */
   public double edgeOpacity = 1.0;
+
+  /**
+   * The dihedral angle in degrees above which the join between two facets counts as an edge.
+   *
+   * <p>
+   * The outline follows the shape rather than the tessellation: a {@code Cuboid} shows its twelve
+   * creases, a {@code Cylinder} the two circles where its caps meet the barrel, and a
+   * {@code Sphere} nothing at all. An explicit {@code EdgeForm} means the user asked for the mesh
+   * itself, so it drops the angle to a hair above zero and every facet that is not coplanar with
+   * its neighbour is outlined.
+   */
+  public double edgeAngle = DEFAULT_EDGE_ANGLE;
+
+  /** The crease angle of the outline every face carries when no {@code EdgeForm} was given. */
+  public static final double DEFAULT_EDGE_ANGLE = 30.0;
+
+  /** The crease angle of an {@code EdgeForm} the user asked for: the whole mesh, bar seams. */
+  public static final double EXPLICIT_EDGE_ANGLE = 1.0;
 
   /** {@code EdgeForm} line width in printer's points. */
   public double edgeThickness = 1.0;

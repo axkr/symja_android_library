@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
 import java.util.Arrays;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -29,10 +30,13 @@ public class BoxWhiskerChart extends ListPlot {
       return F.NIL;
     }
 
-    IExpr dataArg = engine.evaluate(ast.arg1());
+    IExpr dataArg =
+        GraphicsOptions.chartData(engine.evaluate(ast.arg1()), F.ListAlloc());
     if (!dataArg.isList()) {
       return F.NIL;
     }
+    dataArg = QuantityFunctions.quantityPlotMagnitudes(dataArg,
+        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
 
     // Check for "Outliers" and "Notched" specifications in the second argument
     boolean showOutliers = false;
@@ -63,13 +67,13 @@ public class BoxWhiskerChart extends ListPlot {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
-        if (key.equals(S.ChartStyle)) {
+        if (key == S.ChartStyle) {
           chartStyle = val;
-        } else if (key.equals(S.BarSpacing)) {
+        } else if (key == S.BarSpacing) {
           barSpacing = val;
-        } else if (key.equals(S.ChartLabels)) {
+        } else if (key == S.ChartLabels) {
           chartLabels = val;
-        } else if (key.equals(S.ChartLegends)) {
+        } else if (key == S.ChartLegends) {
           chartLegends = val;
         }
       }
@@ -296,7 +300,7 @@ public class BoxWhiskerChart extends ListPlot {
       }
 
       // Labels
-      if (!chartLabels.equals(S.None) && chartLabels.isList()) {
+      if (chartLabels != S.None && chartLabels.isList()) {
         if (i <= ((IAST) chartLabels).argSize()) {
           IExpr lbl = ((IAST) chartLabels).get(i);
           primitives.append(

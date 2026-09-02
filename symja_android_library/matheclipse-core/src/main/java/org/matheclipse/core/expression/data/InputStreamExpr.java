@@ -147,6 +147,21 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
   public static InputStreamExpr newInstance(final String fileName, String streamName)
       throws FileNotFoundException {
     File file = new File(fileName);
+    return newInstance(file, streamName);
+  }
+
+  /**
+   * Creates a new {@link InputStreamExpr} from an already resolved {@link File}. This is the form
+   * the built-ins use, so that the file name goes through
+   * {@link org.matheclipse.core.io.FileSandbox} first.
+   *
+   * @param file the file to open
+   * @param streamName the name assigned to the created stream
+   * @return a new {@link InputStreamExpr} wrapping the file input stream
+   * @throws FileNotFoundException if the file does not exist
+   */
+  public static InputStreamExpr newInstance(final File file, String streamName)
+      throws FileNotFoundException {
     return new InputStreamExpr(new FileInputStream(file), streamName);
   }
 

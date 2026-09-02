@@ -4,8 +4,10 @@ import static j2html.TagCreator.tag;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.matheclipse.core.interfaces.IAST;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -230,15 +232,11 @@ public class SVGGraphics3D {
     final List<Vector3> points;
     final Color color;
     final double opacity;
-    final Color edgeColor;
-    final double edgeWidth;
 
-    Face(List<Vector3> points, Color color, double opacity, Color edgeColor, double edgeWidth) {
+    Face(List<Vector3> points, Color color, double opacity) {
       this.points = points;
       this.color = color;
       this.opacity = opacity;
-      this.edgeColor = edgeColor;
-      this.edgeWidth = edgeWidth;
       double sum = 0;
       for (Vector3 p : points) {
         sum += p.z;
@@ -252,10 +250,11 @@ public class SVGGraphics3D {
       for (Vector3 p : points) {
         path.append(format(p.x)).append(',').append(format(p.y)).append(' ');
       }
+      // the outline a face carries is drawn by the crease pass, as lines of its own along the
+      // edges of the shape rather than around every facet the shape was tessellated into
       DomContent polygon = tag("polygon").attr("points", path.toString().trim())
-          .attr("fill", hex(color)).attr("fill-opacity", format(opacity))
-          .attr("stroke", edgeColor == null ? "none" : hex(edgeColor))
-          .attr("stroke-width", format(edgeWidth))
+          .attr("fill", hex(color)).attr("fill-opacity", format(opacity)).attr("stroke", "none")
+          .attr("stroke-width", "0")
           // hairline seams between neighbouring facets show as a grid of white cracks
           .attr("shape-rendering", "crispEdges");
       return polygon;
@@ -383,12 +382,15 @@ public class SVGGraphics3D {
     View view = camera(scene, center, maxDim, size, dataScale);
     List<Light> lights = lights(scene, view);
 
-    List<Renderable> renderables = new ArrayList<>();
+    // the elements are gathered into a list that also carries each one's creases, from which
+    // the outline around a face is taken
+    RenderList collected = new RenderList();
     if (scene.has("elements")) {
       for (JsonNode element : scene.get("elements")) {
-        collect(element, dataScale, view, lights, diagonal, renderables);
+        collect(element, dataScale, view, lights, diagonal, collected);
       }
     }
+    List<Renderable> renderables = collected;
     // the scene is cut before the box and the axes are added, so the frame stays whole
     double[][] clip = clipPlanes(scene, view, dataScale);
     if (clip != null) {
@@ -695,6 +697,10 @@ public class SVGGraphics3D {
     double opacity = element.has("opacity") ? element.get("opacity").asDouble(1) : 1;
     double[] matrix = matrix(element);
 
+    RenderList sink = out instanceof RenderList ? (RenderList) out : null;
+    if (sink != null) {
+      sink.creases = creasesOf(element);
+    }
     switch (type) {
       case "Polygon":
         polygons(element, color, opacity, matrix, dataScale, view, lights, out);
@@ -737,6 +743,28 @@ public class SVGGraphics3D {
       default:
         break;
     }
+    if (sink != null && sink.creases != null) {
+      sink.creases.emit(view, out);
+      sink.creases = null;
+    }
+  }
+
+  /**
+   * The outline the element asks for, or {@code null} when it draws none.
+   *
+   * <p>
+   * Every face carries one unless an {@code EdgeForm[None]} turned it off, which is what a
+   * plotted surface does - its mesh is drawn as lines of its own instead.
+   */
+  private static Creases creasesOf(JsonNode element) {
+    Color color = edgeColor(element);
+    if (color == null) {
+      return null;
+    }
+    double opacity = element.has("edgeOpacity") ? element.get("edgeOpacity").asDouble(1) : 1;
+    double width = element.has("edgeThickness") ? element.get("edgeThickness").asDouble(1) : 1;
+    double angle = element.has("edgeAngle") ? element.get("edgeAngle").asDouble(30) : 30;
+    return new Creases(color, opacity, width, angle);
   }
 
   /** An indexed triangle mesh, one flat facet per triangle. */
@@ -754,8 +782,6 @@ public class SVGGraphics3D {
     }
     JsonNode vertexColors = element.get("vertexColors");
     JsonNode vertexNormals = element.get("vertexNormals");
-    Color edge = edgeColor(element);
-    double edgeWidth = element.has("edgeThickness") ? element.get("edgeThickness").asDouble(1) : 1;
 
     for (int t = 0; t + 2 < indices.size(); t += 3) {
       int a = indices.get(t).asInt();
@@ -777,7 +803,7 @@ public class SVGGraphics3D {
       // into a scatter of bright triangles; averaging the three vertex normals follows the
       // surface the sampling meant, which is what the interactive output shows.
       Vector3 smooth = averageNormal(vertexNormals, a, b, c, matrix, dataScale);
-      addShadedFace(out, view, lights, base, opacity, edge, edgeWidth, smooth, pa, pb, pc);
+      addShadedFace(out, view, lights, base, opacity, smooth, pa, pb, pc);
     }
   }
 
@@ -846,10 +872,9 @@ public class SVGGraphics3D {
     }
     for (int i = 0; i < TUBE_SEGMENTS; i++) {
       if (cone) {
-        addFace(out, view, lights, color, opacity, null, 0, bottom.get(i), bottom.get(i + 1),
-            top.get(i));
+        addFace(out, view, lights, color, opacity, bottom.get(i), bottom.get(i + 1), top.get(i));
       } else {
-        addFace(out, view, lights, color, opacity, null, 0, bottom.get(i), bottom.get(i + 1),
+        addFace(out, view, lights, color, opacity, bottom.get(i), bottom.get(i + 1),
             top.get(i + 1), top.get(i));
       }
     }
@@ -862,7 +887,7 @@ public class SVGGraphics3D {
   private static void cap(List<Renderable> out, View view, List<Light> lights, Surface color,
       double opacity, List<Vector3> rim, Vector3 centre) {
     for (int i = 0; i + 1 < rim.size(); i++) {
-      addFace(out, view, lights, color, opacity, null, 0, centre, rim.get(i), rim.get(i + 1));
+      addFace(out, view, lights, color, opacity, centre, rim.get(i), rim.get(i + 1));
     }
   }
 
@@ -876,8 +901,8 @@ public class SVGGraphics3D {
     int[][] faces =
         {{0, 2, 3, 1}, {4, 5, 7, 6}, {0, 1, 5, 4}, {2, 6, 7, 3}, {0, 4, 6, 2}, {1, 3, 7, 5}};
     for (int[] face : faces) {
-      addFace(out, view, lights, color, opacity, null, 0, corner[face[0]], corner[face[1]],
-          corner[face[2]], corner[face[3]]);
+      addFace(out, view, lights, color, opacity, corner[face[0]], corner[face[1]], corner[face[2]],
+          corner[face[3]]);
     }
   }
 
@@ -894,7 +919,7 @@ public class SVGGraphics3D {
             new Vector3(centre.x + v[0] * scale, centre.y + v[1] * scale, centre.z + v[2] * scale),
             matrix, dataScale);
       }
-      addFace(out, view, lights, color, opacity, null, 0, corners);
+      addFace(out, view, lights, color, opacity, corners);
     }
   }
 
@@ -1206,7 +1231,7 @@ public class SVGGraphics3D {
         for (Vector3 corner : square) {
           lifted.add(new Vector3(corner.x, corner.y, corner.z - nudge));
         }
-        out.add(new Face(lifted, color, opacity, null, 0));
+        out.add(new Face(lifted, color, opacity));
       }
     }
   }
@@ -1249,7 +1274,7 @@ public class SVGGraphics3D {
           }
         }
         if (points.size() >= 3) {
-          kept.add(new Face(points, face.color, face.opacity, face.edgeColor, face.edgeWidth));
+          kept.add(new Face(points, face.color, face.opacity));
         }
       } else if (r instanceof Polyline) {
         Polyline line = (Polyline) r;
@@ -1753,8 +1778,8 @@ public class SVGGraphics3D {
   }
 
   private static void addFace(List<Renderable> out, View view, List<Light> lights, Surface base,
-      double opacity, Color edge, double edgeWidth, Vector3... corners) {
-    addShadedFace(out, view, lights, base, opacity, edge, edgeWidth, null, corners);
+      double opacity, Vector3... corners) {
+    addShadedFace(out, view, lights, base, opacity, null, corners);
   }
 
   /**
@@ -1766,15 +1791,22 @@ public class SVGGraphics3D {
    * for rather than as the flat triangles it is drawn with.
    */
   private static void addShadedFace(List<Renderable> out, View view, List<Light> lights,
-      Surface base, double opacity, Color edge, double edgeWidth, Vector3 shadingNormal,
-      Vector3... corners) {
+      Surface base, double opacity, Vector3 shadingNormal, Vector3... corners) {
     if (corners.length < 3) {
       return;
     }
-    Vector3 normal = corners[1].sub(corners[0]).cross(corners[2].sub(corners[0]));
-    if (normal.length() == 0) {
+    Vector3 flat = corners[1].sub(corners[0]).cross(corners[2].sub(corners[0]));
+    if (flat.length() == 0) {
       return;
     }
+    if (out instanceof RenderList && ((RenderList) out).creases != null) {
+      // the facet is handed on in world space so that the outline can be taken from the creases
+      // of the shape rather than from every seam of its tessellation. The crease is a fold in
+      // the geometry, so it is the flat normal that decides it and not the one the sampling
+      // supplied for shading, which is smooth across the fold by design.
+      ((RenderList) out).creases.add(flat, corners);
+    }
+    Vector3 normal = flat;
     if (shadingNormal != null) {
       // keep the side the flat face is facing, so a back face still takes the back colour
       normal = shadingNormal.dot(normal) < 0 ? shadingNormal.scale(-1) : shadingNormal;
@@ -1784,7 +1816,7 @@ public class SVGGraphics3D {
     for (Vector3 corner : corners) {
       projected.add(view.project(corner));
     }
-    out.add(new Face(projected, lit, opacity, edge, edgeWidth));
+    out.add(new Face(projected, lit, opacity));
   }
 
   /** Turn a grid of points into quads, as a tessellated sphere or tube produces. */
@@ -1792,8 +1824,8 @@ public class SVGGraphics3D {
       List<Light> lights, List<Renderable> out) {
     for (int i = 0; i + 1 < grid.length; i++) {
       for (int j = 0; j + 1 < grid[i].length; j++) {
-        addFace(out, view, lights, color, opacity, null, 0, grid[i][j], grid[i + 1][j],
-            grid[i + 1][j + 1], grid[i][j + 1]);
+        addFace(out, view, lights, color, opacity, grid[i][j], grid[i + 1][j], grid[i + 1][j + 1],
+            grid[i][j + 1]);
       }
     }
   }
@@ -1841,6 +1873,141 @@ public class SVGGraphics3D {
       matrix[i] = node.get(i).asDouble();
     }
     return matrix;
+  }
+
+  /**
+   * The renderables gathered so far, plus the creases of the element being tessellated.
+   *
+   * <p>
+   * A primitive hands every facet it builds to {@link Creases} on its way into the list, which is
+   * how the outline of a shape is recovered without every primitive having to know its own
+   * silhouette. The field is null while an element that draws no outline is collected.
+   */
+  private static final class RenderList extends ArrayList<Renderable> {
+    private static final long serialVersionUID = 1L;
+
+    transient Creases creases;
+  }
+
+  /**
+   * The edges of one element's facets, from which the outline Wolfram draws around a face is
+   * taken.
+   *
+   * <p>
+   * The outline follows the shape rather than the tessellation: an edge is drawn where a facet has
+   * no neighbour at all, or where the two facets that meet along it turn by more than the crease
+   * angle. A {@code Cuboid} therefore shows its twelve edges, a {@code Cylinder} the two circles
+   * where its caps meet the barrel, and a {@code Sphere} nothing - which is what Wolfram draws.
+   * An explicit {@code EdgeForm} drops the angle to a hair above zero, and the mesh appears.
+   */
+  private static final class Creases {
+    /** Beyond this many facets the outline is dropped rather than allowed to cost the picture. */
+    private static final int MAX_FACETS = 200000;
+    /** Corners are rounded to a ten millionth before facets are joined up along their edges. */
+    private static final double QUANTUM = 1e7;
+
+    private final Color color;
+    private final double opacity;
+    private final double width;
+    private final double cosLimit;
+    private final Map<String, Edge> edges = new LinkedHashMap<>();
+    private int facets = 0;
+
+    Creases(Color color, double opacity, double width, double angle) {
+      this.color = color;
+      this.opacity = opacity;
+      this.width = width;
+      this.cosLimit = Math.cos(Math.toRadians(Math.max(0.0, Math.min(180.0, angle))));
+    }
+
+    /** One facet, given by its world space corners and the normal they turned out to have. */
+    void add(Vector3 normal, Vector3[] corners) {
+      if (corners.length < 3 || ++facets > MAX_FACETS) {
+        return;
+      }
+      Vector3 unit = normal.normalize();
+      for (int i = 0; i < corners.length; i++) {
+        Vector3 a = corners[i];
+        Vector3 b = corners[(i + 1) % corners.length];
+        String key = key(a, b);
+        if (key == null) {
+          // a degenerate edge, as the pole of a tessellated sphere produces
+          continue;
+        }
+        Edge edge = edges.get(key);
+        if (edge == null) {
+          edges.put(key, new Edge(a, b, unit));
+        } else {
+          edge.meet(unit);
+        }
+      }
+    }
+
+    /** Draw the edges that survived, farthest first like everything else. */
+    void emit(View view, List<Renderable> out) {
+      if (facets > MAX_FACETS) {
+        return;
+      }
+      for (Edge edge : edges.values()) {
+        if (!edge.isOutline(cosLimit)) {
+          continue;
+        }
+        Polyline line = new Polyline(List.of(view.project(edge.a), view.project(edge.b)), color,
+            opacity, width, null);
+        // an outline shares its place with the faces it borders, so it is nudged towards the
+        // camera to settle which of them the painter draws last
+        line.depth -= Math.abs(line.depth) * 1e-3;
+        out.add(line);
+      }
+    }
+
+    private static String key(Vector3 a, Vector3 b) {
+      long ax = Math.round(a.x * QUANTUM);
+      long ay = Math.round(a.y * QUANTUM);
+      long az = Math.round(a.z * QUANTUM);
+      long bx = Math.round(b.x * QUANTUM);
+      long by = Math.round(b.y * QUANTUM);
+      long bz = Math.round(b.z * QUANTUM);
+      if (ax == bx && ay == by && az == bz) {
+        return null;
+      }
+      // an edge is the same edge whichever facet walked it, so the ends are put in a fixed order
+      boolean forward = ax < bx || (ax == bx && (ay < by || (ay == by && az < bz)));
+      return forward ? ax + "," + ay + "," + az + "|" + bx + "," + by + "," + bz
+          : bx + "," + by + "," + bz + "|" + ax + "," + ay + "," + az;
+    }
+  }
+
+  /** One edge of a facet, with the facets that meet along it. */
+  private static final class Edge {
+    final Vector3 a;
+    final Vector3 b;
+    final Vector3 normal;
+    Vector3 neighbour = null;
+    int uses = 1;
+
+    Edge(Vector3 a, Vector3 b, Vector3 normal) {
+      this.a = a;
+      this.b = b;
+      this.normal = normal;
+    }
+
+    void meet(Vector3 other) {
+      uses++;
+      if (neighbour == null) {
+        neighbour = other;
+      }
+    }
+
+    boolean isOutline(double cosLimit) {
+      if (uses != 2 || neighbour == null) {
+        // a border of the surface, or a seam where more than two facets meet
+        return true;
+      }
+      // the sign of a normal follows the winding, which two facets need not agree on, so it is
+      // the angle between the planes that decides and not the one between the directions
+      return Math.abs(normal.dot(neighbour)) < cosLimit;
+    }
   }
 
   private static Color edgeColor(JsonNode element) {

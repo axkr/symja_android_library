@@ -58,8 +58,27 @@ public class RationalizeNumericsVisitor extends VisitorExpr {
     return super.visitAST(ast);
   }
 
+  /**
+   * A number with no finite value has no rational approximation, so it is left as it is.
+   *
+   * <p>
+   * Without this the conversion reaches {@code new BigFraction(Double.POSITIVE_INFINITY)}, which
+   * answers a {@code MathIllegalArgumentException} that escapes as far as whichever built-in asked
+   * to rationalize its argument. {@code Integrate(-Infinity, 2)} crashed that way instead of
+   * reporting that {@code 2} is not something to integrate over.
+   *
+   * @param value a real or imaginary part
+   * @return {@code true} if {@code value} can be rationalized at all
+   */
+  private static boolean isRationalizable(double value) {
+    return !Double.isNaN(value) && !Double.isInfinite(value);
+  }
+
   @Override
   public IExpr visit(IComplexNum element) {
+    if (!isRationalizable(element.getRealPart()) || !isRationalizable(element.getImaginaryPart())) {
+      return element;
+    }
     if (useConvergenceMethod) {
       long precision = element.precision();
       IFraction realPart = rationalizePart(element.getRealPart(), element.re().isZero(), precision);
@@ -75,6 +94,9 @@ public class RationalizeNumericsVisitor extends VisitorExpr {
 
   @Override
   public IExpr visit(INum element) {
+    if (!isRationalizable(element.getRealPart())) {
+      return element;
+    }
     if (useConvergenceMethod) {
       IFraction fraction =
           rationalizePart(element.getRealPart(), element.isZero(), element.precision());

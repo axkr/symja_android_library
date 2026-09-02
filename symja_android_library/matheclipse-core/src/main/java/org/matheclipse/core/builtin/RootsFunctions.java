@@ -17,10 +17,12 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IEvalStepListener;
@@ -256,7 +258,7 @@ public class RootsFunctions {
    * x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)
    * </pre>
    */
-  private static class Roots extends AbstractFunctionEvaluator {
+  private static class Roots extends AbstractFunctionOptionEvaluator {
 
     /**
      * Determine the roots of a univariate polynomial
@@ -268,7 +270,13 @@ public class RootsFunctions {
      * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      boolean cubicsInRadicals = options[0].isTrue();
+      boolean quarticsInRadicals = options[1].isTrue();
+      if (argSize > 0 && argSize < ast.argSize()) {
+        ast = ast.copyUntil(argSize + 1);
+      }
       IExpr arg1 = ast.arg1();
       if (arg1.isEqual()) {
         IAST equalAST = (IAST) arg1;
@@ -298,7 +306,8 @@ public class RootsFunctions {
       }
       IAST variables = eVar.getVarList();
       IExpr variable = variables.arg1();
-      IAST list = roots(arg1, false, variables, engine);
+      IAST list =
+          roots(arg1, false, variables, true, true, cubicsInRadicals, quarticsInRadicals, engine);
       if (list.isPresent()) {
         return F.mapFunction(S.Or, list, t -> F.Equal(variable, t));
       }
@@ -308,6 +317,15 @@ public class RootsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      // `Cubics` and `Quartics` default to `True` here: `Roots` is the radical solver, and the
+      // callers which want the inert form ask for it explicitly
+      setOptions(newSymbol, //
+          new IBuiltInSymbol[] {S.Cubics, S.Quartics}, //
+          new IExpr[] {S.True, S.True});
     }
   }
 
@@ -397,6 +415,16 @@ public class RootsFunctions {
 
   public static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables,
       boolean createSet, boolean sort, EvalEngine engine) {
+    return roots(arg1, numericSolutions, variables, createSet, sort, true, true, engine);
+  }
+
+  /**
+   * @param cubicsInRadicals the value of the {@link S#Cubics} option
+   * @param quarticsInRadicals the value of the {@link S#Quartics} option
+   */
+  public static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables,
+      boolean createSet, boolean sort, boolean cubicsInRadicals, boolean quarticsInRadicals,
+      EvalEngine engine) {
 
     IExpr expr = evalExpandAll(arg1, engine);
 
@@ -411,8 +439,8 @@ public class RootsFunctions {
         expr = S.Numerator.funEval(engine, expr);
       }
     }
-    IAST result =
-        rootsOfVariable(expr, denom, variables, numericSolutions, createSet, sort, engine);
+    IAST result = rootsOfVariable(expr, denom, variables, numericSolutions, createSet, sort, true,
+        cubicsInRadicals, quarticsInRadicals, engine);
     if (result.isPresent()) {
       result = (IAST) engine.evaluate(result);
     }
@@ -456,6 +484,60 @@ public class RootsFunctions {
    * @return the roots of the polynomial or {@link F#NIL} if an exception occurs
    */
   /**
+   * Test if the polynomial is a binomial <code>a*x^n + b*x^m</code> in the given variable, i.e. one
+   * of the &quot;very simple forms&quot; which {@link #unitPolynomial(int,
+   * org.matheclipse.core.polynomials.longexponent.ExprPolynomial)} solves in radicals whatever the
+   * {@link S#Cubics} and {@link S#Quartics} options request.
+   *
+   * @param polynomial an expanded polynomial
+   * @param variable the polynomial variable
+   */
+  private static boolean isBinomialInVariable(IExpr polynomial, IExpr variable) {
+    if (!polynomial.isPlus()) {
+      // a single monomial
+      return true;
+    }
+    return polynomial.argSize() <= 2;
+  }
+
+  /**
+   * Represent a general cubic or quartic factor by inert {@link S#Root} objects instead of solving
+   * it with the explicit radical formulas of Cardano and Ferrari.
+   *
+   * <p>
+   * <code>Cubics-&gt;False</code> and <code>Quartics-&gt;False</code> ask for the roots of cubics
+   * and quartics &quot;that do not have very simple forms&quot; to be given implicitly. The simple
+   * forms are the binomials, which {@link #isBinomialInVariable(IExpr, IExpr)} keeps out of this
+   * path, and the reducible polynomials, whose factors reach this method one at a time with a lower
+   * degree.
+   *
+   * @param polynomial an irreducible polynomial factor in <code>variable</code>
+   * @param variable the polynomial variable
+   * @param cubicsInRadicals the value of the {@link S#Cubics} option
+   * @param quarticsInRadicals the value of the {@link S#Quartics} option
+   * @param numericSolutions <code>true</code> if the caller asked for numerical solutions
+   * @param allowRootObjects <code>false</code> if the caller cannot use inert objects
+   * @param engine the evaluation engine
+   * @return the {@link S#Root} objects of the factor, or {@link F#NIL} if it should be solved in
+   *         radicals after all
+   */
+  private static IAST generalRootObjects(IExpr polynomial, IExpr variable,
+      boolean cubicsInRadicals, boolean quarticsInRadicals, boolean numericSolutions,
+      boolean allowRootObjects, EvalEngine engine) {
+    if ((cubicsInRadicals && quarticsInRadicals) || !allowRootObjects || numericSolutions) {
+      return F.NIL;
+    }
+    if (isBinomialInVariable(polynomial, variable)) {
+      return F.NIL;
+    }
+    int degree = S.Exponent.of(engine, polynomial, variable).toIntDefault();
+    if ((degree == 3 && !cubicsInRadicals) || (degree == 4 && !quarticsInRadicals)) {
+      return rootObjects(polynomial, variable, degree, numericSolutions, engine);
+    }
+    return F.NIL;
+  }
+
+  /**
    * Represent the roots of a polynomial which has no closed radical form as inert {@link S#Root}
    * objects <code>Root(f&amp;, k, 0)</code> for <code>k = 1, ..., degree</code>.
    *
@@ -487,6 +569,17 @@ public class RootsFunctions {
    */
   private static IAST rootObjects(IExpr polynomial, IExpr variable, boolean numericSolutions,
       EvalEngine engine) {
+    return rootObjects(polynomial, variable, 5, numericSolutions, engine);
+  }
+
+  /**
+   * @param minDegree the lowest degree which is represented by {@link S#Root} objects. Degree
+   *        <code>5</code> is the Abel-Ruffini bound; the {@link S#Cubics} and {@link S#Quartics}
+   *        options lower it to <code>3</code> or <code>4</code> to request the inert form for the
+   *        general cubics and quartics as well.
+   */
+  private static IAST rootObjects(IExpr polynomial, IExpr variable, int minDegree,
+      boolean numericSolutions, EvalEngine engine) {
     if (numericSolutions || !variable.isSymbol() || polynomial.isNumericMode()) {
       return F.NIL;
     }
@@ -502,8 +595,7 @@ public class RootsFunctions {
       return F.NIL;
     }
     int degree = S.Exponent.of(engine, polynomial, variable).toIntDefault();
-    // degree <= 4 is always solvable in radicals and is handled by QuarticSolver
-    if (degree < 5 || degree > Config.MAX_POLYNOMIAL_DEGREE) {
+    if (degree < minDegree || degree > Config.MAX_POLYNOMIAL_DEGREE) {
       return F.NIL;
     }
     // the Root object identifies the polynomial by a pure function of Slot1
@@ -686,7 +778,7 @@ public class RootsFunctions {
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
         IASTMutable temp =
-            rhsNumerator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(1, reducedDegree)), 1);
+            rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, reducedDegree)), 1);
         if (rhsNumerator.first().isNegative()) {
           isNegative = true;
           temp.set(1, rhsNumerator.first().negate());
@@ -706,7 +798,7 @@ public class RootsFunctions {
           rhsDenominator = ((IAST) rhsDenominator).setAtCopy(1, rhsDenominator.first().negate());
         }
         IASTMutable temp =
-            rhsDenominator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(-1, reducedDegree)), 1);
+            rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, reducedDegree)), 1);
         zDenominator = engine.evaluate(temp);
       } else {
         if (rhsDenominator.isNegative()) {
@@ -882,6 +974,22 @@ public class RootsFunctions {
   public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
       final IAST variables, boolean numericSolutions, boolean createSet, boolean sort,
       boolean allowRootObjects, EvalEngine engine) {
+    return rootsOfVariable(expr, denominator, variables, numericSolutions, createSet, sort,
+        allowRootObjects, true, true, engine);
+  }
+
+  /**
+   * @param cubicsInRadicals the value of the {@link S#Cubics} option: if <code>false</code>, a
+   *        general cubic is represented by inert {@link S#Root} objects instead of the explicit
+   *        radicals of the Cardano formula
+   * @param quarticsInRadicals the value of the {@link S#Quartics} option, likewise for the Ferrari
+   *        formula
+   * @see #rootsOfVariable(IExpr, IExpr, IAST, boolean, boolean, boolean, boolean, EvalEngine)
+   */
+  public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
+      final IAST variables, boolean numericSolutions, boolean createSet, boolean sort,
+      boolean allowRootObjects, boolean cubicsInRadicals, boolean quarticsInRadicals,
+      EvalEngine engine) {
     IASTMutable result = F.NIL;
     // List<IExpr> varList = variables.copyTo();
     try {
@@ -907,13 +1015,19 @@ public class RootsFunctions {
       }
       // }
       IASTAppendable newResult = F.ListAlloc(8);
-      IAST factorRational = Algebra.factorRational(polyRat, jas, S.List);
+      IAST factorRational = AlgebraUtil.factorRational(polyRat, jas, S.List);
       if (factorRational.isNIL()) {
         factorRational = F.Times(expr);
       }
       for (int i = 1; i < factorRational.size(); i++) {
         IExpr factor = factorRational.get(i);
         IExpr temp = F.evalExpand(factor);
+        IAST inertRoots = generalRootObjects(temp, variables.arg1(), cubicsInRadicals,
+            quarticsInRadicals, numericSolutions, allowRootObjects, engine);
+        if (inertRoots.isPresent()) {
+          newResult.appendArgs(inertRoots);
+          continue;
+        }
         IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1(), false, true);
         if (quarticResultList.isPresent()) {
           for (int j = 1; j < quarticResultList.size(); j++) {
@@ -934,7 +1048,7 @@ public class RootsFunctions {
             }
             return F.NIL;
           }
-          IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List);
+          IAST factorComplex = AlgebraUtil.factorRational(polyRat, jas, S.List);
           if (factorComplex.isNIL()) {
             factorComplex = F.Times(expr);
           }

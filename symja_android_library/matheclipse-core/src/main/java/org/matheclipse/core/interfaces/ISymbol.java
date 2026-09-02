@@ -460,12 +460,12 @@ public interface ISymbol extends IExpr {
 
   static IAST symbolDefinition(ISymbol symbol) {
 
-    if (symbol.equals(S.In)) {
+    if (symbol == S.In) {
       IAST list = EvalEngine.get().getEvalHistory().definitionIn();
       IASTAppendable result = F.ListAlloc(list.isNIL() ? 1 : list.size());
       result.appendArgs(list);
       return result;
-    } else if (symbol.equals(S.Out)) {
+    } else if (symbol == S.Out) {
       IAST list = EvalEngine.get().getEvalHistory().definitionOut();
       IASTAppendable result = F.ListAlloc(list.isNIL() ? 1 : list.size());
       result.appendArgs(list);

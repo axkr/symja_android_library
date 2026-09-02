@@ -37,7 +37,7 @@ public class ExpToTrig extends AbstractEvaluator {
     IExpr flattened = arg1.replaceAll(x -> {
       if (x.isPower()) {
         IExpr base = x.base();
-        if (base.isPower() && base.base().equals(S.E)) {
+        if (base.isPower() && base.base() == S.E) {
           return F.Power(S.E, engine.evaluate(F.Times(base.exponent(), x.exponent())));
         }
       }
@@ -52,7 +52,7 @@ public class ExpToTrig extends AbstractEvaluator {
       if (x.isPower()) {
         IExpr exponent = F.NIL;
         IExpr base = x.base();
-        if (base.equals(S.E)) {
+        if (base == S.E) {
           exponent = x.exponent();
         } else if (base.isNumber()) {
           // base^exponent => E ^(exponent*Log(base))
@@ -68,7 +68,7 @@ public class ExpToTrig extends AbstractEvaluator {
             for (int i = 1; i < exponent.size(); i++) {
               IExpr arg = ((IAST) exponent).get(i);
               if (!arg.isFree(
-                  y -> y.isComplex() || y.isComplexNumeric() || y.equals(S.I) || y.equals(F.CNI),
+                  y -> y.isComplex() || y.isComplexNumeric() || y == S.I || y.equals(F.CNI),
                   true)) {
                 hasI.append(arg);
               } else {
@@ -204,7 +204,7 @@ public class ExpToTrig extends AbstractEvaluator {
    * Extracts the coefficient and argument of a Log term. C*Log(A) -> {C, A}
    */
   private static IExpr[] extractLog(IExpr expr) {
-    if (expr.isAST1() && expr.head().equals(S.Log)) {
+    if (expr.isAST1() && expr.head() == S.Log) {
       return new IExpr[] {F.C1, expr.first()};
     }
     if (expr.isTimes()) {
@@ -212,7 +212,7 @@ public class ExpToTrig extends AbstractEvaluator {
       int logIndex = -1;
       int logCount = 0;
       for (int i = 1; i <= times.argSize(); i++) {
-        if (times.get(i).isAST1() && times.get(i).head().equals(S.Log)) {
+        if (times.get(i).isAST1() && times.get(i).head() == S.Log) {
           logIndex = i;
           logCount++;
         }

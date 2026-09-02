@@ -3,7 +3,7 @@ package org.matheclipse.core.visjs;
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -65,8 +65,8 @@ public class SimpleVisGraphExample {
       // 1})");
       IExpr result = util.eval(
           "Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}, {EdgeWeight -> {2, 3, 4}})");
-      if (result instanceof GraphExpr) {
-        String javaScriptStr = ((GraphExpr) result).graphToJSForm();
+      if (result instanceof IGraphExpr) {
+        String javaScriptStr = ((IGraphExpr) result).graphToJSForm();
         if (javaScriptStr != null) {
           String js = VISJS_PAGE;
           js = StringUtils.replace(js, "`1`", javaScriptStr);

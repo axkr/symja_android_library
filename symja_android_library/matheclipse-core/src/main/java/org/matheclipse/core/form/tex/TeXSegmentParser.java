@@ -340,7 +340,7 @@ class TeXSegmentParser {
               Node arg2 = list.item(position[0]);
               String arg2NodeName = arg2.getNodeName();
               if (arg2NodeName.equals("mfenced")) {
-                if (lhs.equals(S.Integrate)) {
+                if (lhs == S.Integrate) {
                   ISymbol test = F.Dummy("test");
                   IExpr temp = integrate(list, position, test, test);
                   if (position[0] == listSize) {
@@ -363,7 +363,7 @@ class TeXSegmentParser {
                 }
               } else if (!arg2NodeName.equals("mo") //
                   && (isNumericFunction || lhs.isBuiltInSymbolID() || lhs.isFunction())) {
-                if (lhs.equals(S.Integrate)) {
+                if (lhs == S.Integrate) {
                   ISymbol test = F.Dummy("test");
                   IExpr temp = integrate(list, position, test, test);
                   if (position[0] == listSize) {
@@ -711,11 +711,11 @@ class TeXSegmentParser {
       position[0] = dxEnd;
       arg1 = F.xreplace(arg1, dummySymbol, x);
       symbolOrList = F.xreplace(symbolOrList, dummySymbol, x);
-      return F.binaryAST2(S.Integrate, arg1, symbolOrList);
+      return F.Integrate(arg1, symbolOrList);
     } else if (dxStart == position[0]) {
       position[0] = dxEnd;
       symbolOrList = F.xreplace(symbolOrList, dummySymbol, x);
-      return F.binaryAST2(S.Integrate, dxValue, symbolOrList);
+      return F.Integrate(dxValue, symbolOrList);
     }
     throw new AbortException();
   }
@@ -1017,7 +1017,7 @@ class TeXSegmentParser {
 
       IExpr a1 = toExpr(arg1);
       IExpr a2 = toExpr(arg2);
-      if (a1.equals(S.Limit)) {
+      if (a1 == S.Limit) {
         // Limit(#,a2)&
         if (a2.isAST(S.Implies, 3)) { // \Rightarrow
           a2 = F.Rule(a2.first(), a2.second());
@@ -1045,9 +1045,9 @@ class TeXSegmentParser {
         return F.Limit(DUMMY_SUB_SLOT, a2);
       }
       if (a1 == S.Log10) {
-        return F.binaryAST2(S.Log, a2, DUMMY_SUB_SLOT);
+        return F.Log(a2, DUMMY_SUB_SLOT);
       }
-      return F.binaryAST2(S.Subscript, a1, a2);
+      return F.Subscript(a1, a2);
     }
     // } finally {
     // subOrSup = oldSubOrSup;
@@ -1141,7 +1141,7 @@ class TeXSegmentParser {
         // typically Sin^(-1) -> ArcSin or similar...
         return value;
       }
-    } else if (a2.equals(S.Degree)) {
+    } else if (a2 == S.Degree) {
       // case \sin 30 ^ { \circ } ==> Sin(30*Degree)
       return F.Times(a1, a2);
     }

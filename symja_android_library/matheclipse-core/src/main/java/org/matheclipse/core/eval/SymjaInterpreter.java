@@ -74,7 +74,7 @@ public class SymjaInterpreter extends EvalUtilities {
     try {
       result = evaluate(expr);
       if (result.isPresent()) {
-        if (result.equals(S.Null)) {
+        if (result == S.Null) {
           return buf.toString();
         }
         if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result)) {
@@ -85,7 +85,7 @@ public class SymjaInterpreter extends EvalUtilities {
     } catch (SymjaMathException sma) {
       Throwable me = sma.getCause();
       Validate.printException(buf, me);
-      if (expr.equals(S.Null)) {
+      if (expr == S.Null) {
         return buf.toString();
       }
       if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, expr)) {
@@ -145,7 +145,7 @@ public class SymjaInterpreter extends EvalUtilities {
       if (expr.isPresent()) {
         result = evaluate(expr);
         if (result.isPresent()) {
-          if (result.equals(S.Null)) {
+          if (result == S.Null) {
             return buf.toString();
           }
           if (OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result)) {

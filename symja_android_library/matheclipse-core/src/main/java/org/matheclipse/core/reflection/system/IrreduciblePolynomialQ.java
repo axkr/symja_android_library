@@ -48,16 +48,16 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
     IAST extensionGenerators = F.CEmptyList;
     boolean gaussianFromExtension = false;
     IExpr extensionOption = options[0];
-    if (extensionOption.equals(S.Automatic)) {
+    if (extensionOption == S.Automatic) {
       extensionGenerators = AlgebraicNumberUtils.extractAlgebraicGenerators(poly);
-    } else if (extensionOption.equals(S.All)) {
+    } else if (extensionOption == S.All) {
       // Absolute irreducibility over the algebraic closure of Q; approximate by adjoining I
       // (sufficient for absolute irreducibility of e.g. x^2 + y^2). Full algebraic closure is not
       // implemented.
       gaussianFromExtension = true;
     } else if (extensionOption.isList()) {
       extensionGenerators = (IAST) extensionOption;
-    } else if (!extensionOption.equals(S.None)) {
+    } else if (extensionOption != S.None) {
       // Single algebraic number, e.g. Extension -> Sqrt(3); treat as singleton list
       extensionGenerators = F.List(extensionOption);
     }
@@ -153,12 +153,12 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
       IExpr arg = originalAST.get(i);
       if (arg.isRule()) {
         IExpr lhs = arg.first();
-        if (lhs.equals(S.Extension)) {
+        if (lhs == S.Extension) {
           // Drop the Extension rule; if we still need to pass I to Factor we add
           // GaussianIntegers -> True below.
           continue;
         }
-        if (lhs.equals(S.GaussianIntegers)) {
+        if (lhs == S.GaussianIntegers) {
           gaussianOptionAlreadyPresent = true;
           if (gaussianFromExtension) {
             factorAST.append(F.Rule(S.GaussianIntegers, S.True));

@@ -358,7 +358,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         }
       }
     }
-    if (!options[2].equals(S.Automatic)) {
+    if (options[2] != S.Automatic) {
       if (options[2].isInteger()) {
         // S.AccuracyGoal
         accuracyGoal = options[2].toIntDefault();
@@ -490,7 +490,16 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     for (int i = 1; i < matrixOfVarValuePairs.size(); i++) {
       IExpr variableInitialGuessPair = matrixOfVarValuePairs.get(i);
       if (variableInitialGuessPair.isList2()) {
-        vectorOfVariables.append(variableInitialGuessPair.first());
+        IExpr variable = variableInitialGuessPair.first();
+        if (!variable.isVariable()) {
+          // The variables become the keys of a substitution map, so two pairs naming the same
+          // non-variable collided there: FindRoot({x,1+Sqrt(2)},{{1,1},{1,1}}) failed with
+          // "Multiple entries with same key: 1=1.0 and 1=1.0" from the map builder rather than
+          // saying what was wrong with the argument.
+          // `1` is not a valid variable.
+          return Errors.printMessage(S.FindRoot, "ivar", F.list(variable), engine);
+        }
+        vectorOfVariables.append(variable);
         IExpr guessedValue = variableInitialGuessPair.second();
         // a non-numeric or non-finite guess falls back to the complex computation
         double doubleValue = guessedValue.evalfNaN();
