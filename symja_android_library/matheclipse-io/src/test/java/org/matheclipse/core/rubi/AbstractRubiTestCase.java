@@ -3,11 +3,13 @@ package org.matheclipse.core.rubi;
 import java.io.StringWriter;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.TimeConstrainedExecutor;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -21,6 +23,7 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
+import com.google.common.util.concurrent.SimpleTimeLimiter;
 import junit.framework.TestCase;
 
 /** Tests system.reflection classes */
@@ -40,7 +43,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
   }
 
-  private String printResult(IExpr integral, IExpr result, String expectedResult,
+  private String printResult(IExpr integral, IExpr variable, IExpr result, String expectedResult,
       String manuallyCheckedResult) {
     // if (result.equals(F.Null)) {
     // return "";
@@ -78,30 +81,12 @@ public abstract class AbstractRubiTestCase extends TestCase {
           return expectedResult;
         }
 
-        IExpr temp = fEvaluator.eval(F.Subtract(result, expected));
-        // System.out.println(temp.toString());
-        expected = fEvaluator.eval(F.PossibleZeroQ(temp));
-        if (expected.isTrue()) {
-          // the expressions are structurally equal
+        // Everything from here on is the expensive part, and it used to run unbounded on the test
+        // thread: fSeconds limits the *integration* only, so a single case could hold a class for
+        // tens of minutes inside PossibleZeroQ, a symbolic D() over a huge antiderivative, or
+        // Together/Simplify. Give it the same budget the integration gets.
+        if (isAcceptedAnswer(integral, variable, result, expected)) {
           return expectedResult;
-        } else {
-          // Form-independent correctness check: the antiderivative must differentiate back to the
-          // integrand, i.e. D(result, x) - integrand == 0. This is what lets a native algorithm
-          // stage produce a different-looking (but correct) antiderivative than Rubi/Mathematica.
-          //
-          // The two checks are OR-ed, so their order cannot change which results are accepted -
-          // only what it costs to decide. The numeric check runs in milliseconds, while the
-          // symbolic one calls Together/Simplify, which take tens of seconds on a big difference
-          // and can hang outright (JAS' subresultant GCD swells on complex-rational coefficients,
-          // and it never checks the engine deadline, so no timeout can stop it). So try the cheap
-          // one first and only fall back to the symbolic route when it cannot decide.
-          IExpr difference = fEvaluator.eval(F.Subtract(F.D(result, F.symbol("x")), integral));
-          if (isFiniteDifferenceCorrect(result, integral, F.symbol("x"))
-              || isZeroAntiderivativeCheck(difference)) {
-            return expectedResult;
-          } else {
-            System.out.println("D(result) - integrand not provably zero:\n" + difference + "\n");
-          }
         }
         // IExpr resultTogether= F.Together.of(F.ExpandAll(result));
         // IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
@@ -122,6 +107,74 @@ public abstract class AbstractRubiTestCase extends TestCase {
     final StringWriter buf = new StringWriter();
     OutputFormFactory.get(fEvaluator.getEvalEngine().isRelaxedSyntax()).convert(buf, result);
     return buf.toString();
+  }
+
+  /**
+   * Is {@code result} an acceptable answer, run under a time limit?
+   *
+   * <p>
+   * The checks are OR-ed, so their order cannot change which results are accepted - only what it
+   * costs to decide. {@code PossibleZeroQ} on {@code result - expected} settles the common case
+   * cheaply; the numeric {@link #isFiniteDifferenceCorrect} settles "correct but written
+   * differently", which is most of what a corpus section produces; and only when neither can decide
+   * does the symbolic route run {@code Together}/{@code Simplify}, which take tens of seconds on a
+   * big difference. Do not reorder them by guesswork - putting the numeric check first was measured
+   * and made things worse, because it evaluates a possibly huge antiderivative at up to 24 points
+   * for cases {@code PossibleZeroQ} would have settled at once.
+   *
+   * <p>
+   * The whole sequence runs on a worker with a {@code fSeconds} deadline. That deadline can only be
+   * honoured because {@code EvalEngine}'s interruption checks are non-clearing: they used to call
+   * {@code Thread.interrupted()}, which clears the flag, so any of Symja's broad
+   * {@code catch (RuntimeException)} handlers swallowing the resulting {@code TimeoutException}
+   * left the thread uncancellable.
+   */
+  private boolean isAcceptedAnswer(IExpr integral, IExpr variable, IExpr result, IExpr expected) {
+    return verifyWithin(() -> {
+      EvalEngine.remove();
+      EvalEngine.setReset(fEvaluator.getEvalEngine());
+
+      IExpr temp = fEvaluator.eval(F.Subtract(result, expected));
+      if (fEvaluator.eval(F.PossibleZeroQ(temp)).isTrue()) {
+        // the expressions are structurally equal
+        return Boolean.TRUE;
+      }
+      // Form-independent correctness check: the antiderivative must differentiate back to the
+      // integrand, i.e. D(result, var) - integrand == 0. This is what lets a native algorithm stage
+      // produce a different-looking (but correct) antiderivative than Rubi/Mathematica.
+      if (isFiniteDifferenceCorrect(result, integral, variable)) {
+        return Boolean.TRUE;
+      }
+      // built lazily: as a local initialised before the checks above it cost a symbolic D() over a
+      // large antiderivative for every case the numeric check then settled on its own
+      IExpr difference = fEvaluator.eval(F.Subtract(F.D(result, variable), integral));
+      if (isZeroAntiderivativeCheck(difference)) {
+        return Boolean.TRUE;
+      }
+      System.out.println("D(result) - integrand not provably zero:\n" + difference + "\n");
+      return Boolean.FALSE;
+    });
+  }
+
+  /**
+   * Run {@code check} with the class's {@code fSeconds} deadline, treating "did not finish" as "not
+   * verified". A check that overruns leaves a daemon worker behind at minimum priority rather than
+   * blocking the run - see {@link TimeConstrainedExecutor}.
+   */
+  private boolean verifyWithin(Callable<Boolean> check) {
+    TimeConstrainedExecutor executor = TimeConstrainedExecutor.create();
+    try {
+      long seconds = fSeconds > 0 ? fSeconds : 60;
+      return Boolean.TRUE.equals(SimpleTimeLimiter.create(executor.service())
+          .callWithTimeout(check, seconds, TimeUnit.SECONDS));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    } catch (Exception e) {
+      return false;
+    } finally {
+      executor.dispose();
+    }
   }
 
   /**
@@ -231,7 +284,12 @@ public abstract class AbstractRubiTestCase extends TestCase {
       String manuallyCheckedResult) {
     IExpr result;
     final StringWriter buf = new StringWriter();
-    IExpr integral = fEvaluator.parse(inputExpression).first();
+    IExpr parsed = fEvaluator.parse(inputExpression);
+    IExpr integral = parsed.first();
+    // Integrate[f, var] - 58 of these tests integrate over something other than x (34 t, 10 r,
+    // 7 y, 5 z, 2 w), and printResult()'s correctness checks are meaningless against the wrong
+    // one, so carry it rather than assuming.
+    IExpr variable = parsed.isAST(S.Integrate, 3) ? parsed.second() : F.symbol("x");
     try {
       if (fSeconds <= 0) {
         result = fEvaluator.eval(inputExpression);
@@ -242,12 +300,12 @@ public abstract class AbstractRubiTestCase extends TestCase {
             new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }
       if (result != null) {
-        return printResult(integral, result, expectedResult, manuallyCheckedResult);
+        return printResult(integral, variable, result, expectedResult, manuallyCheckedResult);
       }
     } catch (final AbortException re) {
-      return printResult(integral, F.$Aborted, expectedResult, manuallyCheckedResult);
+      return printResult(integral, variable, F.$Aborted, expectedResult, manuallyCheckedResult);
     } catch (final FailedException re) {
-      return printResult(integral, F.$Failed, expectedResult, manuallyCheckedResult);
+      return printResult(integral, variable, F.$Failed, expectedResult, manuallyCheckedResult);
     } catch (final SyntaxError se) {
       String msg = se.getMessage();
       System.err.println(msg);

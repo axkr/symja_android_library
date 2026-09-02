@@ -2,6 +2,29 @@ package org.matheclipse.core.rubi.independent;
 
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
+/**
+ * Rubi's "0 Independent test suites" corpus section. 50 integrals.
+ *
+ * <p>
+ * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
+ * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
+ * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
+ * unnoticed, so run it after any change to the integrator:
+ *
+ * <pre>
+ * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
+ *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * </pre>
+ *
+ * <p>
+ * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
+ * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
+ * JVM across classes makes every test fail.
+ *
+ * <p>
+ * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
+ * and Symja has no answer for that integral yet.
+ */
 public class CharlwoodProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
@@ -38,6 +61,9 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test3() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja returns only a partial result. It used to leak Rubi`subst into the
+    // answer; that leak is fixed, so the integral now comes back unevaluated instead.
     check( //
         "Integrate[ArcSin[Sqrt[x+1]-Sqrt[x]], x]", //
         "((Sqrt[x]+3*Sqrt[1+x])*Sqrt[-x+Sqrt[x]*Sqrt[1+x]])/(4*Sqrt[2])-(3/8+x)*ArcSin[Sqrt[x]-Sqrt[1+x]]" //
@@ -52,6 +78,11 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test5() {
+    // KNOWN GAP - this test does not pass. Symja's answer is correct (verified by differentiating
+    // it back) but is a bulky EllipticF/EllipticPi form rather than the compact ArcTan reference,
+    // and takes ~12s, so it also exceeds this class's 20s budget once the machine is busy. Do not
+    // raise fSeconds to "fix" it: the budget decides which strategy wins, and raising it to 60
+    // makes test4/test47/test50 return a different form and fail.
     check( //
         "Integrate[Cos[x]^2/Sqrt[Cos[x]^4+Cos[x]^2+1], x]", //
         "x/3+ArcTan[(Cos[x]*(1+Cos[x]^2)*Sin[x])/(1+Cos[x]^2*Sqrt[1+Cos[x]^2+Cos[x]^4])]/3" //
@@ -101,6 +132,8 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test12() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja returns a partial result containing an unevaluated Integrate.
     check( //
         "Integrate[ArcTan[x+Sqrt[1-x^2]], x]", //
         "-ArcSin[x]/2+1/4*Sqrt[3]*ArcTan[(-1+Sqrt[3]*x)/Sqrt[1-x^2]]+1/4*Sqrt[3]*ArcTan[(1+Sqrt[3]*x)/Sqrt[1-x^2]]-1/4*Sqrt[3]*ArcTan[(-1+2*x^2)/Sqrt[3]]+x*ArcTan[x+Sqrt[1-x^2]]-ArcTanh[x*Sqrt[1-x^2]]/4-Log[1-x^2+x^4]/8" //
@@ -332,6 +365,9 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test45() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja leaves this unevaluated: rule 3054 reports 'Endless iteration
+    // detected' on it.
     check( //
         "Integrate[Sqrt[Sqrt[Sec[x]+1]-Sqrt[Sec[x]+(-1)*1]], x]", //
         "Sqrt[2]*(Sqrt[-1+Sqrt[2]]*ArcTan[(Sqrt[-2+2*Sqrt[2]]*(-Sqrt[2]-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]]))/(2*Sqrt[-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]]])]-Sqrt[1+Sqrt[2]]*ArcTan[(Sqrt[2+2*Sqrt[2]]*(-Sqrt[2]-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]]))/(2*Sqrt[-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]]])]-Sqrt[1+Sqrt[2]]*ArcTanh[(Sqrt[-2+2*Sqrt[2]]*Sqrt[-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]]])/(Sqrt[2]-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]])]+Sqrt[-1+Sqrt[2]]*ArcTanh[(Sqrt[2+2*Sqrt[2]]*Sqrt[-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]]])/(Sqrt[2]-Sqrt[-1+Sec[x]]+Sqrt[1+Sec[x]])])*Cot[x]*Sqrt[-1+Sec[x]]*Sqrt[1+Sec[x]]" //

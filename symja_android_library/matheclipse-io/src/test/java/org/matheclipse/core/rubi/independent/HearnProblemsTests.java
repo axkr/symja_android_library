@@ -2,6 +2,29 @@ package org.matheclipse.core.rubi.independent;
 
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
+/**
+ * Rubi's "0 Independent test suites" corpus section. 284 integrals.
+ *
+ * <p>
+ * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
+ * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
+ * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
+ * unnoticed, so run it after any change to the integrator:
+ *
+ * <pre>
+ * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
+ *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * </pre>
+ *
+ * <p>
+ * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
+ * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
+ * JVM across classes makes every test fail.
+ *
+ * <p>
+ * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
+ * and Symja has no answer for that integral yet.
+ */
 public class HearnProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
@@ -1207,9 +1230,13 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test170() {
+    // Rubi says CannotIntegrate[..]; Integrate() maps that back to an unevaluated Integrate()
+    // before returning, so the unevaluated form is the answer Symja can actually give. It used to
+    // return Rubi`Subst[Integrate[E^E^E^x/x,x],x,E^x] instead - the substitution wrapper surviving
+    // around an integral the rules could not finish - which that leak fix now suppresses.
     check( //
         "Integrate[E^E^E^E^x, x]", //
-        "CannotIntegrate[E^E^E^E^x,x]" //
+        "Integrate[E^E^E^E^x,x]" //
     );
   }
 
@@ -1964,6 +1991,9 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test278() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja does not finish this within the class budget (still unfinished at
+    // 90s).
     check( //
         "Integrate[(2*x^6+4*x^5+7*x^4-3*x^3-x*x-8*x+(-1)*8)/((2*x^2+(-1)*1)^2*Sqrt[x^4+4*x^3+2*x^2+1]), x]", //
         "((1+2*x)*Sqrt[1+2*x^2+4*x^3+x^4])/(2*(-1+2*x^2))-ArcTanh[(x*(2+x)*(7-x+27*x^2+33*x^3))/((2+37*x^2+31*x^3)*Sqrt[1+2*x^2+4*x^3+x^4])]" //
@@ -1971,6 +2001,10 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test279() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja leaves this unevaluated. It integrates over y, and until the harness
+    // stopped assuming x the correctness fallback could not even be applied to it - but the answer
+    // is genuinely missing, not just differently shaped.
     check( //
         "Integrate[(1+2*y)*Sqrt[1-5*y-5*y^2]/(y*(1+y)*(2+y)*Sqrt[1-y-y^2]), y]", //
         "-ArcTanh[((1-3*y)*Sqrt[1-5*y-5*y^2])/((1-5*y)*Sqrt[1-y-y^2])]/4-ArcTanh[((4+3*y)*Sqrt[1-5*y-5*y^2])/((6+5*y)*Sqrt[1-y-y^2])]/2+9/4*ArcTanh[((11+7*y)*Sqrt[1-5*y-5*y^2])/(3*(7+5*y)*Sqrt[1-y-y^2])]" //
@@ -1985,6 +2019,8 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test281() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja leaves this unevaluated.
     check( //
         "Integrate[Sqrt[-4*Sqrt[2]+9]*x-Sqrt[x^4+2*x^2+4*x+1]*Sqrt[2], x]", //
         "1/2*Sqrt[9-4*Sqrt[2]]*x^2-Sqrt[2]*(-Sqrt[1+4*x+2*x^2+x^4]/3+1/3*(1+x)*Sqrt[1+4*x+2*x^2+x^4]+(4*I*(-13+3*Sqrt[33])^(1/3)*Sqrt[1+4*x+2*x^2+x^4])/(4*2^(2/3)*((-1)*I+Sqrt[3])-2*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*(I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3)+6*I*(-13+3*Sqrt[33])^(1/3)*x)-(8*2^(2/3)*Sqrt[3/(-13+3*Sqrt[33]+4*(-26+6*Sqrt[33])^(1/3))]*Sqrt[(I*(-19899+3445*Sqrt[33]+(-26+6*Sqrt[33])^(2/3)*(-2574+466*Sqrt[33])+(-26+6*Sqrt[33])^(1/3)*(-19899+3445*Sqrt[33])+(59697-10335*Sqrt[33])*x))/((-39-13*I*Sqrt[3]+9*I*Sqrt[11]+9*Sqrt[33]+4*I*(3*I+Sqrt[3])*(-26+6*Sqrt[33])^(1/3))*(26-6*Sqrt[33]+(-13+13*I*Sqrt[3]-9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-4-4*I*Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x))]*Sqrt[1+4*x+2*x^2+x^4]*EllipticE[ArcSin[Sqrt[26-6*Sqrt[33]+(-13-13*I*Sqrt[3]+9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+4*I*(I+Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x]/(Sqrt[(39+13*I*Sqrt[3]-9*I*Sqrt[11]-9*Sqrt[33]+4*(3-I*Sqrt[3])*(-26+6*Sqrt[33])^(1/3))/(39-13*I*Sqrt[3]+9*I*Sqrt[11]-9*Sqrt[33]+4*(3+I*Sqrt[3])*(-26+6*Sqrt[33])^(1/3))]*Sqrt[26-6*Sqrt[33]+(-13+13*I*Sqrt[3]-9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-4-4*I*Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x])],(4*(21+7*I*Sqrt[3]-3*I*Sqrt[11]-3*Sqrt[33])+(3-I*Sqrt[3]-3*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3))/(4*(21-7*I*Sqrt[3]+3*I*Sqrt[11]-3*Sqrt[33])+(3+I*Sqrt[3]+3*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3))])/((4*2^(2/3)-(-13+3*Sqrt[33])^(1/3)-2^(1/3)*(-13+3*Sqrt[33])^(2/3)+3*(-13+3*Sqrt[33])^(1/3)*x)*Sqrt[(I*(1+x))/((104-24*Sqrt[33]+(-13-13*I*Sqrt[3]+9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+4*I*(I+Sqrt[3])*(-26+6*Sqrt[33])^(2/3))*(26-6*Sqrt[33]+(-13+13*I*Sqrt[3]-9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-4-4*I*Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x))]*Sqrt[26-6*Sqrt[33]+(-13+13*I*Sqrt[3]-9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-4-4*I*Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x]*Sqrt[26-6*Sqrt[33]+(-13-13*I*Sqrt[3]+9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+4*I*(I+Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x])+((2^(1/3)*(13-13*I*Sqrt[3]+9*I*Sqrt[11]-3*Sqrt[33])+4*2^(2/3)*(1+I*Sqrt[3])*(-13+3*Sqrt[33])^(1/3)+20*(-13+3*Sqrt[33])^(2/3))*(4*2^(2/3)*(I+Sqrt[3])+8*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*((-1)*I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3))*Sqrt[(52-12*Sqrt[33]-2^(1/3)*(-13+3*Sqrt[33])^(4/3)+4*(-26+6*Sqrt[33])^(2/3))/(-13+3*Sqrt[33]+4*(-26+6*Sqrt[33])^(1/3))]*Sqrt[((-8)*I*(-13+3*Sqrt[33])+((-43)*I-13*Sqrt[3]+9*Sqrt[11]+5*I*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(2*I+4*Sqrt[3]-2*I*Sqrt[33])*(-26+6*Sqrt[33])^(2/3)+(8*I*(-13+3*Sqrt[33])+(13*I-13*Sqrt[3]+9*Sqrt[11]-3*I*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+4*(I+Sqrt[3])*(-26+6*Sqrt[33])^(2/3))*x)/(1+x)]*Sqrt[1+4*x+2*x^2+x^4]*EllipticF[ArcSin[(Sqrt[52-12*Sqrt[33]-2^(1/3)*(-13+3*Sqrt[33])^(4/3)+4*(-26+6*Sqrt[33])^(2/3)]*Sqrt[26-6*Sqrt[33]+(-13-13*I*Sqrt[3]+9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+4*I*(I+Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x])/(2^(1/6)*Sqrt[3]*(-13+3*Sqrt[33])^(2/3)*Sqrt[39+13*I*Sqrt[3]-9*I*Sqrt[11]-9*Sqrt[33]+4*(3-I*Sqrt[3])*(-26+6*Sqrt[33])^(1/3)]*Sqrt[1+x])],(4*(21*I-7*Sqrt[3]+3*Sqrt[11]-3*I*Sqrt[33])+(3*I+Sqrt[3]+3*Sqrt[11]+3*I*Sqrt[33])*(-26+6*Sqrt[33])^(1/3))/(-56*Sqrt[3]+24*Sqrt[11]+2*(Sqrt[3]+3*Sqrt[11])*(-26+6*Sqrt[33])^(1/3))])/(3*2^(2/3)*3^(3/4)*(-13+3*Sqrt[33])^(1/3)*Sqrt[39+13*I*Sqrt[3]-9*I*Sqrt[11]-9*Sqrt[33]+4*(3-I*Sqrt[3])*(-26+6*Sqrt[33])^(1/3)]*Sqrt[1+x]*(4*2^(2/3)*((-1)*I+Sqrt[3])-2*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*(I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3)+6*I*(-13+3*Sqrt[33])^(1/3)*x)*Sqrt[26-6*Sqrt[33]+(-13-13*I*Sqrt[3]+9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+4*I*(I+Sqrt[3])*(-26+6*Sqrt[33])^(2/3)+6*(-13+3*Sqrt[33])*x]*Sqrt[(8*(-13+3*Sqrt[33])-(5-3*I*Sqrt[3]+3*I*Sqrt[11]+Sqrt[33])*(-26+6*Sqrt[33])^(2/3)+(-26+6*Sqrt[33])^(1/3)*(-41+15*I*Sqrt[3]-3*I*Sqrt[11]+7*Sqrt[33])+(104-24*Sqrt[33]+(-13-13*I*Sqrt[3]+9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+4*I*(I+Sqrt[3])*(-26+6*Sqrt[33])^(2/3))*x)/((-39-13*I*Sqrt[3]+9*I*Sqrt[11]+9*Sqrt[33]+4*I*(3*I+Sqrt[3])*(-26+6*Sqrt[33])^(1/3))*(1+x))])+((4*2^(2/3)+2*(-13+3*Sqrt[33])^(1/3)-2^(1/3)*(-13+3*Sqrt[33])^(2/3))*(4*2^(2/3)*(I+Sqrt[3])-4*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*((-1)*I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3))*(4*2^(2/3)*((-1)*I+Sqrt[3])+4*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*(I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3))*Sqrt[(-39+13*I*Sqrt[3]-9*I*Sqrt[11]+9*Sqrt[33]-4*I*((-3)*I+Sqrt[3])*(-26+6*Sqrt[33])^(1/3))/(104-24*Sqrt[33]+(-13+13*I*Sqrt[3]-9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-4-4*I*Sqrt[3])*(-26+6*Sqrt[33])^(2/3))]*Sqrt[1+x]*Sqrt[(104-24*Sqrt[33]+2*(1+14*I*Sqrt[3]-6*I*Sqrt[11]+Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-7-I*Sqrt[3]-3*I*Sqrt[11]+Sqrt[33])*(-26+6*Sqrt[33])^(2/3)+2*(-52+12*Sqrt[33]+2^(1/3)*(-13+3*Sqrt[33])^(4/3)-4*(-26+6*Sqrt[33])^(2/3))*x)/((-39+13*I*Sqrt[3]-9*I*Sqrt[11]+9*Sqrt[33]-4*I*((-3)*I+Sqrt[3])*(-26+6*Sqrt[33])^(1/3))*(1+x))]*Sqrt[(104-24*Sqrt[33]+2*(1-14*I*Sqrt[3]+6*I*Sqrt[11]+Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-7+I*Sqrt[3]+3*I*Sqrt[11]+Sqrt[33])*(-26+6*Sqrt[33])^(2/3)+2*(-52+12*Sqrt[33]+2^(1/3)*(-13+3*Sqrt[33])^(4/3)-4*(-26+6*Sqrt[33])^(2/3))*x)/((-39-13*I*Sqrt[3]+9*I*Sqrt[11]+9*Sqrt[33]+4*I*(3*I+Sqrt[3])*(-26+6*Sqrt[33])^(1/3))*(1+x))]*Sqrt[1+4*x+2*x^2+x^4]*EllipticPi[(2^(1/3)*(4*2^(1/3)*((-3)*I+Sqrt[3])+(3*I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3)))/(4*2^(2/3)*((-1)*I+Sqrt[3])-8*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*(I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3)),ArcSin[Sqrt[13-3*Sqrt[33]-2^(1/3)*(-13+3*Sqrt[33])^(4/3)+4*(-26+6*Sqrt[33])^(2/3)+(-39+9*Sqrt[33])*x]/(2^(1/6)*Sqrt[3]*(-13+3*Sqrt[33])^(2/3)*Sqrt[(-39+13*I*Sqrt[3]-9*I*Sqrt[11]+9*Sqrt[33]-4*I*((-3)*I+Sqrt[3])*(-26+6*Sqrt[33])^(1/3))/(104-24*Sqrt[33]+(-13+13*I*Sqrt[3]-9*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3)+(-4-4*I*Sqrt[3])*(-26+6*Sqrt[33])^(2/3))]*Sqrt[1+x])],(4*(21-7*I*Sqrt[3]+3*I*Sqrt[11]-3*Sqrt[33])+(3+I*Sqrt[3]+3*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3))/(4*(21+7*I*Sqrt[3]-3*I*Sqrt[11]-3*Sqrt[33])+(3-I*Sqrt[3]-3*I*Sqrt[11]+3*Sqrt[33])*(-26+6*Sqrt[33])^(1/3))])/(2^(1/6)*Sqrt[3]*(4*2^(2/3)*(I+Sqrt[3])+2*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*((-1)*I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3)-6*I*(-13+3*Sqrt[33])^(1/3)*x)*(4*2^(2/3)*((-1)*I+Sqrt[3])-2*I*(-13+3*Sqrt[33])^(1/3)+2^(1/3)*(I+Sqrt[3])*(-13+3*Sqrt[33])^(2/3)+6*I*(-13+3*Sqrt[33])^(1/3)*x)*Sqrt[13-3*Sqrt[33]-2^(1/3)*(-13+3*Sqrt[33])^(4/3)+4*(-26+6*Sqrt[33])^(2/3)+(-39+9*Sqrt[33])*x]))" //

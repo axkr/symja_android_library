@@ -227,6 +227,26 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   /** Nesting depth of {@link #evaluate}: 1 is the integral the user asked for. */
   private static final ThreadLocal<Integer> EVAL_DEPTH = ThreadLocal.withInitial(() -> 0);
 
+  /**
+   * Set while the Rubi rules are matching, so a sub-integral a rule asked for can be told apart
+   * from one a native stage asked for. Only the former must refuse a bare {@code RootSum}: the
+   * native stages build their own answers out of one. {@code evaluate} consumes it on entry, so it
+   * marks only the immediately requested integral and not the whole subtree beneath a rule - a
+   * native stage running under a rule still gets its own RootSum answers.
+   */
+  private static final ThreadLocal<Boolean> IN_RUBI_RULES =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * Integrals already known to answer a Rubi rule with nothing but a {@code RootSum}, so the next
+   * rule that asks for the same one is refused immediately. Without this the deferral is ruinous:
+   * the native cascade recomputes the whole RootSum for every rule that retries the sub-integral
+   * and the answer is thrown away each time - measured at 1864s on a test that takes 18s otherwise.
+   * Only the rule-facing decision is cached, never a value, and it is cleared at depth 0.
+   */
+  private static final ThreadLocal<java.util.Set<IExpr>> DEFERRED_ROOTSUM =
+      ThreadLocal.withInitial(java.util.HashSet::new);
+
   /** Lazily created daemon scheduler for the Rubi time budget. */
   private static ScheduledExecutorService WATCHDOG_SCHEDULER = null;
 
@@ -234,25 +254,98 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST holdallAST, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
     final int depth = EVAL_DEPTH.get();
+    // Consume the flag: it means "a Rubi rule asked for THIS integral", so it must not stay set for
+    // the native stages below, which reach this same method for their own sub-integrals and do
+    // legitimately build answers out of a RootSum. Rubi sets it again around its own rule match.
+    final boolean calledFromRubiRule = IN_RUBI_RULES.get();
     EVAL_DEPTH.set(depth + 1);
+    IN_RUBI_RULES.set(Boolean.FALSE);
     try {
+      if (calledFromRubiRule && DEFERRED_ROOTSUM.get().contains(holdallAST)) {
+        return F.NIL;
+      }
       IExpr result = evaluateIntegrate(holdallAST, argSize, option, engine, originalAST);
-      if (depth > 0 || result.isNIL()) {
+      if (depth > 0) {
+        // A sub-integral a Rubi rule asked for must not come back as a bare RootSum: it is a
+        // construct the rules have never seen, because Mathematica
+        // answers these inner algebraic integrals in closed form. Handing one back corrupts the
+        // answer - SubstAux's fallback for an unknown head is Map(Function(SubstAux(#1,x,v,flag)),
+        // u), which wraps each of RootSum's pure-function arguments in a SECOND function whose #1
+        // captures the RootSum's own #1 (the root); the substitution is dropped and the integral
+        // silently collapses to 0. Defer instead, exactly as RationalIntegration's
+        // RootSumMode.DEFER already does pre-Rubi, and let the native post-Rubi stages answer the
+        // outer integral, which they can. Gated on IN_RUBI_RULES, not on depth alone: the native
+        // stages reach this same path for their own sub-integrals and legitimately build answers
+        // out of a RootSum, so blocking those would lose the very answers this is protecting. A
+        // Plus is left alone: there the RootSum is one term of an answer the rules did build.
+        if (calledFromRubiRule && result.isPresent() && !result.isPlus()
+            && !result.isFree(F.RootSum)) {
+          DEFERRED_ROOTSUM.get().add(holdallAST);
+          return F.NIL;
+        }
+        return result;
+      }
+      if (result.isNIL()) {
         return result;
       }
       // Only for the integral the user asked for, and only once it is complete: the rules split an
       // integral by linearity and hand the same transcendental back with coefficients written over
       // different radical extensions, which Plus cannot add. Collect them and denest the sums.
       IExpr x = holdallAST.arg2().isList() ? holdallAST.arg2().first() : holdallAST.arg2();
-      return RadicalCoefficients.collect(result, x, engine).orElse(result);
+      result = RadicalCoefficients.collect(result, x, engine).orElse(result);
+      if (containsRubiInternals(result)) {
+        // Rubi's own symbols escaped into the answer, which happens when a rule deactivated part
+        // of the integrand and the sub-integral it produced stayed unevaluated: the inert trig
+        // markers survive as §sin/§cos, and a substitution rule leaves Rubi`subst[Integrate[..]].
+        // Neither is an antiderivative the caller can use or feed back in, and both are strictly
+        // less useful than the unevaluated integral, so hand that back instead.
+        return F.NIL;
+      }
+      return result;
     } finally {
+      IN_RUBI_RULES.set(calledFromRubiRule);
       if (depth == 0) {
         // don't leave a boxed 0 behind in pooled threads
         EVAL_DEPTH.remove();
+        IN_RUBI_RULES.remove();
+        DEFERRED_ROOTSUM.remove();
       } else {
         EVAL_DEPTH.set(depth);
       }
     }
+  }
+
+  /**
+   * Does <code>expr</code> still carry a symbol which only exists inside the Rubi rule set?
+   *
+   * <p>
+   * Two kinds leak into a result when a rule rewrote the integrand but the sub-integral it produced
+   * stayed unevaluated: the inert trigonometric markers, whose names start with <code>§</code> and
+   * which {@code ActivateTrig} would normally turn back into {@code Sin}/{@code Cos}, and the
+   * substitution wrapper, which exists under both spellings - <code>Rubi`subst</code>, the internal
+   * helper, and <code>Rubi`Subst</code>, the rule-level function. A successful substitution
+   * evaluates away; one that survives is wrapping an integral the rules could not finish.
+   *
+   * <p>
+   * Only those two. The rest of the <code>Rubi`</code> context is <em>not</em> a leak: a
+   * {@code RootSum} answer legitimately carries {@code Rubi`simphelp},
+   * {@code Rubi`normalizesumfactors} and {@code Rubi`substaux} inside its pure-function body, where
+   * they still evaluate - rejecting those cost three passing Charlwood tests (4, 47 and 50). Note
+   * {@code substaux} is deliberately not matched: the test is equality, not a prefix.
+   * {@code Unintegrable} and {@code CannotIntegrate} are in the context too, but they are mapped
+   * back to an unevaluated {@code Integrate()} before this runs, so they never reach here.
+   */
+  private static boolean containsRubiInternals(IExpr expr) {
+    return !expr.isFree(part -> {
+      if (!part.isSymbol()) {
+        return false;
+      }
+      ISymbol symbol = (ISymbol) part;
+      // the inert markers are plain symbols, not Rubi context ones, so the prefix is the only test
+      return symbol.getSymbolName().startsWith("§")
+          || (symbol.getContext() == Context.RUBI
+              && symbol.getSymbolName().equalsIgnoreCase("subst"));
+    }, true);
   }
 
   private IExpr evaluateIntegrate(IAST holdallAST, final int argSize, final IExpr[] option,
@@ -526,7 +619,24 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // the substitution above maps back to the unevaluated Integrate(). That isn't an
           // antiderivative, so it must not end the cascade here: the native fallback stages below
           // can still solve the integral, for example with a RootSum() antiderivative.
-          if (!rubiResult.equals(ast)) {
+          //
+          // A result still carrying a Rubi-internal head is not an antiderivative either. It means
+          // a rule gave up part-way - typically SubstAux deferring a substitution it cannot perform
+          // (see the RootSum note on $heldfunctions above) - and leaves a Rubi`Subst in the answer.
+          // The depth-0 guard would reject it, but only after this return has already ended the
+          // cascade, so the integral would come back unevaluated even though a native stage below
+          // can solve it. Treat it as "no answer" here instead.
+          // A result carrying a Rubi-internal head AND an unevaluated Integrate is a rule that gave
+          // up part-way: SubstAux could not perform the substitution (see the RootSum note on
+          // evaluate) and left Rubi`Subst wrapping the sub-integral. That is not an antiderivative,
+          // and returning it here would end the cascade before the native stages below - which can
+          // solve these - ever run; the depth-0 guard would then reject it and the caller would get
+          // the integral back unevaluated. Both conditions are required: internals alone are not a
+          // dead end, because RadicalCoefficients.collect at depth 0 evaluates many of them away,
+          // and bailing out on those cost testIntegrateRationalizeSurdDenominator its answer.
+          boolean unfinishedSubstitution =
+              containsRubiInternals(rubiResult) && !rubiResult.isFree(S.Integrate, true);
+          if (!rubiResult.equals(ast) && !unfinishedSubstitution) {
             return rubiResult;
           }
         }
@@ -1454,7 +1564,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             }
 
             engine.rubiASTCache.put(ast, F.NIL);
-            IExpr temp = S.Integrate.evalDownRule(engine, ast);
+            final boolean outerInRubi = IN_RUBI_RULES.get();
+            IExpr temp;
+            try {
+              IN_RUBI_RULES.set(Boolean.TRUE);
+              temp = S.Integrate.evalDownRule(engine, ast);
+            } finally {
+              IN_RUBI_RULES.set(outerInRubi);
+            }
             if (temp.isPresent()) {
               if (temp.equals(ast)) {
                 if (!assumptionsActive) {

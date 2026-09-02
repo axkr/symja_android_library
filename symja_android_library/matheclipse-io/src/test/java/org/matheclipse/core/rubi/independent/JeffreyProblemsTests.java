@@ -2,6 +2,29 @@ package org.matheclipse.core.rubi.independent;
 
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
+/**
+ * Rubi's "0 Independent test suites" corpus section. 9 integrals.
+ *
+ * <p>
+ * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
+ * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
+ * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
+ * unnoticed, so run it after any change to the integrator:
+ *
+ * <pre>
+ * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
+ *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * </pre>
+ *
+ * <p>
+ * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
+ * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
+ * JVM across classes makes every test fail.
+ *
+ * <p>
+ * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
+ * and Symja has no answer for that integral yet.
+ */
 public class JeffreyProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
@@ -31,6 +54,9 @@ public class JeffreyProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test2() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja leaves this unevaluated. It used to leak the inert trig markers
+    // (§cos/§sin) into the answer; that leak is fixed.
     check( //
         "Integrate[(Cos[x]+2*Sin[x]+1)/(Cos[x]^2-2*Sin[x]*Cos[x]+2*Sin[x]+3), x]", //
         "-ArcTan[(2*Cos[x]-Sin[x])/(2+Sin[x])]" //
@@ -52,6 +78,8 @@ public class JeffreyProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test5() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja does not finish this within the class budget.
     check( //
         "Integrate[(5*Cos[x]^2+4*Cos[x]+(-1)*1)/(4*Cos[x]^3-3*Cos[x]^2-4*Cos[x]+(-1)*1), x]", //
         "x-2*ArcTan[Sin[x]/(3+Cos[x])]-2*ArcTan[(3*Sin[x]+7*Cos[x]*Sin[x])/(1+2*Cos[x]+5*Cos[x]^2)]" //
@@ -59,6 +87,8 @@ public class JeffreyProblemsTests extends AbstractRubiTestCase {
   }
 
   public void test6() {
+    // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
+    // has ever produced. Symja does not finish this within the class budget.
     check( //
         "Integrate[(7*Cos[x]^2+2*Cos[x]+(-1)*5)/(4*Cos[x]^3-9*Cos[x]^2+2*Cos[x]+(-1)*1), x]", //
         "x-2*ArcTan[(2*Cos[x]*Sin[x])/(1-Cos[x]+2*Cos[x]^2)]" //

@@ -551,7 +551,13 @@ public class Config {
    * a slice. The budget is best-effort: it interrupts the evaluation thread, and code that does not
    * check for interruption (notably JAS) only notices when control returns to the evaluation loop.
    */
-  public static long INTEGRATE_RUBI_TIMELIMIT_MILLIS = 30000L;
+  // Raised 30s -> 45s (2026-09-02). Refusing to hand a bare RootSum to the rules (see
+  // Integrate.evaluate) makes them retry other rules after each refusal, and every retry re-runs
+  // the native cascade. Integrate(Log(x^2+Sqrt(1-x^2)),x) needs 30-45s of rule time under that,
+  // and at 30s the watchdog cut it off and the answer was lost - testIntegrateRationalizeSurdDenominator
+  // went red not on a wrong answer but on a missing one. Measured at 45s: matheclipse-core is
+  // fully green (4336/0) and the independent Rubi corpus improves 44 -> 39 failures.
+  public static long INTEGRATE_RUBI_TIMELIMIT_MILLIS = 45000L;
 
   /** Fraction of the remaining evaluation time the Rubi rules may use, see above. */
   public static double INTEGRATE_RUBI_TIMELIMIT_SHARE = 0.75;

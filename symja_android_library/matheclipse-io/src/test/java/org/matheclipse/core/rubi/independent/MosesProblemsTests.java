@@ -2,6 +2,29 @@ package org.matheclipse.core.rubi.independent;
 
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
+/**
+ * Rubi's "0 Independent test suites" corpus section. 113 integrals.
+ *
+ * <p>
+ * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
+ * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
+ * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
+ * unnoticed, so run it after any change to the integrator:
+ *
+ * <pre>
+ * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
+ *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * </pre>
+ *
+ * <p>
+ * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
+ * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
+ * JVM across classes makes every test fail.
+ *
+ * <p>
+ * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
+ * and Symja has no answer for that integral yet.
+ */
 public class MosesProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 

@@ -355,9 +355,13 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "Integrate(x^2,{x})");
     check("Integrate(Cos(x^3), x)", //
         "(-x*Gamma(1/3,-I*x^3))/(6*(-I*x^3)^(1/3))+(-x*Gamma(1/3,I*x^3))/(6*(I*x^3)^(1/3))");
+    // used to leak Rubi's internal substitution wrapper into the answer:
+    // 100000/123787*Rubi`subst[Integrate(Round(m,1/100),m),m,154439/125000+123787/100000*m].
+    // A rule rewrote the integrand and the sub-integral stayed unevaluated, so Rubi`subst survived
+    // into a result the caller can neither use nor feed back in; the unevaluated integral is
+    // returned instead - like the two neighbouring cases here.
     check("Integrate(Round(1.235512+1.23787m, 0.01),m)", //
-        "100000/123787*Rubi`subst[Integrate(Round(m,1/100),m),m,154439/125000+123787/\n"
-            + "100000*m]");
+        "Integrate(Round(1.23551+1.23787*m,0.01),m)");
     check("Integrate(Tan(x),Cos(x))", //
         "Integrate(Tan(x),Cos(x))");
 
