@@ -103,7 +103,6 @@ public class GraphFunctions {
       S.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
       S.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
       S.FindGraphIsomorphism.setEvaluator(new FindGraphIsomorphism());
-      S.FindIndependentVertexSet.setEvaluator(new FindIndependentVertexSet());
       S.FindMinimumCostFlow.setEvaluator(new FindMinimumCostFlow());
       S.FindVertexCover.setEvaluator(new FindVertexCover());
       S.FindShortestPath.setEvaluator(new FindShortestPath());
@@ -2184,7 +2183,10 @@ public class GraphFunctions {
    * <blockquote>
    *
    * <p>
-   * find an eulerian cycle in the <code>graph</code>.
+   * find an eulerian cycle in the <code>graph</code> - a cycle traversing every edge exactly once.
+   * The result is a list of cycles, holding the one that was found, and <code>{}</code> when the
+   * graph has none. <code>FindEulerianCycle(graph, k)</code> asks for at most <code>k</code> of
+   * them; only one is produced.
    *
    * </blockquote>
    *
@@ -2199,7 +2201,7 @@ public class GraphFunctions {
    *
    * <pre>
    * <code>&gt;&gt; FindEulerianCycle(Graph({1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 4 -&gt; 1}))
-   * {4-&gt;1,1-&gt;2,2-&gt;3,3-&gt;4}
+   * {{4-&gt;1,1-&gt;2,2-&gt;3,3-&gt;4}}
    * </code>
    * </pre>
    *
@@ -2213,6 +2215,13 @@ public class GraphFunctions {
 
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        if (!arg2.isInfinity() && arg2 != S.All && arg2.toIntDefault() < 1) {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+        }
+      }
 
       GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
       if (gex == null) {
@@ -2225,7 +2234,9 @@ public class GraphFunctions {
         return F.CEmptyList;
       }
       final List<IExpr> iList = path.getVertexList();
-      return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
+      // a list of cycles holding the one that was found, as FindPostmanTour reports its tours
+      return F.list(
+          F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1))));
     }
 
     @Override
@@ -2235,7 +2246,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -2251,7 +2262,10 @@ public class GraphFunctions {
    * <blockquote>
    *
    * <p>
-   * find an hamiltonian cycle in the <code>graph</code>.
+   * find an hamiltonian cycle in the <code>graph</code> - a cycle visiting every vertex exactly
+   * once. The result is a list of cycles, holding the one that was found, and <code>{}</code> when
+   * the graph has none. <code>FindHamiltonianCycle(graph, k)</code> asks for at most <code>k</code>
+   * of them; only one is produced.
    *
    * </blockquote>
    *
@@ -2268,7 +2282,7 @@ public class GraphFunctions {
    *
    * <pre>
    * <code>&gt;&gt; FindHamiltonianCycle( {1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 4 -&gt; 1} )
-   * {1-&gt;2,2-&gt;3,3-&gt;4,4-&gt;1}
+   * {{1-&gt;2,2-&gt;3,3-&gt;4,4-&gt;1}}
    * </code>
    * </pre>
    */
@@ -2276,6 +2290,14 @@ public class GraphFunctions {
 
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        if (!arg2.isInfinity() && arg2 != S.All && arg2.toIntDefault() < 1) {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+        }
+      }
+
       GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
       if (gex == null) {
         return F.NIL;
@@ -2285,8 +2307,10 @@ public class GraphFunctions {
         // Graph is not Hamiltonian
         return F.CEmptyList;
       }
-      List<IExpr> iList = path.getVertexList();
-      return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
+      final List<IExpr> iList = path.getVertexList();
+      // a list of cycles holding the one that was found, as FindEulerianCycle reports its cycles
+      return F.list(
+          F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1))));
     }
 
     @Override
@@ -2296,7 +2320,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -2335,49 +2359,6 @@ public class GraphFunctions {
     }
   }
 
-
-  private static class FindIndependentVertexSet extends AbstractEvaluator {
-
-    @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-      // try {
-      // GraphExpr<?> gex = createGraph(ast.arg1());
-      // if (gex == null) {
-      // return F.NIL;
-      // }
-      // Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>)gex.toData();
-      // // VertexCoverAlgorithm<IExpr> greedy = new GreedyVCImpl<>(g);
-      // // VertexCoverAlgorithm.VertexCover<IExpr> cover = greedy.getVertexCover();
-      // // if (cover == null) {
-      // // return F.List();
-      // // }
-      // // IASTAppendable resultList = F.ListAlloc(10);
-      // // cover.forEach(x -> resultList.append(x));
-      // // return resultList;
-      //
-      // ChordalGraphIndependentSetFinder<IExpr, ExprEdge> cgisf =
-      // new ChordalGraphIndependentSetFinder<>(g);
-      // IndependentSet<IExpr> independentSet = cgisf.getIndependentSet();
-      // IASTAppendable resultList = F.ListAlloc(independentSet.size());
-      // for (IExpr expr : independentSet) {
-      // resultList.append(expr);
-      // }
-      // return resultList;
-      // } catch (RuntimeException rex) {
-      // }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.NO_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-  }
 
   private static class FindMinimumCostFlow extends AbstractEvaluator {
     private static class MinimumCostFlowProblemImpl

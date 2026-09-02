@@ -24,7 +24,34 @@ public class GraphTheoryInit {
     S.AcyclicGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.AcyclicGraphQ());
     S.AdjacencyGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.AdjacencyGraph());
     S.AdjacencyList.setEvaluator(new org.matheclipse.graphtheory.reflection.AdjacencyList());
-    S.ChromaticNumber.setEvaluator(new org.matheclipse.graphtheory.reflection.ChromaticNumber());
+    S.FindEdgeColoring.setEvaluator(new org.matheclipse.graphtheory.reflection.FindEdgeColoring());
+    S.IndependentVertexSetQ
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.IndependentVertexSetQ());
+    S.IndependentEdgeSetQ
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.IndependentEdgeSetQ());
+    S.FindClique.setEvaluator(new org.matheclipse.graphtheory.reflection.FindClique());
+    S.FindKClique.setEvaluator(new org.matheclipse.graphtheory.reflection.FindKClique());
+    S.FindKClan.setEvaluator(new org.matheclipse.graphtheory.reflection.FindKClan());
+    S.FindKClub.setEvaluator(new org.matheclipse.graphtheory.reflection.FindKClub());
+    S.LuccioSamiComponents
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.LuccioSamiComponents());
+    S.LambdaComponents.setEvaluator(new org.matheclipse.graphtheory.reflection.LambdaComponents());
+    S.KCoreComponents.setEvaluator(new org.matheclipse.graphtheory.reflection.KCoreComponents());
+    S.FindKPlex.setEvaluator(new org.matheclipse.graphtheory.reflection.FindKPlex());
+    S.FindIndependentVertexSet
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.FindIndependentVertexSet());
+    S.EdgeCoverQ.setEvaluator(new org.matheclipse.graphtheory.reflection.EdgeCoverQ());
+    S.VertexCoverQ.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexCoverQ());
+    S.FindEdgeCover.setEvaluator(new org.matheclipse.graphtheory.reflection.FindEdgeCover());
+    S.FindPostmanTour.setEvaluator(new org.matheclipse.graphtheory.reflection.FindPostmanTour());
+    S.FindIndependentEdgeSet
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.FindIndependentEdgeSet());
+    S.FindPlanarColoring
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.FindPlanarColoring());
+    S.PlanarFaceList.setEvaluator(new org.matheclipse.graphtheory.reflection.PlanarFaceList());
+    S.DualPlanarGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.DualPlanarGraph());
+    S.EdgeChromaticNumber
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.EdgeChromaticNumber());
     S.ChromaticPolynomial
         .setEvaluator(new org.matheclipse.graphtheory.reflection.ChromaticPolynomial());
     S.CompleteGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.CompleteGraphQ());
@@ -56,6 +83,8 @@ public class GraphTheoryInit {
     S.TreeGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraphQ());
     S.TreePlot.setEvaluator(new org.matheclipse.graphtheory.reflection.TreePlot());
     S.VertexAdd.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexAdd());
+    S.VertexChromaticNumber
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.VertexChromaticNumber());
     S.VertexContract.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexContract());
     S.VertexDegree.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexDegree());
     S.VertexDelete.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexDelete());
