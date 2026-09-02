@@ -1953,8 +1953,16 @@ public class HypergeometricFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
+      if (b.isReal() && Math.abs(b.evalf()) > MAX_HYPERGEOMETRICU_PARAMETER) {
+        // The arbitrary precision routine works through the second parameter: 10^5 takes under two
+        // seconds, 10^6 does not return, and the 2147483648*Sqrt(2) the fuzzer found never did.
+        return F.NIL;
+      }
       return hypergeometricU(a, b, z, engine).eval(engine);
     }
+
+    /** Highest second parameter handed to the arbitrary precision routine. */
+    private static final int MAX_HYPERGEOMETRICU_PARAMETER = 200000;
 
     private static IExpr hypergeometricU(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
       if (a.isZero()) {

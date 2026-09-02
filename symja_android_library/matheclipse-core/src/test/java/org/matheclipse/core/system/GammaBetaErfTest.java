@@ -428,6 +428,18 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0.15729920705028488");
     check("Erfc(0)", //
         "1");
+
+    // Erfc(x) + Erfc(-x) == 2
+    check("Simplify(Erfc(x)+Erfc(-x))", //
+        "2");
+    check("Simplify(Erfc(2)+Erfc(-2))", //
+        "2");
+    check("Simplify(3*Erfc(x)+3*Erfc(-x))", //
+        "6");
+    check("Simplify(Erfc(x)+Erfc(y))", //
+        "Erfc(x)+Erfc(y)");
+    check("Simplify(Erfc(x)-Erfc(-x))", //
+        "-Erfc(-x)+Erfc(x)");
   }
 
   @Test
@@ -691,6 +703,29 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "Cos(1/2*Pi*x^2)");
   }
 
+  /**
+   * Arguments large enough that Apfloat cannot produce an accurate digit, from about
+   * <code>10^10</code> upwards, where a <code>LossOfPrecisionException</code> used to escape.
+   *
+   * <p>
+   * Both Fresnel integrals approach <code>&plusmn;1/2</code> there, and <code>AiryAi</code> has
+   * either underflowed, for a positive argument, or oscillates with a phase that has outrun the
+   * resolution of a double, for a negative one, so the centre of the oscillation is the best
+   * available answer. Mathematica agrees on all six of these.
+   */
+  @Test
+  public void testAsymptoticFresnelAiry() {
+    check("FresnelS(1.79*^308)", "0.5");
+    check("FresnelS(-1.79*^308)", "-0.5");
+    check("FresnelC(1.79*^308)", "0.5");
+    check("FresnelC(-1.79*^308)", "-0.5");
+    check("AiryAi(1.79*^308)", "0.0");
+    check("AiryAi(-1.79*^308)", "0.0");
+    // continuous with what is computed below the failure point rather than a step at it
+    check("FresnelS(1.0*^6)", "0.5");
+    check("FresnelS(-1.0*^6)", "-0.5");
+  }
+
   @Test
   public void testFresnelS() {
     check("N(FresnelS(2),50)", //
@@ -727,6 +762,24 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGamma() {
+    // reflection formula for literal rational arguments x+y == 1
+    check("Gamma(1/4)*Gamma(3/4)", //
+        "Sqrt(2)*Pi");
+    check("Gamma(1/3)*Gamma(2/3)", //
+        "(2*Pi)/Sqrt(3)");
+    check("Gamma(1/6)*Gamma(5/6)", //
+        "2*Pi");
+    check("Gamma(-1/3)*Gamma(4/3)", //
+        "(-2*Pi)/Sqrt(3)");
+    check("Gamma(1/3)^2*Gamma(2/3)^2", //
+        "4/3*Pi^2");
+    // the quotient is not the reflection product
+    check("Gamma(1/3)/Gamma(2/3)", //
+        "Gamma(1/3)/Gamma(2/3)");
+    // the reflection formula for a symbolic argument
+    check("Gamma(x)*Gamma(1-x)", //
+        "Pi*Csc(Pi*x)");
+
     // https://github.com/Mathics3/mathics-core/pull/1395
     check("Gamma(x,y,z)", //
         "Gamma(x,y,z)");

@@ -140,9 +140,9 @@ public class MatrixSymbolExpr extends DataExpr<Object> implements IArraySymbol {
     appendable.append(fName);
     appendable.append(fDimensions);
     // Only append domain/symmetry if necessary or always append for full reconstruction
-    if (!fDomain.equals(S.Reals) || !fSymmetry.equals(S.None)) {
+    if (fDomain != S.Reals || fSymmetry != S.None) {
       appendable.append(fDomain);
-      if (!fSymmetry.equals(S.None)) {
+      if (fSymmetry != S.None) {
         appendable.append(fSymmetry);
       }
     }
@@ -165,10 +165,10 @@ public class MatrixSymbolExpr extends DataExpr<Object> implements IArraySymbol {
     sb.append(fName.toString());
     sb.append(", ");
     sb.append(fDimensions.toString());
-    if (!fDomain.equals(S.Reals) || !fSymmetry.equals(S.None)) {
+    if (fDomain != S.Reals || fSymmetry != S.None) {
       sb.append(", ");
       sb.append(fDomain.toString());
-      if (!fSymmetry.equals(S.None)) {
+      if (fSymmetry != S.None) {
         sb.append(", ");
         sb.append(fSymmetry.toString());
       }

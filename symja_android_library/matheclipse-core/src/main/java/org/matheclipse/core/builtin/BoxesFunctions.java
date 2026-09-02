@@ -1,6 +1,6 @@
 package org.matheclipse.core.builtin;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -38,7 +38,7 @@ public class BoxesFunctions {
         new StandardFormOperator(Precedence.RULEDELAYED, "\\[RuleDelayed]");
 
     private static Map<ISymbol, StandardFormOperator> OPERATOR_MAP =
-        new HashMap<ISymbol, StandardFormOperator>();
+        new IdentityHashMap<ISymbol, StandardFormOperator>();
 
     private static class StandardFormOperator {
       protected int fPrecedence;

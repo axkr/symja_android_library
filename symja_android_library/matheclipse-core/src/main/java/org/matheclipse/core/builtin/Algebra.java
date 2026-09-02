@@ -16,7 +16,6 @@ import static org.matheclipse.core.expression.S.Pi;
 import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -38,7 +37,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -55,7 +53,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
@@ -65,7 +62,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
 import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.visit.VisitorExpr;
-import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
@@ -75,16 +71,10 @@ import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
 import edu.jas.ufd.Quotient;
 import edu.jas.ufd.QuotientRing;
-import edu.jas.ps.PolynomialTaylorFunction;
-import edu.jas.ps.TaylorFunction;
-import edu.jas.ps.UnivPowerSeries;
-import edu.jas.ps.UnivPowerSeriesRing;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
-import edu.jas.ufd.SquarefreeAbstract;
-import edu.jas.ufd.SquarefreeFactory;
 
 public class Algebra {
   /**
@@ -1326,7 +1316,7 @@ public class Algebra {
         throws JASConversionException {
       IExpr option = options[MODULUS_OPTION];
       if (option.isInteger() && !option.isZero()) {
-        return factorModulus(expr, varList, factorSquareFree, option);
+        return AlgebraUtil.factorModulus(expr, varList, factorSquareFree, option);
       }
       if (!factorSquareFree) {
         option = options[1];
@@ -1495,7 +1485,7 @@ public class Algebra {
       IExpr extension = options[1];
       IExpr gaussianIntegers = options[2];
       boolean trig = options[3].isTrue();
-      if (options[MODULUS_OPTION].isZero() && extension.equals(S.None)
+      if (options[MODULUS_OPTION].isZero() && extension == S.None
           && gaussianIntegers.isFalse()) {
         return AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
       }
@@ -1569,7 +1559,7 @@ public class Algebra {
         return arg1;
       }
       try {
-        if (options[MODULUS_OPTION].isZero() && options[1].equals(S.None) && options[2].isFalse()) {
+        if (options[MODULUS_OPTION].isZero() && options[1] == S.None && options[2].isFalse()) {
           // structure-preserving square-free factorization (see AlgebraUtil#factorSquareFree)
           IExpr temp = AlgebraUtil.factorSquareFree(arg1, eVar, engine);
           engine.putCache(ast, temp);
@@ -2502,7 +2492,7 @@ public class Algebra {
           temp = jas.expr2JAS(arg1);
           poly = factory.gcd(poly, temp);
         }
-        return Algebra.factorModulus(jas, modIntegerRing, poly, false);
+        return AlgebraUtil.factorModulus(jas, modIntegerRing, poly, false);
       } catch (JASConversionException e) {
         // LOGGER.debug("PolynomialGCD.modulusGCD() failed", e);
       }
@@ -3089,7 +3079,7 @@ public class Algebra {
         IAST mList = (IAST) m;
         IExpr result = poly;
         for (int i = 1; i <= mList.argSize(); i++) {
-          IExpr next = engine.evaluate(F.binaryAST2(S.PolynomialMod, result, mList.get(i)));
+          IExpr next = engine.evaluate(F.PolynomialMod(result, mList.get(i)));
           if (!next.isPresent()) {
             return F.NIL;
           }
@@ -3109,7 +3099,7 @@ public class Algebra {
       if (useModulus && pOption.isOne()) {
         return F.C0;
       }
-      boolean integerDomain = coefficientDomain.equals(S.Integers);
+      boolean integerDomain = coefficientDomain == S.Integers;
 
       // Integer modulus (second argument): reduce all numeric coefficients modulo m.
       if (m.isInteger()) {
@@ -3916,7 +3906,7 @@ public class Algebra {
           arg1 = result;
         }
 
-        if (head.equals(S.Log)) {
+        if (head == S.Log) {
           if (arg1.isRational()) {
             return powerExpandLogRational((IRational) arg1);
           }
@@ -3950,14 +3940,14 @@ public class Algebra {
             }
             return logResult;
           }
-        } else if (head.equals(S.ProductLog)) {
+        } else if (head == S.ProductLog) {
           if (arg1.isTimes()) {
             IAST timesAST = (IAST) arg1;
             // ProductLog(x1 * x2 * ... * Exp(x1 * x2 * ...)) -> x1 * x2 * ...
             for (int i = 1; i <= timesAST.argSize(); i++) {
               IExpr factor = timesAST.get(i);
 
-              if (factor.isPower() && factor.base().equals(S.E)) {
+              if (factor.isPower() && factor.base() == S.E) {
                 IExpr exponent = factor.exponent();
                 // Create a copy of the Times AST and remove the E^y factor
                 // oneIdentity1() safely reduces Times(x) to x if only one factor remains
@@ -4226,6 +4216,13 @@ public class Algebra {
    * @return the expression with all integer coefficients reduced modulo {@code modulus}
    */
   public static IExpr expandModReduce(IExpr expr, IInteger modulus, EvalEngine engine) {
+    if (!modulus.isPositive()) {
+      // The contract above says positive, and everything below relies on it: IInteger#mod answers
+      // an ArithmeticException for a modulus of zero or less rather than a residue. Mathematica
+      // leaves the expression alone for such a Modulus rather than reporting it, so ExpandAll(2,
+      // Modulus->-1) is 2.
+      return expr;
+    }
     VariablesSet varSet = new VariablesSet(expr);
     IAST varList = varSet.getVarList();
     if (varList.argSize() > 0) {
@@ -4239,96 +4236,6 @@ public class Algebra {
       }
     }
     return reduceCoefficients(expr, modulus, engine);
-  }
-
-  public static IExpr factor(IExpr arg1, EvalEngine engine) {
-    VariablesSet eVar = new VariablesSet(arg1);
-    return AlgebraUtil.factor(F.Factor(arg1), arg1, eVar, false, false, true, false, engine);
-  }
-
-  private static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
-      IExpr option) throws JASConversionException {
-    try {
-      // found "Modulus" option => use ModIntegerRing
-      ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-      JASModInteger jas = new JASModInteger(varList, modIntegerRing);
-      GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-
-      return factorModulus(jas, modIntegerRing, poly, factorSquareFree);
-    } catch (ArithmeticException ae) {
-      // toInt() conversion failed
-      // LOGGER.debug("Algebra.factorModulus() failed", ae);
-    }
-    return F.NIL;
-  }
-
-
-  /**
-   * @param jas
-   * @param modIntegerRing
-   * @param poly
-   * @param factorSquareFree
-   * @return {@link F#NIL} if evaluation is impossible.
-   */
-  public static IAST factorModulus(JASModInteger jas, ModLongRing modIntegerRing,
-      GenPolynomial<ModLong> poly, boolean factorSquareFree) {
-    SortedMap<GenPolynomial<ModLong>, Long> map;
-    try {
-      FactorAbstract<ModLong> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
-      if (factorSquareFree) {
-        map = factorAbstract.squarefreeFactors(poly);
-      } else {
-        map = factorAbstract.factors(poly);
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      // JAS may throw RuntimeExceptions
-      return F.NIL;
-    }
-    IASTAppendable result = F.TimesAlloc(map.size());
-    for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {
-      final GenPolynomial<ModLong> singleFactor = entry.getKey();
-      final Long val = entry.getValue();
-      result.append(F.Power(jas.modLongPoly2Expr(singleFactor), F.ZZ(val)));
-    }
-    return result;
-  }
-
-  public static IAST factorRational(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
-      ISymbol head) {
-    if (polyRat.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
-      // Exponent ist out of bounds for function `1`.
-      return Errors.printMessage(S.Factor, "lrgexp", F.List(S.Factor));
-    }
-    Object[] objects = jas.factorTerms(polyRat);
-    GenPolynomial<edu.jas.arith.BigInteger> poly =
-        (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-    FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
-        FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-    map = factorAbstract.factors(poly);
-    // if (map.size() == 1 && original != null) {
-    // return F.unaryAST1(head, original);
-    // }
-    IASTAppendable result = F.ast(head, map.size() + 1);
-    java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-    java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-    if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-      result.append(F.fraction(gcd, lcm));
-    }
-    for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
-      final GenPolynomial<BigInteger> key = entry.getKey();
-      final Long value = entry.getValue();
-      if (key.isONE() && value.equals(1L)) {
-        continue;
-      }
-      if (value == 1L) {
-        result.append(jas.integerPoly2Expr(key));
-      } else {
-        result.append(F.Power(jas.integerPoly2Expr(key), F.ZZ(value)));
-      }
-    }
-    return result;
   }
 
   public static void initialize() {
@@ -4356,190 +4263,6 @@ public class Algebra {
       }
     }
     return false;
-  }
-
-  /**
-   * Create an iterative partial fraction decomposition of the expression numerator / Times( ... )
-   * for the given variable. * Example: Apart(1 / ((x - 1) * (x - 2)))
-   *
-   * @param numerator the numerator of the fraction expression
-   * @param denominatorTimes the Times( ... ) expression of the denominator of the fraction
-   *        expression
-   * @param variable the variable to decompose over
-   * @param engine the evaluation engine
-   * @return the partial fraction decomposition if possible, otherwise F.NIL
-   */
-  public static IExpr partialFractionDecomposition(IExpr numerator, IExpr denominatorTimes,
-      IExpr variable, EvalEngine engine) {
-    if (!denominatorTimes.isTimes()) {
-      return S.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
-    }
-
-    IAST denomAST = (IAST) denominatorTimes;
-    int argSize = denomAST.argSize();
-
-    // Allocate a flat Plus buffer to collect the decomposed terms
-    IASTAppendable resultPlus = F.PlusAlloc(argSize + 1);
-
-    IExpr currentNumerator = numerator;
-    IExpr currentFirst = denomAST.arg1();
-    IExpr currentRest = denomAST.splice(1).oneIdentity0();
-
-    for (int i = 1; i <= argSize; i++) {
-      if (currentFirst.isFree(variable)) {
-        // Factor is constant with respect to the variable, pull it into the numerator
-        currentNumerator = S.Times.of(engine, currentNumerator, F.Power(currentFirst, -1));
-      } else {
-        IExpr v1 = S.Expand.of(engine, currentFirst);
-        IExpr v2 = S.Expand.of(engine, currentRest);
-        IExpr peGCD = S.PolynomialExtendedGCD.of(engine, v1, v2, variable);
-
-        if (peGCD.isList() && peGCD.second().isList()) {
-          IAST s = (IAST) peGCD.second();
-          IExpr A = s.arg1();
-          IExpr B = s.arg2();
-
-          IExpr u1 = S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(B, currentNumerator)), v1,
-              variable);
-          if (u1.isPresent()) {
-            IExpr u2 = S.PolynomialRemainder.ofNIL(engine, F.Expand(F.Times(A, currentNumerator)),
-                v2, variable);
-            if (u2.isPresent()) {
-              // Append the resolved partial fraction term
-              resultPlus.append(S.Times.of(engine, u1, F.Power(currentFirst, -1)));
-              // Carry the remaining numerator forward
-              currentNumerator = u2;
-            } else {
-              return F.NIL;
-            }
-          } else {
-            return F.NIL;
-          }
-        } else {
-          return F.NIL;
-        }
-      }
-
-      // Advance to the next factor in the denominator
-      if (!currentRest.isTimes()) {
-        // Base case: we have reached the last factor.
-        // Append the final term and terminate the loop.
-        resultPlus.append(S.Times.of(engine, currentNumerator, F.Power(currentRest, -1)));
-        break;
-      } else {
-        IAST restAST = (IAST) currentRest;
-        currentFirst = restAST.arg1();
-        currentRest = restAST.splice(1).oneIdentity0();
-      }
-    }
-
-    return engine.evaluate(resultPlus);
-  }
-
-
-
-  /**
-   * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition
-   * of the numerator and denominator parts.
-   *
-   * @param pf partial fraction generator
-   * @param parts
-   * @param variableList a list of variable
-   * @return {@link F#NIL} if the partial fraction decomposition wasn't constructed
-   */
-  public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf,
-      IExpr[] parts, IAST variableList) {
-    try {
-      IExpr exprNumerator = F.evalExpandAll(parts[0]);
-      IExpr exprDenominator = F.evalExpandAll(parts[1]);
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
-      GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
-      if (numerator == null) {
-        return F.NIL;
-      }
-      GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
-      if (denominator == null) {
-        return F.NIL;
-      }
-      // get factors
-      FactorAbstract<BigRational> factorAbstract =
-          FactorFactory.getImplementation(BigRational.ZERO);
-      SortedMap<GenPolynomial<BigRational>, Long> sfactors =
-          factorAbstract.baseFactors(denominator);
-
-      List<GenPolynomial<BigRational>> D =
-          new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
-
-      SquarefreeAbstract<BigRational> sqf = SquarefreeFactory.getImplementation(BigRational.ZERO);
-      List<List<GenPolynomial<BigRational>>> Ai = sqf.basePartialFraction(numerator, sfactors);
-      // returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
-      // A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
-
-      if (Ai.size() > 0) {
-        // IAST result = F.Plus();
-        pf.allocPlus(Ai.size() * 2);
-        pf.setJAS(jas);
-        if (!Ai.get(0).get(0).isZERO()) {
-          pf.addNonFractionalPart(Ai.get(0).get(0));
-        }
-        for (int i = 1; i < Ai.size(); i++) {
-          final List<GenPolynomial<BigRational>> list = Ai.get(i);
-          int j = 0;
-          for (GenPolynomial<BigRational> genPolynomial : list) {
-            if (!genPolynomial.isZERO()) {
-              final GenPolynomial<BigRational> Di_1 = D.get(i - 1);
-              pf.addSinglePartialFraction(genPolynomial, Di_1, j);
-            }
-            j++;
-          }
-        }
-        return pf.getResult();
-      }
-    } catch (RuntimeException e) {
-      Errors.rethrowsInterruptException(e);
-      // JAS may throw JASConversionException and RuntimeExceptions
-      // LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
-    }
-    return F.NIL;
-  }
-
-
-  /**
-   * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition
-   * of the numerator and denominator parts.
-   *
-   * @param pf partial fraction generator
-   * @param parts
-   * @param variable a variable
-   * @return {@link F#NIL} if the partial fraction decomposition wasn't constructed
-   */
-  public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf,
-      IExpr[] parts, IExpr variable) {
-    return partialFractionDecompositionRational(pf, parts, F.list(variable));
-  }
-
-  public static IExpr polynomialTaylorSeries(IExpr[] parts, IExpr x, IExpr x0, int n,
-      int expDenominator) {
-    try {
-      IExpr exprNumerator = F.evalExpandAll(parts[0]);
-      IExpr exprDenominator = F.evalExpandAll(parts[1]);
-
-      final UnivPowerSeries<BigRational> ps = quotientPS(exprNumerator, exprDenominator, x);
-      if (ps != null && !ps.isZERO()) {
-        ASTSeriesData seriesData = new ASTSeriesData(x, x0, 0, n + expDenominator, expDenominator);
-        // reversed order seems to be a bit faster
-        for (int i = n; i >= 0; i--) {
-          BigRational coefficient = ps.coefficient(i);
-          seriesData.setCoeff(i, F.fraction(coefficient.numerator(), coefficient.denominator()));
-        }
-        return seriesData;
-      }
-    } catch (RuntimeException e) {
-      Errors.rethrowsInterruptException(e);
-      // JAS may throw JASConversionException and RuntimeExceptions
-      // LOGGER.debug("Algebra.polynomialTaylorSeries() failed", e);
-    }
-    return F.NIL;
   }
 
   /**
@@ -4591,42 +4314,6 @@ public class Algebra {
       }
     }
     return logIntExpanded;
-  }
-
-  public static UnivPowerSeries<BigRational> quotientPS(IExpr exprNumerator, IExpr exprDenominator,
-      IExpr x) {
-    JASConvert<BigRational> jas = new JASConvert<BigRational>(x.makeList(), BigRational.ZERO);
-    GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
-    if (numerator == null) {
-      return null;
-    }
-    final UnivPowerSeries<BigRational> ps;
-    BigRational cfac = BigRational.ONE;
-    UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(cfac);
-    TaylorFunction<BigRational> FN = new PolynomialTaylorFunction<BigRational>(numerator);
-    if (exprNumerator.isOne()) {
-      GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
-      if (denominator == null) {
-        return null;
-      }
-      TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
-      UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
-      ps = psD.inverse();
-    } else {
-      if (exprDenominator.isOne()) {
-        ps = fac.seriesOfTaylor(FN, BigRational.ZERO);
-      } else {
-        GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
-        if (denominator == null) {
-          return null;
-        }
-        TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
-        UnivPowerSeries<BigRational> psN = fac.seriesOfTaylor(FN, BigRational.ZERO);
-        UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
-        ps = psN.divide(psD);
-      }
-    }
-    return ps;
   }
 
   /**

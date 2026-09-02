@@ -151,7 +151,7 @@ public class MatrixPlot extends ListPlot {
 
     graphicsOptions.setBoundingBox(new double[] {0, cols, 0, rows});
 
-    if (graphicsOptions.aspectRatio().equals(S.Automatic)) {
+    if (graphicsOptions.aspectRatio() == S.Automatic) {
       graphicsOptions.setAspectRatio(F.num((double) rows / (double) cols));
     }
 

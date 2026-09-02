@@ -128,6 +128,7 @@ public class ListLinePlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
     IExpr arg1 = ast.arg1();
     if (!checkList(engine, arg1)) {
       // `1` is not a list of numbers or pairs of numbers.

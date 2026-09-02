@@ -278,12 +278,28 @@ public class SimplifyUtil extends VisitorExpr {
     PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(x_), F.ArcTan(y_), //
         F.CPiHalf, //
         F.And(F.Positive(x), F.Equal(y, F.Power(x, F.CN1))));
-    // ArcTan(1/2) + ArcTan(1/3) == Pi/4
-    PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.C1D2), //
-        F.CPiQuarter);
-    // ArcTan(1/3) + ArcTan(1/7) == ArcTan(1/2)
-    PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.QQ(1L, 7L)), //
-        F.ArcTan(F.C1D2));
+    // ArcTan(x) + ArcTan(y) == ArcTan((x+y)/(1-x*y)) for rational x, y with x*y < 1 - on that
+    // domain the principal values add without a Pi correction. Subsumes the formerly hardcoded
+    // pairs ArcTan(1/2)+ArcTan(1/3) == Pi/4 and ArcTan(1/3)+ArcTan(1/7) == ArcTan(1/2);
+    // Mathematica's FullSimplify contracts the general sum the same way:
+    // ArcTan(1/7)+ArcTan(1/9) == ArcTan(8/31).
+    PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(x_), F.ArcTan(y_), //
+        F.ArcTan(F.Times(F.Plus(x, y), F.Power(F.Subtract(F.C1, F.Times(x, y)), F.CN1))), //
+        F.And(F.Element(x, S.Rationals), F.Element(y, S.Rationals),
+            F.Less(F.Times(x, y), F.C1)));
+    // ArcTan(x) + ArcTan(y) == Pi + ArcTan((x+y)/(1-x*y)) for positive rational x, y with
+    // x*y > 1, e.g. ArcTan(2)+ArcTan(3) == 3*Pi/4. Negative pairs need no rule of their own:
+    // ArcTan is odd, so -ArcTan(2)-ArcTan(3) reaches the matcher as the pair (2,3) with a
+    // common integer factor -1, which the Plus matcher strips and reapplies.
+    PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(x_), F.ArcTan(y_), //
+        F.Plus(S.Pi,
+            F.ArcTan(F.Times(F.Plus(x, y), F.Power(F.Subtract(F.C1, F.Times(x, y)), F.CN1)))), //
+        F.And(F.Element(x, S.Rationals), F.Element(y, S.Rationals), F.Positive(x),
+            F.Less(F.C1, F.Times(x, y))));
+    // Erfc(x) + Erfc(-x) == 2
+    PLUS_ORDERLESS_MATCHER.defineHashRule(F.Erfc(x_), F.Erfc(y_), //
+        F.C2, //
+        F.Equal(F.Plus(x, y), F.C0));
   }
 
   /**
@@ -454,6 +470,14 @@ public class SimplifyUtil extends VisitorExpr {
         F.Abs(x_), //
         F.Abs(y_), //
         F.Abs(F.Times(x, y))));
+    // Gamma(x)*Gamma(-x) == -Pi*Csc(Pi*x)/x - the reflection formula at the mirrored argument.
+    // The eager matcher only handles Gamma(x)*Gamma(1-x); this variant stays until FullSimplify,
+    // like Mathematica's.
+    timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
+        F.Gamma(x_), //
+        F.Gamma(y_), //
+        F.Times(F.CN1, S.Pi, F.Power(x, F.CN1), F.Csc(F.Times(S.Pi, x))), //
+        F.Equal(F.Plus(x, y), F.C0), true));
     return timesMatcher;
   }
 

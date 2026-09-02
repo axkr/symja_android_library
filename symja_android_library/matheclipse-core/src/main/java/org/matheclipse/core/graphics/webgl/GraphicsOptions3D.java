@@ -869,14 +869,67 @@ public final class GraphicsOptions3D {
     return null;
   }
 
+  /**
+   * The transparency an {@code Opacity} inside a style specification asks for, or {@code NaN}
+   * when it names none.
+   *
+   * <p>
+   * {@code Opacity[o, colour]} is a colour rather than a directive, and its transparency reaches
+   * the caller through that colour's alpha channel instead.
+   */
+  static double firstOpacity(IExpr value) {
+    if (value.isAST(org.matheclipse.core.expression.S.Opacity, 2)) {
+      return ColorUtil.dbl(((IAST) value).arg1(), Double.NaN);
+    }
+    if (value.isList() || value.isAST(org.matheclipse.core.expression.S.Directive)) {
+      IAST list = (IAST) value;
+      for (int i = 1; i <= list.argSize(); i++) {
+        double o = firstOpacity(list.get(i));
+        if (!Double.isNaN(o)) {
+          return o;
+        }
+      }
+    }
+    return Double.NaN;
+  }
+
+  /**
+   * The width in printer's points of a named <code>Thickness</code> size, or
+   * <code>Double.NaN</code>. <code>Thick</code> is <code>Thickness(Large)</code> and
+   * <code>Thin</code> is <code>Thickness(Tiny)</code>, so the named sizes carry the widths those
+   * two directives have always drawn with.
+   */
+  static double namedThicknessPoints(IExpr size) {
+    if (size.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) size).ordinal()) {
+        case ID.Tiny:
+          return 1.0;
+        case ID.Small:
+          return 1.25;
+        case ID.Medium:
+          return 1.5;
+        case ID.Large:
+          return 2.0;
+        default:
+          break;
+      }
+    }
+    return Double.NaN;
+  }
+
   /** The first line width in a style specification, in printer's points. */
   static double firstThickness(IExpr value) {
     if (value.isAST(org.matheclipse.core.expression.S.AbsoluteThickness, 2)) {
       return ColorUtil.dbl(((IAST) value).arg1(), Double.NaN);
     }
     if (value.isAST(org.matheclipse.core.expression.S.Thickness, 2)) {
+      IExpr size = ((IAST) value).arg1();
+      double named = namedThicknessPoints(size);
+      if (!Double.isNaN(named)) {
+        return named;
+      }
       // a fraction of the image; 0.002 is Thin and reads as one point
-      double f = ColorUtil.dbl(((IAST) value).arg1(), Double.NaN);
+      double f = ColorUtil.dbl(size, Double.NaN);
       return Double.isNaN(f) ? Double.NaN : f * 500.0;
     }
     if (value.isBuiltInSymbol()) {

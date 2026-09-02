@@ -1,5 +1,10 @@
 package org.matheclipse.core.eval.util;
 
+import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AbstractFractionSym;
@@ -156,12 +161,12 @@ public class SolveUtils {
       IExpr val = ast.arg1();
       IExpr condition = ast.arg2();
       IExpr integersDomainVariable = F.NIL;
-      if (condition.isAST(S.Element, 3) && condition.second().equals(S.Integers)) {
+      if (condition.isAST(S.Element, 3) && condition.second() == S.Integers) {
         integersDomainVariable = condition.first();
       } else if (condition.isAnd()) {
         for (int i = 1; i < condition.size(); i++) {
           IExpr arg = condition.get(i);
-          if (arg.isAST(S.Element, 3) && arg.second().equals(S.Integers)) {
+          if (arg.isAST(S.Element, 3) && arg.second() == S.Integers) {
             integersDomainVariable = arg.first();
             break;
           }
@@ -231,5 +236,179 @@ public class SolveUtils {
    */
   public static IExpr substitute$InverseFunction(IExpr expr) {
     return InverseFunctionExpander.substitute$InverseFunction(expr);
+  }
+
+  /**
+   * Solve the equations in the residue class ring <code>Z / modulus Z</code>, i.e. determine all
+   * variable assignments from <code>{0, 1, ..., modulus-1}</code> which fulfill every equation
+   * modulo <code>modulus</code>.
+   *
+   * <p>
+   * The complete residue system is enumerated, so the result is exact for arbitrary (also
+   * non-prime) moduli, as long as the search space <code>modulus ^ numberOfVariables</code> stays
+   * below {@link #MAX_MODULUS_SEARCH_SPACE}. Only polynomial equations with rational coefficients
+   * are solved, all other systems are returned unevaluated.
+   *
+   * @param ast the <code>Solve(...)</code> ast
+   * @param userDefinedVariables the variables the user asked to solve for
+   * @param modulusOption the value of the {@link S#Modulus} option
+   * @param engine the evaluation engine
+   * @return the (possibly empty) list of solution lists or {@link F#NIL} if the system cannot be
+   *         solved this way
+   */
+  public static IExpr solveModulus(IAST termsList, IAST userDefinedVariables,
+      IExpr modulusOption, ISymbol reportingSymbol, EvalEngine engine) {
+    int modulus = modulusOption.toIntDefault();
+    if (!modulusOption.isInteger() || modulus < 1) {
+      // Value of option `1` should be a prime number or zero.
+      return Errors.printMessage(reportingSymbol, "modp", F.List(F.Rule(S.Modulus, modulusOption)),
+          engine);
+    }
+    IInteger modulusValue = (IInteger) modulusOption;
+
+    IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, new boolean[] {false});
+    if (lists[2].isPresent()) {
+      // either no solution possible or no equations at all
+      return lists[2];
+    }
+    if (lists[1].argSize() > 0) {
+      // inequalities aren't defined in a residue class ring
+      return Errors.printMessage(reportingSymbol, "nsmet", F.list(reportingSymbol), engine);
+    }
+    IAST termsEqualZeroList = lists[0];
+
+    // only the variables which really occur in the equations are enumerated; the remaining
+    // user defined variables are unconstrained and therefore not part of the solution rules
+    VariablesSet equationVariables = new VariablesSet(termsEqualZeroList);
+    IAST varList = equationVariables.getVarList();
+    for (int i = 1; i < varList.size(); i++) {
+      if (!userDefinedVariables.contains(varList.get(i))) {
+        // the equations contain a symbol which shouldn't be solved for
+        return Errors.printMessage(reportingSymbol, "nsmet", F.list(reportingSymbol), engine);
+      }
+    }
+    // A fraction is zero exactly where its numerator is zero. Together() additionally clears the
+    // denominators of rational coefficients, so that an equation like 2*x == 3 - which the
+    // evaluator already normalized to x == 3/2 - is enumerated as the integer polynomial 2*x-3.
+    IASTAppendable numerators = F.ListAlloc(termsEqualZeroList.argSize());
+    IASTAppendable denominators = F.ListAlloc(termsEqualZeroList.argSize());
+    for (int i = 1; i < termsEqualZeroList.size(); i++) {
+      IExpr together = S.Together.of(engine, termsEqualZeroList.get(i));
+      IExpr numerator = S.Numerator.of(engine, together);
+      IExpr denominator = S.Denominator.of(engine, together);
+      if (!isModulusPolynomial(numerator, varList, engine)
+          || !isModulusPolynomial(denominator, varList, engine)) {
+        // only polynomials with rational coefficients have a meaning in a residue class ring
+        return Errors.printMessage(reportingSymbol, "nsmet", F.list(reportingSymbol), engine);
+      }
+      numerators.append(numerator);
+      denominators.append(denominator);
+    }
+
+    IASTAppendable searchVariables = F.ListAlloc(userDefinedVariables.argSize());
+    long searchSpace = 1L;
+    for (int i = 1; i < userDefinedVariables.size(); i++) {
+      IExpr variable = userDefinedVariables.get(i);
+      if (equationVariables.contains(variable)) {
+        searchVariables.append(variable);
+        searchSpace *= modulus;
+        if (searchSpace > MAX_MODULUS_SEARCH_SPACE) {
+          // The system cannot be solved with the methods available to Solve.
+          return Errors.printMessage(reportingSymbol, "nsmet", F.list(reportingSymbol), engine);
+        }
+      }
+    }
+
+    int numberOfVariables = searchVariables.argSize();
+    int[] residues = new int[numberOfVariables];
+    IASTAppendable result = F.ListAlloc();
+    do {
+      IASTAppendable rules = F.ListAlloc(numberOfVariables);
+      for (int i = 0; i < numberOfVariables; i++) {
+        rules.append(F.Rule(searchVariables.get(i + 1), F.ZZ(residues[i])));
+      }
+      if (isModulusSolution(numerators, denominators, rules, modulusValue, engine)) {
+        result.append(rules);
+      }
+    } while (nextResidues(residues, modulus));
+    return result;
+  }
+
+  /**
+   * The maximum number of variable assignments which are enumerated for the {@link S#Modulus}
+   * option, i.e. <code>modulus ^ numberOfVariables</code> must not exceed this limit.
+   */
+  private static final long MAX_MODULUS_SEARCH_SPACE = 1_000_000L;
+
+
+  /**
+   * Test if <code>expr</code> is a polynomial in the given variables and if all its coefficients
+   * are rational numbers. Only such an expression can be mapped into a residue class ring.
+   *
+   * @param expr the expression to test
+   * @param varList the variables of the polynomial
+   * @param engine the evaluation engine
+   * @return <code>true</code> if <code>expr</code> is a polynomial with rational coefficients
+   */
+  private static boolean isModulusPolynomial(IExpr expr, IAST varList, EvalEngine engine) {
+    if (!expr.isPolynomial(varList)) {
+      return false;
+    }
+    if (varList.isEmpty()) {
+      return expr.isRational();
+    }
+    IExpr coefficientRules = S.CoefficientRules.of(engine, expr, varList);
+    if (!coefficientRules.isList()) {
+      return false;
+    }
+    return ((IAST) coefficientRules).forAll(rule -> rule.isRule() && rule.second().isRational());
+  }
+
+  /**
+   * Test if all numerators are divisible by <code>modulus</code> after substituting the variables
+   * with the values of the given <code>rules</code>. A residue for which a denominator becomes
+   * divisible by <code>modulus</code> isn't a solution, because the corresponding term isn't
+   * defined in the residue class ring.
+   *
+   * @param numerators the numerators of the expressions which should become <code>0</code>
+   * @param denominators the corresponding denominators
+   * @param rules the list of <code>variable -> residue</code> rules
+   * @param modulus the modulus
+   * @param engine the evaluation engine
+   * @return <code>true</code> if every term is <code>0</code> modulo <code>modulus</code>
+   */
+  private static boolean isModulusSolution(IAST numerators, IAST denominators, IAST rules,
+      IInteger modulus, EvalEngine engine) {
+    for (int i = 1; i < numerators.size(); i++) {
+      IExpr denominator = denominators.get(i);
+      if (!denominator.isOne()
+          && engine.evaluate(F.Mod(F.subst(denominator, rules), modulus)).isZero()) {
+        // the term isn't defined for this residue
+        return false;
+      }
+      IExpr numerator = F.subst(numerators.get(i), rules);
+      if (!engine.evaluate(F.Mod(numerator, modulus)).isZero()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Step to the next tuple of the complete residue system in lexicographical order, i.e. increment
+   * the last entry of <code>residues</code> and carry over to the entries on the left.
+   *
+   * @param residues the current tuple; modified in place
+   * @param modulus the modulus
+   * @return <code>false</code> if the last tuple was already reached
+   */
+  private static boolean nextResidues(int[] residues, int modulus) {
+    for (int i = residues.length - 1; i >= 0; i--) {
+      if (++residues[i] < modulus) {
+        return true;
+      }
+      residues[i] = 0;
+    }
+    return false;
   }
 }

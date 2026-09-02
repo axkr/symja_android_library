@@ -181,7 +181,7 @@ public class SparseArrayFunctions {
 
       if (argSize >= 2) {
         IExpr arg2 = ast.arg2();
-        if (arg2.equals(S.Automatic)) {
+        if (arg2 == S.Automatic) {
           // automatic detection enabled
         } else if (arg2.isList()) {
           // List of Java int numbers expected in `1`.
@@ -195,7 +195,7 @@ public class SparseArrayFunctions {
 
         // Handle Compressed Row Storage (CRS) Input Form
         if (argSize == 4) {
-          if (dimension != null && arg1.equals(S.Automatic)) {
+          if (dimension != null && arg1 == S.Automatic) {
             if (ast.arg4().isList3()) {
               IAST list = (IAST) ast.arg4();
               int version = list.arg1().toMachineInt();

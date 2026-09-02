@@ -45,10 +45,10 @@ import com.google.common.math.DoubleMath;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import edu.jas.arith.PrimeInteger;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.Int2IntMap;
+import org.matheclipse.external.fastutil.ints.Int2IntRBTreeMap;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 /**
  * Abstract base class for IntegerSym and BigIntegerSym

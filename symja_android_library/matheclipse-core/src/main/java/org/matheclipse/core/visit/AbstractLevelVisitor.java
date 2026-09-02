@@ -143,7 +143,7 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
         }
       }
     }
-    if (levelExpr.isInfinity() || levelExpr.equals(S.All)) {
+    if (levelExpr.isInfinity() || levelExpr == S.All) {
       // level specification Infinity and -1 are equivalent
       fToLevel = Integer.MAX_VALUE;
       fFromLevel = startValueForAll;

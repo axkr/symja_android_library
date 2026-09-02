@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -390,10 +392,21 @@ public class RegionPrimitives {
       return null;
     }
     IAST axis = (IAST) reg.arg1();
-    if (!isCoordinateVector(axis.arg1(), 3) || !isCoordinateVector(axis.arg2(), 3)) {
-      return null;
+    if (!axis.arg1().isList() || !((IAST) axis.arg1()).arg1().isList()) {
+      // a capsule of any embedding dimension - in the plane it is a stadium
+      int dimension = axis.arg1().argSize();
+      if (dimension < 2 || !isCoordinateVector(axis.arg1(), dimension)
+          || !isCoordinateVector(axis.arg2(), dimension)) {
+        return null;
+      }
+      return new CapsuleSpec(axis.arg1(), axis.arg2(), reg.arg2());
     }
-    return new CapsuleSpec(axis.arg1(), axis.arg2(), reg.arg2());
+    return null;
+  }
+
+  /** The embedding dimension of a parsed capsule. */
+  public static int capsuleDimension(CapsuleSpec spec) {
+    return spec.p1.argSize();
   }
 
   /** <code>4*Pi*(rOuter^3 - rInner^3)/3</code> */
@@ -409,7 +422,8 @@ public class RegionPrimitives {
   /** <code>Pi*r^2*h + 4*Pi*r^3/3</code> for the cylinder and the two hemispherical caps. */
   public static IExpr capsuleShapeVolume(IAST reg, EvalEngine engine) {
     CapsuleSpec spec = parseCapsuleShape(reg);
-    if (spec == null) {
+    if (spec == null || capsuleDimension(spec) != 3) {
+      // the cylinder plus two hemispherical caps is the three dimensional formula
       return F.NIL;
     }
     IExpr h = distance(spec.p1, spec.p2, engine);
@@ -904,5 +918,598 @@ public class RegionPrimitives {
    */
   public static IAST indeterminateCentroid(int n) {
     return constantVector(S.Indeterminate, n);
+  }
+
+  // ---------------------------------------------------------------- parametrized surfaces
+
+  /** A parameter range <code>{u, umin, umax}</code> of a parametrized surface. */
+  public static final class ParameterRange {
+    public final IExpr variable;
+    public final IExpr min;
+    public final IExpr max;
+
+    private ParameterRange(IExpr variable, IExpr min, IExpr max) {
+      this.variable = variable;
+      this.min = min;
+      this.max = max;
+    }
+  }
+
+  /**
+   * Parse a <code>{u, umin, umax}</code> iterator of a parametrized surface.
+   *
+   * @return <code>null</code> if <code>expr</code> is not such a triple with a symbol in front
+   */
+  public static ParameterRange parseParameterRange(IExpr expr) {
+    if (!expr.isList3()) {
+      return null;
+    }
+    IAST range = (IAST) expr;
+    if (!range.arg1().isSymbol()) {
+      return null;
+    }
+    return new ParameterRange(range.arg1(), range.arg2(), range.arg3());
+  }
+
+  /**
+   * The coordinate functions of a parametrized surface. A single scalar <code>x</code> describes
+   * the graph <code>{s, t, x}</code> over the two parameters.
+   *
+   * @return {@link F#NIL} if <code>expr</code> is a list which is not a vector of coordinates
+   */
+  public static IAST surfaceCoordinates(IExpr expr, ParameterRange s, ParameterRange t) {
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      if (list.argSize() < 2 || list.arg1().isList()) {
+        return F.NIL;
+      }
+      return list;
+    }
+    return F.list(s.variable, t.variable, expr);
+  }
+
+  /**
+   * The area element <code>Sqrt(E*G - F^2)</code> of the first fundamental form, where
+   * <code>E = rs.rs</code>, <code>F = rs.rt</code> and <code>G = rt.rt</code>. This is the norm of
+   * the cross product in three dimensions and generalizes it to any number of coordinates.
+   */
+  public static IExpr surfaceAreaElement(IAST coordinates, ParameterRange s, ParameterRange t,
+      EvalEngine engine) {
+    IExpr rs = engine.evaluate(F.D(coordinates, s.variable));
+    IExpr rt = engine.evaluate(F.D(coordinates, t.variable));
+    if (!rs.isList() || !rt.isList()) {
+      return F.NIL;
+    }
+    IExpr e = F.Dot(rs, rs);
+    IExpr f = F.Dot(rs, rt);
+    IExpr g = F.Dot(rt, rt);
+    return reduceOnDomain(F.Sqrt(F.Subtract(F.Times(e, g), F.Sqr(f))), engine, s, t);
+  }
+
+  /**
+   * Simplify a square root which the integration has to see in its reduced form, under the
+   * assumption that the parameters stay inside their ranges.
+   *
+   * <p>
+   * The area element and the speed of a curve are square roots of a sum of squares, and the
+   * {@link S#Simplify} half is what turns the raw first fundamental form of the unit sphere into
+   * the <code>Sqrt(Sin(u)^2)</code> that <code>Integrate</code> can work with at all. Restricting
+   * the parameters to the rectangle which is integrated over then reduces that to
+   * <code>Sin(u)</code>, which is valid because the integral only ever evaluates the element
+   * there.
+   *
+   * <p>
+   * The refinement used to be load bearing: <code>Integrate(Sqrt(Sin(u)^2), {u,0,Pi})</code>
+   * answered <code>0</code> instead of <code>2</code>, so an unreduced element gave a wrong area.
+   * That defect is fixed (the limit machinery now reads <code>Sqrt(f^2)</code> as
+   * <code>Abs(f)</code> and the range is split at the sign changes), so this is a simplification
+   * aid rather than a correctness workaround.
+   */
+  private static IExpr reduceOnDomain(IExpr element, EvalEngine engine, ParameterRange... ranges) {
+    IASTAppendable bounds = F.ast(S.And, 2 * ranges.length);
+    for (ParameterRange range : ranges) {
+      bounds.append(F.LessEqual(range.min, range.variable));
+      bounds.append(F.LessEqual(range.variable, range.max));
+    }
+    // Refine has the HoldAll attribute, and an expression which has already been evaluated carries
+    // a flag which stops it from being rewritten a second time. So the unevaluated Simplify(...)
+    // tree is handed over as a whole and the simplification runs *under* the assumptions - passing
+    // an already evaluated element here silently returns it unchanged.
+    IExpr refined = engine.evaluate(F.Refine(F.Simplify(element), bounds));
+    return refined.isPresent() ? refined : engine.evaluate(F.Simplify(element));
+  }
+
+  /**
+   * The arc length <code>Integrate(Norm(D(curve, u)), {u, umin, umax})</code> of one coordinate
+   * curve of a parametrized surface.
+   */
+  public static IExpr curveArcLength(IAST coordinates, ParameterRange along, ParameterRange fixed,
+      IExpr fixedValue, boolean numeric, EvalEngine engine) {
+    IExpr curve = engine.evaluate(F.subst(coordinates, F.Rule(fixed.variable, fixedValue)));
+    IExpr derivative = engine.evaluate(F.D(curve, along.variable));
+    if (!derivative.isList()) {
+      return F.NIL;
+    }
+    IExpr speed = reduceOnDomain(F.Sqrt(F.Total(F.Sqr(derivative))), engine, along);
+    return integrateAlong(speed, along, numeric);
+  }
+
+  // ---------------------------------------------------------------- measure options
+
+  /**
+   * The option symbols which <code>Area</code>, <code>Perimeter</code> and <code>Volume</code>
+   * accept, in the order in which they are handed to the evaluator.
+   */
+  public static final IBuiltInSymbol[] MEASURE_OPTION_KEYS = new IBuiltInSymbol[] {//
+      S.AccuracyGoal, S.Assumptions, S.GenerateConditions, //
+      S.PerformanceGoal, S.PrecisionGoal, S.WorkingPrecision};
+
+  /** The default values of {@link #MEASURE_OPTION_KEYS}. */
+  public static final IExpr[] MEASURE_OPTION_DEFAULTS = new IExpr[] {//
+      F.CInfinity, S.$Assumptions, S.Automatic, //
+      S.$PerformanceGoal, S.Automatic, S.Automatic};
+
+  /** The index of <code>AccuracyGoal</code> in {@link #MEASURE_OPTION_KEYS}. */
+  public static final int MEASURE_OPTION_ACCURACY_GOAL = 0;
+
+  /** The index of <code>Assumptions</code> in {@link #MEASURE_OPTION_KEYS}. */
+  public static final int MEASURE_OPTION_ASSUMPTIONS = 1;
+
+  /** The index of <code>PrecisionGoal</code> in {@link #MEASURE_OPTION_KEYS}. */
+  public static final int MEASURE_OPTION_PRECISION_GOAL = 4;
+
+  /** The index of <code>WorkingPrecision</code> in {@link #MEASURE_OPTION_KEYS}. */
+  public static final int MEASURE_OPTION_WORKING_PRECISION = 5;
+
+  /** The value of one option, or {@link F#NIL} if the option was not given. */
+  private static IExpr option(IExpr[] options, int index) {
+    if (options == null || options.length <= index || options[index] == null) {
+      return F.NIL;
+    }
+    return options[index];
+  }
+
+  /**
+   * One of the numerical goals asks for a number rather than for a closed form, so an integral
+   * which a measure has to evaluate should be handed to <code>NIntegrate</code> instead of to
+   * <code>Integrate</code>.
+   *
+   * <p>
+   * This only concerns the parametrized forms of <code>Area</code> and <code>Perimeter</code> -
+   * the closed form measures of the region primitives never integrate, which is why the same
+   * options have no effect on them.
+   */
+  public static boolean requestsNumericIntegration(IExpr[] options) {
+    return isNumericGoal(option(options, MEASURE_OPTION_WORKING_PRECISION))
+        || isNumericGoal(option(options, MEASURE_OPTION_PRECISION_GOAL))
+        || isNumericGoal(option(options, MEASURE_OPTION_ACCURACY_GOAL));
+  }
+
+  /** <code>MachinePrecision</code> or a positive number of digits. */
+  private static boolean isNumericGoal(IExpr value) {
+    if (value.isNIL() || value == S.Automatic || value.isInfinity()) {
+      return false;
+    }
+    return value == S.MachinePrecision || value.toIntDefault() > 0;
+  }
+
+  /**
+   * Integrate over the rectangle which the two parameter ranges span, symbolically or - if one of
+   * the numerical goals asks for it - numerically.
+   */
+  public static IExpr integrateOverRectangle(IExpr integrand, ParameterRange s, ParameterRange t,
+      boolean numeric, EvalEngine engine) {
+    IAST sIterator = F.list(s.variable, s.min, s.max);
+    IAST tIterator = F.list(t.variable, t.min, t.max);
+    // built explicitly: the three argument F.NIntegrate(f, x, optionRule) convenience overload
+    // names its last parameter for an option rule, not for a second iterator
+    return engine.evaluate(F.ast(new IExpr[] {integrand, sIterator, tIterator},
+        numeric ? S.NIntegrate : S.Integrate));
+  }
+
+  /** Integrate along one parameter range, symbolically or numerically. */
+  public static IExpr integrateAlong(IExpr integrand, ParameterRange along, boolean numeric) {
+    IAST iterator = F.list(along.variable, along.min, along.max);
+    return F.ast(new IExpr[] {integrand, iterator}, numeric ? S.NIntegrate : S.Integrate);
+  }
+
+  /**
+   * Apply the options which change the value of a region measure.
+   *
+   * <p>
+   * <code>Assumptions</code> is used to {@link S#Refine} the symbolic result, so that
+   * <code>Area(Rectangle({0,0},{a,b}), Assumptions -> a>0 && b>0)</code> gives <code>a*b</code>
+   * instead of <code>Abs(a*b)</code>. <code>WorkingPrecision</code> evaluates the result
+   * numerically. The remaining options only steer the numerical integration which Symja does not
+   * use for the closed form measures, so they are accepted and ignored.
+   *
+   * @param result the measure which was computed without looking at the options
+   */
+  public static IExpr applyMeasureOptions(IExpr result, IExpr[] options, EvalEngine engine) {
+    if (result.isNIL() || options == null) {
+      return result;
+    }
+    IExpr value = result;
+    IExpr assumptions = options.length > MEASURE_OPTION_ASSUMPTIONS //
+        ? options[MEASURE_OPTION_ASSUMPTIONS]
+        : F.NIL;
+    if (assumptions != null && assumptions.isPresent() && assumptions.isAST()) {
+      IAssumptions oldAssumptions = engine.getAssumptions();
+      try {
+        IAssumptions newAssumptions = Assumptions.getInstance(assumptions);
+        if (newAssumptions != null) {
+          engine.setAssumptions(newAssumptions);
+          value = engine.evaluate(F.Refine(value, assumptions));
+        }
+      } finally {
+        engine.setAssumptions(oldAssumptions);
+      }
+    }
+    IExpr workingPrecision = options.length > MEASURE_OPTION_WORKING_PRECISION //
+        ? options[MEASURE_OPTION_WORKING_PRECISION]
+        : F.NIL;
+    if (workingPrecision != null && workingPrecision.isPresent()) {
+      if (workingPrecision == S.MachinePrecision) {
+        value = engine.evaluate(F.N(value));
+      } else {
+        int precision = workingPrecision.toIntDefault();
+        if (precision > 0) {
+          value = engine.evaluate(F.N(value, F.ZZ(precision)));
+        }
+      }
+    }
+    return value;
+  }
+
+  // ---------------------------------------------------------------- dimensional dispatch
+
+  /** The region has exactly the dimension which was asked for. */
+  public static final int DIMENSION_MATCHES = 1;
+
+  /** The dimension of the region could not be determined. */
+  public static final int DIMENSION_UNKNOWN = 0;
+
+  /** The region is of a different dimension than the one which was asked for. */
+  public static final int DIMENSION_DIFFERS = -1;
+
+  /**
+   * Compare the {@link org.matheclipse.core.reflection.system.RegionDimension} of a region with the
+   * dimension a measure function asks for.
+   *
+   * <p>
+   * <code>Area</code>, <code>Perimeter</code> and <code>Volume</code> are only defined for regions
+   * of one particular dimension and give <code>Undefined</code> for every other region. Deciding
+   * that centrally means a head which has no closed form measure still answers
+   * <code>Undefined</code> instead of staying unevaluated.
+   *
+   * @return {@link #DIMENSION_MATCHES}, {@link #DIMENSION_UNKNOWN} or {@link #DIMENSION_DIFFERS}
+   */
+  public static int dimensionMatch(IExpr region, int wantedDimension) {
+    int dimension =
+        org.matheclipse.core.reflection.system.RegionDimension.getRegionDimension(region);
+    if (dimension < 0) {
+      return DIMENSION_UNKNOWN;
+    }
+    return dimension == wantedDimension ? DIMENSION_MATCHES : DIMENSION_DIFFERS;
+  }
+
+  /**
+   * The number of points of an <code>EmptyRegion(n)</code> is zero, so every measure of it is zero.
+   *
+   * @return {@link F#NIL} if <code>reg</code> is not an <code>EmptyRegion(n)</code>
+   */
+  public static IExpr emptyRegionMeasure(IAST reg) {
+    if (reg.isAST(S.EmptyRegion, 2) && reg.arg1().toIntDefault() > 0) {
+      return F.C0;
+    }
+    return F.NIL;
+  }
+
+  // ---------------------------------------------------------------- axis aligned boxes
+
+  /**
+   * The two opposite corners of an axis aligned box.
+   *
+   * <pre>
+   * Rectangle()          {0,0} .. {1,1}
+   * Cuboid()             {0,0,0} .. {1,1,1}
+   * Rectangle(p)         p .. p+1 in every coordinate
+   * Rectangle(p1, p2)
+   * </pre>
+   *
+   * @return <code>{lower, upper}</code> or {@link F#NIL} if the arguments don't match one of the
+   *         forms above
+   */
+  public static IAST boxCorners(IAST reg) {
+    int n = reg.head() == S.Rectangle ? 2 : 3;
+    if (reg.argSize() == 0) {
+      return F.list(constantVector(F.C0, n), constantVector(F.C1, n));
+    }
+    if (reg.argSize() == 1 && reg.arg1().isList() && reg.arg1().argSize() > 0) {
+      IAST lower = (IAST) reg.arg1();
+      IASTAppendable upper = F.ListAlloc(lower.argSize());
+      for (int i = 1; i <= lower.argSize(); i++) {
+        upper.append(F.Plus(lower.get(i), F.C1));
+      }
+      return F.list(lower, upper);
+    }
+    if (reg.argSize() == 2 && reg.arg1().isList() && reg.arg2().isList()
+        && reg.arg1().argSize() == reg.arg2().argSize() && reg.arg1().argSize() > 0) {
+      return F.list(reg.arg1(), reg.arg2());
+    }
+    return F.NIL;
+  }
+
+  // ---------------------------------------------------------------- Cone / Cylinder
+
+  /**
+   * The axis and the radius of a <code>Cone</code> or <code>Cylinder</code>. For a cone
+   * <code>base</code> is the center of the base disk and <code>tip</code> the apex.
+   */
+  public static final class AxisSpec {
+    public final IExpr base;
+    public final IExpr tip;
+    public final IExpr radius;
+
+    private AxisSpec(IExpr base, IExpr tip, IExpr radius) {
+      this.base = base;
+      this.tip = tip;
+      this.radius = radius;
+    }
+  }
+
+  /**
+   * Parse <code>Cone()</code> / <code>Cylinder()</code>, which are equivalent to
+   * <code>Cone({{0,0,-1},{0,0,1}}, 1)</code>, and <code>Cone({p1, p2}, r)</code>.
+   *
+   * @return <code>null</code> if the arguments don't match one of those forms
+   */
+  public static AxisSpec parseAxisRegion(IAST reg) {
+    IExpr base = F.List(F.C0, F.C0, F.CN1);
+    IExpr tip = F.List(F.C0, F.C0, F.C1);
+    IExpr radius = F.C1;
+    if (reg.argSize() >= 1) {
+      if (!reg.arg1().isList2() || !((IAST) reg.arg1()).arg1().isList()) {
+        return null;
+      }
+      IAST points = (IAST) reg.arg1();
+      base = points.arg1();
+      tip = points.arg2();
+      if (base.argSize() != tip.argSize()) {
+        return null;
+      }
+    }
+    if (reg.argSize() >= 2) {
+      radius = reg.arg2();
+    }
+    if (reg.argSize() > 2) {
+      return null;
+    }
+    return new AxisSpec(base, tip, radius);
+  }
+
+  // ---------------------------------------------------------------- annulus
+
+  /** The center and the inner/outer radius of an <code>Annulus</code>. */
+  public static final class AnnulusSpec {
+    public final IExpr center;
+    public final IExpr innerRadius;
+    public final IExpr outerRadius;
+    /** The angular extent in radians - <code>2*Pi</code> for a full annulus. */
+    public final IExpr angle;
+
+    private AnnulusSpec(IExpr center, IExpr innerRadius, IExpr outerRadius, IExpr angle) {
+      this.center = center;
+      this.innerRadius = innerRadius;
+      this.outerRadius = outerRadius;
+      this.angle = angle;
+    }
+
+    /** The annulus covers the full <code>2*Pi</code> turn. */
+    public boolean isFull() {
+      return angle.equals(F.C2Pi);
+    }
+  }
+
+  /**
+   * Parse the argument forms of an annulus.
+   *
+   * <pre>
+   * Annulus()                            center {0,0}, radii {1,2}
+   * Annulus(c, {rin, rout})
+   * Annulus(c, {rin, rout}, {t1, t2})    only the sector between the two angles
+   * </pre>
+   *
+   * @return <code>null</code> if the arguments don't match one of the forms above
+   */
+  public static AnnulusSpec parseAnnulus(IAST reg, EvalEngine engine) {
+    IExpr center = F.CListC0C0;
+    IExpr innerRadius = F.C1;
+    IExpr outerRadius = F.C2;
+    IExpr angle = F.C2Pi;
+    if (reg.argSize() >= 1) {
+      if (!reg.arg1().isList() || reg.arg1().argSize() < 2) {
+        return null;
+      }
+      center = reg.arg1();
+    }
+    if (reg.argSize() >= 2) {
+      if (!reg.arg2().isList2()) {
+        return null;
+      }
+      innerRadius = reg.arg2().first();
+      outerRadius = reg.arg2().second();
+    }
+    if (reg.argSize() == 3) {
+      if (!reg.arg3().isList2()) {
+        return null;
+      }
+      angle = engine.evaluate(F.Abs(F.Subtract(reg.arg3().second(), reg.arg3().first())));
+    }
+    if (reg.argSize() > 3) {
+      return null;
+    }
+    return new AnnulusSpec(center, innerRadius, outerRadius, angle);
+  }
+
+  // ---------------------------------------------------------------- regular polygon
+
+  /** The center, the circumradius and the number of vertices of a <code>RegularPolygon</code>. */
+  public static final class RegularPolygonSpec {
+    public final IExpr center;
+    public final IExpr radius;
+    public final IExpr n;
+
+    private RegularPolygonSpec(IExpr center, IExpr radius, IExpr n) {
+      this.center = center;
+      this.radius = radius;
+      this.n = n;
+    }
+  }
+
+  /**
+   * Parse the argument forms of a regular polygon.
+   *
+   * <pre>
+   * RegularPolygon(n)                 center {0,0}, circumradius 1
+   * RegularPolygon(r, n)
+   * RegularPolygon({r, theta}, n)     rotated by theta
+   * RegularPolygon(c, r, n)
+   * RegularPolygon(c, {r, theta}, n)
+   * </pre>
+   *
+   * The rotation angle does not change any of the measures, so it is accepted and ignored here.
+   *
+   * @return <code>null</code> if the arguments don't match one of the forms above
+   */
+  public static RegularPolygonSpec parseRegularPolygon(IAST reg) {
+    IExpr center = F.CListC0C0;
+    IExpr radius = F.C1;
+    IExpr n;
+    switch (reg.argSize()) {
+      case 1:
+        n = reg.arg1();
+        break;
+      case 2:
+        radius = radiusOfRegularPolygon(reg.arg1());
+        n = reg.arg2();
+        break;
+      case 3:
+        center = reg.arg1();
+        radius = radiusOfRegularPolygon(reg.arg2());
+        n = reg.arg3();
+        break;
+      default:
+        return null;
+    }
+    if (radius.isNIL()) {
+      return null;
+    }
+    return new RegularPolygonSpec(center, radius, n);
+  }
+
+  /** The circumradius of a regular polygon, given either plainly or as <code>{r, theta}</code>. */
+  private static IExpr radiusOfRegularPolygon(IExpr expr) {
+    if (expr.isList2()) {
+      return ((IAST) expr).arg1();
+    }
+    return expr.isList() ? F.NIL : expr;
+  }
+
+  // ---------------------------------------------------------------- polygons in space
+
+  /**
+   * The area of a planar polygon, which may be embedded in a space of any dimension. In the plane
+   * this is the shoelace formula, in higher dimensions the norm of one half of the sum of the
+   * successive cross products - which is the same value for a planar polygon.
+   *
+   * @return {@link F#NIL} if <code>points</code> is not a list of at least three coordinate vectors
+   *         of equal length
+   */
+  public static IExpr polygonArea(IAST points, EvalEngine engine) {
+    int n = points.argSize();
+    if (n < 3 || !points.arg1().isList()) {
+      return F.NIL;
+    }
+    int embeddingDimension = points.arg1().argSize();
+    for (int i = 1; i <= n; i++) {
+      if (!points.get(i).isList() || points.get(i).argSize() != embeddingDimension) {
+        return F.NIL;
+      }
+    }
+    if (embeddingDimension == 2) {
+      // the shoelace formula gives an exact rational area for rational coordinates
+      IASTAppendable sum = F.PlusAlloc(n);
+      for (int i = 1; i <= n; i++) {
+        IAST p1 = (IAST) points.get(i);
+        IAST p2 = (IAST) points.get(i % n + 1);
+        sum.append(F.Subtract(F.Times(p1.arg1(), p2.arg2()), F.Times(p2.arg1(), p1.arg2())));
+      }
+      return engine.evaluate(F.Times(F.C1D2, F.Abs(sum)));
+    }
+    if (embeddingDimension == 3) {
+      // 1/2 * Norm(Sum(Cross(p_i, p_i+1)))
+      IASTAppendable x = F.PlusAlloc(n);
+      IASTAppendable y = F.PlusAlloc(n);
+      IASTAppendable z = F.PlusAlloc(n);
+      for (int i = 1; i <= n; i++) {
+        IAST p1 = (IAST) points.get(i);
+        IAST p2 = (IAST) points.get(i % n + 1);
+        x.append(F.Subtract(F.Times(p1.arg2(), p2.arg3()), F.Times(p1.arg3(), p2.arg2())));
+        y.append(F.Subtract(F.Times(p1.arg3(), p2.arg1()), F.Times(p1.arg1(), p2.arg3())));
+        z.append(F.Subtract(F.Times(p1.arg1(), p2.arg2()), F.Times(p1.arg2(), p2.arg1())));
+      }
+      return engine.evaluate(F.Times(F.C1D2, F.Norm(F.list(x, y, z))));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The sum of the distances between the successive vertices of a closed polygon.
+   *
+   * @return {@link F#NIL} if <code>points</code> is not a list of at least two coordinate vectors
+   */
+  public static IExpr polygonPerimeter(IAST points, EvalEngine engine) {
+    int n = points.argSize();
+    if (n < 2 || !points.arg1().isList()) {
+      return F.NIL;
+    }
+    IASTAppendable sum = F.PlusAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      sum.append(F.Norm(F.Subtract(points.get(i), points.get(i % n + 1))));
+    }
+    return engine.evaluate(sum);
+  }
+
+  /**
+   * The corner points of a region which is given either as an explicit list of vertices or - for
+   * <code>Simplex(n)</code> and the box shaped regions - by a defining set of numbers.
+   *
+   * @return {@link F#NIL} if the vertices of <code>reg</code> are not available
+   */
+  public static IAST verticesOfSimplex(IAST reg) {
+    if (reg.argSize() == 1) {
+      if (reg.arg1().isList() && reg.arg1().argSize() > 0 && ((IAST) reg.arg1()).arg1().isList()) {
+        return (IAST) reg.arg1();
+      }
+      int n = reg.arg1().toIntDefault();
+      if (n > 0) {
+        // the standard simplex: the origin and the n unit vectors of the n dimensional space
+        IASTAppendable vertices = F.ListAlloc(n + 1);
+        vertices.append(constantVector(F.C0, n));
+        for (int i = 1; i <= n; i++) {
+          IASTAppendable unit = F.ListAlloc(n);
+          for (int j = 1; j <= n; j++) {
+            unit.append(i == j ? F.C1 : F.C0);
+          }
+          vertices.append(unit);
+        }
+        return vertices;
+      }
+    } else if (reg.argSize() == 0) {
+      // Simplex() is the standard triangle in the plane
+      return F.list(F.CListC0C0, F.List(F.C1, F.C0), F.List(F.C0, F.C1));
+    }
+    return F.NIL;
   }
 }

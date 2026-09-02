@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComparatorFunction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
@@ -292,9 +293,7 @@ public class CompareUtil {
       }
 
 
-      IExpr temp = function.replaceAll(x -> x.isNumericFunction(true) //
-          ? IExpr.ofNullable(x.evalNumber())
-          : F.NIL);
+      IExpr temp = numericSubstitution(function);
       if (temp.isPresent()) {
         temp = engine.evaluate(temp);
         if (temp.isZero()) {
@@ -304,6 +303,77 @@ public class CompareUtil {
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
       Errors.printMessage(S.PossibleZeroQ, ve, engine);
+    }
+    return false;
+  }
+
+  /**
+   * Substitute every numeric (sub-)expression of <code>expr</code> by its {@link INumber} value.
+   *
+   * <p>
+   * Arguments which the {@link ISymbol#NHOLDFIRST} / {@link ISymbol#NHOLDREST} attributes of their
+   * head protect are left alone. For those heads a number is a structural index and not a value, so
+   * numericalizing it doesn't produce a numeric approximation but an invalid expression:
+   * <code>Derivative(1)[y][x]</code> would become <code>Derivative(1.0)[y][x]</code> and
+   * <code>Surd(x,3)</code> would become <code>Surd(x,3.0)</code>, both of which their evaluator
+   * rejects with an error message.
+   *
+   * @return {@link F#NIL} if nothing was substituted
+   */
+  private static IExpr numericSubstitution(IExpr expr) {
+    if (expr.isNumericFunction(true)) {
+      IExpr number = IExpr.ofNullable(expr.evalNumber());
+      if (number.isPresent()) {
+        return number;
+      }
+    }
+    if (!expr.isAST()) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    final int attributes =
+        ast.head().isSymbol() ? ((ISymbol) ast.head()).getAttributes() : ISymbol.NOATTRIBUTE;
+    if ((attributes & ISymbol.NHOLDALL) == ISymbol.NHOLDALL) {
+      return F.NIL;
+    }
+    IASTMutable result = F.NIL;
+    // start at the head, because it can be a `Derivative(1)[y]` like expression itself
+    for (int i = 0; i < ast.size(); i++) {
+      if (isNHold(attributes, i)) {
+        continue;
+      }
+      IExpr temp = numericSubstitution(ast.get(i));
+      if (temp.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        if (i == 0) {
+          // The loop starts at the head on purpose, see above, but the fixed size AST classes -
+          // B1, B2 and the rest - refuse a write to index 0: another head means another expression
+          // class, so there is nowhere to put it. setAtCopy() rebuilds them instead, where set()
+          // only answers an IndexOutOfBoundsException.
+          result = result.setAtCopy(0, temp);
+        } else {
+          result.set(i, temp);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Test if the argument at <code>position</code> is protected from numericalization by the
+   * {@link ISymbol#NHOLDFIRST} / {@link ISymbol#NHOLDREST} attributes of its head.
+   *
+   * @param attributes the attributes bitmask of the heads symbol
+   * @param position <code>0</code> is the head itself, which is never held
+   */
+  private static boolean isNHold(int attributes, int position) {
+    if (position == 1) {
+      return (attributes & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE;
+    }
+    if (position > 1) {
+      return (attributes & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE;
     }
     return false;
   }

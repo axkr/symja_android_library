@@ -208,6 +208,23 @@ public final class QuantityOps {
   }
 
   /**
+   * Applies a magnitude-level predicate, dropping the unit: Positive, Negative, NonNegative, ...
+   *
+   * <p>
+   * The sign of a quantity is the sign of its magnitude, which is also what {@link #compare} does
+   * for two quantities in the same unit. For an affine unit that means the magnitude as written:
+   * {@code Positive(Quantity(-3,"DegreesCelsius"))} is {@code False} even though the temperature
+   * is above absolute zero, consistent with {@code Quantity(-3,"DegreesCelsius") < 0}.
+   *
+   * @return {@link F#NIL} unless the predicate decides, so that a symbolic magnitude leaves the
+   *         whole expression unevaluated rather than dropping the unit
+   */
+  public static IExpr testMagnitude(IAST quantity, ISymbol head, EvalEngine engine) {
+    IExpr result = engine.evaluate(F.unaryAST1(head, quantity.arg1()));
+    return result.isTrue() || result.isFalse() ? result : F.NIL;
+  }
+
+  /**
    * The magnitude of {@code q2} expressed in {@code q1}'s unit, or {@code F.NIL} if incompatible.
    */
   public static IExpr magnitudeInFirstUnit(IAST q1, IAST q2, EvalEngine engine) {

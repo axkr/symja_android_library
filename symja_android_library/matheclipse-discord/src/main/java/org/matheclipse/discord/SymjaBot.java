@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
@@ -24,12 +23,10 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
-import org.matheclipse.image.bridge.fig.Histogram;
-import org.matheclipse.image.bridge.fig.ListPlot;
-import org.matheclipse.image.bridge.fig.Plot;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
@@ -60,8 +57,9 @@ public class SymjaBot {
     if (args.length > 0) {
       Locale.setDefault(Locale.US);
       ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
-      ToggleFeature.COMPILE = false;
-      ToggleFeature.COMPILE_PRINT = true;
+      // Compile / CompiledFunction / CompilePrint are not available here: the
+      // matheclipse-compile module is deliberately not on this module's classpath, so the
+      // symbols stay unevaluated. See COMPILE_MODULE_PLAN.md section 6.2.
       Config.JAVA_UNSAFE = true;
       Config.SHORTEN_STRING_LENGTH = 512;
       Config.USE_VISJS = true;
@@ -79,7 +77,6 @@ public class SymjaBot {
       Config.PRIME_FACTORS = new BigIntegerPrimality();
       EvalEngine.get().setPackageMode(true);
       F.initSymbols();
-      initFunctions();
       System.out.println("Symja Version: " + Config.VERSION + " initialized");
       String theDiscordToken = args[0];
       // ReactorResources reactor = ReactorResources.builder() //
@@ -118,15 +115,6 @@ public class SymjaBot {
     } else {
       System.out.println("The discord bot token has to be set as the first argument.");
     }
-  }
-
-  public static void initFunctions() {
-    // S.ArrayPlot.setEvaluator(new ArrayPlot());
-    S.ListPlot.setEvaluator(new ListPlot());
-    // S.ListLogPlot.setEvaluator(new ListLogPlot());
-    // S.ListLogLogPlot.setEvaluator(new ListLogLogPlot());
-    S.Histogram.setEvaluator(new Histogram());
-    S.Plot.setEvaluator(new Plot());
   }
 
   private static void createMessage(final Message message) {
@@ -211,6 +199,26 @@ public class SymjaBot {
     return buf.toString();
   }
 
+  /**
+   * Turn a graphic into the bitmap this channel can carry.
+   *
+   * <p>
+   * Every plot evaluates to {@code Graphics} or {@code Graphics3D}, which is an SVG document rather
+   * than something that can be posted here, so it is drawn once into an image. This used to be
+   * done by giving three of the plots a different evaluator that returned a bitmap directly; going
+   * through the rendering instead covers all of them, and shows the same picture the console and
+   * the web front end show.
+   *
+   * @return <code>null</code> if the result is not a graphic
+   */
+  private static IExpr rasterize(IExpr result) {
+    if (result instanceof IAST
+        && (result.isGraphicsObject() || result.isAST(S.Graphics3D))) {
+      return ImageExpr.toImageExpr((IAST) result);
+    }
+    return null;
+  }
+
   private static void sendBufferedImage(ImageExpr imageExpr, Mono<MessageChannel> mChannel) {
     BufferedImage bufferedImage = imageExpr.getBufferedImage();
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -271,6 +279,10 @@ public class SymjaBot {
           new EvalControlledCallable(evaluator.getEvalEngine()));
       if (result instanceof ImageExpr) {
         return result;
+      }
+      IExpr picture = rasterize(result);
+      if (picture != null) {
+        return picture;
       }
       if (result != null) {
         return printResultShortened(trimmedInput, result);

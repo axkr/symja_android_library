@@ -444,19 +444,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // print message: Cross: The arguments are expected to be vectors of equal length, and the
     // number of arguments is expected to be 1 less than their length.
     check("Cross({a,b}, {c,d})", //
-        "Cross({a,b},{c,d})");
+        "{a,b}⨯{c,d}");
     check("Cross({1,2}, {3,4})", //
-        "Cross({1,2},{3,4})");
+        "{1,2}⨯{3,4}");
     check("Cross({1,2,3}, {4,5,6}, {7,8,9})", //
-        "Cross({1,2,3},{4,5,6},{7,8,9})");
+        "{1,2,3}⨯{4,5,6}⨯{7,8,9}");
     check("Cross({1,2,3,4}, {5,6,7,8})", //
-        "Cross({1,2,3,4},{5,6,7,8})");
+        "{1,2,3,4}⨯{5,6,7,8}");
     // a symbolic argument can't be validated
     check("Cross(a, b)", //
-        "Cross(a,b)");
+        "a⨯b");
     // 3 vectors of length 4 are a valid input, but aren't implemented yet (no message)
     check("Cross({1,2,3,4}, {5,6,7,8}, {9,10,11,12})", //
-        "Cross({1,2,3,4},{5,6,7,8},{9,10,11,12})");
+        "{1,2,3,4}⨯{5,6,7,8}⨯{9,10,11,12}");
     check("Cross({a, b, c}, {x, y, z})", //
         "{-c*y+b*z,c*x-a*z,-b*x+a*y}");
     check("Cross({x, y})", //
@@ -464,7 +464,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Cross({x1, y1, z1}, {x2, y2, z2})", //
         "{-y2*z1+y1*z2,x2*z1-x1*z2,-x2*y1+x1*y2}");
     check("Cross({1, 2}, {3, 4, 5})", //
-        "Cross({1,2},{3,4,5})");
+        "{1,2}⨯{3,4,5}");
 
     check("Cross({1,2,3},{1,1/2,1/3})", //
         "{-5/6,8/3,-3/2}");

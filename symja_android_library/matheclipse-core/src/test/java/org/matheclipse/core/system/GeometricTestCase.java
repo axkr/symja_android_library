@@ -111,6 +111,102 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "r1*r2*Min(Pi,Abs(-t1+t2)/2)");
     check("Area(Rectangle({a,b},{c,d}))", //
         "Abs((-a+c)*(-b+d))");
+
+    // the area of a region whose dimension is not two is Undefined, also for a head which has no
+    // closed form area of its own
+    check("Area(Point({1,2}))", //
+        "Undefined");
+    check("Area(Line({{0,0},{1,1}}))", //
+        "Undefined");
+    check("Area(Cuboid())", //
+        "Undefined");
+    check("Area(Ball())", //
+        "Undefined");
+    check("Area(Tetrahedron())", //
+        "Undefined");
+    check("Area(Sphere({0,0},1))", //
+        "Undefined");
+    check("Area(Interval({0,1}))", //
+        "Undefined");
+
+    // planar polygons which are embedded in three dimensions
+    check("Area(Polygon({{0,0,0},{1,0,0},{0,1,0}}))", //
+        "1/2");
+    check("Area(Polygon({{0,0,0},{4,0,0},{4,3,0},{0,3,0}}))", //
+        "12");
+
+    // Simplex, Annulus, Torus and the planar readings of Ball and Cuboid
+    check("Area(Simplex(2))", //
+        "1/2");
+    check("Area(Simplex({{0,0},{4,0},{0,3}}))", //
+        "6");
+    check("Area(Annulus({0,0},{1,2}))", //
+        "3*Pi");
+    check("Area(Annulus())", //
+        "3*Pi");
+    check("Area(Ball({0,0},5))", //
+        "25*Pi");
+    check("Area(Cuboid({0,0},{3,4}))", //
+        "12");
+    check("Area(Torus())", //
+        "3/4*Pi^2");
+    check("Area(EmptyRegion(2))", //
+        "0");
+    check("Area(HalfPlane({0,0},{1,0}))", //
+        "Infinity");
+
+    // options
+    check("Area(Rectangle({0,0},{a,b}))", //
+        "Abs(a*b)");
+    check("Area(Rectangle({0,0},{a,b}), Assumptions->a>0&&b>0)", //
+        "a*b");
+    check("Area(Disk({0,0},r), Assumptions->r>0)", //
+        "Pi*r^2");
+    check("Area(Disk(), WorkingPrecision->20)", //
+        "3.1415926535897932384");
+    // the options which only steer a numerical integration have no effect on a closed form
+    check("Area(Disk(), AccuracyGoal->10, PrecisionGoal->10, GenerateConditions->True)", //
+        "Pi");
+  }
+
+  @Test
+  public void testAreaParametric() {
+    // Area({x1,...,xn}, {s,smin,smax}, {t,tmin,tmax}) integrates the area element of the first
+    // fundamental form over the parameter rectangle
+    check("Area({s, t}, {s,0,3}, {t,0,4})", //
+        "12");
+    check("Area({r*Cos(t), r*Sin(t)}, {r,0,1}, {t,0,2*Pi})", //
+        "Pi");
+    check("Area({Sin(u)*Cos(v), Sin(u)*Sin(v), Cos(u)}, {u,0,Pi}, {v,0,2*Pi})", //
+        "4*Pi");
+    check("Area({2*Cos(t), 2*Sin(t), z}, {t,0,2*Pi}, {z,0,5})", //
+        "20*Pi");
+    // a part which the parametrization covers twice is counted twice
+    check("Area({r*Cos(t), r*Sin(t)}, {r,0,1}, {t,0,4*Pi})", //
+        "2*Pi");
+    // a scalar describes the graph {s,t,x} over the two parameters
+    check("Area(0, {s,0,2}, {t,0,3})", //
+        "6");
+
+    // a numerical goal hands the integral to NIntegrate, which reaches an integrand that
+    // Integrate has no closed form for
+    checkNumeric("Area({u, v, u^3+v^3}, {u,0,1}, {v,0,1}, WorkingPrecision->MachinePrecision)", //
+        "2.00108", 1.0e-5);
+    checkNumeric("Area({s,t}, {s,0,3}, {t,0,4}, PrecisionGoal->8)", //
+        "12.0", 1.0e-8);
+
+    // the coordinate chart variant is not supported
+    check("Area({s,t}, {s,0,1}, {t,0,1}, \"Cartesian\")", //
+        "Area({s,t},{s,0,1},{t,0,1},Cartesian)");
+  }
+
+  @Test
+  public void testPerimeterParametric() {
+    // the total arc length of the image of the four edges of the parameter rectangle
+    check("Perimeter({s, t}, {s,0,3}, {t,0,4})", //
+        "14");
+    check("Perimeter({r*Cos(t), r*Sin(t)}, {r,0,1}, {t,0,2*Pi})", //
+        "2+2*Pi");
   }
 
   @Test
@@ -366,6 +462,59 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("Perimeter(Triangle({{0,0,0},{1,0,0},{0,1,1}}))", //
         "1+Sqrt(2)+Sqrt(3)");
 
+    // the perimeter of a region of dimension zero, one, three or higher is Undefined
+    check("Perimeter(Point({1,2}))", //
+        "Undefined");
+    check("Perimeter(Ball())", //
+        "Undefined");
+    check("Perimeter(Cuboid())", //
+        "Undefined");
+    check("Perimeter(Tetrahedron())", //
+        "Undefined");
+
+    // Simplex, Annulus, Parallelogram, RegularPolygon and the planar readings of Ball and Cuboid
+    check("Perimeter(Simplex(2))", //
+        "2+Sqrt(2)");
+    check("Perimeter(Annulus({0,0},{1,2}))", //
+        "6*Pi");
+    check("Perimeter(Parallelogram({0,0},{{1,0},{0,1}}))", //
+        "4");
+    check("Perimeter(Parallelogram())", //
+        "2*(1+Sqrt(2))");
+    check("Perimeter(RegularPolygon(6))", //
+        "6");
+    check("Perimeter(RegularPolygon(4))", //
+        "4*Sqrt(2)");
+    check("Perimeter(Ball({0,0},5))", //
+        "10*Pi");
+    check("Perimeter(Cuboid({0,0},{3,4}))", //
+        "14");
+    check("Perimeter(EmptyRegion(2))", //
+        "0");
+
+    // A smooth closed surface bounds nothing and falls back to the topological boundary in the
+    // surrounding space, whose arc length is infinite. A flat polytope in space is bounded by its
+    // edge cycle and keeps a finite perimeter - both readings are confirmed against Wolfram.
+    check("Perimeter(Sphere())", //
+        "Infinity");
+    check("Perimeter(Sphere({1,2,3},5))", //
+        "Infinity");
+    check("Perimeter(Torus())", //
+        "Infinity");
+    check("Perimeter(Polygon({{0,0,0},{1,0,0},{0,1,0}}))", //
+        "2+Sqrt(2)");
+
+    // the two elliptic readings agree with 4*rMax*EllipticE(1-rMin^2/rMax^2)
+    check("Perimeter(Disk({0,0},{3,1}))", //
+        "4*EllipticE(-8)");
+    check("Perimeter(Disk({0,0},{1,3}))", //
+        "12*EllipticE(8/9)");
+
+    // options
+    check("Perimeter(Rectangle({0,0},{a,b}), Assumptions->a>0&&b>0)", //
+        "2*(a+b)");
+    check("Perimeter(Rectangle(), AccuracyGoal->5)", //
+        "4");
   }
 
   @Test
@@ -667,6 +816,45 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("RegionCentroid(Ellipsoid({1, 2}, {3, 4}))", "{1,2}");
     check("RegionCentroid(Tetrahedron({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}))", "{1/4,1/4,1/4}");
     check("RegionCentroid(foo)", "RegionCentroid(foo)");
+
+    // the centroid of a cone lies a quarter of the way from the base disk to the apex
+    check("RegionCentroid(Cone())", //
+        "{0,0,-1/2}");
+    check("RegionCentroid(Cone({{0,0,0},{0,0,4}},1))", //
+        "{0,0,1}");
+    check("RegionCentroid(Cylinder())", //
+        "{0,0,0}");
+    check("RegionCentroid(Cylinder({{0,0,0},{0,0,4}},1))", //
+        "{0,0,2}");
+    check("RegionCentroid(Annulus({0,0},{1,2}))", //
+        "{0,0}");
+    check("RegionCentroid(Annulus({3,4},{1,2}))", //
+        "{3,4}");
+    check("RegionCentroid(Parallelepiped({0,0,0},{{1,0,0},{0,2,0},{0,0,4}}))", //
+        "{1/2,1,2}");
+    check("RegionCentroid(Simplex(2))", //
+        "{1/3,1/3}");
+    check("RegionCentroid(Simplex(3))", //
+        "{1/4,1/4,1/4}");
+    check("RegionCentroid(RegularPolygon({5,6},2,4))", //
+        "{5,6}");
+    check("RegionCentroid(Interval({1,5}))", //
+        "{3}");
+    // the empty region has no center of mass
+    check("RegionCentroid(EmptyRegion(2))", //
+        "{}");
+    // a planar polygon which is embedded in three dimensions
+    check("RegionCentroid(Polygon({{0,0,0},{1,0,0},{0,1,0}}))", //
+        "{1/3,1/3,0}");
+    check("RegionCentroid(Polygon({{0,0,0},{4,0,0},{4,3,0},{0,3,0}}))", //
+        "{2,3/2,0}");
+    // Parallelepiped without the spanning vectors stays unevaluated
+    check("RegionCentroid(Parallelepiped({0,0,0}))", //
+        "RegionCentroid(Parallelepiped({0,0,0}))");
+
+    // options
+    check("RegionCentroid(Disk({a,b},r), Assumptions->r>0)", //
+        "{a,b}");
   }
 
   @Test
@@ -724,6 +912,234 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("RegionMember(Triangle({{0, 0}, {4, 0}, {0, 3}}), {1, 1})", "True");
     check("RegionMember(Triangle({{0, 0}, {4, 0}, {0, 3}}), {3, 3})", "False");
     check("RegionMember(Polygon({{0, 0}, {4, 0}, {4, 4}, {2, 1}, {0, 4}}), {2, 3})", "False");
+
+    // for a point with symbolic coordinates the membership condition itself is the result
+    check("RegionMember(Disk(), {x,y})", //
+        "x^2+y^2<=1");
+    check("RegionMember(Ball(), {x,y,z})", //
+        "x^2+y^2+z^2<=1");
+    check("RegionMember(Circle(), {x,y})", //
+        "x^2+y^2==1");
+    check("RegionMember(Ellipsoid({0,0},{2,3}), {x,y})", //
+        "x^2/4+y^2/9<=1");
+    check("RegionMember(Rectangle({0,0},{2,3}), {x,y})", //
+        "0<=x&&x<=2&&0<=y&&y<=3");
+    check("RegionMember(Cuboid(), {x,y,z})", //
+        "0<=x&&x<=1&&0<=y&&y<=1&&0<=z&&z<=1");
+    check("RegionMember(Simplex(2), {x,y})", //
+        "x>=0&&y>=0&&x+y<=1");
+    check("RegionMember(Triangle({{0,0},{1,0},{0,1}}), {x,y})", //
+        "x>=0&&y>=0&&x+y<=1");
+    check("RegionMember(Annulus({0,0},{1,2}), {x,y})", //
+        "1<=x^2+y^2&&x^2+y^2<=4");
+    check("RegionMember(HalfSpace({1,1},1), {x,y})", //
+        "x+y<=1");
+    check("RegionMember(Interval({1,5}), {x})", //
+        "1<=x&&x<=5");
+    check("RegionMember(Point({1,2}), {x,y})", //
+        "x==1&&y==2");
+    check("RegionMember(Parallelogram(), {x,y})", //
+        "0<=x-y&&x-y<=1&&0<=y&&y<=1");
+    // a cylinder is a tube of constant radius, the radius of a cone shrinks towards the apex
+    check("RegionMember(Cylinder(), {x,y,z})", //
+        "z>=-1&&z<=1&&x^2+y^2<=1");
+    check("RegionMember(Cone(), {x,y,z})", //
+        "z>=-1&&z<=1&&x^2+y^2<=(1/2-z/2)^2");
+    // collinearity, with the segment and the half line bounded by their projection parameter
+    check("RegionMember(InfiniteLine({{0,0},{1,1}}), {x,y})", //
+        "x==y");
+    check("RegionMember(HalfLine({{0,0},{1,1}}), {x,y})", //
+        "x==y&&x+y>=0");
+    check("RegionMember(Line({{0,0},{1,1}}), {x,y})", //
+        "x==y&&0<=x+y&&x+y<=2");
+
+    // numeric points decide the condition
+    check("RegionMember(Simplex(2), {1/4,1/4})", //
+        "True");
+    check("RegionMember(Simplex(3), {1/4,1/4,1/4})", //
+        "True");
+    check("RegionMember(Simplex(2), {1,1})", //
+        "False");
+    check("RegionMember(Cone(), {0,0,0})", //
+        "True");
+    check("RegionMember(Cone(), {9/10,0,0})", //
+        "False");
+    check("RegionMember(Cylinder(), {9/10,0,0})", //
+        "True");
+    check("RegionMember(Line({{0,0},{2,2}}), {1,1})", //
+        "True");
+    check("RegionMember(Line({{0,0},{2,2}}), {1,0})", //
+        "False");
+    check("RegionMember(HalfLine({{0,0},{1,1}}), {-1,-1})", //
+        "False");
+    check("RegionMember(HalfLine({{0,0},{1,1}}), {3,3})", //
+        "True");
+    check("RegionMember(Point({{1,2},{3,4}}), {3,4})", //
+        "True");
+    check("RegionMember(Annulus({0,0},{1,2}), {3/2,0})", //
+        "True");
+    check("RegionMember(Annulus({0,0},{1,2}), {1/2,0})", //
+        "False");
+    check("RegionMember(Parallelepiped({0,0,0},{{1,0,0},{0,1,0},{0,0,1}}), {1/2,1/2,1/2})", //
+        "True");
+    check("RegionMember(SphericalShell({0,0,0},{1,2}), {3/2,0,0})", //
+        "True");
+    check("RegionMember(EmptyRegion(2), {0,0})", //
+        "False");
+    check("RegionMember(FullRegion(2), {0,0})", //
+        "True");
+
+    // a convex outline is the intersection of the half planes of its edges; collinear edges bound
+    // the same half plane and are listed once
+    check("RegionMember(Polygon({{0,0},{4,0},{4,3},{0,3}}), {x,y})", //
+        "y>=0&&x<=4&&y<=3&&x>=0");
+    check("RegionMember(Polygon({{0,0},{2,0},{4,0},{4,3},{0,3}}), {x,y})", //
+        "y>=0&&x<=4&&y<=3&&x>=0");
+    // a clockwise outline gives the same region
+    check("RegionMember(Polygon({{0,0},{0,3},{4,3},{4,0}}), {x,y})", //
+        "x>=0&&y<=3&&x<=4&&y>=0");
+    // a non convex outline is cut into ear triangles
+    check("RegionMember(Polygon({{0,0},{4,0},{4,4},{2,1},{0,4}}), {x,y})", //
+        "(x<=4&&3*x-2*y>=4&&x+2*y>=4)||(y>=0&&-x-2*y>=-4&&x-2*y>=0)||(-x+2*y>=0&&-3*x-2*y>=-\n"
+            + "8&&x>=0)");
+    // a self intersecting outline is declined rather than answered wrongly
+    check("RegionMember(Polygon({{0,0},{2,2},{2,0},{0,2}}), {x,y})", //
+        "RegionMember(Polygon({{0,0},{2,2},{2,0},{0,2}}),{x,y})");
+
+    // sectors: the polar angle of the point is measured relative to the start of the sector
+    check("RegionMember(Disk({0,0},1,{0,Pi/2}), {1/2,1/2})", //
+        "True");
+    check("RegionMember(Disk({0,0},1,{0,Pi/2}), {-1/2,1/2})", //
+        "False");
+    // the center belongs to a disk sector but not to an arc
+    check("RegionMember(Disk({0,0},1,{0,Pi/2}), {0,0})", //
+        "True");
+    check("RegionMember(Circle({0,0},1,{0,Pi/2}), {0,0})", //
+        "False");
+    check("RegionMember(Circle({0,0},1,{0,Pi/2}), {1,0})", //
+        "True");
+    // a range which crosses the negative x axis is handled
+    check("RegionMember(Disk({0,0},1,{3*Pi/4,5*Pi/4}), {-1/2,0})", //
+        "True");
+    check("RegionMember(Disk({0,0},1,{3*Pi/4,5*Pi/4}), {1/2,0})", //
+        "False");
+    // a full turn is the whole disk
+    check("RegionMember(Disk({0,0},1,{0,2*Pi}), {-1/2,-1/2})", //
+        "True");
+    check("RegionMember(Annulus({0,0},{1,2},{0,Pi/2}), {3/2,0})", //
+        "True");
+    check("RegionMember(Annulus({0,0},{1,2},{0,Pi/2}), {-3/2,0})", //
+        "False");
+  }
+
+  @Test
+  public void testRegionMemberFormulaRegions() {
+    // ImplicitRegion is defined by its condition, so membership is that condition with the
+    // coordinates substituted
+    check("RegionMember(ImplicitRegion(x^2+y^2<=1, {x,y}), {1/2,1/2})", //
+        "True");
+    check("RegionMember(ImplicitRegion(x^2+y^2<=1, {x,y}), {2,2})", //
+        "False");
+    check("RegionMember(ImplicitRegion(x^2+y^2<=1, {x,y}), {a,b})", //
+        "a^2+b^2<=1");
+    // a variable may carry its own bounds
+    check("RegionMember(ImplicitRegion(x^2<=4, {{x,0,3}}), {1})", //
+        "True");
+    check("RegionMember(ImplicitRegion(x^2<=4, {{x,0,3}}), {3})", //
+        "False");
+
+    // a Boolean combination of regions combines their membership conditions
+    check("RegionMember(RegionUnion(Disk({0,0},1), Disk({3,0},1)), {3,0})", //
+        "True");
+    check("RegionMember(RegionUnion(Disk({0,0},1), Disk({3,0},1)), {3/2,0})", //
+        "False");
+    check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({1,0},1)), {1/2,0})", //
+        "True");
+    check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({3,0},1)), {1/2,0})", //
+        "False");
+    check("RegionMember(RegionDifference(Disk({0,0},2), Disk({0,0},1)), {3/2,0})", //
+        "True");
+    check("RegionMember(RegionDifference(Disk({0,0},2), Disk({0,0},1)), {1/2,0})", //
+        "False");
+    check("RegionMember(RegionSymmetricDifference(Disk({0,0},1), Disk({1,0},1)), {-1/2,0})", //
+        "True");
+    check("RegionMember(RegionSymmetricDifference(Disk({0,0},1), Disk({1,0},1)), {1/2,0})", //
+        "False");
+    check("RegionMember(RegionUnion(Disk(), Disk({3,0},1)), {x,y})", //
+        "x^2+y^2<=1||(3-x)^2+y^2<=1");
+  }
+
+  @Test
+  public void testConstantRegionQ() {
+    check("ConstantRegionQ(Disk({0,0},2))", //
+        "True");
+    check("ConstantRegionQ(Disk({0,0},r))", //
+        "False");
+    check("ConstantRegionQ(Triangle({{0,0},{1,0},{0,1}}))", //
+        "True");
+    check("ConstantRegionQ(ImplicitRegion(x^2+y^2<=1, {x,y}))", //
+        "True");
+    // the variables of the formula are bound by the region, a free parameter is not
+    check("ConstantRegionQ(ImplicitRegion(x^2+y^2<=r, {x,y}))", //
+        "False");
+    check("ConstantRegionQ(RegionUnion(Disk(), Disk({3,0},1)))", //
+        "True");
+    check("ConstantRegionQ(42)", //
+        "False");
+    check("ConstantRegionQ(foo)", //
+        "False");
+  }
+
+  @Test
+  public void testFullRegion() {
+    check("RegionDimension(FullRegion(3))", //
+        "3");
+    check("RegionEmbeddingDimension(FullRegion(3))", //
+        "3");
+    check("RegionMember(FullRegion(2), {5,5})", //
+        "True");
+    check("Area(FullRegion(2))", //
+        "Infinity");
+    check("Volume(FullRegion(3))", //
+        "Infinity");
+    check("RegionMeasure(FullRegion(3))", //
+        "Infinity");
+    check("BoundedRegionQ(FullRegion(2))", //
+        "False");
+    check("RegionCentroid(FullRegion(2))", //
+        "{Indeterminate,Indeterminate}");
+  }
+
+  @Test
+  public void testFormulaRegionDimensions() {
+    check("RegionEmbeddingDimension(ImplicitRegion(x^2+y^2<=1, {x,y}))", //
+        "2");
+    check("RegionDimension(ParametricRegion({r*Cos(t), r*Sin(t)}, {r,t}))", //
+        "2");
+    check("RegionEmbeddingDimension(ParametricRegion({r*Cos(t), r*Sin(t)}, {r,t}))", //
+        "2");
+    check("RegionEmbeddingDimension(RegionUnion(Disk(), Disk({3,0},1)))", //
+        "2");
+  }
+
+  @Test
+  public void testRegionMemberFunction() {
+    // RegionMember(region) is the membership test as a reusable function object
+    check("Head(RegionMember(Disk()))", //
+        "RegionMemberFunction");
+    check("RegionMember(Disk())", //
+        "RegionMemberFunction(Disk({0,0}))");
+    check("RegionMember(Disk())[{0,0}]", //
+        "True");
+    check("RegionMember(Disk())[{2,2}]", //
+        "False");
+    // a list of points is tested point by point
+    check("RegionMember(Disk())[{{0,0},{2,2}}]", //
+        "{True,False}");
+    check("RegionMember(Ball({0,0,0},2))[{{1,1,1},{2,2,2}}]", //
+        "{True,False}");
+    check("RegionMember(Disk())[{x,y}]", //
+        "x^2+y^2<=1");
   }
 
   @Test

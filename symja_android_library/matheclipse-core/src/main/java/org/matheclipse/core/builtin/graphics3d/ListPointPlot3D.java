@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -28,7 +29,9 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     if (argSize < 1 || !ast.arg1().isList()) {
       return F.NIL;
     }
-    IAST listData = (IAST) ast.arg1();
+    IExpr plotData = QuantityFunctions.quantityPlotMagnitudes(ast.arg1(),
+        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
+    IAST listData = plotData.isList() ? (IAST) plotData : (IAST) ast.arg1();
     if (listData.isEmpty()) {
       return F.Graphics3D(F.CEmptyList);
     }
@@ -166,18 +169,18 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
    */
   private static void addFilling(GraphicsComplexBuilder builder, List<double[]> coordinates,
       IExpr filling, IExpr fillingStyle, IExpr pointStyle) {
-    if (coordinates.isEmpty() || filling.isNone() || filling.equals(S.Automatic)) {
+    if (coordinates.isEmpty() || filling.isNone() || filling == S.Automatic) {
       return;
     }
     double base;
-    if (filling.equals(S.Bottom) || filling.equals(S.Axis)) {
-      base = filling.equals(S.Axis) ? 0.0 : Double.MAX_VALUE;
-      if (filling.equals(S.Bottom)) {
+    if (filling == S.Bottom || filling == S.Axis) {
+      base = filling == S.Axis ? 0.0 : Double.MAX_VALUE;
+      if (filling == S.Bottom) {
         for (double[] xyz : coordinates) {
           base = Math.min(base, xyz[2]);
         }
       }
-    } else if (filling.equals(S.Top)) {
+    } else if (filling == S.Top) {
       base = -Double.MAX_VALUE;
       for (double[] xyz : coordinates) {
         base = Math.max(base, xyz[2]);
@@ -195,7 +198,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       int to = builder.addVertex(xyz[0], xyz[1], xyz[2], null, null);
       stems.append(F.List(F.ZZ(from), F.ZZ(to)));
     }
-    builder.addPrimitive(fillingStyle.equals(S.Automatic) ? pointStyle : fillingStyle);
+    builder.addPrimitive(fillingStyle == S.Automatic ? pointStyle : fillingStyle);
     builder.addPrimitive(F.Line(stems));
     // the points are drawn after the stems again, so they keep their own colour
     builder.addPrimitive(pointStyle);

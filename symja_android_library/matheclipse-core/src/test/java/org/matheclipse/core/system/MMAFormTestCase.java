@@ -56,6 +56,40 @@ public class MMAFormTestCase extends ExprEvaluatorTestCase {
     assertEquals(expr.toMMA(), "a + i*b^2 + k*c^3 + d");
   }
 
+  /**
+   * The non-finite machine doubles have to be named the way the Wolfram Language names them.
+   * Symja's own input form appends the precision marker to <code>Double.toString()</code> and so
+   * prints <code>Infinity`</code>, <code>-Infinity`</code> and <code>NaN`</code>, all of which
+   * Symja reads back. The Wolfram Language reads none of them: a backtick separates a context from
+   * a symbol there rather than marking precision, and it calls <code>NaN</code>
+   * <code>Indeterminate</code>.
+   */
+  @Test
+  public void testWLNonFiniteDoubles() {
+    assertEquals(F.num(Double.POSITIVE_INFINITY).toMMA(), "Infinity");
+    assertEquals(F.num(Double.NEGATIVE_INFINITY).toMMA(), "-Infinity");
+    assertEquals(F.num(Double.NaN).toMMA(), "Indeterminate");
+    assertEquals(F.List(F.C1, F.num(Double.POSITIVE_INFINITY), F.C2).toMMA(),
+        "{1,Infinity,2}");
+  }
+
+  /** A leading minus has to be parenthesised exactly as it is for a finite negative number. */
+  @Test
+  public void testWLNonFiniteDoublesPrecedence() {
+    IExpr negativeInfinity = F.num(Double.NEGATIVE_INFINITY);
+    assertEquals(F.Plus(F.C1, negativeInfinity).toMMA(), "-Infinity + 1");
+    assertEquals(F.Times(F.C2, negativeInfinity).toMMA(), "(-Infinity)*2");
+    assertEquals(F.Power(negativeInfinity, F.C2).toMMA(), "(-Infinity)^2");
+    assertEquals(F.Sin(negativeInfinity).toMMA(), "Sin[-Infinity]");
+  }
+
+  /** A machine complex carries the same names into both of its parts. */
+  @Test
+  public void testWLNonFiniteComplex() {
+    assertEquals(F.complexNum(Double.POSITIVE_INFINITY, 1.0).toMMA(), "Infinity + I*1.0`");
+    assertEquals(F.complexNum(1.0, Double.NaN).toMMA(), "1.0` + I*Indeterminate");
+  }
+
   @Test
   public void testWLHeadTest() {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);

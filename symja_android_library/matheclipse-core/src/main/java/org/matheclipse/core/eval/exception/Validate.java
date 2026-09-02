@@ -972,8 +972,8 @@ public final class Validate {
     if (eq.isAST2()) {
       IAST equal = (IAST) eq;
       IExpr head = equal.head();
-      if (head.equals(S.Equal) || head.equals(S.Unequal) || head.equals(S.Greater)
-          || head.equals(S.GreaterEqual) || head.equals(S.Less) || head.equals(S.LessEqual)) {
+      if (head == S.Equal || head == S.Unequal || head == S.Greater
+          || head == S.GreaterEqual || head == S.Less || head == S.LessEqual) {
         final IExpr[] arr = new IExpr[] {F.expandAll(equal.arg1(), true, true),
             F.expandAll(equal.arg2(), true, true)};
         termsEqualZeroList.append(F.ast(arr, head));
@@ -997,20 +997,73 @@ public final class Validate {
   }
 
   private static void subtractListRecursive(IExpr subtract, IASTAppendable termsEqualZeroList) {
-    if (subtract.isList()) {
-      IAST list = (IAST) subtract;
+    IASTAppendable components = F.ListAlloc(subtract.isList() ? subtract.size() : 1);
+    appendListComponents(subtract, components);
+    for (int i = 1; i < components.size(); i++) {
+      IExpr component = components.get(i);
+      termsEqualZeroList
+          .append(F.Equal(component.isTimes() ? component : F.evalExpandAll(component), F.C0));
+    }
+  }
+
+  /**
+   * Split a relation between two equal length lists into its componentwise relations, e.g.
+   * <code>{x,y} == {1,2}</code> into <code>{x == 1, y == 2}</code>. Nested lists are split
+   * recursively, so <code>{{x,y},{z,w}} == {{1,2},{3,4}}</code> yields four relations.
+   *
+   * <p>
+   * A relation between two lists holds componentwise, so every solver has to take it apart before
+   * it can treat its arguments as scalar equations. This is the one place which knows how.
+   *
+   * @param relation a binary relation, for example an {@link S#Equal} or {@link S#Unequal}
+   * @return the list of componentwise relations, or {@link F#NIL} if <code>relation</code> isn't
+   *         list valued on both sides or the two lists have different lengths
+   */
+  public static IAST splitListRelation(IAST relation) {
+    if (!relation.isAST2() || !relation.arg1().isList() || !relation.arg2().isList()) {
+      return F.NIL;
+    }
+    IAST lhs = (IAST) relation.arg1();
+    IAST rhs = (IAST) relation.arg2();
+    if (lhs.size() != rhs.size()) {
+      // relations between lists of different lengths aren't componentwise
+      return F.NIL;
+    }
+    IASTAppendable components = F.ListAlloc(lhs.argSize());
+    for (int i = 1; i < lhs.size(); i++) {
+      IAST component = F.binaryAST2(relation.head(), lhs.get(i), rhs.get(i));
+      IAST nested = splitListRelation(component);
+      if (nested.isPresent()) {
+        components.appendArgs(nested);
+      } else {
+        components.append(component);
+      }
+    }
+    return components;
+  }
+
+  /**
+   * Append the scalar components of a (possibly nested) list valued expression to
+   * <code>components</code>.
+   *
+   * <p>
+   * A relation between two lists holds componentwise, so the difference of the two sides of
+   * <code>{x,y} == {1,2}</code> contributes the two terms <code>x-1</code> and <code>y-2</code>
+   * rather than the single list <code>{x-1, y-2}</code> - a solver expects one scalar term per
+   * equation.
+   *
+   * @param expr the difference of the two sides of a relation
+   * @param components the collector for the scalar components
+   */
+  private static void appendListComponents(IExpr expr, IASTAppendable components) {
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
       for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.get(i);
-        if (arg.isList()) {
-          subtractListRecursive(arg, termsEqualZeroList);
-          continue;
-        }
-        termsEqualZeroList.append(F.Equal(arg.isTimes() ? arg : F.evalExpandAll(arg), F.C0));
+        appendListComponents(list.get(i), components);
       }
       return;
     }
-    termsEqualZeroList
-        .append(F.Equal(subtract.isTimes() ? subtract : F.evalExpandAll(subtract), F.C0));
+    components.append(expr);
   }
 
   /**
@@ -1024,7 +1077,9 @@ public final class Validate {
       IExpr last = equal.last();
       for (int i = 1; i < equal.argSize(); i++) {
         IExpr temp = F.evalExpandAll(F.Subtract(equal.get(i), last));
-        termsEqualNumberList.append(temp);
+        // a relation between two lists holds componentwise, so `{x,y} == {1,2}` contributes one
+        // term per component instead of the single list `{x-1, y-2}`
+        appendListComponents(temp, termsEqualNumberList);
       }
 
     } else if (expr.isTrue()) {

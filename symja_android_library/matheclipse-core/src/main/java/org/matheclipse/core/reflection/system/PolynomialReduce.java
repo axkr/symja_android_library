@@ -31,6 +31,12 @@ import edu.jas.poly.TermOrderByName;
  */
 public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
 
+  /**
+   * How many reduction steps {@link #multivariateDivision} may take before it gives up. Generous
+   * for a real polynomial, where each step removes a leading term.
+   */
+  private static final int MAX_DIVISION_STEPS = 10000;
+
   public PolynomialReduce() {}
 
   @Override
@@ -39,6 +45,13 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
     IExpr polynomialExpr = ast.arg1();
     IExpr divisorsListExpr = ast.arg2().makeList();
     IAST variablesListExpr = (argSize == 3) ? ast.arg3().makeList() : F.CEmptyList;
+    for (int i = 1; i < variablesListExpr.size(); i++) {
+      IExpr variable = variablesListExpr.get(i);
+      if (!variable.isVariable()) {
+        // `1` is not a valid variable.
+        return Errors.printMessage(S.PolynomialReduce, "ivar", F.List(variable), engine);
+      }
+    }
 
     IAST divisorsAST = (IAST) divisorsListExpr;
 
@@ -96,7 +109,19 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
         divisors.add(divPoly);
       }
 
+      if (hasListCoefficient(poly)) {
+        return F.NIL;
+      }
+      for (GenPolynomial<IExpr> divisor : divisors) {
+        if (hasListCoefficient(divisor)) {
+          return F.NIL;
+        }
+      }
+
       ReductionResult<IExpr> result = multivariateDivision(poly, divisors, ring);
+      if (result == null) {
+        return F.NIL;
+      }
 
       IASTAppendable quotientsList = F.ListAlloc(divisors.size());
       for (GenPolynomial<IExpr> q : result.quotients) {
@@ -132,6 +157,9 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
     }
 
     ReductionResult<BigRational> result = multivariateDivision(poly, divisors, ring);
+    if (result == null) {
+      return F.NIL;
+    }
 
     IASTAppendable quotientsList = F.ListAlloc(divisors.size());
     for (GenPolynomial<BigRational> q : result.quotients) {
@@ -156,6 +184,9 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
     }
 
     ReductionResult<BigInteger> result = multivariateDivision(poly, divisors, ring);
+    if (result == null) {
+      return F.NIL;
+    }
 
     // Return format: {{q1, q2, ...}, remainder}
     IASTAppendable quotientsList = F.ListAlloc(divisors.size());
@@ -211,6 +242,29 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
    * Algorithm: Multivariate Division P = q1*d1 + ... + qk*dk + r
    */
   @SuppressWarnings("unchecked")
+  /**
+   * Whether any coefficient of {@code poly} is itself a list.
+   *
+   * <p>
+   * An argument like <code>{1,1,1}</code> is not a polynomial, but it converts into one all the
+   * same, as a constant whose coefficient is the list. Reducing that cannot terminate: the
+   * coefficient arithmetic threads a list against one of a different length, which answers a
+   * Thread::tdlen message and an unevaluated product rather than a number, so nothing ever cancels
+   * and each pass builds a larger expression than the last. One such call printed 524220 messages
+   * - 95 distinct ones, repeated - and 40 MB of output before the step limit stopped it.
+   *
+   * @param poly the converted polynomial
+   * @return {@code true} if it holds a coefficient no reduction can cancel
+   */
+  private static boolean hasListCoefficient(GenPolynomial<IExpr> poly) {
+    for (IExpr coefficient : poly.getMap().values()) {
+      if (coefficient.isList()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static <C extends edu.jas.structure.RingElem<C>> ReductionResult<C> multivariateDivision(
       GenPolynomial<C> P, List<GenPolynomial<C>> divisors, GenPolynomialRing<C> ring) {
 
@@ -227,7 +281,17 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
     int stagnationCount = 0;
 
     // As long as the polynomial is not 0
+    int steps = 0;
     while (!pCurr.isZERO()) {
+      if (++steps > MAX_DIVISION_STEPS) {
+        // A genuine reduction lowers the leading term in a well order, so this loop is finite for
+        // anything that really is a polynomial. It is not for an argument that merely passes for
+        // one: a coefficient which is itself a list divides and multiplies without ever
+        // cancelling, so every pass yields a different polynomial rather than a smaller one, and
+        // the stagnation guard below never sees the same leading term twice. Giving up is the
+        // caller's cue to answer an unevaluated PolynomialReduce rather than a half-reduced one.
+        return null;
+      }
       boolean divisionOccurred = false;
       ExpVector e = pCurr.leadingExpVector();
       C c = pCurr.leadingBaseCoefficient();
@@ -283,7 +347,17 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
                 quotients.set(i, quotients.get(i).sum(S));
 
                 // Update polynomial: p = p - S * div
-                pCurr = pCurr.subtract(S.multiply(div));
+                GenPolynomial<C> reduced = pCurr.subtract(S.multiply(div));
+                if (reduced.equals(pCurr)) {
+                  // The subtraction cancelled nothing, so this is not progress. It happens with
+                  // IExpr coefficients, whose quotient is accepted above without checking that
+                  // factorCoeff * cDiv is back to c - there is no reliable structural equality to
+                  // check it with. Counting it as a division would reset the stagnation guard
+                  // below on every pass and the loop would never end. Leave the term to the next
+                  // divisor, or to the remainder.
+                  continue;
+                }
+                pCurr = reduced;
 
                 divisionOccurred = true;
                 lastExp = null;

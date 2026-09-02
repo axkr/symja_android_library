@@ -98,7 +98,7 @@ public class AttributeFunctions {
           sym.clearAttributes(ISymbol.ALL_ATTRIBUTES);
         }
         IExpr temp = engine.evaluate(F.SetAttributes(leftHandSide.first(), rightHandSide));
-        if (temp.equals(S.Null)) {
+        if (temp == S.Null) {
           return rightHandSide;
         }
       }

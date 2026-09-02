@@ -1,5 +1,6 @@
 package org.matheclipse.io.others;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.io.system.AbstractTestCase;
@@ -34,7 +35,10 @@ public class UnitTestingJUnit extends AbstractTestCase {
   }
 
   /** The JUnit setup method */
+  // @BeforeEach as well as @Override: JUnit 5 does not carry a lifecycle annotation onto
+  // an overriding method, so without it neither this method nor the one it overrides runs
   @Override
+  @BeforeEach
   public void setUp() {
     super.setUp();
     Config.FILESYSTEM_ENABLED = true;

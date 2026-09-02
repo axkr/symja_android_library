@@ -438,8 +438,8 @@ public abstract class Prim2D {
   // ---------------------------------------------------------------- raster
 
   /**
-   * {@code Raster[...]}. Rendered as a grid of rectangles rather than an embedded bitmap, so the
-   * converter stays free of an image encoding dependency.
+   * {@code Raster[...]}. Rendered as a grid of rectangles while equal neighbours merge into few
+   * enough of them, and as an embedded PNG once they do not.
    */
   public static final class RasterPrim extends Prim2D {
     /** Row 0 is the bottom row, in the coordinate convention. */

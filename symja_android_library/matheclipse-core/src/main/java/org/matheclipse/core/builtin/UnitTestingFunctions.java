@@ -15,14 +15,15 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.TestReportObjectExpr;
 import org.matheclipse.core.expression.data.TestResultObjectExpr;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
@@ -82,7 +83,10 @@ public class UnitTestingFunctions {
             return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
           }
         }
-        File file = new File(arg1);
+        File file = FileSandbox.resolveRead(ast.topHead(), arg1, engine);
+        if (file == null) {
+          return F.NIL;
+        }
 
         if (file.exists()) {
           return getFile(file, ast, engine);
@@ -225,7 +229,7 @@ public class UnitTestingFunctions {
         if (result.isTrue()) {
           success(assoc);
         } else {
-          if (sameTest.equals(S.SameQ)) {
+          if (sameTest == S.SameQ) {
             String actualOutputFullForm = tempActualOutput.fullFormString();
             String expectedOutputFullForm = expectedOutput.fullFormString();
             if (actualOutputFullForm.equals(expectedOutputFullForm)) {

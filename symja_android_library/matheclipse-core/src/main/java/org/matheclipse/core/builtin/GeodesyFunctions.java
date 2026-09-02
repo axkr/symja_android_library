@@ -22,7 +22,7 @@ public class GeodesyFunctions {
     private static void init() {
       S.GeodesyData.setEvaluator(new GeodesyData());
       S.GeoPosition.setEvaluator(new GeoPosition());
-      // S.GeoDistance is implemented in the matheclipse-orekit module, which measures it along a
+      // S.GeoDistance is implemented in the matheclipse-astro module, which measures it along a
       // rhumb line with Orekit's LoxodromeArc. The geodesic solver in
       // org.matheclipse.core.numerics.geodesy stays here and is what FindShortestTour uses.
     }

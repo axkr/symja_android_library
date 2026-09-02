@@ -7,15 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.nio.Attribute;
-import org.jgrapht.nio.DefaultAttribute;
-import org.jgrapht.nio.ExportException;
-import org.jgrapht.nio.GraphExporter;
-import org.jgrapht.nio.csv.CSVExporter;
-import org.jgrapht.nio.dot.DOTExporter;
-import org.jgrapht.nio.graphml.GraphMLExporter;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -24,14 +15,15 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.io.TableFormatIO;
 
 /** Export some data into a string representation */
 public class ExportString extends AbstractEvaluator {
@@ -62,18 +54,13 @@ public class ExportString extends AbstractEvaluator {
       }
 
       if (format.equals(Extension.SVG)) {
-        if (arg1.isGraphicsObject()) {
-          SVGGraphics svgGraphics = new SVGGraphics(360, 360);
-          String svgString = svgGraphics.toSVG((IAST) arg1, true);
-          return F.stringx(svgString);
-        }
-        if (arg1.isAST(S.Graphics3D)) {
-          String svgString = SVGGraphics3D.toSVG((IAST) arg1);
+        String svgString = SVGGraphics.svgDocument(arg1);
+        if (svgString != null) {
           return F.stringx(svgString);
         }
       }
-      if (arg1 instanceof GraphExpr) {
-        graphExport(((GraphExpr<DefaultEdge>) arg1).toData(), writer, format);
+      if (arg1 instanceof IGraphExpr) {
+        ((IGraphExpr) arg1).graphExport(writer, format);
         return F.stringx(writer.toString());
       }
 
@@ -85,6 +72,14 @@ public class ExportString extends AbstractEvaluator {
         }
       } else if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
         if (arg1.isDataset()) {
+          // matheclipse-dataset writes the format's own separator - a tab for TSV - where the
+          // IASTDataset fallback below always writes commas
+          TableFormatIO tableFormatIO = TableFormatIO.get();
+          if (tableFormatIO != null && tableFormatIO.canExport(format)) {
+            if (tableFormatIO.exportTable(writer, arg1, format, F.NIL)) {
+              return F.stringx(writer.toString());
+            }
+          }
           ((IASTDataset) arg1).csv(writer);
           return F.stringx(writer.toString());
         }
@@ -134,38 +129,7 @@ public class ExportString extends AbstractEvaluator {
     return F.NIL;
   }
 
-  private static final Function<IExpr, String> nameProvider = v -> String.valueOf(v);
 
-  void graphExport(Graph<IExpr, DefaultEdge> g, Writer writer, Extension format)
-      throws ExportException {
-    switch (format) {
-      case DOT:
-        DOTExporter<IExpr, DefaultEdge> dotExporter = new DOTExporter<>(); // new
-                                                                           // IntegerComponentNameProvider<>(),
-                                                                           // null, null, null,
-                                                                           // null);
-        // dotExporter.putGraphAttribute("overlap", "false");
-        // dotExporter.putGraphAttribute("splines", "true");
-
-        dotExporter.setGraphAttributeProvider(() -> {
-          Map<String, Attribute> map = new LinkedHashMap<>();
-          map.put("overlap", DefaultAttribute.createAttribute("false"));
-          map.put("splines", DefaultAttribute.createAttribute("true"));
-          return map;
-        });
-        return;
-      case GRAPHML:
-        GraphExporter<IExpr, DefaultEdge> graphMLExporter = new GraphMLExporter<>();
-        graphMLExporter.exportGraph(g, writer);
-        return;
-      default:
-    }
-
-    // DEFAULT: return CSV file
-    CSVExporter<IExpr, DefaultEdge> exporter = new CSVExporter<IExpr, DefaultEdge>(nameProvider,
-        org.jgrapht.nio.csv.CSVFormat.EDGE_LIST, ';');
-    exporter.exportGraph(g, writer);
-  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {

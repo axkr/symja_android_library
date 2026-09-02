@@ -50,11 +50,41 @@ public class ManipulateControl {
   /** A free text field, parsed as an expression when it is read back. */
   public static final String INPUTFIELD = "inputfield";
 
+  /**
+   * A <code>FileNameSetter</code>: a Browse button whose value is a file name.
+   *
+   * <p>
+   * On a local kernel the button opens a dialog and the name it yields is a path on that machine.
+   * In a browser there is no such path to yield - the kernel is elsewhere and reads inside a
+   * directory of its own - so the widget carries the file across first and the value is the name it
+   * was stored under. Either way what the variable ends up holding is a name
+   * <code>Import</code> can open, which is the only part a notebook can be written against.
+   */
+  public static final String FILE = "file";
+
+  /**
+   * A bar of independent switches whose variable holds the list of the ones that are on, as
+   * <code>TogglerBar</code> and <code>CheckboxBar</code> do.
+   */
+  public static final String MULTI = "multi";
+
   /** A <code>Button[label, action]</code> row. Binds no variable. */
   public static final String BUTTON = "button";
 
   /** A heading between controls, from a string or <code>Style</code> argument. */
   public static final String HEADING = "heading";
+
+  /**
+   * A row that shows an expression rather than offering a control, from an argument that carries a
+   * <code>Dynamic</code>.
+   *
+   * <p>
+   * <code>Manipulate[..., Row[{"moves: ", Dynamic[moves]}]]</code> is the usual way a demonstration
+   * puts a live read-out next to its sliders. It is not a control specification, and it is not the
+   * static heading a plain string gives either: it is re-evaluated and re-rendered with every
+   * frame, so its expression is kept here rather than its text.
+   */
+  public static final String DISPLAY = "display";
 
   /** A <code>Delimiter</code> argument: a horizontal rule. */
   public static final String DELIMITER = "delimiter";
@@ -99,19 +129,65 @@ public class ManipulateControl {
   /** A <code>Button</code>'s action, held. */
   private IExpr action = F.NIL;
 
+  /** A {@link #DISPLAY} row's expression, held so it can be re-evaluated with every frame. */
+  private IExpr display = F.NIL;
+
+  /**
+   * The <code>Dynamic[...]</code> this control writes through, when it came from a control object
+   * such as <code>Slider[Dynamic[x]]</code> rather than from a <code>Manipulate</code>
+   * specification.
+   *
+   * <p>
+   * A specification names a variable and the server owns it. A control object points wherever the
+   * user pointed it - at a global symbol, at a part of a list - and may carry a setter function
+   * that decides what the value becomes. Keeping the whole expression is what lets the write go
+   * back through {@link Dynamics#assign}.
+   */
+  private IExpr dynamic = F.NIL;
+
+  /** The identity the browser uses, when it is not simply the bound variable's name. */
+  private String nameOverride;
+
+  /** Whether the user may only look at this control, from <code>Dynamic[expr, None]</code>. */
+  private boolean readOnly = false;
+
   /** <code>Appearance</code> of this control, or <code>null</code> for the default. */
   private String appearance;
 
   /** <code>Enabled -> cond</code>, held so it can be resolved against the live bindings. */
   private IExpr enabled = F.NIL;
 
+  /**
+   * The condition under which this row is on screen at all, from the pane of a
+   * <code>PaneSelector</code> it belongs to.
+   *
+   * <p>
+   * A <code>PaneSelector</code> swaps whole groups of controls as its selector moves. The panel
+   * here is one flat list of rows, so each row of a pane carries the test that says whether its
+   * pane is the one showing; the rows of the other panes are hidden rather than absent, which is
+   * what keeps their variables bound while they are off screen.
+   */
+  private IExpr visible = F.NIL;
+
   /** <code>ControlPlacement</code> of this single control, or <code>null</code>. */
   private String placement;
+
+  /** For a {@link #FILE} control: "Open", "OpenList", "Save" or "Directory". */
+  private String fileDialog = "Open";
 
   ManipulateControl(String kind, ISymbol variable) {
     this.kind = kind;
     this.variable = variable;
     this.label = variable == null ? "" : variable.getSymbolName();
+  }
+
+  /** @see #fileDialog */
+  public String getFileDialog() {
+    return fileDialog;
+  }
+
+  public void setFileDialog(String fileDialog) {
+    this.fileDialog = fileDialog;
   }
 
   public String getKind() {
@@ -123,7 +199,35 @@ public class ManipulateControl {
   }
 
   public String getName() {
+    if (nameOverride != null) {
+      return nameOverride;
+    }
     return variable == null ? "" : variable.getSymbolName();
+  }
+
+  void setName(String name) {
+    this.nameOverride = name;
+  }
+
+  /**
+   * The <code>Dynamic</code> this control writes through, or {@link F#NIL} when it binds a
+   * <code>Manipulate</code> variable instead.
+   */
+  public IExpr getDynamic() {
+    return dynamic;
+  }
+
+  void setDynamic(IExpr dynamic) {
+    this.dynamic = dynamic;
+  }
+
+  /** Whether this control only shows its value, from <code>Dynamic[expr, None]</code>. */
+  public boolean isReadOnly() {
+    return readOnly;
+  }
+
+  void setReadOnly(boolean readOnly) {
+    this.readOnly = readOnly;
   }
 
   /** Whether this row binds a variable; headings, delimiters and buttons do not. */
@@ -137,6 +241,20 @@ public class ManipulateControl {
 
   public IExpr getEnabledCondition() {
     return enabled;
+  }
+
+  /** The condition under which this row is on screen, or {@link F#NIL} when it always is. */
+  public IExpr getVisibleCondition() {
+    return visible;
+  }
+
+  void setVisibleCondition(IExpr visible) {
+    this.visible = visible;
+  }
+
+  /** The held expression of a {@link #DISPLAY} row, or {@link F#NIL} for every other kind. */
+  public IExpr getDisplay() {
+    return display;
   }
 
   public List<IExpr> getValues() {
@@ -251,6 +369,9 @@ public class ManipulateControl {
     if (DISCRETE.equals(kind)) {
       return Integer.valueOf(initialIndex);
     }
+    if (MULTI.equals(kind)) {
+      return selectedIndices();
+    }
     if (CHECKBOX.equals(kind)) {
       return Boolean.valueOf(initial.isTrue());
     }
@@ -261,7 +382,10 @@ public class ManipulateControl {
     if (LOCATOR.equals(kind)) {
       return points;
     }
-    if (COLOR.equals(kind) || INPUTFIELD.equals(kind)) {
+    if (COLOR.equals(kind)) {
+      return colorText();
+    }
+    if (INPUTFIELD.equals(kind) || FILE.equals(kind)) {
       return initial.isPresent() ? initial.toString() : "";
     }
     return Double.valueOf(numericInitial());
@@ -275,6 +399,42 @@ public class ManipulateControl {
       }
     }
     return min;
+  }
+
+  /** The positions in {@link #values} that a {@link #MULTI} control currently has switched on. */
+  private List<Integer> selectedIndices() {
+    List<Integer> selected = new ArrayList<Integer>();
+    if (!initial.isList()) {
+      return selected;
+    }
+    IAST chosen = (IAST) initial;
+    for (int i = 0; i < values.size(); i++) {
+      for (int j = 1; j < chosen.size(); j++) {
+        if (values.get(i).equals(chosen.get(j))) {
+          selected.add(Integer.valueOf(i));
+          break;
+        }
+      }
+    }
+    return selected;
+  }
+
+  /**
+   * A colour as the <code>#rrggbb</code> an HTML colour input understands, or the empty string when
+   * the value is not a colour.
+   */
+  private String colorText() {
+    if (initial.isAST(S.RGBColor, 4, 5)) {
+      IAST color = (IAST) initial;
+      return String.format("#%02x%02x%02x", channel(color.arg1()), channel(color.arg2()),
+          channel(color.arg3()));
+    }
+    return initial.isPresent() ? initial.toString() : "";
+  }
+
+  private static int channel(IExpr value) {
+    double d = toDouble(value, 0.0);
+    return Math.max(0, Math.min(255, (int) Math.round(d * 255.0)));
   }
 
   private double[] pairInitial() {
@@ -319,6 +479,9 @@ public class ManipulateControl {
       json.put("placement", placement);
     }
     json.put("enabled", true);
+    if (readOnly) {
+      json.put("readOnly", true);
+    }
 
     if (SLIDER.equals(kind) || TRIGGER.equals(kind)) {
       json.put("min", min);
@@ -345,6 +508,17 @@ public class ManipulateControl {
       }
       json.set("labels", labels);
       json.put("value", initialIndex);
+    } else if (MULTI.equals(kind)) {
+      ArrayNode labels = mapper.createArrayNode();
+      for (String valueLabel : valueLabels) {
+        labels.add(valueLabel);
+      }
+      json.set("labels", labels);
+      ArrayNode selected = mapper.createArrayNode();
+      for (Integer index : selectedIndices()) {
+        selected.add(index.intValue());
+      }
+      json.set("value", selected);
     } else if (CHECKBOX.equals(kind)) {
       json.put("value", initial.isTrue());
     } else if (LOCATOR.equals(kind)) {
@@ -358,8 +532,13 @@ public class ManipulateControl {
       json.put("minY", minY);
       json.put("maxY", maxY);
       json.put("autoCreate", autoCreate);
-    } else if (COLOR.equals(kind) || INPUTFIELD.equals(kind)) {
+    } else if (COLOR.equals(kind)) {
+      json.put("value", colorText());
+    } else if (INPUTFIELD.equals(kind)) {
       json.put("value", initial.isPresent() ? initial.toString() : "");
+    } else if (FILE.equals(kind)) {
+      json.put("value", initial.isPresent() && initial.isString() ? initial.toString() : "");
+      json.put("dialog", fileDialog);
     } else if (BUTTON.equals(kind)) {
       // the action stays on the server; the browser only sends the row index back
     }
@@ -382,6 +561,13 @@ public class ManipulateControl {
 
   static ManipulateControl delimiter() {
     return new ManipulateControl(DELIMITER, null);
+  }
+
+  /** A row that re-renders <code>expr</code> with every frame. */
+  static ManipulateControl display(IExpr expr) {
+    ManipulateControl control = new ManipulateControl(DISPLAY, null);
+    control.display = expr;
+    return control;
   }
 
   static ManipulateControl button(String label, IExpr action) {

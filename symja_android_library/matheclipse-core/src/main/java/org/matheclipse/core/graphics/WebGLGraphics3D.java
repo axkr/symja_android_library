@@ -61,15 +61,24 @@ public class WebGLGraphics3D {
   }
 
   public static String generateHTMLSnippet(IAST graphics) {
-    return generateOutput(graphics, true);
+    return generateOutput(graphics, true, -1, -1);
+  }
+
+  /**
+   * A snippet drawn in a box of the caller's choosing rather than at the size the graphic asks
+   * for, for somewhere with room of its own to fill - a table cell, say. Only the element the
+   * renderer builds its canvas in is sized; the scene is the same one {@code ImageSize} describes.
+   */
+  public static String generateHTMLSnippet(IAST graphics, int width, int height) {
+    return generateOutput(graphics, true, width, height);
   }
 
   public static String generateHTML(IAST graphics) {
-    return generateOutput(graphics, false);
+    return generateOutput(graphics, false, -1, -1);
   }
 
   public static String generateHTML(IAST graphics, boolean isSnippet) {
-    return generateOutput(graphics, isSnippet);
+    return generateOutput(graphics, isSnippet, -1, -1);
   }
 
   /** The scene JSON on its own, which the tests assert against. */
@@ -81,7 +90,13 @@ public class WebGLGraphics3D {
     }
   }
 
-  private static String generateOutput(IAST graphics, boolean isSnippet) {
+  /**
+   * @param boxWidth the width to draw the snippet in, or a value {@code <= 0} to take the size
+   *        from the scene
+   * @param boxHeight as {@code boxWidth}, for the height
+   */
+  private static String generateOutput(IAST graphics, boolean isSnippet, int boxWidth,
+      int boxHeight) {
     ObjectNode scene;
     try {
       scene = buildScene(graphics);
@@ -94,6 +109,12 @@ public class WebGLGraphics3D {
       ArrayNode size = (ArrayNode) scene.get("imageSize");
       width = size.get(0).asDouble(360);
       height = size.get(1).asDouble(360);
+    }
+    if (boxWidth > 0) {
+      width = boxWidth;
+    }
+    if (boxHeight > 0) {
+      height = boxHeight;
     }
     String json;
     try {
@@ -465,9 +486,18 @@ public class WebGLGraphics3D {
 
   // -------------------------------------------------------------------- HTML
 
+  /**
+   * Distinguishes the containers of snippets built in the same millisecond. The random suffix this
+   * replaces collided about once in ten thousand, which a page showing a single graphic never
+   * noticed - but a table drawing one per cell builds them back to back, and two cells sharing an
+   * id means the second scene is rendered into the first cell and one of them stays empty.
+   */
+  private static final java.util.concurrent.atomic.AtomicLong SNIPPET_COUNT =
+      new java.util.concurrent.atomic.AtomicLong();
+
   private static String createSnippetHTML(String jsonData, double width, double height) {
     String containerId =
-        "webgl_" + System.currentTimeMillis() + "_" + (int) (Math.random() * 10000);
+        "webgl_" + System.currentTimeMillis() + "_" + SNIPPET_COUNT.incrementAndGet();
     StringBuilder html = new StringBuilder();
     html.append("<div data-type=\"webgl\" id=\"").append(containerId).append("\" style=\"width: ")
         .append((int) Math.round(width)).append("px; height: ").append((int) Math.round(height))

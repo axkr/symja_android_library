@@ -43,7 +43,7 @@ public class EntityList extends AbstractFunctionEvaluator {
   private IExpr getAllElements(EvalEngine engine) {
     IASTAppendable result = F.ListAlloc();
     for (int z = 1; z <= 118; z++) {
-      IExpr name = engine.evaluate(F.ElementData(F.ZZ(z), F.stringx("StandardName")));
+      IExpr name = engine.evaluate(F.ElementData(F.ZZ(z), F.stringx("Name")));
       if (name.isString()) {
         result.append(F.Entity(F.stringx("Element"), name));
       }
@@ -89,7 +89,7 @@ public class EntityList extends AbstractFunctionEvaluator {
       }
 
       if (match) {
-        IExpr name = engine.evaluate(F.ElementData(F.ZZ(z), F.stringx("StandardName")));
+        IExpr name = engine.evaluate(F.ElementData(F.ZZ(z), F.stringx("Name")));
         if (name.isString()) {
           result.append(F.Entity(F.stringx("Element"), name));
         }

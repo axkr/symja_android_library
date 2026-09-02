@@ -73,7 +73,7 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
             TimeUnit.SECONDS, true, new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }
       if (result != null) {
-        if (result.equals(S.Null)) {
+        if (result == S.Null) {
           return "Null";
         } else {
           return result;

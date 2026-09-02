@@ -167,7 +167,7 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public boolean append(IExpr expr) {
-    hashValue = 0;
+    argumentsChanged();
     if (size() > 0) {
       if (size() == 1) {
         // first argument
@@ -196,7 +196,7 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public final void append(int location, IExpr expr) {
-    hashValue = 0;
+    argumentsChanged();
     int size = lastIndex - firstIndex;
     if (location == 0) {
       if (size == 0) {
@@ -249,7 +249,7 @@ public abstract class HMArrayList extends AbstractAST
     if (dumpArray.length == 0) {
       return false;
     }
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     if (dumpArray.length > array.length - lastIndex) {
       growAtEnd(dumpArray.length);
@@ -272,7 +272,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public boolean appendAll(IAST ast, int startPosition, int endPosition) {
     if (ast.size() > 0 && startPosition < endPosition) {
-      hashValue = 0;
+      argumentsChanged();
       if (startPosition >= 1) {
         // a subset of the arguments of a uniform list is uniform as well
         mergeUniformTypeFlags(argumentTypeFlags(ast), size());
@@ -311,7 +311,7 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     int size = lastIndex - firstIndex;
     if (location < 0 || location > size) {
@@ -360,7 +360,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
     if (list.size() > 0 && startPosition < endPosition) {
-      hashValue = 0;
+      argumentsChanged();
       uniformTypeFlags = UniformFlags.UNKNOWN;
       int length = endPosition - startPosition;
       if (length > array.length - lastIndex) {
@@ -384,7 +384,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
     if (args.length > 0 && startPosition < endPosition) {
-      hashValue = 0;
+      argumentsChanged();
       uniformTypeFlags = UniformFlags.UNKNOWN;
       int length = endPosition - startPosition;
       if (length > array.length - lastIndex) {
@@ -430,7 +430,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public final boolean appendArgs(IAST ast, int untilPosition) {
     if (untilPosition > 1) {
-      hashValue = 0;
+      argumentsChanged();
       // only arguments of ast are appended here; a subset of the arguments of a uniform list is
       // uniform as well
       mergeUniformTypeFlags(argumentTypeFlags(ast), size());
@@ -452,7 +452,7 @@ public abstract class HMArrayList extends AbstractAST
     if (start >= end) {
       return this;
     }
-    hashValue = 0;
+    argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     int length = end - start;
     if (length > array.length - lastIndex) {
@@ -1248,7 +1248,7 @@ public abstract class HMArrayList extends AbstractAST
     if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
       throw new NullPointerException("Index: " + location + ", Size: " + (lastIndex - firstIndex));
     }
-    hashValue = 0;
+    argumentsChanged();
     if (location != 0 && uniformTypeFlags != UniformFlags.UNKNOWN) {
       uniformTypeFlags &= expr.uniformFlags();
     }

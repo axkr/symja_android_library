@@ -15,7 +15,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.builtin.Import;
 import org.matheclipse.io.tensor.io.ImageFormat;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class ImportTest {
   // @Test

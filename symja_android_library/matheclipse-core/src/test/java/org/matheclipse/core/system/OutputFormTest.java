@@ -183,4 +183,45 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     }
   }
 
+  /**
+   * <code>Grid, Pane, TableForm</code> are display wrappers: they survive evaluation and only the
+   * printed representation changes. Evaluating them repeatedly in one session must keep returning
+   * the same result.
+   */
+  @Test
+  public void testCases() {
+    check("Grid({{a, b}, {c, d}})", "Grid({{a,b},{c,d}})");
+    check("Grid({{a, b}, {c, d}}); Grid({a, b, c})", "Grid({a,b,c})");
+    // OutputForm prints strings without the surrounding quotes
+    check(
+        "Grid({{a, b}, {c, d}}); Grid({a, b, c}); Grid({{\"first\", \"second\", \"third\"},{a},{1, 2, 3}})",
+        "Grid({{first,second,third},{a},{1,2,3}})");
+    check(
+        "Grid({{a, b}, {c, d}}); Grid({a, b, c}); Grid({{\"first\", \"second\", \"third\"},{a},{1, 2, 3}}); Grid({\"This is a long title\", {\"first\", \"second\", \"third\"},{a},{1, 2, 3}})",
+        "Grid({This is a long title,{first,second,third},{a},{1,2,3}})");
+    // ... InputForm keeps them, so the grid can be read back
+    check("InputForm(Grid({{\"first\", \"second\", \"third\"},{a},{1, 2, 3}}))",
+        "Grid({{\"first\",\"second\",\"third\"},{a},{1,2,3}})");
+    check("Pane(37!)", "Pane(13763753091226345046315979581580902400000000)");
+    check("Pane(37!); {{Pane(a,3), Pane(expt, 3)}}//TableForm//TeXForm",
+        "\\begin{array}{cc}\n \\text{Pane}(a,3) & \\text{Pane}(expt,3) \\\\\n\\end{array}");
+    // the delayed rule is held, so the option value stays unevaluated
+    check("Grid({{a,bc},{d,e}}, ColumnAlignments:>Symbol(\"Rig\"<>\"ht\"))",
+        "Grid({{a,bc},{d,e}},ColumnAlignments:>Symbol(Rig<>ht))");
+    // TODO Grid has no TeX converter yet - it falls back to the generic function form
+    check(
+        "Grid({{a,bc},{d,e}}, ColumnAlignments:>Symbol(\"Rig\"<>\"ht\")); TeXForm@Grid({{a,bc},{d,e}}, ColumnAlignments->Left)",
+        "\\text{Grid}(\\{\\{a,bc\\},\\{d,e\\}\\},ColumnAlignments\\to Left)");
+    check(
+        "Grid({{a,bc},{d,e}}, ColumnAlignments:>Symbol(\"Rig\"<>\"ht\")); TeXForm@Grid({{a,bc},{d,e}}, ColumnAlignments->Left); TeXForm(TableForm({{a,b},{c,d}}))",
+        "\\begin{array}{cc}\n a & b \\\\\n c & d \\\\\n\\end{array}");
+  }
+
+  /** <code>TableForm</code> stays in the expression tree - only its printed form is a table. */
+  @Test
+  public void testTableFormIsADisplayWrapper() {
+    check("Head(TableForm({{a,b},{c,d}}))", "TableForm");
+    check("FullForm(TableForm({{a,b},{c,d}}))", "TableForm(List(List(a, b), List(c, d)))");
+    check("TableForm({{a,b},{c,d}})", " a  b \n c  d ");
+  }
 }

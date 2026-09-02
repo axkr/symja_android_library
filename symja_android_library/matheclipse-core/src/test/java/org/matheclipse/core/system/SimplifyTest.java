@@ -27,6 +27,14 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
     check("FullSimplify(a*Conjugate(a))", //
         "Abs(a)^2");
+    // Gamma(x)*Gamma(-x) == -Pi*Csc(Pi*x)/x pays off when the rewrite lets the product
+    // collapse; for the bare pair the folded form is larger and Simplify keeps the input
+    check("FullSimplify(Gamma(x)*Gamma(-x)*Sin(Pi*x))", //
+        "-Pi/x");
+    check("FullSimplify(x*Gamma(x)*Gamma(-x))", //
+        "-Pi*Csc(Pi*x)");
+    check("FullSimplify(Gamma(x)*Gamma(-x)*x*Sin(Pi*x))", //
+        "-Pi");
     check("FullSimplify( 3*E^(-x)+7*E^x )", //
         "10*Cosh(x)+4*Sinh(x)");
     check("Simplify( 3*E^(-x)+7*E^x )", //

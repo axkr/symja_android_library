@@ -131,6 +131,14 @@ public class ShiftRegisterSequence extends AbstractFunctionOptionEvaluator {
           TreeMap<Integer, Integer> expToCoeff = collectPolynomialTerms(spec, var, p);
           if (!expToCoeff.isEmpty()) {
             n = expToCoeff.lastKey();
+            if (n < 2) {
+              // n is the register width, so it sizes the arrays below. A reciprocal such as
+              // 1/All parses to an exponent of -1 and reached `new int[n]` with it, which is a
+              // NegativeArraySizeException; the n <= 0 test further down came too late to help.
+              // `1` is not a univariate polynomial function with integer coefficients of degree
+              // greater than 1.
+              return Errors.printMessage(S.ShiftRegisterSequence, "nupi", F.List(spec), engine);
+            }
             int tapCount = expToCoeff.headMap(n).size();
             tapPositions = new int[tapCount];
             tapCoeffs = new int[tapCount];
@@ -205,7 +213,7 @@ public class ShiftRegisterSequence extends AbstractFunctionOptionEvaluator {
       }
 
       int numElements;
-      if (s == null || s.equals(S.All)) {
+      if (s == null || s == S.All) {
         // Full maximum-length period is p^n - 1; cap by MAX_SEQUENCE_LENGTH to avoid OOM.
         BigInteger period = BigInteger.valueOf(p).pow(n).subtract(BigInteger.ONE);
         numElements =

@@ -95,10 +95,41 @@ public class SumTest extends ExprEvaluatorTestCase {
         "0^a+HarmonicNumber(n,-a)");
   }
 
+  /**
+   * An iterator is a list, <code>{i, imax}</code> or <code>{i, imin, imax}</code>, or the bare
+   * symbol of an indefinite sum. A number is neither.
+   *
+   * <p>
+   * Sum inherits its unrolling from Table, where a count <em>is</em> a valid specification -
+   * <code>Table[x, 3]</code> is <code>{x, x, x}</code> - so <code>Sum(x, 3)</code> answered
+   * <code>3*x</code> where Mathematica leaves it alone. Accepting it also let a first argument of
+   * <code>Times()</code> reach the rule index with no factors at all, which no bucket describes,
+   * and the index answered an array index of <code>-1</code>.
+   */
+  @Test
+  public void testSumIteratorMustBeListOrSymbol() {
+    check("Sum(x,3)", "Sum(x,3)");
+    check("Sum(1,2)", "Sum(1,2)");
+    check("Sum(Times(),2)", "Sum(Times(),2)");
+    check("Product(x,3)", "Product(x,3)");
+    check("Product(Times(),2)", "Product(Times(),2)");
+    // the indefinite forms take a bare symbol and still work
+    check("Sum(k^2,k)", "1/3*(k/2-3/2*k^2+k^3)");
+    check("Sum(a^i,i)", "a^i/(-1+a)");
+    // and the ordinary iterators are untouched
+    check("Sum(i,{i,1,10})", "55");
+    check("Sum(x,{i,1,3})", "3*x");
+    check("Product(i,{i,1,5})", "120");
+    check("Product(x,{i,1,3})", "x^3");
+  }
+
   @Test
   public void testSum004() {
+    // a number is not an iterator, so this is left alone rather than wrapped in Hold, which was
+    // Symja's way of saying it declined to unroll something this large. Mathematica also answers
+    // Sum[10007, 2147483647] with the expression itself.
     check("Sum(10007,2147483647)", //
-        "Hold(Sum(10007,2147483647))");
+        "Sum(10007,2147483647)");
     check("Sum(1.5708,{i,1,10},{1->0})", //
         "Sum(1.5708,{i,1,10},{1->0})");
     check("Sum(i^2,x)", //

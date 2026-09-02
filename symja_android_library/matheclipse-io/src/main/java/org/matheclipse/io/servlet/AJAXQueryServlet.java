@@ -3,6 +3,7 @@ package org.matheclipse.io.servlet;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -27,19 +28,27 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.GraphExpr;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Locale;
+import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.io.ImageFormatIO;
+import org.matheclipse.core.io.TableFormatIO;
+import org.matheclipse.core.interfaces.IASTDataset;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.graphics.GraphGraphics;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.manipulate.ManipulateSpec;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.io.IOInit;
-import org.matheclipse.io.expression.ASTDataset;
 import org.matheclipse.logging.ThreadLocalNotifyingAppender.ThreadLocalNotifierClosable;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -115,6 +124,69 @@ public class AJAXQueryServlet extends HttpServlet {
   private static final Logger LOGGER = LogManager.getLogger(AJAXQueryServlet.class);
 
   public static volatile boolean INITIALIZED = false;
+
+  /**
+   * <code>ExportForm(expr, "fmt")</code> is the reference's way of saying that the result of a cell
+   * is to be delivered as a file rather than displayed. Here that means: serialize it into the
+   * session's sandbox directory and return a link to {@link AJAXDownloadServlet}.
+   *
+   * <p>
+   * Deliberately not the same thing as <code>Export</code>, which writes a file on the kernel side
+   * and now writes it inside the sandbox. One is storage, the other is delivery.
+   *
+   * @return the HTML link, or <code>null</code> if the expression cannot be written in that format
+   */
+  private static String exportFormLink(EvalEngine engine, IAST exportForm) {
+    IExpr expr = exportForm.arg1();
+    IExpr formatArg = exportForm.arg2();
+    if (formatArg.isList() && formatArg.size() > 1) {
+      formatArg = formatArg.first();
+    }
+    if (!formatArg.isString()) {
+      return null;
+    }
+    Extension format = Extension.exportExtension(formatArg.toString());
+    byte[] bytes = null;
+    TableFormatIO tableFormatIO = TableFormatIO.get();
+    if (tableFormatIO != null && tableFormatIO.canExport(format) && expr.isDataset()) {
+      StringBuilderWriter writer = new StringBuilderWriter();
+      if (tableFormatIO.exportTable(writer, expr, format, F.NIL)) {
+        bytes = writer.toString().getBytes(StandardCharsets.UTF_8);
+      }
+    }
+    if (bytes == null) {
+      ImageFormatIO imageFormatIO = ImageFormatIO.get();
+      if (imageFormatIO != null && imageFormatIO.canExport(format)) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+          if (imageFormatIO.exportImage(out, expr, format)) {
+            bytes = out.toByteArray();
+          }
+        } catch (IOException ioe) {
+          LOGGER.debug("ExportForm failed", ioe);
+        }
+      }
+    }
+    if (bytes == null) {
+      // everything else goes out the way ExportString would render it
+      IExpr exported = S.ExportString.of(engine, expr, F.$str(formatArg.toString()));
+      if (!exported.isString()) {
+        return null;
+      }
+      bytes = exported.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    // named by the content, so that re-evaluating a cell reuses the file rather than filling the
+    // session's quota with copies, and so that the session id never reaches the page
+    String name = SessionSandbox.safeName(
+        "export-" + Integer.toHexString(Arrays.hashCode(bytes)) + "."
+            + formatArg.toString().toLowerCase(Locale.US),
+        formatArg.toString());
+    if (name == null || SessionSandbox.store(engine.getSessionID(), name, bytes) == null) {
+      return null;
+    }
+    return "<a href=\"/ajax/download/?name=" + name + "\" download=\"" + name + "\">"
+        + name + " (" + bytes.length + " bytes)</a>";
+  }
 
   protected boolean isRelaxedSyntax() {
     return true;
@@ -201,6 +273,13 @@ public class AJAXQueryServlet extends HttpServlet {
             Config.DEFAULT_ITERATION_LIMIT, outs, errors, isRelaxedSyntax());
         engine.setOutListDisabled(false, (short) 100);
         engine.setPackageMode(false);
+        // the file system permission is per session here, not the global Config switch, and it
+        // comes with the directory every user supplied file name is resolved inside
+        Path sandboxRoot = SessionSandbox.rootFor(session.getId());
+        if (sandboxRoot != null) {
+          engine.setFileSandboxRoot(sandboxRoot);
+          engine.setFileSystemEnabled(true);
+        }
         ENGINES.put(session.getId(), engine);
       } else {
         engine.setOutPrintStream(outs);
@@ -269,24 +348,43 @@ public class AJAXQueryServlet extends HttpServlet {
     String input = inputString.trim();
     try {
       EvalEngine.setReset(engine);
-      ExprParser parser = new ExprParser(engine, isRelaxedSyntax());
+      // Read the input as a script: a cell may hold several expressions written one per line, the
+      // way a notebook cell does. Without this a newline is whitespace, so two definitions on two
+      // lines silently join into one expression through implicit multiplication, and the second one
+      // is never defined.
+      ExprParser parser = new ExprParser(engine, ExprParserFactory.MMA_STYLE_FACTORY,
+          isRelaxedSyntax(), true, ParserConfig.EXPLICIT_TIMES_OPERATOR);
       // throws SyntaxError exception, if syntax isn't valid
-      IExpr inExpr = parser.parse(input);
-      if (inExpr != null) {
-        long numberOfLeaves = inExpr.leafCount();
-        if (numberOfLeaves > Config.MAX_INPUT_LEAVES) {
-          return JSONBuilder.createJSONError("Input expression too big!");
+      parser.beginScript(input);
+      IExpr inExpr = parser.nextScriptExpression();
+      if (inExpr.isPresent()) {
+        StringBuilderWriter outBuffer = null;
+        IExpr outExpr = null;
+        // Every expression is evaluated, in the order it was written, and only the last result is
+        // shown - as a notebook cell does. They are parsed one at a time so that a `Begin` in one
+        // line is in force while the next line is parsed.
+        while (inExpr.isPresent()) {
+          long numberOfLeaves = inExpr.leafCount();
+          if (numberOfLeaves > Config.MAX_INPUT_LEAVES) {
+            return JSONBuilder.createJSONError("Input expression too big!");
+          }
+          if (numericMode.equals("N")) {
+            inExpr = F.N(inExpr);
+          }
+          outBuffer = new StringBuilderWriter();
+          outExpr = evalTopLevel(engine, outBuffer, inExpr);
+          inExpr = parser.nextScriptExpression();
         }
-        if (numericMode.equals("N")) {
-          inExpr = F.N(inExpr);
-        }
-        StringBuilderWriter outBuffer = new StringBuilderWriter();
-        IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
           // an interactive widget: keep the expression, hand the browser its controls
           ManipulateSpec manipulateSpec = ManipulateSpec.parse(outExpr, engine);
           if (manipulateSpec != null) {
             return ManipulateSession.create(engine, manipulateSpec, outWriter, errorWriter);
+          }
+          // a live cell: a Dynamic outside a Manipulate follows the symbols of the session
+          // itself, so a control in one cell can change what another cell shows
+          if (DynamicSession.isDynamicResult(outExpr)) {
+            return DynamicSession.create(engine, outExpr, outWriter, errorWriter);
           }
           return renderResult(engine, outExpr, outWriter, errorWriter);
         }
@@ -331,7 +429,7 @@ public class AJAXQueryServlet extends HttpServlet {
    */
   static String[] renderResult(EvalEngine engine, IExpr outExpr, StringBuilderWriter outWriter,
       StringBuilderWriter errorWriter) throws IOException {
-        if (outExpr instanceof GraphExpr) {
+        if (outExpr instanceof IGraphExpr) {
           GraphGraphics graphGraphics = new GraphGraphics(outExpr);
           IAST graphics = graphGraphics.toGraphics();
           if (graphics.isPresent()) {
@@ -371,8 +469,8 @@ public class AJAXQueryServlet extends HttpServlet {
         if (outExpr.isASTSizeGE(S.Show, 2)) {
           IAST show = (IAST) outExpr;
           return JSONBuilder.createJSONShow(engine, show);
-        } else if (outExpr instanceof GraphExpr) {
-          String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
+        } else if (outExpr instanceof IGraphExpr) {
+          String javaScriptStr = ((IGraphExpr) outExpr).graphToJSForm();
           if (javaScriptStr != null) {
             String html = VISJS_IFRAME;
             html = html.replace("`1`", javaScriptStr);
@@ -409,8 +507,15 @@ public class AJAXQueryServlet extends HttpServlet {
             // ></iframe>");
             // }
           }
-        } else if (outExpr instanceof ASTDataset) {
-          String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();
+        } else if (outExpr.isAST(S.ExportForm, 3)) {
+          String link = exportFormLink(engine, (IAST) outExpr);
+          if (link != null) {
+            return JSONBuilder.createJSONHTML(engine, link, outWriter, errorWriter);
+          }
+        } else if (outExpr.isDataset()) {
+          // through the IASTDataset interface in matheclipse-core, so that the servlet needs no
+          // compile time knowledge of matheclipse-dataset
+          String javaScriptStr = ((IASTDataset) outExpr).datasetToJSForm();
           if (javaScriptStr != null) {
             String htmlSnippet = javaScriptStr.trim();
             return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
@@ -495,7 +600,7 @@ public class AJAXQueryServlet extends HttpServlet {
     EvalEngine[] engineRef = new EvalEngine[] {engine};
     result = ExprEvaluator.evalTopLevel(parsedExpression, engineRef);
     engine = engineRef[0];
-    if ((result != null) && !result.equals(S.Null)) {
+    if ((result != null) && result != S.Null) {
       OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result);
     }
     return result;
@@ -711,15 +816,18 @@ public class AJAXQueryServlet extends HttpServlet {
 
     EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
+    // A few modules decide at registration time whether to install an evaluator at all - Dataset,
+    // SemanticImport and the Swing functions - so the switch has to be on while IOInit runs. It is
+    // turned back off immediately: from here on the permission is per session, granted on the
+    // engine together with that session's sandbox directory.
     Config.FILESYSTEM_ENABLED = true;
     F.initSymja();
     IOInit.init();
+    Config.FILESYSTEM_ENABLED = false;
+    SessionSandbox.sweepOrphans();
     engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
     engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
 
-    S.Plot.setEvaluator(org.matheclipse.core.builtin.graphics.Plot.CONST);
-    S.Plot3D.setEvaluator(org.matheclipse.core.builtin.graphics3d.Plot3D.CONST);
-    // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     // AJAXQueryServlet.log.info(servlet + " initialized");
     System.out.println("Symja version " + Config.VERSION + " initialized");

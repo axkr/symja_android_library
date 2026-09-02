@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics3d;
 
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -19,8 +20,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** {@code Plot3D[f, {x, xmin, xmax}, {y, ymin, ymax}]} - a surface over a rectangular domain. */
 public class Plot3D extends AbstractFunctionOptionEvaluator {
-
-  public static final Plot3D CONST = new Plot3D();
 
   private static final int X_PLOT_POINTS = Plot3DTools.X_PLOT_POINTS;
   private static final int X_PLOT_RANGE = Plot3DTools.X_PLOT_RANGE;
@@ -53,10 +52,16 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
 
-      final IExpr xMin = engine.evalN(lst1.arg2());
-      final IExpr xMax = engine.evalN(lst1.arg3());
-      final IExpr yMin = engine.evalN(lst2.arg2());
-      final IExpr yMax = engine.evalN(lst2.arg3());
+      // a quantity valued range is stripped to magnitudes; the variable stays a plain number
+      IExpr rangeUnits = GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic);
+      IAST xRange = QuantityFunctions.quantityPlotRange(engine.evaluate(lst1.arg2()),
+          engine.evaluate(lst1.arg3()), rangeUnits, engine);
+      IAST yRange = QuantityFunctions.quantityPlotRange(engine.evaluate(lst2.arg2()),
+          engine.evaluate(lst2.arg3()), rangeUnits, engine);
+      final IExpr xMin = engine.evalN(xRange.isPresent() ? xRange.arg1() : lst1.arg2());
+      final IExpr xMax = engine.evalN(xRange.isPresent() ? xRange.arg2() : lst1.arg3());
+      final IExpr yMin = engine.evalN(yRange.isPresent() ? yRange.arg1() : lst2.arg2());
+      final IExpr yMax = engine.evalN(yRange.isPresent() ? yRange.arg2() : lst2.arg3());
       if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || (!(yMin instanceof INum))
           || (!(yMax instanceof INum))) {
         return F.NIL;
@@ -80,8 +85,14 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
           options[X_COLOR_FUNCTION_SCALING], engine);
 
       final IASTAppendable surfaces = F.ListAlloc(functions.argSize());
+      final IExpr targetUnits = GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic);
+      final IAST samplePoint = F.List(F.Rule(xVar, F.num((xMinD + xMaxD) / 2.0)),
+          F.Rule(yVar, F.num((yMinD + yMaxD) / 2.0)));
       for (int f = 1; f <= functions.argSize(); f++) {
-        IExpr surface = buildSurface(functions.get(f), f - 1, xVar, yVar, xMinD, xMaxD, yMinD,
+        // a quantity valued function is plotted by its magnitude
+        IExpr plotted = QuantityFunctions.quantityPlotFunction(((IAST) functions).get(f),
+            samplePoint, targetUnits, engine);
+        IExpr surface = buildSurface(plotted, f - 1, xVar, yVar, xMinD, xMaxD, yMinD,
             yMaxD, nx, ny, options, colorMap, engine);
         if (surface.isPresent()) {
           surfaces.append(surface);
@@ -219,12 +230,12 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         options[X_MESH], engine);
     if (meshLines.argSize() > 0) {
       IExpr meshStyle = options[Plot3DTools.X_MESH_STYLE];
-      decorated.append(meshStyle.equals(S.Automatic) ? S.Black : meshStyle);
+      decorated.append(meshStyle == S.Automatic ? S.Black : meshStyle);
       decorated.append(meshLines);
     }
 
     IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
-    if (!boundaryStyle.equals(S.Automatic) && !boundaryStyle.isNone()) {
+    if (boundaryStyle != S.Automatic && !boundaryStyle.isNone()) {
       IAST boundary = Plot3DTools.surfaceBoundary(grid);
       if (boundary.argSize() > 0) {
         decorated.append(boundaryStyle);
@@ -326,7 +337,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
    */
   private static void applyRegionFunction(double[][] z, double xMin, double xStep, double yMin,
       double yStep, int nx, int ny, IExpr regionFunction, EvalEngine engine) {
-    if (regionFunction.isNone() || regionFunction.equals(S.Automatic)
+    if (regionFunction.isNone() || regionFunction == S.Automatic
         || !regionFunction.isPresent()) {
       return;
     }
@@ -362,7 +373,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
   private static void applyExclusions(double[][] z, double xMin, double xStep, double yMin,
       double yStep, int nx, int ny, ISymbol xVar, ISymbol yVar, IExpr exclusions,
       EvalEngine engine) {
-    if (exclusions.isNone() || exclusions.equals(S.Automatic) || !exclusions.isPresent()) {
+    if (exclusions.isNone() || exclusions == S.Automatic || !exclusions.isPresent()) {
       return;
     }
     IAST list = exclusions.isList() ? (IAST) exclusions : F.list(exclusions);
@@ -434,7 +445,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
    */
   private static IAST meshFunctionLines(double[][][] grid, int nx, int ny, IExpr meshFunctions,
       IExpr meshOption, EvalEngine engine) {
-    if (meshFunctions.equals(S.Automatic) || meshFunctions.isNone() || meshOption.isNone()) {
+    if (meshFunctions == S.Automatic || meshFunctions.isNone() || meshOption.isNone()) {
       return F.CEmptyList;
     }
     IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);

@@ -81,7 +81,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     // ContourStyle was given, so that a plot written either way looks the same
     IExpr contourStyle = options[Plot3DTools.X_CONTOUR_STYLE];
     IExpr styleSource =
-        contourStyle.equals(S.Automatic) ? options[Plot3DTools.X_PLOT_STYLE] : contourStyle;
+        contourStyle == S.Automatic ? options[Plot3DTools.X_PLOT_STYLE] : contourStyle;
 
     IASTAppendable surfaces = F.ListAlloc(levels.length);
     for (int level = 0; level < levels.length; level++) {

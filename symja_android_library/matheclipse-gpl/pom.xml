@@ -33,10 +33,6 @@
 			<artifactId>matheclipse-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>it.unimi.dsi</groupId>
-			<artifactId>fastutil-core</artifactId>
-		</dependency>
 
 		<!-- logging dependencies -->
 		<dependency> <!-- provide the logging-framework implementation -->

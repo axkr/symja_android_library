@@ -17,6 +17,7 @@ import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.IGraphics2D;
 import org.matheclipse.core.graphics.IGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -499,6 +500,22 @@ public class GraphicsFunctions {
     }
   }
 
+  /** <code>Thick</code> is equivalent to <code>Thickness(Large)</code>. */
+  private static class Thick extends AbstractSymbolEvaluator {
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.unaryAST1(S.Thickness, S.Large);
+    }
+  }
+
+  /** <code>Thin</code> is equivalent to <code>Thickness(Tiny)</code>. */
+  private static class Thin extends AbstractSymbolEvaluator {
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.unaryAST1(S.Thickness, S.Tiny);
+    }
+  }
+
   private static class GraphicsComplex extends AbstractFunctionOptionEvaluator
       implements IGraphics2D, IGraphics3D {
 
@@ -553,24 +570,95 @@ public class GraphicsFunctions {
         json.put("type", "graphicscomplex");
         if (list.isListOfLists() && graphics3DCoords(json, list)) {
           ArrayNode array = GraphicsOptions.jsonObjectMapper().createArrayNode();
-          for (int i = 1; i < primitives.size(); i++) {
-            IExpr primitive = primitives.get(i);
-            if (primitive.isAST() && primitive.isBuiltInFunction()) {
-              IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
-              IEvaluator evaluator = symbol.getEvaluator();
-              if (evaluator instanceof IGraphics3D) {
-                ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
-                if (((IGraphics3D) evaluator).graphics3D(g, (IAST) primitive, color, opacity)) {
-                  array.add(g);
-                }
-              }
-            }
-          }
+          graphicsComplex3DRecursive(array, primitives, list, color, opacity);
           json.set("elements", array);
           return true;
         }
       }
       return false;
+    }
+
+    /**
+     * Walks the primitives of a <code>GraphicsComplex</code>.
+     *
+     * <p>
+     * Two things have to happen that a flat loop over the arguments does not do. A nested list
+     * scopes its own directives, exactly as one directly inside <code>Graphics3D</code> does, so
+     * <code>{RGBColor(...), Sphere(...)}</code> has to be walked into rather than skipped for not
+     * being a primitive. And the vertex indices that are the whole point of a complex have to be
+     * resolved against the coordinate pool before a primitive - which only ever sees its own
+     * arguments - is asked to render itself.
+     */
+    private static void graphicsComplex3DRecursive(ArrayNode array, IAST primitives, IAST points,
+        IAST color, IExpr opacity) {
+      IAST currentColor = color;
+      IExpr currentOpacity = opacity;
+      for (int i = 1; i < primitives.size(); i++) {
+        IExpr primitive = primitives.get(i);
+        if (!primitive.isAST()) {
+          continue;
+        }
+        IAST primitiveAST = (IAST) primitive;
+        if (primitiveAST.isList()) {
+          graphicsComplex3DRecursive(array, primitiveAST, points, currentColor, currentOpacity);
+        } else if (primitiveAST.isRGBColor()) {
+          currentColor = primitiveAST;
+        } else if (primitiveAST.isAST(S.Opacity, 2)) {
+          currentOpacity = primitiveAST.arg1();
+        } else if (primitiveAST.isBuiltInFunction()) {
+          IGraphics3D evaluator = primitiveAST.headInstanceOf(IGraphics3D.class);
+          if (evaluator != null) {
+            ObjectNode g = GraphicsOptions.jsonObjectMapper().createObjectNode();
+            IAST resolved = resolveVertexIndices(primitiveAST, points);
+            if (evaluator.graphics3D(g, resolved, currentColor, currentOpacity)) {
+              array.add(g);
+            }
+          }
+        }
+      }
+    }
+
+    /** A primitive with the vertex indices of its coordinate argument replaced by coordinates. */
+    private static IAST resolveVertexIndices(IAST primitive, IAST points) {
+      if (primitive.argSize() < 1) {
+        return primitive;
+      }
+      IExpr coordinates = primitive.arg1();
+      IExpr resolved = substituteVertexIndices(coordinates, points);
+      return resolved == coordinates ? primitive : primitive.setAtCopy(1, resolved);
+    }
+
+    /**
+     * Inside a complex a list whose entries are all integers is a list of vertex indices, not a
+     * coordinate - the same rule the WebGL collector follows, so the two renderers agree on what
+     * <code>Line({1, 2, 3})</code> means.
+     */
+    private static IExpr substituteVertexIndices(IExpr expr, IAST points) {
+      if (!expr.isList()) {
+        return expr;
+      }
+      IAST list = (IAST) expr;
+      boolean allIntegers = list.argSize() > 0;
+      for (int i = 1; i <= list.argSize(); i++) {
+        if (!list.get(i).isInteger()) {
+          allIntegers = false;
+          break;
+        }
+      }
+      IASTAppendable result = F.ListAlloc(list.argSize());
+      if (allIntegers) {
+        for (int i = 1; i <= list.argSize(); i++) {
+          int index = list.get(i).toIntDefault(0);
+          if (index >= 1 && index < points.size()) {
+            result.append(points.get(index));
+          }
+        }
+        return result;
+      }
+      for (int i = 1; i <= list.argSize(); i++) {
+        result.append(substituteVertexIndices(list.get(i), points));
+      }
+      return result;
     }
 
     @Override
@@ -655,6 +743,8 @@ public class GraphicsFunctions {
       S.Dashed.setEvaluator(new Dashed());
       S.DotDashed.setEvaluator(new DotDashed());
       S.Dotted.setEvaluator(new Dotted());
+      S.Thick.setEvaluator(new Thick());
+      S.Thin.setEvaluator(new Thin());
 
 
       S.Arrow.setEvaluator(new Arrow());

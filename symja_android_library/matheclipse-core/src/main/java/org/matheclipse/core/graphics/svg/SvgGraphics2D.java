@@ -183,7 +183,7 @@ public class SvgGraphics2D {
     ContainerTag<?> defs = tag("defs");
     boolean hasDefs = false;
     if (LegendRenderer.isBarLegend(options.plotLegends)) {
-      defs.with(LegendRenderer.barGradient(gradientId));
+      defs.with(LegendRenderer.barGradient(gradientId, options.plotLegends));
       hasDefs = true;
     }
     if (options.plotRangeClipping) {

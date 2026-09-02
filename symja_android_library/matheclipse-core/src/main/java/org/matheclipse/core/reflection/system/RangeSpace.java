@@ -64,16 +64,16 @@ public class RangeSpace extends AbstractFunctionOptionEvaluator {
       rowReduceAST.append(F.Transpose(arg1));
 
       // Propagate options to RowReduce
-      if (method.isPresent() && !method.equals(S.Automatic)) {
+      if (method.isPresent() && method != S.Automatic) {
         rowReduceAST.append(F.Rule(S.Method, method));
       }
       if (modulus.isPresent() && !modulus.equals(F.C0)) {
         rowReduceAST.append(F.Rule(S.Modulus, modulus));
       }
-      if (tolerance.isPresent() && !tolerance.equals(S.Automatic)) {
+      if (tolerance.isPresent() && tolerance != S.Automatic) {
         rowReduceAST.append(F.Rule(S.Tolerance, tolerance));
       }
-      if (zeroTest.isPresent() && !zeroTest.equals(S.Automatic)) {
+      if (zeroTest.isPresent() && zeroTest != S.Automatic) {
         rowReduceAST.append(F.Rule(S.ZeroTest, zeroTest));
       }
 

@@ -146,7 +146,7 @@ public final class TriangleGeometry {
       // "p defaults to p2"
       return 2;
     }
-    if (vertexSpec.equals(S.All)) {
+    if (vertexSpec == S.All) {
       return ALL_VERTICES;
     }
     if (vertexSpec.isInteger()) {

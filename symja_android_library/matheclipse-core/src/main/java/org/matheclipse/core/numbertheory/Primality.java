@@ -27,9 +27,9 @@ import org.matheclipse.core.interfaces.IInteger;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 import edu.jas.arith.PrimeInteger;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.matheclipse.external.fastutil.ints.Int2IntMap;
+import org.matheclipse.external.fastutil.ints.Int2IntRBTreeMap;
+import org.matheclipse.external.fastutil.objects.ObjectSet;
 
 /**
  * Provides primality probabilistic methods for small prime factors.
@@ -646,7 +646,7 @@ public class Primality implements IPrimality {
    * @return the rest factor or zero, if the number could be factored completely into primes less
    *         equal then 1021
    */
-  public static BigInteger countPrimes32749(final BigInteger val, Int2IntMap map) {
+  public static BigInteger countPrimes32749(final BigInteger val, Map<Integer, Integer> map) {
     BigInteger[] divRem;
     BigInteger result = val;
     // int count = 0;
@@ -656,7 +656,7 @@ public class Primality implements IPrimality {
       }
       divRem = result.divideAndRemainder(BIprimes[i]);
       if (divRem[1].signum() == 0) {
-        int count = map.get(PRIMES_2_1021[i]);
+        int count = map.getOrDefault(PRIMES_2_1021[i], 0);
         do {
           count++;
           result = divRem[0]; // quotient
@@ -682,7 +682,7 @@ public class Primality implements IPrimality {
       }
       divRem = result.divideAndRemainder(b);
       if (divRem[1].signum() == 0) {
-        int count = map.get(prime);
+        int count = map.getOrDefault(prime, 0);
         do {
           count++;
           result = divRem[0]; // quotient
@@ -734,7 +734,7 @@ public class Primality implements IPrimality {
    * algorithm</a>
    *
    * @param val the integer which should be factored; small prime factors should already be divided
-   *        out with {@link #countPrimes32749(BigInteger, Int2IntMap)}
+   *        out with {@link #countPrimes32749(BigInteger, Map)}
    * @param map the map of all determined prime factors and their associated exponents
    */
   public static void pollardRhoFactors(final BigInteger val, Map<BigInteger, Integer> map) {
@@ -860,7 +860,7 @@ public class Primality implements IPrimality {
     if (isNegative) {
       map3.put(BigInteger.valueOf(-1), 1);
     }
-    ObjectSet<it.unimi.dsi.fastutil.ints.Int2IntMap.Entry> entrySet = map.int2IntEntrySet();
+    ObjectSet<org.matheclipse.external.fastutil.ints.Int2IntMap.Entry> entrySet = map.int2IntEntrySet();
     for (Entry<Integer, Integer> entry : entrySet) {
       map3.put(BigInteger.valueOf(entry.getKey()), entry.getValue());
     }

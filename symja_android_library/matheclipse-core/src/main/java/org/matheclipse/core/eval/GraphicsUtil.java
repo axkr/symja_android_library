@@ -515,7 +515,7 @@ public class GraphicsUtil {
         F.DirectionalLight(F.RGBColor(0.5, 0.18, 0.), F.List(0, 2, 2)),
         F.DirectionalLight(F.RGBColor(0., 0., 0.18), F.List(0, 0, 2)));
     IAST result = F.NIL;
-    if (lighting.equals(S.Automatic)) {
+    if (lighting == S.Automatic) {
       result = automatic;
     } else if (lighting.equals(F.$str("Neutral"))) {
       result = F.List(F.AmbientLight(F.RGBColor(0.35, 0.35, 0.35)),
@@ -564,7 +564,7 @@ public class GraphicsUtil {
     if (result.isAST1()) {
       IExpr color = result.arg1();
       if (color.isRGBColor()) {
-        if (result.head().equals(S.AmbientLight)) {
+        if (result.head() == S.AmbientLight) {
           json.put("type", "ambient");
           GraphicsOptions.setColor(json, (IAST) color, F.RGBColor(F.C1, F.C1, F.C1), true);
           return true;
@@ -583,17 +583,17 @@ public class GraphicsUtil {
         IExpr color = result.arg1();
         if (color.isRGBColor() && result.arg2().isList()) {
           IAST list = (IAST) result.arg2();
-          if (result.head().equals(S.DirectionalLight) && list.isList()) {
+          if (result.head() == S.DirectionalLight && list.isList()) {
             json.put("type", "directional");
             GraphicsOptions.setColor(json, (IAST) color, F.NIL, true);
             GraphicsUtil.graphics3DCoordsOrListOfCoords(json, list, "coords");
             return true;
-          } else if (result.head().equals(S.PointLight) && list.isList3()) {
+          } else if (result.head() == S.PointLight && list.isList3()) {
             json.put("type", "point");
             GraphicsOptions.setColor(json, (IAST) color, F.NIL, true);
             GraphicsUtil.graphics3DCoordsOrListOfCoords(json, list, "coords");
             return true;
-          } else if (result.head().equals(S.SpotLight) && list.isList2() && list.isListOfLists()) {
+          } else if (result.head() == S.SpotLight && list.isList2() && list.isListOfLists()) {
             IAST coords = (IAST) list.arg1();
             IAST target = (IAST) list.arg2();
             if (coords.isList3() && target.isList3()) {

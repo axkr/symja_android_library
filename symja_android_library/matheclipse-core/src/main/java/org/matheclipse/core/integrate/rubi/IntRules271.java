@@ -8,298 +8,52 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IAST;
 import com.google.common.base.Supplier;
 
-/**
- * IndefiniteIntegrationRules from the <a href="https://rulebasedintegration.org/">Rubi - rule-based
- * integrator</a>.
- * 
+/** 
+ * IndefiniteIntegrationRules from the <a href="https://rulebasedintegration.org/">Rubi -
+ * rule-based integrator</a>.
+ *  
  */
-class IntRules271 {
-  public static IAST RULES =
-      List(
-          IIntegrate(5421,
-              Integrate(
-                  Power(Coth(Plus(a_DEFAULT, Times(b_DEFAULT, x_), Times(c_DEFAULT, Sqr(x_)))),
-                      n_DEFAULT),
-                  x_Symbol),
-              Condition(
-                  Simp(Integral(Power(Coth(Plus(a, Times(b, x), Times(c, Sqr(x)))), n),
-                      x), x),
-                  FreeQ(List(a, b, c, n), x))),
-          IIntegrate(5422,
-              Integrate(
-                  Times(
-                      Plus(d_DEFAULT, Times(e_DEFAULT, x_)), Tanh(Plus(a_DEFAULT,
-                          Times(b_DEFAULT, x_), Times(c_DEFAULT, Sqr(x_))))),
-                  x_Symbol),
-              Condition(
-                  Plus(
-                      Simp(
-                          Times(
-                              e, Log(Cosh(
-                                  Plus(a, Times(b, x), Times(c, Sqr(x))))),
-                              Power(Times(C2, c), CN1)),
-                          x),
-                      Dist(Times(Subtract(Times(C2, c, d), Times(b, e)), Power(Times(C2, c), CN1)),
-                          Integrate(Tanh(Plus(a, Times(b, x), Times(c, Sqr(x)))), x), x)),
-                  FreeQ(List(a, b, c, d, e), x))),
-          IIntegrate(5423,
-              Integrate(
-                  Times(
-                      Coth(Plus(a_DEFAULT, Times(b_DEFAULT, x_),
-                          Times(c_DEFAULT, Sqr(x_)))),
-                      Plus(d_DEFAULT, Times(e_DEFAULT, x_))),
-                  x_Symbol),
-              Condition(
-                  Plus(
-                      Simp(Times(e, Log(Sinh(Plus(a, Times(b, x), Times(c, Sqr(x))))),
-                          Power(Times(C2, c), CN1)), x),
-                      Dist(Times(Subtract(Times(C2, c, d), Times(b, e)), Power(Times(C2, c), CN1)),
-                          Integrate(Coth(Plus(a, Times(b, x), Times(c, Sqr(x)))), x), x)),
-                  FreeQ(List(a, b, c, d, e), x))),
-          IIntegrate(5424,
-              Integrate(
-                  Times(
-                      Power(Plus(d_DEFAULT,
-                          Times(e_DEFAULT, x_)), m_DEFAULT),
-                      Power(
-                          Tanh(Plus(a_DEFAULT, Times(b_DEFAULT, x_),
-                              Times(c_DEFAULT, Sqr(x_)))),
-                          n_DEFAULT)),
-                  x_Symbol),
-              Condition(
-                  Simp(
-                      Integral(Times(Power(Plus(d, Times(e, x)), m),
-                          Power(Tanh(Plus(a, Times(b, x), Times(c, Sqr(x)))), n)), x),
-                      x),
-                  FreeQ(List(a, b, c, d, e, m, n), x))),
-          IIntegrate(5425,
-              Integrate(Times(
-                  Power(Coth(Plus(a_DEFAULT, Times(b_DEFAULT, x_), Times(c_DEFAULT, Sqr(x_)))),
-                      n_DEFAULT),
-                  Power(Plus(d_DEFAULT, Times(e_DEFAULT, x_)), m_DEFAULT)), x_Symbol),
-              Condition(Simp(Integral(Times(Power(Plus(d, Times(e, x)), m),
-                  Power(Coth(Plus(a, Times(b, x), Times(c, Sqr(x)))), n)), x), x),
-                  FreeQ(List(a, b, c, d, e, m, n), x))),
-          IIntegrate(5426,
-              Integrate(Times(Power(u_, m_DEFAULT),
-                  Power(Sech(v_), n_DEFAULT)), x_Symbol),
-              Condition(
-                  Integrate(Times(Power(ExpandToSum(u, x), m),
-                      Power(Sech(ExpandToSum(v, x)), n)), x),
-                  And(FreeQ(list(m,
-                      n), x), LinearQ(list(u, v),
-                          x),
-                      Not(LinearMatchQ(list(u, v), x))))),
-          IIntegrate(5427,
-              Integrate(Times(Power(Csch(
-                  v_), n_DEFAULT), Power(u_,
-                      m_DEFAULT)),
-                  x_Symbol),
-              Condition(
-                  Integrate(Times(Power(ExpandToSum(u, x), m),
-                      Power(Csch(ExpandToSum(v, x)), n)), x),
-                  And(FreeQ(list(m,
-                      n), x), LinearQ(list(u, v),
-                          x),
-                      Not(LinearMatchQ(list(u, v), x))))),
-          IIntegrate(5428,
-              Integrate(
-                  Power(
-                      Plus(
-                          a_DEFAULT, Times(b_DEFAULT, Sech(Plus(c_DEFAULT,
-                              Times(d_DEFAULT, Power(x_, n_)))))),
-                      p_DEFAULT),
-                  x_Symbol),
-              Condition(
-                  Dist(Power(n, CN1),
-                      Subst(
-                          Integrate(
-                              Times(
-                                  Power(x, Subtract(Power(n, CN1),
-                                      C1)),
-                                  Power(Plus(a, Times(b, Sech(Plus(c, Times(d, x))))), p)),
-                              x),
-                          x, Power(x, n)),
-                      x),
-                  And(FreeQ(List(a, b, c, d, p), x), IGtQ(Power(n, CN1), C0), IntegerQ(p)))),
-          IIntegrate(5429,
-              Integrate(
-                  Power(
-                      Plus(a_DEFAULT,
-                          Times(Csch(Plus(c_DEFAULT, Times(d_DEFAULT, Power(x_, n_)))), b_DEFAULT)),
-                      p_DEFAULT),
-                  x_Symbol),
-              Condition(
-                  Dist(Power(n, CN1),
-                      Subst(
-                          Integrate(Times(Power(x, Subtract(Power(n, CN1), C1)),
-                              Power(Plus(a, Times(b, Csch(Plus(c, Times(d, x))))), p)), x),
-                          x, Power(x, n)),
-                      x),
-                  And(FreeQ(List(a, b, c, d, p), x), IGtQ(Power(n, CN1), C0), IntegerQ(p)))),
-          IIntegrate(5430,
-              Integrate(
-                  Power(
-                      Plus(a_DEFAULT,
-                          Times(b_DEFAULT, Sech(Plus(c_DEFAULT, Times(d_DEFAULT, Power(x_, n_)))))),
-                      p_DEFAULT),
-                  x_Symbol),
-              Condition(
-                  Unintegrable(Power(Plus(a, Times(b, Sech(Plus(c, Times(d, Power(x, n)))))), p),
-                      x),
-                  FreeQ(List(a, b, c, d, n, p), x))),
-          IIntegrate(5431,
-              Integrate(
-                  Power(
-                      Plus(
-                          a_DEFAULT, Times(Csch(Plus(c_DEFAULT, Times(d_DEFAULT, Power(x_, n_)))),
-                              b_DEFAULT)),
-                      p_DEFAULT),
-                  x_Symbol),
-              Condition(
-                  Unintegrable(Power(Plus(a, Times(b, Csch(Plus(c, Times(d, Power(x, n)))))),
-                      p), x),
-                  FreeQ(List(a, b, c, d, n, p), x))),
-          IIntegrate(5432,
-              Integrate(
-                  Power(
-                      Plus(
-                          a_DEFAULT, Times(b_DEFAULT, Sech(Plus(c_DEFAULT,
-                              Times(d_DEFAULT, Power(u_, n_)))))),
-                      p_DEFAULT),
-                  x_Symbol),
-              Condition(
-                  Dist(
-                      Power(Coefficient(u, x,
-                          C1), CN1),
-                      Subst(
-                          Integrate(Power(Plus(a, Times(b, Sech(Plus(c, Times(d, Power(x, n)))))),
-                              p), x),
-                          x, u),
-                      x),
-                  And(FreeQ(List(a, b, c, d, n, p), x), LinearQ(u, x), NeQ(u, x)))),
-          IIntegrate(5433,
-              Integrate(
-                  Power(
-                      Plus(
-                          a_DEFAULT, Times(Csch(Plus(c_DEFAULT, Times(d_DEFAULT, Power(u_, n_)))),
-                              b_DEFAULT)),
-                      p_DEFAULT),
-                  x_Symbol),
-              Condition(Dist(Power(Coefficient(u, x, C1), CN1),
-                  Subst(Integrate(Power(Plus(a, Times(b, Csch(Plus(c, Times(d, Power(x, n)))))), p),
-                      x), x, u),
-                  x), And(FreeQ(List(a, b, c, d, n, p), x), LinearQ(u, x), NeQ(u, x)))),
-          IIntegrate(5434,
-              Integrate(Power(Plus(a_DEFAULT, Times(b_DEFAULT, Sech(u_))),
-                  p_DEFAULT), x_Symbol),
-              Condition(
-                  Integrate(Power(Plus(a, Times(b, Sech(ExpandToSum(u, x)))),
-                      p), x),
-                  And(FreeQ(list(a, b, p), x), BinomialQ(u, x), Not(BinomialMatchQ(u, x))))),
-          IIntegrate(5435,
-              Integrate(Power(Plus(a_DEFAULT, Times(Csch(u_), b_DEFAULT)),
-                  p_DEFAULT), x_Symbol),
-              Condition(
-                  Integrate(Power(Plus(a, Times(b, Csch(ExpandToSum(u, x)))),
-                      p), x),
-                  And(FreeQ(list(a, b, p), x), BinomialQ(u, x), Not(BinomialMatchQ(u, x))))),
-          IIntegrate(5436,
-              Integrate(
-                  Times(Power(x_, m_DEFAULT),
-                      Power(
-                          Plus(a_DEFAULT,
-                              Times(
-                                  b_DEFAULT, Sech(Plus(c_DEFAULT, Times(d_DEFAULT,
-                                      Power(x_, n_)))))),
-                          p_DEFAULT)),
-                  x_Symbol),
-              Condition(
-                  Dist(Power(n, CN1),
-                      Subst(
-                          Integrate(
-                              Times(Power(x, Subtract(Simplify(Times(Plus(m, C1), Power(n, CN1))),
-                                  C1)), Power(Plus(a, Times(b, Sech(Plus(c, Times(d, x))))),
-                                      p)),
-                              x),
-                          x, Power(x, n)),
-                      x),
-                  And(FreeQ(List(a, b, c, d, m, n,
-                      p), x), IGtQ(Simplify(Times(Plus(m, C1), Power(n, CN1))),
-                          C0),
-                      IntegerQ(p)))),
-          IIntegrate(5437,
-              Integrate(
-                  Times(
-                      Power(
-                          Plus(a_DEFAULT,
-                              Times(Csch(Plus(c_DEFAULT, Times(d_DEFAULT, Power(x_, n_)))),
-                                  b_DEFAULT)),
-                          p_DEFAULT),
-                      Power(x_, m_DEFAULT)),
-                  x_Symbol),
-              Condition(
-                  Dist(Power(n, CN1),
-                      Subst(
-                          Integrate(
-                              Times(
-                                  Power(x, Subtract(Simplify(Times(Plus(m, C1), Power(n, CN1))),
-                                      C1)),
-                                  Power(Plus(a, Times(b, Csch(Plus(c, Times(d, x))))), p)),
-                              x),
-                          x, Power(x, n)),
-                      x),
-                  And(FreeQ(List(a, b, c, d, m, n,
-                      p), x), IGtQ(Simplify(Times(Plus(m, C1), Power(n, CN1))),
-                          C0),
-                      IntegerQ(p)))),
-          IIntegrate(5438,
-              Integrate(
-                  Times(Power(x_, m_DEFAULT),
-                      Power(
-                          Plus(a_DEFAULT,
-                              Times(
-                                  b_DEFAULT, Sech(Plus(c_DEFAULT, Times(d_DEFAULT,
-                                      Power(x_, n_)))))),
-                          p_DEFAULT)),
-                  x_Symbol),
-              Condition(
-                  Unintegrable(Times(Power(x, m),
-                      Power(Plus(a, Times(b, Sech(Plus(c, Times(d, Power(x, n)))))), p)), x),
-                  FreeQ(List(a, b, c, d, m, n, p), x))),
-          IIntegrate(5439,
-              Integrate(
-                  Times(
-                      Power(
-                          Plus(a_DEFAULT,
-                              Times(Csch(Plus(c_DEFAULT, Times(d_DEFAULT, Power(x_, n_)))),
-                                  b_DEFAULT)),
-                          p_DEFAULT),
-                      Power(x_, m_DEFAULT)),
-                  x_Symbol),
-              Condition(Unintegrable(Times(Power(x, m),
-                  Power(Plus(a, Times(b, Csch(Plus(c, Times(d, Power(x, n)))))), p)), x), FreeQ(
-                      List(a, b, c, d, m, n, p), x))),
-          IIntegrate(5440,
-              Integrate(
-                  Times(
-                      Power(Times(e_,
-                          x_), m_DEFAULT),
-                      Power(
-                          Plus(a_DEFAULT,
-                              Times(
-                                  b_DEFAULT, Sech(Plus(c_DEFAULT, Times(d_DEFAULT,
-                                      Power(x_, n_)))))),
-                          p_DEFAULT)),
-                  x_Symbol),
-              Condition(
-                  Dist(
-                      Times(Power(e, IntPart(m)), Power(Times(e, x), FracPart(m)),
-                          Power(Power(x, FracPart(m)), CN1)),
-                      Integrate(
-                          Times(Power(x, m),
-                              Power(Plus(a, Times(b, Sech(Plus(c, Times(d, Power(x, n)))))), p)),
-                          x),
-                      x),
-                  FreeQ(List(a, b, c, d, e, m, n, p), x))));
+class IntRules271 { 
+  public static IAST RULES = List( 
+IIntegrate(5421,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),p_),Power(Times(f_DEFAULT,x_),m_DEFAULT),Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),q_)),x_Symbol),
+    Condition(With(list(Set(u,IntHide(Times(Power(Times(f,x),m),Power(Plus(d,Times(e,x)),q)),x))),Subtract(Simp(Dist(Power(Plus(a,Times(b,ArcTan(Times(c,x)))),p),u,x),x),Simp(Dist(Times(b,c,p),Integrate(ExpandIntegrand(Power(Plus(a,Times(b,ArcTan(Times(c,x)))),Plus(p,CN1)),Times(u,Power(Plus(C1,Times(Sqr(c),Sqr(x))),CN1)),x),x),x),x))),And(FreeQ(List(a,b,c,d,e,f,q),x),IGtQ(p,C1),EqQ(Plus(Times(Sqr(c),Sqr(d)),Sqr(e)),C0),IntegersQ(m,q),NeQ(m,CN1),NeQ(q,CN1),ILtQ(Plus(m,q,C1),C0),LtQ(Times(m,q),C0)))),
+IIntegrate(5422,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),p_),Power(Times(f_DEFAULT,x_),m_DEFAULT),Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),q_)),x_Symbol),
+    Condition(With(list(Set(u,IntHide(Times(Power(Times(f,x),m),Power(Plus(d,Times(e,x)),q)),x))),Plus(Simp(Dist(Power(Plus(a,Times(b,ArcCot(Times(c,x)))),p),u,x),x),Simp(Dist(Times(b,c,p),Integrate(ExpandIntegrand(Power(Plus(a,Times(b,ArcCot(Times(c,x)))),Plus(p,CN1)),Times(u,Power(Plus(C1,Times(Sqr(c),Sqr(x))),CN1)),x),x),x),x))),And(FreeQ(List(a,b,c,d,e,f,q),x),IGtQ(p,C1),EqQ(Plus(Times(Sqr(c),Sqr(d)),Sqr(e)),C0),IntegersQ(m,q),NeQ(m,CN1),NeQ(q,CN1),ILtQ(Plus(m,q,C1),C0),LtQ(Times(m,q),C0)))),
+IIntegrate(5423,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Times(f_DEFAULT,x_),m_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,x_)),q_DEFAULT)),x_Symbol),
+    Condition(Integrate(ExpandIntegrand(Power(Plus(a,Times(b,ArcTan(Times(c,x)))),p),Times(Power(Times(f,x),m),Power(Plus(d,Times(e,x)),q)),x),x),And(FreeQ(List(a,b,c,d,e,f,m),x),IGtQ(p,C0),IntegerQ(q),Or(GtQ(q,C0),NeQ(a,C0),IntegerQ(m))))),
+IIntegrate(5424,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Times(f_DEFAULT,x_),m_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,x_)),q_DEFAULT)),x_Symbol),
+    Condition(Integrate(ExpandIntegrand(Power(Plus(a,Times(b,ArcCot(Times(c,x)))),p),Times(Power(Times(f,x),m),Power(Plus(d,Times(e,x)),q)),x),x),And(FreeQ(List(a,b,c,d,e,f,m),x),IGtQ(p,C0),IntegerQ(q),Or(GtQ(q,C0),NeQ(a,C0),IntegerQ(m))))),
+IIntegrate(5425,Integrate(Times(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),q_DEFAULT)),x_Symbol),
+    Condition(Plus(Simp(Times(CN1,b,Power(Plus(d,Times(e,Sqr(x))),q),Power(Times(C2,c,q,Plus(Times(C2,q),C1)),CN1)),x),Simp(Times(x,Power(Plus(d,Times(e,Sqr(x))),q),Plus(a,Times(b,ArcTan(Times(c,x)))),Power(Plus(Times(C2,q),C1),CN1)),x),Simp(Dist(Times(C2,d,q,Power(Plus(Times(C2,q),C1),CN1)),Integrate(Times(Power(Plus(d,Times(e,Sqr(x))),Plus(q,CN1)),Plus(a,Times(b,ArcTan(Times(c,x))))),x),x),x)),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(q,C0)))),
+IIntegrate(5426,Integrate(Times(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),q_DEFAULT)),x_Symbol),
+    Condition(Plus(Simp(Times(b,Power(Plus(d,Times(e,Sqr(x))),q),Power(Times(C2,c,q,Plus(Times(C2,q),C1)),CN1)),x),Simp(Times(x,Power(Plus(d,Times(e,Sqr(x))),q),Plus(a,Times(b,ArcCot(Times(c,x)))),Power(Plus(Times(C2,q),C1),CN1)),x),Simp(Dist(Times(C2,d,q,Power(Plus(Times(C2,q),C1),CN1)),Integrate(Times(Power(Plus(d,Times(e,Sqr(x))),Plus(q,CN1)),Plus(a,Times(b,ArcCot(Times(c,x))))),x),x),x)),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(q,C0)))),
+IIntegrate(5427,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),p_),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),q_DEFAULT)),x_Symbol),
+    Condition(Plus(Simp(Times(CN1,b,p,Power(Plus(d,Times(e,Sqr(x))),q),Power(Plus(a,Times(b,ArcTan(Times(c,x)))),Plus(p,CN1)),Power(Times(C2,c,q,Plus(Times(C2,q),C1)),CN1)),x),Simp(Times(x,Power(Plus(d,Times(e,Sqr(x))),q),Power(Plus(a,Times(b,ArcTan(Times(c,x)))),p),Power(Plus(Times(C2,q),C1),CN1)),x),Simp(Dist(Times(C2,d,q,Power(Plus(Times(C2,q),C1),CN1)),Integrate(Times(Power(Plus(d,Times(e,Sqr(x))),Plus(q,CN1)),Power(Plus(a,Times(b,ArcTan(Times(c,x)))),p)),x),x),x),Simp(Dist(Times(Sqr(b),d,p,Plus(p,CN1),Power(Times(C2,q,Plus(Times(C2,q),C1)),CN1)),Integrate(Times(Power(Plus(d,Times(e,Sqr(x))),Plus(q,CN1)),Power(Plus(a,Times(b,ArcTan(Times(c,x)))),Plus(p,CN2))),x),x),x)),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(q,C0),GtQ(p,C1)))),
+IIntegrate(5428,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),p_),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),q_DEFAULT)),x_Symbol),
+    Condition(Plus(Simp(Times(b,p,Power(Plus(d,Times(e,Sqr(x))),q),Power(Plus(a,Times(b,ArcCot(Times(c,x)))),Plus(p,CN1)),Power(Times(C2,c,q,Plus(Times(C2,q),C1)),CN1)),x),Simp(Times(x,Power(Plus(d,Times(e,Sqr(x))),q),Power(Plus(a,Times(b,ArcCot(Times(c,x)))),p),Power(Plus(Times(C2,q),C1),CN1)),x),Simp(Dist(Times(C2,d,q,Power(Plus(Times(C2,q),C1),CN1)),Integrate(Times(Power(Plus(d,Times(e,Sqr(x))),Plus(q,CN1)),Power(Plus(a,Times(b,ArcCot(Times(c,x)))),p)),x),x),x),Simp(Dist(Times(Sqr(b),d,p,Plus(p,CN1),Power(Times(C2,q,Plus(Times(C2,q),C1)),CN1)),Integrate(Times(Power(Plus(d,Times(e,Sqr(x))),Plus(q,CN1)),Power(Plus(a,Times(b,ArcCot(Times(c,x)))),Plus(p,CN2))),x),x),x)),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(q,C0),GtQ(p,C1)))),
+IIntegrate(5429,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),CN1),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1)),x_Symbol),
+    Condition(Simp(Times(Log(RemoveContent(Plus(a,Times(b,ArcTan(Times(c,x)))),x)),Power(Times(b,c,d),CN1)),x),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d))))),
+IIntegrate(5430,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),CN1),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1)),x_Symbol),
+    Condition(Simp(Times(CN1,Log(RemoveContent(Plus(a,Times(b,ArcCot(Times(c,x)))),x)),Power(Times(b,c,d),CN1)),x),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d))))),
+IIntegrate(5431,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1)),x_Symbol),
+    Condition(Simp(Times(Power(Plus(a,Times(b,ArcTan(Times(c,x)))),Plus(p,C1)),Power(Times(b,c,d,Plus(p,C1)),CN1)),x),And(FreeQ(List(a,b,c,d,e,p),x),EqQ(e,Times(Sqr(c),d)),NeQ(p,CN1)))),
+IIntegrate(5432,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1)),x_Symbol),
+    Condition(Simp(Times(CN1,Power(Plus(a,Times(b,ArcCot(Times(c,x)))),Plus(p,C1)),Power(Times(b,c,d,Plus(p,C1)),CN1)),x),And(FreeQ(List(a,b,c,d,e,p),x),EqQ(e,Times(Sqr(c),d)),NeQ(p,CN1)))),
+IIntegrate(5433,Integrate(Times(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1D2)),x_Symbol),
+    Condition(Plus(Simp(Times(CN2,CI,Plus(a,Times(b,ArcTan(Times(c,x)))),ArcTan(Times(Sqrt(Plus(C1,Times(CI,c,x))),Power(Subtract(C1,Times(CI,c,x)),CN1D2))),Power(Times(c,Sqrt(d)),CN1)),x),Simp(Times(CI,b,PolyLog(C2,Times(CNI,Sqrt(Plus(C1,Times(CI,c,x))),Power(Subtract(C1,Times(CI,c,x)),CN1D2))),Power(Times(c,Sqrt(d)),CN1)),x),Negate(Simp(Times(CI,b,PolyLog(C2,Times(CI,Sqrt(Plus(C1,Times(CI,c,x))),Power(Subtract(C1,Times(CI,c,x)),CN1D2))),Power(Times(c,Sqrt(d)),CN1)),x))),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(d,C0)))),
+IIntegrate(5434,Integrate(Times(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1D2)),x_Symbol),
+    Condition(Plus(Simp(Times(CN2,CI,Plus(a,Times(b,ArcCot(Times(c,x)))),ArcTan(Times(Sqrt(Plus(C1,Times(CI,c,x))),Power(Subtract(C1,Times(CI,c,x)),CN1D2))),Power(Times(c,Sqrt(d)),CN1)),x),Negate(Simp(Times(CI,b,PolyLog(C2,Times(CNI,Sqrt(Plus(C1,Times(CI,c,x))),Power(Subtract(C1,Times(CI,c,x)),CN1D2))),Power(Times(c,Sqrt(d)),CN1)),x)),Simp(Times(CI,b,PolyLog(C2,Times(CI,Sqrt(Plus(C1,Times(CI,c,x))),Power(Subtract(C1,Times(CI,c,x)),CN1D2))),Power(Times(c,Sqrt(d)),CN1)),x)),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(d,C0)))),
+IIntegrate(5435,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1D2)),x_Symbol),
+    Condition(Simp(Dist(Power(Times(c,Sqrt(d)),CN1),Subst(Integrate(Times(Power(Plus(a,Times(b,x)),p),Sec(x)),x),x,ArcTan(Times(c,x))),x),x),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),IGtQ(p,C0),GtQ(d,C0)))),
+IIntegrate(5436,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1D2)),x_Symbol),
+    Condition(Simp(Dist(Times(CN1,x,Sqrt(Plus(C1,Power(Times(Sqr(c),Sqr(x)),CN1))),Power(Plus(d,Times(e,Sqr(x))),CN1D2)),Subst(Integrate(Times(Power(Plus(a,Times(b,x)),p),Csc(x)),x),x,ArcCot(Times(c,x))),x),x),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),IGtQ(p,C0),GtQ(d,C0)))),
+IIntegrate(5437,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1D2)),x_Symbol),
+    Condition(Simp(Dist(Times(Sqrt(Plus(C1,Times(Sqr(c),Sqr(x)))),Power(Plus(d,Times(e,Sqr(x))),CN1D2)),Integrate(Times(Power(Plus(a,Times(b,ArcTan(Times(c,x)))),p),Power(Plus(C1,Times(Sqr(c),Sqr(x))),CN1D2)),x),x),x),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),IGtQ(p,C0),Not(GtQ(d,C0))))),
+IIntegrate(5438,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN1D2)),x_Symbol),
+    Condition(Simp(Dist(Times(Sqrt(Plus(C1,Times(Sqr(c),Sqr(x)))),Power(Plus(d,Times(e,Sqr(x))),CN1D2)),Integrate(Times(Power(Plus(a,Times(b,ArcCot(Times(c,x)))),p),Power(Plus(C1,Times(Sqr(c),Sqr(x))),CN1D2)),x),x),x),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),IGtQ(p,C0),Not(GtQ(d,C0))))),
+IIntegrate(5439,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcTan(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN2)),x_Symbol),
+    Condition(Plus(Simp(Times(x,Power(Plus(a,Times(b,ArcTan(Times(c,x)))),p),Power(Times(C2,d,Plus(d,Times(e,Sqr(x)))),CN1)),x),Simp(Times(Power(Plus(a,Times(b,ArcTan(Times(c,x)))),Plus(p,C1)),Power(Times(C2,b,c,Sqr(d),Plus(p,C1)),CN1)),x),Negate(Simp(Dist(Times(b,c,C1D2,p),Integrate(Times(x,Power(Plus(a,Times(b,ArcTan(Times(c,x)))),Plus(p,CN1)),Power(Plus(d,Times(e,Sqr(x))),CN2)),x),x),x))),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(p,C0)))),
+IIntegrate(5440,Integrate(Times(Power(Plus(a_DEFAULT,Times(ArcCot(Times(c_DEFAULT,x_)),b_DEFAULT)),p_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),CN2)),x_Symbol),
+    Condition(Plus(Simp(Times(x,Power(Plus(a,Times(b,ArcCot(Times(c,x)))),p),Power(Times(C2,d,Plus(d,Times(e,Sqr(x)))),CN1)),x),Negate(Simp(Times(Power(Plus(a,Times(b,ArcCot(Times(c,x)))),Plus(p,C1)),Power(Times(C2,b,c,Sqr(d),Plus(p,C1)),CN1)),x)),Simp(Dist(Times(b,c,C1D2,p),Integrate(Times(x,Power(Plus(a,Times(b,ArcCot(Times(c,x)))),Plus(p,CN1)),Power(Plus(d,Times(e,Sqr(x))),CN2)),x),x),x)),And(FreeQ(List(a,b,c,d,e),x),EqQ(e,Times(Sqr(c),d)),GtQ(p,C0))))
+  );
 }

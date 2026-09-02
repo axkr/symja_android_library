@@ -137,6 +137,8 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
             return S.Area.funEval(engine, reg);
           case ID.EmptyRegion:
             return reg.argSize() == 1 ? F.C0 : F.NIL;
+          case ID.FullRegion:
+            return reg.argSize() == 1 && reg.arg1().toIntDefault() > 0 ? F.CInfinity : F.NIL;
         }
       }
     }

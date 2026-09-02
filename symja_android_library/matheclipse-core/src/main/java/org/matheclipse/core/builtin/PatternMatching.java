@@ -112,7 +112,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Blank)) {
+      if (ast.head() == S.Blank) {
         if (ast.isAST0()) {
           return F.$b();
         }
@@ -139,7 +139,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.BlankSequence)) {
+      if (ast.head() == S.BlankSequence) {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null);
         }
@@ -166,7 +166,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.BlankNullSequence)) {
+      if (ast.head() == S.BlankNullSequence) {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null, true);
         }
@@ -1030,7 +1030,11 @@ public final class PatternMatching {
         IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
           IExpr temp = engine.evalHoldPattern((IAST) arg1, true, false);
-          if (temp == arg1) {
+          // NIL is the other way of saying that nothing changed, and it has to be read as such
+          // rather than wrapped: for a pattern head like Optional the recursive walk delegates
+          // straight to that head's evaluator, which answers NIL when it leaves the pattern alone,
+          // so HoldPattern(x_:1) came back as HoldPattern(NIL) - a sentinel leaking into a result.
+          if (temp.isNIL() || temp == arg1) {
             return F.NIL;
           }
           return F.HoldPattern(temp);
@@ -1061,7 +1065,7 @@ public final class PatternMatching {
         IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
           IExpr temp = engine.evalHoldPattern((IAST) arg1, true, false);
-          if (temp == arg1) {
+          if (temp.isNIL() || temp == arg1) {
             return F.NIL;
           }
           return F.Literal(temp);
@@ -1249,7 +1253,7 @@ public final class PatternMatching {
             message = F.stringx(rightHandSide.toString());
           }
           symbol.putMessage(IPatternMatcher.SET, messageName, message);
-          if (builtinSymbol.equals(S.Set)) {
+          if (builtinSymbol == S.Set) {
             return message;
           }
           return S.Null;
@@ -1317,7 +1321,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Optional)) {
+      if (ast.head() == S.Optional) {
         // convert only special forms of _. or x_.
         if (ast.size() == 2) {
           IExpr arg1 = engine.evaluate(ast.arg1());
@@ -1386,7 +1390,7 @@ public final class PatternMatching {
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (!symbol.hasProtectedAttribute()) {
           try {
-            if (!builtinSymbol.equals(S.SetDelayed)) {
+            if (builtinSymbol != S.SetDelayed) {
               rightHandSide = engine.evaluate(rightHandSide);
             }
           } catch (final ReturnException e) {
@@ -1394,7 +1398,7 @@ public final class PatternMatching {
           }
           symbol.putDownRule(IPatternMatcher.SET, true, (IAST) leftHandSide, rightHandSide,
               engine.isPackageMode());
-          if (builtinSymbol.equals(S.Set)) {
+          if (builtinSymbol == S.Set) {
             return rightHandSide;
           }
           return S.Null;
@@ -1419,7 +1423,7 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      if (ast.head().equals(S.OptionValue)) {
+      if (ast.head() == S.OptionValue) {
         return IPatternMap.optionValueReplace(ast, false, engine);
       }
 
@@ -1497,7 +1501,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.OptionsPattern)) {
+      if (ast.head() == S.OptionsPattern) {
         if (ast.isAST0()) {
           return F.$OptionsPattern();
         }
@@ -1525,7 +1529,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Pattern)) {
+      if (ast.head() == S.Pattern) {
         if (ast.size() == 3) {
           if (ast.arg1().isSymbol()) {
             final ISymbol symbol = (ISymbol) ast.arg1();
@@ -1662,7 +1666,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Repeated)) {
+      if (ast.head() == S.Repeated) {
         IExpr arg1 = ast.arg1();
         if (ast.isAST1()) {
           return F.$Repeated(arg1, 1, Integer.MAX_VALUE, engine);
@@ -1744,7 +1748,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.RepeatedNull)) {
+      if (ast.head() == S.RepeatedNull) {
         IExpr arg1 = ast.arg1();
         if (ast.isAST1()) {
           return F.$Repeated(arg1, 0, Integer.MAX_VALUE, engine);
@@ -2009,7 +2013,7 @@ public final class PatternMatching {
       final IExpr leftHandSide = ast.arg1();
 
       IExpr head = engine.evaluate(leftHandSide.head());
-      if (head.topHead().equals(S.Association)) {
+      if (head.topHead() == S.Association) {
         head = S.Association;
       }
       IExpr rightHandSide = ast.arg2();

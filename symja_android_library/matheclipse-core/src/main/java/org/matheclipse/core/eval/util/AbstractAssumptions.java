@@ -131,13 +131,13 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return S.Undefined;
     }
     if (expr.isSymbol()) {
-      if (expr.equals(S.Degree)) {
+      if (expr == S.Degree) {
         return S.False;
       }
-      if (expr.equals(S.Pi)) {
+      if (expr == S.Pi) {
         return S.False;
       }
-      if (expr.equals(S.E)) {
+      if (expr == S.E) {
         return S.False;
       }
     }
@@ -936,10 +936,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
       int size = ast.size();
       if (size == 2) {
         IExpr arg1 = ast.arg1();
-        if (symbol.equals(S.Abs)) {
+        if (symbol == S.Abs) {
           return true;
         }
-        if (symbol.equals(S.Log) && assumeGreaterEqual(arg1, F.C1)) {
+        if (symbol == S.Log && assumeGreaterEqual(arg1, F.C1)) {
           return true;
         }
       }
@@ -1106,10 +1106,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
       int size = ast.size();
       if (size == 2) {
         IExpr arg1 = ast.arg1();
-        if (symbol.equals(S.Abs) && (assumeNegative(arg1) || assumePositive(arg1))) {
+        if (symbol == S.Abs && (assumeNegative(arg1) || assumePositive(arg1))) {
           return true;
         }
-        if (symbol.equals(S.Log) && assumeGreaterThan(arg1, F.C1)) {
+        if (symbol == S.Log && assumeGreaterThan(arg1, F.C1)) {
           return true;
         }
       }

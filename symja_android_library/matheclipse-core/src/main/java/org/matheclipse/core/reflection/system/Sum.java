@@ -284,6 +284,16 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
       ast = ast.removeAtCopy(ast.argSize());
     }
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr iterator = ast.get(i);
+      if (!iterator.isList() && !iterator.isSymbol()) {
+        // An iterator is either a list, {i, imax} or {i, imin, imax}, or the bare symbol of an
+        // indefinite sum. A number is neither: Sum inherits its unrolling from Table, where a
+        // count is a valid specification - Table[x, 3] is {x, x, x} - and so answered
+        // Sum(x, 3) with 3*x. Mathematica leaves it alone.
+        return F.NIL;
+      }
+    }
     IExpr arg1 = ast.arg1();
     if (arg1.isAST()) {
       arg1 = F.expand(arg1, false, false, false);

@@ -5,7 +5,6 @@ import java.util.Random;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -23,6 +22,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Tensors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -178,39 +178,61 @@ public final class RandomFunctions {
    */
   private static final class RandomChoice extends AbstractFunctionEvaluator {
 
-    /** Sampler for enumerated distributions. */
-    private static final class EnumeratedDistributionSampler {
-      /** Probabilities */
-      private final double[] weights;
+    /**
+     * Draws indices with probability proportional to the weights, <b>with replacement</b>: every
+     * choice is made from the whole list, which is what tells <code>RandomChoice</code> from
+     * <code>RandomSample</code>.
+     *
+     * <p>
+     * Through the generator handed in, which is the engine's. This used to be hipparchus's
+     * {@code RandomDataGenerator}, one of its own making that <code>SeedRandom</code> cannot
+     * reach - so a weighted choice was the one draw in this file that could not be reproduced,
+     * while the unweighted one beside it always could.
+     */
+    private static final class WeightedSampler {
+      /** The running sums of the weights, so a draw is one comparison walk. */
+      private final double[] cumulative;
+      private final Random random;
 
       /**
-       * Create an EnumeratedDistributionSampler from the provided weights.
-       *
-       * @param weights the weights of the distribution sampler
+       * @return a sampler, or <code>null</code> when the weights are not usable: each has to be a
+       *         number, non-negative and finite, and at least one of them positive
        */
-      EnumeratedDistributionSampler(double[] weights) {
-        this.weights = weights;
+      static WeightedSampler of(IAST weightList, int length, Random random) {
+        double[] weights = weightList.toDoubleVector();
+        if (weights == null || weights.length != length) {
+          return null;
+        }
+        double[] cumulative = new double[length];
+        double sum = 0.0;
+        for (int i = 0; i < length; i++) {
+          if (!(weights[i] >= 0.0) || Double.isInfinite(weights[i])) {
+            return null;
+          }
+          sum += weights[i];
+          cumulative[i] = sum;
+        }
+        if (!(sum > 0.0)) {
+          return null;
+        }
+        return new WeightedSampler(cumulative, random);
       }
 
-      /**
-       * Generates a random sample of size sampleSize from {0, 1, ... , weights.length - 1}, using
-       * weights as probabilities.
-       *
-       * <p>
-       * For 0 &lt; i &lt; weights.length, the probability that i is selected (on any draw) is
-       * weights[i]. If necessary, the weights array is normalized to sum to 1 so that weights[i] is
-       * a probability and the array sums to 1.
-       *
-       * <p>
-       * Weights can be 0, but must not be negative, infinite or NaN. At least one weight must be
-       * positive.
-       *
-       * @param sampleSize size of sample to generate
-       * @return a random array of indexes from the distribution
-       */
-      public int[] sample(int sampleSize) {
-        RandomDataGenerator rg = new RandomDataGenerator();
-        return rg.nextSampleWithReplacement(sampleSize, weights);
+      private WeightedSampler(double[] cumulative, Random random) {
+        this.cumulative = cumulative;
+        this.random = random;
+      }
+
+      /** One index, drawn by the weights. */
+      int next() {
+        double point = random.nextDouble() * cumulative[cumulative.length - 1];
+        for (int i = 0; i < cumulative.length; i++) {
+          if (point < cumulative[i]) {
+            return i;
+          }
+        }
+        // the running sum can fall a rounding short of the total
+        return cumulative.length - 1;
       }
     }
 
@@ -223,12 +245,11 @@ public final class RandomFunctions {
           && arg1.first().size() == arg1.second().size()) {
         IAST weights = (IAST) arg1.first();
         IAST items = (IAST) arg1.second();
-        double[] itemWeights = weights.toDoubleVector();
-        if (itemWeights != null) {
-          EnumeratedDistributionSampler sampler = new EnumeratedDistributionSampler(itemWeights);
+        WeightedSampler sampler =
+            WeightedSampler.of(weights, items.argSize(), engine.getRandom());
+        if (sampler != null) {
           if (ast.isAST1()) {
-            int[] chosen = sampler.sample(1);
-            return items.get(chosen[0] + 1);
+            return items.get(sampler.next() + 1);
           }
           if (ast.isAST2()) {
             IExpr arg2 = ast.arg2();
@@ -239,15 +260,11 @@ public final class RandomFunctions {
               if (dimension == null) {
                 return F.NIL;
               }
-              return Tensors.build(() -> {
-                return items.get(sampler.sample(1)[0] + 1);
-              }, dimension);
+              return Tensors.build(() -> items.get(sampler.next() + 1), dimension);
             }
             int n = arg2.toMachineInt();
             if (n > 0) {
-
-              int[] chosen = sampler.sample(n);
-              return F.mapRange(0, n, i -> items.get(chosen[i] + 1));
+              return F.mapRange(0, n, i -> items.get(sampler.next() + 1));
             }
           }
         }
@@ -816,49 +833,233 @@ public final class RandomFunctions {
    *
    *
    * <pre>
-   * RandomSample(&lt;function&gt;)
+   * RandomSample(list)
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * create a random sample for the arguments of the <code>function</code>.
+   * a random permutation of the elements of <code>list</code>.
    *
    * </blockquote>
    *
    * <pre>
-   * RandomSample(&lt;function&gt;, n)
+   * RandomSample(list, n)
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * create a random sample of <code>n</code> elements for the arguments of the <code>function
-   * </code>.
+   * a sample of <code>n</code> of the elements, drawn <b>without replacement</b>: no element is
+   * sampled twice, and each is sampled with equal probability. There is no answer to give when
+   * <code>n</code> is larger than the number of elements, so that is reported rather than
+   * shortened - use <code>UpTo(n)</code> to ask for as many as are available.
    *
    * </blockquote>
+   *
+   * <pre>
+   * RandomSample(list, UpTo(n))
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * a sample of <code>n</code> of the elements, or of as many as there are.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * RandomSample({w1, w2, ...} -&gt; {e1, e2, ...}, n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * a sample drawn by the elements' weights: each draw takes an element with probability
+   * proportional to its weight among those left, and that element is then gone. An element of
+   * weight <code>0</code> is drawn only once nothing with weight remains.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * RandomSample(i;;j;;k, n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * a sample of the <code>Span</code> from <code>i</code> to <code>j</code> in steps of
+   * <code>k</code>.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * A dataset is sampled by its rows and gives a dataset back. The draw is made through the
+   * engine's own generator, so <code>SeedRandom</code> governs it - including the generator
+   * <code>SeedRandom</code>'s <code>Method</code> option selects.
    *
    * <h3>Examples</h3>
    *
    * <pre>
-   * &gt;&gt; RandomSample(f(1,2,3,4,5))
-   * f(3,4,5,1,2)
+   * &gt;&gt; SeedRandom(1); RandomSample({a,b,c,d})
+   * {d,a,b,c}
    *
-   * &gt;&gt; RandomSample(f(1,2,3,4,5),3)
-   * f(3,4,1)
+   * &gt;&gt; SeedRandom(1); RandomSample({a,b,c,d}, 2)
+   * {d,a}
+   *
+   * &gt;&gt; SeedRandom(1); RandomSample({1,2,3}, UpTo(10))
+   * {2,3,1}
+   *
+   * &gt;&gt; SeedRandom(1); RandomSample(1;;10;;2, 3)
+   * {5,7,3}
+   *
+   * &gt;&gt; SeedRandom(1); RandomSample({1,2,3}-&gt;{a,b,c}, 2)
+   * {c,b}
    * </pre>
    */
   private static final class RandomSample extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        int n = ast.isAST2() ? ast.arg2().toMachineInt() : Integer.MAX_VALUE;
-        if (n >= 0) {
-          return shuffle((IAST) ast.arg1(), n);
+      IExpr arg1 = ast.arg1();
+      IAST weights = null;
+      if (arg1.isRuleAST()) {
+        // "RandomSample[{w1,w2,…}->{e1,e2,…},n]" - the elements with the weights to draw them by
+        if (!arg1.first().isList() || !arg1.second().isList()
+            || arg1.first().size() != arg1.second().size()) {
+          return F.NIL;
+        }
+        weights = (IAST) arg1.first();
+        arg1 = arg1.second();
+      } else if (arg1.isAST(S.Span)) {
+        // "RandomSample[i;;j;;k, n] may be used to sample the Span from i to j in steps of k"
+        arg1 = spanAsList((IAST) arg1, engine);
+      }
+      if (!arg1.isList() && !arg1.isDataset()) {
+        return F.NIL;
+      }
+      final int available =
+          arg1.isDataset() ? ((IASTDataset) arg1).rowCount() : ((IAST) arg1).argSize();
+      int n = available;
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        // "RandomSample[{e1,e2,…},UpTo[n]] gives a sample of n of the ei, or as many as are
+        // available" - so UpTo is the one form that may ask for more than there is
+        boolean upTo = arg2.isAST(S.UpTo, 2);
+        IExpr count = upTo ? arg2.first() : arg2;
+        if (upTo && count.isInfinity()) {
+          n = available;
+        } else {
+          int requested = count.toIntDefault();
+          if (requested < 0) {
+            return F.NIL;
+          }
+          if (upTo) {
+            n = Math.min(requested, available);
+          } else {
+            if (requested > available) {
+              // The elements of `1` are not compatible with the sample size `2`.
+              return Errors.printMessage(ast.topHead(), "smplen", F.List(ast.arg1(), arg2), engine);
+            }
+            n = requested;
+          }
         }
       }
-      return F.NIL;
+      if (arg1.isDataset()) {
+        // the rows of the dataset, and a dataset back - the implementation is in
+        // matheclipse-dataset and is reached through the interface core owns
+        return ((IASTDataset) arg1).randomSample(n, engine.getRandom());
+      }
+      if (weights != null) {
+        return weightedShuffle(weights, (IAST) arg1, n, engine.getRandom());
+      }
+      return shuffle((IAST) arg1, n, engine.getRandom());
+    }
+
+    /**
+     * A sample drawn by the elements' weights and still without replacement: each draw takes an
+     * element with probability proportional to its weight <b>among those left</b>, and that element
+     * is then gone. Through the engine's own generator, so that <code>SeedRandom</code> governs a
+     * weighted draw exactly as it governs a plain one.
+     *
+     * @return {@link F#NIL} when the weights are not usable - not all numbers, or one of them
+     *         negative or not finite
+     */
+    private static IExpr weightedShuffle(IAST weightList, IAST items, int n, Random random) {
+      final int len = items.argSize();
+      double[] weights = weightList.toDoubleVector();
+      if (weights == null || weights.length != len) {
+        return F.NIL;
+      }
+      for (int i = 0; i < len; i++) {
+        if (!(weights[i] >= 0.0) || Double.isInfinite(weights[i])) {
+          return F.NIL;
+        }
+      }
+      boolean[] taken = new boolean[len];
+      IASTAppendable result = items.copyHead(n);
+      for (int draw = 0; draw < n; draw++) {
+        double total = 0.0;
+        int remaining = 0;
+        int last = -1;
+        for (int i = 0; i < len; i++) {
+          if (!taken[i]) {
+            total += weights[i];
+            remaining++;
+            last = i;
+          }
+        }
+        int chosen = -1;
+        if (total > 0.0) {
+          double point = random.nextDouble() * total;
+          double sum = 0.0;
+          for (int i = 0; i < len; i++) {
+            if (taken[i]) {
+              continue;
+            }
+            sum += weights[i];
+            if (point < sum) {
+              chosen = i;
+              break;
+            }
+          }
+          if (chosen < 0) {
+            // the accumulated sum can fall a rounding short of the total
+            chosen = last;
+          }
+        } else {
+          // every weight left is zero, so nothing tells the remaining elements apart and they are
+          // drawn evenly - the alternative would be to refuse a sample the caller can still have
+          int k = random.nextInt(remaining);
+          for (int i = 0; i < len; i++) {
+            if (!taken[i] && k-- == 0) {
+              chosen = i;
+              break;
+            }
+          }
+        }
+        taken[chosen] = true;
+        result.append(items.get(chosen + 1));
+      }
+      return result;
+    }
+
+    /**
+     * The integers a <code>Span</code> runs over, as a list, or {@link F#NIL} when the span is not
+     * one of concrete integers - <code>1;;10;;2</code> is <code>{1,3,5,7,9}</code>.
+     */
+    private static IExpr spanAsList(IAST span, EvalEngine engine) {
+      if (span.size() < 3) {
+        return F.NIL;
+      }
+      IExpr from = span.arg1();
+      IExpr to = span.arg2();
+      IExpr step = span.size() > 3 ? span.arg3() : F.C1;
+      if (!from.isInteger() || !to.isInteger() || !step.isInteger() || step.isZero()) {
+        return F.NIL;
+      }
+      IExpr range = engine.evaluate(F.Range(from, to, step));
+      return range.isList() ? range : F.NIL;
     }
 
     @Override
@@ -866,12 +1067,11 @@ public final class RandomFunctions {
       return ARGS_1_2;
     }
 
-    public static IAST shuffle(IAST list, int n) {
+    public static IAST shuffle(IAST list, int n, Random random) {
       final int len = list.argSize();
 
       // Shuffle indices.
-      final int[] indexList = MathArrays.natural(len);
-      MathArrays.shuffle(indexList);
+      final int[] indexList = shuffledIndices(len, random);
 
       if (n < len) {
         IASTAppendable result = list.copyHead(n);
@@ -894,15 +1094,114 @@ public final class RandomFunctions {
         // Non-negative machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(ast.topHead(), "intnm", F.List(F.C1, ast), engine);
       }
+      if (ast.isAST2()) {
+        // "A Method option to SeedRandom can be given to specify the pseudorandom generator used"
+        IExpr option = ast.arg2();
+        if (!option.isRuleAST() || option.first() != S.Method) {
+          // Unknown option `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "optx", F.List(option, ast), engine);
+        }
+        Random generator = generatorFor(option.second());
+        if (generator == null) {
+          // The method `1` is not one of "Congruential", "Legacy" or "MersenneTwister".
+          return Errors.printMessage(ast.topHead(), "seedm", F.List(option.second()), engine);
+        }
+        engine.setRandom(generator);
+      }
       Random random = engine.getRandom();
       random.setSeed(seedValue);
       return F.ZZ(seedValue);
     }
 
+    /**
+     * The generator a <code>Method</code> names, or <code>null</code> when it names none of them.
+     *
+     * <p>
+     * <code>"Legacy"</code> and <code>"Congruential"</code> are the linear congruential generator
+     * of {@link Random}, which is what every random built-in draws from unless this says otherwise.
+     * The reference lists further methods - <code>"ExtendedCA"</code>, <code>"MKL"</code>,
+     * <code>"Rule30CA"</code> - which have no counterpart here and are declined rather than
+     * quietly answered with a generator that is not the one asked for.
+     */
+    private static Random generatorFor(IExpr method) {
+      if (!method.isString()) {
+        return null;
+      }
+      String name = method.toString();
+      if (name.equalsIgnoreCase("MersenneTwister")) {
+        return new GeneratorRandom(new org.hipparchus.random.MersenneTwister());
+      }
+      if (name.equalsIgnoreCase("Legacy") || name.equalsIgnoreCase("Congruential")) {
+        return new Random();
+      }
+      return null;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
+  }
+
+  /**
+   * A {@link Random} that draws from one of hipparchus's generators, so that the built-ins - all of
+   * which ask the engine for a <code>Random</code> - can be pointed at a different one.
+   *
+   * <p>
+   * Only {@code next(int)} is overridden, and deliberately: every other method of
+   * <code>Random</code> is defined in terms of it, so the distributions stay the ones
+   * <code>Random</code> documents and only the stream of bits changes.
+   */
+  private static final class GeneratorRandom extends Random {
+    private static final long serialVersionUID = 1L;
+
+    private final org.hipparchus.random.RandomGenerator generator;
+
+    GeneratorRandom(org.hipparchus.random.RandomGenerator generator) {
+      this.generator = generator;
+    }
+
+    @Override
+    protected int next(int bits) {
+      return generator.nextInt() >>> (32 - bits);
+    }
+
+    @Override
+    public synchronized void setSeed(long seed) {
+      // called by Random's own constructor, before the field is assigned
+      if (generator != null) {
+        generator.setSeed(seed);
+      }
+    }
+  }
+
+  /**
+   * The numbers <code>0..len-1</code> in a random order.
+   *
+   * <p>
+   * Through the engine's own generator, which is what <code>SeedRandom</code> seeds. This used to
+   * be <code>MathArrays.shuffle</code>, whose generator is hipparchus's and which
+   * <code>SeedRandom</code> therefore did not reach - so <code>RandomSample</code> was the one
+   * function in this file that could not be made reproducible, while <code>RandomInteger</code>,
+   * <code>RandomReal</code> and the rest could.
+   *
+   * <p>
+   * Shared with <code>matheclipse-dataset</code>, so that sampling the rows of a dataset and
+   * sampling a list of the same rows are the same operation rather than two that happen to agree.
+   */
+  public static int[] shuffledIndices(int len, Random random) {
+    final int[] indexList = new int[len];
+    for (int i = 0; i < len; i++) {
+      indexList[i] = i;
+    }
+    // Fisher-Yates
+    for (int i = len - 1; i > 0; i--) {
+      int j = random.nextInt(i + 1);
+      int swap = indexList[i];
+      indexList[i] = indexList[j];
+      indexList[j] = swap;
+    }
+    return indexList;
   }
 
   public static void initialize() {

@@ -88,7 +88,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y'(x) == -3*y(x)^2, y(x), x)", //
         "{{y(x)->1/(3*x-C(1))}}");
     check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", //
-        "{{y(x)->1/(1/2+3*x)}}");
+        "{{y(x)->2/(1+6*x)}}");
   }
 
   @Test
@@ -127,7 +127,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testDSolveSystemEqns() {
     check("DSolve({y'(x)-3*z(x) == Sin(x), y(x) + z(x) == 1/5, y(Pi/2) == 1/2}, {y, z}, x)", //
-        "{{y->Function({x},1/5-Cos(x)/10+3/10*Sin(x)),z->Function({x},Cos(x)/10-3/10*Sin(x))}}");
+        "{{y->Function({x},1/10*(2-Cos(x)+3*Sin(x))),z->Function({x},1/10*(Cos(x)-3*Sin(x)))}}");
   }
 
   @Test
@@ -164,12 +164,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // Bernoulli equation with n=3: y'(x) - y(x) = y(x)^3
     // Standard substitution u = y^-2 leads to linear ODE u' + 2u = -2
     check("DSolve(y'(x) - y(x) == y(x)^3, y(x), x)", //
-        "{{y(x)->1/Sqrt(-1+C(1)/E^(2*x))}}");
+        "{{y(x)->-1/Sqrt(-1+C(1)/E^(2*x))},{y(x)->1/Sqrt(-1+C(1)/E^(2*x))}}");
 
     // Bernoulli equation with variable coefficients and n=3: x*y'(x) + y(x) == x^3*y(x)^3
     // Transforms to y' + (1/x)y = x^2 y^3
     check("DSolve(x*y'(x) + y(x) == x^3*y(x)^3, y(x), x)", //
-        "{{y(x)->1/Sqrt(-2*x^3+x^2*C(1))}}");
+        "{{y(x)->-1/Sqrt(-2*x^3+x^2*C(1))},{y(x)->1/Sqrt(-2*x^3+x^2*C(1))}}");
 
     // Bernoulli equation with n=4: y'(x) + y(x) == x*y(x)^4
     // u = y^-3 leads to u' - 3u = -3x
@@ -303,9 +303,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->-2+3*E^x}}");
 
     // Non-linear ODE with coefficient boundary condition: 3*y(0)==6 means y(0)=2
-    // Must match: DSolve({y'(x)==-3*y(x)^2, y(0)==2}, y(x), x) == {{y(x)->1/(1/2+3*x)}}
+    // Must match: DSolve({y'(x)==-3*y(x)^2, y(0)==2}, y(x), x) == {{y(x)->2/(1+6*x)}}
     check("DSolve({y'(x)==-3*y(x)^2, 3*y(0)==6}, y(x), x)", //
-        "{{y(x)->1/(1/2+3*x)}}");
+        "{{y(x)->2/(1+6*x)}}");
   }
 
   @Test
@@ -352,7 +352,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 
     check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", //
-        "{{y(x)->1/(1/2+3*x)}}");
+        "{{y(x)->2/(1+6*x)}}");
   }
 
   @Test
@@ -425,7 +425,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // Substitute y' = v(y) -> y*v*v' + v^2 = 0 -> v = C_1/y
     // Backsubstitute: y' = C_1/y -> y^2/2 = C_1*x + C_2
     check("DSolve(y(x)*y''(x) + y'(x)^2 == 0, y(x), x)", //
-        "{{y(x)->Sqrt(2*x*C(1)-C(2))}}");
+        "{{y(x)->-Sqrt(2*x*C(1)-C(2))},{y(x)->Sqrt(2*x*C(1)-C(2))}}");
   }
 
   @Test
@@ -562,9 +562,48 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y''(x) + y(x) == 0 && y(0)==1 && y'(0)==0, y(x), x)", //
         "{{y(x)->Cos(x)}}");
     check("DSolve(y'(x) == -3*y(x)^2 && y(0)==2, y(x), x)", //
-        "{{y(x)->1/(1/2+3*x)}}");
+        "{{y(x)->2/(1+6*x)}}");
     check("DSolveValue(y'(x)==y(x)+2 && y(0)==1, y(x), x)", //
         "-2+3*E^x");
+  }
+
+  @Test
+  public void testDSolveSimplified() {
+    // Substituting the integration constant leaves the fractions it came with nested inside each
+    // other, so the particular solution is put over a common denominator.
+    check("DSolve({y'(x) == x * y(x)^2, y(0) == 2}, y(x), x)", //
+        "{{y(x)->2/(1-x^2)}}");
+
+    check("DSolve({y'(x) == y(x)^2, y(0) == 1}, y(x), x)", //
+        "{{y(x)->1/(1-x)}}");
+
+    check("DSolve({y'(x) == y(x)^3, y(0) == 1}, y(x), x)", //
+        "{{y(x)->1/Sqrt(1-2*x)}}");
+
+    // The x-factor may be any closed-form function of x, not just a monomial.
+    check("DSolve({y'(x) == Cos(x) * y(x)^2, y(0) == 1}, y(x), x)", //
+        "{{y(x)->1/(1-Sin(x))}}");
+
+    // A quotient separates too: y' == x/y.
+    check("DSolve({y'(x) == x / y(x), y(0) == 1}, y(x), x)", //
+        "{{y(x)->Sqrt(1+x^2)}}");
+
+    // DSolve(..., y, x) asks for the Function form.
+    check("DSolve({y'(t) == -t * y(t)^2, y(0) == 1}, y, t)", //
+        "{{y->Function({t},2/(2+t^2))}}");
+
+    check("DSolve({y'(t) == (t - t^3) * y(t)^2, y(0) == 1}, y, t)", //
+        "{{y->Function({t},4/(4-2*t^2+t^4))}}");
+
+    // Undoing the Bernoulli substitution u == y^(1-n) for an even exponent gives both signs of the
+    // root, and only the initial condition tells them apart: with y(0) == -1 the answer is the
+    // negative branch, not the positive one.
+    check("DSolve({y'(x) == x / y(x), y(0) == -1}, y(x), x)", //
+        "{{y(x)->-Sqrt(1+x^2)}}");
+
+    // Without conditions both branches are returned.
+    check("DSolve(y'(x) == x / y(x), y(x), x)", //
+        "{{y(x)->-Sqrt(x^2-C(1))},{y(x)->Sqrt(x^2-C(1))}}");
   }
 
   /** The JUnit setup method */

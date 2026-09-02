@@ -10,6 +10,8 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -23,6 +25,51 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Options for the 2D Graphics object.
  */
 public class GraphicsOptions {
+
+  /**
+   * The data a chart should plot.
+   *
+   * <p>
+   * A <code>Dataset</code> becomes its rows, which for the one-column dataset a chart is usually
+   * handed - <code>planets[All, "radius"]</code> - is already the bare list of numbers the chart
+   * wants. An <code>Association</code> becomes its values, and its keys are collected into
+   * <code>labelsOut</code> so that <code>PieChart[&lt;|"a" -&gt; 1, "b" -&gt; 2|&gt;]</code> labels its
+   * slices the way the reference does. Anything else is handed back untouched.
+   *
+   * <p>
+   * The charts live in <code>matheclipse-core</code> and cannot see <code>ASTDataset</code>, which
+   * is in <code>matheclipse-dataset</code>; they do not need to, because
+   * {@link IASTDataset#normalizeDataset(IExpr)} is the contract core owns.
+   *
+   * @param labelsOut collects the keys of an association, in order; left alone otherwise
+   * @return the data to plot
+   */
+  public static IExpr chartData(IExpr arg, IASTAppendable labelsOut) {
+    IExpr data = IASTDataset.normalizeDataset(arg);
+    if (data.isAssociation()) {
+      IAssociation assoc = (IAssociation) data;
+      IASTAppendable values = F.ListAlloc(assoc.argSize());
+      for (int i = 1; i < assoc.size(); i++) {
+        IAST rule = assoc.getRule(i);
+        labelsOut.append(rule.first());
+        values.append(rule.second());
+      }
+      return values;
+    }
+    return data;
+  }
+
+  /**
+   * The labels to draw: whatever <code>ChartLabels</code> was given, or the keys an association
+   * brought with it. An explicit option wins - the keys are a default, not an override.
+   */
+  public static IExpr chartLabels(IExpr chartLabels, IASTAppendable keyLabels) {
+    if (chartLabels == S.None && keyLabels.argSize() > 0) {
+      return keyLabels;
+    }
+    return chartLabels;
+  }
+
 
   /**
    * Holder for the lazily created JSON object mapper.
@@ -252,7 +299,8 @@ public class GraphicsOptions {
   public static OptionSet listPlotExtras(OptionSet set) {
     return set.add(S.Automatic, S.PlotMarkers, S.InterpolationOrder, S.PlotTheme, S.LabelStyle,
         S.ColorFunction, S.ColorFunctionScaling, S.ScalingFunctions, S.ClippingStyle,
-        S.LabelingFunction, S.LabelingSize, S.MeshStyle, S.PerformanceGoal).add(S.None, S.Mesh);
+        S.LabelingFunction, S.LabelingSize, S.MeshStyle, S.PerformanceGoal, S.TargetUnits)
+        .add(S.None, S.Mesh);
   }
 
   /** Options of the bar, pie, histogram and box whisker charts. */
@@ -260,7 +308,8 @@ public class GraphicsOptions {
     return set
         .add(S.Automatic, S.ChartStyle, S.ChartBaseStyle, S.ChartElementFunction, S.ChartElements,
             S.ChartLayout, S.BarOrigin, S.BarSpacing, S.SectorOrigin, S.SectorSpacing,
-            S.LabelingFunction, S.LabelingSize, S.PlotTheme, S.LabelStyle, S.PerformanceGoal)
+            S.LabelingFunction, S.LabelingSize, S.PlotTheme, S.LabelStyle, S.PerformanceGoal,
+            S.TargetUnits)
         .add(S.None, S.ChartLabels);
   }
 
@@ -1628,8 +1677,8 @@ public class GraphicsOptions {
         if (rule.isRuleAST()) {
           IExpr key = ((IAST) rule).arg1();
           // Filter out keys we already added explicitly to avoid overriding with defaults
-          if (key.equals(S.Axes) || key.equals(S.AxesLabel) || key.equals(S.PlotLabel)
-              || key.equals(S.PlotLegends) || key.equals(S.Filling) || key.equals(S.AspectRatio)) {
+          if (key == S.Axes || key == S.AxesLabel || key == S.PlotLabel
+              || key == S.PlotLegends || key == S.Filling || key == S.AspectRatio) {
             continue;
           }
         }
@@ -2122,7 +2171,7 @@ public class GraphicsOptions {
     if (optionRules.isPresent()) {
       for (int i = 1; i < optionRules.size(); i++) {
         IExpr rule = optionRules.get(i);
-        if (rule.isRuleAST() && rule.first().equals(S.$Scaling)) {
+        if (rule.isRuleAST() && rule.first() == S.$Scaling) {
           IExpr value = ((IAST) rule).second();
           if (value.isList() && ((IAST) value).argSize() >= 2) {
             return ((IAST) value).arg2().toString().replace("\"", "");

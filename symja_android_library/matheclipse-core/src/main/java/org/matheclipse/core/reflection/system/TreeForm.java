@@ -67,7 +67,7 @@ public class TreeForm extends AbstractFunctionEvaluator {
           if (val.isFalse()) {
             showLabels = false;
             tooltips = false;
-          } else if (val.equals(S.Automatic)) {
+          } else if (val == S.Automatic) {
             showLabels = true;
             tooltips = true;
           }

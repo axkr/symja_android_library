@@ -21,6 +21,9 @@
 		</license>
 	</licenses>
 	<properties>
+		<!-- Depends on matheclipse-astro, which is compiled for Java 21 because
+		of Orekit. matheclipse-core stays on the release 11 default. -->
+		<maven.compiler.release>21</maven.compiler.release>
 		<!-- This project is not intended to be published -->
 		<deployment.suppress>true</deployment.suppress>
 	</properties>
@@ -37,7 +40,7 @@
 		<dependency>
 			<groupId>org.openapitools</groupId>
 			<artifactId>openapi-generator-cli</artifactId>
-			<version>7.24.0</version>
+			<version>7.25.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

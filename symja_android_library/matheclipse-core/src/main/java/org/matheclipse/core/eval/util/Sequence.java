@@ -70,11 +70,11 @@ public final class Sequence extends ListSizeSequence {
           sequArray[j++] = sequ;
           continue;
         }
-      } else if (element.equals(S.All)) {
+      } else if (element == S.All) {
         sequ = new Sequence(1, Integer.MAX_VALUE);
         sequArray[j++] = sequ;
         continue;
-      } else if (element.equals(S.None)) {
+      } else if (element == S.None) {
         sequ = new Sequence(1, 0);
         sequArray[j++] = sequ;
         continue;

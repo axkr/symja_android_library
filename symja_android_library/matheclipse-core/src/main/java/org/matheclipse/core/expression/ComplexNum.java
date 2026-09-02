@@ -15,6 +15,7 @@ import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -444,7 +445,29 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public Apcomplex apcomplexValue() {
+    checkFinite(fComplex.getReal());
+    checkFinite(fComplex.getImaginary());
     return new Apcomplex(new Apfloat(fComplex.getReal()), new Apfloat(fComplex.getImaginary()));
+  }
+
+  /**
+   * Refuse a part that no arbitrary precision number can hold, as {@link Num#apfloatValue()} does
+   * for the real case.
+   *
+   * <p>
+   * Apfloat has no representation for an infinity or a NaN and answers a
+   * {@link NumberFormatException}, which none of the paths reaching here expect - every
+   * {@code apcomplexValue()} caller in this class hands the result straight to an arbitrary
+   * precision routine. Raising it as a Symja exception instead means
+   * {@code EvalEngine#evalASTBuiltinFunction} turns it into a message and an unevaluated result.
+   *
+   * @param value the real or imaginary part about to be converted
+   */
+  private static void checkFinite(final double value) {
+    if (!Double.isFinite(value)) {
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
   }
 
   @Override

@@ -125,7 +125,7 @@ public class Sequences {
    * @return
    */
   public static SeqBase SeqPer(IExpr seq, IAST limits) {
-    BuiltInDummy head = new BuiltInDummy("$seqper");
+    BuiltInDummy head = new BuiltInDummy(EvalEngine.uniqueName("$seqper"));
     IASTMutable ast = F.binaryAST2(head, seq, limits);
 
     SeqPer res = new SeqPer(ast);
@@ -168,7 +168,7 @@ public class Sequences {
    * @return
    */
   public static SeqBase SeqFormula(IExpr seq, IAST limits) {
-    BuiltInDummy head = new BuiltInDummy("$seqformula");
+    BuiltInDummy head = new BuiltInDummy(EvalEngine.uniqueName("$seqformula"));
     IASTMutable ast = F.binaryAST2(head, seq, limits);
     SeqFormula res = new SeqFormula(ast);
     head.setEvaluator(res);

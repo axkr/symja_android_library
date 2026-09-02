@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public interface IAssumptions {
 
@@ -312,7 +312,7 @@ public interface IAssumptions {
    * @param range
    * @return <code>null</code> if no interval can be determined
    */
-  public IntArrayList reduceRange(IExpr x, final int[] range);
+  public int[] reduceRange(IExpr x, final int[] range);
 
   /**
    * Get some assumptions about tensor symbols

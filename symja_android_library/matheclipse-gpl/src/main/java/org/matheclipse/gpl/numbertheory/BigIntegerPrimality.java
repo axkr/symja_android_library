@@ -12,12 +12,12 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.external.fastutil.ints.Int2IntMap;
+import org.matheclipse.external.fastutil.ints.Int2IntRBTreeMap;
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
 import de.tilman_neumann.util.SortedMultiset;
 import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import edu.jas.arith.PrimeInteger;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 
 /** Provides primality probabilistic methods for BigInteger numbers */
 public class BigIntegerPrimality extends Primality {

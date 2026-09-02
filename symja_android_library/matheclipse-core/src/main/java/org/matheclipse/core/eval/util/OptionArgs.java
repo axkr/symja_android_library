@@ -32,7 +32,7 @@ public class OptionArgs {
       } else {
         IExpr option = options.getOption(S.Assumptions);
         if (option.isPresent()) {
-          if (option.equals(S.$Assumptions)) {
+          if (option == S.$Assumptions) {
             assumptionExpr = S.$Assumptions.assignedValue();
             if (assumptionExpr == null) {
               assumptionExpr = F.NIL;
@@ -60,7 +60,7 @@ public class OptionArgs {
 
   public static IExpr determineAssumptions(IExpr assumptionOption) {
     IExpr assumptionExpr = assumptionOption;
-    if (assumptionOption.equals(S.$Assumptions)) {
+    if (assumptionOption == S.$Assumptions) {
       assumptionExpr = S.$Assumptions.assignedValue();
       if (assumptionExpr == null) {
         assumptionExpr = F.NIL;

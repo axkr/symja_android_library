@@ -25,6 +25,7 @@ public class BuiltinUsage {
     USAGE[ID.AbsoluteTime] = "get absolute time in seconds";
     USAGE[ID.AbsoluteTiming] = "get total wall-clock time to run a Symja command";
     USAGE[ID.Accumulate] = "accumulates the values of $list$, returning a new list";
+    USAGE[ID.AccountingForm] = "print with all numbers in accounting notation";
     USAGE[ID.AddTo] = "add a value and assignes that returning the new value";
     USAGE[ID.Algebraics] = "domain of the Algebraic numbers";
     USAGE[ID.All] = "option value that specify using everything";
@@ -146,6 +147,7 @@ public class BuiltinUsage {
     USAGE[ID.D] = "partial derivative of a function";
     USAGE[ID.Decrement] =
         "decreases the value by one and assigns that returning the original value";
+    USAGE[ID.DecimalForm] = "print with all numbers in decimal notation";
     USAGE[ID.DedekindNumber] = "known Dedekind numbers [0..9]";
     USAGE[ID.Default] = "predefined default arguments for a function";
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
@@ -194,6 +196,7 @@ public class BuiltinUsage {
     USAGE[ID.EndOfLine] = "a string pattern matching EOL";
     USAGE[ID.EndPackage] =
         "restore the context and the context path to the state before the nearest call to `BeginPackage`";
+    USAGE[ID.EngineeringForm] = "print with all numbers in engineering notation";
     USAGE[ID.Equal] = "numerical equality";
     USAGE[ID.Equivalent] = "logic equivalence";
     USAGE[ID.Erf] = "error function";
@@ -438,6 +441,7 @@ public class BuiltinUsage {
     // USAGE[ID.NumberDigits] = "digits of a real number";
     USAGE[ID.NumberLinePlot] = "plot along a number line";
     USAGE[ID.NumberQ] = "test whether an expression is a number";
+    USAGE[ID.NumberForm] = "print with a given precision and number formatting options";
     USAGE[ID.NumberString] = "characters in string representation of a number";
     USAGE[ID.NumericQ] = "test whether an expression is a number";
     USAGE[ID.Numerator] = "numerator of an expression";
@@ -463,6 +467,7 @@ public class BuiltinUsage {
     USAGE[ID.Outer] = "generalized outer product";
     USAGE[ID.Overflow] = "overflow in numeric evaluation";
 
+    USAGE[ID.PaddedForm] = "print with all numbers padded to a given number of digits";
     USAGE[ID.PadLeft] = "pad out by the left a ragged array to make a matrix";
     USAGE[ID.PadRight] = "pad out by the right a ragged array to make a matrix";
     USAGE[ID.Part] = "get/set any part of an expression";
@@ -577,6 +582,7 @@ public class BuiltinUsage {
     USAGE[ID.Sec] = "secant function";
     USAGE[ID.Sech] = "hyperbolic secant function";
     USAGE[ID.Select] = "pick elements according to a criterion";
+    USAGE[ID.ScientificForm] = "print with all numbers in scientific notation";
     USAGE[ID.Sequence] = "represents a sequence of arguments to a function";
     USAGE[ID.SequenceHold] =
         "attribute that prevents 'Sequence' objects from being spliced into a function's arguments.";

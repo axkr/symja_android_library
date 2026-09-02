@@ -156,7 +156,7 @@ public final class VisitorBooleanLevelSpecification extends AbstractVisitorBoole
         }
       }
     }
-    if (levelExpr.isInfinity() || levelExpr.equals(S.All)) {
+    if (levelExpr.isInfinity() || levelExpr == S.All) {
       // level specification Infinity and -1 are equivalent
       fToLevel = Integer.MAX_VALUE;
       fFromLevel = 1;

@@ -48,7 +48,7 @@ public final class PiecewiseExpand extends AbstractFunctionOptionEvaluator {
 
       if (argSize == 2) {
         IExpr arg2 = ast.arg2();
-        if (arg2.equals(S.Reals) || arg2.equals(S.Complexes)) {
+        if (arg2 == S.Reals || arg2 == S.Complexes) {
           domain = ((IBuiltInSymbol) arg2);
         } else {
           assumptions = Assumptions.getInstance(arg2);
@@ -56,7 +56,7 @@ public final class PiecewiseExpand extends AbstractFunctionOptionEvaluator {
       } else if (argSize == 3) {
         IExpr arg2 = ast.arg2();
         IExpr arg3 = ast.arg3();
-        if (arg3.equals(S.Reals) || arg3.equals(S.Complexes)) {
+        if (arg3 == S.Reals || arg3 == S.Complexes) {
           domain = ((IBuiltInSymbol) arg3);
         }
         assumptions = Assumptions.getInstance(arg2);

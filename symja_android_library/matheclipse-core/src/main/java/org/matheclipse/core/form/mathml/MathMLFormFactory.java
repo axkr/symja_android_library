@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.apfloat.Apcomplex;
@@ -15,6 +16,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -30,6 +32,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
+import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -131,7 +134,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.isAST1() && f.head().equals(S.C) && f.arg1().isInteger()) {
+      if (f.isAST1() && f.head() == S.C && f.arg1().isInteger()) {
         fFactory.tagStart(buf, "msub");
         buf.append("<mi>c</mi>");
         fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
@@ -324,6 +327,31 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         return true;
       }
       return false;
+    }
+  }
+
+  /**
+   * Renders the <code>ScientificForm, EngineeringForm, NumberForm, AccountingForm, PaddedForm,
+   * DecimalForm</code> display wrappers by installing a {@link NumberFormatter} for the wrapped
+   * subtree.
+   */
+  private static final class NumberForm extends AbstractConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      NumberFormatter formatter = NumberFormatter.of(f, EvalEngine.get());
+      NumberFormatter previous = fFactory.fNumberFormatter;
+      fFactory.fNumberFormatter = formatter;
+      try {
+        fFactory.convertInternal(buf, f.arg1(), precedence, false);
+      } finally {
+        fFactory.fNumberFormatter = previous;
+      }
+      return true;
     }
   }
 
@@ -686,7 +714,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           if (exp.isOne()) {
             fFactory.convertInternal(buf, arg1, Integer.MIN_VALUE, false);
           } else {
-            convert(buf, F.binaryAST2(S.Power, arg1, exp), Integer.MIN_VALUE);
+            convert(buf, F.Power(arg1, exp), Integer.MIN_VALUE);
           }
           fFactory.tagEnd(buf, "mfrac");
         } else {
@@ -879,8 +907,132 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
 
     private static String escapeHtml(String text) {
-      return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-          .replace("\"", "&quot;");
+      return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"",
+          "&quot;");
+    }
+  }
+
+  /**
+   * A control object - <code>Slider[Dynamic[x]]</code> and its relatives - as the place its widget
+   * goes.
+   *
+   * <p>
+   * Like {@link Button} this only ever emits a marker. The interactive front end has replaced the
+   * arguments with the position of the control it kept, and it holds the description the widget is
+   * built from; <code>Dynamic</code> around a lone integer means "the control at this position".
+   * Anything else - including a perfectly ordinary static <code>Slider[0.5]</code> - is a control
+   * object nobody is driving, which stays inert and prints as itself.
+   */
+  private static final class ControlWidget extends MMLOperator {
+
+    public ControlWidget() {
+      super(0, "mtext", "");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 2 || !f.arg1().isAST(S.Dynamic, 2)) {
+        return false;
+      }
+      int control = ((IAST) f.arg1()).arg1().toIntDefault();
+      if (control < 0) {
+        return false;
+      }
+      fFactory.tagStart(buf, "mtext");
+      buf.append("<span class=\"symjacontrol\" data-control=\"").append(control).append("\">");
+      buf.append("</span>");
+      fFactory.tagEnd(buf, "mtext");
+      return true;
+    }
+  }
+
+  /**
+   * <code>Row[{e1, e2, ...}]</code> and <code>Row[{...}, separator]</code> as the elements set
+   * side by side.
+   *
+   * <p>
+   * A row is the usual way to write a live read-out - <code>Row[{"moves: ", Dynamic[moves]}]</code>
+   * - so it has to lay its elements out rather than print as a function call. Anything inside it
+   * goes through the ordinary conversion, which is what lets a control or a button sit in one.
+   */
+  private static final class Row extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2 || f.size() > 3 || !f.arg1().isList()) {
+        return false;
+      }
+      IAST items = (IAST) f.arg1();
+      IExpr separator = f.size() == 3 ? f.arg2() : F.NIL;
+      fFactory.tagStart(buf, "mrow");
+      for (int i = 1; i < items.size(); i++) {
+        fFactory.convertInternal(buf, items.get(i), Integer.MIN_VALUE, false);
+        if (separator.isPresent() && i < items.argSize()) {
+          fFactory.convertInternal(buf, separator, Integer.MIN_VALUE, false);
+        }
+      }
+      fFactory.tagEnd(buf, "mrow");
+      return true;
+    }
+  }
+
+  /**
+   * <code>Graphics[...]</code> as the picture itself, drawn into the surrounding layout.
+   *
+   * <p>
+   * A graphic that is the whole result is drawn by the front end, which has a path of its own for
+   * it. One inside a layout had nowhere to go and printed as <code>Graphics({Disk()})</code> in the
+   * middle of the page, which is what made a picture and a control impossible to put in one column
+   * - and a <code>LocatorPane</code>, which is exactly a picture with controls on it, impossible to
+   * show at all.
+   *
+   * <p>
+   * The SVG goes inside an <code>mtext</code>, an HTML integration point, for the same reason a
+   * button does: an HTML element there is parsed as HTML rather than as MathML.
+   */
+  private static final class GraphicsInline extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      StringBuilder svg = new StringBuilder();
+      try {
+        if (!GraphicsUtil.renderGraphics2DSVG(svg, f, true, EvalEngine.get())) {
+          return false;
+        }
+      } catch (RuntimeException rex) {
+        // a picture that cannot be drawn falls back to printing as itself, rather than taking
+        // the whole rendering with it
+        return false;
+      }
+      fFactory.tagStart(buf, "mtext");
+      buf.append(svg);
+      fFactory.tagEnd(buf, "mtext");
+      return true;
+    }
+  }
+
+  /** <code>Column[{e1, e2, ...}]</code> as the elements one above the other. */
+  private static final class Column extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2 || !f.arg1().isList()) {
+        return false;
+      }
+      IAST items = (IAST) f.arg1();
+      fFactory.tagStart(buf, "mtable", "columnalign=\"left\"");
+      for (int i = 1; i < items.size(); i++) {
+        fFactory.tagStart(buf, "mtr");
+        fFactory.tagStart(buf, "mtd", "columnalign=\"left\"");
+        fFactory.convertInternal(buf, items.get(i), Integer.MIN_VALUE, false);
+        fFactory.tagEnd(buf, "mtd");
+        fFactory.tagEnd(buf, "mtr");
+      }
+      fFactory.tagEnd(buf, "mtable");
+      return true;
     }
   }
 
@@ -974,8 +1126,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    * <code>Style[expr, directives...]</code> as an <code>mstyle</code> element.
    *
    * <p>
-   * A directive that is not understood is skipped rather than making the whole conversion fail:
-   * the expression itself still has to be shown. Without this the browser would print the literal
+   * A directive that is not understood is skipped rather than making the whole conversion fail: the
+   * expression itself still has to be shown. Without this the browser would print the literal
    * <code>Style[3.14159, Small]</code> instead of the number.
    */
   private static final class Style extends MMLOperator {
@@ -1074,9 +1226,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   /**
-   * The <code>#rrggbb</code> form of a colour directive, or <code>null</code> when the expression is
-   * not a colour. Colours reach this point as <code>RGBColor</code>, because a named colour such as
-   * <code>Red</code> evaluates to one.
+   * The <code>#rrggbb</code> form of a colour directive, or <code>null</code> when the expression
+   * is not a colour. Colours reach this point as <code>RGBColor</code>, because a named colour such
+   * as <code>Red</code> evaluates to one.
    */
   private static String colorOf(IExpr expr) {
     if (expr.isAST(S.RGBColor, 4, 5)) {
@@ -1376,7 +1528,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    */
   public static final boolean PLUS_CALL = true;
 
-  public static final Map<ISymbol, IConverter> CONVERTERS = new HashMap<ISymbol, IConverter>(199);
+  public static final Map<ISymbol, IConverter> CONVERTERS =
+      new IdentityHashMap<ISymbol, IConverter>(199);
 
   private static final TrieBuilder<String, Object, ArrayList<Object>> constantBuilder =
       TrieBuilder.create();
@@ -1408,6 +1561,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   private boolean fUseSignificantFigures = false;
   private int fExponentFigures;
   private int fSignificantFigures;
+
+  /**
+   * Installed while converting the argument of a number form wrapper; <code>null</code> otherwise.
+   */
+  NumberFormatter fNumberFormatter = null;
 
   /** Constructor */
   public MathMLFormFactory() {
@@ -1541,10 +1699,73 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   private String convertApfloatToFormattedString(Apfloat value) {
+    if (fNumberFormatter != null) {
+      String markup = formattedNumberMarkup(fNumberFormatter.format(value, fSignificantFigures));
+      if (markup != null) {
+        return markup;
+      }
+    }
     StringBuilder buf = new StringBuilder();
     int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
     ApfloatToMMA.apfloatToMathML(buf, value, numericPrecision, numericPrecision,
         fUseSignificantFigures);
+    return buf.toString();
+  }
+
+  /**
+   * Append a <code>double</code>, honouring an installed {@link NumberFormatter}.
+   */
+  private void appendFormattedDouble(final StringBuilder buf, double value) {
+    if (fNumberFormatter != null) {
+      String markup = formattedNumberMarkup(fNumberFormatter.format(value, fSignificantFigures));
+      if (markup != null) {
+        buf.append(markup);
+        return;
+      }
+    }
+    tagStart(buf, "mn");
+    buf.append(convertDoubleToFormattedString(value));
+    tagEnd(buf, "mn");
+  }
+
+  /**
+   * Render a {@link NumberFormatter.FormattedNumber} as MathML markup.
+   *
+   * @return <code>null</code> if the value could not be formatted and the caller should fall back
+   *         to the default formatting
+   */
+  private String formattedNumberMarkup(NumberFormatter.FormattedNumber formatted) {
+    if (formatted == null) {
+      return null;
+    }
+    StringBuilder buf = new StringBuilder();
+    if (formatted.custom.isPresent()) {
+      NumberFormatter previous = fNumberFormatter;
+      fNumberFormatter = null;
+      try {
+        convertInternal(buf, formatted.custom, Integer.MIN_VALUE, false);
+        return buf.toString();
+      } finally {
+        fNumberFormatter = previous;
+      }
+    }
+    if (!formatted.scientific) {
+      tagStart(buf, "mn");
+      buf.append(formatted.mantissa);
+      tagEnd(buf, "mn");
+      return buf.toString();
+    }
+    tagStart(buf, "mrow");
+    tagStart(buf, "mn");
+    buf.append(formatted.mantissa);
+    tagEnd(buf, "mn");
+    // <!ENTITY times "&#0215;" >
+    tag(buf, "mo", "&#0215;");
+    tagStart(buf, "msup");
+    tag(buf, "mn", "10");
+    tag(buf, "mn", Integer.toString(formatted.exponent));
+    tagEnd(buf, "msup");
+    tagEnd(buf, "mrow");
     return buf.toString();
   }
   // public void convertApfloat(StringBuilder buf, Apfloat num) {
@@ -1672,11 +1893,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     if (operator != null) {
       if (operator instanceof PostfixOperator) {
         if (list.isAST1()) {
-          convertPostfixOperator(buf, list, (PostfixOperator) operator, operator.getPrecedence());
+          // The enclosing expression's precedence, not the operator's own: passing its own made
+          // the "parenthesize when the context binds tighter" test true for every prefix and
+          // postfix operator reached here, so Del(f) came out as (\u2207f) and Increment(a) as
+          // (a++). This is the precedence OutputFormFactory passes at the same point.
+          convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
           return;
         }
       } else {
-        if (convertOperator(operator, list, buf, operator.getPrecedence(), head)) {
+        if (convertOperator(operator, list, buf, precedence, head)) {
           return;
         }
       }
@@ -1951,9 +2176,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   public void convertDouble(final StringBuilder buf, final INum d, final int precedence,
       boolean caller) {
     if (d instanceof Num && F.isZero(d.doubleValue(), Config.ZERO_IN_OUTPUT_FORMAT)) {
-      tagStart(buf, "mn");
-      buf.append(convertDoubleToFormattedString(0.0));
-      tagEnd(buf, "mn");
+      appendFormattedDouble(buf, 0.0);
       return;
     }
     final boolean isNegative = d.isNegative();
@@ -1965,9 +2188,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     if (d instanceof ApfloatNum) {
       convertApfloat(buf, d.apfloatValue(), precedence);
     } else {
-      tagStart(buf, "mn");
-      buf.append(convertDoubleToFormattedString(d.getRealPart()));
-      tagEnd(buf, "mn");
+      appendFormattedDouble(buf, d.getRealPart());
     }
 
     if (isNegative && (precedence > Precedence.PLUS)) {
@@ -1991,18 +2212,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     if (Precedence.PLUS < precedence) {
       tag(buf, "mo", "(");
     }
-    tagStart(buf, "mn");
-    buf.append(convertDoubleToFormattedString(realPart));
-    tagEnd(buf, "mn");
+    appendFormattedDouble(buf, realPart);
     if (isImNegative) {
       tag(buf, "mo", "-");
       imaginaryPart *= (-1);
     } else {
       tag(buf, "mo", "+");
     }
-    tagStart(buf, "mn");
-    buf.append(convertDoubleToFormattedString(imaginaryPart));
-    tagEnd(buf, "mn");
+    appendFormattedDouble(buf, imaginaryPart);
 
     // <!ENTITY InvisibleTimes "&#x2062;" >
     // <!ENTITY CenterDot "&#0183;" >
@@ -2275,9 +2492,16 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       tagStart(buf, "mrow");
       tag(buf, "mo", "(");
     }
-    tagStart(buf, "mn");
-    buf.append(i.toBigNumerator().toString());
-    tagEnd(buf, "mn");
+    String formatted = fNumberFormatter == null ? null
+        // exact integers only pick up DigitBlock, padding and sign options - never an exponent
+        : formattedNumberMarkup(fNumberFormatter.format(i.toBigNumerator()));
+    if (formatted != null) {
+      buf.append(formatted);
+    } else {
+      tagStart(buf, "mn");
+      buf.append(i.toBigNumerator().toString());
+      tagEnd(buf, "mn");
+    }
     if (i.isNegative() && (precedence > Precedence.PLUS)) {
       tag(buf, "mo", ")");
       tagEnd(buf, "mrow");
@@ -2844,6 +3068,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.LessEqual, new MMLOperator(Precedence.LESSEQUAL, "&#x2264;"));
     CONVERTERS.put(S.MatrixForm, new MatrixForm(false));
     CONVERTERS.put(S.TableForm, new MatrixForm(true));
+
+    NumberForm numberForm = new NumberForm();
+    CONVERTERS.put(S.AccountingForm, numberForm);
+    CONVERTERS.put(S.DecimalForm, numberForm);
+    CONVERTERS.put(S.EngineeringForm, numberForm);
+    CONVERTERS.put(S.NumberForm, numberForm);
+    CONVERTERS.put(S.PaddedForm, numberForm);
+    CONVERTERS.put(S.ScientificForm, numberForm);
     CONVERTERS.put(S.Not, new Not());
     CONVERTERS.put(S.Or, new MMLOperator(Precedence.OR, "&#x2228;"));
     CONVERTERS.put(S.Plus, new Plus());
@@ -2856,6 +3088,33 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.SetDelayed, new MMLOperator(Precedence.SETDELAYED, ":="));
     CONVERTERS.put(S.Sqrt, new Sqrt());
     CONVERTERS.put(S.Button, new Button());
+    CONVERTERS.put(S.Row, new Row());
+    CONVERTERS.put(S.Column, new Column());
+    CONVERTERS.put(S.Graphics, new GraphicsInline());
+    ControlWidget controlWidget = new ControlWidget();
+    CONVERTERS.put(S.Slider, controlWidget);
+    CONVERTERS.put(S.VerticalSlider, controlWidget);
+    CONVERTERS.put(S.Slider2D, controlWidget);
+    CONVERTERS.put(S.IntervalSlider, controlWidget);
+    CONVERTERS.put(S.Manipulator, controlWidget);
+    CONVERTERS.put(S.Checkbox, controlWidget);
+    CONVERTERS.put(S.Toggler, controlWidget);
+    CONVERTERS.put(S.Opener, controlWidget);
+    CONVERTERS.put(S.TogglerBar, controlWidget);
+    CONVERTERS.put(S.CheckboxBar, controlWidget);
+    CONVERTERS.put(S.PopupMenu, controlWidget);
+    CONVERTERS.put(S.SetterBar, controlWidget);
+    CONVERTERS.put(S.RadioButtonBar, controlWidget);
+    CONVERTERS.put(S.RadioButton, controlWidget);
+    CONVERTERS.put(S.Setter, controlWidget);
+    CONVERTERS.put(S.InputField, controlWidget);
+    CONVERTERS.put(S.ColorSetter, controlWidget);
+    CONVERTERS.put(S.ColorSlider, controlWidget);
+    CONVERTERS.put(S.Trigger, controlWidget);
+    CONVERTERS.put(S.Animator, controlWidget);
+    CONVERTERS.put(S.Locator, controlWidget);
+    CONVERTERS.put(S.LocatorPane, controlWidget);
+    CONVERTERS.put(S.ProgressIndicator, controlWidget);
     CONVERTERS.put(S.Overscript, new Overscript());
     CONVERTERS.put(S.Style, new Style());
     CONVERTERS.put(S.Subscript, new Subscript());

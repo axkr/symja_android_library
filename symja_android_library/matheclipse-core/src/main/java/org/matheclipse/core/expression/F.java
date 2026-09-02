@@ -48,7 +48,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
-import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
@@ -59,6 +58,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
@@ -4775,6 +4775,12 @@ public class F extends S {
       list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
       return NIL;
     }
+    // IAST#hasSpecialArg() covers Sequence(...) and S.Nothing, and its single scan is shared with
+    // the Unevaluated/ConditionalExpression tests of the evaluation loop
+    if (!list.hasSpecialArg()) {
+      list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+      return NIL;
+    }
     final int indx = list.indexOf(x -> x.isSequence() || (isList && x == S.Nothing));
     if (indx > 0) {
       final int extraSize = list.get(indx).size();
@@ -7461,6 +7467,13 @@ public class F extends S {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
+        // A local function is reached like any other head, so it can arrive with the wrong
+        // number of arguments. Reading one that is not there answers null, which then travels
+        // into the operator as a null IExpr: Convergents({Unevaluated(Sequence()),1,1,1}) spliced
+        // its first element away, left a local function with none, and died inside it on a null.
+        if (!ast.isAST2()) {
+          return NIL;
+        }
         return function.apply(ast.arg1(), ast.arg2());
       }
     });
@@ -7471,6 +7484,9 @@ public class F extends S {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
+        if (!ast.isAST2()) {
+          return NIL;
+        }
         return booleSymbol(function.test(ast.arg1(), ast.arg2()));
       }
     });
@@ -7486,6 +7502,9 @@ public class F extends S {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
+        if (!ast.isAST1()) {
+          return NIL;
+        }
         return function.apply(ast.arg1());
       }
     });
@@ -7495,6 +7514,9 @@ public class F extends S {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
+        if (!ast.isAST1()) {
+          return NIL;
+        }
         return booleSymbol(function.test(ast.arg1()));
       }
     });
@@ -9970,6 +9992,10 @@ public class F extends S {
 
   public static IAST RegionMember(final IExpr a0, final IExpr a1) {
     return new AST2(RegionMember, a0, a1);
+  }
+
+  public static IAST RegionMemberFunction(final IExpr a0) {
+    return new AST1(RegionMemberFunction, a0);
   }
 
   public static IAST RegionNearest(final IExpr a0, final IExpr a1) {

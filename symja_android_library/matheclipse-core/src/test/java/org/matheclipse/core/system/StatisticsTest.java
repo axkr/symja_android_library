@@ -452,11 +452,281 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     check("MovingMedian(SparseArray({1 -> 1, 3 -> 3}, 4), 3)", //
         "{1,0}");
 
+    // Matrix input: each window is a block of rows, and its median is columnwise
+    check("MovingMedian({{1, 2}, {5, 3}, {1, 4}, {3, 2}, {5, 5}}, 2)", //
+        "{{3,5/2},{3,7/2},{2,3},{4,7/2}}");
+    check("MovingMedian({{1, 2}, {5, 3}, {1, 4}, {3, 2}, {5, 5}}, 3)", //
+        "{{1,3},{3,3},{3,4}}");
+
     // Edge cases (should remain unevaluated)
     check("MovingMedian({1, 2, 3}, 5)", //
         "MovingMedian({1,2,3},5)");
     check("MovingMedian({1, 2, 3}, -2)", //
         "MovingMedian({1,2,3},-2)");
+  }
+
+  /**
+   * Interpolating between two order statistics must not form a difference that overflows. The
+   * textbook <code>lo + w*(hi-lo)</code> is an identity in exact arithmetic but not in machine
+   * arithmetic: neighbours of opposite sign near the top of the double range make
+   * <code>hi-lo</code> round to <code>Infinity</code>, and at <code>w == 0</code> the result is
+   * <code>0*Infinity</code>. Every head below shared that defect through a different kernel, so
+   * they are pinned together.
+   */
+  @Test
+  public void testQuantileFamilyOverflow() {
+    // Quantile, boxed path. Was Infinity.
+    check("Quantile({-1.0*10^308, 1.0*10^308}, 1/2, {{1/2,0},{0,1}})", //
+        "0.0");
+    // weight exactly 1 selects the upper element. Was Infinity.
+    check("Quantile({-1.0*10^308, 1.0*10^308}, 0.6, {{0,0},{1,0}})", //
+        "1.*10^308");
+    // weight exactly 0 selects the lower element. Was Indeterminate, via 0*Infinity.
+    check("Quantile({-1.0*10^308, 1.0*10^308}, 0.6, {{1/2,0},{0,0}})", //
+        "-1.*10^308");
+    // an interior weight interpolates. Was Infinity.
+    check("Quantile({-1.0*10^308, 1.0*10^308}, 0.6, {{0,0},{0,1}})", //
+        "-6.*10^307");
+
+    // Quartiles inherits the Quantile path. Middle slot was Infinity.
+    check("Quartiles({-1.0*10^308, 1.0*10^308})", //
+        "{-1.*10^308,0.0,1.*10^308}");
+
+    // Median, machine-precision path (was Hipparchus StatUtils#percentile). Was Infinity, which
+    // also left this path disagreeing with the exact path through Quantile on the same data.
+    check("Median({-1.0*10^308, 1.0*10^308})", //
+        "0.0");
+    check("Median({-1.0*10^308, 1.0*10^308}) == Quantile({-1.0*10^308, 1.0*10^308}, 1/2, {{1/2,0},{0,1}})", //
+        "True");
+
+    // MeanDeviation, machine-precision path: the deviations are both 1.0*10^308, so their sum
+    // overflows even though the data mean does not. Was Indeterminate.
+    check("MeanDeviation({-1.0*10^308, 1.0*10^308})", //
+        "1.*10^308");
+    // here it is the data mean itself that overflows
+    check("MeanDeviation({1.0*10^308, 1.0*10^308, 1.0*10^308})", //
+        "0.0");
+
+    // MovingMedian, machine-precision path (was DescriptiveStatistics#getPercentile). Was
+    // {Infinity} and {Infinity,5.0*10^307}.
+    check("MovingMedian({-1.0*10^308, 1.0*10^308}, 2)", //
+        "{0.0}");
+    check("MovingMedian({-1.0*10^308, 1.0*10^308, 3.0}, 2)", //
+        "{0.0,5.*10^307}");
+
+    // Guard on the fix: outside the unit interval the convex combination is the unsafe form,
+    // because (1-w) and w then have opposite signs and can overflow independently into
+    // Infinity+(-Infinity). The difference form must still be used there.
+    check("Quantile({1.0*10^308, 1.0*10^308}, 1/2, {{1/2,0},{0,100}})", //
+        "1.*10^308");
+
+    // Not a defect: the interquartile range of this data really is 2*10^308, which no double can
+    // hold. Only the interpolation was fixed, not the subtraction that follows it.
+    check("InterquartileRange({-1.0*10^308, 1.0*10^308})", //
+        "Infinity");
+
+    // Ordinary data is unchanged by the switch of interpolation form.
+    check("Quartiles({1,2,3,4})", //
+        "{3/2,5/2,7/2}");
+    check("Quartiles({1.,2.,3.,4.})", //
+        "{1.5,2.5,3.5}");
+    check("Median({1.,2.,3.,4.})", //
+        "2.5");
+  }
+
+  /**
+   * A list of quantiles, and every head built on one, is computed against a single sorted copy of
+   * the data. The cases below are the ones that must not take that path, or must fall back off it
+   * per element; they are what stops the shared sort from being visible in the results.
+   */
+  @Test
+  public void testQuantileSharedSort() {
+    // a q the shared path cannot compute drops back to one Quantile per element
+    check("Quantile({1,2,3,4}, {1/2, x})", //
+        "{2,Quantile({1,2,3,4},x)}");
+    // symbolic parameters make every point incomputable, so the whole list falls back to one
+    // unevaluated Quantile per element
+    check("Map(Head, Quartiles({1,2,3,4}, {{a,b},{c,d}}))", //
+        "{Quantile,Quantile,Quantile}");
+    check("Map(Head, Quantile({1,2,3,4}, {1/4,3/4}, {{a,b},{c,d}}))", //
+        "{Quantile,Quantile}");
+
+    // an out-of-range q anywhere in the list still rejects the whole call
+    check("Quantile({1,2,3,4}, {1/2, 2})", //
+        "Quantile({1,2,3,4},{1/2,2})");
+    check("Quantile({1,2,3,4}, {})", //
+        "{}");
+
+    // only a flat list gets the shared sort; a matrix keeps the columnwise Quantile path and a
+    // tensor the ArrayReduce path
+    check("Quartiles({{1,2},{3,4},{5,6},{7,8}})", //
+        "{{2,4,6},{3,5,7}}");
+    check("Quartiles({{{1,2},{3,4}},{{5,6},{7,8}}})", //
+        "{{{1,3,5},{2,4,6}},{{3,5,7},{4,6,8}}}");
+    check("Quantile({{1,2},{3,4},{5,6},{7,8}}, {1/4,1/2,3/4}, {{1/2,0},{0,1}})", //
+        "{{2,4,6},{3,5,7}}");
+
+    // symbolic-real elements keep the difference form of the interpolation, so their printed
+    // shape is unchanged by going through the shared sort
+    check("Quartiles({Pi,E,2,Sqrt(2)})", //
+        "{Sqrt(2)+1/2*(2-Sqrt(2)),2+1/2*(-2+E),E+1/2*(-E+Pi)}");
+
+    // distributions never reach the data path at all
+    check("Quartiles(ExponentialDistribution(x))", //
+        "{Log(4/3)/x,Log(2)/x,Log(4)/x}");
+    check("InterquartileRange(NormalDistribution(0,1))", //
+        "2*Sqrt(2)*InverseErfc(1/2)");
+  }
+
+  /**
+   * The two-element parameter form <code>{a,b}</code>, which means <code>{{a,b},{0,1}}</code>. It
+   * is absent from the Quantile reference page and named only in the message text for a malformed
+   * specification. Every value here was run in Mathematica.
+   */
+  @Test
+  public void testQuantilePairParameters() {
+    check("Quantile({1,2,3}, 1/2, {1,2})", //
+        "3");
+    check("Quartiles({1,2,3}, {1,2})", //
+        "{9/4,3,3}");
+    // these two are what rule out reading {a,b} as a constant weight, which fits the pair above
+    // just as well
+    check("Quantile(Range(10), 3/10, {1,2})", //
+        "23/5");
+    check("Quantile(Range(10), 7/20, {0,0})", //
+        "7/2");
+    // the pair form is equivalent to spelling out the matrix
+    check("Quantile(Range(10), 3/10, {1,2}) == Quantile(Range(10), 3/10, {{1,2},{0,1}})", //
+        "True");
+    check("InterquartileRange({1,2,3,4}, {1,2})", //
+        "3/2");
+    // a specification that is neither form stays unevaluated
+    check("Quantile({1,2,3}, 1/2, {{0,0},{1,0},{1,1}})", //
+        "Quantile({1,2,3},1/2,\n{{0,0},\n {1,0},\n {1,1}})");
+  }
+
+  /**
+   * <code>InterquartileRange(data, {{a,b},{c,d}})</code> and columnwise array input, both
+   * documented by Wolfram and both previously missing.
+   */
+  @Test
+  public void testInterquartileRangeSignatures() {
+    check("InterquartileRange({1,2,3,4,5,6,7,8}, {{0,0},{1,0}})", //
+        "4");
+    check("InterquartileRange({1,2,3,4,5,6,7,8,9,10}, {{0,1},{0,1}})", //
+        "11/2");
+    // columnwise. This has to be decided before the vector branch: the quartiles of a 3-column
+    // matrix are themselves a 3-list, which that branch would read as one vector's {q1,q2,q3}.
+    check("InterquartileRange({{1,2,3},{4,5,6},{7,8,9},{10,11,12}})", //
+        "{6,6,6}");
+    check("InterquartileRange({{{1,2},{3,4}},{{5,6},{7,8}}})", //
+        "{{4,4},{4,4}}");
+    // a rank-3 array reduces across the first index: entry [i][j] is the range of the three
+    // values at that position. Deliberately asymmetric, so the numbers distinguish this from
+    // any other reduction order
+    check("InterquartileRange({{{1,100},{3,4}},{{5,6},{7,800}},{{9,10},{11,12}}})", //
+        "{{6,141/2},{6,597}}");
+    // the parameterization reaches each column
+    check("InterquartileRange({{1,2},{3,4},{5,6},{7,8}}, {{0,0},{1,0}})", //
+        "{4,4}");
+    // distributions take no parameterization
+    check("InterquartileRange(NormalDistribution(0,1))", //
+        "2*Sqrt(2)*InverseErfc(1/2)");
+    check("InterquartileRange(ExponentialDistribution(2))", //
+        "Log(3)/2");
+  }
+
+  /**
+   * <code>Association</code>, <code>SparseArray</code> and <code>WeightedData</code> across the
+   * quantile family. Every value here was run in Mathematica.
+   */
+  @Test
+  public void testStatisticsDataContainers() {
+    // an Association contributes its values and drops its keys
+    check("Median(<|a -> 1, b -> 2, c -> 3|>)", //
+        "2");
+    check("Quantile(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 1/2)", //
+        "2");
+    check("Quartiles(<|a -> 1, b -> 2, c -> 3, d -> 4|>)", //
+        "{3/2,5/2,7/2}");
+    check("InterquartileRange(<|a -> 1, b -> 2, c -> 3, d -> 4|>)", //
+        "2");
+    check("MeanDeviation(<|a -> 1, b -> 2, c -> 3, d -> 4|>)", //
+        "1");
+    check("MedianDeviation(<|a -> 1, b -> 2, c -> 3, d -> 4|>)", //
+        "1");
+    check("MovingMedian(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 2)", //
+        "{3/2,5/2,7/2}");
+
+    // a SparseArray contributes its dense form
+    check("Quartiles(SparseArray({1,2,3,4}))", //
+        "{3/2,5/2,7/2}");
+    check("InterquartileRange(SparseArray({1,2,3,4}))", //
+        "2");
+
+    // WeightedData goes through the underlying empirical distribution, NOT through the data
+    // list: the same numbers as a plain list give Quartiles {3/2,5/2,7/2}, not {1,2,3}
+    check("Quantile(WeightedData({1,2,3,4}, {1,1,1,1}), 1/2)", //
+        "2");
+    check("Quartiles(WeightedData({1,2,3,4}, {1,1,1,1}))", //
+        "{1,2,3}");
+    check("Quartiles({1,2,3,4})", //
+        "{3/2,5/2,7/2}");
+    check("InterquartileRange(WeightedData({1,2,3,4}, {1,1,1,1}))", //
+        "2");
+    check("Quantile(WeightedData({1,2,3,4}, {1,1,1,1}), {1/4,3/4})", //
+        "{1,3}");
+    check("Median(WeightedData({1,2,3,4}, {1,1,1,10}))", //
+        "4");
+    // no cumulative weight fraction is below 0, so this has to select the minimum outright
+    check("Quantile(WeightedData({1,2,3,4}, {1,1,1,1}), 0)", //
+        "1");
+  }
+
+  /**
+   * Inputs this family used to fail on in silence, or by leaking a message from the arithmetic
+   * rather than reporting the argument. The results are all unevaluated either way; what changed
+   * is which message reaches the user.
+   */
+  @Test
+  public void testQuantileFamilyMessages() {
+    // MeanDeviation::vecmat1. This used to divide by zero and answer Indeterminate, leaking
+    // Power::infy and Infinity::indet on the way
+    check("MeanDeviation({})", //
+        "MeanDeviation({})");
+
+    // MovingMedian::arg2, for a window that is not a positive integer no larger than the data.
+    // The tag is Wolfram's, registered on MovingMedian itself because the shared table already
+    // uses "arg2" for an unrelated message
+    check("MovingMedian({1,2,3}, 0)", //
+        "MovingMedian({1,2,3},0)");
+    check("MovingMedian({1,2,3}, 5)", //
+        "MovingMedian({1,2,3},5)");
+    check("MovingMedian({1,2,3}, 3/2)", //
+        "MovingMedian({1,2,3},3/2)");
+    check("MovingMedian({}, 2)", //
+        "MovingMedian({},2)");
+
+    // Quantile::parm, for a parameter specification that is neither a 2x2 matrix nor a pair
+    check("Quantile({1,2,3}, 1/2, {{0,0},{1,0},{1,1}})", //
+        "Quantile({1,2,3},1/2,\n{{0,0},\n {1,0},\n {1,1}})");
+    check("Quantile({1,2,3}, 1/2, x)", //
+        "Quantile({1,2,3},1/2,x)");
+    check("Quartiles({1,2,3}, {{0,0},{1,0},{1,1}})", //
+        "Quartiles({1,2,3},\n{{0,0},\n {1,0},\n {1,1}})");
+
+    // an empty list is silent across the whole family, as it is in Wolfram Language. Quantile
+    // used to be the one head that printed a message here
+    check("Median({})", //
+        "Median({})");
+    check("Quartiles({})", //
+        "Quartiles({})");
+    check("Quantile({}, 1/2)", //
+        "Quantile({},1/2)");
+    check("InterquartileRange({})", //
+        "InterquartileRange({})");
+    check("MedianDeviation({})", //
+        "MedianDeviation({})");
   }
 
   @Test

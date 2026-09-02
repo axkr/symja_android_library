@@ -39,6 +39,8 @@ import jakarta.servlet.http.HttpSession;
  * bindings a JSON object of control name to the value the browser holds
  * button   optional, the index of a Button control that was pressed
  * bodyButton optional, the index of a Button the body itself produced
+ * bodyControl optional, the index of a control the body itself drew
+ * bodyValue   the value that control produced, in the shape a panel control sends
  * dispose  optional, release the widget and run its Deinitialization code
  * </pre>
  *
@@ -106,6 +108,20 @@ public class AJAXManipulateServlet extends HttpServlet {
     int buttonIndex = intParameter(req, "button");
     // a Button the body itself produced, identified by its position in the last rendering
     int bodyButtonIndex = intParameter(req, "bodyButton");
+    // a control the body itself drew - Slider[Dynamic[x]] and its relatives - and the value the
+    // user produced with it, in the same shape a panel control sends
+    int bodyControlIndex = intParameter(req, "bodyControl");
+    JsonNode bodyControlValue = null;
+    if (bodyControlIndex >= 0) {
+      try {
+        String posted = req.getParameter("bodyValue");
+        bodyControlValue = posted == null ? null : JSONBuilder.JSON_OBJECT_MAPPER.readTree(posted);
+      } catch (Exception ex) {
+        out.println(JSONBuilder
+            .createJSONErrorString("Cannot read the control value: " + ex.getMessage()));
+        return;
+      }
+    }
 
     final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
@@ -127,8 +143,8 @@ public class AJAXManipulateServlet extends HttpServlet {
       // see AJAXQueryServlet#sessionLock: one evaluation per session at a time, and never on the
       // engine's own monitor - a time budgeted evaluation copies the engine from its worker thread
       synchronized (AJAXQueryServlet.sessionLock(session.getId())) {
-        out.println(evaluate(engine, spec, bindings, buttonIndex, bodyButtonIndex, id, outWriter,
-            errorWriter));
+        out.println(evaluate(engine, spec, bindings, buttonIndex, bodyButtonIndex, bodyControlIndex,
+            bodyControlValue, id, outWriter, errorWriter));
       }
     } finally {
       EvalEngine.remove();
@@ -152,8 +168,8 @@ public class AJAXManipulateServlet extends HttpServlet {
   }
 
   private static String evaluate(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
-      int buttonIndex, int bodyButtonIndex, String widgetId, StringBuilderWriter outWriter,
-      StringBuilderWriter errorWriter) {
+      int buttonIndex, int bodyButtonIndex, int bodyControlIndex, JsonNode bodyControlValue,
+      String widgetId, StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<String> task = executor.submit(() -> {
       try {
@@ -165,19 +181,25 @@ public class AJAXManipulateServlet extends HttpServlet {
               ? ManipulateSession.runButtonAction(engine, spec, bindings, buttonIndex)
               : ManipulateSession.runBodyButtonAction(engine, spec, bindings, widgetId,
                   bodyButtonIndex);
-          if (updated != null) {
-            // the action may have moved controls; render for the values it left behind
-            ObjectNode merged = bindings.deepCopy();
-            merged.setAll(updated);
-            effective = merged;
-          }
+        } else if (bodyControlIndex >= 0) {
+          updated = ManipulateSession.applyBodyControl(engine, spec, bindings, widgetId,
+              bodyControlIndex, bodyControlValue);
         }
-        IExpr result = ManipulateSession.registerBodyButtons(widgetId,
-            ManipulateSession.evaluateBody(engine, spec, effective));
+        if (updated != null && !updated.isEmpty()) {
+          // the write may have moved panel controls; render for the values it left behind
+          ObjectNode merged = bindings.deepCopy();
+          merged.setAll(updated);
+          effective = merged;
+        }
+        IExpr result = ManipulateSession.registerBodyInteractions(engine, spec, effective,
+            widgetId, ManipulateSession.evaluateBody(engine, spec, effective));
         String[] rendered =
             AJAXQueryServlet.renderResult(engine, result, outWriter, errorWriter);
         return withExtras(rendered[1], updated,
-            ManipulateSession.resolveEnabled(engine, spec, effective));
+            ManipulateSession.resolveEnabled(engine, spec, effective),
+            ManipulateSession.resolveVisible(engine, spec, effective),
+            ManipulateSession.renderDisplays(engine, spec, effective, outWriter, errorWriter),
+            ManipulateSession.bodyControlsJSON(widgetId));
       } catch (AbortException ae) {
         String[] aborted =
             AJAXQueryServlet.renderResult(engine, S.$Aborted, outWriter, errorWriter);
@@ -200,13 +222,16 @@ public class AJAXManipulateServlet extends HttpServlet {
   }
 
   /**
-   * Add what the browser needs besides the rendering: the control values a button action wrote, and
-   * the resolved <code>Enabled</code> state of every control.
+   * Add what the browser needs besides the rendering: the control values a button action wrote, the
+   * resolved <code>Enabled</code> state of every control, and the re-rendered read-out rows.
    */
   private static String withExtras(String resultJSON, ObjectNode updated,
-      com.fasterxml.jackson.databind.node.ArrayNode enabled) {
+      com.fasterxml.jackson.databind.node.ArrayNode enabled,
+      com.fasterxml.jackson.databind.node.ArrayNode visible, ObjectNode displays,
+      com.fasterxml.jackson.databind.node.ArrayNode bodyControls) {
     boolean hasBindings = updated != null && !updated.isEmpty();
-    if (!hasBindings && enabled == null) {
+    if (!hasBindings && enabled == null && visible == null && displays == null
+        && bodyControls == null) {
       return resultJSON;
     }
     try {
@@ -217,6 +242,15 @@ public class AJAXManipulateServlet extends HttpServlet {
         }
         if (enabled != null) {
           ((ObjectNode) tree).set("enabled", enabled);
+        }
+        if (visible != null) {
+          ((ObjectNode) tree).set("visible", visible);
+        }
+        if (displays != null) {
+          ((ObjectNode) tree).set("displays", displays);
+        }
+        if (bodyControls != null) {
+          ((ObjectNode) tree).set("bodyControls", bodyControls);
         }
         return tree.toString();
       }
