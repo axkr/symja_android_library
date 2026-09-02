@@ -425,7 +425,7 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "TransformationFunction({{0,-1,1},{1,0,-1},{0,0,1}})");
 
     check("RotationTransform(alpha)", //
-        "TransformationFunction({{Cos(alpha),-Sin(alpha),0},{Sin(alpha),Cos(alpha),0},{0,\n" //
+        "TransformationFunction({{Cos(Alpha),-Sin(Alpha),0},{Sin(Alpha),Cos(Alpha),0},{0,\n"
             + "0,1}})");
 
     // RotationTransform(phi, w) - rotate around the axis `w`; the 3x3 rotation has to be embedded

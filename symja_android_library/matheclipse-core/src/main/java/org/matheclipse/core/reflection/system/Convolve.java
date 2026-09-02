@@ -182,7 +182,7 @@ public class Convolve extends AbstractFunctionEvaluator {
 
   /** Return the exponent of an <code>E^(...)</code> or <code>Exp(...)</code> expression. */
   private static IExpr gaussianExponent(IExpr factor) {
-    if (factor.isPower() && factor.base().equals(S.E)) {
+    if (factor.isPower() && factor.base() == S.E) {
       return factor.exponent();
     }
     if (factor.isAST(S.Exp, 2)) {

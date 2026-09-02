@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.parser.client.Parser;
@@ -226,7 +225,7 @@ class ParserTestCase {
   @Test
   void testParser26() {
     Parser p = new Parser(false, true);
-    List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\n" + "			  v=!=0 && \n"
+    List<ASTNode> obj = p.parseScript("	SumSimplerAuxQ[u_,v_] :=\n" + "			  v=!=0 && \n"
         + "			  NonnumericFactors[u]===NonnumericFactors[v] &&\n"
         + "			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\n"
         + "\n" + "");
@@ -238,7 +237,7 @@ class ParserTestCase {
   @Test
   void testParser27() {
     Parser p = new Parser(false, true);
-    List<ASTNode> obj = p.parsePackage("\n" + "TryTanhSubst[u_,x_Symbol] :=\n"
+    List<ASTNode> obj = p.parseScript("\n" + "TryTanhSubst[u_,x_Symbol] :=\n"
         + "  FalseQ[FunctionOfLinear[u,x]] &&\n"
         + "  Not[MatchQ[u,r_.*(s_+t_)^n_. /; IntegerQ[n] && n>0]] &&\n"
         + "(*Not[MatchQ[u,Log[f_[x]^2] /; SinhCoshQ[f]]]  && *)\n"
@@ -261,7 +260,7 @@ class ParserTestCase {
   @Test
   void testParser28() {
     Parser p = new Parser(false, true);
-    List<ASTNode> list = p.parsePackage("\n" + "TrigSimplifyAux[u_] := u\n" + "\n" + "\n"
+    List<ASTNode> list = p.parseScript("\n" + "TrigSimplifyAux[u_] := u\n" + "\n" + "\n"
         + "(* ::Section::Closed:: *)\n" + "(*Factoring functions*)\n" + "\n" + "\n"
         + "(* ::Subsection::Closed:: *)\n" + "(*ContentFactor*)\n" + "\n" + "\n"
         + "(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)\n"
@@ -547,13 +546,14 @@ class ParserTestCase {
 
   @Test
   void testParser63() {
-    assumeTrue(System.getProperty("os.name").contains("Windows"));
+    // \[DifferentialD] is a prefix operator, so it cannot be followed by "= 4".
+    // Mathematica reports the same situation with the `sntxf` message.
     Exception e = assertThrows(Exception.class, () -> {
       PARSE_UNRELAXED.parse("\\[DifferentialD] = 4");
     });
-    assertEquals(e.getMessage(),
-        "Syntax error in line: 1 - unexpected (named unicode) character: '\\[DifferentialD]'\n"
-            + " = 4\n" + "^");
+    assertEquals(
+        "Syntax error in line: 1 - Operator: = is no prefix operator.\n" + "\uF74C = 4\n" + "  ^",
+        e.getMessage());
   }
 
   @Test

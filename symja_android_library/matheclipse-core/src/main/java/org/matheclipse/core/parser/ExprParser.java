@@ -125,8 +125,8 @@ public class ExprParser extends Scanner {
   }
 
   public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax,
-      boolean packageMode, boolean explicitTimes) {
-    super(packageMode, explicitTimes);
+      boolean scriptMode, boolean explicitTimes) {
+    super(scriptMode, explicitTimes);
     this.fRelaxedSyntax = relaxedSyntax;
     this.fFactory = factory;
     this.fEngine = engine;
@@ -948,7 +948,11 @@ public class ExprParser extends Scanner {
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
-              String precisionStr = getJavaDoubleString();
+              // Without the token, so that a *^ exponent following the precision can still be
+              // seen: getJavaDoubleString() would read past the '*' and leave the '^' standing
+              // alone, which is why 1.5`20*^3 answered "Operator: ^ is no prefix operator" even
+              // though 1.5*^3 parses. This is the form InputForm and FullForm print.
+              String precisionStr = getJavaDoubleStringWithoutToken();
               double doublePrecision = 0;
               try {
                 doublePrecision = Double.parseDouble(precisionStr);
@@ -960,7 +964,32 @@ public class ExprParser extends Scanner {
                 doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
                 precisionStr = "" + ParserConfig.MACHINE_PRECISION;
               }
-              return F.num(numberStr, doublePrecision);
+              String mantissaStr = numberStr;
+              if (isValidPosition() && fInputString[fCurrentPosition] == '*'
+                  && fCurrentPosition + 1 < fInputString.length
+                  && fInputString[fCurrentPosition + 1] == '^') {
+                int beforeExponent = fCurrentPosition;
+                fCurrentPosition += 2;
+                int exponentStart = fCurrentPosition;
+                if (isValidPosition() && (fInputString[fCurrentPosition] == '+'
+                    || fInputString[fCurrentPosition] == '-')) {
+                  fCurrentPosition++;
+                }
+                int digits = 0;
+                while (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
+                  fCurrentPosition++;
+                  digits++;
+                }
+                if (digits > 0) {
+                  mantissaStr = numberStr + "E"
+                      + new String(fInputString, exponentStart, fCurrentPosition - exponentStart);
+                } else {
+                  // a '*' that begins something else, e.g. 1.5`20*x - leave it to the parser
+                  fCurrentPosition = beforeExponent;
+                }
+              }
+              getNextToken();
+              return F.num(mantissaStr, doublePrecision);
               // long precision = getJavaLong();
               // if (precision < ParserConfig.MACHINE_PRECISION) {
               // precision = ParserConfig.MACHINE_PRECISION;
@@ -1256,6 +1285,20 @@ public class ExprParser extends Scanner {
     if (infixOperator.headSymbol() == S.CompoundExpression) {
       if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
+        return createInfixFunction(infixOperator, lhs, S.Null);
+      }
+      if (fScriptMode && fRecursionDepth < 1 && fToken == TT_NEWLINE) {
+        // A line of a script which ends in `;` ends there: what comes after the newline is the
+        // next expression, not the right hand side of this one. Without this the whole script
+        // collapses into one CompoundExpression, and an expression which changes the context
+        // cannot be evaluated before the expressions after it are parsed.
+        //
+        // The newline is what ends it, not the `;` on its own:
+        // {@link org.matheclipse.parser.client.Parser} ends the expression at every `;` written
+        // outside brackets, so it reads `a = 1; b = 2` on one line as two expressions. That is not
+        // what the Wolfram Language does with it, and for input typed by hand - where writing
+        // several short statements on one line is ordinary - it would put each of them in the
+        // output history separately.
         return createInfixFunction(infixOperator, lhs, S.Null);
       }
     }
@@ -1587,6 +1630,13 @@ public class ExprParser extends Scanner {
             ast.append(S.Null);
             break;
           }
+          if (fScriptMode && fRecursionDepth < 1 && fToken == TT_NEWLINE) {
+            // the `;` which ends a line ends the expression, the same way it does for the first
+            // one in {@link #parseCompoundExpressionNull}. This is the second and later `;` of a
+            // line such as `a = 1; b = 2;`, which this loop collects into one flat node.
+            ast.append(S.Null);
+            break;
+          }
         }
         while (fToken == TT_NEWLINE) {
           getNextToken();
@@ -1685,32 +1735,57 @@ public class ExprParser extends Scanner {
     return expr;
   }
 
-  public void parsePackage(final String expression) throws SyntaxError {
+  /**
+   * Start reading an input which holds several expressions, separated by newlines.
+   *
+   * <p>
+   * Call {@link #nextScriptExpression()} until it returns {@link F#NIL}. The parser has to have
+   * been created with <code>scriptMode</code>, or a newline is read as whitespace and the whole
+   * input comes back as one expression.
+   *
+   * @param expression the input to read
+   */
+  public void beginScript(final String expression) throws SyntaxError {
     initialize(expression);
+  }
+
+  /**
+   * The next expression of the input given to {@link #beginScript(String)}, or {@link F#NIL} once
+   * the input is used up.
+   *
+   * <p>
+   * One expression at a time rather than all of them at once, so that the caller can evaluate each
+   * before the next is parsed. That is what lets a <code>Begin</code> take effect: this parser
+   * resolves a name to a context while it parses, so an expression which changes the context has to
+   * have been evaluated before the expressions after it are read.
+   */
+  public IExpr nextScriptExpression() throws SyntaxError {
     while (fToken == TT_NEWLINE) {
       getNextToken();
     }
-    IExpr temp = parseExpression().eval(fEngine);
-    // fNodeList.add(temp);
-    while (fToken != TT_EOF) {
-      if (fToken == TT_PRECEDENCE_CLOSE) {
-        throwSyntaxError("Too many closing ')'; End-of-file not reached.");
-      }
-      if (fToken == TT_LIST_CLOSE) {
-        throwSyntaxError("Too many closing '}'; End-of-file not reached.");
-      }
-      if (fToken == TT_ARGUMENTS_CLOSE) {
-        throwSyntaxError("Too many closing ']'; End-of-file not reached.");
-      }
-      while (fToken == TT_NEWLINE) {
-        getNextToken();
-      }
-      if (fToken == TT_EOF) {
-        return;
-      }
-      temp = parseExpression().eval(fEngine);
+    if (fToken == TT_EOF) {
+      return F.NIL;
     }
+    if (fToken == TT_PRECEDENCE_CLOSE) {
+      throwSyntaxError("Too many closing ')'; End-of-file not reached.");
+    }
+    if (fToken == TT_LIST_CLOSE) {
+      throwSyntaxError("Too many closing '}'; End-of-file not reached.");
+    }
+    if (fToken == TT_ARGUMENTS_CLOSE) {
+      throwSyntaxError("Too many closing ']'; End-of-file not reached.");
+    }
+    return parseExpression();
+  }
 
+  /** Read and evaluate every expression of a script, in the order they are written. */
+  public void parseScript(final String expression) throws SyntaxError {
+    beginScript(expression);
+    IExpr expr = nextScriptExpression();
+    while (expr.isPresent()) {
+      expr.eval(fEngine);
+      expr = nextScriptExpression();
+    }
   }
 
   private IExpr parsePrimary(final int min_precedence) {

@@ -184,7 +184,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
   }
 
   private String printResult(IExpr result, boolean relaxedSyntax) {
-    if (result.equals(S.Null)) {
+    if (result == S.Null) {
       return "";
     }
     final StringBuilderWriter buf = new StringBuilderWriter();

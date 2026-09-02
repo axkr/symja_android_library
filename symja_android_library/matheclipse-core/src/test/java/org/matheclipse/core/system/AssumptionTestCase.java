@@ -15,7 +15,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class AssumptionTestCase {
 
@@ -58,8 +57,8 @@ public class AssumptionTestCase {
     }
 
     @Override
-    public IntArrayList reduceRange(IExpr x, int[] range) {
-      return IntArrayList.of(range[0], range[1]);
+    public int[] reduceRange(IExpr x, int[] range) {
+      return new int[] {range[0], range[1]};
     }
 
     // @Override

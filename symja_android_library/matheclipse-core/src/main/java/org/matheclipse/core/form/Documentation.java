@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,11 +36,17 @@ public class Documentation {
 
   public static final String GITHUB = "https://github.com/";
 
-  public static final String CORE_POM_PATH =
-      "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/";
+  /** The repository path every module directory sits in. */
+  public static final String MODULES_PATH =
+      "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-";
 
-  public static final String IO_POM_PATH =
-      "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/";
+  /** @deprecated use {@link #moduleOf(String)}, which knows about every module. */
+  @Deprecated
+  public static final String CORE_POM_PATH = MODULES_PATH + "core/";
+
+  /** @deprecated use {@link #moduleOf(String)}, which knows about every module. */
+  @Deprecated
+  public static final String IO_POM_PATH = MODULES_PATH + "io/";
 
   public static final String SRC_PATH = "src/main/java/";
 
@@ -58,6 +64,31 @@ public class Documentation {
     return "doc/functions/" + symbolName + ".md";
   }
 
+  /**
+   * The Maven module a class of the given package belongs to.
+   *
+   * <p>
+   * Every module's root package is <code>org.matheclipse.&lt;module&gt;</code> and its directory is
+   * <code>matheclipse-&lt;module&gt;</code> - true for core, parser, io, gpl, image, nlp, astro,
+   * bio, chem, graphtheory, compile, script and discord alike - so the module is the third package
+   * segment rather than something to enumerate. Evaluators outside <code>org.matheclipse</code>
+   * fall back to <code>core</code>.
+   *
+   * @param packageName the fully qualified package name
+   * @return the module name without the <code>matheclipse-</code> prefix
+   */
+  public static String moduleOf(String packageName) {
+    if (packageName.startsWith("org.matheclipse.")) {
+      String rest = packageName.substring("org.matheclipse.".length());
+      int dot = rest.indexOf('.');
+      String module = dot > 0 ? rest.substring(0, dot) : rest;
+      if (!module.isEmpty()) {
+        return module;
+      }
+    }
+    return "core";
+  }
+
   public static String buildURL(final Class<?> clazz, int line) {
     String canonicalName = clazz.getCanonicalName();
     String packageName = clazz.getPackage().getName();
@@ -65,11 +96,9 @@ public class Documentation {
 
     StringBuilder buf = new StringBuilder(512);
     buf.append(Documentation.GITHUB);
-    if (packageName.startsWith("org.matheclipse.io")) {
-      buf.append(Documentation.IO_POM_PATH);
-    } else {
-      buf.append(Documentation.CORE_POM_PATH);
-    }
+    buf.append(Documentation.MODULES_PATH);
+    buf.append(moduleOf(packageName));
+    buf.append('/');
     buf.append(Documentation.SRC_PATH);
 
     int index = parentClass.indexOf('.');
@@ -275,7 +304,7 @@ public class Documentation {
         pattern = F.$str("System`" + pattern.toString());
       }
     }
-    Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+    Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
     java.util.regex.Pattern regexPattern =
         IStringX.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
 
@@ -307,7 +336,7 @@ public class Documentation {
         for (int i = 1; i < pathAsStrings.size(); i++) {
           String context = pathAsStrings.get(i).toString();
           str = F.$str(context + patternStr);
-          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+          Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
           java.util.regex.Pattern regexPattern =
               IStringX.toRegexPattern(str, true, ignoreCase, ast, groups, engine);
           if (regexPattern == null) {
@@ -434,7 +463,7 @@ public class Documentation {
         pattern = F.$str("System`" + pattern.toString());
       }
     }
-    Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+    Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
     java.util.regex.Pattern regexPattern =
         IStringX.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
 

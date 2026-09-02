@@ -9,6 +9,9 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.compile.ICompiledFunction;
+import org.matheclipse.core.compile.IExprCompiler;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -37,6 +40,18 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
   private int fFailureCount = 0;
 
   UnaryNumerical fFirstDerivative = null;
+
+  /**
+   * The sampled function compiled to JVM bytecode, or <code>null</code> when
+   * {@link Config#COMPILE_NUMERIC_FUNCTIONS} is off, no {@link IExprCompiler} is installed, or the
+   * expression could not be compiled.
+   *
+   * <p>
+   * Not final: it is dropped again as soon as the compiled result disagrees with the interpreted
+   * one, so a partially supported expression degrades to plain interpretation instead of returning
+   * wrong numbers for the rest of the run.
+   */
+  private ICompiledFunction fCompiled;
 
   /**
    * <p>
@@ -142,6 +157,33 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     }
     fDummyVariable = F.Dummy("$" + fVariable.toString());
     fUnaryFunction = F.subst(unaryFunction, x -> x.equals(variable) ? fDummyVariable : F.NIL);
+    // compiled from the original expression and variable, not from the dummy-substituted form:
+    // the dummy only exists to keep substitution off the global evaluation epoch, and the
+    // compiler has no use for it
+    fCompiled = compileOrNull(unaryFunction, variable, engine);
+  }
+
+  /**
+   * Compile {@code function} for the fast path of {@link #value(double)}, if that is switched on
+   * and possible at all.
+   *
+   * @return the compiled function, or <code>null</code> to sample the interpreted way
+   */
+  private static ICompiledFunction compileOrNull(final IExpr function, final ISymbol variable,
+      final EvalEngine engine) {
+    if (!Config.COMPILE_NUMERIC_FUNCTIONS) {
+      return null;
+    }
+    IExprCompiler compiler = IExprCompiler.get();
+    if (compiler == null) {
+      // no matheclipse-compile on the classpath - the normal case on Android
+      return null;
+    }
+    if (!function.isNumericFunction(variable)) {
+      // nothing to gain, and the compiler would only report a message
+      return null;
+    }
+    return compiler.compileReal(function, variable, engine);
   }
 
   /**
@@ -222,6 +264,12 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
 
   @Override
   public double value(double value) {
+    if (fCompiled != null && fPrecision <= 15) {
+      Double compiled = valueCompiled(value);
+      if (compiled != null) {
+        return compiled.doubleValue();
+      }
+    }
     try {
       double result =
           fPrecision > 15 ? valueWithPrecision(value) : substituted(F.num(value)).evalfNaN();
@@ -234,6 +282,32 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
       fFailureCount++;
       return Double.NaN;
     }
+  }
+
+  /**
+   * One sample through {@link #fCompiled}.
+   *
+   * <p>
+   * The compiled path is a fast path, not the authority. A <code>NaN</code> or an exception from it
+   * may be a genuine gap in the function or a gap in what the compiler supports, and the two are
+   * indistinguishable from here - so neither is trusted: the compiled function is dropped for the
+   * rest of this instance's life and the caller samples the interpreted way. Worst case that costs
+   * the speed-up on a function which really does have a <code>NaN</code> region; the alternative is
+   * reporting a gap in the compiler as a gap in the function.
+   *
+   * @return the computed value, or <code>null</code> to let the caller sample the interpreted way
+   */
+  private Double valueCompiled(double value) {
+    try {
+      double result = fCompiled.evalDouble(value, fEngine);
+      if (!Double.isNaN(result)) {
+        return Double.valueOf(result);
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    fCompiled = null;
+    return null;
   }
 
   /**

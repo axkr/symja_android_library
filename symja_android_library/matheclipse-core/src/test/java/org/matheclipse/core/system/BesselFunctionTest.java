@@ -178,9 +178,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "I*0.24037720111131736");
 
     check("BesselJ(3/2, x)", //
-        "Sqrt(2/Pi)*Sqrt(x)*(-Cos(x)/x+Sin(x)/x^2)");
+        "(Sqrt(2/Pi)*(-x*Cos(x)+Sin(x)))/x^(3/2)");
     check("BesselJ(-3/2, x)", //
-        "-Sqrt(2/Pi)*Sqrt(x)*(Cos(x)/x^2+Sin(x)/x)");
+        "(-Sqrt(2/Pi)*(Cos(x)+x*Sin(x)))/x^(3/2)");
 
     check("BesselJ(1/2,-1)", //
         "I*Sqrt(2/Pi)*Sin(1)");
@@ -222,11 +222,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("BesselJ(-2.5, 1.333)", //
         "1.6236");
     check("BesselJ(-2.5, z)", //
-        "(Sqrt(2/Pi)*(-z)^2.0*(((2*Cos(z))/z^3-Cos(z)/z+(2*Sin(z))/z^2)/z+(Cos(z)/z^2+Sin(z)/z)/z^\n"
-            + "2))/Sqrt(z)");
+        "(Sqrt(2/Pi)*(-z)^2.0*(3*Cos(z)-z^2*Cos(z)+3*z*Sin(z)))/z^(9/2)");
     check("BesselJ(-5/2, z)", //
-        "Sqrt(2/Pi)*z^(3/2)*(((2*Cos(z))/z^3-Cos(z)/z+(2*Sin(z))/z^2)/z+(Cos(z)/z^2+Sin(z)/z)/z^\n"
-            + "2)");
+        "(Sqrt(2/Pi)*(3*Cos(z)-z^2*Cos(z)+3*z*Sin(z)))/z^(5/2)");
     check("BesselJ(0, 5.2)", "-0.11029");
     checkNumeric("BesselJ(3.5, 1.2)", //
         "0.013270419445925403");

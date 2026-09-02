@@ -88,10 +88,18 @@ public final class Extract extends AbstractFunctionEvaluator {
               return F.NIL;
             }
             if (arg3.isPresent()) {
-              // Direct structural extraction — no evaluation of result elements
-              IASTAppendable partAST = F.Part(positions.argSize(), list);
-              partAST.appendAll(positions, 1, positions.size());
-              IExpr rawResult = Part.part(list, partAST, 2, engine);
+              IExpr rawResult;
+              if (positions.argSize() == 0) {
+                // The empty position names the whole expression, as Part() with no index does.
+                // Building Part(list) and asking for its second argument instead runs off the end
+                // of it, which is what Extract({}, {{}}, h) used to do.
+                rawResult = list;
+              } else {
+                // Direct structural extraction — no evaluation of result elements
+                IASTAppendable partAST = F.Part(positions.argSize(), list);
+                partAST.appendAll(positions, 1, positions.size());
+                rawResult = Part.part(list, partAST, 2, engine);
+              }
               if (rawResult.isNIL()) {
                 return F.NIL;
               }

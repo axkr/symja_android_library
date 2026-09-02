@@ -297,7 +297,9 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = engine.evaluate(ast.arg1());
+      // a QuantityArray is the array it stands for, not its two arguments
+      final IExpr arg1 =
+          QuantityFunctions.normalizeQuantityArray(engine.evaluate(ast.arg1()));
       Predicate<IExpr> test = null;
       final int argSize = ast.argSize();
       if ((argSize >= 3)) {
@@ -742,7 +744,9 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = engine.evaluate(ast.arg1());
+      // a QuantityArray is measured as the array it stands for, not as its two arguments
+      final IExpr arg1 =
+          QuantityFunctions.normalizeQuantityArray(engine.evaluate(ast.arg1()));
       int[] dims = arg1.isMatrix();
       if (dims == null) {
         return S.False;
@@ -1917,7 +1921,9 @@ public class PredicateQ {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      final IExpr arg1 = engine.evaluate(ast.arg1());
+      // a QuantityArray is measured as the array it stands for, not as its two arguments
+      final IExpr arg1 =
+          QuantityFunctions.normalizeQuantityArray(engine.evaluate(ast.arg1()));
       int dim = arg1.isVector();
       if (dim == (-1)) {
         return S.False;

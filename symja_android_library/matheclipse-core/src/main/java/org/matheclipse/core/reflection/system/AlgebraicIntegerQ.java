@@ -126,8 +126,8 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
    * transcendental.
    */
   private boolean isKnownTranscendental(IExpr expr) {
-    if (expr.equals(S.Pi) || expr.equals(S.E) || expr.equals(S.EulerGamma)
-        || expr.equals(S.Catalan)) {
+    if (expr == S.Pi || expr == S.E || expr == S.EulerGamma
+        || expr == S.Catalan) {
       return true;
     }
     if (expr.isAST()) {

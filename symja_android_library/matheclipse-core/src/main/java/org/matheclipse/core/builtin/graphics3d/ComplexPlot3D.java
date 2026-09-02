@@ -128,7 +128,7 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
     if (!boundaryStyle.isNone() && grid.length > 1 && grid[0].length > 1) {
       graphicsComplex = F.List(graphicsComplex,
-          boundaryStyle.equals(S.Automatic) ? S.Black : boundaryStyle, boundaryLine(grid));
+          boundaryStyle == S.Automatic ? S.Black : boundaryStyle, boundaryLine(grid));
     }
 
     return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,

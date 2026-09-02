@@ -342,7 +342,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final IExpr evaluateHead(IAST ast, EvalEngine engine) {
-    return isConstantAttribute() ? F.NIL : super.evaluateHead(ast, engine);
+    // A built-in symbol without an own value evaluates to itself, so the head of `ast` cannot
+    // change and the whole head evaluation - one evalLoop() entry for every evaluated expression -
+    // is skipped. Built-in symbols are protected, so only an own value assigned in package mode can
+    // make the head evaluate to something else.
+    return (isConstantAttribute() || !hasAssignedSymbolValue()) ? F.NIL
+        : super.evaluateHead(ast, engine);
   }
 
   /** {@inheritDoc} */
@@ -421,7 +426,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final boolean isHoldOrHoldFormOrDefer() {
-    return this.equals(S.Defer) || this.equals(S.Hold) || this.equals(S.HoldForm);
+    return this == S.Defer || this == S.Hold || this == S.HoldForm;
   }
 
   /** {@inheritDoc} */

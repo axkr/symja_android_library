@@ -222,7 +222,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         maxIterations = 100;
       }
     }
-    if (!options[1].equals(S.Automatic)) {
+    if (options[1] != S.Automatic) {
       if (options[1].isSymbol() || options[1].isString()) {
         // determine option S.Method
         method = options[1].toString();

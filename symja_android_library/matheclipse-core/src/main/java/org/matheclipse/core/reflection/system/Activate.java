@@ -49,11 +49,22 @@ public class Activate extends AbstractFunctionOptionEvaluator {
           return engine.evaluate(result);
         }
       }
-      IASTMutable result = ast.copy();
+      // only build a copy once an argument really changed. Rebuilding unconditionally wrote every
+      // argument back into a copy of the original, which a SeriesData cannot accept - its last
+      // arguments are machine integers, not arbitrary expressions - so Activate(SeriesData(...))
+      // failed with an IndexOutOfBoundsException even though a series holds nothing to activate.
+      IASTMutable result = F.NIL;
       for (int i = 1; i < ast.size(); i++) {
-        result.set(i, activate(ast.getRule(i), matcher, heads, engine));
+        IExpr argument = ast.getRule(i);
+        IExpr activated = activate(argument, matcher, heads, engine);
+        if (activated != argument) {
+          if (result.isNIL()) {
+            result = ast.copy();
+          }
+          result.set(i, activated);
+        }
       }
-      return result;
+      return result.isNIL() ? ast : result;
     }
     return expr;
   }

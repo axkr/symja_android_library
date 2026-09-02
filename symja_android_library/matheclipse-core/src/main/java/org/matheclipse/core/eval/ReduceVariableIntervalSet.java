@@ -51,8 +51,8 @@ public class ReduceVariableIntervalSet {
    *
    * @param engine
    */
-  private static void printIfunMessage(EvalEngine engine) {
-    Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+  private static boolean allowInverseFunctions(EvalEngine engine) {
+    return Errors.allowInverseFunctions(S.InverseFunction, engine);
   }
 
   // /**
@@ -468,8 +468,9 @@ public class ReduceVariableIntervalSet {
           if (exponent.isFree(predicate, true)) {
             // f(x) ^ a
             IExpr reversedPower = exponent.inverse();
-            if (!reversedPower.isMathematicalIntegerNonNegative()) {
-              printIfunMessage(engine);
+            if (!reversedPower.isMathematicalIntegerNonNegative()
+                && !allowInverseFunctions(engine)) {
+              return F.NIL;
             }
             IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
             if (value.isIntervalData()) {

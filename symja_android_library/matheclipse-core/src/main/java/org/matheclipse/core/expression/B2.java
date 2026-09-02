@@ -1670,7 +1670,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
    */
   @Override
   public IExpr set(int location, IExpr object) {
-    hashValue = 0;
+    argumentsChanged();
     IExpr result;
     switch (location) {
       case 0:
@@ -1770,4 +1770,5 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       objectOutput.writeObject(get(i));
     }
   }
+
 }

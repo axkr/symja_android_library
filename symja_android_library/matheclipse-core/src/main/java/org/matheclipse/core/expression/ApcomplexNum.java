@@ -16,6 +16,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -95,14 +96,37 @@ public class ApcomplexNum implements IComplexNum {
   // public static final ApfloatComplexNum NaN = valueOf(Double.NaN,
   // Double.NaN);
 
+
+  /**
+   * An {@link Apfloat} for a machine double, refusing one that cannot be represented.
+   *
+   * <p>
+   * Apfloat has no representation for an infinity or a NaN and answers a
+   * {@link NumberFormatException} for either, which none of the arithmetic below expects: it
+   * escapes the built-in that asked for the operation instead of being reported. A Symja exception
+   * is turned into a message and an unevaluated result by
+   * {@code EvalEngine#evalASTBuiltinFunction}. This mirrors {@code DMath#apfloatOf(double)}.
+   *
+   * @param value the machine double to convert
+   * @return the value as an arbitrary precision number
+   */
+  private static Apfloat apfloatOf(final double value) {
+    if (!Double.isFinite(value)) {
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
+    return new Apfloat(value);
+  }
+
   public static ApcomplexNum valueOf(final double real) {
-    return valueOf(EvalEngine.getApfloat().valueOf(new Apcomplex(new Apfloat(real))));
+    return valueOf(EvalEngine.getApfloat().valueOf(new Apcomplex(apfloatOf(real))));
   }
 
   public static ApcomplexNum valueOf(final double real, final double imaginary) {
     return valueOf(
-        EvalEngine.getApfloat().valueOf(new Apcomplex(new Apfloat(real), new Apfloat(imaginary))));
+        EvalEngine.getApfloat().valueOf(new Apcomplex(apfloatOf(real), apfloatOf(imaginary))));
   }
+
 
   public static ApcomplexNum valueOf(final String realPart, final String imaginaryPart,
       long precision) {
@@ -173,7 +197,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum add(double value) {
-    return valueOf(EvalEngine.getApfloat().divide(fApcomplex, new Apfloat(value)));
+    // add, not divide: this was a copy of divide(double) below, so (6+8i).add(2.0) answered 3+4i
+    // instead of 8+8i. IExpr#add(double) is defined as plus(F.num(that)).
+    return valueOf(EvalEngine.getApfloat().add(fApcomplex, new Apcomplex(apfloatOf(value))));
   }
 
   @Override
@@ -530,8 +556,17 @@ public class ApcomplexNum implements IComplexNum {
       }
       try {
         return compareTo(((INumber) expr).apcomplexValue());
-      } catch (NumberFormatException nfe) {
-        //
+      } catch (NumberFormatException | SymjaMathException ex) {
+        // see ApfloatNum#compareTo(IExpr): a non-finite value cannot be converted, and a throw
+        // during Orderless sorting escapes the evaluation instead of the built-in. The real part
+        // decides, then the sign of this imaginary part, which mirrors what Num#compareTo answers
+        // for the same pair in the other direction.
+        int c = Double.compare(reDoubleValue(), ((INumber) expr).reDoubleValue());
+        if (c != 0) {
+          return c;
+        }
+        double imaginary = imDoubleValue();
+        return imaginary > 0.0 ? 1 : imaginary < 0.0 ? -1 : 0;
       }
     }
     return IExpr.compareHierarchy(this, expr);
@@ -573,7 +608,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr copySign(double d) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    Apfloat sign = new Apfloat(d);
+    Apfloat sign = apfloatOf(d);
     return valueOf(h.copySign(fApcomplex.real(), sign), //
         h.copySign(fApcomplex.imag(), sign));
   }
@@ -672,7 +707,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum divide(double value) {
-    return valueOf(EvalEngine.getApfloat().divide(fApcomplex, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().divide(fApcomplex, apfloatOf(value)));
   }
 
   @Override
@@ -765,7 +800,14 @@ public class ApcomplexNum implements IComplexNum {
     final long precision = fApcomplex.precision();
     if (precision != Apcomplex.INFINITE && engine.getNumericPrecision() < precision
         && engine.isNumericMode()) {
-      return valueOf(EvalEngine.getApfloat().valueOf(fApcomplex));
+      // Only when the conversion actually lowers the precision. It does not always reach the
+      // engine's: converting a 30 digit value here answers one of 255 digits, so the test above
+      // stays true for ever and evalLoop() is told the expression changed on every pass. That is
+      // an endless loop rather than a wrong answer - UnitStep(-0.8`30 + 1.2`30*I) never returned.
+      ApcomplexNum reduced = valueOf(EvalEngine.getApfloat().valueOf(fApcomplex));
+      if (reduced.fApcomplex.precision() < precision) {
+        return reduced;
+      }
     }
     if (fApcomplex.imag().signum() == 0) {
       return ApfloatNum.valueOf(fApcomplex.real());
@@ -1438,7 +1480,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum multiply(double value) {
-    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, apfloatOf(value)));
   }
 
   @Override
@@ -1460,7 +1502,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum multiply(int value) {
-    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, apfloatOf(value)));
   }
 
   /** @return */
@@ -1550,7 +1592,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr pow(double value) {
-    return valueOf(EvalEngine.getApfloat().pow(fApcomplex, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().pow(fApcomplex, apfloatOf(value)));
   }
 
   @Override
@@ -1602,8 +1644,8 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr remainder(double value) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    return valueOf(h.mod(fApcomplex.real(), new Apfloat(value)), //
-        h.mod(fApcomplex.imag(), new Apfloat(value)));
+    return valueOf(h.mod(fApcomplex.real(), apfloatOf(value)), //
+        h.mod(fApcomplex.imag(), apfloatOf(value)));
   }
 
   @Override
@@ -1715,7 +1757,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr subtract(double value) {
-    return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, new Apfloat(value)));
+    return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, apfloatOf(value)));
   }
 
   @Override

@@ -44,8 +44,8 @@ public class TeXTests {
       f.close();
       String inputString = buff.toString();
       Parser p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true, true);
-      return p.parsePackage(inputString);
-      // return p.parsePackage(inputString);
+      return p.parseScript(inputString);
+      // return p.parseScript(inputString);
 
       // assertEquals(obj.toString(),
       // "Plus[Plus[Times[-1, a], Times[-1, Times[b, Factorial2[c]]]], d]");

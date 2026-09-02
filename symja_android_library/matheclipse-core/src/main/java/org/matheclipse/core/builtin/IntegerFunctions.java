@@ -40,8 +40,8 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numerics.utils.RealDigitsResult;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import org.matheclipse.external.fastutil.objects.Object2IntMap;
+import org.matheclipse.external.fastutil.objects.Object2IntOpenHashMap;
 
 public class IntegerFunctions {
 
@@ -240,6 +240,11 @@ public class IntegerFunctions {
       if (ast.argSize() == 0) {
         return F.CN1;
       }
+      if (ast.isAST1()) {
+        // an n-ary operation applied to one thing is that thing. OneIdentity does not do this on
+        // its own, it speaks about pattern matching rather than evaluation.
+        return ast.arg1();
+      }
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         BigInteger result = ((IInteger) arg1).toBigNumerator();
@@ -268,7 +273,9 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      // {Flat, Listable, OneIdentity, Orderless}, as in Mathematica.
+      newSymbol.setAttributes(
+          ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.ORDERLESS);
     }
   }
 
@@ -277,6 +284,12 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 0) {
         return F.C0;
+      }
+      if (ast.isAST1()) {
+        // the identity of an n-ary operation applied to one thing is that thing. OneIdentity alone
+        // does not do this - it speaks about pattern matching rather than evaluation - so the rule
+        // belongs here, and without it BitOr(e) stayed unevaluated for anything but an integer.
+        return ast.arg1();
       }
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
@@ -312,7 +325,10 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      // {Flat, Listable, OneIdentity, Orderless} in Mathematica. OneIdentity is the one that shows:
+      // BitOr(e) is e, where only Listable left it as an unevaluated BitOr(e) for a non-integer.
+      newSymbol.setAttributes(
+          ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.ORDERLESS);
     }
   }
 
@@ -321,6 +337,11 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 0) {
         return F.C0;
+      }
+      if (ast.isAST1()) {
+        // an n-ary operation applied to one thing is that thing. OneIdentity does not do this on
+        // its own, it speaks about pattern matching rather than evaluation.
+        return ast.arg1();
       }
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
@@ -350,7 +371,9 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      // {Flat, Listable, OneIdentity, Orderless}, as in Mathematica.
+      newSymbol.setAttributes(
+          ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.ORDERLESS);
     }
   }
 

@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -27,7 +28,8 @@ public class NumberLinePlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    IExpr dataArg = ast.arg1();
+    IExpr dataArg = QuantityFunctions.quantityPlotMagnitudes(ast.arg1(),
+        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
     IAST dataList = dataArg.makeList();
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
@@ -264,7 +266,7 @@ public class NumberLinePlot extends ListPlot {
     // 2. Draw Left Endpoint (if finite)
     if (!aInf) {
       IExpr p = F.Point(F.List(F.num(a), F.num(y)));
-      if (lType.equals(S.Less)) {
+      if (lType == S.Less) {
         primitives.append(F.Style(p, F.FaceForm(S.White),
             F.EdgeForm(F.Directive(color, F.Thickness(thickness)))));
       } else {
@@ -275,7 +277,7 @@ public class NumberLinePlot extends ListPlot {
     // 3. Draw Right Endpoint (if finite)
     if (!bInf) {
       IExpr p = F.Point(F.List(F.num(b), F.num(y)));
-      if (rType.equals(S.Less)) {
+      if (rType == S.Less) {
         primitives.append(F.Style(p, F.FaceForm(S.White),
             F.EdgeForm(F.Directive(color, F.Thickness(thickness)))));
       } else {

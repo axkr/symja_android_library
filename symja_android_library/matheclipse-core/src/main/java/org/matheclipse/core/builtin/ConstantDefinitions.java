@@ -19,12 +19,16 @@ import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
+import org.matheclipse.core.eval.util.SymjaDirectories;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateGranularity;
 import org.matheclipse.core.expression.data.DateObjectExpr;
+import java.util.List;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -73,6 +77,7 @@ public class ConstantDefinitions {
       S.$Context.setEvaluator(new $Context());
       S.$ContextPath.setEvaluator(new $ContextPath());
       S.$CreationDate.setEvaluator(new $CreationDate());
+      S.$GeoLocation.setEvaluator(new $GeoLocation());
       S.$HistoryLength.setEvaluator(new $HistoryLength());
       S.$HomeDirectory.setEvaluator(new $HomeDirectory());
       S.$Input.setEvaluator(new $Input());
@@ -95,6 +100,7 @@ public class ConstantDefinitions {
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
       S.$SystemCharacterEncoding.setEvaluator(new $SystemCharacterEncoding());
+      S.$UnitSystem.setEvaluator(new $UnitSystem());
       S.$CharacterEncoding.setEvaluator(new $CharacterEncoding());
       S.$SystemMemory.setEvaluator(new $SystemMemory());
       S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
@@ -201,12 +207,8 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      String userHome = System.getProperty("user.home");
-      if (userHome == null) {
-        return F.CEmptyString;
-      }
-      Path path = Paths.get(userHome, "Symja");
-      return F.stringx(path.toString());
+      Path path = SymjaDirectories.baseDirectory();
+      return path == null ? F.CEmptyString : F.stringx(path.toString());
     }
   }
 
@@ -258,6 +260,29 @@ public class ConstantDefinitions {
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.listOfObjects(F.ZZ(YEAR), F.ZZ(MONTH), F.ZZ(DAY), F.ZZ(HOUR), F.ZZ(MINUTE),
           F.ZZ(SECOND));
+    }
+  }
+
+  /**
+   * The observer's position on Earth, for the functions which need somewhere to stand.
+   *
+   * <p>
+   * Unset it evaluates to itself rather than to a default: guessing a location would silently give
+   * a sunrise time or a sky chart for the wrong place, which is worse than reporting that no
+   * location is known.
+   */
+  private static class $GeoLocation extends AbstractSymbolEvaluator implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      IExpr location = S.$GeoLocation.assignedValue();
+      return location == null ? F.NIL : location;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      S.$GeoLocation.assignValue(rightHandSide, setDelayed);
+      return rightHandSide;
     }
   }
 
@@ -502,11 +527,17 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      String path = System.getenv("PATH");
-      if (path == null) {
-        return F.CEmptyString;
+      // The directories Get and Needs search for a package - as in the Wolfram Language, a
+      // list of directories. This used to return the operating system's PATH variable, which
+      // is the search path for executables and has nothing to do with packages.
+      // through FileSandbox, so that a sandboxed session reports the directory it can actually
+      // read rather than the host's home directory
+      List<java.nio.file.Path> searchPath = FileSandbox.searchPath(engine);
+      IASTAppendable list = F.ListAlloc(searchPath.size());
+      for (java.nio.file.Path directory : searchPath) {
+        list.append(F.stringx(directory.toString()));
       }
-      return F.stringx(path);
+      return list;
     }
   }
 
@@ -581,6 +612,37 @@ public class ConstantDefinitions {
     }
   }
 
+  /**
+   * $UnitSystem - the unit system to assume for returned quantities, {@code "Metric"} or
+   * {@code "Imperial"}.
+   *
+   * <p>
+   * Mathematica seeds this from the geodetic location of the machine at the start of a session.
+   * Symja has no such location, so it starts at {@code "Metric"}; assigning to the symbol changes
+   * it for the session.
+   */
+  private static class $UnitSystem extends AbstractSymbolEvaluator implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      // read the assigned value directly: hasAssignedSymbolValue() first calls ensureRulesLoaded(),
+      // which on this built-in symbol reports no value even right after evaluateSet stored one
+      IExpr assigned = symbol.assignedValue();
+      return assigned != null && assigned.isPresent() ? assigned : F.stringx("Metric");
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (rightHandSide.isString("Metric") || rightHandSide.isString("Imperial")) {
+        S.$UnitSystem.assignValue(rightHandSide, setDelayed);
+        return rightHandSide;
+      }
+      // Cannot set `1` to `2`; value must be "Metric" or "Imperial".
+      return Errors.printMessage(S.$UnitSystem, "unitsys",
+          F.list(S.$UnitSystem, rightHandSide), engine);
+    }
+  }
+
   private static class $SystemMemory extends AbstractSymbolEvaluator {
 
     @Override
@@ -606,12 +668,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      String userHome = System.getProperty("user.home");
-      if (userHome == null) {
-        return F.CEmptyString;
-      }
-      Path path = Paths.get(userHome, "Symja");
-      return F.stringx(path.toString());
+      // Deliberately not the same directory as $BaseDirectory: the user directory is read
+      // after it, so a user can override an installation-wide setting.
+      Path path = SymjaDirectories.userBaseDirectory();
+      return path == null ? F.CEmptyString : F.stringx(path.toString());
     }
   }
 

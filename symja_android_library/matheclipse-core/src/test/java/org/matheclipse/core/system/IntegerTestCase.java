@@ -59,6 +59,40 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
     assertEquals("1", a.toString());
   }
 
+  /**
+   * The three n-ary bitwise operations carry <code>{Flat, Listable, OneIdentity, Orderless}</code>
+   * as they do in Mathematica, where Symja gave them <code>Listable</code> alone.
+   *
+   * <p>
+   * The single argument rule is written into the evaluators rather than left to
+   * <code>OneIdentity</code>, which speaks about pattern matching and does not collapse
+   * <code>f(x)</code> to <code>x</code> on its own. Without it <code>BitOr(a)</code> stayed
+   * unevaluated for anything that was not an integer, which is how it first turned up:
+   * <code>BitOr(HoldPattern(x_:1))</code> is <code>HoldPattern(x_:1)</code> in Mathematica.
+   */
+  @Test
+  public void testBitwiseAttributes() {
+    check("Attributes(BitAnd)", "{Flat,Listable,OneIdentity,Orderless,Protected}");
+    check("Attributes(BitOr)", "{Flat,Listable,OneIdentity,Orderless,Protected}");
+    check("Attributes(BitXor)", "{Flat,Listable,OneIdentity,Orderless,Protected}");
+    // one argument is that argument, whether or not it is an integer
+    check("BitAnd(a)", "a");
+    check("BitOr(a)", "a");
+    check("BitXor(a)", "a");
+    check("BitOr(HoldPattern(x_:1))", "HoldPattern(x_:1)");
+    // Flat and Orderless, and the identities of the empty case
+    check("BitOr(a,BitOr(b,c))", "BitOr(a,b,c)");
+    check("BitAnd(b,a)", "BitAnd(a,b)");
+    check("BitAnd()", "-1");
+    check("BitOr()", "0");
+    check("BitXor()", "0");
+    // the unary and positional ones keep Listable alone
+    check("Attributes(BitNot)", "{Listable,Protected}");
+    check("Attributes(BitLength)", "{Listable,Protected}");
+    check("BitNot(5)", "-6");
+    check("BitXor({1,2},{3,4})", "{2,6}");
+  }
+
   @Test
   public void testBitAnd() {
     check("Table(BitAnd(n,3), {n,-10,10})", //
@@ -189,8 +223,10 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBitOr() {
+    // the arguments come back in canonical order now that BitOr is Orderless, as it is in
+    // Mathematica; they were left in the order they were written when it was only Listable
     check("BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})", //
-        "BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})");
+        "BitOr(a,<|a->0,b:>1|>,{{{}}},{x,1,-1,-1})");
     check("Table(BitOr(n,3), {n,-10,10})", //
         "{-9,-9,-5,-5,-5,-5,-1,-1,-1,-1,3,3,3,3,7,7,7,7,11,11,11}");
     check("BitOr(61,15)", //

@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -640,6 +641,14 @@ public class EvalEngine implements Serializable {
   /** @see Config#isFileSystemEnabled() */
   transient boolean fFileSystemEnabled;
 
+  /**
+   * The directory user-supplied file names are resolved inside, or <code>null</code> for the whole
+   * file system.
+   *
+   * @see org.matheclipse.core.io.FileSandbox
+   */
+  transient Path fFileSandboxRoot;
+
   transient String fSessionID;
 
   private transient String fMessageShortcut;
@@ -1160,6 +1169,16 @@ public class EvalEngine implements Serializable {
               if (opres.result.isNIL()) {
                 return null;
               }
+            } else if (ast.head().isAST()) {
+              // An operator form takes exactly one argument: Extract(spec) applied to it becomes
+              // Extract(argument, spec). Applied to any other number it used to fall through to
+              // the arity check below, which reads the count against the direct form and let it
+              // pass - Extract(OptionValue(y))[a, b, c] was then evaluated as though it were the
+              // three argument Extract, and failed inside Part.
+              // `1` called with `2` arguments; 1 argument is expected.
+              Errors.printMessage(ast.topHead(), "argx",
+                  F.list(ast.head(), F.ZZ(ast.argSize())), this);
+              return null;
             }
             break;
           case 2:
@@ -1233,6 +1252,7 @@ public class EvalEngine implements Serializable {
     engine.fEvalRHSMode = fEvalRHSMode;
     engine.fDisabledTrigRules = fDisabledTrigRules;
     engine.fFileSystemEnabled = fFileSystemEnabled;
+    engine.fFileSandboxRoot = fFileSandboxRoot;
     engine.fIterationLimit = fIterationLimit;
     engine.fModifiedVariablesList = fModifiedVariablesList;
     engine.fNumericMode = fNumericMode;
@@ -1435,11 +1455,13 @@ public class EvalEngine implements Serializable {
       // IASTMutable[] rlist = new IASTMutable[1];
       // rlist[0] = F.NIL;
       IASTMutable rlist = F.NIL;
+      // memoized in an eval flag: one scan answers every special-argument test of the loop
+      final boolean hasSpecialArg = ast.hasSpecialArg();
       IExpr x = ast.arg1();
       if ((ISymbol.HOLDFIRST & attributes) == ISymbol.NOATTRIBUTE) {
         // the HoldFirst attribute is disabled
         try {
-          if (!x.isAST(S.Unevaluated)) {
+          if (!hasSpecialArg || !x.isAST(S.Unevaluated)) {
             selectNumericMode(attributes, ISymbol.NHOLDFIRST, localNumericMode);
             rlist = evalArg(rlist, ast, x, 1, isNumericFunction);
             if (astSize == 2 && rlist.isPresent()) {
@@ -1480,7 +1502,7 @@ public class EvalEngine implements Serializable {
             final boolean nMode = localNumericMode;
             for (int i = 2; i < ast.size(); i++) {
               IExpr arg = ast.get(i);
-              if (!arg.isUnevaluated()) {
+              if (!hasSpecialArg || !arg.isUnevaluated()) {
                 selectNumericMode(attributes, ISymbol.NHOLDREST, nMode);
                 rlist = evalArg(rlist, ast, arg, i, isNumericFunction);
               }
@@ -1657,7 +1679,7 @@ public class EvalEngine implements Serializable {
       }
     }
 
-    if (!(arg1 instanceof IPatternObject) && arg1.isPresent()) {
+    if (RulesData.isUpRulesDefined() && !(arg1 instanceof IPatternObject) && arg1.isPresent()) {
       ISymbol lhsSymbol = arg1.isSymbol() ? (ISymbol) arg1 : arg1.topHead();
       return lhsSymbol.evalUpRules(ast, this);
     }
@@ -1676,8 +1698,8 @@ public class EvalEngine implements Serializable {
         // check for Set or SetDelayed necessary, because of dynamic
         // evaluation then initializing rules for predefined symbols
         // (i.e. Sin, Cos,...)
-        if (!(symbol.equals(S.Set) || symbol.equals(S.SetDelayed) || symbol.equals(S.UpSet)
-            || symbol.equals(S.UpSetDelayed))) {
+        if (!(symbol == S.Set || symbol == S.SetDelayed || symbol == S.UpSet
+            || symbol == S.UpSetDelayed)) {
           return F.NIL;
         }
         // } else {
@@ -1687,7 +1709,7 @@ public class EvalEngine implements Serializable {
       }
     }
 
-    if (!symbol.equals(S.Integrate)) {
+    if (symbol != S.Integrate) {
       IExpr result;
       // if (!isNumericMode() || (ISymbol.NUMERICFUNCTION & attributes) != ISymbol.NUMERICFUNCTION)
       // {
@@ -1811,12 +1833,15 @@ public class EvalEngine implements Serializable {
     if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE && !((mutableAST.getEvalFlags()
         & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
       // thread over the lists
-      resultList = threadASTListArgs(mutableAST, S.Thread, "tdlen");
-      if (resultList.isPresent()) {
-        if (resultList.isAssociation()) {
-          return resultList;
+      IExpr threaded = threadASTListArgs(mutableAST, S.Thread, "tdlen");
+      if (threaded.isPresent()) {
+        if (threaded.isAssociation() || !threaded.isAST()) {
+          // an association was already evaluated in F#assoc(); a sparse array is an atom whose
+          // elements are evaluated when the returned expression is evaluated
+          return threaded;
         }
-        return evalArgs(resultList, ISymbol.NOATTRIBUTE, false).orElse(resultList);
+        IASTMutable threadedAST = (IASTMutable) threaded;
+        return evalArgs(threadedAST, ISymbol.NOATTRIBUTE, false).orElse(threadedAST);
       }
     }
 
@@ -1946,28 +1971,28 @@ public class EvalEngine implements Serializable {
    *         possible
    */
   public final boolean evalBoolean(final IExpr expr) throws ArgumentTypeException {
-    if (expr.equals(S.True)) {
+    if (expr == S.True) {
       return true;
     }
-    if (expr.equals(S.False)) {
+    if (expr == S.False) {
       return false;
     }
     if (expr.isNumericFunction(true)) {
       IExpr numericResult = evalN(expr);
-      if (numericResult.equals(S.True)) {
+      if (numericResult == S.True) {
         return true;
       }
-      if (numericResult.equals(S.False)) {
+      if (numericResult == S.False) {
         return false;
       }
     } else {
       IExpr temp = evaluateNIL(expr);
       if (temp.isNumericFunction(true)) {
         IExpr numericResult = evalN(temp);
-        if (numericResult.equals(S.True)) {
+        if (numericResult == S.True) {
           return true;
         }
-        if (numericResult.equals(S.False)) {
+        if (numericResult == S.False) {
           return false;
         }
       }
@@ -2923,9 +2948,11 @@ public class EvalEngine implements Serializable {
     final boolean localNumericMode = fNumericMode;
     final boolean argNumericMode = isNumericArg(ast);
     IASTMutable rlist = F.NIL;
+    // memoized in an eval flag: one scan answers every special-argument test of the loop
+    final boolean hasSpecialArg = ast.hasSpecialArg();
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
-      if (!arg.isUnevaluated()) {
+      if (!hasSpecialArg || !arg.isUnevaluated()) {
         // fNumericMode = localNumericMode;
         setNumericMode(localNumericMode);
         rlist = evalArg(rlist, ast, arg, i, argNumericMode);
@@ -3133,7 +3160,7 @@ public class EvalEngine implements Serializable {
   public IExpr evalRules(ISymbol symbol, IAST argsAST) {
     IAST ast;
     boolean[] unevaluatedFunction = new boolean[] {false};
-    if (argsAST.exists(x -> x.isAST(S.Unevaluated, 2))) {
+    if (argsAST.hasSpecialArg() && argsAST.exists(x -> x.isAST(S.Unevaluated, 2))) {
       ast = mapUnevaluated(argsAST, unevaluatedFunction);
     } else {
       ast = argsAST;
@@ -3395,6 +3422,11 @@ public class EvalEngine implements Serializable {
    * @return
    */
   private IExpr evalTagSetPlusTimes(IAST ast) {
+    if (!ast.hasSpecialArg()) {
+      // both Rubi hooks below require an argument with the head `Dist`, which hasSpecialArg()
+      // covers - and by now the flag was already computed while the arguments were evaluated
+      return F.NIL;
+    }
     if (ast.isPlus()) {
       return UtilityFunctionCtors.evalRubiDistPlus(ast, this);
     } else if (ast.isTimes()) {
@@ -3692,7 +3724,9 @@ public class EvalEngine implements Serializable {
    */
   public IExpr evalUpRules(IAST ast) {
     IExpr result = F.NIL;
-    if (ast.size() > 1) {
+    // if no UpSet/UpSetDelayed/TagSet was evaluated yet, no argument can carry an up-value, so the
+    // probe over all arguments (and their topHead()) is skipped completely
+    if (ast.size() > 1 && RulesData.isUpRulesDefined()) {
       IExpr x = ast.arg1();
       if (!(x instanceof IPatternObject) && x.isPresent()) {
         ISymbol head = x.isSymbol() ? (ISymbol) x : x.topHead();
@@ -3976,6 +4010,15 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Replace the generator every random built-in draws from. <code>SeedRandom</code> uses this for
+   * its <code>Method</code> option; everything else reads {@link #getRandom()} and so follows
+   * whatever was installed here.
+   */
+  public void setRandom(Random random) {
+    fRandom = random;
+  }
+
+  /**
    * Get the reap list object associated to the most enclosing <code>Reap()</code> statement. The
    * even indices in <code>java.util.List</code> contain the tag defined in <code>Sow()</code>. If
    * no tag is defined in <code>Sow()</code> tag <code>F.None</code> is used. The odd indices in
@@ -4240,88 +4283,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Check if the expression <code>expr</code> violates the {@link ISymbo#Listable} constraints.
-   * 
-   * @param argument the argument which should be checked
-   * @param refHeadType the reference head type, which is expected for {@link ISymbol#LISTABLE}
-   * @param refArgSize the reference argument size, which will be set by this method
-   * @param refAssociation the reference association, which will be set by this method
-   * @param errorHead the command head for the error message
-   * @param errorShortcut the message shortcut for the error message
-   * @param errorAST the ast which is evaluated for the error message
-   * @return <code>true</code> if the expression violates the {@link ISymbo#Listable} constraints
-   */
-  private boolean isInvalidListable(IExpr argument, ISymbol refHeadType, int[] refArgSize,
-      IAssociation[] refAssociation, ISymbol errorHead, String errorShortcut, final IAST errorAST) {
-    if (argument.isList() && (refHeadType == S.List)) {
-      if (refArgSize[0] < 0) {
-        refArgSize[0] = ((IAST) argument).argSize();
-      } else {
-        if (refArgSize[0] != ((IAST) argument).argSize()) {
-          // tdlen: Objects of unequal length in `1` cannot be combined.
-          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), this);
-          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-          return true;
-        }
-      }
-    } else if (argument.isSparseArray()) {
-      ISparseArray sp = (ISparseArray) argument;
-      if (refHeadType == S.SparseArray || refHeadType == S.List) {
-        int[] dimensions = sp.getDimension();
-        if (dimensions.length > 0) {
-          if (refArgSize[0] < 0) {
-            refArgSize[0] = dimensions[0];
-          } else {
-            if (refArgSize[0] != dimensions[0]) {
-              // Objects of unequal length in `1` cannot be combined.
-              Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
-              // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-              return true;
-            }
-          }
-        } else {
-          // Objects of unequal length in `1` cannot be combined.
-          Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
-          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-          return true;
-        }
-      }
-    } else {
-      if (argument.isAssociation() && refHeadType == S.Association) {
-        IAssociation association = (IAssociation) argument;
-
-        if (refArgSize[0] < 0) {
-          refArgSize[0] = association.argSize();
-        }
-        if (refArgSize[0] != association.argSize()) {
-          // tdlen: Objects of unequal length in `1` cannot be combined.
-          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), this);
-          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-          return true;
-        }
-        if (refAssociation[0] != null) {
-          if (refAssociation[0].size() != association.size()) {
-            // The arguments `1` and `2` in `3` are incompatible.
-            Errors.printMessage(S.Association, "incmp",
-                F.List(refAssociation[0], association, errorAST), this);
-            return true;
-          }
-          for (int i = 1; i < association.size(); i++) {
-            if (!refAssociation[0].isKey(association.getRule(i).first())) {
-              // The arguments `1` and `2` in `3` are incompatible.
-              Errors.printMessage(S.Association, "incmp",
-                  F.List(refAssociation[0], association, errorAST), this);
-              return true;
-            }
-          }
-        }
-        refAssociation[0] = association;
-      }
-    }
-    return false;
-  }
-
-  /**
    * If <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
    * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
    * 
@@ -4387,6 +4348,55 @@ public class EvalEngine implements Serializable {
    */
   public final boolean isQuietMode() {
     return fQuietMode;
+  }
+
+  /**
+   * The {@link S#InverseFunctions} mode of the solver which is currently running: use symbolic
+   * inverse functions and warn about the branches which may be lost by a multivalued inverse.
+   */
+  public static final int INVERSE_FUNCTIONS_AUTOMATIC = 0;
+
+  /** Use symbolic inverse functions without warning about them. */
+  public static final int INVERSE_FUNCTIONS_TRUE = 1;
+
+  /** Never use symbolic inverse functions. */
+  public static final int INVERSE_FUNCTIONS_FALSE = 2;
+
+  /**
+   * The {@link S#InverseFunctions} mode of the solver which is currently running. It is a property
+   * of the running call rather than of one expression, and the sites which apply an inverse
+   * function sit several layers below the solver which was given the option, so it travels with the
+   * engine like the assumptions and the quiet mode do.
+   */
+  private int fInverseFunctions = INVERSE_FUNCTIONS_AUTOMATIC;
+
+  /**
+   * Test if a symbolic inverse function may be applied, i.e. if {@link S#InverseFunctions} isn't
+   * set to {@link S#False}.
+   */
+  public final boolean isUseInverseFunctions() {
+    return fInverseFunctions != INVERSE_FUNCTIONS_FALSE;
+  }
+
+  /**
+   * Test if applying a symbolic inverse function should warn that values may be lost for a
+   * multivalued inverse, i.e. if {@link S#InverseFunctions} is set to {@link S#Automatic}.
+   */
+  public final boolean isWarnInverseFunctions() {
+    return fInverseFunctions == INVERSE_FUNCTIONS_AUTOMATIC;
+  }
+
+  /**
+   * Set the {@link S#InverseFunctions} mode for the dynamic extent of a solver call.
+   *
+   * @param inverseFunctions one of {@link #INVERSE_FUNCTIONS_AUTOMATIC},
+   *        {@link #INVERSE_FUNCTIONS_TRUE} or {@link #INVERSE_FUNCTIONS_FALSE}
+   * @return the previous mode, to be restored by the caller
+   */
+  public int setInverseFunctions(int inverseFunctions) {
+    int oldValue = fInverseFunctions;
+    this.fInverseFunctions = inverseFunctions;
+    return oldValue;
   }
 
   /**
@@ -4736,6 +4746,23 @@ public class EvalEngine implements Serializable {
     this.fFileSystemEnabled = fFileSystemEnabled;
   }
 
+  /**
+   * Confine the file names built-in functions get from user input to <code>root</code>. This is
+   * what a server does for one browser session; a local kernel leaves it <code>null</code> and
+   * reaches the whole file system, as before.
+   *
+   * @param root an existing directory, or <code>null</code> for no sandbox
+   * @see org.matheclipse.core.io.FileSandbox
+   */
+  public void setFileSandboxRoot(Path root) {
+    this.fFileSandboxRoot = root;
+  }
+
+  /** @return the sandbox directory, or <code>null</code> when there is none */
+  public final Path getFileSandboxRoot() {
+    return fFileSandboxRoot;
+  }
+
   public void setIterationLimit(final int i) {
     fIterationLimit = i;
   }
@@ -5033,48 +5060,228 @@ public class EvalEngine implements Serializable {
    *        method if necessary
    * @param messageShortcut for the {@link Errors#printMessage(ISymbol, String, IAST, EvalEngine)}
    *        method if necessary
-   * @return the resulting ast with the <code>argHead</code> threaded into each ast argument or
-   *         {@link F#NIL} if no {@link ISymbol#LISTABLE} arguments were found.
+   * @return the resulting expression with the <code>argHead</code> threaded into each argument of
+   *         the container. This is a {@link S#List} or {@link S#Association} {@link IAST}, or an
+   *         {@link ISparseArray}. Returns {@link F#NIL} if no {@link ISymbol#LISTABLE} arguments
+   *         were found or if the arguments cannot be combined.
    */
-  public IASTMutable threadASTListArgs(final IAST ast, ISymbol commandHead,
+  public IExpr threadASTListArgs(final IAST ast, ISymbol commandHead,
       String messageShortcut) {
-    ISymbol determineHead = null;
     if (ast.isUniform()) {
+      // uniform arguments never contain a S.List, S.Association or S.SparseArray argument
+      ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
       return F.NIL;
     }
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr expr = ast.get(i);
-      if (expr.isList()) {
-        determineHead = S.List;
+    final int size = ast.size();
+
+    // first pass: determine the container head over which the arguments are threaded. A S.List
+    // argument wins over every other container type, even if it appears in the last position, so
+    // the head has to be known before the arguments can be validated.
+    ISymbol listableHead = null;
+    for (int i = 1; i < size; i++) {
+      ISymbol containerHead = ast.get(i).listableContainerHead();
+      if (containerHead == S.List) {
+        listableHead = S.List;
         break;
       }
-      if (expr.isAssociation()) {
-        determineHead = S.Association;
-      }
-      if (expr.isSparseArray() && determineHead != S.Association) {
-        determineHead = S.SparseArray;
+      if (containerHead == S.Association) {
+        listableHead = S.Association;
+      } else if (containerHead == S.SparseArray && listableHead != S.Association) {
+        listableHead = S.SparseArray;
       }
     }
-    if (determineHead == null) {
-      // no Listable argument type found!
+    if (listableHead == null) {
+      // no Listable argument type found! Remember this in the eval flags, so that a re-evaluation
+      // of this expression doesn't scan the arguments again.
+      ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
       return F.NIL;
     }
-    final ISymbol listableHead = determineHead;
-    int[] refArgSize = new int[] {-1};
-    IAssociation[] refAssociation = new IAssociation[] {null};
-    if (ast.exists(x -> isInvalidListable(x, listableHead, refArgSize, refAssociation, commandHead,
-        messageShortcut, ast))) {
-      // Errors.printMessage called in isValidListable()
-      return F.NIL;
-    }
-    if (refArgSize[0] != -1) {
-      IASTMutable result = EvalAttributes.threadList(ast, listableHead, ast.head(), refArgSize[0],
-          refAssociation[0]);
-      result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-      return result;
-    }
-    ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 
+    // Drop the identity element of S.Plus and S.Times before threading. Threading an argument into
+    // a S.List creates elements like Plus[0, a], which the evalArgs() call on the threaded result
+    // simplifies to a. The value of a S.RuleDelayed in an S.Association is held and is never
+    // re-evaluated, so there the redundant identity element would stay visible:
+    // <code>0 + &lt;|s2:&gt;a|&gt;</code> has to return <code>&lt;|s2:&gt;a|&gt;</code>, not
+    // <code>&lt;|s2:&gt;0+a|&gt;</code>.
+    final IExpr identityElement = listableIdentityElement(ast.head());
+    if (identityElement != null) {
+      IExpr reduced = removeIdentityElement(ast, identityElement);
+      if (reduced.isPresent()) {
+        return reduced;
+      }
+    }
+
+    // second pass: validate that all arguments of the determined container type can be combined
+    int refArgSize = -1;
+    IAssociation refAssociation = null;
+    // position of the only S.SparseArray argument; 0 if there is none or more than one
+    int sparsePosition = 0;
+    for (int i = 1; i < size; i++) {
+      final IExpr argument = ast.get(i);
+      final ISymbol containerHead = argument.listableContainerHead();
+      if (containerHead == null) {
+        // a scalar argument is threaded unchanged into every element
+        continue;
+      }
+      if (containerHead == S.List) {
+        if (listableHead != S.List) {
+          // a S.List argument isn't combined with a S.Association or S.SparseArray head
+          continue;
+        }
+        final int argSize = ((IAST) argument).argSize();
+        if (refArgSize < 0) {
+          refArgSize = argSize;
+        } else if (refArgSize != argSize) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          return invalidListable(ast, commandHead, messageShortcut, F.list(ast));
+        }
+      } else if (containerHead == S.SparseArray) {
+        if (listableHead == S.Association) {
+          // a S.SparseArray argument isn't combined with a S.Association head. It is validated for
+          // a S.List head as well as for a S.SparseArray head.
+          continue;
+        }
+        // remember the position of a single S.SparseArray argument for the sparse preserving path
+        sparsePosition = (sparsePosition == 0) ? i : -1;
+        final int[] dimensions = ((ISparseArray) argument).getDimension();
+        if (dimensions.length == 0) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          return invalidListable(ast, S.Thread, "tdlen", F.list(ast));
+        }
+        if (refArgSize < 0) {
+          refArgSize = dimensions[0];
+        } else if (refArgSize != dimensions[0]) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          return invalidListable(ast, S.Thread, "tdlen", F.list(ast));
+        }
+      } else {
+        if (listableHead != S.Association) {
+          // a S.Association argument isn't combined with a S.List or S.SparseArray head
+          continue;
+        }
+        final IAssociation association = (IAssociation) argument;
+        final int argSize = association.argSize();
+        if (refArgSize < 0) {
+          refArgSize = argSize;
+        } else if (refArgSize != argSize) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          return invalidListable(ast, commandHead, messageShortcut, F.list(ast));
+        }
+        if (refAssociation != null) {
+          if (refAssociation.size() != association.size()) {
+            // incmp: The arguments `1` and `2` in `3` are incompatible.
+            return invalidListable(ast, S.Association, "incmp",
+                F.List(refAssociation, association, ast));
+          }
+          for (int j = 1; j < association.size(); j++) {
+            if (!refAssociation.isKey(association.getRule(j).first())) {
+              // incmp: The arguments `1` and `2` in `3` are incompatible.
+              return invalidListable(ast, S.Association, "incmp",
+                  F.List(refAssociation, association, ast));
+            }
+          }
+        }
+        refAssociation = association;
+      }
+    }
+    if (refArgSize < 0) {
+      // the loop above assigns refArgSize for every argument type which could be determined in the
+      // first pass, so this should not happen
+      ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+      return F.NIL;
+    }
+    if (listableHead == S.SparseArray && sparsePosition > 0 && refArgSize > 0) {
+      // Exactly one S.SparseArray argument and no other container argument: thread into the stored
+      // values and the default value only, instead of expanding the sparse array into a dense list
+      // of `refArgSize` elements. This is the same sparse preserving path which evalASTArg1() uses
+      // for a unary Listable function.
+      return ((ISparseArray) ast.get(sparsePosition)).mapThreadSparse(ast, sparsePosition);
+    }
+    // don't set IAST.IS_LISTABLE_THREADED on the result. Its head is S.List, S.SparseArray or
+    // S.Association and never carries the ISymbol#LISTABLE attribute, so the flag would never be
+    // read; and threadList() may return F.NIL, whose eval flags are shared globally.
+    return EvalAttributes.threadList(ast, listableHead, ast.head(), refArgSize, refAssociation);
+  }
+
+  /**
+   * Get the identity element of a {@link ISymbol#LISTABLE} and {@link ISymbol#ONEIDENTITY} head, if
+   * an argument which is equal to it can be dropped without changing the result.
+   *
+   * @param head the head of the expression which should be threaded
+   * @return {@link F#C0} for {@link S#Plus}, {@link F#C1} for {@link S#Times}; <code>null</code> if
+   *         the head has no identity element which may be dropped
+   */
+  private static IExpr listableIdentityElement(IExpr head) {
+    if (head == S.Plus) {
+      return F.C0;
+    }
+    if (head == S.Times) {
+      return F.C1;
+    }
+    return null;
+  }
+
+  /**
+   * Remove all arguments which are equal to <code>identityElement</code> from <code>ast</code>.
+   *
+   * @param ast the expression whose arguments should be reduced
+   * @param identityElement the identity element of <code>ast.head()</code>
+   * @return the reduced expression, the single remaining argument if only one argument is left
+   *         ({@link ISymbol#ONEIDENTITY}), or {@link F#NIL} if <code>ast</code> contains no
+   *         <code>identityElement</code> argument
+   */
+  private static IExpr removeIdentityElement(final IAST ast, final IExpr identityElement) {
+    final int size = ast.size();
+    int identityCount = 0;
+    for (int i = 1; i < size; i++) {
+      if (identityElement.equals(ast.get(i))) {
+        identityCount++;
+      }
+    }
+    if (identityCount == 0) {
+      return F.NIL;
+    }
+    final int remaining = ast.argSize() - identityCount;
+    if (remaining <= 0) {
+      // all arguments are the identity element; a container argument is never equal to it, so this
+      // cannot happen for a threaded expression
+      return F.NIL;
+    }
+    if (remaining == 1) {
+      // ONEIDENTITY: Plus[0, x] is x
+      for (int i = 1; i < size; i++) {
+        final IExpr argument = ast.get(i);
+        if (!identityElement.equals(argument)) {
+          return argument;
+        }
+      }
+    }
+    IASTAppendable result = ast.copyHead(remaining);
+    for (int i = 1; i < size; i++) {
+      final IExpr argument = ast.get(i);
+      if (!identityElement.equals(argument)) {
+        result.append(argument);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Print the message which explains why the arguments of the {@link ISymbol#LISTABLE} expression
+   * <code>ast</code> cannot be combined and remember in the eval flags of <code>ast</code> that the
+   * message was already printed, so that a re-evaluation of <code>ast</code> doesn't print it
+   * again.
+   *
+   * @param ast the {@link ISymbol#LISTABLE} expression which couldn't be threaded
+   * @param errorHead the symbol which owns the message
+   * @param errorShortcut the message shortcut
+   * @param messageArgs the arguments of the message
+   * @return {@link F#NIL}
+   */
+  private IExpr invalidListable(final IAST ast, ISymbol errorHead, String errorShortcut,
+      IAST messageArgs) {
+    Errors.printMessage(errorHead, errorShortcut, messageArgs, this);
+    ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
     return F.NIL;
   }
 }

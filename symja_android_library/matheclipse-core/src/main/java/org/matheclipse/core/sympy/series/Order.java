@@ -205,7 +205,7 @@ public class Order {
       List<IExpr> effectivePointsList = points; // used for pts tuple later
 
       // Create substitution rules
-      if (point.isInfinity() || point.equals(F.ComplexInfinity)) {
+      if (point.isInfinity() || point == S.ComplexInfinity) {
         effectivePoint = F.C0;
         effectivePointsList = Collections.nCopies(variables.size(), F.C0);
         for (ISymbol v : variables) {
@@ -362,7 +362,7 @@ public class Order {
     IAST finalVarPointList = mapToList(varPointMap);
 
     // Mimics: obj = Expr.__new__(cls, *args) where args = (expr,) + Tuple(*zip(variables, point))
-    return F.binaryAST2(S.Order, leadingTermExpr, finalVarPointList);
+    return F.Order(leadingTermExpr, finalVarPointList);
   }
 
 

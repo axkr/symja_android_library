@@ -291,7 +291,7 @@ public class Predicates {
    * @return
    */
   public static BiPredicate<IExpr, IExpr> sameTest(final IExpr head, final EvalEngine engine) {
-    return head.equals(S.Automatic) ? //
+    return head == S.Automatic ? //
         (x, y) -> x.isSame(y) : //
         (x, y) -> engine.evalTrue(head, x, y);
   }

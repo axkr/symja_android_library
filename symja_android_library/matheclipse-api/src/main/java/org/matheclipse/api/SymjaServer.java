@@ -8,7 +8,6 @@ import java.util.Deque;
 import java.util.Map;
 import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
@@ -109,8 +108,9 @@ public class SymjaServer {
   }
 
   public static void initAPI() {
-    ToggleFeature.COMPILE = false;
-    ToggleFeature.COMPILE_PRINT = true;
+    // Compile / CompiledFunction / CompilePrint are not available here: the
+    // matheclipse-compile module is deliberately not on this module's classpath, so the
+    // symbols stay unevaluated. See COMPILE_MODULE_PLAN.md section 6.2.
     Config.FUZZY_PARSER = true;
     Config.UNPROTECT_ALLOWED = false;
     Config.JAS_NO_THREADS = false;
@@ -130,6 +130,9 @@ public class SymjaServer {
     S.IntegerName.setEvaluator(new org.matheclipse.nlp.builtin.IntegerName());
     S.RemoveDiacritics.setEvaluator(new org.matheclipse.nlp.builtin.RemoveDiacritics());
     S.Transliterate.setEvaluator(new org.matheclipse.nlp.builtin.Transliterate());
+    // the graph functions moved to matheclipse-graphtheory; the API server renders graph pods,
+    // so it registers them itself rather than going through IOInit like the servlets do
+    org.matheclipse.graphtheory.GraphTheoryInit.init();
     FuzzyParserFactory.initialize();
     System.out.println("Symja version " + Config.VERSION + " initialized");
   }

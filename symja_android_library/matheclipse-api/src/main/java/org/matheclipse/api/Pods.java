@@ -42,7 +42,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
-import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.tex.TeXParser;
@@ -960,8 +960,8 @@ public class Pods {
                 addPod(podsArray, inExpr, podOut, podOut.first().toString(),
                     IStringX.inputForm(inExpr), "Function", "Plotter", form, engine);
                 numpods++;
-              } else if (outExpr instanceof GraphExpr) {
-                String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
+              } else if (outExpr instanceof IGraphExpr) {
+                String javaScriptStr = ((IGraphExpr) outExpr).graphToJSForm();
                 if (javaScriptStr != null) {
                   String html = VISJS_IFRAME;
                   html = StringUtils.replace(html, "`1`", javaScriptStr);
@@ -1016,7 +1016,7 @@ public class Pods {
                           formats, engine);
                       numpods++;
                     }
-                    inExpr = F.Solve(F.binaryAST2(S.Equal, arg1, arg2), variables);
+                    inExpr = F.Solve(F.Equal(arg1, arg2), variables);
                     podOut = engine.evaluate(inExpr);
                     addSymjaPod(podsArray, inExpr, podOut, "Solution", "Reduce", formats, engine);
                     numpods++;
@@ -1283,8 +1283,8 @@ public class Pods {
             errorString = errorWriter.toString().trim();
           }
           outExpr = engine.evaluate(inExpr);
-          if (outExpr instanceof GraphExpr) {
-            String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
+          if (outExpr instanceof IGraphExpr) {
+            String javaScriptStr = ((IGraphExpr) outExpr).graphToJSForm();
             if (javaScriptStr != null) {
               String html = VISJS_IFRAME;
               html = StringUtils.replace(html, "`1`", javaScriptStr);

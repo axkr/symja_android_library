@@ -126,7 +126,7 @@ public class TranscendentalRisch {
       IExpr factor = factors.get(i);
       if (factor.isFree(x, true)) {
         constFactor = F.Times(constFactor, factor);
-      } else if (factor.isPower() && factor.base().equals(S.E)) {
+      } else if (factor.isPower() && factor.base() == S.E) {
         if (expFactor.isPresent()) {
           return F.NIL;
         }
@@ -179,7 +179,7 @@ public class TranscendentalRisch {
     IAST factors = factorsOf(integrand);
     for (int i = 1; i < factors.size(); i++) {
       IExpr factor = factors.get(i);
-      if (factor.isPower() && factor.base().equals(S.E)) {
+      if (factor.isPower() && factor.base() == S.E) {
         if (expFactor.isPresent()) {
           return F.NIL;
         }
@@ -219,7 +219,7 @@ public class TranscendentalRisch {
       IExpr factor = factors.get(i);
       if (factor.isFree(x, true)) {
         c = F.Times(c, factor);
-      } else if (factor.isPower() && factor.base().equals(S.E)) {
+      } else if (factor.isPower() && factor.base() == S.E) {
         if (expFactor.isPresent()) {
           return F.NIL;
         }
@@ -463,7 +463,7 @@ public class TranscendentalRisch {
       IExpr factor = factors.get(i);
       if (factor.isFree(x, true)) {
         c = F.Times(c, factor);
-      } else if (factor.isPower() && factor.base().equals(S.E)) {
+      } else if (factor.isPower() && factor.base() == S.E) {
         if (expFactor.isPresent()) {
           return F.NIL;
         }

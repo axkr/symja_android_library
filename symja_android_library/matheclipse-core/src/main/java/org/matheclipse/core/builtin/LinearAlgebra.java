@@ -87,8 +87,8 @@ import org.matheclipse.core.interfaces.ITensorAccess;
 import com.google.common.math.LongMath;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.vector.GenMatrix;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntList;
 
 public final class LinearAlgebra {
   public static class Adjugate extends AbstractMatrix1Matrix {
@@ -204,7 +204,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      IExpr arg1 = QuantityFunctions.normalizeQuantityArray(ast.arg1());
       return F.ZZ(LinearAlgebraUtil.arrayDepth(arg1));
     }
 
@@ -1130,7 +1130,8 @@ public final class LinearAlgebra {
   private static class Dimensions extends AbstractFunctionEvaluator {
 
     private static IAST getDimensions(final IAST ast, int maximumLevel) {
-      IAST list = (IAST) ast.arg1();
+      // a QuantityArray measures as the array it stands for, not as its two arguments
+      IAST list = (IAST) QuantityFunctions.normalizeQuantityArray(ast.arg1());
       IExpr header = list.head();
       final IntList dims = LinearAlgebraUtil.dimensions(list, header, maximumLevel - 1);
       return F.mapRange(0, dims.size(), i -> F.ZZ(dims.getInt(i)));
@@ -3136,10 +3137,10 @@ public final class LinearAlgebra {
         IASTAppendable result = F.ast(f, 2);
         IntArrayList list1CurClone = new IntArrayList(list1Cur);
         list1CurClone.add(i);
-        result.append(list1.getPart(list1CurClone));
+        result.append(list1.getPart(list1CurClone.toIntArray()));
         IntArrayList list2CurClone = new IntArrayList(list2Cur);
         list2CurClone.add(0, i);
-        result.append(list2.getPart(list2CurClone));
+        result.append(list2.getPart(list2CurClone.toIntArray()));
         return result;
       }
     }
@@ -4513,6 +4514,13 @@ public final class LinearAlgebra {
         // absolute Value
         return F.Abs(arg1);
       }
+      if (arg1.isQuantity()) {
+        // a quantity is a scalar here; NumericQ is False for one, so the branch above misses it
+        if (ast.isAST2()) {
+          return F.NIL;
+        }
+        return F.Abs(arg1);
+      }
       // The first Norm argument should be a scalar, vector or matrix.
       return Errors.printMessage(ast.topHead(), "nvm", F.CEmptyList, engine);
     }
@@ -4943,7 +4951,7 @@ public final class LinearAlgebra {
           if (dim1 == 0) {
             return F.CEmptyList;
           }
-          if (head.equals(S.Dot)) {
+          if (head == S.Dot) {
             FieldVector<IExpr> u = Convert.list2Vector(arg1);
             FieldVector<IExpr> v = Convert.list2Vector(arg2);
             if (u != null && v != null) {

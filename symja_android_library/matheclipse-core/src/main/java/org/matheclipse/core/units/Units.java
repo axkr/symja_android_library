@@ -52,6 +52,56 @@ public final class Units {
     return Collections.unmodifiableMap(map);
   }
 
+  /**
+   * The unit a simple quantity takes in each unit system, keyed by the SI base unit of its
+   * dimension. The two entries per row are {@code {Metric, Imperial}}.
+   *
+   * <p>
+   * Pinned to Mathematica: {@code UnitConvert[Quantity[3,"Meters"],"Imperial"]} is
+   * {@code Quantity[1250/381,"Yards"]} - the Imperial length is the YARD, not the foot -
+   * {@code UnitConvert[Quantity[1,"Kilograms"],"Imperial"]} is
+   * {@code Quantity[100000000/45359237,"Pounds"]}, and
+   * {@code UnitConvert[Quantity[300,"Kelvins"],"Imperial"]} is
+   * {@code Quantity[8033/100,"DegreesFahrenheit"]} - the affine Fahrenheit, not Rankine.
+   *
+   * <p>
+   * A dimension absent from this table has no system preference, and a quantity of that dimension
+   * is returned unchanged. The Metric temperature entry is the one row NOT verified.
+   */
+  private static final Map<String, String[]> SYSTEM_UNITS =
+      Map.ofEntries(Map.entry("Meters", new String[] {"Meters", "Yards"}), //
+          Map.entry("Kilograms", new String[] {"Kilograms", "Pounds"}), //
+          Map.entry("Kelvins", new String[] {"DegreesCelsius", "DegreesFahrenheit"}));
+
+  /**
+   * The unit that {@code canonicalUnit} takes in {@code system}.
+   *
+   * <p>
+   * Only a SIMPLE quantity - one base dimension, to the first power - has a system unit. A
+   * compound unit is left alone, which is what Mathematica does:
+   * {@code UnitConvert[Quantity[3,"Meters"]/Quantity[1,"Seconds"], "Imperial"]} comes back as
+   * {@code Quantity[3,"Meters"/"Seconds"]}, unconverted. So this is a lookup of a preferred unit
+   * per quantity kind, NOT a substitution of base units inside a monomial.
+   *
+   * @param system {@code "Metric"} or {@code "Imperial"}
+   * @return the target unit, or {@link F#NIL} when that dimension has no unit in that system
+   */
+  public static IExpr systemUnit(IExpr canonicalUnit, String system) {
+    Map<String, IRational> dims = dimensions(canonicalUnit);
+    if (dims == null || dims.size() != 1) {
+      return F.NIL;
+    }
+    Map.Entry<String, IRational> dimension = dims.entrySet().iterator().next();
+    if (!dimension.getValue().isOne()) {
+      return F.NIL;
+    }
+    String[] units = SYSTEM_UNITS.get(dimension.getKey());
+    if (units == null) {
+      return F.NIL;
+    }
+    return F.stringx("Imperial".equals(system) ? units[1] : units[0]);
+  }
+
   private Units() {}
 
   // ------------------------------------------------- physical quantities / dimension specs

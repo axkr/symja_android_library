@@ -233,6 +233,11 @@ public final class Arithmetic {
       if (arg1.isNumber()) {
         return ((INumber) arg1).abs();
       }
+      if (arg1.isQuantity()) {
+        // the magnitude, keeping the unit, as Re, Im, Floor, Ceiling and Round already do. For an
+        // affine unit that is the magnitude as written, not its absolute temperature.
+        return QuantityOps.mapMagnitude((IAST) arg1, S.Abs, engine);
+      }
       IExpr temp = engine.evalNumericFunctionNIL(arg1);
       if (temp.isReal()) {
         return arg1.copySign((IReal) temp);
@@ -762,7 +767,7 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        if (ast.head().equals(S.Complex)) {
+        if (ast.head() == S.Complex) {
           if (!ast.isAST2()) {
             return Errors.printArgMessage(ast, ARGS_2_2, engine);
           }
@@ -1352,6 +1357,19 @@ public final class Arithmetic {
             } else {
               return F.CInfinity;
             }
+          }
+          if (arg1.isInterval() || arg1.isIntervalData()) {
+            // The direction of an interval normalises to the interval of its signs:
+            // DirectedInfinity(Interval({-42,42})) is DirectedInfinity(Interval({-1,1})), and one
+            // that stays on a single side of zero collapses to +/-Infinity. Sign() computes
+            // exactly that, so ask it rather than dividing by Abs() below: for an interval that
+            // quotient is not a direction, and it never settles either, because Abs() of an
+            // interval stays unevaluated and every pass wraps the previous quotient in one more.
+            IExpr sign = engine.evaluate(F.Sign(arg1));
+            if (sign.isPresent() && !sign.isAST(S.Sign) && !sign.equals(arg1)) {
+              return F.DirectedInfinity(sign);
+            }
+            return F.NIL;
           }
           if (!arg1.isOne() && arg1.isNumericFunction(true)) {
             IExpr abs = arg1.abs();
@@ -3044,6 +3062,10 @@ public final class Arithmetic {
           C1, true);
       plusMatcher.definePatternHashRule(Power(F.Csc(x_), C2), Power(F.Cot(x_), C2), //
           C1, true);
+      plusMatcher.definePatternHashRule(Power(F.Sec(x_), C2), Power(F.Tan(x_), C2), //
+          C1, true);
+      plusMatcher.definePatternHashRule(Power(F.Coth(x_), C2), Power(F.Csch(x_), C2), //
+          C1, true);
       plusMatcher.definePatternHashRule(F.Erf(x_), F.Erfc(x_), //
           C1);
 
@@ -3197,18 +3219,39 @@ public final class Arithmetic {
         if (ast.head() != S.Plus) {
           return F.NIL;
         }
-        if (ast.exists(x -> x instanceof IDataExpr)) {
-          // DateObject(...) + Quantity(1, "Day") and friends
-          IExpr dateResult = DateTimeFunctions.plusDateObject(ast);
-          if (dateResult.isPresent()) {
-            return dateResult;
+        // Neither a data expression nor a quantity can occur in a uniformly numeric sum, so the
+        // two cheap uniform tests below are done first. Both remaining cases are extremely rare
+        // (78 hits in ~2.7 million sums over the whole test suite), so one combined scan decides
+        // whether either of them has to be looked at at all.
+        if (ast.exists(x -> x instanceof IDataExpr || x.isQuantity()
+            || AroundFunctions.isAround(x) || AroundFunctions.isVectorAround(x))) {
+          if (ast.exists(x -> AroundFunctions.isVectorAround(x))) {
+            IExpr vectorResult = AroundFunctions.plusVectorAround(ast, engine);
+            if (vectorResult.isPresent()) {
+              return vectorResult;
+            }
           }
-        }
-        if (ast.exists(x -> x.isQuantity())) {
-          // T1 - T2 of two absolute temperatures is a temperature difference
-          IExpr temperatureResult = QuantityOps.temperatureSubtraction(ast, engine);
-          if (temperatureResult.isPresent()) {
-            return temperatureResult;
+          if (ast.exists(x -> AroundFunctions.isAround(x))) {
+            // uncertainties add in quadrature, and this must happen before equal terms are
+            // collected - see AroundFunctions#plus
+            IExpr aroundResult = AroundFunctions.plus(ast, engine);
+            if (aroundResult.isPresent()) {
+              return aroundResult;
+            }
+          }
+          if (ast.exists(x -> x instanceof IDataExpr)) {
+            // DateObject(...) + Quantity(1, "Day") and friends
+            IExpr dateResult = DateTimeFunctions.plusDateObject(ast);
+            if (dateResult.isPresent()) {
+              return dateResult;
+            }
+          }
+          if (ast.exists(x -> x.isQuantity())) {
+            // T1 - T2 of two absolute temperatures is a temperature difference
+            IExpr temperatureResult = QuantityOps.temperatureSubtraction(ast, engine);
+            if (temperatureResult.isPresent()) {
+              return temperatureResult;
+            }
           }
         }
         if (ast.isUniform(UniformFlags.REAL)) {
@@ -3642,6 +3685,13 @@ public final class Arithmetic {
             return org.matheclipse.core.expression.IntervalDataSym.power(base, (IAST) exponent);
           }
           return powerZeroArg1(exponent);
+        }
+        if (AroundFunctions.isAround(base) || AroundFunctions.isAround(exponent)) {
+          // Sqrt and Exp of an uncertain value reduce to a Power, so the propagation lives here
+          IExpr aroundResult = AroundFunctions.power(ast, EvalEngine.get());
+          if (aroundResult.isPresent()) {
+            return aroundResult;
+          }
         }
         if (base.isQuantity()) {
           return QuantityOps.power((IAST) base, exponent, EvalEngine.get());
@@ -4471,7 +4521,7 @@ public final class Arithmetic {
       if (base.isTimes()) {
         final IAST baseTimes = base;
         if (exponent.isInteger() || exponent.isMinusOne()) {
-          return baseTimes.mapThread(F.binaryAST2(S.Power, F.Slot1, exponent), 1);
+          return baseTimes.mapThread(F.Power(F.Slot1, exponent), 1);
         }
         if (exponent.isFraction()) {
           // (a * b * c)^n => a^n * b^n * c^n => result * (rest ^ exponent)
@@ -5492,7 +5542,7 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Rational)) {
+      if (ast.head() == S.Rational) {
         if (!ast.isAST2()) {
           return Errors.printArgMessage(ast, ARGS_2_2, engine);
         }
@@ -5780,7 +5830,7 @@ public final class Arithmetic {
           return numberSign((INumber) expr);
         }
         IExpr temp = F.eval(F.Sign(expr));
-        if (!temp.topHead().equals(S.Sign)) {
+        if (temp.topHead() != S.Sign) {
           return temp;
         }
         return F.NIL;
@@ -5805,14 +5855,16 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr result = F.NIL;
-      IExpr arg1 = engine.evaluateNIL(ast.arg1());
-      if (arg1.isPresent()) {
-        if (!arg1.isNumber()) {
-          result = F.Sign(arg1);
-          arg1 = result;
-        }
-      } else {
-        arg1 = ast.arg1();
+      IExpr evaluated = engine.evaluateNIL(ast.arg1());
+      IExpr arg1 = evaluated.isPresent() ? evaluated : ast.arg1();
+      if (arg1.isQuantity()) {
+        // the sign of a quantity is the sign of its magnitude, and is dimensionless. Without this
+        // the generic path reaches Quantity/Abs(Quantity), which is 0/0 for a zero magnitude.
+        return F.Sign(((IAST) arg1).arg1());
+      }
+      if (evaluated.isPresent() && !arg1.isNumber()) {
+        result = F.Sign(arg1);
+        arg1 = result;
       }
       if (arg1.isList()) {
         return arg1.mapThread(F.Sign(F.Slot1), 1);
@@ -5892,6 +5944,52 @@ public final class Arithmetic {
           }
         }
         return IntervalSym.mapSymbol(S.Sign, (IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        // The sign of an interval is the interval of its signs, which is decided by the bounds:
+        // which of -1, 0 and 1 the interval actually reaches. Without this the generic
+        // arg1/Abs(arg1) below applies, which is not a sign for an interval at all - it divides
+        // the interval by itself and answers IntervalData({1/42,...,42}) for {1,...,42}.
+        //
+        // The bound relations matter, so this is not a plain map over the endpoints: the open
+        // interval {-2,Less,Less,0} never takes the value 0, so its sign is exactly -1, where
+        // mapping Sign over the endpoints would answer the interval -1 to 0 and lose the -1 end.
+        IAST intervalData = (IAST) arg1;
+        if (intervalData.isAST0()) {
+          return F.NIL;
+        }
+        boolean hasNegative = false;
+        boolean hasZero = false;
+        boolean hasPositive = false;
+        for (int i = 1; i < intervalData.size(); i++) {
+          IExpr sub = intervalData.get(i);
+          if (!sub.isList() || ((IAST) sub).size() != 5) {
+            return F.NIL;
+          }
+          IAST bounds = (IAST) sub;
+          IExpr lower = bounds.arg1();
+          IExpr upper = bounds.arg4();
+          boolean lowerBelowZero = lower.isNegativeResult();
+          boolean upperAboveZero = upper.isPositiveResult();
+          boolean lowerReachesZero = lowerBelowZero || (lower.isZero() && bounds.arg2() == S.LessEqual);
+          boolean upperReachesZero = upperAboveZero || (upper.isZero() && bounds.arg3() == S.LessEqual);
+          boolean determined = lowerBelowZero || upperAboveZero || (lowerReachesZero && upperReachesZero);
+          if (!determined) {
+            // a bound that is neither positive, negative nor zero is symbolic, and guessing which
+            // side of zero it falls on is exactly what must not happen here
+            return F.NIL;
+          }
+          hasNegative = hasNegative || lowerBelowZero;
+          hasPositive = hasPositive || upperAboveZero;
+          hasZero = hasZero || (lowerReachesZero && upperReachesZero);
+        }
+        int lowestSign = hasNegative ? -1 : hasZero ? 0 : 1;
+        int highestSign = hasPositive ? 1 : hasZero ? 0 : -1;
+        if (lowestSign == highestSign) {
+          return F.ZZ(lowestSign);
+        }
+        return F.IntervalData(
+            F.List(F.ZZ(lowestSign), S.LessEqual, S.LessEqual, F.ZZ(highestSign)));
       }
       IExpr temp = engine.evaluateNIL(F.Abs(arg1));
       if (temp.isPresent() && !temp.isAST(S.Abs)) {
@@ -6671,6 +6769,11 @@ public final class Arithmetic {
           F.Csc(x_), //
           F.Tan(x_), //
           F.Sec(x)));
+      // Cot(x)*Sec(x) -> Csc(x)
+      timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
+          F.Cot(x_), //
+          F.Sec(x_), //
+          F.Csc(x)));
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Power(F.Csc(x_), F.m_), //
           F.Power(F.Cot(x_), F.n_DEFAULT), //
@@ -6701,11 +6804,14 @@ public final class Arithmetic {
           F.Gamma(F.Plus(F.C1, F.Times(F.CN1, x_))), //
           // Pi*Csc(x*Pi)
           F.Times(S.Pi, F.Csc(F.Times(x, S.Pi)))));
+      // Gamma(x)*Gamma(y) -> Pi*Csc(x*Pi) /; x+y == 1 - the reflection formula for literal
+      // rational arguments. The structural rule above cannot match them, because e.g. 3/4 is an
+      // atom and not Plus(1, Times(-1, 1/4)); it used to be hardcoded for the pair (1/4, 3/4).
       timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
-          F.Gamma(F.C1D4), //
-          F.Gamma(F.C3D4), //
-          // Sqrt(2)*Pi
-          F.Times(S.Pi, F.CSqrt2)));
+          F.Gamma(x_), //
+          F.Gamma(y_), //
+          F.Times(S.Pi, F.Csc(F.Times(x, S.Pi))), //
+          F.And(F.Element(x, S.Rationals), F.Equal(F.Plus(x, y), F.C1)), true));
 
 
       // Sin(x_)^2/(1-Cos(x_)^2) = 1
@@ -6713,10 +6819,10 @@ public final class Arithmetic {
           F.Power(F.Sin(x_), F.C2), //
           F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Cos(x_), F.C2))), F.CN1), //
           F.C1));
-      // (1-Cos(x_)^2) / Sin(x_)^2 = 1
+      // (1-Cos(x_)^2) * Csc(x_)^2 = 1 ; 1/Sin(x)^2 arrives canonicalized as Csc(x)^2
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Cos(x_), F.C2))), //
-          F.Power(F.Sin(x_), F.CN2), //
+          F.Power(F.Csc(x_), F.C2), //
           F.C1));
 
       // Cos(x_)^2/(1-Sin(x_)^2) = 1
@@ -6724,10 +6830,10 @@ public final class Arithmetic {
           F.Power(F.Cos(x_), F.C2), //
           F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sin(x_), F.C2))), F.CN1), //
           F.C1));
-      // (1-Sin(x_)^2) / Cos(x_)^2 = 1
+      // (1-Sin(x_)^2) * Sec(x_)^2 = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sin(x_), F.C2))), //
-          F.Power(F.Cos(x_), F.CN2), //
+          F.Power(F.Sec(x_), F.C2), //
           F.C1));
 
       // Sech(x_)^2/(1-Tanh(x_)^2 ) = 1
@@ -6735,10 +6841,10 @@ public final class Arithmetic {
           F.Power(F.Sech(x_), F.C2), //
           F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Tanh(x_), F.C2))), F.CN1), //
           F.C1));
-      // (1-Tanh(x_)^2 ) / Sech(x_)^2 = 1
+      // (1-Tanh(x_)^2) * Cosh(x_)^2 = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Tanh(x_), F.C2))), //
-          F.Power(F.Sech(x_), F.CN2), //
+          F.Power(F.Cosh(x_), F.C2), //
           F.C1));
 
       // Tanh(x_)^2/(1-Sech(x_)^2 ) = 1
@@ -6746,10 +6852,10 @@ public final class Arithmetic {
           F.Power(F.Tanh(x_), F.C2), //
           F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sech(x_), F.C2))), F.CN1), //
           F.C1));
-      // (1-Sech(x_)^2 ) / Tanh(x_)^2= 1
+      // (1-Sech(x_)^2) * Coth(x_)^2 = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sech(x_), F.C2))), //
-          F.Power(F.Tanh(x_), F.CN2), //
+          F.Power(F.Coth(x_), F.C2), //
           F.C1));
 
       // Cos(2*x_)/(1-2*Sin(x)^2) = 1
@@ -6757,10 +6863,10 @@ public final class Arithmetic {
           F.Cos(F.Times(F.C2, x_)), //
           F.Power(F.Plus(F.C1, F.Times(F.CN2, F.Power(F.Sin(x_), F.C2))), F.CN1), //
           F.C1));
-      // (1-2*Sin(x)^2) / Cos(2*x_) = 1
+      // (1-2*Sin(x)^2) * Sec(2*x_) = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.C1, F.Times(F.CN2, F.Power(F.Sin(x_), F.C2))), //
-          F.Power(F.Cos(F.Times(F.C2, x_)), F.CN1), //
+          F.Sec(F.Times(F.C2, x_)), //
           F.C1));
 
       // Cos(2*x_)/(-1+2*Cos(x)^2) = 1
@@ -6768,10 +6874,10 @@ public final class Arithmetic {
           F.Cos(F.Times(F.C2, x_)), //
           F.Power(F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cos(x_), F.C2))), F.CN1), //
           F.C1));
-      // (-1+2*Cos(x)^2) / Cos(2*x_) = 1
+      // (-1+2*Cos(x)^2) * Sec(2*x_) = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cos(x_), F.C2))), //
-          F.Power(F.Cos(F.Times(F.C2, x_)), F.CN1), //
+          F.Sec(F.Times(F.C2, x_)), //
           F.C1));
 
       // Sec(x_)^2/(1+Tan(x_)^2 ) = 1
@@ -6779,10 +6885,10 @@ public final class Arithmetic {
           F.Power(F.Sec(x_), F.C2), //
           F.Power(F.Plus(F.C1, F.Power(F.Tan(x_), F.C2)), F.CN1), //
           F.C1));
-      // (1+Tan(x_)^2) / Sec(x_)^2 = 1
+      // (1+Tan(x_)^2) * Cos(x_)^2 = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.C1, F.Power(F.Tan(x_), F.C2)), //
-          F.Power(F.Sec(x_), F.CN2), //
+          F.Power(F.Cos(x_), F.C2), //
           F.C1));
 
       // Csc(x_)^2/(1+Cot(x_)^2 ) = 1
@@ -6790,10 +6896,98 @@ public final class Arithmetic {
           F.Power(F.Csc(x_), F.C2), //
           F.Power(F.Plus(F.C1, F.Power(F.Cot(x_), F.C2)), F.CN1), //
           F.C1));
-      // (1+Cot(x_)^2) / Csc(x_)^2 = 1
+      // (1+Cot(x_)^2) * Sin(x_)^2 = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
           F.Plus(F.C1, F.Power(F.Cot(x_), F.C2)), //
-          F.Power(F.Csc(x_), F.CN2), //
+          F.Power(F.Sin(x_), F.C2), //
+          F.C1));
+
+      // Tan(x_)^2/(-1+Sec(x_)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Power(F.Tan(x_), F.C2), //
+          F.Power(F.Plus(F.CN1, F.Power(F.Sec(x_), F.C2)), F.CN1), //
+          F.C1));
+      // (-1+Sec(x_)^2) * Cot(x_)^2 = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.CN1, F.Power(F.Sec(x_), F.C2)), //
+          F.Power(F.Cot(x_), F.C2), //
+          F.C1));
+
+      // Cot(x_)^2/(-1+Csc(x_)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Power(F.Cot(x_), F.C2), //
+          F.Power(F.Plus(F.CN1, F.Power(F.Csc(x_), F.C2)), F.CN1), //
+          F.C1));
+      // (-1+Csc(x_)^2) * Tan(x_)^2 = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.CN1, F.Power(F.Csc(x_), F.C2)), //
+          F.Power(F.Tan(x_), F.C2), //
+          F.C1));
+
+      // Sinh(x_)^2/(-1+Cosh(x_)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Power(F.Sinh(x_), F.C2), //
+          F.Power(F.Plus(F.CN1, F.Power(F.Cosh(x_), F.C2)), F.CN1), //
+          F.C1));
+      // (-1+Cosh(x_)^2) * Csch(x_)^2 = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.CN1, F.Power(F.Cosh(x_), F.C2)), //
+          F.Power(F.Csch(x_), F.C2), //
+          F.C1));
+
+      // Cosh(x_)^2/(1+Sinh(x_)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Power(F.Cosh(x_), F.C2), //
+          F.Power(F.Plus(F.C1, F.Power(F.Sinh(x_), F.C2)), F.CN1), //
+          F.C1));
+      // (1+Sinh(x_)^2) * Sech(x_)^2 = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.C1, F.Power(F.Sinh(x_), F.C2)), //
+          F.Power(F.Sech(x_), F.C2), //
+          F.C1));
+
+      // Coth(x_)^2/(1+Csch(x_)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Power(F.Coth(x_), F.C2), //
+          F.Power(F.Plus(F.C1, F.Power(F.Csch(x_), F.C2)), F.CN1), //
+          F.C1));
+      // (1+Csch(x_)^2) * Tanh(x_)^2 = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.C1, F.Power(F.Csch(x_), F.C2)), //
+          F.Power(F.Tanh(x_), F.C2), //
+          F.C1));
+
+      // Csch(x_)^2/(-1+Coth(x_)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Power(F.Csch(x_), F.C2), //
+          F.Power(F.Plus(F.CN1, F.Power(F.Coth(x_), F.C2)), F.CN1), //
+          F.C1));
+      // (-1+Coth(x_)^2) * Sinh(x_)^2 = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.CN1, F.Power(F.Coth(x_), F.C2)), //
+          F.Power(F.Sinh(x_), F.C2), //
+          F.C1));
+
+      // Cosh(2*x_)/(1+2*Sinh(x)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Cosh(F.Times(F.C2, x_)), //
+          F.Power(F.Plus(F.C1, F.Times(F.C2, F.Power(F.Sinh(x_), F.C2))), F.CN1), //
+          F.C1));
+      // (1+2*Sinh(x)^2) * Sech(2*x_) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.C1, F.Times(F.C2, F.Power(F.Sinh(x_), F.C2))), //
+          F.Sech(F.Times(F.C2, x_)), //
+          F.C1));
+
+      // Cosh(2*x_)/(-1+2*Cosh(x)^2) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Cosh(F.Times(F.C2, x_)), //
+          F.Power(F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cosh(x_), F.C2))), F.CN1), //
+          F.C1));
+      // (-1+2*Cosh(x)^2) * Sech(2*x_) = 1
+      timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //
+          F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cosh(x_), F.C2))), //
+          F.Sech(F.Times(F.C2, x_)), //
           F.C1));
 
       // TODO: HACK useOnlyEqualFactors = true in the following rules,
@@ -7110,6 +7304,15 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       final int size = ast.size();
+      if (ast.head() != S.Times) {
+        // Times has no operator form, so Times(a,b)[x,y] does not mean "multiply x and y".
+        // Evaluation arrives here all the same, because AbstractAST#evaluate() dispatches on
+        // topHead(), which looks through nested heads so that Derivative(1)[f] can work. Without
+        // this the outer arguments are multiplied as though the head were the plain symbol and
+        // (2*Sqrt(5))[3,4] answers 12, where Mathematica leaves the expression alone. The two
+        // branches below already made this test for one and two arguments.
+        return F.NIL;
+      }
       if (size == 1) {
         if (ast.head() == S.Times) {
           return F.C1;
@@ -7119,6 +7322,20 @@ public final class Arithmetic {
       if (size == 2) {
         // OneIdentity ?
         return (ast.head() == S.Times) ? ast.arg1() : F.NIL;
+      }
+      if (ast.exists(x -> AroundFunctions.isAround(x))) {
+        // uncertainties propagate through the product, and this must happen before equal factors
+        // are collected into a power - see AroundFunctions#times
+        IExpr aroundResult = AroundFunctions.times(ast, engine);
+        if (aroundResult.isPresent()) {
+          return aroundResult;
+        }
+      }
+      if (ast.exists(x -> AroundFunctions.isVectorAround(x))) {
+        IExpr vectorResult = AroundFunctions.timesVectorAround(ast, engine);
+        if (vectorResult.isPresent()) {
+          return vectorResult;
+        }
       }
       if (size == 3 && ast.exists(x -> x instanceof IDataExpr)) {
         // in relaxed syntax mode DateObject(...)("Day") parses as an implicit multiplication;
@@ -7183,11 +7400,11 @@ public final class Arithmetic {
           return ast.arg2().mapThread(F.Times(arg1, F.Slot1), 2);
         }
         final IExpr arg2 = ast.arg2();
-        IExpr temp = distributeLeadingFactor(binaryOperator(ast, arg1, arg2, engine), ast);
-        if (temp.isPresent()) {
-          return temp;
-        }
-        return binaryOperator(ast, arg1, arg2, engine);
+        // distributeLeadingFactor() returns its first argument unchanged if it cannot distribute,
+        // so falling back to it is the same as evaluating the product a second time
+        final IExpr binary = binaryOperator(ast, arg1, arg2, engine);
+        final IExpr temp = distributeLeadingFactor(binary, ast);
+        return temp.isPresent() ? temp : binary;
       }
 
       if (size > 3) {

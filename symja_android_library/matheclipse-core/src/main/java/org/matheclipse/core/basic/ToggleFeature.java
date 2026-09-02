@@ -39,10 +39,17 @@ public class ToggleFeature {
 
   /**
    * If <code>true</code>, enable the space dynamics and astronomy functions implemented in the
-   * <code>matheclipse-orekit</code> module. Most of them additionally need the external
-   * <code>orekit-data</code> files; see <code>org.matheclipse.orekit.data.OrekitDataContext</code>.
+   * <code>matheclipse-astro</code> module. Most of them additionally need the external
+   * <code>orekit-data</code> files; see <code>org.matheclipse.astro.data.AstroDataContext</code>.
    */
-  public static boolean OREKIT = true;
+  public static boolean ASTRO = true;
+
+  /**
+   * Enable the chemistry functions (<code>Molecule</code>, <code>MoleculeValue</code>,
+   * <code>ChemicalFormula</code>, ...). Their evaluators live in the
+   * <code>matheclipse-chem</code> module, which is backed by the Chemistry Development Kit.
+   */
+  public static boolean CHEM = true;
 
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.Series</code> and

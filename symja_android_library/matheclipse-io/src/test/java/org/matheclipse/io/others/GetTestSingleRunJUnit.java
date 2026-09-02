@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.eval.PackageUtil;
+import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -193,7 +193,7 @@ public class GetTestSingleRunJUnit {
     OutputFormFactory fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
 
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parsePackage(VECTOR_ANALYSIS);
+    final List<ASTNode> node = parser.parseScript(VECTOR_ANALYSIS);
     PackageUtil.evaluatePackage(node, engine);
 
     // print Coordinates::usage to console

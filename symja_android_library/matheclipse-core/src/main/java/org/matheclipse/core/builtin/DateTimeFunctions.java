@@ -1,13 +1,13 @@
 package org.matheclipse.core.builtin;
 
+import java.math.BigInteger;
+import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -25,7 +25,6 @@ import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -53,9 +52,7 @@ public class DateTimeFunctions {
 
   private static final long NANOS_PER_DAY = 86400_000_000_000L;
 
-  /** Indexed by {@link DayOfWeek#getValue()} minus one. */
-  private static final IBuiltInSymbol[] WEEKDAY_SYMBOLS = new IBuiltInSymbol[] { //
-      S.Monday, S.Tuesday, S.Wednesday, S.Thursday, S.Friday, S.Saturday, S.Sunday};
+  private static final BigInteger NANOS_PER_SECOND = BigInteger.valueOf(1_000_000_000L);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -215,7 +212,10 @@ public class DateTimeFunctions {
     }
     if (expr.isNumber() && expr.isReal()) {
       double seconds = expr.evalf();
-      LocalDateTime dateTime = plusSeconds(EPOCH_1900, seconds);
+      LocalDateTime dateTime = plusSecondsOrNull(EPOCH_1900, seconds);
+      if (dateTime == null) {
+        return null;
+      }
       DateGranularity gran = granularity == null ? DateGranularity.INSTANT : granularity;
       return new DateSpec(
           DateObjectExpr.newInstance(gran.truncate(dateTime), gran, DateObjectExpr.GREGORIAN,
@@ -277,9 +277,22 @@ public class DateTimeFunctions {
 
   /**
    * Build a {@link LocalDateTime} from possibly out of range and possibly fractional components.
+   *
+   * <p>
+   * Out of range means a month of zero or a day beyond the end of one, which normalise into the
+   * neighbouring month or year. It does not extend to components that no date can hold at all: a
+   * year of 2147483647 is past what {@link LocalDate} accepts, and a component that is not a finite
+   * number is not a date component. Both answer <code>null</code>, the same way the rest of the
+   * date specification reader reports something it cannot read - callers check for it.
+   *
+   * @return the date, or <code>null</code> if these components do not describe one
    */
   static LocalDateTime dateTimeOf(int year, int month, double day, double hour, double minute,
       double second) {
+    if (!Double.isFinite(day) || !Double.isFinite(hour) || !Double.isFinite(minute)
+        || !Double.isFinite(second)) {
+      return null;
+    }
     long monthIndex = (long) year * 12L + (month - 1L);
     int normYear = (int) Math.floorDiv(monthIndex, 12L);
     int normMonth = (int) Math.floorMod(monthIndex, 12L) + 1;
@@ -291,12 +304,75 @@ public class DateTimeFunctions {
         + (hour - hourInt) * 3600.0 //
         + (minute - minuteInt) * 60.0 //
         + (second - secondInt);
-    return LocalDateTime.of(normYear, normMonth, 1, 0, 0) //
-        .plusDays(dayInt - 1) //
-        .plusHours(hourInt) //
-        .plusMinutes(minuteInt) //
-        .plusSeconds(secondInt) //
-        .plusNanos(Math.round(fractionSeconds * 1.0e9));
+    try {
+      return LocalDateTime.of(normYear, normMonth, 1, 0, 0) //
+          .plusDays(dayInt - 1) //
+          .plusHours(hourInt) //
+          .plusMinutes(minuteInt) //
+          .plusSeconds(secondInt) //
+          .plusNanos(Math.round(fractionSeconds * 1.0e9));
+    } catch (DateTimeException | ArithmeticException e) {
+      return null;
+    }
+  }
+
+  /**
+   * {@link #plusSeconds} for a count of seconds that may not land on the calendar at all, which is
+   * what a number reaching {@link #dateSpec(IExpr)} can be.
+   *
+   * <p>
+   * Two ways to miss. A number large enough carries the date past the range of
+   * {@link LocalDate#ofEpochDay(long)}, which complains rather than answering, and
+   * <code>DayMatchQ(9223372036854775807, 2)</code> failed with that complaint instead of the
+   * unevaluated expression Mathematica gives. A {@code NaN} misses more quietly: narrowing it to a
+   * long gives <code>0</code>, so the date would come back as the 1900 epoch itself, which is a
+   * wrong answer rather than no answer.
+   *
+   * @return the date, or <code>null</code> if <code>seconds</code> does not denote one
+   */
+  static LocalDateTime plusSecondsOrNull(LocalDateTime dateTime, double seconds) {
+    if (!Double.isFinite(seconds)) {
+      return null;
+    }
+    try {
+      return plusSeconds(dateTime, seconds);
+    } catch (DateTimeException | ArithmeticException e) {
+      return null;
+    }
+  }
+
+  /**
+   * The exact number of nanoseconds from {@code from} to {@code to}.
+   *
+   * <p>
+   * {@link Duration#toNanos()} cannot be used: a long holds only about 292 years of nanoseconds, so
+   * it throws an {@code ArithmeticException} for any pair of dates further apart than that - which
+   * is every difference reaching back past the 1900 epoch that a bare number denotes. Seconds and
+   * the nanosecond adjustment are each well within range, and Java normalises the adjustment to be
+   * non-negative, so combining them signs correctly.
+   */
+  static BigInteger nanosBetween(LocalDateTime from, LocalDateTime to) {
+    Duration duration = Duration.between(from, to);
+    return BigInteger.valueOf(duration.getSeconds()).multiply(NANOS_PER_SECOND)
+        .add(BigInteger.valueOf(duration.getNano()));
+  }
+
+  /**
+   * Move {@code origin} by an exact number of nanoseconds, which can be more than a long holds.
+   *
+   * @return the date, or <code>null</code> if the offset carries it off the calendar
+   */
+  static LocalDateTime plusNanos(LocalDateTime origin, BigInteger nanos) {
+    BigInteger[] secondsAndNanos = nanos.divideAndRemainder(NANOS_PER_SECOND);
+    if (secondsAndNanos[0].bitLength() >= 63) {
+      return null;
+    }
+    try {
+      return origin.plusSeconds(secondsAndNanos[0].longValue())
+          .plusNanos(secondsAndNanos[1].longValue());
+    } catch (DateTimeException | ArithmeticException e) {
+      return null;
+    }
   }
 
   /** Add a possibly fractional number of seconds to a date. */
@@ -557,185 +633,8 @@ public class DateTimeFunctions {
 
   /** <code>true</code> for a format element which is not a date element but a literal separator. */
   private static boolean isSeparatorElement(String name) {
-    return dateElementIndex(name) < 0;
+    return DateObjectExpr.dateElementIndex(name) < 0;
   }
-
-  // ==================================================================================
-  // date elements
-  // ==================================================================================
-
-  /**
-   * All supported date element names. The index into this array is used by
-   * {@link #dateElement(int, LocalDateTime, DateObjectExpr, boolean)}.
-   */
-  private static final String[] DATE_ELEMENTS = new String[] { //
-      "Year", "YearShort", "Quarter", "QuarterName", "QuarterNameShort", //
-      "Month", "MonthShort", "MonthName", "MonthNameShort", "MonthNameInitial", //
-      "Day", "DayShort", "DayName", "DayNameShort", "DayNameInitial", //
-      "Hour", "HourShort", "Hour12", "Hour12Short", "Hour24", "Hour24Short", //
-      "AMPM", "AMPMLowerCase", //
-      "Minute", "MinuteShort", "Second", "SecondShort", "Millisecond", "MillisecondShort", //
-      "Week", "WeekShort", "ISOWeek", "ISOWeekYear", "ISOYear", "ISOWeekDay", //
-      "ISOYearDay", "ISOYearDayShort", "DayOfYear", "ISOWeekDate", "Granularity"};
-
-  private static int dateElementIndex(String name) {
-    for (int i = 0; i < DATE_ELEMENTS.length; i++) {
-      if (DATE_ELEMENTS[i].equals(name)) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  /**
-   * Compute a date element.
-   *
-   * @param asString <code>true</code> for the {@link S#DateString} rendering - zero padded strings
-   *        - and <code>false</code> for the {@link S#DateValue} rendering - integers, symbols and
-   *        strings
-   * @return {@link F#NIL} if <code>name</code> is not a supported date element
-   */
-  public static IExpr dateElement(String name, LocalDateTime date, DateObjectExpr dateObject,
-      boolean asString) {
-    int index = dateElementIndex(name);
-    if (index < 0) {
-      return F.NIL;
-    }
-    int quarter = (date.getMonthValue() - 1) / 3 + 1;
-    switch (name) {
-      case "Year":
-        return integerOrPadded(DateObjectExpr.toDisplayYear(date.getYear()), 4, asString);
-      case "YearShort":
-        return integerOrPadded(Math.floorMod(date.getYear(), 100), 2, asString);
-      case "Quarter":
-        return integerOrPadded(quarter, 1, asString);
-      case "QuarterName":
-        return F.stringx("Quarter " + quarter);
-      case "QuarterNameShort":
-        return F.stringx("Q" + quarter);
-      case "Month":
-        return integerOrPadded(date.getMonthValue(), 2, asString);
-      case "MonthShort":
-        return integerOrPadded(date.getMonthValue(), 1, asString);
-      case "MonthName":
-        return F.stringx(date.getMonth().getDisplayName(TextStyle.FULL, Locale.US));
-      case "MonthNameShort":
-        return F.stringx(date.getMonth().getDisplayName(TextStyle.SHORT, Locale.US));
-      case "MonthNameInitial":
-        return F.stringx(date.getMonth().getDisplayName(TextStyle.NARROW, Locale.US));
-      case "Day":
-        return integerOrPadded(date.getDayOfMonth(), 2, asString);
-      case "DayShort":
-        return integerOrPadded(date.getDayOfMonth(), 1, asString);
-      case "DayName":
-        return asString ? F.stringx(date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.US))
-            : weekdaySymbol(date.getDayOfWeek());
-      case "DayNameShort":
-        return F.stringx(date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.US));
-      case "DayNameInitial":
-        return F.stringx(date.getDayOfWeek().getDisplayName(TextStyle.NARROW, Locale.US));
-      case "Hour":
-      case "Hour24":
-        return integerOrPadded(date.getHour(), 2, asString);
-      case "HourShort":
-      case "Hour24Short":
-        return integerOrPadded(date.getHour(), 1, asString);
-      case "Hour12":
-        return integerOrPadded(hour12(date.getHour()), 2, asString);
-      case "Hour12Short":
-        return integerOrPadded(hour12(date.getHour()), 1, asString);
-      case "AMPM":
-        return F.stringx(date.getHour() < 12 ? "AM" : "PM");
-      case "AMPMLowerCase":
-        return F.stringx(date.getHour() < 12 ? "am" : "pm");
-      case "Minute":
-        return integerOrPadded(date.getMinute(), 2, asString);
-      case "MinuteShort":
-        return integerOrPadded(date.getMinute(), 1, asString);
-      case "Second":
-        return integerOrPadded(date.getSecond(), 2, asString);
-      case "SecondShort":
-        return integerOrPadded(date.getSecond(), 1, asString);
-      case "Millisecond":
-        return integerOrPadded(date.getNano() / 1_000_000, 3, asString);
-      case "MillisecondShort":
-        return integerOrPadded(date.getNano() / 1_000_000, 1, asString);
-      case "Week":
-      case "ISOWeek":
-        return integerOrPadded(date.get(WeekFields.ISO.weekOfWeekBasedYear()), 2, asString);
-      case "WeekShort":
-        return integerOrPadded(date.get(WeekFields.ISO.weekOfWeekBasedYear()), 1, asString);
-      case "ISOWeekYear":
-        return integerOrPadded(date.get(WeekFields.ISO.weekBasedYear()), 4, asString);
-      case "ISOYear":
-        return integerOrPadded(DateObjectExpr.toDisplayYear(date.getYear()), 4, asString);
-      case "ISOWeekDay":
-        return integerOrPadded(date.getDayOfWeek().getValue(), 1, asString);
-      case "ISOYearDay":
-        return integerOrPadded(date.getDayOfYear(), 3, asString);
-      case "ISOYearDayShort":
-      case "DayOfYear":
-        return integerOrPadded(date.getDayOfYear(), 1, asString);
-      case "ISOWeekDate":
-        return F.stringx(
-            String.format(Locale.US, "%04d-W%02d-%d", date.get(WeekFields.ISO.weekBasedYear()),
-                date.get(WeekFields.ISO.weekOfWeekBasedYear()), date.getDayOfWeek().getValue()));
-      case "Granularity":
-        return F.stringx(dateObject == null ? DateGranularity.INSTANT.getName()
-            : dateObject.getGranularity().getName());
-      default:
-        return F.NIL;
-    }
-  }
-
-  private static int hour12(int hour) {
-    int result = hour % 12;
-    return result == 0 ? 12 : result;
-  }
-
-  private static IExpr integerOrPadded(int value, int digits, boolean asString) {
-    if (!asString) {
-      return F.ZZ(value);
-    }
-    if (value < 0) {
-      return F.stringx(Integer.toString(value));
-    }
-    StringBuilder buf = new StringBuilder(Integer.toString(value));
-    while (buf.length() < digits) {
-      buf.insert(0, '0');
-    }
-    return F.stringx(buf.toString());
-  }
-
-  static IBuiltInSymbol weekdaySymbol(DayOfWeek dayOfWeek) {
-    return WEEKDAY_SYMBOLS[dayOfWeek.getValue() - 1];
-  }
-
-  /**
-   * Map a weekday symbol or a weekday name string to a {@link DayOfWeek}.
-   *
-   * @return <code>null</code> if <code>expr</code> is not a weekday specification
-   */
-  static DayOfWeek toDayOfWeek(IExpr expr) {
-    for (int i = 0; i < WEEKDAY_SYMBOLS.length; i++) {
-      if (expr == WEEKDAY_SYMBOLS[i]) {
-        return DayOfWeek.of(i + 1);
-      }
-    }
-    if (expr.isString()) {
-      String name = expr.toString();
-      for (int i = 0; i < WEEKDAY_SYMBOLS.length; i++) {
-        if (WEEKDAY_SYMBOLS[i].getSymbolName().equalsIgnoreCase(name)) {
-          return DayOfWeek.of(i + 1);
-        }
-      }
-    }
-    return null;
-  }
-
-  // ==================================================================================
-  // date formatting
-  // ==================================================================================
 
   /** The default date format, i.e. <code>Mon 1 Jan 1900 00:00:00</code>. */
   private static final String[] DEFAULT_DATE_TIME_FORMAT = new String[] {"DayNameShort", " ",
@@ -747,7 +646,7 @@ public class DateTimeFunctions {
 
   /**
    * The named {@link S#DateString} formats which expand to a list of elements. Single date elements
-   * such as <code>"Year"</code> are handled by {@link #dateElement} directly.
+   * such as <code>"Year"</code> are handled by {@link DateObjectExpr#dateElement} directly.
    */
   private static String[] namedFormat(String name) {
     switch (name) {
@@ -809,7 +708,7 @@ public class DateTimeFunctions {
       }
       return;
     }
-    IExpr value = dateElement(name, date, dateObject, true);
+    IExpr value = DateObjectExpr.dateElement(name, date, dateObject, true);
     if (value.isPresent()) {
       buf.append(value.toString());
     } else {
@@ -936,15 +835,15 @@ public class DateTimeFunctions {
       case "Month":
         return date.plusMonths(whole);
       case "Week":
-        return plusSeconds(date, count * 7 * 86400.0);
+        return plusSecondsOrNull(date, count * 7 * 86400.0);
       case "Day":
-        return plusSeconds(date, count * 86400.0);
+        return plusSecondsOrNull(date, count * 86400.0);
       case "Hour":
-        return plusSeconds(date, count * 3600.0);
+        return plusSecondsOrNull(date, count * 3600.0);
       case "Minute":
-        return plusSeconds(date, count * 60.0);
+        return plusSecondsOrNull(date, count * 60.0);
       case "Second":
-        return plusSeconds(date, count);
+        return plusSecondsOrNull(date, count);
       default:
         return null;
     }
@@ -1252,7 +1151,12 @@ public class DateTimeFunctions {
       if (!arg1.isNumber() || !arg1.isReal()) {
         return F.NIL;
       }
-      LocalDateTime date = plusSeconds(EPOCH_1900, arg1.evalf());
+      LocalDateTime date = plusSecondsOrNull(EPOCH_1900, arg1.evalf());
+      if (date == null) {
+        // a number of seconds so large that it names no representable date; Mathematica leaves
+        // the expression alone rather than reporting it
+        return F.NIL;
+      }
       return instantObject(date, F.CD0, arg1.isInexactNumber());
     }
 
@@ -1282,7 +1186,10 @@ public class DateTimeFunctions {
       IExpr timeZone = spec.dateObject.getTimeZone();
       if (timeZone != S.None && timeZone.isReal()) {
         // the date object is given in a local time zone - convert back to GMT
-        date = plusSeconds(date, -timeZone.evalf() * 3600.0);
+        date = plusSecondsOrNull(date, -timeZone.evalf() * 3600.0);
+        if (date == null) {
+          return F.NIL;
+        }
       }
       return unixTime(date, spec.real);
     }
@@ -1315,7 +1222,10 @@ public class DateTimeFunctions {
         }
       }
       double offsetSeconds = timeZone.isReal() ? timeZone.evalf() * 3600.0 : 0.0;
-      LocalDateTime date = plusSeconds(EPOCH_1970, arg1.evalf() + offsetSeconds);
+      LocalDateTime date = plusSecondsOrNull(EPOCH_1970, arg1.evalf() + offsetSeconds);
+      if (date == null) {
+        return F.NIL;
+      }
       return instantObject(date, timeZone, arg1.isInexactNumber());
     }
 
@@ -1364,11 +1274,24 @@ public class DateTimeFunctions {
         return F.NIL;
       }
       double julianDate = arg1.evalf();
+      if (!Double.isFinite(julianDate)) {
+        return F.NIL;
+      }
       double days = julianDate - JULIAN_DATE_EPOCH_1970;
       long epochDay = (long) Math.floor(days);
       double dayFraction = days - epochDay;
-      LocalDateTime date = LocalDate.ofEpochDay(epochDay).atStartOfDay()
-          .plusNanos(Math.round(dayFraction * NANOS_PER_DAY));
+      LocalDateTime date;
+      try {
+        date = LocalDate.ofEpochDay(epochDay).atStartOfDay()
+            .plusNanos(Math.round(dayFraction * NANOS_PER_DAY));
+      } catch (DateTimeException | ArithmeticException ex) {
+        // A LocalDateTime runs to year +/-999999999 and no further, so a Julian day this large
+        // names no date it can hold. Mathematica answers a DateObject with a year of a few hundred
+        // digits, which would need a date representation of arbitrary precision rather than the
+        // java.time one used throughout here; leaving the expression alone is the honest answer
+        // until there is one.
+        return F.NIL;
+      }
       return instantObject(date, F.CD0, arg1.isInexactNumber());
     }
 
@@ -1444,7 +1367,7 @@ public class DateTimeFunctions {
         return F.NIL;
       }
       String name = ast.arg1().toString();
-      return dateElement(name, dateObject.start(), dateObject, false);
+      return DateObjectExpr.dateElement(name, dateObject.start(), dateObject, false);
     }
 
     @Override
@@ -1489,8 +1412,8 @@ public class DateTimeFunctions {
         if ("Granularity".equals(name)) {
           return F.stringx(timeObject.getGranularity().getName());
         }
-        return dateElement(name, LocalDateTime.of(LocalDate.of(2000, 1, 1), timeObject.toData()),
-            null, false);
+        return DateObjectExpr.dateElement(name,
+            LocalDateTime.of(LocalDate.of(2000, 1, 1), timeObject.toData()), null, false);
       }
       if (ast.isAST0()) {
         return TimeObjectExpr.newInstance(LocalTime.now().truncatedTo(ChronoUnit.SECONDS),
@@ -1638,7 +1561,7 @@ public class DateTimeFunctions {
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {
-          return dateElement(arg1.toString(), LocalDateTime.now(), null, false);
+          return DateObjectExpr.dateElement(arg1.toString(), LocalDateTime.now(), null, false);
         }
         if (arg1.isList()) {
           return arg1.mapThread(ast, 1);
@@ -1668,7 +1591,7 @@ public class DateTimeFunctions {
       if (!element.isString()) {
         return F.NIL;
       }
-      return dateElement(element.toString(), spec.instant, spec.dateObject, false);
+      return DateObjectExpr.dateElement(element.toString(), spec.instant, spec.dateObject, false);
     }
 
     @Override
@@ -1710,7 +1633,7 @@ public class DateTimeFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return weekdaySymbol(LocalDateTime.now().getDayOfWeek());
+        return DateObjectExpr.weekdaySymbol(LocalDateTime.now().getDayOfWeek());
       }
       for (int i = 2; i < ast.size(); i++) {
         if (!ast.get(i).isRuleAST()) {
@@ -1719,7 +1642,7 @@ public class DateTimeFunctions {
         }
       }
       IExpr arg1 = ast.arg1();
-      if (arg1.isString() && toDayOfWeek(arg1) != null) {
+      if (arg1.isString() && DateObjectExpr.toDayOfWeek(arg1) != null) {
         // a weekday name is not a date
         return F.NIL;
       }
@@ -1727,7 +1650,7 @@ public class DateTimeFunctions {
       if (spec == null) {
         return F.NIL;
       }
-      return weekdaySymbol(spec.instant.getDayOfWeek());
+      return DateObjectExpr.weekdaySymbol(spec.instant.getDayOfWeek());
     }
 
     @Override
@@ -1775,7 +1698,7 @@ public class DateTimeFunctions {
       LocalDate start = from.instant.toLocalDate();
       LocalDate end = to.instant.toLocalDate();
       if (ast.argSize() >= 3) {
-        DayOfWeek dayOfWeek = toDayOfWeek(ast.arg3());
+        DayOfWeek dayOfWeek = DateObjectExpr.toDayOfWeek(ast.arg3());
         String dayType = ast.arg3().isString() ? ast.arg3().toString() : null;
         long count = 0;
         LocalDate current = start.plusDays(1);
@@ -1836,7 +1759,7 @@ public class DateTimeFunctions {
    * <code>true</code> if the day specification is one this implementation understands.
    */
   static boolean isDaySpec(IExpr expr) {
-    if (toDayOfWeek(expr) != null) {
+    if (DateObjectExpr.toDayOfWeek(expr) != null) {
       return true;
     }
     if (expr.isString()) {
@@ -1864,7 +1787,7 @@ public class DateTimeFunctions {
       if (spec == null || !isDaySpec(ast.arg2())) {
         return F.NIL;
       }
-      DayOfWeek dayOfWeek = toDayOfWeek(ast.arg2());
+      DayOfWeek dayOfWeek = DateObjectExpr.toDayOfWeek(ast.arg2());
       String dayType = ast.arg2().isString() ? ast.arg2().toString() : null;
       return F.booleSymbol(matchesDayType(spec.instant.toLocalDate(), dayOfWeek, dayType));
     }
@@ -1897,7 +1820,7 @@ public class DateTimeFunctions {
         if (!isDaySpec(ast.arg3())) {
           return F.NIL;
         }
-        DayOfWeek dayOfWeek = toDayOfWeek(ast.arg3());
+        DayOfWeek dayOfWeek = DateObjectExpr.toDayOfWeek(ast.arg3());
         String dayType = ast.arg3().isString() ? ast.arg3().toString() : null;
         int step = count >= 0 ? 1 : -1;
         int remaining = Math.abs(count);
@@ -1946,7 +1869,7 @@ public class DateTimeFunctions {
           if (!isDaySpec(arg2)) {
             return F.NIL;
           }
-          DayOfWeek dayOfWeek = toDayOfWeek(arg2);
+          DayOfWeek dayOfWeek = DateObjectExpr.toDayOfWeek(arg2);
           String dayType = arg2.isString() ? arg2.toString() : null;
           while (!matchesDayType(date, dayOfWeek, dayType)) {
             date = date.plusDays(1);
@@ -1993,7 +1916,7 @@ public class DateTimeFunctions {
         if (!isDaySpec(ast.arg3())) {
           return F.NIL;
         }
-        dayOfWeek = toDayOfWeek(ast.arg3());
+        dayOfWeek = DateObjectExpr.toDayOfWeek(ast.arg3());
         dayType = ast.arg3().isString() ? ast.arg3().toString() : null;
       }
       IASTAppendable result = F.ListAlloc();
@@ -2118,7 +2041,7 @@ public class DateTimeFunctions {
         return F.NIL;
       }
     }
-    DayOfWeek dayOfWeek = toDayOfWeek(specArgument);
+    DayOfWeek dayOfWeek = DateObjectExpr.toDayOfWeek(specArgument);
     if (dayOfWeek != null) {
       LocalDate date = spec.instant.toLocalDate();
       do {
@@ -2141,6 +2064,17 @@ public class DateTimeFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST1()) {
+        // DatePlus[increment] shifts the current instant, so the only argument is the increment
+        // rather than a date, and the answer is a date list because "now" has a time of day. The
+        // one argument form was advertised by expectedArgSize all along but read arg2 regardless.
+        List<Object[]> nowIncrements = toIncrements(arg1);
+        if (nowIncrements == null) {
+          return F.NIL;
+        }
+        LocalDateTime shifted = applyIncrements(LocalDateTime.now(), nowIncrements);
+        return shifted == null ? F.NIL : dateListOf(shifted);
+      }
       DateSpec spec = dateSpec(arg1);
       if (spec == null) {
         return F.NIL;
@@ -2179,8 +2113,13 @@ public class DateTimeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      DateSpec from = dateSpec(ast.arg1());
-      DateSpec to = dateSpec(ast.arg2());
+      // DateDifference[date] measures from the current instant to date, which is why it comes out
+      // negative for a date in the past. dateSpec of the empty list is "now", the same reading
+      // DateList[{}] uses. Like DatePlus this arity was advertised by expectedArgSize all along
+      // and then read arg2 regardless.
+      final boolean fromNow = ast.isAST1();
+      DateSpec from = dateSpec(fromNow ? F.CEmptyList : ast.arg1());
+      DateSpec to = dateSpec(fromNow ? ast.arg1() : ast.arg2());
       if (from == null || to == null) {
         return F.NIL;
       }
@@ -2212,19 +2151,21 @@ public class DateTimeFunctions {
     private static IExpr difference(LocalDateTime from, LocalDateTime to, String unit) {
       switch (unit) {
         case "Day":
-          return exactOrReal(Duration.between(from, to).toNanos(), NANOS_PER_DAY);
+          return exactOrReal(nanosBetween(from, to), NANOS_PER_DAY);
         case "Week":
           // a whole number of weeks is exact, any other difference is a machine number
-          long nanos = Duration.between(from, to).toNanos();
-          long weekNanos = 7 * NANOS_PER_DAY;
-          return nanos % weekNanos == 0 ? F.ZZ(nanos / weekNanos)
-              : F.num(nanos / (double) weekNanos);
+          BigInteger nanos = nanosBetween(from, to);
+          BigInteger weekNanos = BigInteger.valueOf(7 * NANOS_PER_DAY);
+          return nanos.remainder(weekNanos).signum() == 0 ? F.ZZ(nanos.divide(weekNanos))
+              : F.num(new java.math.BigDecimal(nanos)
+                  .divide(new java.math.BigDecimal(weekNanos), java.math.MathContext.DECIMAL64)
+                  .doubleValue());
         case "Hour":
-          return exactOrReal(Duration.between(from, to).toNanos(), 3600_000_000_000L);
+          return exactOrReal(nanosBetween(from, to), 3600_000_000_000L);
         case "Minute":
-          return exactOrReal(Duration.between(from, to).toNanos(), 60_000_000_000L);
+          return exactOrReal(nanosBetween(from, to), 60_000_000_000L);
         case "Second":
-          return exactOrReal(Duration.between(from, to).toNanos(), 1_000_000_000L);
+          return exactOrReal(nanosBetween(from, to), 1_000_000_000L);
         case "Month":
           return monthOrYearDifference(from, to, 1);
         case "Quarter":
@@ -2263,12 +2204,13 @@ public class DateTimeFunctions {
     }
 
     /** An exact rational if the nano difference is a multiple of the unit, otherwise a real. */
-    private static IExpr exactOrReal(long nanos, long nanosPerUnit) {
-      if (nanos % nanosPerUnit == 0) {
-        return F.ZZ(nanos / nanosPerUnit);
+    private static IExpr exactOrReal(BigInteger nanos, long nanosPerUnit) {
+      BigInteger perUnit = BigInteger.valueOf(nanosPerUnit);
+      BigInteger[] quotientAndRemainder = nanos.divideAndRemainder(perUnit);
+      if (quotientAndRemainder[1].signum() == 0) {
+        return F.ZZ(quotientAndRemainder[0]);
       }
-      long gcd = gcd(Math.abs(nanos), nanosPerUnit);
-      return F.QQ(nanos / gcd, nanosPerUnit / gcd);
+      return F.QQ(nanos, perUnit);
     }
 
     private static long gcd(long a, long b) {
@@ -2724,6 +2666,9 @@ public class DateTimeFunctions {
       } else {
         result = granularMean(spans);
       }
+      if (result == null) {
+        return F.NIL;
+      }
       if (granularity == null) {
         return instantObject(result, timeZone == S.None ? F.CD0 : timeZone, true);
       }
@@ -2745,8 +2690,11 @@ public class DateTimeFunctions {
 
     private static LocalDateTime interpolate(LocalDateTime start, LocalDateTime end,
         double fraction) {
-      long nanos = Duration.between(start, end).toNanos();
-      return start.plusNanos(Math.round(nanos * fraction));
+      BigInteger nanos = nanosBetween(start, end);
+      BigInteger scaled =
+          new java.math.BigDecimal(nanos).multiply(java.math.BigDecimal.valueOf(fraction))
+              .setScale(0, java.math.RoundingMode.HALF_UP).toBigIntegerExact();
+      return plusNanos(start, scaled);
     }
 
     /**
@@ -2762,35 +2710,38 @@ public class DateTimeFunctions {
      * </p>
      */
     private static LocalDateTime granularMean(List<LocalDateTime[]> spans) {
-      long unit = Long.MAX_VALUE;
+      // every length and offset here is a count of nanoseconds between two dates, which a long
+      // holds only for spans under about 292 years; anything reaching back to the year zero
+      // overflowed it
+      BigInteger unit = null;
       for (LocalDateTime[] span : spans) {
-        long length = Duration.between(span[0], span[1]).toNanos();
-        if (length > 0 && length < unit) {
+        BigInteger length = nanosBetween(span[0], span[1]);
+        if (length.signum() > 0 && (unit == null || length.compareTo(unit) < 0)) {
           unit = length;
         }
       }
-      if (unit == Long.MAX_VALUE) {
-        unit = 1L;
+      if (unit == null) {
+        unit = BigInteger.ONE;
       }
       // accumulate as an exact mean of nanosecond offsets relative to the first span
       LocalDateTime origin = spans.get(0)[0];
-      java.math.BigInteger weightedSum = java.math.BigInteger.ZERO;
-      java.math.BigInteger totalWeight = java.math.BigInteger.ZERO;
+      BigInteger weightedSum = BigInteger.ZERO;
+      BigInteger totalWeight = BigInteger.ZERO;
       for (LocalDateTime[] span : spans) {
-        long length = Duration.between(span[0], span[1]).toNanos();
-        long weight = Math.max(1L, length / unit);
-        long midpoint = Duration.between(origin, span[0]).toNanos() + length / 2;
-        weightedSum = weightedSum.add(
-            java.math.BigInteger.valueOf(weight).multiply(java.math.BigInteger.valueOf(midpoint)));
-        totalWeight = totalWeight.add(java.math.BigInteger.valueOf(weight));
+        BigInteger length = nanosBetween(span[0], span[1]);
+        BigInteger weight = length.divide(unit).max(BigInteger.ONE);
+        BigInteger midpoint =
+            nanosBetween(origin, span[0]).add(length.divide(BigInteger.valueOf(2L)));
+        weightedSum = weightedSum.add(weight.multiply(midpoint));
+        totalWeight = totalWeight.add(weight);
       }
-      java.math.BigInteger[] division = weightedSum.divideAndRemainder(totalWeight);
-      long offset = division[0].longValue();
+      BigInteger[] division = weightedSum.divideAndRemainder(totalWeight);
+      BigInteger offset = division[0];
       // round the remainder to the nearest nanosecond
       if (division[1].abs().shiftLeft(1).compareTo(totalWeight.abs()) >= 0) {
-        offset += weightedSum.signum() < 0 ? -1 : 1;
+        offset = offset.add(BigInteger.valueOf(weightedSum.signum() < 0 ? -1L : 1L));
       }
-      return origin.plusNanos(offset);
+      return plusNanos(origin, offset);
     }
 
     @Override

@@ -614,6 +614,54 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\frac{1}{3} \\cdot \\frac{1}{2}");
   }
 
+  /**
+   * The operators built from the Mathics3 tables get their LaTeX from
+   * {@code OperatorMarkup} rather than from a line of their own in {@code TeXFormFactory}, so
+   * these check the wiring, not each of the 182 macros.
+   */
+  @Test
+  public void testOperatorTableInfix() {
+    check("TeXForm(Proportional(a,b))", //
+        "a \\propto b");
+    check("TeXForm(Subset(a,b))", //
+        "a \\subset b");
+    check("TeXForm(Precedes(a,b))", //
+        "a \\prec b");
+    // a flat operator keeps collecting arguments
+    check("TeXForm(CirclePlus(a,b,c))", //
+        "a \\oplus b \\oplus c");
+    // Mathics3 records "\\\\" for Backslash, which is a line break in LaTeX; OperatorMarkup
+    // corrects it to the set-minus slash the character means.
+    check("TeXForm(Backslash(a,b))", //
+        "a \\setminus b");
+  }
+
+  @Test
+  public void testOperatorTablePrefix() {
+    check("TeXForm(Del(f))", //
+        "\\nabla f");
+    check("TeXForm(PartialD(x))", //
+        "\\partial x");
+    check("TeXForm(NotExists(x))", //
+        "\\nexists x");
+    // only a one-argument call is a prefix form
+    check("TeXForm(Del(f,g))", //
+        "\\text{Del}(f,g)");
+  }
+
+  @Test
+  public void testOperatorTableParseOnlyHeadsStayFunctions() {
+    // Xnor's only spelling is a private-use character, so it has no operator form in any
+    // output format - see OperatorTable.Row#outputForm.
+    check("TeXForm(Xnor(a,b))", //
+        "\\text{Xnor}(a,b)");
+    // A hand-written converter always wins over the table.
+    check("TeXForm(Conjugate(a))", //
+        "a^*");
+    check("TeXForm(Union(a,b))", //
+        "a \\cup b");
+  }
+
   @Override
   public void setUp() {
     super.setUp();

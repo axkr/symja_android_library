@@ -20,8 +20,8 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.longs.LongOpenHashSet;
 
 /**
  * Functions for the mesh region objects <code>BoundaryMeshRegion</code> and
@@ -1014,7 +1014,7 @@ public class MeshFunctions {
     if (cells.isNIL() || cells.argSize() == 0) {
       return F.NIL;
     }
-    return F.binaryAST2(S.GraphicsComplex, meshCoordinates(meshRegion), cells);
+    return F.GraphicsComplex(meshCoordinates(meshRegion), cells);
   }
 
   private static class BoundaryMeshRegion extends AbstractEvaluator

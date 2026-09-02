@@ -108,6 +108,28 @@ public class Permutations extends AbstractFunctionEvaluator {
         step = range.step();
       }
 
+      // No permutation can be longer than the list, so a bound past n contributes nothing. This
+      // matters because Permutations(list, All) answers Integer.MAX_VALUE here: the loops below
+      // would run through two billion iterations that the i <= n test discards, and at
+      // Integer.MAX_VALUE the increment overflows to negative and the loop never ends at all -
+      // Permutations({1,2}, All) did not return.
+      //
+      // Only the bound the loop walks towards may be lowered. Lowering the one it starts from
+      // would visit lengths that were never asked for: Permutations(x^2, {3}) is empty, because
+      // x^2 has two arguments, and starting at 2 instead answers {x^2, 2^x}.
+      if (step > 0) {
+        if (max > n) {
+          max = n;
+        }
+      } else if (step < 0) {
+        if (min > n) {
+          // down to the largest length at or below n that the stride actually lands on, so that
+          // Permutations(Range(4), {4, 0, -2}) still visits 4, 2 and 0 rather than 3 and 1
+          int stride = -step;
+          min -= ((min - n + stride - 1) / stride) * stride;
+        }
+      }
+
       final IASTAppendable result = F.ListAlloc(100);
 
       if (step > 0) {

@@ -1299,6 +1299,14 @@ public final class NumberTheory {
       if (value.isNumIntValue()) {
         return F.list(F.ZZ((int) Math.rint(doubleValue)));
       }
+      if (Double.isInfinite(doubleValue)) {
+        // an infinity has no continued fraction expansion to give; Mathematica answers {} here.
+        // BigFraction refuses it with "cannot convert infinite value", which used to escape.
+        return F.CEmptyList;
+      }
+      if (Double.isNaN(doubleValue)) {
+        return F.NIL;
+      }
       boolean isNegative = doubleValue < 0;
       if (isNegative) {
         doubleValue = Math.abs(doubleValue);

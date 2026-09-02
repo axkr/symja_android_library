@@ -639,7 +639,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       int last = span[1];
       int step = span[2];
       return spanPart(ast, pos, arg1, arg2, start, last, step, p1, engine);
-    } else if (arg2.equals(S.All)) {
+    } else if (arg2 == S.All) {
       return spanPart(ast, pos, arg1, arg2, 1, arg1.argSize(), 1, p1, engine);
     } else if (arg2.isReal()) {
       final int indx = ast.get(pos).toIntDefault();
@@ -743,6 +743,12 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     } else if (arg2.isList()) {
       IExpr temp = null;
       final IAST list = (IAST) arg2;
+      if (arg1.isDataset() && p1 >= ast.size()) {
+        IExpr dataset = datasetPart(arg1, list, engine);
+        if (dataset.isPresent()) {
+          return dataset;
+        }
+      }
       final IASTAppendable result = F.ast(arg1.head(), list.size());
 
       for (int i = 1; i < list.size(); i++) {
@@ -785,6 +791,49 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
     // The expression `1` cannot be used as a part specification.
     return Errors.printMessage(S.Part, "pkspec1", F.list(arg2), engine);
+  }
+
+  /**
+   * <code>dataset[[{i, j, ...}]]</code>.
+   *
+   * <p>
+   * The generic path below builds <code>head(items...)</code> from the head of the expression being
+   * indexed, which is right for <code>f(a, b, c)[[{1, 3}]]</code> and wrong for a
+   * <code>Dataset</code>: it produced <code>Dataset(row, row)</code> - the <code>Dataset</code>
+   * head applied to two one-row datasets - and, for an empty specification, a
+   * <code>Dataset()</code> that then complained about being called with no arguments.
+   *
+   * <p>
+   * A dataset knows how it is indexed, and it is not indexed uniformly: several rows select rows,
+   * but a dataset of one row selects columns. So the whole selection is handed to
+   * {@link IAST#getItems(int[], int, int)}, which is where that knowledge lives.
+   *
+   * @return the selection, or {@link F#NIL} when this is not a plain list of positions and the
+   *         generic path should have it after all
+   */
+  private static IExpr datasetPart(final IAST arg1, final IAST list, EvalEngine engine) {
+    final int argSize = arg1.argSize();
+    int[] positions = new int[list.argSize()];
+    for (int i = 1; i < list.size(); i++) {
+      IExpr listArg = list.get(i);
+      if (!listArg.isReal()) {
+        return F.NIL;
+      }
+      int index = listArg.toIntDefault();
+      if (F.isNotPresent(index)) {
+        return F.NIL;
+      }
+      if (index < 0) {
+        // counted from the end, as everywhere else in Part
+        index = argSize + index + 1;
+      }
+      if (index < 1 || index > argSize) {
+        // Part `1` of `2` does not exist.
+        return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
+      }
+      positions[i - 1] = index;
+    }
+    return arg1.getItems(positions, positions.length, 0);
   }
 
   private static IExpr spanPart(final IAST ast, int pos, final IAST arg1, final IExpr arg2,
@@ -867,7 +916,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
   public static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos,
       EvalEngine engine) {
-    if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x.equals(S.All), 2)) {
+    if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x == S.All, 2)) {
       return arg1.getPart(ast, pos);
     }
     // TODO implement more combinations for SparseArray

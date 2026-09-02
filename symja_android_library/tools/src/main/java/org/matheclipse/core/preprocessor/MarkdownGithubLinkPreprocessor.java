@@ -132,6 +132,11 @@ public class MarkdownGithubLinkPreprocessor {
   /** Add a github link to the implementation of a Symja function. */
   public static void main(final String[] args) {
     F.initSymja();
+    // Documentation.functionURL(..) only returns a link when the evaluator is actually installed,
+    // so the out-of-core modules have to be initialized too. Without this every function
+    // implemented in matheclipse-io, -chem, -bio, -astro, -graphtheory or -compile is skipped and
+    // keeps whatever (by now stale) link its *.md file already carries.
+    org.matheclipse.io.IOInit.init();
 
     System.out.println("Append Github link to the Symja functions markdown file.");
 

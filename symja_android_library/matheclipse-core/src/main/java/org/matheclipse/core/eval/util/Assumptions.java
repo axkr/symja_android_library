@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.IDistribution;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class Assumptions extends AbstractAssumptions {
   private static class ComplexRelations {
@@ -1026,7 +1026,7 @@ public class Assumptions extends AbstractAssumptions {
   }
 
   @Override
-  public IntArrayList reduceRange(IExpr x, final int[] xRange) {
+  public int[] reduceRange(IExpr x, final int[] xRange) {
     IExpr temp = elementsMap.get(x);
     if (temp != null) {
       return null;
@@ -1061,7 +1061,7 @@ public class Assumptions extends AbstractAssumptions {
       if (iList.isEmpty()) {
         return null;
       }
-      return iList;
+      return iList.toIntArray();
     }
     return null;
   }

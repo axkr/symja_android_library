@@ -436,7 +436,7 @@ public final class Plot3DTools {
    * every 3D surface came out orange while the equivalent 2D curve came out blue.
    */
   public static IExpr surfaceStyle(int index, IExpr plotStyle) {
-    return F.binaryAST2(S.Directive, SURFACE_SPECULARITY, surfaceColor(index, plotStyle));
+    return F.Directive(SURFACE_SPECULARITY, surfaceColor(index, plotStyle));
   }
 
   /** The colour of surface number {@code index}, without the highlight that goes with it. */
@@ -498,12 +498,12 @@ public final class Plot3DTools {
   public static IExpr chartFaceStyle(int index, IExpr plotStyle) {
     IExpr base = chartStyle(index, plotStyle);
     if (!base.isAST(S.RGBColor, 4)) {
-      return F.binaryAST2(S.Directive, base, F.Opacity(F.num(CHART_FACE_OPACITY)));
+      return F.Directive(base, F.Opacity(F.num(CHART_FACE_OPACITY)));
     }
     IAST color = (IAST) base;
     IAST lightened = F.RGBColor(lighten(color.arg1().evalfNaN()), lighten(color.arg2().evalfNaN()),
         lighten(color.arg3().evalfNaN()));
-    return F.binaryAST2(S.Directive, lightened, F.Opacity(F.num(CHART_FACE_OPACITY)));
+    return F.Directive(lightened, F.Opacity(F.num(CHART_FACE_OPACITY)));
   }
 
   private static double lighten(double channel) {
@@ -899,7 +899,7 @@ public final class Plot3DTools {
       if (arg.isRuleAST() && ((IAST) arg).arg1() == S.PlotLegends) {
         IExpr legends = ((IAST) arg).arg2();
         if (!legends.isNone()) {
-          return F.binaryAST2(S.Legended, graphic, legends);
+          return F.Legended(graphic, legends);
         }
       }
     }

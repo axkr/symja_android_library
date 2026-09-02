@@ -1343,9 +1343,9 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
    * Helper to evaluate Booleans back into integer bounds (1 and 0).
    */
   private IExpr fromBoolean(IExpr expr, EvalEngine engine) {
-    if (expr.equals(F.True))
+    if (expr == S.True)
       return F.C1;
-    if (expr.equals(F.False))
+    if (expr == S.False)
       return F.C0;
     if (expr.isInteger())
       return expr;

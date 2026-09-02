@@ -52,7 +52,7 @@ public class IntRangeSpec {
     int max = Integer.MAX_VALUE;
     int step = 1;
 
-    if (specification.equals(S.All) || specification.isInfinity()) {
+    if (specification == S.All || specification.isInfinity()) {
       // all from 0 to Integer.MAX_VALUE
     } else if (specification.isInteger()) {
       max = specification.toIntDefault(-1);
@@ -78,7 +78,7 @@ public class IntRangeSpec {
       step = parsedStep;
 
       IExpr arg2 = list.second();
-      if (arg2.isInfinity() || arg2.equals(S.All)) {
+      if (arg2.isInfinity() || arg2 == S.All) {
         max = step > 0 ? Integer.MAX_VALUE : 0;
       } else {
         max = arg2.toIntDefault(-1);

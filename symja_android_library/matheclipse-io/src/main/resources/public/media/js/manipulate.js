@@ -22,6 +22,11 @@ function createManipulate(spec) {
 		controls: spec.controls || [],
 		options: spec.options || {},
 		bindings: {},
+		// the controls the body itself drew, as the server last described them, and the live
+		// widgets built for them - kept by position so a re-rendered body can hand a control
+		// that is still under the pointer back to the user rather than a fresh one
+		bodyControls: spec.bodyControls || [],
+		bodyWidgets: {},
 		// generation counters: a burst of moves is coalesced into a single evaluation
 		pending: 0,
 		applied: 0,
@@ -61,6 +66,10 @@ function createManipulate(spec) {
 
 	if (spec.enabled)
 		applyManipulateEnabled(widget, spec.enabled);
+	if (spec.visible)
+		applyManipulateVisible(widget, spec.visible);
+	if (spec.displays)
+		applyManipulateDisplays(widget, spec.displays);
 
 	showManipulateBody(widget, spec.body);
 
@@ -75,8 +84,12 @@ function createManipulate(spec) {
 function buildManipulateControls(widget) {
 	widget.controls.each(function(control, index) {
 		var row = buildManipulateRow(widget, control, index);
-		if (row)
+		if (row) {
+			// every kind of row remembers its element, not only the ones with a widget in them:
+			// a PaneSelector hides whole rows, headings and separators along with the controls
+			control.row = row;
 			widget.panel.appendChild(row);
+		}
 	});
 }
 
@@ -85,6 +98,13 @@ function buildManipulateRow(widget, control, index) {
 		return $E('div', {'class': 'manipulatedelimiter'});
 	if (control.kind == 'heading')
 		return $E('div', {'class': 'manipulateheading'}, $T(control.label));
+	if (control.kind == 'display') {
+		// the server sends this row's rendering with every frame; the element is only the
+		// place it goes
+		var display = $E('div', {'class': 'manipulatedisplay'});
+		control.displayElement = display;
+		return display;
+	}
 	if (control.kind == 'button') {
 		var button = $E('input', {'type': 'button', 'class': 'manipulatebutton',
 			'value': control.label});
@@ -115,6 +135,8 @@ function buildManipulateWidget(widget, control) {
 		return buildDiscrete(widget, control);
 	case 'checkbox':
 		return buildCheckbox(widget, control);
+	case 'multi':
+		return buildMulti(widget, control);
 	case 'interval':
 		return buildInterval(widget, control);
 	case 'slider2d':
@@ -125,6 +147,8 @@ function buildManipulateWidget(widget, control) {
 		return buildColor(widget, control);
 	case 'inputfield':
 		return buildInputField(widget, control);
+	case 'file':
+		return buildFileNameSetter(widget, control);
 	}
 	return null;
 }
@@ -145,11 +169,11 @@ function buildSlider(widget, control) {
 		readout.setText(formatManipulateNumber(value));
 		// ContinuousAction -> False waits for the mouse button to come up again
 		if (widget.options.continuousAction)
-			requestManipulate(widget, control.name);
+			manipulateChanged(widget, control);
 	});
 	input.observe('change', function() {
 		widget.bindings[control.name] = parseFloat(input.value);
-		requestManipulate(widget, control.name);
+		manipulateChanged(widget, control);
 	});
 
 	box.appendChild(input);
@@ -196,7 +220,7 @@ function buildDiscrete(widget, control) {
 					other.setClassName('selected', i == index);
 				});
 				control.value = index;
-				requestManipulate(widget, control.name);
+				manipulateChanged(widget, control);
 			});
 			buttons.push(button);
 			box.appendChild(button);
@@ -212,7 +236,7 @@ function buildDiscrete(widget, control) {
 		select.observe('change', function() {
 			widget.bindings[control.name] = select.selectedIndex;
 			control.value = select.selectedIndex;
-			requestManipulate(widget, control.name);
+			manipulateChanged(widget, control);
 		});
 		control.input = select;
 		box.appendChild(select);
@@ -226,7 +250,7 @@ function buildCheckbox(widget, control) {
 	input.checked = control.value ? true : false;
 	input.observe('change', function() {
 		widget.bindings[control.name] = input.checked;
-		requestManipulate(widget, control.name);
+		manipulateChanged(widget, control);
 	});
 	control.input = input;
 	box.appendChild(input);
@@ -256,10 +280,18 @@ function buildInterval(widget, control) {
 		}
 		widget.bindings[control.name] = [a, b];
 		readout.setText(formatManipulateNumber(a) + ' .. ' + formatManipulateNumber(b));
-		requestManipulate(widget, control.name);
+		manipulateChanged(widget, control);
 	}
 	low.observe('input', update);
 	high.observe('input', update);
+
+	// how a value the server sends back is put into this control (see setManipulateControlValue)
+	control.apply = function(value) {
+		low.value = value[0];
+		high.value = value[1];
+		readout.setText(formatManipulateNumber(value[0]) + ' .. '
+			+ formatManipulateNumber(value[1]));
+	};
 
 	box.appendChild(low);
 	box.appendChild(high);
@@ -295,7 +327,7 @@ function buildSlider2D(widget, control) {
 			control.minY + (1 - fy) * (control.maxY - control.minY)
 		];
 		place();
-		requestManipulate(widget, control.name);
+		manipulateChanged(widget, control);
 	}
 
 	var dragging = false;
@@ -312,6 +344,8 @@ function buildSlider2D(widget, control) {
 		dragging = false;
 	});
 
+	control.apply = place;
+
 	box.appendChild(pad);
 	box.appendChild(readout);
 	place();
@@ -322,6 +356,7 @@ function buildSlider2D(widget, control) {
 function buildLocator(widget, control) {
 	var box = $E('span', {'class': 'manipulatecontrol manipulatelocator'});
 	var points = widget.bindings[control.name] || [];
+	var rows = [];
 	points.each(function(point, index) {
 		var x = $E('input', {'type': 'range', 'class': 'manipulateslider',
 			'min': control.min, 'max': control.max, 'step': (control.max - control.min) / 100});
@@ -339,12 +374,27 @@ function buildLocator(widget, control) {
 			widget.bindings[control.name][index] = [px, py];
 			readout.setText('{' + formatManipulateNumber(px) + ', '
 				+ formatManipulateNumber(py) + '}');
-			requestManipulate(widget, control.name);
+			manipulateChanged(widget, control);
 		}
 		x.observe('input', update);
 		y.observe('input', update);
+		rows.push({x: x, y: y, readout: readout});
 		box.appendChild($E('span', {'class': 'manipulatepoint'}, x, y, readout));
 	});
+
+	// a locator's position is regularly not the one that was sent - a setter may round or clamp
+	// it, and a pane keeps its points inside the picture - so the sliders follow the answer
+	control.apply = function(value) {
+		rows.each(function(row, index) {
+			var point = value[index];
+			if (!point)
+				return;
+			row.x.value = point[0];
+			row.y.value = point[1];
+			row.readout.setText('{' + formatManipulateNumber(point[0]) + ', '
+				+ formatManipulateNumber(point[1]) + '}');
+		});
+	};
 	return box;
 }
 
@@ -355,7 +405,7 @@ function buildColor(widget, control) {
 	widget.bindings[control.name] = input.value;
 	input.observe('change', function() {
 		widget.bindings[control.name] = input.value;
-		requestManipulate(widget, control.name);
+		manipulateChanged(widget, control);
 	});
 	control.input = input;
 	box.appendChild(input);
@@ -368,11 +418,149 @@ function buildInputField(widget, control) {
 	input.value = control.value == null ? '' : control.value;
 	input.observe('change', function() {
 		widget.bindings[control.name] = input.value;
-		requestManipulate(widget, control.name);
+		manipulateChanged(widget, control);
 	});
 	control.input = input;
 	box.appendChild(input);
 	return box;
+}
+
+/**
+ * FileNameSetter[Dynamic[f]]: a Browse button whose value is a file name.
+ *
+ * On a local kernel that name is a path on the machine the kernel runs on. Here it cannot be: the
+ * kernel is at the other end of an HTTP connection and reads inside a directory of its own, so the
+ * file is carried across first - the same POST /ajax/upload/ the toolbar button uses - and the
+ * value handed to the variable is the name it was stored under. Import(f) then means the same
+ * thing it would mean locally.
+ */
+function buildFileNameSetter(widget, control) {
+	var box = $E('span', {'class': 'manipulatecontrol'});
+	var dialog = control.dialog || 'Open';
+	var button = $E('input', {'type': 'button', 'class': 'manipulatesetter',
+		'value': dialog == 'Directory' ? 'Choose folder\u2026' : 'Browse\u2026'});
+	var readout = $E('span', {'class': 'manipulatevalue'},
+		$T(control.value == null ? '' : control.value));
+	var input = $E('input', {'type': 'file', 'style': 'display: none'});
+	if (dialog == 'OpenList')
+		input.multiple = true;
+
+	control.input = input;
+	control.readout = readout;
+
+	// a Save or Directory dialog has nothing to upload - a browser cannot offer either - so the
+	// button asks for a name instead and the value is whatever the user types
+	function askForName() {
+		var name = window.prompt(dialog == 'Directory' ?
+			"Folder name inside this session's directory:" :
+			"File name to write inside this session's directory:", control.value || '');
+		if (name == null)
+			return;
+		widget.bindings[control.name] = name;
+		readout.setText(name);
+		manipulateChanged(widget, control);
+	}
+
+	function uploadChosen() {
+		var files = input.files;
+		if (!files || files.length == 0)
+			return;
+		var names = [];
+		var pending = files.length;
+		readout.setText("uploading\u2026");
+		$A(files).each(function(file) {
+			var form = new FormData();
+			form.append('file', file);
+			var request = new XMLHttpRequest();
+			request.open('POST', '/ajax/upload/');
+			request.onload = function() {
+				var result;
+				try {
+					result = JSON.parse(request.responseText);
+				} catch (e) {
+					result = {'error': request.responseText};
+				}
+				if (result.error) {
+					readout.setText(result.error);
+				} else {
+					names.push(result.name);
+				}
+				if (--pending == 0)
+					uploadsDone(names);
+			};
+			request.onerror = function() {
+				readout.setText("upload failed");
+				if (--pending == 0)
+					uploadsDone(names);
+			};
+			request.send(form);
+		});
+	}
+
+	function uploadsDone(names) {
+		if (names.length == 0)
+			return;
+		// the variable holds one name, or the list of them for OpenList - the same shape the
+		// server writes back through ManipulateSession.valueOf
+		var value = dialog == 'OpenList' ? names.join(',') : names[0];
+		widget.bindings[control.name] = value;
+		readout.setText(value);
+		manipulateChanged(widget, control);
+	}
+
+	input.observe('change', uploadChosen);
+	button.observe('click', function() {
+		if (dialog == 'Save' || dialog == 'Directory') {
+			askForName();
+			return;
+		}
+		// so that picking the same file twice in a row fires the change event again
+		input.value = '';
+		input.click();
+	});
+
+	box.appendChild(button);
+	box.appendChild(readout);
+	box.appendChild(input);
+	return box;
+}
+
+/**
+ * A row of independent switches, for TogglerBar and CheckboxBar. Unlike the single choice of a
+ * setter bar, the value here is the list of positions that are on, so clicking one adds or
+ * removes it and leaves the rest alone.
+ */
+function buildMulti(widget, control) {
+	var box = $E('span', {'class': 'manipulatecontrol'});
+	var labels = control.labels || [];
+	var buttons = [];
+	labels.each(function(text, index) {
+		var button = $E('input', {'type': 'button', 'class': 'manipulatesetter', 'value': text});
+		button.observe('click', function() {
+			var chosen = (widget.bindings[control.name] || []).slice();
+			var at = chosen.indexOf(index);
+			if (at >= 0)
+				chosen.splice(at, 1);
+			else
+				chosen.push(index);
+			widget.bindings[control.name] = chosen;
+			control.value = chosen;
+			refreshMultiButtons(control);
+			manipulateChanged(widget, control);
+		});
+		buttons.push(button);
+		box.appendChild(button);
+	});
+	control.buttons = buttons;
+	refreshMultiButtons(control);
+	return box;
+}
+
+function refreshMultiButtons(control) {
+	var chosen = control.value || [];
+	(control.buttons || []).each(function(button, index) {
+		button.setClassName('selected', chosen.indexOf(index) >= 0);
+	});
 }
 
 function formatManipulateNumber(value) {
@@ -384,6 +572,39 @@ function formatManipulateNumber(value) {
 }
 
 // ---------------------------------------------------------------- evaluation
+
+/**
+ * A control the user moved, whichever kind it is.
+ *
+ * <p>A control of the panel changes one of the widget's own variables, so the whole binding set
+ * goes back and the body is rendered again. A control the body itself drew was written
+ * <code>Slider[Dynamic[x]]</code> and points wherever <code>x</code> is - which may be a variable
+ * of this widget, and may just as well be a symbol of the session - so it sends its position and
+ * its value instead, and the server decides where the write lands.
+ */
+function manipulateChanged(widget, control) {
+	if (control.dynamicIndex != null)
+		requestDynamic(widget, control);
+	else if (control.bodyIndex != null)
+		requestBodyControl(widget, control);
+	else
+		requestManipulate(widget, control.name);
+}
+
+/**
+ * The controls that are actually on screen. A Manipulate builds its panel once and keeps the
+ * live objects in its control list; a live Dynamic cell rebuilds its rendering on every change
+ * and keeps them by position instead, because the list the server sends is only a description.
+ */
+function manipulateLiveControls(widget) {
+	if (!widget.widgets)
+		return widget.controls;
+	var live = [];
+	$H(widget.widgets).each(function(pair) {
+		live.push(pair.value);
+	});
+	return live;
+}
 
 /**
  * Note a control change and re-evaluate, at most one request at a time. Evaluating on every
@@ -412,7 +633,23 @@ function manipulateIsTracked(widget, name) {
 	return tracked.indexOf(name) >= 0;
 }
 
-function postManipulate(widget, buttonIndex, bodyButtonIndex) {
+/**
+ * The same coalescing for a control the body drew. Only the newest position of the control is
+ * worth sending, so a burst of moves collapses into one write the way a panel control's does.
+ */
+function requestBodyControl(widget, control) {
+	widget.pending++;
+	if (widget.scheduled || widget.inflight)
+		return;
+	widget.scheduled = true;
+	window.setTimeout(function() {
+		widget.scheduled = false;
+		if (widget.applied != widget.pending)
+			postManipulate(widget, -1, -1, control);
+	}, MANIPULATE_DEBOUNCE);
+}
+
+function postManipulate(widget, buttonIndex, bodyButtonIndex, bodyControl) {
 	widget.inflight = true;
 	widget.applied = widget.pending;
 	var parameters = {
@@ -423,6 +660,10 @@ function postManipulate(widget, buttonIndex, bodyButtonIndex) {
 		parameters.button = buttonIndex;
 	if (bodyButtonIndex != null && bodyButtonIndex >= 0)
 		parameters.bodyButton = bodyButtonIndex;
+	if (bodyControl != null) {
+		parameters.bodyControl = bodyControl.bodyIndex;
+		parameters.bodyValue = Object.toJSON(widget.bindings[bodyControl.name]);
+	}
 
 	new Ajax.Request('/ajax/manipulate/', {
 		method: 'post',
@@ -439,6 +680,11 @@ function postManipulate(widget, buttonIndex, bodyButtonIndex) {
 				applyManipulateBindings(widget, response.bindings);
 			if (response.enabled)
 				applyManipulateEnabled(widget, response.enabled);
+			if (response.visible)
+				applyManipulateVisible(widget, response.visible);
+			if (response.displays)
+				applyManipulateDisplays(widget, response.displays);
+			widget.bodyControls = response.bodyControls || [];
 			showManipulateResponse(widget, response);
 			widget.inflight = false;
 			// a change that arrived while this request was on its way
@@ -456,25 +702,61 @@ function applyManipulateBindings(widget, bindings) {
 	widget.controls.each(function(control) {
 		if (!control.name || bindings[control.name] === undefined)
 			return;
-		var value = bindings[control.name];
-		widget.bindings[control.name] = value;
-		control.value = value;
-		if (control.kind == 'slider' || control.kind == 'trigger') {
-			if (control.input)
-				control.input.value = value;
-			if (control.readout)
-				control.readout.setText(formatManipulateNumber(value));
-		} else if (control.kind == 'checkbox' && control.input) {
-			control.input.checked = value ? true : false;
-		} else if (control.kind == 'discrete') {
-			if (control.input)
-				control.input.selectedIndex = value;
-			if (control.buttons)
-				control.buttons.each(function(button, i) {
-					button.setClassName('selected', i == value);
-				});
-		}
+		setManipulateControlValue(widget, control, bindings[control.name]);
 	});
+}
+
+/**
+ * Put a value into a control that is already on screen, without rebuilding it.
+ *
+ * <p>The value the server answers with is the one that was actually stored, which need not be
+ * the one that was sent: a Dynamic with a setter may clamp it, round it or refuse it. Moving the
+ * widget to it is what keeps the control showing the truth rather than drifting away from it.
+ */
+function setManipulateControlValue(widget, control, value) {
+	if (value === undefined)
+		return;
+	widget.bindings[control.name] = value;
+	control.value = value;
+	// the controls whose widget is more than one element keep a closure that writes into it
+	if (control.apply) {
+		control.apply(value);
+		return;
+	}
+	switch (control.kind) {
+	case 'slider':
+	case 'trigger':
+		if (control.input)
+			control.input.value = value;
+		if (control.readout)
+			control.readout.setText(formatManipulateNumber(value));
+		return;
+	case 'checkbox':
+		if (control.input)
+			control.input.checked = value ? true : false;
+		return;
+	case 'discrete':
+		if (control.input)
+			control.input.selectedIndex = value;
+		if (control.buttons)
+			control.buttons.each(function(button, i) {
+				button.setClassName('selected', i == value);
+			});
+		return;
+	case 'multi':
+		refreshMultiButtons(control);
+		return;
+	case 'color':
+	case 'inputfield':
+		if (control.input)
+			control.input.value = value == null ? '' : value;
+		return;
+	case 'file':
+		// the file input itself cannot be written to, so only the read-out follows the value
+		if (control.readout)
+			control.readout.setText(value == null ? '' : value);
+		return;
+	}
 }
 
 /**
@@ -494,6 +776,55 @@ function applyManipulateEnabled(widget, flags) {
 			control.widgetElement.select('input, select, button').each(function(input) {
 				input.disabled = !on;
 			});
+	});
+}
+
+/**
+ * Show the rows of the PaneSelector pane the selector is on and hide the rest.
+ *
+ * The hidden rows stay in the panel rather than being removed: their variables are still bound,
+ * so the body can go on using them, and the panel does not have to be rebuilt every time the
+ * selector moves.
+ */
+function applyManipulateVisible(widget, flags) {
+	widget.controls.each(function(control, index) {
+		var on = flags[index] !== false;
+		if (control.visible === on)
+			return;
+		control.visible = on;
+		var row = control.row || control.displayElement;
+		if (!row)
+			return;
+		if (on)
+			row.show();
+		else
+			row.hide();
+	});
+}
+
+/**
+ * Put the fresh rendering of every read-out row on screen. These are the rows written with a
+ * Dynamic - Manipulate[..., Row[{"moves: ", Dynamic[moves]}]] - and they follow the frame the
+ * same way the body does, through the very same renderer.
+ */
+function applyManipulateDisplays(widget, displays) {
+	$H(displays).each(function(pair) {
+		var control = widget.controls[parseInt(pair.key, 10)];
+		if (!control || !control.displayElement)
+			return;
+		var rendering = pair.value;
+		if (rendering == null || !rendering.results)
+			return;
+		var replacement = $E('div', {'class': 'manipulatedisplay'});
+		rendering.results.each(function(result) {
+			if (result.result != null && result.result !== '')
+				replacement.appendChild(createLine(result.result, result.format));
+		});
+		if (control.visible === false)
+			replacement.hide();
+		control.displayElement.replace(replacement);
+		control.displayElement = replacement;
+		control.row = replacement;
 	});
 }
 
@@ -528,6 +859,54 @@ function showManipulateBody(widget, body) {
 	widget.dom.replaceChild(replacement, widget.output);
 	widget.output = replacement;
 	wireManipulateBodyButtons(widget);
+	wireManipulateBodyControls(widget);
+}
+
+/**
+ * Put the controls the body drew - Slider[Dynamic[x]] and its relatives - into the rendering.
+ *
+ * <p>The rendering only marks where each one goes; the widget itself is built here, from the
+ * description the server sent, by exactly the same builders the control panel uses.
+ *
+ * <p>A control that was already on screen is moved into the new rendering rather than rebuilt.
+ * The body is re-rendered on every frame, and a slider that was replaced under the pointer would
+ * lose the drag that is moving it - so the element survives the frame and only its value is
+ * brought up to date.
+ */
+function wireManipulateBodyControls(widget) {
+	var descriptors = widget.bodyControls || [];
+	widget.output.select('span.symjacontrol').each(function(span) {
+		var index = parseInt(span.readAttribute('data-control'), 10);
+		var descriptor = descriptors[index];
+		if (descriptor == null)
+			return;
+		var control = widget.bodyWidgets[index];
+		if (control && manipulateSameShape(control, descriptor)) {
+			setManipulateControlValue(widget, control, descriptor.value);
+		} else {
+			control = Object.clone(descriptor);
+			control.bodyIndex = index;
+			widget.bindings[control.name] = control.value;
+			control.element = buildManipulateWidget(widget, control);
+			widget.bodyWidgets[index] = control;
+		}
+		if (control.element) {
+			span.appendChild(control.element);
+			if (control.readOnly)
+				control.element.select('input, select, button').each(function(input) {
+					input.disabled = true;
+				});
+		}
+	});
+}
+
+/** Whether a control already on screen is still the one the server is describing. */
+function manipulateSameShape(control, descriptor) {
+	if (control.kind != descriptor.kind)
+		return false;
+	var was = control.labels ? control.labels.length : 0;
+	var now = descriptor.labels ? descriptor.labels.length : 0;
+	return was == now && control.min === descriptor.min && control.max === descriptor.max;
 }
 
 /**
@@ -604,7 +983,7 @@ function stopManipulateAnimation(widget) {
 function manipulateAnimationControl(widget) {
 	var name = widget.options.animationVariable;
 	var found = null;
-	widget.controls.each(function(control) {
+	manipulateLiveControls(widget).each(function(control) {
 		if (found)
 			return;
 		if (control.kind != 'slider' && control.kind != 'trigger')
@@ -628,11 +1007,11 @@ function advanceManipulateAnimation(widget, control) {
 		control.input.value = value;
 	if (control.readout)
 		control.readout.setText(formatManipulateNumber(value));
-	requestManipulate(widget, control.name);
+	manipulateChanged(widget, control);
 }
 
 function refreshManipulatePlayButtons(widget) {
-	widget.controls.each(function(control) {
+	manipulateLiveControls(widget).each(function(control) {
 		if (!control.playButton)
 			return;
 		var icon = control.playButton.select('i')[0];

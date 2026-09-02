@@ -1153,6 +1153,97 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
+  public void testSqrtOfSquareIsAbs() {
+    // Sqrt(f^2) is Abs(f), not f. The series expansion flattens (f^2)^(1/2) to f^(2*1/2), which
+    // silently picks the positive branch - these all used to come out as 1.
+    check("Limit(Sqrt(x^2)/x, x->0)", //
+        "Indeterminate");
+    check("Limit(Sqrt(x^2)/x, x->0, Direction->1)", //
+        "-1");
+    check("Limit(Sqrt(x^2)/x, x->0, Direction->-1)", //
+        "1");
+    check("Limit(Sqrt(Sin(x)^2)/Sin(x), x->0)", //
+        "Indeterminate");
+    check("Limit(Sqrt(Sin(x)^2)/Sin(x), x->0, Direction->1)", //
+        "-1");
+    check("Limit(Sqrt(Sin(x)^2)/Sin(x), x->0, Direction->-1)", //
+        "1");
+    // the two sided limit of |Sin(x)|*Cot(x) does not exist, the one sided ones are -/+1
+    check("Limit(Cot(x)*Sqrt(Sin(x)^2), x->0)", //
+        "Indeterminate");
+    check("Limit(-Cot(x)*Sqrt(Sin(x)^2), x->0, Direction->-1)", //
+        "-1");
+    check("Limit(-Cot(x)*Sqrt(Sin(x)^2), x->Pi, Direction->1)", //
+        "1");
+
+    // the answers agree with the Abs form, which was always right
+    check("Limit(Abs(x)/x, x->0)", //
+        "Indeterminate");
+    check("Limit(Abs(x)/x, x->0, Direction->1)", //
+        "-1");
+    check("Limit(Abs(x)/x, x->0, Direction->-1)", //
+        "1");
+
+    // a radical which does not change sign at the limit point keeps its value
+    check("Limit(Sqrt((x+5)^2)/(x+5), x->2)", //
+        "1");
+    check("Limit(Sqrt(x^2)/x, x->Infinity)", //
+        "1");
+    check("Limit(Sqrt(x^2)/x, x->-Infinity)", //
+        "-1");
+  }
+
+  @Test
+  public void testAbsBranchAtNonZeroPoint() {
+    // the Abs rewrite is no longer restricted to Abs(x) at the point zero
+    check("Limit(Abs(x-2)/(x-2), x->2, Direction->1)", //
+        "-1");
+    check("Limit(Abs(x-2)/(x-2), x->2, Direction->-1)", //
+        "1");
+    check("Limit(Abs(x-2)/(x-2), x->2)", //
+        "Indeterminate");
+    check("Limit(Abs(x^2-4)/(x-2), x->2, Direction->1)", //
+        "-4");
+    check("Limit(Abs(x^2-4)/(x-2), x->2, Direction->-1)", //
+        "4");
+    check("Limit(Abs(Sin(x))/x, x->0, Direction->1)", //
+        "-1");
+    check("Limit(Abs(Sin(x))/x, x->0, Direction->-1)", //
+        "1");
+    // an Abs whose argument keeps its sign at the point is not in the way
+    check("Limit(Abs(x+5)/(x+5), x->2)", //
+        "1");
+  }
+
+  @Test
+  public void testRealAbsBranchMatchesAbs() {
+    // RealAbs is the real valued twin of Abs which substAbs() and the derivative of Abs produce.
+    // It has to answer exactly like Abs: the one sided rewrite has to reach it, and the two sided
+    // limit has to keep the kink. Its derivative rule x/RealAbs(x) makes the Taylor expansion of
+    // RealAbs(x) start with x, so RealAbs(x)/x used to come out as 1 both sided and Indeterminate
+    // one sided - the opposite of the truth on both counts.
+    check("Limit(RealAbs(x)/x, x->0)", //
+        "Indeterminate");
+    check("Limit(RealAbs(x)/x, x->0, Direction->1)", //
+        "-1");
+    check("Limit(RealAbs(x)/x, x->0, Direction->-1)", //
+        "1");
+    check("Limit(RealAbs(Sin(x))/Sin(x), x->0)", //
+        "Indeterminate");
+    check("Limit(RealAbs(Sin(x))/x, x->0, Direction->1)", //
+        "-1");
+    check("Limit(RealAbs(x-2)/(x-2), x->2, Direction->1)", //
+        "-1");
+    check("Limit(RealAbs(x-2)/(x-2), x->2, Direction->-1)", //
+        "1");
+    check("Limit(RealAbs(x-2)/(x-2), x->2)", //
+        "Indeterminate");
+    // RealAbs itself is continuous at the kink
+    check("Limit(RealAbs(x), x->0)", //
+        "0");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
