@@ -312,7 +312,7 @@
 			<dependency>
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
-				<version>1.23.1</version>
+				<version>1.23.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.logicng</groupId>
@@ -488,7 +488,7 @@
 			<dependency>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-annotations</artifactId>
-				<version>4.10.3</version>
+				<version>4.10.4</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
