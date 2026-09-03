@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -84,8 +85,11 @@ public class ReliefImage extends AbstractFunctionOptionEvaluator {
     double[] light = lightingAngle(options[OPTION_LIGHTING_ANGLE], engine);
     boolean aspectBased = ASPECT_BASED_SHADING.equals(methodName(options[OPTION_METHOD]));
     boolean scaleColors = !options[OPTION_COLOR_FUNCTION_SCALING].isFalse();
-    java.util.function.DoubleFunction<IExpr> colorFunction = GraphicsOptions
-        .colorFunction(options[OPTION_COLOR_FUNCTION], engine, t -> F.GrayLevel(F.C1));
+    // the heights are already mapped onto 0..1 below, so the slot is handed over as it stands
+    PlotColorFunction colorFunction = PlotColorFunction
+        .of(PlotColorFunction.Family.ARRAY, options[OPTION_COLOR_FUNCTION],
+            options[OPTION_COLOR_FUNCTION_SCALING], S.ReliefImage, engine)
+        .sink(PlotColorFunction.Sink.FLAT).fallback(t -> F.GrayLevel(F.C1)).build();
     // the default is written as {Black, White}, and a bare colour symbol is not yet a colour - it
     // has to be evaluated into the RGBColor it stands for before it can be read
     float[][] clipping = clippingStyle(engine.evaluate(options[OPTION_CLIPPING_STYLE]), engine);
@@ -103,7 +107,8 @@ public class ReliefImage extends AbstractFunctionOptionEvaluator {
       float[] rgb = clippingColor(clipping, heights[y][x], range);
       if (rgb == null) {
         double argument = scaleColors ? scaled[y][x] : heights[y][x];
-        float[] rgba = Colors.toRgba(colorFunction.apply(argument));
+        float[] rgba = colorFunction == null ? null
+            : Colors.toRgba(colorFunction.color(argument));
         rgb = rgba == null ? new float[] {1.0f, 1.0f, 1.0f} : rgba;
       }
       double shade = shade(scaled, x, y, width, height, light, aspectBased);

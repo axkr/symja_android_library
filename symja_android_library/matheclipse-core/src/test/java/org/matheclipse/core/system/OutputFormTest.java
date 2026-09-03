@@ -217,6 +217,17 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
         "\\begin{array}{cc}\n a & b \\\\\n c & d \\\\\n\\end{array}");
   }
 
+  /**
+   * <code>Overlay</code> composites graphics; an overlay of anything else is inert and has to keep
+   * printing as itself rather than being swallowed by the graphics converter.
+   */
+  @Test
+  public void testOverlayOfPlainExpressionsStaysInert() {
+    check("Overlay({1, 2, 3})", "Overlay({1,2,3})");
+    check("Overlay({1, 2, 3}); Overlay({a, b}, {2}, None)", "Overlay({a,b},{2},None)");
+    check("Overlay({1, 2, 3}); Overlay({a, b}, {2}, None); Overlay(x)", "Overlay(x)");
+  }
+
   /** <code>TableForm</code> stays in the expression tree - only its printed form is a table. */
   @Test
   public void testTableFormIsADisplayWrapper() {

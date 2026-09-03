@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -379,12 +380,8 @@ public class PeriodicTableFunctions {
       } catch (RuntimeException rex) {
         return F.NIL;
       }
-      return isColor(color) ? color : F.NIL;
-    }
-
-    private static boolean isColor(IExpr expr) {
-      return expr.isAST(S.RGBColor) || expr.isAST(S.GrayLevel) || expr.isAST(S.Hue)
-          || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor);
+      // one shared answer to "is this a colour", so the table cannot drift from the plots
+      return GraphicsOptions.isColorExpr(color) ? color : F.NIL;
     }
   }
 
