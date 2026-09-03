@@ -3,28 +3,13 @@ package org.matheclipse.core.graphics.svg;
 import java.awt.Color;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotRangePaddingSpec;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** The options of a 2D {@code Graphics} expression, parsed into plain fields. */
 public final class GraphicsOptions2D {
-
-  /** A length that is either absolute or a fraction of the plot range. */
-  public static final class Padding {
-    public double value;
-    public boolean scaled;
-
-    Padding(double value, boolean scaled) {
-      this.value = value;
-      this.scaled = scaled;
-    }
-
-    /** The padding in data units for a range of the given size. */
-    public double resolve(double range) {
-      return scaled ? range * value : value;
-    }
-  }
 
   public boolean axesX = false;
   public boolean axesY = false;
@@ -59,8 +44,7 @@ public final class GraphicsOptions2D {
   public boolean plotRangeAutomatic = true;
   public boolean plotRangeAll = false;
   public boolean plotRangeClipping = false;
-  public Padding plotRangePaddingX = new Padding(0.02, true);
-  public Padding plotRangePaddingY = new Padding(0.02, true);
+  public PlotRangePaddingSpec plotRangePadding = PlotRangePaddingSpec.automatic(2);
 
   /** {@code LabelStyle}, applied to every piece of text the plot labels itself with. */
   public Style2D labelStyle = null;
@@ -473,47 +457,21 @@ public final class GraphicsOptions2D {
   }
 
   private void applyPlotRangePadding(IExpr value) {
-    if (value.isNone()) {
-      plotRangePaddingX = new Padding(0, false);
-      plotRangePaddingY = new Padding(0, false);
-      return;
-    }
-    if (value == S.Automatic) {
-      plotRangePaddingX = new Padding(0.02, true);
-      plotRangePaddingY = new Padding(0.02, true);
-      return;
-    }
-    if (value.isList() && ((IAST) value).argSize() >= 2) {
-      IAST list = (IAST) value;
-      Padding px = paddingOf(list.arg1());
-      Padding py = paddingOf(list.arg2());
-      if (px != null) {
-        plotRangePaddingX = px;
-      }
-      if (py != null) {
-        plotRangePaddingY = py;
-      }
-      return;
-    }
-    Padding p = paddingOf(value);
-    if (p != null) {
-      plotRangePaddingX = p;
-      plotRangePaddingY = new Padding(p.value, p.scaled);
-    }
+    plotRangePadding = PlotRangePaddingSpec.parseOrAutomatic(value, 2);
   }
 
-  private Padding paddingOf(IExpr value) {
-    if (value.isNone()) {
-      return new Padding(0, false);
-    }
-    if (value.isAST(S.Scaled, 2)) {
-      return new Padding(ColorUtil.dbl(((IAST) value).arg1(), 0.02), true);
-    }
-    if (value.isList() && ((IAST) value).argSize() >= 2) {
-      // {before, after}; a single value covers both sides here
-      return paddingOf(((IAST) value).arg1());
-    }
-    double d = ColorUtil.dbl(value, Double.NaN);
-    return Double.isNaN(d) ? null : new Padding(d, false);
+  /**
+   * Whether an explicit {@code PlotRange} fixed this end of this axis.
+   *
+   * <p>
+   * {@code Automatic} padding is left off a side the user pinned themselves: a range that was
+   * asked for by name is drawn as it was asked for. {@code All}, {@code Full} and
+   * {@code Automatic} leave {@link #plotRange} null, so they correctly count as unpinned.
+   *
+   * @param axis 0 for x, 1 for y
+   * @param side 0 for the low end, 1 for the high end
+   */
+  public boolean plotRangePinned(int axis, int side) {
+    return plotRange != null && !Double.isNaN(plotRange[axis][side]);
   }
 }

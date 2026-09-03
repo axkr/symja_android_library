@@ -167,6 +167,9 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     double vStep = (vMax - vMin) / (vCount - 1);
 
     double[][][] grid = new double[uCount][vCount][];
+    // the same points, region or no region, so that a cell the boundary crosses is still a cell
+    double[][][] unmasked = region == null ? null : new double[uCount][vCount][];
+    boolean[][] inside = region == null ? null : new boolean[uCount][vCount];
     boolean any = false;
     for (int i = 0; i < uCount; i++) {
       double u = uMin + i * uStep;
@@ -174,10 +177,13 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         double v = vMin + j * vStep;
         double[] point = evaluatePoint(func, engine,
             F.List(F.Rule(uVar, F.num(u)), F.Rule(vVar, F.num(v))), monitor);
-        if (point != null && region != null
-            && !region.accepts(point[0], point[1], point[2], u, v)) {
-          // a hole in the surface: addSurface skips every quad that touches it
-          point = null;
+        if (region != null) {
+          unmasked[i][j] = point;
+          inside[i][j] = point != null && region.accepts(point[0], point[1], point[2], u, v);
+          if (!inside[i][j]) {
+            // the cells that touch it are cut along the edge of the region instead of drawn
+            point = null;
+          }
         }
         grid[i][j] = point;
         any |= point != null;
@@ -209,7 +215,23 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     // showing a crease where the last row of quads meets the first
     boolean wrapU = closes(grid, true);
     boolean wrapV = closes(grid, false);
-    Plot3DTools.addSurface(builder, grid, wrapU, wrapV, colors, true, meshOption, meshStyle);
+    // the boundary is placed by halving the parameters: a parametric surface can fold, so a
+    // straight line between two of its points need not lie on it at all
+    Plot3DTools.RegionEdge edge = region == null ? null
+        : Plot3DTools.parameterEdge(new Plot3DTools.SurfaceSampler() {
+          @Override
+          public double[] point(double u, double v) {
+            return evaluatePoint(func, engine,
+                F.List(F.Rule(uVar, F.num(u)), F.Rule(vVar, F.num(v))), F.NIL);
+          }
+
+          @Override
+          public boolean inside(double[] point, double u, double v) {
+            return region.accepts(point[0], point[1], point[2], u, v);
+          }
+        }, uMin, uStep, vMin, vStep);
+    Plot3DTools.addSurface(builder, grid, wrapU, wrapV, colors, true, meshOption, meshStyle,
+        unmasked, inside, edge);
     return grid;
   }
 

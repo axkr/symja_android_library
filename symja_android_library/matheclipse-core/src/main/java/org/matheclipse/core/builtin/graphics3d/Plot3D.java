@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -147,17 +148,24 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    // a sample the RegionFunction rejects, or one an Exclusions curve runs through, is not part
-    // of the surface; it is left out the same way a value that is not a number is
-    applyRegionFunction(z, xMinD, xStep, yMinD, yStep, nx, ny,
-        options[Plot3DTools.X_REGION_FUNCTION], engine);
+    // an Exclusions curve runs through the surface and takes the samples on it with it, the same
+    // way a value that is not a number is left out
     applyExclusions(z, xMinD, xStep, yMinD, yStep, nx, ny, xVar, yVar,
         options[Plot3DTools.X_EXCLUSIONS], engine);
+
+    // The RegionFunction is answered per sample but the values are kept: a cell the edge of the
+    // region runs through is cut along that edge rather than dropped, and cutting it interpolates
+    // across the cell, so it needs the height at every corner. What the region decides is which
+    // samples are part of the picture, which is what the visible band is then measured over.
+    RegionFunctionFilter region =
+        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
+    boolean[][] inside =
+        applyRegionFunction(z, xMinD, xStep, yMinD, yStep, nx, ny, region, engine);
 
     int finiteCount = 0;
     for (int i = 0; i < nx; i++) {
       for (int j = 0; j < ny; j++) {
-        if (Double.isFinite(z[i][j])) {
+        if (inside[i][j]) {
           finiteCount++;
         }
       }
@@ -172,7 +180,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     int v = 0;
     for (int i = 0; i < nx; i++) {
       for (int j = 0; j < ny; j++) {
-        if (Double.isFinite(z[i][j])) {
+        if (inside[i][j]) {
           valid[v++] = z[i][j];
         }
       }
@@ -183,6 +191,8 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
 
     boolean clipToNothing = options[Plot3DTools.X_CLIPPING_STYLE].isNone();
     double[][][] grid = new double[nx][ny][];
+    // the same points, region or no region, so that a cell the boundary crosses is still a cell
+    double[][][] unmasked = region == null ? null : new double[nx][ny][];
     IExpr[][] colors = colorMap == null ? null : new IExpr[nx][ny];
     for (int i = 0; i < nx; i++) {
       double x = xMinD + i * xStep;
@@ -201,7 +211,13 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
           continue;
         }
         double clamped = Math.max(zMin, Math.min(zMax, value));
-        grid[i][j] = new double[] {x, y, clamped};
+        double[] point = new double[] {x, y, clamped};
+        if (unmasked != null) {
+          unmasked[i][j] = point;
+        }
+        if (inside[i][j]) {
+          grid[i][j] = point;
+        }
         if (colors != null) {
           double cz = colorMap.isScaled() ? scale(clamped, zMin, zMax) : clamped;
           double cx = colorMap.isScaled() ? scale(x, xMinD, xMaxD) : x;
@@ -215,7 +231,8 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(index, options[X_PLOT_STYLE]),
         options[X_MESH]);
     Plot3DTools.addSurface(builder, grid, false, false, colors, true, options[X_MESH],
-        options[Plot3DTools.X_MESH_STYLE]);
+        options[Plot3DTools.X_MESH_STYLE], unmasked, inside,
+        regionEdge(unmasked, region, zMin, zMax));
     IExpr complex = builder.build();
 
     if (complex.isNIL()) {
@@ -336,23 +353,52 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
    * leaves a hole, which is the same thing that happens where the function has no value, so the
    * surface simply stops at the edge of the region.
    */
-  private static void applyRegionFunction(double[][] z, double xMin, double xStep, double yMin,
-      double yStep, int nx, int ny, IExpr regionFunction, EvalEngine engine) {
-    RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
-    if (region == null) {
-      return;
-    }
+  private static boolean[][] applyRegionFunction(double[][] z, double xMin, double xStep,
+      double yMin, double yStep, int nx, int ny, RegionFunctionFilter region, EvalEngine engine) {
+    boolean[][] inside = new boolean[nx][ny];
     for (int i = 0; i < nx; i++) {
       double x = xMin + i * xStep;
       for (int j = 0; j < ny; j++) {
-        if (!Double.isFinite(z[i][j])) {
-          continue;
-        }
-        if (!region.accepts(x, yMin + j * yStep, z[i][j])) {
-          z[i][j] = Double.NaN;
-        }
+        inside[i][j] = Double.isFinite(z[i][j])
+            && (region == null || region.accepts(x, yMin + j * yStep, z[i][j]));
       }
     }
+    return inside;
+  }
+
+  /**
+   * Where the edge of the region crosses a grid line, as a point on the surface.
+   *
+   * <p>
+   * The predicate answers yes or no and nothing else, so the crossing is found by halving the grid
+   * line rather than by interpolating a value. The height along it is interpolated between the two
+   * samples: the boundary is already being followed to first order inside one cell, and evaluating
+   * the plotted function again at every step of every bisection would cost more than the whole
+   * sampling did.
+   */
+  private static Plot3DTools.RegionEdge regionEdge(double[][][] unmasked,
+      RegionFunctionFilter region, double zMin, double zMax) {
+    if (unmasked == null || region == null) {
+      return null;
+    }
+    return (i1, j1, i2, j2) -> {
+      double[] from = unmasked[i1][j1];
+      double[] to = unmasked[i2][j2];
+      if (from == null || to == null) {
+        return null;
+      }
+      double[] at = RegionClip.crossing((px, py) -> {
+        double t = Math.abs(to[0] - from[0]) > Math.abs(to[1] - from[1])
+            ? (px - from[0]) / (to[0] - from[0])
+            : (py - from[1]) / (to[1] - from[1]);
+        return region.accepts(px, py, from[2] + t * (to[2] - from[2]));
+      }, from[0], from[1], to[0], to[1]);
+      double t = Math.abs(to[0] - from[0]) > Math.abs(to[1] - from[1])
+          ? (at[0] - from[0]) / (to[0] - from[0])
+          : (at[1] - from[1]) / (to[1] - from[1]);
+      double height = Math.max(zMin, Math.min(zMax, from[2] + t * (to[2] - from[2])));
+      return new double[] {at[0], at[1], height};
+    };
   }
 
   /**

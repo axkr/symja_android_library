@@ -284,6 +284,9 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
       IAST plotRange = F.Rule(S.PlotRange, F.List(F.List(F.num(overallMinX), F.num(overallMaxX)),
           F.List(F.num(overallMinY), F.num(overallMaxY))));
       graphicsExpr.append(plotRange);
+      // the range above is the laid out extent of the words themselves; an explicit range would
+      // otherwise be drawn with no margin at all and the outermost words would touch the edge
+      graphicsExpr.append(F.Rule(S.PlotRangePadding, F.Scaled(0.02)));
       // System.out.println(graphicsExpr);
       return graphicsExpr;
     }

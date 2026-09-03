@@ -44,11 +44,15 @@ public final class Viewport2D {
 
   private final DoubleUnaryOperator scaleFnX;
   private final DoubleUnaryOperator scaleFnY;
+  private final DoubleUnaryOperator inverseFnX;
+  private final DoubleUnaryOperator inverseFnY;
 
   public Viewport2D(GraphicsOptions2D options) {
     this.options = options;
     this.scaleFnX = GraphicsOptions.getScalingFunction(options.scalingX);
     this.scaleFnY = GraphicsOptions.getScalingFunction(options.scalingY);
+    this.inverseFnX = GraphicsOptions.getInverseScalingFunction(options.scalingX);
+    this.inverseFnY = GraphicsOptions.getInverseScalingFunction(options.scalingY);
   }
 
   public boolean isLogX() {
@@ -130,22 +134,46 @@ public final class Viewport2D {
       }
     }
 
-    rawMinX = dMinX;
-    rawMaxX = dMaxX;
-    rawMinY = dMinY;
-    rawMaxY = dMaxY;
+    // PlotRangePadding in coordinate units belongs in the data's own coordinates: on a
+    // logarithmic axis, adding it after the scaling would make it a number of decades instead.
+    boolean pinLoX = options.plotRangePinned(0, 0);
+    boolean pinHiX = options.plotRangePinned(0, 1);
+    boolean pinLoY = options.plotRangePinned(1, 0);
+    boolean pinHiY = options.plotRangePinned(1, 1);
+    double[] absX = options.plotRangePadding.absolutePad(0);
+    double[] absY = options.plotRangePadding.absolutePad(1);
+    dMinX -= absX[0];
+    dMaxX += absX[1];
+    dMinY -= absY[0];
+    dMaxY += absY[1];
+    // that padding can carry a logarithmic axis down to or past zero, which has no logarithm
+    if (isLogX() && dMinX <= 0) {
+      dMinX = dMaxX > 0 ? Math.max(LOG_MIN_CLAMP, dMaxX / 100.0) : LOG_MIN_CLAMP;
+    }
+    if (isLogY() && dMinY <= 0) {
+      dMinY = dMaxY > 0 ? Math.max(LOG_MIN_CLAMP, dMaxY / 100.0) : LOG_MIN_CLAMP;
+    }
 
     minX = scaleFnX.applyAsDouble(dMinX);
     maxX = scaleFnX.applyAsDouble(dMaxX);
     minY = scaleFnY.applyAsDouble(dMinY);
     maxY = scaleFnY.applyAsDouble(dMaxY);
 
-    double padX = options.plotRangePaddingX.resolve(maxX - minX);
-    double padY = options.plotRangePaddingY.resolve(maxY - minY);
-    minX -= padX;
-    maxX += padX;
-    minY -= padY;
-    maxY += padY;
+    // Scaled padding is a fraction of the finished picture, so it is measured in the coordinates
+    // the picture is drawn in rather than the data's
+    double[] scX = options.plotRangePadding.scaledPad(0, maxX - minX, pinLoX, pinHiX);
+    double[] scY = options.plotRangePadding.scaledPad(1, maxY - minY, pinLoY, pinHiY);
+    minX -= scX[0];
+    maxX += scX[1];
+    minY -= scY[0];
+    maxY += scY[1];
+
+    // the logarithmic ticks are placed from the raw range, so it has to cover the padding too or
+    // the padded strip comes out blank; on a linear axis the inverse is the identity
+    rawMinX = inverseFnX.applyAsDouble(minX);
+    rawMaxX = inverseFnX.applyAsDouble(maxX);
+    rawMinY = inverseFnY.applyAsDouble(minY);
+    rawMaxY = inverseFnY.applyAsDouble(maxY);
 
     double rangeX = maxX - minX;
     double rangeY = maxY - minY;

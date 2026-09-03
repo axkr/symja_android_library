@@ -115,8 +115,10 @@ public class ListDensityPlot extends DensityPlot {
     if (gridData == null || gridData.minZ == Double.MAX_VALUE) {
       return F.NIL;
     }
-    boolean[][] defined = ListContourPlot.applyRegionFunction(gridData, RegionFunctionFilter
-        .of(GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine));
+    RegionFunctionFilter region = RegionFunctionFilter
+        .of(GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
+    // the data keeps its values: the region is applied to the raster below, which is finer
+    boolean[][] defined = ListContourPlot.applyRegionFunction(gridData, region, false);
     if (gridData.minZ > gridData.maxZ) {
       // the region left nothing to paint, which is the same as data with no value in it
       return F.NIL;
@@ -154,6 +156,17 @@ public class ListDensityPlot extends DensityPlot {
           // a cell without a value stays transparent rather than being painted in a colour that
           // the data never had
           continue;
+        }
+        if (region != null) {
+          // The region is asked about the raster cell rather than about the data nodes it was
+          // interpolated from. The raster is finer than the data, so the edge of the region
+          // follows the region at the resolution of the picture instead of stepping once per
+          // datum, which on a small array is a very coarse staircase.
+          double cellX = xRange[0] + (xRange[1] - xRange[0]) * (i + 0.5) / cellsX;
+          double cellY = yRange[0] + (yRange[1] - yRange[0]) * (j + 0.5) / cellsY;
+          if (!region.accepts(cellX, cellY, z)) {
+            continue;
+          }
         }
 
         double t = z;

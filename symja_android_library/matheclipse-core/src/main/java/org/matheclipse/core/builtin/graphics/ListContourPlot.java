@@ -103,8 +103,11 @@ public class ListContourPlot extends ContourPlot {
       return Errors.printMessage(S.ListContourPlot, "arrayerr", F.List(dataArg), engine);
     }
 
-    boolean[][] defined = applyRegionFunction(gridData, RegionFunctionFilter
-        .of(GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine));
+    RegionFunctionFilter region = RegionFunctionFilter
+        .of(GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
+    // the values stay: a cell the edge of the region runs through is cut along that edge, and
+    // cutting it interpolates across the cell
+    boolean[][] defined = applyRegionFunction(gridData, region, false);
     if (gridData.minZ > gridData.maxZ) {
       // the region left nothing to contour, which is the same as data with no value in it
       return F.NIL;
@@ -119,7 +122,8 @@ public class ListContourPlot extends ContourPlot {
         !GraphicsOptions.optionValue(originalAST, S.ContourLines, S.True).isFalse();
     generateContoursFromGrid(primitives, gridData, contoursOption, contourStyle, contourShading,
         colorFunctionScaling, contourLines,
-        GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic), engine);
+        GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic), engine, defined,
+        region);
 
     // Mesh draws the sampling grid over the contours, as it does for the function plots
     IExpr meshLines = GraphicsOptions.meshGrid(
@@ -163,7 +167,8 @@ public class ListContourPlot extends ContourPlot {
    *
    * @return which nodes carry a value, indexed {@code [x][y]} like {@code zGrid}
    */
-  static boolean[][] applyRegionFunction(GridData gd, RegionFunctionFilter region) {
+  static boolean[][] applyRegionFunction(GridData gd, RegionFunctionFilter region,
+      boolean maskValues) {
     int nx = gd.zGrid.length;
     int ny = nx > 0 ? gd.zGrid[0].length : 0;
     boolean[][] defined = new boolean[nx][ny];
@@ -173,12 +178,14 @@ public class ListContourPlot extends ContourPlot {
       double x = gd.xMin + i * gd.stepX;
       for (int j = 0; j < ny; j++) {
         double z = gd.zGrid[i][j];
-        if (region != null && Double.isFinite(z) && !region.accepts(x, gd.yMin + j * gd.stepY, z)) {
-          z = Double.NaN;
-          gd.zGrid[i][j] = z;
+        boolean keep = Double.isFinite(z)
+            && (region == null || region.accepts(x, gd.yMin + j * gd.stepY, z));
+        if (!keep && maskValues) {
+          // a raster cell cannot be cut, so the value goes with the node it was rejected at
+          gd.zGrid[i][j] = Double.NaN;
         }
-        defined[i][j] = Double.isFinite(z);
-        if (defined[i][j]) {
+        defined[i][j] = keep;
+        if (keep) {
           minZ = Math.min(minZ, z);
           maxZ = Math.max(maxZ, z);
         }
@@ -367,7 +374,8 @@ public class ListContourPlot extends ContourPlot {
 
   private void generateContoursFromGrid(IASTAppendable primitives, GridData gd,
       IExpr contoursOption, IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
-      boolean contourLines, IExpr colorFunctionOpt, EvalEngine engine) {
+      boolean contourLines, IExpr colorFunctionOpt, EvalEngine engine, boolean[][] inside,
+      RegionFunctionFilter region) {
     java.util.function.DoubleFunction<IExpr> colorMap =
         GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getShadingColor);
 
@@ -407,6 +415,10 @@ public class ListContourPlot extends ContourPlot {
     int gridX = gd.zGrid.length - 1;
     int gridY = gd.zGrid[0].length - 1;
 
+    // the cells the edge of the region runs through, and the line it follows through each
+    double[][][][] cellClip = ContourPlot.regionClips(inside, region, gd.zGrid, gd.xMin, gd.yMin,
+        gd.stepX, gd.stepY, gridX, gridY);
+
     // 1. Shading (Polygons)
     if (contourShading != S.None && !contourShading.isFalse()) {
       for (int k = -1; k < levels.length; k++) {
@@ -428,8 +440,24 @@ public class ListContourPlot extends ContourPlot {
           for (int j = 0; j < gridY; j++) {
             double x = gd.xMin + i * gd.stepX;
             double y = gd.yMin + j * gd.stepY;
-            processCellPolygon(polygons, x, y, gd.stepX, gd.stepY, gd.zGrid[i][j],
-                gd.zGrid[i + 1][j], gd.zGrid[i + 1][j + 1], gd.zGrid[i][j + 1], level);
+            if (cellClip != null && !inside[i][j] && !inside[i + 1][j] && !inside[i + 1][j + 1]
+                && !inside[i][j + 1]) {
+              continue;
+            }
+            double[][] clip = cellClip == null ? null : cellClip[i][j];
+            if (cellClip != null && clip == null && !(inside[i][j] && inside[i + 1][j]
+                && inside[i + 1][j + 1] && inside[i][j + 1])) {
+              continue;
+            }
+            final double c00 = gd.zGrid[i][j];
+            final double c10 = gd.zGrid[i + 1][j];
+            final double c11 = gd.zGrid[i + 1][j + 1];
+            final double c01 = gd.zGrid[i][j + 1];
+            final double cx = x;
+            final double cy = y;
+            final double cLevel = level;
+            ContourPlot.clipped(polygons, clip, S.Polygon, out -> processCellPolygon(out, cx, cy,
+                gd.stepX, gd.stepY, c00, c10, c11, c01, cLevel));
           }
         }
 
@@ -460,8 +488,24 @@ public class ListContourPlot extends ContourPlot {
           for (int j = 0; j < gridY; j++) {
             double x = gd.xMin + i * gd.stepX;
             double y = gd.yMin + j * gd.stepY;
-            processCellLine(lineSegments, x, y, gd.stepX, gd.stepY, gd.zGrid[i][j],
-                gd.zGrid[i + 1][j], gd.zGrid[i + 1][j + 1], gd.zGrid[i][j + 1], level);
+            if (cellClip != null && !inside[i][j] && !inside[i + 1][j] && !inside[i + 1][j + 1]
+                && !inside[i][j + 1]) {
+              continue;
+            }
+            double[][] clip = cellClip == null ? null : cellClip[i][j];
+            if (cellClip != null && clip == null && !(inside[i][j] && inside[i + 1][j]
+                && inside[i + 1][j + 1] && inside[i][j + 1])) {
+              continue;
+            }
+            final double c00 = gd.zGrid[i][j];
+            final double c10 = gd.zGrid[i + 1][j];
+            final double c11 = gd.zGrid[i + 1][j + 1];
+            final double c01 = gd.zGrid[i][j + 1];
+            final double cx = x;
+            final double cy = y;
+            final double cLevel = level;
+            ContourPlot.clipped(lineSegments, clip, S.Line, out -> processCellLine(out, cx, cy,
+                gd.stepX, gd.stepY, c00, c10, c11, c01, cLevel));
           }
         }
 

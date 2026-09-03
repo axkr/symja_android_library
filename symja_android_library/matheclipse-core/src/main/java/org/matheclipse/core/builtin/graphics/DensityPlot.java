@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -134,15 +135,12 @@ public class DensityPlot extends ListPlot {
           z = Double.NaN;
         }
 
-        // a sample the RegionFunction rejects is dropped before the colour scale is chosen, so
-        // the shading describes what is drawn rather than the whole rectangle
-        if (region != null && Double.isFinite(z) && !region.accepts(xVal, yVal, z)) {
-          z = Double.NaN;
-        }
-
         zGrid[i][j] = z;
-        defined[i][j] = Double.isFinite(z);
-        if (Double.isFinite(z)) {
+        // The value is kept even where the region rejects it: a cell the edge of the region runs
+        // through is cut along that edge rather than dropped, and cutting it interpolates across
+        // the cell. What the region decides is which samples the colour scale is measured over.
+        defined[i][j] = Double.isFinite(z) && (region == null || region.accepts(xVal, yVal, z));
+        if (defined[i][j]) {
           if (z < minZ)
             minZ = z;
           if (z > maxZ)
@@ -159,6 +157,13 @@ public class DensityPlot extends ListPlot {
     java.util.function.DoubleFunction<IExpr> colorMap =
         GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getDensityColor);
     IExpr[][] cells = new IExpr[gridY][gridX];
+    // the cells the edge of the region runs through, and the line it follows through each
+    double[][][][] cellClip = ContourPlot.regionClips(defined, region, zGrid, xRange[0], yRange[0],
+        stepX, stepY, gridX, gridY);
+    // A raster paints whole cells, so the ones the boundary crosses are left out of it and drawn
+    // as polygons cut to the region instead. Without that the edge of a region is a staircase with
+    // one step per sample, however smooth the region itself is.
+    IASTAppendable edgeCells = F.ListAlloc();
 
     for (int i = 0; i < gridX; i++) {
       double x = xRange[0] + i * stepX;
@@ -174,6 +179,12 @@ public class DensityPlot extends ListPlot {
         if (Double.isNaN(v00) || Double.isNaN(v10) || Double.isNaN(v01) || Double.isNaN(v11)) {
           continue;
         }
+        boolean whole = defined[i][j] && defined[i + 1][j] && defined[i][j + 1]
+            && defined[i + 1][j + 1];
+        double[][] clip = cellClip == null ? null : cellClip[i][j];
+        if (!whole && clip == null) {
+          continue; // wholly outside, or crossed more than once and not describable by one line
+        }
 
         double cellZ = (v00 + v10 + v01 + v11) / 4.0;
 
@@ -185,14 +196,30 @@ public class DensityPlot extends ListPlot {
         } else {
           t = cellZ;
         }
+        IExpr color = colorMap.apply(t);
 
-        // j counts upwards from the bottom, while the raster rows are given top first
-        cells[gridY - 1 - j][i] = colorMap.apply(t);
+        if (whole) {
+          // j counts upwards from the bottom, while the raster rows are given top first
+          cells[gridY - 1 - j][i] = color;
+          continue;
+        }
+        double[][] corners = {{x, y}, {x + stepX, y}, {x + stepX, y + stepY}, {x, y + stepY}};
+        double[][] cut =
+            RegionClip.clipPolygon(corners, clip[0], clip[1], clip[2][0], clip[2][1]);
+        if (cut == null) {
+          continue;
+        }
+        IASTAppendable points = F.ListAlloc(cut.length);
+        for (double[] point : cut) {
+          points.append(F.List(F.num(point[0]), F.num(point[1])));
+        }
+        edgeCells.append(F.List(F.EdgeForm(S.None), color, F.Polygon(points)));
       }
     }
     double meshX1 = xRange[0] + gridX * stepX;
     double meshY1 = yRange[0] + gridY * stepY;
     primitives.append(GraphicsOptions.rasterTopFirst(cells, xRange[0], yRange[0], meshX1, meshY1));
+    primitives.appendArgs(edgeCells);
     IExpr meshLines =
         GraphicsOptions.meshGrid(meshOpt, xRange[0], yRange[0], meshX1, meshY1, gridX, gridY);
     if (meshLines.isPresent()) {

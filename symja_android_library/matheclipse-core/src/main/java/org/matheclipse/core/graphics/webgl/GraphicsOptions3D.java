@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotRangePaddingSpec;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -83,11 +84,8 @@ public final class GraphicsOptions3D {
   /** The part of the display area the drawing fills, as {@code {{xmin,xmax},{ymin,ymax}}}. */
   public double[][] plotRegion = null;
 
-  /** Padding added to the data range, in data units, per axis as low and high. */
-  public double[][] plotRangePadding = null;
-
-  /** The same as a fraction of each axis's own extent, from {@code Scaled}. */
-  public double[][] plotRangePaddingScaled = null;
+  /** {@code PlotRangePadding}: the room left around the data, per axis and per side. */
+  public PlotRangePaddingSpec plotRangePadding = PlotRangePaddingSpec.automatic(3);
 
   public String plotLabel = null;
 
@@ -503,54 +501,17 @@ public final class GraphicsOptions3D {
    * {@code PlotRangePadding}, which widens the range the box covers.
    *
    * <p>
-   * A plain number is in the data's own units; {@code Scaled[s]} is a fraction of the extent of
-   * each axis, so the same setting suits any data. Either may be given once for all three axes or
-   * once per axis, and each axis may name its two sides separately.
+   * A plain number is in the data's own units; {@code Scaled[s]} is a fraction of the finished
+   * plot, so the same setting suits any data. Either may be given once for all three axes or once
+   * per axis, and each axis may name its two sides separately.
    */
   private void parsePlotRangePadding(IExpr value) {
-    if (value.isNone()) {
-      plotRangePadding = new double[][] {{0, 0}, {0, 0}, {0, 0}};
-      return;
-    }
-    if (value.isAST(S.Scaled, 2)) {
-      plotRangePaddingScaled = spread(((IAST) value).arg1());
-      return;
-    }
-    if (value.isList() && ((IAST) value).argSize() == 3) {
-      IAST list = (IAST) value;
-      double[][] absolute = new double[3][];
-      double[][] scaled = new double[3][];
-      boolean anyScaled = false;
-      for (int i = 0; i < 3; i++) {
-        IExpr axis = list.get(i + 1);
-        if (axis.isAST(S.Scaled, 2)) {
-          scaled[i] = sides(((IAST) axis).arg1());
-          absolute[i] = new double[] {0, 0};
-          anyScaled = true;
-        } else {
-          absolute[i] = sides(axis);
-          scaled[i] = new double[] {0, 0};
-        }
-        if (absolute[i] == null) {
-          return;
-        }
-      }
-      plotRangePadding = absolute;
-      if (anyScaled) {
-        plotRangePaddingScaled = scaled;
-      }
-      return;
-    }
-    plotRangePadding = spread(value);
+    plotRangePadding = PlotRangePaddingSpec.parseOrAutomatic(value, 3);
   }
 
-  /** One padding specification applied to all three axes. */
-  private static double[][] spread(IExpr value) {
-    double[] both = sides(value);
-    if (both == null) {
-      return null;
-    }
-    return new double[][] {both.clone(), both.clone(), both.clone()};
+  /** Whether an explicit {@code PlotRange} fixed this axis. */
+  public boolean plotRangePinned(int axis) {
+    return plotRange[axis] != null;
   }
 
   /** {@code ViewMatrix -> {t, p}}, or a single matrix used as the transformation alone. */

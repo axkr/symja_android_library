@@ -212,6 +212,10 @@ public class NumberLinePlot extends ListPlot {
       graphicsOptions.addPadding();
       graphicsOptions.addOption(F.Rule(S.PlotRange,
           F.List(F.List(F.num(drawMin), F.num(drawMax)), F.List(F.C0, F.num(topRow)))));
+      // An explicit PlotRange switches automatic padding off, so ask for the usual margin by
+      // name: the topmost row sits exactly at topRow and would otherwise be drawn half outside
+      // the picture, and the outermost points would touch the ends of the line.
+      graphicsOptions.addOption(F.Rule(S.PlotRangePadding, F.Scaled(0.02)));
       // One row of the reference's height per data set. This has to go through the field rather
       // than addOption: getListOfRules emits AspectRatio from the field and skips any option rule
       // of the same name, so an added rule would be dropped.

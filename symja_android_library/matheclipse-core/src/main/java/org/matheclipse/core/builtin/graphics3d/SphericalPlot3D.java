@@ -102,6 +102,9 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
 
     RegionFunctionFilter region =
         RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
+    // the same points, region or no region, so that a cell the boundary crosses is still a cell
+    double[][][] unmasked = region == null ? null : new double[nTheta][nPhi][];
+    boolean[][] insideGrid = region == null ? null : new boolean[nTheta][nPhi];
     double[][][] grid = new double[nTheta][nPhi][];
     double[][] radii = new double[nTheta][nPhi];
     double rMin = Double.MAX_VALUE;
@@ -128,9 +131,13 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
         double px = r * sinT * Math.cos(p);
         double py = r * sinT * Math.sin(p);
         double pz = r * cosT;
-        if (region != null && !region.accepts(px, py, pz, t, p, r)) {
-          // a point the region rejects leaves a hole, the same way a radius without a value does
-          continue;
+        if (region != null) {
+          unmasked[i][j] = new double[] {px, py, pz};
+          insideGrid[i][j] = region.accepts(px, py, pz, t, p, r);
+          if (!insideGrid[i][j]) {
+            // the cells that touch it are cut along the edge of the region instead of drawn
+            continue;
+          }
         }
         radii[i][j] = r;
         rMin = Math.min(rMin, r);
@@ -165,11 +172,45 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
         options[Plot3DTools.X_MESH]);
     // a full azimuth closes the surface, so the seam at phi = 2 Pi is welded to the one at 0
     boolean wrapPhi = Math.abs((phi[1] - phi[0]) - 2 * Math.PI) < 1e-9;
+    // the boundary is placed by halving the angles rather than the coordinates, so that every
+    // trial point stays on the surface
+    Plot3DTools.RegionEdge edge = region == null ? null
+        : Plot3DTools.parameterEdge(new Plot3DTools.SurfaceSampler() {
+          @Override
+          public double[] point(double t, double p) {
+            double value = radiusAt(radius, thetaVar, t, phiVar, p, engine);
+            if (!Double.isFinite(value)) {
+              return null;
+            }
+            return new double[] {value * Math.sin(t) * Math.cos(p),
+                value * Math.sin(t) * Math.sin(p), value * Math.cos(t)};
+          }
+
+          @Override
+          public boolean inside(double[] point, double t, double p) {
+            double value = Math.sqrt(
+                point[0] * point[0] + point[1] * point[1] + point[2] * point[2]);
+            return region.accepts(point[0], point[1], point[2], t, p, value);
+          }
+        }, theta[0], thetaStep, phi[0], phiStep);
     Plot3DTools.addSurface(builder, grid, false, wrapPhi, colors, true, options[Plot3DTools.X_MESH],
-        options[Plot3DTools.X_MESH_STYLE]);
+        options[Plot3DTools.X_MESH_STYLE], unmasked, insideGrid, edge);
     // the rim of the surface, and the rim of every hole a RegionFunction cut in it
     return Plot3DTools.withBoundary(builder.build(), grid,
         options[Plot3DTools.X_BOUNDARY_STYLE]);
+  }
+
+  /** The radius in one direction, or {@code NaN} where the function has no value there. */
+  private static double radiusAt(IExpr radius, ISymbol thetaVar, double t, ISymbol phiVar, double p,
+      EvalEngine engine) {
+    try {
+      return engine
+          .evaluate(F.subst(radius, F.List(F.Rule(thetaVar, F.num(t)), F.Rule(phiVar, F.num(p)))))
+          .evalfNaN();
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return Double.NaN;
+    }
   }
 
   @Override

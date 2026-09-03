@@ -5,6 +5,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -708,6 +709,45 @@ public final class Plot3DTools {
    */
   public static void addSurface(GraphicsComplexBuilder builder, double[][][] grid, boolean wrapU,
       boolean wrapV, IExpr[][] colors, boolean smooth, IExpr meshOption, IExpr meshStyle) {
+    addSurface(builder, grid, wrapU, wrapV, colors, smooth, meshOption, meshStyle, null, null,
+        null);
+  }
+
+  /**
+   * Where the edge of a region crosses a grid line.
+   *
+   * <p>
+   * The plot knows how to place a point between two of its own samples; this hands that back to
+   * {@link #addSurface} so that a cell the region only partly covers can be cut along the boundary
+   * instead of being dropped whole.
+   */
+  @FunctionalInterface
+  public interface RegionEdge {
+    /**
+     * The point where the region ends between the accepted node {@code (i1, j1)} and the rejected
+     * node {@code (i2, j2)}, or {@code null} when it cannot be placed.
+     */
+    double[] crossing(int i1, int j1, int i2, int j2);
+  }
+
+  /**
+   * As {@link #addSurface}, cutting the cells the edge of a region runs through.
+   *
+   * <p>
+   * A masked grid can only drop whole cells, which leaves the edge of a region as a staircase with
+   * one step per sample. The cells the boundary crosses are drawn here instead as the polygon that
+   * survives it: the corners that are inside, and the points where the boundary meets the cell's
+   * own edges. They are walked in the same order the quads above are, so the winding - and with it
+   * which face the lights see - stays the same.
+   *
+   * @param unmasked the sampled points for every node the function has a value at, region or no
+   *        region; {@code null} to do no clipping
+   * @param inside which nodes belong to the region
+   * @param edge where the boundary crosses a grid line
+   */
+  public static void addSurface(GraphicsComplexBuilder builder, double[][][] grid, boolean wrapU,
+      boolean wrapV, IExpr[][] colors, boolean smooth, IExpr meshOption, IExpr meshStyle,
+      double[][][] unmasked, boolean[][] inside, RegionEdge edge) {
     int rows = grid.length;
     if (rows == 0) {
       return;
@@ -750,8 +790,186 @@ public final class Plot3DTools {
       }
     }
 
+    // Every grid line the region boundary crosses gets one vertex, shared by the two cells that
+    // meet along it and by the mesh line that runs down it. Placing it once is what keeps the cut
+    // cells from cracking apart and the mesh from stopping a sample short of the edge.
+    int[][][] crossings = unmasked != null && inside != null && edge != null
+        ? regionCrossings(builder, unmasked, inside, normals, colors, edge, rows, cols)
+        : null;
+    if (crossings != null) {
+      addRegionEdgeCells(builder, unmasked, inside, indices, crossings, rows, cols);
+    }
+
     if (showMesh(meshOption)) {
-      addMeshLines(builder, indices, rows, cols, wrapU, wrapV, meshOption, meshStyle);
+      addMeshLines(builder, indices, crossings, rows, cols, wrapU, wrapV, meshOption, meshStyle);
+    }
+  }
+
+  /** A surface sampled at arbitrary parameter values, for placing a region boundary on it. */
+  public interface SurfaceSampler {
+    /** The point at the given parameters, or {@code null} when the surface has none there. */
+    double[] point(double u, double v);
+
+    /** Whether that point belongs to the region. */
+    boolean inside(double[] point, double u, double v);
+  }
+
+  /**
+   * A {@link RegionEdge} that places the boundary by halving the parameters, not the coordinates.
+   *
+   * <p>
+   * A parametric surface can fold over itself, so a straight line between two of its points is not
+   * generally on the surface at all. Between two neighbouring samples the parameters, on the other
+   * hand, run straight by construction, so bisecting there keeps every trial point on the surface.
+   * The predicate answers yes or no and nothing else, which is why this is a bisection rather than
+   * an interpolation.
+   *
+   * @param sampler evaluates the surface and asks the region about it
+   * @param u0 the first parameter at index zero, and {@code uStep} the distance between samples
+   */
+  public static RegionEdge parameterEdge(SurfaceSampler sampler, double u0, double uStep, double v0,
+      double vStep) {
+    return (i1, j1, i2, j2) -> {
+      double au = u0 + i1 * uStep;
+      double av = v0 + j1 * vStep;
+      double bu = u0 + i2 * uStep;
+      double bv = v0 + j2 * vStep;
+      double[] best = sampler.point(au, av);
+      if (best == null) {
+        return null;
+      }
+      double lo = 0.0;
+      double hi = 1.0;
+      for (int k = 0; k < RegionClip.CROSSING_ITERATIONS; k++) {
+        double mid = (lo + hi) / 2.0;
+        double mu = au + mid * (bu - au);
+        double mv = av + mid * (bv - av);
+        double[] point = sampler.point(mu, mv);
+        if (point != null && sampler.inside(point, mu, mv)) {
+          lo = mid;
+          best = point;
+        } else {
+          hi = mid;
+        }
+      }
+      return best;
+    };
+  }
+
+  /**
+   * One vertex per grid line the region boundary crosses.
+   *
+   * @return {@code {alongU, alongV}}, where {@code alongU[i][j]} is the vertex on the line from
+   *         node {@code (i, j)} to {@code (i + 1, j)} and {@code alongV[i][j]} the one from
+   *         {@code (i, j)} to {@code (i, j + 1)}, each {@code -1} where the boundary does not cross
+   */
+  private static int[][][] regionCrossings(GraphicsComplexBuilder builder, double[][][] unmasked,
+      boolean[][] inside, double[][][] normals, IExpr[][] colors, RegionEdge edge, int rows,
+      int cols) {
+    int[][] alongU = new int[rows][cols];
+    int[][] alongV = new int[rows][cols];
+    for (int[] row : alongU) {
+      java.util.Arrays.fill(row, -1);
+    }
+    for (int[] row : alongV) {
+      java.util.Arrays.fill(row, -1);
+    }
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        if (i + 1 < rows) {
+          alongU[i][j] =
+              crossingVertex(builder, unmasked, inside, normals, colors, edge, i, j, i + 1, j);
+        }
+        if (j + 1 < cols) {
+          alongV[i][j] =
+              crossingVertex(builder, unmasked, inside, normals, colors, edge, i, j, i, j + 1);
+        }
+      }
+    }
+    return new int[][][] {alongU, alongV};
+  }
+
+  /**
+   * The vertex where the boundary crosses one grid line, or {@code -1}.
+   *
+   * <p>
+   * The normal and the colour come from the sample the crossing was walked away from, so the strip
+   * along the edge is lit and coloured like the surface it belongs to.
+   */
+  private static int crossingVertex(GraphicsComplexBuilder builder, double[][][] unmasked,
+      boolean[][] inside, double[][][] normals, IExpr[][] colors, RegionEdge edge, int i1, int j1,
+      int i2, int j2) {
+    if (inside[i1][j1] == inside[i2][j2] || unmasked[i1][j1] == null || unmasked[i2][j2] == null) {
+      return -1;
+    }
+    int fi = inside[i1][j1] ? i1 : i2;
+    int fj = inside[i1][j1] ? j1 : j2;
+    int ti = inside[i1][j1] ? i2 : i1;
+    int tj = inside[i1][j1] ? j2 : j1;
+    double[] point = edge.crossing(fi, fj, ti, tj);
+    if (point == null) {
+      return -1;
+    }
+    return builder.addVertex(point[0], point[1], point[2],
+        normals == null ? null : normals[fi][fj], colors == null ? null : colors[fi][fj]);
+  }
+
+  /**
+   * Draws the part of each straddled cell that lies inside the region.
+   *
+   * <p>
+   * The corners that are inside and the points where the boundary meets the cell's own edges,
+   * walked in the order the quads are, so the winding - and with it which face the lights see -
+   * stays the same. A cell whose inside corners are diagonally opposite is crossed twice and no
+   * single polygon describes it, so it is left out the way it was before there was any clipping.
+   * At any density worth plotting at those cells are rare and each is one sample across.
+   */
+  private static void addRegionEdgeCells(GraphicsComplexBuilder builder, double[][][] unmasked,
+      boolean[][] inside, int[][] indices, int[][][] crossings, int rows, int cols) {
+    int[][] alongU = crossings[0];
+    int[][] alongV = crossings[1];
+    for (int i = 0; i < rows - 1; i++) {
+      for (int j = 0; j < cols - 1; j++) {
+        int[] ci = {i, i + 1, i + 1, i};
+        int[] cj = {j, j, j + 1, j + 1};
+        boolean complete = true;
+        boolean mixed = false;
+        for (int k = 0; k < 4; k++) {
+          if (unmasked[ci[k]][cj[k]] == null) {
+            complete = false;
+            break;
+          }
+          mixed |= inside[ci[k]][cj[k]] != inside[ci[0]][cj[0]];
+        }
+        if (!complete || !mixed) {
+          continue;
+        }
+        if (inside[i][j] == inside[i + 1][j + 1] && inside[i + 1][j] == inside[i][j + 1]) {
+          continue; // the two inside corners are diagonally opposite
+        }
+        // the crossing on each of the four cell edges, in the order they are walked
+        int[] onEdge = {alongU[i][j], alongV[i + 1][j], alongU[i][j + 1], alongV[i][j]};
+        int[] polygon = new int[8];
+        int count = 0;
+        boolean known = true;
+        for (int k = 0; k < 4; k++) {
+          int next = (k + 1) % 4;
+          if (inside[ci[k]][cj[k]]) {
+            known &= indices[ci[k]][cj[k]] >= 0;
+            polygon[count++] = indices[ci[k]][cj[k]];
+          }
+          if (inside[ci[k]][cj[k]] != inside[ci[next]][cj[next]]) {
+            known &= onEdge[k] >= 0;
+            polygon[count++] = onEdge[k];
+          }
+        }
+        if (!known || count < 3) {
+          continue;
+        }
+        int[] face = new int[count];
+        System.arraycopy(polygon, 0, face, 0, count);
+        builder.addPolygon(face);
+      }
     }
   }
 
@@ -762,8 +980,9 @@ public final class Plot3DTools {
    * The last line in each direction is always drawn, so the surface is bounded on all four sides
    * however the spacing divides the sampling.
    */
-  private static void addMeshLines(GraphicsComplexBuilder builder, int[][] indices, int rows,
-      int cols, boolean wrapU, boolean wrapV, IExpr meshOption, IExpr meshStyle) {
+  private static void addMeshLines(GraphicsComplexBuilder builder, int[][] indices,
+      int[][][] crossings, int rows, int cols, boolean wrapU, boolean wrapV, IExpr meshOption,
+      IExpr meshStyle) {
     int strideU = meshStride(meshOption, rows);
     int strideV = meshStride(meshOption, cols);
     builder.addPrimitive(
@@ -774,28 +993,48 @@ public final class Plot3DTools {
       if (i % strideU != 0 && i != rows - 1) {
         continue;
       }
-      addRun(builder, indices[i], cols, wrapV);
+      addRun(builder, indices[i], crossings == null ? null : crossings[1][i], cols, wrapV);
     }
     for (int j = 0; j < cols; j++) {
       if (j % strideV != 0 && j != cols - 1) {
         continue;
       }
       int[] column = new int[rows];
+      int[] columnCrossings = crossings == null ? null : new int[rows];
       for (int i = 0; i < rows; i++) {
         column[i] = indices[i][j];
+        if (columnCrossings != null) {
+          columnCrossings[i] = crossings[0][i][j];
+        }
       }
-      addRun(builder, column, rows, wrapU);
+      addRun(builder, column, columnCrossings, rows, wrapU);
     }
   }
 
   /** One mesh line, broken wherever the surface has a hole. */
-  private static void addRun(GraphicsComplexBuilder builder, int[] line, int count, boolean wrap) {
+  /**
+   * One mesh line along a row or a column of the grid, broken wherever the surface is.
+   *
+   * <p>
+   * {@code crossings[k]} is the vertex where the edge of a region cuts the grid line between
+   * {@code k} and {@code k + 1}, or {@code -1}. Running out to it rather than stopping at the last
+   * sample is what keeps the mesh from ending a cell short of a surface that was cut to the region.
+   */
+  private static void addRun(GraphicsComplexBuilder builder, int[] line, int[] crossings, int count,
+      boolean wrap) {
     IASTAppendable current = F.ListAlloc(count);
     for (int k = 0; k <= count; k++) {
       int index = k == count ? (wrap ? line[0] : -1) : line[k];
       if (index >= 0) {
+        if (current.argSize() == 0 && crossings != null && k > 0 && line[k - 1] < 0
+            && crossings[k - 1] >= 0) {
+          current.append(F.ZZ(crossings[k - 1]));
+        }
         current.append(F.ZZ(index));
       } else {
+        if (crossings != null && k > 0 && line[k - 1] >= 0 && crossings[k - 1] >= 0) {
+          current.append(F.ZZ(crossings[k - 1]));
+        }
         if (current.argSize() >= 2) {
           builder.addPrimitive(F.Line(current));
         }
@@ -995,7 +1234,8 @@ public final class Plot3DTools {
     return key == S.Axes || key == S.AxesLabel || key == S.AxesEdge || key == S.AxesStyle
         || key == S.Background || key == S.Boxed || key == S.BoxStyle || key == S.BoxRatios
         || key == S.FaceGrids || key == S.ImageSize || key == S.Lighting || key == S.PlotLabel
-        || key == S.PlotRange || key == S.Ticks || key == S.TicksStyle || key == S.LabelStyle
+        || key == S.PlotRange || key == S.PlotRangePadding || key == S.Ticks
+        || key == S.TicksStyle || key == S.LabelStyle
         || key == S.ViewPoint || key == S.ViewVertical || key == S.ViewAngle || key == S.ViewCenter
         || key == S.ViewProjection || key == S.ViewRange || key == S.SphericalRegion
         || key == S.ScalingFunctions;

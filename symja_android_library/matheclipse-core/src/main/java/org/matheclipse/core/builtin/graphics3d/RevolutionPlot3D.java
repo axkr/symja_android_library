@@ -139,6 +139,9 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
 
     RegionFunctionFilter region =
         RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
+    // the same points, region or no region, so that a cell the boundary crosses is still a cell
+    double[][][] unmasked = region == null ? null : new double[nT][nTheta][];
+    boolean[][] insideGrid = region == null ? null : new boolean[nT][nTheta];
     double[][][] grid = new double[nT][nTheta][];
     boolean any = false;
     double zMin = Double.MAX_VALUE;
@@ -161,10 +164,14 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
         for (int c = 0; c < 3; c++) {
           point[c] = radius * (cos * u[c] + sin * w[c]) + height * axis[c];
         }
-        if (region != null
-            && !region.accepts(point[0], point[1], point[2], tValue, angle, radius)) {
-          // a point the region rejects leaves a hole; addSurface skips the quads that touch it
-          continue;
+        if (region != null) {
+          unmasked[i][j] = point;
+          insideGrid[i][j] =
+              region.accepts(point[0], point[1], point[2], tValue, angle, radius);
+          if (!insideGrid[i][j]) {
+            // the cells that touch it are cut along the edge of the region instead of drawn
+            continue;
+          }
         }
         grid[i][j] = point;
         zMin = Math.min(zMin, point[2]);
@@ -196,8 +203,36 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
         Plot3DTools.surfaceStyle(index, options[Plot3DTools.X_PLOT_STYLE]),
         options[Plot3DTools.X_MESH]);
     boolean wrapTheta = Math.abs((theta[1] - theta[0]) - 2 * Math.PI) < 1e-9;
+    // the boundary is placed by halving the curve parameter and the angle rather than the
+    // coordinates, so that every trial point stays on the surface of revolution
+    final double[] frameU = u;
+    final double[] frameW = w;
+    Plot3DTools.RegionEdge edge = region == null ? null
+        : Plot3DTools.parameterEdge(new Plot3DTools.SurfaceSampler() {
+          @Override
+          public double[] point(double tValue, double angle) {
+            double[] curve = evaluateCurve(func, tVar, tValue, engine, F.NIL);
+            if (curve == null) {
+              return null;
+            }
+            double[] at = new double[3];
+            for (int c = 0; c < 3; c++) {
+              at[c] = curve[0] * (Math.cos(angle) * frameU[c] + Math.sin(angle) * frameW[c])
+                  + curve[1] * axis[c];
+            }
+            return at;
+          }
+
+          @Override
+          public boolean inside(double[] at, double tValue, double angle) {
+            double[] curve = evaluateCurve(func, tVar, tValue, engine, F.NIL);
+            return curve != null
+                && region.accepts(at[0], at[1], at[2], tValue, angle, curve[0]);
+          }
+        }, t[0], tStep, theta[0], thetaStep);
     Plot3DTools.addSurface(builder, grid, false, wrapTheta, colors, true,
-        options[Plot3DTools.X_MESH], options[Plot3DTools.X_MESH_STYLE]);
+        options[Plot3DTools.X_MESH], options[Plot3DTools.X_MESH_STYLE], unmasked, insideGrid,
+        edge);
     // the rim of the surface, and the rim of every hole a RegionFunction cut in it
     return Plot3DTools.withBoundary(builder.build(), grid,
         options[Plot3DTools.X_BOUNDARY_STYLE]);

@@ -249,15 +249,16 @@ public class WebGLGraphics3D {
     // PlotRangePadding widens what the box covers, so it is applied to the range rather than to
     // the picture: the extra room is in the data's own coordinates and the axes count it too
     for (int i = 0; i < 3; i++) {
-      double extent = ranges[i][1] - ranges[i][0];
-      if (options.plotRangePaddingScaled != null
-          && options.plotRangePaddingScaled[i] != null) {
-        ranges[i][0] -= options.plotRangePaddingScaled[i][0] * extent;
-        ranges[i][1] += options.plotRangePaddingScaled[i][1] * extent;
-      }
-      if (options.plotRangePadding != null && options.plotRangePadding[i] != null) {
-        ranges[i][0] -= options.plotRangePadding[i][0];
-        ranges[i][1] += options.plotRangePadding[i][1];
+      boolean pinned = options.plotRangePinned(i);
+      double[] pad = options.plotRangePadding.resolve(i, ranges[i][1] - ranges[i][0], pinned, //
+          pinned);
+      double low = ranges[i][0] - pad[0];
+      double high = ranges[i][1] + pad[1];
+      // negative padding could turn the range inside out; an unusable box is worse than an
+      // unpadded one
+      if (high > low) {
+        ranges[i][0] = low;
+        ranges[i][1] = high;
       }
     }
     return ranges;

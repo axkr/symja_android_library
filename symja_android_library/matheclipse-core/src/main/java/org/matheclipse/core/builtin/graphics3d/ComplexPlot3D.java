@@ -67,6 +67,9 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     // lets a predicate be written as Function({z, f}, Abs(z) < 2) or Function({z, f}, Abs(f) < 2)
     RegionFunctionFilter region =
         RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
+    // the same points, region or no region, so that a cell the boundary crosses is still a cell
+    double[][][] unmasked = region == null ? null : new double[rows][cols][];
+    boolean[][] insideGrid = region == null ? null : new boolean[rows][cols];
     double[][][] grid = new double[rows][cols][];
     IExpr[][] colors = new IExpr[rows][cols];
     double[] heights = new double[rows * cols];
@@ -91,10 +94,14 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
         }
-        if (region != null && !region.accepts(zVal, value)) {
-          // a hole in the surface: addSurface skips every quad that touches it, and the rim of
-          // the hole is what BoundaryStyle then outlines
-          continue;
+        if (region != null) {
+          unmasked[i][j] = new double[] {re, im, height};
+          insideGrid[i][j] = region.accepts(zVal, value);
+          if (!insideGrid[i][j]) {
+            // the cells that touch it are cut along the edge of the region instead of drawn, and
+            // the rim of the hole is what BoundaryStyle then outlines
+            continue;
+          }
         }
         if (Double.isFinite(height)) {
           heights[finiteCount++] = height;
@@ -119,21 +126,42 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
 
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
-        if (grid[i][j] == null) {
-          continue;
-        }
-        double h = grid[i][j][2];
-        if (!Double.isFinite(h) || h > maxHeight) {
-          grid[i][j][2] = maxHeight;
+        for (double[] point : new double[][] {grid[i][j],
+            unmasked == null ? null : unmasked[i][j]}) {
+          if (point == null) {
+            continue;
+          }
+          double h = point[2];
+          if (!Double.isFinite(h) || h > maxHeight) {
+            point[2] = maxHeight;
+          }
         }
       }
     }
+    final double capped = maxHeight;
 
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, true);
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, options[Plot3DTools.X_PLOT_STYLE]),
         options[Plot3DTools.X_MESH]);
+    // the boundary is placed by halving the sample point rather than the drawn coordinates, so
+    // that the height at the crossing is the one the function really takes there
+    Plot3DTools.RegionEdge edge = region == null ? null
+        : Plot3DTools.parameterEdge(new Plot3DTools.SurfaceSampler() {
+          @Override
+          public double[] point(double re, double im) {
+            double height = heightAt(function, zVar, re, im, engine);
+            return new double[] {re, im,
+                Double.isFinite(height) ? Math.min(height, capped) : capped};
+          }
+
+          @Override
+          public boolean inside(double[] at, double re, double im) {
+            IExpr value = valueAt(function, zVar, re, im, engine);
+            return region.accepts(F.complexNum(re, im), value);
+          }
+        }, minRe, dRe, minIm, dIm);
     Plot3DTools.addSurface(builder, grid, false, false, colors, true, options[Plot3DTools.X_MESH],
-        options[Plot3DTools.X_MESH_STYLE]);
+        options[Plot3DTools.X_MESH_STYLE], unmasked, insideGrid, edge);
     IExpr graphicsComplex = builder.build();
     if (graphicsComplex.isNIL()) {
       return F.NIL;
@@ -155,6 +183,25 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
             F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS), F.Rule(S.Axes, S.True),
             // the colour carries the meaning here, so the lights must not tint it
             F.Rule(S.Lighting, F.stringx("Neutral"))});
+  }
+
+  /** The function at one point of the plane, or {@code F.NIL} where it has no value. */
+  private static IExpr valueAt(IExpr function, ISymbol zVar, double re, double im,
+      EvalEngine engine) {
+    try {
+      return engine.evalN(F.subst(function, F.Rule(zVar, F.complexNum(re, im))));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /** Its modulus, which is the height the surface is drawn at. */
+  private static double heightAt(IExpr function, ISymbol zVar, double re, double im,
+      EvalEngine engine) {
+    IExpr value = valueAt(function, zVar, re, im, engine);
+    return value instanceof INumber ? F.complexNum(((INumber) value).reDoubleValue(),
+        ((INumber) value).imDoubleValue()).dabs() : Double.NaN;
   }
 
   private IComplexNum toComplex(IExpr expr) {

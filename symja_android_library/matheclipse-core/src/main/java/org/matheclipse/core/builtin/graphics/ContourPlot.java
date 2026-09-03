@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -187,6 +188,7 @@ public class ContourPlot extends ListPlot {
 
     // 1. Compute Grid
     boolean[][] defined = new boolean[gridX + 1][gridY + 1];
+    boolean[][] inside = new boolean[gridX + 1][gridY + 1];
     for (int i = 0; i <= gridX; i++) {
       double xVal = xRange[0] + i * stepX;
       for (int j = 0; j <= gridY; j++) {
@@ -202,15 +204,14 @@ public class ContourPlot extends ListPlot {
           z = Double.NaN;
         }
 
-        // a sample the RegionFunction rejects is dropped before the levels are chosen, so the
-        // contours describe what is drawn rather than the whole rectangle
-        if (region != null && Double.isFinite(z) && !region.accepts(xVal, yVal, z)) {
-          z = Double.NaN;
-        }
-
         zGrid[i][j] = z;
-        defined[i][j] = Double.isFinite(z);
-        if (Double.isFinite(z)) {
+        // The value is kept even where the region rejects it: a cell the edge of the region runs
+        // through is clipped rather than dropped, and clipping interpolates across the cell, so it
+        // needs the value at every corner. Whether a corner is part of the picture is a separate
+        // question, and the answer to it is what the levels and the outline are built from.
+        inside[i][j] = Double.isFinite(z) && (region == null || region.accepts(xVal, yVal, z));
+        defined[i][j] = inside[i][j];
+        if (inside[i][j]) {
           if (z < minZ)
             minZ = z;
           if (z > maxZ)
@@ -234,6 +235,11 @@ public class ContourPlot extends ListPlot {
       }
     }
 
+    // The cells the edge of the region runs through, and the line it follows through each. A cell
+    // that is wholly in or wholly out is not listed here: it is drawn, or not, exactly as before.
+    double[][][][] cellClip = regionClips(inside, region, zGrid, xRange[0], yRange[0], stepX, stepY,
+        gridX, gridY);
+
     // 3. Shading (Polygons)
     if (contourShading != S.None && !contourShading.isFalse()) {
       for (int k = -1; k < levels.length; k++) {
@@ -255,8 +261,26 @@ public class ContourPlot extends ListPlot {
           for (int j = 0; j < gridY; j++) {
             double x = xRange[0] + i * stepX;
             double y = yRange[0] + j * stepY;
-            processCellPolygon(polygons, x, y, stepX, stepY, zGrid[i][j], zGrid[i + 1][j],
-                zGrid[i + 1][j + 1], zGrid[i][j + 1], level);
+            if (cellClip != null && !inside[i][j] && !inside[i + 1][j] && !inside[i + 1][j + 1]
+                && !inside[i][j + 1]) {
+              continue;
+            }
+            double[][] clip = cellClip == null ? null : cellClip[i][j];
+            if (cellClip != null && clip == null && !(inside[i][j] && inside[i + 1][j]
+                && inside[i + 1][j + 1] && inside[i][j + 1])) {
+              // partly inside, but the region crosses the cell more than once: no single line
+              // describes it, so it is left out as it was before there was any clipping at all
+              continue;
+            }
+            final double c00 = zGrid[i][j];
+            final double c10 = zGrid[i + 1][j];
+            final double c11 = zGrid[i + 1][j + 1];
+            final double c01 = zGrid[i][j + 1];
+            final double cx = x;
+            final double cy = y;
+            final double cLevel = level;
+            clipped(polygons, clip, S.Polygon,
+                out -> processCellPolygon(out, cx, cy, stepX, stepY, c00, c10, c11, c01, cLevel));
           }
         }
 
@@ -293,8 +317,24 @@ public class ContourPlot extends ListPlot {
           for (int j = 0; j < gridY; j++) {
             double x = xRange[0] + i * stepX;
             double y = yRange[0] + j * stepY;
-            processCellLine(lineSegments, x, y, stepX, stepY, zGrid[i][j], zGrid[i + 1][j],
-                zGrid[i + 1][j + 1], zGrid[i][j + 1], level);
+            if (cellClip != null && !inside[i][j] && !inside[i + 1][j] && !inside[i + 1][j + 1]
+                && !inside[i][j + 1]) {
+              continue;
+            }
+            double[][] clip = cellClip == null ? null : cellClip[i][j];
+            if (cellClip != null && clip == null && !(inside[i][j] && inside[i + 1][j]
+                && inside[i + 1][j + 1] && inside[i][j + 1])) {
+              continue;
+            }
+            final double c00 = zGrid[i][j];
+            final double c10 = zGrid[i + 1][j];
+            final double c11 = zGrid[i + 1][j + 1];
+            final double c01 = zGrid[i][j + 1];
+            final double cx = x;
+            final double cy = y;
+            final double cLevel = level;
+            clipped(lineSegments, clip, S.Line,
+                out -> processCellLine(out, cx, cy, stepX, stepY, c00, c10, c11, c01, cLevel));
           }
         }
 
@@ -319,6 +359,114 @@ public class ContourPlot extends ListPlot {
     }
 
     appendBoundary(primitives, defined, xRange[0], yRange[0], stepX, stepY, boundaryStyle);
+  }
+
+  /**
+   * The line the edge of the region follows through each cell it runs through.
+   *
+   * <p>
+   * Masking a grid can only drop whole cells, which turns a smooth region boundary into a staircase
+   * with one step per sample. Clipping each straddled cell to the line between the two points where
+   * the region crosses its edges follows the boundary instead. Inside one cell a smooth curve is
+   * very nearly straight, so at any density worth plotting at the difference is invisible.
+   *
+   * <p>
+   * The value at a crossing is interpolated from the four corners rather than evaluated again: the
+   * boundary is already being approximated to first order inside the cell, and a region written on
+   * the value rather than on the position would otherwise cost a fresh evaluation of the plotted
+   * function at every step of every bisection.
+   *
+   * @return {@code null} when there is no region at all, otherwise an entry per cell which is
+   *         {@code null} unless that cell needs clipping
+   */
+  static double[][][][] regionClips(boolean[][] inside, RegionFunctionFilter region,
+      double[][] zGrid, double x0, double y0, double stepX, double stepY, int gridX, int gridY) {
+    if (region == null) {
+      return null;
+    }
+    double[][][][] clips = new double[gridX][gridY][][];
+    for (int i = 0; i < gridX; i++) {
+      double x = x0 + i * stepX;
+      for (int j = 0; j < gridY; j++) {
+        double y = y0 + j * stepY;
+        boolean[] corners = {inside[i][j], inside[i + 1][j], inside[i + 1][j + 1],
+            inside[i][j + 1]};
+        if (corners[0] == corners[1] && corners[1] == corners[2] && corners[2] == corners[3]) {
+          continue; // wholly in or wholly out; nothing to cut
+        }
+        final double v00 = zGrid[i][j];
+        final double v10 = zGrid[i + 1][j];
+        final double v11 = zGrid[i + 1][j + 1];
+        final double v01 = zGrid[i][j + 1];
+        if (!Double.isFinite(v00) || !Double.isFinite(v10) || !Double.isFinite(v11)
+            || !Double.isFinite(v01)) {
+          continue; // a corner without a value: the cell is dropped anyway
+        }
+        RegionClip.Membership member = (px, py) -> {
+          double u = (px - x) / stepX;
+          double v = (py - y) / stepY;
+          double value = v00 * (1 - u) * (1 - v) + v10 * u * (1 - v) + v11 * u * v
+              + v01 * (1 - u) * v;
+          return region.accepts(px, py, value);
+        };
+        double[][] cellCorners = {{x, y}, {x + stepX, y}, {x + stepX, y + stepY}, {x, y + stepY}};
+        clips[i][j] = RegionClip.cellBoundary(member, cellCorners, corners);
+      }
+    }
+    return clips;
+  }
+
+  /**
+   * Appends what one cell draws, cut to the region when its edge runs through that cell.
+   *
+   * <p>
+   * The marching squares routines write straight into the output, so a clipped cell is drawn into a
+   * scratch list first and each primitive is then cut. Both the shaded bands and the contour lines
+   * are pieces of a cell that a straight line already cut off, so both stay convex and one pass of
+   * the clipper is enough.
+   *
+   * @param clip {@code null} to append what the cell draws unchanged
+   * @param head {@code Polygon} or {@code Line}, which is what the cell draws
+   */
+  static void clipped(IASTAppendable out, double[][] clip, ISymbol head,
+      java.util.function.Consumer<IASTAppendable> draw) {
+    if (clip == null) {
+      draw.accept(out);
+      return;
+    }
+    IASTAppendable raw = F.ListAlloc(4);
+    draw.accept(raw);
+    for (IExpr primitive : raw) {
+      if (!primitive.isAST1() || !primitive.first().isList()) {
+        continue;
+      }
+      IAST points = (IAST) primitive.first();
+      double[][] corners = new double[points.argSize()][];
+      boolean readable = true;
+      for (int k = 1; k <= points.argSize(); k++) {
+        IExpr point = points.get(k);
+        if (!point.isList2()) {
+          readable = false;
+          break;
+        }
+        corners[k - 1] =
+            new double[] {point.first().evalfNaN(), point.second().evalfNaN()};
+      }
+      if (!readable) {
+        continue;
+      }
+      double[][] cut = head == S.Line && corners.length == 2
+          ? RegionClip.clipSegment(corners[0], corners[1], clip[0], clip[1], clip[2][0], clip[2][1])
+          : RegionClip.clipPolygon(corners, clip[0], clip[1], clip[2][0], clip[2][1]);
+      if (cut == null) {
+        continue;
+      }
+      IASTAppendable list = F.ListAlloc(cut.length);
+      for (double[] point : cut) {
+        list.append(F.List(F.num(point[0]), F.num(point[1])));
+      }
+      out.append(F.unaryAST1(head, list));
+    }
   }
 
   /**

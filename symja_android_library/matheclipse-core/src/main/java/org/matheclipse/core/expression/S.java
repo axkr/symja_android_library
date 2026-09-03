@@ -16043,6 +16043,14 @@ public class S {
   public final static IBuiltInSymbol PlotRangeClipping =
       S.initFinalSymbol("PlotRangeClipping", ID.PlotRangeClipping);
 
+  /**
+   * PlotRangePadding->p - is an option for graphics functions which specifies how much to enlarge
+   * the range that is drawn beyond the range the data occupies.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlotRangePadding.md">PlotRangePadding
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol PlotRangePadding =
       S.initFinalSymbol("PlotRangePadding", ID.PlotRangePadding);
 

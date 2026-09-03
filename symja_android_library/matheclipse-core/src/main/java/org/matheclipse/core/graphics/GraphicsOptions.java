@@ -566,6 +566,20 @@ public class GraphicsOptions {
     return x -> x;
   }
 
+  /**
+   * The inverse of {@link #getScalingFunction(String)}, for reading a data coordinate back out of
+   * a scaled one.
+   */
+  public static DoubleUnaryOperator getInverseScalingFunction(String scale) {
+    if (scale == null)
+      return x -> x;
+    if (scale.equalsIgnoreCase("Log10"))
+      return x -> Math.pow(10.0, x);
+    if (scale.equalsIgnoreCase("Log"))
+      return Math::exp;
+    return x -> x;
+  }
+
   public static Function<IExpr, IExpr> getScaling(ArrayNode array, IExpr scale) {
     if (scale.isString()) {
       String scaleStr = scale.toString();
