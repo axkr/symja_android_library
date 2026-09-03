@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -689,7 +690,7 @@ public final class Programming {
    * <blockquote>
    *
    * <p>
-   * starts with <code>i = max</code>.
+   * starts with <code>i = min</code>.
    *
    * </blockquote>
    *
@@ -769,11 +770,28 @@ public final class Programming {
       }
       try {
         final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-        ast.forEach2((x, i) -> iterList.add(Iterator.create((IAST) x, i, engine)));
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          if (arg.isList()) {
+            iterList.add(Iterator.create((IAST) arg, i, engine));
+          } else {
+            // a bare count is a valid specification, as it is for Table: Do(expr, 3) runs three
+            // times. Anything else is reported instead of silently doing nothing.
+            IExpr evaledArg = engine.evaluate(arg);
+            if (evaledArg.isReal()) {
+              iterList.add(Iterator.create(F.list(evaledArg), i, engine));
+            } else {
+              // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
+              return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)), engine);
+            }
+          }
+        }
         final DoIterator generator = new DoIterator(iterList, engine);
         return generator.doIt(ast.arg1());
-      } catch (final NoEvalException | ClassCastException e) {
-        // ClassCastException: the iterators are generated only from IASTs
+      } catch (final ValidateException ve) {
+        return Errors.printMessage(ast.topHead(), ve, engine);
+      } catch (final NoEvalException e) {
+        // the iterator has no appropriate bounds
       }
       return F.NIL;
     }

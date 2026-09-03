@@ -192,6 +192,22 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
       }
     }
     IExpr head = function.head();
+    if ((head == S.Max || head == S.Min) && function.argSize() > 2) {
+      // Math.max/Math.min only ever take two arguments; Max/Min take any number, so more than
+      // two has to nest - "Math.max(a, Math.max(b, c))" - rather than pass three arguments to a
+      // two-argument method
+      String methodName = head == S.Max ? "Math.max" : "Math.min";
+      for (int i = 1; i < function.argSize(); i++) {
+        buf.append(methodName).append('(');
+        convertInternal(buf, function.get(i));
+        buf.append(',');
+      }
+      convertInternal(buf, function.last());
+      for (int i = 1; i < function.argSize(); i++) {
+        buf.append(')');
+      }
+      return;
+    }
     if (head.isSymbol()) {
       String str = functionHead((ISymbol) head);
       if (str != null) {

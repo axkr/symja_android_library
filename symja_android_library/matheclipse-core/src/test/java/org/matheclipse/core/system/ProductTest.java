@@ -369,4 +369,63 @@ public class ProductTest extends ExprEvaluatorTestCase {
     check("Product(e+1,{e,{}})", //
         "1");
   }
+
+  /**
+   * A <code>{{e1,e2,...}}</code> iterator specification runs over the elements of the list without
+   * assigning them to a variable; only the number of elements matters.
+   */
+  @Test
+  public void testProductVariableLessListIterator() {
+    check("Product(x, {{1,2,3}})", //
+        "x^3");
+    check("Product(x, {{a,b}})", //
+        "x^2");
+    check("Product(f(x), {{}})", //
+        "1");
+  }
+
+  @Test
+  public void testProductStep() {
+    check("Product(k, {k,1,n,2})", //
+        "(2^(1+Floor(1/2*(-1+n)))*Gamma(3/2+Floor(1/2*(-1+n))))/Sqrt(Pi)");
+    check("Product(k^2, {k,1,n,2})", //
+        "(2^(2*(1+Floor(1/2*(-1+n))))*Gamma(3/2+Floor(1/2*(-1+n)))^2)/Pi");
+    // the closed form has to agree with the unrolled product 1*3*5*7 == 105
+    check("Product(k, {k,1,7,2})", //
+        "105");
+    check("((2^(1+Floor(1/2*(-1+n)))*Gamma(3/2+Floor(1/2*(-1+n))))/Sqrt(Pi) /. n->7)", //
+        "105");
+    check("Product(f(k), {k,1,6,2})", //
+        "f(1)*f(3)*f(5)");
+  }
+
+  /**
+   * A zero factor does not make the product zero on its own: an empty range is the empty product
+   * <code>1</code>.
+   */
+  @Test
+  public void testProductEmptyRange() {
+    check("Product(0, {i,1,0})", //
+        "1");
+    check("Product(0, {i,5,1})", //
+        "1");
+    check("Product(f(i), {i,1,0})", //
+        "1");
+    check("Product(0, {i,1,3})", //
+        "0");
+    check("Product(0, {i,1,n})", //
+        "0^n");
+  }
+
+  @Test
+  public void testProductZeroStep() {
+    check("Product(i, {i,1,5,0})", //
+        "Product(i,{i,1,5,0})");
+  }
+
+  @Test
+  public void testProductListFactor() {
+    check("Product({i,i^2}, {i,1,n})", //
+        "{n!,(n!)^2}");
+  }
 }

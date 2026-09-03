@@ -6725,6 +6725,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDo() {
+    // a bare count is a valid specification, as it is for Table
+    check("Reap(Do(Sow(i), 3))[[2,1]]", //
+        "{i,i,i}");
+    // a step of 0 would iterate forever
+    check("Do(Print(i), {i,1,5,0})", //
+        "Do(Print(i),{i,1,5,0})");
+    // an iterator specification which is neither a list nor a count is reported, not ignored
+    check("s={i,1,3}; Do(Sow(i), s)", //
+        "Do(Sow(i),s)");
+
+    // a {{e1,e2,...}} iterator runs over the elements of the list without assigning them to a
+    // variable; only the number of elements matters
+    check("Reap(Do(Sow(z), {{1,2,3}}))[[2,1]]", //
+        "{z,z,z}");
+    check("Reap(Do(Sow(z), {{}}))[[2]]", //
+        "{}");
     // `Evaluate(...)` escapes the HoldAll attribute of `Do`, so the iterator specification is
     // evaluated before `Do` reads it
     check("it={i,1,3}; Reap(Do(Sow(i), Evaluate(it)))[[2,1]]", //
@@ -21778,6 +21794,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Range(a,b,Infinity)", //
         "a");
 
+    // a step of 0 never advances; the message is `range`, not the 1/0 that computing the number
+    // of steps used to leak
+    check("Range(1,5,0)", //
+        "Range(1,5,0)");
     check("Range(1,1.25,0)", //
         "Range(1,1.25,0)");
     check("Range(1,-1 )", //
@@ -25585,6 +25605,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTable() {
     EvalEngine.resetModuleCounter4JUnit();
+
+    // a step of 0 would iterate forever
+    check("Table(i, {i,1,5,0})", //
+        "Table(i,{i,1,5,0})");
+    check("Table(i, {i,1.,5.,0.})", //
+        "Table(i,{i,1.0,5.0,0.0})");
+    // a range whose length cannot be decided is left alone; answering {} would silently claim the
+    // table is empty
+    check("Table(i, {i,1,n})", //
+        "Table(i,{i,1,n})");
+    check("Table(i, {i,a,b})", //
+        "Table(i,{i,a,b})");
+    // ... but a range whose length is decidable is built, even with symbolic bounds
+    check("Table(i, {i,n,n+3})", //
+        "{n,1+n,2+n,3+n}");
+    // a one element iterator is a count, not a variable
+    check("Table(x, {a+b})", //
+        "Table(x,{a+b})");
+    // the count form is not capped where the equivalent {i,n} form is not
+    check("Length(Table(0, {2000}))", //
+        "2000");
+    check("Length(Table(0, {i,2000}))", //
+        "2000");
+
+    // a {{e1,e2,...}} iterator runs over the elements of the list without assigning them to a
+    // variable; only the number of elements matters
+    check("Table(x, {{a,b,c}})", //
+        "{x,x,x}");
+    check("Table(x, {{1,2,3}})", //
+        "{x,x,x}");
+    check("Table(f(i), {i,{a,b}}, {{1,2}})", //
+        "{{f(a),f(a)},{f(b),f(b)}}");
+    check("Table(x, {{}})", //
+        "{}");
 
     check("Table(n, {n, 2147483647, 2147483647 , 1})", //
         "{2147483647}");

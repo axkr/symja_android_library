@@ -92,6 +92,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
 
     // --- Native Hipparchus Instance Methods ---
     builder.put(S.Abs, ".abs");
+    builder.put(S.Conjugate, ".conjugate");
     builder.put(S.ArcCos, ".acos");
     builder.put(S.ArcSin, ".asin");
     builder.put(S.ArcTan, ".atan");
@@ -208,6 +209,18 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
       }
     }
     IExpr head = function.head();
+    if (function.isAST1() && (head == S.Re || head == S.Im || head == S.Arg)) {
+      // these read a `double` out of a Complex (Hipparchus has no `Complex`-valued accessor for
+      // any of the three), but every other operation in this domain - Plus, Times, the other
+      // dot-mapped functions - chains Hipparchus instance methods and so needs a Complex to call
+      // them on; wrapping the double back up is what keeps the two composable
+      buf.append("Complex.valueOf((");
+      convertInternal(buf, function.first());
+      buf.append(").");
+      buf.append(head == S.Re ? "getReal" : head == S.Im ? "getImaginary" : "getArgument");
+      buf.append("())");
+      return;
+    }
     if (head.isSymbol() && function.size() > 1) {
       String str = functionHead((ISymbol) head);
       if (str != null) {
@@ -216,6 +229,15 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
           if (function.isPower()) {
             IExpr base = function.base();
             IExpr exponent = function.exponent();
+            if (base == S.E) {
+              // E^z is exactly exp(z), for any exponent - Hipparchus has no two-argument
+              // Complex.pow(double,Complex) overload, so writing this the general way below
+              // ends up calling an instance method on the plain `double` Math.E is written as
+              buf.append("(");
+              convertInternal(buf, exponent);
+              buf.append(").exp()");
+              return;
+            }
             if (exponent.isNumEqualRational(F.C1D2)) {
               buf.append("(");
               convertInternal(buf, base);

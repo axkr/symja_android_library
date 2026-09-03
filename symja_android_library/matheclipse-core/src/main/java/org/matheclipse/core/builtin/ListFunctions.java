@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -22,7 +23,6 @@ import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
-import org.matheclipse.core.eval.ArithmeticUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -404,192 +404,107 @@ public final class ListFunctions {
     }
 
     public IExpr tableRecursive() {
-
-      if (fIndex < fIterList.size()) {
-        final IIterator<IExpr> iter = fIterList.get(fIndex);
-        if (iter.setUp()) {
-          try {
-            final int index = fIndex++;
-            if (fPrototypeList.head() == S.Plus || fPrototypeList.head() == S.Times) {
-              if (iter.hasNext()) {
-                fCurrentIndex[index] = iter.next();
-                fCurrentVariable[index] = iter.getVariable();
-                IExpr temp = tableRecursive();
-                if (temp == null || temp.isNIL()) {
-                  temp = fDefaultValue;
-                }
-                if (temp.isNumber()) {
-                  if (fPrototypeList.head() == S.Plus) {
-                    return tablePlus((INumber) temp, iter, index);
-                  } else {
-                    return tableTimes((INumber) temp, iter, index);
-                  }
-                } else {
-                  return createGenericTable(iter, index, iter.allocHint(), temp, null);
-                }
-              }
-              if (iter.isInvalidNumeric()) {
-                return fDefaultValue;
-              }
-              return F.NIL;
-            }
-            return createGenericTable(iter, index, iter.allocHint(), null, null);
-          } finally {
-            --fIndex;
-            iter.tearDown();
-          }
-        }
-        return fDefaultValue;
-      }
-      return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
+      return tableRecursive(false);
     }
 
     /**
-     * Throws a {@link NoEvalException#CONST} flow control exception if the iterator's setup fails.
-     * 
+     * Like {@link #tableRecursive()}, but throws a {@link NoEvalException#CONST} flow control
+     * exception if the iterator does not determine the values it iterates over.
+     *
      * @return {@link F#NIL} if the iterator is empty
      * @throws FlowControlException
      */
     public IExpr tableThrowRecursive() throws FlowControlException {
-      if (fIndex < fIterList.size()) {
-        final IIterator<IExpr> iter = fIterList.get(fIndex);
+      return tableRecursive(true);
+    }
 
+    /**
+     * Walk the iterator at {@link #fIndex}, recursing into the iterators behind it and handing the
+     * innermost variable bindings to {@link #fFunction}.
+     *
+     * @param throwOnInvalidIterator use {@link IIterator#setUpThrow()}, which raises
+     *        {@link NoEvalException} for an iterator that does not determine its values, instead of
+     *        {@link IIterator#setUp()}
+     */
+    private IExpr tableRecursive(boolean throwOnInvalidIterator) {
+      if (fIndex >= fIterList.size()) {
+        return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
+      }
+      final IIterator<IExpr> iter = fIterList.get(fIndex);
+      try {
+        // setUp() saves the value the iterator variable had before the iteration, so tearDown()
+        // has to run even when the set up fails
+        if (!(throwOnInvalidIterator ? iter.setUpThrow() : iter.setUp())) {
+          return fDefaultValue;
+        }
+        final int index = fIndex++;
         try {
-          if (iter.setUpThrow()) {
-            final int index = fIndex++;
+          if (fPrototypeList.head() == S.Plus || fPrototypeList.head() == S.Times) {
             if (iter.hasNext()) {
-              if (fPrototypeList.head() == S.Plus || fPrototypeList.head() == S.Times) {
-
-                fCurrentIndex[index] = iter.next();
-                fCurrentVariable[index] = iter.getVariable();
-                IExpr temp = tableRecursive();
-                if (temp == null || temp.isNIL()) {
-                  temp = fDefaultValue;
-                }
-                if (temp.isNumber()) {
-                  if (fPrototypeList.head() == S.Plus) {
-                    return tablePlus((INumber) temp, iter, index);
-                  } else {
-                    return tableTimes((INumber) temp, iter, index);
-                  }
-                } else {
-                  // if (iter.isApproximationMode() && temp.isNumericFunction(true)) {
-                  // INumber num = temp.evalNumber();
-                  // if (num != null) {
-                  // if (fPrototypeList.head().equals(S.Plus)) {
-                  // return tablePlus(num, iter, index);
-                  // } else {
-                  // return tableTimes(num, iter, index);
-                  // }
-                  // }
-                  // }
-                  return createGenericTable(iter, index, iter.allocHint(), temp, null);
-                }
+              fCurrentIndex[index] = iter.next();
+              fCurrentVariable[index] = iter.getVariable();
+              IExpr temp = tableRecursive();
+              if (temp == null || temp.isNIL()) {
+                temp = fDefaultValue;
               }
-            } else {
-              return F.NIL;
+              if (temp.isNumber()) {
+                return fPrototypeList.head() == S.Plus //
+                    ? tableAccumulate((INumber) temp, iter, index, IExpr::plus, F.NIL)
+                    : tableAccumulate((INumber) temp, iter, index, IExpr::times, F.C0);
+              }
+              return createGenericTable(iter, index, iter.allocHint(), temp, null);
             }
-            return createGenericTable(iter, index, iter.allocHint(), null, null);
+            if (iter.isInvalidNumeric()) {
+              return fDefaultValue;
+            }
+            return F.NIL;
           }
+          return createGenericTable(iter, index, iter.allocHint(), null, null);
         } finally {
+          // only decrement what was incremented above
           --fIndex;
-          iter.tearDown();
         }
-
-        return fDefaultValue;
+      } finally {
+        iter.tearDown();
       }
-      return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
     }
 
-    private IExpr tablePlus(INumber num, final IIterator<IExpr> iter, final int index) {
+    /**
+     * Fold the remaining elements of <code>iter</code> into <code>num</code> with
+     * <code>operator</code>, the accumulating tail shared by <code>Sum()</code> and
+     * <code>Product()</code>. As soon as an element is not a numeric function the fold is abandoned
+     * and the rest is collected symbolically by
+     * {@link #createGenericTable(IIterator, int, int, IExpr, IExpr)}.
+     *
+     * @param num the value accumulated so far
+     * @param iter the iterator to consume
+     * @param index the position of <code>iter</code> in the iterator list
+     * @param operator {@link IExpr#plus(IExpr)} for a sum, {@link IExpr#times(IExpr)} for a product
+     * @param absorbing the absorbing element which ends the fold early ({@link F#C0} for a
+     *        product), or {@link F#NIL} if the operator has none
+     */
+    private IExpr tableAccumulate(INumber num, final IIterator<IExpr> iter, final int index,
+        BinaryOperator<IExpr> operator, IExpr absorbing) {
       int counter = 0;
-      IExpr sumResult = num;
+      IExpr result = num;
       while (iter.hasNext()) {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
         IExpr temp = tableRecursive();
-        if (temp == null) {
+        if (temp == null || temp.isNIL()) {
           temp = fDefaultValue;
         }
         if (temp.isNumericFunction(true)) {
-          // if (iter.isApproximationMode()) {
-          // try {
-          // Complex c = temp.evalfc();
-          // if (c.isReal()) {
-          // final double realPart = c.getReal();
-          // if (F.isZero(realPart, 1.0e-12)) {
-          // break;
-          // }
-          // sumResult = sumResult.add(c.getReal());
-          // counter++;
-          // continue;
-          // }
-          // if (F.isZero(c, 1.0e-6)) {
-          // break;
-          // }
-          // sumResult = sumResult.plus(F.complexNum(c));
-          // } catch (ArgumentTypeException ate) {
-          // sumResult = sumResult.plus(temp);
-          // }
-          // } else {
-          sumResult = sumResult.plus(temp);
-          // }
-        } else {
-          return createGenericTable(iter, index, iter.allocHint() - counter, sumResult, temp);
-        }
-        counter++;
-      }
-      return sumResult;
-    }
-
-    private IExpr tableTimes(INumber num, final IIterator<IExpr> iter, final int index) {
-      int counter = 0;
-      IExpr productResult = num;
-      while (iter.hasNext()) {
-        fCurrentIndex[index] = iter.next();
-        fCurrentVariable[index] = iter.getVariable();
-        IExpr temp = tableRecursive();
-        if (temp == null) {
-          temp = fDefaultValue;
-        }
-        if (temp.isNumericFunction(true)) {
-          // if (iter.isApproximationMode()) {
-          // try {
-          // Complex c = temp.evalfc();
-          // if (c.isReal()) {
-          // final double realPart = c.getReal();
-          // if (F.isZero(realPart, 1.0e-12)) {
-          // return F.C0;
-          // }
-          // if (F.isFuzzyEquals(realPart, 1.0, 1.0e-12)) {
-          // break;
-          // }
-          // productResult = productResult.multiply(c.getReal());
-          // counter++;
-          // continue;
-          // }
-          // if (F.isZero(c, 1.0e-6)) {
-          // return F.C0;
-          // }
-          // if (F.isFuzzyEquals(c, Complex.ONE, 1.0e-6)) {
-          // break;
-          // }
-          // productResult = productResult.times(F.complexNum(c));
-          // } catch (ArgumentTypeException ate) {
-          // productResult = productResult.times(temp);
-          // }
-          // } else {
-          if (temp.isZero()) {
-            return F.C0;
+          if (absorbing.isPresent() && temp.equals(absorbing)) {
+            return absorbing;
           }
-          productResult = productResult.times(temp);
-          // }
+          result = operator.apply(result, temp);
         } else {
-          return createGenericTable(iter, index, iter.allocHint() - counter, productResult, temp);
+          return createGenericTable(iter, index, iter.allocHint() - counter, result, temp);
         }
         counter++;
       }
-      return productResult;
+      return result;
     }
 
     /**
@@ -5417,8 +5332,10 @@ public final class ListFunctions {
       }
       if (ast.isAST3()) {
         if (ast.arg3().isZero()) {
-          ArithmeticUtil.printInfy(ast.topHead(), ast.arg2(), ast.arg3());
-          return F.NIL;
+          // Range specification in `1` does not have appropriate bounds.
+          // A step of 0 never advances; saying so beats leaking the 1/0 that computing the number
+          // of steps would produce.
+          return Errors.printMessage(S.Range, "range", F.list(ast), engine);
         }
         if (ast.arg3().isDirectedInfinity()) {
           return ast.arg1();
@@ -7011,58 +6928,53 @@ public final class ListFunctions {
      */
     protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue,
         EvalEngine engine) {
+      if (ast.size() <= 2) {
+        return F.NIL;
+      }
+      final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
       try {
-        if (ast.size() > 2) {
-          final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-          for (int i = 2; i < ast.size(); i++) {
-            IExpr arg = ast.get(i);
-            if (arg.isList()) {
-              iterList.add(Iterator.create((IAST) arg, i, engine));
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          if (arg.isList()) {
+            iterList.add(Iterator.create((IAST) arg, i, engine));
+          } else {
+            IExpr evaledArg = engine.evaluate(arg);
+            if (evaledArg.isReal()) {
+              iterList.add(Iterator.create(F.list(evaledArg), i, engine));
             } else {
-              IExpr evaledArg = engine.evaluate(arg);
-              if (evaledArg.isReal()) {
-                iterList.add(Iterator.create(F.list(evaledArg), i, engine));
-              } else {
-                // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-                return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)), engine);
-              }
+              // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
+              return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)), engine);
             }
           }
-
-          final TableGenerator generator = new TableGenerator(iterList, resultList,
-              new TableFunction(engine, ast.arg1()), defaultValue);
-          return generator.tableRecursive();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
-        return Errors.printMessage(S.Table, e, EvalEngine.get());
-      } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
-        // ClassCastException: the iterators are generated only from IASTs
-        // ArithmeticException example: division / by zero if step==-1
+        return Errors.printMessage(ast.topHead(), e, engine);
       }
-      return F.NIL;
+      return generate(ast.topHead(), iterList, resultList, ast.arg1(), defaultValue, false, engine);
     }
 
+    /**
+     * Like {@link #evaluateTable(IAST, IAST, IExpr, EvalEngine)}, but every argument is taken as an
+     * iterator specification without checking it first, and an iterator which does not determine
+     * the values it iterates over aborts the generation instead of being skipped.
+     *
+     * @see Product
+     * @see Sum
+     */
     protected static IExpr evaluateTableThrow(final IAST ast, final IAST resultList,
         IExpr defaultValue, EvalEngine engine) {
+      if (ast.size() <= 2) {
+        return F.NIL;
+      }
+      final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
       try {
-        if (ast.size() > 2) {
-          final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-          for (int i = 2; i < ast.size(); i++) {
-            IExpr arg = ast.get(i);
-            iterList.add(Iterator.create(arg.makeList(), i, engine));
-          }
-
-          final TableGenerator generator = new TableGenerator(iterList, resultList,
-              new TableFunction(engine, ast.arg1()), defaultValue);
-          return generator.tableThrowRecursive();
+        for (int i = 2; i < ast.size(); i++) {
+          iterList.add(Iterator.create(ast.get(i).makeList(), i, engine));
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
-        return Errors.printMessage(S.Table, e, EvalEngine.get());
-      } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
-        // ClassCastException: the iterators are generated only from IASTs
-        // ArithmeticException example: division / by zero if step==-1
+        return Errors.printMessage(ast.topHead(), e, engine);
       }
-      return F.NIL;
+      return generate(ast.topHead(), iterList, resultList, ast.arg1(), defaultValue, true, engine);
     }
 
     /**
@@ -7073,22 +6985,39 @@ public final class ListFunctions {
      * @param iter the iterator function
      * @param resultList the result list to which the generated expressions should be appended.
      * @param defaultValue the default value used if the iterator is invalid
+     * @param head the head to report a message for
      * @return {@link F#NIL} if no evaluation is possible
      * @see Product
      * @see Sum
      */
     protected static IExpr evaluateLast(final IExpr expr, final IIterator<IExpr> iter,
-        final IAST resultList, IExpr defaultValue) {
-      try {
-        final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-        iterList.add(iter);
+        final IAST resultList, IExpr defaultValue, ISymbol head) {
+      final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+      iterList.add(iter);
+      return generate(head, iterList, resultList, expr, defaultValue, false, EvalEngine.get());
+    }
 
-        final TableGenerator generator = new TableGenerator(iterList, resultList,
-            new TableFunction(EvalEngine.get(), expr), defaultValue);
-        return generator.tableRecursive();
+    /**
+     * Run a {@link TableGenerator} over <code>iterList</code>, the shared tail of
+     * {@link #evaluateTable(IAST, IAST, IExpr, EvalEngine)},
+     * {@link #evaluateTableThrow(IAST, IAST, IExpr, EvalEngine)} and
+     * {@link #evaluateLast(IExpr, IIterator, IAST, IExpr)}.
+     *
+     * @param head the head to report a message for
+     * @param throwOnInvalidIterator abort on an iterator which does not determine its values
+     * @return {@link F#NIL} if no evaluation is possible
+     */
+    private static IExpr generate(ISymbol head, List<IIterator<IExpr>> iterList,
+        final IAST resultList, IExpr expr, IExpr defaultValue, boolean throwOnInvalidIterator,
+        EvalEngine engine) {
+      try {
+        final TableGenerator generator =
+            new TableGenerator(iterList, resultList, new TableFunction(engine, expr), defaultValue);
+        return throwOnInvalidIterator ? generator.tableThrowRecursive() : generator.tableRecursive();
       } catch (final ArrayIndexOutOfBoundsException e) {
-        return Errors.printMessage(S.Table, e, EvalEngine.get());
+        return Errors.printMessage(head, e, engine);
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
+        // NoEvalException: an iterator which does not determine the values it iterates over
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
       }
@@ -7101,23 +7030,37 @@ public final class ListFunctions {
     }
 
     /**
-     * Determine all local variables of the iterators starting with index <code>2</code>.
+     * Reindex an iterator whose step differs from <code>1</code> onto a fresh variable with step
+     * <code>1</code>: <code>{var, from, to, step}</code> becomes
+     * <code>{j, 0, Floor((to-from)/step)}</code> and <code>expr</code> is rewritten in terms of
+     * <code>from + step*j</code>. The symbolic <code>Sum()</code> and <code>Product()</code>
+     * engines all assume a step of <code>1</code>; this is what makes them applicable to a stepped
+     * iterator.
      *
-     * @param ast
-     * @return a list of local variables
+     * @param expr the summand or the factor
+     * @param iterator an iterator with a lower limit, an upper limit and a step
+     * @return <code>{rewrittenExpr, {j, 0, count}}</code> or {@link F#NIL} if the iterator cannot
+     *         be reindexed
+     * @see Product
+     * @see Sum
      */
-    public IAST determineIteratorVariables(final IAST ast) {
-      int size = ast.size();
-      return F.mapRange(2, size, i -> {
-        final IExpr arg = ast.get(i);
-        if (arg.isVariable()) {
-          return arg;
-        }
-        if (arg.isList() && arg.size() >= 2 && arg.first().isVariable()) {
-          return arg.first();
-        }
+    protected static IAST reindexStepIterator(final IExpr expr, final IIterator<IExpr> iterator) {
+      final ISymbol variable = iterator.getVariable();
+      IExpr from = iterator.getLowerLimit();
+      IExpr to = iterator.getUpperLimit();
+      IExpr step = iterator.getStep();
+      if (variable == null || from == null || to == null || step == null || step.isZero()
+          || from.isDirectedInfinity() || to.isDirectedInfinity() || !step.isFree(variable, true)
+          || !from.isFree(variable, true) || !to.isFree(variable, true)) {
         return F.NIL;
-      });
+      }
+      // F.Dummy(String) is not unique - two reindexings of the same variable name would both
+      // produce "step$i" and the outer substitution could capture the inner iterator's variable
+      ISymbol newVariable = F.Dummy(EvalEngine.uniqueName("step$" + variable.getSymbolName()));
+      IExpr count = F.Floor(F.Divide(F.Subtract(to, from), step));
+      IExpr rewritten =
+          F.subst(expr, x -> x.equals(variable), F.Plus(from, F.Times(step, newVariable)));
+      return F.List(rewritten, F.list(newVariable, F.C0, count));
     }
 
     /**

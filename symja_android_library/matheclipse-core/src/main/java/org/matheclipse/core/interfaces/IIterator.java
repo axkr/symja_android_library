@@ -86,7 +86,9 @@ public interface IIterator<E> extends Iterator<E> {
   }
 
   /**
-   * Test if there's a valid variable set for the iterator.
+   * Test if this iterator iterates over a determined set of values, so that {@link #setUpThrow()}
+   * can run it. That is the case for an iterator over the elements of a list, with or without a
+   * variable to assign them to.
    *
    * @return
    */

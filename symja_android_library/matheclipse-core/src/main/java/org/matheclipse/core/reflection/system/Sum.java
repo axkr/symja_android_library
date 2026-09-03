@@ -71,8 +71,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
         // shift the summation index to start at 0: ratio(from + var)
         IExpr num = engine.evaluate(F.Expand(F.xreplace(ratio[0], var, F.Plus(from, var))));
         IExpr den = engine.evaluate(F.Expand(F.xreplace(ratio[1], var, F.Plus(from, var))));
-        int degNum = degree(num, var, engine);
-        int degDen = degree(den, var, engine);
+        int degNum = degreeOf(num, var, engine);
+        int degDen = degreeOf(den, var, engine);
         if (degNum < 0 || degDen < 0) {
           return F.NIL;
         }
@@ -182,11 +182,6 @@ public class Sum extends ListFunctions.Table implements SumRules {
           && result.isFreeAST(S.Hypergeometric2F1);
     }
 
-    private static int degree(IExpr poly, ISymbol var, EvalEngine engine) {
-      int d = engine.evaluate(F.Exponent(poly, var)).toIntDefault();
-      return d == Integer.MIN_VALUE ? -1 : d;
-    }
-
     /**
      * The multiset of roots of <code>poly</code> in <code>var</code>, or <code>null</code> if the
      * polynomial cannot be split completely into linear factors over the roots found by
@@ -194,7 +189,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
      */
     private static List<IExpr> roots(IExpr poly, ISymbol var, EvalEngine engine) {
       List<IExpr> result = new ArrayList<>();
-      int d = degree(poly, var, engine);
+      int d = degreeOf(poly, var, engine);
       if (d <= 0) {
         return result;
       }
@@ -217,7 +212,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
       }
-      if (degree(p, var, engine) > 0) {
+      if (degreeOf(p, var, engine) > 0) {
         // could not fully factor -> not a nice hypergeometric term
         return null;
       }
@@ -295,6 +290,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
     }
     IExpr arg1 = ast.arg1();
+    if (arg1.isList()) {
+      // Sum({f,g},{i,1,n}) is the list of the two sums
+      return arg1.mapThread(ast, 1);
+    }
     if (arg1.isAST()) {
       arg1 = F.expand(arg1, false, false, false);
     }
@@ -352,27 +351,30 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
 
-        if (preevaledSum.argSize() >= 2) {
-          IAST sumForm = preevaledSum;
-          IAST lastList = list;
-          if (list.isAST2()) {
-            // Sum(f(x),..., {x, a}) ==> Sum(f(x),..., {x, 1, a})
-            lastList = F.List(list.arg1(), F.C1, list.arg2());
-            sumForm = sumForm.setAtCopy(sumForm.argSize(), lastList);
+        IAST sumForm = preevaledSum;
+        IAST lastList = list;
+        if (list.isAST2()) {
+          // Sum(f(x),..., {x, a}) ==> Sum(f(x),..., {x, 1, a})
+          lastList = F.List(list.arg1(), F.C1, list.arg2());
+          sumForm = sumForm.setAtCopy(sumForm.argSize(), lastList);
+        }
+        if (preevaledSum.argSize() > 2) {
+          // Multiple iterators: reduce the innermost sum with the full engine, not just with the
+          // rule table, and splice the result back. Only a closed form is spliced; a partially
+          // evaluated sum, or a DifferenceRoot recurrence, would be pushed into the outer iterator
+          // in a shape no outer summation can work with.
+          IAST reducedSumForm = F.Sum(preevaledSum.arg1(), lastList);
+          IExpr reducedResult = engine.evalQuietNIL(reducedSumForm);
+          if (reducedResult.isPresent() && !reducedResult.equals(reducedSumForm)
+              && reducedResult.isFreeAST(S.Sum) && reducedResult.isFreeAST(S.DifferenceRoot)) {
+            IASTMutable result = sumForm.removeAtCopy(sumForm.argSize());
+            result.set(1, reducedResult);
+            return result;
           }
-          if (preevaledSum.argSize() > 2) {
-            IAST reducedSumForm = F.Sum(preevaledSum.arg1(), lastList);
-            IExpr reducedResult = matcher1().apply(reducedSumForm);
-            if (reducedResult.isPresent()) {
-              IASTMutable result = sumForm.removeAtCopy(sumForm.argSize());
-              result.set(1, reducedResult);
-              return result;
-            }
-          } else {
-            IExpr result = matcher1().apply(sumForm);
-            if (result.isPresent()) {
-              return result;
-            }
+        } else {
+          IExpr result = matcher1().apply(sumForm);
+          if (result.isPresent()) {
+            return result;
           }
         }
 
@@ -428,7 +430,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
           if (iterator.isValidVariable() && iterator.isNumericFunction()) {
             IAST resultList = Plus();
-            temp = evaluateLast(preevaledSum.arg1(), iterator, resultList, F.C0);
+            temp = evaluateLast(preevaledSum.arg1(), iterator, resultList, F.C0, S.Sum);
             if (temp.isNIL() || temp.equals(resultList)) {
               return F.NIL;
             }
@@ -457,20 +459,30 @@ public class Sum extends ListFunctions.Table implements SumRules {
                       iterator.getUpperLimit(), null, engine);
                 }
                 if (temp.isNIL()) {
+                  // partial fractions -> PolyGamma / HarmonicNumber; after Gosper, so that a
+                  // telescoping sum keeps its elementary closed form
+                  temp = rationalSum(arg1, iterator.getVariable(), iterator.getLowerLimit(),
+                      iterator.getUpperLimit(), engine);
+                }
+                if (temp.isNIL()) {
                   // DIFFERENCE ROOT FALLBACK
                   // Holonomic sequence encoding using DifferenceRoot
                   temp = differenceRootFallback(arg1, iterator.getVariable(),
                       iterator.getLowerLimit(), iterator.getUpperLimit(), engine);
                 }
               }
-              if (temp.isPresent()) {
-                if (preevaledSum.isAST2()) {
-                  return temp;
-                }
-                IASTAppendable result = preevaledSum.removeAtClone(preevaledSum.argSize());
-                result.set(1, temp);
-                return result;
+            } else {
+              // A stepped iterator is reindexed onto a step of 1 and summed again; the engines
+              // above all assume a step of 1.
+              temp = steppedSum(arg1, iterator, engine);
+            }
+            if (temp.isPresent()) {
+              if (preevaledSum.isAST2()) {
+                return temp;
               }
+              IASTAppendable result = preevaledSum.removeAtClone(preevaledSum.argSize());
+              result.set(1, temp);
+              return result;
             }
           }
 
@@ -605,19 +617,28 @@ public class Sum extends ListFunctions.Table implements SumRules {
       if (expr.isPower() && !engine.evalGreater(C1, from) && !engine.evalGreater(from, to)) {
         IAST powAST = (IAST) expr;
         if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var) && to.isFree(var)) {
+          IExpr exponent = powAST.arg2();
           if (from.isOne()) {
             // i^(k),{i,1,n}) ==> HarmonicNumber(n,-k)
-            return F.HarmonicNumber(to, powAST.arg2().negate());
+            return F.HarmonicNumber(to, exponent.negate());
+          }
+          if (exponent.isNumber() || from.isInteger()) {
+            // i^k,{i,n,m} ==> HarmonicNumber(m,-k)-HarmonicNumber(n-1,-k)
+            //
+            // The HurwitzZeta form below has a pole for the exponent -1: for Sum(1/i,{i,n,m}) it
+            // is HurwitzZeta(1,n)-HurwitzZeta(1,1+m), which is ComplexInfinity-ComplexInfinity.
+            return F.Subtract(F.HarmonicNumber(to, exponent.negate()),
+                F.HarmonicNumber(F.Subtract(from, F.C1), exponent.negate()));
           }
           // i^k,{i,n,m} ==> HurwitzZeta(-k, n)-HurwitzZeta(-k,1+m)
-          return F.Subtract(F.HurwitzZeta(F.Negate(powAST.arg2()), from),
-              F.HurwitzZeta(F.Negate(powAST.arg2()), F.Plus(1, to)));
+          return F.Subtract(F.HurwitzZeta(F.Negate(exponent), from),
+              F.HurwitzZeta(F.Negate(exponent), F.Plus(1, to)));
         }
       }
 
       try {
         IAST resultList = Plus();
-        IExpr temp = evaluateLast(expr, iterator, resultList, F.NIL);
+        IExpr temp = evaluateLast(expr, iterator, resultList, F.NIL, S.Sum);
         if (temp.isPresent() && !temp.equals(resultList)) {
           return temp;
         }
@@ -625,7 +646,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
         return Errors.printMessage(S.Sum, rle, engine);
       }
     }
-    if (from.isPositive()) {
+    if (from.isPositive() && !isRationalInVar(expr, var, true, engine)) {
+      // A rational summand is left to rationalSum(): shifting the range to 0 would split its
+      // closed form into two PolyGamma() differences around the pole at var == 0.
       IExpr temp1 = engine.evalQuiet(F.Sum(expr, F.list(var, C0, from.minus(F.C1))));
       if (!temp1.isComplexInfinity() && temp1.isFreeAST(S.Sum)) {
         IExpr temp2 = engine.evalQuietNIL(F.Sum(expr, F.list(var, C0, to)));
@@ -673,6 +696,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
           return F.Subtract(subSum, F.Sum(expr, F.list(var, C1, from.minus(F.C1))));
         }
       }
+    }
+    // rational summand over [from, Infinity) -> PolyGamma closed form
+    IExpr rational = rationalSum(expr, var, from, to, engine);
+    if (rational.isPresent()) {
+      return rational;
     }
     // hypergeometric summand over [from, Infinity) -> HypergeometricPFQ closed form. Used as a last
     // resort so that summands handled by the rules/reduction above keep their established form.
@@ -763,6 +791,228 @@ public class Sum extends ListFunctions.Table implements SumRules {
     IExpr term2 =
         F.Times(F.Divide(1, pInc1), F.Subtract(F.BernoulliB(pInc1, from), F.BernoulliB(pInc1)));
     return F.Subtract(term1, term2);
+  }
+
+  /**
+   * Sum over an iterator whose step differs from <code>1</code> by reindexing it onto a step of
+   * <code>1</code>, see {@link ListFunctions.Table#reindexStepIterator(IExpr, IIterator)}.
+   *
+   * @return the closed form or {@link F#NIL} if the reindexed sum has none either
+   */
+  private static IExpr steppedSum(IExpr expr, IIterator<IExpr> iterator, EvalEngine engine) {
+    IAST reindexed = reindexStepIterator(expr, iterator);
+    if (reindexed.isNIL()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evalQuietNIL(F.Sum(reindexed.arg1(), reindexed.arg2()));
+    if (result.isPresent() && result.isFreeAST(S.Sum) && result.isFreeAST(S.DifferenceRoot)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rational summands: partial fractions -> PolyGamma / HarmonicNumber
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Test if <code>term</code> is a rational function of <code>var</code>, that is the quotient of
+   * two polynomials in <code>var</code>.
+   *
+   * @param properOnly only accept a denominator which really depends on <code>var</code>; a
+   *        polynomial summand is summed by Faulhaber's formula and is not a case for
+   *        {@link #rationalSum(IExpr, ISymbol, IExpr, IExpr, EvalEngine)}
+   */
+  private static boolean isRationalInVar(IExpr term, ISymbol var, boolean properOnly,
+      EvalEngine engine) {
+    IExpr together = engine.evaluate(F.Together(term));
+    IExpr numerator = engine.evaluate(F.Numerator(together));
+    IExpr denominator = engine.evaluate(F.Denominator(together));
+    if (properOnly && denominator.isFree(var, true)) {
+      return false;
+    }
+    return engine.evalTrue(F.PolynomialQ(numerator, var))
+        && engine.evalTrue(F.PolynomialQ(denominator, var));
+  }
+
+  /**
+   * Sum a rational summand in closed form by splitting it into partial fractions. Each part has to
+   * be of the shape <code>c/(b*var+a)^m</code>; the sum of <code>1/(var+a)^m</code> over
+   * <code>[from,to]</code> is
+   * <code>(-1)^m/(m-1)! * (PolyGamma(m-1,from+a) - PolyGamma(m-1,to+1+a))</code>, and over
+   * <code>[from,Infinity)</code> it is <code>(-1)^m/(m-1)! * PolyGamma(m-1,from+a)</code> once the
+   * divergent parts of the first order terms have cancelled.
+   *
+   * @param term the summand
+   * @param var the summation variable
+   * @param from the lower limit
+   * @param to the upper limit, may be {@link F#CInfinity}
+   * @return the closed form or {@link F#NIL}
+   */
+  private static IExpr rationalSum(IExpr term, ISymbol var, IExpr from, IExpr to,
+      EvalEngine engine) {
+    try {
+      IExpr together = engine.evaluate(F.Together(term));
+      IExpr numerator = engine.evaluate(F.Numerator(together));
+      IExpr denominator = engine.evaluate(F.Denominator(together));
+      if (denominator.isZero() || denominator.isFree(var, true)
+          || !engine.evalTrue(F.PolynomialQ(numerator, var))
+          || !engine.evalTrue(F.PolynomialQ(denominator, var))) {
+        // a polynomial summand is summed by Faulhaber's formula, not here
+        return F.NIL;
+      }
+      final boolean infinite = to.isInfinity();
+
+      // Split off the polynomial part first: Apart() does not do it for a parametric denominator,
+      // see Apart(x/(a+b*x),x)
+      IExpr polynomialPart = engine.evaluate(F.PolynomialQuotient(numerator, denominator, var));
+      IExpr remainder = engine.evaluate(F.PolynomialRemainder(numerator, denominator, var));
+      IExpr apart = engine.evaluate(F.Apart(F.Divide(remainder, denominator), var));
+      IAST parts = apart.isPlus() ? (IAST) apart : F.Plus(apart);
+
+      IASTAppendable result = F.PlusAlloc(parts.size() + 1);
+      IASTAppendable firstOrderCoefficients = F.PlusAlloc(parts.size());
+      for (int i = 1; i < parts.size(); i++) {
+        IExpr part = parts.get(i);
+        if (part.isZero()) {
+          continue;
+        }
+        if (part.isFree(var, true) || engine.evalTrue(F.PolynomialQ(part, var))) {
+          // Apart() can leave a polynomial piece behind
+          polynomialPart = engine.evaluate(F.Plus(polynomialPart, part));
+          continue;
+        }
+        IExpr[] shiftedPower = linearDenominatorPower(part, var, engine);
+        if (shiftedPower == null) {
+          // not of the shape c/(b*var+a)^m, for example an irreducible quadratic denominator
+          return F.NIL;
+        }
+        IExpr coefficient = shiftedPower[0];
+        IExpr shift = shiftedPower[1];
+        int power = shiftedPower[2].toIntDefault();
+        if (power < 1) {
+          return F.NIL;
+        }
+        IExpr lower = engine.evaluate(F.Plus(from, shift));
+        if (isPolyGammaPole(lower)) {
+          // the summation range runs through the pole of this part
+          return F.NIL;
+        }
+        IExpr factor = F.Times(coefficient, polyGammaTailFactor(power));
+        if (power == 1) {
+          firstOrderCoefficients.append(coefficient);
+        }
+        if (infinite) {
+          result.append(F.Times(factor, F.PolyGamma(F.ZZ(power - 1), lower)));
+        } else {
+          IExpr upper = engine.evaluate(F.Plus(to, C1, shift));
+          if (isPolyGammaPole(upper)) {
+            return F.NIL;
+          }
+          if (shift.isInteger()) {
+            // HarmonicNumber reads better than PolyGamma for an integer shift
+            result.append(F.Times(coefficient,
+                F.Subtract(F.HarmonicNumber(F.Plus(to, shift), F.ZZ(power)),
+                    F.HarmonicNumber(F.Plus(from, shift, F.CN1), F.ZZ(power)))));
+          } else {
+            result.append(F.Times(factor, F.Subtract(F.PolyGamma(F.ZZ(power - 1), lower),
+                F.PolyGamma(F.ZZ(power - 1), upper))));
+          }
+        }
+      }
+
+      if (infinite) {
+        if (!engine.evaluate(polynomialPart).isZero()) {
+          // a polynomial part diverges
+          Errors.printMessage(S.Sum, "div", F.List(), engine);
+          return F.NIL;
+        }
+        // Each first order part contributes a divergent Log(); they cancel out exactly when the
+        // first order coefficients sum to zero, and what is left is -c*PolyGamma(0, from+a).
+        IExpr coefficientSum = engine.evaluate(F.Together(firstOrderCoefficients));
+        if (!coefficientSum.isZero()) {
+          coefficientSum = engine.evaluate(F.Simplify(coefficientSum));
+        }
+        if (!coefficientSum.isZero()) {
+          if (coefficientSum.isNumber()) {
+            Errors.printMessage(S.Sum, "div", F.List(), engine);
+          }
+          return F.NIL;
+        }
+      } else if (!engine.evaluate(polynomialPart).isZero()) {
+        IExpr antidifference = polynomialAntidifference(polynomialPart, var, engine);
+        if (antidifference.isNIL()) {
+          return F.NIL;
+        }
+        // FunctionExpand resolves the FactorialPower() basis the antidifference is built in
+        result.append(engine.evaluate(F.Expand(F.FunctionExpand(
+            F.Subtract(F.xreplace(antidifference, var, F.Plus(to, C1)),
+                F.xreplace(antidifference, var, from))))));
+      }
+      if (result.isAST0()) {
+        return F.NIL;
+      }
+      if (infinite) {
+        // the first order parts cancel against each other, which Together() carries out
+        return engine.evaluate(F.Together(result));
+      }
+      return engine.evaluate(result);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * Decompose a partial fraction <code>part</code> into <code>coefficient/(var+shift)^power</code>.
+   *
+   * @return the array <code>{coefficient, shift, power}</code> or <code>null</code> if
+   *         <code>part</code> does not have that shape
+   */
+  private static IExpr[] linearDenominatorPower(IExpr part, ISymbol var, EvalEngine engine) {
+    IExpr together = engine.evaluate(F.Together(part));
+    IExpr numerator = engine.evaluate(F.Numerator(together));
+    IExpr denominator = engine.evaluate(F.Denominator(together));
+    if (!numerator.isFree(var, true)) {
+      return null;
+    }
+    int power = engine.evaluate(F.Exponent(denominator, var)).toIntDefault();
+    if (power < 1) {
+      return null;
+    }
+    IExpr leadingCoefficient = engine.evaluate(F.Coefficient(denominator, var, F.ZZ(power)));
+    if (leadingCoefficient.isZero() || !leadingCoefficient.isFree(var, true)) {
+      return null;
+    }
+    // For denominator == leadingCoefficient*(var-root)^power the coefficient of var^(power-1) is
+    // -power*root*leadingCoefficient, which determines the root without solving anything.
+    IExpr root = engine.evaluate(F.Divide(F.Coefficient(denominator, var, F.ZZ(power - 1)),
+        F.Times(F.ZZ(-power), leadingCoefficient)));
+    IExpr check = engine.evaluate(F.Expand(F.Subtract(denominator,
+        F.Times(leadingCoefficient, F.Power(F.Subtract(var, root), F.ZZ(power))))));
+    if (!check.isZero()) {
+      return null;
+    }
+    return new IExpr[] {engine.evaluate(F.Divide(numerator, leadingCoefficient)),
+        engine.evaluate(F.Negate(root)), F.ZZ(power)};
+  }
+
+  /**
+   * The factor <code>(-1)^m/(m-1)!</code> which relates <code>PolyGamma(m-1,z)</code> to the tail
+   * <code>Sum(1/(z+k)^m, {k,0,Infinity})</code>.
+   */
+  private static IExpr polyGammaTailFactor(int power) {
+    IInteger factorial = C1;
+    for (int i = 2; i < power; i++) {
+      factorial = factorial.multiply(F.ZZ(i));
+    }
+    IExpr factor = F.QQ(C1, factorial);
+    return (power % 2 == 0) ? factor : factor.negate();
+  }
+
+  /** Test if <code>expr</code> is a pole of {@code PolyGamma}, i.e. a non positive integer. */
+  private static boolean isPolyGammaPole(IExpr expr) {
+    return expr.isInteger() && !expr.isPositive();
   }
 
   // ---------------------------------------------------------------------------
@@ -865,7 +1115,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       if (engine.evaluate(F.Simplify(residual)).isZero()) {
         return true;
       }
-      return numericallyZero(residual, var, engine);
+      return numericallyZero(residual, F.List(shifted, antidiff, term), var, engine);
     } catch (RuntimeException rex) {
       return false;
     }
@@ -873,44 +1123,79 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
   /**
    * Confirm that <code>residual</code> vanishes by evaluating it at several integer points for
-   * <code>var</code> with the remaining free symbols set to distinct primes.
+   * <code>var</code> with the remaining free symbols set to distinct sample values. Every sample
+   * point has to be decided; a point which does not evaluate to a number leaves the identity
+   * unconfirmed and fails the check.
+   *
+   * @param residual the expression which has to vanish
+   * @param scaleParts the terms whose cancellation produces <code>residual</code>; their magnitude
+   *        is the scale against which an inexact residual is compared
+   * @param var the summation variable
    */
-  private static boolean numericallyZero(IExpr residual, ISymbol var, EvalEngine engine) {
+  private static boolean numericallyZero(IExpr residual, IAST scaleParts, ISymbol var,
+      EvalEngine engine) {
     IAST variables = new VariablesSet(residual).getVarList();
-    int[] primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
-    int[] varPoints = {5, 6, 7};
-    int verified = 0;
+    // The free parameters are sampled above every sample point of `var`, so that a factor like
+    // Binomial(parameter, var) in the residual is not trivially zero at every one of them.
+    int[] parameterValues = {11, 13, 17, 19, 23, 29, 31, 37, 41, 43};
+    int[] varPoints = {5, 6, 7, 8};
     for (int varValue : varPoints) {
       IASTAppendable rules = F.ListAlloc(variables.size());
       rules.append(F.Rule(var, F.ZZ(varValue)));
       int p = 0;
-      boolean ok = true;
       for (IExpr v : variables) {
         if (v.equals(var)) {
           continue;
         }
-        if (p >= primes.length) {
-          ok = false;
-          break;
-        }
-        rules.append(F.Rule(v, F.ZZ(primes[p++])));
-      }
-      if (!ok) {
-        continue;
-      }
-      IExpr value = engine.evaluate(F.ReplaceAll(residual, rules));
-      if (!value.isNumber()) {
-        value = engine.evaluate(F.Chop(F.N(value)));
-      }
-      if (value.isNumber()) {
-        if (value.isZero()) {
-          verified++;
-        } else {
+        if (p >= parameterValues.length) {
+          // too many free parameters to sample
           return false;
         }
+        rules.append(F.Rule(v, F.ZZ(parameterValues[p++])));
+      }
+      IExpr value = engine.evaluate(F.ReplaceAll(residual, rules));
+      if (value.isNumber()) {
+        if (!value.isZero()) {
+          return false;
+        }
+        continue;
+      }
+      // Inexact fallback: compare the residual against the size of the terms which had to cancel.
+      // An absolute Chop() would reject a correct antidifference as soon as those terms grow.
+      double residualValue = numericAbs(value, engine);
+      if (Double.isNaN(residualValue)) {
+        return false;
+      }
+      double scale = 1.0;
+      for (IExpr part : scaleParts) {
+        double partValue = numericAbs(engine.evaluate(F.ReplaceAll(part, rules)), engine);
+        if (Double.isNaN(partValue)) {
+          return false;
+        }
+        scale = Math.max(scale, partValue);
+      }
+      if (residualValue > 1.0e-8 * scale) {
+        return false;
       }
     }
-    return verified > 0;
+    return true;
+  }
+
+  /**
+   * The absolute value of <code>expr</code> as a <code>double</code>, or <code>Double.NaN</code> if
+   * it does not evaluate to a finite real number.
+   */
+  private static double numericAbs(IExpr expr, EvalEngine engine) {
+    try {
+      IExpr value = engine.evalQuietNIL(F.N(F.Abs(expr)));
+      if (value.isPresent() && value.isReal()) {
+        double d = value.evalf();
+        return Double.isFinite(d) ? d : Double.NaN;
+      }
+    } catch (RuntimeException rex) {
+      //
+    }
+    return Double.NaN;
   }
 
   /**
@@ -1125,12 +1410,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
     if (from.isInteger()) {
 
       // Guard: Do not use DifferenceRoot for pure rational functions.
-      // Gosper's algorithm fully handles rational summations. Wrapping a failed
+      // Gosper's algorithm and rationalSum() fully handle rational summations. Wrapping a failed
       // rational sum into a DifferenceRoot sequence just creates unsimplifiable noise.
-      IExpr tog = engine.evaluate(F.Together(term));
-      IExpr num = engine.evaluate(F.Numerator(tog));
-      IExpr den = engine.evaluate(F.Denominator(tog));
-      if (engine.evalTrue(F.PolynomialQ(num, var)) && engine.evalTrue(F.PolynomialQ(den, var))) {
+      if (isRationalInVar(term, var, false, engine)) {
         return F.NIL;
       }
 

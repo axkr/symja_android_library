@@ -384,12 +384,10 @@ public class ExprEvaluator {
       return rex.getValue();
     } catch (BreakException | ContinueException conex) {
       // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", conex);
-      IAST ast = F.Continue();
-      if (conex instanceof BreakException) {
-        ast = F.Break();
-      }
+      boolean isBreak = conex instanceof BreakException;
+      IAST ast = isBreak ? F.Break() : F.Continue();
       // No enclosing For, While or Do found for `1`.
-      Errors.printMessage(S.Continue, "nofwd", F.list(ast), engine);
+      Errors.printMessage(isBreak ? S.Break : S.Continue, "nofwd", F.list(ast), engine);
       temp = F.Hold(ast);
     } catch (ThrowException e) {
       // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);

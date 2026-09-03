@@ -154,7 +154,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(a^i, {i,0,n})", //
         "(-1+a^(1+n))/(-1+a)");
     check("Sum((3/7)^i, {i,1,n})", //
-        "3/4*(1-(3/7)^k)");
+        "3/4*(1-(3/7)^n)");
     check("Sum((3/7)^i, {i,0,n})", //
         "7/4*(1-(3/7)^(1+n))");
 
@@ -326,7 +326,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "c*(i-n)+1/2*c*(-i+n)*(1+i+n)");
 
     check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", //
-        "c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*n*(-i+n)+1/2*n^2*(-i+n))");
+        "3/2*c*n*(-i+n)+1/2*c*n^2*(-i+n)+1/2*c*(i-n)*n*(1+i+n)");
     check("Simplify(c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*n*(-i+n)+1/2*(-i+n)*n^2))", //
         "1/2*c*(2-i)*n*(-i+n)");
 
@@ -762,10 +762,135 @@ public class SumTest extends ExprEvaluatorTestCase {
         "1/(1-x)");
   }
 
+  /**
+   * A <code>{{e1,e2,...}}</code> iterator specification runs over the elements of the list without
+   * assigning them to a variable; only the number of elements matters.
+   */
+  @Test
+  public void testSumVariableLessListIterator() {
+    check("Sum(k^s*HarmonicNumber(k), {{k, 1, n}})", //
+        "3*k^s*HarmonicNumber(k)");
+    check("Sum(x, {{1,2,3}})", //
+        "3*x");
+    check("Sum(x, {{a,b}})", //
+        "2*x");
+    check("Sum(f(x), {{}})", //
+        "0");
+    check("Sum(x, {{1,2,3}}, {{4,5}})", //
+        "6*x");
+  }
+
+  @Test
+  public void testSumGeometricSymbolicUpperLimit() {
+    // the right hand side of the geometric rule used to carry a free `k` instead of the upper
+    // limit, so every bound gave the same wrong answer
+    check("Sum(2^i, {i,1,n})", //
+        "2*(-1+2^n)");
+    check("Sum(2^i, {i,1,m})", //
+        "2*(-1+2^m)");
+    check("Sum(a*b^i, {i,1,k})", //
+        "(a*b*(-1+b^k))/(-1+b)");
+  }
+
+  @Test
+  public void testSumHarmonicNumberLowerLimit() {
+    // the HurwitzZeta form of this sum is a pole for the exponent -1
+    check("Sum(1/i, {i,2,n})", //
+        "-1+HarmonicNumber(n)");
+    check("Sum(1/i, {i,a,b})", //
+        "-HarmonicNumber(-1+a)+HarmonicNumber(b)");
+    check("Sum(1/k^2, {k,2,n})", //
+        "-1+HarmonicNumber(n,2)");
+    check("Sum(1/i, {i,3,10})", //
+        "3601/2520");
+    // a symbolic exponent with a symbolic lower limit keeps the HurwitzZeta form
+    check("Sum(k^a, {k,j,n})", //
+        "HurwitzZeta(-a,j)-HurwitzZeta(-a,1+n)");
+  }
+
+  @Test
+  public void testSumBinomialTheorem() {
+    check("Sum(Binomial(n,i)*x^i, {i,0,n})", //
+        "(1+x)^n");
+    check("Sum(Binomial(n,i)*x^i*y^(n-i), {i,0,n})", //
+        "(x+y)^n");
+    check("Sum(Binomial(n,i), {i,0,n})", //
+        "2^n");
+    // the closed form has to agree with the unrolled sum
+    check("Sum(Binomial(3,i)*2^i, {i,0,3})", //
+        "27");
+    check("((1+x)^n /. {n->3, x->2})", //
+        "27");
+  }
+
+  @Test
+  public void testSumRational() {
+    check("Sum(1/(i+a), {i,1,n})", //
+        "-PolyGamma(0,1+a)+PolyGamma(0,1+a+n)");
+    check("Sum(1/(i+3), {i,1,n})", //
+        "-11/6+HarmonicNumber(3+n)");
+    check("Sum(1/(2*i+1)^2, {i,1,n})", //
+        "1/4*(PolyGamma(1,3/2)-PolyGamma(1,3/2+n))");
+    check("Sum((i^2+1)/(i+1), {i,1,n})", //
+        "-n/2+n^2/2+2*(-1+HarmonicNumber(1+n))");
+    // a telescoping sum keeps its elementary closed form, Gosper runs before the partial fractions
+    check("Sum(1/(i*(i+1)), {i,1,n})", //
+        "1-1/(1+n)");
+  }
+
+  @Test
+  public void testSumRationalInfinity() {
+    check("Sum(1/(i^2+i*x), {i,1,Infinity})", //
+        "(EulerGamma+PolyGamma(0,1+x))/x");
+    check("Sum(1/(i+a)^2, {i,1,Infinity})", //
+        "PolyGamma(1,1+a)");
+    check("Sum(1/(i*(i+2)), {i,1,Infinity})", //
+        "3/4");
+    check("Sum(1/(i*(i+1)*(i+2)), {i,1,Infinity})", //
+        "1/4");
+    // divergent: the first order coefficients do not cancel
+    check("Sum(1/(i+1), {i,1,Infinity})", //
+        "Sum(1/(1+i),{i,1,Infinity})");
+  }
+
+  @Test
+  public void testSumStep() {
+    check("Sum(k, {k,1,n,2})", //
+        "(1+Floor(1/2*(-1+n)))^2");
+    check("Sum(k, {k,0,n,2})", //
+        "-1-Floor(n/2)+(1+Floor(n/2))^2");
+    check("Sum(2^k, {k,1,n,2})", //
+        "-2/3+2^(1+2*(1+Floor(1/2*(-1+n))))/3");
+    // the closed form has to agree with the unrolled sum
+    check("Sum(k, {k,1,9,2})", //
+        "25");
+    check("((1+Floor(1/2*(-1+n)))^2 /. n->9)", //
+        "25");
+    check("Sum(x, {x,10,3,-4})", //
+        "16");
+  }
+
+  /** A step of 0 would iterate forever. */
+  @Test
+  public void testSumZeroStep() {
+    check("Sum(i, {i,1,5,0})", //
+        "Sum(i,{i,1,5,0})");
+  }
+
+  @Test
+  public void testSumListSummand() {
+    check("Sum({i,i^2}, {i,1,n})", //
+        "{1/2*n*(1+n),n/6+n^2/2+n^3/3}");
+    check("Sum({i,1}, {i,1,3})", //
+        "{6,3}");
+  }
+
   @Test
   public void testDifferenceRoot() {
+    // the inner sum over i has the closed form c*(PolyGamma(0,n+2-j)-PolyGamma(0,2-j)); the
+    // outer sum over j has none
     check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", //
-        "c*Sum(1/(1+i-j),{j,1+i,n},{i,1,n})");
+        "-c*Sum(PolyGamma(0,2-j),{j,1+i,n})+c*Sum(PolyGamma(0,2-j+n),{j,1+i,n})");
     check("Sum((-1)^(j-1)*Gamma(j),{j,1,n-1})", //
         "DifferenceRoot[Function({y,n},{-n*y(n)-y(1+n)+n*y(1+n)+y(2+n)==0,y(1)==0,y(2)==1})][n]");
   }

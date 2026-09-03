@@ -7,7 +7,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.F;
@@ -146,6 +145,10 @@ public class Iterator {
         if (!Double.isNaN(d)) {
           return !(d < 0.0);
         }
+        // Whether the iteration is over cannot be decided, e.g. for {i,1,n} with a symbolic n.
+        // Answering "no more elements" would silently produce an empty table for a range whose
+        // length is simply unknown, so the whole iteration is abandoned instead.
+        throw NoEvalException.CONST;
       }
       return false;
     }
@@ -324,9 +327,13 @@ public class Iterator {
       return false;
     }
 
+    /**
+     * This iterator always iterates over a fixed set of values, whether or not they are assigned to
+     * a variable. A <code>{{e1, e2,...}}</code> specification has no variable at all.
+     */
     @Override
     public boolean isSetIterator() {
-      return variable != null;
+      return true;
     }
 
     @Override
@@ -1209,33 +1216,29 @@ public class Iterator {
         evalEngine.setNumericMode(true);
       }
       fNumericMode = evalEngine.isNumericMode();
-      int iterationLimit = evalEngine.getIterationLimit();
       switch (list.size()) {
         case 2:
           lowerLimit = F.C1;
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg1());
           step = F.C1;
           variable = null;
+          if (upperLimit.isListOrAssociation()) {
+            // {{e1, e2,...}} iterate over the elements of the list without assigning them to a
+            // variable; the number of elements determines the number of iterations
+            return new ExprListIterator(null, (IAST) upperLimit, evalEngine);
+          }
           if (upperLimit instanceof INum) {
             return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
           }
           if (upperLimit.isInteger()) {
             try {
-              int iUpperLimit = ((IInteger) upperLimit).toInt();
-              if (iUpperLimit > iterationLimit && iterationLimit > 0) {
-                IterationLimitExceeded.throwIt(iUpperLimit, upperLimit);
-              }
-              return new IntIterator(variable, 1, iUpperLimit, 1);
+              return new IntIterator(variable, 1, ((IInteger) upperLimit).toInt(), 1);
             } catch (ArithmeticException ae) {
               //
             }
           }
           if (upperLimit.isRational()) {
             try {
-              int iUpperLimit = ((IRational) upperLimit).floor().toInt();
-              if (iUpperLimit > iterationLimit && iterationLimit > 0) {
-                IterationLimitExceeded.throwIt(iUpperLimit, upperLimit);
-              }
               return new RationalIterator(variable, F.C1, (IRational) upperLimit, F.C1);
             } catch (ArithmeticException ae) {
               //
@@ -1246,8 +1249,11 @@ public class Iterator {
             return new RealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
           if (!list.arg1().isVariable()) {
+            // Iterator does not have appropriate bounds.
+            // A one element iterator is a count, not a variable, so a `vloc` "cannot be localized"
+            // message would name something which was never meant to be a variable.
             throw new ArgumentTypeException(
-                Errors.getMessage("vloc", F.list(list.arg1()), EvalEngine.get()));
+                Errors.getMessage("iterb", F.list(list), EvalEngine.get()));
           }
           break;
         case 3:
@@ -1346,6 +1352,7 @@ public class Iterator {
           lowerLimit = evalEngine.evalWithoutNumericReset(list.arg2());
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg3());
           step = evalEngine.evalWithoutNumericReset(list.arg4());
+          checkNonZeroStep(list, step);
           if (list.arg1() instanceof ISymbol) {
             ISymbol sym = (ISymbol) list.arg1();
             if (!sym.isVariable() || sym.hasProtectedAttribute()) {
@@ -1526,6 +1533,7 @@ public class Iterator {
           lowerLimit = evalEngine.evalWithoutNumericReset(list.arg1());
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
           step = evalEngine.evalWithoutNumericReset(list.arg3());
+          checkNonZeroStep(list, step);
           variable = symbol;
           if (lowerLimit instanceof INum && upperLimit instanceof INum && step instanceof INum) {
             return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
@@ -1590,6 +1598,20 @@ public class Iterator {
       // Range specification in `1` does not have appropriate bounds.
       String str = Errors.getMessage("range", F.list(list), EvalEngine.get());
       throw new ArgumentTypeException(str);
+    }
+  }
+
+  /**
+   * Reject a step of <code>0</code>, which would make the iterator run forever. The range iterators
+   * advance by <code>count += step</code> and stop by comparing against the upper limit, so a step
+   * of <code>0</code> never terminates.
+   *
+   * @throws ArgumentTypeException if <code>step</code> is zero
+   */
+  private static void checkNonZeroStep(final IAST list, IExpr step) throws ArgumentTypeException {
+    if (step.isZero()) {
+      // Iterator does not have appropriate bounds.
+      throw new ArgumentTypeException(Errors.getMessage("iterb", F.list(list), EvalEngine.get()));
     }
   }
 }

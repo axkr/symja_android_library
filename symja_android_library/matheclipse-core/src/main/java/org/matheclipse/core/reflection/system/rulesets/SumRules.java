@@ -68,9 +68,9 @@ matcher.caseOf(Sum(Power(i_,c_),list(i_Symbol,C0,n_Symbol)),
     // Sum(i_^c_,{i_Symbol,1,n_Symbol}):=HarmonicNumber(n,-c)/;FreeQ({c,n},i)
 matcher.caseOf(Sum(Power(i_,c_),list(i_Symbol,C1,n_Symbol)),
       Condition(HarmonicNumber(n,Negate(c)),FreeQ(list(c,n),i)));
-    // Sum(a_.*b_^i_,{i_Symbol,1,n_Symbol}):=(a*b*(-1+b^k))/(-1+b)/;FreeQ({a,b,n},i)
+    // Sum(a_.*b_^i_,{i_Symbol,1,n_Symbol}):=(a*b*(-1+b^n))/(-1+b)/;FreeQ({a,b,n},i)
 matcher.caseOf(Sum(Times(a_DEFAULT,Power(b_,i_)),list(i_Symbol,C1,n_Symbol)),
-      Condition(Times(a,Power(Plus(CN1,b),CN1),b,Plus(CN1,Power(b,k))),FreeQ(list(a,b,n),i)));
+      Condition(Times(a,Power(Plus(CN1,b),CN1),b,Plus(CN1,Power(b,n))),FreeQ(list(a,b,n),i)));
     // Sum(Ceiling(Log(i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1)/(-1+E)+(-E^Floor(Log(n))+n)*Ceiling(Log(n))/;FreeQ(n,i)
 matcher.caseOf(Sum(Ceiling(Log(i_)),list(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(n)),Exp(Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Exp(Floor(Log(n)))),C1),Power(Plus(CN1,E),CN1)),Times(Plus(Negate(Exp(Floor(Log(n)))),n),Ceiling(Log(n)))),FreeQ(n,i)));
@@ -140,6 +140,12 @@ matcher.caseOf(Sum(Times(i_,Power(c_,i_)),list(i_Symbol,C0,n_)),
     // Sum(Binomial(n_,i_),{i_Symbol,0,n_}):=2^n/;FreeQ(n,i)
 matcher.caseOf(Sum(Binomial(n_,i_),list(i_Symbol,C0,n_)),
       Condition(Power(C2,n),FreeQ(n,i)));
+    // Sum((Binomial(n_,i_)*x_^i_)/y_^(i_-n_),{i_Symbol,0,n_}):=(x+y)^n/;FreeQ({n,x,y},i)
+matcher.caseOf(Sum(Times(Binomial(n_,i_),Power(x_,i_),Power(y_,Plus(Negate(i_),n_))),list(i_Symbol,C0,n_)),
+      Condition(Power(Plus(x,y),n),FreeQ(list(n,x,y),i)));
+    // Sum(Binomial(n_,i_)*x_^i_,{i_Symbol,0,n_}):=(1+x)^n/;FreeQ({n,x},i)
+matcher.caseOf(Sum(Times(Binomial(n_,i_),Power(x_,i_)),list(i_Symbol,C0,n_)),
+      Condition(Power(Plus(C1,x),n),FreeQ(list(n,x),i)));
     // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_}):=n/2^(1-n)/;FreeQ(n,i)
 matcher.caseOf(Sum(Times(i_,Binomial(n_,i_)),list(i_Symbol,C0,n_)),
       Condition(Times(n,Power(C2,Plus(CN1,n))),FreeQ(n,i)));

@@ -43,7 +43,7 @@ Sum(i_^c_, {i_Symbol,0,n_Symbol}) := 0^c + HarmonicNumber(n, -c)
 Sum(i_^c_, {i_Symbol,1,n_Symbol}) := HarmonicNumber(n, -c)
   /;  FreeQ({c,n},i),
   
-Sum(a_. *(b_^i_), {i_Symbol,1,n_Symbol}) := (a*b*(-1 + b^k))/(-1 + b)
+Sum(a_. *(b_^i_), {i_Symbol,1,n_Symbol}) := (a*b*(-1 + b^n))/(-1 + b)
   /; FreeQ({a,b,n},i),
    
 Sum(Ceiling(Log(i_)), {i_Symbol,1,n_Symbol}):=
@@ -106,6 +106,12 @@ Sum(i_*c_^i_, {i_Symbol,0,n_}) := (c + c^(1 + n)*(-1 - n + c*n))/(1 - c)^2
   
 Sum(Binomial(n_, i_), {i_Symbol,0,n_}) := 2^n
   /; FreeQ(n,i),
+
+(* binomial theorem *)
+Sum(Binomial(n_, i_)*x_^i_*y_^(n_-i_), {i_Symbol,0,n_}) := (x+y)^n
+  /; FreeQ({n,x,y},i),
+Sum(Binomial(n_, i_)*x_^i_, {i_Symbol,0,n_}) := (1+x)^n
+  /; FreeQ({n,x},i),
   
 Sum(i_*Binomial(n_, i_), {i_Symbol,0,n_}) := n*2^(n-1)
   /; FreeQ(n,i),

@@ -50,11 +50,13 @@ public class Product extends ListFunctions.Table implements ProductRules {
       }
     }
     IExpr arg1 = ast.arg1();
+    if (arg1.isList()) {
+      // Product({f,g},{i,1,n}) is the list of the two products
+      return arg1.mapThread(ast, 1);
+    }
     if (arg1.isAST()) {
+      // F.expand() falls back to its argument and never returns NIL
       arg1 = F.expand(arg1, false, false, false);
-      if (arg1.isNIL()) {
-        arg1 = ast.arg1();
-      }
     }
     if (arg1.isTimes()) {
       IExpr resultTimes = engine.evaluate(arg1.mapThread(ast, 1));
@@ -122,10 +124,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
       // Executed before evaluateTableThrow to prevent dummy variable shadowing
       // when limits contain the iterator variable symbolically.
       if (preevaledProduct.argSize() >= 2 && argN.isList()) {
-        if (arg1.isZero()) {
-          return F.C0;
-        }
-
+        // A zero factor does NOT make the product zero on its own: an empty range is the empty
+        // product 1, so Product(0,{i,1,0}) is 1 and not 0. The range is examined below.
         try {
           iterator = Iterator.create((IAST) argN, preevaledProduct.argSize(), engine);
         } catch (final ValidateException ve) {
@@ -140,6 +140,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
           if (iterator.getUpperLimit().isInfinity()) {
             if (arg1.isOne()) {
               return F.C1;
+            }
+            if (arg1.isZero()) {
+              // an infinite range is never the empty product
+              return F.C0;
             }
             if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
               return F.CInfinity;
@@ -169,12 +173,26 @@ public class Product extends ListFunctions.Table implements ProductRules {
             // Universal evaluation for terms free of the iterator
             if (arg1.isFree(var)) {
               IExpr count = engine.evaluate(F.Simplify(F.Plus(F.Subtract(to, from), F.C1)));
-              IExpr evalPower = F.Power(arg1, count);
+              // an empty range is the empty product, whatever the factor is; in particular
+              // Power(0, 0) must not be reached here
+              IExpr evalPower = count.isNonPositiveResult() ? F.C1 : F.Power(arg1, count);
               if (preevaledProduct.isAST2()) {
                 return engine.evaluate(evalPower);
               }
               IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
               result.set(1, engine.evaluate(evalPower));
+              return result;
+            }
+          } else if (!iterator.isNumericFunction() && !iterator.getStep().isOne()) {
+            // A stepped iterator is reindexed onto a step of 1 and multiplied again; the symbolic
+            // reduction above assumes a step of 1.
+            IExpr steppedProduct = steppedProduct(arg1, iterator, engine);
+            if (steppedProduct.isPresent()) {
+              if (preevaledProduct.isAST2()) {
+                return steppedProduct;
+              }
+              IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
+              result.set(1, steppedProduct);
               return result;
             }
           }
@@ -204,7 +222,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
             return F.NIL;
           }
           IAST resultList = Times();
-          IExpr temp = evaluateLast(preevaledProduct.arg1(), iterator, resultList, F.C1);
+          IExpr temp = evaluateLast(preevaledProduct.arg1(), iterator, resultList, F.C1, S.Product);
           if (temp.isNIL() || temp.equals(resultList)) {
             return F.NIL;
           }
@@ -335,6 +353,24 @@ public class Product extends ListFunctions.Table implements ProductRules {
     if (from.isOne()) {
       // ((-1+variable)!)^exponent
       return F.Power(F.Factorial(to), powerAST.exponent());
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Multiply over an iterator whose step differs from <code>1</code> by reindexing it onto a step
+   * of <code>1</code>, see {@link ListFunctions.Table#reindexStepIterator(IExpr, IIterator)}.
+   *
+   * @return the closed form or {@link F#NIL} if the reindexed product has none either
+   */
+  private static IExpr steppedProduct(IExpr expr, IIterator<IExpr> iterator, EvalEngine engine) {
+    IAST reindexed = reindexStepIterator(expr, iterator);
+    if (reindexed.isNIL()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evalQuietNIL(F.Product(reindexed.arg1(), reindexed.arg2()));
+    if (result.isPresent() && result.isFreeAST(S.Product) && result.isFreeAST(S.Sum)) {
+      return result;
     }
     return F.NIL;
   }
