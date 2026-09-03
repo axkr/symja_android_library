@@ -1,8 +1,5 @@
 package org.matheclipse.compile.builtin;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.Modifier;
@@ -13,6 +10,7 @@ import org.matheclipse.compile.CompilationOptions;
 import org.matheclipse.compile.CompileAnalyzer;
 import org.matheclipse.compile.CompileFactory;
 import org.matheclipse.compile.CompiledFunctionArg;
+import org.matheclipse.compile.CompileRewrites;
 import org.matheclipse.compile.CompoundAssignment;
 import org.matheclipse.compile.ConstantHoisting;
 import org.matheclipse.compile.InlineDefinitions;
@@ -123,25 +121,6 @@ public class CompilerFunctions {
     Initializer.init();
   }
 
-  static class MemoryClassLoader extends URLClassLoader {
-    Map<String, byte[]> classBytes = new HashMap<>();
-
-    public MemoryClassLoader(Map<String, byte[]> classBytes) {
-      super(new URL[0], MemoryClassLoader.class.getClassLoader());
-      this.classBytes.putAll(classBytes);
-    }
-
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-      byte[] buf = classBytes.get(name);
-      if (buf == null) {
-        return super.findClass(name);
-      }
-      classBytes.remove(name);
-      return defineClass(name, buf, 0, buf.length);
-    }
-  }
-
   private static class Compile extends AbstractCoreFunctionOptionEvaluator {
     @Override
     protected IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
@@ -149,7 +128,7 @@ public class CompilerFunctions {
         return F.NIL;
       }
       try {
-        CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, engine);
+        CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, ast.arg2(), engine);
         if (args == null) {
           return F.NIL;
         }
@@ -228,6 +207,15 @@ public class CompilerFunctions {
           printArgumentError(compiledFunction, ast, runtimeOptions, engine);
           return engine
               .evaluate(F.subst(compiledFunction.getExpr(), Functors.equalRules(variables, ast)));
+        } catch (ArithmeticException aex) {
+          // integer overflow or division by zero in compiled code: fall back to uncompiled
+          // evaluation which can widen to arbitrary precision
+          if (!runtimeOptions.isEvaluateSymbolically()) {
+            return F.NIL;
+          }
+          printNumericalError(runtimeOptions, engine);
+          return engine
+              .evaluate(F.subst(compiledFunction.getExpr(), Functors.equalRules(variables, ast)));
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           return handleRuntimeError(runtimeOptions, ast, rex, engine);
@@ -266,7 +254,7 @@ public class CompilerFunctions {
       if (!ToggleFeature.COMPILE_PRINT) {
         return F.NIL;
       }
-      CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, engine);
+      CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, ast.arg2(), engine);
       if (args == null) {
         return F.NIL;
       }
@@ -412,20 +400,14 @@ public class CompilerFunctions {
 
   private CompilerFunctions() {}
 
-  public static Class<?> loadClass(String name, Map<String, byte[]> classBytes)
-      throws ClassNotFoundException, IOException {
-    try (MemoryClassLoader classLoader = new MemoryClassLoader(classBytes)) {
-      return classLoader.loadClass(name);
-    }
-  }
-
-  private static CompiledFunctionArg[] checkIsVariableOrVariableList(IAST ast, EvalEngine engine) {
+  private static CompiledFunctionArg[] checkIsVariableOrVariableList(IAST ast, IExpr body,
+      EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (arg1.isList()) {
       IAST list = (IAST) arg1;
       CompiledFunctionArg[] result = new CompiledFunctionArg[list.argSize()];
       for (int i = 1; i <= list.argSize(); i++) {
-        CompiledFunctionArg arg = checkVariable(list.get(i), engine);
+        CompiledFunctionArg arg = checkVariable(list.get(i), body, engine);
         if (arg == null) {
           Errors.printMessage(ast.topHead(), "ivar", F.list(list.get(i)), engine);
           return null;
@@ -435,7 +417,7 @@ public class CompilerFunctions {
       return result;
     }
 
-    CompiledFunctionArg arg = checkVariable(arg1, engine);
+    CompiledFunctionArg arg = checkVariable(arg1, body, engine);
     if (arg == null) {
       Errors.printMessage(ast.topHead(), "ivar", F.list(arg1), engine);
       return null;
@@ -443,7 +425,63 @@ public class CompilerFunctions {
     return new CompiledFunctionArg[] {arg};
   }
 
-  private static CompiledFunctionArg checkVariable(IExpr arg, EvalEngine engine) {
+  /**
+   * Whether <code>body</code> uses the bare parameter <code>symbol</code> in a fixed count
+   * <i>position</i> - the 3rd argument of <code>Nest</code>/<code>NestList</code>/
+   * <code>FixedPointList</code>, the 2nd of <code>Array</code>, or a bare <code>{symbol}</code>
+   * iterator spec of a <code>Do</code>/<code>Table</code>/<code>Sum</code>/<code>Product</code>.
+   *
+   * <p>
+   * A parameter with no declared type defaults to <code>_Real</code>, matching the Wolfram
+   * Language - unless it is only ever used this way, in which case real <code>Compile</code>'s
+   * usage-based type inference settles on <code>_Integer</code> instead. Without this, a bare
+   * argument driving one of these reaches the compiled body as e.g. <code>100.</code> instead of
+   * <code>100</code>, and <code>NestList</code> (which insists on an exact integer count) throws
+   * rather than compute anything.
+   */
+  private static boolean isUsedAsIntegerCount(ISymbol symbol, IExpr body) {
+    if (!body.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) body;
+    IExpr head = ast.head();
+    if (head.isBuiltInSymbol()) {
+      boolean isCountPosition;
+      switch (((IBuiltInSymbol) head).ordinal()) {
+        case ID.Nest:
+        case ID.NestList:
+        case ID.FixedPointList:
+          isCountPosition = ast.argSize() == 3 && ast.arg3() == symbol;
+          break;
+        case ID.Array:
+          isCountPosition = ast.argSize() >= 2 && ast.arg2() == symbol;
+          break;
+        case ID.Do:
+        case ID.Table:
+        case ID.Sum:
+        case ID.Product:
+          isCountPosition = false;
+          for (int i = 2; i <= ast.argSize() && !isCountPosition; i++) {
+            IExpr iter = ast.get(i);
+            isCountPosition = iter.isList1() && iter.first() == symbol;
+          }
+          break;
+        default:
+          isCountPosition = false;
+      }
+      if (isCountPosition) {
+        return true;
+      }
+    }
+    for (int i = 1; i <= ast.argSize(); i++) {
+      if (isUsedAsIntegerCount(symbol, ast.get(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static CompiledFunctionArg checkVariable(IExpr arg, IExpr body, EvalEngine engine) {
     IExpr sym = arg;
     IExpr headTest = S.Real;
     CompiledFunctionArg.Rank rank = CompiledFunctionArg.Rank.SCALAR;
@@ -483,6 +521,11 @@ public class CompilerFunctions {
           return null;
         }
       }
+    }
+
+    if (headTest == S.Real && sym.isSymbol() && isUsedAsIntegerCount((ISymbol) sym, body)) {
+      // no declared type - infer _Integer from usage, the same as Wolfram's real Compile
+      headTest = S.Integer;
     }
 
     return new CompiledFunctionArg(sym, headTest, rank);
@@ -623,8 +666,8 @@ public class CompilerFunctions {
     // the code generator have to see the same nodes
     // expand the calls to other compiled functions first - the bodies they paste in may themselves
     // contain compound assignments, which the next line has to see
-    IExpr expression = CompoundAssignment
-        .normalize(InlineDefinitions.inline(ast.arg2(), compilationOptions, ast, engine));
+    IExpr expression = CompileRewrites.rewrite(CompoundAssignment
+        .normalize(InlineDefinitions.inline(ast.arg2(), compilationOptions, ast, engine)));
 
     // lift the large constant lists into fields, before the analyzer records a type for every node
     // it sees: it keys those on node identity, so it and the code generator have to see the same
@@ -712,12 +755,17 @@ public class CompilerFunctions {
                 .isNumericWithConstantReads(expression, hoisted.constants(), numericVars));
 
     CompileFactory cf = new CompileFactory(numericVars, symbolicVars, args, domain,
-        analyzer.getNodeTypes(), classBuilder, constantFields, constantArrays);
+        analyzer.getNodeTypes(), classBuilder, constantFields, constantArrays, runtimeOptions);
 
     StringBuilder expressionBuf = new StringBuilder();
     cf.convert(expressionBuf, expression, false, true);
 
     String exprStr = expressionBuf.toString();
+    // a `Return(...)` anywhere in the expression - whether generated directly here or reached
+    // through a nested method the expression above calls - throws a ReturnException that has to
+    // be caught at the top, since nothing inside the generated methods catches it: they are
+    // ordinary Java methods, not the loop bodies that catch Break/Continue.
+    evalMethod.beginControlFlow("try");
     if (exprStr.startsWith("throw ")) {
       evalMethod.addStatement("$L", exprStr);
     } else if (coerceToInteger) {
@@ -729,6 +777,10 @@ public class CompilerFunctions {
     } else {
       evalMethod.addStatement("return $T.symjify($L)", F.class, exprStr);
     }
+    evalMethod.nextControlFlow("catch ($T returnException)",
+        org.matheclipse.core.eval.exception.ReturnException.class);
+    evalMethod.addStatement("return returnException.getValue()");
+    evalMethod.endControlFlow();
 
     classBuilder.addMethod(evalMethod.build());
 

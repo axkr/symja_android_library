@@ -32,11 +32,12 @@ public class CompileFactory {
   private int statementCounter = 1;
   private final IBuiltInSymbol domain;
   private HashSet<String> localVariables;
-  private final VariableManager numericVariables;
+  final VariableManager numericVariables;
   private final VariableManager variables;
   final CompiledFunctionArg[] args;
-  private final Map<IExpr, CompileAnalyzer.VarType> nodeTypes;
+  final Map<IExpr, CompileAnalyzer.VarType> nodeTypes;
   private final TypeSpec.Builder classBuilder;
+  private final IntegerFormWriter integerWriter;
 
   /**
    * The field which holds each constant {@link ConstantHoisting} lifted out of the expression,
@@ -62,13 +63,22 @@ public class CompileFactory {
       CompiledFunctionArg[] args, IBuiltInSymbol domain,
       Map<IExpr, CompileAnalyzer.VarType> nodeTypes, TypeSpec.Builder classBuilder) {
     this(numericVariables, variables, args, domain, nodeTypes, classBuilder, Collections.emptyMap(),
-        Collections.emptyMap());
+        Collections.emptyMap(), RuntimeOptions.DEFAULT);
   }
 
   public CompileFactory(VariableManager numericVariables, VariableManager variables,
       CompiledFunctionArg[] args, IBuiltInSymbol domain,
       Map<IExpr, CompileAnalyzer.VarType> nodeTypes, TypeSpec.Builder classBuilder,
       Map<ISymbol, String> constantFields, Map<ISymbol, ConstantArray> constantArrays) {
+    this(numericVariables, variables, args, domain, nodeTypes, classBuilder, constantFields,
+        constantArrays, RuntimeOptions.DEFAULT);
+  }
+
+  public CompileFactory(VariableManager numericVariables, VariableManager variables,
+      CompiledFunctionArg[] args, IBuiltInSymbol domain,
+      Map<IExpr, CompileAnalyzer.VarType> nodeTypes, TypeSpec.Builder classBuilder,
+      Map<ISymbol, String> constantFields, Map<ISymbol, ConstantArray> constantArrays,
+      RuntimeOptions runtimeOptions) {
     this.localVariables = new HashSet<>();
     this.numericVariables = numericVariables;
     this.variables = variables;
@@ -78,6 +88,7 @@ public class CompileFactory {
     this.classBuilder = classBuilder;
     this.constantFields = constantFields;
     this.constantArrays = constantArrays;
+    this.integerWriter = new IntegerFormWriter(this, runtimeOptions.isCatchMachineIntegerOverflow());
   }
 
   /**
@@ -113,7 +124,8 @@ public class CompileFactory {
     StringBuilder buf = new StringBuilder(array.field);
     for (IExpr index : indices) {
       StringBuilder indexBuffer = new StringBuilder();
-      if (convertNumeric(indexBuffer, index, S.Reals) != 1) {
+      int indexType = convertNumeric(indexBuffer, index, S.Reals);
+      if (indexType != 1 && indexType != 3) {
         return null;
       }
       buf.append("[(int)(").append(indexBuffer).append(") - 1]");
@@ -139,6 +151,63 @@ public class CompileFactory {
     IAST ast = (IAST) expression;
     for (int i = 1; i < ast.size(); i++) {
       if (containsConstantArrayAccess(ast.get(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Whether <code>expression</code> is, or contains, a list literal.
+   *
+   * <p>
+   * <code>isNumericFunction</code> treats every <code>List</code> as numeric regardless of its
+   * elements, so a literal list reaches the numeric converter, which has no idea what to do with
+   * one: it writes <code>F.List.ofN(...)</code> or <code>F.Clip.ofN(...)</code>, a call that
+   * throws at run time because <code>ofN</code> only ever answers with a single number. The
+   * expression is still handled correctly - the runtime failure falls back to the uncompiled
+   * evaluation - but only after printing a spurious "numerical error" message. Keeping a list out
+   * of the numeric converter's hands in the first place is what avoids that.
+   */
+  private static boolean containsList(IExpr expression) {
+    if (expression.isList()) {
+      return true;
+    }
+    if (!expression.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) expression;
+    for (int i = 1; i < ast.size(); i++) {
+      if (containsList(ast.get(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Whether <code>expression</code> is, or contains, the imaginary unit or a non-real numeric
+   * literal.
+   *
+   * <p>
+   * The double emitter has no notion of a complex number: an expression which is complex-valued
+   * despite every argument of the compiled function being real - <code>x + I</code>, a
+   * <code>Module</code> which builds a complex number out of two real arguments - reaches it
+   * anyway, because nothing about <code>isNumericFunction</code> depends on the compiled
+   * function's domain. It then writes the imaginary unit as a bare Java identifier, which Janino
+   * cannot resolve. Handing such an expression to the symbolic fallback instead lets ordinary
+   * complex arithmetic compute the right answer.
+   */
+  private static boolean containsImaginary(IExpr expression) {
+    if (expression == S.I || expression.isComplex() || expression.isComplexNumeric()) {
+      return true;
+    }
+    if (!expression.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) expression;
+    for (int i = 1; i < ast.size(); i++) {
+      if (containsImaginary(ast.get(i))) {
         return true;
       }
     }
@@ -193,6 +262,26 @@ public class CompileFactory {
     return true;
   }
 
+  /**
+   * The field-name suffix a numeric field of {@link #convertNumeric}'s result <code>type</code>
+   * gets: <code>1</code> (double) -&gt; <code>"d"</code>, <code>2</code> (complex) -&gt;
+   * <code>"c"</code>, <code>3</code> (exact long) -&gt; <code>"l"</code>.
+   */
+  private static String fieldSuffix(int type) {
+    return type == 1 ? "d" : type == 3 ? "l" : "c";
+  }
+
+  /** The Java type of a numeric field of {@link #convertNumeric}'s result <code>type</code>. */
+  private static TypeName fieldType(int type) {
+    if (type == 1) {
+      return TypeName.DOUBLE;
+    }
+    if (type == 3) {
+      return TypeName.LONG;
+    }
+    return ClassName.get(Complex.class);
+  }
+
   private static boolean convertSet(CompileFactory factory, final StringBuilder parentBuffer,
       final IAST f) {
     if (f.argSize() != 2 || !f.arg1().isVariable()) {
@@ -202,10 +291,12 @@ public class CompileFactory {
 
     CompileAnalyzer.VarType inferredType =
         factory.nodeTypes.getOrDefault(f.arg2(), CompileAnalyzer.VarType.UNKNOWN);
-    boolean isNumericRHS = inferredType == CompileAnalyzer.VarType.REAL
-        || inferredType == CompileAnalyzer.VarType.INTEGER
-        || f.arg2().isNumericFunction(factory.numericVariables)
-        || factory.containsConstantArrayAccess(f.arg2());
+    boolean isNumericRHS = !containsList(f.arg2())
+        && !(factory.domain == S.Reals && containsImaginary(f.arg2()))
+        && (inferredType == CompileAnalyzer.VarType.REAL
+            || inferredType == CompileAnalyzer.VarType.INTEGER
+            || f.arg2().isNumericFunction(factory.numericVariables)
+            || factory.containsConstantArrayAccess(f.arg2()));
 
     if (isNumericRHS) {
       StringBuilder numericBuffer = new StringBuilder();
@@ -215,20 +306,32 @@ public class CompileFactory {
         String existingVar = factory.numericVariables.apply(f.arg1());
         String fieldName;
 
+        String rhs = numericBuffer.toString();
         if (existingVar != null && existingVar.startsWith("this.")) {
           fieldName = existingVar.substring(5);
+          // an existing field's type is fixed by whatever assignment or initializer created it;
+          // this assignment's own RHS may have resolved to a different one - most commonly a
+          // scalar `_Integer` argument's `int` field fed by this writer's exact `long` arithmetic
+          // - and Java only widens a narrower Java type into a wider one implicitly. A `long`
+          // into an existing `int` field needs an explicit (lossy, but no more so than the `int`
+          // arithmetic the field already commits it to) narrowing cast; a `double` into an
+          // existing `long` field is the same case in the other direction.
+          if (type == 3 && fieldName.endsWith("_i")) {
+            rhs = "(int)(" + rhs + ")";
+          } else if (type == 1 && fieldName.endsWith("_l")) {
+            rhs = "(long)(" + rhs + ")";
+          }
         } else {
           int fieldId = factory.fieldCounter++;
-          fieldName = "local_var_" + fieldId + "_" + (type == 1 ? "d" : "c");
+          fieldName = "local_var_" + fieldId + "_" + fieldSuffix(type);
           factory.numericVariables.put(f.arg1(), "this." + fieldName);
-          TypeName fieldType = type == 1 ? TypeName.DOUBLE : ClassName.get(Complex.class);
-          factory.classBuilder.addField(fieldType, fieldName, Modifier.PRIVATE);
+          factory.classBuilder.addField(fieldType(type), fieldName, Modifier.PRIVATE);
         }
 
         MethodSpec.Builder method = MethodSpec.methodBuilder("setExpression" + m)
             .addModifiers(Modifier.PRIVATE).returns(IExpr.class);
 
-        method.addStatement("this.$L = $L", fieldName, numericBuffer.toString());
+        method.addStatement("this.$L = $L", fieldName, rhs);
         String returnExpr = "F.symjify(this." + fieldName + ")";
 
         if (factory.localVariables.contains(variable)) {
@@ -281,8 +384,10 @@ public class CompileFactory {
     String numericField = factory.numericVariables.apply(f.arg1());
     if (numericField != null && numericField.startsWith("this.")) {
       // convertSet names the field after the type it created it for
-      method.addStatement(numericField.endsWith("_c") ? "$L = engine.evalComplex(value)"
-          : "$L = engine.evalDouble(value)", numericField);
+      String syncStatement = numericField.endsWith("_c") ? "$L = engine.evalComplex(value)"
+          : numericField.endsWith("_l") ? "$L = (long) engine.evalInt(value)"
+              : "$L = engine.evalDouble(value)";
+      method.addStatement(syncStatement, numericField);
     }
 
     method.addStatement("return value");
@@ -320,7 +425,8 @@ public class CompileFactory {
     String fieldName = fieldReference.substring(5);
     // convertSet names the field after the type it created it for
     boolean complex = fieldName.endsWith("_c");
-    if (!complex && !fieldName.endsWith("_d")) {
+    boolean exactInteger = fieldName.endsWith("_l");
+    if (!complex && !exactInteger && !fieldName.endsWith("_d")) {
       return false;
     }
 
@@ -333,6 +439,14 @@ public class CompileFactory {
       method.addStatement("$T previous = this.$L", Complex.class, fieldName);
       method.addStatement("this.$L = previous.$L(1.0)", fieldName,
           increment ? "add" : "subtract");
+    } else if (exactInteger) {
+      method.addStatement("long previous = this.$L", fieldName);
+      if (factory.integerWriter.isChecked()) {
+        method.addStatement("this.$L = Math.$L(previous, 1L)", fieldName,
+            increment ? "addExact" : "subtractExact");
+      } else {
+        method.addStatement("this.$L = previous $L 1L", fieldName, increment ? "+" : "-");
+      }
     } else {
       method.addStatement("double previous = this.$L", fieldName);
       method.addStatement("this.$L = previous $L 1.0", fieldName, increment ? "+" : "-");
@@ -419,6 +533,9 @@ public class CompileFactory {
       for (int i = 1; i < f.argSize(); i += 2) {
         StringBuilder testExpr = new StringBuilder();
         boolean optimized = factory.tryOptimizeCondition(testExpr, f.get(i));
+        if (!optimized) {
+          factory.convert(testExpr, f.get(i), false, true);
+        }
 
         String condStr =
             optimized ? testExpr.toString() : "engine.evalTrue(" + testExpr.toString() + ")";
@@ -517,24 +634,39 @@ public class CompileFactory {
           step = iter.arg4();
         }
 
-        StringBuilder iminBuf = new StringBuilder();
-        factory.convert(iminBuf, imin, false, true);
-        StringBuilder imaxBuf = new StringBuilder();
-        factory.convert(imaxBuf, imax, false, true);
-        StringBuilder stepBuf = new StringBuilder();
-        factory.convert(stepBuf, step, false, true);
+        // an exact `long` loop variable is only worth it when every bound writes as one; a bound
+        // this writer declines (a symbolic or genuinely real one) falls back to the existing
+        // `double` loop unchanged
+        String iminLong = factory.integerWriter.write(imin);
+        String imaxLong = factory.integerWriter.write(imax);
+        String stepLong = factory.integerWriter.write(step);
+        boolean integerLoop = iminLong != null && imaxLong != null && stepLong != null;
 
         String iterName = "iter_" + m;
-        method.addStatement("double $L_min = engine.evalDouble(F.symjify($L))", iterName,
-            iminBuf.toString());
-        method.addStatement("double $L_max = engine.evalDouble(F.symjify($L))", iterName,
-            imaxBuf.toString());
-        method.addStatement("double $L_step = engine.evalDouble(F.symjify($L))", iterName,
-            stepBuf.toString());
+        if (integerLoop) {
+          method.addStatement("long $L_min = $L", iterName, iminLong);
+          method.addStatement("long $L_max = $L", iterName, imaxLong);
+          method.addStatement("long $L_step = $L", iterName, stepLong);
+        } else {
+          StringBuilder iminBuf = new StringBuilder();
+          factory.convert(iminBuf, imin, false, true);
+          StringBuilder imaxBuf = new StringBuilder();
+          factory.convert(imaxBuf, imax, false, true);
+          StringBuilder stepBuf = new StringBuilder();
+          factory.convert(stepBuf, step, false, true);
+
+          method.addStatement("double $L_min = engine.evalDouble(F.symjify($L))", iterName,
+              iminBuf.toString());
+          method.addStatement("double $L_max = engine.evalDouble(F.symjify($L))", iterName,
+              imaxBuf.toString());
+          method.addStatement("double $L_step = engine.evalDouble(F.symjify($L))", iterName,
+              stepBuf.toString());
+        }
 
         int loopId = factory.fieldCounter++;
-        String loopVarName = "loop_var_" + loopId + "_d";
-        factory.classBuilder.addField(TypeName.DOUBLE, loopVarName, Modifier.PRIVATE);
+        String loopVarName = "loop_var_" + loopId + "_" + (integerLoop ? "l" : "d");
+        factory.classBuilder.addField(integerLoop ? TypeName.LONG : TypeName.DOUBLE, loopVarName,
+            Modifier.PRIVATE);
 
         String loopCond = iterName + "_step > 0 ? this." + loopVarName + " <= " + iterName
             + "_max : this." + loopVarName + " >= " + iterName + "_max";
@@ -751,17 +883,18 @@ public class CompileFactory {
           CompileAnalyzer.VarType inferredType =
               factory.nodeTypes.getOrDefault(arg.second(), CompileAnalyzer.VarType.UNKNOWN);
 
-          if (inferredType == CompileAnalyzer.VarType.REAL
-              || inferredType == CompileAnalyzer.VarType.INTEGER
-              || arg.second().isNumericFunction(factory.numericVariables)
-              || factory.containsConstantArrayAccess(arg.second())) {
+          if (!containsList(arg.second())
+              && !(factory.domain == S.Reals && containsImaginary(arg.second()))
+              && (inferredType == CompileAnalyzer.VarType.REAL
+                  || inferredType == CompileAnalyzer.VarType.INTEGER
+                  || arg.second().isNumericFunction(factory.numericVariables)
+                  || factory.containsConstantArrayAccess(arg.second()))) {
             StringBuilder numericBuffer = new StringBuilder();
             int type = factory.convertNumeric(numericBuffer, arg.second(), factory.domain);
             if (type > 0) {
               int fieldId = factory.fieldCounter++;
-              String fieldName = "local_var_" + fieldId + "_" + (type == 1 ? "d" : "c");
-              TypeName fieldType = type == 1 ? TypeName.DOUBLE : ClassName.get(Complex.class);
-              factory.classBuilder.addField(fieldType, fieldName, Modifier.PRIVATE);
+              String fieldName = "local_var_" + fieldId + "_" + fieldSuffix(type);
+              factory.classBuilder.addField(fieldType(type), fieldName, Modifier.PRIVATE);
               factory.numericVariables.put(arg.first(), "this." + fieldName);
 
               method.addStatement("this.$L = $L", fieldName, numericBuffer.toString());
@@ -856,8 +989,8 @@ public class CompileFactory {
   }
 
   public void convert(StringBuilder buf, IExpr expression, boolean symbolic, boolean addEval) {
-    if (!symbolic && (expression.isNumericFunction(numericVariables)
-        || containsConstantArrayAccess(expression))) {
+    if (!symbolic && !containsList(expression) && !(domain == S.Reals && containsImaginary(expression))
+        && (expression.isNumericFunction(numericVariables) || containsConstantArrayAccess(expression))) {
       int type = convertNumeric(buf, expression, domain);
       if (type > 0) {
         return;
@@ -1097,6 +1230,16 @@ public class CompileFactory {
     if (containsStatement(expression)) {
       return 0;
     }
+    if (domain == S.Reals && nodeTypes.get(expression) == CompileAnalyzer.VarType.INTEGER) {
+      // an expression the analyzer has proven exactly integer-valued is computed as an exact
+      // `long` when this writer has a case for it; anything it declines falls through to the
+      // double emitter below exactly as if this branch were not here
+      String longExpr = integerWriter.write(expression);
+      if (longExpr != null) {
+        parentBuffer.append(longExpr);
+        return 3;
+      }
+    }
     if (domain == S.Reals) {
       try {
         StringBuilder buf = new StringBuilder();
@@ -1125,9 +1268,21 @@ public class CompileFactory {
   }
 
   private Function<IExpr, IExpr> getNumericSubstFunction(String evalMethod) {
+    boolean forDouble = evalMethod.equals("evalf");
     return x -> {
       String str = numericVariables.apply(x);
       if (x.isSymbol() && str != null) {
+        if (forDouble && (str.endsWith("_i") || str.endsWith("_l"))) {
+          // a scalar `_Integer` argument or an exact-integer local is a Java `int`/`long` field;
+          // substituting its bare name here would let its *declared* Java type - not the domain
+          // this conversion is for - decide how the surrounding operator behaves. That is
+          // invisible for `+`/`*`/`-`, where the other operand (or an implicit widening) usually
+          // saves it, but not for `/`: two `int`/`long` operands do integer division in Java
+          // regardless of what the analyzer inferred, so `n/2` silently truncated instead of
+          // computing the real quotient real `Compile` always gives. The cast forces this
+          // conversion's own domain throughout.
+          str = "((double)(" + str + "))";
+        }
         return F.stringx(str);
       }
       return F.NIL;
@@ -1200,22 +1355,87 @@ public class CompileFactory {
   }
 
   /**
+   * Whether argument <code>argIndex</code> (1-based) of <code>parent</code> is held - not
+   * evaluated when <code>parent</code> itself is, so an assignment nested inside it must not be
+   * hoisted into a once-called method: Symja's own evaluator - once the whole symbolic expression
+   * this walk is building is handed to <code>F.eval</code> - is what decides how many times, and
+   * in which order, it actually runs. <code>Table</code>'s body runs once per iteration, an
+   * <code>If</code>'s branch only if its condition picks it, a <code>Function</code>'s body once
+   * per application; a once-called Java method could only ever give one of those the wrong answer.
+   *
+   * <p>
+   * This reads the head's actual <code>HoldFirst</code>/<code>HoldRest</code> attributes rather
+   * than naming heads, so it is automatically right about every one of them - <code>Table</code>,
+   * <code>Sum</code>, <code>Product</code>, <code>Map</code>'s <code>Function</code> argument,
+   * <code>Function</code> itself (its body is held exactly like everything else <code>HOLDALL</code>
+   * covers) - and about a nested <code>If</code>/<code>Which</code>/<code>Do</code>/<code>While</code>/
+   * <code>For</code> reached this way only because something else in the same expression (not
+   * that head itself) is what fell to the symbolic fallback: those are compiled natively, with
+   * correct held semantics of their own, whenever they are the expression a {@link #convert} call
+   * is actually asked to handle - this is only reached when they are not.
+   */
+  private static boolean isHeldPosition(IAST parent, int argIndex) {
+    IExpr head = parent.head();
+    if (!head.isSymbol()) {
+      return false;
+    }
+    int attributes = ((ISymbol) head).getAttributes();
+    return argIndex == 1 ? (attributes & ISymbol.HOLDFIRST) != 0
+        : (attributes & ISymbol.HOLDREST) != 0;
+  }
+
+  /**
+   * Record the variable a held <code>Set</code>/<code>SetDelayed</code>/<code>Increment</code>/
+   * <code>Decrement</code> assigns, so its numeric field - if it has one - can be resynced from
+   * <code>vars</code> once the whole symbolic expression containing it has actually run. Does
+   * nothing for anything else; safe to call unconditionally on every held argument.
+   */
+  private static void recordHeldAssignment(IAST ast, java.util.Set<ISymbol> heldAssigned) {
+    IExpr head = ast.head();
+    if (!head.isBuiltInSymbol()) {
+      return;
+    }
+    switch (((IBuiltInSymbol) head).ordinal()) {
+      case ID.Set:
+      case ID.SetDelayed:
+        if (ast.argSize() == 2 && ast.arg1().isSymbol()) {
+          heldAssigned.add((ISymbol) ast.arg1());
+        }
+        break;
+      case ID.Increment:
+      case ID.Decrement:
+        if (ast.argSize() == 1 && ast.arg1().isSymbol()) {
+          heldAssigned.add((ISymbol) ast.arg1());
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
    * Replace the statements nested inside <code>expression</code> by symbols standing for the calls
    * which generate them.
    *
    * <p>
-   * The symbolic form of an expression is written by {@link IExpr#internalJavaString}, which knows
-   * how to write a <code>Module</code> as <code>F.Module(F.List(x, y), ...)</code> - and the
+   * The symbolic form of an expression is written by {@link SymbolicFormWriter}, which knows how
+   * to write a <code>Module</code> as <code>F.Module(F.List(x, y), ...)</code> - and the
    * <code>x</code> and <code>y</code> in it are local variables of the compiled function which no
    * Java declaration in the generated class matches. Handing those subexpressions to
    * {@link #convert} instead, and putting the call it returns in their place, keeps them out of the
-   * symbolic form altogether.
+   * symbolic form altogether - <i>except</i> inside a {@link #isHeldPosition held} argument, where
+   * hoisting would run the statement once, eagerly, while the enclosing call's Java arguments are
+   * being built, instead of however many times (or in whichever branch) the head that holds it
+   * actually calls for. <code>held</code> is sticky once set: everything nested inside a held
+   * position is itself left to the same one <code>F.eval</code> that runs the held position,
+   * whatever further statements or scopes it contains.
    *
    * <p>
    * Only a nested statement is lifted, never <code>expression</code> itself: this runs from inside
    * {@link #convert}, so lifting the whole expression would hand it straight back.
    */
-  private IExpr hoistStatements(IExpr expression, Map<ISymbol, String> generated) {
+  private IExpr hoistStatements(IExpr expression, Map<ISymbol, String> generated, boolean held,
+      java.util.Set<ISymbol> heldAssigned) {
     if (!expression.isAST()) {
       return expression;
     }
@@ -1223,7 +1443,8 @@ public class CompileFactory {
     IASTMutable result = F.NIL;
     for (int i = 1; i < ast.size(); i++) {
       IExpr argument = ast.get(i);
-      IExpr replaced = hoistArgument(argument, generated);
+      boolean argHeld = held || isHeldPosition(ast, i);
+      IExpr replaced = hoistArgument(argument, generated, argHeld, heldAssigned);
       if (replaced != argument) {
         if (result.isNIL()) {
           result = ast.copy();
@@ -1234,12 +1455,18 @@ public class CompileFactory {
     return result.isPresent() ? result : ast;
   }
 
-  private IExpr hoistArgument(IExpr argument, Map<ISymbol, String> generated) {
+  private IExpr hoistArgument(IExpr argument, Map<ISymbol, String> generated, boolean held,
+      java.util.Set<ISymbol> heldAssigned) {
     if (!argument.isAST()) {
       return argument;
     }
-    if (!isStatement((IAST) argument)) {
-      return hoistStatements(argument, generated);
+    IAST argAst = (IAST) argument;
+    if (held) {
+      recordHeldAssignment(argAst, heldAssigned);
+      return hoistStatements(argument, generated, true, heldAssigned);
+    }
+    if (!isStatement(argAst)) {
+      return hoistStatements(argument, generated, false, heldAssigned);
     }
     StringBuilder buf = new StringBuilder();
     convert(buf, argument, false, false);
@@ -1252,11 +1479,46 @@ public class CompileFactory {
     return placeholder;
   }
 
+  /**
+   * Generate a method that runs <code>symbolicText</code> - already-built, <code>F.eval</code>-
+   * ready source - exactly once and then resyncs the numeric field of every variable in
+   * <code>heldAssigned</code> from <code>vars</code>, and return a call to it.
+   *
+   * <p>
+   * A variable assigned inside a held position - a <code>Table</code>'s body, an <code>If</code>'s
+   * branch, a <code>Function</code>'s body - is deliberately left un-hoisted by
+   * {@link #hoistArgument}, so its <code>vars</code> entry is correct the moment the whole
+   * symbolic call above returns, but its numeric field mirror, if it has one, is not: nothing
+   * inside the held subtree wrote it, on purpose. Later native code that reads the variable
+   * through its field rather than through <code>vars</code> would otherwise see whatever value it
+   * held before this call ran.
+   */
+  private String wrapWithFieldResync(String symbolicText, java.util.Set<ISymbol> heldAssigned) {
+    int m = module++;
+    MethodSpec.Builder method = MethodSpec.methodBuilder("symbolicExpression" + m)
+        .addModifiers(Modifier.PRIVATE).returns(IExpr.class);
+    method.addStatement("$T result = F.eval($L)", IExpr.class, symbolicText);
+    for (ISymbol sym : heldAssigned) {
+      String field = numericVariables.apply(sym);
+      if (field == null || !field.startsWith("this.")) {
+        continue;
+      }
+      String resync = field.endsWith("_c") ? "$L = engine.evalComplex(vars.get($S))"
+          : field.endsWith("_l") ? "$L = (long) engine.evalInt(vars.get($S))"
+              : "$L = engine.evalDouble(vars.get($S))";
+      method.addStatement(resync, field, sym.toString());
+    }
+    method.addStatement("return result");
+    classBuilder.addMethod(method.build());
+    return "symbolicExpression" + m + "()";
+  }
+
   private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
     Map<ISymbol, String> generated = new HashMap<>();
-    IExpr prepared = hoistStatements(expression, generated);
+    java.util.Set<ISymbol> heldAssigned = new java.util.LinkedHashSet<>();
+    IExpr prepared = hoistStatements(expression, generated, false, heldAssigned);
     try {
-      buf.append(prepared.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> {
+      SymbolicFormWriter writer = new SymbolicFormWriter(x -> {
         // a statement lifted out above is reached through the method which generates it
         String statement = generated.get(x);
         if (statement != null) {
@@ -1278,7 +1540,10 @@ public class CompileFactory {
           return str;
         }
         return null;
-      }));
+      });
+      String symbolicText = writer.write(prepared);
+      buf.append(heldAssigned.isEmpty() ? symbolicText
+          : wrapWithFieldResync(symbolicText, heldAssigned));
       return true;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);

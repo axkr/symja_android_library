@@ -41,7 +41,7 @@ public class VariableManager implements Function<IExpr, String> {
 
   @Override
   public String apply(IExpr expr) {
-    for (Iterator<Map<IExpr, String>> iterator = varStack.descendingIterator(); iterator
+    for (Iterator<Map<IExpr, String>> iterator = varStack.iterator(); iterator
         .hasNext();) {
       Map<IExpr, String> map = iterator.next();
       String temp = map.get(expr);

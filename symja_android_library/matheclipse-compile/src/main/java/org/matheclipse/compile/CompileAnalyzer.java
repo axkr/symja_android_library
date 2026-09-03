@@ -72,6 +72,18 @@ public class CompileAnalyzer {
       }
       return VarType.UNKNOWN;
     }
+
+    /** Whether <code>sym</code> is declared in this scope or one of its ancestors. */
+    public boolean contains(ISymbol sym) {
+      Scope curr = this;
+      while (curr != null) {
+        if (curr.variables.containsKey(sym)) {
+          return true;
+        }
+        curr = curr.parent;
+      }
+      return false;
+    }
   }
 
   private Scope currentScope = new Scope(null);
@@ -132,8 +144,19 @@ public class CompileAnalyzer {
     } else if (expr.isSymbol()) {
       if (expr == S.True || expr == S.False) {
         type = VarType.BOOLEAN;
+      } else if (expr == S.I) {
+        // the imaginary unit: a constant, not a compiled variable
+        type = VarType.COMPLEX;
+      } else if (expr == S.Pi || expr == S.E || expr == S.EulerGamma || expr == S.Degree
+          || expr == S.GoldenRatio || expr == S.Catalan) {
+        type = VarType.REAL;
       } else {
-        type = currentScope.get((ISymbol) expr);
+        ISymbol sym = (ISymbol) expr;
+        // a symbol which was never declared (an argument, a Module/Block/With local, a loop
+        // variable) is free in the compiled function: it reads back whatever the caller's
+        // environment binds it to, which the numeric emitters cannot express - so it has to be
+        // symbolic, not merely "unknown" (which widen() treats as compatible with anything).
+        type = currentScope.contains(sym) ? currentScope.get(sym) : VarType.SYMBOLIC;
       }
     } else if (expr.isAST()) {
       type = analyzeAST((IAST) expr);
@@ -172,6 +195,9 @@ public class CompileAnalyzer {
         case ID.Subtract:
         case ID.Divide:
           return analyzeMath(ast);
+        case ID.Mod:
+        case ID.Quotient:
+          return analyzeIntegerPreservingBinary(ast);
         case ID.Less:
         case ID.LessEqual:
         case ID.Greater:
@@ -267,14 +293,47 @@ public class CompileAnalyzer {
 
   private VarType analyzeLoop(IAST ast) {
     loopDepth++;
-    currentScope = new Scope(currentScope); // Push isolated scope
     try {
-      for (int i = 1; i <= ast.argSize(); i++) {
-        analyze(ast.get(i));
+      IExpr head = ast.head();
+      // CompileRewrites flattens a multi-iterator Do into nested single-iterator ones before the
+      // analyzer ever sees it, so a native Do always has exactly one iterator here; anything else
+      // (a bare `Do(body, {n})` repetition count, or - defensively - a Do this analyzer is asked
+      // to type outside that pipeline) falls back to the generic handling below, where the loop
+      // variable, if any, is never declared and so reads as symbolic rather than a wrong type.
+      if (head == S.Do && ast.argSize() == 2 && ast.arg2().isList()
+          && ((IAST) ast.arg2()).argSize() >= 2 && ((IAST) ast.arg2()).arg1().isSymbol()) {
+        IAST iter = (IAST) ast.arg2();
+        ISymbol loopVar = (ISymbol) iter.arg1();
+        // the bounds are evaluated once in the *enclosing* scope, exactly like Mathematica's own
+        // iterator semantics - and, unlike the body, never see the loop variable itself - so they
+        // are analyzed before it is declared and its scope is pushed
+        VarType boundsType = VarType.UNKNOWN;
+        for (int k = 2; k <= iter.argSize(); k++) {
+          boundsType = VarType.widen(boundsType, analyze(iter.get(k)));
+        }
+        currentScope = new Scope(currentScope);
+        try {
+          // the native Do loop generates a `long` loop variable only when every bound is
+          // provably integer, and a `double` one otherwise - REAL is the safe default a
+          // symbolic or real-valued bound falls back to
+          currentScope.variables.put(loopVar,
+              boundsType == VarType.INTEGER ? VarType.INTEGER : VarType.REAL);
+          analyze(ast.arg1());
+        } finally {
+          currentScope = currentScope.parent;
+        }
+      } else {
+        currentScope = new Scope(currentScope);
+        try {
+          for (int i = 1; i <= ast.argSize(); i++) {
+            analyze(ast.get(i));
+          }
+        } finally {
+          currentScope = currentScope.parent;
+        }
       }
       return VarType.SYMBOLIC;
     } finally {
-      currentScope = currentScope.parent;
       loopDepth--;
     }
   }
@@ -325,7 +384,53 @@ public class CompileAnalyzer {
     for (int i = 1; i <= ast.argSize(); i++) {
       mergedType = VarType.widen(mergedType, analyze(ast.get(i)));
     }
+    IExpr head = ast.head();
+    if (head == S.Divide) {
+      // real Compile's own Divide has no exact-integer result - it always computes a machine
+      // real, even when the arguments divide evenly - so an Integer/Boolean/Unknown combination
+      // is downgraded to Real; Complex and Symbolic still take over as usual
+      return downgradeToReal(mergedType);
+    }
+    if (head == S.Power && ast.argSize() == 2 && mergedType == VarType.INTEGER
+        && !isNonNegativeIntegerLiteral(ast.arg2())) {
+      // an Integer base to a non-literal or negative exponent might not have an exact integer
+      // value (a negative power is a fraction; the sign of a non-literal exponent is unknown) -
+      // downgrade the same way Divide does. A literal non-negative integer exponent is exact and
+      // keeps the Integer type; the code generator unrolls it into a multiplication chain.
+      return VarType.REAL;
+    }
     return mergedType;
+  }
+
+  /**
+   * <code>Mod</code>/<code>Quotient</code>: exactly an integer of two integer arguments (the
+   * code generator's <code>IntegerFormWriter</code> emits <code>Math.floorMod</code>/
+   * <code>Math.floorDiv</code>, which match Mathematica's sign convention exactly), a machine
+   * real of anything else numeric - the same "downgrade what is not provably exact" rule
+   * {@link #analyzeMath}'s <code>Divide</code> case uses.
+   */
+  private VarType analyzeIntegerPreservingBinary(IAST ast) {
+    VarType merged = VarType.UNKNOWN;
+    for (int i = 1; i <= ast.argSize(); i++) {
+      merged = VarType.widen(merged, analyze(ast.get(i)));
+    }
+    return merged == VarType.INTEGER ? VarType.INTEGER : downgradeToReal(merged);
+  }
+
+  /** <code>type</code>, unless it is one a Divide could never actually produce. */
+  private static VarType downgradeToReal(VarType type) {
+    switch (type) {
+      case COMPLEX:
+      case SYMBOLIC:
+      case REAL:
+        return type;
+      default:
+        return VarType.REAL;
+    }
+  }
+
+  private static boolean isNonNegativeIntegerLiteral(IExpr expr) {
+    return expr.isInteger() && !expr.isNegative();
   }
 
   private VarType analyzeComparison(IAST ast) {
