@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.graphtheory.GraphTheoryInit;
 import org.matheclipse.image.ImageInit;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
@@ -35,6 +36,11 @@ public class MD2Symja {
 
     // initialize from module matheclipse-image:
     ImageInit.init();
+
+    // initialize from module matheclipse-graphtheory: core owns the Graph, Graph3D, TreePlot, ...
+    // symbols but not their evaluators, so without this call they stay unevaluated and the Graph3D
+    // blocks in graphics3Dtest.md print as text instead of drawing a picture.
+    GraphTheoryInit.init();
   }
 
   public static String generateHTMLString(final String markdownStr) {
