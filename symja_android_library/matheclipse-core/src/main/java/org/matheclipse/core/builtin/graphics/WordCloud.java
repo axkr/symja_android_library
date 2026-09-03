@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -98,6 +99,8 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
       IExpr wordSpacings = GraphicsOptions.optionValue(originalAST, S.WordSpacings, S.Automatic);
       IExpr colorFunctionSpec =
           GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic);
+      IExpr colorFunctionScaling =
+          GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True);
       IExpr scalingFunctions =
           GraphicsOptions.optionValue(originalAST, S.ScalingFunctions, S.Automatic);
 
@@ -249,12 +252,17 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
 
       IASTAppendable insets = F.ListAlloc(items.size());
       int colorIndex = 0;
-      // a ColorFunction paints by weight; without one the words cycle through the palette
-      java.util.function.DoubleFunction<IExpr> colorFn =
-          GraphicsOptions.colorFunction(colorFunctionSpec, engine, t -> F.NIL);
+      // a ColorFunction paints by weight; without one the words cycle through the palette.
+      // item.fraction is already the weight's position in the range, so with scaling on there is
+      // nothing left to scale and the slot is left undeclared
+      PlotColorFunction colorFn = PlotColorFunction
+          .of(PlotColorFunction.Family.CHART, colorFunctionSpec, colorFunctionScaling,
+              S.WordCloud, engine)
+          .build();
 
       for (WordItem item : items) {
-        IExpr colorAST = colorFn.apply(item.fraction);
+        IExpr colorAST = colorFn == null ? F.NIL
+            : colorFn.color(colorFn.isScaled() ? item.fraction : item.weight);
         if (!colorAST.isPresent()) {
           RGBColor rgb =
               GraphicsOptions.PLOT_COLORS[colorIndex % GraphicsOptions.PLOT_COLORS.length];

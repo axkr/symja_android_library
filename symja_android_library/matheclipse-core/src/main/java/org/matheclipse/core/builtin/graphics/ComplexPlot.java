@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics;
 
-import java.awt.Color;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -8,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.ComplexColoring;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,6 +20,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * Example:
  * <code>ComplexPlot[(z^2 + 1) / (z^2 - 1), {z, -2 - 2 I, 2 + 2 I}, ColorFunction -> "CyclicLogAbsArg"]</code>
+ * <p>
+ * The colouring itself lives in {@link org.matheclipse.core.graphics.ComplexColoring}, which
+ * {@code ComplexPlot3D} shares, so the two plots cannot drift apart on what a scheme looks like.
  */
 public class ComplexPlot extends ListPlot {
 
@@ -71,12 +74,11 @@ public class ComplexPlot extends ListPlot {
 
     // Default defaults
     int plotPoints = 100; // Higher default for raster-like quality
-    String colorFunction = "Automatic";
 
     IExpr colorFunctionSpec =
         GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic);
-    boolean colorFunctionScaling =
-        !GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True).isFalse();
+    IExpr colorFunctionScaling =
+        GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True);
     // the options array holds resolved values, not the rules the caller wrote,
     // so the option rules are read back off the original call
     for (IExpr opt : originalAST) {
@@ -85,14 +87,9 @@ public class ComplexPlot extends ListPlot {
         IExpr val = ((IAST) opt).arg2();
         if (key == S.PlotPoints) {
           plotPoints = val.toIntDefault(100);
-        } else if (key == S.ColorFunction) {
-          colorFunction = val.toString().replace("\"", "");
         }
       }
     }
-    // A name this plot knows selects one of its own shading schemes. Anything else -- a gradient
-    // name, or a function -- colours the plot itself, and takes over from the schemes.
-    boolean namedScheme = colorFunctionSpec == S.Automatic || isNamedScheme(colorFunction);
 
     double x0 = 0, y0 = 0, x1 = 0, y1 = 0;
     try {
@@ -116,8 +113,15 @@ public class ComplexPlot extends ListPlot {
     // lets a predicate be written as Function({z, f}, Abs(z) < 2) or Function({z, f}, Abs(f) < 2)
     RegionFunctionFilter region = RegionFunctionFilter.of(
         GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
+    ComplexColoring coloring = ComplexColoring.of(colorFunctionSpec, colorFunctionScaling,
+        new double[] {x0, x1, y0, y1}, S.ComplexPlot, engine);
 
-    // Generate the colour grid
+    // The values are sampled before any of them is coloured: the scaling of a ColorFunction, and
+    // the schemes that shade by the rank of Abs(f), both need the whole picture before they can
+    // answer for one cell of it.
+    double[][] valueRe = new double[plotPoints][plotPoints];
+    double[][] valueIm = new double[plotPoints][plotPoints];
+    boolean[][] painted = new boolean[plotPoints][plotPoints];
     for (int i = 0; i < plotPoints; i++) {
       double rMid = x0 + (i + 0.5) * dx;
       for (int j = 0; j < plotPoints; j++) {
@@ -133,27 +137,33 @@ public class ComplexPlot extends ListPlot {
             // number does
             continue;
           }
-
-          IExpr rgb = F.NIL;
-          if (namedScheme) {
-            double[] hsb = complexToHSB(res, colorFunction);
-            if (hsb != null) {
-              Color c = Color.getHSBColor((float) hsb[0], (float) hsb[1], (float) hsb[2]);
-              rgb = F.RGBColor(c.getRed() / 255.0, c.getGreen() / 255.0, c.getBlue() / 255.0);
-            }
-          } else {
-            rgb = paintedColor(colorFunctionSpec, res, colorFunctionScaling, engine);
+          double[] value = complexValue(res);
+          if (value == null) {
+            continue;
           }
-          if (rgb.isPresent()) {
-            // j counts upwards from the bottom, while the raster rows are given top first
-            cells[plotPoints - 1 - j][i] = rgb;
-          }
+          valueRe[i][j] = value[0];
+          valueIm[i][j] = value[1];
+          painted[i][j] = true;
+          coloring.observe(rMid, iMid, value[0], value[1]);
         } catch (RuntimeException rex) {
           return Errors.printMessage(S.ComplexPlot, rex);
         }
       }
     }
-    primitives.append(GraphicsOptions.rasterTopFirst(cells, x0, y0, x1, y1));
+    coloring.prepare();
+
+    for (int i = 0; i < plotPoints; i++) {
+      double rMid = x0 + (i + 0.5) * dx;
+      for (int j = 0; j < plotPoints; j++) {
+        if (painted[i][j]) {
+          // j counts upwards from the bottom, while the raster rows are given top first
+          cells[plotPoints - 1 - j][i] =
+              coloring.color(rMid, y0 + (j + 0.5) * dy, valueRe[i][j], valueIm[i][j]);
+        }
+      }
+    }
+    // a domain colouring is a picture of a function, so the sampling grid is smoothed over
+    primitives.append(GraphicsOptions.smoothRasterTopFirst(cells, x0, y0, x1, y1));
 
     graphicsOptions.setBoundingBox(new double[] {x0, x1, y0, y1});
 
@@ -165,166 +175,29 @@ public class ComplexPlot extends ListPlot {
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
-  /** Shading schemes this plot draws itself, as opposed to colours a caller supplies. */
-  private static boolean isNamedScheme(String name) {
-    switch (name) {
-      case "Automatic":
-      case "None":
-      case "GlobalAbs":
-      case "MaxAbs":
-      case "CyclicArg":
-      case "CyclicLogAbs":
-      case "CyclicLogAbsArg":
-      case "CyclicReImLogAbs":
-        return true;
-      default:
-        return false;
-    }
-  }
-
   /**
-   * The colour a caller's own {@code ColorFunction} gives a value.
+   * The value of the plotted function at one sample point, as a real and an imaginary part.
    *
    * <p>
-   * A function is offered the value itself first. A gradient name takes a single number instead, so
-   * the phase is used: scaled to 0..1 over a full turn, or left as the angle in radians when
-   * {@code ColorFunctionScaling -> False}. A function that wanted a number rather than the value
-   * gets the same phase.
+   * A pole comes back as a pair of non-finite doubles rather than as nothing: a point where the
+   * function blows up is part of the picture and is drawn white, while a point where it has no
+   * numeric value at all is not, and leaves a hole.
    *
-   * @return the colour, or {@link F#NIL} when nothing usable came back
+   * @return {@code {re, im}}, or {@code null} when the value is not a number
    */
-  private static IExpr paintedColor(IExpr spec, IExpr value, boolean scaling, EvalEngine engine) {
-    if (!spec.isString()) {
-      IExpr direct = evalColor(F.unaryAST1(spec, value), engine);
-      if (direct.isPresent()) {
-        return direct;
-      }
+  private static double[] complexValue(IExpr value) {
+    if (value.isDirectedInfinity() || value == S.ComplexInfinity || value == S.Indeterminate) {
+      return new double[] {Double.NaN, Double.NaN};
     }
-    double phase = phaseOf(value);
-    if (Double.isNaN(phase)) {
-      return F.NIL;
-    }
-    double argument = scaling ? (phase + Math.PI) / (2.0 * Math.PI) : phase;
-    IExpr function = spec.isString() ? F.ColorData(spec) : spec;
-    return evalColor(F.unaryAST1(function, F.num(argument)), engine);
-  }
-
-  /** The phase of a complex value, or {@code NaN} when it has none. */
-  private static double phaseOf(IExpr value) {
     if (!value.isNumber()) {
-      return Double.NaN;
+      return null;
     }
     try {
       Complex c = value.evalfc();
-      double re = c.getRealPart();
-      double im = c.getImaginaryPart();
-      if (!Double.isFinite(re) || !Double.isFinite(im)) {
-        return Double.NaN;
-      }
-      return Math.atan2(im, re);
+      return new double[] {c.getRealPart(), c.getImaginaryPart()};
     } catch (RuntimeException rex) {
-      return Double.NaN;
+      return null;
     }
-  }
-
-  private static IExpr evalColor(IExpr call, EvalEngine engine) {
-    try {
-      IExpr color = engine.evaluate(call);
-      return GraphicsOptions.isColorExpr(color) ? color : F.NIL;
-    } catch (RuntimeException rex) {
-      return F.NIL;
-    }
-  }
-
-  /**
-   * Maps a complex value to HSB colors based on the selected ColorFunction strategy.
-   * <p>
-   * Instead of smooth Sin^2 waves, we use Pow(Sin, 0.1) to create broad bright areas and narrow
-   * dark drops (grid lines).
-   */
-  private double[] complexToHSB(IExpr val, String mode) {
-    if (val.isNumber()) {
-      Complex c = null;
-      try {
-        c = val.evalfc();
-      } catch (Exception e) {
-        return null;
-      }
-
-      double re = c.getRealPart();
-      double im = c.getImaginaryPart();
-
-      // Singularities/Infinity -> White
-      if (Double.isNaN(re) || Double.isNaN(im) || Double.isInfinite(re) || Double.isInfinite(im)) {
-        return new double[] {0.0, 0.0, 1.0};
-      }
-
-      double abs = Math.hypot(re, im);
-      double arg = Math.atan2(im, re); // -pi to pi
-
-      // 1. Base Hue: Argument (Phase) -> 0..1
-      double hue = (arg < 0 ? arg + 2 * Math.PI : arg) / (2.0 * Math.PI);
-
-      double saturation = 1.0;
-      double brightness = 1.0;
-
-      // Log Magnitude
-      double logAbs = Math.log(abs + 1e-20);
-
-      // --- Shading Logic ---
-      // "Sharp" logic: use power < 1.0 (e.g. 0.15) on the sine wave.
-      // |Sin(x)| goes 0..1. |Sin(x)|^0.1 rises very fast to ~1.0, staying bright,
-      // and dips sharply to 0 at x = n*Pi. This creates the "Grid line" effect.
-      double sharpness = 0.15;
-
-      if (mode.equalsIgnoreCase("None")) {
-        // Pure Phase Plot
-        return new double[] {hue, 1.0, 1.0};
-
-      } else if (mode.equalsIgnoreCase("GlobalAbs") || mode.equalsIgnoreCase("MaxAbs")) {
-        // Smooth gradient based on magnitude (no cycles)
-        brightness = abs / (1.0 + abs);
-
-      } else if (mode.equalsIgnoreCase("CyclicArg")) {
-        // Radial Spokes only
-        // Cycle 6 times (every 60 deg)
-        double spoke = Math.pow(Math.abs(Math.sin(arg * 6.0)), sharpness);
-        brightness = spoke;
-
-      } else if (mode.equalsIgnoreCase("CyclicLogAbsArg")) {
-        // ** TARGET LOOK **: Polar Grid (Rings + Spokes)
-        // Rings: repeat every 2*Pi in log scale (natural log steps)
-        double ring = Math.pow(Math.abs(Math.sin(logAbs * Math.PI)), sharpness);
-
-        // Spokes: 6 or 12 spokes? Mma usually has 2*k segments. Let's use 6.
-        double spoke = Math.pow(Math.abs(Math.sin(arg * 6.0)), sharpness);
-
-        // Combine: Darken if either ring OR spoke is hit (Grid intersection is darkest)
-        // Multiply brightnesses.
-        brightness = ring * spoke;
-
-        // Optional: slight saturation drop at lines for "ink" effect
-        saturation = 0.8 + 0.2 * brightness;
-
-      } else if (mode.equalsIgnoreCase("CyclicReImLogAbs")) {
-        // Checkerboard + Rings
-        double reGrid = Math.pow(Math.abs(Math.sin(re * 2.0)), sharpness);
-        double imGrid = Math.pow(Math.abs(Math.sin(im * 2.0)), sharpness);
-        double logRing = Math.pow(Math.abs(Math.sin(logAbs * 4.0)), sharpness);
-
-        brightness = reGrid * imGrid * logRing;
-
-      } else {
-        // Default: "Automatic" / "CyclicLogAbs"
-        // Just rings, sharp contours
-        // Freq 2*Pi creates bands at e^0, e^1, e^2...
-        double ring = Math.pow(Math.abs(Math.sin(logAbs * Math.PI)), sharpness);
-        brightness = ring;
-      }
-
-      return new double[] {hue, saturation, brightness};
-    }
-    return null;
   }
 
   @Override

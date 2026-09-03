@@ -8,9 +8,11 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -759,6 +761,7 @@ public class GraphicsFunctions {
       S.Labeled.setEvaluator(new Labeled());
       S.Line.setEvaluator(new Line());
       S.Octahedron.setEvaluator(new Octahedron());
+      S.Overlay.setEvaluator(new Overlay());
       S.Point.setEvaluator(new Point());
       S.Polygon.setEvaluator(new Polygon());
       S.Rectangle.setEvaluator(new Rectangle());
@@ -785,6 +788,36 @@ public class GraphicsFunctions {
       return ARGS_2_3;
     }
 
+  }
+
+  /**
+   * <code>Overlay({e1, e2, ...})</code> stacks its items on one canvas, later ones on top.
+   *
+   * <p>
+   * A display wrapper: <code>evaluate()</code> always returns {@link F#NIL} so the expression
+   * survives evaluation and the SVG factory can composite it, the same contract
+   * <code>TableForm</code> and <code>Row</code> follow. Only graphics are composited - an
+   * <code>Overlay</code> of anything else simply prints as itself.
+   */
+  private static final class Overlay extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the wrapper must survive evaluation - it is resolved by
+      // org.matheclipse.core.graphics.svg.SvgLayout#overlay
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // {layers}, the layer selection, the selectable layer, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
   }
 
   private static class Line extends AbstractEvaluator implements IGraphics2D, IGraphics3D {

@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -104,6 +105,22 @@ public class Histogram extends ListPlot {
     double maxY = 0;
     double[] stackBase = new double[numBins];
 
+    // A ColorFunction colours each bar by its own height, so it takes the place of ChartStyle -
+    // the Wolfram Language gives it the higher priority of the two. The tallest bin sets the top
+    // of the scale.
+    double tallest = 0;
+    for (int d = 0; d < datasetCount; d++) {
+      for (int i = 0; i < numBins; i++) {
+        tallest = Math.max(tallest, counts[d][i]);
+      }
+    }
+    PlotColorFunction barColors = PlotColorFunction
+        .of(PlotColorFunction.Family.CHART,
+            GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic),
+            GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True), S.Histogram,
+            engine)
+        .range(1, 0, tallest).build();
+
     for (int d = 0; d < datasetCount; d++) {
       IExpr color = getChartStyle(chartStyle, d);
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color, !chartStyle.isAutomatic());
@@ -118,6 +135,10 @@ public class Histogram extends ListPlot {
         double x0 = min + i * h;
         double base = stacked ? stackBase[i] : 0.0;
         double top = base + counts[d][i];
+        if (barColors != null) {
+          // one directive per bar, which stays in force until the next one
+          group.append(barColors.color(counts[d][i]));
+        }
         group
             .append(F.Rectangle(F.List(F.num(x0), F.num(base)), F.List(F.num(x0 + h), F.num(top))));
         maxY = Math.max(maxY, top);

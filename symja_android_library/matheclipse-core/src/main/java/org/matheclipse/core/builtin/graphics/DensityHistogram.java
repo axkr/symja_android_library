@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -37,19 +38,11 @@ public class DensityHistogram extends ListPlot {
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
-    boolean colorFunctionScaling = true;
-    // the options array holds resolved values, not the rules the caller wrote,
-    // so the option rules are read back off the original call
-    for (IExpr opt : originalAST) {
-      if (opt.isRuleAST()) {
-        IExpr key = ((IAST) opt).arg1();
-        IExpr val = ((IAST) opt).arg2();
-        if (key.isBuiltInSymbol() && ((IBuiltInSymbol) key).ordinal() == ID.ColorFunctionScaling) {
-          if (val.isFalse())
-            colorFunctionScaling = false;
-        }
-      }
-    }
+    // both options are declared on the chart family now, so they are read the ordinary way
+    IExpr colorFunctionOpt = GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic);
+    IExpr colorFunctionScalingOpt =
+        GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True);
+    boolean colorFunctionScaling = !colorFunctionScalingOpt.isFalse();
 
     IAST dataList = (IAST) dataArg;
     int n = dataList.argSize();
@@ -157,6 +150,13 @@ public class DensityHistogram extends ListPlot {
       graphicsOptions.setPlotLegends(barLegend);
     }
 
+    // the bin count is what a colour function is given, over the range the bins actually reach
+    PlotColorFunction colorMap = PlotColorFunction
+        .of(PlotColorFunction.Family.CHART, colorFunctionOpt, colorFunctionScalingOpt,
+            S.DensityHistogram, engine)
+        .range(1, 0, maxCount).sink(PlotColorFunction.Sink.FLAT)
+        .fallback(GraphicsOptions::getSunsetColor).build();
+
     IASTAppendable primitives = F.ListAlloc();
     primitives.append(F.EdgeForm(S.None));
 
@@ -172,14 +172,9 @@ public class DensityHistogram extends ListPlot {
           double x1 = x0 + hX;
           double y1 = y0 + hY;
 
-          double t = 0.0;
-          if (colorFunctionScaling && maxCount > 0) {
-            t = (double) c / (double) maxCount;
-          } else {
-            t = c;
-          }
-
-          IExpr color = GraphicsOptions.getSunsetColor(t);
+          IExpr color = colorMap != null ? colorMap.color(c)
+              : GraphicsOptions.getSunsetColor(
+                  colorFunctionScaling && maxCount > 0 ? (double) c / (double) maxCount : c);
           primitives.append(color);
           primitives
               .append(F.Rectangle(F.List(F.num(x0), F.num(y0)), F.List(F.num(x1), F.num(y1))));

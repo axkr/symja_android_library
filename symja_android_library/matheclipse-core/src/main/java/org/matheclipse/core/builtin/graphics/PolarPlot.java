@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -54,6 +55,8 @@ public class PolarPlot extends Plot {
         .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
+    // a polar curve's colour function is given its angle and radius as well as its coordinates
+    graphicsOptions.setColorFamily(PlotColorFunction.Family.POLAR_2D);
     graphicsOptions.applyPlotTheme(originalAST);
     IExpr function = ast.arg1();
     IAST rangeList = (IAST) ast.arg2();

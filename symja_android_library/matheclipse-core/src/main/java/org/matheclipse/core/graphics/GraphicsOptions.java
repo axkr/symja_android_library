@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IAST;
@@ -309,8 +310,8 @@ public class GraphicsOptions {
         .add(S.Automatic, S.ChartStyle, S.ChartBaseStyle, S.ChartElementFunction, S.ChartElements,
             S.ChartLayout, S.BarOrigin, S.BarSpacing, S.SectorOrigin, S.SectorSpacing,
             S.LabelingFunction, S.LabelingSize, S.PlotTheme, S.LabelStyle, S.PerformanceGoal,
-            S.TargetUnits)
-        .add(S.None, S.ChartLabels);
+            S.TargetUnits, S.ColorFunction)
+        .add(S.True, S.ColorFunctionScaling).add(S.None, S.ChartLabels);
   }
 
   /** Options of the contour plots. */
@@ -338,15 +339,19 @@ public class GraphicsOptions {
 
   /** Options of the polar plots. */
   public static OptionSet polarExtras(OptionSet set) {
-    return set.add(S.Automatic, S.PolarAxes, S.PolarGridLines, S.PolarTicks, S.PlotPoints,
-        S.MaxRecursion, S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction)
-        .add(S.None, S.Mesh);
+    return set
+        .add(S.Automatic, S.PolarAxes, S.PolarGridLines, S.PolarTicks, S.PlotPoints,
+            S.MaxRecursion, S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction,
+            S.ColorFunction)
+        .add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh);
   }
 
   /** Options of {@code WordCloud}. */
   public static OptionSet wordCloudExtras(OptionSet set) {
-    return set.add(S.Automatic, S.WordOrientation, S.WordSpacings, S.WordSelectionFunction,
-        S.ColorFunction, S.ScalingFunctions, S.PlotTheme, S.LabelStyle);
+    return set
+        .add(S.Automatic, S.WordOrientation, S.WordSpacings, S.WordSelectionFunction,
+            S.ColorFunction, S.ScalingFunctions, S.PlotTheme, S.LabelStyle)
+        .add(S.True, S.ColorFunctionScaling);
   }
 
   /**
@@ -411,6 +416,21 @@ public class GraphicsOptions {
         F.List(F.List(F.num(x0), F.num(y0)), F.List(F.num(x1), F.num(y1))));
   }
 
+  /**
+   * The same raster, marked as samples of a continuous field rather than as values of its own.
+   *
+   * <p>
+   * The cells of a domain colouring are the grid the function happened to be evaluated on, not
+   * data; drawn crisply, the grid is what the reader sees. {@code InterpolationOrder -> 1} tells
+   * the renderer to smooth between the samples instead.
+   */
+  public static IAST smoothRasterTopFirst(IExpr[][] rowsTopFirst, double x0, double y0, double x1,
+      double y1) {
+    IAST raster = rasterTopFirst(rowsTopFirst, x0, y0, x1, y1);
+    return F.ternaryAST3(S.Raster, raster.arg1(), raster.arg2(),
+        F.Rule(S.InterpolationOrder, F.C1));
+  }
+
   /** Fully transparent, used for cells a raster has no value for. */
   private static final IAST TRANSPARENT_CELL = F.RGBColor(F.C0, F.C0, F.C0, F.C0);
 
@@ -472,52 +492,72 @@ public class GraphicsOptions {
         F.List(F.num(x0 + i2 * stepX), F.num(y0 + j2 * stepY))));
   }
 
-  /**
-   * Resolve a {@code ColorFunction} option into a mapping from a value in 0..1 to a colour.
-   *
-   * <p>
-   * A gradient name such as {@code "Rainbow"}, a {@code ColorData[...]} object, or any function of
-   * one argument. Anything that does not evaluate to a colour falls back to the plot's own default,
-   * so a misspelled gradient degrades to the normal appearance instead of a blank picture.
-   *
-   * @param spec the option value, possibly {@link S#Automatic}
-   * @param engine used to apply the function
-   * @param fallback the colouring to use when {@code spec} does not name one
-   */
-  public static java.util.function.DoubleFunction<IExpr> colorFunction(IExpr spec,
-      EvalEngine engine, java.util.function.DoubleFunction<IExpr> fallback) {
-    if (spec == null || spec == S.Automatic || spec.isNone()) {
-      return fallback;
+  /** Anything a 2D primitive list may carry as a colour directive. */
+  public static boolean isColorExpr(IExpr expr) {
+    if (expr == null || !expr.isPresent()) {
+      return false;
     }
-    final IExpr function = spec.isString() ? F.ColorData(spec) : spec;
-    return t -> {
-      try {
-        IExpr color = engine.evaluate(F.unaryAST1(function, F.num(t)));
-        return isColorExpr(color) ? color : fallback.apply(t);
-      } catch (RuntimeException rex) {
-        return fallback.apply(t);
-      }
-    };
+    if (expr.isBuiltInSymbol()) {
+      // a named colour stays a symbol in Symja, and it is the commonest thing for a
+      // ColorFunction to answer with: If(#2 > 0, Red, Blue)
+      return ColorUtil.named((IBuiltInSymbol) expr) != null;
+    }
+    if (ColorUtil.parseDirective(expr) != null) {
+      return true;
+    }
+    if (expr.isAST(S.Opacity, 2)) {
+      // Opacity(o) on its own fades whatever colour is already in force rather than naming one
+      return true;
+    }
+    return expr.isAST(S.Directive) && isDirectiveList((IAST) expr);
   }
 
-  /** True when the expression is one of the colour space heads. */
-  public static boolean isColorExpr(IExpr expr) {
-    if (expr == null || !expr.isAST()) {
+  /** Whether every part of a {@code Directive} is something a renderer can act on. */
+  private static boolean isDirectiveList(IAST directive) {
+    if (directive.argSize() == 1 && directive.arg1().isList()) {
+      directive = (IAST) directive.arg1();
+    }
+    for (int i = 1; i <= directive.argSize(); i++) {
+      IExpr part = directive.get(i);
+      if (isColorExpr(part) || part.isAST(S.Thickness) || part.isAST(S.PointSize)
+          || part.isAST(S.Dashing) || part.isAST(S.AbsoluteThickness)) {
+        continue;
+      }
       return false;
     }
-    IExpr head = expr.head();
-    if (!head.isBuiltInSymbol()) {
-      return false;
+    return directive.argSize() > 0;
+  }
+
+  /**
+   * The same colour reduced to a single {@code RGBColor}, for somewhere that can hold nothing else.
+   *
+   * <p>
+   * A raster cell and a {@code VertexColors} entry are one colour each, so a directive that a curve
+   * could carry whole - a thickness beside a colour, an opacity in front of one - has to be folded
+   * down. A bare {@code Opacity} names no colour of its own, so it fades {@code under}, which is
+   * whatever the plot would have drawn there anyway.
+   *
+   * @param under the colour a bare {@code Opacity} applies to, or {@link F#NIL}
+   * @return an {@code RGBColor}, or {@link F#NIL} when nothing renderable is in there
+   */
+  public static IExpr toColorExpr(IExpr expr, IExpr under) {
+    if (expr == null || !expr.isPresent()) {
+      return F.NIL;
     }
-    switch (((IBuiltInSymbol) head).ordinal()) {
-      case ID.RGBColor:
-      case ID.Hue:
-      case ID.GrayLevel:
-      case ID.CMYKColor:
-        return true;
-      default:
-        return false;
+    if (expr.isAST(S.Opacity, 2)) {
+      java.awt.Color base = under.isPresent() ? ColorUtil.parseDirective(under) : null;
+      if (base == null) {
+        base = java.awt.Color.BLACK;
+      }
+      return rgbExpr(ColorUtil.withAlpha(base, ColorUtil.dbl(((IAST) expr).arg1(), 1.0)));
     }
+    java.awt.Color color = ColorUtil.parseDirective(expr);
+    return color == null ? F.NIL : rgbExpr(color);
+  }
+
+  private static IExpr rgbExpr(java.awt.Color c) {
+    return F.RGBColor(F.num(c.getRed() / 255.0), F.num(c.getGreen() / 255.0),
+        F.num(c.getBlue() / 255.0), F.num(c.getAlpha() / 255.0));
   }
 
   /**
@@ -533,7 +573,7 @@ public class GraphicsOptions {
     IAST rules = (IAST) spec;
     for (int i = 1; i < rules.size(); i++) {
       IExpr rule = rules.get(i);
-      if (rule.isRuleAST() && rule.first().equals(value)) {
+      if (rule.isRuleAST() && sameValue(rule.first(), value)) {
         IExpr color = ((IAST) rule).second();
         if (isColorExpr(color)) {
           return color;
@@ -541,6 +581,25 @@ public class GraphicsOptions {
       }
     }
     return null;
+  }
+
+  /**
+   * Whether a {@code ColorRules} left hand side names this value.
+   *
+   * <p>
+   * Structural equality alone would miss {@code 1 -> Red} against a cell holding {@code 1.0}, and
+   * a rule written as an integer against data read as reals is the usual way to write one.
+   */
+  private static boolean sameValue(IExpr ruleValue, IExpr value) {
+    if (ruleValue.equals(value)) {
+      return true;
+    }
+    if (ruleValue.isNumber() && value.isNumber()) {
+      double a = ruleValue.evalfNaN();
+      double b = value.evalfNaN();
+      return a == b;
+    }
+    return false;
   }
 
   protected static void addPadding(double[] boundingbox) {
@@ -1011,6 +1070,25 @@ public class GraphicsOptions {
   private boolean colorFunctionScaling = true;
 
   /**
+   * Which tuple this plot's colour function is given. The curve plots share one painter, but they
+   * do not all draw the same kind of thing: a parametric curve knows its parameter and a polar one
+   * its angle and radius, and the Wolfram Language hands those over too.
+   */
+  private PlotColorFunction.Family colorFamily = PlotColorFunction.Family.CURVE_2D;
+
+  /**
+   * The range each argument spans, indexed from zero for the first. A null entry means the painter
+   * should measure it from the curve itself.
+   */
+  private double[][] colorRange = new double[6][];
+
+  /**
+   * The arguments past {@code x, y} at one point of the curve, indexed the same way the point list
+   * is. Only a family with more than two arguments needs it.
+   */
+  private java.util.function.IntFunction<double[]> colorExtras = null;
+
+  /**
    * Read {@code ColorFunction} and {@code ColorFunctionScaling} off the call.
    *
    * <p>
@@ -1024,6 +1102,168 @@ public class GraphicsOptions {
     colorFunctionScaling = !optionValue(originalAST, S.ColorFunctionScaling, S.True).isFalse();
     interpolationOrder =
         optionValue(originalAST, S.InterpolationOrder, S.Automatic).toIntDefault(-1);
+  }
+
+  /** Which tuple this plot hands its colour function. Defaults to a plain curve's {@code x, y}. */
+  public void setColorFamily(PlotColorFunction.Family family) {
+    this.colorFamily = family;
+  }
+
+  /**
+   * The range one argument of the colour function spans, counting from one. Left unsaid, the
+   * painter measures the two coordinates from the curve it is painting and leaves the rest alone.
+   */
+  public void setColorRange(int slot, double lo, double hi) {
+    if (slot >= 1 && slot <= colorRange.length) {
+      colorRange[slot - 1] = new double[] {lo, hi};
+    }
+  }
+
+  /**
+   * The arguments past {@code x, y} at each point, for the families that have them: the parameter
+   * of a parametric curve, the angle and radius of a polar one. Indexed the same way the point
+   * list handed to the painter is.
+   */
+  public void setColorExtras(java.util.function.IntFunction<double[]> extras) {
+    this.colorExtras = extras;
+  }
+
+  /**
+   * A curve painted along its length by {@code ColorFunction}.
+   *
+   * <p>
+   * Each step of the curve becomes its own piece, coloured from where that piece sits. The colour
+   * function is given the two coordinates of that place, and a named gradient is given the second
+   * of them - the height - which is why {@code ColorFunction -> "Rainbow"} follows the shape of
+   * the curve rather than sweeping across the picture. The positions are scaled into 0..1 over the
+   * curve unless {@code ColorFunctionScaling -> False} asks for the raw values.
+   *
+   * <p>
+   * A step the function has nothing to say about keeps the colour the curve would have had, rather
+   * than costing the whole curve its colouring: a function with a hole in it should leave a mostly
+   * right picture.
+   *
+   * @param points the curve, as a list of {@code {x, y}} pairs
+   * @return the coloured pieces, or {@link F#NIL} when no colour function applies
+   */
+  private IAST colorFunctionCurve(IAST points) {
+    if (points.argSize() < 1) {
+      return F.NIL;
+    }
+    double minX = Double.MAX_VALUE;
+    double maxX = -Double.MAX_VALUE;
+    double minY = Double.MAX_VALUE;
+    double maxY = -Double.MAX_VALUE;
+    for (int i = 1; i < points.size(); i++) {
+      IExpr point = points.get(i);
+      if (!point.isList() || ((IAST) point).argSize() < 2) {
+        return F.NIL;
+      }
+      double x = ((IAST) point).arg1().evalfNaN();
+      double y = ((IAST) point).arg2().evalfNaN();
+      if (!Double.isFinite(x) || !Double.isFinite(y)) {
+        return F.NIL;
+      }
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+    // a range the caller declared - the drawn extent of an axis - beats the curve's own box
+    double[] xRange = colorRange[0] == null ? new double[] {minX, maxX} : colorRange[0];
+    double[] yRange = colorRange[1] == null ? new double[] {minY, maxY} : colorRange[1];
+
+    PlotColorFunction.Builder builder = PlotColorFunction
+        .of(colorFamily, colorFunction, F.bool(colorFunctionScaling), S.ColorFunction,
+            EvalEngine.get())
+        .range(1, xRange[0], xRange[1]).range(2, yRange[0], yRange[1]);
+    for (int slot = 3; slot <= colorFamily.arity; slot++) {
+      double[] extra = colorRange[slot - 1];
+      if (extra != null) {
+        builder.range(slot, extra[0], extra[1]);
+      }
+    }
+    PlotColorFunction colors = builder.build();
+    if (colors == null) {
+      return F.NIL;
+    }
+
+    IASTAppendable out = F.ListAlloc(Math.max(1, points.argSize()));
+    boolean painted = false;
+    int last = joined ? points.argSize() - 1 : points.argSize();
+    for (int i = 1; i <= last; i++) {
+      IAST from = (IAST) points.get(i);
+      double x = from.arg1().evalfNaN();
+      double y = from.arg2().evalfNaN();
+      if (joined) {
+        // colour a step from its middle, so the two ends of it agree
+        IAST to = (IAST) points.get(i + 1);
+        x = (x + to.arg1().evalfNaN()) / 2.0;
+        y = (y + to.arg2().evalfNaN()) / 2.0;
+      }
+      double[] tuple = new double[colorFamily.arity];
+      tuple[0] = x;
+      tuple[1] = y;
+      if (colorFamily == PlotColorFunction.Family.POLAR_2D) {
+        // the angle and the radius are the point itself in another form, so they need no plumbing
+        tuple[2] = Math.atan2(y, x);
+        tuple[3] = Math.hypot(x, y);
+      } else if (colorFamily.arity > 2 && recordedParameters(points, i) != null) {
+        // a parametric curve carries the parameter it was drawn at on the point itself
+        double[] parameters = recordedParameters(points, i);
+        for (int slot = 2; slot < colorFamily.arity && slot - 2 < parameters.length; slot++) {
+          tuple[slot] = parameters[slot - 2];
+        }
+      } else if (colorFamily.arity > 2 && colorExtras != null) {
+        double[] extras = colorExtras.apply(i);
+        for (int slot = 2; slot < colorFamily.arity && slot - 2 < extras.length; slot++) {
+          tuple[slot] = extras[slot - 2];
+        }
+      }
+      IExpr color = colors.color(tuple);
+      painted = true;
+      out.append(F.List(color, joined ? F.Line(F.List(from, points.get(i + 1))) : F.Point(from)));
+    }
+    return painted ? out : F.NIL;
+  }
+
+  /**
+   * The parameters of the piece of curve that starts at point {@code i}.
+   *
+   * <p>
+   * A joined step is coloured from its middle, so its parameter is the middle one too - the same
+   * rule its coordinates follow, which is what keeps the two ends of a step agreeing.
+   *
+   * @return the parameters, or {@code null} when this curve carries none
+   */
+  private double[] recordedParameters(IAST points, int i) {
+    double[] from = pointParameters(points.get(i));
+    if (from == null) {
+      return null;
+    }
+    if (!joined || i + 1 >= points.size()) {
+      return from;
+    }
+    double[] to = pointParameters(points.get(i + 1));
+    if (to == null || to.length != from.length) {
+      return from;
+    }
+    double[] middle = new double[from.length];
+    for (int k = 0; k < middle.length; k++) {
+      middle[k] = (from[k] + to[k]) / 2.0;
+    }
+    return middle;
+  }
+
+  /**
+   * A curve painted by {@code ColorFunction}, for a plot that builds its own line rather than going
+   * through {@link #addPoints}.
+   *
+   * @param points the curve, as a list of {@code {x, y}} pairs
+   * @return the coloured pieces, or {@link F#NIL} when no colour function applies
+   */
+  public IAST colorCurve(IAST points) {
+    return colorFunctionCurve(points);
   }
 
   /**
@@ -1149,123 +1389,6 @@ public class GraphicsOptions {
     return true;
   }
 
-  /**
-   * A curve painted along its length by {@code ColorFunction}.
-   *
-   * <p>
-   * Each step of the curve becomes its own piece, coloured from where that piece sits. A named
-   * gradient is a function of one argument and gets the position along x; anything else is offered
-   * both coordinates first and one after, so that {@code Function[{x, y}, ...]} and {@code Hue}
-   * both work. The positions are scaled into 0..1 over the curve unless
-   * {@code ColorFunctionScaling -> False} asks for the raw values.
-   *
-   * @param points the curve, as a list of {@code {x, y}} pairs
-   * @return the coloured pieces, or {@link F#NIL} when no colour function applies
-   */
-  private IAST colorFunctionCurve(IAST points) {
-    if (colorFunction == null || colorFunction == S.Automatic || colorFunction.isNone()
-        || points.argSize() < 1) {
-      return F.NIL;
-    }
-    double minX = Double.MAX_VALUE;
-    double maxX = -Double.MAX_VALUE;
-    double minY = Double.MAX_VALUE;
-    double maxY = -Double.MAX_VALUE;
-    for (int i = 1; i < points.size(); i++) {
-      IExpr point = points.get(i);
-      if (!point.isList() || ((IAST) point).argSize() < 2) {
-        return F.NIL;
-      }
-      double x = ((IAST) point).arg1().evalfNaN();
-      double y = ((IAST) point).arg2().evalfNaN();
-      if (!Double.isFinite(x) || !Double.isFinite(y)) {
-        return F.NIL;
-      }
-      minX = Math.min(minX, x);
-      maxX = Math.max(maxX, x);
-      minY = Math.min(minY, y);
-      maxY = Math.max(maxY, y);
-    }
-    double spanX = maxX - minX;
-    double spanY = maxY - minY;
-
-    java.util.Map<Long, IExpr> cache = new java.util.HashMap<>();
-    IASTAppendable out = F.ListAlloc(Math.max(1, points.argSize()));
-    boolean painted = false;
-    int last = joined ? points.argSize() - 1 : points.argSize();
-    for (int i = 1; i <= last; i++) {
-      IAST from = (IAST) points.get(i);
-      double x = from.arg1().evalfNaN();
-      double y = from.arg2().evalfNaN();
-      if (joined) {
-        // colour a step from its middle, so the two ends of it agree
-        IAST to = (IAST) points.get(i + 1);
-        x = (x + to.arg1().evalfNaN()) / 2.0;
-        y = (y + to.arg2().evalfNaN()) / 2.0;
-      }
-      double u = colorFunctionScaling ? (spanX > 0 ? (x - minX) / spanX : 0.0) : x;
-      double v = colorFunctionScaling ? (spanY > 0 ? (y - minY) / spanY : 0.0) : y;
-      IExpr color = cachedColor(cache, u, v);
-      if (color.isNIL()) {
-        return F.NIL;
-      }
-      painted = true;
-      out.append(F.List(color, joined ? F.Line(F.List(from, points.get(i + 1))) : F.Point(from)));
-    }
-    return painted ? out : F.NIL;
-  }
-
-  /**
-   * A curve painted by {@code ColorFunction}, for a plot that builds its own line rather than going
-   * through {@link #addPoints}.
-   *
-   * @param points the curve, as a list of {@code {x, y}} pairs
-   * @return the coloured pieces, or {@link F#NIL} when no colour function applies
-   */
-  public IAST colorCurve(IAST points) {
-    return colorFunctionCurve(points);
-  }
-
-  /**
-   * The colour at a position, remembering the ones already worked out.
-   *
-   * <p>
-   * An adaptively sampled curve carries hundreds of steps, and evaluating a colour expression for
-   * every one of them is the slow part. Positions are rounded to a step finer than the eye can
-   * follow before the lookup, so a smooth curve needs only a few hundred evaluations at most.
-   */
-  private IExpr cachedColor(java.util.Map<Long, IExpr> cache, double u, double v) {
-    long key = ((long) Math.round(u * 512) << 32) ^ (Math.round(v * 512) & 0xffffffffL);
-    IExpr cached = cache.get(key);
-    if (cached != null) {
-      return cached;
-    }
-    IExpr color = evalColor(u, v);
-    cache.put(key, color);
-    return color;
-  }
-
-  private IExpr evalColor(double u, double v) {
-    IExpr function =
-        colorFunction.isString() ? F.ColorData(colorFunction) : colorFunction;
-    if (!colorFunction.isString()) {
-      // a function of the position gets both coordinates when it can take them
-      IExpr both = tryColor(F.binaryAST2(function, F.num(u), F.num(v)));
-      if (both.isPresent()) {
-        return both;
-      }
-    }
-    return tryColor(F.unaryAST1(function, F.num(u)));
-  }
-
-  private IExpr tryColor(IExpr call) {
-    try {
-      IExpr color = EvalEngine.get().evaluate(call);
-      return isColorExpr(color) ? color : F.NIL;
-    } catch (RuntimeException rex) {
-      return F.NIL;
-    }
-  }
 
   /** The count {@code Mesh} asks for, or -1 for every sample. */
   private int meshCount() {
@@ -1663,6 +1786,12 @@ public class GraphicsOptions {
     graphicsOptions.mesh = this.mesh;
     graphicsOptions.colorFunction = this.colorFunction;
     graphicsOptions.colorFunctionScaling = this.colorFunctionScaling;
+    graphicsOptions.colorFamily = this.colorFamily;
+    graphicsOptions.colorRange = this.colorRange.clone();
+    graphicsOptions.colorExtras = this.colorExtras;
+    // shared rather than copied: the records belong to the points, and a copy of the options
+    // still paints the very same points
+    graphicsOptions.pointParameters = this.pointParameters;
     graphicsOptions.curveThickness = this.curveThickness;
     graphicsOptions.interpolationOrder = this.interpolationOrder;
     return graphicsOptions;
@@ -1953,6 +2082,59 @@ public class GraphicsOptions {
 
   public IAST point(double x, double y) {
     return F.List(F.num(x), F.num(y));
+  }
+
+  /**
+   * The parameter each sampled point was drawn at, for the plots that have one.
+   *
+   * <p>
+   * A parametric curve is handed to the painter as a bare list of coordinates, and its parameter
+   * cannot be recovered from those: the same point may be reached at two parameters, and the list
+   * is broken into polylines wherever the curve has no value, so counting from the start of one
+   * does not give it either. The sampler therefore records the parameter of each point it makes,
+   * and every step that rebuilds a point carries the record across, which is what lets
+   * {@code ColorFunction -> (Hue(#3)&)} colour a parametric curve by where it is along itself.
+   *
+   * <p>
+   * Keyed by identity: two points at the same coordinates are still two samples, at two
+   * parameters. The map lives as long as the options object, which is one plot.
+   */
+  private java.util.Map<IExpr, double[]> pointParameters = null;
+
+  /**
+   * A sampled point of a parametric curve, remembered along with the parameters it was drawn at.
+   *
+   * @param parameters the parameter values, in the order the family declares them after
+   *        {@code x, y}
+   */
+  public IAST parametricPoint(double x, double y, double... parameters) {
+    IAST point = point(x, y);
+    if (pointParameters == null) {
+      pointParameters = new java.util.IdentityHashMap<>();
+    }
+    pointParameters.put(point, parameters.clone());
+    return point;
+  }
+
+  /**
+   * Carry the record of a point across to the point that replaced it.
+   *
+   * <p>
+   * A scaling function or a unit conversion rebuilds a point rather than editing it, so without
+   * this the parameter would be lost between the sampler and the painter.
+   */
+  public void carryPointParameters(IExpr from, IExpr to) {
+    if (pointParameters != null && from != to) {
+      double[] parameters = pointParameters.get(from);
+      if (parameters != null) {
+        pointParameters.put(to, parameters);
+      }
+    }
+  }
+
+  /** The parameters a point was drawn at, or {@code null} when nothing recorded any. */
+  public double[] pointParameters(IExpr point) {
+    return pointParameters == null ? null : pointParameters.get(point);
   }
 
   public double pointSize() {

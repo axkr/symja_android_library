@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -128,6 +129,21 @@ public class PieChart extends ListPlot {
     // Default EdgeForm(White) for sector separators
     primitives.append(F.EdgeForm(S.White));
 
+    // the largest datum sets the top of the scale, so a gradient runs across the whole pie
+    double largest = 0.0;
+    for (int i = 1; i < dataList.size(); i++) {
+      double v = getDoubleVal(dataList.get(i));
+      if (!Double.isNaN(v)) {
+        largest = Math.max(largest, v);
+      }
+    }
+    PlotColorFunction sectorColors = PlotColorFunction
+        .of(PlotColorFunction.Family.CHART,
+            GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic),
+            GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True), S.PieChart,
+            engine)
+        .range(1, 0, largest).build();
+
     double currentAngle = startAngle;
     int index = 0;
 
@@ -162,14 +178,18 @@ public class PieChart extends ListPlot {
         double a1 = Math.min(currentAngle, endAngle);
         double a2 = Math.max(currentAngle, endAngle);
 
-        // Color
+        // Color: a ColorFunction is given the value of the sector and outranks ChartStyle
+        IExpr functionColor = sectorColors == null ? F.NIL : sectorColors.color(val);
         IExpr color;
-        if (style != null) {
+        if (functionColor.isPresent()) {
+          color = functionColor;
+        } else if (style != null) {
           color = style;
         } else {
           color = getChartStyle(chartStyle, index);
         }
-        boolean colorIsExplicit = style != null || !chartStyle.isAutomatic();
+        boolean colorIsExplicit =
+            functionColor.isPresent() || style != null || !chartStyle.isAutomatic();
         IExpr elementStyle = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
 
         double midAngle = (a1 + a2) / 2.0;

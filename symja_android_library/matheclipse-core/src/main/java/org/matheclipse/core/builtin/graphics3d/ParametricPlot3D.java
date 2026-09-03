@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -63,15 +64,15 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
       IAST uRange = (IAST) ast.arg2();
       IAST vRange = (IAST) ast.arg3();
-      Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[Plot3DTools.X_COLOR_FUNCTION],
-          options[Plot3DTools.X_COLOR_FUNCTION_SCALING], engine);
+      PlotColorFunction.Builder colorBuilder = Plot3DTools.plotColors(
+          PlotColorFunction.Family.PARAMETRIC_3D_UV, options, S.ParametricPlot3D, engine);
 
       for (int i = 0; i < functions.size(); i++) {
-        GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colorMap != null);
+        GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colorBuilder != null);
         Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(i, plotStyle), meshOption);
         double[][][] grid =
             createSurfaceGeometry(functions.get(i), uRange, vRange, samples[0], samples[1], engine,
-                builder, colorMap, meshOption, options[Plot3DTools.X_MESH_STYLE],
+                builder, colorBuilder, meshOption, options[Plot3DTools.X_MESH_STYLE],
                 options[Plot3DTools.X_EVALUATION_MONITOR], region);
         if (grid != null) {
           // the rim of the surface, and the rim of every hole a RegionFunction cut in it
@@ -151,7 +152,8 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
 
   /** The sampled grid, or {@code null} when the parametrisation gave nothing to draw. */
   private double[][][] createSurfaceGeometry(IExpr func, IAST uRange, IAST vRange, int uCount,
-      int vCount, EvalEngine engine, GraphicsComplexBuilder builder, Plot3DTools.ColorMap colorMap,
+      int vCount, EvalEngine engine, GraphicsComplexBuilder builder,
+      PlotColorFunction.Builder colorBuilder,
       IExpr meshOption, IExpr meshStyle, IExpr monitor, RegionFunctionFilter region) {
     ISymbol uVar = (ISymbol) uRange.arg1();
     double uMin = uRange.arg2().evalfNaN();
@@ -193,20 +195,20 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       return null;
     }
 
+    double[] box = Plot3DTools.extentOf(grid);
+    PlotColorFunction colorMap = colorBuilder
+        .ranges(box[0], box[1], box[2], box[3], box[4], box[5], uMin, uMax, vMin, vMax).build();
     IExpr[][] colors = null;
     if (colorMap != null) {
       colors = new IExpr[uCount][vCount];
-      double[] bounds = extent(grid);
       for (int i = 0; i < uCount; i++) {
         for (int j = 0; j < vCount; j++) {
           double[] p = grid[i][j];
           if (p == null) {
             continue;
           }
-          colors[i][j] = colorMap.isScaled()
-              ? colorMap.apply(fraction(p[0], bounds[0], bounds[1]),
-                  fraction(p[1], bounds[2], bounds[3]), fraction(p[2], bounds[4], bounds[5]))
-              : colorMap.apply(p[0], p[1], p[2]);
+          // the two parameters go with the point, so a surface can be coloured by either
+          colors[i][j] = colorMap.color(p[0], p[1], p[2], uMin + i * uStep, vMin + j * vStep);
         }
       }
     }

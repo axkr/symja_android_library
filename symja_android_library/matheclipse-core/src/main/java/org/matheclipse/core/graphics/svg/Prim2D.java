@@ -448,10 +448,26 @@ public abstract class Prim2D {
     public final double y1;
     public final double x2;
     public final double y2;
+    /**
+     * Whether the cells are samples of something continuous rather than values in their own right.
+     *
+     * <p>
+     * An {@code ArrayPlot} draws one cell per datum and each cell is a fact, so its edges have to
+     * stay where they are. A domain colouring is a picture of a function that was sampled on a
+     * grid, and the grid is an artefact of the sampling - drawing it crisply shows the reader the
+     * sampling instead of the function, so it is smoothed between the samples.
+     */
+    public final boolean smooth;
 
     public RasterPrim(Color[][] cells, double x1, double y1, double x2, double y2, Style2D style) {
+      this(cells, x1, y1, x2, y2, false, style);
+    }
+
+    public RasterPrim(Color[][] cells, double x1, double y1, double x2, double y2, boolean smooth,
+        Style2D style) {
       super(style);
       this.cells = cells;
+      this.smooth = smooth;
       this.x1 = Math.min(x1, x2);
       this.y1 = Math.min(y1, y2);
       this.x2 = Math.max(x1, x2);

@@ -515,7 +515,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
               IExpr yLast = yFunction.apply(lastPoint.arg2());
               if (xBoundingBox(boundingbox, xLast, engine)
                   && yBoundingBox(boundingbox, yLast, engine)) {
-                addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
+                addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
                     yLast, lastArg);
               }
             }
@@ -535,13 +535,13 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
             IExpr yLast = yFunction.apply(lastPoint.arg2());
             if (xBoundingBox(boundingbox, xLast, engine)
                 && yBoundingBox(boundingbox, yLast, engine)) {
-              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
                   yLast, lastArg);
             }
 
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
                   yValue, (IAST) arg);
               isConnected = true;
               continue;
@@ -550,7 +550,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           if (isConnected) {
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
                   yValue, (IAST) arg);
             }
           }
@@ -561,9 +561,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr yLast = yFunction.apply(lastPoint.arg2());
           if (xBoundingBox(boundingbox, xLast, engine)
               && yBoundingBox(boundingbox, yLast, engine)) {
-            addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
+            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
                 yLast, lastArg);
-            addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
+            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
                 yLast, lastArg);
           }
         }
@@ -719,22 +719,26 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
   }
 
-  private static boolean addSinglePoint(IASTAppendable pointPrimitives,
-      IASTAppendable graphicsExtraPrimitives, double[] boundingbox, EvalEngine engine,
-      IExpr xScaled, IExpr yScaled, IAST arg) {
+  private static boolean addSinglePoint(GraphicsOptions graphicsOptions,
+      IASTAppendable pointPrimitives, IASTAppendable graphicsExtraPrimitives, double[] boundingbox,
+      EvalEngine engine, IExpr xScaled, IExpr yScaled, IAST arg) {
     IReal x = xScaled.evalReal();
     IReal y = yScaled.evalReal();
     if (x != null && y != null) {
       if (xBoundingBox(boundingbox, x, engine) && yBoundingBox(boundingbox, y, engine)) {
-        pointPrimitives.append(F.List(x, y));
+        IAST scaledPoint = F.List(x, y);
+        // the scaling functions rebuild the point, so anything the sampler recorded about it -
+        // the parameter of a parametric curve - has to follow it here or it is lost
+        graphicsOptions.carryPointParameters(arg, scaledPoint);
+        pointPrimitives.append(scaledPoint);
         if (arg.isAST(S.Labeled, 3)) {
           // Manual Text creation with offset
           IExpr label = arg.arg2();
           // Text[label, {x,y}, {0, -1.5}]
           graphicsExtraPrimitives
-              .append(F.function(S.Text, label, F.List(x, y), F.List(F.C0, F.num(-1.5))));
+              .append(F.function(S.Text, label, scaledPoint, F.List(F.C0, F.num(-1.5))));
         } else if (arg.isAST(S.Style, 3)) {
-          IASTMutable styledPoint = arg.setAtCopy(1, F.Point(F.List(x, y)));
+          IASTMutable styledPoint = arg.setAtCopy(1, F.Point(scaledPoint));
           graphicsExtraPrimitives.append(styledPoint);
         }
         return true;

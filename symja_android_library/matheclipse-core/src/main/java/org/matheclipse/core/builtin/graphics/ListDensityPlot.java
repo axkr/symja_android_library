@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -137,8 +138,11 @@ public class ListDensityPlot extends DensityPlot {
     int cellsX = refine(nodesX);
     int cellsY = refine(nodesY);
 
-    java.util.function.DoubleFunction<IExpr> colorMap =
-        GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getDensityColor);
+    PlotColorFunction colorMap = PlotColorFunction
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+            S.ListDensityPlot, engine)
+        .range(1, gridData.minZ, gridData.maxZ).sink(PlotColorFunction.Sink.FLAT)
+        .fallback(this::getDensityColor).build();
     double spanZ = gridData.maxZ - gridData.minZ;
 
     IExpr[][] cells = new IExpr[cellsY][cellsX];
@@ -169,12 +173,10 @@ public class ListDensityPlot extends DensityPlot {
           }
         }
 
-        double t = z;
-        if (colorFunctionScaling) {
-          t = (Math.abs(spanZ) > 1e-9) ? (z - gridData.minZ) / spanZ : 0.5;
-        }
         // j counts upwards from the bottom, while the raster rows are given top first
-        cells[cellsY - 1 - j][i] = colorMap.apply(t);
+        cells[cellsY - 1 - j][i] = colorMap != null ? colorMap.color(z)
+            : getDensityColor(DensityPlot.scaledValue(z, gridData.minZ, gridData.maxZ,
+                colorFunctionScaling));
       }
     }
 

@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -376,8 +377,11 @@ public class ListContourPlot extends ContourPlot {
       IExpr contoursOption, IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
       boolean contourLines, IExpr colorFunctionOpt, EvalEngine engine, boolean[][] inside,
       RegionFunctionFilter region) {
-    java.util.function.DoubleFunction<IExpr> colorMap =
-        GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getShadingColor);
+    PlotColorFunction colorMap = PlotColorFunction
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+            S.ListContourPlot, engine)
+        .range(1, gd.minZ, gd.maxZ).sink(PlotColorFunction.Sink.FLAT)
+        .fallback(this::getShadingColor).build();
 
     if (gd.minZ == Double.MAX_VALUE) {
       return;
@@ -431,8 +435,9 @@ public class ListContourPlot extends ContourPlot {
           double lower = (k == -1) ? gd.minZ : levels[k];
           double upper = (k == levels.length - 1) ? gd.maxZ : levels[k + 1];
           double bandZ = (lower + upper) * 0.5;
-          double t = colorFunctionScaling ? (bandZ - gd.minZ) / (gd.maxZ - gd.minZ) : bandZ;
-          color = colorMap.apply(t);
+          color = colorMap != null ? colorMap.color(bandZ)
+              : getShadingColor(DensityPlot.scaledValue(bandZ, gd.minZ, gd.maxZ,
+                  colorFunctionScaling));
         }
 
         IASTAppendable polygons = F.ListAlloc();

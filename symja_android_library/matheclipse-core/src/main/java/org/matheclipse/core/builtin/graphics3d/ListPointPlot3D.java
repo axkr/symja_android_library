@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -62,27 +63,47 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
 
     RegionFunctionFilter region =
         RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
-    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
-    boolean any = false;
+
+    // The points are gathered before any of them is registered: a colour function is scaled over
+    // the extent the data reaches, and that is not known until the last dataset has been read.
+    List<List<double[]>> perDataset = new ArrayList<>();
     for (int i = 1; i < datasets.size(); i++) {
-      if (!datasets.get(i).isList()) {
+      List<double[]> coordinates = new ArrayList<>();
+      if (datasets.get(i).isList()) {
+        IAST dataset = (IAST) datasets.get(i);
+        if (isHeightMap) {
+          collectHeightMap(dataset, dataRange, coordinates, region);
+        } else {
+          collectCoordinates(dataset, coordinates, region);
+        }
+      }
+      perDataset.add(coordinates);
+    }
+    double[] box = extentOf(perDataset);
+    PlotColorFunction pointColors = Plot3DTools
+        .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPointPlot3D, engine)
+        .ranges(box[0], box[1], box[2], box[3], box[4], box[5]).build();
+
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, pointColors != null);
+    boolean any = false;
+    for (int i = 0; i < perDataset.size(); i++) {
+      List<double[]> coordinates = perDataset.get(i);
+      if (coordinates.isEmpty()) {
         continue;
       }
-      IAST dataset = (IAST) datasets.get(i);
-      IASTAppendable indices = F.ListAlloc(dataset.argSize());
-      List<double[]> coordinates = new ArrayList<>();
-      if (isHeightMap) {
-        addHeightMap(builder, dataset, dataRange, indices, coordinates, region);
-      } else {
-        addCoordinates(builder, dataset, indices, coordinates, region);
+      IASTAppendable indices = F.ListAlloc(coordinates.size());
+      for (double[] point : coordinates) {
+        IExpr color = pointColors == null ? null : pointColors.color(point[0], point[1], point[2]);
+        indices.append(F.ZZ(builder.addVertex(point[0], point[1], point[2], null, color)));
       }
-      if (indices.argSize() > 0) {
-        IExpr style = Plot3DTools.curveStyle(i - 1, plotStyle);
+      IExpr style = Plot3DTools.curveStyle(i, plotStyle);
+      if (pointColors == null) {
+        // a ColorFunction colours each point itself, and outranks PlotStyle where it does
         builder.addPrimitive(style);
-        builder.addPrimitive(F.Point(indices));
-        addFilling(builder, coordinates, filling, fillingStyle, style);
-        any = true;
       }
+      builder.addPrimitive(F.Point(indices));
+      addFilling(builder, coordinates, filling, fillingStyle, style);
+      any = true;
     }
     if (!any) {
       return F.NIL;
@@ -101,8 +122,8 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
    * the count in that direction: reading both from the row count put the x extent of any array that
    * was not square in the wrong place.
    */
-  private static void addHeightMap(GraphicsComplexBuilder builder, IAST rows, IExpr dataRange,
-      IASTAppendable indices, List<double[]> coordinates, RegionFunctionFilter region) {
+  private static void collectHeightMap(IAST rows, IExpr dataRange, List<double[]> coordinates,
+      RegionFunctionFilter region) {
     int rowCount = rows.argSize();
     int colCount = 0;
     for (int r = 1; r <= rowCount; r++) {
@@ -140,14 +161,36 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
         if (region != null && !region.accepts(px, py, z)) {
           continue;
         }
-        indices.append(F.ZZ(builder.addVertex(px, py, z, null, null)));
         coordinates.add(new double[] {px, py, z});
       }
     }
   }
 
-  private static void addCoordinates(GraphicsComplexBuilder builder, IAST dataset,
-      IASTAppendable indices, List<double[]> coordinates, RegionFunctionFilter region) {
+  /**
+   * The box the points reach, as {@code {xMin, xMax, yMin, yMax, zMin, zMax}}.
+   *
+   * <p>
+   * This is the range a colour function's arguments are scaled over. An empty plot reports the
+   * unit box, which nothing will be coloured against anyway.
+   */
+  private static double[] extentOf(List<List<double[]>> datasets) {
+    double[] box = {Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE,
+        Double.MAX_VALUE, -Double.MAX_VALUE};
+    boolean any = false;
+    for (List<double[]> points : datasets) {
+      for (double[] p : points) {
+        any = true;
+        for (int c = 0; c < 3; c++) {
+          box[c * 2] = Math.min(box[c * 2], p[c]);
+          box[c * 2 + 1] = Math.max(box[c * 2 + 1], p[c]);
+        }
+      }
+    }
+    return any ? box : new double[] {0, 1, 0, 1, 0, 1};
+  }
+
+  private static void collectCoordinates(IAST dataset, List<double[]> coordinates,
+      RegionFunctionFilter region) {
     for (int k = 1; k < dataset.size(); k++) {
       IExpr point = dataset.get(k);
       if (!point.isList3()) {
@@ -159,7 +202,6 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       // a point that cannot be evaluated is left out; it used to abandon the whole plot
       if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)
           && (region == null || region.accepts(x, y, z))) {
-        indices.append(F.ZZ(builder.addVertex(x, y, z, null, null)));
         coordinates.add(new double[] {x, y, z});
       }
     }

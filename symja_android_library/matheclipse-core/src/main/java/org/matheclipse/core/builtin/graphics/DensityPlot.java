@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -154,8 +155,11 @@ public class DensityPlot extends ListPlot {
 
     // 4. Generate the cell grid as a single raster rather than one rectangle per cell
     IASTAppendable primitives = F.ListAlloc();
-    java.util.function.DoubleFunction<IExpr> colorMap =
-        GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getDensityColor);
+    PlotColorFunction colorMap = PlotColorFunction
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+            S.DensityPlot, engine)
+        .range(1, minZ, maxZ).sink(PlotColorFunction.Sink.FLAT).fallback(this::getDensityColor)
+        .build();
     IExpr[][] cells = new IExpr[gridY][gridX];
     // the cells the edge of the region runs through, and the line it follows through each
     double[][][][] cellClip = ContourPlot.regionClips(defined, region, zGrid, xRange[0], yRange[0],
@@ -188,15 +192,8 @@ public class DensityPlot extends ListPlot {
 
         double cellZ = (v00 + v10 + v01 + v11) / 4.0;
 
-        double t = 0.5;
-        if (colorFunctionScaling) {
-          if (Math.abs(maxZ - minZ) > 1e-9) {
-            t = (cellZ - minZ) / (maxZ - minZ);
-          }
-        } else {
-          t = cellZ;
-        }
-        IExpr color = colorMap.apply(t);
+        IExpr color = colorMap != null ? colorMap.color(cellZ)
+            : getDensityColor(scaledValue(cellZ, minZ, maxZ, colorFunctionScaling));
 
         if (whole) {
           // j counts upwards from the bottom, while the raster rows are given top first
@@ -235,6 +232,14 @@ public class DensityPlot extends ListPlot {
    * Interpolates colors to match the "Sunset" density gradient. Maps t [0..1] -> [Deep Purple ...
    * Yellow]
    */
+  /** Where a value sits on the default scale: its position in the range, or the value itself. */
+  static double scaledValue(double v, double min, double max, boolean scaling) {
+    if (!scaling) {
+      return v;
+    }
+    return Math.abs(max - min) > 1e-9 ? (v - min) / (max - min) : 0.5;
+  }
+
   protected IExpr getDensityColor(double t) {
     if (t < 0)
       t = 0;

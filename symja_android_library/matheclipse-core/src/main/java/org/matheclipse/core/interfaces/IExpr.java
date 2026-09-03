@@ -3443,12 +3443,28 @@ public interface IExpr
   /**
    * Check if the expression is a {@link S#Graphics} or {@link S#GraphicsRow} or a list of
    * {@link S#Graphics} AST's.
-   * 
+   *
+   * <p>
+   * An {@link S#Overlay} counts only when it actually holds graphics. It is a general purpose
+   * display wrapper, so <code>Overlay({1, 2, 3})</code> has to keep printing as itself rather than
+   * being handed to the SVG converter, which would return a blank picture.
+   *
    * @return <code>true</code> if the expression is a graphics object
    */
   default boolean isGraphicsObject() {
-    return (this instanceof IAST) && (isAST(S.Graphics) || isAST(S.GraphicsColumn)
-        || isAST(S.GraphicsGrid) || isAST(S.GraphicsRow) || isListOf(S.Graphics));
+    if (!(this instanceof IAST)) {
+      return false;
+    }
+    if (isAST(S.Graphics) || isAST(S.GraphicsColumn) || isAST(S.GraphicsGrid)
+        || isAST(S.GraphicsRow) || isListOf(S.Graphics)) {
+      return true;
+    }
+    if (isAST(S.Overlay) && ((IAST) this).argSize() >= 1) {
+      IExpr layers = ((IAST) this).arg1();
+      // any graphic is enough: a non graphic item is dropped, as it is in a GraphicsRow
+      return layers.isList() && ((IAST) layers).exists(x -> x.isGraphicsObject());
+    }
+    return false;
   }
 
   /**

@@ -767,10 +767,11 @@ public final class SvgRenderer2D {
         .attr("y", fmt(Math.min(ya, yb))) //
         .attr("width", fmt(boxWidth)) //
         .attr("height", fmt(boxHeight)) //
-        // the cells are square in data coordinates, not on screen, and a raster is a grid of
-        // values rather than a photograph, so it is stretched to the box and left unsmoothed
+        // the cells are square in data coordinates, not on screen, so the image is stretched to
+        // the box; a grid of values keeps its cell edges, while a sampled field is smoothed so the
+        // reader sees the function rather than the sampling grid
         .attr("preserveAspectRatio", "none") //
-        .attr("image-rendering", "pixelated") //
+        .attr("image-rendering", prim.smooth ? "auto" : "pixelated") //
         .attr("href", PngEncoder.dataUri(argb, width, height)));
   }
 

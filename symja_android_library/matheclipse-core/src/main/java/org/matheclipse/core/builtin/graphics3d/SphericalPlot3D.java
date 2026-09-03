@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -42,13 +43,13 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
 
     IAST functions = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS], 40);
-    Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[Plot3DTools.X_COLOR_FUNCTION],
-        options[Plot3DTools.X_COLOR_FUNCTION_SCALING], engine);
+    PlotColorFunction.Builder colorBuilder = Plot3DTools
+        .plotColors(PlotColorFunction.Family.SPHERICAL_3D, options, S.SphericalPlot3D, engine);
 
     IASTAppendable graphicsList = F.ListAlloc(functions.argSize());
     for (int k = 1; k <= functions.argSize(); k++) {
       IExpr surface = buildSurface(functions.get(k), k - 1, thetaVar, theta, phiVar, phi, samples,
-          options, colorMap, engine);
+          options, colorBuilder, engine);
       if (surface.isPresent()) {
         graphicsList.append(surface);
       }
@@ -93,7 +94,8 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr buildSurface(IExpr radius, int index, ISymbol thetaVar, double[] theta,
-      ISymbol phiVar, double[] phi, int[] samples, IExpr[] options, Plot3DTools.ColorMap colorMap,
+      ISymbol phiVar, double[] phi, int[] samples, IExpr[] options,
+      PlotColorFunction.Builder colorBuilder,
       EvalEngine engine) {
     int nTheta = samples[0];
     int nPhi = samples[1];
@@ -150,6 +152,11 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    double[] box = Plot3DTools.extentOf(grid);
+    PlotColorFunction colorMap = colorBuilder
+        .ranges(box[0], box[1], box[2], box[3], box[4], box[5], theta[0], theta[1], phi[0], phi[1],
+            rMin, rMax)
+        .build();
     IExpr[][] colors = null;
     if (colorMap != null) {
       colors = new IExpr[nTheta][nPhi];
@@ -158,10 +165,10 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
           if (grid[i][j] == null) {
             continue;
           }
-          double r = radii[i][j];
-          // the natural quantity to colour a spherical plot by is its radius
-          double scaled = colorMap.isScaled() && rMax > rMin ? (r - rMin) / (rMax - rMin) : r;
-          colors[i][j] = colorMap.apply(scaled, scaled, scaled);
+          double[] point = grid[i][j];
+          // the whole tuple: where the point is, the two angles that put it there, and the radius
+          colors[i][j] = colorMap.color(point[0], point[1], point[2], theta[0] + i * thetaStep,
+              phi[0] + j * phiStep, radii[i][j]);
         }
       }
     }

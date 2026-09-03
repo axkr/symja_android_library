@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -163,9 +164,6 @@ public class ContourPlot extends ListPlot {
       IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
       IExpr colorFunctionOpt, EvalEngine engine, boolean isMulti, boolean contourLines,
       boolean contourLabels, RegionFunctionFilter region, IExpr boundaryStyle) {
-    java.util.function.DoubleFunction<IExpr> colorMap =
-        GraphicsOptions.colorFunction(colorFunctionOpt, engine, this::getShadingColor);
-
     boolean isEquation = false;
     if (function.isAST(S.Equal, 3)) {
       isEquation = true;
@@ -223,6 +221,15 @@ public class ContourPlot extends ListPlot {
     if (minZ == Double.MAX_VALUE)
       return;
 
+    // one argument, the average of the two levels the band lies between, which is what the
+    // reference means by "the average of the scaled values of f for each pair of successive
+    // contour levels" - the scaling is a straight line, so averaging before it is the same thing
+    PlotColorFunction colorMap = PlotColorFunction
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+            S.ContourPlot, engine)
+        .range(1, minZ, maxZ).sink(PlotColorFunction.Sink.FLAT).fallback(this::getShadingColor)
+        .build();
+
     // 2. Determine Levels
     double[] levels;
     if (isEquation) {
@@ -252,8 +259,11 @@ public class ContourPlot extends ListPlot {
           double lower = (k == -1) ? minZ : levels[k];
           double upper = (k == levels.length - 1) ? maxZ : levels[k + 1];
           double bandZ = (lower + upper) * 0.5;
-          double t = (colorFunctionScaling && !isEquation) ? (bandZ - minZ) / (maxZ - minZ) : bandZ;
-          color = colorMap.apply(t);
+          // an equation has no range of values to place a band within, so it is left unscaled
+          color = colorMap != null && !isEquation ? colorMap.color(bandZ)
+              : getShadingColor((colorFunctionScaling && !isEquation)
+                  ? (bandZ - minZ) / (maxZ - minZ)
+                  : bandZ);
         }
 
         IASTAppendable polygons = F.ListAlloc();

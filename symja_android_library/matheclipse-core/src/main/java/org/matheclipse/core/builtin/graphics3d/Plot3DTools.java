@@ -5,11 +5,13 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * The parts every {@code *Plot3D} builtin needs: reading the options they share, turning a sampled
@@ -612,74 +614,47 @@ public final class Plot3DTools {
     return Math.max(1, (int) Math.round((samples - 1.0) / lines));
   }
 
-  /** A colour function of a scaled height, or {@code null} when the surface is a flat colour. */
-  public static ColorMap colorMap(IExpr colorFunction, IExpr colorFunctionScaling,
-      EvalEngine engine) {
-    if (colorFunction == null || colorFunction.isAutomatic() || colorFunction.isNone()) {
-      return null;
+  /**
+   * The bounding box of a sampled grid, as {@code {xMin, xMax, yMin, yMax, zMin, zMax}}.
+   *
+   * <p>
+   * This is the range a colour function's coordinates are scaled over: the extent the surface
+   * actually reaches, rather than the box the plot happens to be drawn in.
+   *
+   * @param grid {@code [i][j]} coordinate triples, {@code null} where there is no sample
+   */
+  public static double[] extentOf(double[][][] grid) {
+    double[] bounds = {Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE,
+        Double.MAX_VALUE, -Double.MAX_VALUE};
+    for (double[][] row : grid) {
+      for (double[] p : row) {
+        if (p == null) {
+          continue;
+        }
+        for (int c = 0; c < 3; c++) {
+          bounds[c * 2] = Math.min(bounds[c * 2], p[c]);
+          bounds[c * 2 + 1] = Math.max(bounds[c * 2 + 1], p[c]);
+        }
+      }
     }
-    boolean scaled = colorFunctionScaling == null || !colorFunctionScaling.isFalse();
-    final IExpr function =
-        colorFunction.isString() ? F.ColorData(colorFunction) : colorFunction;
-    return new ColorMap(function, scaled, engine);
+    return bounds;
   }
 
   /**
-   * A {@code ColorFunction} applied to a point of a surface.
+   * The {@code ColorFunction} of a surface, or {@code null} when it keeps its own flat colour.
    *
    * <p>
-   * Passes the coordinates scaled into 0..1 unless {@code ColorFunctionScaling -> False}, and
-   * accepts a function of any arity, so the call is tried with three arguments first and falls back
-   * to one. The result of the failed arity is cached, because a colour function is evaluated once
-   * per vertex and re-discovering the arity thousands of times is the difference between a plot
-   * that appears at once and one that takes a second.
+   * The caller finishes the builder with the range each coordinate spans, so that a colour
+   * function sees positions rather than raw units.
+   *
+   * @param family which tuple this plot hands over; a plain surface passes {@code x, y, z}
    */
-  public static final class ColorMap {
-    private final IExpr function;
-    private final boolean scaled;
-    private final EvalEngine engine;
-    private int arity = 0;
-
-    ColorMap(IExpr function, boolean scaled, EvalEngine engine) {
-      this.function = function;
-      this.scaled = scaled;
-      this.engine = engine;
-    }
-
-    /**
-     * @param x, y, z the point, already scaled into 0..1 when scaling is on
-     * @return a colour expression, or {@code null} when the function did not produce one
-     */
-    public IExpr apply(double x, double y, double z) {
-      if (arity != 1) {
-        IExpr color = tryApply(F.ternaryAST3(function, F.num(x), F.num(y), F.num(z)));
-        if (color != null) {
-          arity = 3;
-          return color;
-        }
-        if (arity == 3) {
-          return null;
-        }
-      }
-      IExpr color = tryApply(F.unaryAST1(function, F.num(z)));
-      if (color != null) {
-        arity = 1;
-      }
-      return color;
-    }
-
-    private IExpr tryApply(IExpr call) {
-      try {
-        IExpr color = engine.evaluate(call);
-        return GraphicsOptions.isColorExpr(color) ? color : null;
-      } catch (RuntimeException rex) {
-        return null;
-      }
-    }
-
-    public boolean isScaled() {
-      return scaled;
-    }
+  public static PlotColorFunction.Builder plotColors(PlotColorFunction.Family family,
+      IExpr[] options, ISymbol plotSymbol, EvalEngine engine) {
+    return PlotColorFunction
+        .of(family, options[X_COLOR_FUNCTION], options[X_COLOR_FUNCTION_SCALING], plotSymbol,
+            engine)
+        .sink(PlotColorFunction.Sink.FLAT);
   }
 
   /**

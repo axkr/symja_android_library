@@ -156,6 +156,10 @@ public class Errors {
       "cfro",
       "Value of option RuntimeOptions -> `1` should be Automatic, \"Speed\", \"Quality\", a rule or a list of rules.", //
       "cfsa", "Argument `1` at position `2` should be a machine-size `3`.", //
+      "cfdrop", "`1` cannot be applied to one sample by `2` and was ignored.", //
+      "cfeval", "The ColorFunction of `1` did not evaluate to a color; using the default coloring.", //
+      "cfname", "`1` is not a known color gradient for `2`; using the default coloring.", //
+      "cfshade", "`1` is not a known shading scheme for `2`; using Automatic.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
@@ -174,6 +178,7 @@ public class Errors {
       "dimss", "`1` is not a valid dimension specification for `2`.", //
       "dims",
       "The dimension `1` of the first argument is not the same as the number of binning specifications `2`.", //
+      "div", "Sum does not converge.", //
       "divz", "The argument `1` should be nonzero.", //
       "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
       "dlim", "The limit point `1` in `2` should be Infinity or -Infinity.", //

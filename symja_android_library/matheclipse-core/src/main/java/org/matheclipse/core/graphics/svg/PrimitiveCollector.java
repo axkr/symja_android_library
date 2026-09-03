@@ -1457,7 +1457,16 @@ public final class PrimitiveCollector {
       x2 = b[0];
       y2 = b[1];
     }
-    primitives.add(new Prim2D.RasterPrim(cells, x1, y1, x2, y2, style.clone()));
+    // InterpolationOrder -> 0 is a grid of values and keeps its cell edges; anything higher says
+    // the cells are samples of something continuous, and is drawn smoothly between them
+    boolean smooth = false;
+    for (int i = 2; i <= ast.argSize(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isRuleAST() && ((IAST) arg).arg1() == S.InterpolationOrder) {
+        smooth = ((IAST) arg).arg2().toIntDefault(0) > 0;
+      }
+    }
+    primitives.add(new Prim2D.RasterPrim(cells, x1, y1, x2, y2, smooth, style.clone()));
   }
 
   private static float clampF(double v) {

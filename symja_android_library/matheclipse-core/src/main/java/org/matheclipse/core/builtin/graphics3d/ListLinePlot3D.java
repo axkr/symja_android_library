@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -38,7 +39,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         // only a numeric first height identifies this case; otherwise fall through
         if (!Double.isNaN(((IAST) ast.arg1()).arg1().evalfNaN())) {
           IExpr heightLinePlot =
-              heightLinePlot(F.list(ast.arg1()), plotStyle, dataRange, engine, region);
+              colorLines(heightLinePlot(F.list(ast.arg1()), plotStyle, dataRange, engine, region),
+                  options, engine);
           if (heightLinePlot.isPresent()) {
             return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
                 new IExpr[] {F.Rule(S.Axes, S.True),
@@ -56,7 +58,9 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
       // e.g.: ListLinePlot3D[{{x_1, y_1, z_1}, {x_2, y_2, z_2}}]
       if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
         return Plot3DTools.graphics3D(
-            coordinateLinePlot(F.list(ast.arg1()), plotStyle, engine, region), ast, 1,
+            colorLines(coordinateLinePlot(F.list(ast.arg1()), plotStyle, engine, region),
+                options, engine),
+            ast, 1,
             new IExpr[] {F.Rule(S.Axes, S.True),
                 F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
                 F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
@@ -68,7 +72,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         // only a numeric first height identifies this case; otherwise fall through
         if (!Double.isNaN(((IAST) ((IAST) ast.arg1()).arg1()).arg1().evalfNaN())) {
           IExpr heightLinePlot =
-              heightLinePlot((IAST) ast.arg1(), plotStyle, dataRange, engine, region);
+              colorLines(heightLinePlot((IAST) ast.arg1(), plotStyle, dataRange, engine, region),
+                  options, engine);
           if (heightLinePlot.isPresent()) {
             return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
                 new IExpr[] {F.Rule(S.Axes, S.True),
@@ -84,7 +89,9 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         // e.g.: ListLinePlot3D[{{coord1, coord2}, {coord3, coord4}}]
         if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
           return Plot3DTools.graphics3D(
-              coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine, region), ast, 1,
+              colorLines(coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine, region),
+                options, engine),
+            ast, 1,
               new IExpr[] {F.Rule(S.Axes, S.True),
                   F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
                   F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
@@ -106,6 +113,82 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
    * heights divided by a zero range and gave up with a division error. The shape of the picture is
    * the business of {@code BoxRatios}, which is how the other plots in this package do it.
    */
+  /**
+   * Paint a line list along its length, when a {@code ColorFunction} says how.
+   *
+   * <p>
+   * A line plot hands out one colour per line. A colour function is asked about a place rather
+   * than about a line, so each step of each line becomes a piece of its own, coloured from its
+   * middle so that its two ends agree - the same way the two dimensional curve plots do it. The
+   * per line style is dropped where that happens: a colour function outranks {@code PlotStyle}.
+   *
+   * @param lines the {@code {style, Line(...), ...}} list a line plot produced
+   * @return the same list repainted, or unchanged when there is no colour function
+   */
+  private static IExpr colorLines(IExpr lines, IExpr[] options, EvalEngine engine) {
+    if (!lines.isList() || ((IAST) lines).argSize() == 0) {
+      return lines;
+    }
+    IAST list = (IAST) lines;
+    double[] box = {Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE,
+        Double.MAX_VALUE, -Double.MAX_VALUE};
+    boolean any = false;
+    for (int i = 1; i < list.size(); i++) {
+      if (!list.get(i).isAST(S.Line, 2) || !list.get(i).first().isList()) {
+        continue;
+      }
+      IAST points = (IAST) list.get(i).first();
+      for (int k = 1; k < points.size(); k++) {
+        if (!points.get(k).isList3()) {
+          continue;
+        }
+        any = true;
+        for (int c = 0; c < 3; c++) {
+          double v = ((IAST) points.get(k)).get(c + 1).evalfNaN();
+          box[c * 2] = Math.min(box[c * 2], v);
+          box[c * 2 + 1] = Math.max(box[c * 2 + 1], v);
+        }
+      }
+    }
+    if (!any) {
+      return lines;
+    }
+    PlotColorFunction colors = Plot3DTools
+        .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListLinePlot3D, engine)
+        .ranges(box[0], box[1], box[2], box[3], box[4], box[5]).build();
+    if (colors == null) {
+      return lines;
+    }
+
+    IASTAppendable out = F.ListAlloc(list.argSize() * 4);
+    for (int i = 1; i < list.size(); i++) {
+      IExpr element = list.get(i);
+      if (!element.isAST(S.Line, 2) || !element.first().isList()) {
+        continue; // the per line style, which the colour function replaces
+      }
+      IAST points = (IAST) element.first();
+      if (points.argSize() < 2) {
+        out.append(element);
+        continue;
+      }
+      for (int k = 1; k < points.argSize(); k++) {
+        IExpr from = points.get(k);
+        IExpr to = points.get(k + 1);
+        if (!from.isList3() || !to.isList3()) {
+          continue;
+        }
+        out.append(colors.color(midpoint(from, to, 1), midpoint(from, to, 2),
+            midpoint(from, to, 3)));
+        out.append(F.Line(F.List(from, to)));
+      }
+    }
+    return out.argSize() > 0 ? out : lines;
+  }
+
+  private static double midpoint(IExpr from, IExpr to, int part) {
+    return (((IAST) from).get(part).evalfNaN() + ((IAST) to).get(part).evalfNaN()) / 2.0;
+  }
+
   private IExpr heightLinePlot(IAST heights, IExpr plotStyle, IExpr dataRange, EvalEngine engine,
       RegionFunctionFilter region) {
     final int valuesSize = heights.size();

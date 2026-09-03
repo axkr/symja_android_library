@@ -35,6 +35,28 @@ public final class GraphicsOptions2D {
   public double[] imageSize = {360, 360};
   public boolean imageSizeSet = false;
   public boolean imageSizeHeightSet = false;
+  /** {@code ImageSize -> All}: leave room for the largest item, shown or not. */
+  public boolean imageSizeAll = false;
+  /**
+   * Whether an {@code ImageSize} rule was actually written. {@link #imageSizeSet} cannot say:
+   * every top level converter sets it from its constructor before any option is read.
+   */
+  public boolean imageSizeExplicit = false;
+
+  /**
+   * True when this graphic is one layer of an {@code Overlay} and so must not paint a canvas of
+   * its own. A layer that asked for a {@code Background} still gets one, and hides what is under
+   * it - which is why the Wolfram documentation reaches for a translucent one.
+   */
+  public boolean transparentBackground = false;
+
+  /**
+   * {@code Alignment}, as a fraction of the leftover space on each axis: {@code [0]} is horizontal
+   * with 0 at the left edge and 1 at the right, {@code [1]} is vertical with 0 at the top. Only
+   * {@code SvgLayout.overlay} reads it, since it is the only layout in which an item can be
+   * smaller than the space it is given.
+   */
+  public final double[] alignment = {0.5, 0.5};
 
   /** {@code {{left, right}, {bottom, top}}} in pixels, or {@code null} for automatic. */
   public double[] imagePadding = null;
@@ -209,9 +231,12 @@ public final class GraphicsOptions2D {
         }
         break;
       case ID.Background:
-        if (!value.isNone()) {
-          background = ColorUtil.parse(value);
-        }
+        // None is a colour here, not a missing option: it asks for a transparent canvas, which
+        // ColorUtil.css renders as fill="none". Leaving background null would paint it white.
+        background = value.isNone() ? ColorUtil.TRANSPARENT : ColorUtil.parseDirective(value);
+        break;
+      case ID.Alignment:
+        applyAlignment(value);
         break;
       case ID.PlotLabel:
         plotLabel = value.isNone() ? null : value;
@@ -340,6 +365,13 @@ public final class GraphicsOptions2D {
 
   private void applyImageSize(IExpr value) {
     imageSizeSet = true;
+    imageSizeExplicit = true;
+    if (value == S.All) {
+      // All asks for room, not for a size; namedImageSize would leave imageSize alone anyway,
+      // but returning here keeps that independent of how named sizes are spelled
+      imageSizeAll = true;
+      return;
+    }
     if (value.isList() && ((IAST) value).argSize() >= 2) {
       IAST list = (IAST) value;
       double w = namedImageSize(list.arg1(), Double.NaN);
@@ -454,6 +486,71 @@ public final class GraphicsOptions2D {
     }
     target[0] = lo;
     target[1] = hi;
+  }
+
+  /**
+   * {@code Alignment}: where the spare room around a smaller item goes.
+   *
+   * <p>
+   * Stored as a fraction of that room on each axis, so the names and the numeric {@code 0..1}
+   * form are the same thing. The vertical fraction runs downwards, matching SVG: 0 is the top.
+   * A single name only moves the axis it belongs to, so {@code Alignment -> Left} leaves the
+   * vertical placement alone, and a name given for the wrong axis of a pair is ignored rather
+   * than guessed at.
+   */
+  private void applyAlignment(IExpr value) {
+    if (value.isList() && ((IAST) value).argSize() >= 2) {
+      IAST pair = (IAST) value;
+      applyAlignmentPart(pair.arg1(), 0);
+      applyAlignmentPart(pair.arg2(), 1);
+      return;
+    }
+    applyAlignmentPart(value, -1);
+  }
+
+  /** @param axis 0 for horizontal, 1 for vertical, -1 to let the value name its own axis */
+  private void applyAlignmentPart(IExpr value, int axis) {
+    if (value.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) value).ordinal()) {
+        case ID.Left:
+          place(axis, 0, 0.0);
+          return;
+        case ID.Right:
+          place(axis, 0, 1.0);
+          return;
+        case ID.Top:
+          place(axis, 1, 0.0);
+          return;
+        case ID.Bottom:
+          place(axis, 1, 1.0);
+          return;
+        case ID.Center:
+          place(axis, 0, 0.5);
+          place(axis, 1, 0.5);
+          return;
+        default:
+          // Automatic, and anything else that names no position, keeps the default
+          return;
+      }
+    }
+    double fraction = ColorUtil.dbl(value, Double.NaN);
+    if (!Double.isNaN(fraction)) {
+      fraction = Math.max(0.0, Math.min(1.0, fraction));
+      place(axis, 0, fraction);
+      place(axis, 1, fraction);
+    }
+  }
+
+  /**
+   * Put {@code fraction} on the axis a value belongs to.
+   *
+   * @param requested the axis the caller asked for, or -1 when the value names its own
+   * @param own the axis this value belongs to; a pair entry meant for the other one is dropped
+   */
+  private void place(int requested, int own, double fraction) {
+    if (requested < 0 || requested == own) {
+      alignment[own] = fraction;
+    }
   }
 
   private void applyPlotRangePadding(IExpr value) {

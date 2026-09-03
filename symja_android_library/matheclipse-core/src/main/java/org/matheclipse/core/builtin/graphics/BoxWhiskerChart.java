@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -121,6 +122,25 @@ public class BoxWhiskerChart extends ListPlot {
 
     double boxWidth = 1.0 / (1.0 + spacing);
 
+    // A ColorFunction colours each box by the value it stands for, which for a box and whisker
+    // chart is its median: the one number the box is drawn around. The scale runs over the medians
+    // of all the datasets, so the colours say how they compare with one another.
+    double medianMin = Double.MAX_VALUE;
+    double medianMax = -Double.MAX_VALUE;
+    for (int i = 1; i <= count; i++) {
+      double m = medianOf(datasets.get(i));
+      if (!Double.isNaN(m)) {
+        medianMin = Math.min(medianMin, m);
+        medianMax = Math.max(medianMax, m);
+      }
+    }
+    PlotColorFunction boxColors = PlotColorFunction
+        .of(PlotColorFunction.Family.CHART,
+            GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic),
+            GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True),
+            S.BoxWhiskerChart, engine)
+        .range(1, medianMin, medianMax).build();
+
     for (int i = 1; i <= count; i++) {
       IExpr datasetExpr = datasets.get(i);
       if (!datasetExpr.isList())
@@ -230,7 +250,8 @@ public class BoxWhiskerChart extends ListPlot {
           F.List(F.num(x + capW), F.num(whiskerTop)))));
 
       // 2. Box
-      IExpr color = getChartStyle(chartStyle, i - 1);
+      IExpr functionColor = boxColors == null ? F.NIL : boxColors.color(median);
+      IExpr color = functionColor.isPresent() ? functionColor : getChartStyle(chartStyle, i - 1);
       group.append(color);
       group.append(F.EdgeForm(F.None));
 
@@ -435,6 +456,28 @@ public class BoxWhiskerChart extends ListPlot {
       return sorted[n - 1];
 
     return (1 - delta) * sorted[lhs] + delta * sorted[lhs + 1];
+  }
+
+  /** The median of one dataset, or {@code NaN} when it holds no numbers. */
+  private double medianOf(IExpr datasetExpr) {
+    if (!datasetExpr.isList()) {
+      return Double.NaN;
+    }
+    IAST dataset = (IAST) datasetExpr;
+    double[] values = new double[dataset.argSize()];
+    int n = 0;
+    for (int k = 1; k <= dataset.argSize(); k++) {
+      double v = dataset.get(k).evalfNaN();
+      if (Double.isFinite(v)) {
+        values[n++] = v;
+      }
+    }
+    if (n == 0) {
+      return Double.NaN;
+    }
+    double[] sorted = java.util.Arrays.copyOf(values, n);
+    java.util.Arrays.sort(sorted);
+    return getQuantile(sorted, 0.50);
   }
 
   private IExpr getChartStyle(IExpr styleOption, int index) {

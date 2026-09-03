@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -58,6 +59,8 @@ public class ParametricPlot extends Plot {
         .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
+    // a parametric curve's colour function is given the parameter alongside the coordinates
+    graphicsOptions.setColorFamily(PlotColorFunction.Family.PARAMETRIC_2D);
     graphicsOptions.applyPlotTheme(originalAST);
     IExpr function = ast.arg1();
     IAST rangeList1 = (IAST) ast.arg2();
@@ -303,6 +306,8 @@ public class ParametricPlot extends Plot {
       steps = Math.max(2, steps / 8);
     }
     double step = (tMaxD - tMinD) / steps;
+    // the parameter is scaled over the range its iterator declares, like every other argument
+    graphicsOptions.setColorRange(3, tMinD, tMaxD);
 
     IAST curveList;
     if (functionOrListOfFunctions.isList()) {
@@ -347,7 +352,7 @@ public class ParametricPlot extends Plot {
           double y = engine.evalDouble(yExpr);
           if (Double.isFinite(x) && Double.isFinite(y)
               && (region == null || region.accepts(x, y, t))) {
-            linePoints.append(graphicsOptions.point(x, y));
+            linePoints.append(graphicsOptions.parametricPoint(x, y, t));
             drawn = true;
           }
         } catch (RuntimeException e) {

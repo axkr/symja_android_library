@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -67,13 +68,13 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS], 40);
-    Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[Plot3DTools.X_COLOR_FUNCTION],
-        options[Plot3DTools.X_COLOR_FUNCTION_SCALING], engine);
+    PlotColorFunction.Builder colorBuilder = Plot3DTools
+        .plotColors(PlotColorFunction.Family.REVOLUTION_3D, options, S.RevolutionPlot3D, engine);
 
     IASTAppendable graphicsList = F.ListAlloc(functions.size());
     for (int k = 0; k < functions.size(); k++) {
       IExpr surface = buildSurface(functions.get(k), k, tVar, t, theta, axis, samples, options,
-          colorMap, engine);
+          colorBuilder, engine);
       if (surface.isPresent()) {
         graphicsList.append(surface);
       }
@@ -126,7 +127,7 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr buildSurface(IExpr func, int index, IExpr tVar, double[] t, double[] theta,
-      double[] axis, int[] samples, IExpr[] options, Plot3DTools.ColorMap colorMap,
+      double[] axis, int[] samples, IExpr[] options, PlotColorFunction.Builder colorBuilder,
       EvalEngine engine) {
     int nT = samples[0];
     int nTheta = samples[1];
@@ -183,6 +184,23 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    double[] box = Plot3DTools.extentOf(grid);
+    // the radius of revolution is how far the point is from the axis of it
+    double rMin = Double.MAX_VALUE;
+    double rMax = -Double.MAX_VALUE;
+    for (double[][] row : grid) {
+      for (double[] p : row) {
+        if (p != null) {
+          double r = Math.hypot(p[0], p[1]);
+          rMin = Math.min(rMin, r);
+          rMax = Math.max(rMax, r);
+        }
+      }
+    }
+    PlotColorFunction colorMap = colorBuilder
+        .ranges(box[0], box[1], box[2], box[3], box[4], box[5], t[0], t[1], theta[0], theta[1],
+            rMin, rMax)
+        .build();
     IExpr[][] colors = null;
     if (colorMap != null) {
       colors = new IExpr[nT][nTheta];
@@ -192,8 +210,9 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
           if (p == null) {
             continue;
           }
-          double z = colorMap.isScaled() && zMax > zMin ? (p[2] - zMin) / (zMax - zMin) : p[2];
-          colors[i][j] = colorMap.apply(p[0], p[1], z);
+          // every coordinate is handed over in the same units, which they were not before
+          colors[i][j] = colorMap.color(p[0], p[1], p[2], t[0] + i * tStep,
+              theta[0] + j * thetaStep, Math.hypot(p[0], p[1]));
         }
       }
     }

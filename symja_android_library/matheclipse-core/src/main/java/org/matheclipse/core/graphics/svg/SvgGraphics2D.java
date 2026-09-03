@@ -105,6 +105,9 @@ public class SvgGraphics2D {
       if (graphicsExpr.isAST(S.GraphicsGrid)) {
         return new SvgLayout(options).grid(graphicsExpr, withSVGTag);
       }
+      if (graphicsExpr.isAST(S.Overlay)) {
+        return new SvgLayout(options).overlay(graphicsExpr, withSVGTag);
+      }
       List<DomContent> elements = buildElements(graphicsExpr);
       if (elements == null) {
         return null;
@@ -124,6 +127,23 @@ public class SvgGraphics2D {
     }
   }
 
+  /**
+   * The full canvas background.
+   *
+   * <p>
+   * A translucent colour has to carry its alpha in {@code fill-opacity}, because
+   * {@link ColorUtil#css} emits only the rgb triple. An {@code Overlay} layer with a half
+   * transparent {@code Background} is the documented way to let the layer beneath show through.
+   */
+  private ContainerTag<?> backgroundRect() {
+    ContainerTag<?> rect = tag("rect").attr("width", "100%").attr("height", "100%").attr("fill",
+        options.background == null ? "white" : ColorUtil.css(options.background));
+    if (options.background != null && options.background.getAlpha() < 255) {
+      rect.attr("fill-opacity", SvgRenderer2D.fmt(options.background.getAlpha() / 255.0));
+    }
+    return rect;
+  }
+
   private ContainerTag<?> emptyDocument() {
     return svgRoot(Collections.singletonList(
         tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white")));
@@ -138,7 +158,8 @@ public class SvgGraphics2D {
   /** The children of the {@code <svg>} root, in drawing order. */
   private List<DomContent> buildElements(IAST graphicsExpr) {
     if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)
-        || graphicsExpr.isAST(S.GraphicsColumn) || graphicsExpr.isAST(S.GraphicsGrid)) {
+        || graphicsExpr.isAST(S.GraphicsColumn) || graphicsExpr.isAST(S.GraphicsGrid)
+        || graphicsExpr.isAST(S.Overlay)) {
       return null;
     }
 
@@ -174,9 +195,11 @@ public class SvgGraphics2D {
     AxesFrameRenderer axes = new AxesFrameRenderer(viewport, options);
 
     List<DomContent> elements = new ArrayList<>();
-    // Background covers the whole image, not only the drawing area
-    elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill",
-        options.background == null ? "white" : ColorUtil.css(options.background)));
+    // Background covers the whole image, not only the drawing area. An Overlay layer leaves it
+    // out unless it asked for one of its own, so the layers below still show through.
+    if (!options.transparentBackground || options.background != null) {
+      elements.add(backgroundRect());
+    }
 
     String plotAreaId = "plotArea" + idSuffix;
     String gradientId = "legendGradient" + idSuffix;
@@ -618,6 +641,52 @@ public class SvgGraphics2D {
     // a layout cell keeps the size the row, column or grid gave it
     SvgGraphics2D sub = new SvgGraphics2D(width, height, true);
     return sub.toSVG(ast, true);
+  }
+
+  /** One layer of an {@code Overlay}: its element children, and the size it settled on. */
+  static final class Layer {
+    final String contents;
+    final double width;
+    final double height;
+
+    Layer(String contents, double width, double height) {
+      this.contents = contents;
+      this.width = width;
+      this.height = height;
+    }
+  }
+
+  /**
+   * Render one layer of an {@code Overlay} at its natural size.
+   *
+   * <p>
+   * Unlike {@link #renderChild} the layer is measured rather than told: the aspect ratio decides
+   * the height exactly as it does for a top level graphic, and the size it settled on is handed
+   * back so the overlay can size its canvas and place the layer. Only the element children come
+   * back, never a root - the root this class emits carries a responsive style whose
+   * {@code height: auto} would stretch the layer to the full canvas height, which is precisely
+   * what an overlay must not do.
+   *
+   * @param width the width budget, which the layer's own {@code ImageSize} may override
+   * @return the layer, or {@code null} when the expression is not a graphic
+   */
+  static Layer renderLayer(IExpr expr, double width) {
+    if (!(expr instanceof IAST)) {
+      return null;
+    }
+    IAST ast = (IAST) expr;
+    if (!ast.isGraphicsObject() && !ast.isAST(S.Graphics) && !ast.isAST(S.GraphicsRow)
+        && !ast.isAST(S.GraphicsColumn) && !ast.isAST(S.GraphicsGrid) && !ast.isList()) {
+      return null;
+    }
+    // a square seed, so a layer whose range is degenerate still comes out at a usable size
+    SvgGraphics2D sub = new SvgGraphics2D(width, width);
+    sub.options.transparentBackground = true;
+    String contents = sub.toSVG(ast, false);
+    if (contents == null || contents.isEmpty()) {
+      return null;
+    }
+    return new Layer(contents, sub.options.imageSize[0], sub.options.imageSize[1]);
   }
 
   static ContainerTag<?> placed(String svg, double x, double y) {

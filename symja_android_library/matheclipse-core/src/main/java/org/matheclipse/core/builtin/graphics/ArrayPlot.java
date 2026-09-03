@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -141,15 +142,17 @@ public class ArrayPlot extends ListPlot {
 
     IASTAppendable primitives = F.ListAlloc();
     // one raster rather than one rectangle per cell
-    java.util.function.DoubleFunction<IExpr> colorMap =
-        GraphicsOptions.colorFunction(colorFunctionOpt, engine, t -> F.GrayLevel(1.0 - t));
-    // the two colour scales below are not the same one, so which is in use has to be known here.
-    // This is the test colorFunction() itself makes to decide between the caller's function and
-    // the grey scale.
-    boolean automaticColors = colorFunctionOpt == S.Automatic || colorFunctionOpt.isNone();
     // the value the grey scale reaches black at: the extreme furthest from zero on whichever side
     // the data lies, which is the maximum unless every value is negative
-    double greyLimit = max > 0.0 ? max : min;
+    final double greyLimit = max > 0.0 ? max : min;
+    final boolean scaling = colorFunctionScaling;
+    // A ColorFunction is a scale over the range of the data. The default grey scale is a
+    // different one - see greyColor - so the two are separate objects rather than one function
+    // reached through two sets of arithmetic.
+    PlotColorFunction colorMap = PlotColorFunction
+        .of(PlotColorFunction.Family.ARRAY, colorFunctionOpt, F.bool(scaling), S.ArrayPlot, engine)
+        .range(1, min, max).sink(PlotColorFunction.Sink.FLAT)
+        .fallback(t -> greyColor(t, greyLimit, scaling)).build();
     IExpr[][] cells = new IExpr[rows][cols];
 
     // Draw cells
@@ -175,31 +178,7 @@ public class ArrayPlot extends ListPlot {
           try {
             double d = val.evalDouble();
             if (Double.isFinite(d)) {
-              double t;
-              if (!colorFunctionScaling) {
-                // the value is the position on the scale, and is not rescaled at all
-                t = d;
-              } else if (automaticColors) {
-                // The grey scale runs from white at zero to black at the largest value, rather
-                // than from white at the smallest value: ArrayPlot[{{1, 2, 3}}] is three greys
-                // with no white among them, and ArrayPlot[{{-1, 0, 1}}] paints -1 and 0 alike
-                // because everything below zero is off the white end of the scale. That is the
-                // reference behaviour; only this default scale has it, the scale a ColorFunction
-                // is given is the usual one over the whole range of the data.
-                t = greyLimit == 0.0 ? 0.0 : d / greyLimit;
-              } else if (max > min) {
-                t = (d - min) / (max - min);
-              } else {
-                t = 0.0;
-              }
-              if (t < 0)
-                t = 0;
-              if (t > 1)
-                t = 1;
-
-              // the grey scale is inverted against the usual one: zero is white and the largest
-              // value is black
-              color = colorMap.apply(t);
+              color = colorMap == null ? greyColor(d, greyLimit, scaling) : colorMap.color(d);
             }
           } catch (Exception e) {
           }
@@ -238,16 +217,40 @@ public class ArrayPlot extends ListPlot {
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
+  /**
+   * The scale {@code ArrayPlot} paints with when no {@code ColorFunction} was given.
+   *
+   * <p>
+   * It runs from white at zero to black at the largest value, rather than from white at the
+   * smallest: {@code ArrayPlot({{1, 2, 3}})} is three greys with no white among them, and
+   * {@code ArrayPlot({{-1, 0, 1}})} paints -1 and 0 alike because everything below zero is off the
+   * white end of the scale. That is the reference behaviour, and it belongs to this scale alone - a
+   * {@code ColorFunction} is given the usual scale over the whole range of the data.
+   *
+   * <p>
+   * The clamp lives here too. An unscaled value is a position on this scale and positions outside
+   * it are the ends of it, which is why {@code ColorFunctionScaling -> False} still paints 3 black.
+   * A caller's own function gets its value as it stands.
+   *
+   * @param value the cell, raw when scaling is off and already a position on the scale when it is
+   */
+  private static IExpr greyColor(double value, double greyLimit, boolean scaling) {
+    double t = value;
+    if (scaling) {
+      t = greyLimit == 0.0 ? 0.0 : value / greyLimit;
+    }
+    t = t < 0.0 ? 0.0 : t > 1.0 ? 1.0 : t;
+    return F.GrayLevel(1.0 - t);
+  }
+
   private boolean isColor(IExpr e) {
     if (e.isAST()) {
       IExpr head = e.head();
-      return head == S.RGBColor || head == S.Hue || head == S.GrayLevel
-          || head == S.CMYKColor;
+      return head == S.RGBColor || head == S.Hue || head == S.GrayLevel || head == S.CMYKColor;
     }
-    return e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue
-        || e == S.Black || e == S.White || e == S.Gray || e == S.Yellow
-        || e == S.Cyan || e == S.Magenta || e == S.Orange || e == S.Pink
-        || e == S.Purple || e == S.Brown);
+    return e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue || e == S.Black
+        || e == S.White || e == S.Gray || e == S.Yellow || e == S.Cyan || e == S.Magenta
+        || e == S.Orange || e == S.Pink || e == S.Purple || e == S.Brown);
   }
 
   @Override

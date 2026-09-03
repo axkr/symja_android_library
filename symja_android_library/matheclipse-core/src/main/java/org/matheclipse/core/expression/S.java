@@ -15411,6 +15411,15 @@ public class S {
 
   public final static IBuiltInSymbol Overlaps = S.initFinalSymbol("Overlaps", ID.Overlaps);
 
+  /**
+   * Overlay(x) - TODO describe `Overlay`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Overlay.md">Overlay
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Overlay = S.initFinalSymbol("Overlay", ID.Overlay);
+
   public final static IBuiltInSymbol Overscript = S.initFinalSymbol("Overscript", ID.Overscript);
 
   public final static IBuiltInSymbol OverscriptBox =

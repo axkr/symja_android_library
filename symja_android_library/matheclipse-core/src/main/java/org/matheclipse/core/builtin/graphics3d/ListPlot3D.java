@@ -9,9 +9,9 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -65,7 +65,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt,
             plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
             RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
-            options[Plot3DTools.X_BOUNDARY_STYLE]);
+            options[Plot3DTools.X_BOUNDARY_STYLE],
+            Plot3DTools.plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D,
+                engine));
       }
     }
 
@@ -128,7 +130,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
    */
   private IExpr processHeightMap(IAST heightData, IExpr dataRangeOpt, IExpr boxRatiosOpt,
       IExpr plotRangeOpt, IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST,
-      int argSize, RegionFunctionFilter region, IExpr boundaryStyle) {
+      int argSize, RegionFunctionFilter region, IExpr boundaryStyle,
+      PlotColorFunction.Builder colorBuilder) {
     int rows = heightData.argSize();
     IExpr firstRow = heightData.arg1();
     int cols = ((IAST) firstRow).argSize();
@@ -158,9 +161,6 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
-    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
-
     // the grid is handed to the shared surface builder, so this plot gets the same winding,
     // vertex normals and mesh lines as the ones that sample a function
     double[][][] grid = new double[rows][cols][];
@@ -180,7 +180,24 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         }
       }
     }
-    Plot3DTools.addSurface(builder, grid, false, false, null, true, meshOpt, meshStyleOpt);
+    double[] box = Plot3DTools.extentOf(grid);
+    PlotColorFunction colorMap =
+        colorBuilder.ranges(box[0], box[1], box[2], box[3], box[4], box[5]).build();
+    IExpr[][] colors = null;
+    if (colorMap != null) {
+      colors = new IExpr[rows][cols];
+      for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+          double[] p = grid[i][j];
+          if (p != null) {
+            colors[i][j] = colorMap.color(p[0], p[1], p[2]);
+          }
+        }
+      }
+    }
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
+    Plot3DTools.addSurface(builder, grid, false, false, colors, true, meshOpt, meshStyleOpt);
 
     IExpr graphicsComplex = builder.build();
     if (graphicsComplex.equals(F.NIL)) {

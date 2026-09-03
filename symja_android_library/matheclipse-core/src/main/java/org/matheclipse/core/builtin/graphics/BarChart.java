@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -193,9 +194,20 @@ public class BarChart extends ListPlot {
     IASTAppendable primitives = F.ListAlloc(bars.size() * 2 + 2);
     int labelPlacement = GraphicsOptions.labelingPlacement(labelingFunction);
 
+    // a ColorFunction colours each bar by its own value, and outranks ChartStyle for the colour
+    PlotColorFunction barColors = PlotColorFunction
+        .of(PlotColorFunction.Family.CHART,
+            GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic),
+            GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True), S.BarChart,
+            engine)
+        .range(1, minValue, maxValue).build();
+
     for (Bar bar : bars) {
-      IExpr color = bar.style.isPresent() ? bar.style : chartColor(chartStyle, bar.colorIndex);
-      boolean colorIsExplicit = bar.style.isPresent() || !chartStyle.isAutomatic();
+      IExpr functionColor = barColors == null ? F.NIL : barColors.color(bar.value);
+      IExpr color = functionColor.isPresent() ? functionColor
+          : bar.style.isPresent() ? bar.style : chartColor(chartStyle, bar.colorIndex);
+      boolean colorIsExplicit =
+          functionColor.isPresent() || bar.style.isPresent() || !chartStyle.isAutomatic();
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
 
       IASTAppendable group = F.ListAlloc(4);

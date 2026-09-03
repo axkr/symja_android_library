@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -83,8 +84,8 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       int[] samples = Plot3DTools.plotPoints(options[X_PLOT_POINTS], 40);
       final int nx = samples[0];
       final int ny = samples[1];
-      Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[X_COLOR_FUNCTION],
-          options[X_COLOR_FUNCTION_SCALING], engine);
+      PlotColorFunction.Builder colorBuilder = Plot3DTools
+          .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.Plot3D, engine);
 
       final IASTAppendable surfaces = F.ListAlloc(functions.argSize());
       final IExpr targetUnits = GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic);
@@ -95,7 +96,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         IExpr plotted = QuantityFunctions.quantityPlotFunction(((IAST) functions).get(f),
             samplePoint, targetUnits, engine);
         IExpr surface = buildSurface(plotted, f - 1, xVar, yVar, xMinD, xMaxD, yMinD,
-            yMaxD, nx, ny, options, colorMap, engine);
+            yMaxD, nx, ny, options, colorBuilder, engine);
         if (surface.isPresent()) {
           surfaces.append(surface);
         }
@@ -114,7 +115,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
 
   private static IExpr buildSurface(IExpr function, int index, ISymbol xVar, ISymbol yVar,
       double xMinD, double xMaxD, double yMinD, double yMaxD, int nx, int ny, final IExpr[] options,
-      Plot3DTools.ColorMap colorMap, EvalEngine engine) {
+      PlotColorFunction.Builder colorBuilder, EvalEngine engine) {
     // nx, ny and the steps below are not final: MaxRecursion replaces the grid with a finer one
     double xStep = (xMaxD - xMinD) / (nx - 1);
     double yStep = (yMaxD - yMinD) / (ny - 1);
@@ -188,6 +189,9 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     double[] range = GraphicsUtil.automaticPlotRange3D(valid);
     double zMin = range[1] > range[0] ? range[0] : -1.0;
     double zMax = range[1] > range[0] ? range[1] : 1.0;
+    // the colouring is built here, where the drawn extent of every axis is finally known
+    PlotColorFunction colorMap =
+        colorBuilder.ranges(xMinD, xMaxD, yMinD, yMaxD, zMin, zMax).build();
 
     boolean clipToNothing = options[Plot3DTools.X_CLIPPING_STYLE].isNone();
     double[][][] grid = new double[nx][ny][];
@@ -219,10 +223,8 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
           grid[i][j] = point;
         }
         if (colors != null) {
-          double cz = colorMap.isScaled() ? scale(clamped, zMin, zMax) : clamped;
-          double cx = colorMap.isScaled() ? scale(x, xMinD, xMaxD) : x;
-          double cy = colorMap.isScaled() ? scale(y, yMinD, yMaxD) : y;
-          colors[i][j] = colorMap.apply(cx, cy, cz);
+          // the scaling is the colouring's own business now: it is handed the point as it is
+          colors[i][j] = colorMap.color(x, y, clamped);
         }
       }
     }

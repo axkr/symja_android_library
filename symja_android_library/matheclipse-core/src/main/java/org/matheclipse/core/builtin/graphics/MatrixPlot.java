@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -122,9 +123,15 @@ public class MatrixPlot extends ListPlot {
 
     // One raster rather than one rectangle per cell: row 0 of the matrix is drawn at the top,
     // which is the order rasterTopFirst expects.
-    java.util.function.DoubleFunction<IExpr> colorMap =
-        GraphicsOptions.colorFunction(colorFunctionOpt, engine, GraphicsOptions::getMatrixColor);
-    double[] sortedValues = colorFunctionScaling ? sortedFiniteValues(data) : null;
+    final double[] sortedValues = colorFunctionScaling ? sortedFiniteValues(data) : null;
+    final boolean scaling = colorFunctionScaling;
+    // The default scale places a value by its rank among the others, which is what keeps a matrix
+    // of wildly different magnitudes readable. A ColorFunction is given the plain range instead:
+    // a caller who wrote GrayLevel(#) asked for the value, not for its position in a sort.
+    PlotColorFunction colorMap = PlotColorFunction
+        .of(PlotColorFunction.Family.ARRAY, colorFunctionOpt, F.bool(scaling), S.MatrixPlot, engine)
+        .range(1, minValue(data), maxValue(data)).sink(PlotColorFunction.Sink.FLAT)
+        .fallback(GraphicsOptions::getMatrixColor).build();
     IExpr[][] cells = new IExpr[rows][cols];
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
@@ -132,15 +139,16 @@ public class MatrixPlot extends ListPlot {
         if (Double.isNaN(val)) {
           continue;
         }
-        double t = 0.5;
-        if (colorFunctionScaling) {
-          t = rankFraction(sortedValues, val);
-        } else {
-          t = val;
-        }
         // an explicit rule for this value wins, then ColorFunction, then the matrix colour map
         IExpr ruleColor = GraphicsOptions.colorRule(colorRulesOpt, list.getAt(r + 1).getAt(c + 1));
-        cells[r][c] = ruleColor != null ? ruleColor : colorMap.apply(t);
+        if (ruleColor != null) {
+          cells[r][c] = ruleColor;
+        } else if (colorMap != null) {
+          cells[r][c] = colorMap.color(val);
+        } else {
+          cells[r][c] = GraphicsOptions
+              .getMatrixColor(scaling ? rankFraction(sortedValues, val) : val);
+        }
       }
     }
     primitives.append(GraphicsOptions.rasterTopFirst(cells, 0, 0, cols, rows));
@@ -189,6 +197,32 @@ public class MatrixPlot extends ListPlot {
   }
 
   /** Every finite entry of the matrix, in ascending order. */
+  /** The smallest finite entry, or 0 when there is none. */
+  private static double minValue(double[][] data) {
+    double min = Double.POSITIVE_INFINITY;
+    for (double[] row : data) {
+      for (double v : row) {
+        if (!Double.isNaN(v) && v < min) {
+          min = v;
+        }
+      }
+    }
+    return Double.isFinite(min) ? min : 0.0;
+  }
+
+  /** The largest finite entry, or 1 when there is none. */
+  private static double maxValue(double[][] data) {
+    double max = Double.NEGATIVE_INFINITY;
+    for (double[] row : data) {
+      for (double v : row) {
+        if (!Double.isNaN(v) && v > max) {
+          max = v;
+        }
+      }
+    }
+    return Double.isFinite(max) ? max : 1.0;
+  }
+
   private static double[] sortedFiniteValues(double[][] data) {
     int count = 0;
     for (double[] row : data) {

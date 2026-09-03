@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -242,6 +243,26 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
           }
         }
 
+        // A ColorFunction colours each element by where it stands, and so takes the place of the
+        // chart palette. The extent is the data's own, which is only known now that every sample
+        // has been taken.
+        double dataMinX = Double.MAX_VALUE;
+        double dataMaxX = -Double.MAX_VALUE;
+        double dataMinY = Double.MAX_VALUE;
+        double dataMaxY = -Double.MAX_VALUE;
+        for (PlotData pd : data) {
+          dataMinX = Math.min(dataMinX, pd.x);
+          dataMaxX = Math.max(dataMaxX, pd.x);
+          dataMinY = Math.min(dataMinY, pd.y);
+          dataMaxY = Math.max(dataMaxY, pd.y);
+        }
+        PlotColorFunction elementColors = data.isEmpty() ? null
+            : PlotColorFunction
+                .of(PlotColorFunction.Family.SURFACE_3D, options[X_COLOR_FUNCTION],
+                    options[X_COLOR_FUNCTION_SCALING], S.DiscretePlot3D, engine)
+                .sink(PlotColorFunction.Sink.FLAT)
+                .ranges(dataMinX, dataMaxX, dataMinY, dataMaxY, minZ, maxZ).build();
+
         // Construct graphics layout
         List<PlotData> drawn = new ArrayList<>();
         for (PlotData pd : data) {
@@ -259,6 +280,10 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
           double y = pd.y;
 
           drawn.add(new PlotData(x, y, z, color));
+          if (elementColors != null) {
+            // stands until the next one, which is the next element
+            primitives.append(elementColors.color(x, y, z));
+          }
           if (pointsOnly) {
             appendMarker(primitives, plotMarkers, colorIdx, x, y, z);
           } else if (useThinLineStyle) {
@@ -486,6 +511,10 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       Plot3DTools.indexOf(optionSet(), S.EvaluationMonitor);
   private static final int X_JOINED = Plot3DTools.indexOf(optionSet(), S.Joined);
   private static final int X_PLOT_MARKERS = Plot3DTools.indexOf(optionSet(), S.PlotMarkers);
+  // this plot has its own option table, so the surface block's positions do not apply to it
+  private static final int X_COLOR_FUNCTION = Plot3DTools.indexOf(optionSet(), S.ColorFunction);
+  private static final int X_COLOR_FUNCTION_SCALING =
+      Plot3DTools.indexOf(optionSet(), S.ColorFunctionScaling);
 
   @Override
   public void setUp(final ISymbol newSymbol) {

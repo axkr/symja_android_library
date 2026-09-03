@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.ComplexColoring;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -60,8 +61,10 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     double dRe = (maxRe - minRe) / (cols - 1);
     double dIm = (maxIm - minIm) / (rows - 1);
 
-    Plot3DTools.ColorMap colorMap = Plot3DTools.colorMap(options[Plot3DTools.X_COLOR_FUNCTION],
-        options[Plot3DTools.X_COLOR_FUNCTION_SCALING], engine);
+    // the same colouring the 2D ComplexPlot uses, so a scheme looks the same in both
+    ComplexColoring coloring = ComplexColoring.of(options[Plot3DTools.X_COLOR_FUNCTION],
+        options[Plot3DTools.X_COLOR_FUNCTION_SCALING],
+        new double[] {minRe, maxRe, minIm, maxIm}, S.ComplexPlot3D, engine);
 
     // RegionFunction is given the sample point and the value there, both complex, which is what
     // lets a predicate be written as Function({z, f}, Abs(z) < 2) or Function({z, f}, Abs(f) < 2)
@@ -72,6 +75,10 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     boolean[][] insideGrid = region == null ? null : new boolean[rows][cols];
     double[][][] grid = new double[rows][cols][];
     IExpr[][] colors = new IExpr[rows][cols];
+    // the value at each vertex, kept until every one of them has been seen: the colouring scales
+    // and ranks the values against each other, so none can be coloured before all are sampled
+    double[][] valueRe = new double[rows][cols];
+    double[][] valueIm = new double[rows][cols];
     double[] heights = new double[rows * cols];
     int finiteCount = 0;
 
@@ -80,7 +87,8 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
       for (int j = 0; j < cols; j++) {
         double re = minRe + j * dRe;
         double height = Double.NaN;
-        double arg = 0.0;
+        double fre = Double.NaN;
+        double fim = Double.NaN;
         IExpr zVal = F.complexNum(re, im);
         IExpr value = F.NIL;
         try {
@@ -89,7 +97,8 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
           if (value instanceof INumber) {
             IComplexNum cn = toComplex(value);
             height = cn.dabs();
-            arg = cn.complexArg().evalfNaN();
+            fre = cn.reDoubleValue();
+            fim = cn.imDoubleValue();
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
@@ -107,10 +116,18 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
           heights[finiteCount++] = height;
         }
         grid[i][j] = new double[] {re, im, height};
-        double hue = (arg + Math.PI) / (2 * Math.PI);
-        // the argument runs round the colour wheel, which is the convention for a domain colouring
-        colors[i][j] = colorMap != null ? colorMap.apply(re, im, hue)
-            : F.Hue(F.num(hue), F.num(0.6), F.num(1.0));
+        valueRe[i][j] = fre;
+        valueIm[i][j] = fim;
+        coloring.observe(re, im, fre, fim);
+      }
+    }
+    coloring.prepare();
+    for (int i = 0; i < rows; i++) {
+      double im = minIm + i * dIm;
+      for (int j = 0; j < cols; j++) {
+        if (grid[i][j] != null) {
+          colors[i][j] = coloring.color(minRe + j * dRe, im, valueRe[i][j], valueIm[i][j]);
+        }
       }
     }
     if (finiteCount == 0) {

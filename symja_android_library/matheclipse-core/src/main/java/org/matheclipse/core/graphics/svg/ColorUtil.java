@@ -3,6 +3,7 @@ package org.matheclipse.core.graphics.svg;
 import java.awt.Color;
 import java.util.Locale;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -150,6 +151,10 @@ public final class ColorUtil {
         return lighterDarker(ast, false);
       case ID.Blend:
         return blend(ast);
+      case ID.XYZColor:
+        return parseXYZ(ast);
+      case ID.LABColor:
+        return parseLAB(ast);
       case ID.Opacity:
         // Opacity[o, colour] denotes a colour; plain Opacity[o] is a directive, not a colour
         if (ast.argSize() >= 2) {
@@ -219,6 +224,64 @@ public final class ColorUtil {
     float a = ast.argSize() >= 5 ? fclamp(dbl(ast.get(5), 1)) : 1.0f;
     return new Color(fclamp((1 - c) * (1 - k)), fclamp((1 - m) * (1 - k)),
         fclamp((1 - y) * (1 - k)), a);
+  }
+
+  /**
+   * {@code XYZColor[x, y, z]} and {@code XYZColor[x, y, z, a]}, in the CIE 1931 space with the D65
+   * white point, converted through linear sRGB.
+   */
+  private static Color parseXYZ(IAST ast) {
+    if (ast.argSize() < 3) {
+      return null;
+    }
+    float a = ast.argSize() >= 4 ? fclamp(dbl(ast.get(4), 1)) : 1.0f;
+    return xyzToColor(dbl(ast.arg1(), 0), dbl(ast.arg2(), 0), dbl(ast.arg3(), 0), a);
+  }
+
+  /**
+   * {@code LABColor[l, a, b]} and {@code LABColor[l, a, b, alpha]}, in CIE L*a*b* with the D65
+   * white point. The lightness runs 0..1 here, as the Wolfram Language writes it, rather than the
+   * 0..100 of the underlying space.
+   */
+  private static Color parseLAB(IAST ast) {
+    if (ast.argSize() < 3) {
+      return null;
+    }
+    double lightness = dbl(ast.arg1(), 0) * 100.0;
+    double aStar = dbl(ast.arg2(), 0) * 100.0;
+    double bStar = dbl(ast.arg3(), 0) * 100.0;
+    float alpha = ast.argSize() >= 4 ? fclamp(dbl(ast.get(4), 1)) : 1.0f;
+
+    double fy = (lightness + 16.0) / 116.0;
+    double fx = fy + aStar / 500.0;
+    double fz = fy - bStar / 200.0;
+    return xyzToColor(D65_X * labInverse(fx), D65_Y * labInverse(fy), D65_Z * labInverse(fz),
+        alpha);
+  }
+
+  /** The D65 white point, which is the one the Wolfram Language's colour spaces are relative to. */
+  private static final double D65_X = 0.95047;
+  private static final double D65_Y = 1.0;
+  private static final double D65_Z = 1.08883;
+
+  private static double labInverse(double t) {
+    // the linear segment near black keeps the transform invertible where the cube root flattens
+    return t > 6.0 / 29.0 ? t * t * t : 3.0 * (6.0 / 29.0) * (6.0 / 29.0) * (t - 4.0 / 29.0);
+  }
+
+  /** CIE XYZ to sRGB, through the linear working space and the sRGB transfer curve. */
+  private static Color xyzToColor(double x, double y, double z, float alpha) {
+    double r = 3.2404542 * x - 1.5371385 * y - 0.4985314 * z;
+    double g = -0.9692660 * x + 1.8760108 * y + 0.0415560 * z;
+    double b = 0.0556434 * x - 0.2040259 * y + 1.0572252 * z;
+    return new Color(fclamp(gamma(r)), fclamp(gamma(g)), fclamp(gamma(b)), alpha);
+  }
+
+  private static double gamma(double linear) {
+    if (linear <= 0.0031308) {
+      return 12.92 * linear;
+    }
+    return 1.055 * Math.pow(linear, 1.0 / 2.4) - 0.055;
   }
 
   private static Color parseHex(String raw) {
@@ -306,6 +369,50 @@ public final class ColorUtil {
   }
 
   /** A copy of {@code c} whose alpha is multiplied by {@code factor}. */
+  /**
+   * A colour that may be wrapped in a {@code Directive}, or written as a bare list of directives.
+   *
+   * <p>
+   * {@code Background -> Directive({Opacity(0.5), Orange})} is the documented way to let an
+   * {@code Overlay} layer show the one beneath it, so the opacity has to survive into the colour.
+   * A plain {@code Opacity(o)} is a factor rather than a colour, which is why {@link #parse}
+   * cannot read it on its own; here it multiplies whichever colour the directive also carries.
+   *
+   * @return the colour, or {@code null} when the expression does not denote one
+   */
+  public static Color parseDirective(IExpr expr) {
+    Color direct = parse(expr);
+    if (direct != null) {
+      return direct;
+    }
+    IAST parts;
+    if (expr.isList()) {
+      parts = (IAST) expr;
+    } else if (expr.isAST(S.Directive)) {
+      IAST directive = (IAST) expr;
+      // Directive({a, b}) and Directive(a, b) mean the same thing
+      parts = directive.argSize() == 1 && directive.arg1().isList() ? (IAST) directive.arg1()
+          : directive;
+    } else {
+      return null;
+    }
+    Color color = null;
+    double opacity = 1.0;
+    for (int i = 1; i <= parts.argSize(); i++) {
+      IExpr part = parts.get(i);
+      if (part.isAST(S.Opacity, 2)) {
+        opacity = clamp01(dbl(((IAST) part).arg1(), 1.0));
+        continue;
+      }
+      Color c = parseDirective(part);
+      if (c != null) {
+        // the last colour wins, as it would when the directives are applied in order
+        color = c;
+      }
+    }
+    return color == null ? null : withAlpha(color, opacity);
+  }
+
   public static Color withAlpha(Color c, double factor) {
     int alpha = (int) Math.round(clamp01(c.getAlpha() / 255.0 * factor) * 255);
     return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);

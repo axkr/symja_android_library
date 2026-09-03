@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.graphics.MarchingCubesTables;
@@ -85,10 +86,22 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr styleSource =
         contourStyle == S.Automatic ? options[Plot3DTools.X_PLOT_STYLE] : contourStyle;
 
+    // The colour function of a contour surface is given the point and the value there. Marching
+    // cubes produces a triangle soup rather than a grid, so a level is coloured as a whole, from
+    // the middle of the box and the level's own value - which is exactly what a colour scheme
+    // name asks for, since it reads the fourth argument.
+    PlotColorFunction levelColors = Plot3DTools
+        .plotColors(PlotColorFunction.Family.CONTOUR_3D, options, S.ContourPlot3D, engine)
+        .ranges(min[0], max[0], min[1], max[1], min[2], max[2], levels[0],
+            levels[levels.length - 1])
+        .build();
+
     IASTAppendable surfaces = F.ListAlloc(levels.length);
     for (int level = 0; level < levels.length; level++) {
       GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
-      IExpr style = Plot3DTools.surfaceStyle(level, styleSource);
+      IExpr style = levelColors == null ? Plot3DTools.surfaceStyle(level, styleSource)
+          : levelColors.color((min[0] + max[0]) / 2.0, (min[1] + max[1]) / 2.0,
+              (min[2] + max[2]) / 2.0, levels[level]);
       Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
       marchingCubes(builder, grid, levels[level], min, max, points);
       IExpr complex = builder.build();
