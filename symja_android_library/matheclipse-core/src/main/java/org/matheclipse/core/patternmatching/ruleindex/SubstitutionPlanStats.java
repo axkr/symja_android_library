@@ -109,30 +109,10 @@ public final class SubstitutionPlanStats {
     }
   }
 
-  public static long plansBuilt() {
-    return PLANS_BUILT.get();
-  }
 
-  public static long planned() {
-    return PLANNED.get();
-  }
 
-  public static long generic() {
-    return GENERIC.get();
-  }
 
-  public static long refusals(Refusal reason) {
-    return REFUSALS[reason.ordinal()].get();
-  }
 
-  /** Total number of declined right-hand-sides. */
-  public static long refusals() {
-    long sum = 0;
-    for (AtomicLong counter : REFUSALS) {
-      sum += counter.get();
-    }
-    return sum;
-  }
 
   public static long checked() {
     return CHECKED.get();
@@ -158,21 +138,4 @@ public final class SubstitutionPlanStats {
     firstMismatch = null;
   }
 
-  public static String summary() {
-    StringBuilder buf = new StringBuilder();
-    buf.append("plansBuilt=").append(PLANS_BUILT.get());
-    buf.append(" planned=").append(PLANNED.get());
-    buf.append(" generic=").append(GENERIC.get());
-    buf.append(" refused=").append(refusals());
-    for (Refusal reason : Refusal.values()) {
-      long count = refusals(reason);
-      if (count > 0) {
-        buf.append(' ').append(reason).append('=').append(count);
-      }
-    }
-    if (CHECKED.get() > 0) {
-      buf.append(" checked=").append(CHECKED.get()).append(" mismatched=").append(MISMATCHED.get());
-    }
-    return buf.toString();
-  }
 }

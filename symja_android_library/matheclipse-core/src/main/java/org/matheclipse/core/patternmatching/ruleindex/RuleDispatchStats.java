@@ -92,17 +92,8 @@ public final class RuleDispatchStats {
 
   private static final AtomicLong RHS_CONDITIONS_HELD = new AtomicLong();
 
-  public static long rhsConditionsHeld() {
-    return RHS_CONDITIONS_HELD.get();
-  }
 
-  public static long dispatches() {
-    return DISPATCHES.get();
-  }
 
-  public static long indexedDispatches() {
-    return INDEXED_DISPATCHES.get();
-  }
 
   public static long rulesVisited() {
     return RULES_VISITED.get();
@@ -116,9 +107,6 @@ public final class RuleDispatchStats {
     return MATCH_ATTEMPTS.get();
   }
 
-  public static long rhsConditionEvaluations() {
-    return RHS_CONDITION_EVALUATIONS.get();
-  }
 
   /**
    * Number of pattern rule dispatches per symbol, for the question which rule sets the dispatch is
@@ -144,24 +132,6 @@ public final class RuleDispatchStats {
     }
   }
 
-  /**
-   * The symbols dispatched most often, as
-   * <code>name dispatches=n rules=m maxVisits=n*m</code> lines ordered by descending
-   * <code>n*m</code> - the upper bound of the rule list walk they can cause.
-   *
-   * @param limit maximum number of symbols to report
-   */
-  public static String perSymbolSummary(int limit) {
-    return PER_SYMBOL.entrySet().stream() //
-        .sorted((a, b) -> Long.compare(bound(b.getKey(), b.getValue()), //
-            bound(a.getKey(), a.getValue()))) //
-        .limit(limit) //
-        .map(e -> String.format("%-28s dispatches=%-9d rules=%-6d maxVisits=%d", e.getKey(),
-            e.getValue().get(), PER_SYMBOL_RULES.getOrDefault(e.getKey(), 0),
-            bound(e.getKey(), e.getValue()))) //
-        .reduce((a, b) -> a + "\n" + b) //
-        .orElse("");
-  }
 
   private static long bound(String symbolName, AtomicLong dispatches) {
     return dispatches.get() * PER_SYMBOL_RULES.getOrDefault(symbolName, 0).longValue();

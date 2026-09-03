@@ -3,7 +3,6 @@ package org.matheclipse.core.patternmatching.hash;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 
 /**
@@ -42,12 +41,6 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
   }
 
   @Override
-  public int hashCode() {
-    // use the symmetric hash code.
-    return super.hashCode();
-  }
-
-  @Override
   public boolean equals(Object obj) {
     boolean test = super.equals(obj);
     if (test && obj instanceof HashedPatternRules) {
@@ -71,20 +64,6 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
     return false;
   }
 
-  /** @return the right-hand-side result */
-  public IExpr getRHS() {
-    return IExpr.ofNullable(fRHS);
-  }
-
-  /**
-   * Get the Condition for this rule.
-   *
-   * @return may return <code>null</code>.
-   */
-  public IExpr getCondition() {
-    return fCondition;
-  }
-
   /**
    * Get (or create) the rule <code>
    * {&lt;first-left-hand-side&gt;, &lt;second-left-hand-side&gt;}:=&lt;right-hand-side&gt;</code>
@@ -94,13 +73,8 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
   public RulesData getRulesData() {
     if (fRulesData == null) {
       fRulesData = new RulesData();
-      if (fCondition != null) {
-        fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false,
-            F.list(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
-      } else {
-        fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false,
-            F.list(fLHSPattern1, fLHSPattern2), fRHS);
-      }
+      IExpr rhs = fCondition != null ? F.Condition(fRHS, fCondition) : fRHS;
+      fRulesData.putDownRule(F.list(fLHSPattern1, fLHSPattern2), rhs);
     }
     return fRulesData;
   }

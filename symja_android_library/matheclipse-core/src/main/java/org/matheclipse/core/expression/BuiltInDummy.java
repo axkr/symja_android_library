@@ -31,7 +31,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -1004,15 +1003,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
     EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final void putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
-    if (fRulesData == null) {
-      fRulesData = new RulesData();
-    }
-    fRulesData.insertMatcher(pmEvaluator);
   }
 
   @Override

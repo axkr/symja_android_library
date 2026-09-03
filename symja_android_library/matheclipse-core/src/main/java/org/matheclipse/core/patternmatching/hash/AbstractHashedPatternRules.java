@@ -73,7 +73,7 @@ public abstract class AbstractHashedPatternRules {
       return true;
     }
     if (obj instanceof AbstractHashedPatternRules) {
-      HashedPatternRules other = (HashedPatternRules) obj;
+      AbstractHashedPatternRules other = (AbstractHashedPatternRules) obj;
       if (hash1 != other.hash1) {
         return false;
       }

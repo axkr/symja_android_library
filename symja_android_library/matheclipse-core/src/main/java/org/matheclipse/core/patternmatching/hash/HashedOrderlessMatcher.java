@@ -20,7 +20,7 @@ public class HashedOrderlessMatcher {
    * Times(...), Plus(...)</code>), which should be matched with these matching rules. This pruning
    * reduces the number of tries in the search tree of matching rules.
    */
-  private static int MAX_AST_SIZE_ARGUMENT = 4;
+  private static final int MAX_AST_SIZE_ARGUMENT = 4;
 
   protected OpenIntToList<AbstractHashedPatternRules> fHashRuleMap;
   protected OpenIntToList<AbstractHashedPatternRules> fPatternHashRuleMap;
@@ -128,7 +128,7 @@ public class HashedOrderlessMatcher {
    * @param lhsNegate if <code>true</code> this rule needs a negative integer factor to be true
    * @param condition if <code>!= null</code> do a condition test for the matched 2 left-hand-sides
    */
-  public void definePatternHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs,
+  private void definePatternHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs,
       final boolean lhsNegate, final IExpr condition) {
     AbstractHashedPatternRules hashRule =
         new HashedPatternRules(lhs1, lhs2, rhs, lhsNegate, condition, false);
@@ -182,9 +182,6 @@ public class HashedOrderlessMatcher {
           int size = temp.argSize();
           hashValues = new int[size];
           createSpecialHashValues(temp, hashValues);
-          // for (int i = 0; i < size; i++) {
-          // hashValues[i] = temp.get(i + 1).accept(HashValueVisitor.HASH_VALUE_VISITOR);
-          // }
 
           result = evaluateHashedValues(temp, fPatternHashRuleMap, hashValues, engine);
           if (result.isPresent()) {
@@ -225,7 +222,8 @@ public class HashedOrderlessMatcher {
    * @return
    */
   protected static IAST setIsHashEvaledFlag(IAST ast) {
-    ast.setEvalFlags(IAST.IS_HASH_EVALED);
+    // add, don't replace - setEvalFlags() would discard the other cached flags of the AST
+    ast.addEvalFlags(IAST.IS_HASH_EVALED);
     return ast;
   }
 

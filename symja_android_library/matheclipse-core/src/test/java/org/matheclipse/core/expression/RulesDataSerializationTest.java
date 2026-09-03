@@ -140,4 +140,27 @@ public class RulesDataSerializationTest {
     // fOrig[5] should evaluate to 50 (Pattern Rule)
     assertEquals(F.ZZ(50), engine.evaluate(F.unary(fOrig, F.ZZ(5))));
   }
+
+  /**
+   * The pattern free rules are keyed by <code>equals()</code>: <code>f(1)</code> and
+   * <code>f(1.0)</code> are different rules, also after a round trip.
+   */
+  @Test
+  public void testIntegerAndRealKeysAfterDeserialization() {
+    EvalEngine engine = new EvalEngine(false);
+    ISymbol f = F.symbol("f_int_real");
+    // f[1] = a
+    engine.evaluate(F.Set(F.unary(f, F.C1), F.a));
+    // f[2.0] = b
+    engine.evaluate(F.Set(F.unary(f, F.num(2.0)), F.b));
+
+    RulesData deserializedRules = deserializeRules(serializeRules(f.getRulesData()));
+    f.clearAll(engine);
+    f.setRulesData(deserializedRules);
+
+    assertEquals(F.a, engine.evaluate(F.unary(f, F.C1)));
+    assertEquals(F.unary(f, F.num(1.0)), engine.evaluate(F.unary(f, F.num(1.0))));
+    assertEquals(F.b, engine.evaluate(F.unary(f, F.num(2.0))));
+    assertEquals(F.unary(f, F.C2), engine.evaluate(F.unary(f, F.C2)));
+  }
 }

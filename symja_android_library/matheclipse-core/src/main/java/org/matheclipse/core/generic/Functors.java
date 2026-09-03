@@ -128,6 +128,8 @@ public class Functors {
         for (int i = 0; i < fMatchers.size(); i++) {
           PatternMatcherList matcher = fMatchers.get(i);
           if (matcher != null) {
+            // the matcher instance is shared, so drop the results of a previous expression
+            matcher.resetReplaceList();
             matcher.replaceEvaled(arg, fEngine);
             IAST list = matcher.getReplaceList();
             if (list.size() > 1) {
@@ -706,7 +708,7 @@ public class Functors {
             if (lhs.isAST()) {
               IAST lhsPatternExpr = (IAST) lhs;
               boolean matched = matcher.matchASTSubset(lhsPatternExpr, arg, allReplacePositions,
-                  allReplaceExprs, allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
+                  allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
 
               while (matched) {
                 IExpr rhs = matcher.replacePatternMatch(matcher.getLHS(), matcher.getPatternMap(),
@@ -716,7 +718,7 @@ public class Functors {
 
                 evaled = true;
                 matched = matcher.matchASTSubset(lhsPatternExpr, arg, allReplacePositions,
-                    allReplaceExprs, allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
+                    allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
               }
             }
           }

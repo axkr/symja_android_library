@@ -140,9 +140,6 @@ public final class OrderlessPairIndex {
     return (h ^ (h >>> 16)) & 0x7FFFFFFF;
   }
 
-  public int featureCount() {
-    return pairedWith.length;
-  }
 
   /**
    * @return the feature of the hash value, or <code>-1</code> if no rule uses it

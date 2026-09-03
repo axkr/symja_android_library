@@ -4,18 +4,14 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
-import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.ruleindex.SubstitutionPlanStats;
 
 /**
@@ -202,15 +198,16 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   @Override
   public IPatternMatcher copy() {
     PatternMatcherAndEvaluator v = new PatternMatcherAndEvaluator();
-    v.fLHSPriority = fLHSPriority;
-    v.fThrowIfTrue = fThrowIfTrue;
-    v.fLhsPatternExpr = fLhsPatternExpr;
-    if (fPatternMap != null) {
-      v.fPatternMap = fPatternMap.copy();
-    }
-    v.fLhsExprToMatch = fLhsExprToMatch;
-    v.fSetFlags = fSetFlags;
-    v.fPatterHash = fPatterHash;
+    copyEvaluatorFieldsTo(v);
+    return v;
+  }
+
+  /**
+   * Copy all fields except the per-match state (<code>fReturnResult</code>,
+   * <code>fSubstitutedMatch</code>) into <code>v</code>.
+   */
+  protected final void copyEvaluatorFieldsTo(PatternMatcherAndEvaluator v) {
+    copyBaseFieldsTo(v);
     v.fRightHandSide = fRightHandSide;
     // the plan depends only on the right-hand-side and the slot layout, and IPatternMap#copy()
     // preserves that layout - so the copy can use the same plan
@@ -218,7 +215,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     v.fRightHandSidePlanRefused = fRightHandSidePlanRefused;
     // like in clone() - fReturnResult is per-match state and must not leak into the copy
     v.fReturnResult = F.NIL;
-    return v;
   }
 
   @Override
@@ -287,16 +283,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   @Override
   public final IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
     return replaceEvaled(leftHandSide, engine);
-  }
-
-  public static IExpr evalInternal(final IExpr leftHandSide, final IExpr rightHandSide,
-      List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
-    PatternMatcherAndEvaluator pm = new PatternMatcherAndEvaluator();
-    IPatternMap patternMap = IPatternMap.createSymbolToValueMap(patternIndexMap);
-    pm.fPatternMap = patternMap;
-    pm.fRightHandSide = rightHandSide;
-    pm.setLHSExprToMatch(leftHandSide);
-    return pm.replacePatternMatch(leftHandSide, patternMap, EvalEngine.get(), true);
   }
 
   public IExpr replace(final IExpr leftHandSide, EvalEngine engine) {
@@ -436,11 +422,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return F.NIL;
     } catch (final ReturnException e) {
       result = e.getValue();
-      if (Config.TRACE_REWRITE_RULE) {
-        return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
-            F.$str("RewriteRule"));
+      if (evaluate) {
+        if (Config.TRACE_REWRITE_RULE) {
+          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
+              F.$str("RewriteRule"));
+        }
+        return result.eval(engine);
       }
-      return result.eval(engine);
+      return result;
     }
   }
 
@@ -451,36 +440,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   public final IExpr getSubstitutedMatch() {
     return fSubstitutedMatch;
-  }
-
-  @Override
-  public IAST getAsAST() {
-    ISymbol setSymbol = getSetSymbol();
-    IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
-    if (isFlagOn(HOLDPATTERN)) {
-      return F.HoldPattern(temp);
-    }
-    if (isFlagOn(LITERAL)) {
-      return F.Literal(temp);
-    }
-    return temp;
-  }
-
-  @Override
-  public ISymbol getSetSymbol() {
-    if (isFlagOn(SET_DELAYED))
-      return S.SetDelayed;
-    if (isFlagOn(SET))
-      return S.Set;
-    if (isFlagOn(UPSET_DELAYED))
-      return S.UpSetDelayed;
-    if (isFlagOn(UPSET))
-      return S.UpSet;
-    if (isFlagOn(TAGSET_DELAYED))
-      return S.TagSetDelayed;
-    if (isFlagOn(TAGSET))
-      return S.TagSet;
-    return null;
   }
 
   @Override
@@ -530,8 +489,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     if (this == obj)
       return true;
     if (!super.equals(obj))
-      return false;
-    if (getClass() != obj.getClass())
       return false;
     PatternMatcherAndEvaluator other = (PatternMatcherAndEvaluator) obj;
     if (fRightHandSide == null) {

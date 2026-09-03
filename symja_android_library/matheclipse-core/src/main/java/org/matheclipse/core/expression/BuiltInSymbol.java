@@ -232,7 +232,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final RulesData createRulesData(int[] sizes) {
     ensureRulesLoaded();
-    return (fRulesData == null) ? (fRulesData = new RulesData(sizes, this)) : fRulesData;
+    return (fRulesData == null) ? (fRulesData = new RulesData(sizes)) : fRulesData;
   }
 
   /**

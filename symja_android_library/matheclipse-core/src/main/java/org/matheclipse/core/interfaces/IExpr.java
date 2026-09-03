@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -57,6 +58,7 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
 import org.matheclipse.core.numbertheory.GaussianInteger;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.WildMatcher;
@@ -6084,7 +6086,18 @@ public interface IExpr
   default Map<ISymbol, IExpr> match(final IExpr pattern, EvalEngine engine) {
     IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
     if (matcher.test(this, engine)) {
-      return matcher.getPatternMap();
+      Map<ISymbol, IExpr> result = new HashMap<ISymbol, IExpr>();
+      IPatternMap patternMap = matcher.getPatternMap();
+      if (patternMap != null) {
+        for (int i = 0; i < patternMap.size(); i++) {
+          IExpr key = patternMap.getKey(i);
+          IExpr value = patternMap.getValue(i);
+          if (key.isSymbol() && value != null) {
+            result.put((ISymbol) key, value);
+          }
+        }
+      }
+      return result;
     }
     return null;
   }

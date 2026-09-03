@@ -1,9 +1,5 @@
 package org.matheclipse.core.patternmatching;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +23,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
  * commutative structures like Plus and Times. It builds a replacement dictionary that maps pattern
  * wildcards to matched subexpressions.
  */
-public class WildMatcher extends PatternMatcher implements Externalizable {
+public class WildMatcher extends PatternMatcher {
 
   private static class MatchContext {
     public IAST exprAST;
@@ -53,28 +49,26 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
     }
   }
 
-  private IExpr pattern;
-
   public WildMatcher() {
     super();
   }
 
+  /**
+   * @param pattern the pattern; the {@link IPatternMap} of the superclass is not needed, the
+   *        bindings are collected in the replacement dictionary of {@link #match}
+   */
   public WildMatcher(IExpr pattern) {
-    this.pattern = pattern;
-    // keep the base class field in sync - hashCode(), equals() and getLHS() are inherited and
-    // dereference fLhsPatternExpr
-    this.fLhsPatternExpr = pattern;
+    super(NOFLAG, pattern, false);
   }
 
   @Override
   public IPatternMatcher copy() {
-    return new WildMatcher(this.pattern);
+    return new WildMatcher(fLhsPatternExpr);
   }
 
-  private IAST createModifiedAST(IAST originalAST, boolean[] available, IExpr extraTerm,
-      boolean isPlus) {
-    IASTAppendable modifiedExpr =
-        isPlus ? F.PlusAlloc(originalAST.argSize() + 1) : F.TimesAlloc(originalAST.argSize() + 1);
+  /** The <code>Times</code> of the still available terms of <code>originalAST</code> and <code>extraTerm</code>. */
+  private static IAST createModifiedAST(IAST originalAST, boolean[] available, IExpr extraTerm) {
+    IASTAppendable modifiedExpr = F.TimesAlloc(originalAST.argSize() + 1);
     for (int k = 1; k < available.length; k++) {
       if (available[k]) {
         modifiedExpr.append(originalAST.get(k));
@@ -100,18 +94,8 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
   }
 
   @Override
-  public IAST getAsAST() {
-    return pattern.isAST() ? (IAST) pattern : F.NIL;
-  }
-
-  @Override
   public int getLHSPriority() {
     return 0;
-  }
-
-  @Override
-  public int getPatternHash() {
-    return pattern.hashCode();
   }
 
   @Override
@@ -132,12 +116,16 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
     return true;
   }
 
+  /**
+   * Match <code>pat</code> against <code>expr</code>.
+   *
+   * @return the replacement dictionary or <code>null</code> if there is no match
+   */
   public Map<IExpr, IExpr> match(IExpr pat, IExpr expr, EvalEngine engine) {
     return match(pat, expr, new HashMap<IExpr, IExpr>(), engine, true);
   }
 
-
-  public Map<IExpr, IExpr> match(IExpr pat, IExpr expr, Map<IExpr, IExpr> replDict,
+  private Map<IExpr, IExpr> match(IExpr pat, IExpr expr, Map<IExpr, IExpr> replDict,
       EvalEngine engine) {
     return match(pat, expr, replDict, engine, true);
   }
@@ -146,7 +134,7 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
    * Core SymPy match logic that recursively compares expression trees and builds a replacement
    * dictionary.
    */
-  public Map<IExpr, IExpr> match(IExpr pat, IExpr expr, Map<IExpr, IExpr> replDict,
+  private Map<IExpr, IExpr> match(IExpr pat, IExpr expr, Map<IExpr, IExpr> replDict,
       EvalEngine engine, boolean allowPartialExponent) {
     if (replDict == null) {
       return null;
@@ -204,8 +192,9 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
               if (invResult != null) {
                 return invResult;
               }
+              // fall through to the standard sequence match below
+              break;
             }
-
             default:
               break;
           }
@@ -521,7 +510,7 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
             IExpr remainder = context.engine.evaluate(F.Power(eBase, remainderExp));
 
             // Add remainder back as available for pure wild matching
-            IAST modifiedExpr = createModifiedAST(context.exprAST, available, remainder, false);
+            IAST modifiedExpr = createModifiedAST(context.exprAST, available, remainder);
 
             boolean[] newAvailable = new boolean[modifiedExpr.argSize() + 1];
             java.util.Arrays.fill(newAvailable, 1, newAvailable.length, true);
@@ -553,7 +542,7 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
           available[j] = false;
 
           // Build modified expression: remaining available terms + the numeric quotient
-          IAST modifiedExpr = createModifiedAST(context.exprAST, available, quotient, false);
+          IAST modifiedExpr = createModifiedAST(context.exprAST, available, quotient);
 
           boolean[] newAvailable = new boolean[modifiedExpr.argSize() + 1];
           java.util.Arrays.fill(newAvailable, 1, newAvailable.length, true);
@@ -715,20 +704,13 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
   }
 
   @Override
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    pattern = (IExpr) in.readObject();
-    fLhsPatternExpr = pattern;
-  }
-
-  @Override
   public boolean test(IExpr expr) throws ThrowException {
     return test(expr, EvalEngine.get());
   }
 
   @Override
   public boolean test(IExpr expr, EvalEngine engine) throws ThrowException {
-    Map<IExpr, IExpr> result = match(this.pattern, expr, new HashMap<>(), engine);
-    return result != null;
+    return match(fLhsPatternExpr, expr, engine) != null;
   }
 
   /**
@@ -880,9 +862,4 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
     return null;
   }
 
-  // --- Standard IPatternMatcher interface overrides ---
-  @Override
-  public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeObject(pattern);
-  }
 }

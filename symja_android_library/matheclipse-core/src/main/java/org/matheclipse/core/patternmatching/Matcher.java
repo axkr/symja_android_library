@@ -1,14 +1,12 @@
 package org.matheclipse.core.patternmatching;
 
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ConditionException;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -91,92 +89,15 @@ public class Matcher implements Function<IExpr, IExpr> {
     }
   }
 
-  private static class PatternMatcherBiFunctionMethod extends AbstractPatternMatcherMethod {
-    BiFunction<IExpr, IExpr, IExpr> fRightHandSide;
+  /**
+   * A rule whose right-hand-side is a Java function of the single matched pattern value.
+   */
+  private static final class PatternMatcherFunctionMethod extends PatternMatcher {
+    private static final long serialVersionUID = 3452587395234693418L;
 
-    /** public for serialization */
-    public PatternMatcherBiFunctionMethod() {
-      super();
-    }
+    private final Function<IExpr, IExpr> fRightHandSide;
 
-    public PatternMatcherBiFunctionMethod(final IExpr leftHandSide,
-        final BiFunction<IExpr, IExpr, IExpr> rightHandSide) {
-      super(leftHandSide);
-      fRightHandSide = rightHandSide;
-    }
-
-    @Override
-    public IPatternMatcher copy() {
-      PatternMatcherBiFunctionMethod v = new PatternMatcherBiFunctionMethod();
-      v.fLHSPriority = fLHSPriority;
-      v.fThrowIfTrue = fThrowIfTrue;
-      v.fLhsPatternExpr = fLhsPatternExpr;
-      if (fPatternMap != null) {
-        v.fPatternMap = fPatternMap.copy();
-      }
-      v.fLhsExprToMatch = fLhsExprToMatch;
-      v.fSetFlags = fSetFlags;
-      v.fRightHandSide = fRightHandSide;
-      return v;
-    }
-
-    @Override
-    IExpr evalMethod() {
-      IPatternMap pm = createPatternMap();
-      IExpr arg1 = pm.getValue(0);
-      IExpr arg2 = pm.getValue(1);
-      return fRightHandSide.apply(arg1, arg2);
-    }
-
-  }
-
-  private static class PatternMatcherBiPredicateMethod extends AbstractPatternMatcherMethod {
-    BiPredicate<IExpr, IExpr> fRightHandSide;
-
-    /** public for serialization */
-    public PatternMatcherBiPredicateMethod() {
-      super();
-    }
-
-    public PatternMatcherBiPredicateMethod(final IExpr leftHandSide,
-        final BiPredicate<IExpr, IExpr> rightHandSide) {
-      super(leftHandSide);
-      fRightHandSide = rightHandSide;
-    }
-
-    @Override
-    public IPatternMatcher copy() {
-      PatternMatcherBiPredicateMethod v = new PatternMatcherBiPredicateMethod();
-      v.fLHSPriority = fLHSPriority;
-      v.fThrowIfTrue = fThrowIfTrue;
-      v.fLhsPatternExpr = fLhsPatternExpr;
-      if (fPatternMap != null) {
-        v.fPatternMap = fPatternMap.copy();
-      }
-      v.fLhsExprToMatch = fLhsExprToMatch;
-      v.fSetFlags = fSetFlags;
-      v.fRightHandSide = fRightHandSide;
-      return v;
-    }
-
-    @Override
-    IExpr evalMethod() {
-      IPatternMap pm = createPatternMap();
-      IExpr arg1 = pm.getValue(0);
-      IExpr arg2 = pm.getValue(1);
-      return fRightHandSide.test(arg1, arg2) ? S.True : S.False;
-    }
-  }
-
-  private static class PatternMatcherFunctionMethod extends AbstractPatternMatcherMethod {
-    Function<IExpr, IExpr> fRightHandSide;
-
-    /** public for serialization */
-    public PatternMatcherFunctionMethod() {
-      super();
-    }
-
-    public PatternMatcherFunctionMethod(final IExpr leftHandSide,
+    PatternMatcherFunctionMethod(final IExpr leftHandSide,
         final Function<IExpr, IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
@@ -184,96 +105,30 @@ public class Matcher implements Function<IExpr, IExpr> {
 
     @Override
     public IPatternMatcher copy() {
-      PatternMatcherFunctionMethod v = new PatternMatcherFunctionMethod();
-      v.fLHSPriority = fLHSPriority;
-      v.fThrowIfTrue = fThrowIfTrue;
-      v.fLhsPatternExpr = fLhsPatternExpr;
-      if (fPatternMap != null) {
-        v.fPatternMap = fPatternMap.copy();
-      }
-      v.fLhsExprToMatch = fLhsExprToMatch;
-      v.fSetFlags = fSetFlags;
-      v.fRightHandSide = fRightHandSide;
+      PatternMatcherFunctionMethod v =
+          new PatternMatcherFunctionMethod(fLhsPatternExpr, fRightHandSide);
+      copyBaseFieldsTo(v);
       return v;
     }
 
     @Override
-    IExpr evalMethod() {
-      IPatternMap pm = createPatternMap();
-      IExpr arg1 = pm.getValue(0);
-      return fRightHandSide.apply(arg1);
-    }
-  }
-
-  private static class PatternMatcherMapMethod extends AbstractPatternMatcherMethod {
-    IPatternMethod fRightHandSide;
-
-    /** public for serialization */
-    public PatternMatcherMapMethod() {
-      super();
-    }
-
-    public PatternMatcherMapMethod(final IExpr leftHandSide, final IPatternMethod rightHandSide) {
-      super(leftHandSide);
-      fRightHandSide = rightHandSide;
-    }
-
-    @Override
-    public IPatternMatcher copy() {
-      PatternMatcherMapMethod v = new PatternMatcherMapMethod();
-      v.fLHSPriority = fLHSPriority;
-      v.fThrowIfTrue = fThrowIfTrue;
-      v.fLhsPatternExpr = fLhsPatternExpr;
-      if (fPatternMap != null) {
-        v.fPatternMap = fPatternMap.copy();
+    public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
+      if (isRuleWithoutPatterns()) {
+        return fLhsPatternExpr.equals(leftHandSide) ? evalMethod() : F.NIL;
       }
-      v.fLhsExprToMatch = fLhsExprToMatch;
-      v.fSetFlags = fSetFlags;
-      v.fRightHandSide = fRightHandSide;
-      return v;
+      IPatternMap patternMap = createPatternMap();
+      patternMap.initPattern();
+      return matchExpr(fLhsPatternExpr, leftHandSide, engine) ? evalMethod() : F.NIL;
     }
 
-    @Override
-    IExpr evalMethod() {
-      IPatternMap pm = createPatternMap();
-      return fRightHandSide.eval(pm);
-    }
-  }
-
-  private static class PatternMatcherPredicateMethod extends AbstractPatternMatcherMethod {
-    Predicate<IExpr> fRightHandSide;
-
-    /** public for serialization */
-    public PatternMatcherPredicateMethod() {
-      super();
-    }
-
-    public PatternMatcherPredicateMethod(final IExpr leftHandSide,
-        final Predicate<IExpr> rightHandSide) {
-      super(leftHandSide);
-      fRightHandSide = rightHandSide;
-    }
-
-    @Override
-    public IPatternMatcher copy() {
-      PatternMatcherPredicateMethod v = new PatternMatcherPredicateMethod();
-      v.fLHSPriority = fLHSPriority;
-      v.fThrowIfTrue = fThrowIfTrue;
-      v.fLhsPatternExpr = fLhsPatternExpr;
-      if (fPatternMap != null) {
-        v.fPatternMap = fPatternMap.copy();
+    private IExpr evalMethod() {
+      try {
+        return fRightHandSide.apply(createPatternMap().getValue(0));
+      } catch (final ConditionException e) {
+        return F.NIL;
+      } catch (final ReturnException e) {
+        return e.getValue();
       }
-      v.fLhsExprToMatch = fLhsExprToMatch;
-      v.fSetFlags = fSetFlags;
-      v.fRightHandSide = fRightHandSide;
-      return v;
-    }
-
-    @Override
-    IExpr evalMethod() {
-      IPatternMap pm = createPatternMap();
-      IExpr arg1 = pm.getValue(0);
-      return fRightHandSide.test(arg1) ? S.True : S.False;
     }
   }
 
@@ -298,57 +153,11 @@ public class Matcher implements Function<IExpr, IExpr> {
   }
 
   /**
-   * If this rule matches the evaluation will return <code>S.True</code> or <code>S.False</code>
-   * depending on the <code>predicates</code> result.
-   *
-   * @param patternMatchingRule
-   * @param predicate
-   */
-  public void caseBoole(final IExpr patternMatchingRule,
-      final BiPredicate<IExpr, IExpr> predicate) {
-    rules.insertMatcher(new PatternMatcherBiPredicateMethod(patternMatchingRule, predicate));
-  }
-
-  /**
-   * If this rule matches the evaluation will return <code>S.True</code> or <code>S.False</code>
-   * depending on the <code>predicates</code> result.
-   *
-   * @param patternMatchingRule
-   * @param predicate
-   */
-  public void caseBoole(final IExpr patternMatchingRule, final Predicate<IExpr> predicate) {
-    rules.insertMatcher(new PatternMatcherPredicateMethod(patternMatchingRule, predicate));
-  }
-
-  /**
-   * If this rule matches the evaluation will return the result of the <code>method.eval()</code>
-   * method.
-   *
-   * @param patternMatchingRule
-   * @param method
-   */
-  public void caseMethod(final IExpr patternMatchingRule, final IPatternMethod method) {
-    rules.insertMatcher(new PatternMatcherMapMethod(patternMatchingRule, method));
-  }
-
-  /**
    * If this rule matches the evaluation will return the result of the <code>function.apply()</code>
-   * method.
+   * method, called with the value of the (single) pattern of the left-hand-side.
    *
-   * @param patternMatchingRule
-   * @param function
-   */
-  public void caseOf(final IExpr patternMatchingRule,
-      final BiFunction<IExpr, IExpr, IExpr> function) {
-    rules.insertMatcher(new PatternMatcherBiFunctionMethod(patternMatchingRule, function));
-  }
-
-  /**
-   * If this rule matches the evaluation will return the result of the <code>function.apply()</code>
-   * method.
-   *
-   * @param patternMatchingRule
-   * @param function
+   * @param patternMatchingRule the left-hand-side pattern with exactly one pattern object
+   * @param function the function which computes the result from the matched value
    */
   public void caseOf(final IExpr patternMatchingRule, final Function<IExpr, IExpr> function) {
     rules.insertMatcher(new PatternMatcherFunctionMethod(patternMatchingRule, function));

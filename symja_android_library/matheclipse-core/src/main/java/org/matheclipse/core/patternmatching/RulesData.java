@@ -4,20 +4,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
-import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -191,10 +187,6 @@ public final class RulesData implements Serializable {
   private transient volatile int fRuleIndexEpoch;
 
   /**
-   * Matches rules which contain no patterns and are defined with {@link S#UpSet} or
-   * {@link S#UpSetDelayed} function
-   */
-  /**
    * <code>true</code> as soon as one up-value was installed anywhere in this JVM.
    * <p>
    * Up-values are created exclusively by {@link S#UpSet}, {@link S#UpSetDelayed}, {@link S#TagSet}
@@ -218,6 +210,10 @@ public final class RulesData implements Serializable {
     return UP_RULES_DEFINED;
   }
 
+  /**
+   * Matches rules which contain no patterns and are defined with {@link S#UpSet} or
+   * {@link S#UpSetDelayed} function
+   */
   private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 
   /**
@@ -229,33 +225,13 @@ public final class RulesData implements Serializable {
     clear();
   }
 
+  /**
+   * @param sizes <code>sizes[0]</code> is the expected number of pattern-free rules
+   */
   public RulesData(int[] sizes) {
-    // this.context = context;
     clear();
-    if (sizes.length > 0) {
-      int capacity;
-      if (sizes[0] > 0) {
-        capacity = sizes[0];
-        if (capacity < 8) {
-          capacity = 8;
-        }
-        fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(capacity);
-      }
-    }
-  }
-
-  public RulesData(int[] sizes, IBuiltInSymbol head) {
-    // this.context = context;
-    clear();
-    if (sizes.length > 0) {
-      int capacity;
-      if (sizes[0] > 0) {
-        capacity = sizes[0];
-        if (capacity < 8) {
-          capacity = 8;
-        }
-        fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(capacity);
-      }
+    if (sizes.length > 0 && sizes[0] > 0) {
+      fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(Math.max(8, sizes[0]));
     }
   }
 
@@ -266,100 +242,41 @@ public final class RulesData implements Serializable {
    * @param visitor the visitor which manipulates the IAST objects
    */
   public void accept(AbstractVisitor visitor) {
-    Iterator<Map.Entry<IExpr, PatternMatcherEquals>> iter;
-    PatternMatcherEquals pmEquals;
-    IAST ast;
-    PatternMatcherAndEvaluator pmEvaluator;
-    if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
-      iter = fEqualUpRules.entrySet().iterator();
-      while (iter.hasNext()) {
-        Map.Entry<IExpr, PatternMatcherEquals> next = iter.next();
-        IExpr key = next.getKey();
-        pmEquals = next.getValue();
-        if (key.isASTOrAssociation()) {
-          key.accept(visitor);
-        }
-        if (pmEquals.getRHS().isASTOrAssociation()) {
-          pmEquals.getRHS().accept(visitor);
-        }
+    forEachUpRule(matcher -> {
+      IExpr lhs = matcher.getLHS();
+      if (lhs.isASTOrAssociation()) {
+        lhs.accept(visitor);
       }
-    }
-    if (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0) {
-      List<IPatternMatcher> upRules = fSimplePatternUpRules;
-      for (int i = 0; i < upRules.size(); i++) {
-        if (upRules.get(i) != null) {
-          IPatternMatcher elem = upRules.get(i);
-
-          if (elem instanceof PatternMatcherAndEvaluator) {
-            pmEvaluator = (PatternMatcherAndEvaluator) elem;
-            if (pmEvaluator.getLHS().isASTOrAssociation()) {
-              pmEvaluator.getLHS().accept(visitor);
-            }
-            if (pmEvaluator.getRHS().isASTOrAssociation()) {
-              pmEvaluator.getRHS().accept(visitor);
-            }
-          }
-        }
+      IExpr rhs = matcher.getRHS();
+      if (rhs.isASTOrAssociation()) {
+        rhs.accept(visitor);
       }
-    }
-
-    if (fEqualDownRules != null && fEqualDownRules.size() > 0) {
-      iter = fEqualDownRules.entrySet().iterator();
-      while (iter.hasNext()) {
-        Map.Entry<IExpr, PatternMatcherEquals> next = iter.next();
-        IExpr key = next.getKey();
-        pmEquals = next.getValue();
-        ast = pmEquals.getAsAST();
-        if (key.isASTOrAssociation()) {
-          key.accept(visitor);
-        }
-        ast.accept(visitor);
+    });
+    forEachDownRule(matcher -> {
+      IExpr lhs = matcher.getLHS();
+      if (lhs.isASTOrAssociation()) {
+        lhs.accept(visitor);
       }
-    }
-
-    if (fPatternDownRules != null && fPatternDownRules.size() > 0) {
-      IPatternMatcher[] list = fPatternDownRules.toArray(new IPatternMatcher[0]);
-      final int length = list.length;
-      for (int i = 0; i < length; i++) {
-        if (list[i] instanceof PatternMatcherAndEvaluator) {
-          pmEvaluator = (PatternMatcherAndEvaluator) list[i];
-          ast = pmEvaluator.getAsAST();
-          ast.accept(visitor);
-        }
-      }
-    }
+      matcher.getAsAST().accept(visitor);
+    });
   }
 
   /**
-   * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as
-   * a simple pattern rule to the <code>fSimplePatternRules</code>.
+   * Replace an existing rule with an equivalent left-hand-side, otherwise append the rule.
    *
-   * @param leftHandSide
-   * @param pmEvaluator
-   * @return
+   * @param upRules the list of up-rules
+   * @param pmEvaluator the new rule
    */
-  private PatternMatcher addSimplePatternUpRule(final IExpr leftHandSide,
+  private static IPatternMatcher addSimplePatternUpRule(List<IPatternMatcher> upRules,
       final PatternMatcher pmEvaluator) {
-    // IExpr head = ((IAST) leftHandSide).head();
-    // if (head.isFreeOfPatterns()) {
-    // final int hash = ((IAST) leftHandSide).topHead().hashCode();
-    // if (F.isSystemInitialized()) {
-    // int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
-    // if (indx >= 0) {
-    // fSimplePatternUpRules.remove(indx);
-    // }
-    // }
-    // fSimplePatternUpRules.add(pmEvaluator);
-    // return pmEvaluator;
-    // }
-
-    if (F.isSystemInitialized()) {
-      int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
-      if (indx >= 0) {
-        fSimplePatternUpRules.remove(indx);
+    for (int i = 0; i < upRules.size(); i++) {
+      if (upRules.get(i).equivalentLHS(pmEvaluator) == 0) {
+        // same left-hand-side: the new definition replaces the old one
+        upRules.set(i, pmEvaluator);
+        return pmEvaluator;
       }
     }
-    fSimplePatternUpRules.add(pmEvaluator);
+    upRules.add(pmEvaluator);
     return pmEvaluator;
   }
 
@@ -372,13 +289,54 @@ public final class RulesData implements Serializable {
     fSimplePatternUpRules = null;
   }
 
-  public void clearAll() {
-    clear();
-    fMessages = null;
+  /**
+   * The pattern-free rules of <code>map</code> sorted by their left-hand-side, so that the printed
+   * definitions have a stable order independent of the hash map iteration order.
+   */
+  private static List<PatternMatcherEquals> sortedEqualRules(
+      Map<IExpr, PatternMatcherEquals> map) {
+    if (map == null || map.isEmpty()) {
+      return java.util.Collections.emptyList();
+    }
+    List<PatternMatcherEquals> list = new ArrayList<PatternMatcherEquals>(map.values());
+    if (list.size() > 1) {
+      list.sort((a, b) -> a.getLHS().compareTo(b.getLHS()));
+    }
+    return list;
   }
 
-  public List<IAST> definition() {
-    int size = 4;
+  /**
+   * Call <code>consumer</code> for every up-rule: first the pattern-free rules (sorted), then the
+   * pattern rules in evaluation order.
+   */
+  private void forEachUpRule(java.util.function.Consumer<IPatternMatcher> consumer) {
+    for (PatternMatcherEquals matcher : sortedEqualRules(fEqualUpRules)) {
+      consumer.accept(matcher);
+    }
+    if (fSimplePatternUpRules != null) {
+      for (IPatternMatcher matcher : fSimplePatternUpRules.toArray(new IPatternMatcher[0])) {
+        consumer.accept(matcher);
+      }
+    }
+  }
+
+  /**
+   * Call <code>consumer</code> for every down-rule: first the pattern-free rules (sorted), then
+   * the pattern rules in evaluation order.
+   */
+  private void forEachDownRule(java.util.function.Consumer<IPatternMatcher> consumer) {
+    for (PatternMatcherEquals matcher : sortedEqualRules(fEqualDownRules)) {
+      consumer.accept(matcher);
+    }
+    if (fPatternDownRules != null) {
+      for (IPatternMatcher matcher : fPatternDownRules.toArray(new IPatternMatcher[0])) {
+        consumer.accept(matcher);
+      }
+    }
+  }
+
+  private int numberOfRules() {
+    int size = 0;
     if (fEqualUpRules != null) {
       size += fEqualUpRules.size();
     }
@@ -391,46 +349,13 @@ public final class RulesData implements Serializable {
     if (fPatternDownRules != null) {
       size += fPatternDownRules.size();
     }
-    ArrayList<IAST> definitionList = new ArrayList<IAST>(size);
-    Iterator<Map.Entry<IExpr, PatternMatcherEquals>> iter;
-    PatternMatcherEquals pmEquals;
-    PatternMatcherAndEvaluator pmEvaluator;
-    if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
-      iter = fEqualUpRules.entrySet().iterator();
-      while (iter.hasNext()) {
-        pmEquals = iter.next().getValue();
-        definitionList.add(pmEquals.getAsAST());
-      }
-    }
-    if (fSimplePatternUpRules != null) {
-      for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
-        IPatternMatcher elem = fSimplePatternUpRules.get(i);
-        if (elem instanceof PatternMatcherAndEvaluator) {
-          pmEvaluator = (PatternMatcherAndEvaluator) elem;
-          definitionList.add(pmEvaluator.getAsAST());
-        }
-      }
-    }
+    return size;
+  }
 
-    if (fEqualDownRules != null && fEqualDownRules.size() > 0) {
-      iter = fEqualDownRules.entrySet().iterator();
-      while (iter.hasNext()) {
-        pmEquals = iter.next().getValue();
-        definitionList.add(pmEquals.getAsAST());
-      }
-    }
-
-    if (fPatternDownRules != null && fPatternDownRules.size() > 0) {
-      IPatternMatcher[] list = fPatternDownRules.toArray(new IPatternMatcher[0]);
-      final int length = list.length;
-      for (int i = 0; i < length; i++) {
-        if (list[i] instanceof PatternMatcherAndEvaluator) {
-          pmEvaluator = (PatternMatcherAndEvaluator) list[i];
-          definitionList.add(pmEvaluator.getAsAST());
-        }
-      }
-    }
-
+  public List<IAST> definition() {
+    ArrayList<IAST> definitionList = new ArrayList<IAST>(numberOfRules());
+    forEachUpRule(matcher -> definitionList.add(matcher.getAsAST()));
+    forEachDownRule(matcher -> definitionList.add(matcher.getAsAST()));
     return definitionList;
   }
 
@@ -471,26 +396,9 @@ public final class RulesData implements Serializable {
    * @return a list of <code>RuleDelayed(HoldPattern(lhs), rhs)</code> rules
    */
   public IAST downValues() {
-    int size = 1;
-    if (fEqualDownRules != null) {
-      size += fEqualDownRules.size();
-    }
-    if (fPatternDownRules != null) {
-      size += fPatternDownRules.size();
-    }
-    IASTAppendable result = F.ListAlloc(size);
-    if (fEqualDownRules != null) {
-      for (Map.Entry<IExpr, PatternMatcherEquals> entry : fEqualDownRules.entrySet()) {
-        PatternMatcherEquals value = entry.getValue();
-        result.append(F.RuleDelayed(F.HoldPattern(value.getLHS()), value.getRHS()));
-      }
-    }
-    if (fPatternDownRules != null) {
-      for (int i = 0; i < fPatternDownRules.size(); i++) {
-        IPatternMatcher matcher = fPatternDownRules.get(i);
-        result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS()));
-      }
-    }
+    IASTAppendable result = F.ListAlloc(numberOfRules() + 1);
+    forEachDownRule(
+        matcher -> result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS())));
     return result;
   }
 
@@ -501,64 +409,34 @@ public final class RulesData implements Serializable {
    * @return a list of <code>RuleDelayed(HoldPattern(lhs), rhs)</code> rules
    */
   public IAST upValues() {
-    int size = 1;
-    if (fEqualUpRules != null) {
-      size += fEqualUpRules.size();
-    }
-    if (fSimplePatternUpRules != null) {
-      size += fSimplePatternUpRules.size();
-    }
-    IASTAppendable result = F.ListAlloc(size);
-    if (fEqualUpRules != null) {
-      for (Map.Entry<IExpr, PatternMatcherEquals> entry : fEqualUpRules.entrySet()) {
-        PatternMatcherEquals value = entry.getValue();
-        result.append(F.RuleDelayed(F.HoldPattern(value.getLHS()), value.getRHS()));
-      }
-    }
-    if (fSimplePatternUpRules != null) {
-      for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
-        IPatternMatcher matcher = fSimplePatternUpRules.get(i);
-        result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS()));
-      }
-    }
+    IASTAppendable result = F.ListAlloc(numberOfRules() + 1);
+    forEachUpRule(
+        matcher -> result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS())));
     return result;
   }
 
+  /**
+   * Two rule sets are equal if they contain equal rules; used by the serialization tests.
+   */
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null || getClass() != obj.getClass()) {
       return false;
-    if (getClass() != obj.getClass())
-      return false;
-
+    }
     RulesData other = (RulesData) obj;
+    return java.util.Objects.equals(fEqualDownRules, other.fEqualDownRules)
+        && java.util.Objects.equals(fEqualUpRules, other.fEqualUpRules)
+        && java.util.Objects.equals(fPatternDownRules, other.fPatternDownRules)
+        && java.util.Objects.equals(fSimplePatternUpRules, other.fSimplePatternUpRules);
+  }
 
-    if (fEqualDownRules == null) {
-      if (other.fEqualDownRules != null)
-        return false;
-    } else if (!fEqualDownRules.equals(other.fEqualDownRules))
-      return false;
-    if (fEqualUpRules == null) {
-      if (other.fEqualUpRules != null)
-        return false;
-    } else if (!fEqualUpRules.equals(other.fEqualUpRules))
-      return false;
-
-    if (fPatternDownRules == null) {
-      if (other.fPatternDownRules != null)
-        return false;
-    } else if (!fPatternDownRules.equals(other.fPatternDownRules))
-      return false;
-
-    if (fSimplePatternUpRules == null) {
-      if (other.fSimplePatternUpRules != null)
-        return false;
-    } else if (!fSimplePatternUpRules.equals(other.fSimplePatternUpRules))
-      return false;
-
-    return true;
+  @Override
+  public int hashCode() {
+    return java.util.Objects.hash(fEqualDownRules, fEqualUpRules, fPatternDownRules,
+        fSimplePatternUpRules);
   }
 
   /**
@@ -616,10 +494,7 @@ public final class RulesData implements Serializable {
       engine.setEvalRHSMode(true);
 
       if (fPatternDownRules != null) {
-        int patternHash = 0;
-        if (expr.isASTOrAssociation()) {
-          patternHash = ((IAST) expr).patternHashCode();
-        }
+        final int patternHash = ((IAST) expr).patternHashCode();
         IEvalStepListener stepListener = engine.getStepListener();
         final boolean isTraceMode =
             Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
@@ -631,8 +506,10 @@ public final class RulesData implements Serializable {
         final boolean indexable = rules.size() >= RuleFeatureIndex.INDEXABLE_RULES;
         if (index == null || index.ruleCount() != rules.size()) {
           RuleDispatchStats.dispatch(false);
-          for (IPatternMatcher patternEvaluator : rules) {
-            IExpr result = evalPatternDownRule(patternEvaluator, expr, engine, patternHash,
+          // index based loop: the right-hand-side of a rule may define a new rule for the same
+          // symbol, which an iterator would report as a ConcurrentModificationException
+          for (int i = 0; i < rules.size(); i++) {
+            IExpr result = evalPatternDownRule(rules.get(i), expr, engine, patternHash,
                 stepListener, isTraceMode, indexable);
             if (result.isPresent()) {
               return result;
@@ -696,7 +573,7 @@ public final class RulesData implements Serializable {
 
     IExpr result = evalMatcher(patternEvaluator, expr, engine);
     if (result.isPresent()) {
-      if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
+      if (patternEvaluator.getLHS().isAST(S.Integrate)) {
         if (!expr.equals(result)) {
           return result;
         }
@@ -808,19 +685,6 @@ public final class RulesData implements Serializable {
     fRuleIndexUnusable = false;
   }
 
-  private static boolean isShowSteps(IPatternMatcher pmEvaluator) {
-    IExpr head = pmEvaluator.getLHS().head();
-    if (head.isSymbol() && ((ISymbol) head).isContext(Context.RUBI)) {
-      return true;
-    }
-    return head == S.Integrate;
-  }
-
-  private static boolean isShowPriority(IPatternMatcher pmEvaluator) {
-    IExpr head = pmEvaluator.getLHS().head();
-    return head == S.Integrate;
-  }
-
   /**
    * Try matching the <code>expression</code> with this pattern-matching up-rules.
    * 
@@ -870,49 +734,39 @@ public final class RulesData implements Serializable {
     return fMessages;
   }
 
-  /** @return Returns the equalRules. */
+  /**
+   * The pattern-free down-rules, keyed by their left-hand-side.
+   *
+   * <p>
+   * This is a hash map on purpose: a {@link java.util.TreeMap} would use
+   * {@link IExpr#compareTo(IExpr)}, which reports <code>1</code> and <code>1.0</code> as equal, so
+   * <code>f(1)=a</code> would also answer <code>f(1.0)</code>.
+   *
+   * @return the map, created if necessary
+   */
   public final Map<IExpr, PatternMatcherEquals> getEqualDownRules() {
     if (fEqualDownRules == null) {
-      fEqualDownRules = new TreeMap<IExpr, PatternMatcherEquals>();
+      fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>();
     }
     return fEqualDownRules;
   }
 
-  /** @return Returns the equalRules. */
-  public final Map<IExpr, PatternMatcherEquals> getEqualUpRules() {
+  private Map<IExpr, PatternMatcherEquals> getEqualUpRules() {
     if (fEqualUpRules == null) {
-      fEqualUpRules = new TreeMap<IExpr, PatternMatcherEquals>();
+      fEqualUpRules = new HashMap<IExpr, PatternMatcherEquals>();
     }
     return fEqualUpRules;
   }
 
   private List<IPatternMatcher> getSimplePatternUpRules() {
     if (fSimplePatternUpRules == null) {
-      fSimplePatternUpRules = new ArrayList<IPatternMatcher>(); // IPatternMatcher.EQUIVALENCE_COMPARATOR);
+      fSimplePatternUpRules = new ArrayList<IPatternMatcher>();
     }
     return fSimplePatternUpRules;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((fEqualDownRules == null) ? 0 : fEqualDownRules.hashCode());
-    result = prime * result + ((fEqualUpRules == null) ? 0 : fEqualUpRules.hashCode());
-    result = prime * result + ((fPatternDownRules == null) ? 0 : fPatternDownRules.hashCode());
-    result =
-        prime * result + ((fSimplePatternUpRules == null) ? 0 : fSimplePatternUpRules.hashCode());
-    return result;
-  }
-
   public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
     return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
-        IPatternMap.DEFAULT_RULE_PRIORITY);
-  }
-
-  public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-      final IExpr leftHandSide, final IExpr rightHandSide) {
-    return putDownRule(setSymbol, false, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY);
   }
 
@@ -926,13 +780,8 @@ public final class RulesData implements Serializable {
       return pmEquals;
     }
 
-    final PatternMatcherAndEvaluator pmEvaluator;
-    int patternHash = 0;
-    if (!isComplicatedPatternRule(leftHandSide) && !leftHandSide.isCondition()) {
-      patternHash = ((IAST) leftHandSide).patternHashCode();
-    }
-    pmEvaluator =
-        new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide, true, patternHash);
+    final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(setSymbol,
+        leftHandSide, rightHandSide, true, recomputePatternHash(leftHandSide));
     if (pmEvaluator.isRuleWithoutPatterns()) {
       fEqualDownRules = getEqualDownRules();
       PatternMatcherEquals pmEquals =
@@ -963,9 +812,6 @@ public final class RulesData implements Serializable {
     }
     final PatternMatcher pmEvaluator = new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED,
         leftHandSide, rightHandSide, false, patternHash);
-    // final PatternMatcher pmEvaluator = new PatternMatcherAndEvaluatorMemoize(
-    // IPatternMatcher.SET_DELAYED, leftHandSide, Suppliers.memoize(() -> rightHandSide), false,
-    // patternHash);
     pmEvaluator.setLHSPriority(priority);
     invalidateRuleIndex();
     if (fPatternDownRules == null) {
@@ -1044,6 +890,11 @@ public final class RulesData implements Serializable {
   /**
    * Insert a new (or replace an old equivalent) pattern matching rule in the rules data structure.
    *
+   * <p>
+   * <code>fPriorityDownRules</code> is sorted ascending, so the insert position is found by
+   * binary search. Rules with the same priority keep their insertion order; within that run an
+   * equivalent rule is replaced instead of appended.
+   *
    * @param newPatternMatcher the new pattern matching rule
    */
   public final PatternMatcher insertMatcher(final PatternMatcher newPatternMatcher) {
@@ -1055,85 +906,83 @@ public final class RulesData implements Serializable {
       fPriorityDownRules.add(newPatternMatcher.getLHSPriority());
       return newPatternMatcher;
     }
-    final int size = fPatternDownRules.size();
-    final int patternHash = newPatternMatcher.getPatternHash();
     final int lhsPriority = newPatternMatcher.getLHSPriority();
-    IPatternMap pmSlotValuesMap = null;
-    IExpr pmRHS = null;
-    IExpr pmSlotValuesLHS = null;
-    // TODO use a binary search in fPriorityDownRules to find the first equal getLHSPriority()
-    for (int i = 0; i < size; i++) {
-      final int priority = fPriorityDownRules.getInt(i);
-      if (priority > lhsPriority) {
-        fPatternDownRules.add(i, newPatternMatcher);
-        fPriorityDownRules.add(i, lhsPriority);
-        return newPatternMatcher;
+    // first index whose priority is greater than lhsPriority
+    int low = 0;
+    int high = fPriorityDownRules.size();
+    while (low < high) {
+      int mid = (low + high) >>> 1;
+      if (fPriorityDownRules.getInt(mid) <= lhsPriority) {
+        low = mid + 1;
       } else {
-        if (priority == lhsPriority) {
-          // There can be "multiple rules" with the same priority
-          // Append the new rule matcher behind the last one or replace an existing equivalent rule
-          // matcher
-          final IPatternMatcher matcher = fPatternDownRules.get(i);
-          if (matcher.isPatternHashAllowed(patternHash)) {
-            if (IPatternMatcher.EQUIVALENCE_COMPARATOR.compare(newPatternMatcher, matcher) == 0) {
-              if (pmSlotValuesMap == null) {
-                pmSlotValuesMap = newPatternMatcher.getPatternMap().copy();
-                pmSlotValuesMap.initSlotValues();
-                pmRHS = pmSlotValuesMap.substituteSymbols(newPatternMatcher.getRHS(), F.NIL);
-                pmSlotValuesLHS =
-                    pmSlotValuesMap.substitutePatternOrSymbols(newPatternMatcher.getLHS(), true);
-              }
-              if (equivalentSlots(matcher, pmSlotValuesMap.size(), pmSlotValuesLHS, pmRHS)) {
-                fPatternDownRules.set(i, newPatternMatcher);
-                fPriorityDownRules.set(i, lhsPriority);
-                return newPatternMatcher;
-              }
+        high = mid;
+      }
+    }
+    final int insertPosition = low;
+    // the run of rules with the same priority ends at insertPosition
+    int runStart = insertPosition;
+    while (runStart > 0 && fPriorityDownRules.getInt(runStart - 1) == lhsPriority) {
+      runStart--;
+    }
+    if (runStart < insertPosition) {
+      final int patternHash = newPatternMatcher.getPatternHash();
+      IPatternMap pmSlotValuesMap = null;
+      IExpr pmRHS = null;
+      for (int i = runStart; i < insertPosition; i++) {
+        final IPatternMatcher matcher = fPatternDownRules.get(i);
+        // a hash of 0 means "no pre-filtering" on either side
+        if (patternHash == 0 || matcher.getPatternHash() == 0
+            || matcher.getPatternHash() == patternHash) {
+          if (IPatternMatcher.EQUIVALENCE_COMPARATOR.compare(newPatternMatcher, matcher) == 0) {
+            if (pmSlotValuesMap == null) {
+              pmSlotValuesMap = newPatternMatcher.getPatternMap().copy();
+              pmSlotValuesMap.initSlotValues();
+              pmRHS = pmSlotValuesMap.substituteSymbols(newPatternMatcher.getRHS(), F.NIL);
+            }
+            if (equivalentSlots(matcher, pmSlotValuesMap.size(), pmRHS)) {
+              fPatternDownRules.set(i, newPatternMatcher);
+              return newPatternMatcher;
             }
           }
         }
       }
     }
-
-    fPatternDownRules.add(newPatternMatcher);
-    fPriorityDownRules.add(lhsPriority);
+    fPatternDownRules.add(insertPosition, newPatternMatcher);
+    fPriorityDownRules.add(insertPosition, lhsPriority);
     return newPatternMatcher;
   }
 
   /**
-   * Test if the matchers are equivalent, comparing the LHS (and possibly RHS-condition), with named
-   * patterns replaced by slot values <code>#1, #2, #3,...</code>.
+   * Test if the right-hand-side conditions of two matchers with equivalent left-hand-sides are
+   * equivalent too, with named patterns replaced by slot values <code>#1, #2, #3,...</code>.
+   *
+   * <p>
+   * The left-hand-sides were already compared by {@link IPatternMatcher#EQUIVALENCE_COMPARATOR},
+   * which also handles patterns inside associations; only the conditions of the right-hand-sides
+   * still have to be compared here, because <code>f(x_):=1/;x&gt;0</code> and
+   * <code>f(x_):=2/;x&lt;0</code> are two different rules.
    *
    * @param matcher the existing pattern matcher in the RulesData structure
    * @param newNumberOfPatterns the number of patterns which the new rule contains
-   * @param newSlotValuesLHS the left-hand-side of the new rule with patterns replaced by slot
-   *        values
    * @param newSlotValuesRHS the right-hand-side of the new rule with pattern symbols replaced by
    *        slot values
-   * @return <code>true</code> if the <code>matcher</code>'s LHS and RHS-condition are equivalent to
-   *         the new matcher parameters
+   * @return <code>true</code> if the <code>matcher</code>'s RHS-condition is equivalent to the new
+   *         matcher parameters
    */
   private static boolean equivalentSlots(IPatternMatcher matcher, int newNumberOfPatterns,
-      IExpr newSlotValuesLHS, IExpr newSlotValuesRHS) {
+      IExpr newSlotValuesRHS) {
     IPatternMap oldMap = matcher.getPatternMap();
     if (oldMap.size() != newNumberOfPatterns) {
       return false;
     }
-    oldMap = oldMap.copy();
-    oldMap.initSlotValues();
-    IExpr oldSlotValuesLHS = oldMap.substitutePatternOrSymbols(matcher.getLHS(), true);
-    if (oldSlotValuesLHS.equals(newSlotValuesLHS)) {
-      IExpr rhs = matcher.getRHS();
-      if (newSlotValuesRHS.isCondition() && rhs.isCondition()) {
-        IExpr oldSlotValuesRHS = oldMap.substituteSymbols(rhs.second(), F.NIL);
-        return newSlotValuesRHS.second().equals(oldSlotValuesRHS);
-      }
-      return !(rhs.isCondition() || newSlotValuesRHS.isCondition());
+    IExpr rhs = matcher.getRHS();
+    if (newSlotValuesRHS.isCondition() && rhs.isCondition()) {
+      oldMap = oldMap.copy();
+      oldMap.initSlotValues();
+      IExpr oldSlotValuesRHS = oldMap.substituteSymbols(rhs.second(), F.NIL);
+      return newSlotValuesRHS.second().equals(oldSlotValuesRHS);
     }
-    return false;
-  }
-
-  public void putfDefaultValues(IExpr expr) {
-    putDefaultValues(DEFAULT_VALUE_INDEX, expr);
+    return !(rhs.isCondition() || newSlotValuesRHS.isCondition());
   }
 
   public void putDefaultValues(int pos, IExpr expr) {
@@ -1166,39 +1015,64 @@ public final class RulesData implements Serializable {
       return pmEquals;
     }
 
-    fSimplePatternUpRules = getSimplePatternUpRules();
-    return addSimplePatternUpRule(leftHandSide, pmEvaluator);
+    return addSimplePatternUpRule(getSimplePatternUpRules(), pmEvaluator);
   }
 
+  /**
+   * Remove all rules whose left-hand-side is equivalent to <code>leftHandSide</code>.
+   *
+   * @param setSymbol the flags of the definition; if one of {@link IPatternMatcher#UPSET},
+   *        {@link IPatternMatcher#UPSET_DELAYED}, {@link IPatternMatcher#TAGSET} or
+   *        {@link IPatternMatcher#TAGSET_DELAYED} is set, the up-rules are searched, otherwise the
+   *        down-rules
+   * @param equalRule <code>true</code> if the left-hand-side contains no patterns
+   * @param leftHandSide the left-hand-side of the definition
+   * @return <code>true</code> if at least one rule was removed
+   */
   public boolean removeRule(final int setSymbol, final boolean equalRule,
       final IExpr leftHandSide) {
+    final boolean upRule = (setSymbol & (IPatternMatcher.UPSET | IPatternMatcher.UPSET_DELAYED
+        | IPatternMatcher.TAGSET | IPatternMatcher.TAGSET_DELAYED)) != 0;
+    final Map<IExpr, PatternMatcherEquals> equalRules = upRule ? fEqualUpRules : fEqualDownRules;
     if (equalRule) {
-      if (fEqualDownRules != null) {
-        return fEqualDownRules.remove(leftHandSide) != null;
-      }
+      return equalRules != null && equalRules.remove(leftHandSide) != null;
     }
 
     final PatternMatcherAndEvaluator pmEvaluator =
-        new PatternMatcherAndEvaluator(setSymbol, leftHandSide, null);
+        new PatternMatcherAndEvaluator(setSymbol, leftHandSide, F.NIL);
     if (pmEvaluator.isRuleWithoutPatterns()) {
-      if (fEqualDownRules != null) {
-        return fEqualDownRules.remove(leftHandSide) != null;
-      }
+      return equalRules != null && equalRules.remove(leftHandSide) != null;
     }
 
-    boolean evaled = false;
+    if (upRule) {
+      return removeEquivalentRules(fSimplePatternUpRules, null, pmEvaluator);
+    }
     if (fPatternDownRules != null) {
       invalidateRuleIndex();
-      int i = 0;
-      while (i < fPatternDownRules.size()) {
-        IPatternMatcher pm = fPatternDownRules.get(i);
-        if (pm.equivalentLHS(pmEvaluator) == 0) {
-          fPatternDownRules.remove(i);
-          fPriorityDownRules.removeInt(i);
-          evaled = true;
-        } else {
-          i++;
+    }
+    return removeEquivalentRules(fPatternDownRules, fPriorityDownRules, pmEvaluator);
+  }
+
+  /**
+   * Remove every matcher of <code>rules</code> whose left-hand-side is equivalent to the one of
+   * <code>pmEvaluator</code>; <code>priorities</code> (if not <code>null</code>) is kept aligned.
+   */
+  private static boolean removeEquivalentRules(List<IPatternMatcher> rules,
+      IntArrayList priorities, IPatternMatcher pmEvaluator) {
+    if (rules == null) {
+      return false;
+    }
+    boolean evaled = false;
+    int i = 0;
+    while (i < rules.size()) {
+      if (rules.get(i).equivalentLHS(pmEvaluator) == 0) {
+        rules.remove(i);
+        if (priorities != null && i < priorities.size()) {
+          priorities.removeInt(i);
         }
+        evaled = true;
+      } else {
+        i++;
       }
     }
     return evaled;

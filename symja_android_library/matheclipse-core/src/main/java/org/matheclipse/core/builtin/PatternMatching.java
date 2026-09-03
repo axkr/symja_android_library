@@ -99,6 +99,7 @@ public final class PatternMatching {
         S.RepeatedNull.setEvaluator(RepeatedNull.CONST);
         S.TagSet.setEvaluator(new TagSet());
         S.TagSetDelayed.setEvaluator(new TagSetDelayed());
+        S.TagUnset.setEvaluator(new TagUnset());
         S.Unset.setEvaluator(new Unset());
         S.UpSet.setEvaluator(new UpSet());
         S.UpSetDelayed.setEvaluator(new UpSetDelayed());
@@ -2472,6 +2473,14 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST2()) {
+        // the parser creates TagSet(tag, Unset(lhs)) for the input `tag /: lhs =.`
+        if (arg1.isSymbol() && ast.arg2().isAST(S.Unset, 2)) {
+          return TagUnset.tagUnset((ISymbol) arg1, ast.arg2().first(), engine);
+        }
+        // TagSet called with 2 arguments; 3 arguments are expected.
+        return Errors.printArgMessage(ast, ARGS_3_3, engine);
+      }
       if (arg1.isSymbol()) {
         final ISymbol symbol = (ISymbol) arg1;
         final IExpr leftHandSide = ast.arg2();
@@ -2518,7 +2527,8 @@ public final class PatternMatching {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      // the 2 argument form is the parsed `tag /: lhs =.`, see evaluate()
+      return ARGS_2_3;
     }
 
     /**
@@ -2608,6 +2618,106 @@ public final class PatternMatching {
         }
       }
       return false;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.SEQUENCEHOLD);
+    }
+  }
+
+  /**
+   * <pre>
+   * <code>TagUnset(f, lhs)
+   *
+   * f /: lhs =.
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * removes the rule for <code>lhs</code> which is associated with the tag symbol <code>f</code>.
+   * </p>
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; f /: g(f, x_) = x^2
+   * &gt;&gt; f /: g(f, x_) =.
+   * &gt;&gt; UpValues(f)
+   * {}
+   * </code>
+   * </pre>
+   */
+  private static final class TagUnset extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isSymbol()) {
+        return tagUnset((ISymbol) arg1, ast.arg2(), engine);
+      }
+      // Argument `1` at position `2` is expected to be a symbol.
+      Errors.printMessage(S.TagUnset, "sym", F.list(arg1, F.C1), engine);
+      return F.NIL;
+    }
+
+    /**
+     * Remove the rule for <code>leftHandSide</code> from the down-values or up-values of
+     * <code>tagSymbol</code>, depending on where the tag occurs in the left-hand-side.
+     *
+     * @return {@link S#Null} if a rule was removed, {@link S#$Failed} otherwise
+     */
+    static IExpr tagUnset(ISymbol tagSymbol, IExpr leftHandSide, EvalEngine engine) {
+      final boolean packageMode = engine.isPackageMode();
+      if (!packageMode && tagSymbol.hasProtectedAttribute()) {
+        // Tag `1` in `2` is Protected.
+        Errors.printMessage(S.TagUnset, "write", F.list(tagSymbol, leftHandSide), engine);
+        return S.$Failed;
+      }
+      try {
+        IExpr lhs = leftHandSide;
+        if (lhs.isAST()) {
+          lhs = engine.evalHoldPattern((IAST) lhs);
+        }
+        IAST lhsAST = Validate.checkASTTagRuleType(lhs, S.TagUnset);
+        // classify the left-hand-side exactly like TagSet.createPatternMatcher() does, so that
+        // the rule is searched where TagSet stored it
+        boolean removed;
+        if (lhsAST.head().equals(tagSymbol)) {
+          removed = tagSymbol.removeRule(IPatternMatcher.TAGSET, false, lhsAST, packageMode);
+        } else if (lhsAST.isCondition() && lhsAST.first().isAST()
+            && lhsAST.first().head().equals(tagSymbol)) {
+          removed = tagSymbol.removeRule(IPatternMatcher.SET, false, lhsAST, packageMode);
+        } else if (TagSet.isTagAvailable(tagSymbol, (lhsAST.isCondition()
+            && lhsAST.first().isAST()) ? (IAST) lhsAST.first() : lhsAST)) {
+          removed = tagSymbol.removeRule(IPatternMatcher.TAGSET, false, lhsAST, packageMode);
+        } else {
+          // Tag `1` not found in `2`
+          Errors.printMessage(S.TagUnset, "tagnf", F.list(tagSymbol, lhsAST), engine);
+          return S.$Failed;
+        }
+        if (!removed) {
+          // Assignment on `2` for `1` not found.
+          Errors.printMessage(S.TagUnset, "norep", F.list(lhsAST, tagSymbol), engine);
+          return S.$Failed;
+        }
+        return S.Null;
+      } catch (final RuleCreationError rce) {
+        // Cannot unset object `1`.
+        Errors.printMessage(S.TagUnset, "usraw", F.list(leftHandSide), engine);
+        return S.$Failed;
+      } catch (final ValidateException ve) {
+        Errors.printMessage(S.TagUnset, ve, engine);
+        return S.$Failed;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     @Override

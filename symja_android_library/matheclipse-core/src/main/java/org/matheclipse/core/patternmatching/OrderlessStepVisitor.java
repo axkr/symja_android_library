@@ -2,7 +2,6 @@ package org.matheclipse.core.patternmatching;
 
 import org.matheclipse.core.combinatoric.IStepVisitor;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -26,8 +25,10 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
    * @see MultisetPartitionsIterator
    */
   public OrderlessStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
-      StackMatcher stackMatcher, IPatternMap patternMap, boolean oneIdentity) {
-    super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, oneIdentity);
+      StackMatcher stackMatcher, IPatternMap patternMap) {
+    // the sizes are equal, so every pattern argument gets exactly one evaluated argument, which
+    // is pushed as it is
+    super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, true);
   }
 
   @Override
@@ -44,11 +45,7 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
               "OrderlessStepVisitor#matchSinglePartition() current length is " + n);
         }
 
-        IExpr value = array[result[j][0]];
-        if (!stackMatcher.push(fLhsPatternAST.get(j + 1), //
-            fOneIdentity //
-                ? value //
-                : F.unaryAST1(fSymbol, value))) {
+        if (!stackMatcher.push(fLhsPatternAST.get(j + 1), array[result[j][0]])) {
           // push failed -> will be cleaned up in finally via matched == false
           return false;
         }

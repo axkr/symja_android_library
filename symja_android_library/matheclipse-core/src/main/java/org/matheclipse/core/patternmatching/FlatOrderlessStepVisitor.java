@@ -24,7 +24,7 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
    * @param lhsEvalAST
    * @param patternMatcher
    * @param patternMap
-   * @deprecated used only for JUnit tests
+   * @deprecated only used by JUnit tests; production code passes a {@link StackMatcher}
    */
   @Deprecated
   public FlatOrderlessStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,

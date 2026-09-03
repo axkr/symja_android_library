@@ -34,7 +34,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.visit.IVisitor;
@@ -1102,17 +1101,6 @@ public class Symbol implements ISymbol, Serializable {
     }
     EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final void putDownRule(PatternMatcherAndInvoker pmEvaluator) {
-    ensureRulesLoaded();
-    if (fRulesData == null) {
-      fRulesData = new RulesData();
-    }
-    EvalEngine.incEpoch();
-    fRulesData.insertMatcher(pmEvaluator);
   }
 
   @Override

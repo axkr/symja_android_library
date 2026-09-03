@@ -100,6 +100,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
     }
   }
 
+  /** Debug output of one partition, used by the step iterators. */
   public String toString(int[][] result) {
     StringBuilder buf = new StringBuilder(16 + result.length * 10);
     for (int i = 0; i < result.length; i++) {

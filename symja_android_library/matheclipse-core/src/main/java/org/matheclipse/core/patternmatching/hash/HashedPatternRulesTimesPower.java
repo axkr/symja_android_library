@@ -53,6 +53,11 @@ public class HashedPatternRulesTimesPower extends HashedPatternRulesTimes {
     }
   }
 
+  /**
+   * Deliberately bypasses the exponent arithmetic of
+   * {@link HashedPatternRulesTimes#evalDownRule(IExpr, IExpr, IExpr, IExpr, EvalEngine)}: the
+   * arguments are matched as they are (see {@link HashedOrderlessMatcherTimes#updateHashValues}).
+   */
   @Override
   public IExpr evalDownRule(IExpr arg1, IExpr num1, IExpr arg2, IExpr num2, EvalEngine engine) {
     return getRulesData().evalDownRule(F.list(arg1, arg2), engine);

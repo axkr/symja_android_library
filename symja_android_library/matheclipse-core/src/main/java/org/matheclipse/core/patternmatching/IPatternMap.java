@@ -3,12 +3,9 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -84,7 +81,7 @@ import org.matheclipse.core.visit.VisitorReplaceAllWithPatternFlags;
  * @see org.matheclipse.core.patternmatching.PatternMatcher
  * @see org.matheclipse.core.expression.Pattern
  */
-public interface IPatternMap extends Map<ISymbol, IExpr> {
+public interface IPatternMap {
   /**
    * The default priority when associating a new rule to a symbol. Lower values have higher
    * priorities.
@@ -107,7 +104,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     }
 
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {}
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -130,20 +126,12 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return null;
     }
 
-    @Override
-    public final IExpr getSymbolValue(ISymbol symbol) {
-      return null;
-    }
 
     @Override
     public IExpr getValue(IPatternObject pattern) {
       return null;
     }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      return new ArrayList<IExpr>(1);
-    }
 
     @Override
     public void initPattern() {}
@@ -156,15 +144,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return true;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      return false;
-    }
 
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      return true;
-    }
 
     @Override
     public boolean isRuleWithoutPatterns() {
@@ -180,13 +160,11 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     @Override
     public boolean setValue(IPatternObject pattern, IExpr expr) {
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
     public boolean setValue(IPatternSequence pattern, IAST sequence) {
       return false;
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
     }
 
     @Override
@@ -257,14 +235,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     }
 
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-    // for (int i = 0; i < patternMap.size(); i++) {
-    // // compare object references with operator '==' here !
-    // if (fSymbol1 == getKey(i)) {
-    // fValue1 = patternMap.getValue(i);
-    // }
-    // }
-    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -302,20 +272,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return (sym == fSymbol1) ? fValue1 : null;
     }
 
-    @Override
-    public final IExpr getSymbolValue(ISymbol sym) {
-      return (sym == fSymbol1) ? fValue1 : null;
-    }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      if (fValue1 == null) {
-        return null;
-      }
-      List<IExpr> args = new ArrayList<IExpr>(1);
-      args.add(fValue1);
-      return args;
-    }
 
     @Override
     public void initPattern() {
@@ -341,24 +298,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return fValue1 != null;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
-        return true;
-      }
-      return false;
-    }
 
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      if (isAllPatternsAssigned()) {
-        return true;
-      }
-      return substitutedExpr.isFree(x -> {
-        // compare object references with operator '==' here !
-        return (fSymbol1 != x);
-      }, true);
-    }
 
     @Override
     public boolean isRuleWithoutPatterns() {
@@ -401,7 +341,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
@@ -416,7 +355,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
     }
 
     @Override
@@ -514,17 +452,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     }
 
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-    // for (int i = 0; i < patternMap.size(); i++) {
-    // // compare object references with operator '==' here !
-    // IExpr temp = getKey(i);
-    // if (fSymbol1 == temp) {
-    // fValue1 = patternMap.getValue(i);
-    // } else if (fSymbol2 == temp) {
-    // fValue2 = patternMap.getValue(i);
-    // }
-    // }
-    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -574,27 +501,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return null;
     }
 
-    @Override
-    public final IExpr getSymbolValue(ISymbol sym) {
-      if (sym == fSymbol1) {
-        return fValue1;
-      }
-      if (sym == fSymbol2) {
-        return fValue2;
-      }
-      return null;
-    }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      if (fValue1 == null || fValue2 == null) {
-        return null;
-      }
-      List<IExpr> args = new ArrayList<IExpr>(2);
-      args.add(fValue1);
-      args.add(fValue2);
-      return args;
-    }
 
     @Override
     public void initPattern() {
@@ -625,27 +532,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return fValue2 != null && fValue1 != null;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
-        return true;
-      }
-      return false;
-    }
 
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      if (isAllPatternsAssigned()) {
-        return true;
-      }
-      return substitutedExpr.isFree(x -> {
-        // compare object references with operator '==' here !
-        return (fSymbol1 != x) && (fSymbol2 != x);
-      }, true);
-    }
 
     @Override
     public boolean isRuleWithoutPatterns() {
@@ -706,7 +593,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
@@ -725,7 +611,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
     }
 
     @Override
@@ -851,19 +736,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     }
 
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-    // for (int i = 0; i < patternMap.size(); i++) {
-    // // compare object references with operator '==' here !
-    // IExpr temp = getKey(i);
-    // if (fSymbol1 == temp) {
-    // fValue1 = patternMap.getValue(i);
-    // } else if (fSymbol2 == temp) {
-    // fValue2 = patternMap.getValue(i);
-    // } else if (fSymbol3 == temp) {
-    // fValue3 = patternMap.getValue(i);
-    // }
-    // }
-    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -923,32 +795,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return null;
     }
 
-    @Override
-    public final IExpr getSymbolValue(ISymbol sym) {
-      if (sym == fSymbol1) {
-        return fValue1;
-      }
-      if (sym == fSymbol2) {
-        return fValue2;
-      }
-      if (sym == fSymbol3) {
-        return fValue3;
-      }
-      return null;
-    }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      if (isAllPatternsAssigned()) {
-        List<IExpr> args = new ArrayList<IExpr>(3);
-        args.add(fValue1);
-        args.add(fValue2);
-        args.add(fValue3);
-        return args;
-      } else {
-        return null;
-      }
-    }
 
     @Override
     public void initPattern() {
@@ -984,30 +831,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return fValue3 != null && fValue2 != null && fValue1 != null;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
-        return true;
-      }
-      return false;
-    }
 
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      if (isAllPatternsAssigned()) {
-        return true;
-      }
-      return substitutedExpr.isFree(x -> {
-        // compare object references with operator '==' here !
-        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x);
-      }, true);
-    }
 
     @Override
     public boolean isRuleWithoutPatterns() {
@@ -1083,7 +907,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
@@ -1105,7 +928,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         fValue3 = sequence;
         return true;
       }
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
       return false;
     }
 
@@ -1255,21 +1077,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     }
 
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-    // for (int i = 0; i < patternMap.size(); i++) {
-    // // compare object references with operator '==' here !
-    // IExpr temp = getKey(i);
-    // if (fSymbol1 == temp) {
-    // fValue1 = patternMap.getValue(i);
-    // } else if (fSymbol2 == temp) {
-    // fValue2 = patternMap.getValue(i);
-    // } else if (fSymbol3 == temp) {
-    // fValue3 = patternMap.getValue(i);
-    // } else if (fSymbol4 == temp) {
-    // fValue4 = patternMap.getValue(i);
-    // }
-    // }
-    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -1338,36 +1145,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return null;
     }
 
-    @Override
-    public final IExpr getSymbolValue(ISymbol sym) {
-      if (sym == fSymbol1) {
-        return fValue1;
-      }
-      if (sym == fSymbol2) {
-        return fValue2;
-      }
-      if (sym == fSymbol3) {
-        return fValue3;
-      }
-      if (sym == fSymbol4) {
-        return fValue4;
-      }
-      return null;
-    }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      if (isAllPatternsAssigned()) {
-        List<IExpr> args = new ArrayList<IExpr>(4);
-        args.add(fValue1);
-        args.add(fValue2);
-        args.add(fValue3);
-        args.add(fValue4);
-        return args;
-      } else {
-        return null;
-      }
-    }
 
     @Override
     public void initPattern() {
@@ -1408,33 +1186,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return fValue4 != null && fValue3 != null && fValue2 != null && fValue1 != null;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue4 != null && fSymbol4 instanceof ISymbol) {
-        return true;
-      }
-      return false;
-    }
 
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      if (isAllPatternsAssigned()) {
-        return true;
-      }
-      return substitutedExpr.isFree(x -> {
-        // compare object references with operator '==' here !
-        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x) && (fSymbol4 != x);
-      }, true);
-    }
 
     @Override
     public boolean isRuleWithoutPatterns() {
@@ -1525,7 +1277,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
@@ -1551,7 +1302,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         fValue4 = sequence;
         return true;
       }
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
       return false;
     }
 
@@ -1727,23 +1477,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     }
 
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-    // for (int i = 0; i < patternMap.size(); i++) {
-    // // compare object references with operator '==' here !
-    // IExpr temp = getKey(i);
-    // if (fSymbol1 == temp) {
-    // fValue1 = patternMap.getValue(i);
-    // } else if (fSymbol2 == temp) {
-    // fValue2 = patternMap.getValue(i);
-    // } else if (fSymbol3 == temp) {
-    // fValue3 = patternMap.getValue(i);
-    // } else if (fSymbol4 == temp) {
-    // fValue4 = patternMap.getValue(i);
-    // } else if (fSymbol5 == temp) {
-    // fValue5 = patternMap.getValue(i);
-    // }
-    // }
-    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -1820,40 +1553,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return null;
     }
 
-    @Override
-    public final IExpr getSymbolValue(ISymbol sym) {
-      if (sym == fSymbol1) {
-        return fValue1;
-      }
-      if (sym == fSymbol2) {
-        return fValue2;
-      }
-      if (sym == fSymbol3) {
-        return fValue3;
-      }
-      if (sym == fSymbol4) {
-        return fValue4;
-      }
-      if (sym == fSymbol5) {
-        return fValue5;
-      }
-      return null;
-    }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      if (isAllPatternsAssigned()) {
-        List<IExpr> args = new ArrayList<IExpr>(5);
-        args.add(fValue1);
-        args.add(fValue2);
-        args.add(fValue3);
-        args.add(fValue4);
-        args.add(fValue5);
-        return args;
-      } else {
-        return null;
-      }
-    }
 
     @Override
     public void initPattern() {
@@ -1900,37 +1600,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
           && fValue1 != null;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue4 != null && fSymbol4 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue5 != null && fSymbol5 instanceof ISymbol) {
-        return true;
-      }
-      return false;
-    }
 
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      if (isAllPatternsAssigned()) {
-        return true;
-      }
-      return substitutedExpr.isFree(x -> {
-        // compare object references with operator '==' here !
-        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x) && (fSymbol4 != x)
-            && (fSymbol5 != x);
-      }, true);
-    }
 
     @Override
     public boolean isRuleWithoutPatterns() {
@@ -2036,7 +1706,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
@@ -2066,7 +1735,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         fValue5 = sequence;
         return true;
       }
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
       return false;
     }
 
@@ -2270,25 +1938,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     }
 
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-    // for (int i = 0; i < patternMap.size(); i++) {
-    // // compare object references with operator '==' here !
-    // IExpr temp = getKey(i);
-    // if (fSymbol1 == temp) {
-    // fValue1 = patternMap.getValue(i);
-    // } else if (fSymbol2 == temp) {
-    // fValue2 = patternMap.getValue(i);
-    // } else if (fSymbol3 == temp) {
-    // fValue3 = patternMap.getValue(i);
-    // } else if (fSymbol4 == temp) {
-    // fValue4 = patternMap.getValue(i);
-    // } else if (fSymbol5 == temp) {
-    // fValue5 = patternMap.getValue(i);
-    // } else if (fSymbol6 == temp) {
-    // fValue6 = patternMap.getValue(i);
-    // }
-    // }
-    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -2374,44 +2023,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return null;
     }
 
-    @Override
-    public final IExpr getSymbolValue(ISymbol sym) {
-      if (sym == fSymbol1) {
-        return fValue1;
-      }
-      if (sym == fSymbol2) {
-        return fValue2;
-      }
-      if (sym == fSymbol3) {
-        return fValue3;
-      }
-      if (sym == fSymbol4) {
-        return fValue4;
-      }
-      if (sym == fSymbol5) {
-        return fValue5;
-      }
-      if (sym == fSymbol6) {
-        return fValue6;
-      }
-      return null;
-    }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      if (isAllPatternsAssigned()) {
-        List<IExpr> args = new ArrayList<IExpr>(6);
-        args.add(fValue1);
-        args.add(fValue2);
-        args.add(fValue3);
-        args.add(fValue4);
-        args.add(fValue5);
-        args.add(fValue6);
-        return args;
-      } else {
-        return null;
-      }
-    }
 
     @Override
     public void initPattern() {
@@ -2463,40 +2075,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
           && fValue2 != null && fValue1 != null;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue4 != null && fSymbol4 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue5 != null && fSymbol5 instanceof ISymbol) {
-        return true;
-      }
-      if (fValue6 != null && fSymbol6 instanceof ISymbol) {
-        return true;
-      }
-      return false;
-    }
 
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      if (isAllPatternsAssigned()) {
-        return true;
-      }
-      return substitutedExpr.isFree(x -> {
-        // compare object references with operator '==' here !
-        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x) && (fSymbol4 != x)
-            && (fSymbol5 != x) && (fSymbol6 != x);
-      }, true);
-    }
 
     @Override
     public boolean isRuleWithoutPatterns() {
@@ -2612,12 +2191,11 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       if (temp == fSymbol6) {
         fValue6 = expr;
         if (fValue6.isOneIdentityAST1()) {
-          fValue3 = fValue6.first();
+          fValue6 = fValue6.first();
         }
         return true;
       }
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
@@ -2651,7 +2229,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         fValue6 = sequence;
         return true;
       }
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
       return false;
     }
 
@@ -2887,16 +2464,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
      * @param patternMap
      */
     // @Override
-    // public void copyPatternValuesFromPatternMatcher(final IPatternMap patternMap) {
-    // for (int i = 0; i < patternMap.size(); i++) {
-    // for (int j = 0; j < fSymbolsOrPattern.length; j++) {
-    // // compare object references with operator '==' here !
-    // if (fSymbolsOrPattern[j] == patternMap.getKey(i)) {
-    // fSymbolsOrPatternValues[j] = patternMap.getValue(i);
-    // }
-    // }
-    // }
-    // }
 
     /** {@inheritDoc} */
     @Override
@@ -2946,40 +2513,11 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     @Override
     public IExpr getValue(IPatternObject pattern) {
       ISymbol sym = pattern.getSymbol();
-      if (sym != null) {
-        return getSymbolValue(sym);
-      }
-      IExpr temp = pattern;
-
-      int indx = indexOf(temp);
+      int indx = indexOf(sym != null ? sym : pattern);
       return indx >= 0 ? fSymbolsOrPatternValues[indx] : null;
     }
 
-    /**
-     * Return the matched value for the given symbol
-     *
-     * @param symbol the symbol
-     * @return <code>null</code> if no matched expression exists
-     */
-    @Override
-    public final IExpr getSymbolValue(ISymbol symbol) {
-      int indx = indexOf(symbol);
-      return indx >= 0 ? fSymbolsOrPatternValues[indx] : null;
-    }
 
-    @Override
-    public List<IExpr> getValuesAsList() {
-      final int length = fSymbolsOrPatternValues.length;
-      List<IExpr> args = new ArrayList<IExpr>(length);
-      for (int i = 0; i < length; i++) {
-        IExpr arg = fSymbolsOrPatternValues[i];
-        if (arg == null) {
-          return null;
-        }
-        args.add(arg);
-      }
-      return args;
-    }
 
     /** Set all pattern values to <code>null</code>; */
     @Override
@@ -3031,21 +2569,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return true;
     }
 
-    @Override
-    public boolean isValueAssigned() {
-      if (fSymbolsOrPatternValues != null) {
-        // at least one pattern has a value assigned?
-        final int length = fSymbolsOrPatternValues.length;
-        for (int i = 0; i < length; i++) {
-          if (fSymbolsOrPatternValues[i] != null) {
-            if (fSymbolsOrPattern[i] instanceof ISymbol) {
-              return true;
-            }
-          }
-        }
-      }
-      return false;
-    }
 
     /**
      * Returns true if the given expression contains no patterns
@@ -3057,31 +2580,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return fRuleWithoutPattern;
     }
 
-    /**
-     * Check if the substituted expression still contains a symbol of a pattern expression.
-     *
-     * @param substitutedExpr
-     * @return
-     */
-    @Override
-    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
-      if (isAllPatternsAssigned()) {
-        return true;
-      }
-      if (fSymbolsOrPattern != null) {
-        return substitutedExpr.isFree(x -> {
-          final int length = fSymbolsOrPattern.length;
-          for (int i = 0; i < length; i++) {
-            // compare object references with operator '==' here !
-            if (fSymbolsOrPattern[i] == x) {
-              return false;
-            }
-          }
-          return true;
-        }, true);
-      }
-      return true;
-    }
 
     /**
      * Reset the values to the values in the given array
@@ -3131,7 +2629,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
     }
 
     @Override
@@ -3147,7 +2644,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
         return true;
       }
       return false;
-      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
     }
 
     /** {@inheritDoc} */
@@ -3196,7 +2692,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
             return F.NIL;
           }
           if (input.isAST(S.OptionValue, 2, 4)) {
-            // final int length = fSymbolsOrPattern.length;
             return IPatternMap.optionValueReplace((IAST) input, true, engine);
           }
           return F.NIL;
@@ -3211,16 +2706,16 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       if (fSymbolsOrPatternValues != null) {
         return F.subst(rhsExpr, (IExpr input) -> {
           if (input instanceof IPatternObject) {
-            final ISymbol symbol = (ISymbol) input;
-            final int length = fSymbolsOrPattern.length;
+            // fSymbolsOrPattern holds the symbol of a named pattern, so the pattern object itself
+            // has to be looked up in fPatternObjects
+            final int length = fPatternObjects.length;
             for (int i = 0; i < length; i++) {
               // compare object references with operator '==' here !
-              if (symbol == fSymbolsOrPattern[i]) {
+              if (input == fPatternObjects[i]) {
                 return fSymbolsOrPatternValues[i] != null ? fSymbolsOrPatternValues[i]
                     : nilOrEmptySequence;
               }
             }
-            return F.NIL;
           }
           return F.NIL;
         });
@@ -3252,13 +2747,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
       return "PatternMap[]";
     }
 
-    public IExpr[] getSymbolsOrPattern() {
-      return fSymbolsOrPattern;
-    }
 
-    public IExpr[] getSymbolsOrPatternValues() {
-      return fSymbolsOrPatternValues;
-    }
 
   }
 
@@ -3285,84 +2774,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
   }
 
 
-  public static IPatternMap createSymbolToValueMap(
-      List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
-    int size = patternIndexMap.size();
-    switch (size) {
-      case 1:
-        PatternMap1 patternMap1 = new PatternMap1();
-        patternMap1.fValue1 = patternIndexMap.get(0).getFirst();
-        patternMap1.fSymbol1 = patternIndexMap.get(0).getSecond();
-        return patternMap1;
-      case 2:
-        PatternMap2 patternMap2 = new PatternMap2();
-        patternMap2.fValue1 = patternIndexMap.get(0).getFirst();
-        patternMap2.fSymbol1 = patternIndexMap.get(0).getSecond();
-        patternMap2.fValue2 = patternIndexMap.get(1).getFirst();
-        patternMap2.fSymbol2 = patternIndexMap.get(1).getSecond();
-        return patternMap2;
-      case 3:
-        PatternMap3 patternMap3 = new PatternMap3();
-        patternMap3.fValue1 = patternIndexMap.get(0).getFirst();
-        patternMap3.fSymbol1 = patternIndexMap.get(0).getSecond();
-        patternMap3.fValue2 = patternIndexMap.get(1).getFirst();
-        patternMap3.fSymbol2 = patternIndexMap.get(1).getSecond();
-        patternMap3.fValue3 = patternIndexMap.get(2).getFirst();
-        patternMap3.fSymbol3 = patternIndexMap.get(2).getSecond();
-        return patternMap3;
-      case 4:
-        PatternMap4 patternMap4 = new PatternMap4();
-        patternMap4.fValue1 = patternIndexMap.get(0).getFirst();
-        patternMap4.fSymbol1 = patternIndexMap.get(0).getSecond();
-        patternMap4.fValue2 = patternIndexMap.get(1).getFirst();
-        patternMap4.fSymbol2 = patternIndexMap.get(1).getSecond();
-        patternMap4.fValue3 = patternIndexMap.get(2).getFirst();
-        patternMap4.fSymbol3 = patternIndexMap.get(2).getSecond();
-        patternMap4.fValue4 = patternIndexMap.get(3).getFirst();
-        patternMap4.fSymbol4 = patternIndexMap.get(3).getSecond();
-        return patternMap4;
-      case 5:
-        PatternMap5 patternMap5 = new PatternMap5();
-        patternMap5.fValue1 = patternIndexMap.get(0).getFirst();
-        patternMap5.fSymbol1 = patternIndexMap.get(0).getSecond();
-        patternMap5.fValue2 = patternIndexMap.get(1).getFirst();
-        patternMap5.fSymbol2 = patternIndexMap.get(1).getSecond();
-        patternMap5.fValue3 = patternIndexMap.get(2).getFirst();
-        patternMap5.fSymbol3 = patternIndexMap.get(2).getSecond();
-        patternMap5.fValue4 = patternIndexMap.get(3).getFirst();
-        patternMap5.fSymbol4 = patternIndexMap.get(3).getSecond();
-        patternMap5.fValue5 = patternIndexMap.get(4).getFirst();
-        patternMap5.fSymbol5 = patternIndexMap.get(4).getSecond();
-        return patternMap5;
-      case 6:
-        PatternMap6 patternMap6 = new PatternMap6();
-        patternMap6.fValue1 = patternIndexMap.get(0).getFirst();
-        patternMap6.fSymbol1 = patternIndexMap.get(0).getSecond();
-        patternMap6.fValue2 = patternIndexMap.get(1).getFirst();
-        patternMap6.fSymbol2 = patternIndexMap.get(1).getSecond();
-        patternMap6.fValue3 = patternIndexMap.get(2).getFirst();
-        patternMap6.fSymbol3 = patternIndexMap.get(2).getSecond();
-        patternMap6.fValue4 = patternIndexMap.get(3).getFirst();
-        patternMap6.fSymbol4 = patternIndexMap.get(3).getSecond();
-        patternMap6.fValue5 = patternIndexMap.get(4).getFirst();
-        patternMap6.fSymbol5 = patternIndexMap.get(4).getSecond();
-        patternMap6.fValue6 = patternIndexMap.get(5).getFirst();
-        patternMap6.fSymbol6 = patternIndexMap.get(5).getSecond();
-        return patternMap6;
-    }
-    PatternMap patternMap = new PatternMap();
-    patternMap.fRuleWithoutPattern = true;
-    patternMap.fSymbolsOrPattern = new IExpr[size];
-    patternMap.fSymbolsOrPatternValues = new IExpr[size];
-    patternMap.fPatternObjects = new IPatternObject[size];
-    int i = 0;
-    for (GenericPair<IExpr, ISymbol> entry : patternIndexMap) {
-      patternMap.fSymbolsOrPatternValues[i] = entry.getFirst();
-      patternMap.fSymbolsOrPattern[i] = entry.getSecond();
-      i++;
-    }
-    return patternMap;
-  }
 
   public static IPatternMap createSymbolToPatternObjetMap(
       List<GenericPair<IExpr, IPatternObject>> patternIndexMap, boolean isRuleWithoutPattern) {
@@ -3612,7 +3023,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
    *
    * @param patternMap
    */
-  // public void copyPatternValuesFromPatternMatcher(final IPatternMap patternMap);
 
   /**
    * Get the first <code>int</code> index value mapped to the given pattern or symbol.
@@ -3627,23 +3037,21 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
   public IExpr getKey(int index);
 
   /**
-   * Return the matched value for the given <code>index</code> if possisble.
+   * Get the value at the given <code>index</code>.
    *
-   * @return <code>null</code> if no matched expression exists
+   * @param index the slot index of the pattern
+   * @return <code>null</code> if no value was matched for the pattern at this index
+   * @see #getKey(int)
    */
   public IExpr getValue(int index);
 
-  public IExpr getSymbolValue(ISymbol symbol);
-
   /**
-   * Return the matched value for the given pattern object
+   * Return the matched value for the given pattern object.
    *
    * @param pattern the pattern object
    * @return <code>null</code> if no matched expression exists
    */
   public IExpr getValue(IPatternObject pattern);
-
-  public List<IExpr> getValuesAsList();
 
   /** Set all pattern values to <code>null</code>; */
   public void initPattern();
@@ -3661,14 +3069,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
    */
   public boolean isAllPatternsAssigned();
 
-  /**
-   * Check if the substituted expression still contains a symbol of a pattern expression.
-   *
-   * @param substitutedExpr
-   * @return
-   */
-  public boolean isFreeOfPatternSymbols(IExpr substitutedExpr);
-
   default boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
     final IExpr temp = substitutePatternOrSymbols(expr, false).orElse(expr);
     if (temp.isSequence()) {
@@ -3683,13 +3083,6 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
    * @return
    */
   public boolean isRuleWithoutPatterns();
-
-  /**
-   * Returns true if the pattern matcher contains at least one value assigned.
-   *
-   * @return
-   */
-  public boolean isValueAssigned();
 
   /**
    * Reset the values to the values in the given array
@@ -3724,7 +3117,7 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
    *
    * @return the number of symbols used in this map.
    */
-  @Override
+  /** The number of pattern slots. */
   public int size();
 
   public IExpr substitute(IExpr symbolOrPatternObject);
@@ -3978,58 +3371,14 @@ public interface IPatternMap extends Map<ISymbol, IExpr> {
     lhsPatternAST.isFreeOfPatterns();
   }
 
-  @Override
-  default boolean isEmpty() {
-    return size() == 0;
-  }
 
-  @Override
-  default boolean containsKey(Object key) {
-    return get(key) != null;
-  }
 
-  @Override
-  default boolean containsValue(Object value) {
-    throw new UnsupportedOperationException("containsValue is not supported in IPatternMap");
-  }
 
-  @Override
-  default IExpr get(Object key) {
-    return getSymbolValue((ISymbol) key);
-  }
 
-  @Override
-  default IExpr put(ISymbol key, IExpr value) {
-    throw new UnsupportedOperationException("containsValue is not supported in IPatternMap");
-  }
 
-  @Override
-  default IExpr remove(Object key) {
-    throw new UnsupportedOperationException("remove is not supported in IPatternMap");
-  }
 
-  @Override
-  default void putAll(Map<? extends ISymbol, ? extends IExpr> m) {
-    throw new UnsupportedOperationException("putAll is not supported in IPatternMap");
-  }
 
-  @Override
-  default void clear() {
-    initPattern();
-  }
 
-  @Override
-  default Set<ISymbol> keySet() {
-    throw new UnsupportedOperationException("keySet is not supported in IPatternMap");
-  }
 
-  @Override
-  default Collection<IExpr> values() {
-    throw new UnsupportedOperationException("values is not supported in IPatternMap");
-  }
 
-  @Override
-  default Set<Entry<ISymbol, IExpr>> entrySet() {
-    throw new UnsupportedOperationException("entrySet is not supported in IPatternMap");
-  }
 }

@@ -18,15 +18,7 @@ public final class PatternMatcherEvalEngine extends PatternMatcher {
   @Override
   public IPatternMatcher copy() {
     PatternMatcherEvalEngine v = new PatternMatcherEvalEngine();
-    v.fLHSPriority = fLHSPriority;
-    v.fThrowIfTrue = fThrowIfTrue;
-    v.fLhsPatternExpr = fLhsPatternExpr;
-    if (fPatternMap != null) {
-      v.fPatternMap = fPatternMap.copy();
-    }
-    v.fLhsExprToMatch = fLhsExprToMatch;
-    v.fSetFlags = fSetFlags;
-    v.fPatterHash = fPatterHash;
+    copyBaseFieldsTo(v);
     v.fEngine = fEngine;
     return v;
   }

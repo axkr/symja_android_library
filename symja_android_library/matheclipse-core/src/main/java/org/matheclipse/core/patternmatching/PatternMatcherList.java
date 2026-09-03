@@ -1,6 +1,8 @@
 package org.matheclipse.core.patternmatching;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ConditionException;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -64,20 +66,15 @@ public final class PatternMatcherList extends PatternMatcherAndEvaluator {
   @Override
   public IPatternMatcher copy() {
     PatternMatcherList v = new PatternMatcherList();
-    v.fLHSPriority = fLHSPriority;
-    v.fThrowIfTrue = fThrowIfTrue;
-    v.fLhsPatternExpr = fLhsPatternExpr;
-    if (fPatternMap != null) {
-      v.fPatternMap = fPatternMap.copy();
-    }
-    v.fLhsExprToMatch = fLhsExprToMatch;
-    v.fSetFlags = fSetFlags;
-    v.fPatterHash = fPatterHash;
-    v.fRightHandSide = fRightHandSide;
-    // like in clone() - fReturnResult is per-match state and must not leak into the copy
-    v.fReturnResult = F.NIL;
-    v.fReplaceList = fReplaceList;
+    copyEvaluatorFieldsTo(v);
+    // the collected results are per-match state
+    v.fReplaceList = F.ListAlloc();
     return v;
+  }
+
+  /** Forget the results collected so far. */
+  public void resetReplaceList() {
+    fReplaceList = F.ListAlloc();
   }
 
   @Override
@@ -86,13 +83,39 @@ public final class PatternMatcherList extends PatternMatcherAndEvaluator {
     return F.NIL;
   }
 
+  /**
+   * Collect the substituted right-hand-side and return <code>false</code>, so that the caller
+   * continues with the next possible match.
+   *
+   * <p>
+   * A right-hand-side <code>body /; test</code> (or a <code>Module</code>, <code>With</code>,
+   * <code>Block</code> with such a condition) is evaluated first and only collected if the test
+   * holds - like {@link PatternMatcherAndEvaluator#checkRHSCondition(EvalEngine)} does for a
+   * single match.
+   */
   @Override
   public boolean checkRHSCondition(EvalEngine engine) {
     IPatternMap patternMap = createPatternMap();
-
     if (patternMap.isAllPatternsAssigned()) {
       IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
       if (result.isPresent()) {
+        if (fRightHandSide.isCondition() || fRightHandSide.isBlockModuleOrWithCondition()) {
+          // Condition() only evaluates its test in "evaluate right-hand-side" mode
+          final boolean oldEvalRHSMode = engine.isEvalRHSMode();
+          engine.pushOptionsStack();
+          try {
+            engine.setEvalRHSMode(true);
+            engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+            result = result.eval(engine);
+          } catch (final ConditionException e) {
+            return false;
+          } catch (final ReturnException e) {
+            result = e.getValue();
+          } finally {
+            engine.popOptionsStack();
+            engine.setEvalRHSMode(oldEvalRHSMode);
+          }
+        }
         fReplaceList.append(result);
         return false;
       }

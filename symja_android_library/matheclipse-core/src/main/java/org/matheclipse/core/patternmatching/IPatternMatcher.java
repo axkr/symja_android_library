@@ -93,17 +93,6 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
     }
   }
 
-  public static class PriorityComparator implements Comparator<IPatternMatcher>, Serializable {
-
-    private static final long serialVersionUID = -8228506547987873450L;
-
-    @Override
-    public int compare(IPatternMatcher o1, IPatternMatcher o2) {
-      return o1.getLHSPriority() < o2.getLHSPriority() ? -1
-          : o1.getLHSPriority() > o2.getLHSPriority() ? 1 : 0;
-    }
-  }
-
   public static final int NOFLAG = 0x0000;
 
   /** This rule is defined with the <code>Set[]</code> function */
@@ -112,19 +101,17 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
   /** This rule is defined with the <code>SetDelayed[]</code> function */
   public static final int SET_DELAYED = 0x0002;
 
-  /** This rule is defined with the <code>Set[]</code> function */
+  /** This rule is defined with the <code>TagSet[]</code> function */
   public static final int TAGSET = 0x0004;
 
-  /** This rule is defined with the <code>Set[]</code> function */
+  /** This rule is defined with the <code>TagSetDelayed[]</code> function */
   public static final int TAGSET_DELAYED = 0x0008;
 
-  /** This rule is defined with the <code>Set[]</code> function */
+  /** This rule is defined with the <code>UpSet[]</code> function */
   public static final int UPSET = 0x0010;
 
-  /** This rule is defined with the <code>Set[]</code> function */
+  /** This rule is defined with the <code>UpSetDelayed[]</code> function */
   public static final int UPSET_DELAYED = 0x0020;
-
-  public final static int THROW_IF_TRUE = 0x01001;
 
   /** This rules left-hand-side is wrapped with a <code>Literal[]</code> function */
   public static final int LITERAL = 0x1000;
@@ -132,19 +119,20 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
   /** This rules left-hand-side is wrapped with a <code>HoldPattern[]</code> function */
   public static final int HOLDPATTERN = 0x2000;
 
-  /** Serialization mask */
-  public static final int SERIALIZATION_MASK = 0x8000;
-
-  // Serializable {
   public static final EquivalenceComparator EQUIVALENCE_COMPARATOR = new EquivalenceComparator();
-
-  public static final PriorityComparator PRIORITY_COMPARATOR = new PriorityComparator();
 
   /** */
   private static final long serialVersionUID = 2841686297882535691L;
 
   /** Contains the "pattern-matching" expression */
   protected IExpr fLhsPatternExpr;
+
+  /**
+   * The flags of the definition which created this matcher, i.e. one of {@link #SET},
+   * {@link #SET_DELAYED}, {@link #UPSET},... possibly combined with {@link #HOLDPATTERN} or
+   * {@link #LITERAL}.
+   */
+  protected int fSetFlags;
 
   /**
    * Contains the lhs expression which should be matched in a clone of this pattern matcher during
@@ -202,10 +190,7 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    IPatternMatcher v = (IPatternMatcher) super.clone();
-    v.fLhsPatternExpr = fLhsPatternExpr;
-    v.fLhsExprToMatch = fLhsExprToMatch;
-    return v;
+    return super.clone();
   }
 
   public abstract IPatternMatcher copy();
@@ -246,7 +231,66 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    */
   public abstract IExpr eval(final IExpr leftHandSide, EvalEngine engine);
 
-  public abstract IAST getAsAST();
+  /**
+   * The rule as an expression: <code>Set(lhs, rhs)</code>, <code>SetDelayed(lhs, rhs)</code>,...
+   * possibly wrapped in <code>HoldPattern()</code> or <code>Literal()</code>.
+   */
+  public IAST getAsAST() {
+    IAST temp = F.binaryAST2(getSetSymbol(), getLHS(), getRHS());
+    if (isFlagOn(HOLDPATTERN)) {
+      return F.HoldPattern(temp);
+    }
+    if (isFlagOn(LITERAL)) {
+      return F.Literal(temp);
+    }
+    return temp;
+  }
+
+  /**
+   * Get the flags for this matcher.
+   *
+   * @see #SET
+   */
+  public final int getFlags() {
+    return fSetFlags;
+  }
+
+  /**
+   * Return the <code>Set, SetDelayed, UpSet,...</code> symbol which defined this rule.
+   *
+   * @return <code>null</code> if no symbol was defined
+   */
+  public final ISymbol getSetSymbol() {
+    if (isFlagOn(SET_DELAYED)) {
+      return S.SetDelayed;
+    }
+    if (isFlagOn(SET)) {
+      return S.Set;
+    }
+    if (isFlagOn(UPSET_DELAYED)) {
+      return S.UpSetDelayed;
+    }
+    if (isFlagOn(UPSET)) {
+      return S.UpSet;
+    }
+    if (isFlagOn(TAGSET_DELAYED)) {
+      return S.TagSetDelayed;
+    }
+    if (isFlagOn(TAGSET)) {
+      return S.TagSet;
+    }
+    return null;
+  }
+
+  /**
+   * Are the given flags enabled ?
+   *
+   * @param flags
+   * @see #SET
+   */
+  public final boolean isFlagOn(int flags) {
+    return (fSetFlags & flags) == flags;
+  }
 
   /**
    * Get the "left-hand-side" of a pattern-matching rule.

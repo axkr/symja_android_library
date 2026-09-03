@@ -23,7 +23,6 @@ import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
 
 /**
@@ -1178,18 +1177,6 @@ public interface ISymbol extends IExpr {
    */
   public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule,
       IPatternObject leftHandSide, IExpr rightHandSide, int priority, boolean packageMode);
-
-  /**
-   * <p>
-   * Associate a new rule, which invokes a method, to this symbol.
-   * 
-   * <p>
-   * Deprecated: don't use dynamically called methods.
-   *
-   * @param pmEvaluator the pattern matcher and invoker which should be associated with this symbol
-   */
-  @Deprecated
-  public void putDownRule(final PatternMatcherAndInvoker pmEvaluator);
 
   public void putMessage(final int setSymbol, String messageName, IStringX message);
 
