@@ -511,7 +511,7 @@
 			<dependency>
 				<groupId>org.boofcv</groupId>
 				<artifactId>boofcv-feature</artifactId>
-				<version>1.4.0</version>
+				<version>1.5.0</version>
 			</dependency>
 			<!-- TwelveMonkeys plugs extra formats into javax.imageio through
 			the ServiceLoader, so nothing references it at compile time. -->
