@@ -3,10 +3,34 @@
 ```
 DSolve(equation, f(var), var)
 ```
-> attempts to solve a linear differential `equation` for the function `f(var)` and variable `var`.
+> attempts to solve a differential `equation` for the function `f(var)` and variable `var`.
+
+```
+DSolve(equations, {f(var), g(var)}, var)
+```
+> attempts to solve a system of differential `equations`.
+
+```
+DSolve(equation, u(var1, var2), {var1, var2})
+```
+> attempts to solve a partial differential `equation` in two independent variables.
+
+The unknown function and the variable it depends on may be left out when the equation determines
+them. Boundary and initial conditions are given alongside the equation. The arbitrary constants
+and functions of a general solution are named `C(1)`, `C(2)`, ..., which the option
+`GeneratedParameters` renames.
+
+Ordinary differential equations are solved by the characteristic polynomial and variation of
+parameters when they have constant coefficients, and otherwise by the methods for Euler-Cauchy,
+separable, exact, homogeneous, Bernoulli, Riccati and Clairaut equations, by reduction of order,
+by the Laplace transform, and by recognizing the equations of the Airy and Bessel functions.
+Partial differential equations in two independent variables are solved by the method of
+characteristics when they are linear or quasi-linear, and receive a complete integral through
+Clairaut's and Charpit's methods when they are nonlinear.
 
 See:  
 * [Wikipedia - Ordinary differential equation](https://en.wikipedia.org/wiki/Ordinary_differential_equation)
+* [Wikipedia - Partial differential equation](https://en.wikipedia.org/wiki/Partial_differential_equation)
 
 ### Examples
 
@@ -27,7 +51,47 @@ See:
 {{y->Function({x},C(1)/E^x+E^x*C(2))}}        
 ```
 
-DSolve can also solve basic PDE
+The unknown and the variable may be left out, and an equation written without arguments is
+answered with a pure function.
+
+```
+>> DSolve(y'(x) == y(x))
+{{y(x)->E^x*C(1)}}
+
+>> DSolve(y' == y)
+{{y->Function({x},E^x*C(1))}}
+```
+
+Equations of higher order with constant coefficients are solved through the roots of their
+characteristic polynomial, and an inhomogeneous one by variation of parameters.
+
+```
+>> DSolve(y'''(x) - 6*y''(x) + 11*y'(x) - 6*y(x) == 0, y(x), x)
+{{y(x)->E^x*C(1)+E^(2*x)*C(2)+E^(3*x)*C(3)}}
+
+>> DSolve(y''(x) + y(x) == Sec(x), y(x), x)
+{{y(x)->C(1)*Cos(x)+Cos(x)*Log(Cos(x))+x*Sin(x)+C(2)*Sin(x)}}
+```
+
+`GeneratedParameters` names the arbitrary constants.
+
+```
+>> DSolve(y''(x) - 4*y(x) == 0, y(x), x, GeneratedParameters -> f)
+{{y(x)->f(1)/E^(2*x)+E^(2*x)*f(2)}}
+```
+
+Systems are split into blocks which share no unknown, and each block is solved on its own.
+
+```
+>> DSolve({y'(x) == x^2*y(x), z'(x) == 5*z(x)}, {y, z}, x)
+{{y->Function({x},E^(x^3/3)*C(1)),z->Function({x},E^(5*x)*C(2))}}
+
+>> DSolve({x'(t)==y(t), y'(t)==-x(t)}, {x(t), y(t)}, t)
+{{x(t)->C(1)*Cos(t)+C(2)*Sin(t),y(t)->C(2)*Cos(t)-C(1)*Sin(t)}}
+```
+
+The general solution of a partial differential equation contains an arbitrary function rather than
+an arbitrary constant.
 
 ```
 >> DSolve(D(f(x, y), x)/f(x, y) + 3*D(f(x, y), y) / f(x, y) == 2, f, {x, y}) 
@@ -38,15 +102,44 @@ DSolve can also solve basic PDE
         
 >> DSolve(D(y(x, t), t) + 2*D(y(x, t), x) == 0, y(x, t), {x, t}) 
 {{y(x,t)->C(1)[1/2*(2*t-x)]}}
+
+>> DSolve(D(u(x, y), x) == 1, u(x,y), {x, y})
+{{u(x,y)->x+C(1)[y]}}
+```
+
+Homogeneous equations of second order with constant coefficients are solved through the roots of
+their principal part. Laplace's equation has imaginary characteristic directions, the wave equation
+two real ones, and a repeated direction contributes a factor of the variable.
+
+```
+>> DSolve(D(u(x,y), {x,2}) + D(u(x,y), {y,2}) == 0, u(x,y), {x, y})
+{{u(x,y)->C(1)[-I*x+y]+C(2)[I*x+y]}}
+
+>> DSolve(D(u(x,t), {x,2}) - D(u(x,t), {t,2}) == 0, u(x,t), {t, x})
+{{u(x,t)->C(1)[-t+x]+C(2)[t+x]}}
+
+>> DSolve(3*D(u(x,y),{x,2}) + 30*D(u(x,y),x,y) + 75*D(u(x,y),{y,2}) == 0, u, {x, y})
+{{u->Function({x,y},C(1)[-5*x+y]+x*C(2)[-5*x+y])}}
+```
+
+A nonlinear equation of first order has no general solution in terms of an arbitrary function.
+What is returned is a complete integral, a family with two parameters.
+
+```
+>> DSolve(u(x,y) == x*D(u(x,y),x) + y*D(u(x,y),y) + Sin(D(u(x,y),x) + D(u(x,y),y)), u, {x, y})
+{{u->Function({x,y},x*C(1)+y*C(2)+Sin(C(1)+C(2)))}}
+```
+
+A condition which prescribes the unknown along a line determines the arbitrary function, so an
+initial profile is carried along the characteristics.
+
+```
+>> DSolve({D(u(t,x),t) + c*D(u(t,x),x) == 0, u(0,x) == E^(-x^2)}, u, {t, x})
+{{u->Function({t,x},E^(-(-c*t+x)^2))}}
 ```
 
 ### Related terms
-[DSolveValue](DSolveValue.md), [Factor](Factor.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md),[Solve](Solve.md)
-
-
-
-
-
+[DSolveValue](DSolveValue.md), [Factor](Factor.md), [FindRoot](FindRoot.md), [NDSolve](NDSolve.md), [NRoots](NRoots.md),[Solve](Solve.md)
 
 ### Implementation status
 

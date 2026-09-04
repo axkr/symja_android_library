@@ -491,6 +491,190 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveHigherOrderConstantCoefficients() {
+    // Solved through the roots of the characteristic polynomial. Building the equivalent first
+    // order system and taking a matrix exponential of its companion matrix instead did not return
+    // for any of these.
+    check("DSolve(y'''(x) - 6*y''(x) + 11*y'(x) - 6*y(x) == 0, y(x), x)", //
+        "{{y(x)->E^x*C(1)+E^(2*x)*C(2)+E^(3*x)*C(3)}}");
+
+    // A pair of conjugate complex roots stays real, as Cos and Sin of the imaginary part.
+    check("DSolve(y'''(x) + 4*y'(x) == 5*y(x), y(x), x)", //
+        "{{y(x)->E^x*C(1)+(C(2)*Cos(1/2*Sqrt(19)*x))/E^(x/2)+(C(3)*Sin(1/2*Sqrt(19)*x))/E^(x/\n" //
+            + "2)}}");
+
+    // A repeated root contributes the extra solution x*E^(r*x); here the root 0 twice.
+    check("DSolve(y'''(x) + y''(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/E^x+C(2)+x*C(3)}}");
+
+    check("DSolve(y''''(x) - y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/E^x+E^x*C(4)+C(2)*Cos(x)+C(3)*Sin(x)}}");
+  }
+
+  @Test
+  public void testDSolveVariationOfParameters() {
+    check("DSolve(y''(x) + y(x) == Sec(x), y(x), x)", //
+        "{{y(x)->C(1)*Cos(x)+Cos(x)*Log(Cos(x))+x*Sin(x)+C(2)*Sin(x)}}");
+
+    check("DSolve(y''(x) - 3*y'(x) + 2*y(x) == E^(3*x), y(x), x)", //
+        "{{y(x)->E^(3*x)/2+E^x*C(1)+E^(2*x)*C(2)}}");
+  }
+
+  @Test
+  public void testDSolveNonlinearInDerivative() {
+    // Reading a coefficient of y'(x) accounts for the linear term only and used to answer
+    // x+C(1). Solving the quadratic for y'(x) first gives two quadratures.
+    check("DSolve(y'(x) + x*y'(x)^2 == 1, y(x), x)", //
+        "{{y(x)->-Sqrt(1+4*x)+C(1)-Log(1-Sqrt(1+4*x))},{y(x)->Sqrt(1+4*x)+C(1)-Log(1+Sqrt(\n" //
+            + "1+4*x))}}");
+  }
+
+  @Test
+  public void testDSolveDeclinesInsteadOfAnswering() {
+    // No method covers a linear equation of second order with these variable coefficients. The
+    // first order solvers used to be offered it anyway, and answered from the part of it they
+    // could read, which produced an expression containing y''(x) itself.
+    check("DSolve(x*y''(x) + 2*y'(x) - x*y(x) == Sin(x), y(x), x)", //
+        "DSolve(-x*y(x)+2*y'(x)+x*y''(x)==Sin(x),y(x),x)");
+
+    // The second integration is elliptic, so this has no solution in elementary terms.
+    check("DSolve(y''(x) == y(x)^2 + 1, y(x), x)", //
+        "DSolve(y''(x)==1+y(x)^2,y(x),x)");
+
+    // A system which is not linear in its unknowns has no coefficient matrix. Treating E^z(x) as
+    // if it were a forcing function produced an answer to a different system.
+    check("DSolve({y'(x) == Exp(z(x)) + 1, z'(x) == y(x) - x}, {y, z}, x)", //
+        "DSolve({y'(x)==1+E^z(x),z'(x)==-x+y(x)},{y,z},x)");
+  }
+
+  @Test
+  public void testDSolveSystemDecoupled() {
+    // The two equations share no unknown, so they are separate problems. As one system neither
+    // fits the matrix construction, because the first coefficient depends on x.
+    check("DSolve({y'(x) == x^2*y(x), z'(x) == 5*z(x)}, {y, z}, x)", //
+        "{{y->Function({x},E^(x^3/3)*C(1)),z->Function({x},E^(5*x)*C(2))}}");
+
+    check("DSolve({y'(x) == x^2*y(x), z'(x) == 5*z(x), y(0) == 1, z(0) == 2}, {y, z}, x)", //
+        "{{y->Function({x},E^(x^3/3)),z->Function({x},2*E^(5*x))}}");
+  }
+
+  @Test
+  public void testDSolveSystemComplexEigenvalues() {
+    check(
+        "DSolve({y'(x) == y(x) - 2*z(x), z'(x) == y(x) - z(x), y(0) == 1, z(0) == 4}, {y, z}, x)", //
+        "{{y->Function({x},Cos(x)-7*Sin(x)),z->Function({x},4*Cos(x)-3*Sin(x))}}");
+  }
+
+  @Test
+  public void testDSolveReductionOfOrderWithConditions() {
+    // The general second integration of y'^2 == y^4/2 + C(1) is elliptic. Determining C(1) from
+    // y'(0) before integrating again makes it elementary, which is the only way this is solvable.
+    check("DSolve({y''(x) == y(x)^3, y(0) == 5, y'(0) == 25/Sqrt(2)}, y(x), x)", //
+        "{{y(x)->1/(1/5-x/Sqrt(2))}}");
+  }
+
+  @Test
+  public void testDSolveHomogeneousWithRoot() {
+    // y'(x) == y(x)/x + Sqrt(y(x)/x) is homogeneous but neither exact nor does it have an
+    // integrating factor in one variable, so the substitution y == v*x has to solve it.
+    check("DSolve(y'(x) - Sqrt(y(x)/x) == y(x)/x, y(x), x)", //
+        "{{y(x)->1/4*x*C(1)^2+1/2*x*C(1)*Log(x)+1/4*x*Log(x)^2}}");
+  }
+
+  @Test
+  public void testDSolvePDESingleDerivative() {
+    // Only one of the two derivatives occurs, so the other variable is a parameter and the
+    // constant of the integration is an arbitrary function of it.
+    check("DSolve(D(u(x, y), x) == 1, u(x,y), {x, y})", //
+        "{{u(x,y)->x+C(1)[y]}}");
+  }
+
+  @Test
+  public void testDSolvePDESecondOrder() {
+    // Elliptic: the characteristic directions are imaginary.
+    check("DSolve(D(u(x,y), {x,2}) + D(u(x,y), {y,2}) == 0, u(x,y), {x, y})", //
+        "{{u(x,y)->C(1)[-I*x+y]+C(2)[I*x+y]}}");
+
+    // Hyperbolic: d'Alembert's two families of real characteristics.
+    check("DSolve(D(u(x,t), {x,2}) - D(u(x,t), {t,2}) == 0, u(x,t), {t, x})", //
+        "{{u(x,t)->C(1)[-t+x]+C(2)[t+x]}}");
+
+    check("DSolve(2*D(u(x,y),{x,2}) + 7*D(u(x,y),x,y) - D(u(x,y),{y,2}) == 0, u, {x, y})", //
+        "{{u->Function({x,y},C(1)[(-7/4-Sqrt(57)/4)*x+y]+C(2)[(-7/4+Sqrt(57)/4)*x+y])}}");
+
+    // Parabolic: the repeated direction contributes a factor x, as a repeated root of a
+    // characteristic polynomial does for an ordinary equation.
+    check("DSolve(3*D(u(x,y),{x,2}) + 30*D(u(x,y),x,y) + 75*D(u(x,y),{y,2}) == 0, u, {x, y})", //
+        "{{u->Function({x,y},C(1)[-5*x+y]+x*C(2)[-5*x+y])}}");
+
+    // The principal part is the mixed derivative alone, so the operator factors directly.
+    check("DSolve(D(u(x,y),x,y) == 0, u(x,y), {x,y})", //
+        "{{u(x,y)->C(1)[y]+C(2)[x]}}");
+  }
+
+  @Test
+  public void testDSolvePDECompleteIntegral() {
+    // A nonlinear first-order equation has no general solution in terms of an arbitrary function.
+    // What is returned is a complete integral, a family with two parameters.
+    check("DSolve(D(u(x,y),x)*D(u(x,y),y) == 1, u, {x, y})", //
+        "{{u->Function({x,y},y/C(1)+x*C(1)+C(2))}}");
+
+    // The eikonal equation: one branch per root of the equation for the second derivative.
+    check("DSolve(D(u(x,y),x)^2 + D(u(x,y),y)^2 == 1, u, {x, y})", //
+        "{{u->Function({x,y},x*C(1)-y*Sqrt(1-C(1)^2)+C(2))},{u->Function({x,y},x*C(1)+y*Sqrt(\n" //
+            + "1-C(1)^2)+C(2))}}");
+
+    // Clairaut's equation u == x*u_x + y*u_y + f(u_x,u_y): replacing the derivatives by the two
+    // parameters is already the complete integral.
+    check("DSolve(u(x,y) == x*D(u(x,y),x) + y*D(u(x,y),y) + Sin(D(u(x,y),x) + D(u(x,y),y)), u, {x, y})", //
+        "{{u->Function({x,y},x*C(1)+y*C(2)+Sin(C(1)+C(2)))}}");
+
+    // Separable in the two groups of variables, so each side is a constant and one quadrature per
+    // variable remains.
+    check("DSolve(D(u(x,y),x)^2 + a*D(u(x,y),y) == x + 3*y, u, {x, y})", //
+        "{{u->Function({x,y},(3*y-C(1))^2/(6*a)-2/3*(x+C(1))^(3/2)+C(2))},{u->Function({x,y},(\n" //
+            + "3*y-C(1))^2/(6*a)+2/3*(x+C(1))^(3/2)+C(2))}}");
+  }
+
+  @Test
+  public void testDSolvePDEInitialConditions() {
+    // The initial profile is carried along the characteristics, so it simply travels.
+    check("DSolve({D(u(t,x),t) + c*D(u(t,x),x) == 0, u(0,x) == E^(-x^2)}, u, {t, x})", //
+        "{{u->Function({t,x},E^(-(-c*t+x)^2))}}");
+
+    check("DSolve({x*D(u(x,y),y) + y*D(u(x,y),x) == -4*x*y*u(x,y), u(x,0) == E^(-x^2)}, u, {x, y})", //
+        "{{u->Function({x,y},E^(-x^2-y^2))}}");
+  }
+
+  @Test
+  public void testDSolveInferredArguments() {
+    // The unknown and the variable it depends on can be read off the equation.
+    check("DSolve(y'(x) == y(x))", //
+        "{{y(x)->E^x*C(1)}}");
+
+    // An equation written without arguments cannot say what the variable is, so x is used, and
+    // the answer is a pure function which can be applied.
+    check("DSolve(y' == y)", //
+        "{{y->Function({x},E^x*C(1))}}");
+
+    check("DSolve({y'(x) == x*y(x), y(0) == 3})", //
+        "{{y(x)->3*E^(x^2/2)}}");
+
+    check("DSolve({y'(x) == z(x), z'(x) == -y(x)})", //
+        "{{y(x)->C(1)*Cos(x)+C(2)*Sin(x),z(x)->C(2)*Cos(x)-C(1)*Sin(x)}}");
+  }
+
+  @Test
+  public void testDSolveGeneratedParameters() {
+    check("DSolve(y''(x) - 4*y(x) == 0, y(x), x, GeneratedParameters -> f)", //
+        "{{y(x)->f(1)/E^(2*x)+E^(2*x)*f(2)}}");
+
+    // The arbitrary function of a partial differential equation is renamed as well.
+    check("DSolve(D(u(x,y),x) + 3*D(u(x,y),y) + u(x,y) == 1, u, {x, y}, GeneratedParameters -> f)", //
+        "{{u->Function({x,y},1+f(1)[-3*x+y]/E^x)}}");
+  }
+
+  @Test
   public void testDSolveValue001() {
     // Basic First-Order ODE
     // DSolve returns {{y(x) -> E^x * C(1)}}, DSolveValue strips the rules and returns the value

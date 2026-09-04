@@ -16,7 +16,7 @@ See:
 -2+E^x*C(1)
 
 >> DSolveValue({y'(x)==y(x)+2,y(0)==1},y(x), x)
-2+3*E^x
+-2+3*E^x
 ```
 
 ### Related terms

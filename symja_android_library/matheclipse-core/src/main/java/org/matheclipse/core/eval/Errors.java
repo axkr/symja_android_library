@@ -353,6 +353,9 @@ public class Errors {
       "ndsz",
       "At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.", //
       "nlim", "`1` = `2` is not a valid limit of integration.", //
+      "nlpde",
+      "Solution requested to a nonlinear partial differential equation. Trying to build a "
+          + "complete integral.", //
       "neql", "Lists `1` and `2` have different lengths.", //
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
       "nlnmt2",
