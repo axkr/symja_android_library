@@ -30,6 +30,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -111,7 +112,7 @@ public class Convert {
       return vector[i].getApcomplexNum();
     });
     if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+      out.addFlag(Flag.IS_VECTOR);
     }
     return out;
   }
@@ -143,7 +144,7 @@ public class Convert {
       return vector.getEntry(i).getApcomplexNum();
     });
     if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+      out.addFlag(Flag.IS_VECTOR);
     }
     return out;
   }
@@ -200,7 +201,7 @@ public class Convert {
       return vector[i].getApfloatNum();
     });
     if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+      out.addFlag(Flag.IS_VECTOR);
     }
     return out;
   }
@@ -232,7 +233,7 @@ public class Convert {
 
     });
     if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+      out.addFlag(Flag.IS_VECTOR);
     }
     return out;
   }
@@ -281,7 +282,7 @@ public class Convert {
     if (dim == null || dim[1] == 0) {
       if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
         if (arg1.isAST()) {
-          ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
+          ((IAST) arg1).resetFlags();
         }
         // Argument `1` at position `2` is not a non-empty rectangular matrix.
         Errors.printMessage(symbol, "matrix", F.list(arg1, F.C1));
@@ -296,7 +297,7 @@ public class Convert {
     if (dim == null || dim[0] != dim[1] || dim[1] == 0) {
       if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
         if (arg1.isAST()) {
-          ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
+          ((IAST) arg1).resetFlags();
         }
         // Argument `1` at position `2` is not a non-empty square matrix.
         Errors.printMessage(symbol, "matsq", F.list(arg1, F.C1));
@@ -366,7 +367,7 @@ public class Convert {
       return F.complexNum(cmp);
     });
     if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+      out.addFlag(Flag.IS_VECTOR);
     }
     return out;
   }
@@ -400,7 +401,7 @@ public class Convert {
       return F.complexNum(cmp);
     });
     if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+      out.addFlag(Flag.IS_VECTOR);
     }
     return out;
   }
@@ -1597,7 +1598,7 @@ public class Convert {
     }
     final int rowSize = vector.getDimension();
     final IASTAppendable out = F.mapRange(0, rowSize, i -> vector.getEntry(i));
-    out.addEvalFlags(IAST.IS_VECTOR);
+    out.addFlag(Flag.IS_VECTOR);
     return out;
   }
 
@@ -1625,7 +1626,7 @@ public class Convert {
     final int rowSize = vector.getDimension();
     final IASTAppendable out = F.mapRange(0, rowSize, i -> F.num(vector.getEntry(i)));
     if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+      out.addFlag(Flag.IS_VECTOR);
     }
     return out;
   }

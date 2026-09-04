@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -234,7 +235,7 @@ public class Root extends AbstractFunctionEvaluator {
     // The root index k and the ordering flag n are positions in a list of roots, not numbers to be
     // approximated: without NHoldRest, N[Root[f, k, n]] would rewrite them to 1.0 / 0.0 and the
     // integer check in evaluate(IAST, EvalEngine) would no longer match.
-    newSymbol.setAttributes(ISymbol.NHOLDREST);
+    newSymbol.setAttributes(Attribute.NHOLDREST);
   }
 
   /**

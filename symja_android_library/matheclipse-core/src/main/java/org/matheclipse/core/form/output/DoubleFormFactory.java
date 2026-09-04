@@ -21,6 +21,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.DoubleToMMA;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -1056,7 +1057,7 @@ public abstract class DoubleFormFactory {
 
       return;
     }
-    if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
+    if (list.hasFlag(Flag.IS_MATRIX)) {
       if (!fEmpty) {
         newLine(buf);
       }
@@ -1068,7 +1069,7 @@ public abstract class DoubleFormFactory {
     }
     for (int i = 2; i < listSize; i++) {
       append(buf, ",");
-      if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
+      if (list.hasFlag(Flag.IS_MATRIX)) {
         newLine(buf);
         append(buf, ' ');
       }

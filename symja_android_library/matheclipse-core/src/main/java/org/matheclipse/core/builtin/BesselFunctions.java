@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.BesselY;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -197,7 +198,7 @@ public class BesselFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
 
   }
@@ -252,7 +253,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -306,7 +307,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -361,7 +362,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
 
   }
@@ -416,7 +417,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -611,7 +612,7 @@ public class BesselFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -687,7 +688,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -802,7 +803,7 @@ public class BesselFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -911,7 +912,7 @@ public class BesselFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1026,7 +1027,7 @@ public class BesselFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1065,7 +1066,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1142,7 +1143,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1237,7 +1238,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1387,7 +1388,7 @@ public class BesselFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1458,7 +1459,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1528,7 +1529,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1610,7 +1611,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1813,7 +1814,7 @@ public class BesselFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
 
   }

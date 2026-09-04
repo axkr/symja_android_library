@@ -15,6 +15,7 @@ import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -530,6 +531,6 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
   public void setUp(final ISymbol newSymbol) {
     GraphicsOptions.OptionSet options = optionSet();
     setOptions(newSymbol, options.keys(), options.values());
-    newSymbol.setAttributes(ISymbol.HOLDALL);
+    newSymbol.setAttributes(Attribute.HOLDALL);
   }
 }

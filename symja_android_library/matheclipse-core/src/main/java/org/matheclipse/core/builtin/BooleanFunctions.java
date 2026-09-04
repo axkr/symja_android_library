@@ -53,6 +53,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.expression.data.BDDParser;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -722,7 +723,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ONEIDENTITY | ISymbol.FLAT);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.ONEIDENTITY, Attribute.FLAT);
     }
   }
 
@@ -842,7 +843,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -859,7 +860,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1295,7 +1296,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1885,7 +1886,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS);
+      newSymbol.setAttributes(Attribute.ORDERLESS);
     }
   }
 
@@ -1937,7 +1938,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -1989,7 +1990,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -2594,7 +2595,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -3018,9 +3019,8 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(
-          ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
-      MAX_DUMMY_SYMBOL.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.NUMERICFUNCTION);
+      MAX_DUMMY_SYMBOL.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT);
     }
   }
 
@@ -3166,9 +3166,8 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(
-          ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
-      MIN_DUMMY_SYMBOL.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.NUMERICFUNCTION);
+      MIN_DUMMY_SYMBOL.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT);
 
     }
   }
@@ -3281,7 +3280,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -3344,7 +3343,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3446,7 +3445,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3503,7 +3502,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3543,7 +3542,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -3689,7 +3688,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ONEIDENTITY | ISymbol.FLAT);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.ONEIDENTITY, Attribute.FLAT);
     }
   }
 
@@ -3752,7 +3751,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -4163,7 +4162,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS);
+      newSymbol.setAttributes(Attribute.ORDERLESS);
     }
   }
 
@@ -4227,7 +4226,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.ONEIDENTITY | ISymbol.FLAT);
+      newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.ONEIDENTITY, Attribute.FLAT);
     }
   }
 

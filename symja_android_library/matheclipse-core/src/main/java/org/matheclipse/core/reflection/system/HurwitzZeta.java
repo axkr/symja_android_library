@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.NIL;
 import static org.matheclipse.core.expression.S.Pi;
 import org.apfloat.FixedPrecisionApcomplexHelper;
@@ -164,7 +165,7 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     super.setUp(newSymbol);
   }
 }

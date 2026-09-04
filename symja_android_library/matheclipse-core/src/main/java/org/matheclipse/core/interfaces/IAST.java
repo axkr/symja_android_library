@@ -114,146 +114,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     EMPIRICAL_DISTRIBUTION; // org.hipparchus.stat.fitting.EmpiricalDistribution
   }
 
-  /**
-   * Is set, if the built-in function associated with this object was evaluated and no further
-   * evaluation is needed for the built-in evaluation function.
-   */
-  public static final int BUILT_IN_EVALED = 0x00040000;
-
-  /**
-   * One of the arguments of the list contains a pattern object which can be set to a default value
-   * (or optional value).
-   */
-  public static final int CONTAINS_DEFAULT_PATTERN = 0x0004;
-
-  /**
-   * All of the arguments of the list are pattern objects which can be set to a default value (or
-   * optional value).
-   */
-  public static final int CONTAINS_ALL_DEFAULT_PATTERN = 0x10000000;
-
-  /** Negative flag mask for CONTAINS_DEFAULT_PATTERN */
-  public static final int CONTAINS_NO_DEFAULT_PATTERN_MASK = 0xFFFB;
-
-  /** The list or the lists subexpressions contain no pattern object. */
-  public static final int CONTAINS_NO_PATTERN = 0x0008;
-
-  /**
-   * Is set, if one of the (nested) arguments of a numeric function contains a numeric expression.
-   */
-  public static final int CONTAINS_NUMERIC_ARG = 0x00010000;
-
-  /** The head or one of the arguments of the list or sublists contains a pattern object */
-  public static final int CONTAINS_PATTERN = 0x0001;
-
-  /**
-   * One of the arguments of the list or sublists contains a pattern object. Combination of <code>
-   * CONTAINS_PATTERN, CONTAINS_PATTERN_SEQUENCE, CONTAINS_DEFAULT_PATTERN</code>
-   */
-  public static final int CONTAINS_PATTERN_EXPR = 0x0007;
-
-  /** The head or one of the arguments of the list or sublists contains a pattern object */
-  public static final int CONTAINS_PATTERN_SEQUENCE = 0x0002;
-
-  /**
-   * Flag which will be set for new allocated IAST expressions during a capsulated traversal
-   * algorithm. Temporary flag which should be deleted after traversing the expression
-   */
-  public static final int IS_COPIED = 0x20000000;
-
-  /** This expression is already evaluated by ExpandAll() function */
-  public static final int IS_ALL_EXPANDED = 0x2000;
-
-  /**
-   * This expression represents an already decomposed partial fraction expression.
-   * <p>
-   * See: {@link S#Apart}
-   *
-   */
-  public static final int IS_DECOMPOSED_PARTIAL_FRACTION = 0x0080;
-
-  /** This expression is already evaluated in the Derivative[] function */
-  public static final int IS_DERIVATIVE_EVALED = 0x8000;
-
-  /** This expression is already evaluated by Expand() function */
-  public static final int IS_EXPANDED = 0x1000;
-
-  /** This expression is an already evaled expression */
-  public static final int IS_FLAT_ORDERLESS_EVALED = 0x0800;
-
-  /** This expression is an already flattened expression */
-  public static final int IS_FLATTENED = 0x0100;
-
-  /** This expression is an already flattened or sorted expression */
-  public static final int IS_FLATTENED_OR_SORTED_MASK = 0x0300;
-
-  /** This expression is already evaluated by a HashedOrderlessMatcher function */
-  public static final int IS_HASH_EVALED = 0x4000;
-
-  /** This expression has already applied the Listable attribute to its argument expressions */
-  public static final int IS_LISTABLE_THREADED = 0x0400;
-
-  /** This expression represents a matrix */
-  public static final int IS_MATRIX = 0x0020;
-
-  /** This expression represents a matrix or vector if one of the following bits is set. */
-  public static final int IS_MATRIX_OR_VECTOR = 0x0060;
-
-  public static final int IS_NOT_NUMERIC_FUNCTION = 0x00800000;
-
-  public static final int IS_NOT_NUMERIC_FUNCTION_OR_LIST = 0x02000000;
-
-  public static final int IS_NUMERIC_FUNCTION = 0x00400000;
-
-  public static final int IS_NUMERIC_FUNCTION_OR_LIST = 0x01000000;
-
-  public static final int IS_NUMERIC_MASK = 0x03C00000;
-
-  public static final int IS_NUMERIC_CONSTANT = 0x40000000;
-  public static final int IS_NOT_NUMERIC_CONSTANT = 0x00020000;
-  /**
-   * This expression is an already sorted expression (i.e. sorted with the <code>Order()</code>
-   * function)
-   */
-  public static final int IS_SORTED = 0x0200;
-
-  /** This expression represents a vector */
-  public static final int IS_VECTOR = 0x0040;
-
-  /** NO_FLAG ACTIVATED */
-  public static final int NO_FLAG = 0x0000;
-
-  /**
-   * Is set, if the arguments of this expression were scanned and none of them is one of the few
-   * expressions the evaluation loop has to look for: {@link S#Unevaluated}, {@link S#Sequence},
-   * {@link S#ConditionalExpression}, <code>Rubi`Dist</code> or the symbol {@link S#Nothing}.
-   * <p>
-   * Evaluating one expression used to scan its arguments for these separately and repeatedly -
-   * {@link EvalEngine#evalArgs(IAST, int, boolean)},
-   * {@link EvalEngine#evalRules(ISymbol, IAST)}, {@code evalNoAttributes()},
-   * {@link F#flattenSequence(IAST)} and {@code extractConditionalExpression(false)} - although all
-   * of them are extremely rare (measured over the test suite: 7 {@link S#Sequence} and 393
-   * {@link S#ConditionalExpression} arguments in tens of millions of scans). One scan now answers
-   * all of them and the result is memoized here.
-   * <p>
-   * The flag is dropped again in {@code AbstractAST#argumentsChanged()} whenever an argument is
-   * appended or replaced.
-   *
-   * @see #hasSpecialArg()
-   */
-  public static final int CONTAINS_NO_SPECIAL_ARG = 0x0010;
-
-  public static final int NUMERIC_ARBITRARY_EVALED = 0x08000000;
-
-  public static final int NUMERIC_DOUBLE_EVALED = 0x04000000;
-
-  /** This List expression args should be printed in multi-line style */
-  public static final int OUTPUT_MULTILINE = 0x00100000;
-
-  public static final int SEQUENCE_FLATTENED = 0x00080000;
-
-  /** The <code>Times(...)</code> expression was determined implicitly in the expression parser. */
-  public static final int TIMES_PARSED_IMPLICIT = 0x00200000;
 
   /**
    * <code>range(maximumExclusive)</code> gives
@@ -299,8 +159,222 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param i
    */
+  /**
+   * Switch on the given raw flag bits, leaving every other flag alone.
+   * <p>
+   * <b>Internal.</b> Prefer {@link #addFlag(EvalFlags.Flag)}, which also clears the flags that
+   * contradict the one being set.
+   *
+   * @param i the raw flag bits to add
+   * @return <code>this</code>
+   */
+  public IAST addFlagBits(int i);
+
+  /**
+   * Is the given evaluation flag set for this list?
+   *
+   * @param flag the flag to test
+   * @return <code>true</code> if the flag is set
+   */
   @Override
-  public IAST addEvalFlags(int i);
+  default boolean hasFlag(EvalFlags.Flag flag) {
+    return (getEvalFlagBits() & flag.mask()) != 0;
+  }
+
+  /**
+   * Is the given evaluation flag cleared for this list?
+   *
+   * @param flag the flag to test
+   * @return <code>true</code> if the flag is not set
+   */
+  @Override
+  default boolean hasNoFlag(EvalFlags.Flag flag) {
+    return (getEvalFlagBits() & flag.mask()) == 0;
+  }
+
+  /**
+   * Is <b>at least one</b> of the flags of the given group set for this list?
+   *
+   * @param group the group to test
+   * @return <code>true</code> if any flag of the group is set
+   */
+  @Override
+  default boolean hasAnyFlag(EvalFlags.Group group) {
+    return (getEvalFlagBits() & group.mask()) != 0;
+  }
+
+  /**
+   * Are <b>all</b> of the flags of the given group set for this list?
+   *
+   * @param group the group to test
+   * @return <code>true</code> if every flag of the group is set
+   */
+  @Override
+  default boolean hasAllFlags(EvalFlags.Group group) {
+    final int mask = group.mask();
+    return (getEvalFlagBits() & mask) == mask;
+  }
+
+  /**
+   * Is <b>none</b> of the flags of the given group set for this list?
+   *
+   * @param group the group to test
+   * @return <code>true</code> if no flag of the group is set
+   */
+  @Override
+  default boolean hasNoFlag(EvalFlags.Group group) {
+    return (getEvalFlagBits() & group.mask()) == 0;
+  }
+
+  /**
+   * Set an evaluation flag, and clear the flags which contradict it.
+   * <p>
+   * This is what makes a state like &quot;both a numeric function and not a numeric function&quot;
+   * unreachable through this API.
+   *
+   * @param flag the flag to set
+   * @return <code>this</code>
+   * @see EvalFlags.Flag#clears()
+   */
+  @Override
+  default IAST addFlag(EvalFlags.Flag flag) {
+    final int clears = flag.clears();
+    if (clears != EvalFlags.Mask.NONE) {
+      setEvalFlagBits((getEvalFlagBits() & ~clears) | flag.mask());
+      return this;
+    }
+    return addFlagBits(flag.mask());
+  }
+
+  /**
+   * Set two evaluation flags, each clearing the flags which contradict it.
+   *
+   * @param first the first flag to set
+   * @param second the second flag to set
+   * @return <code>this</code>
+   */
+  @Override
+  default IAST addFlags(EvalFlags.Flag first, EvalFlags.Flag second) {
+    addFlag(first);
+    return addFlag(second);
+  }
+
+  /**
+   * Set every flag of the given group.
+   * <p>
+   * Unlike {@link #addFlag(EvalFlags.Flag)} this does not clear contradicting flags - a group is
+   * meant for transferring bits which are already consistent.
+   *
+   * @param group the group of flags to set
+   * @return <code>this</code>
+   */
+  @Override
+  default IAST addFlags(EvalFlags.Group group) {
+    return addFlagBits(group.mask());
+  }
+
+  /**
+   * Clear a single evaluation flag.
+   *
+   * @param flag the flag to clear
+   * @return <code>this</code>
+   */
+  default IAST clearFlag(EvalFlags.Flag flag) {
+    setEvalFlagBits(getEvalFlagBits() & ~flag.mask());
+    return this;
+  }
+
+  /**
+   * Clear every flag of the given group.
+   *
+   * @param group the group of flags to clear
+   * @return <code>this</code>
+   */
+  default IAST clearFlags(EvalFlags.Group group) {
+    setEvalFlagBits(getEvalFlagBits() & ~group.mask());
+    return this;
+  }
+
+  /**
+   * Clear all evaluation flags.
+   *
+   * @return <code>this</code>
+   */
+  default IAST resetFlags() {
+    setEvalFlagBits(EvalFlags.Mask.NONE);
+    return this;
+  }
+
+  /**
+   * Copy the flags of the given group from <code>source</code> into this expression, leaving every
+   * other flag of this expression untouched.
+   *
+   * @param source the expression to copy the flags from
+   * @param group the group of flags to copy
+   * @return <code>this</code>
+   */
+  default IAST copyFlagsFrom(IAST source, EvalFlags.Group group) {
+    return addFlagBits(source.getEvalFlagBits() & group.mask());
+  }
+
+  /**
+   * Copy a single flag from <code>source</code> into this expression, leaving every other flag of
+   * this expression untouched.
+   *
+   * @param source the expression to copy the flag from
+   * @param flag the flag to copy
+   * @return <code>this</code>
+   */
+  default IAST copyFlagsFrom(IAST source, EvalFlags.Flag flag) {
+    return addFlagBits(source.getEvalFlagBits() & flag.mask());
+  }
+
+  /**
+   * Do this expression and <code>other</code> agree on every flag of the given group?
+   *
+   * @param other the expression to compare with
+   * @param group the group of flags to compare
+   * @return <code>true</code> if both expressions have the same flags of that group set
+   */
+  default boolean sameFlags(IAST other, EvalFlags.Group group) {
+    final int mask = group.mask();
+    return (getEvalFlagBits() & mask) == (other.getEvalFlagBits() & mask);
+  }
+
+  /**
+   * Read a memoized three-valued property of this expression.
+   *
+   * @param trait the property to read
+   * @return the memoized answer, or {@link EvalFlags.Ternary#UNKNOWN} if it was not computed yet
+   */
+  default EvalFlags.Ternary getTrait(EvalFlags.Trait trait) {
+    return trait.read(getEvalFlagBits());
+  }
+
+  /**
+   * Memoize a three-valued property of this expression. The bit for the opposite answer is always
+   * cleared, so the contradictory state cannot be produced.
+   *
+   * @param trait the property to memoize
+   * @param value the answer
+   * @return <code>this</code>
+   */
+  default IAST setTrait(EvalFlags.Trait trait, boolean value) {
+    return setTrait(trait, value ? EvalFlags.Ternary.TRUE : EvalFlags.Ternary.FALSE);
+  }
+
+  /**
+   * Memoize a three-valued property of this expression. Writing {@link EvalFlags.Ternary#UNKNOWN}
+   * forgets a previously memoized answer.
+   *
+   * @param trait the property to memoize
+   * @param value the answer
+   * @return <code>this</code>
+   */
+  default IAST setTrait(EvalFlags.Trait trait, EvalFlags.Ternary value) {
+    setEvalFlagBits(trait.write(getEvalFlagBits(), value));
+    return this;
+  }
 
   /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
@@ -1245,11 +1319,15 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public long getEvalEpoch();
 
   /**
-   * Get the evaluation flags for this list.
+   * Get the whole evaluation flag word of this list.
+   * <p>
+   * <b>Internal.</b> Externalization and the pattern-map accumulator need the raw word; everything
+   * else should use the typed API - {@link #hasFlag(EvalFlags.Flag)},
+   * {@link #addFlag(EvalFlags.Flag)}, {@link #getTrait(EvalFlags.Trait)}.
    *
-   * @return the evaluation flags
+   * @return the raw evaluation flags
    */
-  public int getEvalFlags();
+  public int getEvalFlagBits();
 
   /**
    * Get the cached hash value.
@@ -1472,26 +1550,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public boolean isEmpty();
 
   /**
-   * Are the given evaluation flags disabled for this list ?
-   *
-   * @param flags the evaluation flags to test against
-   * @return <code>true</code> if the evaluation flags are disabled
-   * @see IAST#NO_FLAG
-   */
-  @Override
-  public boolean isEvalFlagOff(int flags);
-
-  /**
-   * Are the given evaluation flags enabled for this list ?
-   *
-   * @param flags the evaluation flags to test against
-   * @return <code>true</code> if the evaluation flags are enabled
-   * @see IAST#NO_FLAG
-   */
-  @Override
-  public boolean isEvalFlagOn(int flags);
-
-  /**
    * Returns <code>true</code> if the expression at the given <code>position</code>, did not match
    * the <code>pattern</code>. Calls <code>get(Position).isFree(pattern, true)</code>.
    *
@@ -1587,7 +1645,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * {@link S#ConditionalExpression} or <code>Rubi`Dist</code>, or is the symbol
    * {@link S#Nothing}.
    * <p>
-   * The result is memoized in the {@link #CONTAINS_NO_SPECIAL_ARG} eval flag. The test is
+   * The result is memoized in the {@link EvalFlags.Flag#CONTAINS_NO_SPECIAL_ARG} eval flag. The test is
    * intentionally coarse - it ignores the number of arguments of those expressions - so that a
    * negative result can be used by every caller; a positive result only means that the caller has
    * to run its own precise test.
@@ -1595,7 +1653,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return <code>false</code> if none of the arguments needs any of those treatments
    */
   default boolean hasSpecialArg() {
-    if (isEvalFlagOn(CONTAINS_NO_SPECIAL_ARG)) {
+    if (hasFlag(EvalFlags.Flag.CONTAINS_NO_SPECIAL_ARG)) {
       return false;
     }
     final IExpr dist = F.$rubi("Dist");
@@ -1606,7 +1664,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     })) {
       return true;
     }
-    addEvalFlags(CONTAINS_NO_SPECIAL_ARG);
+    addFlag(EvalFlags.Flag.CONTAINS_NO_SPECIAL_ARG);
     return false;
   }
 
@@ -2214,11 +2272,15 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public void setEvalEpoch(long epoch);
 
   /**
-   * Set the evaluation flags for this list (i.e. replace all existing flags).
+   * Replace the whole evaluation flag word of this list.
+   * <p>
+   * <b>Internal.</b> This discards every flag which is not in <code>i</code>; prefer
+   * {@link #addFlag(EvalFlags.Flag)} / {@link #clearFlag(EvalFlags.Flag)}, which leave the other
+   * memoized answers alone.
    *
-   * @param i
+   * @param i the raw evaluation flags
    */
-  public void setEvalFlags(int i);
+  public void setEvalFlagBits(int i);
 
   /**
    * Returns the <b>number of elements</b> in this {@code IAST}.The <b>number of elements</b> equals

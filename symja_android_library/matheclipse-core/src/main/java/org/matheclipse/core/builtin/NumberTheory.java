@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static java.lang.Math.addExact;
 import static java.lang.Math.floorMod;
 import static java.lang.Math.multiplyExact;
@@ -253,7 +254,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -408,7 +409,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -593,7 +594,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -664,7 +665,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -752,7 +753,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1066,7 +1067,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDREST);
+      newSymbol.setAttributes(Attribute.NHOLDREST);
     }
   }
 
@@ -1359,7 +1360,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1436,7 +1437,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1597,7 +1598,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.LISTABLE);
     }
   }
 
@@ -1668,7 +1669,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
     /**
@@ -1752,7 +1753,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1873,7 +1874,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2050,7 +2051,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2134,7 +2135,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2346,7 +2347,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2475,7 +2476,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
 
   }
@@ -2740,7 +2741,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2878,7 +2879,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2976,7 +2977,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3151,7 +3152,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -3253,7 +3254,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      // newSymbol.setAttributes(ISymbol.LISTABLE);
+      // newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3467,7 +3468,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3556,7 +3557,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -3608,7 +3609,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3681,7 +3682,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -4028,7 +4029,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -4433,7 +4434,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -4565,7 +4566,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -4788,7 +4789,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
     /**
@@ -4971,7 +4972,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -5141,7 +5142,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -5214,7 +5215,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -5362,7 +5363,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       super.setUp(newSymbol);
     }
   }
@@ -5578,7 +5579,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -5645,7 +5646,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -5710,7 +5711,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -5880,7 +5881,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      // newSymbol.setAttributes(ISymbol.HOLDALL);
+      // newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -6260,7 +6261,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -6507,7 +6508,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -6606,7 +6607,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -6730,7 +6731,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 

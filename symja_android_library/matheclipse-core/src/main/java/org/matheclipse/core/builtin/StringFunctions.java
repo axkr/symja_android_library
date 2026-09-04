@@ -35,6 +35,7 @@ import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.form.tex.TeXParser;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -189,7 +190,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -293,7 +294,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1054,7 +1055,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
     @Override
@@ -1349,7 +1350,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.FLAT);
     }
   }
 
@@ -1707,7 +1708,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
     }
   }
 
@@ -1755,7 +1756,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2244,7 +2245,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2891,7 +2892,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
   private static class TemplateSlot extends AbstractFunctionEvaluator {
@@ -2908,7 +2909,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -3079,7 +3080,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3101,7 +3102,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -3289,7 +3290,7 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 

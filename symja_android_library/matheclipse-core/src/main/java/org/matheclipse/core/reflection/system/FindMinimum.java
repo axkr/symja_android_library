@@ -52,6 +52,7 @@ import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.generic.MultiVariateVectorGradient;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.TwiceDifferentiableMultiVariateNumerical;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1099,7 +1100,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDALL);
+    newSymbol.setAttributes(Attribute.HOLDALL);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
             S.MaxIterations, S.Method}, //

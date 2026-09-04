@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -129,7 +130,7 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
 
   @Override
   public void setUp(ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
   }
 
 }

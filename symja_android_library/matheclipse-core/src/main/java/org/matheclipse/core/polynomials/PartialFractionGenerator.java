@@ -2,6 +2,7 @@ package org.matheclipse.core.polynomials;
 
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -35,7 +36,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
   public void addNonFractionalPart(GenPolynomial<BigRational> genPolynomial) {
     IExpr temp = F.eval(jas.rationalPoly2Expr(genPolynomial, false));
     if (temp.isAST()) {
-      ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+      ((IAST) temp).addFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION);
     }
     result.append(temp);
   }
@@ -58,7 +59,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
     }
     if (!temp.isZERO()) {
       if (temp.isAST()) {
-        ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+        ((IAST) temp).addFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION);
       }
       result.append(temp);
     }
@@ -68,7 +69,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
   // {
   // IExpr temp = F.eval(jas.integerPoly2Expr(genPolynomial));
   // if (temp.isAST()) {
-  // ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+  // ((IAST) temp).addFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION);
   // }
   // result.append(temp);
   // }
@@ -93,7 +94,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
   // }
   // if (!temp.isZERO()) {
   // if (temp.isAST()) {
-  // ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+  // ((IAST) temp).addFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION);
   // }
   // result.append(temp);
   // }

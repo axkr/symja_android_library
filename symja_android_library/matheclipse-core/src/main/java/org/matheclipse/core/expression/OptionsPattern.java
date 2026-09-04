@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -168,7 +169,7 @@ public class OptionsPattern extends AbstractPatternSequence {
     IPatternMap.addPattern(patternIndexMap, this);
     // the ast contains a pattern sequence (i.e. "x__")
     int[] result = new int[2];
-    result[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
+    result[0] = EvalFlags.Mask.CONTAINS_PATTERN_SEQUENCE;
     result[1] = RuleConfig.PRIORITY_OPTIONS_PATTERN;
     return result;
   }

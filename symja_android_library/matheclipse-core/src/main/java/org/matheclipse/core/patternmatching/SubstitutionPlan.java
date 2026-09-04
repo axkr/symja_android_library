@@ -5,6 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -161,8 +162,7 @@ final class SubstitutionPlan {
     }
     final IAST left = (IAST) planned;
     final IAST right = (IAST) generic;
-    if ((left.getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) != (right.getEvalFlags()
-        & IAST.IS_FLATTENED_OR_SORTED_MASK)) {
+    if (!left.sameFlags(right, Group.FLATTENED_OR_SORTED)) {
       return false;
     }
     if (left.size() != right.size()) {

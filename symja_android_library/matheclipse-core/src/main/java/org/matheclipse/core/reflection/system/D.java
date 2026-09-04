@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryBindIth1st;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -371,7 +372,7 @@ public class D extends AbstractFunctionOptionEvaluator {
     }
 
     IASTAppendable dAST = ast.copyUntil(argSize + 1);
-    dAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_DERIVATIVE_EVALED);
+    dAST.copyFlagsFrom(ast, Flag.IS_DERIVATIVE_EVALED);
     IExpr nonConstants = options.length > 0 && options[0] != null ? options[0] : F.CEmptyList;
     IAST nonConstantsList = normalizeNonConstants(nonConstants);
     if (nonConstantsList.isEmpty()) {
@@ -464,7 +465,7 @@ public class D extends AbstractFunctionOptionEvaluator {
           IAST subList = (IAST) xList.arg1();
           return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluateNIL(F.D(a, b)), fx);
         } else if (xList.isAST2()) {
-          if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
+          if (ast.hasFlag(Flag.IS_DERIVATIVE_EVALED)) {
             return F.NIL;
           }
           IExpr xListN = xList.arg2();
@@ -744,7 +745,7 @@ public class D extends AbstractFunctionOptionEvaluator {
       }
 
       // Fallback for AST1 and other derivatives
-      if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+      if (function.isAST1() && ast.hasNoFlag(Flag.IS_DERIVATIVE_EVALED)) {
         IAST[] derivStruct = function.isDerivativeAST1();
         if (derivStruct != null && derivStruct[2] != null) {
           IAST headAST = derivStruct[1];
@@ -771,7 +772,7 @@ public class D extends AbstractFunctionOptionEvaluator {
         }
         return F.NIL;
       }
-      if (ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+      if (ast.hasNoFlag(Flag.IS_DERIVATIVE_EVALED)) {
         return getDerivativeArgN(x, function, function.head(), engine);
       }
     }

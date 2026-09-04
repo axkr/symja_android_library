@@ -179,9 +179,6 @@ public interface ISymbol extends IExpr {
   /** ISymbol attribute for a numeric function */
   public static final int NUMERICFUNCTION = 0x0400;
 
-  /** ISymbol flag for a symbol which has already loaded it's package definition */
-  public static final int PACKAGE_LOADED = 0x0800;
-
   /** ISymbol attribute for a function transformation: f(x) ==> x */
   public static final int ONEIDENTITY = 0x0001;
 
@@ -207,15 +204,25 @@ public interface ISymbol extends IExpr {
   public static final int LOCKED = PROTECTED | 0x20000;
 
   /**
-   * A mask which tests if any evaluation engine attribute is sets
+   * The attributes which {@code EvalEngine#evalAttributes} actually dispatches on.
+   * <p>
+   * Derived rather than written out, so that adding an attribute cannot leave it stale - which is
+   * what happened to its hand-written predecessor when {@link #NONTHREADABLE} was added. Every
+   * operand is a constant variable, so this still folds to a literal at compile time.
+   * <p>
+   * The four exclusions are deliberate: {@link #PROTECTED}, {@link #READPROTECTED} and
+   * {@link #LOCKED} are never read while evaluating, and {@link #NONTHREADABLE} is consulted on an
+   * <i>argument's</i> head rather than on the head being dispatched. {@link #SEQUENCEHOLD} is
+   * excluded so that a {@code SequenceHold}-only symbol such as {@link S#Rule} keeps the
+   * {@code evalNoAttributes} fast path; that method applies the {@code SequenceHold} guard itself.
    */
-  public static final int NO_EVAL_ENGINE_ATTRIBUTE = 0xFFF077FF;
+  public static final int EVAL_ENGINE_ATTRIBUTES =
+      ~(PROTECTED | READPROTECTED | LOCKED | NONTHREADABLE | SEQUENCEHOLD);
 
   public static final int ALL_ATTRIBUTES = FLATORDERLESS | NHOLDALL | HOLDALLCOMPLETE | LISTABLE
       | NUMERICFUNCTION | CONSTANT | ONEIDENTITY | PROTECTED | READPROTECTED | LOCKED
       | NONTHREADABLE;
 
-  public static final int CLEAR_MASK = 0xFFFFFFFF;
   //
   // Flags definition starts here
   //
@@ -239,85 +246,17 @@ public interface ISymbol extends IExpr {
    * @param symbol the symbol to get the attributes for
    */
   static IAST attributesList(ISymbol symbol) {
+    return attributesList(symbol.getAttributes());
+  }
 
-    int attributes = symbol.getAttributes();
-    IASTAppendable result = F.ListAlloc(Integer.bitCount(attributes));
-
-    if ((attributes & CONSTANT) != NOATTRIBUTE) {
-      result.append(S.Constant);
-    }
-
-    if ((attributes & FLAT) != NOATTRIBUTE) {
-      result.append(S.Flat);
-    }
-
-    if ((attributes & HOLDALLCOMPLETE) == HOLDALLCOMPLETE) {
-      result.append(S.HoldAllComplete);
-    } else if ((attributes & HOLDCOMPLETE) == HOLDCOMPLETE) {
-      result.append(S.HoldComplete);
-    } else if ((attributes & HOLDALL) == HOLDALL) {
-      result.append(S.HoldAll);
-    } else {
-      if ((attributes & HOLDFIRST) != NOATTRIBUTE) {
-        result.append(S.HoldFirst);
-      }
-
-      if ((attributes & HOLDREST) != NOATTRIBUTE) {
-        result.append(S.HoldRest);
-      }
-    }
-
-    if ((attributes & LISTABLE) != NOATTRIBUTE) {
-      result.append(S.Listable);
-    }
-
-    if ((attributes & NHOLDALL) == NHOLDALL) {
-      result.append(S.NHoldAll);
-    } else {
-      if ((attributes & NHOLDFIRST) != NOATTRIBUTE) {
-        result.append(S.NHoldFirst);
-      }
-
-      if ((attributes & NHOLDREST) != NOATTRIBUTE) {
-        result.append(S.NHoldRest);
-      }
-    }
-
-    if ((attributes & NONTHREADABLE) != NOATTRIBUTE) {
-      result.append(S.NonThreadable);
-    }
-
-    if ((attributes & NUMERICFUNCTION) != NOATTRIBUTE) {
-      result.append(S.NumericFunction);
-    }
-
-    if ((attributes & ONEIDENTITY) != NOATTRIBUTE) {
-      result.append(S.OneIdentity);
-    }
-
-    if ((attributes & ORDERLESS) != NOATTRIBUTE) {
-      result.append(S.Orderless);
-    }
-
-    if ((attributes & LOCKED) == LOCKED) {
-      result.append(S.Locked);
-      result.append(S.Protected);
-    } else {
-      if ((attributes & PROTECTED) != NOATTRIBUTE) {
-        result.append(S.Protected);
-      }
-    }
-
-    if ((attributes & READPROTECTED) != NOATTRIBUTE) {
-      result.append(S.ReadProtected);
-    }
-
-    if ((attributes & SEQUENCEHOLD) == SEQUENCEHOLD
-        && ((attributes & HOLDALLCOMPLETE) != HOLDALLCOMPLETE)) {
-      result.append(S.SequenceHold);
-    }
-    result.sortInplace(Comparators.CANONICAL_COMPARATOR);
-    return result;
+  /**
+   * Get the given attribute bits as symbolic constants in a list.
+   *
+   * @param attributes the raw attribute word, as returned by {@link #getAttributes()}
+   * @return the attributes as a canonically sorted list of symbols
+   */
+  static IAST attributesList(int attributes) {
+    return Attribute.toList(attributes);
   }
 
   private static void collectSymbolsRecursive(IAST symbolsList, Set<ISymbol> symbolSet,
@@ -589,6 +528,35 @@ public interface ISymbol extends IExpr {
   public void clearEvalFlags(final int flags);
 
   /**
+   * Add an evaluation flag of the <b>symbol</b> flag namespace ({@link #DIRTY_FLAG_ASSIGNED_VALUE},
+   * {@link #SYMBOL_DEFINITION_PRESENT}, ...) to the existing ones.
+   * <p>
+   * These flags are unrelated to the {@link EvalFlags} of an {@link IAST} and to the symbol
+   * <i>attributes</i> ({@link #FLAT}, {@link #NONTHREADABLE}, ...); all three live in different
+   * fields and must never be mixed.
+   *
+   * @param flags the symbol evaluation flags to add
+   * @return <code>this</code>
+   */
+  public ISymbol addEvalFlags(int flags);
+
+  /**
+   * Are the given symbol evaluation flags disabled for this symbol?
+   *
+   * @param flags the symbol evaluation flags to test against
+   * @return <code>true</code> if none of the flags is set
+   */
+  public boolean isEvalFlagOff(int flags);
+
+  /**
+   * Are the given symbol evaluation flags enabled for this symbol?
+   *
+   * @param flags the symbol evaluation flags to test against
+   * @return <code>true</code> if all of the flags are set
+   */
+  public boolean isEvalFlagOn(int flags);
+
+  /**
    * Clear the <code>OwnValues</code> value which is assigned to this symbol.
    * 
    */
@@ -699,6 +667,53 @@ public interface ISymbol extends IExpr {
    * @see IBuiltInSymbol#FLAT
    */
   public int getAttributes();
+
+  /**
+   * Does this symbol carry the given attribute?
+   * <p>
+   * For a composite attribute like {@link Attribute#HOLDALL} every one of its bits has to be set,
+   * so a symbol with only {@code HoldFirst} does <b>not</b> have {@code HoldAll}.
+   *
+   * @param attribute the attribute to test for
+   * @return <code>true</code> if the attribute is set
+   */
+  default boolean hasAttribute(Attribute attribute) {
+    return attribute.isSetIn(getAttributes());
+  }
+
+  /**
+   * Add the given attribute to this symbol's existing attributes.
+   *
+   * @param attribute the attribute to add
+   */
+  default void addAttributes(Attribute attribute) {
+    addAttributes(attribute.mask());
+  }
+
+  /**
+   * Remove the given attribute from this symbol's existing attributes.
+   *
+   * @param attribute the attribute to remove
+   */
+  default void clearAttributes(Attribute attribute) {
+    clearAttributes(attribute.mask());
+  }
+
+  /**
+   * Replace this symbol's attributes with exactly the given ones.
+   * <p>
+   * This is the form the {@code setUp(ISymbol)} declaration of a built-in function uses. Note that
+   * it <b>replaces</b> - use {@link #addAttributes(Attribute)} to add one to what is already set.
+   *
+   * @param attributes the complete set of attributes for this symbol
+   */
+  default void setAttributes(Attribute... attributes) {
+    int mask = NOATTRIBUTE;
+    for (int i = 0; i < attributes.length; i++) {
+      mask |= attributes[i].mask();
+    }
+    setAttributes(mask);
+  }
 
   /**
    * Get the context this symbol is assigned to.

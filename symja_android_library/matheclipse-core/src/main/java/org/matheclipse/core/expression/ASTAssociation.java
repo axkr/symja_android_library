@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -309,7 +310,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    // if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+    // if (hasNoFlag(Flag.BUILT_IN_EVALED)) {
     IAssociation result = F.NIL;
     for (int i = 1; i < size(); i++) {
       IExpr arg = getRule(i);

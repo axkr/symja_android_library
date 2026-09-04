@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcCoth;
 import static org.matheclipse.core.expression.F.ArcCsc;
@@ -367,7 +368,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -451,7 +452,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -548,7 +549,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -658,7 +659,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -723,7 +724,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -777,7 +778,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -823,7 +824,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -869,7 +870,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -978,7 +979,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1054,7 +1055,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1280,7 +1281,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1393,7 +1394,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1590,7 +1591,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1733,7 +1734,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1950,7 +1951,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -2094,7 +2095,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -2288,7 +2289,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -2429,7 +2430,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -2483,7 +2484,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2539,7 +2540,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -2581,7 +2582,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2626,7 +2627,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2666,7 +2667,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2679,7 +2680,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2805,7 +2806,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -3022,7 +3023,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -3043,7 +3044,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -3065,7 +3066,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -3260,7 +3261,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -3392,7 +3393,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -3592,7 +3593,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -3712,7 +3713,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -3878,7 +3879,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -4060,7 +4061,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -4193,7 +4194,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 

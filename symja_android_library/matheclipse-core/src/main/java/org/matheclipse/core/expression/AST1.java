@@ -107,7 +107,7 @@ public class AST1 extends AST0 {
   @Override
   public IAST clone() throws CloneNotSupportedException {
     AST1 result = (AST1) super.clone();
-    result.setEvalFlags(IAST.NO_FLAG);
+    result.resetFlags();
     result.arg0 = arg0;
     result.arg1 = arg1;
     return result;

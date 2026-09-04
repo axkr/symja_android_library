@@ -23,6 +23,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.TestReportObjectExpr;
 import org.matheclipse.core.expression.data.TestResultObjectExpr;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -178,7 +179,7 @@ public class UnitTestingFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+      newSymbol.setAttributes(Attribute.HOLDFIRST);
     }
   }
 
@@ -277,7 +278,7 @@ public class UnitTestingFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
+      newSymbol.setAttributes(Attribute.HOLDALLCOMPLETE);
     }
   }
 

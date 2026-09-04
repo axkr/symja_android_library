@@ -34,6 +34,8 @@ import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -553,7 +555,7 @@ public class StructureFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
 
     /**
@@ -880,7 +882,7 @@ public class StructureFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -911,7 +913,7 @@ public class StructureFunctions {
 
         IAST astEvaled = engine.evalArgs(ast, attributes, false).orElse(ast);
 
-        if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE) {
+        if (Attribute.LISTABLE.isSetIn(attributes)) {
           // Listable threads the *application* over list arguments, before they are substituted
           // into the body. Threading the already substituted body instead would thread the wrong
           // expression as soon as the body holds its arguments, e.g. Piecewise(...): there the
@@ -1008,7 +1010,7 @@ public class StructureFunctions {
     public void setUp(final ISymbol newSymbol) {
       // don't set HOLDALL - the arguments are evaluated before applying the 'function
       // head'
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -1069,7 +1071,7 @@ public class StructureFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      // if (arg1.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      // if (arg1.hasFlag(Flag.BUILT_IN_EVALED)) {
       // IExpr head = arg1.head();
       // if (ast.isAST2()) {
       // return F.unaryAST1(engine.evaluate(ast.arg2()), head);
@@ -2009,7 +2011,7 @@ public class StructureFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -2201,7 +2203,7 @@ public class StructureFunctions {
       if (ast.arg1().isASTOrAssociation()) {
         IAST arg1 = (IAST) ast.arg1();
         if (comparator == null) {
-          if (arg1.isEvalFlagOn(IAST.IS_SORTED)) {
+          if (arg1.hasFlag(Flag.IS_SORTED)) {
             return arg1;
           }
           if (arg1.isAssociation()) {

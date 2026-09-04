@@ -64,6 +64,8 @@ import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Comparators.SameTestComparator;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -766,7 +768,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+      newSymbol.setAttributes(Attribute.HOLDFIRST);
     }
   }
 
@@ -1039,7 +1041,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -1423,7 +1425,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
       setOptions(newSymbol, S.Heads, S.False);
     }
 
@@ -1817,7 +1819,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
     }
   }
 
@@ -1962,7 +1964,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -2172,7 +2174,7 @@ public final class ListFunctions {
      */
     private static IExpr keepHeadDeletionSequence(IExpr result) {
       if (result.isAST(S.Sequence)) {
-        ((IAST) result).addEvalFlags(IAST.BUILT_IN_EVALED);
+        ((IAST) result).addFlag(Flag.BUILT_IN_EVALED);
       }
       return result;
     }
@@ -2280,7 +2282,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -2459,7 +2461,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -2596,7 +2598,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDREST);
+      newSymbol.setAttributes(Attribute.NHOLDREST);
     }
 
     /**
@@ -2861,7 +2863,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
     }
   }
 
@@ -2984,7 +2986,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
       setOptions(newSymbol, S.Heads, S.False);
     }
   }
@@ -3112,7 +3114,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
       setOptions(newSymbol, S.Heads, S.True);
     }
   }
@@ -3634,7 +3636,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
       setOptions(newSymbol, S.SameTest, S.Automatic);
     }
   }
@@ -3871,7 +3873,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
     }
   }
 
@@ -3935,7 +3937,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
     }
   }
 
@@ -5038,7 +5040,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
       setOptions(newSymbol, //
           F.list(F.Rule(S.Heads, S.True)));
     }
@@ -5259,7 +5261,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+      newSymbol.setAttributes(Attribute.HOLDFIRST);
     }
   }
 
@@ -5387,7 +5389,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -6183,7 +6185,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
     }
   }
 
@@ -6572,7 +6574,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
     }
   }
 
@@ -6819,7 +6821,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      // newSymbol.setAttributes(ISymbol.LISTABLE);
+      // newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -7026,7 +7028,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
 
     /**
@@ -7514,7 +7516,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDREST);
+      newSymbol.setAttributes(Attribute.NHOLDREST);
     }
   }
 
@@ -8249,7 +8251,7 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
       setOptions(newSymbol, S.SameTest, S.Automatic);
     }
 

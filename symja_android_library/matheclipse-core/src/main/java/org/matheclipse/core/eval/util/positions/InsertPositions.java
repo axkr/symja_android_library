@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -243,12 +244,12 @@ public class InsertPositions {
    * @return
    */
   protected Object[] getAppendableIntPair(IAST ast) {
-    if (ast.isEvalFlagOn(IAST.IS_COPIED)) {
+    if (ast.hasFlag(Flag.IS_COPIED)) {
       IntArrayList value = insertASTCache.get(ast);
       return new Object[] {ast, value};
     }
     IASTAppendable appendable = ast.copyAppendable();
-    appendable.addEvalFlags(IAST.IS_COPIED);
+    appendable.addFlag(Flag.IS_COPIED);
     IntArrayList list = new IntArrayList();
     insertASTCache.put(appendable, list);
     return new Object[] {appendable, list};

@@ -58,7 +58,13 @@ import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EdgeListType;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
+import org.matheclipse.core.interfaces.EvalFlags.Group;
+import org.matheclipse.core.interfaces.EvalFlags.Ternary;
+import org.matheclipse.core.interfaces.EvalFlags.Trait;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1628,7 +1634,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final IAST addEvalFlags(final int i) {
+  public final IAST addFlagBits(final int i) {
     fEvalFlags |= i;
     return this;
   }
@@ -1664,7 +1670,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     // EvalEngine#threadASTListArgs() has to scan the arguments again
     // an appended or replaced argument may be one of the expressions IAST#hasSpecialArg() looks
     // for, so the arguments have to be scanned again
-    fEvalFlags &= ~(IAST.IS_LISTABLE_THREADED | IAST.CONTAINS_NO_SPECIAL_ARG);
+    fEvalFlags &= ~EvalFlags.Mask.ARGUMENTS_CHANGED;
   }
 
   @Override
@@ -2292,7 +2298,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         IBuiltInSymbol symbol = (IBuiltInSymbol) head;
         final IEvaluator evaluator = symbol.getEvaluator();
         if (evaluator instanceof ICoreFunctionEvaluator) {
-          // if (isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+          // if (hasFlag(Flag.BUILT_IN_EVALED)) {
           // return F.NIL;
           // }
           try {
@@ -2303,7 +2309,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             }
             IAST ast = opres.result;
             IBuiltInSymbol header = symbol;
-            if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+            if (!Attribute.SEQUENCEHOLD.isSetIn(header.getAttributes())) {
               IExpr temp;
               if ((temp = F.flattenSequence(this)).isPresent()) {
                 return temp;
@@ -2440,7 +2446,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    */
   @Override
   public final boolean hasSpecialArg() {
-    if ((fEvalFlags & IAST.CONTAINS_NO_SPECIAL_ARG) == IAST.CONTAINS_NO_SPECIAL_ARG) {
+    if ((fEvalFlags & EvalFlags.Mask.CONTAINS_NO_SPECIAL_ARG) != 0) {
       return false;
     }
     final IExpr dist = RubiDist.DIST;
@@ -2453,7 +2459,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         return true;
       }
     }
-    fEvalFlags |= IAST.CONTAINS_NO_SPECIAL_ARG;
+    fEvalFlags |= EvalFlags.Mask.CONTAINS_NO_SPECIAL_ARG;
     return false;
   }
 
@@ -2866,7 +2872,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final int getEvalFlags() {
+  public final int getEvalFlagBits() {
     return fEvalFlags;
   }
 
@@ -3443,7 +3449,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isAllExpanded() {
-    if (isEvalFlagOff(IAST.IS_ALL_EXPANDED)) {
+    if (hasNoFlag(Flag.IS_ALL_EXPANDED)) {
       return false;
     }
     return true;
@@ -3870,18 +3876,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isEvalFlagOff(final int i) {
-    return (fEvalFlags & i) == 0;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final boolean isEvalFlagOn(final int i) {
-    return (fEvalFlags & i) == i;
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public boolean isExcept() {
     return isAST(S.Except, 2, 3);
   }
@@ -3889,7 +3883,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isExpanded() {
-    return !(isPlusTimesPower() && (isEvalFlagOff(IAST.IS_EXPANDED)));
+    return !(isPlusTimesPower() && (hasNoFlag(Flag.IS_EXPANDED)));
   }
 
   /** {@inheritDoc} */
@@ -3955,16 +3949,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isFreeOfPatterns() {
-    final int evalFlags = getEvalFlags();
-    if ((evalFlags & IAST.CONTAINS_NO_PATTERN) == IAST.CONTAINS_NO_PATTERN) {
+    final int evalFlags = getEvalFlagBits();
+    if ((evalFlags & EvalFlags.Mask.CONTAINS_NO_PATTERN) != 0) {
       return true;
     }
-    if ((evalFlags & IAST.CONTAINS_PATTERN_EXPR) != IAST.NO_FLAG) {
+    if ((evalFlags & EvalFlags.Mask.PATTERN_EXPR) != 0) {
       return false;
     }
 
     if (isPatternMatchingFunction()) {
-      addEvalFlags(IAST.CONTAINS_PATTERN);
+      addFlag(Flag.CONTAINS_PATTERN);
       return false;
     }
     boolean isFreeOfPatterns = true;
@@ -3978,36 +3972,36 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (temp.isASTOrAssociation() && !temp.isFreeOfPatterns()) {
         isFreeOfPatterns = false;
         if (temp.isOptional()) {
-          addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_PATTERN);
+          addFlags(Flag.CONTAINS_DEFAULT_PATTERN, Flag.CONTAINS_PATTERN);
           defaultOrOptionalCounter++;
         } else {
-          addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
+          copyFlagsFrom((IAST) temp, Group.PATTERN_EXPR);
         }
         continue;
       } else if (temp instanceof IPatternObject) {
         isFreeOfPatterns = false;
         if (temp instanceof IPatternSequence) {
           if (temp.isPatternDefault()) {
-            addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_PATTERN_SEQUENCE);
+            addFlags(Flag.CONTAINS_DEFAULT_PATTERN, Flag.CONTAINS_PATTERN_SEQUENCE);
             defaultOrOptionalCounter++;
           } else {
-            addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+            addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
           }
         } else {
           if (temp.isPatternDefault()) {
-            addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_PATTERN);
+            addFlags(Flag.CONTAINS_DEFAULT_PATTERN, Flag.CONTAINS_PATTERN);
             defaultOrOptionalCounter++;
           } else {
-            addEvalFlags(IAST.CONTAINS_PATTERN);
+            addFlag(Flag.CONTAINS_PATTERN);
           }
         }
       }
     }
     if (isFreeOfPatterns) {
-      addEvalFlags(IAST.CONTAINS_NO_PATTERN);
+      addFlag(Flag.CONTAINS_NO_PATTERN);
     } else {
       if (defaultOrOptionalCounter == argSize()) {
-        addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
+        addFlag(Flag.CONTAINS_ALL_DEFAULT_PATTERN);
       }
     }
     return isFreeOfPatterns;
@@ -4459,7 +4453,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public int[] isMatrix(boolean setMatrixFormat) {
-    if (isEvalFlagOn(IAST.IS_MATRIX)) {
+    if (hasFlag(Flag.IS_MATRIX)) {
       final int[] dim = new int[2];
       dim[0] = argSize();
       if (dim[0] > 0) {
@@ -4494,7 +4488,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             }
           }
           if (setMatrixFormat && (dim[0] > 1 || dim[1] > 0)) {
-            addEvalFlags(IAST.IS_MATRIX);
+            addFlag(Flag.IS_MATRIX);
           }
           return dim;
         }
@@ -4506,7 +4500,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public int[] isMatrixIgnore() {
-    if (isEvalFlagOn(IAST.IS_MATRIX)) {
+    if (hasFlag(Flag.IS_MATRIX)) {
       final int[] dim = new int[2];
       dim[0] = argSize();
       if (dim[0] > 0) {
@@ -4662,7 +4656,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isNumericArgument(boolean allowList) {
-    if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+    if (hasFlag(Flag.CONTAINS_NUMERIC_ARG)) {
       return forAll(x -> x.isNumericFunction(allowList)
           || (x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction(allowList))));
     }
@@ -4684,22 +4678,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isNumericFunction(boolean allowList) {
 
-    final int evalFlags = getEvalFlags();
-    if ((evalFlags & IAST.IS_NUMERIC_MASK) != IAST.NO_FLAG) {
-      if (allowList) {
-        if ((evalFlags & IAST.IS_NUMERIC_FUNCTION_OR_LIST) == IAST.IS_NUMERIC_FUNCTION_OR_LIST) {
-          return true;
-        } else if ((evalFlags
-            & IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST) == IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST) {
-          return false;
-        }
-      } else {
-        if ((evalFlags & IAST.IS_NUMERIC_FUNCTION) == IAST.IS_NUMERIC_FUNCTION) {
-          return true;
-        } else if ((evalFlags & IAST.IS_NOT_NUMERIC_FUNCTION) == IAST.IS_NOT_NUMERIC_FUNCTION) {
-          return false;
-        }
-      }
+    final Trait trait = allowList ? Trait.NUMERIC_FUNCTION_OR_LIST : Trait.NUMERIC_FUNCTION;
+    final Ternary memoized = getTrait(trait);
+    if (memoized != Ternary.UNKNOWN) {
+      return memoized == Ternary.TRUE;
     }
 
     if (allowList) {
@@ -4712,8 +4694,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (forAll && !isList()) {
           forAll = hasExpectedArgSize(topHead());
         }
-        addEvalFlags(
-            forAll ? IAST.IS_NUMERIC_FUNCTION_OR_LIST : IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST);
+        setTrait(Trait.NUMERIC_FUNCTION_OR_LIST, forAll);
         return forAll;
       }
     } else {
@@ -4723,7 +4704,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (forAll) {
           forAll = hasExpectedArgSize(topHead());
         }
-        addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
+        setTrait(Trait.NUMERIC_FUNCTION, forAll);
         return forAll;
       }
     }
@@ -4733,7 +4714,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (forAll) {
         forAll = comparatorFunction.hasExpectedArgSize(comparatorFunction.topHead());
       }
-      addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
+      setTrait(Trait.NUMERIC_FUNCTION, forAll);
       return forAll;
     } else if (isPiecewise() != null) {
       VariablesSet varSet = new VariablesSet(this);
@@ -4746,21 +4727,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isNumericConstant() {
     if (isNumericFunctionAST()) {
-      final int evalFlags = getEvalFlags();
-      if ((evalFlags & IS_NOT_NUMERIC_FUNCTION) == IS_NOT_NUMERIC_FUNCTION) {
+      if (getTrait(Trait.NUMERIC_FUNCTION) == Ternary.FALSE) {
         return false;
       }
-      if ((evalFlags & IAST.IS_NUMERIC_CONSTANT) == IS_NUMERIC_CONSTANT) {
-        return true;
-      } else if ((evalFlags & IS_NOT_NUMERIC_CONSTANT) == IS_NOT_NUMERIC_CONSTANT) {
-        return false;
+      final Ternary memoized = getTrait(Trait.NUMERIC_CONSTANT);
+      if (memoized != Ternary.UNKNOWN) {
+        return memoized == Ternary.TRUE;
       }
       boolean forAll = forAll(x -> x.isNumericConstant(), 1);
       if (forAll) {
-        addEvalFlags(IAST.IS_NUMERIC_FUNCTION | IS_NUMERIC_CONSTANT);
-      } else {
-        addEvalFlags(IS_NOT_NUMERIC_CONSTANT);
+        setTrait(Trait.NUMERIC_FUNCTION, true);
       }
+      setTrait(Trait.NUMERIC_CONSTANT, forAll);
       return forAll;
     }
     return false;
@@ -4871,7 +4849,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isPatternExpr() {
-    return (fEvalFlags & CONTAINS_PATTERN_EXPR) != NO_FLAG;
+    return (fEvalFlags & EvalFlags.Mask.PATTERN_EXPR) != 0;
   }
 
   @Override
@@ -5141,7 +5119,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               }
             }
           }
-          addEvalFlags(IAST.IS_MATRIX);
+          addFlag(Flag.IS_MATRIX);
           return containsNum;
         }
       }
@@ -5535,7 +5513,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public int isVector() {
-    if (isEvalFlagOn(IAST.IS_VECTOR)) {
+    if (hasFlag(Flag.IS_VECTOR)) {
       return argSize();
     }
     if (isList()) {
@@ -5553,7 +5531,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           }
         }
       }
-      addEvalFlags(IAST.IS_VECTOR);
+      addFlag(Flag.IS_VECTOR);
       return length;
     }
     return -1;
@@ -6685,7 +6663,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final void setEvalFlags(final int i) {
+  public final void setEvalFlagBits(final int i) {
     fEvalFlags = i;
   }
 

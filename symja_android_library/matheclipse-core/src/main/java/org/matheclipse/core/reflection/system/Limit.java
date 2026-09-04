@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -4282,7 +4283,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.NHOLDALL);
+    newSymbol.setAttributes(Attribute.NHOLDALL);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {S.Direction, S.Assumptions, S.GenerateConditions}, //
         new IExpr[] {S.Reals, S.$Assumptions, S.Automatic});

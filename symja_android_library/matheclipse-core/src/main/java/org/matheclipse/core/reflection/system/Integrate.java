@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.Log;
@@ -182,7 +184,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
       F.ISet(F.$s("§$timelimit"), F.ZZ(Config.INTEGRATE_RUBI_TIMELIMIT));
       F.ISet(F.$s("§$showsteps"), S.False);
-      UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
+      UtilityFunctionCtors.ReapList.setAttributes(Attribute.HOLDFIRST);
       F.ISet(F.$s("§$trigfunctions"), F.List(S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc));
       F.ISet(F.$s("§$hyperbolicfunctions"), F.List(S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch));
       F.ISet(F.$s("§$inversetrigfunctions"),
@@ -1403,7 +1405,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
 
       if (arg1AST.size() >= 3 && arg1AST.isFree(S.Integrate) && arg1AST.isPlusTimesPower()) {
-        if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && x.isSymbol()) {
+        if (!arg1AST.hasFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION) && x.isSymbol()) {
           Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, true);
           if (parts.isPresent()) {
             IExpr temp = AlgebraUtil.partsApart(parts.get(), x, engine);
@@ -1631,7 +1633,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDALL);
+    newSymbol.setAttributes(Attribute.HOLDALL);
     setOptions(newSymbol, new IBuiltInSymbol[] {S.Assumptions, S.Method},
         new IExpr[] {S.$Assumptions, S.Automatic});
     super.setUp(newSymbol);

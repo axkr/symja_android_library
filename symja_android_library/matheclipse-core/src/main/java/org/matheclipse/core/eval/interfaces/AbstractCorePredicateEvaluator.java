@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -35,7 +36,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
     IExpr arg1 = engine.evaluate(ast.arg1());
     if (arg1.isList() || arg1.isAssociation()) {
       // thread over list?
-      if ((ast.topHead().getAttributes() & ISymbol.LISTABLE) == ISymbol.LISTABLE) {
+      if (Attribute.LISTABLE.isSetIn(ast.topHead().getAttributes())) {
         return arg1.mapThread(ast, 1);
       }
     }

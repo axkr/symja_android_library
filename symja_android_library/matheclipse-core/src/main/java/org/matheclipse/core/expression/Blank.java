@@ -8,6 +8,7 @@ import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -131,11 +132,11 @@ public class Blank implements IPattern {
     if (isPatternDefault()) {
       // the ast contains a pattern with default value (i.e. "_." or
       // "_:")
-      result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
+      result[0] = EvalFlags.Mask.CONTAINS_DEFAULT_PATTERN;
       result[1] = RuleConfig.PRIORITY_BLANK_OPTIONAL;
     } else {
       // the ast contains a pattern without default value (i.e. "_")
-      result[0] = IAST.CONTAINS_PATTERN;
+      result[0] = EvalFlags.Mask.CONTAINS_PATTERN;
       result[1] = RuleConfig.PRIORITY_BLANK;
     }
     if (fHeadTest != null) {
@@ -254,17 +255,6 @@ public class Blank implements IPattern {
   @Override
   public IExpr getHeadTest() {
     return fHeadTest;
-  }
-
-  @Override
-  public int getEvalFlags() {
-    if (isPatternDefault()) {
-      // the ast contains a pattern with default value (i.e. "x_." or
-      // "x_:")
-      return IAST.CONTAINS_DEFAULT_PATTERN;
-    }
-    // the ast contains a pattern without default value (i.e. "x_")
-    return IAST.CONTAINS_PATTERN;
   }
 
   @Override

@@ -27,6 +27,7 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -201,7 +202,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -228,7 +229,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -274,8 +275,7 @@ public class IntegerFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       // {Flat, Listable, OneIdentity, Orderless}, as in Mathematica.
-      newSymbol.setAttributes(
-          ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.ORDERLESS);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY, Attribute.ORDERLESS);
     }
   }
 
@@ -327,8 +327,7 @@ public class IntegerFunctions {
     public void setUp(ISymbol newSymbol) {
       // {Flat, Listable, OneIdentity, Orderless} in Mathematica. OneIdentity is the one that shows:
       // BitOr(e) is e, where only Listable left it as an unevaluated BitOr(e) for a non-integer.
-      newSymbol.setAttributes(
-          ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.ORDERLESS);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY, Attribute.ORDERLESS);
     }
   }
 
@@ -372,8 +371,7 @@ public class IntegerFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       // {Flat, Listable, OneIdentity, Orderless}, as in Mathematica.
-      newSymbol.setAttributes(
-          ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.ORDERLESS);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY, Attribute.ORDERLESS);
     }
   }
 
@@ -407,7 +405,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -441,7 +439,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -487,7 +485,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -515,7 +513,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -679,7 +677,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION | ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION, Attribute.HOLDREST);
       super.setUp(newSymbol);
     }
   }
@@ -849,7 +847,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -905,7 +903,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1084,7 +1082,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION | ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION, Attribute.HOLDREST);
       super.setUp(newSymbol);
     }
   }
@@ -1223,7 +1221,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.NHOLDALL, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1398,7 +1396,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1490,7 +1488,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1670,7 +1668,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1965,7 +1963,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       super.setUp(newSymbol);
     }
   }
@@ -2127,7 +2125,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
 
   }
@@ -2256,7 +2254,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2328,7 +2326,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2484,7 +2482,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }

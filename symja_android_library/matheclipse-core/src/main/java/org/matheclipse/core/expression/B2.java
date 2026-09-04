@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.generic.ObjIntPredicate;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1612,7 +1613,9 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    this.fEvalFlags = objectInput.readShort();
+    // only the flags which cannot be recomputed are persisted; masking also undoes the sign
+    // extension of readShort()
+    this.fEvalFlags = objectInput.readShort() & EvalFlags.Mask.PERSISTENT;
 
     // int size;
     // byte attributeFlags = objectInput.readByte();
@@ -1725,7 +1728,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    objectOutput.writeShort(fEvalFlags);
+    // only the flags which cannot be recomputed are persisted
+    objectOutput.writeShort(fEvalFlags & EvalFlags.Mask.PERSISTENT);
 
     // int size = size();
     // byte attributeFlags = (byte) 0;

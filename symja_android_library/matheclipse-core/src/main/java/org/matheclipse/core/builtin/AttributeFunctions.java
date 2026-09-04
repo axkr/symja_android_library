@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -112,7 +113,7 @@ public class AttributeFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.LISTABLE);
     }
   }
 
@@ -236,60 +237,13 @@ public class AttributeFunctions {
      * @param attribute
      */
     private boolean clearAttributes(final ISymbol sym, ISymbol attribute) {
-      int functionID = attribute.ordinal();
-      if (functionID > ID.UNKNOWN) {
-        switch (functionID) {
-          case ID.Constant:
-            sym.clearAttributes(ISymbol.CONSTANT);
-            return true;
-          case ID.Flat:
-            sym.clearAttributes(ISymbol.FLAT);
-            return true;
-          case ID.Listable:
-            sym.clearAttributes(ISymbol.LISTABLE);
-            return true;
-          case ID.NonThreadable:
-            sym.clearAttributes(ISymbol.NONTHREADABLE);
-            return true;
-          case ID.OneIdentity:
-            sym.clearAttributes(ISymbol.ONEIDENTITY);
-            return true;
-          case ID.Orderless:
-            sym.clearAttributes(ISymbol.ORDERLESS);
-            return true;
-          case ID.HoldAll:
-            sym.clearAttributes(ISymbol.HOLDALL);
-            return true;
-          case ID.HoldAllComplete:
-            sym.clearAttributes(ISymbol.HOLDALLCOMPLETE);
-            return true;
-          case ID.HoldComplete:
-            sym.clearAttributes(ISymbol.HOLDCOMPLETE);
-            return true;
-          case ID.HoldFirst:
-            sym.clearAttributes(ISymbol.HOLDFIRST);
-            return true;
-          case ID.HoldRest:
-            sym.clearAttributes(ISymbol.HOLDREST);
-            return true;
-          case ID.NHoldAll:
-            sym.clearAttributes(ISymbol.NHOLDALL);
-            return true;
-          case ID.NHoldFirst:
-            sym.clearAttributes(ISymbol.NHOLDFIRST);
-            return true;
-          case ID.NHoldRest:
-            sym.clearAttributes(ISymbol.NHOLDREST);
-            return true;
-          case ID.NumericFunction:
-            sym.clearAttributes(ISymbol.NUMERICFUNCTION);
-            return true;
-          case ID.SequenceHold:
-            sym.clearAttributes(ISymbol.SEQUENCEHOLD);
-            return true;
-        }
+      Attribute known = Attribute.of(attribute);
+      if (known == null || !known.isUserClearable()) {
+        // not an attribute at all, or one which must not be removed - the caller reports "attnf"
+        return false;
       }
-      return false;
+      sym.clearAttributes(known.mask());
+      return true;
     }
   }
 
@@ -318,14 +272,14 @@ public class AttributeFunctions {
     private static void appendProtected(final IASTAppendable result, ISymbol x) {
       ISymbol symbol = x;
       if (!symbol.hasProtectedAttribute()) {
-        symbol.addAttributes(ISymbol.PROTECTED);
+        symbol.addAttributes(Attribute.PROTECTED);
         result.append(x);
       }
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -355,14 +309,14 @@ public class AttributeFunctions {
     private static void appendUnprotected(final IASTAppendable result, IExpr x) {
       ISymbol symbol = (ISymbol) x;
       if (symbol.hasProtectedAttribute()) {
-        symbol.clearAttributes(ISymbol.PROTECTED);
+        symbol.clearAttributes(Attribute.PROTECTED);
         result.append(x);
       }
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -487,141 +441,24 @@ public class AttributeFunctions {
         Errors.printMessage(S.SetAttributes, "write", F.list(sym), EvalEngine.get());
         throw new FailedException();
       }
-      int functionID = attribute.ordinal();
-      if (functionID > ID.UNKNOWN) {
-        switch (functionID) {
-          case ID.Constant:
-            sym.addAttributes(ISymbol.CONSTANT);
-            return true;
-          case ID.Flat:
-            sym.addAttributes(ISymbol.FLAT);
-            return true;
-          case ID.Listable:
-            sym.addAttributes(ISymbol.LISTABLE);
-            return true;
-          case ID.NonThreadable:
-            sym.addAttributes(ISymbol.NONTHREADABLE);
-            return true;
-          case ID.Locked:
-            sym.addAttributes(ISymbol.LOCKED);
-            return true;
-          case ID.OneIdentity:
-            sym.addAttributes(ISymbol.ONEIDENTITY);
-            return true;
-          case ID.Orderless:
-            sym.addAttributes(ISymbol.ORDERLESS);
-            return true;
-          case ID.HoldAll:
-            sym.addAttributes(ISymbol.HOLDALL);
-            return true;
-          case ID.HoldAllComplete:
-            sym.addAttributes(ISymbol.HOLDALLCOMPLETE);
-            return true;
-          case ID.HoldComplete:
-            sym.addAttributes(ISymbol.HOLDCOMPLETE);
-            return true;
-          case ID.HoldFirst:
-            sym.addAttributes(ISymbol.HOLDFIRST);
-            return true;
-          case ID.HoldRest:
-            sym.addAttributes(ISymbol.HOLDREST);
-            return true;
-          case ID.NHoldAll:
-            sym.addAttributes(ISymbol.NHOLDALL);
-            return true;
-          case ID.NHoldFirst:
-            sym.addAttributes(ISymbol.NHOLDFIRST);
-            return true;
-          case ID.NHoldRest:
-            sym.addAttributes(ISymbol.NHOLDREST);
-            return true;
-          case ID.NumericFunction:
-            sym.addAttributes(ISymbol.NUMERICFUNCTION);
-            return true;
-          case ID.Protected:
-            sym.addAttributes(ISymbol.PROTECTED);
-            return true;
-          case ID.ReadProtected:
-            sym.addAttributes(ISymbol.READPROTECTED);
-            return true;
-          case ID.SequenceHold:
-            sym.addAttributes(ISymbol.SEQUENCEHOLD);
-            return true;
-        }
+      Attribute known = Attribute.of(attribute);
+      if (known == null) {
+        // the caller reports "attnf"
+        return false;
       }
-      return false;
+      sym.addAttributes(known.mask());
+      return true;
     }
   }
 
   public static int getSymbolsAsAttributes(IAST listOfSymbols, EvalEngine engine) {
     int attributes = ISymbol.NOATTRIBUTE;
     for (int i = 1; i < listOfSymbols.size(); i++) {
-      final IExpr arg = listOfSymbols.get(i);
-      if (arg.isBuiltInSymbol()) {
-        int functionID = ((IBuiltInSymbol) arg).ordinal();
-        if (functionID > ID.UNKNOWN) {
-          switch (functionID) {
-            case ID.Constant:
-              attributes |= ISymbol.CONSTANT;
-              break;
-            case ID.Flat:
-              attributes |= ISymbol.FLAT;
-              break;
-            case ID.Listable:
-              attributes |= ISymbol.LISTABLE;
-              break;
-            case ID.NonThreadable:
-              attributes |= ISymbol.NONTHREADABLE;
-              break;
-            case ID.Locked:
-              attributes |= ISymbol.LOCKED;
-              break;
-            case ID.OneIdentity:
-              attributes |= ISymbol.ONEIDENTITY;
-              break;
-            case ID.Orderless:
-              attributes |= ISymbol.ORDERLESS;
-              break;
-            case ID.HoldAll:
-              attributes |= ISymbol.HOLDALL;
-              break;
-            case ID.HoldAllComplete:
-              attributes |= ISymbol.HOLDALLCOMPLETE;
-              break;
-            case ID.HoldComplete:
-              attributes |= ISymbol.HOLDCOMPLETE;
-              break;
-            case ID.HoldFirst:
-              attributes |= ISymbol.HOLDFIRST;
-              break;
-            case ID.HoldRest:
-              attributes |= ISymbol.HOLDREST;
-              break;
-            case ID.NHoldAll:
-              attributes |= ISymbol.NHOLDALL;
-              break;
-            case ID.NHoldFirst:
-              attributes |= ISymbol.NHOLDFIRST;
-              break;
-            case ID.NHoldRest:
-              attributes |= ISymbol.NHOLDREST;
-              break;
-            case ID.NumericFunction:
-              attributes |= ISymbol.NUMERICFUNCTION;
-              break;
-            case ID.Protected:
-              attributes |= ISymbol.PROTECTED;
-              break;
-            case ID.ReadProtected:
-              attributes |= ISymbol.READPROTECTED;
-              break;
-            case ID.SequenceHold:
-              attributes |= ISymbol.SEQUENCEHOLD;
-              break;
-            default:
-              break;
-          }
-        }
+      Attribute known = Attribute.of(listOfSymbols.get(i));
+      if (known != null) {
+        // an argument which is not an attribute is silently ignored here - both callers
+        // (Function's 3-argument form and Compile's RuntimeAttributes) pass no error context
+        attributes = known.setIn(attributes);
       }
     }
     return attributes;

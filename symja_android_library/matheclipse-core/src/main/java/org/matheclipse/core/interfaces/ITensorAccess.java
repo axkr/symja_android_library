@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.function.Predicate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 
 public interface ITensorAccess extends IExpr {
 
@@ -33,7 +34,7 @@ public interface ITensorAccess extends IExpr {
   @Override
   default boolean isNumericArgument(boolean allowList) {
     if (allowList) {
-      if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+      if (hasFlag(Flag.CONTAINS_NUMERIC_ARG)) {
         return true;
       }
       return exists(x -> x.isNumericArgument(true));

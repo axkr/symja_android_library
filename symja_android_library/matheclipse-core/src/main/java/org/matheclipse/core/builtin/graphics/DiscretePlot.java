@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -176,6 +177,6 @@ public class DiscretePlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     super.setUp(newSymbol);
-    newSymbol.setAttributes(ISymbol.HOLDALL);
+    newSymbol.setAttributes(Attribute.HOLDALL);
   }
 }

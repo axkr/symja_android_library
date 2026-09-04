@@ -18,6 +18,7 @@ import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.IGraphics2D;
 import org.matheclipse.core.graphics.IGraphics3D;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1279,7 +1280,7 @@ public class GraphicsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDREST);
+      newSymbol.setAttributes(Attribute.NHOLDREST);
     }
   }
 

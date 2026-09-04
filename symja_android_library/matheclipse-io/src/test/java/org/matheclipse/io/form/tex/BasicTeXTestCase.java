@@ -1,5 +1,6 @@
 package org.matheclipse.io.form.tex;
 
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringWriter;
 import org.junit.jupiter.api.Assertions;
@@ -469,7 +470,7 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX044() {
     IExpr expr = EvalEngine.get().evaluate("{{{a->b},{c:>d}},{4,5,6}}");
-    ((IAST) expr).setEvalFlags(IAST.OUTPUT_MULTILINE);
+    ((IAST) expr).addFlag(Flag.OUTPUT_MULTILINE);
     check(expr, //
         "\\begin{array}{c}\n" + //
             " \\{\\{a\\to b\\},\\{c:\\to d\\}\\} \\\\\n" + //

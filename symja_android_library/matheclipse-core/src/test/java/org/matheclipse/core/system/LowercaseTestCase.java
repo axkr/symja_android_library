@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -2862,6 +2863,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("Attributes(f)", //
         "{Orderless}");
+
+    // ReadProtected used to answer "ReadProtected is not a known attribute": the ClearAttributes
+    // switch had 16 of the 19 cases the SetAttributes switch had
+    check("SetAttributes(g, ReadProtected)", //
+        "");
+    check("Attributes(g)", //
+        "{ReadProtected}");
+    check("ClearAttributes(g, ReadProtected)", //
+        "");
+    check("Attributes(g)", //
+        "{}");
+
+    // Locked stays non-clearable
+    check("ClearAttributes(g, Locked)", //
+        "ClearAttributes(g,Locked)");
+  }
+
+  @Test
+  public void testSequenceHoldIsNotSplicedOnTheFastPath() {
+    // A symbol whose ONLY attribute is SequenceHold passes the ISymbol#EVAL_ENGINE_ATTRIBUTES
+    // gate and used to reach evalNoAttributes(), which flattened Sequence() unconditionally -
+    // exactly what the attribute forbids. Mathematica: f[Sequence[1, 2]] stays unflattened.
+    check("SetAttributes(seqhold, SequenceHold)", //
+        "");
+    check("Attributes(seqhold)", //
+        "{SequenceHold}");
+    check("seqhold(Sequence(1, 2))", //
+        "seqhold(Sequence(1,2))");
+
+    // without the attribute the arguments are spliced as usual
+    check("noseqhold(Sequence(1, 2))", //
+        "noseqhold(1,2)");
   }
 
   @Test
@@ -26918,7 +26951,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     IAST ast = F.Plus(F.Power(F.x, F.CN1), F.Power(F.y, F.CN1));
 
     // Mark the AST as completely expanded to trigger the new optimization path
-    ast.addEvalFlags(IAST.IS_ALL_EXPANDED);
+    ast.addFlag(Flag.IS_ALL_EXPANDED);
 
     IExpr result = AlgebraUtil.togetherNull(ast, EvalEngine.get());
 

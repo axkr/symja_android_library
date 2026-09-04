@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
@@ -703,7 +704,7 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+    newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
     super.setUp(newSymbol);
   }
 

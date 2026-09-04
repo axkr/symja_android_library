@@ -18,6 +18,8 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -55,7 +57,7 @@ public final class ASTRealMatrix extends AbstractAST
     // the void
     // constructor. Since this class does not have one, serialization and deserialization will fail
     // at runtime.
-    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
+    addFlag(Flag.CONTAINS_NUMERIC_ARG);
   }
 
   /**
@@ -100,7 +102,7 @@ public final class ASTRealMatrix extends AbstractAST
       throw new ASTElementLimitExceeded(matrix.length, matrix[0].length);
     }
     this.matrix = new Array2DRowRealMatrix(matrix, deepCopy);
-    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
+    addFlag(Flag.CONTAINS_NUMERIC_ARG);
   }
 
   /**
@@ -117,7 +119,7 @@ public final class ASTRealMatrix extends AbstractAST
     } else {
       this.matrix = matrix;
     }
-    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
+    addFlag(Flag.CONTAINS_NUMERIC_ARG);
   }
 
   /**
@@ -474,7 +476,9 @@ public final class ASTRealMatrix extends AbstractAST
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    this.fEvalFlags = objectInput.readShort();
+    // only the flags which cannot be recomputed are persisted; masking also undoes the sign
+    // extension of readShort()
+    this.fEvalFlags = objectInput.readShort() & EvalFlags.Mask.PERSISTENT;
     this.matrix = (RealMatrix) objectInput.readObject();
   }
 
@@ -592,7 +596,8 @@ public final class ASTRealMatrix extends AbstractAST
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    objectOutput.writeShort(fEvalFlags);
+    // only the flags which cannot be recomputed are persisted
+    objectOutput.writeShort(fEvalFlags & EvalFlags.Mask.PERSISTENT);
     objectOutput.writeObject(matrix);
   }
 }

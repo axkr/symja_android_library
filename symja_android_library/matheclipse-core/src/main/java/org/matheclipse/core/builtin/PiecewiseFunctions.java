@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -68,7 +69,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NHOLDALL | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDALL, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -337,7 +338,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -432,7 +433,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.ORDERLESS, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -535,7 +536,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.ORDERLESS, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -733,7 +734,7 @@ public class PiecewiseFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set NUMERICFUNCTION
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
   private static final class Ramp extends AbstractEvaluator {
@@ -766,7 +767,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -844,7 +845,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -907,7 +908,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1012,7 +1013,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
     private IExpr unitize(IExpr x, EvalEngine engine) {
@@ -1167,7 +1168,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1211,7 +1212,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1255,7 +1256,7 @@ public class PiecewiseFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 

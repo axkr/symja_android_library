@@ -50,6 +50,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -445,7 +446,7 @@ public class GraphFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
   }
 

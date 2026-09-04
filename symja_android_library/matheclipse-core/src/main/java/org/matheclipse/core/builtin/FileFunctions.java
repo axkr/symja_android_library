@@ -52,6 +52,7 @@ import org.matheclipse.core.expression.data.NumericArrayExpr.TypeException;
 import org.matheclipse.core.expression.data.OutputStreamExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -132,7 +133,7 @@ public class FileFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -427,7 +428,7 @@ public class FileFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
   /**
@@ -485,7 +486,7 @@ public class FileFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -529,7 +530,7 @@ public class FileFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -1044,7 +1045,7 @@ public class FileFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
   /** Put[{&lt;file name&gt;}} */
@@ -1623,7 +1624,7 @@ public class FileFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
     }
   }
 

@@ -31,6 +31,7 @@ import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -1995,7 +1996,7 @@ public class OutputFormFactory {
       }
       return;
     }
-    if (list.isEvalFlagOn(IAST.IS_MATRIX) || isMatrix) {
+    if (list.hasFlag(Flag.IS_MATRIX) || isMatrix) {
       if (!fEmpty) {
         newLine(buf);
       }
@@ -2007,7 +2008,7 @@ public class OutputFormFactory {
     }
     for (int i = 2; i < listSize; i++) {
       append(buf, ",");
-      if (list.isEvalFlagOn(IAST.IS_MATRIX) || isMatrix) {
+      if (list.hasFlag(Flag.IS_MATRIX) || isMatrix) {
         newLine(buf);
         append(buf, ' ');
       }

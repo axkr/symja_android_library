@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -51,24 +52,24 @@ public class EvalAttributes {
    * @return returns the flattened list or <code>F.NIL</code>
    */
   public static IASTAppendable flattenDeep(final IAST ast) {
-    if ((ast.getEvalFlags() & IAST.IS_FLATTENED) == IAST.IS_FLATTENED) {
+    if (ast.hasFlag(Flag.IS_FLATTENED)) {
       // already flattened
       return F.NIL;
     }
     if (ast.isUniform()) {
       // the arguments are atoms, so none of them is a nested function with the same head
-      ast.addEvalFlags(IAST.IS_FLATTENED);
+      ast.addFlag(Flag.IS_FLATTENED);
       return F.NIL;
     }
     final IExpr sym = ast.head();
     if (sym.isSymbol() && ast.isAST(sym)) {
       IASTAppendable result = flattenDeep((ISymbol) sym, ast);
       if (result.isPresent()) {
-        result.addEvalFlags(IAST.IS_FLATTENED);
+        result.addFlag(Flag.IS_FLATTENED);
         return result;
       }
     }
-    ast.addEvalFlags(IAST.IS_FLATTENED);
+    ast.addFlag(Flag.IS_FLATTENED);
     return F.NIL;
   }
 
@@ -118,13 +119,13 @@ public class EvalAttributes {
    * @see #flattenDeep(IAST)
    */
   public static IASTAppendable flatten(final IAST ast) {
-    if (ast.isEvalFlagOn(IAST.IS_FLATTENED)) {
+    if (ast.hasFlag(Flag.IS_FLATTENED)) {
       // already flattened
       return F.NIL;
     }
     if (ast.isUniform()) {
       // the arguments are atoms, so none of them is a nested function with the same head
-      ast.addEvalFlags(IAST.IS_FLATTENED);
+      ast.addFlag(Flag.IS_FLATTENED);
       return F.NIL;
     }
 
@@ -132,11 +133,11 @@ public class EvalAttributes {
     if (sym.isSymbol() && ast.isAST(sym)) {
       IASTAppendable result = flatten((ISymbol) sym, ast);
       if (result.isPresent()) {
-        result.addEvalFlags(IAST.IS_FLATTENED);
+        result.addFlag(Flag.IS_FLATTENED);
         return result;
       }
     }
-    ast.addEvalFlags(IAST.IS_FLATTENED);
+    ast.addFlag(Flag.IS_FLATTENED);
     return F.NIL;
   }
 
@@ -397,7 +398,7 @@ public class EvalAttributes {
    * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
    */
   public static final boolean sortWithFlags(IASTMutable ast) {
-    if (ast.isEvalFlagOn(IAST.IS_SORTED)) {
+    if (ast.hasFlag(Flag.IS_SORTED)) {
       return false;
     }
 
@@ -410,7 +411,7 @@ public class EvalAttributes {
           return sort3Args(ast, true);
         default:
           if (sort(ast, Comparators.CANONICAL_COMPARATOR)) {
-            ast.addEvalFlags(IAST.IS_SORTED);
+            ast.addFlag(Flag.IS_SORTED);
             if (Config.DEBUG) {
               checkCachedHashcode(ast);
             }
@@ -418,7 +419,7 @@ public class EvalAttributes {
           }
       }
     }
-    ast.addEvalFlags(IAST.IS_SORTED);
+    ast.addFlag(Flag.IS_SORTED);
     return false;
   }
 
@@ -494,7 +495,7 @@ public class EvalAttributes {
       ast.set(2, ast.arg1());
       ast.set(1, temp);
       if (setFlag) {
-        ast.addEvalFlags(IAST.IS_SORTED);
+        ast.addFlag(Flag.IS_SORTED);
       }
       if (Config.DEBUG) {
         checkCachedHashcode(ast);
@@ -502,7 +503,7 @@ public class EvalAttributes {
       return true;
     }
     if (setFlag) {
-      ast.addEvalFlags(IAST.IS_SORTED);
+      ast.addFlag(Flag.IS_SORTED);
     }
     return false;
   }
@@ -538,7 +539,7 @@ public class EvalAttributes {
       }
     }
     if (setFlag) {
-      ast.addEvalFlags(IAST.IS_SORTED);
+      ast.addFlag(Flag.IS_SORTED);
     }
     if (evaled) {
       if (Config.DEBUG) {

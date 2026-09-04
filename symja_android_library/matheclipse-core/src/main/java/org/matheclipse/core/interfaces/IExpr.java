@@ -498,16 +498,87 @@ public interface IExpr
   }
 
   /**
-   * Add an evaluation flag to the existing ones if supported.
-   * <p>
-   * <b>Note</b> only certain data structures like <code>IAST</code> and <code>ISparseArray</code>
-   * support evaluation flags, otherwise the <code>this</code> object will be returned without
-   * modification.
+   * Is the given evaluation flag set for this expression?
    *
-   * @param evalFlags the evaluation flags to add
-   * @return the object with the added evaluation flags
+   * @param flag the flag to test
+   * @return <code>true</code> if the flag is set
    */
-  default IExpr addEvalFlags(final int evalFlags) {
+  default boolean hasFlag(EvalFlags.Flag flag) {
+    return false;
+  }
+
+  /**
+   * Is the given evaluation flag cleared for this expression?
+   *
+   * @param flag the flag to test
+   * @return <code>true</code> if the flag is not set
+   */
+  default boolean hasNoFlag(EvalFlags.Flag flag) {
+    return !hasFlag(flag);
+  }
+
+  /**
+   * Is <b>at least one</b> of the flags of the given group set for this expression?
+   *
+   * @param group the group to test
+   * @return <code>true</code> if any flag of the group is set
+   */
+  default boolean hasAnyFlag(EvalFlags.Group group) {
+    return false;
+  }
+
+  /**
+   * Are <b>all</b> of the flags of the given group set for this expression?
+   *
+   * @param group the group to test
+   * @return <code>true</code> if every flag of the group is set
+   */
+  default boolean hasAllFlags(EvalFlags.Group group) {
+    return false;
+  }
+
+  /**
+   * Is <b>none</b> of the flags of the given group set for this expression?
+   *
+   * @param group the group to test
+   * @return <code>true</code> if no flag of the group is set
+   */
+  default boolean hasNoFlag(EvalFlags.Group group) {
+    return true;
+  }
+
+  /**
+   * Set an evaluation flag, if supported.
+   * <p>
+   * <b>Note</b> only certain data structures like {@link IAST} and {@link ISparseArray} support
+   * evaluation flags, otherwise <code>this</code> is returned unmodified. {@link IAST} overrides
+   * this to additionally clear the flags which contradict the one being set.
+   *
+   * @param flag the flag to set
+   * @return the object with the flag set
+   */
+  default IExpr addFlag(EvalFlags.Flag flag) {
+    return this;
+  }
+
+  /**
+   * Set two evaluation flags, if supported.
+   *
+   * @param first the first flag to set
+   * @param second the second flag to set
+   * @return the object with both flags set
+   */
+  default IExpr addFlags(EvalFlags.Flag first, EvalFlags.Flag second) {
+    return addFlag(first).addFlag(second);
+  }
+
+  /**
+   * Set every flag of the given group, if supported.
+   *
+   * @param group the group of flags to set
+   * @return the object with the flags set
+   */
+  default IExpr addFlags(EvalFlags.Group group) {
     return this;
   }
 
@@ -3167,26 +3238,6 @@ public interface IExpr
    * Test if this expression is the function <code>Equal[&lt;arg1&gt;, &lt;arg2&gt;]</code>
    */
   default boolean isEqual() {
-    return false;
-  }
-
-  /**
-   * Are the given evaluation flags disabled for this list ?
-   *
-   * @param flags
-   * @see IAST#NO_FLAG
-   */
-  default boolean isEvalFlagOff(int flags) {
-    return true;
-  }
-
-  /**
-   * Are the given evaluation flags enabled for this list ?
-   *
-   * @param flags
-   * @see IAST#NO_FLAG
-   */
-  default boolean isEvalFlagOn(int flags) {
     return false;
   }
 

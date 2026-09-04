@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ArraySymbolExpr;
 import org.matheclipse.core.expression.data.MatrixSymbolExpr;
 import org.matheclipse.core.expression.data.VectorSymbolExpr;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -225,6 +226,6 @@ public class TensorProduct extends AbstractEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+    newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
   }
 }

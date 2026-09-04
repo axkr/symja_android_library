@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.Errors;
@@ -411,7 +412,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDALL);
+    newSymbol.setAttributes(Attribute.HOLDALL);
     MATCHER1 = Suppliers.memoize(ProductRules::init1);
   }
 }

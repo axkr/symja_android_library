@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -561,7 +562,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
       fPatternMap = determinePatterns(priority);
       this.fLHSPriority = priority[0];
-      if (this.fLhsPatternExpr.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
+      if (this.fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
         this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
       }
       if (patternExpr.isCondition()) {
@@ -850,7 +851,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     final int lhsEvalSize = lhsEvalAST.size();
 
     // handle pattern sequences (contains Sequence objects)
-    if (lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
+    if (lhsPatternAST.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
       if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
         return false;
       }
@@ -877,7 +878,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       if (pOffset > 1) {
         // materialize the remaining slices once
         IASTAppendable patternTail = lhsPatternAST.copyFrom(pOffset);
-        patternTail.addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+        patternTail.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
         lhsPatternAST = patternTail;
         lhsEvalAST = lhsEvalAST.copyFrom(eOffset);
       }
@@ -969,8 +970,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         // carries none of them yet, so reading the flags raw would skip the default-value branch
         // below and Power(x,n_.) would fail to match x. Compute them first.
         lhsPatternAST.isFreeOfPatterns();
-        if ((lhsPatternAST.getEvalFlags()
-            & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) {
+        if (lhsPatternAST.hasFlag(Flag.CONTAINS_DEFAULT_PATTERN)) {
           if (lhsEvalExpr.isASTOrAssociation() //
               && lhsPatternAST.hasOptionalArgument() //
               && !lhsPatternAST.isOrderlessAST()) {
@@ -986,8 +986,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             if (head.isSymbol()) {
               ISymbol patternHead = (ISymbol) head;
               IExpr evalHead = lhsEvalExpr.head();
-              if ((lhsPatternAST.getEvalFlags()
-                  & IAST.CONTAINS_ALL_DEFAULT_PATTERN) == IAST.CONTAINS_ALL_DEFAULT_PATTERN
+              if (lhsPatternAST.hasFlag(Flag.CONTAINS_ALL_DEFAULT_PATTERN)
                   && patternHead.hasOneIdentityAttribute() && lhsPatternAST.isOrderlessAST()) {
                 if (patternHead.equals(evalHead) && lhsEvalExpr.isAST()) {
                   if (lhsPatternAST.argSize() >= lhsEvalExpr.size()) {
@@ -1480,7 +1479,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         IAST lhsPatternList = lhsPatternAST;
         if (lhsPatternAST.isAssociation()) {
           lhsPatternList = ((IAssociation) lhsPatternAST).normal(false);
-          lhsPatternList.setEvalFlags(lhsPatternAST.getEvalFlags());
+          lhsPatternList.setEvalFlagBits(lhsPatternAST.getEvalFlagBits());
           ((IASTMutable) lhsPatternList).set(0, S.Association);
         }
         IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
@@ -2185,8 +2184,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             IExpr evalArg = lhsEvalFinal.get(k);
             if (!(patternArg.head() instanceof IPatternObject)) {
               if (patternArg.isASTOrAssociation()) {
-                if ((((IAST) patternArg).getEvalFlags()
-                    & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) {
+                if (((IAST) patternArg).hasFlag(Flag.CONTAINS_DEFAULT_PATTERN)) {
                   continue;
                 }
               }
@@ -2430,7 +2428,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
     this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
     fLHSPriority = priority[0];
-    if (fLhsPatternExpr.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
+    if (fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
       fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
     }
     if (fLhsPatternExpr.isCondition()) {

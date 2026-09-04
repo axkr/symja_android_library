@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import java.io.File;
@@ -143,7 +144,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -794,7 +795,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -941,7 +942,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
   }
 
@@ -987,7 +988,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -1031,7 +1032,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -1092,7 +1093,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -1138,7 +1139,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -1214,7 +1215,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -1269,7 +1270,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -1423,7 +1424,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -1481,7 +1482,7 @@ public class ConstantDefinitions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.CONSTANT);
+      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -297,7 +298,7 @@ public class Zeta extends AbstractArg12 {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     super.setUp(newSymbol);
   }
 

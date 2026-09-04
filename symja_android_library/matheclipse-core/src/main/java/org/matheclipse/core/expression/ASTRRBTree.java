@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.generic.ObjIntPredicate;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -516,7 +517,9 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    this.fEvalFlags = objectInput.readShort();
+    // only the flags which cannot be recomputed are persisted; masking also undoes the sign
+    // extension of readShort()
+    this.fEvalFlags = objectInput.readShort() & EvalFlags.Mask.PERSISTENT;
     // MutRrbt is not serializable
     this.rrbTree = ((ImRrbt<IExpr>) objectInput.readObject()).toMutRrbt();
   }
@@ -573,7 +576,8 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    objectOutput.writeShort(fEvalFlags);
+    // only the flags which cannot be recomputed are persisted
+    objectOutput.writeShort(fEvalFlags & EvalFlags.Mask.PERSISTENT);
     // MutRrbt is not serializable
     objectOutput.writeObject(rrbTree.immutable());
   }
@@ -758,7 +762,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void clear() {
     hashValue = 0;
-    fEvalFlags = NO_FLAG;
+    fEvalFlags = EvalFlags.Mask.NONE;
     rrbTree = StaticImports.mutableRrb();
   }
 

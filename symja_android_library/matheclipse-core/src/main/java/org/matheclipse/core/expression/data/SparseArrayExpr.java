@@ -31,6 +31,8 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Tensors;
+import org.matheclipse.core.interfaces.EvalFlags;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1724,15 +1726,47 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     } else {
       this.fDimension = dimension;
     }
-    // this.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+    // this.addFlag(Flag.SEQUENCE_FLATTENED);
     this.fDefaultValue = defaultValue;
   }
 
   /** {@inheritDoc} */
   @Override
-  public final ISparseArray addEvalFlags(final int i) {
-    fEvalFlags |= i;
+  public final ISparseArray addFlag(EvalFlags.Flag flag) {
+    fEvalFlags = (fEvalFlags & ~flag.clears()) | flag.mask();
     return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final IExpr addFlags(EvalFlags.Flag first, EvalFlags.Flag second) {
+    addFlag(first);
+    return addFlag(second);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final IExpr addFlags(EvalFlags.Group group) {
+    fEvalFlags |= group.mask();
+    return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean hasAnyFlag(EvalFlags.Group group) {
+    return (fEvalFlags & group.mask()) != 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean hasAllFlags(EvalFlags.Group group) {
+    return (fEvalFlags & group.mask()) == group.mask();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean hasNoFlag(EvalFlags.Group group) {
+    return (fEvalFlags & group.mask()) == 0;
   }
 
   @Override
@@ -1793,7 +1827,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    // if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+    // if (hasNoFlag(Flag.BUILT_IN_EVALED)) {
     boolean containsNumericArg = false;
     boolean evaled = false;
     IExpr newDefaultValue = fDefaultValue;
@@ -1831,18 +1865,18 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     if (evaled) {
       SparseArrayExpr result = new SparseArrayExpr(trie, fDimension, newDefaultValue, false);
       if (containsNumericArg) {
-        result.addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
-        // result.addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+        result.addFlag(Flag.CONTAINS_NUMERIC_ARG);
+        // result.addFlags(Flag.BUILT_IN_EVALED, Flag.CONTAINS_NUMERIC_ARG);
         // } else {
-        // result.addEvalFlags(IAST.BUILT_IN_EVALED);
+        // result.addFlag(Flag.BUILT_IN_EVALED);
       }
       return result;
     }
     if (containsNumericArg) {
-      addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
-      // addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+      addFlag(Flag.CONTAINS_NUMERIC_ARG);
+      // addFlags(Flag.BUILT_IN_EVALED, Flag.CONTAINS_NUMERIC_ARG);
       // } else {
-      // addEvalFlags(IAST.BUILT_IN_EVALED);
+      // addFlag(Flag.BUILT_IN_EVALED);
     }
     // }
     return F.NIL;
@@ -2227,8 +2261,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isEvalFlagOn(final int i) {
-    return (fEvalFlags & i) == i;
+  public final boolean hasFlag(EvalFlags.Flag flag) {
+    return (fEvalFlags & flag.mask()) != 0;
   }
 
   /** {@inheritDoc} */
@@ -2236,7 +2270,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   public int isInexactVector() {
     int result = isVector();
     if (result >= 0) {
-      if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+      if (hasFlag(Flag.CONTAINS_NUMERIC_ARG)) {
         return result;
       }
       if (exists(x -> x.isInexactNumber())) {
@@ -2390,9 +2424,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     if (dimension.length > 0) {
       IASTMutable result = Tensors.build(index -> getIndex(index), dimension);
       if (fDimension.length == 1) {
-        // result.addEvalFlags(IAST.IS_VECTOR);
+        // result.addFlag(Flag.IS_VECTOR);
       } else if (fDimension.length == 2) {
-        // result.addEvalFlags(IAST.IS_MATRIX);
+        // result.addFlag(Flag.IS_MATRIX);
       }
       return result;
     }

@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
@@ -209,7 +211,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -287,7 +289,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -471,7 +473,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -533,7 +535,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -591,7 +593,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -649,7 +651,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -916,7 +918,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -987,7 +989,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1063,7 +1065,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1288,7 +1290,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1378,7 +1380,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -1626,7 +1628,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1704,7 +1706,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1744,12 +1746,12 @@ public class HypergeometricFunctions {
       int bLength = b.isVector();
       if (aLength > 0) {
         aVector = (IAST) a.normal(false);
-        if (!aVector.isEvalFlagOn(IAST.IS_SORTED)) {
+        if (!aVector.hasFlag(Flag.IS_SORTED)) {
           IASTMutable aResult = aVector.copy();
           if (EvalAttributes.sortWithFlags(aResult)) {
             return F.HypergeometricPFQ(aResult, b, z);
           }
-          aVector.addEvalFlags(IAST.IS_SORTED);
+          aVector.addFlag(Flag.IS_SORTED);
         }
         a = aVector;
       } else if (aLength == 0) {
@@ -1761,12 +1763,12 @@ public class HypergeometricFunctions {
           return F.C1;
         }
         bVector = (IAST) b.normal(false);
-        if (!bVector.isEvalFlagOn(IAST.IS_SORTED)) {
+        if (!bVector.hasFlag(Flag.IS_SORTED)) {
           IASTMutable bResult = bVector.copy();
           if (EvalAttributes.sortWithFlags(bResult)) {
             return F.HypergeometricPFQ(a, bResult, z);
           }
-          bVector.addEvalFlags(IAST.IS_SORTED);
+          bVector.addFlag(Flag.IS_SORTED);
         }
         b = bVector;
       } else if (bLength == 0) {
@@ -1967,7 +1969,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -2224,7 +2226,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -2280,7 +2282,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -2357,7 +2359,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -2461,7 +2463,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -2524,7 +2526,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -2578,7 +2580,7 @@ public class HypergeometricFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 

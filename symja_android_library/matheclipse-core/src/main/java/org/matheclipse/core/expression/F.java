@@ -64,6 +64,9 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.ObjIntFunction;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
+import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -905,13 +908,13 @@ public class F extends S {
       JASConfig.USE_SPARSE_GCD = Config.JAS_GCD_SPARSE;
 
       initApfloat();
-      S.C.setAttributes(ISymbol.NHOLDALL);
-      Slot.setAttributes(ISymbol.NHOLDALL);
+      S.C.setAttributes(Attribute.NHOLDALL);
+      Slot.setAttributes(Attribute.NHOLDALL);
       Slot.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
-      SlotSequence.setAttributes(ISymbol.NHOLDALL);
+      SlotSequence.setAttributes(Attribute.NHOLDALL);
       SlotSequence.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
-      Inactive.setAttributes(ISymbol.HOLDFIRST);
-      PatternTest.setAttributes(ISymbol.HOLDREST);
+      Inactive.setAttributes(Attribute.HOLDFIRST);
+      PatternTest.setAttributes(Attribute.HOLDREST);
       List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
       CMissingNotFound = Missing("NotFound").functionEvaled();
@@ -4776,7 +4779,7 @@ public class F extends S {
    * @return <code>F.NIL</code> if no sequence is flattened
    */
   public static IAST flattenSequence(final IAST list) {
-    if (list.isEvalFlagOn(IAST.SEQUENCE_FLATTENED)) {
+    if (list.hasFlag(Flag.SEQUENCE_FLATTENED)) {
       return NIL;
     }
 
@@ -4784,13 +4787,13 @@ public class F extends S {
     // uniform arguments are atoms, so none of them is a Sequence(...). A list additionally has to
     // rule out the symbol S.Nothing, which requires a type that can't be a symbol.
     if (isList ? list.isUniformAny(UniformFlags.NUMBER | UniformFlags.STRING) : list.isUniform()) {
-      list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+      list.addFlag(Flag.SEQUENCE_FLATTENED);
       return NIL;
     }
     // IAST#hasSpecialArg() covers Sequence(...) and S.Nothing, and its single scan is shared with
     // the Unevaluated/ConditionalExpression tests of the evaluation loop
     if (!list.hasSpecialArg()) {
-      list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+      list.addFlag(Flag.SEQUENCE_FLATTENED);
       return NIL;
     }
     final int indx = list.indexOf(x -> x.isSequence() || (isList && x == S.Nothing));
@@ -4808,7 +4811,7 @@ public class F extends S {
       });
       return seqResult;
     }
-    list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+    list.addFlag(Flag.SEQUENCE_FLATTENED);
     return NIL;
   }
 
@@ -5588,7 +5591,7 @@ public class F extends S {
    * @return <code>NIL</code>
    */
   public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
-    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
+    lhs.addFlags(Group.FLATTENED_OR_SORTED);
     org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(lhs, rhs,
         priority);
     return NIL;
@@ -6437,7 +6440,7 @@ public class F extends S {
    * @return <code>F.NIL</code>
    */
   public static IAST ISet(final IAST lhs, final IExpr rhs, boolean equalRule) {
-    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
+    lhs.addFlags(Group.FLATTENED_OR_SORTED);
     F.setDownRule(lhs, rhs, equalRule, true);
     return NIL;
   }
@@ -6463,7 +6466,7 @@ public class F extends S {
    * @return <code>NIL</code>
    */
   public static IAST ISetDelayed(final IAST lhs, final IExpr rhs) {
-    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
+    lhs.addFlags(Group.FLATTENED_OR_SORTED);
     F.setDelayedDownRule(IPatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
     return NIL;
   }
@@ -6478,7 +6481,7 @@ public class F extends S {
    * @return <code>NIL</code>
    */
   public static IAST ISetDelayed(int priority, final IAST lhs, final IExpr rhs) {
-    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
+    lhs.addFlags(Group.FLATTENED_OR_SORTED);
     F.setDelayedDownRule(priority, lhs, rhs, true);
     return NIL;
   }
@@ -12447,7 +12450,7 @@ public class F extends S {
    */
   public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
     IASTAppendable vector = mapRange(0, n, i -> iFunction.apply(i));
-    vector.addEvalFlags(IAST.IS_VECTOR);
+    vector.addFlag(Flag.IS_VECTOR);
     return vector;
   }
 

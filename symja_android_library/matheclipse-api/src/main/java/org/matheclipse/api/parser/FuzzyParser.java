@@ -26,6 +26,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1129,7 +1130,7 @@ public class FuzzyParser extends Scanner {
       }
       getNextToken();
     } while (fToken == TT_PRECEDENCE_OPEN);
-    func.addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
+    func.addFlag(Flag.TIMES_PARSED_IMPLICIT);
     return func;
   }
 
@@ -1286,7 +1287,7 @@ public class FuzzyParser extends Scanner {
               rhs = parseLookaheadOperator(oper.getPrecedence());
             }
             lhs = F.$(S.Times, lhs, rhs);
-            ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
+            ((IAST) lhs).addFlag(Flag.TIMES_PARSED_IMPLICIT);
             continue;
           }
         }

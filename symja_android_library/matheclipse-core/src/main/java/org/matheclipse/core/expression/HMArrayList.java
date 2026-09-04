@@ -38,6 +38,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.generic.ObjIntPredicate;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1141,7 +1142,7 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public IExpr remove(int location) {
-    if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+    if (Config.FUZZ_TESTING && hasFlag(Flag.BUILT_IN_EVALED)) {
       throw new NullPointerException("Index: " + location);
     }
     hashValue = 0;
@@ -1245,7 +1246,7 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public IExpr set(int location, IExpr expr) {
-    if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+    if (Config.FUZZ_TESTING && hasFlag(Flag.BUILT_IN_EVALED)) {
       throw new NullPointerException("Index: " + location + ", Size: " + (lastIndex - firstIndex));
     }
     argumentsChanged();

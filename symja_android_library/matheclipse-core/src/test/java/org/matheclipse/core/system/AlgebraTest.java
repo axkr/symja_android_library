@@ -426,6 +426,28 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     check("Together(a/b + c/d)", //
         "(b*c+a*d)/(b*d)");
 
+    // regression: a bare symbol denominator never reached the polynomial-gcd cancellation, and
+    // cancelCommonFactors() only factors the numerator for up to 3 variables - so from four
+    // variables on the common x survived. Rubi's PolyQ is
+    // PolynomialQ(u,x)||PolynomialQ(Together(u),x), so ExpandToSum() then printed
+    // "Warning: Unrecognized expression for expansion"
+    check("Together((b*x+c*x^2)/x)", //
+        "b+c*x");
+    check("Together((b*x+c*x^2+d*x^3)/x)", //
+        "b+c*x+d*x^2");
+    check("Together((b*x+c*x^2+d*x^3+e*x^4)/x)", //
+        "b+c*x+d*x^2+e*x^3");
+    check("Together((3*b*x+6*c*x^2+9*d*x^3)/x)", //
+        "3*(b+2*c*x+3*d*x^2)");
+    check("Together((b*(1+p)*x+c*(2+2*p)*x^2+d*(3+3*p)*x^3)/x)", //
+        "b+b*p+2*c*x+2*c*p*x+3*d*x^2+3*d*p*x^2");
+    check("PolynomialQ(Together((b*(1+p)*x+c*(2+2*p)*x^2+d*(3+3*p)*x^3)/x), x)", //
+        "True");
+    // nothing to cancel - the constant term keeps 1/x in the result
+    check("Together((a+b*x+c*x^2+d*x^3)/x)", //
+        "(a+b*x+c*x^2+d*x^3)/x");
+    check("Together((b*x+c*x^2+d*x^3)/x^2)", //
+        "(b+c*x+d*x^2)/x");
   }
 
   @Test

@@ -16,6 +16,8 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.MutableInt;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -248,12 +250,12 @@ public final class Combinatoric {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Cycles) {
-        if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+        if (ast.hasFlag(Flag.BUILT_IN_EVALED)) {
           return F.NIL;
         }
         IExpr temp = CombinatoricUtil.canonicalizeCycles(ast, false, engine);
         if (temp.equals(ast)) {
-          ast.setEvalFlags(IAST.BUILT_IN_EVALED);
+          ast.addFlag(Flag.BUILT_IN_EVALED);
           return F.NIL;
         }
         return temp;
@@ -605,7 +607,7 @@ public final class Combinatoric {
       partitionElement = F.ast(symbol);
       if (partitionStartIndex + 1 == n) {
         // OneIdentity check here
-        if ((symbol.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY) {
+        if (Attribute.ONEIDENTITY.isSetIn(symbol.getAttributes())) {
           partition.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
         } else {
           partitionElement.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
@@ -812,7 +814,7 @@ public final class Combinatoric {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1() && arg1.isAST(S.Cycles, 2)) {
         IAST cycles = (IAST) arg1;
-        if (cycles.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+        if (cycles.hasFlag(Flag.BUILT_IN_EVALED)) {
           return cycles;
         }
         return CombinatoricUtil.checkCycles(cycles, false, engine);
@@ -935,7 +937,7 @@ public final class Combinatoric {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Cycles, 2)) {
         IAST cycles;
-        if (arg1.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+        if (arg1.hasFlag(Flag.BUILT_IN_EVALED)) {
           cycles = (IAST) arg1;
         } else {
           cycles = CombinatoricUtil.checkCycles((IAST) arg1, false, engine);
@@ -1080,7 +1082,7 @@ public final class Combinatoric {
       }
       if (arg2.isAST(S.Cycles, 2)) {
         IAST cycles;
-        if (arg2.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+        if (arg2.hasFlag(Flag.BUILT_IN_EVALED)) {
           cycles = (IAST) arg2;
         } else {
           cycles = CombinatoricUtil.checkCycles((IAST) arg2, false, engine);
@@ -1177,7 +1179,7 @@ public final class Combinatoric {
           return permuteCycles((IAST) arg1, (IAST) arg2, ast);
         } else if (arg2.isAST(S.Cycles, 2)) {
           IAST cycles;
-          if (arg2.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+          if (arg2.hasFlag(Flag.BUILT_IN_EVALED)) {
             cycles = (IAST) arg2;
           } else {
             cycles = CombinatoricUtil.checkCycles((IAST) arg2, false, engine);
@@ -1223,7 +1225,7 @@ public final class Combinatoric {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1532,7 +1534,7 @@ public final class Combinatoric {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.addAttributes(ISymbol.NHOLDALL);
+      newSymbol.addAttributes(Attribute.NHOLDALL);
     }
   }
 

@@ -28,6 +28,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -1125,7 +1126,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    // newSymbol.setAttributes(ISymbol.HOLDALL);
+    // newSymbol.setAttributes(Attribute.HOLDALL);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
             S.MaxIterations, S.Method, S.AccuracyGoal}, //

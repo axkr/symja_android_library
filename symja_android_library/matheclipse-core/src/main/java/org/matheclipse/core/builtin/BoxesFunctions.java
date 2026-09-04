@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -187,7 +188,7 @@ public class BoxesFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
+      newSymbol.setAttributes(Attribute.HOLDALLCOMPLETE);
       OPERATOR_MAP.put(S.Rule, RULE);
       OPERATOR_MAP.put(S.RuleDelayed, RULE_DELAYED);
       super.setUp(newSymbol);

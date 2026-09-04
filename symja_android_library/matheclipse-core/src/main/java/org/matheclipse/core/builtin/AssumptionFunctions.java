@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -51,7 +52,7 @@ public class AssumptionFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDALL);
+      newSymbol.setAttributes(Attribute.NHOLDALL);
     }
   }
 
@@ -82,7 +83,7 @@ public class AssumptionFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDALL);
+      newSymbol.setAttributes(Attribute.NHOLDALL);
     }
   }
 
@@ -119,7 +120,7 @@ public class AssumptionFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDALL);
+      newSymbol.setAttributes(Attribute.NHOLDALL);
     }
   }
 
@@ -157,7 +158,7 @@ public class AssumptionFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDREST);
+      newSymbol.setAttributes(Attribute.HOLDREST);
     }
   }
 
@@ -424,7 +425,7 @@ public class AssumptionFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
       setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
 

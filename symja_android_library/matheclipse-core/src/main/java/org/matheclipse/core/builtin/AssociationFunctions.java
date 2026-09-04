@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -185,7 +186,7 @@ public class AssociationFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+      newSymbol.setAttributes(Attribute.HOLDFIRST);
     }
   }
 
@@ -298,7 +299,7 @@ public class AssociationFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
+      newSymbol.setAttributes(Attribute.HOLDALLCOMPLETE);
     }
 
     @Override
@@ -1131,7 +1132,7 @@ public class AssociationFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALLCOMPLETE);
+      newSymbol.setAttributes(Attribute.HOLDALLCOMPLETE);
     }
   }
 

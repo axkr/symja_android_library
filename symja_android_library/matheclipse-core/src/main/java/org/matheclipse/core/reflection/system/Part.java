@@ -10,6 +10,9 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
+import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -943,7 +946,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     if (ast.isAST1()) {
       return ast.arg1();
     }
-    if (ast.size() < 3) { // || ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+    if (ast.size() < 3) { // || ast.hasFlag(Flag.BUILT_IN_EVALED)) {
       return F.NIL;
     }
 
@@ -1004,7 +1007,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           evaledAST.set(i, temp);
         } else {
           evaledAST = ast.setAtCopy(i, temp);
-          evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+          evaledAST.copyFlagsFrom(ast, Group.MATRIX_OR_VECTOR);
         }
       }
     }
@@ -1057,7 +1060,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
   @Override
   public void setUp(ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.NHOLDREST);
+    newSymbol.setAttributes(Attribute.NHOLDREST);
   }
 
 
@@ -1073,7 +1076,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             evaledAST.set(i, temp);
           } else {
             evaledAST = ast.setAtCopy(i, temp);
-            evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+            evaledAST.copyFlagsFrom(ast, Group.MATRIX_OR_VECTOR);
           }
         }
       }

@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -91,7 +92,7 @@ public class SudokuSolve extends AbstractEvaluator {
 
     public IAST getSolution() {
       IASTAppendable matrix9x9 = F.ListAlloc(9);
-      matrix9x9.setEvalFlags(IAST.IS_MATRIX);
+      matrix9x9.addFlag(Flag.IS_MATRIX);
       for (int i = 0; i < boardSize; i++) {
         IASTAppendable row = F.ListAlloc(9);
         for (int j = 0; j < boardSize; j++) {

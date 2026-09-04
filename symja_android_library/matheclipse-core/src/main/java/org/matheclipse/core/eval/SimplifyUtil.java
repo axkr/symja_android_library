@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.x;
@@ -2073,7 +2074,9 @@ public class SimplifyUtil extends VisitorExpr {
 
     HashedOrderlessMatcher plusRuleMap = PLUS_ORDERLESS_MATCHER;
     if (plusRuleMap != null) {
-      plusAST.setEvalFlags(plusAST.getEvalFlags() ^ IAST.IS_HASH_EVALED);
+      // clear, don't toggle - HashedOrderlessMatcher#evaluateRepeated() returns NIL when the
+      // flag is set, so toggling it silently skipped the matcher whenever it was not set yet
+      plusAST.clearFlag(Flag.IS_HASH_EVALED);
       temp = plusRuleMap.evaluateRepeated(plusAST, fEngine);
       if (temp.isPresent()) {
         temp = eval(temp);

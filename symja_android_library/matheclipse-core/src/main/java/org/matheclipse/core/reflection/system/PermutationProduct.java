@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -84,7 +85,7 @@ public class PermutationProduct extends AbstractFunctionEvaluator {
 
   private boolean isValidPermutation(IExpr arg, EvalEngine engine) {
     if (arg.isAST(S.Cycles, 2)) {
-      IAST cycles = arg.isEvalFlagOn(IAST.BUILT_IN_EVALED) ? (IAST) arg
+      IAST cycles = arg.hasFlag(Flag.BUILT_IN_EVALED) ? (IAST) arg
           : CombinatoricUtil.checkCycles((IAST) arg, true, engine);
       return cycles.isPresent();
     } else if (arg.isList()) {
@@ -108,7 +109,7 @@ public class PermutationProduct extends AbstractFunctionEvaluator {
       IExpr arg = block.get(i);
       IAST cycles;
       if (arg.isAST(S.Cycles, 2)) {
-        cycles = arg.isEvalFlagOn(IAST.BUILT_IN_EVALED) ? (IAST) arg
+        cycles = arg.hasFlag(Flag.BUILT_IN_EVALED) ? (IAST) arg
             : CombinatoricUtil.checkCycles((IAST) arg, false, engine);
       } else {
         cycles = (IAST) CombinatoricUtil.permutationCycles((IAST) arg);

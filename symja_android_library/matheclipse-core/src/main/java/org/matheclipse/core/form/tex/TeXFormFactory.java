@@ -28,6 +28,7 @@ import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.form.OperatorMarkup;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.IAST;
@@ -378,7 +379,7 @@ public class TeXFormFactory {
     @Override
     public boolean convert(final StringBuilder buffer, final IAST ast, final int precedence) {
 
-      if ((ast.getEvalFlags() & IAST.OUTPUT_MULTILINE) == IAST.OUTPUT_MULTILINE) {
+      if (ast.hasFlag(Flag.OUTPUT_MULTILINE)) {
         if (convertMultiline(buffer, ast)) {
           return true;
         }
@@ -389,7 +390,7 @@ public class TeXFormFactory {
       // asks for an array, and what the MathML output and the OutputForm of the same expression
       // have always done.
 
-      if ((ast.getEvalFlags() & IAST.IS_VECTOR) == IAST.IS_VECTOR) {
+      if (ast.hasFlag(Flag.IS_VECTOR)) {
         // create a LaTeX row vector
         // \begin{pmatrix} x & y \end{pmatrix}
         buffer.append("\\begin{pmatrix} ");

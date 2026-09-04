@@ -30,6 +30,7 @@ import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -260,7 +261,7 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -370,7 +371,7 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -767,7 +768,7 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -1025,7 +1026,7 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 

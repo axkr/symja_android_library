@@ -111,14 +111,6 @@ public interface IPatternObject extends IExpr, IAtomicEvaluate {
   public IExpr getHeadTest();
 
   /**
-   * Get the flags which should be set in an AST structure, if the structure contains a pattern or
-   * pattern sequence.
-   *
-   * @return
-   */
-  public int getEvalFlags();
-
-  /**
    * Get the pattern-matchers index in the <code>PatternMap</code>
    *
    * @param pm the PatternMap from which we determine the index.

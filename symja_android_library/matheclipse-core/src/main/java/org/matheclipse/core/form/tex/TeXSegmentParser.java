@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -324,11 +325,11 @@ class TeXSegmentParser {
         if (lhs.isSymbol()) {
           attribute = ((ISymbol) lhs).getAttributes();
         }
-        if ((attribute & ISymbol.CONSTANT) != ISymbol.CONSTANT) {
+        if (!Attribute.CONSTANT.isSetIn(attribute)) {
           if ((lhs.isFunction() || lhs.isSymbol() || lhs.isDerivative() != null) && //
               position[0] < listSize) {
             boolean isNumericFunction =
-                ((attribute & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION);
+                (Attribute.NUMERICFUNCTION.isSetIn(attribute));
             if (isFunctionArg1(lhs)) {
               IExpr nextArg = convertNextArg(list, position);
               lhs = F.unaryAST1(lhs, nextArg);

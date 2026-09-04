@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -413,7 +414,7 @@ public class Sequences {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      // newSymbol.setAttributes(ISymbol.LISTABLE);
+      // newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
     protected static final class SeqIterator implements ISeqIterator {

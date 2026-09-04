@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -1722,7 +1723,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
   /** Evaluate built-in rules and define Attributes for a function. */
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDALL);
+    newSymbol.setAttributes(Attribute.HOLDALL);
     MATCHER1 = Suppliers.memoize(SumRules::init1);
   }
 }

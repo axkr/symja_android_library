@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -2747,7 +2748,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    this.fEvalFlags = objectInput.readShort();
+    // only the flags which cannot be recomputed are persisted; masking also undoes the sign
+    // extension of readShort()
+    this.fEvalFlags = objectInput.readShort() & EvalFlags.Mask.PERSISTENT;
 
     int size = objectInput.readInt();
     IExpr[] array = new IExpr[size];
@@ -3236,7 +3239,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    objectOutput.writeShort(fEvalFlags);
+    // only the flags which cannot be recomputed are persisted
+    objectOutput.writeShort(fEvalFlags & EvalFlags.Mask.PERSISTENT);
     int size = size();
     objectOutput.writeInt(size);
     for (int i = 0; i < size; i++) {

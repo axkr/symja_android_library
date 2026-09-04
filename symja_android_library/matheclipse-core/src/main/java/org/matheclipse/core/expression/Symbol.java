@@ -301,7 +301,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void clearAttributes(int attributes) {
-    fAttributes &= (CLEAR_MASK ^ attributes);
+    fAttributes &= ~attributes;
     EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);

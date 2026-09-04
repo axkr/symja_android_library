@@ -23,6 +23,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1545,7 +1546,7 @@ public class ExprParser extends Scanner {
                 : Precedence.TIMES > min_precedence)) {
           if (foldEqualPrecedence) {
             lhs = F.$(S.Times, lhs, parseLookaheadOperator(Precedence.TIMES));
-            ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
+            ((IAST) lhs).addFlag(Flag.TIMES_PARSED_IMPLICIT);
           } else {
             lhs = climbOperators(lhs, Precedence.TIMES, true);
           }

@@ -5,6 +5,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IArraySymbol;
@@ -70,7 +71,7 @@ public class SymbolicArrayUtil {
     IExpr head = ast.head();
     if (head instanceof ISymbol) {
       ISymbol headSymbol = (ISymbol) head;
-      if ((headSymbol.getAttributes() & ISymbol.NONTHREADABLE) != ISymbol.NOATTRIBUTE) {
+      if (Attribute.NONTHREADABLE.isAnySetIn(headSymbol.getAttributes())) {
         return true;
       }
       if (headSymbol.hasListableAttribute()) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.fuzz;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import java.io.BufferedReader;
@@ -377,8 +378,8 @@ public class ExprEvaluatorTests {
     ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
     byte[] b0Array = new byte[] {0};
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
-    F.x.setAttributes(ISymbol.PROTECTED);
-    F.y.setAttributes(ISymbol.PROTECTED);
+    F.x.setAttributes(Attribute.PROTECTED);
+    F.y.setAttributes(Attribute.PROTECTED);
     double[] doubleArr = new double[] {1.0, -1.0, 0.0, 2.0, 100.0, 200.0};
     int[] dims = new int[] {2, 3};
     NumericArrayExpr nae = new NumericArrayExpr(doubleArr, dims, NumericArrayExpr.Real64);
@@ -787,8 +788,8 @@ public class ExprEvaluatorTests {
     ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
     byte[] b0Array = new byte[] {0};
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
-    F.x.setAttributes(ISymbol.PROTECTED);
-    F.y.setAttributes(ISymbol.PROTECTED);
+    F.x.setAttributes(Attribute.PROTECTED);
+    F.y.setAttributes(Attribute.PROTECTED);
     IAST seedList = F.List( //
         ba, //
         b0a, //

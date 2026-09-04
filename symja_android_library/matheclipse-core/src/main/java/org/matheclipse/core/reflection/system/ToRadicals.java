@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.C0;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE);
+    newSymbol.setAttributes(Attribute.LISTABLE);
   }
 
   private static IExpr rootNearFloatNumber(EvalEngine engine, IExpr f, IExpr c) {

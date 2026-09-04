@@ -24,6 +24,8 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.expression.data.VectorSymbolExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -182,7 +184,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
   }
 
@@ -1581,7 +1583,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
     }
   }
 
@@ -1673,7 +1675,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
   }
 
@@ -1754,7 +1756,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
   }
 
@@ -1810,7 +1812,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
   }
   private static class SymbolicDeltaProductArray extends AbstractFunctionEvaluator
@@ -1823,7 +1825,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NONTHREADABLE);
+      newSymbol.setAttributes(Attribute.NONTHREADABLE);
     }
 
     @Override
@@ -1851,7 +1853,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NONTHREADABLE);
+      newSymbol.setAttributes(Attribute.NONTHREADABLE);
     }
 
     @Override
@@ -1889,7 +1891,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NONTHREADABLE);
+      newSymbol.setAttributes(Attribute.NONTHREADABLE);
     }
 
     @Override
@@ -1917,7 +1919,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NONTHREADABLE);
+      newSymbol.setAttributes(Attribute.NONTHREADABLE);
     }
 
     @Override
@@ -1980,7 +1982,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
   }
 
@@ -1994,10 +1996,7 @@ public class TensorFunctions {
           // The wrapped matrix should be printed on a single line, so clear the matrix formatting
           // flag which `F.matrix()`, `DiagonalMatrix`, `Dot` or `Inverse` may have set.
           IAST matrix = (IAST) ast.arg1();
-          int evalFlags = matrix.getEvalFlags();
-          if ((evalFlags & IAST.IS_MATRIX) != 0) {
-            matrix.setEvalFlags(evalFlags & ~IAST.IS_MATRIX);
-          }
+          matrix.clearFlag(Flag.IS_MATRIX);
         }
         return F.NIL;
       }
@@ -2020,7 +2019,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
 
 
@@ -2059,7 +2058,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.READPROTECTED);
+      newSymbol.setAttributes(Attribute.READPROTECTED);
     }
 
   }

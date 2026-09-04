@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -127,7 +128,7 @@ public class DeletePositions {
             // deleting the head yields the bare values as a Sequence(...),
             // consistent with the non-association head removal below
             IASTAppendable result = F.ast(S.Sequence, ast.argSize());
-            result.addEvalFlags(IAST.IS_COPIED);
+            result.addFlag(Flag.IS_COPIED);
             for (int i = 1; i < ast.size(); i++) {
               IExpr rule = ast.getRule(i);
               result.append(rule.second());
@@ -170,9 +171,8 @@ public class DeletePositions {
    * Remove all {@link F#NIL} entries from the list.
    */
   private static IAST removeNILRecursive(IAST list) {
-    if (list.isEvalFlagOn(IAST.IS_COPIED)) {
-      int evalFlags = list.getEvalFlags();
-      list.setEvalFlags(evalFlags ^ IAST.IS_COPIED);
+    if (list.hasFlag(Flag.IS_COPIED)) {
+      list.clearFlag(Flag.IS_COPIED);
 
       if (list.isAssociation()) {
         IAssociation assoc = (IAssociation) list;

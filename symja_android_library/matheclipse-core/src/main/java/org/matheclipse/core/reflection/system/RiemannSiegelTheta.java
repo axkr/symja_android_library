@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -82,7 +83,7 @@ public class RiemannSiegelTheta extends AbstractArg1 {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
   }
 
   /** Riemann-Siegel theta function at {@code t}. */

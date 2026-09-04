@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -85,6 +86,6 @@ public class DigitSum extends AbstractFunctionEvaluator {
 
   @Override
   public void setUp(ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE);
+    newSymbol.setAttributes(Attribute.LISTABLE);
   }
 }

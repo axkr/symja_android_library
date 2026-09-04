@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -57,7 +58,7 @@ public class SymbolicArrayFunctions {
       // this runs after the evaluators of these symbols have been registered, so that a setUp()
       // which assigns the attributes with ISymbol#setAttributes() cannot drop the bit again
       for (int i = 0; i < NON_THREADABLE_HEADS.length; i++) {
-        NON_THREADABLE_HEADS[i].addAttributes(ISymbol.NONTHREADABLE);
+        NON_THREADABLE_HEADS[i].addAttributes(Attribute.NONTHREADABLE);
       }
     }
   }

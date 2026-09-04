@@ -1,5 +1,8 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
+import org.matheclipse.core.interfaces.EvalFlags;
 import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C0;
@@ -302,7 +305,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -330,7 +333,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
   /**
@@ -445,7 +448,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+      newSymbol.setAttributes(Attribute.HOLDFIRST);
     }
   }
 
@@ -619,7 +622,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -830,7 +833,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.NUMERICFUNCTION);
     }
   }
   private static final class ConditionalExpression extends AbstractCoreFunctionEvaluator {
@@ -880,7 +883,7 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set NUMERICFUNCTION
-      // newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+      // newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
     }
   }
   /**
@@ -1040,7 +1043,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1078,7 +1081,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
   /**
@@ -1176,7 +1179,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+      newSymbol.setAttributes(Attribute.HOLDFIRST);
     }
   }
 
@@ -1428,7 +1431,7 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set ISymbol.NUMERICFUNCTION);
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -1513,7 +1516,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -1936,7 +1939,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
@@ -2021,7 +2024,7 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol
-          .setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
+          .setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.LISTABLE);
     }
   }
 
@@ -2263,7 +2266,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2440,7 +2443,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2629,7 +2632,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -2821,7 +2824,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.FLAT, Attribute.LISTABLE);
     }
   }
 
@@ -2876,7 +2879,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -2934,7 +2937,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -3279,7 +3282,7 @@ public final class Arithmetic {
           }
           return numResult;
         }
-        if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+        if (ast.hasFlag(Flag.CONTAINS_NUMERIC_ARG)) {
           IAST temp = engine.evalArgsOrderlessN(ast);
           if (temp.isPresent()) {
             ast = temp;
@@ -3351,8 +3354,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT
-          | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       PLUS_ORDERLESS_MATCHER = initPlusHashMatcher();
       super.setUp(newSymbol);
     }
@@ -3539,7 +3541,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -3664,7 +3666,7 @@ public final class Arithmetic {
   public /* public for steps module */ static class Power extends AbstractFunctionEvaluator
       implements IRewrite, INumeric, IFunctionExpand {
 
-    private static final int POWER_EVALED = IAST.BUILT_IN_EVALED;
+    private static final Flag POWER_EVALED = Flag.BUILT_IN_EVALED;
 
     public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
         EvalEngine engine) {
@@ -4006,7 +4008,7 @@ public final class Arithmetic {
       }
 
       if (engine.isSymbolicMode(S.Power.getAttributes())) {
-        ast.setEvalFlags(POWER_EVALED);
+        ast.addFlag(POWER_EVALED);
         // ast.builtinEvaled();
       }
       return F.NIL;
@@ -4821,7 +4823,7 @@ public final class Arithmetic {
           }
         }
         if (ast.isPresent()) {
-          ast.addEvalFlags(IAST.IS_ALL_EXPANDED);
+          ast.addFlag(Flag.IS_ALL_EXPANDED);
         }
       }
       return F.NIL;
@@ -5320,7 +5322,7 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isEvalFlagOn(POWER_EVALED)) {
+      if (ast.hasFlag(POWER_EVALED)) {
         return F.NIL;
       }
       final int size = ast.size();
@@ -5398,7 +5400,7 @@ public final class Arithmetic {
     /** {@inheritDoc} */
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.ONEIDENTITY, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -5785,7 +5787,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -5812,7 +5814,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -6046,7 +6048,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -6083,7 +6085,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
   /**
@@ -6148,7 +6150,7 @@ public final class Arithmetic {
     /** {@inheritDoc} */
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -6200,7 +6202,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -6436,7 +6438,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NHOLDREST | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDREST, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -7410,7 +7412,7 @@ public final class Arithmetic {
           return temp.oneIdentity1();
         }
       }
-      if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+      if (ast.hasFlag(Flag.CONTAINS_NUMERIC_ARG)) {
         IAST temp = engine.evalArgsOrderlessN(ast);
         if (temp.isPresent()) {
           // reassign because of resorted arguments
@@ -7551,8 +7553,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT
-          | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
 
       TIMES_ORDERLESS_MATCHER = Arithmetic.Times.initTimesHashMatcher();
       super.setUp(newSymbol);

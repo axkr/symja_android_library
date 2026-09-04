@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.Divide;
@@ -502,7 +504,7 @@ public final class LinearAlgebra {
                           F.Sqrt(F.Subtract(a22, F.Times(a12,
                               F.Conjugate(F.Divide(a12, F.Sqrt(a11))), F.Power(a11, F.CN1D2)))))//
                   );
-                  choleskyDecomposition.setEvalFlags(IAST.IS_MATRIX);
+                  choleskyDecomposition.addFlag(Flag.IS_MATRIX);
                   return choleskyDecomposition;
                 }
               } else if (dimension[0] == 3) {
@@ -571,7 +573,7 @@ public final class LinearAlgebra {
                                                   F.Conjugate(
                                                       F.Times(F.Power(a11, F.CN1D2), a12)))),
                                           F.CN1D2))))))); // $$;
-                  choleskyDecomposition.setEvalFlags(IAST.IS_MATRIX);
+                  choleskyDecomposition.addFlag(Flag.IS_MATRIX);
                   return choleskyDecomposition;
                 }
               }
@@ -1440,7 +1442,7 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.ONEIDENTITY);
     }
   }
 
@@ -4082,7 +4084,7 @@ public final class LinearAlgebra {
             return F.NIL;
           }
           if (p == 1) {
-            ((IAST) arg1).addEvalFlags(IAST.IS_MATRIX);
+            ((IAST) arg1).addFlag(Flag.IS_MATRIX);
             return arg1;
           }
           if (p == 0) {
@@ -4205,7 +4207,7 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
       setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance},
           new IExpr[] {S.Automatic, S.Automatic});
     }
@@ -4306,7 +4308,7 @@ public final class LinearAlgebra {
             resultRow.append(det);
           }
         }
-        resultMatrix.setEvalFlags(IAST.IS_MATRIX);
+        resultMatrix.addFlag(Flag.IS_MATRIX);
         return resultMatrix;
       }
       return F.NIL;
@@ -4923,7 +4925,7 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 

@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -333,7 +334,7 @@ public class CompareUtil {
     IAST ast = (IAST) expr;
     final int attributes =
         ast.head().isSymbol() ? ((ISymbol) ast.head()).getAttributes() : ISymbol.NOATTRIBUTE;
-    if ((attributes & ISymbol.NHOLDALL) == ISymbol.NHOLDALL) {
+    if (Attribute.NHOLDALL.isSetIn(attributes)) {
       return F.NIL;
     }
     IASTMutable result = F.NIL;
@@ -370,10 +371,10 @@ public class CompareUtil {
    */
   private static boolean isNHold(int attributes, int position) {
     if (position == 1) {
-      return (attributes & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE;
+      return Attribute.NHOLDFIRST.isAnySetIn(attributes);
     }
     if (position > 1) {
-      return (attributes & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE;
+      return Attribute.NHOLDREST.isAnySetIn(attributes);
     }
     return false;
   }

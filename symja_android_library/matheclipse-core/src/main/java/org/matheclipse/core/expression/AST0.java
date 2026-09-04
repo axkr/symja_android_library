@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import org.matheclipse.core.generic.ObjIntPredicate;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -177,7 +178,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public IAST clone() throws CloneNotSupportedException {
     AST0 result = (AST0) super.clone();
-    result.setEvalFlags(IAST.NO_FLAG);
+    result.resetFlags();
     result.arg0 = arg0;
     return result;
   }
@@ -463,7 +464,9 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    this.fEvalFlags = objectInput.readShort();
+    // only the flags which cannot be recomputed are persisted; masking also undoes the sign
+    // extension of readShort()
+    this.fEvalFlags = objectInput.readShort() & EvalFlags.Mask.PERSISTENT;
 
     int size;
     byte attributeFlags = objectInput.readByte();
@@ -553,7 +556,8 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    objectOutput.writeShort(fEvalFlags);
+    // only the flags which cannot be recomputed are persisted
+    objectOutput.writeShort(fEvalFlags & EvalFlags.Mask.PERSISTENT);
 
     int size = size();
     byte attributeFlags = (byte) 0;

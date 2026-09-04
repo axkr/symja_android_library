@@ -8,6 +8,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -88,7 +90,7 @@ public class IntervalFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+      if (ast.hasNoFlag(Flag.BUILT_IN_EVALED)) {
         try {
           IAST result = IntervalSym.normalize(ast, engine);
           if (result.isPresent()) {
@@ -156,7 +158,7 @@ public class IntervalFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+      if (ast.hasNoFlag(Flag.BUILT_IN_EVALED)) {
         return IntervalDataSym.normalize(ast);
       }
       return F.NIL;
@@ -357,7 +359,7 @@ public class IntervalFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 

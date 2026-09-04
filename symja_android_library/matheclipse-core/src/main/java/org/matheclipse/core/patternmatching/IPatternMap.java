@@ -15,6 +15,8 @@ import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.GenericPair;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -2923,7 +2925,7 @@ public interface IPatternMap {
       List<GenericPair<IExpr, IPatternObject>> patternIndexMap, final IAST lhsPatternExpr,
       int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
 
-    int[] listEvalFlags = new int[] {IAST.NO_FLAG};
+    int[] listEvalFlags = new int[] {EvalFlags.Mask.NONE};
     if (lhsPatternExpr.isPatternMatchingFunction()) {
       ruleWithoutPattern[0] = false;
     }
@@ -2950,11 +2952,11 @@ public interface IPatternMap {
             patternIndexMap, priority, ruleWithoutPattern, listEvalFlags, treeLevel);
       }
     }
-    lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
+    lhsPatternExpr.setEvalFlagBits(listEvalFlags[0]);
     if (lhsPatternExpr.size() > 1
-        && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN)
+        && (listEvalFlags[0] & EvalFlags.Mask.CONTAINS_DEFAULT_PATTERN) != 0
         && lhsPatternExpr.forAll(IExpr::isPatternDefault)) {
-      lhsPatternExpr.addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
+      lhsPatternExpr.addFlag(Flag.CONTAINS_ALL_DEFAULT_PATTERN);
     }
     return listEvalFlags[0];
   }
@@ -2966,7 +2968,7 @@ public interface IPatternMap {
     if (x.isASTOrAssociation()) {
       final IAST lhsPatternAST = (IAST) x;
       if (lhsPatternAST.isPatternMatchingFunction()) {
-        listEvalFlags[0] |= IAST.CONTAINS_PATTERN;
+        listEvalFlags[0] |= EvalFlags.Mask.CONTAINS_PATTERN;
       }
       listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, lhsPatternAST, priority,
           ruleWithoutPattern, treeLevel + 1);
@@ -2975,11 +2977,12 @@ public interface IPatternMap {
       priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
 
       if (x.isPatternDefault()) {
-        listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_ALL_DEFAULT_PATTERN;
+        listEvalFlags[0] |=
+            EvalFlags.Mask.CONTAINS_DEFAULT_PATTERN | EvalFlags.Mask.CONTAINS_ALL_DEFAULT_PATTERN;
       } else if (lhsPatternAST.size() > 1
-          && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN)
+          && (listEvalFlags[0] & EvalFlags.Mask.CONTAINS_DEFAULT_PATTERN) != 0
           && lhsPatternAST.forAll(IExpr::isPatternDefault)) {
-        lhsPatternAST.addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
+        lhsPatternAST.addFlag(Flag.CONTAINS_ALL_DEFAULT_PATTERN);
       }
     } else if (x instanceof IPatternObject) {
       ruleWithoutPattern[0] = false;
@@ -2996,7 +2999,7 @@ public interface IPatternMap {
           priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
 
           if (x.isPatternDefault()) {
-            listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
+            listEvalFlags[0] |= EvalFlags.Mask.CONTAINS_DEFAULT_PATTERN;
           }
         }
       }
@@ -3367,7 +3370,7 @@ public interface IPatternMap {
    * @param lhsPatternAST
    */
   public static void setPatternFlags(IAST lhsPatternAST) {
-    // set for example IAST.CONTAINS_DEFAULT_PATTERN after substituting a pattern in lhsPatternAST
+    // set for example Flag.CONTAINS_DEFAULT_PATTERN after substituting a pattern in lhsPatternAST
     lhsPatternAST.isFreeOfPatterns();
   }
 

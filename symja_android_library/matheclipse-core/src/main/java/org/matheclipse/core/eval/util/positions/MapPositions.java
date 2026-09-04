@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -225,30 +226,29 @@ public class MapPositions {
   }
 
   protected static IASTAppendable getAppendableAST(IAST ast) {
-    if (ast.isEvalFlagOn(IAST.IS_COPIED)) {
+    if (ast.hasFlag(Flag.IS_COPIED)) {
       return (IASTAppendable) ast;
     }
     IASTAppendable appendable = ast.copyAppendable();
-    appendable.addEvalFlags(IAST.IS_COPIED);
+    appendable.addFlag(Flag.IS_COPIED);
     return appendable;
   }
 
   private static IASTMutable getMutableAST(IAST ast) {
-    if (ast.isEvalFlagOn(IAST.IS_COPIED)) {
+    if (ast.hasFlag(Flag.IS_COPIED)) {
       return (IASTMutable) ast;
     }
     IASTMutable mutable = ast.copy();
-    mutable.addEvalFlags(IAST.IS_COPIED);
+    mutable.addFlag(Flag.IS_COPIED);
     return mutable;
   }
 
   protected static void removeIsCopiedRecursive(IAST list) {
-    if (list.isEvalFlagOn(IAST.IS_COPIED)) {
-      int evalFlags = list.getEvalFlags();
-      list.setEvalFlags(evalFlags ^ IAST.IS_COPIED);
+    if (list.hasFlag(Flag.IS_COPIED)) {
+      list.clearFlag(Flag.IS_COPIED);
       for (int i = 0; i < list.size(); i++) {
         IExpr element = list.getRule(i);
-        if (element.isEvalFlagOn(IAST.IS_COPIED)) {
+        if (element.hasFlag(Flag.IS_COPIED)) {
           removeIsCopiedRecursive((IAST) element);
         }
       }

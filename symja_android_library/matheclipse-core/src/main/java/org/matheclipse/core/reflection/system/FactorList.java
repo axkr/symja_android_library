@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -79,7 +80,7 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE);
+    newSymbol.setAttributes(Attribute.LISTABLE);
 
     IBuiltInSymbol[] optionKeys =
         new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers, S.Trig};

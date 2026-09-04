@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
@@ -205,7 +206,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -439,7 +440,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
@@ -835,7 +836,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       setOptions(newSymbol, //
           F.list(F.Rule(S.Trig, S.False)));
     }
@@ -1514,7 +1515,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
 
       IBuiltInSymbol[] optionKeys =
           new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers, S.Trig};
@@ -1588,7 +1589,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       super.setUp(newSymbol);
     }
   }
@@ -1973,7 +1974,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       setOptions(newSymbol, //
           F.list(F.Rule(S.Trig, S.False)));
     }
@@ -2298,7 +2299,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
 
       IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
       IExpr[] optionValues = new IExpr[] {F.C0};
@@ -2501,7 +2502,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
       IExpr[] optionValues = new IExpr[] {F.C0};
       setOptions(newSymbol, optionKeys, optionValues);
@@ -2875,7 +2876,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
       IExpr[] optionValues = new IExpr[] {F.C0};
       setOptions(newSymbol, optionKeys, optionValues);
@@ -4116,7 +4117,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 

@@ -8,6 +8,8 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -23,7 +25,7 @@ public class IntervalSym {
    * The evaluation flag for normalized intervals. Normalized intervals are sorted and overlapping
    * intervals are merged.
    */
-  private static final int INTERVAL_NORMALIZED = IAST.BUILT_IN_EVALED;
+  private static final Flag INTERVAL_NORMALIZED = Flag.BUILT_IN_EVALED;
 
   /**
    * IExprProcessor interface method boolean process (IExpr min, IExpr max, IASTAppendable result,
@@ -461,7 +463,7 @@ public class IntervalSym {
   }
 
   private static boolean isNormalized(final IAST interval) {
-    return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
+    return interval.hasFlag(Flag.BUILT_IN_EVALED);
   }
 
   public static IAST log(final IAST ast) {
@@ -693,12 +695,12 @@ public class IntervalSym {
         result.set(j, list1);
       }
       if (evaled) {
-        result.setEvalFlags(INTERVAL_NORMALIZED);
+        result.addFlag(INTERVAL_NORMALIZED);
         // result.builtinEvaled();
         return result;
       }
       if (intervalList instanceof IASTMutable) {
-        intervalList.setEvalFlags(INTERVAL_NORMALIZED);
+        intervalList.addFlag(INTERVAL_NORMALIZED);
         // intervalList.builtinEvaled();
         if (EvalAttributes.sort((IASTMutable) intervalList, INTERVAL_COMPARATOR)) {
           return intervalList;

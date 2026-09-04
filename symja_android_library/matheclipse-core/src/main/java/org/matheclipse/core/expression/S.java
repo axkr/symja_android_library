@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -22973,7 +22974,7 @@ public class S {
   public static ISymbol initFinalHiddenSymbol(final String symbolName) {
     final ISymbol symbol = new Symbol(symbolName, org.matheclipse.core.expression.Context.FORMAL);
     // TODO make this a real protected symbol
-    // symbol.setAttributes(ISymbol.PROTECTED);
+    // symbol.setAttributes(Attribute.PROTECTED);
     HIDDEN_SYMBOLS_MAP.put(symbolName, symbol);
     return symbol;
   }

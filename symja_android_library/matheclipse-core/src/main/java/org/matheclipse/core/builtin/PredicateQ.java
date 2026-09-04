@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -351,7 +352,7 @@ public class PredicateQ {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
   }
@@ -509,7 +510,7 @@ public class PredicateQ {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
     @Override
@@ -1040,7 +1041,7 @@ public class PredicateQ {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
     @Override
@@ -1224,7 +1225,7 @@ public class PredicateQ {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
@@ -1459,7 +1460,7 @@ public class PredicateQ {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(Attribute.LISTABLE);
       setOptions(newSymbol, S.GaussianIntegers, S.False);
     }
 
@@ -1876,7 +1877,7 @@ public class PredicateQ {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDALL);
       setOptions(newSymbol, new IBuiltInSymbol[] {S.Method}, new IExpr[] {S.Automatic});
     }
 

@@ -1,5 +1,6 @@
 package org.matheclipse.core.polynomials;
 
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -61,7 +62,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
   public void addNonFractionalPart(GenPolynomial<BigRational> genPolynomial) {
     IExpr temp = F.eval(jas.rationalPoly2Expr(genPolynomial, false));
     if (temp.isAST()) {
-      ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+      ((IAST) temp).addFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION);
     }
     result.append(F.Integrate(temp, x));
   }
@@ -181,7 +182,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
             F.Power(jas.rationalPoly2Expr(Di_1, false), F.ZZ(j * (-1L)))));
         if (!temp.isZero()) {
           if (temp.isAST()) {
-            ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+            ((IAST) temp).addFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION);
           }
           result.append(F.Integrate(temp, x));
         }

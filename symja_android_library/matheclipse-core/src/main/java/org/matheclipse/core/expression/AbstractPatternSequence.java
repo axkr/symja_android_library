@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.Collection;
 import java.util.Map;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -150,12 +151,6 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
     return -1;
   }
 
-
-  @Override
-  public int getEvalFlags() {
-    // the ast contains a pattern sequence (i.e. "x__")
-    return IAST.CONTAINS_PATTERN_SEQUENCE;
-  }
 
   /** @return */
   @Override

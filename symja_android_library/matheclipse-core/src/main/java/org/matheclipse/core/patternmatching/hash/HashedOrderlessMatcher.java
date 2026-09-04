@@ -5,6 +5,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -147,7 +148,7 @@ public class HashedOrderlessMatcher {
    * @see HashedPatternRules
    */
   public IAST evaluateRepeated(final IAST orderlessAST, EvalEngine engine) {
-    if (orderlessAST.isEvalFlagOn(IAST.IS_HASH_EVALED)) {
+    if (orderlessAST.hasFlag(Flag.IS_HASH_EVALED)) {
       if (Config.ORDERLESS_HASH_STATISTICS) {
         OrderlessHashStats.call(orderlessAST.head());
         OrderlessHashStats.hashEvaledSkip(orderlessAST.head());
@@ -210,7 +211,7 @@ public class HashedOrderlessMatcher {
     } else if (Config.ORDERLESS_HASH_STATISTICS) {
       OrderlessHashStats.gateReject(orderlessAST.head());
     }
-    orderlessAST.addEvalFlags(IAST.IS_HASH_EVALED);
+    orderlessAST.addFlag(Flag.IS_HASH_EVALED);
     return F.NIL;
   }
 
@@ -223,7 +224,7 @@ public class HashedOrderlessMatcher {
    */
   protected static IAST setIsHashEvaledFlag(IAST ast) {
     // add, don't replace - setEvalFlags() would discard the other cached flags of the AST
-    ast.addEvalFlags(IAST.IS_HASH_EVALED);
+    ast.addFlag(Flag.IS_HASH_EVALED);
     return ast;
   }
 

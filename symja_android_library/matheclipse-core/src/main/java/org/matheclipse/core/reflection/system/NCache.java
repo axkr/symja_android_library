@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -47,6 +48,6 @@ public class NCache extends AbstractFunctionEvaluator {
   public void setUp(final ISymbol newSymbol) {
     // NHoldRest: the cached value is already a number, and asking for the numerical value of a
     // number again is work that changes nothing
-    newSymbol.setAttributes(ISymbol.NHOLDREST);
+    newSymbol.setAttributes(Attribute.NHOLDREST);
   }
 }

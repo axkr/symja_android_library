@@ -98,7 +98,9 @@ import org.matheclipse.parser.client.ParserConfig;
  * @see org.matheclipse.core.expression.F#Dummy(String)
  */
 public class BuiltInDummy implements IBuiltInSymbol, Serializable {
-  private static final long serialVersionUID = -1921824292485125087L;
+  // bumped when the attribute word changed from a byte to an int: the custom read/writeObject
+  // format has no version marker, so an old stream must fail loudly rather than be mis-parsed
+  private static final long serialVersionUID = -1921824292485125086L;
 
   private static final Collator US_COLLATOR = Collator.getInstance(Locale.US);
 
@@ -246,7 +248,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void clearAttributes(final int attributes) {
-    fAttributes &= (CLEAR_MASK ^ attributes);
+    fAttributes &= ~attributes;
     EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
@@ -1026,7 +1028,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     fSymbolName = stream.readUTF();
-    fAttributes = stream.read();
+    fAttributes = stream.readInt();
     IExpr value = (IExpr) stream.readObject();
     assignValue(value, false);
     // fContext = (Context) stream.readObject();
@@ -1046,7 +1048,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   public void readRules(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     fSymbolName = stream.readUTF();
-    fAttributes = stream.read();
+    fAttributes = stream.readInt();
     boolean hasDownRulesData = stream.readBoolean();
     if (hasDownRulesData) {
       fRulesData = new RulesData();
@@ -1185,7 +1187,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
     stream.writeUTF(fSymbolName);
-    stream.write(fAttributes);
+    stream.writeInt(fAttributes);
     stream.writeObject(fValue);
     // if (fContext.equals(Context.SYSTEM)) {
     // stream.writeObject(null);
@@ -1208,7 +1210,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
     stream.writeUTF(fSymbolName);
-    stream.write(fAttributes);
+    stream.writeInt(fAttributes);
     // if (!containsRules()) {
     // return false;
     // }

@@ -42,6 +42,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
@@ -1357,14 +1358,14 @@ public class Pods {
   }
 
   private static IASTAppendable flattenTimes(final IAST ast) {
-    if (ast.isTimes() && ast.isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+    if (ast.isTimes() && ast.hasFlag(Flag.TIMES_PARSED_IMPLICIT)) {
       IASTAppendable result = flattenTimesRecursive(ast);
       if (result.isPresent()) {
-        result.addEvalFlags(IAST.IS_FLATTENED);
+        result.addFlag(Flag.IS_FLATTENED);
         return result;
       }
     }
-    ast.addEvalFlags(IAST.IS_FLATTENED);
+    ast.addFlag(Flag.IS_FLATTENED);
     return F.NIL;
   }
 
@@ -1373,7 +1374,7 @@ public class Pods {
     newSize[0] = 0;
     boolean[] flattened = new boolean[] {false};
     ast.forEach(expr -> {
-      if (ast.isTimes() && ast.isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+      if (ast.isTimes() && ast.hasFlag(Flag.TIMES_PARSED_IMPLICIT)) {
         flattened[0] = true;
         newSize[0] += ast.size();
       } else {
@@ -1383,7 +1384,7 @@ public class Pods {
     if (flattened[0]) {
       IASTAppendable result = F.ast(ast.head(), newSize[0], false);
       ast.forEach(expr -> {
-        if (expr.isTimes() && ((IAST) expr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+        if (expr.isTimes() && ((IAST) expr).hasFlag(Flag.TIMES_PARSED_IMPLICIT)) {
           result.appendArgs(flattenTimesRecursive((IAST) expr).orElse((IAST) expr));
         } else {
           result.append(expr);
@@ -1737,7 +1738,7 @@ public class Pods {
       inExpr = inExpr.first();
     }
     if (inExpr.isTimes() && !inExpr.isNumericFunction(true) && inExpr.argSize() <= 4) {
-      if (((IAST) inExpr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+      if (((IAST) inExpr).hasFlag(Flag.TIMES_PARSED_IMPLICIT)) {
         inExpr = flattenTimes((IAST) inExpr).orElse(inExpr);
         IAST rest = ((IAST) inExpr).setAtClone(0, S.List);
         IASTAppendable specialFunction = F.NIL;

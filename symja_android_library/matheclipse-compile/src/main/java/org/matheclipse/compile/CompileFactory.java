@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1380,8 +1381,8 @@ public class CompileFactory {
       return false;
     }
     int attributes = ((ISymbol) head).getAttributes();
-    return argIndex == 1 ? (attributes & ISymbol.HOLDFIRST) != 0
-        : (attributes & ISymbol.HOLDREST) != 0;
+    return argIndex == 1 ? Attribute.HOLDFIRST.isAnySetIn(attributes)
+        : Attribute.HOLDREST.isAnySetIn(attributes);
   }
 
   /**

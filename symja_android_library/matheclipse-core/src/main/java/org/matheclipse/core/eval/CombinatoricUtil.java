@@ -7,6 +7,7 @@ import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -92,7 +93,7 @@ public class CombinatoricUtil {
     if (cycles.arg1().isList()) {
       IAST mainList = (IAST) cycles.arg1();
       if (mainList.isEmptyList()) {
-        cycles.setEvalFlags(IAST.BUILT_IN_EVALED);
+        cycles.addFlag(Flag.BUILT_IN_EVALED);
         // cycles.builtinEvaled();
         return F.NIL;
       }
@@ -174,7 +175,7 @@ public class CombinatoricUtil {
 
       EvalAttributes.sort(result, Comparators.LEXICAL_COMPARATOR);
       IAST resultCycles = F.Cycles(result);
-      resultCycles.setEvalFlags(IAST.BUILT_IN_EVALED);
+      resultCycles.addFlag(Flag.BUILT_IN_EVALED);
       // resultCycles.builtinEvaled();
       return resultCycles;
     }

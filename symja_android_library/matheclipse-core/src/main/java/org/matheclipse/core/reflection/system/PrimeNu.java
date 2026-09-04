@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
@@ -122,7 +123,7 @@ public class PrimeNu extends AbstractFunctionOptionEvaluator implements IntUnary
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE);
+    newSymbol.setAttributes(Attribute.LISTABLE);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {S.GaussianIntegers}, //
         new IExpr[] {S.False});
