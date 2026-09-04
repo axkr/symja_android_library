@@ -1398,8 +1398,13 @@ final class DSolveODE {
             : engine.evaluate(F.D(basis[column], F.List(xVar, F.ZZ(row))));
       }
     }
-    IExpr wronskian = engine.evaluate(F.Simplify(F.Det(matrix(derivatives, -1, null))));
-    if (wronskian.isZero() || !wronskian.isFree(S.Det, true)) {
+    IASTAppendable fundamental = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      fundamental.append(basis[i]);
+    }
+    IExpr wronskian = engine.evaluate(F.Simplify(S.Wronskian.of(engine, fundamental, xVar)));
+    if (wronskian.isZero() || !wronskian.isFree(S.Wronskian, true)) {
+      // A vanishing determinant means the basis is not one, so there is nothing to vary.
       return F.NIL;
     }
     IExpr forcing = engine.evaluate(F.Divide(lf.g, lf.a[n]));

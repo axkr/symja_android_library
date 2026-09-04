@@ -77,6 +77,7 @@ public final class FunctionDefinitions {
       S.Divisors.setEvaluator(new org.matheclipse.core.reflection.system.Divisors());
       S.DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
       S.DSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.DSolveValue());
+      S.Wronskian.setEvaluator(new org.matheclipse.core.reflection.system.Wronskian());
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
       S.Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
