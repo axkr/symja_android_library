@@ -188,6 +188,7 @@ public class Errors {
       "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
       "dotsh", "Tensors `1` and `2` have incompatible shapes.", //
       "dpvar", "The variable `1` has been specified more than once.", //
+      "domss", "`1` is not a valid domain specification for `2`.", //
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
       "dsdelim", "The delimiter specification is not valid.", //
       "dsdims", "The data has dimensions `1` which `2` does not allow.", //
@@ -486,6 +487,7 @@ public class Errors {
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions `3` must have length `2`.", //
+      "symss", "`1` is not a valid symmetry specification for `2`.", //
       "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
       "realx", "The value `1` is not a real number.", //

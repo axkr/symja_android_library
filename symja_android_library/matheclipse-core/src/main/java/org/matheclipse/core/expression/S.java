@@ -712,6 +712,16 @@ public class S {
       S.initFinalSymbol("Antialiasing", ID.Antialiasing);
 
   /**
+   * Antihermitian(x) - TODO describe `Antihermitian`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Antihermitian.md">Antihermitian
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Antihermitian =
+      S.initFinalSymbol("Antihermitian", ID.Antihermitian);
+
+  /**
    * AntihermitianMatrixQ(m) - returns `True` if `m` is a anti hermitian matrix.
    * 
    * @see <a href=
@@ -1016,6 +1026,15 @@ public class S {
 
   public final static IBuiltInSymbol ArrayDot = S.initFinalSymbol("ArrayDot", ID.ArrayDot);
 
+  /**
+   * ArrayExpand(expr) - expand out the symbolic array operations in `expr`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayExpand.md">ArrayExpand
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ArrayExpand = S.initFinalSymbol("ArrayExpand", ID.ArrayExpand);
+
   public final static IBuiltInSymbol ArrayFlatten =
       S.initFinalSymbol("ArrayFlatten", ID.ArrayFlatten);
 
@@ -1085,8 +1104,32 @@ public class S {
    */
   public final static IBuiltInSymbol ArrayRules = S.initFinalSymbol("ArrayRules", ID.ArrayRules);
 
+  /**
+   * Arrays({d1, ..., dr}) - represents the domain of the arrays of rank `r` and dimensions `di`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Arrays.md">Arrays
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Arrays = S.initFinalSymbol("Arrays", ID.Arrays);
 
+  /**
+   * ArraySimplify(expr) - simplify the symbolic array expression `expr`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArraySimplify.md">ArraySimplify
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ArraySimplify =
+      S.initFinalSymbol("ArraySimplify", ID.ArraySimplify);
+
+  /**
+   * ArraySymbol(a, {n1, n2, ...}) - represents a symbolic `n1` x `n2` x ... array named `a`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArraySymbol.md">ArraySymbol
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ArraySymbol = S.initFinalSymbol("ArraySymbol", ID.ArraySymbol);
 
   /**
@@ -3631,6 +3674,17 @@ public class S {
       S.initFinalSymbol("ComplexVectorPlot", ID.ComplexVectorPlot);
 
   /**
+   * ComponentExpand(expr) - write the symbolic arrays in `expr` as explicit arrays of their indexed
+   * components.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComponentExpand.md">ComponentExpand
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ComponentExpand =
+      S.initFinalSymbol("ComponentExpand", ID.ComponentExpand);
+
+  /**
    * ComponentMeasurements(x) - TODO describe `ComponentMeasurements`.
    * 
    * @see <a href=
@@ -5577,6 +5631,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol DivideBy = S.initFinalSymbol("DivideBy", ID.DivideBy);
+
+  /**
+   * Dividers(x) - TODO describe `Dividers`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dividers.md">Dividers
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Dividers = S.initFinalSymbol("Dividers", ID.Dividers);
 
   /**
    * Divides(x) - TODO describe `Divides`.
@@ -9080,6 +9143,15 @@ public class S {
   public final static IBuiltInSymbol HermiteH = S.initFinalSymbol("HermiteH", ID.HermiteH);
 
   /**
+   * Hermitian(x) - TODO describe `Hermitian`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Hermitian.md">Hermitian
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Hermitian = S.initFinalSymbol("Hermitian", ID.Hermitian);
+
+  /**
    * HermitianMatrixQ(m) - returns `True` if `m` is a hermitian matrix.
    * 
    * @see <a href=
@@ -10682,6 +10754,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Item = S.initFinalSymbol("Item", ID.Item);
+
+  /**
+   * ItemAspectRatio(x) - TODO describe `ItemAspectRatio`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ItemAspectRatio.md">ItemAspectRatio
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ItemAspectRatio =
+      S.initFinalSymbol("ItemAspectRatio", ID.ItemAspectRatio);
 
   /**
    * ItemDisplayFunction(x) - TODO describe `ItemDisplayFunction`.
@@ -12758,6 +12840,13 @@ public class S {
    */
   public final static IBuiltInSymbol MathMLForm = S.initFinalSymbol("MathMLForm", ID.MathMLForm);
 
+  /**
+   * Matrices({d1, d2}) - represents the domain of the `d1` x `d2` matrices.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Matrices.md">Matrices
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Matrices = S.initFinalSymbol("Matrices", ID.Matrices);
 
   /**
@@ -12844,6 +12933,13 @@ public class S {
    */
   public final static IBuiltInSymbol MatrixRank = S.initFinalSymbol("MatrixRank", ID.MatrixRank);
 
+  /**
+   * MatrixSymbol(a, {m, n}) - represents a symbolic `m` x `n` matrix named `a`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixSymbol.md">MatrixSymbol
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol MatrixSymbol =
       S.initFinalSymbol("MatrixSymbol", ID.MatrixSymbol);
 
@@ -14298,6 +14394,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol NonPositive = S.initFinalSymbol("NonPositive", ID.NonPositive);
+
+  /**
+   * NonThreadable - is an attribute which indicates that a symbol `f` and `f(arg1, arg2, ...)`
+   * stand for a non-scalar quantity and are therefore not combined with the elements of a list.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NonThreadable.md">NonThreadable
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NonThreadable =
+      S.initFinalSymbol("NonThreadable", ID.NonThreadable);
 
   /**
    * Nor(arg1, arg2, ...) - Logical NOR function. It evaluates its arguments in order, giving
@@ -20214,15 +20321,47 @@ public class S {
    */
   public final static IBuiltInSymbol Symbol = S.initFinalSymbol("Symbol", ID.Symbol);
 
+  /**
+   * SymbolicDeltaProductArray({n1, n2, ...}, {{j11, j12, ...}, ...}) - represents an `n1` x `n2` x
+   * ... array whose element is `1` where the indices in each group agree, and `0` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymbolicDeltaProductArray.md">SymbolicDeltaProductArray
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SymbolicDeltaProductArray =
       S.initFinalSymbol("SymbolicDeltaProductArray", ID.SymbolicDeltaProductArray);
 
+  /**
+   * SymbolicIdentityArray({n1, n2, ...}) - represents the array whose element is `1` where every
+   * index of the first half equals its partner in the second half, and `0` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymbolicIdentityArray.md">SymbolicIdentityArray
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SymbolicIdentityArray =
       S.initFinalSymbol("SymbolicIdentityArray", ID.SymbolicIdentityArray);
 
+  /**
+   * SymbolicOnesArray({n1, n2, ...}) - represents an `n1` x `n2` x ... array all of whose elements
+   * are `1`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymbolicOnesArray.md">SymbolicOnesArray
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SymbolicOnesArray =
       S.initFinalSymbol("SymbolicOnesArray", ID.SymbolicOnesArray);
 
+  /**
+   * SymbolicZerosArray({n1, n2, ...}) - represents an `n1` x `n2` x ... array all of whose elements
+   * are `0`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymbolicZerosArray.md">SymbolicZerosArray
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SymbolicZerosArray =
       S.initFinalSymbol("SymbolicZerosArray", ID.SymbolicZerosArray);
 
@@ -21968,6 +22107,13 @@ public class S {
    */
   public final static IBuiltInSymbol VectorQ = S.initFinalSymbol("VectorQ", ID.VectorQ);
 
+  /**
+   * Vectors(d) - represents the domain of the vectors of length `d`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Vectors.md">Vectors
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Vectors = S.initFinalSymbol("Vectors", ID.Vectors);
 
   /**
@@ -21997,6 +22143,13 @@ public class S {
    */
   public final static IBuiltInSymbol VectorStyle = S.initFinalSymbol("VectorStyle", ID.VectorStyle);
 
+  /**
+   * VectorSymbol(v, n) - represents a symbolic vector of length `n` named `v`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorSymbol.md">VectorSymbol
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol VectorSymbol =
       S.initFinalSymbol("VectorSymbol", ID.VectorSymbol);
 

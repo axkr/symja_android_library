@@ -1850,6 +1850,14 @@ public class F extends S {
    * @param dimension
    * @return <code>Arrays(dimensions, Complexes, {})</code>.
    */
+  public static IAST ArraySymbol(final IExpr name, final IExpr dimensions) {
+    return new AST2(ArraySymbol, name, dimensions);
+  }
+
+  public static IAST ArraySymbol(final IExpr name, final IExpr dimensions, final IExpr domain) {
+    return new AST3(ArraySymbol, name, dimensions, domain);
+  }
+
   public static IAST Arrays(final IAST dimension) {
     return Arrays(dimension, Complexes, List());
   }
@@ -7967,6 +7975,14 @@ public class F extends S {
     return new AST1(MathMLForm, expr);
   }
 
+  public static IAST MatrixSymbol(final IExpr name, final IExpr dimensions) {
+    return new AST2(MatrixSymbol, name, dimensions);
+  }
+
+  public static IAST MatrixSymbol(final IExpr name, final IExpr dimensions, final IExpr domain) {
+    return new AST3(MatrixSymbol, name, dimensions, domain);
+  }
+
   public static IAST Matrices(final IExpr a0) {
     return new AST1(Matrices, a0);
   }
@@ -11464,6 +11480,10 @@ public class F extends S {
     return symbol;
   }
 
+  public static IAST SymbolicDeltaProductArray(final IExpr a0, final IExpr a1) {
+    return new AST2(SymbolicDeltaProductArray, a0, a1);
+  }
+
   public static IAST SymbolicIdentityArray(final IExpr a0) {
     return new AST1(SymbolicIdentityArray, a0);
   }
@@ -12429,6 +12449,14 @@ public class F extends S {
     IASTAppendable vector = mapRange(0, n, i -> iFunction.apply(i));
     vector.addEvalFlags(IAST.IS_VECTOR);
     return vector;
+  }
+
+  public static IAST VectorSymbol(final IExpr name, final IExpr dimension) {
+    return new AST2(VectorSymbol, name, dimension);
+  }
+
+  public static IAST VectorSymbol(final IExpr name, final IExpr dimension, final IExpr domain) {
+    return new AST3(VectorSymbol, name, dimension, domain);
   }
 
   public static IAST Vectors(final IExpr a0) {
