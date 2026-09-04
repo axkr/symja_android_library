@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -211,7 +212,7 @@ public class AlgebraUtil {
       if (expr.isAST()) {
         if (expandNegativePowers && evalParts && !distributePlus && !factorTerms
             && matcher == null) {
-          ((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
+          ((IAST) expr).addFlag(Flag.IS_EXPANDED);
         } else {
           // Lazy initialization to save memory for nodes that don't require map caching
           if (expandedASTs == null) {
@@ -958,9 +959,13 @@ public class AlgebraUtil {
                 F.Power(F.Times(elements[2], denParts.arg2()), F.CN1));
           }
         }
-      } else if (numerator.isPlus() && (denominator.isTimes() || denominator.isPower())) {
-        // Cancel a common polynomial factor between a Plus numerator and a Times/Power
+      } else if (numerator.isPlus()
+          && (denominator.isTimes() || denominator.isPower() || denominator.isSymbol())) {
+        // Cancel a common polynomial factor between a Plus numerator and a Times/Power/Symbol
         // denominator, e.g. Together(x*(1/x + 1/y)) -> (x^2 + x*y)/(x*y) -> (x + y)/y.
+        // A bare symbol denominator has to be included here: cancelCommonFactors() above only
+        // factors the numerator for up to 3 variables, so e.g. (b*x+c*x^2+d*x^3)/x would
+        // otherwise not cancel at all.
         IAST numParts = numerator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
         if (numParts.arg1().isPlus()) {
           Optional<IExpr[]> result = cancelGCD(numParts.arg1(), denominator);
@@ -1356,7 +1361,7 @@ public class AlgebraUtil {
     }
     IAST localAST = ast;
     IAST tempAST = F.NIL;
-    if (localAST.isEvalFlagOff(IAST.IS_SORTED)) {
+    if (localAST.hasNoFlag(Flag.IS_SORTED)) {
       tempAST = engine.evalFlatOrderlessAttrsRecursive(localAST);
       if (tempAST.isPresent()) {
         localAST = tempAST;
@@ -2745,7 +2750,7 @@ public class AlgebraUtil {
       return;
     }
     if (term.isAST()) {
-      ((IAST) term).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+      ((IAST) term).addFlag(Flag.IS_DECOMPOSED_PARTIAL_FRACTION);
     }
     result.append(term);
   }
@@ -2892,7 +2897,7 @@ public class AlgebraUtil {
   // }
   // IAST localAST = ast;
   // IAST tempAST = F.NIL;
-  // if (localAST.isEvalFlagOff(IAST.IS_SORTED)) {
+  // if (localAST.hasNoFlag(Flag.IS_SORTED)) {
   // tempAST = engine.evalFlatOrderlessAttrsRecursive(localAST);
   // if (tempAST.isPresent()) {
   // localAST = tempAST;
@@ -2960,7 +2965,7 @@ public class AlgebraUtil {
   public static IExpr setAllExpanded(IExpr expr, boolean expandNegativePowers,
       boolean distributePlus) {
     if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
-      ((IAST) expr).addEvalFlags(IAST.IS_ALL_EXPANDED);
+      ((IAST) expr).addFlag(Flag.IS_ALL_EXPANDED);
     }
     return expr;
   }
