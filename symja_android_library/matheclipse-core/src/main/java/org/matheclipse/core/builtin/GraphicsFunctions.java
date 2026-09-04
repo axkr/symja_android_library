@@ -762,6 +762,9 @@ public class GraphicsFunctions {
       S.Line.setEvaluator(new Line());
       S.Octahedron.setEvaluator(new Octahedron());
       S.Overlay.setEvaluator(new Overlay());
+      S.GraphicsRow.setEvaluator(new GraphicsRow());
+      S.GraphicsColumn.setEvaluator(new GraphicsColumn());
+      S.GraphicsGrid.setEvaluator(new GraphicsGrid());
       S.Point.setEvaluator(new Point());
       S.Polygon.setEvaluator(new Polygon());
       S.Rectangle.setEvaluator(new Rectangle());
@@ -769,6 +772,7 @@ public class GraphicsFunctions {
       S.Sphere.setEvaluator(new Sphere());
       S.Tetrahedron.setEvaluator(new Tetrahedron());
       S.Text.setEvaluator(new Text());
+      S.Tooltip.setEvaluator(new Tooltip());
       S.Tube.setEvaluator(new Tube());
       S.GraphicsComplex.setEvaluator(new GraphicsComplex());
       S.GraphicsJSON.setEvaluator(new GraphicsJSON());
@@ -816,6 +820,166 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       // {layers}, the layer selection, the selectable layer, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
+  }
+
+  /**
+   * The options every graphics layout accepts, with the defaults the Wolfram pages give.
+   *
+   * <p>
+   * They are registered so that <code>Options(GraphicsGrid)</code> answers, and so that a name
+   * given in a call is recognised as an option rather than counted as a positional argument. The
+   * values themselves are read straight off the call by
+   * {@link org.matheclipse.core.graphics.svg.LayoutSpec}, which needs the rules the caller wrote
+   * rather than a resolved array.
+   */
+  private static IAST layoutOptions() {
+    return F.List(F.Rule(S.Alignment, F.List(S.Center, S.Center)), //
+        F.Rule(S.AspectRatio, S.Automatic), //
+        F.Rule(S.Background, S.None), //
+        F.Rule(S.BaseStyle, F.CEmptyList), //
+        F.Rule(S.Dividers, S.None), //
+        F.Rule(S.Frame, S.None), //
+        F.Rule(S.FrameStyle, S.Automatic), //
+        F.Rule(S.ImageMargins, F.C0), //
+        F.Rule(S.ImageSize, S.Automatic), //
+        F.Rule(S.ItemAspectRatio, S.Automatic), //
+        F.Rule(S.Spacings, F.Scaled(0.1)));
+  }
+
+  /**
+   * <code>GraphicsRow({g1, g2, ...})</code> draws its items side by side.
+   *
+   * <p>
+   * A display wrapper, exactly like {@link Overlay}: <code>evaluate()</code> returns {@link F#NIL}
+   * so the expression survives into the output stage, where
+   * {@link org.matheclipse.core.graphics.svg.SvgLayout} lays it out. The arguments are still
+   * evaluated first, which is what lets <code>GraphicsRow(Table(Plot(...), {2}))</code> work - an
+   * {@code AbstractCoreFunctionEvaluator} would hold the table unevaluated and the row would find
+   * no pictures to draw.
+   */
+  private static final class GraphicsRow extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // resolved by org.matheclipse.core.graphics.svg.SvgLayout#row
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // {items}, an optional spacing, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, layoutOptions());
+    }
+  }
+
+  /**
+   * <code>GraphicsColumn({g1, g2, ...})</code> draws its items one above the other, the first at
+   * the top. The optional second and third arguments are the horizontal alignment and the gap.
+   */
+  private static final class GraphicsColumn extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // resolved by org.matheclipse.core.graphics.svg.SvgLayout#column
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // {items}, an optional alignment and spacing, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, layoutOptions());
+    }
+  }
+
+  /**
+   * <code>GraphicsGrid({{g11, g12, ...}, ...})</code> arranges its items in a grid.
+   *
+   * <p>
+   * A cell may span several columns or rows by putting <code>SpanFromLeft</code>,
+   * <code>SpanFromAbove</code> or <code>SpanFromBoth</code> in the positions it should cover, and
+   * an <code>Item(expr, opts)</code> cell carries settings of its own.
+   */
+  private static final class GraphicsGrid extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // resolved by org.matheclipse.core.graphics.svg.SvgLayout#grid
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // {{rows}}, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, layoutOptions());
+    }
+  }
+
+  /**
+   * <code>Tooltip(expr, label)</code> shows <code>label</code> while the pointer is over what
+   * <code>expr</code> draws; <code>Tooltip(expr)</code> shows <code>expr</code> itself.
+   *
+   * <p>
+   * A display wrapper: <code>evaluate()</code> returns {@link F#NIL} so it survives into the
+   * picture, where the collectors read it and the renderer writes an SVG <code>title</code>. The
+   * evaluator exists to pin the arity - without it <code>Tooltip()</code> reached the collector and
+   * was silently ignored - and to give the symbol somewhere to hang its documentation.
+   *
+   * <p>
+   * Not an {@code AbstractCoreFunctionEvaluator}: that would hold the arguments, and a tooltip
+   * labels a value rather than the expression that computed it -
+   * <code>Tooltip(Prime(4))</code> has to become <code>Tooltip(7)</code> before a plot can read
+   * either the number or the label.
+   */
+  private static final class Tooltip extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the wrapper must survive evaluation - it is read by
+      // org.matheclipse.core.graphics.svg.PrimitiveCollector and its 3D counterpart
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // the expression, an optional label, and any of the styling options - which are accepted
+      // and ignored, because the browser draws the tooltip and nothing here can style it
       return ARGS_1_INFINITY;
     }
   }

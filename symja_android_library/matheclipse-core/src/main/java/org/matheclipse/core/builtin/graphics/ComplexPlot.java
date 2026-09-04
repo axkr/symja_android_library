@@ -26,6 +26,15 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class ComplexPlot extends ListPlot {
 
+  /**
+   * The data is drawn as one field rather than point by point, so no wrapper is read here; the
+   * label goes over the whole picture instead.
+   */
+  @Override
+  protected boolean readsArgumentWrapper() {
+    return false;
+  }
+
   public ComplexPlot() {}
 
   @Override

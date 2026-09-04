@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -23,12 +24,24 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class NumberLinePlot extends ListPlot {
 
+  /**
+   * The data is drawn as one field rather than point by point, so no wrapper is read here; the
+   * label goes over the whole picture instead.
+   */
+  @Override
+  protected boolean readsArgumentWrapper() {
+    return false;
+  }
+
   public NumberLinePlot() {}
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    IExpr dataArg = QuantityFunctions.quantityPlotMagnitudes(ast.arg1(),
+    // a display wrapper says how the data is shown; it comes off before the levels are read and
+    // its label goes over the whole picture, which is the only level a number line has
+    final PlotWrapper argumentWrapper = PlotWrapper.of(ast.arg1());
+    IExpr dataArg = QuantityFunctions.quantityPlotMagnitudes(argumentWrapper.datum,
         GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
     IAST dataList = dataArg.makeList();
 
@@ -224,7 +237,7 @@ public class NumberLinePlot extends ListPlot {
       graphicsOptions
           .setAspectRatio(F.Times(F.num(topRow), F.Power(F.Times(F.ZZ(10), S.GoldenRatio), F.CN1)));
 
-      IASTAppendable result = F.Graphics(primitives);
+      IASTAppendable result = F.Graphics(argumentWrapper.wrapTooltip(primitives));
       result.appendArgs(graphicsOptions.getListOfRules());
       return result;
     } catch (RuntimeException rex) {

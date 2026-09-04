@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -27,6 +28,15 @@ public class ListContourPlot extends ContourPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    // the shape tests below read the data through any display wrapper; `wrappedAST` keeps the
+    // wrapper, so the label can still be put over the finished picture
+    final IAST wrappedAST = ast;
+    if (ast.size() > 1) {
+      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
+      if (unwrapped != ast.arg1()) {
+        ast = ast.setAtCopy(1, unwrapped);
+      }
+    }
     if (argSize < 1) {
       return F.NIL;
     }
@@ -136,7 +146,7 @@ public class ListContourPlot extends ContourPlot {
     ContourPlot.appendBoundary(primitives, defined, gridData.xMin, gridData.yMin, gridData.stepX,
         gridData.stepY, GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic));
 
-    return createGraphicsFunction(primitives, graphicsOptions, ast);
+    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
   }
 
   /**

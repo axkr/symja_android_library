@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -93,8 +94,14 @@ public class BoxWhiskerChart extends ListPlot {
 
     IAST dataList = (IAST) dataArg;
 
+    // a wrapper around the whole argument comes off before the single/multiple shape is read,
+    // since Tooltip({1,2,3}, "a") is still one dataset
+    final PlotWrapper outerWrapper = PlotWrapper.of(dataList);
+    if (outerWrapper.datum.isList()) {
+      dataList = (IAST) outerWrapper.datum;
+    }
     boolean isMultiDataset = false;
-    if (dataList.argSize() > 0 && dataList.arg1().isList()) {
+    if (dataList.argSize() > 0 && PlotWrapper.strip(dataList.arg1()).isList()) {
       isMultiDataset = true;
     }
 
@@ -128,7 +135,7 @@ public class BoxWhiskerChart extends ListPlot {
     double medianMin = Double.MAX_VALUE;
     double medianMax = -Double.MAX_VALUE;
     for (int i = 1; i <= count; i++) {
-      double m = medianOf(datasets.get(i));
+      double m = medianOf(PlotWrapper.strip(datasets.get(i)));
       if (!Double.isNaN(m)) {
         medianMin = Math.min(medianMin, m);
         medianMax = Math.max(medianMax, m);
@@ -142,15 +149,18 @@ public class BoxWhiskerChart extends ListPlot {
         .range(1, medianMin, medianMax).build();
 
     for (int i = 1; i <= count; i++) {
-      IExpr datasetExpr = datasets.get(i);
+      PlotWrapper datasetWrapper = PlotWrapper.of(datasets.get(i));
+      IExpr datasetExpr = datasetWrapper.datum;
       if (!datasetExpr.isList())
         continue;
       IAST dataset = (IAST) datasetExpr;
+      IExpr boxTooltip = outerWrapper.tooltipOf(datasetWrapper);
 
       // Extract numbers
       double[] values = new double[dataset.size()];
       int n = 0;
-      for (IExpr e : dataset) {
+      for (IExpr wrapped : dataset) {
+        IExpr e = PlotWrapper.strip(wrapped);
         try {
           if (e instanceof INumber) {
             values[n++] = ((INumber) e).reDoubleValue();
@@ -309,7 +319,14 @@ public class BoxWhiskerChart extends ListPlot {
             F.List(F.List(F.num(xLeft), F.num(median)), F.List(F.num(xRight), F.num(median)))));
       }
 
-      primitives.append(group);
+      // the label covers the whole box, whiskers and median line included, so it answers a hover
+      // anywhere on the element it names; a self labelling wrapper names it by its median
+      primitives.append(boxTooltip.isPresent()
+          ? F.binaryAST2(S.Tooltip, group,
+              outerWrapper.tooltipLabelsItself || datasetWrapper.tooltipLabelsItself
+                  ? F.num(median)
+                  : boxTooltip)
+          : group);
 
       // 4. Draw Outliers
       if (showOutliers && outlierPoints.argSize() > 0) {
@@ -467,7 +484,7 @@ public class BoxWhiskerChart extends ListPlot {
     double[] values = new double[dataset.argSize()];
     int n = 0;
     for (int k = 1; k <= dataset.argSize(); k++) {
-      double v = dataset.get(k).evalfNaN();
+      double v = PlotWrapper.strip(dataset.get(k)).evalfNaN();
       if (Double.isFinite(v)) {
         values[n++] = v;
       }

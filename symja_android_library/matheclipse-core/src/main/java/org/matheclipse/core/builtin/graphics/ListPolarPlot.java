@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -32,11 +33,15 @@ public class ListPolarPlot extends ListPlot {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    if (ast.arg1().isList()) {
-      IAST list = (IAST) ast.arg1();
+    PlotWrapper outerWrapper = PlotWrapper.of(ast.arg1());
+    if (outerWrapper.datum.isList()) {
+      IAST list = (IAST) outerWrapper.datum;
       IASTAppendable table = createTable(engine, list, 0);
       if (table.isPresent()) {
-        IASTMutable listPlot = ast.setAtCopy(1, table);
+        // a wrapper around the whole argument labels what it holds, so it is put back on the
+        // converted table rather than lost with the polar coordinates; ListPlot already knows how
+        // to read a wrapped dataset
+        IASTMutable listPlot = ast.setAtCopy(1, outerWrapper.decorate(table));
 
         GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
         // PlotMarkers and Mesh are family options appended after the positional block, so they
@@ -61,10 +66,15 @@ public class ListPolarPlot extends ListPlot {
     if (list.isListOfPoints(2)) {
       IASTAppendable table = F.ListAlloc(list.argSize());
       for (int i = 1; i < list.size(); i++) {
-        IAST elem = (IAST) list.get(i);
+        // the wrapper has to come off before the pair is read as {theta, r}: it is the argument
+        // of the wrapper that holds the angle, not the wrapper itself
+        PlotWrapper wrapper = PlotWrapper.of(list.get(i));
+        IAST elem = (IAST) wrapper.datum;
         IExpr xValue = engine.evaluate(F.Times(elem.arg2(), F.Cos(elem.arg1())));
         IExpr yValue = engine.evaluate(F.Times(elem.arg2(), F.Sin(elem.arg1())));
-        table.append(F.List(xValue, yValue));
+        // the cartesian point is put back into the wrapper it came out of, so the label travels
+        // with the point it belongs to through the ordinary ListPlot path
+        table.append(wrapper.decorate(F.List(xValue, yValue)));
       }
       return table;
     } else if (list.isListOfLists()) {
@@ -73,10 +83,14 @@ public class ListPolarPlot extends ListPlot {
       }
       IASTAppendable listOfTables = F.ListAlloc(list.argSize());
       for (int i = 1; i < list.size(); i++) {
-        IAST subList = (IAST) list.get(i);
+        PlotWrapper wrapper = PlotWrapper.of(list.get(i));
+        if (!wrapper.datum.isList()) {
+          continue;
+        }
+        IAST subList = (IAST) wrapper.datum;
         IASTAppendable subTable = createTable(engine, subList, 1);
         if (subTable.isPresent()) {
-          listOfTables.append(subTable);
+          listOfTables.append(wrapper.decorate(subTable));
         }
       }
       return listOfTables;
@@ -85,13 +99,14 @@ public class ListPolarPlot extends ListPlot {
       final double step = (Math.PI * 2.0) / n;
       double x = 0.0;
       for (int i = 1; i < list.size(); i++) {
-        IExpr elem = list.get(i);
+        PlotWrapper wrapper = PlotWrapper.of(list.get(i));
+        IExpr elem = wrapper.datum;
         // if (isNonReal(elem)) {
         // table.append(F.List(S.None, S.None));
         // } else {
         IExpr xValue = engine.evaluate(F.Times(elem, F.Cos(F.num(x))));
         IExpr yValue = engine.evaluate(F.Times(elem, F.Sin(F.num(x))));
-        table.append(F.List(xValue, yValue));
+        table.append(wrapper.decorate(F.List(xValue, yValue)));
         // }
         x += step;
       }

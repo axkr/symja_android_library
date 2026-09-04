@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -26,6 +27,15 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
+    // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
+    // primitives, reading it from the original call
+    if (ast.size() > 1) {
+      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
+      if (unwrapped != ast.arg1()) {
+        ast = ast.setAtCopy(1, unwrapped);
+      }
+    }
     IExpr data = ast.arg1();
     if (!data.isList()) {
       return F.NIL;

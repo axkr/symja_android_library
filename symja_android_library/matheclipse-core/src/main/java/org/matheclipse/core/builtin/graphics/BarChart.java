@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -46,11 +47,13 @@ public class BarChart extends ListPlot {
     final IExpr style;
     /** The label from a {@code Labeled} wrapper on the datum, or {@link F#NIL}. */
     final IExpr label;
+    /** The label from a {@code Tooltip} wrapper on the datum, or {@link F#NIL}. */
+    final IExpr tooltip;
     /** The number the bar stands for, before any normalisation the layout applied. */
     final IExpr datum;
 
     Bar(double from, double to, double base, double value, int colorIndex, IExpr style, IExpr label,
-        IExpr datum) {
+        IExpr tooltip, IExpr datum) {
       this.from = from;
       this.to = to;
       this.base = base;
@@ -58,6 +61,7 @@ public class BarChart extends ListPlot {
       this.colorIndex = colorIndex;
       this.style = style;
       this.label = label;
+      this.tooltip = tooltip;
       this.datum = datum;
     }
 
@@ -147,7 +151,7 @@ public class BarChart extends ListPlot {
           }
           double scaled = percentile ? (total > 0 ? v / total : 0.0) : v;
           bars.add(new Bar(center - barWidth / 2.0, center + barWidth / 2.0, base, base + scaled,
-              j - 1, styleOf(item), labelOf(item), datum(item)));
+              j - 1, styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
           base += scaled;
         }
       }
@@ -171,7 +175,7 @@ public class BarChart extends ListPlot {
           // a single dataset is drawn in one colour; several datasets colour by position
           int colorIndex = datasetCount == 1 ? 0 : j - 1;
           bars.add(new Bar(cursor - barWidth / 2.0, cursor + barWidth / 2.0, 0.0, v, colorIndex,
-              styleOf(item), labelOf(item), datum(item)));
+              styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
         }
         if (d < datasetCount) {
           cursor += GROUP_GAP;
@@ -215,7 +219,9 @@ public class BarChart extends ListPlot {
         group.append(style);
       }
       appendElement(group, elementFunction, barOrigin, bar, engine);
-      primitives.append(group);
+      // a tooltip covers the whole bar, so it wraps the group rather than sitting inside it
+      primitives.append(
+          bar.tooltip.isPresent() ? F.binaryAST2(S.Tooltip, group, bar.tooltip) : group);
 
       // the value written on the bar, which LabelingFunction asks for
       IExpr valueLabel = GraphicsOptions.labelingText(labelingFunction, bar.datum, engine);
@@ -406,20 +412,28 @@ public class BarChart extends ListPlot {
 
   /** The style of a {@code Style[value, style]} datum, or {@link F#NIL}. */
   private static IExpr styleOf(IExpr item) {
-    return item.isAST(S.Style, 3) ? ((IAST) item).arg2() : F.NIL;
+    return PlotWrapper.of(item).style;
   }
 
   /** The label of a {@code Labeled[value, label]} datum, or {@link F#NIL}. */
   private static IExpr labelOf(IExpr item) {
-    return item.isAST(S.Labeled, 3) ? ((IAST) item).arg2() : F.NIL;
+    return PlotWrapper.of(item).label;
   }
 
-  /** The datum itself, with any {@code Labeled} or {@code Style} wrapper taken off. */
+  /** The label of a {@code Tooltip[value, label]} datum, or {@link F#NIL}. */
+  private static IExpr tooltipOf(IExpr item) {
+    return PlotWrapper.of(item).tooltip;
+  }
+
+  /**
+   * The datum itself, with every display wrapper taken off.
+   *
+   * <p>
+   * A wrapper this did not recognise used to reach {@code evalDouble} and fail there, and the bar
+   * was then simply missing from the chart with nothing said about it.
+   */
   private static IExpr datum(IExpr item) {
-    if (item.isAST(S.Labeled) || item.isAST(S.Style)) {
-      return ((IAST) item).arg1();
-    }
-    return item;
+    return PlotWrapper.strip(item);
   }
 
   private static double value(IExpr item) {

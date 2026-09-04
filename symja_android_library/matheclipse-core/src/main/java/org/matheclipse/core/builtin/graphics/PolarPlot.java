@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -195,7 +196,10 @@ public class PolarPlot extends Plot {
       tMaxD = temp;
     }
 
-    final IAST list = functionOrListOfFunctions.makeList();
+    // a wrapped radius is unwrapped before it is sampled, and its label put back on the finished
+    // curve; the same reading of the four wrapper levels as every other plot family
+    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions);
+    final IAST list = curves.functions;
     int size = list.size();
     final IASTAppendable listOfLines = F.ListAlloc(size - 1);
 
@@ -254,7 +258,7 @@ public class PolarPlot extends Plot {
           segments.append(linePoints);
         }
         if (segments.argSize() > 0) {
-          listOfLines.append(segments);
+          listOfLines.append(curves.decorate(i, segments));
         }
       }
     }

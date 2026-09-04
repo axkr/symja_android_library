@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -148,7 +149,10 @@ public class Plot extends ListPlot {
       xMaxD = temp;
     }
 
-    final IAST list = functionOrListOfFunctions.makeList();
+    // which curve carries which label; the rule lives in PlotWrapper so that every plot family
+    // reads a wrapped argument the same way
+    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions);
+    final IAST list = curves.functions;
     int size = list.size();
     List<double[][]> dataList = new ArrayList<double[][]>(size - 1);
     final IASTAppendable listOfLines = F.ListAlloc(size - 1);
@@ -166,7 +170,8 @@ public class Plot extends ListPlot {
     for (int i = 1; i < size; i++) {
       // a quantity valued function is plotted by its magnitude
       IExpr function =
-          QuantityFunctions.quantityPlotFunction(list.get(i), samplePoint, targetUnits, engine);
+          QuantityFunctions.quantityPlotFunction(curves.function(i), samplePoint, targetUnits,
+              engine);
       double[][] data = null;
       final UnaryNumerical hun = new UnaryNumerical(function, x, Double.NaN, engine);
       // WorkingPrecision only matters where machine arithmetic loses the answer
@@ -196,7 +201,9 @@ public class Plot extends ListPlot {
       IExpr temp =
           plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine, exclusions);
       if (temp.isPresent()) {
-        listOfLines.append(temp);
+        // the curve is handed on wrapped exactly as a caller could have typed it into ListPlot,
+        // so the tooltip needs no machinery of its own here
+        listOfLines.append(curves.decorate(i + 1, temp));
       }
     }
     return listOfLines;

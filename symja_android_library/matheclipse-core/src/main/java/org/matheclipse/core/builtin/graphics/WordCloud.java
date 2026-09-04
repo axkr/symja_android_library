@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -44,8 +45,15 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
     double dirX = 1;
     double dirY = 0;
 
+    /** The label of a {@code Tooltip} around the word, or {@link F#NIL}. */
+    IExpr tooltip = F.NIL;
+
     WordItem(IExpr word, double weight) {
-      this.word = word;
+      // a display wrapper says how the word is shown, not what it says; a wrapped word used to be
+      // laid out and measured as the wrapper expression rather than as the word inside it
+      PlotWrapper wrapper = PlotWrapper.of(word);
+      this.word = wrapper.datum;
+      this.tooltip = wrapper.tooltip;
       this.weight = weight;
       this.scaledWeight = weight;
     }
@@ -281,8 +289,13 @@ public class WordCloud extends AbstractFunctionOptionEvaluator {
         // usual way, and the emitted expression stays what it always was
         IExpr direction = item.dirY == 0 && item.dirX > 0 ? S.Automatic
             : F.List(F.num(item.dirX), F.num(item.dirY));
-        IAST inset =
+        IExpr inset =
             F.Inset(style, F.List(F.num(item.finalX), F.num(item.finalY)), S.Center, direction);
+        // a word is a thing a reader points at, so the label goes on the word rather than on the
+        // cloud; Tooltip(word) names it with the word itself
+        if (item.tooltip.isPresent()) {
+          inset = F.binaryAST2(S.Tooltip, inset, item.tooltip);
+        }
         insets.append(inset);
       }
 

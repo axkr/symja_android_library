@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -150,15 +151,11 @@ public class PieChart extends ListPlot {
     for (int i = 1; i < dataList.size(); i++) {
       IExpr item = dataList.get(i);
       double val = getDoubleVal(item);
-      IExpr label = null;
-      IExpr style = null;
-
-      // Unwrap wrappers
-      if (item.isAST(S.Labeled)) {
-        label = ((IAST) item).arg2();
-      } else if (item.isAST(S.Style)) {
-        style = ((IAST) item).arg2();
-      }
+      // one place knows the wrappers; an unrecognised one used to make the value NaN and the
+      // wedge simply did not appear
+      PlotWrapper wrapper = PlotWrapper.of(item);
+      IExpr label = wrapper.label.isPresent() ? wrapper.label : null;
+      IExpr style = wrapper.style.isPresent() ? wrapper.style : null;
 
       // Global ChartLabels override
       if (chartLabels.isList() && i <= ((IAST) chartLabels).size()) {
@@ -205,7 +202,10 @@ public class PieChart extends ListPlot {
         // Disk Primitive
         group.append(
             F.function(S.Disk, F.List(F.num(cx), F.num(cy)), F.C1, F.List(F.num(a1), F.num(a2))));
-        primitives.append(group);
+        // a tooltip covers the whole wedge
+        primitives.append(wrapper.hasTooltip()
+            ? F.binaryAST2(S.Tooltip, group, wrapper.tooltip)
+            : group);
 
         // Label
         if (label != null) {
@@ -265,12 +265,9 @@ public class PieChart extends ListPlot {
     }
   }
 
-  /** The datum itself, with any {@code Labeled} or {@code Style} wrapper taken off. */
+  /** The datum itself, with every display wrapper taken off. */
   private static IExpr datum(IExpr item) {
-    if (item.isAST(S.Labeled) || item.isAST(S.Style)) {
-      return ((IAST) item).arg1();
-    }
-    return item;
+    return PlotWrapper.strip(item);
   }
 
   private IExpr getChartStyle(IExpr styleOption, int index) {
@@ -285,8 +282,8 @@ public class PieChart extends ListPlot {
 
   private double getDoubleVal(IExpr expr) {
     try {
-      if (expr.isAST(S.Labeled) || expr.isAST(S.Style)) {
-        return getDoubleVal(expr.first());
+      if (PlotWrapper.isWrapper(expr)) {
+        return getDoubleVal(PlotWrapper.strip(expr));
       }
       if (expr instanceof INumber)
         return ((INumber) expr).reDoubleValue();

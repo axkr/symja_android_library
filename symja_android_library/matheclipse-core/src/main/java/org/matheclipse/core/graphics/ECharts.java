@@ -358,7 +358,9 @@ public class ECharts {
       JavaScriptFormFactory toJS, double[] minMax) {
     if (pointList.isListOfPoints(2)) {
       for (int i = 1; i < pointList.size(); i++) {
-        IExpr arg = pointList.get(i);
+        // the pair is read through any display wrapper, which is what the shape test above already
+        // allows for; without this a wrapped point would be read as {payload, label}
+        IExpr arg = PlotWrapper.strip(pointList.get(i));
         IExpr xExpr = arg.first();
         IExpr yExpr = getPointY(arg.second());
         if (isNonReal(xExpr) || isNonReal(yExpr)) {

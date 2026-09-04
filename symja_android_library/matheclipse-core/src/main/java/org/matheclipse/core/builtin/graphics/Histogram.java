@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -35,7 +36,10 @@ public class Histogram extends ListPlot {
 
     // a Dataset plots its rows and an Association its values, labelled by its keys
     IASTAppendable keyLabels = F.ListAlloc();
-    IExpr dataArg = GraphicsOptions.chartData(engine.evaluate(ast.arg1()), keyLabels);
+    // a wrapper around the whole argument is taken off before the data is read; its label is put
+    // back on each bar, since a bin is what a reader can point at
+    final PlotWrapper outerWrapper = PlotWrapper.of(engine.evaluate(ast.arg1()));
+    IExpr dataArg = GraphicsOptions.chartData(outerWrapper.datum, keyLabels);
     if (!dataArg.isList()) {
       return F.NIL;
     }
@@ -58,6 +62,11 @@ public class Histogram extends ListPlot {
     IAST dataList = (IAST) dataArg;
     IAST datasets = GraphicsOptions.chartDatasets(dataList);
     int datasetCount = datasets.argSize();
+    // a dataset may carry its own label, which then covers every bar that dataset fills
+    IExpr[] datasetTooltips = new IExpr[datasetCount + 1];
+    for (int d = 0; d < datasetCount; d++) {
+      datasetTooltips[d + 1] = outerWrapper.tooltipOf(PlotWrapper.of(datasets.get(d + 1)));
+    }
 
     // the bins are shared by every dataset, both because that is what makes the counts
     // comparable and because stacking them needs a common set of bin edges
@@ -139,8 +148,15 @@ public class Histogram extends ListPlot {
           // one directive per bar, which stays in force until the next one
           group.append(barColors.color(counts[d][i]));
         }
-        group
-            .append(F.Rectangle(F.List(F.num(x0), F.num(base)), F.List(F.num(x0 + h), F.num(top))));
+        IExpr bar =
+            F.Rectangle(F.List(F.num(x0), F.num(base)), F.List(F.num(x0 + h), F.num(top)));
+        IExpr barLabel = datasetTooltips[d + 1];
+        if (barLabel != null && barLabel.isPresent()) {
+          // a self labelling wrapper names the bar by what it is worth, which is its count
+          bar = F.binaryAST2(S.Tooltip, bar,
+              outerWrapper.tooltipLabelsItself ? F.ZZ(counts[d][i]) : barLabel);
+        }
+        group.append(bar);
         maxY = Math.max(maxY, top);
         if (stacked) {
           stackBase[i] = top;
@@ -177,10 +193,13 @@ public class Histogram extends ListPlot {
     double[] values = new double[dataset.argSize()];
     int count = 0;
     for (int i = 1; i < dataset.size(); i++) {
-      IExpr element = dataset.get(i);
+      IExpr elementValue = PlotWrapper.strip(dataset.get(i));
       try {
         double v =
-            element instanceof INumber ? ((INumber) element).reDoubleValue() : element.evalDouble();
+            // a wrapper says how a value is shown, not what it is; one left on used to fail here
+            // and the value then quietly took no part in any bin
+            elementValue instanceof INumber ? ((INumber) elementValue).reDoubleValue()
+                : elementValue.evalDouble();
         if (Double.isFinite(v)) {
           values[count++] = v;
         }

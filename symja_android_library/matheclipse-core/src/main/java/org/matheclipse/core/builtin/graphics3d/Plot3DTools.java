@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -1115,7 +1116,28 @@ public final class Plot3DTools {
    * finds for a name.
    */
   public static IExpr graphics3D(IExpr content, IAST originalAST, int argSize, IExpr[] defaults) {
+    return graphics3D(content, originalAST, argSize, defaults, true);
+  }
+
+  /**
+   * The same, for a plot that has already read the wrapper on its first argument.
+   *
+   * <p>
+   * Every three dimensional plot ends here, so this is the one place a {@code Tooltip} written
+   * around a whole surface or dataset needs to be understood - a plot that gives no thought to
+   * wrappers still supports one at that level. A plot which distributes the label over its own
+   * curves has to say so, or the label it put on each would be overridden by the one put around
+   * them all.
+   *
+   * @param applyArgumentWrapper whether to read a display wrapper off {@code originalAST}'s first
+   *        argument and label the primitives with it
+   */
+  public static IExpr graphics3D(IExpr content, IAST originalAST, int argSize, IExpr[] defaults,
+      boolean applyArgumentWrapper) {
     IASTAppendable result = F.ast(S.Graphics3D, 4 + (defaults == null ? 0 : defaults.length));
+    if (applyArgumentWrapper && originalAST != null && originalAST.size() > 1) {
+      content = PlotWrapper.of(originalAST.arg1()).wrapTooltip(content);
+    }
     result.append(content);
     forwardOptions(result, originalAST, argSize);
     if (defaults != null) {

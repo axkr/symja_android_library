@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -22,11 +23,29 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class ContourPlot extends ListPlot {
 
+  /**
+   * The data is drawn as one field rather than point by point, so no wrapper is read here; the
+   * label goes over the whole picture instead.
+   */
+  @Override
+  protected boolean readsArgumentWrapper() {
+    return false;
+  }
+
   public ContourPlot() {}
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    // the shape tests below read the data through any display wrapper; `wrappedAST` keeps the
+    // wrapper, so the label can still be put over the finished picture
+    final IAST wrappedAST = ast;
+    if (ast.size() > 1) {
+      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
+      if (unwrapped != ast.arg1()) {
+        ast = ast.setAtCopy(1, unwrapped);
+      }
+    }
     if (argSize < 3) {
       return F.NIL;
     }
@@ -156,7 +175,7 @@ public class ContourPlot extends ListPlot {
       primitives.append(meshLines);
     }
 
-    return createGraphicsFunction(primitives, graphicsOptions, ast);
+    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
   }
 
   private void generateContours(IASTAppendable primitives, IExpr function, double[] xRange,
@@ -539,7 +558,7 @@ public class ContourPlot extends ListPlot {
   protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
       IAST plotAST) {
     graphicsOptions.addPadding();
-    IASTAppendable result = F.Graphics(primitives);
+    IASTAppendable result = F.Graphics(labelledContent(primitives, plotAST));
     result.appendArgs(graphicsOptions.getListOfRules());
     return result;
   }

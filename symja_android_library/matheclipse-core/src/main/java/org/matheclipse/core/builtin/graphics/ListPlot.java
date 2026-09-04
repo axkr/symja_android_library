@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -304,6 +305,39 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return true;
   }
 
+  /**
+   * Whether this plot already takes a display wrapper off its first argument itself.
+   *
+   * <p>
+   * The plots that read their data point by point put each label where it belongs and must not
+   * have one applied over the whole picture afterwards - an outer label wins in the renderer, so a
+   * second one would overwrite every label the plot had just placed. The plots that draw their data
+   * as a single field or raster do not read wrappers at all, and say so by overriding this, which
+   * is what gets them a label over the picture for free.
+   *
+   * <p>
+   * The default is the cautious one: a plot that says nothing is assumed to have handled it, so a
+   * new plot cannot silently overwrite its own labels.
+   */
+  protected boolean readsArgumentWrapper() {
+    return true;
+  }
+
+  /**
+   * The primitives, with one label over all of them when the plot did not read the wrapper itself.
+   *
+   * <p>
+   * A field or raster plot draws its data as one picture, so the only level a label can sit at is
+   * the whole of it. The plots that read their data point by point have already placed their
+   * labels and say so through {@link #readsArgumentWrapper()}.
+   */
+  protected IExpr labelledContent(IAST graphicsPrimitives, IAST plotAST) {
+    if (readsArgumentWrapper() || plotAST == null || plotAST.size() <= 1) {
+      return graphicsPrimitives;
+    }
+    return PlotWrapper.of(plotAST.arg1()).wrapTooltip(graphicsPrimitives);
+  }
+
   protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions,
       IAST plotAST) {
     IAST expressionsRule = checkForExpressionsLegend(plotAST.arg1(), graphicsOptions);
@@ -320,7 +354,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    IASTAppendable result = F.Graphics(graphicsPrimitives);
+    IASTAppendable result = F.Graphics(labelledContent(graphicsPrimitives, plotAST));
     result.appendArgs(graphicsOptions.getListOfRules());
     // System.out.println(result);
     return result;
@@ -343,11 +377,35 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
     IExpr plotStyle = options[GraphicsOptions.X_PLOTSTYLE];
 
+    // a wrapper around one dataset says how that whole curve is shown, so it comes off before the
+    // shape is judged and goes back on around everything the curve drew
+    PlotWrapper[] curveWrappers = null;
+    if (arg1.isList()) {
+      IAST outer = (IAST) arg1;
+      curveWrappers = new PlotWrapper[outer.size()];
+      IASTAppendable stripped = F.ListAlloc(outer.argSize());
+      boolean anyWrapper = false;
+      for (int j = 1; j < outer.size(); j++) {
+        curveWrappers[j] = PlotWrapper.of(outer.get(j));
+        stripped.append(curveWrappers[j].datum);
+        anyWrapper |= !curveWrappers[j].isPlain();
+      }
+      if (anyWrapper) {
+        arg1 = stripped;
+      }
+    }
+
     if (arg1.isListOfLists()) {
       IAST listOfLists = (IAST) arg1;
       final IASTAppendable graphicsPrimitives = F.ListAlloc();
       for (int j = 1; j < listOfLists.size(); j++) {
         IAST curveData = (IAST) listOfLists.get(j);
+        PlotWrapper curveWrapper =
+            curveWrappers != null && j < curveWrappers.length ? curveWrappers[j] : null;
+        // when this curve carries a tooltip its primitives are gathered so the label can enclose
+        // them; without one they go straight into the shared list, as they always did
+        final IASTAppendable curvePrimitives =
+            curveWrapper != null && curveWrapper.hasTooltip() ? F.ListAlloc() : graphicsPrimitives;
 
         IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
             F.NIL, graphicsOptions.curveThickness());
@@ -371,16 +429,20 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         if (isSegmented) {
           for (int k = 1; k < curveData.size(); k++) {
             IAST segment = (IAST) curveData.get(k);
-            sequencePointListPlot(graphicsPrimitives, segment, graphicsOptions, style, xFunction,
+            sequencePointListPlot(curvePrimitives, segment, graphicsOptions, style, xFunction,
                 yFunction, engine);
           }
         } else {
           if (curveData.isListOfPoints(2)) {
-            sequencePointListPlot(graphicsPrimitives, curveData, graphicsOptions, style, xFunction,
+            sequencePointListPlot(curvePrimitives, curveData, graphicsOptions, style, xFunction,
                 yFunction, engine);
           } else {
-            sequenceYValuesListPlot(graphicsPrimitives, curveData, graphicsOptions, style, engine);
+            sequenceYValuesListPlot(curvePrimitives, curveData, graphicsOptions, style, engine);
           }
+        }
+        if (curvePrimitives != graphicsPrimitives && curvePrimitives.argSize() > 0) {
+          graphicsPrimitives
+              .append(F.binaryAST2(S.Tooltip, curvePrimitives, curveWrapper.tooltip));
         }
       }
       return graphicsPrimitives;
@@ -410,6 +472,13 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
     IExpr plotStyle = options[GraphicsOptions.X_PLOTSTYLE];
 
+    // a wrapper around the whole dataset comes off before its shape is judged, and its label goes
+    // back on around everything the dataset drew
+    PlotWrapper dataWrapper = PlotWrapper.of(arg1);
+    if (!dataWrapper.isPlain()) {
+      arg1 = dataWrapper.datum;
+    }
+
     if (arg1.isNonEmptyList()) {
       final IASTAppendable graphicsPrimitives = F.ListAlloc();
       IAST pointList = (IAST) arg1;
@@ -427,7 +496,28 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
           sequencePointListPlot(graphicsPrimitives, pointList, graphicsOptions, style, xFunction,
               yFunction, engine);
-          return graphicsPrimitives;
+          return dataWrapper.hasTooltip()
+              ? F.List(F.binaryAST2(S.Tooltip, graphicsPrimitives, dataWrapper.tooltip))
+              : graphicsPrimitives;
+        }
+        // each of several datasets may be wrapped in its own right, so the wrappers come off
+        // before the shape is judged and each label goes back on around what that dataset drew
+        IASTAppendable strippedLists = null;
+        PlotWrapper[] datasetWrappers = null;
+        if (pointList.isList()) {
+          datasetWrappers = new PlotWrapper[pointList.size()];
+          strippedLists = F.ListAlloc(pointList.argSize());
+          boolean anyWrapper = false;
+          for (int i = 1; i < pointList.size(); i++) {
+            datasetWrappers[i] = PlotWrapper.of(pointList.get(i));
+            strippedLists.append(datasetWrappers[i].datum);
+            anyWrapper |= !datasetWrappers[i].isPlain();
+          }
+          if (anyWrapper && strippedLists.isListOfLists()) {
+            pointList = strippedLists;
+          } else {
+            datasetWrappers = null;
+          }
         }
         if (pointList.isListOfLists()) {
           IAST listOfLists = pointList;
@@ -442,17 +532,25 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
               style = F.Directive(defaultColor, userStyle);
             }
 
+            PlotWrapper each =
+                datasetWrappers != null && i < datasetWrappers.length ? datasetWrappers[i] : null;
+            final IASTAppendable into =
+                each != null && each.hasTooltip() ? F.ListAlloc() : graphicsPrimitives;
             if (pointList.isListOfPoints(2)) {
               Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
               Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
-              sequencePointListPlot(graphicsPrimitives, pointList, graphicsOptions, style,
-                  xFunction, yFunction, engine);
-            } else {
-              sequenceYValuesListPlot(graphicsPrimitives, pointList, graphicsOptions, style,
+              sequencePointListPlot(into, pointList, graphicsOptions, style, xFunction, yFunction,
                   engine);
+            } else {
+              sequenceYValuesListPlot(into, pointList, graphicsOptions, style, engine);
+            }
+            if (into != graphicsPrimitives && into.argSize() > 0) {
+              graphicsPrimitives.append(F.binaryAST2(S.Tooltip, into, each.tooltip));
             }
           }
-          return graphicsPrimitives;
+          return dataWrapper.hasTooltip()
+              ? F.List(F.binaryAST2(S.Tooltip, graphicsPrimitives, dataWrapper.tooltip))
+              : graphicsPrimitives;
         }
 
       }
@@ -465,7 +563,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
 
       sequenceYValuesListPlot(graphicsPrimitives, pointList, graphicsOptions, style, engine);
-      return graphicsPrimitives;
+      return dataWrapper.hasTooltip()
+          ? F.List(F.binaryAST2(S.Tooltip, graphicsPrimitives, dataWrapper.tooltip))
+          : graphicsPrimitives;
     }
     return F.NIL;
   }
@@ -582,19 +682,13 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (arg.isList2()) {
       return (IAST) arg;
     }
-    if (arg.isASTSizeGE(S.Style, 1) || arg.isASTSizeGE(S.Labeled, 1)) {
-      if (arg.first().isList2()) {
-        return (IAST) arg.first();
-      }
-    }
-    return F.NIL;
+    // a display wrapper says how the point is shown, not where it is
+    IExpr datum = arg.stripDisplayWrappers();
+    return datum.isList2() ? (IAST) datum : F.NIL;
   }
 
   protected static IExpr getPointY(IExpr arg) {
-    if (arg.isASTSizeGE(S.Style, 1) || arg.isASTSizeGE(S.Labeled, 1)) {
-      return arg.first();
-    }
-    return arg;
+    return arg.stripDisplayWrappers();
   }
 
   private static void sequenceYValuesListPlot(IASTAppendable graphicsPrimitives, IAST pointList,
@@ -741,10 +835,51 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IASTMutable styledPoint = arg.setAtCopy(1, F.Point(scaledPoint));
           graphicsExtraPrimitives.append(styledPoint);
         }
+        appendHitTarget(graphicsExtraPrimitives, graphicsOptions, arg, scaledPoint);
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * A transparent mark over a tooltipped point, so there is something to hover.
+   *
+   * <p>
+   * The point itself stays in the bulk primitive that carries the whole dataset - taking it out
+   * would cost it its colour function, its mesh spacing, its share of the bounding box and the
+   * parameter a parametric curve recorded on it. So the tooltip goes on a mark of its own, laid
+   * over the drawn one. It is a {@code Point} rather than a {@code Disk} because a point size is
+   * resolved in pixels: a disk radius is in data units and would come out as a scale dependent
+   * ellipse on any plot whose axes differ. It is invisible but still answers a hover, because the
+   * renderer writes a fully transparent fill rather than no fill at all, and SVG hit tests a
+   * painted fill whatever its opacity.
+   *
+   * @param graphicsOptions the plot's options, for the drawn point size; may be {@code null}
+   * @param arg the datum as written, which is where the tooltip is read from
+   */
+  protected static void appendHitTarget(IASTAppendable extraPrimitives,
+      GraphicsOptions graphicsOptions, IExpr arg, IAST scaledPoint) {
+    appendHitTargetFor(extraPrimitives, graphicsOptions, PlotWrapper.of(arg).tooltip, scaledPoint);
+  }
+
+  /**
+   * The same, for a plot that has already taken the wrapper apart and holds the label by itself.
+   *
+   * @param label the tooltip text, or {@link F#NIL} to add nothing
+   */
+  protected static void appendHitTargetFor(IASTAppendable extraPrimitives,
+      GraphicsOptions graphicsOptions, IExpr label, IAST scaledPoint) {
+    if (label == null || !label.isPresent()) {
+      return;
+    }
+    double drawn = graphicsOptions == null ? 0.0 : graphicsOptions.pointSize();
+    // never smaller than the mark it covers, and large enough to be worth aiming at
+    double hitSize = Math.max(drawn * 1.5, 0.02);
+    extraPrimitives.append(F.binaryAST2(S.Tooltip,
+        F.List(F.unaryAST1(S.Opacity, F.C0), F.unaryAST1(S.PointSize, F.num(hitSize)),
+            F.Point(scaledPoint)),
+        label));
   }
 
   protected static boolean addIndexedYPoint(IASTAppendable pointPrimitives,
@@ -763,6 +898,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
             ((IAST) currentYPrimitive).setAtCopy(1, F.Point(F.List(xScaled, y)));
         textPrimitives.append(styledPoint);
       }
+      appendHitTarget(textPrimitives, null, currentYPrimitive, F.List(xScaled, y));
       pointPrimitives.append(F.List(xScaled, yScaled));
       return true;
     }
@@ -996,9 +1132,29 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         extractCurvesRecursive(ast.arg1(), curves, newColor);
       } else if (head == S.GraphicsGroup || head == S.Annotation
           || head == S.Tooltip) {
-        extractCurvesRecursive(ast.arg1(), curves, currentColor);
+        // a fully transparent group is a hover target rather than something drawn, so it has no
+        // curve to fill under; without this the mark over a tooltipped point becomes a spurious
+        // one point curve and the fill goes down to the axis beneath it
+        if (!isTransparent(ast.arg1())) {
+          extractCurvesRecursive(ast.arg1(), curves, currentColor);
+        }
       }
     }
+  }
+
+  /** Whether these primitives are drawn with no ink at all, and so describe no curve. */
+  private static boolean isTransparent(IExpr primitives) {
+    if (!primitives.isList()) {
+      return false;
+    }
+    IAST list = (IAST) primitives;
+    for (int i = 1; i < list.size(); i++) {
+      IExpr part = list.get(i);
+      if (part.isAST(S.Opacity, 2) && part.first().isZero()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static boolean isColor(IExpr e) {

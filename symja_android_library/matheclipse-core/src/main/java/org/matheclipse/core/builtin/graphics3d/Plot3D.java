@@ -13,6 +13,7 @@ import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -79,7 +80,10 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
 
       final ISymbol xVar = (ISymbol) lst1.arg1();
       final ISymbol yVar = (ISymbol) lst2.arg1();
-      final IExpr functions = ast.arg1().makeList();
+      // the four wrapper levels are read the same way a two dimensional plot reads them, so a
+      // surface can be labelled without Plot3D knowing anything about tooltips
+      final PlotWrapper.Curves curves = PlotWrapper.curves(ast.arg1());
+      final IExpr functions = curves.functions;
 
       int[] samples = Plot3DTools.plotPoints(options[X_PLOT_POINTS], 40);
       final int nx = samples[0];
@@ -98,15 +102,19 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         IExpr surface = buildSurface(plotted, f - 1, xVar, yVar, xMinD, xMaxD, yMinD,
             yMaxD, nx, ny, options, colorBuilder, engine);
         if (surface.isPresent()) {
-          surfaces.append(surface);
+          surfaces.append(curves.decorate(f, surface));
         }
       }
 
       IExpr boxRatios =
           options[X_BOX_RATIOS].isList() ? options[X_BOX_RATIOS] : Plot3DTools.FLAT_BOX_RATIOS;
+      // the label was already distributed over the surfaces above, so it must not be applied a
+      // second time around all of them - the outer one would win and every surface would read the
+      // same
       return Plot3DTools.graphics3D(surfaces, originalAST, argSize,
           new IExpr[] {F.Rule(S.PlotRange, options[X_PLOT_RANGE]), F.Rule(S.BoxRatios, boxRatios),
-              F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+              F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)},
+          false);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(S.Plot3D, rex, engine);

@@ -219,6 +219,9 @@ public class SVGGraphics3D {
   private abstract static class Renderable implements Comparable<Renderable> {
     double depth;
 
+    /** The label of an enclosing {@code Tooltip}, or {@code null}. */
+    String tooltip;
+
     abstract DomContent toSVG();
 
     @Override
@@ -700,6 +703,7 @@ public class SVGGraphics3D {
     RenderList sink = out instanceof RenderList ? (RenderList) out : null;
     if (sink != null) {
       sink.creases = creasesOf(element);
+      sink.beginElement(element.has("tooltip") ? element.get("tooltip").asText() : null);
     }
     switch (type) {
       case "Polygon":
@@ -1274,12 +1278,18 @@ public class SVGGraphics3D {
           }
         }
         if (points.size() >= 3) {
-          kept.add(new Face(points, face.color, face.opacity));
+          // cutting a face makes a new one, and anything the old one carried has to come with it
+          Face clipped = new Face(points, face.color, face.opacity);
+          clipped.tooltip = face.tooltip;
+          kept.add(clipped);
         }
       } else if (r instanceof Polyline) {
         Polyline line = (Polyline) r;
         for (List<Vector3> piece : clipPolyline(line.points, planes)) {
-          kept.add(new Polyline(piece, line.color, line.opacity, line.width, line.dashArray));
+          Polyline clipped =
+              new Polyline(piece, line.color, line.opacity, line.width, line.dashArray);
+          clipped.tooltip = line.tooltip;
+          kept.add(clipped);
         }
       } else if (r instanceof Dot) {
         if (inside(((Dot) r).point, planes)) {
@@ -1714,8 +1724,29 @@ public class SVGGraphics3D {
     // rather than having its contents merged in: it keeps its own coordinates that way, and the
     // interactive output can lay the very same picture over its canvas.
     addOverlay(scene, "prolog", width, height, content);
-    for (Renderable r : renderables) {
-      content.add(r.toSVG());
+    // An SVG title is what a viewer shows on hover, and it has to be a child of the element it
+    // describes, so a labelled facet needs a group to hang it on. The facets are in drawing order
+    // by then, and the facets of one surface mostly stay together in it, so a run that shares a
+    // label shares its group: a labelled surface would otherwise repeat the same title once per
+    // facet. Only a run is merged, never a reordering, so what is drawn is unchanged.
+    for (int i = 0; i < renderables.size();) {
+      Renderable first = renderables.get(i);
+      String tooltip = first.tooltip;
+      if (tooltip == null || tooltip.isEmpty()) {
+        content.add(first.toSVG());
+        i++;
+        continue;
+      }
+      int end = i;
+      while (end < renderables.size() && tooltip.equals(renderables.get(end).tooltip)) {
+        end++;
+      }
+      j2html.tags.ContainerTag<?> group = tag("g").with(tag("title").withText(tooltip));
+      for (int k = i; k < end; k++) {
+        group.with(renderables.get(k).toSVG());
+      }
+      content.add(group);
+      i = end;
     }
     if (scene.has("plotLabel")) {
       content
@@ -1887,6 +1918,33 @@ public class SVGGraphics3D {
     private static final long serialVersionUID = 1L;
 
     transient Creases creases;
+
+    /**
+     * The tooltip of the element being collected, stamped onto everything it adds.
+     *
+     * <p>
+     * One element becomes many facets, and an SVG title has to be a child of the shape it
+     * describes, so the label is copied onto each rather than held once for the element. The facets
+     * cannot be gathered into one group here, because they are painted in depth order and interleave
+     * with every other element; grouping them at collection time would put this element in front of
+     * or behind things it should be woven into. The writer merges the runs that do end up next to
+     * one another after sorting, which is where the markup is kept small: a forty by forty labelled
+     * surface costs about thirty groups rather than sixteen hundred.
+     */
+    transient String tooltip;
+
+    /** Start a new element, whose facets carry its label. */
+    void beginElement(String elementTooltip) {
+      this.tooltip = elementTooltip;
+    }
+
+    @Override
+    public boolean add(Renderable renderable) {
+      if (tooltip != null) {
+        renderable.tooltip = tooltip;
+      }
+      return super.add(renderable);
+    }
   }
 
   /**

@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -24,6 +25,15 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class DensityPlot extends ListPlot {
 
+  /**
+   * The data is drawn as one field rather than point by point, so no wrapper is read here; the
+   * label goes over the whole picture instead.
+   */
+  @Override
+  protected boolean readsArgumentWrapper() {
+    return false;
+  }
+
   // "Sunset" color map control points (RGB)
   private static final double[][] COLOR_MAP = {{0.10, 0.05, 0.30}, // Dark Indigo
       {0.35, 0.10, 0.55}, // Purple
@@ -37,6 +47,15 @@ public class DensityPlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    // the shape tests below read the data through any display wrapper; `wrappedAST` keeps the
+    // wrapper, so the label can still be put over the finished picture
+    final IAST wrappedAST = ast;
+    if (ast.size() > 1) {
+      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
+      if (unwrapped != ast.arg1()) {
+        ast = ast.setAtCopy(1, unwrapped);
+      }
+    }
     if (argSize < 3) {
       return F.NIL;
     }
@@ -225,7 +244,7 @@ public class DensityPlot extends ListPlot {
     ContourPlot.appendBoundary(primitives, defined, xRange[0], yRange[0], stepX, stepY,
         boundaryStyle);
 
-    return createGraphicsFunction(primitives, graphicsOptions, ast);
+    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
   }
 
   /**
@@ -280,7 +299,7 @@ public class DensityPlot extends ListPlot {
   protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
       IAST astPlot) {
     graphicsOptions.addPadding();
-    IASTAppendable result = F.Graphics(primitives);
+    IASTAppendable result = F.Graphics(labelledContent(primitives, astPlot));
     result.appendArgs(graphicsOptions.getListOfRules());
     return result;
   }

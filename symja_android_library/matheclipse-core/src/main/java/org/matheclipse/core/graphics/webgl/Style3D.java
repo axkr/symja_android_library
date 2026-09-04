@@ -152,6 +152,15 @@ public final class Style3D implements Cloneable {
   /** Text colour, which {@code Style} may set independently of the surface colour. */
   public Color textColor = null;
 
+  /**
+   * The label of an enclosing {@code Tooltip}, or {@code null} when there is none.
+   *
+   * <p>
+   * Scopes like a directive, the same way the flat pipeline treats one: everything built inside
+   * the tooltip carries the label, so a shape made of several elements answers as one.
+   */
+  public String tooltip = null;
+
   @Override
   public Style3D clone() {
     try {

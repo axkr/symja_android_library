@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -183,9 +184,10 @@ public final class PrimitiveCollector {
       case ID.Tooltip: {
         if (ast.argSize() >= 1) {
           Style2D scoped = style.clone();
-          if (ast.argSize() >= 2) {
-            scoped.tooltip = tooltipLabel(ast.arg2());
-          }
+          // Tooltip(expr) shows the expression itself, which is what makes wrapping a table of
+          // bare values worth doing at all
+          scoped.tooltip =
+              PlotWrapper.tooltipLabel(ast.argSize() >= 2 ? ast.arg2() : ast.arg1());
           collect(ast.arg1(), scoped);
         }
         break;
@@ -1646,15 +1648,6 @@ public final class PrimitiveCollector {
 
   static String unquote(String s) {
     return s.replace("\"", "");
-  }
-
-  /** The text a {@code Tooltip} label shows, or {@code null} when it has nothing to say. */
-  private static String tooltipLabel(IExpr label) {
-    if (label == null || !label.isPresent() || label.isNone()) {
-      return null;
-    }
-    String text = unquote(label.toString());
-    return text.isEmpty() ? null : text;
   }
 
   private static String fmtDash(double[] values) {

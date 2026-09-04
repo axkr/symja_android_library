@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -84,6 +85,12 @@ public class ListStepPlot extends ListPlot {
     if (dataList.isAssociation()) {
       dataList = ((IAssociation) dataList).matrixOrList();
     }
+    // a wrapper around the whole argument is taken off here and put back on the finished
+    // primitives, so the shape tests below see the data and not the decoration
+    final PlotWrapper outerWrapper = PlotWrapper.of(dataList);
+    if (outerWrapper.datum.isList()) {
+      dataList = (IAST) outerWrapper.datum;
+    }
 
     IASTAppendable primitives = F.ListAlloc();
 
@@ -102,7 +109,8 @@ public class ListStepPlot extends ListPlot {
     boolean generated = false;
     if (isMultiDataset) {
       for (int i = 1; i < dataList.size(); i++) {
-        IExpr subData = dataList.get(i);
+        PlotWrapper datasetWrapper = PlotWrapper.of(dataList.get(i));
+        IExpr subData = datasetWrapper.datum;
         if (subData.isList()) {
           IExpr style = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(), F.NIL,
               graphicsOptions.curveThickness());
@@ -111,8 +119,15 @@ public class ListStepPlot extends ListPlot {
           if (userStyle.isPresent())
             style = F.Directive(style, userStyle);
 
+          int before = primitives.size();
           generated = generateStepPrimitivesSub(primitives, (IAST) subData, stepType, joined, style,
               graphicsOptions, engine);
+          if (datasetWrapper.hasTooltip()) {
+            // one label over the whole curve, put on the primitives this dataset produced
+            for (int k = before; k < primitives.size(); k++) {
+              primitives.set(k, datasetWrapper.wrapTooltip(primitives.get(k)));
+            }
+          }
         }
       }
     } else {
@@ -126,6 +141,11 @@ public class ListStepPlot extends ListPlot {
           style, graphicsOptions, engine, extent, stepMarkers);
     }
 
+    if (generated && outerWrapper.hasTooltip()) {
+      for (int k = 1; k < primitives.size(); k++) {
+        primitives.set(k, outerWrapper.wrapTooltip(primitives.get(k)));
+      }
+    }
     if (!generated) {
       return F.NIL;
     }
@@ -148,26 +168,32 @@ public class ListStepPlot extends ListPlot {
 
     // Points: {x, y}. y can be NaN.
     List<double[]> points = new ArrayList<>();
+    // parallel to points: the label each carries, or NIL
+    List<IExpr> pointTooltips = new ArrayList<>();
 
     // Check for explicit coordinates vs implicit
     // We must handle Missing/None correctly.
     boolean hasCoordinates = false;
-    // Heuristic: Check first non-missing element
+    // Heuristic: Check first non-missing element. It is read through its wrapper, because a
+    // wrapped first point would otherwise make the whole dataset look like a list of bare heights.
     for (IExpr e : data) {
       if (e != S.Missing && !e.isNone()) {
-        if (e.isList2())
+        if (PlotWrapper.strip(e).isList2())
           hasCoordinates = true;
         break;
       }
     }
 
     if (hasCoordinates) {
-      for (IExpr e : data) {
+      for (IExpr wrapped : data) {
+        PlotWrapper wrapper = PlotWrapper.of(wrapped);
+        IExpr e = wrapper.datum;
         if (e.isList2()) {
           try {
             double x = ((IAST) e).arg1().evalDouble();
             double y = ((IAST) e).arg2().evalDouble();
             points.add(new double[] {x, y});
+            pointTooltips.add(wrapper.tooltip);
           } catch (RuntimeException rex) {
             Errors.printMessage(S.ListStepPlot, rex);
             return false;
@@ -177,7 +203,8 @@ public class ListStepPlot extends ListPlot {
     } else {
       // Implicit X (Index)
       for (int i = 1; i < data.size(); i++) {
-        IExpr e = data.get(i);
+        PlotWrapper wrapper = PlotWrapper.of(data.get(i));
+        IExpr e = wrapper.datum;
         double val = Double.NaN;
         if (e != S.Missing && !e.isNone()) {
           if (e instanceof INumber)
@@ -186,6 +213,7 @@ public class ListStepPlot extends ListPlot {
             val = e.evalfNaN();
         }
         points.add(new double[] {i, val});
+        pointTooltips.add(wrapper.tooltip);
       }
     }
 
@@ -324,6 +352,17 @@ public class ListStepPlot extends ListPlot {
     // Flush any remaining line
     if (currentLine.size() > 1) {
       appendStepCurve(group, currentLine, opts);
+    }
+
+    // A tooltipped point gets an invisible mark to hover at the corner its step turns on. The
+    // step curve itself is one primitive for the whole dataset, so a per point label cannot be
+    // carried by the drawn geometry.
+    for (int i = 0; i < pointTooltips.size() && i < n; i++) {
+      IExpr label = pointTooltips.get(i);
+      if (label != null && label.isPresent() && !Double.isNaN(points.get(i)[1])) {
+        appendHitTargetFor(group, opts, label,
+            F.List(fx.apply(F.num(points.get(i)[0])), fy.apply(F.num(points.get(i)[1]))));
+      }
     }
 
     // Handle "Left" Pre-Step (Initial interval ending at first point)

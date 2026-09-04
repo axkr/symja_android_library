@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -28,6 +29,15 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
+    // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
+    // primitives, reading it from the original call
+    if (ast.size() > 1) {
+      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
+      if (unwrapped != ast.arg1()) {
+        ast = ast.setAtCopy(1, unwrapped);
+      }
+    }
     if (argSize < 1 || !ast.arg1().isList()) {
       return F.NIL;
     }
@@ -40,10 +50,10 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
 
     boolean isMultiDataset = false;
     boolean isHeightMap = false;
-    IExpr first = listData.arg1();
+    IExpr first = PlotWrapper.strip(listData.arg1());
     if (first.isList()) {
       IAST firstList = (IAST) first;
-      if (firstList.isList3() && !firstList.arg1().isList()) {
+      if (firstList.isList3() && !PlotWrapper.strip(firstList.arg1()).isList()) {
         // {{x,y,z}, ...} - one set of explicit coordinates
         isMultiDataset = false;
       } else if (!firstList.isEmpty() && firstList.arg1().isList()) {
@@ -67,17 +77,28 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     // The points are gathered before any of them is registered: a colour function is scaled over
     // the extent the data reaches, and that is not known until the last dataset has been read.
     List<List<double[]>> perDataset = new ArrayList<>();
+    // parallel to perDataset: the label of each point, or NIL. A point label cannot ride on the
+    // drawn geometry, because one Point primitive holds every point of a dataset.
+    List<List<IExpr>> perDatasetLabels = new ArrayList<>();
+    IExpr[] datasetLabels = new IExpr[datasets.size()];
     for (int i = 1; i < datasets.size(); i++) {
       List<double[]> coordinates = new ArrayList<>();
-      if (datasets.get(i).isList()) {
-        IAST dataset = (IAST) datasets.get(i);
+      List<IExpr> labels = new ArrayList<>();
+      PlotWrapper datasetWrapper = PlotWrapper.of(datasets.get(i));
+      datasetLabels[i] = datasetWrapper.tooltip;
+      if (datasetWrapper.datum.isList()) {
+        IAST dataset = (IAST) datasetWrapper.datum;
         if (isHeightMap) {
           collectHeightMap(dataset, dataRange, coordinates, region);
         } else {
-          collectCoordinates(dataset, coordinates, region);
+          collectCoordinates(dataset, coordinates, labels, region);
         }
       }
+      while (labels.size() < coordinates.size()) {
+        labels.add(F.NIL);
+      }
       perDataset.add(coordinates);
+      perDatasetLabels.add(labels);
     }
     double[] box = extentOf(perDataset);
     PlotColorFunction pointColors = Plot3DTools
@@ -91,17 +112,38 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       if (coordinates.isEmpty()) {
         continue;
       }
+      List<IExpr> labels = perDatasetLabels.get(i);
       IASTAppendable indices = F.ListAlloc(coordinates.size());
-      for (double[] point : coordinates) {
+      // a labelled point is drawn by itself so that the label has a primitive of its own to sit
+      // on; the rest stay in the one batched Point they were always in
+      IASTAppendable labelled = F.ListAlloc(4);
+      for (int k = 0; k < coordinates.size(); k++) {
+        double[] point = coordinates.get(k);
         IExpr color = pointColors == null ? null : pointColors.color(point[0], point[1], point[2]);
-        indices.append(F.ZZ(builder.addVertex(point[0], point[1], point[2], null, color)));
+        IExpr index = F.ZZ(builder.addVertex(point[0], point[1], point[2], null, color));
+        IExpr label = k < labels.size() ? labels.get(k) : F.NIL;
+        if (label.isPresent()) {
+          labelled.append(F.binaryAST2(S.Tooltip, F.Point(F.List(index)), label));
+        } else {
+          indices.append(index);
+        }
       }
       IExpr style = Plot3DTools.curveStyle(i, plotStyle);
       if (pointColors == null) {
         // a ColorFunction colours each point itself, and outranks PlotStyle where it does
         builder.addPrimitive(style);
       }
-      builder.addPrimitive(F.Point(indices));
+      IExpr batched = F.Point(indices);
+      IExpr datasetLabel = datasetLabels[i + 1];
+      if (indices.argSize() > 0) {
+        builder.addPrimitive(
+            datasetLabel != null && datasetLabel.isPresent()
+                ? F.binaryAST2(S.Tooltip, batched, datasetLabel)
+                : batched);
+      }
+      for (int k = 1; k < labelled.size(); k++) {
+        builder.addPrimitive(labelled.get(k));
+      }
       addFilling(builder, coordinates, filling, fillingStyle, style);
       any = true;
     }
@@ -190,9 +232,12 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private static void collectCoordinates(IAST dataset, List<double[]> coordinates,
-      RegionFunctionFilter region) {
+      List<IExpr> labels, RegionFunctionFilter region) {
     for (int k = 1; k < dataset.size(); k++) {
-      IExpr point = dataset.get(k);
+      // a display wrapper says how the point is shown, not where it is; one left on used to make
+      // the point vanish from the plot with nothing said
+      PlotWrapper wrapper = PlotWrapper.of(dataset.get(k));
+      IExpr point = wrapper.datum;
       if (!point.isList3()) {
         continue;
       }
@@ -203,6 +248,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)
           && (region == null || region.accepts(x, y, z))) {
         coordinates.add(new double[] {x, y, z});
+        labels.add(wrapper.tooltip);
       }
     }
   }

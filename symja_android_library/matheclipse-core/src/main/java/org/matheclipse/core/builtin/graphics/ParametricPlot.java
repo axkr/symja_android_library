@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -309,11 +310,14 @@ public class ParametricPlot extends Plot {
     // the parameter is scaled over the range its iterator declares, like every other argument
     graphicsOptions.setColorRange(3, tMinD, tMaxD);
 
+    // a wrapper is taken off before the {fx, fy} shape is read, since Tooltip({Cos(t), Sin(t)})
+    // is still one curve and not a collection of two
+    final PlotWrapper outer = PlotWrapper.of(functionOrListOfFunctions);
     IAST curveList;
-    if (functionOrListOfFunctions.isList()) {
-      IAST list = (IAST) functionOrListOfFunctions;
-      if (list.size() > 1 && !list.arg1().isList()) {
-        curveList = F.List(list);
+    if (outer.datum.isList()) {
+      IAST list = (IAST) outer.datum;
+      if (list.size() > 1 && !PlotWrapper.strip(list.arg1()).isList()) {
+        curveList = F.List(outer.datum);
       } else {
         curveList = list;
       }
@@ -324,7 +328,10 @@ public class ParametricPlot extends Plot {
     final IASTAppendable listOfLines = F.ListAlloc(curveList.size());
     final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
 
-    for (IExpr curveSpec : curveList) {
+    for (IExpr wrappedCurve : curveList) {
+      PlotWrapper each = PlotWrapper.of(wrappedCurve);
+      IExpr curveSpec = each.datum;
+      IExpr curveTooltip = outer.tooltipOf(each);
       if (!curveSpec.isList() || ((IAST) curveSpec).size() < 3)
         continue;
       // quantity valued components are plotted by their magnitudes, one unit per axis
@@ -371,7 +378,8 @@ public class ParametricPlot extends Plot {
         segments.append(linePoints);
       }
       if (segments.argSize() > 0) {
-        listOfLines.append(segments);
+        listOfLines.append(
+            curveTooltip.isPresent() ? F.binaryAST2(S.Tooltip, segments, curveTooltip) : segments);
       }
     }
 

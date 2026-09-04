@@ -125,21 +125,37 @@ public final class SvgRenderer2D {
   // -------------------------------------------------------------- dispatch
 
   public void draw(List<Prim2D> primitives, ContainerTag<?> parent) {
-    for (Prim2D p : primitives) {
-      try {
-        String tooltip = p.style.tooltip;
-        if (tooltip == null || tooltip.isEmpty()) {
-          p.render(this, parent);
-        } else {
-          // an SVG <title> is what a viewer shows on hover, and it has to be a child of the
-          // element it describes - so the primitive gets a group of its own to hang it on
-          ContainerTag<?> group = tag("g").with(tag("title").withText(tooltip));
-          p.render(this, group);
-          parent.with(group);
+    int i = 0;
+    while (i < primitives.size()) {
+      String tooltip = primitives.get(i).style.tooltip;
+      if (tooltip == null || tooltip.isEmpty()) {
+        try {
+          primitives.get(i).render(this, parent);
+        } catch (RuntimeException rex) {
+          // one primitive failing must not cost the rest of the picture
         }
-      } catch (RuntimeException rex) {
-        // one primitive failing must not cost the rest of the picture
+        i++;
+        continue;
       }
+      // An SVG <title> is what a viewer shows on hover, and it has to be a child of the element it
+      // describes - so the primitives get a group to hang it on. A Tooltip written around a list
+      // scopes over everything that list drew, and those primitives are collected next to one
+      // another, so the whole run shares one group: a contour plot labelled as a whole would
+      // otherwise repeat the same title over every one of its thousands of polygons.
+      int end = i;
+      while (end < primitives.size() && tooltip.equals(primitives.get(end).style.tooltip)) {
+        end++;
+      }
+      ContainerTag<?> group = tag("g").with(tag("title").withText(tooltip));
+      for (int k = i; k < end; k++) {
+        try {
+          primitives.get(k).render(this, group);
+        } catch (RuntimeException rex) {
+          // one primitive failing must not cost the rest of the picture
+        }
+      }
+      parent.with(group);
+      i = end;
     }
   }
 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -133,7 +134,18 @@ public final class PrimitiveCollector3D {
         }
         return;
       }
-      case ID.Tooltip:
+      case ID.Tooltip: {
+        if (ast.argSize() >= 1) {
+          // the style is cloned rather than shared: a tooltip covers what it wraps and nothing
+          // beside it, and passing the style through would leak the label onto later siblings
+          Style3D scoped = style.clone();
+          // Tooltip(expr) shows the expression itself
+          scoped.tooltip =
+              PlotWrapper.tooltipLabel(ast.argSize() >= 2 ? ast.arg2() : ast.arg1());
+          process(ast.arg1(), scoped, context, transform);
+        }
+        return;
+      }
       case ID.Annotation:
       case ID.Labeled:
       case ID.StatusArea:
@@ -860,6 +872,10 @@ public final class PrimitiveCollector3D {
   private ObjectNode newElement(String type, Style3D style, Transform3D transform) {
     ObjectNode node = elements.addObject();
     node.put("type", type);
+    if (style.tooltip != null && !style.tooltip.isEmpty()) {
+      // one key here gives every element type a tooltip, the flat renderer included
+      node.put("tooltip", style.tooltip);
+    }
     if (!transform.isIdentity()) {
       ArrayNode matrix = node.putArray("matrix");
       for (double v : transform.columnMajor()) {

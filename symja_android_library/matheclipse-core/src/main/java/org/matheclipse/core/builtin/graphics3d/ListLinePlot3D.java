@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -23,6 +24,13 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST) {
+    // the shape tests below read the data through any display wrapper, so a labelled dataset is
+    // still recognised as one; `ast` keeps the wrapper, which is where Plot3DTools.graphics3D
+    // reads the label from when it labels the finished primitives
+    final IAST plotAST =
+        ast.size() > 1 && PlotWrapper.isWrapper(ast.arg1())
+            ? ast.setAtCopy(1, PlotWrapper.strip(ast.arg1()))
+            : ast;
     if (ast.argSize() > 0) {
 
       // Plot3DTools.curveStyle is what the rest of this package styles a line with: it cycles
@@ -35,11 +43,11 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
 
       // case 1: single line heights
       // e.g.: ListLinePlot3D[{1, 2, 3, 4, 5}]
-      if (ast.arg1().isASTSizeGE(S.List, 2)) {
+      if (plotAST.arg1().isASTSizeGE(S.List, 2)) {
         // only a numeric first height identifies this case; otherwise fall through
-        if (!Double.isNaN(((IAST) ast.arg1()).arg1().evalfNaN())) {
+        if (!Double.isNaN(((IAST) plotAST.arg1()).arg1().evalfNaN())) {
           IExpr heightLinePlot =
-              colorLines(heightLinePlot(F.list(ast.arg1()), plotStyle, dataRange, engine, region),
+              colorLines(heightLinePlot(F.list(plotAST.arg1()), plotStyle, dataRange, engine, region),
                   options, engine);
           if (heightLinePlot.isPresent()) {
             return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
@@ -52,13 +60,13 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
       }
 
       // try if arg1 is a matrix
-      int[] dimension = ast.arg1().isMatrix(false);
+      int[] dimension = plotAST.arg1().isMatrix(false);
 
       // case 2: single line coordinates
       // e.g.: ListLinePlot3D[{{x_1, y_1, z_1}, {x_2, y_2, z_2}}]
       if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
         return Plot3DTools.graphics3D(
-            colorLines(coordinateLinePlot(F.list(ast.arg1()), plotStyle, engine, region),
+            colorLines(coordinateLinePlot(F.list(plotAST.arg1()), plotStyle, engine, region),
                 options, engine),
             ast, 1,
             new IExpr[] {F.Rule(S.Axes, S.True),
@@ -68,11 +76,11 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
 
       // case 3: multiple line heights
       // e.g.: ListLinePlot3D[{{1, 2, 3, 4}, {-1, -2, -3, -4}}]
-      if (ast.arg1().isASTSizeGE(S.List, 2) && ((IAST) ast.arg1()).arg1().isASTSizeGE(S.List, 2)) {
+      if (plotAST.arg1().isASTSizeGE(S.List, 2) && ((IAST) plotAST.arg1()).arg1().isASTSizeGE(S.List, 2)) {
         // only a numeric first height identifies this case; otherwise fall through
-        if (!Double.isNaN(((IAST) ((IAST) ast.arg1()).arg1()).arg1().evalfNaN())) {
+        if (!Double.isNaN(((IAST) ((IAST) plotAST.arg1()).arg1()).arg1().evalfNaN())) {
           IExpr heightLinePlot =
-              colorLines(heightLinePlot((IAST) ast.arg1(), plotStyle, dataRange, engine, region),
+              colorLines(heightLinePlot((IAST) plotAST.arg1(), plotStyle, dataRange, engine, region),
                   options, engine);
           if (heightLinePlot.isPresent()) {
             return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
@@ -83,13 +91,13 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      if (ast.arg1().isASTSizeGE(S.List, 2)) {
-        dimension = ((IAST) ast.arg1()).arg1().isMatrix(false);
+      if (plotAST.arg1().isASTSizeGE(S.List, 2)) {
+        dimension = ((IAST) plotAST.arg1()).arg1().isMatrix(false);
         // case 4: multiple line coordinates
         // e.g.: ListLinePlot3D[{{coord1, coord2}, {coord3, coord4}}]
         if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
           return Plot3DTools.graphics3D(
-              colorLines(coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine, region),
+              colorLines(coordinateLinePlot((IAST) plotAST.arg1(), plotStyle, engine, region),
                 options, engine),
             ast, 1,
               new IExpr[] {F.Rule(S.Axes, S.True),
@@ -100,7 +108,7 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     // `1` is not a valid dataset or a list of datasets.
-    return Errors.printMessage(ast.topHead(), "ldata", F.list(ast.arg1()), engine);
+    return Errors.printMessage(ast.topHead(), "ldata", F.list(plotAST.arg1()), engine);
   }
 
   /**
