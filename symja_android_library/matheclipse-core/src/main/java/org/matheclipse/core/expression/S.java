@@ -2706,6 +2706,15 @@ public class S {
   public final static IBuiltInSymbol Cases = S.initFinalSymbol("Cases", ID.Cases);
 
   /**
+   * Casoratian(x) - TODO describe `Casoratian`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Casoratian.md">Casoratian
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Casoratian = S.initFinalSymbol("Casoratian", ID.Casoratian);
+
+  /**
    * Catalan - Catalan's constant
    * 
    * @see <a href=
@@ -8826,6 +8835,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Green = S.initFinalSymbol("Green", ID.Green);
+
+  /**
+   * GreenFunction(x) - TODO describe `GreenFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreenFunction.md">GreenFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GreenFunction =
+      S.initFinalSymbol("GreenFunction", ID.GreenFunction);
 
   /**
    * Grid(x) - TODO describe `Grid`.
@@ -22727,6 +22746,15 @@ public class S {
   public final static IBuiltInSymbol Write = S.initFinalSymbol("Write", ID.Write);
 
   public final static IBuiltInSymbol WriteString = S.initFinalSymbol("WriteString", ID.WriteString);
+
+  /**
+   * Wronskian(x) - TODO describe `Wronskian`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Wronskian.md">Wronskian
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Wronskian = S.initFinalSymbol("Wronskian", ID.Wronskian);
 
   public final static IBuiltInSymbol Xnor = S.initFinalSymbol("Xnor", ID.Xnor);
 
