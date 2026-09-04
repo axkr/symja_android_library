@@ -78,6 +78,7 @@ public final class FunctionDefinitions {
       S.DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
       S.DSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.DSolveValue());
       S.Casoratian.setEvaluator(new org.matheclipse.core.reflection.system.Casoratian());
+      S.GreenFunction.setEvaluator(new org.matheclipse.core.reflection.system.GreenFunction());
       S.Wronskian.setEvaluator(new org.matheclipse.core.reflection.system.Wronskian());
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());

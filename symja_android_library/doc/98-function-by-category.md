@@ -409,6 +409,7 @@
 
 * [DSolve](functions/DSolve.md)
 * [Casoratian](functions/Casoratian.md)
+* [GreenFunction](functions/GreenFunction.md)
 * [Wronskian](functions/Wronskian.md)
 * [Eliminate](functions/Eliminate.md)
 * [GroebnerBasis](functions/GroebnerBasis.md)

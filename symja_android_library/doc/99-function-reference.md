@@ -563,6 +563,7 @@ Functions in alphabetical order:
 * [GreaterEqualThan](functions/GreaterEqualThan.md)
 * [GreaterThan](functions/GreaterThan.md)
 * [Green](functions/Green.md)
+* &#x2611; [GreenFunction](functions/GreenFunction.md)
 * &#x2611; [Grid](functions/Grid.md)
 * &#x2611; [GridGraph](functions/GridGraph.md)
 * &#x2705; [GroebnerBasis](functions/GroebnerBasis.md)
