@@ -165,25 +165,8 @@ public class Casoratian extends AbstractFunctionEvaluator {
     if (m < 1 || m > MAX_ORDER) {
       return F.NIL;
     }
-    IExpr[] coefficients = new IExpr[m + 1];
-    IExpr rest = residual;
-    for (int j = m; j >= 0; j--) {
-      IExpr term = F.unaryAST1(head, engine.evaluate(F.Plus(variable, F.ZZ(j))));
-      IExpr coefficient = engine.evaluate(F.Coefficient(rest, term));
-      coefficients[j] = coefficient;
-      rest = engine.evaluate(F.ExpandAll(F.Subtract(rest, F.Times(coefficient, term))));
-    }
-    // Everything mentioning the unknown has to have been read into a coefficient, or the equation
-    // is not linear and has no basis of solutions.
-    if (!rest.isZero() || !rest.isFree(head, true)) {
-      return F.NIL;
-    }
-    for (int j = 0; j <= m; j++) {
-      if (!coefficients[j].isFree(head, true)) {
-        return F.NIL;
-      }
-    }
-    if (coefficients[m].isZero() || coefficients[0].isZero()) {
+    IExpr[] coefficients = shiftCoefficients(residual, head, variable, m, engine);
+    if (coefficients == null || coefficients[m].isZero() || coefficients[0].isZero()) {
       return F.NIL;
     }
     IExpr ratio = engine.evaluate(
@@ -276,8 +259,40 @@ public class Casoratian extends AbstractFunctionEvaluator {
     return product.isFree(S.Product) && product.isFree(index, true) ? product : F.NIL;
   }
 
+  /**
+   * The coefficients <code>a[0]</code> ... <code>a[m]</code> of a difference equation which is
+   * linear in the unknown.
+   *
+   * <p>
+   * As for {@link LinearODEForm}, every term which mentions the unknown has to end up in a
+   * coefficient; what is left over must not contain it, or the equation is not linear and has no
+   * basis of solutions.
+   *
+   * @return <code>null</code> if the equation is not linear in the unknown
+   */
+  static IExpr[] shiftCoefficients(IExpr residual, IExpr head, IExpr variable, int m,
+      EvalEngine engine) {
+    IExpr[] coefficients = new IExpr[m + 1];
+    IExpr rest = engine.evaluate(F.ExpandAll(residual));
+    for (int j = m; j >= 0; j--) {
+      IExpr term = F.unaryAST1(head, engine.evaluate(F.Plus(variable, F.ZZ(j))));
+      IExpr coefficient = engine.evaluate(F.Coefficient(rest, term));
+      coefficients[j] = coefficient;
+      rest = engine.evaluate(F.ExpandAll(F.Subtract(rest, F.Times(coefficient, term))));
+    }
+    if (!rest.isZero() || !rest.isFree(head, true)) {
+      return null;
+    }
+    for (int j = 0; j <= m; j++) {
+      if (!coefficients[j].isFree(head, true)) {
+        return null;
+      }
+    }
+    return coefficients;
+  }
+
   /** The highest shift in which the unknown occurs, or <code>-1</code> if it does not occur. */
-  private static int highestShift(IExpr expr, IExpr head, IExpr variable, EvalEngine engine) {
+  static int highestShift(IExpr expr, IExpr head, IExpr variable, EvalEngine engine) {
     if (!expr.isAST()) {
       return -1;
     }

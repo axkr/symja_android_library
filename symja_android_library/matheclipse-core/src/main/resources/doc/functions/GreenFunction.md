@@ -13,9 +13,9 @@ any right hand side `f` and the same conditions is then
 
 Asking about `y` rather than `y(x)` gives the function itself instead of an expression.
 
-Operators of first and second order are supported, with the conditions either at both ends of the
-interval, which is a boundary value problem, or all at the near end, which is an initial value
-problem and gives a causal Green's function.
+Operators of first and second order are supported, differential and difference alike, with the
+conditions either at both ends of the range, which is a boundary value problem, or at the start of
+it, which is an initial value problem and gives a causal Green's function.
 
 See:  
 * [Wikipedia - Green's function](https://en.wikipedia.org/wiki/Green%27s_function)
@@ -80,8 +80,36 @@ boundary value problem is not unique and it has no Green's function.
 GreenFunction({u(x)+u''(x),u(0)==0,u(Pi)==0},u(x),{x,0,Pi},s)
 ```
 
+A linear difference operator, which shifts the argument instead of differentiating it, is solved
+the same way with the [Casoratian](Casoratian.md) in place of the Wronskian. The two pieces of the
+answer meet at `m+1`, so it is written with `UnitStep`, the step function which has a definite
+value at zero, rather than with `HeavisideTheta`.
+
+```
+>> GreenFunction({y(n+2) - 2*y(n+1) + y(n), y(0) == 0, y(N) == 0}, y(n), {n, 0, N}, m)
+(n*(1+m-N)*UnitStep(1+m-n))/N+((1+m)*(n-N)*UnitStep(-2-m+n))/N
+```
+
+Applying the operator to it gives one at the source and nothing anywhere else.
+
+```
+>> g = GreenFunction({y(n+2) - 2*y(n+1) + y(n), y(0) == 0, y(5) == 0}, y(n), {n, 0, 5}, m) /. m -> 2; Table((g /. n -> k+2) - 2*(g /. n -> k+1) + (g /. n -> k), {k, 0, 3})
+{0,0,1,0}
+```
+
+The initial conditions of a difference equation occupy the first places of the range rather than
+one point, and give a causal Green's function as before.
+
+```
+>> GreenFunction({y(n+2) - 2*y(n+1) + y(n), y(0) == 0, y(1) == 0}, y(n), {n, 0, Infinity}, m)
+(-1-m+n)*UnitStep(-2-m+n)
+
+>> GreenFunction({y(n+1) - 2*y(n), y(0) == 0}, y(n), {n, 0, Infinity}, m)
+UnitStep(-1-m+n)/2^(1+m-n)
+```
+
 ### Related terms
-[DSolve](DSolve.md), [DiracDelta](DiracDelta.md), [HeavisideTheta](HeavisideTheta.md), [Wronskian](Wronskian.md)
+[Casoratian](Casoratian.md), [DSolve](DSolve.md), [DiracDelta](DiracDelta.md), [RSolve](RSolve.md), [Wronskian](Wronskian.md)
 
 ### Implementation status
 

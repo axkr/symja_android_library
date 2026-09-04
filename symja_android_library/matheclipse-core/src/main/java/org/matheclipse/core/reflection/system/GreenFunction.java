@@ -106,6 +106,14 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     if (operator.isEqual()) {
       operator = S.Subtract.of(engine, operator.first(), operator.second());
     }
+    // A difference operator shifts the argument instead of differentiating it, and is the other
+    // kind of problem this solves.
+    int shift = Casoratian.highestShift(operator, head, xVar, engine);
+    if (shift >= 1) {
+      return discreteGreenFunction(problem, operator, head, xVar, xMin, xMax, source, shift,
+          engine);
+    }
+
     LinearODEForm form = LinearODEForm.extract(operator, applied, xVar, engine);
     if (form == null || form.order < 1 || form.order > 2 || !form.g.isZero()) {
       // The operator has to be the homogeneous one, of first or second order.
@@ -179,7 +187,21 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     if (values.argSize() != 1) {
       return null;
     }
-    IExpr general = values.arg1();
+    return splitConstants(values.arg1(), order, engine);
+  }
+
+  /**
+   * The functions a general solution multiplies its arbitrary constants by, which are a basis of
+   * the solutions of the homogeneous equation.
+   *
+   * <p>
+   * The constants are read off the solution rather than assumed to be <code>C(1)</code> and
+   * <code>C(2)</code>, because the counter they are taken from is not reset for every call.
+   *
+   * @return <code>null</code> unless the general solution is exactly a combination of as many
+   *         independent functions as the order, with nothing left over
+   */
+  private static IExpr[] splitConstants(IExpr general, int order, EvalEngine engine) {
     IASTAppendable constants = F.ListAlloc();
     DSolveUtil.extractCVars(general, constants);
     if (constants.argSize() != order) {
@@ -192,15 +214,11 @@ public class GreenFunction extends AbstractFunctionEvaluator {
       rest = engine.evaluate(
           F.ExpandAll(F.Subtract(rest, F.Times(basis[i], constants.get(i + 1)))));
     }
-    // The general solution has to be exactly the combination of the two, with nothing left over.
     if (!rest.isZero()) {
       return null;
     }
     for (int i = 0; i < order; i++) {
-      if (basis[i].isZero()) {
-        return null;
-      }
-      if (!basis[i].isFree(S.C, true)) {
+      if (basis[i].isZero() || !basis[i].isFree(S.C, true)) {
         return null;
       }
     }
@@ -341,5 +359,129 @@ public class GreenFunction extends AbstractFunctionEvaluator {
   @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
+  }
+  /**
+   * The Green's function of a linear difference operator, the discrete counterpart of the one
+   * above.
+   *
+   * <p>
+   * <code>G(n,m)</code> answers a unit impulse at <code>m</code>, so it solves
+   * <code>L(G)(n) == KroneckerDelta(n,m)</code> and meets the conditions. Writing the equation at
+   * <code>n == m</code> and at <code>n == m+1</code> for the two pieces gives two equations for
+   * the two coefficients, whose determinant is the {@link Casoratian} one step along, so
+   * <code>G(n,m) == y1(n)*y2(m+1)/(a(m)*C(m+1))</code> below the impulse and
+   * <code>y1(m+1)*y2(n)/(a(m)*C(m+1))</code> above it. The Casoratian is to this what the
+   * Wronskian is to the continuous case.
+   *
+   * <p>
+   * The two pieces meet at <code>n == m+1</code>, where both expressions agree, so the answer is
+   * written with {@link org.matheclipse.core.expression.S#UnitStep}, which is the step function
+   * with a definite value at zero, rather than with the
+   * {@link org.matheclipse.core.expression.S#HeavisideTheta} of the continuous case.
+   */
+  private static IExpr discreteGreenFunction(IAST problem, IExpr operator, IExpr head, IExpr xVar,
+      IExpr xMin, IExpr xMax, IExpr source, int order, EvalEngine engine) {
+    if (order > 2 || problem.argSize() != order + 1) {
+      return F.NIL;
+    }
+    IExpr[] coefficients =
+        Casoratian.shiftCoefficients(operator, head, xVar, order, engine);
+    if (coefficients == null || coefficients[order].isZero()) {
+      return F.NIL;
+    }
+    IExpr[] basis = discreteBasis(operator, head, xVar, order, engine);
+    if (basis == null) {
+      return F.NIL;
+    }
+    // Writing the equation at n == m makes the impulse land on the term at m + order, and the two
+    // pieces of the answer meet at m + 1, which is where the Casoratian is taken.
+    IExpr matchPoint = engine.evaluate(F.Plus(source, F.C1));
+    IExpr leading = engine.evaluate(F.subst(coefficients[order], xVar, source));
+
+    // Initial conditions for a difference equation occupy the first places of the range rather
+    // than one point, so a second order problem starts from y(nmin) and y(nmin+1).
+    int initial = 0;
+    for (int k = 0; k < order; k++) {
+      initial += countAt(problem, head, xVar, engine.evaluate(F.Plus(xMin, F.ZZ(k))));
+    }
+    int conditionsAtMax = countAt(problem, head, xVar, xMax);
+
+    if (initial == order && conditionsAtMax == 0 && homogeneous(problem, head, xVar, engine)) {
+      IExpr response = discreteResponse(basis, leading, xVar, matchPoint, engine);
+      // The response starts one place beyond the last term the impulse reaches.
+      return response.isNIL() //
+          ? F.NIL
+          : engine.evaluate(F.Times(response,
+              F.UnitStep(F.Subtract(xVar, F.Plus(source, F.ZZ(order))))));
+    }
+    if (order != 2 || countAt(problem, head, xVar, xMin) != 1 || conditionsAtMax != 1) {
+      return F.NIL;
+    }
+    IExpr atMin = matching(problem, head, xVar, xMin, engine);
+    IExpr atMax = matching(problem, head, xVar, xMax, engine);
+    if (atMin.isNIL() || atMax.isNIL() || atMin.equals(atMax)) {
+      return F.NIL;
+    }
+    IExpr y1 = meeting(atMin, basis, head, xVar, engine);
+    IExpr y2 = meeting(atMax, basis, head, xVar, engine);
+    if (y1.isNIL() || y2.isNIL()) {
+      return F.NIL;
+    }
+    IExpr casoratian = engine.evaluate(F.Simplify(
+        S.Casoratian.of(engine, F.List(y1, y2), xVar)));
+    if (casoratian.isZero() || !casoratian.isFree(S.Casoratian, true)) {
+      // Proportional solutions mean the homogeneous problem has a solution of its own.
+      return F.NIL;
+    }
+    IExpr denominator = engine.evaluate(
+        F.Times(leading, F.subst(casoratian, xVar, matchPoint)));
+    if (denominator.isZero()) {
+      return F.NIL;
+    }
+    IExpr below = engine.evaluate(F.Simplify(
+        F.Divide(F.Times(y1, F.subst(y2, xVar, matchPoint)), denominator)));
+    IExpr above = engine.evaluate(F.Simplify(
+        F.Divide(F.Times(F.subst(y1, xVar, matchPoint), y2), denominator)));
+    return engine.evaluate(F.Plus( //
+        F.Times(below, F.UnitStep(F.Subtract(matchPoint, xVar))),
+        F.Times(above, F.UnitStep(F.Subtract(xVar, F.Plus(matchPoint, F.C1))))));
+  }
+
+  /** The solutions of the homogeneous difference equation. */
+  private static IExpr[] discreteBasis(IExpr operator, IExpr head, IExpr xVar, int order,
+      EvalEngine engine) {
+    IExpr applied = F.unaryAST1(head, xVar);
+    IExpr solutions = engine.evaluate(F.RSolve(F.Equal(operator, F.C0), applied, xVar));
+    IAST values = DSolveUtil.extractSolveResults(solutions);
+    if (values.argSize() != 1) {
+      return null;
+    }
+    return splitConstants(values.arg1(), order, engine);
+  }
+
+  /**
+   * The solution of the homogeneous difference equation which is zero at the impulse and steps to
+   * <code>1/a(m)</code> one place further on.
+   */
+  private static IExpr discreteResponse(IExpr[] basis, IExpr leading, IExpr xVar, IExpr matchPoint,
+      EvalEngine engine) {
+    IASTAppendable fundamental = F.ListAlloc(basis.length);
+    for (IExpr element : basis) {
+      fundamental.append(element);
+    }
+    IExpr casoratian = engine.evaluate(F.Simplify(S.Casoratian.of(engine, fundamental, xVar)));
+    if (casoratian.isZero() || !casoratian.isFree(S.Casoratian, true)) {
+      return F.NIL;
+    }
+    IExpr denominator = engine.evaluate(
+        F.Times(leading, F.subst(casoratian, xVar, matchPoint)));
+    if (denominator.isZero()) {
+      return F.NIL;
+    }
+    IExpr numerator = basis.length == 1 //
+        ? basis[0]
+        : F.Subtract(F.Times(F.subst(basis[0], xVar, matchPoint), basis[1]),
+            F.Times(F.subst(basis[1], xVar, matchPoint), basis[0]));
+    return engine.evaluate(F.Simplify(F.Divide(numerator, denominator)));
   }
 }

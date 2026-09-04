@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -933,15 +934,46 @@ public class RSolve extends AbstractFunctionEvaluator {
     }
 
     IAST roots = (IAST) rootsList;
-    Map<IExpr, Integer> rootMults = new HashMap<>();
+    // Solve reports every root once, so counting how often one appears records a repeated root as
+    // a simple one and loses the solutions n^m*root^n which belong to it: the general solution of
+    // y(n+2) - 2*y(n+1) + y(n) == 0 came back as C(1) instead of C(1) + n*C(2). The multiplicities
+    // are recovered by dividing the characteristic polynomial through instead. A LinkedHashMap
+    // keeps the order of the terms reproducible.
+    Map<IExpr, Integer> rootMults = new LinkedHashMap<>();
+    List<IExpr> distinct = new ArrayList<>();
     for (int i = 1; i <= roots.argSize(); i++) {
       IExpr sol = roots.get(i);
       if (sol.isList() && ((IAST) sol).argSize() > 0) {
         IExpr rule = ((IAST) sol).arg1();
-        if (rule.isRule()) {
-          IExpr val = rule.second();
-          rootMults.put(val, rootMults.getOrDefault(val, 0) + 1);
+        if (rule.isRule() && !distinct.contains(rule.second())) {
+          distinct.add(rule.second());
         }
+      }
+    }
+    int order = Collections.max(coeffs.keySet()) - minShift;
+    IExpr characteristic = engine.evaluate(poly);
+    IExpr remaining = characteristic;
+    int total = 0;
+    for (IExpr root : distinct) {
+      int multiplicity = 0;
+      IExpr divisor = engine.evaluate(F.Subtract(xDummy, root));
+      while (total < order) {
+        IExpr rest = engine.evaluate(F.PolynomialRemainder(remaining, divisor, xDummy));
+        if (!DSolveODE.isVanishing(rest, engine)) {
+          break;
+        }
+        remaining = engine.evaluate(F.PolynomialQuotient(remaining, divisor, xDummy));
+        multiplicity++;
+        total++;
+      }
+      rootMults.put(root, multiplicity);
+    }
+    if (total != order) {
+      // The division did not account for the whole polynomial, so fall back to one solution per
+      // root, which is what this did before.
+      rootMults.clear();
+      for (IExpr root : distinct) {
+        rootMults.put(root, 1);
       }
     }
 
