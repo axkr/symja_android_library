@@ -518,17 +518,12 @@ public class Pods {
 
     if ((formats & GRAPHICS) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
-        try {
-          String html = StringEscapeUtils.escapeHtml4(plainText);
-          html = "<iframe srcdoc=\"" + html
-              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
-          json.put(JSBuilder.JSXGRAPH_STR, html);
-        } catch (Exception ex) {
-          LOGGER.debug("JSON API GRAPHICS", ex);
-        }
-
-      } else {
-
+        // A finished SVG document, sized from the ImageSize option and already asking to scale
+        // with max-width: 100%; height: auto. It needs no library and no page around it, so it
+        // is delivered as it stands, under the html key: the fixed size iframe this used to be
+        // wrapped in overrode the size the picture had chosen, and a square frame cropped every
+        // grid that was not square.
+        json.put(JSBuilder.HTML_STR, plainText);
       }
     }
 
@@ -948,7 +943,7 @@ public class Pods {
               IExpr expr = inExpr;
               // outExpr = engine.evaluate(expr);
 
-              if (outExpr.isSameHeadSizeGE(S.Graphics, 2)) {
+              if (outExpr.isGraphicsObject()) {
                 numpods = addGraphicsPod(numpods, inExpr, outExpr, inExpr, "Function", "Plotter",
                     podsArray, engine);
               } else if (WebGLGraphics3D.isRenderable(outExpr)) {
@@ -1179,15 +1174,18 @@ public class Pods {
       String title, String scanner, ArrayNode podsArray, EvalEngine engine) {
     int form = GRAPHICS;
     String html = null;
-    if (podOut.isSameHeadSizeGE(S.Graphics, 2)) {
+    if (podOut.isGraphicsObject()) {
       StringBuilder buf = new StringBuilder();
-      if (GraphicsUtil.renderGraphics2D(buf, (IAST) podOut, engine)) {
-        try {
-          String graphicsStr = buf.toString();
-          html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
-        } catch (Exception ex) {
-          LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
+      try {
+        // the same converter the web front end draws with, so a Graphics, a GraphicsRow, a
+        // GraphicsColumn, a GraphicsGrid, an Overlay and a plain list of graphics all render
+        // here. It returns a finished <svg> document that carries its own size, which is why
+        // nothing is built around it - see the GRAPHICS case of createJSONFormat.
+        if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) podOut, engine) && buf.length() > 0) {
+          html = buf.toString();
         }
+      } catch (RuntimeException rex) {
+        LOGGER.debug("GraphicsUtil.renderGraphics2DSVG() failed", rex);
       }
     } else if (podOut.isAST(S.JSFormData, 3)) {
       html = podOut.first().toString();

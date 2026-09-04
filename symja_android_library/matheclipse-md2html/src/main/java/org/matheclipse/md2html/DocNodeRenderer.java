@@ -103,7 +103,9 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
       IExpr expr = parser.parse(code);
       if (expr != null) {
         IExpr result = F.eval(expr);
-        if (result.isSameHeadSizeGE(S.Graphics, 2)) {
+        // every layout head draws a picture too, so a GraphicsGrid or an Overlay example renders
+        // as the picture it describes rather than as the text of its own source
+        if (result.isGraphicsObject() || result.isSameHeadSizeGE(S.Graphics, 2)) {
           StringBuilder buf = new StringBuilder();
           if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) result, true, EvalEngine.get())) {
             html.raw(buf.toString());

@@ -74,6 +74,8 @@ public final class OutputFunctions {
       S.Prefix.setEvaluator(new PrefixEvaluator());
       S.Postfix.setEvaluator(new PostfixEvaluator());
       S.RomanNumeral.setEvaluator(new RomanNumeral());
+      S.Grid.setEvaluator(new Grid());
+      S.Item.setEvaluator(new Item());
       S.Row.setEvaluator(new Row());
       S.TableForm.setEvaluator(new TableForm());
       S.TeXForm.setEvaluator(new TeXForm());
@@ -853,6 +855,94 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>Grid({{e11, e12, ...}, ...})</code> arranges expressions in a table.
+   *
+   * <p>
+   * A display wrapper: <code>evaluate()</code> returns {@link F#NIL} so the expression survives
+   * evaluation, and only the printed form changes. <code>OutputForm</code> deliberately keeps
+   * printing the call itself, because a grid of expressions has no faithful one line text form;
+   * the table is built by the MathML and TeX factories, which is what the web front end and
+   * <code>TeXForm</code> show.
+   *
+   * <p>
+   * Rows may be of different lengths, a cell may span with <code>SpanFromLeft</code>,
+   * <code>SpanFromAbove</code> or <code>SpanFromBoth</code>, and <code>Item(expr, opts)</code>
+   * gives one cell settings of its own.
+   */
+  private static class Grid extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the wrapper must survive evaluation - it is resolved by the output factories
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // {{rows}}, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      setOptions(newSymbol, //
+          F.List(F.Rule(S.Alignment, F.List(S.Center, S.Automatic)), //
+              F.Rule(S.AllowedDimensions, S.Automatic), //
+              F.Rule(S.Background, S.None), //
+              F.Rule(S.BaselinePosition, S.Automatic), //
+              F.Rule(S.BaseStyle, F.CEmptyList), //
+              F.Rule(S.Dividers, F.CEmptyList), //
+              F.Rule(S.Frame, S.None), //
+              F.Rule(S.FrameStyle, S.Automatic), //
+              F.Rule(S.ItemSize, S.Automatic), //
+              F.Rule(S.ItemStyle, S.None), //
+              F.Rule(S.Spacings, S.Automatic)));
+    }
+  }
+
+  /**
+   * <code>Item(expr, opts)</code> gives one cell of a <code>Grid</code> settings of its own.
+   *
+   * <p>
+   * It means nothing on its own - Wolfram says as much - so it stays unevaluated and is read by
+   * whatever lays the cell out. Outside a construct that supports it, it simply prints as itself.
+   */
+  private static class Item extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // read by org.matheclipse.core.graphics.svg.LayoutSpec, which needs the wrapper intact
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      setOptions(newSymbol, //
+          F.List(F.Rule(S.Alignment, S.Automatic), //
+              F.Rule(S.Background, S.None), //
+              F.Rule(S.BaseStyle, F.CEmptyList), //
+              F.Rule(S.Frame, S.False), //
+              F.Rule(S.FrameStyle, S.Automatic), //
+              F.Rule(S.ItemSize, S.Automatic)));
     }
   }
 

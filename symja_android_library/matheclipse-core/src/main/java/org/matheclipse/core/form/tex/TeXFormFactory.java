@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.graphics.svg.LayoutSpec;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -27,6 +28,8 @@ import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.form.OperatorMarkup;
+import org.matheclipse.core.interfaces.IArraySymbol;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -552,6 +555,96 @@ public class TeXFormFactory {
         }
       }
       return true;
+    }
+  }
+
+  /**
+   * <code>Grid[{{e11, e12, ...}, ...}]</code> as a LaTeX array.
+   *
+   * <p>
+   * The column specification carries the alignment and the vertical rules, and a row that a
+   * divider sits above is preceded by <code>\hline</code>. A cell that spans columns becomes a
+   * <code>\multicolumn</code>, which is the only way an array can express one.
+   *
+   * <p>
+   * The options are read by {@link org.matheclipse.core.graphics.svg.LayoutSpec}, the parser the
+   * MathML factory and the picture layouts also use, so all three agree about what an option
+   * means.
+   */
+  private static final class Grid extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() < 2 || !f.arg1().isList()) {
+        return false;
+      }
+      LayoutSpec spec = LayoutSpec.forGrid(f, (IAST) f.arg1(), 2, LayoutSpec.Units.EMS);
+      buffer.append("\\begin{array}{");
+      for (int c = 0; c < spec.cols; c++) {
+        if (spec.colDividers[c] != null) {
+          buffer.append('|');
+        }
+        buffer.append(columnLetter(spec.colAlignH[c]));
+      }
+      if (spec.colDividers[spec.cols] != null) {
+        buffer.append('|');
+      }
+      buffer.append("}\n");
+      for (int r = 0; r < spec.rows; r++) {
+        if (spec.rowDividers[r] != null) {
+          buffer.append("\\hline\n");
+        }
+        boolean first = true;
+        for (int c = 0; c < spec.cols; c++) {
+          LayoutSpec.Cell cell = spec.cells[r][c];
+          if (cell.covered) {
+            // the spanning cell already claimed this position, so it contributes no column
+            continue;
+          }
+          if (!first) {
+            buffer.append('&');
+          }
+          first = false;
+          buffer.append(' ');
+          appendCell(buffer, spec, r, c);
+          buffer.append(' ');
+        }
+        buffer.append("\\\\\n");
+      }
+      if (spec.rowDividers[spec.rows] != null) {
+        buffer.append("\\hline\n");
+      }
+      buffer.append("\\end{array}");
+      return true;
+    }
+
+    private void appendCell(StringBuilder buffer, LayoutSpec spec, int r, int c) {
+      LayoutSpec.Cell cell = spec.cells[r][c];
+      if (cell.colSpan > 1) {
+        buffer.append("\\multicolumn{").append(cell.colSpan).append("}{")
+            .append(columnLetter(spec.colAlignH[c])).append("}{");
+        appendContent(buffer, cell);
+        buffer.append('}');
+        return;
+      }
+      appendContent(buffer, cell);
+    }
+
+    private void appendContent(StringBuilder buffer, LayoutSpec.Cell cell) {
+      if (cell.content == null) {
+        return;
+      }
+      fFactory.convertInternal(buffer, cell.content, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+    }
+
+    private static char columnLetter(double alignment) {
+      if (Double.isNaN(alignment)) {
+        return 'c';
+      }
+      if (alignment <= 0.25) {
+        return 'l';
+      }
+      return alignment >= 0.75 ? 'r' : 'c';
     }
   }
 
@@ -1584,7 +1677,33 @@ public class TeXFormFactory {
       convertSymbol(buf, (ISymbol) expr);
       return;
     }
+    if (expr instanceof IArraySymbol) {
+      // a symbolic vector, matrix or array is typeset as its name alone, in bold face
+      convertArraySymbol(buf, (IArraySymbol) expr);
+      return;
+    }
     convertString(buf, expr.toString());
+  }
+
+  /**
+   * Typeset the name of a symbolic array variable in bold face, the convention for a non-scalar
+   * quantity. The dimensions, the domain and the symmetry are part of the definition of the symbol,
+   * not of its rendering.
+   *
+   * @param buf the buffer to append to
+   * @param arraySymbol the symbolic vector, matrix or array
+   */
+  private void convertArraySymbol(final StringBuilder buf, final IArraySymbol arraySymbol) {
+    buf.append("\\mathbf{");
+    IExpr name = arraySymbol.getName();
+    if (name instanceof IStringX) {
+      buf.append(escapeTeXText(name.toString()));
+    } else if (name instanceof ISymbol) {
+      buf.append(escapeTeXSpecials(((ISymbol) name).getSymbolName()));
+    } else {
+      convertInternal(buf, name, 0, NO_PLUS_CALL);
+    }
+    buf.append("}");
   }
 
   private boolean convertNumber(final StringBuilder buf, final Object o, final int precedence,
@@ -2376,6 +2495,7 @@ public class TeXFormFactory {
     initTeXConverter(S.PaddedForm, numberForm);
     initTeXConverter(S.ScientificForm, numberForm);
     initTeXConverter(S.TableForm, new TableForm());
+    initTeXConverter(S.Grid, new Grid());
     initTeXConverter(S.Parenthesis, new Parenthesis());
     initTeXConverter(S.Part, new Part());
     initTeXConverter(S.Plus, new Plus());

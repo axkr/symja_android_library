@@ -1,6 +1,7 @@
 package org.matheclipse.io.form.mathml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.StringWriter;
 import org.apfloat.Apcomplex;
 import org.junit.jupiter.api.BeforeEach;
@@ -525,6 +526,121 @@ public class MathMLPresentationTestCase {
         "SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}) // MatrixForm");
     check(expr, //
         "<mrow><mo>(</mo><mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mn>1</mn></mtd><mtd columnalign=\"center\"><mn>0</mn></mtd><mtd columnalign=\"center\"><mn>4</mn></mtd></mtr><mtr><mtd columnalign=\"center\"><mn>0</mn></mtd><mtd columnalign=\"center\"><mn>2</mn></mtd><mtd columnalign=\"center\"><mn>0</mn></mtd></mtr><mtr><mtd columnalign=\"center\"><mn>0</mn></mtd><mtd columnalign=\"center\"><mn>0</mn></mtd><mtd columnalign=\"center\"><mn>3</mn></mtd></mtr></mtable><mo>)</mo></mrow>");
+  }
+
+  /**
+   * <code>Grid</code> becomes an <code>mtable</code>. The lines, the shading and the spacing are
+   * written as CSS on each cell rather than with the MathML table attributes, because only one
+   * browser engine implements those while a style attribute works everywhere.
+   *
+   * <p>
+   * These go through the <code>IExpr</code> form of <code>check</code>, so the expression is
+   * evaluated first exactly as the servlet evaluates it - a colour is only an
+   * <code>RGBColor</code> once it has been.
+   */
+  @Test
+  public void testGrid() {
+    IExpr expr = EvalEngine.get().evaluate("Grid({{a,b},{c,d}})");
+    check(expr, "<mtable columnalign=\"center\">"
+        + "<mtr><mtd columnalign=\"center\" style=\"text-align:center;vertical-align:middle;padding:0.100em 0.400em;\"><mi>a</mi></mtd>"
+        + "<mtd columnalign=\"center\" style=\"text-align:center;vertical-align:middle;padding:0.100em 0.400em;\"><mi>b</mi></mtd></mtr>"
+        + "<mtr><mtd columnalign=\"center\" style=\"text-align:center;vertical-align:middle;padding:0.100em 0.400em;\"><mi>c</mi></mtd>"
+        + "<mtd columnalign=\"center\" style=\"text-align:center;vertical-align:middle;padding:0.100em 0.400em;\"><mi>d</mi></mtd></mtr></mtable>");
+  }
+
+  @Test
+  public void testGridFrameDrawsBorders() {
+    IExpr expr = EvalEngine.get().evaluate("Grid({{a,b}}, Frame -> All)");
+    String out = mathML(expr);
+    assertTrue(out.contains("border-left:1px solid rgb(0,0,0)"), out);
+    assertTrue(out.contains("border-top:1px solid rgb(0,0,0)"), out);
+    assertTrue(out.contains("border-right:1px solid rgb(0,0,0)"), out);
+    assertTrue(out.contains("border-bottom:1px solid rgb(0,0,0)"), out);
+  }
+
+  /** <code>Frame -> True</code> is the perimeter, so no interior line is drawn. */
+  @Test
+  public void testGridFrameTrueLeavesTheInteriorAlone() {
+    String out = mathML(EvalEngine.get().evaluate("Grid({{a,b},{c,d}}, Frame -> True)"));
+    int leftBorders = out.split("border-left", -1).length - 1;
+    assertEquals(2, leftBorders, "only the first column carries a left border: " + out);
+  }
+
+  @Test
+  public void testGridDividersCarryTheirDirective() {
+    String out = mathML(EvalEngine.get()
+        .evaluate("Grid({{a,b,c}}, Dividers -> {{2 -> Directive(Red, Thick)}, None})"));
+    assertTrue(out.contains("border-left:2px solid rgb(255,0,0)"), out);
+  }
+
+  @Test
+  public void testGridBackgroundShadesTheCells() {
+    String out = mathML(
+        EvalEngine.get().evaluate("Grid({{a,b},{c,d}}, Background -> {None, {LightGray}})"));
+    int shaded = out.split("background-color", -1).length - 1;
+    assertEquals(2, shaded, "only the first row is shaded: " + out);
+  }
+
+  @Test
+  public void testGridSpanBecomesAColumnspan() {
+    String out = mathML(EvalEngine.get().evaluate("Grid({{a,SpanFromLeft},{c,d}})"));
+    assertTrue(out.contains("columnspan=\"2\""), out);
+    // the covered position contributes no cell of its own
+    assertEquals(3, out.split("<mtd", -1).length - 1, out);
+  }
+
+  @Test
+  public void testGridAlignmentSetsTheColumns() {
+    String out = mathML(EvalEngine.get()
+        .evaluate("Grid({{\"first\", 1}, {\"second\", 100}}, Alignment -> {{Right, Left}})"));
+    assertTrue(out.contains("columnalign=\"right\"") && out.contains("text-align:right"), out);
+    assertTrue(out.contains("columnalign=\"left\"") && out.contains("text-align:left"), out);
+  }
+
+  @Test
+  public void testGridItemStyleStylesTheCell() {
+    String out = mathML(EvalEngine.get().evaluate("Grid({{a,b}}, ItemStyle -> {{Red}, None})"));
+    assertTrue(out.contains("<mstyle mathcolor=\"#ff0000\"><mi>a</mi></mstyle>"), out);
+  }
+
+  @Test
+  public void testGridItemOverridesTheCell() {
+    String out = mathML(EvalEngine.get().evaluate("Grid({{Item(a, Background -> Red), b}})"));
+    assertTrue(out.contains("background-color:rgb(255,0,0)"), out);
+  }
+
+  /** A short row is padded with an empty cell, so the columns of the rows below still line up. */
+  @Test
+  public void testGridRaggedRowsArePadded() {
+    String out = mathML(EvalEngine.get().evaluate("Grid({{a}, {b, c}})"));
+    assertEquals(4, out.split("<mtd", -1).length - 1, out);
+    assertTrue(out.contains("em;\"></mtd>"), "the missing cell is not empty: " + out);
+  }
+
+  /** Anything that is not a list of rows keeps printing as the call itself. */
+  @Test
+  public void testGridOfANonListPrintsAsItself() {
+    String out = mathML(EvalEngine.get().evaluate("Grid(x)"));
+    assertTrue(out.contains("<mi>Grid</mi>"), out);
+  }
+
+  @Test
+  public void testAPictureInsideALayoutIsDrawn() {
+    String out = mathML(EvalEngine.get().evaluate("Column({Graphics(Disk()), 1})"));
+    assertTrue(out.contains("<mtext><svg"), out);
+  }
+
+  /** An <code>Overlay</code> holding no picture is not a picture, and prints as itself. */
+  @Test
+  public void testAnOverlayOfPlainExpressionsPrintsAsItself() {
+    String out = mathML(EvalEngine.get().evaluate("Overlay({1, 2, 3})"));
+    assertTrue(out.contains("<mi>Overlay</mi>"), out);
+  }
+
+  private String mathML(IExpr expr) {
+    StringWriter stw = new StringWriter();
+    mathUtil.toMathML(expr, stw);
+    return stw.toString();
   }
 
   public void check(String strEval, String strResult) {

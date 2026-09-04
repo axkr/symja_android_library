@@ -575,6 +575,43 @@ public class BasicTeXTestCase {
         "\\textcolor{red}{\\frac{1}{\\sqrt{7}}}");
   }
 
+  /**
+   * <code>Grid</code> is set as an array: the alignment and the vertical rules go in the column
+   * specification, a horizontal divider becomes <code>\hline</code>, and a spanning cell becomes
+   * a <code>\multicolumn</code>.
+   */
+  @Test
+  public void testGrid() {
+    check("Grid({{a,b},{c,d}})", //
+        "\\begin{array}{cc}\n a & b \\\\\n c & d \\\\\n\\end{array}");
+  }
+
+  @Test
+  public void testGridFrameAddsRules() {
+    check("Grid({{a,b},{c,d}}, Frame -> All)", //
+        "\\begin{array}{|c|c|}\n\\hline\n a & b \\\\\n\\hline\n c & d \\\\\n"
+            + "\\hline\n\\end{array}");
+  }
+
+  @Test
+  public void testGridAlignmentPicksTheColumnLetters() {
+    check("Grid({{a,b},{c,d}}, Alignment -> {{Right, Left}})", //
+        "\\begin{array}{rl}\n a & b \\\\\n c & d \\\\\n\\end{array}");
+  }
+
+  @Test
+  public void testGridSpanBecomesAMulticolumn() {
+    check("Grid({{a,SpanFromLeft},{c,d}})", //
+        "\\begin{array}{cc}\n \\multicolumn{2}{c}{a} \\\\\n c & d \\\\\n"
+            + "\\end{array}");
+  }
+
+  @Test
+  public void testGridOfANonListPrintsAsItself() {
+    check("Grid(x)", "\\text{Grid}(x)");
+  }
+
+
   public void check(String strEval, String strResult) {
     StringWriter stw = new StringWriter();
     texUtil.toTeX(strEval, stw, true);

@@ -17,6 +17,8 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
+import org.matheclipse.core.graphics.svg.ColorUtil;
+import org.matheclipse.core.graphics.svg.LayoutSpec;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -34,6 +36,7 @@ import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -997,6 +1000,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       if (f.size() < 2) {
         return false;
       }
+      if (!f.isAST(S.Graphics) && !f.isGraphicsObject()) {
+        // a layout head that holds no picture at all - Overlay({1, 2, 3}) is the usual one -
+        // has to keep printing as itself rather than becoming a blank canvas
+        return false;
+      }
       StringBuilder svg = new StringBuilder();
       try {
         if (!GraphicsUtil.renderGraphics2DSVG(svg, f, true, EvalEngine.get())) {
@@ -1005,6 +1013,208 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       } catch (RuntimeException rex) {
         // a picture that cannot be drawn falls back to printing as itself, rather than taking
         // the whole rendering with it
+        return false;
+      }
+      fFactory.tagStart(buf, "mtext");
+      buf.append(svg);
+      fFactory.tagEnd(buf, "mtext");
+      return true;
+    }
+  }
+
+  /**
+   * <code>Grid[{{e11, e12, ...}, ...}]</code> as a table.
+   *
+   * <p>
+   * The lines, the shading and the spacing are written as CSS on each <code>mtd</code> rather than
+   * with the MathML <code>frame</code>, <code>rowlines</code> and <code>columnlines</code>
+   * attributes: those are only implemented by one browser engine, while a style attribute on a cell
+   * is honoured everywhere the rest of the output already relies on.
+   *
+   * <p>
+   * The options are read by {@link org.matheclipse.core.graphics.svg.LayoutSpec}, the same parser
+   * the picture layouts use, so a grid of expressions and a grid of graphics agree about what
+   * <code>Dividers -&gt; {All, Center}</code> means.
+   */
+  private static final class Grid extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2 || !f.arg1().isList()) {
+        return false;
+      }
+      LayoutSpec spec =
+          LayoutSpec.forGrid(f, (IAST) f.arg1(), 2, LayoutSpec.Units.EMS);
+      StringBuilder table = new StringBuilder("columnalign=\"center\"");
+      if (spec.background != null) {
+        table.append(" style=\"background-color:").append(ColorUtil.css(spec.background))
+            .append(";\"");
+      }
+      fFactory.tagStart(buf, "mtable", table.toString());
+      for (int r = 0; r < spec.rows; r++) {
+        fFactory.tagStart(buf, "mtr");
+        for (int c = 0; c < spec.cols; c++) {
+          if (spec.cells[r][c].covered) {
+            // a covered position contributes no cell at all - the spanning one already
+            // reserved the room, and an empty mtd here would push the row one column wider
+            continue;
+          }
+          convertCell(buf, spec, r, c);
+        }
+        fFactory.tagEnd(buf, "mtr");
+      }
+      fFactory.tagEnd(buf, "mtable");
+      return true;
+    }
+
+    private void convertCell(final StringBuilder buf, LayoutSpec spec, int r, int c) {
+      LayoutSpec.Cell cell = spec.cells[r][c];
+      StringBuilder attributes = new StringBuilder();
+      if (cell.rowSpan > 1) {
+        attributes.append(" rowspan=\"").append(cell.rowSpan).append('"');
+      }
+      if (cell.colSpan > 1) {
+        attributes.append(" columnspan=\"").append(cell.colSpan).append('"');
+      }
+      String align = horizontalName(spec.alignHAt(r, c));
+      attributes.append(" columnalign=\"").append(align).append('"');
+      attributes.append(" style=\"").append(cellStyle(spec, r, c, align)).append('"');
+      fFactory.tagStart(buf, "mtd", attributes.toString().trim());
+      IExpr content = cell.content;
+      if (content != null) {
+        IExpr styles = spec.styleAt(r, c);
+        if (styles != null) {
+          // the existing Style converter turns the directives into mstyle attributes
+          content = F.binaryAST2(S.Style, content, styles);
+        }
+        fFactory.convertInternal(buf, content, Integer.MIN_VALUE, false);
+      }
+      fFactory.tagEnd(buf, "mtd");
+    }
+
+    /** The borders, the shading and the padding of one cell. */
+    private String cellStyle(LayoutSpec spec, int r, int c, String align) {
+      LayoutSpec.Cell cell = spec.cells[r][c];
+      StringBuilder css = new StringBuilder();
+      css.append("text-align:").append(align).append(';');
+      css.append("vertical-align:").append(verticalName(spec.alignVAt(r, c))).append(';');
+      css.append("padding:").append(fmt(gap(spec.rowGaps, r) / 2.0)).append("em ")
+          .append(fmt(gap(spec.colGaps, c) / 2.0)).append("em;");
+      java.awt.Color background =
+          cell.background != null ? cell.background : spec.backgroundAt(r, c);
+      if (background != null) {
+        css.append("background-color:").append(ColorUtil.css(background)).append(';');
+      }
+      appendBorder(css, "left", spec.colDividers[c]);
+      appendBorder(css, "top", spec.rowDividers[r]);
+      if (c + cell.colSpan >= spec.cols) {
+        appendBorder(css, "right", spec.colDividers[spec.cols]);
+      }
+      if (r + cell.rowSpan >= spec.rows) {
+        appendBorder(css, "bottom", spec.rowDividers[spec.rows]);
+      }
+      if (cell.frame != null && cell.frame.isTrue()) {
+        css.append("border:1px solid black;");
+      }
+      return css.toString();
+    }
+
+    private static void appendBorder(StringBuilder css, String side, IExpr divider) {
+      if (divider == null) {
+        return;
+      }
+      css.append("border-").append(side).append(':').append(dividerCss(divider)).append(';');
+    }
+
+    /**
+     * One divider as a CSS border.
+     *
+     * <p>
+     * <code>Thick</code> and <code>Dashed</code> have already become <code>Thickness[...]</code>
+     * and <code>Dashing[...]</code> by the time an option is read, so the heads are what has to be
+     * recognised here rather than the names the caller wrote.
+     */
+    private static String dividerCss(IExpr divider) {
+      double width = 1;
+      String style = "solid";
+      java.awt.Color colour = java.awt.Color.BLACK;
+      IExpr[] parts = divider.isAST(S.Directive) || divider.isList()
+          ? ((IAST) divider).toArray()
+          : new IExpr[] {divider};
+      for (IExpr part : parts) {
+        if (part == null || part.isTrue()) {
+          continue;
+        }
+        if (part.isAST(S.Thickness, 2) || part.isAST(S.AbsoluteThickness, 2)) {
+          double w = ColorUtil.dbl(((IAST) part).arg1(), Double.NaN);
+          if (Double.isNaN(w)) {
+            // a named thickness such as Thickness(Large), which Thick evaluates to
+            w = ((IAST) part).arg1().toString().equalsIgnoreCase("Large") ? 2 : 0.5;
+          }
+          width = Math.max(0.5, w);
+        } else if (part.isAST(S.Dashing) || part.isAST(S.AbsoluteDashing)) {
+          style = "dashed";
+        } else {
+          java.awt.Color parsed = ColorUtil.parseDirective(part);
+          if (parsed != null) {
+            colour = parsed;
+          }
+        }
+      }
+      return fmt(width) + "px " + style + " " + ColorUtil.css(colour);
+    }
+
+    private static double gap(LayoutSpec.Spacing[] gaps, int index) {
+      if (gaps.length == 0) {
+        return 0;
+      }
+      return gaps[Math.min(index, gaps.length - 1)].resolveEms();
+    }
+
+    private static String horizontalName(double fraction) {
+      if (fraction <= 0.25) {
+        return "left";
+      }
+      return fraction >= 0.75 ? "right" : "center";
+    }
+
+    private static String verticalName(double fraction) {
+      if (fraction <= 0.25) {
+        return "top";
+      }
+      return fraction >= 0.75 ? "bottom" : "middle";
+    }
+
+    private static String fmt(double value) {
+      if (value == Math.rint(value)) {
+        return Long.toString((long) value);
+      }
+      return String.format(java.util.Locale.US, "%.3f", value);
+    }
+  }
+
+  /**
+   * <code>Graphics3D[...]</code> inside a layout, drawn by the static three dimensional renderer.
+   *
+   * <p>
+   * The interactive WebGL canvas the front end shows for a whole result cannot be nested inside
+   * typeset output, so a scene that sits in a cell is drawn as a still picture instead of being
+   * left out.
+   */
+  private static final class Graphics3DInline extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      String svg;
+      try {
+        svg = org.matheclipse.core.graphics.SVGGraphics3D.toSVG(f);
+      } catch (RuntimeException rex) {
+        return false;
+      }
+      if (svg == null || svg.isEmpty()) {
         return false;
       }
       fFactory.tagStart(buf, "mtext");
@@ -1655,6 +1865,19 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
     if (o instanceof ISymbol) {
       convertSymbol(buf, (ISymbol) o);
+      return;
+    }
+    if (o instanceof IArraySymbol) {
+      // a symbolic vector, matrix or array is typeset as its name alone, in bold face.
+      // MathML Core dropped the general mathvariant, so the face is set with CSS
+      IExpr name = ((IArraySymbol) o).getName();
+      tagStart(buf, "mi", "style=\"font-weight:bold\"");
+      if (name instanceof ISymbol) {
+        entity(buf, ((ISymbol) name).getSymbolName());
+      } else {
+        entity(buf, name.toString());
+      }
+      tagEnd(buf, "mi");
       return;
     }
     convertString(buf, o.toString());
@@ -3090,7 +3313,16 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.Button, new Button());
     CONVERTERS.put(S.Row, new Row());
     CONVERTERS.put(S.Column, new Column());
-    CONVERTERS.put(S.Graphics, new GraphicsInline());
+    CONVERTERS.put(S.Grid, new Grid());
+    GraphicsInline graphicsInline = new GraphicsInline();
+    CONVERTERS.put(S.Graphics, graphicsInline);
+    // the layout heads draw themselves the same way, so a picture inside a Column or a Grid is a
+    // picture rather than the text of the expression that would have drawn one
+    CONVERTERS.put(S.GraphicsRow, graphicsInline);
+    CONVERTERS.put(S.GraphicsColumn, graphicsInline);
+    CONVERTERS.put(S.GraphicsGrid, graphicsInline);
+    CONVERTERS.put(S.Overlay, graphicsInline);
+    CONVERTERS.put(S.Graphics3D, new Graphics3DInline());
     ControlWidget controlWidget = new ControlWidget();
     CONVERTERS.put(S.Slider, controlWidget);
     CONVERTERS.put(S.VerticalSlider, controlWidget);

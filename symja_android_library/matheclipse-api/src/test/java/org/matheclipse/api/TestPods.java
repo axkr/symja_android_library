@@ -2,11 +2,13 @@ package org.matheclipse.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.matheclipse.api.client.JSONPod;
 import org.matheclipse.api.client.JSONQueryResult;
 import org.matheclipse.core.eval.EvalEngine;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -3251,6 +3253,158 @@ public class TestPods {
 
     // assertEquals(jsonStr, //
     // ""); //
+  }
+
+  // ----------------------------------------------------------------- graphics pods
+
+  /**
+   * The picture a pod carries, taken from the first subpod of the pod with the given title.
+   *
+   * @return the raw markup, or an empty string when no such pod exists
+   */
+  private static String podHtml(String input, String title) {
+    ObjectNode messageJSON = TestPods.createJUnitResult(input, formatsHTML);
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertFalse(queryResult.isError(), () -> input + " reported an error");
+    for (JSONPod pod : queryResult.getPods()) {
+      if (pod.getTitle().equals(title)) {
+        return pod.getSubpods()[0].getHtml();
+      }
+    }
+    return "";
+  }
+
+  /** Whether the query produced a picture pod at all. */
+  private static boolean hasPicturePod(String input) {
+    ObjectNode messageJSON = TestPods.createJUnitResult(input, formatsHTML);
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    for (JSONPod pod : queryResult.getPods()) {
+      if (pod.getTitle().equals("Function") && !pod.getSubpods()[0].getHtml().isEmpty()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static int count(String haystack, String needle) {
+    int n = 0;
+    for (int i = haystack.indexOf(needle); i >= 0; i = haystack.indexOf(needle, i + 1)) {
+      n++;
+    }
+    return n;
+  }
+
+  /**
+   * A plot comes back as a finished SVG document rather than a page that has to fetch a drawing
+   * library before it can show anything.
+   */
+  @Test
+  public void testPlotPodIsAFinishedSvg() {
+    EvalEngine.resetModuleCounter4JUnit();
+    String html = podHtml("Plot(Sin(x), {x, 0, 6})", "Function");
+    assertTrue(html.startsWith("<svg"), html);
+    assertTrue(html.endsWith("</svg>"), html);
+    assertFalse(html.contains("<iframe"), "the picture was wrapped in an iframe");
+    assertFalse(html.contains("jsxgraph"), "the picture still depends on a drawing library");
+  }
+
+  /**
+   * The picture carries the size it chose, so nothing downstream has to guess one. Wrapping it in
+   * a frame of a fixed size is what used to override this.
+   */
+  @Test
+  public void testAGraphicsPodCarriesItsOwnSize() {
+    EvalEngine.resetModuleCounter4JUnit();
+    String html = podHtml("Graphics(Disk())", "Function");
+    assertTrue(html.contains("viewBox="), html);
+    assertTrue(html.contains("max-width: 100%; height: auto;"), html);
+  }
+
+  /**
+   * The layout heads draw pictures too. They were not recognised here at all before, and came back
+   * as the text of the expression that would have drawn one.
+   */
+  @Test
+  public void testGraphicsGridIsAPicture() {
+    EvalEngine.resetModuleCounter4JUnit();
+    String html = podHtml("GraphicsGrid({{Graphics(Disk()), Graphics(Rectangle())}})", "Function");
+    assertTrue(html.startsWith("<svg"), html);
+    // one root, and one nested viewport per cell
+    assertEquals(3, count(html, "<svg"), html);
+  }
+
+  @Test
+  public void testGraphicsRowIsAPicture() {
+    EvalEngine.resetModuleCounter4JUnit();
+    assertTrue(hasPicturePod("GraphicsRow({Graphics(Disk()), Graphics(Rectangle())})"));
+  }
+
+  @Test
+  public void testGraphicsColumnIsAPicture() {
+    EvalEngine.resetModuleCounter4JUnit();
+    assertTrue(hasPicturePod("GraphicsColumn({Graphics(Disk()), Graphics(Rectangle())})"));
+  }
+
+  @Test
+  public void testAnOverlayOfGraphicsIsAPicture() {
+    EvalEngine.resetModuleCounter4JUnit();
+    assertTrue(hasPicturePod("Overlay({Graphics(Disk()), Graphics(Circle())})"));
+  }
+
+  @Test
+  public void testAListOfGraphicsIsAPicture() {
+    EvalEngine.resetModuleCounter4JUnit();
+    assertTrue(hasPicturePod("{Graphics(Disk()), Graphics(Rectangle())}"));
+  }
+
+  /** A three dimensional cell is drawn as a still picture inside the two dimensional layout. */
+  @Test
+  public void testAGridMayHoldAThreeDimensionalCell() {
+    EvalEngine.resetModuleCounter4JUnit();
+    String html = podHtml("GraphicsGrid({{Graphics(Disk()), Graphics3D(Sphere())}})", "Function");
+    assertTrue(html.startsWith("<svg"), html);
+    assertEquals(3, count(html, "<svg"), "the three dimensional cell was dropped: " + html);
+  }
+
+  /**
+   * An <code>Overlay</code> that holds no picture is not one. It has to keep coming back as the
+   * expression itself rather than as a blank canvas.
+   */
+  @Test
+  public void testAnOverlayOfPlainExpressionsIsNotAPicture() {
+    EvalEngine.resetModuleCounter4JUnit();
+    assertFalse(hasPicturePod("Overlay({1, 2, 3})"));
+  }
+
+  /** <code>Grid</code> is a table of expressions, not a drawing, and takes the ordinary pod. */
+  @Test
+  public void testGridIsNotAPicture() {
+    EvalEngine.resetModuleCounter4JUnit();
+    assertFalse(hasPicturePod("Grid({{a, b}, {c, d}})"));
+  }
+
+  /** ... and it is set as a table when the caller asks for MathML. */
+  @Test
+  public void testGridIsSetAsATableInMathML() {
+    EvalEngine.resetModuleCounter4JUnit();
+    ObjectNode messageJSON =
+        TestPods.createJUnitResult("Grid({{a, b}, {c, d}}, Frame -> All)", formatsMATHML);
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertFalse(queryResult.isError());
+    String mathml = queryResult.getPods()[0].getSubpods()[0].getMathml();
+    assertTrue(mathml.contains("<mtable"), mathml);
+    assertTrue(mathml.contains("border-left:1px solid"), mathml);
+  }
+
+  /** A three dimensional scene keeps its own interactive pod. */
+  @Test
+  public void testGraphics3DKeepsItsOwnPod() {
+    EvalEngine.resetModuleCounter4JUnit();
+    ObjectNode messageJSON = TestPods.createJUnitResult("Graphics3D(Sphere())", formatsHTML);
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertFalse(queryResult.isError());
+    String jsx = queryResult.getPods()[1].getSubpods()[0].getJsxgraph();
+    assertTrue(jsx.startsWith("<iframe"), jsx);
   }
 
   @Test

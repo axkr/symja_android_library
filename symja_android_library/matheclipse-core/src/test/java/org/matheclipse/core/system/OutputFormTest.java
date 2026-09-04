@@ -208,10 +208,11 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     // the delayed rule is held, so the option value stays unevaluated
     check("Grid({{a,bc},{d,e}}, ColumnAlignments:>Symbol(\"Rig\"<>\"ht\"))",
         "Grid({{a,bc},{d,e}},ColumnAlignments:>Symbol(Rig<>ht))");
-    // TODO Grid has no TeX converter yet - it falls back to the generic function form
+    // Grid is set as an array. ColumnAlignments is not a Wolfram option and is ignored; the
+    // Alignment option is the one that moves the columns.
     check(
         "Grid({{a,bc},{d,e}}, ColumnAlignments:>Symbol(\"Rig\"<>\"ht\")); TeXForm@Grid({{a,bc},{d,e}}, ColumnAlignments->Left)",
-        "\\text{Grid}(\\{\\{a,bc\\},\\{d,e\\}\\},ColumnAlignments\\to Left)");
+        "\\begin{array}{cc}\n a & bc \\\\\n d & e \\\\\n\\end{array}");
     check(
         "Grid({{a,bc},{d,e}}, ColumnAlignments:>Symbol(\"Rig\"<>\"ht\")); TeXForm@Grid({{a,bc},{d,e}}, ColumnAlignments->Left); TeXForm(TableForm({{a,b},{c,d}}))",
         "\\begin{array}{cc}\n a & b \\\\\n c & d \\\\\n\\end{array}");
