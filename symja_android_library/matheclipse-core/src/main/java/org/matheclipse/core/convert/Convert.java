@@ -1217,21 +1217,6 @@ public class Convert {
       // isMatrix() must be used!
       result.isMatrix(true);
     }
-    if (rowSize < 5 && colSize < 5) {
-      EvalEngine engine = EvalEngine.get();
-      if (!engine.isNumericMode() && engine.isTogetherMode()) {
-        for (int i = 1; i < rowSize + 1; i++) {
-          IASTMutable row = (IASTMutable) result.get(i);
-          for (int j = 1; j < colSize + 1; j++) {
-            IExpr value = row.get(j);
-            if (value.isPlusTimesPower()) {
-              IExpr t = engine.evaluate(F.Simplify(value));
-              row.set(j, t);
-            }
-          }
-        }
-      }
-    }
     return result;
   }
 
@@ -1241,6 +1226,76 @@ public class Convert {
    * @param matrix
    * @return <code>F.NIL</code> if no conversion was possible
    */
+  /**
+   * Largest matrix dimension for which {@link #simplifyMatrixEntries(IExpr, EvalEngine)} does any
+   * work. {@link S#Simplify} searches over rewrites of an expression, so it is only affordable for
+   * the small results of the functions that ask for it.
+   */
+  private static final int SIMPLIFY_MAX_DIMENSION = 5;
+
+  /**
+   * Apply {@link S#Simplify} to every <code>Plus</code>, <code>Times</code> or <code>Power</code>
+   * entry of a small symbolic matrix.
+   *
+   * <p>
+   * This is <b>not</b> a general post-processing step, and must not be called from a conversion
+   * routine. It exists for the few functions which assemble their result entry by entry from the
+   * raw field operations of an elimination or an eigen decomposition, and therefore hand back
+   * correct but badly shaped entries: an unrationalized denominator such as
+   * <code>-24/(-33-9*Sqrt(33))</code>, an uncancelled numeric factor, or a pair of complex
+   * logarithms that is really <code>-Pi/4</code>. The real fix is to normalize where those entries
+   * are built; until then those functions call this explicitly, so that the cost and the changed
+   * output are visible at the call site instead of happening silently to every matrix.
+   *
+   * @param matrix a list of lists; anything else is returned unchanged
+   * @param engine the evaluation engine
+   * @return the matrix with simplified entries, or <code>matrix</code> itself if nothing changed,
+   *         the engine is in numeric mode, or the matrix is too large
+   */
+  public static IExpr simplifyMatrixEntries(IExpr matrix, EvalEngine engine) {
+    if (engine.isNumericMode() || !matrix.isListOfLists()) {
+      return matrix;
+    }
+    final IAST list = (IAST) matrix;
+    final int rows = list.argSize();
+    if (rows == 0 || rows >= SIMPLIFY_MAX_DIMENSION) {
+      return matrix;
+    }
+    IASTMutable result = F.NIL;
+    for (int i = 1; i <= rows; i++) {
+      final IAST row = (IAST) list.get(i);
+      if (row.argSize() >= SIMPLIFY_MAX_DIMENSION) {
+        return matrix;
+      }
+      IASTMutable simplifiedRow = F.NIL;
+      for (int j = 1; j < row.size(); j++) {
+        final IExpr value = row.get(j);
+        if (value.isPlusTimesPower()) {
+          final IExpr simplified = engine.evaluate(F.Simplify(value));
+          if (!simplified.equals(value)) {
+            if (simplifiedRow.isNIL()) {
+              simplifiedRow = row.copy();
+            }
+            simplifiedRow.set(j, simplified);
+          }
+        }
+      }
+      if (simplifiedRow.isPresent()) {
+        if (result.isNIL()) {
+          result = list.copy();
+        }
+        result.set(i, simplifiedRow);
+      }
+    }
+    if (result.isNIL()) {
+      return matrix;
+    }
+    // `copy()` does not carry the eval flags over, and without IS_MATRIX the printer stops putting
+    // one row per line. Because the rows can contain sub lists the flag cannot be set directly.
+    result.isMatrix(true);
+    return result;
+  }
+
   public static IASTAppendable matrix2List(final RealMatrix matrix) {
     return matrix2List(matrix, true);
   }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -40,7 +41,8 @@ public class MatrixExp extends AbstractFunctionEvaluator {
         }
         IExpr result = engine.evaluate(F.Dot(P, F.Dot(fD, Pinv)));
         if (result.isList()) {
-          return result;
+          // the product is built with the raw field operations, so normalize the entries
+          return Convert.simplifyMatrixEntries(result, engine);
         }
       }
     }

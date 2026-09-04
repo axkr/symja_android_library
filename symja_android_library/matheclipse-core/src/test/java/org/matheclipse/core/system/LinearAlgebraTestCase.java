@@ -844,11 +844,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testDot() {
     check("{{a,2}}.{{a},{3}}", //
         "{{6+a^2}}");
-    check("{{3,4}}.{{a},{3}}", //
-        "{{3*(4+a)}}");
-    check("{{a,2},{3,4}}.{{a,2},{3,4}}", //
-        "{{6+a^2,2*(4+a)},\n" //
-            + " {3*(4+a),22}}");
+    check("{{3,4}}.{{a},{3}}",
+            "{{12+3*a}}");
+    check("{{a,2},{3,4}}.{{a,2},{3,4}}",
+            "{{6+a^2,8+2*a},\n" //
+                + " {12+3*a,22}}");
 
     check("{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}.{-11/4,33/4,-5/4}", //
         "{10,11,12}");
@@ -1846,9 +1846,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixPower() {
-    check("MatrixPower({{a,2},{3,4}},3)", //
-        "{{24+12*a+a^3,2*(22+4*a+a^2)},\n" //
-            + " {3*(22+4*a+a^2),112+6*a}}");
+    check("MatrixPower({{a,2},{3,4}},3)",
+            "{{24+12*a+a^3,44+8*a+2*a^2},\n" //
+                + " {66+12*a+3*a^2,112+6*a}}");
 
 
     // github #121 - print error

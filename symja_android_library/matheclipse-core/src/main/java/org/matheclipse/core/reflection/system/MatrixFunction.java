@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -67,7 +68,9 @@ public class MatrixFunction extends AbstractFunctionEvaluator {
         // Check if the eigenvectors matrix is invertible (i.e., matrix is diagonalizable)
         if (sInverse.isList()) {
           // Compute f(M) = S . f(D) . S^(-1)
-          return engine.evaluate(F.Dot(sMatrix, F.Dot(diagonalMatrix, sInverse)));
+          // the product is built with the raw field operations, so normalize the entries
+          return Convert.simplifyMatrixEntries(
+              engine.evaluate(F.Dot(sMatrix, F.Dot(diagonalMatrix, sInverse))), engine);
         }
       }
     }
@@ -131,7 +134,9 @@ public class MatrixFunction extends AbstractFunctionEvaluator {
         // Compute f(A) = S . f(J) . Inverse(S)
         IExpr sInverse = engine.evaluate(F.Inverse(s));
         if (sInverse.isList()) {
-          return engine.evaluate(F.Dot(s, F.Dot(resultJ, sInverse)));
+          // the product is built with the raw field operations, so normalize the entries
+          return Convert.simplifyMatrixEntries(
+              engine.evaluate(F.Dot(s, F.Dot(resultJ, sInverse))), engine);
         }
       }
     }

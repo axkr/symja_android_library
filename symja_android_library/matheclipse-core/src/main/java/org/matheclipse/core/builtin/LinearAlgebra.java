@@ -67,6 +67,7 @@ import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
+import org.matheclipse.core.eval.util.SymbolicDeterminant;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
@@ -99,8 +100,24 @@ public final class LinearAlgebra {
     public static FieldMatrix<IExpr> adjugateMatrix(FieldMatrix<IExpr> matrix,
         Predicate<IExpr> zeroChecker) {
       if (isSymbolicMatrix(matrix)) {
-        // fraction-free cofactor based adjugate; also works for singular matrices
-        return bareissAdjugate(matrix, zeroChecker, EvalEngine.get());
+        // division-free cofactor based adjugate; also works for singular matrices
+        final EvalEngine engine = EvalEngine.get();
+        final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
+        if (expansion != null) {
+          final IExpr[][] cofactors = expansion.adjugate();
+          if (cofactors != null) {
+            final FieldMatrix<IExpr> result = matrix.copy();
+            final int n = matrix.getRowDimension();
+            for (int i = 0; i < n; i++) {
+              for (int j = 0; j < n; j++) {
+                result.setEntry(i, j, engine.evaluate(F.Expand(cofactors[i][j])));
+              }
+            }
+            return result;
+          }
+        }
+        // the expansion grew past its budget: fall back to the fraction-free elimination
+        return bareissAdjugate(matrix, zeroChecker, engine);
       }
       // @since version 1.9
       // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
@@ -3265,7 +3282,17 @@ public final class LinearAlgebra {
    * &gt;&gt; Inverse({{1, 0, 0}, {0, Sqrt(3)/2, 1/2}, {0,-1 / 2, Sqrt(3)/2}})
    * {{1,0,0},
    *  {0,Sqrt(3)/2,-1/2},
-   *  {0,1/2,1/(1/(2*Sqrt(3))+Sqrt(3)/2)}}
+   *  {0,1/2,Sqrt(3)/2}}
+   * </pre>
+   *
+   * <p>
+   * The inverse of a matrix with symbolic entries is the adjugate over the determinant, so every
+   * entry is a single fraction over the common determinant.
+   *
+   * <pre>
+   * &gt;&gt; Inverse({{u, v}, {v, u}})
+   * {{u/(u^2-v^2),-v/(u^2-v^2)},
+   *  {-v/(u^2-v^2),u/(u^2-v^2)}}
    * </pre>
    */
   public static class Inverse extends AbstractMatrix1Matrix {
@@ -4776,9 +4803,13 @@ public final class LinearAlgebra {
             IASTMutable nullspaceVectors = Convert.matrix2List(nullspace);
             pullOutDenominators(nullspaceVectors, engine);
 
+            // the vectors come from the raw field operations of the row reduction, which leave
+            // unrationalized denominators, so normalize the entries
+            IExpr simplified = Convert.simplifyMatrixEntries(nullspaceVectors, engine);
+
             // the rows are already ordered by descending free variable; sorting them by value here
             // would destroy that order
-            return nullspaceVectors;
+            return simplified;
           }
         }
       } catch (final MathRuntimeException | ClassCastException | IndexOutOfBoundsException e) {
@@ -6755,22 +6786,74 @@ public final class LinearAlgebra {
   }
 
   public static IExpr determinant(final FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    if (isSymbolicMatrix(matrix)) {
+      // Any elimination based method has to divide by a pivot. For a symbolic entry that division
+      // is not exact in a ring Symja can compute in, so the quotient is either kept as a nested
+      // fraction or forced through `Cancel`, which invents `Cot`/`Csc` terms and denominators that
+      // the determinant does not have. The memoized Laplace expansion is division free.
+      final EvalEngine engine = EvalEngine.get();
+      final IExpr det = laplaceDeterminant(matrix, engine);
+      if (det.isPresent()) {
+        return det;
+      }
+      // the expansion grew past its budget: fall back to the fraction-free elimination
+      return bareissDeterminant(matrix, zeroChecker, engine);
+    }
     if (matrix.getRowDimension() == 2 && matrix.getColumnDimension() == 2) {
       return determinant2x2(matrix);
     }
     if (matrix.getRowDimension() == 3 && matrix.getColumnDimension() == 3) {
       return determinant3x3(matrix);
     }
-    if (isSymbolicMatrix(matrix)) {
-      // For matrices with symbolic (e.g. polynomial) entries the LU based elimination divides by
-      // the pivots and produces nested rational expressions which would need a (potentially
-      // expensive) `Together` to be collapsed afterwards. The fraction-free Bareiss algorithm only
-      // uses exact divisions and therefore returns an already simplified polynomial result.
-      return bareissDeterminant(matrix, zeroChecker, EvalEngine.get());
-    }
     final FieldLUDecomposition<IExpr> lu =
         new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
     return F.evalExpand(lu.getDeterminant());
+  }
+
+  /**
+   * Determinant of a matrix with symbolic entries, by a memoized division-free Laplace expansion.
+   *
+   * @param matrix a square matrix
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if the expansion is not applicable or grew too large
+   */
+  private static IExpr laplaceDeterminant(final FieldMatrix<IExpr> matrix, EvalEngine engine) {
+    final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
+    if (expansion == null) {
+      return F.NIL;
+    }
+    final IExpr det = expansion.determinant();
+    if (det.isNIL()) {
+      return F.NIL;
+    }
+    final IExpr expanded = engine.evaluate(F.Expand(det));
+    if (hasDenominator(matrix, engine)) {
+      // the entries carry denominators, so the expansion is a sum of fractions; report the single
+      // cancelled fraction instead
+      return engine.evaluate(F.Together(expanded));
+    }
+    return expanded;
+  }
+
+  /**
+   * Returns <code>true</code> if at least one entry of the matrix has a denominator which is not
+   * <code>1</code>. Numeric entries (including exact fractions) are ignored.
+   *
+   * @param matrix the matrix to inspect
+   * @param engine the evaluation engine
+   */
+  private static boolean hasDenominator(final FieldMatrix<IExpr> matrix, EvalEngine engine) {
+    final int rows = matrix.getRowDimension();
+    final int cols = matrix.getColumnDimension();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        final IExpr entry = matrix.getEntry(i, j);
+        if (entry.isPlusTimesPower() && !engine.evaluate(F.Denominator(entry)).isOne()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -7210,9 +7293,36 @@ public final class LinearAlgebra {
   public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix,
       Predicate<IExpr> zeroChecker) {
     if (isSymbolicMatrix(matrix)) {
-      // fraction-free inverse: Inverse = adjugate / determinant (a single division per entry with a
-      // consistent denominator, instead of the per-pivot divisions of the LU based inverse)
+      // division-free inverse: Inverse = adjugate / determinant, a single division per entry
+      // against one common denominator, instead of the per-pivot divisions of an elimination
       final EvalEngine engine = EvalEngine.get();
+      final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
+      if (expansion != null) {
+        final IExpr det = expansion.determinant();
+        if (det.isPresent()) {
+          final IExpr expandedDet = engine.evaluate(F.Expand(det));
+          if (expandedDet.isZero()) {
+            // Matrix `1` is singular.
+            Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(matrix, false)),
+                engine);
+            return null;
+          }
+          final IExpr[][] adjugate = expansion.adjugate();
+          if (adjugate != null) {
+            final FieldMatrix<IExpr> result = matrix.copy();
+            final int n = matrix.getRowDimension();
+            for (int i = 0; i < n; i++) {
+              for (int j = 0; j < n; j++) {
+                final IExpr cofactor = engine.evaluate(F.Expand(adjugate[i][j]));
+                result.setEntry(i, j,
+                    engine.evaluate(F.Together(F.Divide(cofactor, expandedDet))));
+              }
+            }
+            return result;
+          }
+        }
+      }
+      // the expansion grew past its budget: fall back to the fraction-free elimination
       final IExpr det = determinant(matrix, zeroChecker);
       if (det.isZero()) {
         // Matrix `1` is singular.
