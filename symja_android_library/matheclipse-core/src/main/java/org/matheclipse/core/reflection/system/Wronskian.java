@@ -83,6 +83,9 @@ public class Wronskian extends AbstractFunctionEvaluator {
   /** The largest system or equation order this is built for. */
   private static final int MAX_ORDER = 16;
 
+  /** How long the reduction of a determinant may take. */
+  private static final int SIMPLIFY_SECONDS = 5;
+
   public Wronskian() {}
 
   @Override
@@ -137,15 +140,45 @@ public class Wronskian extends AbstractFunctionEvaluator {
       }
       matrix.append(row);
     }
-    IExpr determinant = S.Det.of(engine, matrix);
-    // For rational functions the determinant comes out as a sum of fractions. Putting it over a
-    // common denominator is what shows that the numerator cancels, and it is the form the
-    // Wronskian of 1/x and 1/(x+1) is usually written in. The result is only used when it is not
-    // more complicated, which leaves a polynomial or a trigonometric determinant alone.
+    return normalizeDeterminant(S.Det.of(engine, matrix), engine);
+  }
+
+  /**
+   * Reduces the determinant, and keeps the reduction only when it is not more complicated.
+   *
+   * <p>
+   * This is what makes the answer for linearly dependent functions the plain <code>0</code> the
+   * caller is looking for: the determinant of <code>{2^n, 2^(n+1)}</code> comes out of
+   * {@link org.matheclipse.core.expression.S#Det} as a difference of two powers which are written
+   * differently but are the same. Putting the terms over a common denominator does the same for a
+   * determinant of rational functions, whose numerator cancels.
+   *
+   * <p>
+   * Shared with {@link Casoratian}, which faces the same question for shifts instead of
+   * derivatives.
+   */
+  static IExpr normalizeDeterminant(IExpr determinant, EvalEngine engine) {
+    if (determinant.isNIL() || determinant.isNumber()) {
+      return determinant;
+    }
+    IExpr best = determinant;
     IExpr together = S.Together.of(engine, determinant);
-    return together.isPresent() && together.leafCount() <= determinant.leafCount() //
-        ? together
-        : determinant;
+    if (together.isPresent() && together.leafCount() <= best.leafCount()) {
+      best = together;
+    }
+    IExpr simplified;
+    try {
+      simplified = engine.evaluate(
+          F.TimeConstrained(F.Simplify(best), F.ZZ(SIMPLIFY_SECONDS), S.$Aborted));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return best;
+    }
+    if (simplified.isPresent() && !simplified.equals(S.$Aborted)
+        && simplified.leafCount() <= best.leafCount()) {
+      return simplified;
+    }
+    return best;
   }
 
   /**

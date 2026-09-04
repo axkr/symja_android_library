@@ -180,6 +180,7 @@ Functions in alphabetical order:
 * &#x2611; [CarmichaelLambda](functions/CarmichaelLambda.md)
 * &#x2705; [CartesianProduct](functions/CartesianProduct.md)
 * &#x2705; [Cases](functions/Cases.md)
+* &#x2705; [Casoratian](functions/Casoratian.md)
 * &#x2705; [Catalan](functions/Catalan.md)
 * &#x2705; [CatalanNumber](functions/CatalanNumber.md)
 * &#x2705; [Catch](functions/Catch.md)

@@ -408,6 +408,7 @@
 ## Solvers
 
 * [DSolve](functions/DSolve.md)
+* [Casoratian](functions/Casoratian.md)
 * [Wronskian](functions/Wronskian.md)
 * [Eliminate](functions/Eliminate.md)
 * [GroebnerBasis](functions/GroebnerBasis.md)
