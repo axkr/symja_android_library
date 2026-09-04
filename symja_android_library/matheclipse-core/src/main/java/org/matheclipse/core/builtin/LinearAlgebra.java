@@ -50,6 +50,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -682,6 +683,12 @@ public final class LinearAlgebra {
     protected IExpr transform(final IExpr expr) {
       return expr.conjugate();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected boolean isConjugate() {
+      return true;
+    }
   }
 
   /**
@@ -848,6 +855,15 @@ public final class LinearAlgebra {
    * </pre>
    */
   public static class Det extends AbstractMatrix1Expr {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (SymbolicArrayUtil.isArrayValued(arg1)) {
+        return SymbolicArrayFunctions.detSymbolic(arg1, engine);
+      }
+      return super.evaluate(ast, engine);
+    }
 
     @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
@@ -1244,6 +1260,15 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
+      if (SymbolicArrayUtil.isArrayValued(arg1) || SymbolicArrayUtil.isArrayValued(arg2)) {
+        // a symbolic array has size() == 1 like every other atom, so it would be swallowed by the
+        // empty-argument test below
+        IExpr symbolicResult = SymbolicArrayFunctions.dotSymbolic(arg1, arg2, EvalEngine.get());
+        if (symbolicResult.isPresent()) {
+          return symbolicResult;
+        }
+        return F.NIL;
+      }
 
       if (arg1.size() == 1 && arg2.size() == 1) {
         if (arg1.isList() && arg2.isList()) {
@@ -3244,6 +3269,16 @@ public final class LinearAlgebra {
   public static class Inverse extends AbstractMatrix1Matrix {
 
     @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, final IAST originalAST) {
+      IExpr arg1 = ast.arg1();
+      if (SymbolicArrayUtil.isArrayValued(arg1)) {
+        return SymbolicArrayFunctions.inverseSymbolic(arg1, engine);
+      }
+      return super.evaluate(ast, argSize, options, engine, originalAST);
+    }
+
+    @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
       return Convert.checkNonEmptySquareMatrix(S.Inverse, arg1);
     }
@@ -4032,6 +4067,9 @@ public final class LinearAlgebra {
         engine.setTogetherMode(true);
         final IExpr arg1 = ast.arg1();
         final IExpr arg2 = ast.arg2();
+        if (SymbolicArrayUtil.isArrayValued(arg1)) {
+          return SymbolicArrayFunctions.matrixPowerSymbolic(arg1, arg2, engine);
+        }
         int[] dimensions = arg1.isMatrix(false);
         if (dimensions != null && dimensions[1] > 0 && dimensions[0] > 0) {
           matrix = Convert.list2Matrix(arg1);
@@ -4370,6 +4408,11 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (SymbolicArrayUtil.isArrayValued(arg1)) {
+        // the norm of a symbolic array has no closed form; stay unevaluated without complaining
+        // that the argument is not a vector or matrix
+        return F.NIL;
+      }
       int dim = arg1.isVector();
       if (dim > (-1)) {
         if (dim == 0) {
@@ -6087,6 +6130,9 @@ public final class LinearAlgebra {
         header = ast.arg2();
       }
 
+      if (SymbolicArrayUtil.isArrayValued(arg1)) {
+        return SymbolicArrayFunctions.trSymbolic(arg1, engine);
+      }
       try {
         final IntList dimensions =
             LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
@@ -6296,6 +6342,10 @@ public final class LinearAlgebra {
       } else {
         arg2 = F.NIL;
       }
+      if (SymbolicArrayUtil.isArrayValued(arg1)) {
+        // a symbolic array carries its own shape, so it must not reach the "not a matrix" message
+        return SymbolicArrayFunctions.transposeSymbolic(arg1, arg2, isConjugate(), engine);
+      }
       final IntArrayList dimensions =
           LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       int length = dimensions.size();
@@ -6337,6 +6387,15 @@ public final class LinearAlgebra {
       return expr;
     }
 
+    /**
+     * Whether this evaluator conjugates the entries as well.
+     *
+     * @return <code>false</code> for {@link S#Transpose}, <code>true</code> for
+     *         {@link S#ConjugateTranspose}
+     */
+    protected boolean isConjugate() {
+      return false;
+    }
   }
 
 

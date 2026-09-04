@@ -55,6 +55,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -930,6 +931,9 @@ public final class Arithmetic {
     private IExpr conjugate(IExpr arg1) {
       if (arg1.isNumber()) {
         return arg1.conjugate();
+      }
+      if (SymbolicArrayUtil.isArrayValued(arg1)) {
+        return SymbolicArrayFunctions.conjugateSymbolic(arg1);
       }
       if (arg1.isQuantity()) {
         return QuantityOps.mapMagnitude((IAST) arg1, S.Conjugate, EvalEngine.get());
@@ -3222,6 +3226,14 @@ public final class Arithmetic {
         // two cheap uniform tests below are done first. Both remaining cases are extremely rare
         // (78 hits in ~2.7 million sums over the whole test suite), so one combined scan decides
         // whether either of them has to be looked at at all.
+        if (ast.exists(SymbolicArrayUtil::isArrayValued)) {
+          // a summand which stands for an array has to be collected before PlusOp drops a term
+          // whose coefficients cancel: a - a is the zero array, not the scalar 0
+          IExpr arrayResult = SymbolicArrayFunctions.plusSymbolicArrays(ast, engine);
+          if (arrayResult.isPresent()) {
+            return arrayResult;
+          }
+        }
         if (ast.exists(x -> x instanceof IDataExpr || x.isQuantity()
             || AroundFunctions.isAround(x) || AroundFunctions.isVectorAround(x))) {
           if (ast.exists(x -> AroundFunctions.isVectorAround(x))) {
@@ -3657,6 +3669,14 @@ public final class Arithmetic {
     public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
         EvalEngine engine) {
       try {
+        if (base.isAST()) {
+          // every entry of a symbolic zeros, ones or identity array is 0 or 1, so a positive
+          // integer power of one of them reproduces the array
+          IExpr arrayResult = SymbolicArrayFunctions.powerSymbolicArray(base, exponent);
+          if (arrayResult.isPresent()) {
+            return arrayResult;
+          }
+        }
         if (base.isInexactNumber() && exponent.isInexactNumber()) {
           IExpr result = e2NumericArg(ast, base, exponent);
           if (result.isPresent()) {
@@ -6719,6 +6739,14 @@ public final class Arithmetic {
       if (otherArg.isQuantity()) {
         return F.Quantity(F.C0, ((IAST) otherArg).arg2());
       }
+      if (SymbolicArrayUtil.isArrayValued(otherArg)) {
+        // multiplying an array by 0 gives the zero array of the same shape, not the scalar 0
+        IAST dimensions = SymbolicArrayUtil.tensorDimensions(otherArg, EvalEngine.get());
+        if (dimensions.isPresent()) {
+          return SymbolicArrayUtil.zeros(dimensions);
+        }
+        return F.NIL;
+      }
       if (otherArg.isDirectedInfinity() || otherArg.isIndeterminate()) {
         if (otherArg.isDirectedInfinity()) {
           IASTMutable messageAST =
@@ -7321,6 +7349,14 @@ public final class Arithmetic {
       if (size == 2) {
         // OneIdentity ?
         return (ast.head() == S.Times) ? ast.arg1() : F.NIL;
+      }
+      if (ast.exists(SymbolicArrayUtil::isArrayValued)) {
+        // an array valued factor has to be handled before TimesOp collects the factors, which
+        // would turn 0*array into the scalar 0 instead of the zero array
+        IExpr arrayResult = SymbolicArrayFunctions.timesSymbolicArrays(ast, engine);
+        if (arrayResult.isPresent()) {
+          return arrayResult;
+        }
       }
       if (ast.exists(x -> AroundFunctions.isAround(x))) {
         // uncertainties propagate through the product, and this must happen before equal factors

@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ArraySymbolExpr;
 import org.matheclipse.core.expression.data.MatrixSymbolExpr;
 import org.matheclipse.core.expression.data.VectorSymbolExpr;
+import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -146,10 +147,8 @@ public class TensorTranspose extends AbstractEvaluator {
   private IExpr checkSymbolicSymmetry(IExpr tensor, IAST permList, int rank) {
     IExpr symmetry = S.None;
 
-    if (tensor instanceof MatrixSymbolExpr) {
-      symmetry = ((MatrixSymbolExpr) tensor).getSymmetry();
-    } else if (tensor instanceof ArraySymbolExpr) {
-      symmetry = ((ArraySymbolExpr) tensor).getSymmetry();
+    if (tensor instanceof IArraySymbol) {
+      symmetry = ((IArraySymbol) tensor).getSymmetry();
     }
 
     if (symmetry.isNone()) {

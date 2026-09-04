@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.SymbolicArrayFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -17,6 +19,16 @@ public class ArrayDot extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr a = ast.arg1();
     IExpr b = ast.arg2();
+
+    if (SymbolicArrayUtil.isArrayValued(a) || SymbolicArrayUtil.isArrayValued(b)) {
+      // ArrayDepth() answers 0 for a symbolic array, so the generic path below would build a
+      // TensorContract with nonsensical slot positions
+      IExpr symbolicResult = SymbolicArrayFunctions.arrayDotSymbolic(ast, a, b, engine);
+      if (symbolicResult.isPresent()) {
+        return symbolicResult;
+      }
+      return F.NIL;
+    }
 
     // ArrayDot[a, b] defaults to k=1, which is mathematically equivalent to Dot[a, b]
     if (ast.isAST2()) {

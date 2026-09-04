@@ -1,20 +1,34 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.MatrixSymbolExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Implementation of the MatrixSymbol function.
+ * <pre>
+ * MatrixSymbol(a, {m, n})
+ * </pre>
+ *
+ * <blockquote>
  * <p>
- * Usage: MatrixSymbol(name, {m, n}) MatrixSymbol(name, {m, n}, domain) MatrixSymbol(name, {m, n},
- * domain, symmetry)
+ * represents a symbolic <code>m</code> x <code>n</code> matrix named <code>a</code>.
  * </p>
+ * </blockquote>
+ *
+ * <h3>Examples</h3>
+ *
+ * <pre>
+ * &gt;&gt; TensorDimensions(MatrixSymbol(a, {m, n}))
+ * {m,n}
+ * </pre>
  */
 public class MatrixSymbol extends AbstractEvaluator {
 
@@ -22,50 +36,58 @@ public class MatrixSymbol extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
-    int argSize = ast.argSize();
+    final int argSize = ast.argSize();
     IExpr name = ast.arg1();
     IExpr dimensions = ast.arg2();
 
-    // Validate dimensions: Must be a List of length 2
     if (!dimensions.isList() || dimensions.argSize() != 2) {
       // The list `1` of dimensions `3` must have length `2`.
       return Errors.printMessage(S.MatrixSymbol, "rankl",
-          F.List(dimensions, F.C2, F.stringx("for a matrix")));
+          F.List(dimensions, F.C2, F.stringx("for a matrix")), engine);
     }
-
-    // Validate dimension elements (Positive Integers or Symbols)
-    // Example: ( MatrixSymbol(x, {2, n}) ) is valid.
-    IAST dimsList = (IAST) dimensions;
-    for (int i = 1; i < dimsList.size(); i++) {
-      IExpr dim = dimsList.get(i);
-      if (dim.isInteger()) {
-        if (!dim.isPositive()) {
-          // Invalid dimension specification `1`.
-          return Errors.printMessage(S.MatrixSymbol, "nodim", F.List(dim));
-        }
-        // } else if (!dim.isSymbol()) {
-        // If not integer, it generally should be symbolic.
-        // Complex expressions might be invalid for dimensions.
+    IAST dimensionsList = (IAST) dimensions;
+    for (int i = 1; i < dimensionsList.size(); i++) {
+      IExpr dimension = dimensionsList.get(i);
+      if (!SymbolicArrayUtil.isValidDimension(dimension)) {
+        // Invalid dimension specification `1`.
+        return Errors.printMessage(S.MatrixSymbol, "nodim", F.List(dimension), engine);
       }
     }
 
-    IExpr domain = S.Reals;
+    IExpr domain = S.Complexes;
     if (argSize >= 3) {
       domain = ast.arg3();
-      // Validate domain if necessary (Complexes, Integers, Reals, ...)
+      if (!SymbolicArrayUtil.isValidDomain(domain)) {
+        // `1` is not a valid domain specification for `2`.
+        return Errors.printMessage(S.MatrixSymbol, "domss", F.List(domain, S.MatrixSymbol), engine);
+      }
     }
 
     IExpr symmetry = S.None;
     if (argSize == 4) {
       symmetry = ast.arg4();
-      // Validate symmetry (Symmetric[{1,2}], Antisymmetric[{1,2}], etc.)
+      if (!SymbolicArrayUtil.isValidSymmetry(symmetry, dimensionsList)) {
+        // `1` is not a valid symmetry specification for `2`.
+        return Errors.printMessage(S.MatrixSymbol, "symss", F.List(symmetry, S.MatrixSymbol),
+            engine);
+      }
     }
 
-    return new MatrixSymbolExpr(name, dimsList, domain, symmetry);
+    return new MatrixSymbolExpr(name, dimensionsList, domain, symmetry);
   }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_2_4;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.setAttributes(ISymbol.NONTHREADABLE);
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 }

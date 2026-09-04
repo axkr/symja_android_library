@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -25,6 +26,8 @@ public class AssumptionFunctions {
 
     private static void init() {
       S.Arrays.setEvaluator(new Arrays());
+      S.Matrices.setEvaluator(new Matrices());
+      S.Vectors.setEvaluator(new Vectors());
       S.Assuming.setEvaluator(new Assuming());
       S.Element.setEvaluator(new Element());
       S.NotElement.setEvaluator(new NotElement());
@@ -44,6 +47,74 @@ public class AssumptionFunctions {
         return F.Arrays((IAST) ast.arg1(), (ISymbol) ast.arg2());
       }
       return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NHOLDALL);
+    }
+  }
+
+  /**
+   * <code>Matrices({d1,d2})</code> - the domain of the <code>d1</code> x <code>d2</code> matrices.
+   * The component domain defaults to {@link S#Complexes}, as in the Wolfram Language.
+   */
+  private static final class Matrices extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr dimensions = ast.arg1();
+      if (!dimensions.isList() || dimensions.argSize() != 2) {
+        // The list `1` of dimensions `3` must have length `2`.
+        return Errors.printMessage(S.Matrices, "rankl",
+            F.List(dimensions, F.C2, F.stringx("for a matrix")), engine);
+      }
+      if (ast.isAST1()) {
+        return F.Matrices(dimensions, S.Complexes);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NHOLDALL);
+    }
+  }
+
+  /**
+   * <code>Vectors(d)</code> - the domain of the vectors of length <code>d</code>. The component
+   * domain defaults to {@link S#Complexes}, as in the Wolfram Language.
+   */
+  private static final class Vectors extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr dimension = ast.arg1();
+      if (dimension.isList()) {
+        if (dimension.argSize() != 1) {
+          // The list `1` of dimensions `3` must have length `2`.
+          return Errors.printMessage(S.Vectors, "rankl",
+              F.List(dimension, F.C1, F.stringx("for a vector")), engine);
+        }
+        dimension = dimension.first();
+      }
+      if (ast.isAST1()) {
+        return F.Vectors(dimension, S.Complexes);
+      }
+      if (!ast.arg1().equals(dimension)) {
+        return F.Vectors(dimension, ast.arg2());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override
@@ -129,6 +200,9 @@ public class AssumptionFunctions {
       }
       final IExpr arg2 = ast.arg2();
 
+      if (arg2.isAST(S.Vectors) || arg2.isAST(S.Matrices) || arg2.isAST(S.Arrays)) {
+        return SymbolicArrayFunctions.elementOfArrayDomain(arg1, (IAST) arg2, engine);
+      }
       if (arg2.isSymbol()) {
         final ISymbol domain = (ISymbol) arg2;
         if (arg1.isAST()) {
@@ -178,6 +252,11 @@ public class AssumptionFunctions {
      *         the <code>domain</code>. In all other cases return {@link F#NIL}.
      */
     private IExpr assumeDomain(final IExpr expr, final ISymbol domain, EvalEngine engine) {
+      if (expr.isAST(S.Indexed, 3) && expr.first() instanceof IArraySymbol) {
+        // a component of a symbolic array lies in the element domain the array declares
+        return SymbolicArrayFunctions
+            .domainSubset(((IArraySymbol) expr.first()).getDomain(), domain) ? S.True : F.NIL;
+      }
       if (domain.isBuiltInSymbol()) {
         ISymbol truthValue;
         final int symbolID = domain.ordinal();

@@ -248,6 +248,9 @@ public class AttributeFunctions {
           case ID.Listable:
             sym.clearAttributes(ISymbol.LISTABLE);
             return true;
+          case ID.NonThreadable:
+            sym.clearAttributes(ISymbol.NONTHREADABLE);
+            return true;
           case ID.OneIdentity:
             sym.clearAttributes(ISymbol.ONEIDENTITY);
             return true;
@@ -496,6 +499,9 @@ public class AttributeFunctions {
           case ID.Listable:
             sym.addAttributes(ISymbol.LISTABLE);
             return true;
+          case ID.NonThreadable:
+            sym.addAttributes(ISymbol.NONTHREADABLE);
+            return true;
           case ID.Locked:
             sym.addAttributes(ISymbol.LOCKED);
             return true;
@@ -563,6 +569,9 @@ public class AttributeFunctions {
               break;
             case ID.Listable:
               attributes |= ISymbol.LISTABLE;
+              break;
+            case ID.NonThreadable:
+              attributes |= ISymbol.NONTHREADABLE;
               break;
             case ID.Locked:
               attributes |= ISymbol.LOCKED;

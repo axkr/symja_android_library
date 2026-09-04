@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.SymbolicArrayFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -82,6 +84,12 @@ public class TensorProduct extends AbstractEvaluator {
 
       for (IExpr arg : ast) {
         simplified |= analyzeArgument(arg, scalarParts, tensorParts, engine);
+      }
+
+      IExpr constantProduct = SymbolicArrayFunctions.tensorProductSymbolic(tensorParts, engine);
+      if (constantProduct.isPresent()) {
+        return scalarParts.isEmpty() ? constantProduct
+            : F.Times(scalarParts.oneIdentity1(), constantProduct);
       }
 
       // If no extraction or flattening happened, return F.NIL
@@ -166,6 +174,10 @@ public class TensorProduct extends AbstractEvaluator {
   private int getTensorRank(IExpr arg, EvalEngine engine) {
     if (arg.isNumber()) {
       return 0;
+    }
+    int symbolicRank = SymbolicArrayUtil.rank(arg, engine);
+    if (symbolicRank >= 0) {
+      return symbolicRank;
     }
 
     if (arg.isList()) {

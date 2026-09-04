@@ -5109,6 +5109,15 @@ public class EvalEngine implements Serializable {
       return F.NIL;
     }
 
+    if (ast.exists(SymbolicArrayUtil::isArrayValued)) {
+      // an argument which stands for a non-scalar quantity - a symbolic vector, matrix or array, or
+      // an expression whose head carries the ISymbol#NONTHREADABLE attribute - is never combined
+      // with the elements of a S.List. MatrixSymbol("a", {2,2}) + {1, 2} stays as it is instead of
+      // adding the matrix to each of the two list elements.
+      ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+      return F.NIL;
+    }
+
     // Drop the identity element of S.Plus and S.Times before threading. Threading an argument into
     // a S.List creates elements like Plus[0, a], which the evalArgs() call on the threaded result
     // simplifies to a. The value of a S.RuleDelayed in an S.Association is held and is never

@@ -7,6 +7,7 @@ import java.util.Set;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.DLeibnitzRule;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.ArrayDerivative;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -439,17 +440,17 @@ public class D extends AbstractFunctionOptionEvaluator {
       }
 
       if (x instanceof IArraySymbol) {
-        if (fx.isFree(x, true)) {
-          IExpr result = freeOfX(fx, engine);
-          if (result.isAST(S.SymbolicZerosArray, 2)) {
-            return result;
-          }
-          return F.SymbolicZerosArray(((IArraySymbol) x).getDimensions());
+        // differentiating by a whole vector, matrix or array; an unsupported case has to stay
+        // unevaluated rather than fall through to the scalar rules below
+        return ArrayDerivative.arrayD(fx, (IArraySymbol) x, engine);
+      }
+      if (fx.isAST() && ArrayDerivative.isArrayHead(fx.head()) && !fx.isFree(x, true)) {
+        // an array valued function of a scalar; the product rule of a Dot has to keep the order of
+        // its factors, so this must run before the generic Derivative chain rule
+        IExpr arrayResult = ArrayDerivative.dArrayValuedInScalar((IAST) fx, x, engine);
+        if (arrayResult.isPresent()) {
+          return arrayResult;
         }
-        if (fx.equals(x)) {
-          return F.SymbolicIdentityArray(((IArraySymbol) x).getDimensions());
-        }
-        return F.NIL;
       }
       if (x.isList()) {
         // D[fx_, {...}]

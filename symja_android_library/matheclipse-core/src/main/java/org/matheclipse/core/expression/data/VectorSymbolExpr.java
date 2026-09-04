@@ -1,108 +1,56 @@
 package org.matheclipse.core.expression.data;
 
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * A data expression representing a symbolic vector variable.
+ * A symbolic vector variable, the result of evaluating
+ * <a href="https://reference.wolfram.com/language/ref/VectorSymbol.html">VectorSymbol</a>.
+ *
+ * <p>
+ * It always has rank <code>1</code> and carries no symmetry. Unlike a matrix or an array it is
+ * constructed from and printed with a scalar dimension: <code>VectorSymbol(v, n)</code>, not
+ * <code>VectorSymbol(v, {n})</code>.
+ * </p>
  */
-public class VectorSymbolExpr extends DataExpr<Object> implements IArraySymbol {
+public class VectorSymbolExpr extends AbstractArraySymbolExpr {
 
-  /**
-   * The unique serial version UID.
-   */
   private static final long serialVersionUID = 1L;
 
-  private final IExpr fName;
-  private final IExpr fDimension;
-  private final IExpr fDomain;
+  /** Constructor for {@link java.io.Externalizable}. */
+  public VectorSymbolExpr() {
+    super(S.VectorSymbol);
+  }
 
   /**
-   * @param name the name of the vector (e.g., "v" or Symbol "x")
-   * @param dimension the dimension length (e.g., Integer 3 or Symbol n)
-   * @param domain the domain (e.g., Reals, Complexes)
+   * @param name the name of the vector (e.g. the string "v" or a symbol)
+   * @param dimension the length of the vector (e.g. the integer <code>3</code> or a symbol)
+   * @param domain the domain of the elements (e.g. {@link S#Reals}, {@link S#Complexes})
    */
   public VectorSymbolExpr(IExpr name, IExpr dimension, IExpr domain) {
-    super(S.VectorSymbol, null);
-    this.fName = name;
-    this.fDimension = dimension;
-    this.fDomain = domain;
+    super(S.VectorSymbol, name, F.list(dimension), domain, S.None);
   }
 
   @Override
   public IExpr copy() {
-    // shallow copy
-    return new VectorSymbolExpr(fName, fDimension, fDomain);
+    return new VectorSymbolExpr(fName, fDimensions.arg1(), fDomain);
   }
 
+  /** {@inheritDoc} A vector prints its single dimension as a scalar. */
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj instanceof VectorSymbolExpr) {
-      VectorSymbolExpr other = (VectorSymbolExpr) obj;
-      return fName.equals(other.fName) && fDimension.equals(other.fDimension)
-          && fDomain.equals(other.fDomain);
-    }
-    return false;
-  }
-
-  @Override
-  public IExpr evaluate(EvalEngine engine) {
-    return F.NIL;
-  }
-
-  @Override
-  public String fullFormString() {
-    return normal(false).fullFormString();
+  protected IExpr dimensionsArgument() {
+    return fDimensions.arg1();
   }
 
   /**
-   * Returns the dimension.
+   * The single dimension, i.e. the length of this vector.
    *
-   * @return an IExpr representing the dimension (e.g., 3 or n)
+   * @return the length expression
    */
-  @Override
-  public IAST getDimensions() {
-    return F.List(fDimension);
-  }
-
-  /**
-   * Returns the domain of the vector elements.
-   *
-   * @return the domain expression
-   */
-  public IExpr getDomain() {
-    return fDomain;
-  }
-
-  public IAST getSymmetry() {
-    return F.CEmptyList;
-  }
-
-  /**
-   * Returns the name expression of the VectorSymbol.
-   *
-   * @return the name expression
-   */
-  public IExpr getName() {
-    return fName;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = 19;
-    result = 37 * result + fName.hashCode();
-    result = 37 * result + fDimension.hashCode();
-    result = 37 * result + fDomain.hashCode();
-    return result;
+  public IExpr getDimension() {
+    return fDimensions.arg1();
   }
 
   @Override
@@ -110,41 +58,15 @@ public class VectorSymbolExpr extends DataExpr<Object> implements IArraySymbol {
     return VECTORSYMBOLID;
   }
 
+  /** {@inheritDoc} A vector is never a square matrix. */
   @Override
-  public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return toString();
+  public boolean isSquareMatrix() {
+    return false;
   }
 
-  /** {@inheritDoc} */
+  /** {@inheritDoc} A vector always has rank <code>1</code>. */
   @Override
-  public final boolean isVariable(boolean polynomialQTest) {
-    return true;
-  }
-
-  @Override
-  public IAST normal(boolean nilIfUnevaluated) {
-    // Convert back to standard AST: VectorSymbol[name, dim, domain]
-    IASTAppendable appendable = F.ast(S.VectorSymbol);
-    appendable.append(fName);
-    appendable.append(fDimension);
-    if (fDomain != S.Reals) {
-      appendable.append(fDomain);
-    }
-    return appendable;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("VectorSymbol(");
-    sb.append(fName.toString());
-    sb.append(", ");
-    sb.append(fDimension.toString());
-    if (fDomain != S.Reals) {
-      sb.append(", ");
-      sb.append(fDomain.toString());
-    }
-    sb.append(")");
-    return sb.toString();
+  public int rank() {
+    return 1;
   }
 }

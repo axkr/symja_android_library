@@ -238,7 +238,7 @@ public class Assumptions extends AbstractAssumptions {
           }
           return true;
         }
-      } else if (element.arg2().isAST(S.Arrays, 2, 3)) {
+      } else if (element.arg2().isAST(S.Arrays, 2, 4)) {
         IAST arrays = (IAST) element.arg2();
         ISymbol domain = S.Complexes;
         if (arrays.size() > 2 && arrays.arg2().isSymbol()) {
@@ -250,7 +250,11 @@ public class Assumptions extends AbstractAssumptions {
           }
         }
         if (arrays.arg1().isList() && arrays.arg1().argSize() >= 2) {
-          assumptions.tensorsMap.put(arg1, F.Arrays(arrays.arg1(), domain));
+          // the symmetry is part of the domain and TensorSymmetry reads it back out of the
+          // stored expression, so it must not be dropped here
+          assumptions.tensorsMap.put(arg1, arrays.argSize() == 3
+              ? F.Arrays(arrays.arg1(), domain, arrays.arg3())
+              : F.Arrays(arrays.arg1(), domain));
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.
@@ -268,7 +272,9 @@ public class Assumptions extends AbstractAssumptions {
           }
         }
         if (matrices.arg1().isList() && matrices.arg1().argSize() == 2) {
-          assumptions.tensorsMap.put(arg1, F.Matrices(matrices.arg1(), domain));
+          assumptions.tensorsMap.put(arg1, matrices.argSize() == 3
+              ? F.Matrices(matrices.arg1(), domain, matrices.arg3())
+              : F.Matrices(matrices.arg1(), domain));
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.

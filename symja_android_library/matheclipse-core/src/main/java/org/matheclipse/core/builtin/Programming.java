@@ -13,6 +13,7 @@ import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -35,6 +36,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1339,6 +1341,13 @@ public final class Programming {
         return ast.setAtCopy(2, F.List(arg2));
       }
       IExpr arg1 = ast.arg1();
+      if (SymbolicArrayUtil.isSymbolicArrayHead(arg1)) {
+        return SymbolicArrayFunctions.indexedSymbolicArray((IAST) arg1, (IAST) arg2);
+      }
+      if (arg1 instanceof IArraySymbol) {
+        // Indexed(a, {i,j}) is the component representation of a symbolic array and stays as it is
+        return F.NIL;
+      }
       int[] positions = arg2.toIntVector();
       if (positions != null) {
         if (arg1.isAST()) {

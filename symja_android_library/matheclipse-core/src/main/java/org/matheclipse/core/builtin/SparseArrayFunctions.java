@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -170,6 +171,14 @@ public class SparseArrayFunctions {
       final int argSize = ast.argSize(); //
 
       IExpr arg1 = ast.arg1();
+      if (argSize == 1 && SymbolicArrayUtil.isSymbolicArrayHead(arg1)) {
+        // SparseArray(SymbolicZerosArray({2,2})) and friends build the explicit array first
+        IExpr explicitArray = SymbolicArrayFunctions.normalSymbolicArray((IAST) arg1);
+        if (explicitArray.isList()) {
+          return F.sparseArray((IAST) explicitArray, F.C0);
+        }
+        return F.NIL;
+      }
       IExpr defaultValue = F.NIL;
 
       if (argSize >= 3) {

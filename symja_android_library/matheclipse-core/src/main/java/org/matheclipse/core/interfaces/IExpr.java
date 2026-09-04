@@ -305,7 +305,7 @@ public interface IExpr
 
   public static final int ARRAYSYMBOLID = DATAID + 25;
 
-  public static final int MARIXSYMBOLID = DATAID + 26;
+  public static final int MATRIXSYMBOLID = DATAID + 26;
 
   public static final int VECTORSYMBOLID = DATAID + 27;
 
@@ -3797,8 +3797,75 @@ public interface IExpr
   }
 
   /**
-   * Test if <code>this</code> is a list of points in the given dimension. The head of the points
-   * can be {@link S#List}, {@link S#Labeled} or {@link S#Style}
+   * The datum inside any display wrappers it is dressed in.
+   *
+   * <p>
+   * A plot's data may arrive wrapped in {@code Style}, {@code Labeled}, {@code Tooltip},
+   * {@code Annotation}, {@code StatusArea} or {@code Legended}, at any of the levels the Wolfram
+   * Language allows - around one value, around one point, around a whole dataset, or around a
+   * collection of them - and the wrappers may nest. Every one of them says something about how a
+   * datum is <i>shown</i> and nothing about what it <i>is</i>, so anything asking what the data
+   * looks like has to see through them first. Getting that wrong is not a missing decoration: a
+   * single unrecognised wrapper used to make a whole list stop counting as a list of points, and
+   * the plot then read the coordinates as bare heights.
+   *
+   * <p>
+   * The wrapper that is applied last - the outermost - is the one that shows, so a caller that
+   * wants to know what a wrapper said should peel the layers itself rather than only asking for
+   * the payload. {@code org.matheclipse.core.graphics.PlotWrapper} does that.
+   *
+   * @return the innermost payload, which is never itself a display wrapper; {@code this} when
+   *         there is nothing to take off
+   */
+  default IExpr stripDisplayWrappers() {
+    IExpr datum = this;
+    // a nest deeper than this is not a spelling anyone means, and the cap keeps a cyclic or
+    // pathological expression from spinning here
+    for (int depth = 0; depth < 8; depth++) {
+      if (!datum.isAST() || !isDisplayWrapperHead(datum.head())) {
+        return datum;
+      }
+      IAST wrapper = (IAST) datum;
+      if (wrapper.argSize() < 1) {
+        return datum;
+      }
+      datum = wrapper.arg1();
+    }
+    return datum;
+  }
+
+  /**
+   * Whether a head is one of the display wrappers {@link #stripDisplayWrappers()} sees through.
+   *
+   * <p>
+   * The last four carry no meaning Symja implements. They are listed anyway because recognising a
+   * wrapper is what keeps it from being mistaken for data, which is the failure that actually
+   * hurts - a plot that draws nothing is harder to explain than one that ignores a decoration.
+   */
+  static boolean isDisplayWrapperHead(IExpr head) {
+    if (!head.isBuiltInSymbol()) {
+      return false;
+    }
+    switch (((IBuiltInSymbol) head).ordinal()) {
+      case ID.Style:
+      case ID.Labeled:
+      case ID.Tooltip:
+      case ID.Annotation:
+      case ID.StatusArea:
+      case ID.Legended:
+      case ID.Button:
+      case ID.Mouseover:
+      case ID.Highlighted:
+      case ID.Callout:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Test if <code>this</code> is a list of points in the given dimension. The points may be dressed
+   * in any of the display wrappers {@link #stripDisplayWrappers()} sees through.
    * 
    * @param pointDimension the dimension of the points
    * @return <code>true</code>, if the given expression is a list of points

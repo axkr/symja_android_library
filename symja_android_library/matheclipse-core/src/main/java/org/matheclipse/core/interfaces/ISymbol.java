@@ -167,6 +167,15 @@ public interface ISymbol extends IExpr {
   /** ISymbol attribute which means that no attribute is set. */
   public static final int NOATTRIBUTE = 0x0000;
 
+  /**
+   * ISymbol attribute for a function which represents a non-scalar quantity, so that it and
+   * <code>f(arg1, arg2, ...)</code> are not combined with list arguments in arithmetic and other
+   * functions which work with lists.
+   *
+   * @see <a href="https://reference.wolfram.com/language/ref/NonThreadable.html">NonThreadable</a>
+   */
+  public static final int NONTHREADABLE = 0x00080000;
+
   /** ISymbol attribute for a numeric function */
   public static final int NUMERICFUNCTION = 0x0400;
 
@@ -200,10 +209,11 @@ public interface ISymbol extends IExpr {
   /**
    * A mask which tests if any evaluation engine attribute is sets
    */
-  public static final int NO_EVAL_ENGINE_ATTRIBUTE = 0xFFF877FF;
+  public static final int NO_EVAL_ENGINE_ATTRIBUTE = 0xFFF077FF;
 
   public static final int ALL_ATTRIBUTES = FLATORDERLESS | NHOLDALL | HOLDALLCOMPLETE | LISTABLE
-      | NUMERICFUNCTION | CONSTANT | ONEIDENTITY | PROTECTED | READPROTECTED | LOCKED;
+      | NUMERICFUNCTION | CONSTANT | ONEIDENTITY | PROTECTED | READPROTECTED | LOCKED
+      | NONTHREADABLE;
 
   public static final int CLEAR_MASK = 0xFFFFFFFF;
   //
@@ -271,6 +281,10 @@ public interface ISymbol extends IExpr {
       if ((attributes & NHOLDREST) != NOATTRIBUTE) {
         result.append(S.NHoldRest);
       }
+    }
+
+    if ((attributes & NONTHREADABLE) != NOATTRIBUTE) {
+      result.append(S.NonThreadable);
     }
 
     if ((attributes & NUMERICFUNCTION) != NOATTRIBUTE) {

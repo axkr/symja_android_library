@@ -4387,20 +4387,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isListOfPoints(int pointDimension) {
     if (isList()) {
       for (int i = 1; i < size(); i++) {
-        IExpr arg = get(i);
-        if (arg.isAST(S.List, pointDimension + 1)) {
-          continue;
+        // a display wrapper says how a point is shown, not whether it is one; asking about the
+        // shape of the data has to look through it, or one decorated point makes the whole list
+        // stop reading as points and the plot takes the coordinates for bare heights
+        if (!get(i).stripDisplayWrappers().isAST(S.List, pointDimension + 1)) {
+          return false;
         }
-        if (arg.isASTSizeGE(S.Style, 2)) {
-          if (arg.first().isAST(S.List, pointDimension + 1)) {
-            continue;
-          }
-        } else if (arg.isASTSizeGE(S.Labeled, 2)) {
-          if (arg.first().isAST(S.List, pointDimension + 1)) {
-            continue;
-          }
-        }
-        return false;
       }
       return true;
     }
@@ -6105,10 +6097,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isConditionalExpression()) {
       return arg1();
     }
-    if (isAST(S.SymbolicIdentityArray, 2)) {
-      IExpr dimensions = arg1();
-      if (dimensions.isList()) {
-        return LinearAlgebraUtil.normalSymbolicIdentityArray((IAST) dimensions);
+    if (headInstanceOf(org.matheclipse.core.interfaces.ISymbolicArray.class) != null) {
+      IExpr explicitArray =
+          org.matheclipse.core.builtin.SymbolicArrayFunctions.normalSymbolicArray(this);
+      if (explicitArray.isPresent()) {
+        return explicitArray;
       }
     }
     IExpr temp = map(x -> x.normal(nilIfUnevaluated));

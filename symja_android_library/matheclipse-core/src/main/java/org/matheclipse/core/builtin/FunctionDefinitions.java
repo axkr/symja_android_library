@@ -277,8 +277,6 @@ public final class FunctionDefinitions {
       S.Subsets.setEvaluator(new org.matheclipse.core.reflection.system.Subsets());
       S.SudokuSolve.setEvaluator(new org.matheclipse.core.reflection.system.SudokuSolve());
       S.Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
-      S.SymbolicIdentityArray
-          .setEvaluator(new org.matheclipse.core.reflection.system.SymbolicIdentityArray());
       S.SymmetricPolynomial
           .setEvaluator(new org.matheclipse.core.reflection.system.SymmetricPolynomial());
       S.SymmetricReduction
@@ -387,6 +385,7 @@ public final class FunctionDefinitions {
     BooleanFunctions.initialize();
     LinearAlgebra.initialize();
     TensorFunctions.initialize();
+    SymbolicArrayFunctions.initialize();
     ListFunctions.initialize();
     SubsetFunctions.initialize();
     SequenceFunctions.initialize();
