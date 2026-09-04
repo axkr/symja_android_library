@@ -286,7 +286,7 @@
      * axis: on a plot whose values span a hundredth of its domain, that turns every marker into a
      * streak running far outside the box.
      */
-    function buildPoints(el, diagonal, group, scaleVector) {
+    function buildPoints(el, diagonal, group, scaleVector, tooltip) {
         var THREE = global.THREE;
         var flat = el.points || [];
         var count = Math.floor(flat.length / 3);
@@ -315,6 +315,7 @@
         }
         mesh.instanceMatrix.needsUpdate = true;
         if (mesh.instanceColor) { mesh.instanceColor.needsUpdate = true; }
+        if (tooltip) { mesh.userData.symjaTooltip = tooltip; }
         group.add(mesh);
     }
 
@@ -821,7 +822,8 @@
                     case 'Line': buildPolylines(el, diagonal, group); built = group; break;
                     case 'Arrow': buildArrow(el, diagonal, group); built = group; break;
                     case 'Point':
-                        buildPoints(el, visualDiagonal, markers, scaleVector);
+                        // the instanced mesh goes straight into markers, so it is labelled there
+                        buildPoints(el, visualDiagonal, markers, scaleVector, el.tooltip);
                         built = null;
                         break;
                     case 'BSplineCurve':
@@ -844,6 +846,7 @@
                     }
                     textSprite.position.multiply(scaleVector);
                     textSprite.userData.constantSize = true;
+                    tagTooltip(textSprite, el.tooltip);
                     markers.add(textSprite);
                     continue;
                 }
@@ -851,6 +854,7 @@
                 if (el.matrix && el.matrix.length === 16) {
                     built.applyMatrix4(new THREE.Matrix4().fromArray(el.matrix));
                 }
+                tagTooltip(built, el.tooltip);
                 objects.add(built);
             }
         }
@@ -1205,6 +1209,8 @@
             renderer.setSize(w, h);
             updateSpriteScales(sprites, h, camera);
         }
+        var tooltipOverlay = addTooltipOverlay(container, renderer, scene, camera, controls);
+
         var resizeObserver = null;
         if (typeof ResizeObserver === 'function') {
             resizeObserver = new ResizeObserver(resize);
@@ -1223,6 +1229,7 @@
                     global.removeEventListener('resize', resize);
                 }
                 controls.dispose();
+                if (tooltipOverlay) { tooltipOverlay.dispose(); }
                 scene.traverse(function (object) {
                     if (object.geometry) { object.geometry.dispose(); }
                     var material = object.material;
@@ -1294,6 +1301,99 @@
         div.style.fontSize = fontSize + 'px';
         div.textContent = text;
         container.appendChild(div);
+    }
+
+    /**
+     * Remember a tooltip on everything an element built.
+     *
+     * A shape may arrive as a whole group of meshes, and the raycaster answers with whichever one
+     * the pointer actually met, so the label has to be on all of them rather than only on the
+     * group that holds them.
+     */
+    function tagTooltip(object, text) {
+        if (!object || !text) { return; }
+        object.traverse(function (node) { node.userData.symjaTooltip = text; });
+    }
+
+    /**
+     * A hover label for the scene.
+     *
+     * The picture is drawn on a canvas, so there is nothing to hang a native tooltip on the way a
+     * flat one hangs an SVG title: what is under the pointer has to be worked out by casting a ray
+     * into the scene, and the label drawn as an ordinary element over the canvas.
+     */
+    function addTooltipOverlay(container, renderer, scene, camera, controls) {
+        var THREE = global.THREE;
+        if (!THREE || typeof THREE.Raycaster !== 'function') { return null; }
+        ensureRelative(container);
+        var div = document.createElement('div');
+        div.style.cssText = 'position:absolute;display:none;z-index:2;pointer-events:none;'
+            + 'background:rgba(255,255,255,.92);padding:2px 6px;border:1px solid #999;'
+            + 'border-radius:3px;font:12px Arial,sans-serif;color:#222;white-space:pre;';
+        container.appendChild(div);
+
+        var raycaster = new THREE.Raycaster();
+        var pointer = new THREE.Vector2();
+        var pending = 0;
+        var dragging = false;
+        var canvas = renderer.domElement;
+
+        function hide() {
+            div.style.display = 'none';
+        }
+
+        function look(event) {
+            pending = 0;
+            // the canvas is positioned in its own right when the plot has an inset, so the
+            // pointer is measured against the canvas rather than against the container
+            var box = canvas.getBoundingClientRect();
+            if (box.width === 0 || box.height === 0) { return; }
+            pointer.x = ((event.clientX - box.left) / box.width) * 2 - 1;
+            pointer.y = -((event.clientY - box.top) / box.height) * 2 + 1;
+            scene.updateMatrixWorld();
+            raycaster.setFromCamera(pointer, camera);
+            var hits = raycaster.intersectObjects(scene.children, true);
+            for (var i = 0; i < hits.length; i++) {
+                var label = hits[i].object && hits[i].object.userData
+                    ? hits[i].object.userData.symjaTooltip : null;
+                if (label) {
+                    var area = container.getBoundingClientRect();
+                    div.textContent = label;
+                    div.style.display = 'block';
+                    div.style.left = (event.clientX - area.left + 12) + 'px';
+                    div.style.top = (event.clientY - area.top + 12) + 'px';
+                    return;
+                }
+            }
+            hide();
+        }
+
+        function onMove(event) {
+            // dragging is for turning the scene, not for reading it
+            if (dragging) { hide(); return; }
+            if (pending) { cancelAnimationFrame(pending); }
+            // one look per frame at most, rather than one per mouse event
+            pending = requestAnimationFrame(function () { look(event); });
+        }
+
+        function onDown() { dragging = true; hide(); }
+        function onUp() { dragging = false; }
+
+        canvas.addEventListener('mousemove', onMove);
+        canvas.addEventListener('mouseleave', hide);
+        canvas.addEventListener('pointerdown', onDown);
+        global.addEventListener('pointerup', onUp);
+
+        return {
+            dispose: function () {
+                if (pending) { cancelAnimationFrame(pending); }
+                canvas.removeEventListener('mousemove', onMove);
+                canvas.removeEventListener('mouseleave', hide);
+                canvas.removeEventListener('pointerdown', onDown);
+                global.removeEventListener('pointerup', onUp);
+                if (div.parentNode) { div.parentNode.removeChild(div); }
+            }
+        };
     }
 
     function addLegend(container, text) {
