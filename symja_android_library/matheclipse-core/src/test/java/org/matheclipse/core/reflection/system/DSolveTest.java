@@ -490,6 +490,19 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveSymmetricSquare() {
+    // The solutions are the products of the solutions of u''(x) == (x+2)*u(x), which is Airy's
+    // equation about the centre -2.
+    check("DSolve(y'''(x) - 4*(x + 2)*y'(x) - 2*y(x) == 0, y(x), x)", //
+        "{{y(x)->AiryAi(2+x)^2*C(1)+AiryAi(2+x)*AiryBi(2+x)*C(2)+AiryBi(2+x)^2*C(3)}}");
+
+    // The same for a second order equation whose solutions are Bessel functions of order Sqrt(3).
+    checkResidual("x^3*y'''(x) + 3*x^2*y''(x) + (4*x^3 - 11*x)*y'(x) + 4*x^2*y(x) == 0",
+        "x^3*y'''(x) + 3*x^2*y''(x) + (4*x^3 - 11*x)*y'(x) + 4*x^2*y(x)",
+        "{C(1)->7/5, C(2)->3/4, C(3)->2/3, x->13/10}");
+  }
+
+  @Test
   public void testDSolveLinearizable() {
     // u == Log(y) makes this linear in u.
     check("DSolve(y'(x) == y(x)*(E^x + Log(y(x))), y(x), x)", //

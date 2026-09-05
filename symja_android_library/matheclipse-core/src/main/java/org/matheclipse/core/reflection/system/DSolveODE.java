@@ -958,6 +958,12 @@ final class DSolveODE {
         IExpr eulerCauchySol = solveEulerCauchyODE(normalized, yFunction, xVar, C_1, ctx);
         if (eulerCauchySol.isPresent())
           return eulerCauchySol;
+
+        if (n == 3) {
+          IExpr symmetricSquare = DSolveSymmetricSquare.solve(normalized, xVar, C_1, ctx);
+          if (symmetricSquare.isPresent())
+            return symmetricSquare;
+        }
       }
 
       IExpr reductionOfOrderSol = solveReductionOfOrderODE(lhs, yFunction, xVar, n, C_1, ctx);
