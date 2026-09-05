@@ -490,6 +490,39 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveSystemVariableCoefficients() {
+    // A rotation whose radius grows: the matrix is (1/t)*I plus a constant one, so it commutes
+    // with its own integral and has an exponential.
+    check("DSolve({x'(t) == x(t)/t + y(t), y'(t) == -x(t) + y(t)/t}, {x(t), y(t)}, t)", //
+        "{{x(t)->t*C(1)*Cos(t)+t*C(2)*Sin(t),y(t)->t*C(2)*Cos(t)-t*C(1)*Sin(t)}}");
+
+    // A constant matrix with a scalar function in front of it.
+    check("With({s=DSolve({t*x'(t) + y(t) == 0, t*y'(t) + x(t) == 0}, {x, y}, t)}, "
+        + "Head(s)===List && Max(Abs(N({t*x'(t) + y(t), t*y'(t) + x(t)} /. s[[1]] /. "
+        + "{C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
+        "True");
+
+    // The same shape with a forcing term.
+    check("With({s=DSolve({t*x'(t) + 2*x(t) - 2*y(t) == t, t*y'(t) + x(t) + 5*y(t) == t^2}, "
+        + "{x, y}, t)}, Head(s)===List && "
+        + "Max(Abs(N({t*x'(t) + 2*x(t) - 2*y(t) - t, t*y'(t) + x(t) + 5*y(t) - t^2} /. s[[1]] /. "
+        + "{C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
+        "True");
+
+    // A multiple of the identity plus a multiple of one constant matrix, both depending on t.
+    check("With({s=DSolve({x'(t) == -x(t) + t*y(t), y'(t) == t*x(t) - y(t)}, {x, y}, t)}, "
+        + "Head(s)===List && Max(Abs(N({x'(t) + x(t) - t*y(t), y'(t) - t*x(t) + y(t)} /. s[[1]] "
+        + "/. {C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
+        "True");
+
+    check("With({s=DSolve({x'(t) == x(t)*Cos(t) - Sin(t)*y(t), y'(t) == x(t)*Sin(t) "
+        + "+ y(t)*Cos(t)}, {x, y}, t)}, Head(s)===List && "
+        + "Max(Abs(N({x'(t) - x(t)*Cos(t) + Sin(t)*y(t), y'(t) - x(t)*Sin(t) - y(t)*Cos(t)} "
+        + "/. s[[1]] /. {C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
+        "True");
+  }
+
+  @Test
   public void testDSolveSystemHigherOrder() {
     // Carrying the first derivatives as unknowns of their own turns these into first order
     // systems, which is the shape the matrix engine solves.

@@ -321,12 +321,6 @@ final class DSolveSystem {
     IAST mvAST = (IAST) system[1];
     IAST bAST = (IAST) system[2];
 
-    for (int i = 1; i <= n; i++) {
-      if (!mdAST.get(i).isFree(indepentVariable) || !mvAST.get(i).isFree(indepentVariable)) {
-        return F.NIL;
-      }
-    }
-
     IExpr mdInv = engine.evaluate(F.Inverse(mdAST));
     if (!mdInv.isList()) {
       return F.NIL;
@@ -337,7 +331,11 @@ final class DSolveSystem {
 
     int savedCounter = engine.getConstantCounter();
     try {
-      IExpr bodies = solveLinearFirstOrderSystem(matrixA, vectorB, n, indepentVariable, ctx);
+      // A matrix which depends on the variable has no exponential in general, but the shapes in
+      // which it commutes with its own integral do have one.
+      IExpr bodies = matrixA.isFree(indepentVariable) //
+          ? solveLinearFirstOrderSystem(matrixA, vectorB, n, indepentVariable, ctx)
+          : DSolveSystemVarCoeff.solve(matrixA, vectorB, n, indepentVariable, ctx);
       if (bodies.isList()) {
         if (!DSolveVerify.acceptSystem(residuals, dependentFunctions, indepentVariable,
             (IAST) bodies, engine)) {
