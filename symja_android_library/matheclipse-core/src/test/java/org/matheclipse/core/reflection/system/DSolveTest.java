@@ -649,6 +649,34 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveTriangularSystem() {
+    // Coupled, so the system does not split into blocks, but one equation mentions only x and
+    // solving it makes the other one a scalar equation in y. The coefficients depend on the
+    // variable, which is what puts the system out of reach of the matrix construction; a system
+    // whose matrix is constant is left to that construction, which names the constants after the
+    // unknowns rather than after the order the unknowns are found in.
+    check("With({s=DSolve({x'(t) == x(t), y'(t) == x(t) + t*y(t)}, {x(t), y(t)}, t)[[1]]},"
+        + " Block({X=x(t)/.s, Y=y(t)/.s},"
+        + " Max(Abs(N({D(X,t)-X, D(Y,t)-X-t*Y} /. {t->17/13, C(1)->3/7, C(2)->5/11})))) < 10^-6)", //
+        "True");
+
+    check("With({s=DSolve({y'(t) == t^2*y(t), x'(t) == y(t)}, {x(t), y(t)}, t)[[1]]},"
+        + " Block({X=x(t)/.s, Y=y(t)/.s},"
+        + " Max(Abs(N({D(Y,t)-t^2*Y, D(X,t)-Y} /. {t->17/13, C(1)->3/7, C(2)->5/11})))) < 10^-6)", //
+        "True");
+
+    // The conditions are fitted the same way as for any other system.
+    check("With({s=DSolve({x'(t) == x(t), y'(t) == x(t) + t*y(t), x(0) == 1, y(0) == 0},"
+        + " {x(t), y(t)}, t)[[1]]}, Block({X=x(t)/.s, Y=y(t)/.s},"
+        + " Max(Abs(N({D(X,t)-X, D(Y,t)-X-t*Y, X-1, Y} /. t->0)))) < 10^-6)", //
+        "True");
+
+    // Unknowns which depend on one another in a circle put no equation in that position.
+    check("DSolve({x'(t) == x(t)^2*y(t), y'(t) == x(t)}, {x(t), y(t)}, t)", //
+        "DSolve({x'(t)==x(t)^2*y(t),y'(t)==x(t)},{x(t),y(t)},t)");
+  }
+
+  @Test
   public void testDSolveFactorable() {
     // Anything solving one factor solves the product, so each factor is an equation of its own
     // and the branches are collected. The branches are alternatives rather than parts of one

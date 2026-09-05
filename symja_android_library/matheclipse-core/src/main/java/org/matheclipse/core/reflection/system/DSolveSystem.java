@@ -191,6 +191,14 @@ final class DSolveSystem {
       }
     }
 
+    // A system whose unknowns can be found one at a time is solved that way, before the matrix
+    // construction below, which reaches only the systems whose coefficients are constant.
+    IExpr triangular = solveTriangularSystem(equations, dependentFunctions, indepentVariable,
+        boundaryConditions, outputFunctions, ctx);
+    if (triangular.isPresent()) {
+      return triangular;
+    }
+
     // A system in which an unknown is differentiated more than once is carried to a first order
     // one before the shapes below are looked for, because the test for an algebraic variable knows
     // only about first derivatives and would read a second order equation as one.
@@ -551,6 +559,124 @@ final class DSolveSystem {
       combined.appendArgs((IAST) rules);
     }
     return F.List(combined);
+  }
+
+  /** How high a derivative is substituted forward into the equations still to be solved. */
+  private static final int MAX_TRIANGULAR_ORDER = 4;
+
+  /**
+   * A system which can be solved one unknown at a time.
+   *
+   * <p>
+   * When some equation mentions only one unknown which is still unknown, that equation is a scalar
+   * one and the cascade solves it; putting its solution into the equations left over may leave
+   * another equation in that same position, and so on until every unknown is found. This is what
+   * makes a system such as <code>{x'(t) == x(t), y'(t) == x(t) + t*y(t)}</code> solvable at all: it
+   * is coupled, so the blocks of {@link #solveDecoupled} do not split it, and its coefficients
+   * depend on the variable, so the matrix construction does not reach it either. A system in which
+   * the unknowns genuinely depend on one another in a circle never puts an equation in that
+   * position and is declined.
+   */
+  private static IExpr solveTriangularSystem(IASTAppendable equations, IAST dependentFunctions,
+      IExpr xVar, IAST boundaryConditions, IExpr outputFunctions, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    int n = dependentFunctions.argSize();
+    if (n < 2 || equations.argSize() != n) {
+      return F.NIL;
+    }
+
+    IExpr[] work = new IExpr[n];
+    for (int e = 0; e < n; e++) {
+      IExpr equation = equations.get(e + 1);
+      work[e] = equation.isEqual() //
+          ? engine.evaluate(F.Subtract(equation.first(), equation.second()))
+          : equation;
+    }
+    // A system which is linear with a constant coefficient matrix is left to the matrix
+    // construction below. It answers those already, and names the constants after the unknowns
+    // rather than after the order the unknowns happen to be found in.
+    IAST residuals = F.mapRange(0, n, i -> work[i]);
+    IExpr[] linear =
+        LinearODEForm.extractSystem(residuals, dependentFunctions, xVar, engine);
+    if (linear != null && linear[0].isFree(xVar) && linear[1].isFree(xVar)
+        && linear[2].isFree(xVar)) {
+      return F.NIL;
+    }
+
+    boolean[] equationUsed = new boolean[n];
+    IExpr[] bodies = new IExpr[n];
+
+    for (int solved = 0; solved < n;) {
+      boolean progress = false;
+      for (int e = 0; e < n && !progress; e++) {
+        if (equationUsed[e] || ctx.expired()) {
+          continue;
+        }
+        int only = -1;
+        int count = 0;
+        for (int j = 0; j < n; j++) {
+          if (bodies[j] == null && !work[e].isFree(dependentFunctions.get(j + 1).head(), true)) {
+            only = j;
+            count++;
+          }
+        }
+        if (count != 1) {
+          continue;
+        }
+
+        IExpr function = dependentFunctions.get(only + 1);
+        int order = LinearODEForm.highestDerivativeOrder(work[e], function.head(), xVar);
+        if (order < 1 || order > MAX_TRIANGULAR_ORDER) {
+          continue;
+        }
+        // Every unknown takes its constants from the same running count, so the ones already
+        // handed out are not given again.
+        IAST branches = DSolveODE.solveSubODE(F.Equal(work[e], F.C0), xVar, function,
+            ctx.nextConstant(), ctx);
+        if (branches.argSize() == 0) {
+          // Another equation may isolate another unknown, and this one may become solvable once
+          // that unknown has been substituted into it.
+          continue;
+        }
+
+        bodies[only] = branches.arg1();
+        equationUsed[e] = true;
+        solved++;
+        progress = true;
+
+        for (int f = 0; f < n; f++) {
+          if (!equationUsed[f]) {
+            work[f] = substituteSolved(work[f], function, bodies[only], xVar, order, engine);
+          }
+        }
+      }
+      if (!progress) {
+        return F.NIL;
+      }
+    }
+
+    IASTAppendable ordered = F.ListAlloc(n);
+    for (int j = 0; j < n; j++) {
+      ordered.append(bodies[j]);
+    }
+    return formatSystemResult(ordered, dependentFunctions, xVar, boundaryConditions,
+        outputFunctions, ctx);
+  }
+
+  /**
+   * Puts a solved unknown, and every derivative of it the equation uses, into one residual.
+   *
+   * <p>
+   * The derivatives go in first, because the function itself is part of them.
+   */
+  private static IExpr substituteSolved(IExpr residual, IExpr function, IExpr body, IExpr xVar,
+      int order, EvalEngine engine) {
+    IExpr result = residual;
+    for (int m = order; m >= 1; m--) {
+      IExpr derivative = engine.evaluate(F.D(function, F.List(xVar, F.ZZ(m))));
+      result = F.subst(result, derivative, engine.evaluate(F.D(body, F.List(xVar, F.ZZ(m)))));
+    }
+    return engine.evaluate(F.subst(result, function, body));
   }
 
   private static int find(int[] group, int index) {
