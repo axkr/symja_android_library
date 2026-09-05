@@ -957,6 +957,13 @@ final class DSolveODE {
       return F.NIL;
     }
 
+    // A product is split before the methods below are asked to recognize it whole: anything
+    // solving one factor solves the product.
+    IExpr factoredSol = DSolveFactorable.solve(lhs, yFunction, xVar, n, C_1, ctx);
+    if (factoredSol.isPresent()) {
+      return factoredSol;
+    }
+
     // The one place which decides whether the equation is linear in the function it is solved
     // for. Reading coefficients off an equation which is not makes the solvers below answer
     // confidently with something wrong instead of declining.

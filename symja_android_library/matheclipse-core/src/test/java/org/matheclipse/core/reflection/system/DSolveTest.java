@@ -649,6 +649,26 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveFactorable() {
+    // Anything solving one factor solves the product, so each factor is an equation of its own
+    // and the branches are collected. The branches are alternatives rather than parts of one
+    // solution, so each names its constants from the same place.
+    check("DSolve((y'(x) - y(x))*(y'(x) + y(x)) == 0, y(x), x)", //
+        "{{y(x)->E^x*C(1)},{y(x)->C(1)/E^x}}");
+
+    // The same equation multiplied out, which is the shape it is usually written in.
+    check("DSolve(y'(x)^2 - y(x)^2 == 0, y(x), x)", //
+        "{{y(x)->E^x*C(1)},{y(x)->C(1)/E^x}}");
+
+    check("DSolve(x*y'(x)^2 - (x + y(x))*y'(x) + y(x) == 0, y(x), x)", //
+        "{{y(x)->x+C(1)},{y(x)->x*C(1)}}");
+
+    // The factors need not be of the first order.
+    check("DSolve(y''(x)^2 - y'(x)^2 == 0, y(x), x)", //
+        "{{y(x)->C(1)+E^x*C(2)},{y(x)->C(1)/E^x+C(2)}}");
+  }
+
+  @Test
   public void testDSolveFirstOrderReduction() {
     // The right hand side depends on x and y only through x + y, so in that combination the
     // equation has no x left and is separable.
