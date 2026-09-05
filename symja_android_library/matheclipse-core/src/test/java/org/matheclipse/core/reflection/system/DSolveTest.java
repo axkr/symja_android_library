@@ -649,6 +649,26 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveKovacicApparentSingularities() {
+    // Chebyshev's equation. Its solutions have zeros where r has no pole, which the guess of the
+    // plain case cannot put anywhere; those zeros go into a polynomial factor of their own.
+    check("DSolve((1-x^2)*y''(x) - x*y'(x) + 4*y(x) == 0, y(x), x)", //
+        "{{y(x)->-C(1)/2+x^2*C(1)+x*Sqrt(1-x^2)*C(2)}}");
+
+    check("DSolve((1-x^2)*y''(x) - x*y'(x) + 9*y(x) == 0, y(x), x)", //
+        "{{y(x)->-3/4*x*C(1)+x^3*C(1)-1/4*Sqrt(1-x^2)*C(2)+x^2*Sqrt(1-x^2)*C(2)}}");
+
+    // Gegenbauer's equation, whose two solutions come from two different choices at the poles and
+    // so need no integral between them.
+    check("DSolve((1-x^2)*y''(x) - 3*x*y'(x) + 3*y(x) == 0, y(x), x)", //
+        "{{y(x)->x*C(1)-C(2)/(2*Sqrt(1-x^2))+(x^2*C(2))/Sqrt(1-x^2)}}");
+
+    check("With({b=(y(x) /. DSolve((1-x^2)*y''(x) - 3*x*y'(x) + 3*y(x) == 0, y(x), x)[[1,1]])},"
+        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->1/3)) > 10^-6)", //
+        "True");
+  }
+
+  @Test
   public void testDSolveKovacicPolynomialFactor() {
     // A solution with zeros in it has no polynomial logarithmic derivative, so the guess which
     // looks only for one misses it. Splitting the zeros off into a factor of their own leaves an
