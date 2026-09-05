@@ -1002,7 +1002,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (that instanceof IFraction) {
       return ((IFraction) that).gcd(F.fraction(toBigNumerator(), BigInteger.ONE));
     }
-    return F.C1;
+    // Fall back to the rational content, so that the ring-level GCD JAS calls on polynomial
+    // coefficients finds the 2 shared by 2 and 2*Sqrt(3). The GCD() builtin is untouched.
+    return NumberUtil.rationalContentGCD(this, that);
   }
 
   /** {@inheritDoc} */

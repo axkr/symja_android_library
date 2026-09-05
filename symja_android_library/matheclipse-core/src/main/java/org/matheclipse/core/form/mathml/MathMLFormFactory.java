@@ -1050,6 +1050,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         table.append(" style=\"background-color:").append(ColorUtil.css(spec.background))
             .append(";\"");
       }
+      boolean tight = isAllPictures(spec) && !spec.spacingsExplicit;
       fFactory.tagStart(buf, "mtable", table.toString());
       for (int r = 0; r < spec.rows; r++) {
         fFactory.tagStart(buf, "mtr");
@@ -1059,7 +1060,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
             // reserved the room, and an empty mtd here would push the row one column wider
             continue;
           }
-          convertCell(buf, spec, r, c);
+          convertCell(buf, spec, r, c, tight);
         }
         fFactory.tagEnd(buf, "mtr");
       }
@@ -1067,7 +1068,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       return true;
     }
 
-    private void convertCell(final StringBuilder buf, LayoutSpec spec, int r, int c) {
+    private void convertCell(final StringBuilder buf, LayoutSpec spec, int r, int c,
+        boolean tight) {
       LayoutSpec.Cell cell = spec.cells[r][c];
       StringBuilder attributes = new StringBuilder();
       if (cell.rowSpan > 1) {
@@ -1078,7 +1080,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       }
       String align = horizontalName(spec.alignHAt(r, c));
       attributes.append(" columnalign=\"").append(align).append('"');
-      attributes.append(" style=\"").append(cellStyle(spec, r, c, align)).append('"');
+      attributes.append(" style=\"").append(cellStyle(spec, r, c, align, tight)).append('"');
       fFactory.tagStart(buf, "mtd", attributes.toString().trim());
       IExpr content = cell.content;
       if (content != null) {
@@ -1092,14 +1094,44 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       fFactory.tagEnd(buf, "mtd");
     }
 
+    /**
+     * Whether every cell of the grid draws a picture.
+     *
+     * <p>
+     * Only then is the character sized gap between cells wrong: a grid that holds any text still
+     * needs its columns kept apart, so a mixed one keeps the spacing it has always had.
+     */
+    private static boolean isAllPictures(LayoutSpec spec) {
+      boolean any = false;
+      for (int r = 0; r < spec.rows; r++) {
+        for (int c = 0; c < spec.cols; c++) {
+          IExpr content = spec.cells[r][c].content;
+          if (content == null) {
+            continue;
+          }
+          if (!content.isGraphicsObject()) {
+            return false;
+          }
+          any = true;
+        }
+      }
+      return any;
+    }
+
     /** The borders, the shading and the padding of one cell. */
-    private String cellStyle(LayoutSpec spec, int r, int c, String align) {
+    private String cellStyle(LayoutSpec spec, int r, int c, String align, boolean tight) {
       LayoutSpec.Cell cell = spec.cells[r][c];
       StringBuilder css = new StringBuilder();
       css.append("text-align:").append(align).append(';');
       css.append("vertical-align:").append(verticalName(spec.alignVAt(r, c))).append(';');
-      css.append("padding:").append(fmt(gap(spec.rowGaps, r) / 2.0)).append("em ")
-          .append(fmt(gap(spec.colGaps, c) / 2.0)).append("em;");
+      if (tight) {
+        // a grid of pictures is a sheet of pictures: the default gap is room between columns of
+        // characters, and inserting it between two drawings only pushes them apart
+        css.append("padding:0;");
+      } else {
+        css.append("padding:").append(fmt(gap(spec.rowGaps, r) / 2.0)).append("em ")
+            .append(fmt(gap(spec.colGaps, c) / 2.0)).append("em;");
+      }
       java.awt.Color background =
           cell.background != null ? cell.background : spec.backgroundAt(r, c);
       if (background != null) {
@@ -3322,6 +3354,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.GraphicsColumn, graphicsInline);
     CONVERTERS.put(S.GraphicsGrid, graphicsInline);
     CONVERTERS.put(S.Overlay, graphicsInline);
+    // a display wrapper around a whole picture draws the picture: the converter's own
+    // isGraphicsObject() guard keeps Tooltip(1, "a") printing as itself
+    CONVERTERS.put(S.Tooltip, graphicsInline);
+    CONVERTERS.put(S.Labeled, graphicsInline);
+    CONVERTERS.put(S.Legended, graphicsInline);
+    CONVERTERS.put(S.Annotation, graphicsInline);
+    CONVERTERS.put(S.StatusArea, graphicsInline);
+    CONVERTERS.put(S.Mouseover, graphicsInline);
     CONVERTERS.put(S.Graphics3D, new Graphics3DInline());
     ControlWidget controlWidget = new ControlWidget();
     CONVERTERS.put(S.Slider, controlWidget);

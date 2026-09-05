@@ -273,6 +273,41 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     // as 1/(...) rather than (...)^(-1), does not push a leading sign into the denominator, and
     // only cancels factors that are actually common to numerator and denominator (so a
     // denominator-only numeric/monomial factor such as the 2 in 2-2*x is not pulled out).
+    // A fraction whose every leaf is constant is still cancellable: PolynomialHomogenization
+    // replaces each non-polynomial kernel (here E^Sqrt(3), since E is CONSTANT and Sqrt(3) is a
+    // numeric Power, so there is no variable to be found) with a dummy variable. Every result
+    // below was checked against its input numerically at 30 digits.
+    check("Cancel((2+2*E^(2*Sqrt(3)))/(4*E^Sqrt(3)))", //
+        "(1+E^(2*Sqrt(3)))/(2*E^Sqrt(3))");
+    check("Cancel((6+6*E^(2*Sqrt(3)))/(4*E^Sqrt(3)))", //
+        "(3+3*E^(2*Sqrt(3)))/(2*E^Sqrt(3))");
+    check("Cancel((2+2*Pi)/(4*Pi))", //
+        "(1+Pi)/(2*Pi)");
+    check("Cancel((2+2*Cos(1))/(4*Cos(1)^2))", //
+        "1/2*(Sec(1)+Sec(1)^2)");
+    check("Cancel((2+2*I*E^(2*Sqrt(3)))/(4*E^Sqrt(3)))", //
+        "(1+I*E^(2*Sqrt(3)))/(2*E^Sqrt(3))");
+    // already reduced: the gcd is 1 and the fraction is returned unchanged
+    check("Cancel((1+E^(2*Sqrt(3)))/(2*E^Sqrt(3)))", //
+        "(1+E^(2*Sqrt(3)))/(2*E^Sqrt(3))");
+    // neither a variable nor a substituted kernel, so there is no polynomial ring to build
+    check("Cancel((1+Sqrt(2))/(3+Sqrt(2)))", //
+        "(1+Sqrt(2))/(3+Sqrt(2))");
+    // an irrational coefficient must not hide the integer content: the ring-level GCD of the
+    // coefficients reports the rational content, so gcd(2, 2*Sqrt(3)) is 2 and not 1
+    check("Cancel((2*Sqrt(3)+2*E^(2*q))/(4*E^q))", //
+        "(Sqrt(3)+E^(2*q))/(2*E^q)");
+    check("Cancel((2*Sqrt(3)*x+2*x^2)/(4*x))", //
+        "1/2*(Sqrt(3)+x)");
+    check("Cancel((Sqrt(3)+Sqrt(3)*x^2)/(2*Sqrt(3)*x))", //
+        "(1+x^2)/(2*x)");
+    // the polynomial GCD keeps the coefficients expanded, so this stays a compact quotient instead
+    // of collapsing into a page of nested fractions built from unexpanded products of Sqrt(2)
+    check("Cancel(Expand((1+Sqrt(2)+x)^4*(2+x))/Expand((1+Sqrt(2)+x)^2*(2+x)^2))", //
+        "(17+12*Sqrt(2)+(14+10*Sqrt(2))*x+(3+2*Sqrt(2))*x^2)/(6+4*Sqrt(2)+(3+2*Sqrt(2))*x)");
+    check("Cancel(Expand((1+Sqrt(2)+E^Sqrt(3))^4*(2+E^Sqrt(3)))/Expand((1+Sqrt(2)+E^Sqrt(3))^2*(2+E^Sqrt(3))^2))", //
+        "(17+12*Sqrt(2)+(14+10*Sqrt(2))*E^Sqrt(3)+(3+2*Sqrt(2))*E^(2*Sqrt(3)))/(6+4*Sqrt(\n"
+            + "2)+(3+2*Sqrt(2))*E^Sqrt(3))");
     check("Cancel((4*x^2 - 2*x)/(2 + 3*x))", //
         "(-2*x+4*x^2)/(2+3*x)");
     check("Cancel((-5 - 2*x - 4*x^2)/(3 + 2*x^2 + 5*x^3))", //

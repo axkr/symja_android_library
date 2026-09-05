@@ -24,6 +24,25 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class MatrixFunction extends AbstractFunctionEvaluator {
 
+  /**
+   * Evaluate <code>expr</code> without letting its messages reach the user. Both diagonalization
+   * attempts below may hit a singular transformation matrix and fall back, so their failures are
+   * not user errors.
+   *
+   * @param expr the expression to evaluate
+   * @param engine the evaluation engine
+   * @return the evaluated expression
+   */
+  private static IExpr evalQuiet(IExpr expr, EvalEngine engine) {
+    final boolean quietMode = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      return engine.evaluate(expr);
+    } finally {
+      engine.setQuietMode(quietMode);
+    }
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr f = ast.arg1();
@@ -62,8 +81,9 @@ public class MatrixFunction extends AbstractFunctionEvaluator {
         // The eigenvectors are the rows, so we transpose to get the transformation matrix S
         IAST sMatrix = (IAST) engine.evaluate(F.Transpose(vecsList));
 
-        // Compute Inverse(S)
-        IExpr sInverse = engine.evaluate(F.Inverse(sMatrix));
+        // Compute Inverse(S). A defective matrix gives a singular S; the Jordan fallback below
+        // handles that case, so the `Inverse::sing` message must not reach the user.
+        IExpr sInverse = evalQuiet(F.Inverse(sMatrix), engine);
 
         // Check if the eigenvectors matrix is invertible (i.e., matrix is diagonalizable)
         if (sInverse.isList()) {
@@ -132,7 +152,7 @@ public class MatrixFunction extends AbstractFunctionEvaluator {
         }
 
         // Compute f(A) = S . f(J) . Inverse(S)
-        IExpr sInverse = engine.evaluate(F.Inverse(s));
+        IExpr sInverse = evalQuiet(F.Inverse(s), engine);
         if (sInverse.isList()) {
           // the product is built with the raw field operations, so normalize the entries
           return Convert.simplifyMatrixEntries(

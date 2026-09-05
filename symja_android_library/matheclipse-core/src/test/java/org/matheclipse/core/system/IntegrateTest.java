@@ -74,9 +74,11 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "12-21/5*Log(4)");
     check("Integrate(1/((2 + x^2)*Sqrt(4 + 3*x^2)),x)", //
         "Log(1+x/Sqrt(4+3*x^2))/4-Log(1-x/Sqrt(4+3*x^2))/4");
-    // same as ArcCosh(Sqrt(3/2))
+    // same as ArcCosh(Sqrt(3/2)) = 0.658478...; the logarithm arguments are the reciprocal-free
+    // form of 1-1/Sqrt(3) and 1+1/Sqrt(3), and the coefficients arrive already reduced to 1/2
+    // rather than as 1/4*2
     check("Integrate(1/((2 + x^2)*Sqrt(4 + 3*x^2)), {x, -Infinity, Infinity})", //
-        "1/4*(-2*Log(1-1/Sqrt(3))+2*Log(1+1/Sqrt(3)))");
+        "-Log((-1+Sqrt(3))/Sqrt(3))/2+Log((1+Sqrt(3))/Sqrt(3))/2");
     check("Integrate((1 + x^3)*x^(1/3), {x, -1, 1})", //
         "51/52+27/52*(-1)^(1/3)");
 

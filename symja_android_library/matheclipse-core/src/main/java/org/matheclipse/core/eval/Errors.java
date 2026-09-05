@@ -228,6 +228,7 @@ public class Errors {
       "geoprop", "`1` is not a known property of the reference ellipsoid `2`.", //
       "juliantype", "`1` is not a known Julian date type.", //
       "hdiv", "`1` does not exist. Arguments  are not consistent.", //
+      "hdmpow2", "The order `1` in `2` is restricted to a power of 2.", //
       "heads", "Heads `1` and `2` are expected to be the same.", //
       "heads2", "Heads `1` and `2` at positions `3` and `4` are expected to be the same.", //
       "herm", "The matrix `1` is not hermitian or real and symmetric.", //

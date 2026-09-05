@@ -895,28 +895,36 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
-  // @Test
-  // public void testLimitSinIntegral() {
-  // check("Limit(SinIntegral(t*(1+w)), t->Infinity)", //
-  // "ConditionalExpression(Pi/2,w>-1)");
-  //
-  // // When coefficient is positive constant: plain Pi/2
-  // check("Limit(SinIntegral(3*t), t->Infinity)", //
-  // "Pi/2");
-  //
-  // // When coefficient is negative constant: -Pi/2
-  // check("Limit(SinIntegral(-2*t), t->Infinity)", //
-  // "-Pi/2");
-  //
-  // // At t -> -Infinity with positive coefficient: -Pi/2
-  // check("Limit(SinIntegral(t), t->-Infinity)", //
-  // "-Pi/2");
-  //
-  // check("Limit(CosIntegral(t), t->Infinity)", //
-  // "0");
-  // check("Limit(CosIntegral(t), t->-Infinity)", //
-  // "I*Pi");
-  // }
+  /**
+   * The sine and cosine integrals at infinity. This test was disabled while these were unresolved;
+   * the leading-term overhaul resolves all of them except the symbolic-coefficient case noted
+   * below.
+   */
+  @Test
+  public void testLimitSinIntegral() {
+    // a positive constant coefficient: plain Pi/2
+    check("Limit(SinIntegral(3*t), t->Infinity)", //
+        "Pi/2");
+
+    // a negative constant coefficient flips the sign
+    check("Limit(SinIntegral(-2*t), t->Infinity)", //
+        "-Pi/2");
+
+    // approaching from the other end flips it too, SinIntegral being odd
+    check("Limit(SinIntegral(t), t->-Infinity)", //
+        "-Pi/2");
+
+    check("Limit(CosIntegral(t), t->Infinity)", //
+        "0");
+    // CosIntegral(t) = Ci(|t|) + I*Pi on the negative axis, and Ci vanishes at infinity
+    check("Limit(CosIntegral(t), t->-Infinity)", //
+        "I*Pi");
+
+    // STILL UNRESOLVED: a symbolic coefficient needs the answer split on the sign of 1 + w,
+    // i.e. ConditionalExpression(Pi/2, w > -1). This one does not terminate in reasonable time.
+    // check("Limit(SinIntegral(t*(1+w)), t->Infinity)", //
+    // "ConditionalExpression(Pi/2,w>-1)");
+  }
 
 
 
@@ -934,16 +942,15 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit((Sin(1/x)/2)^(1/x^2), x -> Infinity)", //
         "1");
     /*
-     * Base magnitude bound >= 1: (2 Sin[1/x])^(1/x^2) is unbounded, so no false 0.
-     * 
-     * TODO the shape should be left unevaluated.
+     * Base magnitude bound >= 1: (2 Sin[1/x])^(1/x^2) is unbounded, so no false 0. The base takes
+     * negative values arbitrarily close to 0 while the exponent diverges, so the expression has no
+     * limit - Indeterminate is how this engine reports that, as it does for Sin(1/x) at 0 above.
      */
     check("Limit((2 Sin(1/x))^(1/x^2), x -> 0)", //
         "Indeterminate");
     /*
-     * Negative divergent exponent: the bound inequality flips and a vanishing base blows up.
-     * 
-     * TODO this too should be left unevaluated.
+     * Negative divergent exponent: the bound inequality flips and a vanishing base blows up. As
+     * above, the limit does not exist and Indeterminate is the report for that.
      */
     check("Limit((Sin(1/x)/2)^(-1/x^2), x -> 0)", //
         "Indeterminate");
@@ -1257,6 +1264,193 @@ public class LimitTest extends ExprEvaluatorTestCase {
   public void tearDown() throws Exception {
     // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
+  }
+
+  /**
+   * Differences of surds at infinity, where the two terms individually diverge and only their
+   * conjugate combination is finite. Previously reached through a dedicated conjugate-multiplication
+   * branch in {@code plusLimit}; kept as a regression guard now that the leading-term path resolves
+   * them.
+   */
+  @Test
+  public void testConjugateSurdLimits() {
+    check("Limit(Sqrt(x^2+x)-x, x->Infinity)", //
+        "1/2");
+    check("Limit(Sqrt(x^2+3*x)-x, x->Infinity)", //
+        "3/2");
+    check("Limit(Sqrt(x+1)-Sqrt(x), x->Infinity)", //
+        "0");
+  }
+
+  /**
+   * Rational functions at infinity, decided by the degrees of numerator and denominator. Previously
+   * reached through a dedicated polynomial-degree comparison.
+   */
+  @Test
+  public void testRationalDegreeLimits() {
+    check("Limit((3*x^2+1)/(2*x^2-5), x->Infinity)", //
+        "3/2");
+    check("Limit((x^2+1)/(x^3-1), x->Infinity)", //
+        "0");
+    check("Limit((x^3+1)/(x^2+1), x->Infinity)", //
+        "Infinity");
+    check("Limit((2*x^5-x)/(7*x^5+3), x->-Infinity)", //
+        "2/7");
+  }
+
+  /**
+   * Differences of two poles at a finite point, where each term diverges and the singular parts
+   * cancel. Previously reached through a one-shot {@code Together} retry.
+   */
+  @Test
+  public void testDifferenceOfPolesAtFinitePoint() {
+    check("Limit(1/(x-1)-1/Log(x), x->1)", //
+        "-1/2");
+    check("Limit(1/Log(x)-1/(x-1), x->1)", //
+        "1/2");
+    check("Limit(1/x-1/Sin(x), x->0)", //
+        "0");
+  }
+
+  /**
+   * Nested Gamma logarithms, which grow like <code>g*Log(g)</code> with <code>g = Gamma(x)</code>.
+   * Previously reached through a dedicated leading-Stirling substitution.
+   */
+  @Test
+  public void testNestedGammaLogarithms() {
+    check("Limit(Log(Gamma(Gamma(x))), x->Infinity)", //
+        "Infinity");
+    check("Limit(LogGamma(Gamma(x)), x->Infinity)", //
+        "Infinity");
+    check("Limit(Log(Gamma(Gamma(x)))/Gamma(x), x->Infinity)", //
+        "Infinity");
+  }
+
+  /**
+   * A negative Gamma-family expression at infinity. The Stirling shortcut evaluates
+   * <code>Exp(Limit(Log(f)))</code>, which reconstructs <code>f</code> only for eventually positive
+   * <code>f</code>: for a negative one the sign sits in the imaginary part of the logarithm
+   * (<code>Log(-a) == Log(a) + I*Pi</code>) and a divergent limit swallows it. These all used to
+   * come back with the sign flipped, e.g. <code>-Gamma(x) -&gt; Infinity</code>.
+   */
+  @Test
+  public void testNegativeGammaFamilyAtInfinity() {
+    check("Limit(-Gamma(x), x->Infinity)", //
+        "-Infinity");
+    check("Limit(E^(-Gamma(x)), x->Infinity)", //
+        "0");
+    check("Limit(1/E^Gamma(x), x->Infinity)", //
+        "0");
+    check("Limit(E^(-Factorial(x)), x->Infinity)", //
+        "0");
+    // the positive case must be unaffected
+    check("Limit(Gamma(x), x->Infinity)", //
+        "Infinity");
+    check("Limit(E^(-LogGamma(x)), x->Infinity)", //
+        "0");
+  }
+
+  /**
+   * A constant base raised to a divergent exponent. Substituting Stirling for a Gamma inside an
+   * exponent turns it into an exponential of an exponential, which used to grind indefinitely -
+   * even though the exponent's own limit is immediate.
+   */
+  @Test
+  public void testConstantBaseWithDivergentExponent() {
+    check("Limit(E^Gamma(x)/E^x, x->Infinity)", //
+        "Infinity");
+    check("Limit(E^Factorial(x)/E^x, x->Infinity)", //
+        "Infinity");
+    check("Limit(E^(Gamma(x)-x), x->Infinity)", //
+        "Infinity");
+    // the decaying directions, and a base below one, must be unaffected
+    check("Limit(E^(x-Gamma(x)), x->Infinity)", //
+        "0");
+    check("Limit((1/2)^x, x->Infinity)", //
+        "0");
+    check("Limit((1/2)^(-x), x->Infinity)", //
+        "Infinity");
+  }
+
+  /**
+   * An odd function that saturates at infinity, applied to a divergent argument whose direction is
+   * a free parameter: the answer is the saturation value under the condition that the parameter is
+   * positive, the same shape the engine already produced for <code>b^x</code>.
+   */
+  @Test
+  public void testSaturatingFunctionsWithSymbolicDirection() {
+    check("Limit(SinIntegral(t*(1+w)), t->Infinity)", //
+        "ConditionalExpression(Pi/2,w>-1)");
+    check("Limit(SinIntegral(c*t), t->Infinity)", //
+        "ConditionalExpression(Pi/2,c>0)");
+    check("Limit(ArcTan(c*t), t->Infinity)", //
+        "ConditionalExpression(Pi/2,c>0)");
+    check("Limit(Erf(c*t), t->Infinity)", //
+        "ConditionalExpression(1,c>0)");
+    check("Limit(Tanh(c*t), t->Infinity)", //
+        "ConditionalExpression(1,c>0)");
+    // a known sign still gives a plain answer
+    check("Limit(SinIntegral(3*t), t->Infinity)", //
+        "Pi/2");
+    check("Limit(ArcTan(-t), t->Infinity)", //
+        "-Pi/2");
+  }
+
+  /**
+   * A difference of poles with a SYMBOLIC exponent. Both terms diverge at 1 and their singular
+   * parts cancel, leaving n/2. The cancellation is only visible to a series expansion, and the
+   * leading coefficients cancel symbolically rather than syntactically.
+   */
+  @Test
+  public void testSymbolicExponentDifferenceOfPoles() {
+    check("Limit((n+1)*x^(n+1)/(x^(n+1)-1) - x/(x-1), x->1)", //
+        "n/2");
+    // the concrete instances it generalizes
+    check("Limit(4*x^4/(x^4-1) - x/(x-1), x->1)", //
+        "3/2");
+    check("Limit(3*x^3/(x^3-1) - x/(x-1), x->1)", //
+        "1");
+  }
+
+  /**
+   * Functions with jump discontinuities. Substituting the limit point reports the value AT the
+   * point, which at a jump is not the value approached from either side - these all used to answer
+   * with that value. Away from a jump the same functions are continuous and must keep working.
+   */
+  @Test
+  public void testJumpDiscontinuities() {
+    // KroneckerDelta and DiscreteDelta are zero except at one point: a removable discontinuity,
+    // so the limit exists and is 0 rather than the spike value 1
+    check("Limit(KroneckerDelta(x), x->0)", //
+        "0");
+    check("Limit(DiscreteDelta(x), x->0)", //
+        "0");
+    // SawtoothWave is the fractional part, so it jumps at every integer
+    check("Limit(SawtoothWave(x), x->1)", //
+        "Indeterminate");
+    // these have no one-sided rewrite, so they stay unevaluated rather than claim a value
+    check("Limit(UnitBox(x), x->1/2)", //
+        "Limit(UnitBox(x),x->1/2)");
+    check("Limit(PrimePi(x), x->2)", //
+        "Limit(PrimePi(x),x->2)");
+    check("Limit(Boole(x>0), x->0)", //
+        "Limit(Boole(x>0),x->0)");
+
+    // AWAY from a jump every one of them is continuous and the limit is the value there
+    check("Limit(UnitBox(x), x->0)", //
+        "1");
+    check("Limit(PrimePi(x), x->5/2)", //
+        "1");
+    check("Limit(SawtoothWave(x), x->1/2)", //
+        "1/2");
+    check("Limit(Floor(x), x->3/2)", //
+        "1");
+    check("Limit(Ceiling(x), x->3/2)", //
+        "2");
+    check("Limit(Mod(x,2), x->1/2)", //
+        "1/2");
+    check("Limit(Sign(x), x->3)", //
+        "1");
   }
 
 }

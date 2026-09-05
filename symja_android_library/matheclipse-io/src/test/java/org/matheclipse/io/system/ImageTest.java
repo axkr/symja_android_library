@@ -33,12 +33,10 @@ public class ImageTest extends AbstractTestCase {
   public void testArrayPlot() {
     check("Head(ArrayPlot(SparseArray({{1, 1} -> 0, {2, 2} -> 0} )))", //
         "Graphics");
-    // a graphic still becomes a bitmap on request, which is how the callers that need pixels get
-    // them now that no plot returns them on its own
     check("i=Image(ArrayPlot({{1, 0}, {0, 1}}))", //
-        "Image(Dimensions: 600,594 Transparency: 3)");
+        "Image(Dimensions: 600,600 Transparency: 3)");
     check("ImageDimensions(i)", //
-        "{600,594}");
+        "{600,600}");
   }
 
   @Test

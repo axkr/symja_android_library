@@ -1,8 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import org.matheclipse.core.interfaces.Attribute;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
-import org.matheclipse.core.interfaces.EvalFlags;
 import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C0;
@@ -58,8 +55,8 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -97,14 +94,16 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IDataExpr;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
@@ -123,11 +122,7 @@ import org.matheclipse.core.patternmatching.hash.HashedPatternRulesLog;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimesPower;
 import org.matheclipse.core.polynomials.QuarticSolver;
-import org.matheclipse.core.sympy.core.Expr;
-import org.matheclipse.core.sympy.exception.PoleError;
-import org.matheclipse.core.sympy.series.Order;
 import org.matheclipse.core.units.QuantityOps;
-import org.matheclipse.parser.client.math.MathException;
 
 public final class Arithmetic {
   /**
@@ -1599,8 +1594,7 @@ public final class Arithmetic {
    */
   private static final int MAX_GAMMA_FUNCTION_EXPAND = 256;
 
-  private static final class Gamma extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+  private static final class Gamma extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -2023,8 +2017,8 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol
-          .setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.LISTABLE);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT,
+          Attribute.LISTABLE);
     }
   }
 
@@ -3116,91 +3110,6 @@ public final class Arithmetic {
       return c0.add(F.CC(i1, F.C0));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evalAsLeadingTerm(IAST self, ISymbol x, IExpr logx, int cdir) {
-      IExpr o = Expr.getO(self);
-      if (o.isNIL()) {
-        o = F.O(F.C0);
-      }
-      IExpr old = Expr.removeO(self);
-      if (old.has(S.Piecewise)) {
-        old = S.PiecewiseExpand.of(old);
-      }
-      // This expansion is the last part of expand_log. expand_log also calls
-      // expand_mul with factor=True, which would be more expensive
-      if (self.exists(a -> a.isLog())) {
-        // TODO
-      }
-      IExpr expr = org.matheclipse.core.sympy.core.Function.expandMul(old);
-
-      if (!expr.isPlus()) {
-        return expr.asLeadingTerm(x, logx, cdir);
-      }
-      IAST plusAST = (IAST) expr;
-      // infinite = [t for t in expr.args if t.is_infinite]
-      IAST infinite = plusAST.select(a -> a.isDirectedInfinity());
-
-      IExpr _logx = logx.orElse(F.Dummy("logx"));
-      IASTAppendable leadingTerms = F.PlusAlloc(plusAST.argSize());
-      for (int i = 1; i < plusAST.size(); i++) {
-        IExpr t = plusAST.get(i);
-        leadingTerms.append(t.asLeadingTerm(x, _logx, cdir));
-      }
-      IExpr min = F.O(F.C0);
-      IExpr newExpr = F.C0;
-      try {
-        for (int i = 1; i < leadingTerms.size(); i++) {
-          IExpr term = leadingTerms.get(i);
-          IExpr order = Order.create(term, x);
-          if (min.isPresent() && !((IAST) min).contains(order)) {
-            min = order;
-            newExpr = term;
-          } else if (((IAST) min).contains(order)) {
-            newExpr = newExpr.plus(term);
-          }
-        }
-      } catch (ClassCastException e) {
-        return expr;
-      }
-      if (logx.isNIL()) {
-        newExpr = newExpr.subs(_logx, F.Log(x));
-      }
-
-      boolean isZero = newExpr.isZero();
-      if (!isZero) {
-        newExpr = newExpr.trigsimp().cancel();
-        isZero = newExpr.isZero();
-      }
-      if (isZero) {
-        // simple leading term analysis gave us cancelled terms but we have to send
-        // back a term, so compute the leading term (via series)
-        IExpr n0;
-        try {
-          n0 = Expr.getN(min);
-        } catch (UnsupportedOperationException e) {
-          n0 = F.C1;
-        }
-
-        if (n0.has(S.Symbol)) {
-          n0 = F.C1;
-        }
-        IExpr res = F.O(F.C1);
-        IExpr incr = F.C1;
-        while (res.isAST(S.O, 2)) {
-          // TODO
-          // res = old._eval_nseries(x, n=n0+incr, logx=logx,
-          // cdir=cdir).cancel().powsimp().trigsimp()
-          incr = incr.times(F.C2);
-        }
-        return res.asLeadingTerm(x, logx, cdir);
-      }
-      if (newExpr.isIndeterminate()) {
-        return F.eval(F.Plus(infinite, o));
-      }
-      return newExpr;
-    }
-
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
       double result = 0;
@@ -3237,8 +3146,8 @@ public final class Arithmetic {
             return arrayResult;
           }
         }
-        if (ast.exists(x -> x instanceof IDataExpr || x.isQuantity()
-            || AroundFunctions.isAround(x) || AroundFunctions.isVectorAround(x))) {
+        if (ast.exists(x -> x instanceof IDataExpr || x.isQuantity() || AroundFunctions.isAround(x)
+            || AroundFunctions.isVectorAround(x))) {
           if (ast.exists(x -> AroundFunctions.isVectorAround(x))) {
             IExpr vectorResult = AroundFunctions.plusVectorAround(ast, engine);
             if (vectorResult.isPresent()) {
@@ -3354,87 +3263,11 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT,
+          Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       PLUS_ORDERLESS_MATCHER = initPlusHashMatcher();
       super.setUp(newSymbol);
     }
-
-    // @Override
-    // public IExpr evalAsLeadingTerm(IAST ast, ISymbol x, IExpr logx, int cdir) {
-    // //
-    // https://github.com/sympy/sympy/blob/ab414d124bb9899eb9d677e95498c7a021c9bc29/sympy/core/add.py#L996
-    // IExpr old=ast;
-    //// o = self.getO()
-    //// if o is None:
-    //// o = Order(0)
-    //// old = self.removeO()
-    ////
-    //// if old.has(Piecewise):
-    //// old = piecewise_fold(old)
-    //
-    //// # This expansion is the last part of expand_log. expand_log also calls
-    //// # expand_mul with factor=True, which would be more expensive
-    //// if (any(isinstance(a, log) for a in self.args)) {
-    //// logflags = dict(deep=True, log=True, mul=False, power_exp=False,
-    //// power_base=False, multinomial=False, basic=False, force=False,
-    //// factor=False)
-    //// old = old.expand(**logflags)
-    //// }
-    //// expr = expand_mul(old);
-    // IExpr expr=old;
-    // if (! expr.isPlus()) {
-    // return expr.asLeadingTerm(x, logx , cdir );
-    // }
-    // IExpr infinite = [t for t in expr.args if t.is_infinite]
-    //
-    // _logx = logx.orElseGet( ()-> F.Dummy("logx"));
-    // leading_terms = [t.asLeadingTerm(x, logx=_logx, cdir=cdir) for t in expr.args]
-    //
-    //// min, new_expr = Order(0), 0
-    // IExpr new_expr =F.C0;
-    // try{
-    // for (term in leading_terms) {
-    // order = Order(term, x);
-    // if (not min or order not in min) {
-    // min = order;
-    // new_expr = term;
-    // } else if (min in order) {
-    // new_expr += term;
-    // }
-    // }
-    // }catch(ArgumentTypeError ate) {
-    // return expr;
-    // }
-    // if (log.isNIL()) {
-    // new_expr = new_expr.subs(_logx, log(x));
-    // }
-    // boolean is_zero = new_expr.isZero();
-    // if (!is_zero ) {
-    // new_expr = new_expr.trigsimp().cancel();
-    // is_zero = new_expr.isZero();
-    // }
-    // if (is_zero ) {
-    //// # simple leading term analysis gave us cancelled terms but we have to send
-    //// # back a term, so compute the leading term (via series)
-    // try {
-    // n0 = min.getn();
-    // } catch (NotImplementedError nie) {
-    // n0 = 1;
-    // }
-    // IExpr res = Order(1);
-    // int incr = 1;
-    // while (res.is_Order) {
-    // res = old._eval_nseries(x, n=n0+incr, logx , cdir ).cancel().trigsimp();
-    // //powsimp().trigsimp();
-    // incr *= 2;
-    // }
-    // return res.as_leading_term(x, logx=logx, cdir=cdir);
-    //
-    // }else if(new_expr.isNaN()){
-    // return old.func._from_args(infinite) + o;
-    // }
-    // return new_expr;
-    // }
 
   }
 
@@ -5267,51 +5100,6 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evalAsLeadingTerm(IAST self, ISymbol x, IExpr logx, int cdir) {
-      IExpr b = self.base();
-      IExpr e = self.exponent();
-      if (e.isE()) {
-        IExpr arg = e.asLeadingTerm(x, logx, 0);
-        IExpr arg0 = arg.subs(x, F.C0);
-        if (arg0.isIndeterminate()) {
-          arg.limit(x, F.C0);
-        }
-        if (!arg0.isDirectedInfinity()) {
-          return F.Power(S.E, arg0);
-        }
-        throw new PoleError("Cannot expand " + self + " around 0");
-      } else if (e.has(x)) {
-        IExpr lt = F.Power(S.E, F.Times(e, F.Log(b)));
-        return lt.asLeadingTerm(x, logx, cdir);
-      }
-      IExpr f = F.NIL;
-      try {
-        f = b.asLeadingTerm(x, logx, cdir);
-      } catch (PoleError ex) {
-        return self;
-      }
-
-      if (!e.isInteger() && f.isNegative() && !f.has(x)) {
-        IExpr ndir = (b.subtract(f)).dir(x, cdir);
-        IExpr imNDir = ndir.im();
-        if (imNDir.isNegative()) {
-          // Normally, f**e would evaluate to exp(e*log(f)) but on branch cuts
-          // an other value is expected through the following computation
-          // exp(e*(log(f) - 2*pi*I)) == f**e*exp(-2*e*pi*I) == f**e*(-1)**(-2*e).
-          return F.Times(F.Power(f, e), F.Power(-1, F.Times(F.CN2, e)));
-        }
-        if (imNDir.isZero()) {
-          IExpr log_leadterm = F.Log(b).evalAsLeadingTerm(x, logx, cdir);
-          if (!log_leadterm.isDirectedInfinity()) {
-            return F.Power(S.E, F.Times(e, log_leadterm));
-          }
-        }
-      }
-      return F.Power(f, e);
-    }
-
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
       if (size != 2) {
@@ -5992,9 +5780,12 @@ public final class Arithmetic {
           IExpr upper = bounds.arg4();
           boolean lowerBelowZero = lower.isNegativeResult();
           boolean upperAboveZero = upper.isPositiveResult();
-          boolean lowerReachesZero = lowerBelowZero || (lower.isZero() && bounds.arg2() == S.LessEqual);
-          boolean upperReachesZero = upperAboveZero || (upper.isZero() && bounds.arg3() == S.LessEqual);
-          boolean determined = lowerBelowZero || upperAboveZero || (lowerReachesZero && upperReachesZero);
+          boolean lowerReachesZero =
+              lowerBelowZero || (lower.isZero() && bounds.arg2() == S.LessEqual);
+          boolean upperReachesZero =
+              upperAboveZero || (upper.isZero() && bounds.arg3() == S.LessEqual);
+          boolean determined =
+              lowerBelowZero || upperAboveZero || (lowerReachesZero && upperReachesZero);
           if (!determined) {
             // a bound that is neither positive, negative nor zero is symbolic, and guessing which
             // side of zero it falls on is exactly what must not happen here
@@ -6009,8 +5800,8 @@ public final class Arithmetic {
         if (lowestSign == highestSign) {
           return F.ZZ(lowestSign);
         }
-        return F.IntervalData(
-            F.List(F.ZZ(lowestSign), S.LessEqual, S.LessEqual, F.ZZ(highestSign)));
+        return F
+            .IntervalData(F.List(F.ZZ(lowestSign), S.LessEqual, S.LessEqual, F.ZZ(highestSign)));
       }
       IExpr temp = engine.evaluateNIL(F.Abs(arg1));
       if (temp.isPresent() && !temp.isAST(S.Abs)) {
@@ -7310,17 +7101,6 @@ public final class Arithmetic {
       return c0.multiply(F.CC(i1));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evalAsLeadingTerm(IAST self, ISymbol x, IExpr logx, int cdir) {
-      IASTAppendable result = F.TimesAlloc(self.argSize());
-      for (int i = 1; i < self.size(); i++) {
-        IExpr t = self.get(i);
-        result.append(t.asLeadingTerm(x, logx, cdir));
-      }
-      return result;
-    }
-
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
       double result = 1;
@@ -7553,7 +7333,8 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT,
+          Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
 
       TIMES_ORDERLESS_MATCHER = Arithmetic.Times.initTimesHashMatcher();
       super.setUp(newSymbol);

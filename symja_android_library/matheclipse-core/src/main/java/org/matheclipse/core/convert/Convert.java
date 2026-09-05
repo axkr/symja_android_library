@@ -1234,6 +1234,14 @@ public class Convert {
   private static final int SIMPLIFY_MAX_DIMENSION = 5;
 
   /**
+   * Largest entry, in leaves, that {@link #simplifyMatrixEntries(IExpr, EvalEngine)} will hand to
+   * {@link S#Simplify}. This is a runaway guard, not a policy: the largest entry any current caller
+   * produces is the 187-leaf general symbolic <code>MatrixLog({{a,b},{c,d}})</code>, so nothing
+   * reaches this bound today.
+   */
+  private static final int SIMPLIFY_MAX_LEAFCOUNT = 1000;
+
+  /**
    * Apply {@link S#Simplify} to every <code>Plus</code>, <code>Times</code> or <code>Power</code>
    * entry of a small symbolic matrix.
    *
@@ -1270,7 +1278,7 @@ public class Convert {
       IASTMutable simplifiedRow = F.NIL;
       for (int j = 1; j < row.size(); j++) {
         final IExpr value = row.get(j);
-        if (value.isPlusTimesPower()) {
+        if (value.isPlusTimesPower() && value.leafCount() <= SIMPLIFY_MAX_LEAFCOUNT) {
           final IExpr simplified = engine.evaluate(F.Simplify(value));
           if (!simplified.equals(value)) {
             if (simplifiedRow.isNIL()) {

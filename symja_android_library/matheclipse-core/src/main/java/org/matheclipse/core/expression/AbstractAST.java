@@ -2827,7 +2827,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (equals(that)) {
       return that;
     }
-    return F.C1;
+    // This is the ring-level GCD that JAS calls on polynomial coefficients, not the GCD() builtin,
+    // which stays unevaluated on irrational arguments exactly as Wolfram's does. Reporting the
+    // rational content lets a polynomial such as 2*x^2+2*Sqrt(3) keep its content 2, which
+    // answering 1 here silently dropped.
+    return NumberUtil.rationalContentGCD(this, that);
   }
 
   @Override

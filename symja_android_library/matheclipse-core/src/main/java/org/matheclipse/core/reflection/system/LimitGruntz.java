@@ -18,8 +18,9 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.Limit.Direction;
+import org.matheclipse.core.series.Lead;
+import org.matheclipse.core.series.LeadTerm;
 import org.matheclipse.core.reflection.system.Limit.LimitData;
-import org.matheclipse.core.sympy.simplify.Simplify;
 
 /**
  * The Gruntz algorithm for limits at <code>+Infinity</code> (Dominik Gruntz, <i>On Computing Limits
@@ -176,23 +177,6 @@ public class LimitGruntz {
     return run.infinityData;
   }
 
-  /**
-   * Highest truncation order the adaptive w-series loop in {@link #seriesLeadingTerm} will try
-   * before giving up. Each step re-expands the whole series, so this bounds the cost of chasing a
-   * leading term that cancellation has pushed to a high order.
-   *
-   * <p>
-   * Kept at {@code 2} (the loop runs once - zero-coefficient skip only). Raising it turns on
-   * SymPy-style adaptive order-raising for deeper cancellation. Re-measured 2026-08 AFTER the
-   * compareGrowth ratio limits were routed through the Gruntz algorithm itself (Log-bearing ratios
-   * included): {@code 8} still cost ~2.6x on LimitTestOscillating with ZERO newly resolved cases -
-   * the deep-cancellation shapes (Taylor tails like
-   * <code>x^4*(E^(1/x)-1-1/x-1/(2x^2)-1/(6x^3))</code>, second-order digamma tails) all resolve
-   * through the heuristic growth-ranking paths before they reach this loop. Raise only with a
-   * concrete case in hand that fails at {@code 2} and passes at the higher order.
-   */
-  private static final int GRUNTZ_MAX_SERIES_ORDER = 2;
-
   public static IExpr combineExponentials(IExpr expr, EvalEngine engine) {
     if (expr.isTimes()) {
       IAST times = (IAST) expr;
@@ -255,7 +239,59 @@ public class LimitGruntz {
     return expr;
   }
 
-  public static IExpr combinePlusLogs(IAST plusAST, boolean force, ISymbol x) {
+  /**
+   * Decompose an additive term into <code>{coefficient, logArgument}</code> such that
+   * <code>term == coefficient * Log(logArgument)</code>, with an explicit numeric <code>-1</code>
+   * moved into the argument (<code>-Log(x) -&gt; Log(1/x)</code>) so that subtraction merges into a
+   * quotient.
+   *
+   * <p>
+   * Returns <code>null</code> when the term is not a single-logarithm product: no <code>Log</code>
+   * factor at all, or more than one. A product like <code>Log(a)*Log(b)</code> must never be split
+   * - extracting either <code>Log</code> would silently drop the other factor and change the term's
+   * value (this used to turn <code>Log(x)*Log(Log(x)) - Log(x)</code> into the wrong
+   * <code>Log(Log(x)/x)</code>).
+   */
+  public static IExpr[] singleLogTermParts(IExpr term) {
+    if (term.isLog()) {
+      return new IExpr[] {F.C1, term.first()};
+    }
+    if (!term.isTimes()) {
+      return null;
+    }
+    IAST times = (IAST) term;
+    IASTAppendable coeffPart = F.TimesAlloc(times.size());
+    IExpr sign = F.C1;
+    IExpr logArg = F.NIL;
+    for (IExpr factor : times) {
+      if (factor.isLog()) {
+        if (logArg.isPresent()) {
+          // a second Log factor - not of the form coefficient*Log(argument)
+          return null;
+        }
+        logArg = factor.first();
+      } else if (factor.isNumber() && factor.isNegative()) {
+        // Extract the negative sign to normalize the coefficient key
+        sign = F.eval(F.Times(sign, factor));
+      } else {
+        coeffPart.append(factor);
+      }
+    }
+    if (logArg.isNIL()) {
+      return null;
+    }
+    IExpr coeff = F.eval(coeffPart.oneIdentity1());
+    if (sign.isMinusOne()) {
+      // Move the sign into the Log argument: -Log(x) -> Log(x^-1)
+      logArg = F.Power(logArg, F.CN1);
+    } else if (!sign.isOne()) {
+      // Re-apply the sign if it wasn't a simple -1
+      coeff = F.eval(F.Times(coeff, sign));
+    }
+    return new IExpr[] {coeff, logArg};
+  }
+
+  public static IExpr combinePlusLogs(IAST plusAST, boolean force) {
     Map<IExpr, IASTAppendable> groupMap = new HashMap<>();
     IASTAppendable remainingTerms = F.PlusAlloc(plusAST.size());
 
@@ -265,7 +301,7 @@ public class LimitGruntz {
       // including Log(a)*Log(b) products, which must never be split (a second Log factor
       // used to overwrite the first here, silently dropping it from the rebuilt sum and
       // corrupting e.g. Log(x)*Log(Log(x)) - Log(x) into Log(Log(x)/x))
-      IExpr[] parts = Simplify.singleLogTermParts(term);
+      IExpr[] parts = singleLogTermParts(term);
       if (parts != null && (force || parts[1].isPositiveResult())) {
         IASTAppendable args = groupMap.getOrDefault(parts[0], F.TimesAlloc(4));
         args.append(parts[1]);
@@ -442,14 +478,14 @@ public class LimitGruntz {
         limitResult = ratio;
       } else {
         limitResult = F.NIL;
-        // Exponential-tower ratios drown the heuristic Limit engine in
-        // L'Hopital/Apart/Simplify cycles (observed burning whole time budgets on thesis
-        // 8.20). The thesis computes this comparison limit with the Gruntz algorithm
-        // itself - Log strips one tower level per recursion, so it terminates. Log-bearing
-        // ratios (nested-log towers, thesis #70/#71/#80/#89) route the same way: the
-        // oscillation breakers resolve the plain x/Log(x) shapes instantly, and everything
-        // deeper is exactly what the heuristic engine times out on.
-        if (ratio.has(t -> t.isExp() || t.isLog(), true) && RUN.get().compareGrowthDepth < 4) {
+        // SymPy's compare() computes this ratio limit with limitinf, i.e. with the Gruntz
+        // algorithm itself - and so does the thesis. That recursion terminates because Log
+        // strips one tower level per level of recursion. Routing every ratio this way (not
+        // just the Exp/Log-bearing ones) keeps the comparison inside the algorithm instead of
+        // handing it to the heuristic Limit engine, which drowns exponential-tower ratios in
+        // L'Hopital/Apart/Simplify cycles (observed burning whole time budgets on thesis 8.20)
+        // and is the very machinery Gruntz exists to replace.
+        if (RUN.get().compareGrowthDepth < 4) {
           RUN.get().compareGrowthDepth++;
           try {
             limitResult = evalGruntz(ratio, x, engine);
@@ -458,6 +494,7 @@ public class LimitGruntz {
           }
         }
         if (limitResult.isNIL()) {
+          // Gruntz declined this ratio; the heuristic engine is the last resort.
           // ensure Power(Infinity, -1) evaluates to 0.
           limitResult = engine.evaluate(evalLimitQuiet(ratio, infinityLimitData(x)));
         } else {
@@ -511,7 +548,7 @@ public class LimitGruntz {
       // collapse constant log-sums - series coefficients assemble them unsimplified,
       // e.g. Log(2)/2 + Log(1/(2*Pi))/2 + Log(Pi)/2 which is exactly 0
       if (expr.isPlus() && expr.has(t -> t.isLog(), true)) {
-        IExpr combined = engine.evalQuiet(logCombine(expr, true, null));
+        IExpr combined = engine.evalQuiet(logCombine(expr, true));
         if (combined.isPresent()) {
           return combined;
         }
@@ -573,27 +610,28 @@ public class LimitGruntz {
       return F.NIL;
     }
 
-    if (hasIrrationalWPower(rewritten, w)) {
-      return irrationalPowerLimit(rewritten, w, expr, x, engine, depth);
-    }
-
     // Calculate the series expansion of the rewritten expression around w = 0.
     if (DEBUG) {
       System.out.println("GRUNTZ pre-series g=" + g + " rewritten=" + rewritten);
     }
-    SeriesLead lead = seriesLeadingTerm(rewritten, w, engine);
+    Lead lead = seriesLeadingTerm(rewritten, w, F.Negate(g), engine);
     if (lead == null) {
       if (DEBUG) {
         System.out.println("GRUNTZ series=null/allzero for " + rewritten);
       }
       return F.NIL;
     }
-    int minExp = lead.exponent;
-    IExpr leadCoeff = lead.coefficient;
+    int minExpSign = lead.exponentSign(engine);
+    IExpr leadCoeff = lead.coefficient();
 
     if (DEBUG) {
       System.out.println("GRUNTZ g=" + g + " rewritten=" + rewritten);
-      System.out.println("GRUNTZ minExp=" + minExp + " leadCoeff=" + leadCoeff);
+      System.out.println("GRUNTZ exponent=" + lead.exponent() + " leadCoeff=" + leadCoeff);
+    }
+
+    if (minExpSign == LeadTerm.UNDECIDABLE) {
+      // the exponent could not be ordered against zero - no case of the split below applies
+      return F.NIL;
     }
 
     // FAILSAFE: Prevent infinite loops if rewrite fails to simplify the expression
@@ -605,9 +643,9 @@ public class LimitGruntz {
     IExpr limitCoeff = evalGruntz(leadCoeff, x, engine, depth + 1);
 
     // Reconstruct the final limit based on the degree of the leading term in w
-    if (minExp > 0) {
+    if (minExpSign > 0) {
       return F.C0;
-    } else if (minExp == 0) {
+    } else if (minExpSign == 0) {
       return limitCoeff;
     } else {
       int sign = signInf(leadCoeff, x, engine);
@@ -783,7 +821,7 @@ public class LimitGruntz {
       expr = combineExponentials(expr, engine);
     }
     if (!expr.isFree(S.Log, true)) {
-      expr = logCombine(expr, true, x);
+      expr = logCombine(expr, true);
     }
     return expr;
   }
@@ -914,124 +952,55 @@ public class LimitGruntz {
   }
 
   /**
-   * Same-class exponentials with an irrational log-ratio (e.g. <code>{3^x, 5^x}</code>) rewrite to
-   * powers like <code>w^(1-Log(5)/Log(3))</code>. ASTSeriesData is a rational-exponent
-   * Laurent-Puiseux machine and silently drops such terms, turning <code>3^x/(3^x+5^x)</code> into
-   * the wrong finite limit <code>1</code>. For those shapes bypass the series entirely.
-   */
-  private static boolean hasIrrationalWPower(IExpr rewritten, ISymbol w) {
-    return rewritten.has(p -> p.isPower() && p.base().equals(w) && !p.exponent().isRational(),
-        true);
-  }
-
-  /**
-   * Extract the leading w-power and its coefficient structurally (exponents compared numerically)
-   * instead of through the rational-exponent series machinery - see {@link #hasIrrationalWPower}.
-   * The standard Gruntz case split on the leading exponent then applies as usual.
-   */
-  private static IExpr irrationalPowerLimit(IExpr rewritten, ISymbol w, IExpr expr, ISymbol x,
-      EvalEngine engine, int depth) {
-    IExpr[] lead = leadingWPower(rewritten, w, engine);
-    if (lead == null) {
-      // Unsupported shape - the series machinery would silently produce a wrong value
-      // here, so stay honest.
-      return F.NIL;
-    }
-    IExpr valuation = engine.evaluate(lead[0]);
-    IExpr leadCoefficient = engine.evaluate(lead[1]);
-    double v;
-    if (valuation.isZero()) {
-      v = 0.0;
-    } else {
-      v = valuation.evalfNaN();
-      if (Double.isNaN(v)) {
-        return F.NIL;
-      }
-    }
-    if (v > 1.0e-9) {
-      return F.C0;
-    } else if (v < -1.0e-9) {
-      int sign = signInf(leadCoefficient, x, engine);
-      if (sign == 1) {
-        return F.CInfinity;
-      } else if (sign == -1) {
-        return F.CNInfinity;
-      }
-      return F.NIL;
-    }
-    if (leadCoefficient.equals(expr)) {
-      return F.NIL; // no progress
-    }
-    return leadCoefficient.isFree(x) ? leadCoefficient
-        : evalGruntz(leadCoefficient, x, engine, depth + 1);
-  }
-
-  /** Leading term of the w-series around <code>w = 0</code>. */
-  private static final class SeriesLead {
-    final int exponent;
-    final IExpr coefficient;
-
-    SeriesLead(int exponent, IExpr coefficient) {
-      this.exponent = exponent;
-      this.coefficient = coefficient;
-    }
-  }
-
-  /**
-   * The leading term of the w-series of <code>rewritten</code> around <code>w = 0</code>, with
-   * nested Gruntz entries blocked while the series machinery runs (see {@link RunState#inSeries}).
+   * The leading term of the w-series of <code>rewritten</code> around <code>w = 0+</code>.
+   *
+   * <p>
+   * This is SymPy's <code>mrv_leadterm</code> step. It delegates to the shared
+   * {@link LeadTerm} primitive: first the structural analysis, which is closed (it never calls back
+   * into the {@code Limit} evaluator) and can represent irrational exponents, then a bounded
+   * adaptive-order series expansion for the shapes it declines.
    *
    * <p>
    * The leading term of the w-series can vanish through cancellation - two exponentials of the same
    * comparability class subtracting (thesis 8.14's tower difference), or a second-order asymptotic
    * tail surviving after the first-order parts cancel (the <code>-1/(2*Log(x))</code> in the
-   * digamma towers). A single fixed-order expansion then reports a zero leading coefficient at
-   * minExponent and the caller's case split would return a spurious <code>0</code>/NIL. Two
-   * responses of increasing cost:
-   * <ul>
-   * <li>skip leading zero coefficients inside the captured truncation - a pure scan of terms
-   * already computed (SymPy gruntz's leadterm does the same). Always on, free.</li>
-   * <li>when the WHOLE truncation cancels (isOrder), re-expand at a higher order (the "adaptive
-   * order" of SymPy's calculate_series). This is expensive - total low-order cancellation is common
-   * among the deep mrv sub-limits AND among the many depth-0 Limit calls that Series[] issues
-   * internally - and, measured, it doubles SeriesTest/LimitTest for ZERO extra resolved cases: the
-   * hard tower differences (#80/#89/#71/#70) that need it do not even reach here - they time out
-   * earlier in compareGrowth's heuristic mrv comparison. So the order-raising is kept structural
-   * but gated OFF (GRUNTZ_MAX_SERIES_ORDER == 2 =&gt; the loop runs once); raise the cap to
-   * re-enable it once the compareGrowth bottleneck is addressed.</li>
-   * </ul>
-   * A <code>null</code> series means an unsupported shape, not an under-resolved one, so a higher
-   * order will not help - stop.
+   * digamma towers). {@link LeadTerm} handles both: the structural pass adds the tied minimal-order
+   * coefficients and, when they annihilate, raises the expansion order by doubling - the "adaptive
+   * order" of SymPy's <code>calculate_series</code>, which this code previously carried but kept
+   * switched off behind a fixed order cap.
    *
-   * @return the leading term, or <code>null</code> when no usable series exists
+   * <p>
+   * Nested Gruntz entries stay blocked for the whole call (see {@link RunState#inSeries}): the
+   * series path computes coefficients through engine-level {@code Limit} calls, and letting those
+   * re-enter builds a mutually recursive tree whose cost is combinatorial.
+   *
+   * @param logw the value of <code>Log(w)</code> in terms of the limit variable, substituted back
+   *        into the coefficient exactly as SymPy's <code>mrv_leadterm</code> does
+   * @return the leading term, or <code>null</code> when none could be established
    */
-  private static SeriesLead seriesLeadingTerm(IExpr rewritten, ISymbol w, EvalEngine engine) {
+  private static Lead seriesLeadingTerm(IExpr rewritten, ISymbol w, IExpr logw,
+      EvalEngine engine) {
     RunState run = RUN.get();
     boolean oldInSeries = run.inSeries;
     run.inSeries = true;
     try {
-      for (int seriesOrder = 2; seriesOrder <= GRUNTZ_MAX_SERIES_ORDER; seriesOrder += 2) {
-        ASTSeriesData candidate =
-            ASTSeriesData.seriesDataRecursive(rewritten, w, F.C0, seriesOrder, -1, engine);
-        if (candidate == null) {
+      ISymbol logx = F.Dummy("logx");
+      Lead lead = LeadTerm.leadTerm(rewritten, w, logx, engine);
+      if (lead == null) {
+        lead = LeadTerm.nseriesLead(rewritten, w, logx, 1, engine);
+      }
+      if (lead == null) {
+        return null;
+      }
+      if (lead.coefficientHasLogx()) {
+        // Log(w) is -g in the original variable (SymPy: lt[0].subs(log(w), logw))
+        IExpr coefficient = engine.evalQuiet(F.subst(lead.coefficient(), logx, logw));
+        if (!coefficient.isPresent() || coefficient.isZero()) {
           return null;
         }
-        // Skip leading zero coefficients inside the captured truncation.
-        int nMin = candidate.minExponent();
-        while (nMin < candidate.truncateOrder() && candidate.coefficient(nMin).isZero()) {
-          nMin++;
-        }
-        if (nMin < candidate.truncateOrder()) {
-          IExpr leadCoeff = candidate.coefficient(nMin);
-          return leadCoeff.isNIL() ? null : new SeriesLead(nMin, leadCoeff);
-        }
-        // The whole truncation is zero (isOrder): cancellation runs deeper than this order -
-        // re-expand one step higher (only reached when GRUNTZ_MAX_SERIES_ORDER > 2).
-        if (DEBUG) {
-          System.out.println("GRUNTZ order " + seriesOrder + " all-zero, raising");
-        }
+        return new Lead(coefficient, lead.exponent(), F.NIL);
       }
-      return null;
+      return lead;
     } finally {
       run.inSeries = oldInSeries;
     }
@@ -1063,6 +1032,14 @@ public class LimitGruntz {
     final ISymbol variable = x;
     if (expr.has(e -> e.isAST() && !e.head().isBuiltInSymbol() && !e.isFree(variable, true),
         true)) {
+      return F.NIL;
+    }
+
+    // A piecewise-constant head has to be refused for a related reason: its derivative is zero, so
+    // the Taylor expansion collapses to the value AT the point and the algorithm would report a
+    // jump's midpoint value as the limit (UnitBox at 1/2 came back as 1 from both sides).
+    if (expr.has(e -> e.isAST() && LeadTerm.isDiscontinuousHead(e.head())
+        && !e.isFree(variable, true), true)) {
       return F.NIL;
     }
 
@@ -1521,32 +1498,28 @@ public class LimitGruntz {
   }
 
   public static IExpr logCombine(IExpr expr) {
-    return logCombine(expr, false, null);
-  }
-
-  public static IExpr logCombine(IExpr expr, boolean force) {
-    return logCombine(expr, force, null);
+    return logCombine(expr, false);
   }
 
   // Recursive AST traversal to find and combine Plus structures anywhere
-  public static IExpr logCombine(IExpr expr, boolean force, ISymbol x) {
+  public static IExpr logCombine(IExpr expr, boolean force) {
     if (expr.isPlus()) {
-      IExpr combined = combinePlusLogs((IAST) expr, force, x);
+      IExpr combined = combinePlusLogs((IAST) expr, force);
       if (combined != expr && combined.isAST()) {
-        return mapLogCombine((IAST) combined, force, x);
+        return mapLogCombine((IAST) combined, force);
       }
       return combined;
     } else if (expr.isAST()) {
-      return mapLogCombine((IAST) expr, force, x);
+      return mapLogCombine((IAST) expr, force);
     }
     return expr;
   }
 
-  private static IExpr mapLogCombine(IAST ast, boolean force, ISymbol x) {
+  private static IExpr mapLogCombine(IAST ast, boolean force) {
     IASTAppendable result = F.ast(ast.head(), ast.argSize());
     boolean changed = false;
     for (int i = 1; i <= ast.argSize(); i++) {
-      IExpr arg = logCombine(ast.get(i), force, x);
+      IExpr arg = logCombine(ast.get(i), force);
       if (arg != ast.get(i)) {
         changed = true;
       }
@@ -2004,8 +1977,111 @@ public class LimitGruntz {
   /**
    * Determines the asymptotic sign of an expression as x -> Infinity.
    */
+  /**
+   * SymPy's structural <code>gruntz.sign</code> (gruntz.py 368-422): decide the sign of
+   * <code>expr</code> for large <code>x</code> from the shape of the expression alone.
+   *
+   * <p>
+   * This is the tier that should answer most questions, because it is exact. It runs before the
+   * limit-based ladder below, which ends in numeric sampling and a monotonicity argument - useful
+   * heuristics, but ones that can only ever be evidence, never proof. Anything this method cannot
+   * establish it reports as unknown rather than guessing.
+   *
+   * @return <code>1</code>, <code>0</code>, <code>-1</code>, or {@link Integer#MIN_VALUE} when
+   *         undecided
+   */
+  private static int signStructural(IExpr expr, ISymbol x, EvalEngine engine, int depth) {
+    if (depth > 8) {
+      return Integer.MIN_VALUE;
+    }
+    if (expr.isFree(x)) {
+      IExpr value = expr;
+      if (expr.isPlus() && expr.has(t -> t.isLog(), true)) {
+        // constant log sums arrive unsimplified from the series coefficients, e.g.
+        // Log(2)/2 + Log(1/(2*Pi))/2 + Log(Pi)/2, which is exactly 0
+        IExpr combined = engine.evalQuiet(logCombine(expr, true));
+        if (combined.isPresent()) {
+          value = combined;
+        }
+      }
+      if (value.isZero()) {
+        return 0;
+      }
+      if (engine.evaluate(F.Greater(value, F.C0)).isTrue()) {
+        return 1;
+      }
+      if (engine.evaluate(F.Less(value, F.C0)).isTrue()) {
+        return -1;
+      }
+      return Integer.MIN_VALUE;
+    }
+    if (expr.equals(x)) {
+      return 1; // the limit variable runs to +Infinity
+    }
+    if (expr.isExp()) {
+      return 1; // a real exponential is positive everywhere
+    }
+    if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      int product = 1;
+      for (int i = 1; i < times.size(); i++) {
+        int factorSign = signStructural(times.get(i), x, engine, depth + 1);
+        if (factorSign == 0) {
+          return 0;
+        }
+        if (!F.isPresent(factorSign)) {
+          return Integer.MIN_VALUE;
+        }
+        product *= factorSign;
+      }
+      return product;
+    }
+    if (expr.isPower()) {
+      int baseSign = signStructural(expr.base(), x, engine, depth + 1);
+      if (baseSign == 1) {
+        return 1;
+      }
+      if (baseSign == -1 && expr.exponent().isInteger()) {
+        return expr.exponent().isEven() ? 1 : -1;
+      }
+      return Integer.MIN_VALUE;
+    }
+    if (expr.isLog() && expr.first().isPositiveResult()) {
+      // Log(a) > 0 exactly when a > 1
+      return signStructural(engine.evaluate(F.Subtract(expr.first(), F.C1)), x, engine, depth + 1);
+    }
+    return Integer.MIN_VALUE;
+  }
+
+  /**
+   * The sign of <code>expr</code> for large <code>x</code>, tried in tiers of decreasing rigour.
+   *
+   * <p>
+   * Measured over the whole test suite (counters behind <code>-Dsymja.limit.stats=true</code>):
+   *
+   * <table>
+   * <tr><th>tier</th><th>decisions</th></tr>
+   * <tr><td>{@link #signStructural} - exact, from the shape alone</td><td>2733</td></tr>
+   * <tr><td>the limit of the expression itself</td><td>26</td></tr>
+   * <tr><td>numeric sampling at two agreeing points</td><td>47</td></tr>
+   * <tr><td>leading-term coefficient, derivative monotonicity, deep sampling</td><td>0</td></tr>
+   * </table>
+   *
+   * <p>
+   * So the structural tier carries ~97% of the work, but numeric sampling is <em>not</em>
+   * retirable: it still decides 47 cases nothing above it can. That is worth knowing before anyone
+   * tries again - sampling is evidence, not proof, and replacing it needs a stronger asymptotic
+   * argument rather than simple deletion.
+   *
+   * @return <code>1</code>, <code>0</code>, <code>-1</code>, or {@link Integer#MIN_VALUE}
+   */
   private static int signInfUncached(IExpr expr, ISymbol x, EvalEngine engine) {
     try {
+      int structural = signStructural(expr, x, engine, 0);
+      if (F.isPresent(structural)) {
+        Limit.count(Limit.Strategy.SIGN_STRUCTURAL);
+        return structural;
+      }
       // Prevent circular dependency recursion between Gruntz and Limit!
       // If we are already deep inside the Gruntz algorithm, do NOT spawn a new
       // deep Limit evaluation just to find the sign of a wildly oscillating expression.
@@ -2013,16 +2089,21 @@ public class LimitGruntz {
         // Test progressively smaller sample points. Exponentials like E^10000 or E^E^100
         // will throw RecursionLimitExceeded or Arithmetic overflows. We catch these
         // and degrade to smaller numbers until we safely resolve the asymptotic sign.
+        Limit.count(Limit.Strategy.SIGN_SAMPLED_DEEP);
         return sampledSignAgreement(expr, x, engine, new int[] {10000, 100, 10, 3});
       }
 
       LimitData limitData = infinityLimitData(x);
       IExpr limitResult = evalLimitQuiet(expr, limitData);
 
-      if (limitResult.isInfinity())
+      if (limitResult.isInfinity()) {
+        Limit.count(Limit.Strategy.SIGN_LIMIT);
         return 1;
-      if (limitResult.isNegativeInfinity())
+      }
+      if (limitResult.isNegativeInfinity()) {
+        Limit.count(Limit.Strategy.SIGN_LIMIT);
         return -1;
+      }
 
       if (limitResult.isNumericFunction(true)) {
         if (engine.evaluate(F.Greater(limitResult, F.C0)).isTrue())
@@ -2069,28 +2150,40 @@ public class LimitGruntz {
           // Direct evaluation heuristic (two agreeing sample points - a single one can lie)
           int sampledSign = sampledSignAgreement(expr, x, engine, new int[] {10000, 100});
           if (sampledSign == 1 || sampledSign == -1) {
+            Limit.count(Limit.Strategy.SIGN_SAMPLED_SHALLOW);
             return sampledSign;
           }
 
-          // Leading Term fallback heuristic
-          IExpr lt = ASTSeriesData.leadingTerm(expr, x, F.CInfinity, engine);
-          if (lt.isPresent() && !lt.isNIL()) {
-            if (lt.isExp())
-              return 1;
-
-            int ltSign = sampledSignAgreement(lt, x, engine, new int[] {10000, 100});
-            if (ltSign == 1 || ltSign == -1) {
-              return ltSign;
+          // Leading-term fallback: as x -> Infinity the expression behaves like c*t^e with
+          // t = 1/x -> 0+, and since t is positive the sign of the whole is the sign of c.
+          LeadTerm.Normalized normalized = LeadTerm.normalize(expr, x, F.CInfinity, false);
+          if (normalized != null) {
+            Lead lead = LeadTerm.structuralLeadTerm(normalized.expr(), normalized.t(), engine);
+            if (lead != null && !lead.coefficientHasLogx()) {
+              IExpr coefficient = lead.coefficient();
+              if (engine.evalTrue(F.Greater(coefficient, F.C0))) {
+                Limit.count(Limit.Strategy.SIGN_LEADTERM);
+                return 1;
+              }
+              if (engine.evalTrue(F.Less(coefficient, F.C0))) {
+                Limit.count(Limit.Strategy.SIGN_LEADTERM);
+                return -1;
+              }
             }
           }
           // Directional derivative
           IExpr derivative = engine.evaluate(F.D(expr, x));
           IExpr derivLimit = evalLimitQuiet(derivative, limitData);
 
-          if (engine.evaluate(F.Less(derivLimit, F.C0)).isTrue() || derivLimit.isNegativeInfinity())
+          if (engine.evaluate(F.Less(derivLimit, F.C0)).isTrue()
+              || derivLimit.isNegativeInfinity()) {
+            Limit.count(Limit.Strategy.SIGN_DERIVATIVE);
             return 1;
-          else if (engine.evaluate(F.Greater(derivLimit, F.C0)).isTrue() || derivLimit.isInfinity())
+          } else if (engine.evaluate(F.Greater(derivLimit, F.C0)).isTrue()
+              || derivLimit.isInfinity()) {
+            Limit.count(Limit.Strategy.SIGN_DERIVATIVE);
             return -1;
+          }
         }
       }
       return Integer.MIN_VALUE;

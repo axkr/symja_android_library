@@ -1003,6 +1003,35 @@ public class AlgebraUtil {
    */
   public static Optional<IExpr[]> cancelGCD(final IExpr numerator, final IExpr denominator)
       throws JASConversionException {
+    final EvalEngine engine = EvalEngine.get();
+    final boolean expandCoefficientsMode = engine.isExpandCoefficientsMode();
+    try {
+      // Every pseudo-remainder step of the JAS subresultant loop multiplies a polynomial
+      // coefficient by a Plus expression. Ordinary evaluation does not distribute Times over Plus -
+      // that is Expand's job - so without this mode a coefficient such as
+      // 11+10*Sqrt(2)-2*Sqrt(2)*(6+2*Sqrt(2)), which is 3-2*Sqrt(2), grows syntactically once per
+      // iteration and never collapses, and the cancelled fraction comes back as a page of nested
+      // fractions. See IExpr#multiply(IExpr).
+      engine.setExpandCoefficientsMode(true);
+      return cancelGCDPolynomials(numerator, denominator);
+    } finally {
+      engine.setExpandCoefficientsMode(expandCoefficientsMode);
+    }
+  }
+
+  /**
+   * The polynomial part of {@link #cancelGCD(IExpr, IExpr)}, which must run with
+   * {@link EvalEngine#isExpandCoefficientsMode()} enabled.
+   *
+   * @param numerator an expression which should be converted to JAS polynomial (using
+   *        substitutions)
+   * @param denominator a expression which could be converted to JAS polynomial (using
+   *        substitutions)
+   * @return {@link Optional#empty()} if the expressions couldn't be converted to JAS polynomials,
+   *         gcd equals 1 or an argument is larger than {@link Config#MAX_CANCEL_GCD_LEAFCOUNT}
+   */
+  private static Optional<IExpr[]> cancelGCDPolynomials(final IExpr numerator,
+      final IExpr denominator) throws JASConversionException {
     try {
       if (denominator.isInteger() && numerator.isPlus()) {
         Optional<IExpr[]> result = cancelPlusIntegerGCD((IAST) numerator, (IInteger) denominator);
@@ -1020,9 +1049,6 @@ public class AlgebraUtil {
 
       VariablesSet eVar = new VariablesSet(numerator);
       eVar.addVarList(denominator);
-      if (eVar.size() == 0) {
-        return Optional.empty();
-      }
 
       IAST vars = eVar.getVarList();
       PolynomialHomogenization substitutions = new PolynomialHomogenization(EvalEngine.get());
@@ -1033,6 +1059,16 @@ public class AlgebraUtil {
         eVar.clear();
         eVar.addAll(substitutions.substitutedVariablesSet());
         vars = eVar.getVarList();
+      }
+      // The homogenization mints a dummy variable for every non-polynomial kernel, so a fraction
+      // built purely from constants becomes a polynomial in those dummies: for example
+      // (2+2*E^(2*Sqrt(3)))/(4*E^Sqrt(3)) - where E carries the CONSTANT attribute and Sqrt(3) is a
+      // numeric Power, so VariablesSet finds nothing - turns into (2+2*t^2)/(4*t) with t=E^Sqrt(3).
+      // Testing the variable set before the substitution therefore gave up on exactly the inputs
+      // the substitution was written to handle. Only when neither a variable nor a substituted
+      // kernel exists is there nothing to build a polynomial ring over.
+      if (eVar.size() == 0) {
+        return Optional.empty();
       }
       try {
         ExprPolynomialRing ring = new ExprPolynomialRing(vars);

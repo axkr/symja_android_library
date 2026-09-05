@@ -1,6 +1,7 @@
 package org.matheclipse.core.sympy.simplify;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Dummy;
@@ -9,7 +10,6 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
-import static org.matheclipse.core.expression.S.Together;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
@@ -35,7 +35,7 @@ public class LogCombineTest {
     IExpr expr = Plus(Log(x), Log(y));
 
     // Using force=true to combine symbols without explicit positive assumptions
-    IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
+    IExpr result = org.matheclipse.core.reflection.system.LimitGruntz.logCombine(expr, true);
 
     assertEquals(Log(Times(x, y)), result);
   }
@@ -50,7 +50,7 @@ public class LogCombineTest {
     ISymbol b = Dummy("b");
     IExpr expr = Plus(Times(z, Log(a)), Times(z, Log(b)));
 
-    IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
+    IExpr result = org.matheclipse.core.reflection.system.LimitGruntz.logCombine(expr, true);
 
 
     assertEquals(Times(z, Log(Times(a, b))), result);
@@ -68,12 +68,13 @@ public class LogCombineTest {
     IExpr term2 = Times(CN1, Power(z, CN1), Log(z));
     IExpr expr = Plus(term1, term2);
 
-    IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
+    IExpr result = org.matheclipse.core.reflection.system.LimitGruntz.logCombine(expr, true);
 
-    // The result should have combined arguments simplified by Together
-    // Result: (1/z) * Log( (1/2 + z) / z ) => (1/z) * Log( 1 + 1/(2z) )
-    IExpr expectedArg = Together.of(Times(Plus(C1D2, z), Power(z, CN1)));
-    IExpr expected = Times(Power(z, CN1), Log(expectedArg));
+    // (1/z) * Log((1/2 + z)/z) expanded to (1/z) * Log(1 + 1/(2z)) - the additive form this
+    // test's javadoc asks for, and the one the Stirling/Gruntz callers need: it exposes the
+    // 1 + o(1) shape of the argument as z -> Infinity, which the quotient form (1 + 2z)/(2z)
+    // hides. logCombine merges grouped arguments with ExpandAll for exactly that reason.
+    IExpr expected = Times(Power(z, CN1), Log(Plus(C1, Times(C1D2, Power(z, CN1)))));
 
     assertEquals(expected, result);
   }
@@ -88,7 +89,7 @@ public class LogCombineTest {
     IExpr constant = ZZ(7);
     IExpr expr = Plus(constant, Log(x), Log(y));
 
-    IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
+    IExpr result = org.matheclipse.core.reflection.system.LimitGruntz.logCombine(expr, true);
 
     assertEquals(Plus(constant, Log(Times(x, y))), result);
   }
@@ -102,7 +103,7 @@ public class LogCombineTest {
     ISymbol y = Dummy("y");
     IExpr expr = Plus(Log(x), Times(CN1, Log(y)));
 
-    IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
+    IExpr result = org.matheclipse.core.reflection.system.LimitGruntz.logCombine(expr, true);
 
     assertEquals(Log(Times(x, Power(y, CN1))), result);
   }

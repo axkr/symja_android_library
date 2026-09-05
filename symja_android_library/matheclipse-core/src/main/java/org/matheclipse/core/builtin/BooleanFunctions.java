@@ -70,9 +70,9 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
-import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.external.fastutil.objects.Object2IntArrayMap;
 import org.matheclipse.external.fastutil.objects.Object2IntMap;
+import org.matheclipse.parser.client.math.MathException;
 
 public final class BooleanFunctions {
 

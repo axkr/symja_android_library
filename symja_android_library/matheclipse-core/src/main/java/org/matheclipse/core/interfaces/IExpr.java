@@ -50,6 +50,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pair;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.expression.WildPattern;
@@ -65,8 +66,6 @@ import org.matheclipse.core.patternmatching.WildMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.sympy.core.Add;
 import org.matheclipse.core.sympy.core.Mul;
-import org.matheclipse.core.sympy.exception.ValueError;
-import org.matheclipse.core.sympy.simplify.Powsimp;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -765,6 +764,18 @@ public interface IExpr
     return F.pair(this, F.C1);
   }
 
+
+
+  @Override
+  default IExpr asin() {
+    return S.ArcSin.of(this);
+  }
+
+  @Override
+  default IExpr asinh() {
+    return S.ArcSinh.of(this);
+  }
+
   /**
    * Symja style version of as_coeff_add.
    */
@@ -781,71 +792,6 @@ public interface IExpr
       return Add.asCoeffAdd((IAST) this, rational);
     }
     return F.pair(F.C0, this);
-  }
-
-  default IPair asCoeffExponent(ISymbol x) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3479
-    // ``c*x**e -> c,e`` where x can be any symbolic expression.
-    EvalEngine engine = EvalEngine.get();
-    IExpr s = F.Cancel.of(engine, this);
-    s = F.Collect.of(engine, s, x);
-    Pair coeffMul = s.as_coeff_mul(x);
-    IExpr c = coeffMul.first();
-    IExpr p = coeffMul.second();
-    if (p.isAST1()) {
-      Pair baseExp = p.first().asBaseExp();
-      IExpr b = baseExp.first();
-      IExpr e = baseExp.second();
-      if (b.equals(x)) {
-        return F.pair(c, e);
-      }
-    }
-    return F.pair(s, F.C0);
-  }
-
-
-
-  @Override
-  default IExpr asin() {
-    return S.ArcSin.of(this);
-  }
-
-  @Override
-  default IExpr asinh() {
-    return S.ArcSinh.of(this);
-  }
-
-  default IExpr asLeadingTerm(ISymbol x) {
-    return asLeadingTerm(x, F.NIL, 0);
-  }
-
-  default IExpr asLeadingTerm(ISymbol x, IExpr logx, int cdir) {
-    return asLeadingTerm(new ISymbol[] {x}, logx, cdir);
-  }
-
-  default IExpr asLeadingTerm(ISymbol x, int cdir) {
-    return asLeadingTerm(x, F.NIL, cdir);
-  }
-
-  default IExpr asLeadingTerm(ISymbol[] symbols, IExpr logx, int cdir) {
-    if (symbols.length > 1) {
-      IExpr c = this;
-      for (ISymbol x : symbols) {
-        c = c.asLeadingTerm(new ISymbol[] {x}, logx, cdir);
-      }
-      return c;
-    } else if (symbols.length == 0) {
-      return this;
-    }
-    ISymbol x = symbols[0];
-    if (isFree(x)) {
-      return this;
-    }
-    IExpr obj = evalAsLeadingTerm(x, logx, cdir);
-    if (obj.isPresent()) {
-      return Powsimp.powsimp(obj, true, "exp");
-    }
-    throw new UnsupportedOperationException("asLeadingTerm(" + this + "," + x);
   }
 
   /**
@@ -1228,38 +1174,6 @@ public interface IExpr
     return F.NIL;
   }
 
-  default IExpr dir(ISymbol x, int cdir) {
-    if (isZero()) {
-      return F.C0;
-    }
-
-    IInteger minexp = F.C0;
-    IExpr arg = this;
-    IExpr coeff = F.C0;
-    while (arg.isPresent()) {
-      minexp = minexp.add(F.C1);
-      arg = arg.diff(x);
-      coeff = arg.subs(x, F.C0);
-      if (coeff.isIndeterminate()) {
-        coeff = arg.limit(x, F.C0);
-        if (coeff.isComplexInfinity()) {
-          try {
-            coeff = arg.leadTerm(x).first();
-            if (coeff.has(log(x))) {
-              throw new ValueError("");
-            }
-          } catch (ValueError ve) {
-            coeff = arg.limit(x, F.C0);
-          }
-          if (!coeff.isZero()) {
-            break;
-          }
-        }
-      }
-    }
-    return F.Times(coeff, F.Power(F.ZZ(cdir), minexp));
-  }
-
   @Override
   default IExpr divide(double arg0) {
     return divide(F.num(arg0));
@@ -1505,20 +1419,6 @@ public interface IExpr
    */
   default IExpr eval(EvalEngine engine) {
     return engine.evaluate(this);
-  }
-
-  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
-    if (isAST() && head() instanceof IBuiltInSymbol) {
-      IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
-      if (evaluator instanceof IRewrite) {
-        IExpr obj = ((IRewrite) evaluator).evalAsLeadingTerm((IAST) this, x, logx, cdir);
-        if (obj.isPresent()) {
-          return obj;
-        }
-      }
-    }
-
-    return this;
   }
 
   /**
@@ -1945,7 +1845,21 @@ public interface IExpr
 
   @Override
   default IExpr gcd(IExpr that) {
-    return S.GCD.of(this, that);
+    if (equals(that)) {
+      return this;
+    }
+    // This is the ring-level GCD that JAS calls on polynomial coefficients, not the GCD() builtin,
+    // which stays unevaluated on irrational arguments exactly as Wolfram's does. Take the rational
+    // content first: without it 2 and 2*Sqrt(3) have no common divisor, and the content of
+    // 2*x^2+2*Sqrt(3) is lost.
+    IExpr content = NumberUtil.rationalContentGCD(this, that);
+    if (!content.isOne()) {
+      return content;
+    }
+    IExpr gcd = S.GCD.of(this, that);
+    // An unevaluated GCD(...) node is not a ring element, and dividing a polynomial by it would
+    // produce nonsense; report "no common divisor" instead.
+    return gcd.isAST(S.GCD) ? F.C1 : gcd;
   }
 
   /**
@@ -3502,6 +3416,12 @@ public interface IExpr
    * display wrapper, so <code>Overlay({1, 2, 3})</code> has to keep printing as itself rather than
    * being handed to the SVG converter, which would return a blank picture.
    *
+   * <p>
+   * A display wrapper around a whole picture is a picture: <code>Tooltip(Plot(...), "s")</code>
+   * draws what it wraps, with the annotation applied to the drawing. The same guard as
+   * <code>Overlay</code> applies - <code>Tooltip(1, "s")</code> annotates a number and has no
+   * picture in it - and the recursion covers a nest of them.
+   *
    * @return <code>true</code> if the expression is a graphics object
    */
   default boolean isGraphicsObject() {
@@ -3517,7 +3437,38 @@ public interface IExpr
       // any graphic is enough: a non graphic item is dropped, as it is in a GraphicsRow
       return layers.isList() && ((IAST) layers).exists(x -> x.isGraphicsObject());
     }
+    if (isPictureWrapperHead(head()) && ((IAST) this).argSize() >= 1) {
+      return ((IAST) this).arg1().isGraphicsObject();
+    }
     return false;
+  }
+
+  /**
+   * Whether a head annotates what it wraps without replacing it, so that a picture inside one is
+   * still a picture.
+   *
+   * <p>
+   * This is {@link #isDisplayWrapperHead(IExpr)} without {@link S#Style}: a style has a converter
+   * of its own that recurses into the expression and applies the directives, and treating it as a
+   * picture here would route it past that converter and lose them. {@link S#Button},
+   * {@link S#Highlighted} and {@link S#Callout} are left out for the same reason - each draws
+   * something of its own around what it wraps.
+   */
+  static boolean isPictureWrapperHead(IExpr head) {
+    if (!head.isBuiltInSymbol()) {
+      return false;
+    }
+    switch (((IBuiltInSymbol) head).ordinal()) {
+      case ID.Tooltip:
+      case ID.Labeled:
+      case ID.Legended:
+      case ID.Annotation:
+      case ID.StatusArea:
+      case ID.Mouseover:
+        return true;
+      default:
+        return false;
+    }
   }
 
   /**
@@ -5709,34 +5660,6 @@ public interface IExpr
     return S.LCM.of(this, that);
   }
 
-  default IPair leadTerm(ISymbol x) {
-    return leadTerm(x, F.NIL, 0);
-  }
-
-  /**
-   * Returns the leading term <code>a*x**b</code> as a tuple (a, b).
-   * 
-   * @return
-   */
-  default IPair leadTerm(ISymbol x, IExpr logx, int cdir) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3491
-    IExpr l = asLeadingTerm(x, logx, cdir);
-
-    ISymbol d = F.Dummy("logx");
-    if (l.has(F.Log(x))) {
-      l = l.subs(F.Log(x), d);
-    }
-    IPair coeffExp = l.asCoeffExponent(x);
-    IExpr c = coeffExp.first();
-    IExpr e = coeffExp.second();
-    if (!c.isFree(x)) {
-      throw new ValueError(
-          "cannot compute leadterm(%s, %s). The coefficient should have been free of %s");
-    }
-    c = c.subs(d, F.Log(x));
-    return F.pair(c, e);
-  }
-
   /**
    * Count the number of indivisible subexpressions (atoms/leaves) of this expression.
    *
@@ -6307,29 +6230,15 @@ public interface IExpr
    */
   @Override
   default IExpr multiply(final IExpr that) {
-    // if (isZero()) {
-    // return this;
-    // }
-    // if (that.isZero()) {
-    // return that;
-    // }
-    // if (isOne()) {
-    // return that;
-    // }
-    // if (that.isOne()) {
-    // return this;
-    // }
-    // if (isPlus() && !that.isPlus()) {
-    // if (that.isAtom() || (that.isPower() && that.base().isAtom())) {
-    // IExpr temp = ((IAST) this).mapThread(F.binaryAST2(F.Times, null, that), 1);
-    // return EvalEngine.get().evaluate(temp);
-    // }
-    // } else if (!isPlus() && that.isPlus()) {
-    // if (isAtom() || (isPower() && base().isAtom())) {
-    // IExpr temp = ((IAST) that).mapThread(F.binaryAST2(F.Times, this, null), 2);
-    // return EvalEngine.get().evaluate(temp);
-    // }
-    // }
+    if ((isPlus() || that.isPlus()) && EvalEngine.get().isExpandCoefficientsMode()) {
+      // JAS uses this method for polynomial coefficient arithmetic. Ordinary evaluation leaves a
+      // product with a Plus argument undistributed, so a coefficient built by a chain of
+      // pseudo-remainder steps keeps every intermediate product and grows without bound; expanding
+      // collapses e.g. 11+10*Sqrt(2)-2*Sqrt(2)*(6+2*Sqrt(2)) back to 3-2*Sqrt(2). The mode is set
+      // only around such a computation, because every other caller of this method wants the plain
+      // evaluated product that #times(IExpr) returns. #multiply(int) distributes unconditionally.
+      return F.evalExpand(times(that));
+    }
     return times(that);
   }
 

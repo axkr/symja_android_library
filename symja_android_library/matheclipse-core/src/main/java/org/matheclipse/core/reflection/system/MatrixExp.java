@@ -14,6 +14,44 @@ import org.matheclipse.core.interfaces.ITensorAccess;
 public class MatrixExp extends AbstractFunctionEvaluator {
 
   /**
+   * Test if the given matrix contains a row of zeroes. {@link S#Eigensystem} pads the eigenvector
+   * list of a defective matrix with zero vectors, so this is the exact signature of a matrix which
+   * cannot be diagonalized.
+   *
+   * @param matrix a list of rows
+   * @return <code>true</code> if at least one non-empty row consists only of zeroes
+   */
+  private static boolean hasZeroRow(IAST matrix) {
+    for (int i = 1; i < matrix.size(); i++) {
+      IExpr row = matrix.get(i);
+      if (row.isList()) {
+        IAST rowAST = (IAST) row;
+        if (rowAST.argSize() > 0 && rowAST.forAll(x -> x.isZero())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Evaluate <code>expr</code> without letting its messages reach the user.
+   *
+   * @param expr the expression to evaluate
+   * @param engine the evaluation engine
+   * @return the evaluated expression
+   */
+  private static IExpr evalQuiet(IExpr expr, EvalEngine engine) {
+    final boolean quietMode = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      return engine.evaluate(expr);
+    } finally {
+      engine.setQuietMode(quietMode);
+    }
+  }
+
+  /**
    * Applies a scalar function f to each eigenvalue and reconstructs the matrix via diagonalization:
    * result = P * diag(f(λ₁),...,f(λₙ)) * P⁻¹
    */
@@ -25,9 +63,19 @@ public class MatrixExp extends AbstractFunctionEvaluator {
       IAST eigenValues = (IAST) eigenSys.first();
       IAST eigenVectors = (IAST) eigenSys.second();
 
+      if (hasZeroRow(eigenVectors)) {
+        // `Eigensystem` pads a defective (non-diagonalizable) matrix with zero eigenvectors, so the
+        // transformation matrix is singular and diagonalization cannot work. Leaving now skips a
+        // doomed `Inverse`, whose `Inverse::sing` and `RowReduce` messages would otherwise reach
+        // the user before the caller falls back to the `JordanDecomposition` path.
+        return F.NIL;
+      }
+
       // Eigensystem returns eigenvectors as rows; P needs them as columns
       IExpr P = engine.evaluate(F.Transpose(eigenVectors));
-      IExpr Pinv = engine.evaluate(F.Inverse(P));
+      // A `P` that is singular for some other reason has to stay silent as well: every caller has a
+      // fallback, so a failure here is not something the user did wrong.
+      IExpr Pinv = evalQuiet(F.Inverse(P), engine);
 
       if (Pinv.isMatrix() != null && !Pinv.has(S.Indeterminate) && !Pinv.isDirectedInfinity()) {
         IASTAppendable fD = F.ListAlloc(n);
@@ -225,6 +273,10 @@ public class MatrixExp extends AbstractFunctionEvaluator {
 
       IExpr expMat = computeMatrixExp((ITensorAccess) arg1, n, engine);
       if (expMat.isPresent()) {
+        // The 1x1 and 2x2 closed forms are assembled term by term and return without passing
+        // through the eigensystem path's normalization, so apply it here. It has to happen before
+        // the optional `Dot`, so that the vector product is built from normalized entries.
+        expMat = Convert.simplifyMatrixEntries(expMat, engine);
         if (v != null) {
           return engine.evaluate(F.Dot(expMat, v));
         }

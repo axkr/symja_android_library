@@ -255,7 +255,8 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
     check("MatrixExp[{{a}}]", //
         "{{E^a}}");
     check("MatrixExp({{0,1}, {0,1}})", //
-        "{{1,-1+E},{0,E}}");
+        "{{1,-1+E},\n" //
+            + " {0,E}}");
     check("MatrixExp({{0, 1}, {-1, 0}}*t)", //
         "{{Cos(t),Sin(t)},{-Sin(t),Cos(t)}}");
     check("MatrixExp({{0, a}, {-a, 0}})*t", //
@@ -268,26 +269,20 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
         "{{E^a,(b*(E^a-E^d))/(a-d)},{0,E^d}}");
     check("MatrixExp({{a,0},{c,d}})", //
         "{{E^a,0},{(c*(E^a-E^d))/(a-d),E^d}}");
+    // A^2 == a*b*I, so this is Cosh(w)*I + Sinh(w)/w*A for w == Sqrt(a*b); verified against the
+    // exponential series for both signs of a and of b.
     check("MatrixExp({{0, a}, {b, 0}})", //
-        "{{E^(Sqrt(a)*Sqrt(b))/2+1/(2*E^(Sqrt(a)*Sqrt(b))),(Sqrt(a)*E^(Sqrt(a)*Sqrt(b)))/(\n" //
-            + "2*Sqrt(b))-Sqrt(a)/(2*Sqrt(b)*E^(Sqrt(a)*Sqrt(b)))},{(Sqrt(b)*E^(Sqrt(a)*Sqrt(b)))/(\n" //
-            + "2*Sqrt(a))-Sqrt(b)/(2*Sqrt(a)*E^(Sqrt(a)*Sqrt(b))),E^(Sqrt(a)*Sqrt(b))/2+1/(2*E^(Sqrt(a)*Sqrt(b)))}}");
+        "{{Cosh(Sqrt(a)*Sqrt(b)),(Sqrt(a)*Sinh(Sqrt(a)*Sqrt(b)))/Sqrt(b)},\n" //
+            + " {(Sqrt(b)*Sinh(Sqrt(a)*Sqrt(b)))/Sqrt(a),Cosh(Sqrt(a)*Sqrt(b))}}");
     check("MatrixExp({{a,b}, {c,d}})", //
-        "{{((-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^\n"
-            //
-            + "2+4*b*c-2*a*d+d^2))+((a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^\n"
-            //
-            + "2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2)),(-b*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^\n"
-            //
-            + "2+4*b*c-2*a*d+d^2)+(b*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^\n"
-            //
-            + "2)},{(-c*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2)+(c*E^(a/\n" //
-            + "2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2),((a-d+Sqrt(a^2+4*b*c-\n" //
-            + "2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2))+((-a+d+Sqrt(a^\n"
-            //
-            + "2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^\n"
-            //
-            + "2))}}");
+        "{{(1/2*(-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)))+\n" //
+            + "1/2*(a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))))/Sqrt(a^\n" //
+            + "2+4*b*c-2*a*d+d^2),(b*(-E^(1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)))+E^(1/2*(a+d+Sqrt(a^\n" //
+            + "2+4*b*c-2*a*d+d^2)))))/Sqrt(a^2+4*b*c-2*a*d+d^2)},\n" //
+            + " {(c*(-E^(1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)))+E^(1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^\n" //
+            + "2)))))/Sqrt(a^2+4*b*c-2*a*d+d^2),(1/2*(a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(1/2*(a+d-Sqrt(a^\n" //
+            + "2+4*b*c-2*a*d+d^2)))+1/2*(-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(1/2*(a+d+Sqrt(a^2+4*b*c-\n" //
+            + "2*a*d+d^2))))/Sqrt(a^2+4*b*c-2*a*d+d^2)}}");
 
     // check("MatrixExp[{{2, 3, 0}, {4, 9, 0}, {0, 0, 4}}]", //
     // "{{1/194*(97*E^4+7*Sqrt(97)*E^4+97*E^(1/2*(11+Sqrt(97)))-7*Sqrt(97)*E^(1/2*(11+Sqrt(\n" //
@@ -298,9 +293,11 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
     // + "1/2*(11+Sqrt(97)))+(7*E^(1/2*(11+Sqrt(97))))/Sqrt(97))}}");
 
     check("MatrixExp({{3.4, 1.2}, {0.001, -0.9}})", //
-        "{{29.97054,8.24991},{0.00687492,0.408375}}");
+        "{{29.97054,8.24991},\n" //
+            + " {0.00687492,0.408375}}");
     check("MatrixExp({{1.2, 5.6}, {3, 4}})", //
-        "{{346.5575,661.7346},{354.5007,677.4248}}");
+        "{{346.5575,661.7346},\n" //
+            + " {354.5007,677.4248}}");
     check("MatrixExp({{2, 0, 0}, {0, 1, -1}, {0, 1, 1}})", //
         "{{E^2,0,0},\n" //
             + " {0,1/2*(E^(1-I)+E^(1+I)),-I*1/2*E^(1-I)+I*1/2*E^(1+I)},\n" //
@@ -329,12 +326,13 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
             + " {0.000309008+I*(-0.000730508),-0.104964+I*3.14139}}");
     check("m = {{E,0,0},{0,4*E,-4*E},{0,4*E,4*E}};", //
         "");
-    // the off-diagonal entries are I/2*(Log(4+I*4)-Log(4-I*4)) == I/2 * I*Pi/2, see the numeric
-    // check below
+    // The two eigenvalues are a complex conjugate pair, so the diagonal starts out as
+    // Log(4-I*4)+Log(4+I*4), which `tryPlusLog` folds to Log(32). The off-diagonal entries are
+    // I/2*(Log(4+I*4)-Log(4-I*4)) == I/2 * I*Pi/2. Both are confirmed by the numeric check below.
     check("MatrixLog(m)", //
         "{{1,0,0},\n"//
-            + " {0,1/2*(2+Log(4-I*4)+Log(4+I*4)),-Pi/4},\n" //
-            + " {0,Pi/4,1/2*(2+Log(4-I*4)+Log(4+I*4))}}");
+            + " {0,1/2*(2+Log(32)),-Pi/4},\n" //
+            + " {0,Pi/4,1/2*(2+Log(32))}}");
     check("MatrixLog(m) // N", //
         "{{1.0,0.0,0.0},{0.0,2.73287,-0.785398},{0.0,0.785398,2.73287}}");
 

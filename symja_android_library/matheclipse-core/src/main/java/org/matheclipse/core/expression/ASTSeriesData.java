@@ -14,6 +14,8 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.series.Lead;
+import org.matheclipse.core.series.LeadTerm;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -180,53 +182,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return null;
   }
 
-  private static IExpr extractFromSeries(IExpr expr, IExpr x, IExpr x0, EvalEngine engine) {
-    int n = 1;
-    ASTSeriesData sd = null;
-
-    IExpr seriesFunction = expr;
-    IExpr seriesX0 = x0;
-    boolean isInfinity = x0.isInfinity() || x0.isNegativeInfinity();
-
-    if (isInfinity) {
-      seriesX0 = F.C0;
-      seriesFunction = engine.evaluate(F.subst(expr, x, F.Power(x, F.CN1)));
-    }
-
-    while (n < 20) {
-      sd = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, n, engine);
-      if (sd != null && !sd.isOrder()) {
-        int nMin = sd.minExponent();
-        while (nMin < sd.truncateOrder() && sd.coefficient(nMin).isZero()) {
-          nMin++;
-        }
-        if (nMin < sd.truncateOrder()) {
-          IExpr coeff = sd.coefficient(nMin);
-          IExpr varPart;
-
-          int den = sd.puiseuxDenominator();
-          IExpr pow;
-          if (den == 1) {
-            pow = F.ZZ(nMin);
-          } else {
-            pow = F.QQ(nMin, den).normalize();
-          }
-
-          if (isInfinity) {
-            return engine.evaluate(F.Times(coeff, F.Power(x, F.Negate(pow))));
-          } else if (x0.isZero()) {
-            varPart = x;
-          } else {
-            varPart = F.Subtract(x, x0);
-          }
-          return engine.evaluate(F.Times(coeff, F.Power(varPart, pow)));
-        }
-      }
-      n += 2;
-    }
-    return F.NIL;
-  }
-
   public static ASTSeriesData fromCoefficientMap(IExpr x, IExpr x0, final int n,
       Map<IExpr, IExpr> coefficientMap, IASTAppendable rest) {
     int maxExponent = Config.INVALID_INT;
@@ -374,221 +329,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return F.NIL;
   }
 
-  public static IExpr leadingTerm(IExpr expr, IExpr x, IExpr x0, EvalEngine engine) {
-    if (expr.isFree(x)) {
-      return expr;
-    }
-    if (expr.equals(x)) {
-      if (x0.isZero() || x0.isInfinity() || x0.isNegativeInfinity()) {
-        return x;
-      }
-      return F.Subtract(x, x0);
-    }
-
-    if (expr.isAST()) {
-      IAST ast = (IAST) expr;
-      IExpr head = ast.head();
-
-      if (head.isBuiltInSymbol()) {
-
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Plus: {
-            return extractFromSeries(expr, x, x0, engine);
-          }
-          case ID.Times: {
-            IASTAppendable timesResult = F.TimesAlloc(ast.argSize());
-            for (int i = 1; i <= ast.argSize(); i++) {
-              IExpr lt = leadingTerm(ast.get(i), x, x0, engine);
-              if (lt.isNIL()) {
-                return F.NIL;
-              }
-              timesResult.append(lt);
-            }
-            return engine.evaluate(timesResult);
-          }
-          case ID.Power: {
-            IExpr baseLt = leadingTerm(ast.base(), x, x0, engine);
-            IExpr expLimit = engine.evaluate(F.subst(ast.exponent(), x, x0));
-            if (baseLt.isPresent() && expLimit.isSpecialsFree() && !expLimit.isZero()) {
-              return engine.evaluate(F.Power(baseLt, expLimit));
-            }
-            break;
-          }
-
-          case ID.ArcCos: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isZero()) {
-              return engine.evaluate(F.Divide(S.Pi, F.C2));
-            }
-            break;
-          }
-          case ID.Sin:
-          case ID.Tan:
-          case ID.Sinh:
-          case ID.Tanh:
-          case ID.ArcSin:
-          case ID.ArcTan:
-          case ID.ArcSinh:
-          case ID.ArcTanh: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isZero()) {
-              return leadingTerm(arg, x, x0, engine);
-            }
-            break;
-          }
-          case ID.Cos:
-          case ID.Cosh:
-          case ID.Exp: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isZero()) {
-              return F.C1;
-            }
-            break;
-          }
-          case ID.Gamma: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isInteger() && (argLimit.isZero() || argLimit.isNegativeResult())) {
-              IExpr ltArg = leadingTerm(F.Subtract(arg, argLimit), x, x0, engine);
-              if (ltArg.isPresent()) {
-                IExpr nFact = F.Factorial(argLimit.negate());
-                IExpr sign = F.Power(F.CN1, argLimit.negate());
-                IExpr coeff = engine.evaluate(F.Divide(sign, nFact));
-                return engine.evaluate(F.Times(coeff, F.Power(ltArg, F.CN1)));
-              }
-            }
-            break;
-          }
-          case ID.PolyGamma: {
-            if (ast.argSize() == 2) {
-              IExpr n = ast.arg1();
-              IExpr z = ast.arg2();
-              IExpr zLimit = engine.evaluate(F.subst(z, x, x0));
-              if (zLimit.isZero() && n.isInteger() && !n.isNegativeResult()) {
-                IExpr ltZ = leadingTerm(z, x, x0, engine);
-                if (ltZ.isPresent()) {
-                  IExpr sign = F.Power(F.CN1, F.Plus(n, F.C1));
-                  IExpr fact = F.Factorial(n);
-                  IExpr power = F.Power(ltZ, F.Negate(F.Plus(n, F.C1)));
-                  return engine.evaluate(F.Times(sign, fact, power));
-                }
-              }
-            }
-            break;
-          }
-          case ID.Log: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isOne()) {
-              return leadingTerm(F.Subtract(arg, F.C1), x, x0, engine);
-            } else if (argLimit.isZero()) {
-              IExpr ltArg = leadingTerm(arg, x, x0, engine);
-              if (ltArg.isPresent()) {
-                return engine.evaluate(F.Log(ltArg));
-              }
-            }
-            break;
-          }
-          case ID.Cot:
-          case ID.Coth:
-          case ID.Csc:
-          case ID.Csch: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isZero()) {
-              IExpr ltArg = leadingTerm(arg, x, x0, engine);
-              if (ltArg.isPresent()) {
-                return engine.evaluate(F.Power(ltArg, F.CN1));
-              }
-            }
-            break;
-          }
-          case ID.Sec:
-          case ID.Sech:
-          case ID.Erfc: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isZero()) {
-              return F.C1;
-            }
-            break;
-          }
-          case ID.Erf:
-          case ID.Erfi: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isZero()) {
-              IExpr ltArg = leadingTerm(arg, x, x0, engine);
-              if (ltArg.isPresent()) {
-                return engine.evaluate(F.Times(F.C2, F.Power(S.Pi, F.CN1D2), ltArg));
-              }
-            }
-            break;
-          }
-          case ID.Abs:
-          case ID.Sign: {
-            IExpr arg = ast.arg1();
-            IExpr ltArg = leadingTerm(arg, x, x0, engine);
-            if (ltArg.isPresent()) {
-              return engine.evaluate(F.unaryAST1(head, ltArg));
-            }
-            return F.NIL;
-          }
-          case ID.InverseErf: {
-            IExpr arg = ast.arg1();
-            IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            if (argLimit.isZero()) {
-              IExpr ltArg = leadingTerm(arg, x, x0, engine);
-              if (ltArg.isPresent()) {
-                return engine.evaluate(F.Times(F.Power(S.Pi, F.C1D2), F.C1D2, ltArg));
-              }
-            }
-            break;
-          }
-          case ID.BesselJ:
-          case ID.BesselI: {
-            if (ast.argSize() == 2) {
-              IExpr nu = ast.arg1();
-              IExpr z = ast.arg2();
-              IExpr zLimit = engine.evaluate(F.subst(z, x, x0));
-              if (zLimit.isZero()) {
-                IExpr ltZ = leadingTerm(z, x, x0, engine);
-                if (ltZ.isPresent()) {
-                  IExpr nuLimit = engine.evaluate(F.subst(nu, x, x0));
-                  IExpr halfZ = engine.evaluate(F.Times(F.C1D2, ltZ));
-                  IExpr gammaTerm = engine.evaluate(F.Power(F.Gamma(F.Plus(nuLimit, F.C1)), F.CN1));
-                  return engine.evaluate(F.Times(gammaTerm, F.Power(halfZ, nuLimit)));
-                }
-              }
-            }
-            break;
-          }
-          case ID.EllipticK:
-          case ID.EllipticE: {
-            if (ast.argSize() == 1) {
-              IExpr m = ast.arg1();
-              IExpr mLimit = engine.evaluate(F.subst(m, x, x0));
-              if (mLimit.isZero()) {
-                return engine.evaluate(F.Times(S.Pi, F.C1D2));
-              }
-            }
-            break;
-          }
-        }
-      }
-    }
-
-    IExpr limit = engine.evaluate(F.subst(expr, x, x0));
-    if (limit.isPresent() && !limit.isZero() && !limit.isIndeterminate()
-        && !limit.isDirectedInfinity()) {
-      return limit;
-    }
-    return F.NIL;
-  }
-
   private static ASTSeriesData plusSeriesDataRecursive(final IAST plusAST, IExpr x, IExpr x0,
       final int n, final int direction, EvalEngine engine) {
     Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
@@ -676,7 +416,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               if (numerator != 1) {
                 series = series.shiftTimes(numerator, F.C1, series.truncateOrder());
               }
-              series.setDenominator(denominator);
+              // the expansion ran in u = x^(1/denominator), so the indices already
+              // refer to that lattice - only the denominator has to be recorded
+              series.reinterpretOnPuiseuxLattice(denominator);
               return series;
             }
           }
@@ -694,38 +436,20 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
 
     int currentN = n;
-    IExpr lt = leadingTerm(base, x, x0, engine);
-    if (lt.isPresent() && !lt.isZero()) {
-      IExpr varPart = x0.isZero() ? x : F.Subtract(x, x0);
-      int leadDegree = -1;
-
-      if (lt.isFree(x)) {
-        leadDegree = 0;
-      } else if (lt.equals(varPart) || lt.equals(x)) {
-        leadDegree = 1;
-      } else if (lt.isPower() && (lt.base().equals(varPart) || lt.base().equals(x))) {
-        IExpr exp = lt.exponent();
-        if (exp.isInteger()) {
-          leadDegree = exp.toIntDefault();
-        }
-      } else if (lt.isTimes()) {
-        for (int i = 1; i <= lt.argSize(); i++) {
-          IExpr arg = ((IAST) lt).get(i);
-          if (arg.equals(varPart) || arg.equals(x)) {
-            leadDegree = 1;
-            break;
-          } else if (arg.isPower() && (arg.base().equals(varPart) || arg.base().equals(x))) {
-            IExpr exp = arg.exponent();
-            if (exp.isInteger()) {
-              leadDegree = exp.toIntDefault();
-              break;
-            }
+    // A base with a leading term of degree d needs at least d+1 orders before the power's own
+    // expansion has anything to work with. The leading-term primitive reports that degree
+    // directly as its exponent; this used to be recovered by pattern-matching the rebuilt
+    // leading-term expression back apart, which only recognised integer powers of the variable.
+    if (x instanceof ISymbol) {
+      LeadTerm.Normalized normalized = LeadTerm.normalize(base, (ISymbol) x, x0, false);
+      if (normalized != null) {
+        Lead lead = LeadTerm.structuralLeadTerm(normalized.expr(), normalized.t(), engine);
+        if (lead != null) {
+          int leadDegree = lead.exponent().toIntDefault();
+          if (F.isPresent(leadDegree) && currentN <= leadDegree) {
+            currentN = leadDegree + 1;
           }
         }
-      }
-
-      if (leadDegree != -1 && currentN <= leadDegree) {
-        currentN = leadDegree + 1;
       }
     }
     ASTSeriesData series = seriesDataRecursive(base, x, x0, currentN, direction, engine);
@@ -2937,7 +2661,19 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
   }
 
-  public void setDenominator(int denominator) {
+  /**
+   * Reinterpret the stored coefficients as living on a Puiseux lattice with this denominator, so
+   * that index <code>i</code> now means <code>x^(i/denominator)</code> rather than
+   * <code>x^i</code>.
+   *
+   * <p>
+   * The indices are deliberately NOT rescaled: the caller expanded in a variable that already
+   * stands for <code>x^(1/denominator)</code>, so the stored indices are correct in the new lattice
+   * and rescaling them would square the substitution. This is why the method is private - used as a
+   * general setter on a series that was genuinely expanded in <code>x</code>, it would silently
+   * change the meaning of every coefficient.
+   */
+  private void reinterpretOnPuiseuxLattice(int denominator) {
     this.puiseuxDenominator = denominator;
   }
 

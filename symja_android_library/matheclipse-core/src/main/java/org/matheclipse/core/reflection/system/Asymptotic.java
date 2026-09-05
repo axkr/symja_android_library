@@ -4,6 +4,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.series.Lead;
+import org.matheclipse.core.series.LeadTerm;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -37,46 +39,37 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class Asymptotic extends AbstractFunctionOptionEvaluator {
 
-  /** Order of the first series expansion used to search for a leading term. */
-  private static final int LEADING_TERM_START_ORDER = 3;
-
-  /** Maximum order of the series expansions used to search for a leading term. */
-  private static final int LEADING_TERM_MAX_ORDER = 24;
-
   public Asymptotic() {}
 
   /**
-   * Determine the leading (lowest order) non-zero term of the series expansion of <code>expr</code>
-   * for the variable <code>xVar</code> near <code>x0</code>.
+   * Determine the leading (lowest order) non-zero term of the series expansion of
+   * <code>expr</code> for the variable <code>xVar</code> near <code>x0</code>.
    *
    * <p>
-   * If the expansion vanishes up to the currently computed order, the expansion is repeated with a
-   * doubled order until {@link #LEADING_TERM_MAX_ORDER} is exceeded.
+   * Delegates to the shared {@link LeadTerm} primitive, which normalizes the approach to
+   * <code>t -&gt; 0+</code>, applies the structural leading-term rules and falls back to an
+   * adaptive-order series expansion. This replaced a private expansion loop here that doubled the
+   * order from 3 up to 24 - one of several such loops that had each been written separately.
    *
-   * @return {@link F#NIL} if no series expansion could be determined
+   * @return {@link F#NIL} if no leading term could be determined
    */
   private static IExpr leadingTerm(IExpr expr, IExpr xVar, IExpr x0, EvalEngine engine) {
     if (expr.isFree(xVar)) {
       return expr;
     }
-    for (int order = LEADING_TERM_START_ORDER; order <= LEADING_TERM_MAX_ORDER; order *= 2) {
-      IExpr series = engine.evaluate(F.Series(expr, F.List(xVar, x0, F.ZZ(order))));
-      if (series instanceof ASTSeriesData) {
-        IExpr leadingTerm = ((ASTSeriesData) series).leadingTerm();
-        if (leadingTerm.isPresent()) {
-          return leadingTerm;
-        }
-        // all coefficients up to the current order are zero - retry with a higher order
-        continue;
-      }
-      if (series.isPresent() && !series.isAST(S.Series)) {
-        // the expansion collapsed into a single expression
-        return series;
-      }
+    if (!(xVar instanceof ISymbol)) {
       return F.NIL;
     }
-    // the expansion vanishes up to the maximum computed order
-    return F.C0;
+    LeadTerm.Normalized normalized = LeadTerm.normalize(expr, (ISymbol) xVar, x0, false);
+    if (normalized == null) {
+      return F.NIL;
+    }
+    Lead lead = LeadTerm.leadTerm(normalized.expr(), normalized.t(), engine);
+    if (lead == null) {
+      return F.NIL;
+    }
+    IExpr result = normalized.backSubstitute(lead.toExpr(normalized.t(), engine), engine);
+    return result.isPresent() && result.isFree(normalized.t()) ? result : F.NIL;
   }
 
   @Override

@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcCoth;
 import static org.matheclipse.core.expression.F.ArcCsc;
@@ -63,6 +62,7 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -74,12 +74,9 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.sympy.exception.PoleError;
-import org.matheclipse.core.sympy.exception.ValueError;
 
 public class ExpTrigsFunctions {
 
@@ -1066,31 +1063,6 @@ public class ExpTrigsFunctions {
       F.Log(F.Plus(arg1, F.Sqrt(F.Plus(F.C1, F.Sqr(arg1))))); // $$;
     }
 
-    @Override
-    public IExpr evalAsLeadingTerm(IAST ast, ISymbol x, IExpr logx, int cdir) {
-      IExpr arg = ast.arg1();
-      EvalEngine engine = EvalEngine.get();
-      IExpr x0 = engine.evaluate(arg.subs(x, F.C0)).cancel();
-      if (x0.isZero()) {
-        return arg.asLeadingTerm(x);
-      }
-      // Handling branch points (-I*oo, -I) U (I, I*oo)
-      if (x0.isImaginaryUnit() || x0.isNegativeImaginaryUnit() || x0.isComplexInfinity()) {
-        return rewriteLog(arg, engine).eval(engine).evalAsLeadingTerm(x, logx, cdir);
-      }
-      if (cdir != 0) {
-        // cdir = arg.dir(x, cdir)
-      }
-      if (cdir > 0 && x0.re().isZero() && x0.im().less(F.CN1).isTrue()) {//
-        // S.Less.ofQ(engine, x0.im(), F.CN1)) {
-        return F.Subtract(F.ArcSinh(x0).negate(), F.Times(F.CI, S.Pi));
-      }
-      if (cdir < 0 && x0.re().isZero() && x0.im().greater(F.C1).isTrue()) {
-        // S.Greater.ofQ(engine, x0.im(), F.C1)) {
-        return F.Plus(F.ArcSinh(x0).negate(), F.Times(F.CI, S.Pi));
-      }
-      return F.ArcSinh(x0);
-    }
   }
 
   /**
@@ -2899,78 +2871,6 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    @Override
-    public IExpr evalAsLeadingTerm(IAST ast, ISymbol x, IExpr logx, int cdir) {
-      // Symja Log(b,z) instead of sympy log(z,b) convention is used
-      // https://github.com/sympy/sympy/blob/master/sympy/functions/elementary/exponential.py#L1077
-      final IExpr arg0;
-      if (ast.isAST2()) {
-        arg0 = ast.arg2().together();
-      } else {
-        arg0 = ast.arg1().together();
-      }
-
-      // STEP 1
-      ISymbol t = F.Dummy("t");
-      if (cdir == 0) {
-        cdir = 1;
-      }
-      IExpr z = arg0.subs(x, t.times(F.ZZ(cdir)));
-
-      EvalEngine engine = EvalEngine.get();
-      // STEP 2
-      IExpr c = F.C1;
-      IExpr e = F.C0;
-      try {
-        IPair leadTerm = z.leadTerm(t, logx, cdir);
-        c = leadTerm.first();
-        e = leadTerm.second();
-      } catch (ValueError ve) {
-        IExpr arg = arg0.asLeadingTerm(x, logx, cdir);
-        return F.Log(arg);
-      }
-      if (c.has(t)) {
-        if (!e.isZero()) {
-          throw new PoleError("Cannot expand " + this + " around 0");
-        }
-        c = c.subs(x, t.divide(F.ZZ(cdir)));
-        return F.Log(c);
-      }
-
-      // STEP3
-      if (c.isOne() && e.isZero()) {
-        return arg0.subtract(F.C1).asLeadingTerm(x, logx, 0);
-      }
-      // STEP 4
-      // res = log(c) - e*log(cdir)
-      IASTAppendable res = F.Plus(F.Subtract(F.Log(c), F.Times(e, F.Log(cdir))));
-
-      // logx = log(x) if logx is None else logx
-      if (logx.isNIL()) {
-        logx = F.Log(x);
-      }
-      // res += e*logx
-      res.append(F.Times(e, logx));
-
-      // STEP 5
-      if (c.isNegative() && !z.im().isZero()) {
-        int i = 0;
-        IExpr term = F.NIL;
-        while (i < 5) {
-          // term in enumerate(z.lseries(t)):
-          // if not term.is_real or i == 5:
-          // break
-          i++;
-        }
-        // if (i < 5) {
-        // // coeff, _ = term.as_coeff_exponent(t)
-        // // res += -2*I*S.Pi*Heaviside(-im(coeff), 0)
-        // IExpr coeff = term.asCoeffExponent(t).first();
-        // res.append(F.Times(F.CN2, F.CI, S.Pi, F.heaviside(coeff.im().negate(), F.C0, engine)));
-        // }
-      }
-      return res;
-    }
   }
 
   /**

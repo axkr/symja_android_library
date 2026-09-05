@@ -781,278 +781,275 @@ public class SeriesFunctions {
    */
   private static final class Series extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() >= 2) {
-        IExpr currentExpr = ast.arg1();
+    /**
+     * Direction flag for {@link ASTSeriesData#seriesDataRecursive}: <code>-1</code> when expanding
+     * at <code>+Infinity</code>, <code>+1</code> at <code>-Infinity</code>, <code>0</code>
+     * otherwise.
+     */
+    private static int seriesDirection(IExpr x0) {
+      if (x0.equals(F.CInfinity)) {
+        return -1;
+      }
+      if (x0.equals(F.CNInfinity)) {
+        return 1;
+      }
+      return 0;
+    }
 
-        // Process iterators from LEFT to RIGHT to build the SeriesData hierarchy correctly!
-        // Series(f, {x, x0, nx}, {y, y0, ny}) -> expands x first, then y.
-        // This mathematically ensures x is the outer-most boundary.
-        for (int i = 2; i <= ast.argSize(); i++) {
-          IExpr iterator = ast.get(i);
+    /**
+     * Map a series iterator over the coefficients of an existing series in a <em>different</em>
+     * variable, which is how a multivariate expansion is built up one variable at a time.
+     */
+    private static ASTSeriesData remapCoefficients(ASTSeriesData outerSeries, IAST iterator,
+        EvalEngine engine) {
+      IAST coefficients = outerSeries.arg3();
+      IASTAppendable newCoeffs = F.ListAlloc(coefficients.argSize());
+      for (int j = 1; j <= coefficients.argSize(); j++) {
+        newCoeffs.append(engine.evaluate(F.Series(coefficients.get(j), iterator)));
+      }
+      return new ASTSeriesData(outerSeries.expansionVariable(), outerSeries.expansionPoint(),
+          newCoeffs, outerSeries.minExponent(), outerSeries.truncateOrder(),
+          outerSeries.puiseuxDenominator());
+    }
 
-          if (iterator.isList3()) {
-            IAST list = (IAST) iterator;
-            IExpr x = list.arg1();
-            IExpr x0 = list.arg2();
-            if (!x.isVariable()) {
-              return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
-            }
-            final int n = list.arg3().toMachineInt();
-            if (F.isNotPresent(n)) {
-              return F.NIL;
-            }
-            if (currentExpr.isFree(x)) {
-              continue; // Optimization: if free of x, series in x is the expression itself
-            }
-
-            // Handle ASTSeriesData multi-variate mapping natively
-            if (currentExpr instanceof ASTSeriesData) {
-              ASTSeriesData outerSeries = (ASTSeriesData) currentExpr;
-              if (!outerSeries.expansionVariable().equals(x)) {
-                // Multivariate: map the new series iterator over the coefficients
-                IAST coefficients = outerSeries.arg3();
-                IASTAppendable newCoeffs = F.ListAlloc(coefficients.argSize());
-                for (int j = 1; j <= coefficients.argSize(); j++) {
-                  IExpr coeffSeries = engine.evaluate(F.Series(coefficients.get(j), iterator));
-                  newCoeffs.append(coeffSeries);
-                }
-                currentExpr = new ASTSeriesData(outerSeries.expansionVariable(),
-                    outerSeries.expansionPoint(), newCoeffs, outerSeries.minExponent(),
-                    outerSeries.truncateOrder(), outerSeries.puiseuxDenominator());
-                continue;
-              } else {
-                // Re-expanding in the same variable
-                if (outerSeries.expansionPoint().equals(x0)) {
-                  int targetTruncate =
-                      n * outerSeries.puiseuxDenominator() + outerSeries.truncationOffset();
-                  if (targetTruncate >= outerSeries.truncateOrder()) {
-                    continue; // Cannot increase precision of existing series
-                  } else {
-                    int newNMin = Math.min(outerSeries.minExponent(), targetTruncate);
-                    int capacity = targetTruncate - newNMin;
-                    IASTAppendable newList = F.ListAlloc(capacity < 0 ? 1 : capacity + 1);
-                    for (int j = newNMin; j < targetTruncate; j++) {
-                      newList.append(outerSeries.coefficient(j));
-                    }
-                    currentExpr = new ASTSeriesData(x, x0, newList, newNMin, targetTruncate,
-                        outerSeries.puiseuxDenominator());
-                    continue;
-                  }
-                } else {
-                  // Expanding at a different point! Flatten it first.
-                  currentExpr = outerSeries.normal(false);
-                }
-              }
-            }
-
-            boolean isInfinity = x0.isDirectedInfinity();
-            int direction = 0;
-            if (x0.equals(F.CInfinity)) {
-              direction = -1;
-            } else if (x0.equals(F.CNInfinity)) {
-              direction = 1;
-            }
-
-            // Expand the eight Arc* heads at their branch points (returns a composite IExpr for the
-            // logarithmic / complex branches).
-            if (!isInfinity && currentExpr.isAST()) {
-              IExpr arcSeries = ASTSeriesData.arcBranchSeries((IAST) currentExpr, x, x0, n, engine);
-              if (arcSeries.isPresent()) {
-                currentExpr = arcSeries;
-                continue;
-              }
-            }
-
-            IExpr seriesX0 = x0;
-            IExpr seriesFunction = currentExpr;
-
-            if (isInfinity) {
-              seriesX0 = F.C0;
-              seriesFunction = engine.evaluate(F.subst(currentExpr, x, F.Power(x, F.CN1)));
-            }
-
-            ASTSeriesData series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, n,
-                direction, engine);
-
-            if (series != null) {
-              if (isInfinity) {
-                currentExpr = new ASTSeriesData(x, x0, series.arg3(), series.minExponent(),
-                    series.truncateOrder(), series.puiseuxDenominator());
-              } else {
-                currentExpr = series;
-              }
-            } else {
-              // --- NEW FALLBACK HEURISTIC ---
-              if (currentExpr.isAST() && x.isPresent()) {
-                IAST astFunc = (IAST) currentExpr;
-                IASTAppendable resultAST = F.ast(astFunc.head(), astFunc.argSize());
-                boolean changed = false;
-                for (int j = 1; j <= astFunc.argSize(); j++) {
-                  IExpr arg = astFunc.get(j);
-                  if (!arg.isFree(x)) {
-                    IExpr argSeries = engine.evaluate(F.Series(arg, iterator));
-                    if (argSeries.isPresent() && !argSeries.equals(arg)) {
-                      resultAST.append(argSeries);
-                      changed = true;
-                    } else {
-                      resultAST.append(arg);
-                    }
-                  } else {
-                    resultAST.append(arg);
-                  }
-                }
-                if (changed) {
-                  currentExpr = engine.evaluate(resultAST);
-                  continue;
-                }
-              }
-              return F.NIL;
-            }
-          } else if (iterator.isRuleAST()) {
-            IAST rule = (IAST) iterator;
-            IExpr x = rule.arg1();
-            IExpr x0 = rule.arg2();
-            if (!x.isVariable()) {
-              return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
-            }
-            if (currentExpr.isFree(x)) {
-              continue;
-            }
-
-            if (currentExpr instanceof ASTSeriesData) {
-              ASTSeriesData outerSeries = (ASTSeriesData) currentExpr;
-              if (!outerSeries.expansionVariable().equals(x)) {
-                IAST coefficients = outerSeries.arg3();
-                IASTAppendable newCoeffs = F.ListAlloc(coefficients.argSize());
-                for (int j = 1; j <= coefficients.argSize(); j++) {
-                  IExpr coeffSeries = engine.evaluate(F.Series(coefficients.get(j), iterator));
-                  newCoeffs.append(coeffSeries);
-                }
-                currentExpr = new ASTSeriesData(outerSeries.expansionVariable(),
-                    outerSeries.expansionPoint(), newCoeffs, outerSeries.minExponent(),
-                    outerSeries.truncateOrder(), outerSeries.puiseuxDenominator());
-                continue;
-              } else {
-                currentExpr = outerSeries.normal(false);
-              }
-            }
-
-            boolean isInfinity = x0.isInfinity() || x0.isNegativeInfinity();
-            int direction = 0;
-            if (x0.equals(F.CInfinity)) {
-              direction = -1;
-            } else if (x0.equals(F.CNInfinity)) {
-              direction = 1;
-            }
-
-            IExpr seriesX0 = x0;
-            IExpr seriesFunction = currentExpr;
-
-            if (isInfinity) {
-              seriesX0 = F.C0;
-              seriesFunction = engine.evaluate(F.subst(currentExpr, x, F.Power(x, F.CN1)));
-            }
-
-            int currentN = 1;
-            ASTSeriesData series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0,
-                currentN, direction, engine);
-
-            int probeLimit = 30;
-            while (series != null && currentN < probeLimit) {
-              boolean foundNonZero = false;
-              if (!series.isOrder()) {
-                for (int j = series.minExponent(); j < series.truncateOrder(); j++) {
-                  if (!series.coefficient(j).isZero()) {
-                    foundNonZero = true;
-                    break;
-                  }
-                }
-              }
-              if (foundNonZero) {
-                break;
-              }
-              currentN += 4;
-              series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, currentN,
-                  direction, engine);
-            }
-
-            if (series != null && !series.isOrder()) {
-              int leadIndex = Integer.MAX_VALUE;
-              for (int j = series.minExponent(); j < series.truncateOrder(); j++) {
-                if (!series.coefficient(j).isZero()) {
-                  leadIndex = j;
-                  break;
-                }
-              }
-              if (leadIndex != Integer.MAX_VALUE) {
-                int nextIndex = -1;
-                if (isInfinity || leadIndex < 0) {
-                  for (int j = leadIndex + 1; j < series.truncateOrder(); j++) {
-                    if (!series.coefficient(j).isZero()) {
-                      nextIndex = j;
-                      break;
-                    }
-                  }
-                  if (nextIndex == -1) {
-                    nextIndex = series.truncateOrder();
-                  }
-                }
-                if (nextIndex == -1) {
-                  nextIndex = leadIndex + series.puiseuxDenominator();
-                }
-
-                IASTAppendable coeffs = F.ListAlloc(2);
-                coeffs.append(series.coefficient(leadIndex));
-
-                if (isInfinity) {
-                  currentExpr = new ASTSeriesData(x, x0, coeffs, leadIndex, nextIndex,
-                      series.puiseuxDenominator());
-                } else {
-                  currentExpr = new ASTSeriesData(x, seriesX0, coeffs, leadIndex, nextIndex,
-                      series.puiseuxDenominator());
-                }
-              } else {
-                return F.NIL;
-              }
-            } else {
-              if (currentExpr.isAST() && x.isPresent()) {
-                IAST astFunc = (IAST) currentExpr;
-                IASTAppendable resultAST = F.ast(astFunc.head(), astFunc.argSize());
-                boolean changed = false;
-                for (int j = 1; j <= astFunc.argSize(); j++) {
-                  IExpr arg = astFunc.get(j);
-                  if (!arg.isFree(x)) {
-                    IExpr argSeries = engine.evaluate(F.Series(arg, iterator));
-                    if (argSeries.isPresent() && !argSeries.equals(arg)) {
-                      resultAST.append(argSeries);
-                      changed = true;
-                    } else {
-                      resultAST.append(arg);
-                    }
-                  } else {
-                    resultAST.append(arg);
-                  }
-                }
-                if (changed) {
-                  currentExpr = engine.evaluate(resultAST);
-                  continue;
-                }
-              }
-              return F.NIL;
-            }
-          } else {
-            return F.NIL;
+    /**
+     * Last-resort fallback when the expansion engine declines: expand each argument that depends on
+     * the variable and rebuild the head around the results, e.g. <code>E^f(x)</code> becomes
+     * <code>E^SeriesData(...)</code> and the arithmetic evaluators take it from there.
+     *
+     * @return the rebuilt expression, or {@link F#NIL} when no argument could be expanded
+     */
+    private static IExpr mapSeriesOverArguments(IExpr currentExpr, IExpr x, IAST iterator,
+        EvalEngine engine) {
+      if (!currentExpr.isAST() || !x.isPresent()) {
+        return F.NIL;
+      }
+      IAST astFunc = (IAST) currentExpr;
+      IASTAppendable resultAST = F.ast(astFunc.head(), astFunc.argSize());
+      boolean changed = false;
+      for (int j = 1; j <= astFunc.argSize(); j++) {
+        IExpr arg = astFunc.get(j);
+        if (!arg.isFree(x)) {
+          IExpr argSeries = engine.evaluate(F.Series(arg, iterator));
+          if (argSeries.isPresent() && !argSeries.equals(arg)) {
+            resultAST.append(argSeries);
+            changed = true;
+            continue;
           }
         }
-        if (currentExpr instanceof ASTSeriesData) {
-          // don't carry a Puiseux denominator which the exponents don't need
-          return ((ASTSeriesData) currentExpr).reducePuiseuxDenominator();
-        }
-        return currentExpr;
+        resultAST.append(arg);
       }
-      return F.NIL;
+      return changed ? engine.evaluate(resultAST) : F.NIL;
+    }
+
+    /**
+     * Truncate an existing series in the same variable and at the same point down to
+     * <code>n</code> orders. Precision can only be dropped, never added: the discarded coefficients
+     * are gone, so a higher requested order is silently kept at the order already computed.
+     *
+     * @return the truncated series, or {@link F#NIL} when nothing needs to change
+     */
+    private static IExpr truncateExistingSeries(ASTSeriesData outerSeries, IExpr x, IExpr x0,
+        int n) {
+      int targetTruncate = n * outerSeries.puiseuxDenominator() + outerSeries.truncationOffset();
+      if (targetTruncate >= outerSeries.truncateOrder()) {
+        return F.NIL;
+      }
+      int newNMin = Math.min(outerSeries.minExponent(), targetTruncate);
+      int capacity = targetTruncate - newNMin;
+      IASTAppendable newList = F.ListAlloc(capacity < 0 ? 1 : capacity + 1);
+      for (int j = newNMin; j < targetTruncate; j++) {
+        newList.append(outerSeries.coefficient(j));
+      }
+      return new ASTSeriesData(x, x0, newList, newNMin, targetTruncate,
+          outerSeries.puiseuxDenominator());
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 2) {
+        return F.NIL;
+      }
+      IExpr currentExpr = ast.arg1();
+
+      // Process iterators from LEFT to RIGHT to build the SeriesData hierarchy correctly!
+      // Series(f, {x, x0, nx}, {y, y0, ny}) -> expands x first, then y.
+      // This mathematically ensures x is the outer-most boundary.
+      for (int i = 2; i <= ast.argSize(); i++) {
+        IExpr iterator = ast.get(i);
+
+        // Two iterator forms, differing only in how much of the expansion is wanted:
+        // {x, x0, n} asks for n orders, x -> x0 asks for the leading term alone.
+        final IExpr x;
+        final IExpr x0;
+        final int n;
+        final boolean leadingTermMode;
+        if (iterator.isList3()) {
+          IAST list = (IAST) iterator;
+          x = list.arg1();
+          x0 = list.arg2();
+          n = list.arg3().toMachineInt();
+          leadingTermMode = false;
+          if (F.isNotPresent(n)) {
+            return F.NIL;
+          }
+        } else if (iterator.isRuleAST()) {
+          IAST rule = (IAST) iterator;
+          x = rule.arg1();
+          x0 = rule.arg2();
+          n = 1;
+          leadingTermMode = true;
+        } else {
+          return F.NIL;
+        }
+        if (!x.isVariable()) {
+          return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
+        }
+        if (currentExpr.isFree(x)) {
+          continue; // Optimization: if free of x, series in x is the expression itself
+        }
+
+        // An expansion of an existing series: either in another variable (multivariate, map over
+        // the coefficients), or in the same one (truncate, or flatten and start again elsewhere).
+        if (currentExpr instanceof ASTSeriesData) {
+          ASTSeriesData outerSeries = (ASTSeriesData) currentExpr;
+          if (!outerSeries.expansionVariable().equals(x)) {
+            currentExpr = remapCoefficients(outerSeries, (IAST) iterator, engine);
+            continue;
+          }
+          if (!leadingTermMode && outerSeries.expansionPoint().equals(x0)) {
+            IExpr truncated = truncateExistingSeries(outerSeries, x, x0, n);
+            currentExpr = truncated.orElse(currentExpr);
+            continue;
+          }
+          // a different expansion point (or leading-term mode): flatten and start over
+          currentExpr = outerSeries.normal(false);
+        }
+
+        final boolean isInfinity = leadingTermMode //
+            ? (x0.isInfinity() || x0.isNegativeInfinity())
+            : x0.isDirectedInfinity();
+        final int direction = seriesDirection(x0);
+
+        // Expand the eight Arc* heads at their branch points (returns a composite IExpr for the
+        // logarithmic / complex branches).
+        if (!leadingTermMode && !isInfinity && currentExpr.isAST()) {
+          IExpr arcSeries = ASTSeriesData.arcBranchSeries((IAST) currentExpr, x, x0, n, engine);
+          if (arcSeries.isPresent()) {
+            currentExpr = arcSeries;
+            continue;
+          }
+        }
+
+        // At an infinite expansion point substitute x -> 1/x and expand at zero; the result is
+        // re-tagged with the infinite point afterwards, so index i then means x^(-i).
+        IExpr seriesX0 = isInfinity ? F.C0 : x0;
+        IExpr seriesFunction =
+            isInfinity ? engine.evaluate(F.subst(currentExpr, x, F.Power(x, F.CN1))) : currentExpr;
+
+        IExpr expanded = leadingTermMode
+            ? leadingTermSeries(seriesFunction, x, x0, seriesX0, direction, isInfinity, engine)
+            : fixedOrderSeries(seriesFunction, x, x0, seriesX0, n, direction, isInfinity, engine);
+        if (expanded.isPresent()) {
+          currentExpr = expanded;
+          continue;
+        }
+
+        IExpr mapped = mapSeriesOverArguments(currentExpr, x, (IAST) iterator, engine);
+        if (mapped.isNIL()) {
+          return F.NIL;
+        }
+        currentExpr = mapped;
+      }
+      if (currentExpr instanceof ASTSeriesData) {
+        // don't carry a Puiseux denominator which the exponents don't need
+        return ((ASTSeriesData) currentExpr).reducePuiseuxDenominator();
+      }
+      return currentExpr;
+    }
+
+    /** The <code>{x, x0, n}</code> form: expand to a fixed number of orders. */
+    private static IExpr fixedOrderSeries(IExpr seriesFunction, IExpr x, IExpr x0, IExpr seriesX0,
+        int n, int direction, boolean isInfinity, EvalEngine engine) {
+      ASTSeriesData series =
+          ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, n, direction, engine);
+      if (series == null) {
+        return F.NIL;
+      }
+      return isInfinity //
+          ? new ASTSeriesData(x, x0, series.arg3(), series.minExponent(), series.truncateOrder(),
+              series.puiseuxDenominator())
+          : series;
+    }
+
+    /**
+     * The <code>x -&gt; x0</code> form: the lowest-order non-vanishing term alone, returned as a
+     * series with a single coefficient.
+     *
+     * <p>
+     * This deliberately does NOT delegate to the shared {@link org.matheclipse.core.series.LeadTerm}
+     * primitive, although every other leading-term site in the code base now does. What is wanted
+     * here is a truncated <em>series</em>, and the <code>O(...)</code> boundary it carries is the
+     * index of the next non-vanishing term - series information that a leading term does not have.
+     * Measured: substituting the primitive here reproduces every leading coefficient but shifts
+     * that boundary on Laurent and at-infinity expansions (e.g. the tail of
+     * <code>Series(Gamma(Sin(x)-x), x -&gt; 0)</code> ends at index -7, not -8), so the expansion
+     * would have to be run anyway to recover it.
+     */
+    private static IExpr leadingTermSeries(IExpr seriesFunction, IExpr x, IExpr x0, IExpr seriesX0,
+        int direction, boolean isInfinity, EvalEngine engine) {
+      // Raise the order until a non-zero coefficient appears: the leading term of a function whose
+      // low-order coefficients all cancel sits deeper than any fixed order would reach.
+      int currentN = 1;
+      final int probeLimit = 30;
+      ASTSeriesData series =
+          ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, currentN, direction,
+              engine);
+      while (series != null && currentN < probeLimit && !hasNonZeroCoefficient(series)) {
+        currentN += 4;
+        series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, currentN, direction,
+            engine);
+      }
+      if (series == null || series.isOrder()) {
+        return F.NIL;
+      }
+      int leadIndex = firstNonZeroIndex(series);
+      if (leadIndex == Integer.MAX_VALUE) {
+        return F.NIL;
+      }
+      int nextIndex = -1;
+      if (isInfinity || leadIndex < 0) {
+        for (int j = leadIndex + 1; j < series.truncateOrder(); j++) {
+          if (!series.coefficient(j).isZero()) {
+            nextIndex = j;
+            break;
+          }
+        }
+        if (nextIndex == -1) {
+          nextIndex = series.truncateOrder();
+        }
+      }
+      if (nextIndex == -1) {
+        nextIndex = leadIndex + series.puiseuxDenominator();
+      }
+      IASTAppendable coeffs = F.ListAlloc(2);
+      coeffs.append(series.coefficient(leadIndex));
+      return new ASTSeriesData(x, isInfinity ? x0 : seriesX0, coeffs, leadIndex, nextIndex,
+          series.puiseuxDenominator());
+    }
+
+    /** Index of the first non-vanishing coefficient, or {@link Integer#MAX_VALUE}. */
+    private static int firstNonZeroIndex(ASTSeriesData series) {
+      for (int j = series.minExponent(); j < series.truncateOrder(); j++) {
+        if (!series.coefficient(j).isZero()) {
+          return j;
+        }
+      }
+      return Integer.MAX_VALUE;
+    }
+
+    private static boolean hasNonZeroCoefficient(ASTSeriesData series) {
+      return !series.isOrder() && firstNonZeroIndex(series) != Integer.MAX_VALUE;
     }
 
     @Override

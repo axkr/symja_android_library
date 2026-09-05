@@ -607,11 +607,6 @@ public interface ISymbol extends IExpr {
     return evaluate(engine).orElse(this);
   }
 
-  @Override
-  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
-    return x;
-  }
-
   /**
    * Evaluate the given expression for the &quot;down value&quot; rules associated with this symbol
    *

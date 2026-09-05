@@ -26,6 +26,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.series.Lead;
+import org.matheclipse.core.series.LeadTerm;
 
 public final class Limit extends AbstractFunctionOptionEvaluator {
 
@@ -255,9 +257,6 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   private static final ThreadLocal<Boolean> LHOSPITAL_BUDGET_ACTIVE =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-  /** One-shot guard for the Together retry of an Indeterminate finite-point difference limit. */
-  private static final ThreadLocal<Boolean> TOGETHER_LIMIT_RETRY =
-      ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   /**
    * One-shot guard for the one-sided rewrite of jump-discontinuous functions. The rewrite computes
@@ -281,7 +280,90 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * from the series helpers re-enter it mid-computation - only the OUTERMOST entry (depth 0) may
    * reset per-user-call state like the {@link LimitGruntz} caches.
    */
+  /**
+   * One-shot guard for the last-resort series retry, so the retry cannot re-enter itself through
+   * the recursive limits the expansion issues.
+   */
+  private static final ThreadLocal<Boolean> SERIES_LIMIT_RETRY =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
   private static final ThreadLocal<Integer> LIMIT_BUILTIN_DEPTH = ThreadLocal.withInitial(() -> 0);
+
+  /**
+   * The strategies this evaluator tries, for the hit counters below.
+   *
+   * <p>
+   * Measurement scaffolding, not part of the algorithm. It exists so that decisions about which
+   * heuristics to retire are made from observed hit counts rather than from reading the code and
+   * guessing.
+   */
+  enum Strategy {
+    ROOT_SUM, TWO_SIDED, STEP_FUNCTION, MAX_MIN, OSCILLATING_SPECIAL, HYPERBOLIC_RETRY,
+    LEADING_TERM, GRUNTZ_FIRST, REPLACE_ALL, NUMERIC_FUNCTION_ARGS, INFINITY_ZERO, SIMPLIFY_RETRY,
+    AST_DISPATCH, EXPAND_ALL_RETRY, GRUNTZ_LAST, ENVELOPE_BOUNDED, PLUS_LEADING_GROWTH,
+    PLUS_POLYNOMIAL, PLUS_MAP, TIMES_LIMIT, POWER_LIMIT, PIECEWISE, DIRECTED_INFINITY, LHOSPITAL,
+    RATIONAL_DEGREE, SUBSTITUTE_INFINITY, RECIPROCAL_ZERO, RULE_TABLE, OSC_ENVELOPE, RADICAL_RETRY,
+    EI_NEAR_ZERO, ERFC_ASYMPTOTIC, DOMINANT_TERM, TOWER_DIFF, LEADING_LOG_GAMMA, STIRLING,
+    GAMMA_POLE_SHIFT, LEAK_GUARD, NESTED_INFINITY_REJECT, SERIES_RETRY,
+    // sign tiers, in the order LimitGruntz.signInf tries them
+    SIGN_STRUCTURAL, SIGN_LIMIT, SIGN_INTERVAL, SIGN_EXP, SIGN_TIMES, SIGN_POWER,
+    SIGN_SAMPLED_SHALLOW, SIGN_SAMPLED_DEEP, SIGN_LEADTERM, SIGN_DERIVATIVE, SIGN_UNDECIDED
+  }
+
+  /** Enabled with <code>-Dsymja.limit.stats=true</code>; otherwise every counter call is a no-op. */
+  private static final boolean STATS = Boolean.getBoolean("symja.limit.stats");
+
+  private static final java.util.concurrent.atomic.AtomicLong[] HITS = newHitCounters();
+
+  private static java.util.concurrent.atomic.AtomicLong[] newHitCounters() {
+    java.util.concurrent.atomic.AtomicLong[] counters =
+        new java.util.concurrent.atomic.AtomicLong[Strategy.values().length];
+    for (int i = 0; i < counters.length; i++) {
+      counters[i] = new java.util.concurrent.atomic.AtomicLong();
+    }
+    if (Boolean.getBoolean("symja.limit.stats")) {
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        String file = System.getProperty("symja.limit.stats.file");
+        if (file == null) {
+          System.out.println(statsDump());
+          return;
+        }
+        try (java.io.Writer writer = new java.io.FileWriter(file, true)) {
+          writer.write(statsDump());
+        } catch (java.io.IOException ioe) {
+          System.out.println(statsDump());
+        }
+      }));
+    }
+    return counters;
+  }
+
+  /** Record that {@code strategy} produced {@code result}, and pass the result through. */
+  private static IExpr hit(Strategy strategy, IExpr result) {
+    if (STATS && result.isPresent()) {
+      HITS[strategy.ordinal()].incrementAndGet();
+    }
+    return result;
+  }
+
+  /** Record an unconditional hit for a strategy whose outcome is not an {@link IExpr}. */
+  static void count(Strategy strategy) {
+    if (STATS) {
+      HITS[strategy.ordinal()].incrementAndGet();
+    }
+  }
+
+  /** Human-readable counter dump, most-used strategy first. */
+  public static String statsDump() {
+    StringBuilder buf = new StringBuilder("=== Limit strategy hits ===\n");
+    java.util.List<Strategy> order = new java.util.ArrayList<>(
+        java.util.Arrays.asList(Strategy.values()));
+    order.sort((a, b) -> Long.compare(HITS[b.ordinal()].get(), HITS[a.ordinal()].get()));
+    for (Strategy strategy : order) {
+      buf.append(String.format("%-24s %d%n", strategy, HITS[strategy.ordinal()].get()));
+    }
+    return buf.toString();
+  }
 
   /**
    * Evaluate the limit for the given limit data.
@@ -305,11 +387,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // antiderivative at the bounds of a definite integral.
     IExpr rootSumLimit = limitRootSum(evaledExpr, data, engine);
     if (rootSumLimit.isPresent()) {
-      return rootSumLimit;
+      return hit(Strategy.ROOT_SUM, rootSumLimit);
     }
 
     if (data.direction() == Direction.TWO_SIDED && !limitValue.isDirectedInfinity()) {
-      return evalLimitTwoSided(evaledExpr, data, engine);
+      return hit(Strategy.TWO_SIDED, evalLimitTwoSided(evaledExpr, data, engine));
     }
 
     // One traversal computes every feature flag the gates below test - re-running a full
@@ -321,8 +403,28 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // side - not the value AT the point, which is what the direct substitution further down
     // returns. Replace every such sub-expression by its one-sided value up front; the TWO_SIDED
     // case above then reports Indeterminate whenever the two sides disagree.
+    // KroneckerDelta and DiscreteDelta are zero everywhere except at a single point, so wherever
+    // their argument depends on the limit variable they are eventually zero as it is approached -
+    // a removable discontinuity whose limit is 0, not the spike value 1 that substitution reports.
+    // SawtoothWave is the fractional part, so hand it to the step-function machinery below.
+    IExpr deltaRewritten = F.subst(evaledExpr, sub -> {
+      if (sub.isAST1() && !sub.first().isFree(symbol, true)) {
+        if (sub.isAST(S.KroneckerDelta, 2) || sub.isAST(S.DiscreteDelta, 2)) {
+          return F.C0;
+        }
+        if (sub.isAST(S.SawtoothWave, 2)) {
+          return F.Subtract(sub.first(), F.Floor(sub.first()));
+        }
+      }
+      return F.NIL;
+    });
+    if (deltaRewritten.isPresent() && !deltaRewritten.equals(evaledExpr)) {
+      evaledExpr = engine.evalQuiet(deltaRewritten);
+      features = LimitFeatures.refresh(features, evaledExpr, symbol);
+    }
+
     if (features.stepFunction) {
-      IExpr stepRewritten = stepFunctionRewrite(evaledExpr, data, engine);
+      IExpr stepRewritten = hit(Strategy.STEP_FUNCTION, stepFunctionRewrite(evaledExpr, data, engine));
       if (stepRewritten.isPresent()) {
         evaledExpr = stepRewritten;
         features = LimitFeatures.refresh(features, evaledExpr, symbol);
@@ -335,7 +437,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // (Derivative(0,0,1)[Max][0,0,0] terms). Only fires when EVERY argument comparison is
     // decidable, so crossing arguments (Max(Sin(x),Cos(x))) keep their current behaviour.
     if (features.maxMin) {
-      IExpr maxMinRewritten = maxMinRewrite(evaledExpr, data, engine);
+      IExpr maxMinRewritten = hit(Strategy.MAX_MIN, maxMinRewrite(evaledExpr, data, engine));
       if (maxMinRewritten.isPresent()) {
         evaledExpr = maxMinRewritten;
         features = LimitFeatures.refresh(features, evaledExpr, symbol);
@@ -351,6 +453,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     boolean hasOscillatingSpecial =
         features.oscillator && isOscillatingSpecial(evaledExpr, symbol, limitValue, data);
     if (hasOscillatingSpecial) {
+      count(Strategy.OSCILLATING_SPECIAL);
       return S.Indeterminate;
     }
 
@@ -399,7 +502,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         try {
           IExpr hypTemp = evalLimit(expForm, data, engine);
           if (hypTemp.isPresent() && hypTemp.isFree(S.Limit) && hypTemp.isIndeterminateFree()) {
-            return hypTemp;
+            return hit(Strategy.HYPERBOLIC_RETRY, hypTemp);
           }
         } finally {
           HYPERBOLIC_EXP_RETRY.set(Boolean.FALSE);
@@ -426,6 +529,21 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       System.out.println("Evaluating limit of " + evaledExpr + " as " + data.variable()
           + " approaches " + limitValue);
     }
+
+    // LEADING TERM FAST PATH.
+    // Normalize the approach to t -> 0+ and read the limit off the leading term c*t^e: zero for
+    // e > 0, the coefficient for e == 0, a signed infinity for e < 0. This is SymPy's Limit.doit
+    // fast path, and it is exact - the primitive declines rather than guessing, so a result here
+    // is authoritative and the heuristic cascade below can be skipped. Piecewise, step and
+    // oscillating shapes are excluded: they are not described by a single asymptotic expression
+    // at the limit point, and the rewrites above own those cases.
+    if (!features.piecewise && !features.stepFunction && !features.oscillator) {
+      IExpr leadingTermResult = leadingTermLimit(evaledExpr, data, engine);
+      if (leadingTermResult.isPresent()) {
+        return hit(Strategy.LEADING_TERM, leadingTermResult);
+      }
+    }
+
     // Certain shapes starve the L'Hopital heuristics while the Gruntz algorithm resolves
     // them in about a second when it can and fails fast when it cannot - consult Gruntz FIRST
     // for exactly those (see isGruntzFirstShape), but only at the TOP level: the algorithm's
@@ -441,33 +559,33 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           LimitGruntz.evaluateLimit(evaledExpr, symbol, limitValue, data.direction(), engine);
       if (gruntzFirst.isPresent() && gruntzFirst.isFree(S.Limit)
           && gruntzFirst.isIndeterminateFree() && !hasNestedDirectedInfinity(gruntzFirst)) {
-        return gruntzFirst;
+        return hit(Strategy.GRUNTZ_FIRST, gruntzFirst);
       }
     }
 
     if (limitValue.isNumericFunction(true) && !features.piecewise) {
       IExpr temp = evalReplaceAll(evaledExpr, data, engine);
       if (temp.isPresent()) {
-        return temp;
+        return hit(Strategy.REPLACE_ALL, temp);
       }
     } else if ((limitValue.isInfinity() || limitValue.isNegativeInfinity()) && evaledExpr.isAST()
         && evaledExpr.size() > 1) {
       if (limitValue.isInfinity() || limitValue.isNegativeInfinity()) {
         IExpr temp = evalReplaceAll(evaledExpr, data, engine);
         if (temp.isNumericFunction(true)) {
-          return temp;
+          return hit(Strategy.REPLACE_ALL, temp);
         }
         if (evaledExpr.isNumericFunction(data.variable()) && evaledExpr.size() > 1
             && !evaledExpr.isPlusTimesPower()) {
           temp = limitNumericFunctionArgs((IAST) evaledExpr, data, engine);
           if (temp.isPresent()) {
-            return temp;
+            return hit(Strategy.NUMERIC_FUNCTION_ARGS, temp);
           }
         }
       }
       IExpr temp = limitInfinityZero((IAST) evaledExpr, data, (IAST) limitValue);
       if (temp.isPresent()) {
-        return temp;
+        return hit(Strategy.INFINITY_ZERO, temp);
       }
     }
 
@@ -486,7 +604,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IExpr simplified = engine.evalQuiet(F.Simplify(evaledExpr));
       if (simplified.isPresent() && !simplified.equals(evaledExpr)
           && simplified.leafCount() < evaledExpr.leafCount()) {
-        return evalLimit(simplified, data, engine);
+        return hit(Strategy.SIMPLIFY_RETRY, evalLimit(simplified, data, engine));
       }
     }
 
@@ -497,7 +615,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // termwise sum Infinity-Log(Infinity+a)) is NOT definitive - let the fallbacks run.
     if (temp.isPresent() && temp.isFree(S.Limit) && temp.isIndeterminateFree()
         && !hasNestedDirectedInfinity(temp)) {
-      return temp;
+      return hit(Strategy.AST_DISPATCH, temp);
     }
 
     // 2. If heuristics failed (NIL) OR returned an unresolved Limit or infinity-junk,
@@ -509,7 +627,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (expandedExpr.isPresent() && !expandedExpr.equals(evaledExpr)) {
         IExpr expTemp = evalLimitAST(expandedExpr, limitValue, data, engine);
         if (expTemp.isPresent() && expTemp.isFree(S.Limit) && !hasNestedDirectedInfinity(expTemp)) {
-          return expTemp;
+          return hit(Strategy.EXPAND_ALL_RETRY, expTemp);
         }
       }
 
@@ -520,10 +638,10 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             data.limitValue(), data.direction(), engine);
 
         if (gruntzResult.isPresent() && gruntzResult.isFree(S.Limit)) {
-          return gruntzResult;
+          return hit(Strategy.GRUNTZ_LAST, gruntzResult);
         }
         if (gruntzResult.isPresent() && temp.isNIL()) {
-          return gruntzResult;
+          return hit(Strategy.GRUNTZ_LAST, gruntzResult);
         }
       }
     }
@@ -544,6 +662,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     if (result.isFree(S.DirectedInfinity)) {
       return false;
     }
+    boolean nested = hasNestedDirectedInfinityImpl(result);
+    if (nested) {
+      count(Strategy.NESTED_INFINITY_REJECT);
+    }
+    return nested;
+  }
+
+  private static boolean hasNestedDirectedInfinityImpl(IExpr result) {
     return result.has(sub -> {
       if (!sub.isAST() || sub.isPlus() || sub.isTimes() || sub.isDirectedInfinity() || sub.isList()
           || sub.isInterval() || sub.isIntervalData() || sub.isAST(S.ConditionalExpression)) {
@@ -551,23 +677,6 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
       return ((IAST) sub).exists(arg -> !arg.isFree(S.DirectedInfinity));
     }, true);
-  }
-
-  /**
-   * <code>E^(diverging Gamma-family)</code> like <code>E^Gamma(x)/Gamma(x)</code>: the heuristic
-   * Stirling preprocessing substitutes <code>E^Gamma(x) -&gt; E^(x*Log(x)-x+...)</code> into a form
-   * whose Gamma-vs-poly-log ranking the machinery cannot do, while Gruntz ranks the raw
-   * <code>E^Gamma(x)</code> via its mrv set <code>{E^Gamma(x)}</code> in ~70ms (thesis #46). Routed
-   * to Gruntz FIRST at the builtin boundary - once per user Limit, not on every recursive
-   * evaluateLimit (the nested has-scan there made the Gamma-difference cases O(n^2)).
-   */
-  private static boolean isExpGammaTowerShape(IExpr expr, ISymbol limitVar) {
-    return expr
-        .has(
-            p -> p.isExp() && !p.exponent().isFree(limitVar, true)
-                && p.exponent().has(
-                    t -> t.isFunctionID(ID.Gamma, ID.LogGamma, ID.Factorial, ID.Pochhammer), true),
-            true);
   }
 
   /**
@@ -821,13 +930,101 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
   }
 
+  /**
+   * Resolve a limit through the leading-term primitive.
+   *
+   * <p>
+   * The problem is rewritten so the approach is always <code>t -&gt; 0+</code>, which folds the
+   * direction into the substitution and so needs no parity correction afterwards, and the answer is
+   * read off the leading term. {@link LeadTerm} is a closed recursion - it never calls back into
+   * this evaluator - so this cannot loop through the Limit/Series/Limit cycle that the heuristics
+   * below have to guard against with one-shot flags.
+   *
+   * @return the limit, or {@link F#NIL} when the primitive declines
+   */
+  /**
+   * The leading-term route with the series fallback enabled, for the last-resort retry. Identical
+   * to {@link #leadingTermLimit} except that {@link LeadTerm} may expand a series when the
+   * structural analysis cancels to zero.
+   */
+  private static IExpr seriesLeadingTermLimit(IExpr expr, LimitData data, EvalEngine engine) {
+    if (data.direction() == Direction.TWO_SIDED && !data.limitValue().isInfinity()
+        && !data.limitValue().isNegativeInfinity()) {
+      // A two-sided limit is the common value of the two one-sided ones, and only when they agree.
+      // Taking one side and reporting it would turn every genuine jump into a definite answer -
+      // Abs(x)/x at 0 would come back as 1 rather than Indeterminate.
+      IExpr fromAbove = seriesLeadingTermLimit(expr,
+          new LimitData(data.variable(), data.limitValue(), data.rule(), Direction.FROM_ABOVE),
+          engine);
+      if (fromAbove.isNIL()) {
+        return F.NIL;
+      }
+      IExpr fromBelow = seriesLeadingTermLimit(expr,
+          new LimitData(data.variable(), data.limitValue(), data.rule(), Direction.FROM_BELOW),
+          engine);
+      return fromAbove.equals(fromBelow) ? fromAbove : F.NIL;
+    }
+    LeadTerm.Normalized normalized = LeadTerm.normalize(expr, data.variable(), data.limitValue(),
+        data.direction() == Direction.FROM_BELOW);
+    if (normalized == null) {
+      return F.NIL;
+    }
+    Lead lead = LeadTerm.leadTerm(normalized.expr(), normalized.t(), engine);
+    if (lead == null) {
+      return F.NIL;
+    }
+    IExpr result = LeadTerm.limitFromLead(lead, engine);
+    if (result.isPresent() && result.isFree(normalized.t()) && result.isFree(S.Limit)
+        && result.isIndeterminateFree()) {
+      // A series coefficient arrives as the raw sum the expansion produced, so a symbolic answer
+      // can be correct but unreduced - the n/2 of the case above comes out as
+      // n - n/(2(1+n)) - n^2/(2(1+n)). Reduce over a common denominator; the value is unchanged.
+      if (!result.isNumber()) {
+        IExpr reduced = engine.evalQuiet(F.Together(result));
+        if (reduced.isPresent() && reduced.isFree(S.Limit) && reduced.isIndeterminateFree()) {
+          return reduced;
+        }
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  private static IExpr leadingTermLimit(IExpr expr, LimitData data, EvalEngine engine) {
+    IExpr limitValue = data.limitValue();
+    if (limitValue.isDirectedInfinity() && !limitValue.isInfinity()
+        && !limitValue.isNegativeInfinity()) {
+      return F.NIL; // a directed infinity off the real axis is not a t -> 0+ approach
+    }
+    if (data.direction() == Direction.TWO_SIDED && !limitValue.isInfinity()
+        && !limitValue.isNegativeInfinity()) {
+      // the two-sided splitter above owns this case and compares both one-sided results
+      return F.NIL;
+    }
+    LeadTerm.Normalized normalized = LeadTerm.normalize(expr, data.variable(), limitValue,
+        data.direction() == Direction.FROM_BELOW);
+    if (normalized == null) {
+      return F.NIL;
+    }
+    Lead lead = LeadTerm.structuralLeadTerm(normalized.expr(), normalized.t(), engine);
+    if (lead == null) {
+      return F.NIL;
+    }
+    IExpr result = LeadTerm.limitFromLead(lead, engine);
+    if (result.isPresent() && result.isFree(normalized.t()) && result.isFree(S.Limit)
+        && result.isIndeterminateFree()) {
+      return result;
+    }
+    return F.NIL;
+  }
+
   private static IExpr evalLimitAST(final IExpr expression, final IExpr limitValue, LimitData data,
       EvalEngine engine) {
 
     // Safely catches shapes like (Sin(1/x)/2)^(1/x^2) as x -> 0 natively
     IExpr envelope = envelopeBounded(expression, data, engine);
     if (envelope.isPresent()) {
-      return envelope;
+      return hit(Strategy.ENVELOPE_BOUNDED, envelope);
     }
 
     if (expression.isAST()) {
@@ -844,12 +1041,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (ast.isPlus()) {
         return plusLimit(ast, data, engine);
       } else if (ast.isTimes()) {
-        return timesLimit(ast, data, engine);
+        return hit(Strategy.TIMES_LIMIT, timesLimit(ast, data, engine));
       } else if (ast.isPower()) {
-        return powerLimit(ast, data, engine);
+        return hit(Strategy.POWER_LIMIT, powerLimit(ast, data, engine));
       } else if (ast.isAST(S.Piecewise, 3)) {
-        return piecewiseLimit(ast, data, engine);
-      } else if (ast.argSize() > 0 && ast.isNumericFunctionAST()) {
+        return hit(Strategy.PIECEWISE, piecewiseLimit(ast, data, engine));
+      } else if (ast.argSize() > 0 && ast.isNumericFunctionAST()
+          && !hasJumpAtLimitPoint(ast, data, engine)) {
         IASTMutable copy = ast.copy();
         IExpr temp = F.NIL;
         boolean indeterminate = false;
@@ -878,7 +1076,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (temp.isAST()) {
             IExpr specialLimit = directedInfinityLimit((IAST) temp);
             if (specialLimit.isPresent()) {
-              return specialLimit;
+              return hit(Strategy.DIRECTED_INFINITY, specialLimit);
             }
           }
 
@@ -1372,6 +1570,58 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * Whether a discontinuous head in <code>expr</code> actually jumps AT the limit point.
+   *
+   * <p>
+   * Refusing substitution for every piecewise-constant head would be safe but needlessly lossy:
+   * <code>UnitBox</code> is perfectly continuous at 0, and its limit there really is 1. These
+   * functions are constant on each side of their jumps, so evaluating just outside the point on
+   * both sides settles it - if the two neighbours and the point itself all agree, no jump lies here
+   * and substituting the point is sound.
+   *
+   * @return <code>true</code> when the values disagree, or when the check cannot be carried out
+   */
+  private static boolean jumpsAtLimitPoint(IExpr expr, ISymbol variable, IExpr point,
+      EvalEngine engine) {
+    if (point.isDirectedInfinity()) {
+      // At an infinite point there is no "value at the point" to be wrong about: these functions
+      // are eventually constant out there and the ordinary machinery handles them. Reporting a
+      // jump here would refuse every limit at infinity through a Boole or Piecewise, which is how
+      // Probability integrates over a region.
+      return false;
+    }
+    if (!point.isNumericFunction(true)) {
+      return true; // nothing to sample around
+    }
+    // small enough to sit inside one constant piece of these functions at a rational point,
+    // large enough to stay exact in rational arithmetic
+    final IExpr delta = F.QQ(1, 1000000);
+    try {
+      IExpr atPoint = engine.evalQuiet(F.subst(expr, variable, point));
+      IExpr below = engine.evalQuiet(F.subst(expr, variable, F.Subtract(point, delta)));
+      IExpr above = engine.evalQuiet(F.subst(expr, variable, F.Plus(point, delta)));
+      if (!atPoint.isNumericFunction(true) || !below.isNumericFunction(true)
+          || !above.isNumericFunction(true)) {
+        return true;
+      }
+      return !atPoint.equals(below) || !atPoint.equals(above);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return true;
+    }
+  }
+
+  /** Whether {@code expr} applies a jumping head to the limit variable, and jumps at the point. */
+  private static boolean hasJumpAtLimitPoint(IExpr expr, LimitData data, EvalEngine engine) {
+    ISymbol variable = data.variable();
+    if (!expr.has(e -> e.isAST() && LeadTerm.isDiscontinuousHead(e.head())
+        && !e.isFree(variable, true), true)) {
+      return false;
+    }
+    return jumpsAtLimitPoint(expr, variable, data.limitValue(), engine);
+  }
+
   private static IExpr evalReplaceAll(IExpr expression, LimitData data, EvalEngine engine) {
     // Direct substitution assumes continuity at the limit point. For an UNKNOWN function
     // f(...) whose arguments contain the limit variable, continuity is not justified -
@@ -1380,6 +1630,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     final ISymbol variable = data.variable();
     if (expression.has(e -> e.isAST() && e.head().isSymbol() && !e.head().isBuiltInSymbol()
         && !e.isFree(variable, true), true)) {
+      return F.NIL;
+    }
+    // The same argument for the built-in heads that jump: substituting reports the value AT the
+    // point, which at a jump is not the value approached from either side. Only refuse where a
+    // jump actually sits, so the many points at which these functions are continuous keep working.
+    if (hasJumpAtLimitPoint(expression, data, engine)) {
       return F.NIL;
     }
     IExpr result = expression.replaceAll(data.rule());
@@ -1423,7 +1679,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // depth-guarded evaluateLimit, adopting only a clean result (thesis #59).
       if (!limit.isInfinity() && !limit.isNegativeInfinity() && GAMMA_POLE_SHIFT_DEPTH.get() < 3
           && special.eiVarArg) {
-        IExpr expanded = expandEiNearZero(function, rule, direction, engine);
+        IExpr expanded = hit(Strategy.EI_NEAR_ZERO, expandEiNearZero(function, rule, direction, engine));
         if (expanded.isPresent() && !expanded.equals(function)) {
           int eiDepth = GAMMA_POLE_SHIFT_DEPTH.get();
           GAMMA_POLE_SHIFT_DEPTH.set(eiDepth + 1);
@@ -1455,7 +1711,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // on which timesLimit and lHospitalesRule recurse into each other with an exponential
       // fan-out and never terminate. The general path stays as the fallback.
       if (ERFC_ASYMPTOTIC_DEPTH.get() < 3 && special.erfcVarArg) {
-        IExpr expanded = expandErfcAtInfinity(function, rule, direction, engine);
+        IExpr expanded =
+            hit(Strategy.ERFC_ASYMPTOTIC, expandErfcAtInfinity(function, rule, direction, engine));
         if (expanded.isPresent() && !expanded.equals(function)) {
           int erfcDepth = ERFC_ASYMPTOTIC_DEPTH.get();
           ERFC_ASYMPTOTIC_DEPTH.set(erfcDepth + 1);
@@ -1492,7 +1749,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         int domDepth = DOMINANT_TERM_DEPTH.get();
         DOMINANT_TERM_DEPTH.set(domDepth + 1);
         try {
-          IExpr dominant = dominantTermLimit((IAST) function, rule, direction, engine);
+          IExpr dominant =
+              hit(Strategy.DOMINANT_TERM, dominantTermLimit((IAST) function, rule, direction, engine));
           if (dominant.isPresent() && dominant.isFree(S.Limit) && dominant.isIndeterminateFree()) {
             return dominant;
           }
@@ -1516,7 +1774,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         int towerDepth = DOMINANT_TERM_DEPTH.get();
         DOMINANT_TERM_DEPTH.set(towerDepth + 1);
         try {
-          IExpr reduced = reduceExpOfTowerDiff(function, rule, direction, engine);
+          IExpr reduced =
+              hit(Strategy.TOWER_DIFF, reduceExpOfTowerDiff(function, rule, direction, engine));
           if (reduced.isPresent() && reduced.isFree(S.Limit) && reduced.isIndeterminateFree()) {
             return reduced;
           }
@@ -1536,6 +1795,31 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // - the generalized HarmonicNumber(n, r) is excluded: it has no digamma form, and routing
       // it through the Gamma pipeline displaces the substitution that resolves
       // Limit(HarmonicNumber(m,5), m->Infinity) to Zeta(5)
+      // CONSTANT BASE RAISED TO A DIVERGENT EXPONENT.
+      // b^f with b a positive constant is continuous in f, so if f has a limit of +-Infinity the
+      // answer follows immediately. This has to run BEFORE the Gamma pipeline below: substituting
+      // Stirling for a Gamma inside an exponent turns it into an exponential of an exponential,
+      // and E^(Gamma(x)-x) then grinds indefinitely - even though its exponent Gamma(x)-x resolves
+      // to Infinity on its own in milliseconds.
+      if ((limit.isInfinity() || limit.isNegativeInfinity()) && function.isPower()
+          && function.base().isFree(symbol) && !function.exponent().isFree(symbol)) {
+        IExpr base = function.base();
+        if (base.equals(S.E) || (base.isReal() && base.isPositiveResult())) {
+          IExpr exponentLimit = evalLimitQuiet(function.exponent(), //
+              new LimitData(symbol, limit, rule, direction));
+          if (exponentLimit.isInfinity()) {
+            return base.equals(S.E) || engine.evalTrue(F.Greater(base, F.C1)) //
+                ? F.CInfinity
+                : F.C0;
+          }
+          if (exponentLimit.isNegativeInfinity()) {
+            return base.equals(S.E) || engine.evalTrue(F.Greater(base, F.C1)) //
+                ? F.C0
+                : F.CInfinity;
+          }
+        }
+      }
+
       if (special.gammaOrHarmonic) {
         function = engine.evaluate(F.FunctionExpand(function));
 
@@ -1588,7 +1872,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               if (shiftedResult.isPresent() && shiftedResult.isFree(S.Limit)
                   && shiftedResult.isIndeterminateFree()
                   && !hasNestedDirectedInfinity(shiftedResult)) {
-                return shiftedResult;
+                return hit(Strategy.GAMMA_POLE_SHIFT, shiftedResult);
               }
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
@@ -1613,7 +1897,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
                 : sub.isAST(S.LogGamma, 2) ? sub.first() : F.NIL;
             return g.isPresent() && isNestedGammaArg(g, symbol);
           }, true)) {
-            IExpr leading = leadingLogGamma(function, symbol);
+            IExpr leading = hit(Strategy.LEADING_LOG_GAMMA, leadingLogGamma(function, symbol));
             if (leading.isPresent() && !leading.equals(function)) {
               int leadDepth = GAMMA_POLE_SHIFT_DEPTH.get();
               GAMMA_POLE_SHIFT_DEPTH.set(leadDepth + 1);
@@ -1657,8 +1941,23 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
                   || function.isAST(S.Factorial, 2) || function.isAST(S.Pochhammer, 3))) {
 
 
+            // Exp(Limit(Log(f))) reconstructs f only when f is eventually POSITIVE. For a
+            // negative f the sign lives in the imaginary part of Log(f) (Log(-a) = Log(a) + I*Pi)
+            // and a divergent limit swallows that I*Pi, so Limit(-Gamma(x), x->Infinity) came back
+            // as +Infinity. Pull an explicit negative numeric factor out first and reapply it to
+            // the result. Only a syntactically negative coefficient is handled, deliberately: an
+            // asymptotic sign test here would have to call the very machinery this shortcut exists
+            // to avoid, and when it cannot decide, the shortcut would be skipped entirely.
+            boolean negatedForStirling = false;
+            IExpr positiveFunction = function;
+            if (function.isTimes() && function.first().isNumber()
+                && function.first().isNegative()) {
+              negatedForStirling = true;
+              positiveFunction = engine.evaluate(F.Negate(function));
+            }
+
             // Force logarithms to expand (e.g. Log(a/b) -> Log(a) - Log(b))
-            IExpr logExpr = engine.evaluate(F.PowerExpand(F.Log(function)));
+            IExpr logExpr = engine.evaluate(F.PowerExpand(F.Log(positiveFunction)));
             if (DEBUG) {
               System.out.println("Before replaceLogStirling: " + logExpr);
             }
@@ -1669,7 +1968,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             logExpr = engine.evaluate(F.ExpandAll(logExpr));
 
             // Re-combine logs to stabilize the rational fractions before evaluation
-            logExpr = LimitGruntz.logCombine(logExpr, true, symbol);
+            logExpr = LimitGruntz.logCombine(logExpr, true);
             if (DEBUG) {
               System.out.println("After logCombine: " + logExpr);
             }
@@ -1678,18 +1977,19 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
             // If the logarithmic limit resolved cleanly, immediately return Exp(Result)
             if (logLimit.isPresent() && logLimit.isFree(S.Limit)) {
-              return engine.evaluate(F.Exp(logLimit));
+              IExpr magnitude = engine.evaluate(F.Exp(logLimit));
+              return negatedForStirling ? engine.evaluate(F.Negate(magnitude)) : magnitude;
             }
           }
 
           // --- FALLBACK: STANDARD EXPONENTIAL STIRLING ---
           // Only runs if the heuristic above was additive or failed to resolve.
-          IExpr stirlingFunction = replaceStirling(function, symbol, engine);
+          IExpr stirlingFunction = hit(Strategy.STIRLING, replaceStirling(function, symbol, engine));
           if (!stirlingFunction.equals(function)) {
             // Cancel trivial Sqrt(1/x)*Sqrt(x) terms generated by Stirling
             stirlingFunction = engine.evaluate(F.Simplify(stirlingFunction));
             // Re-combine logarithms into stable rational fractions
-            stirlingFunction = LimitGruntz.logCombine(stirlingFunction, true, symbol);
+            stirlingFunction = LimitGruntz.logCombine(stirlingFunction, true);
             LimitData stirlingData = new LimitData(symbol, limit, rule, direction);
             IExpr stirlingResult = evalLimit(stirlingFunction, stirlingData, engine);
             // Adopt only clean resolutions: a truncated asymptotic series can strand the
@@ -1721,33 +2021,31 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (direction == Direction.TWO_SIDED) {
         IExpr temp = S.Limit.evalDownRule(engine, F.Limit(function, rule));
         if (temp.isPresent()) {
-          return temp;
+          return hit(Strategy.RULE_TABLE, temp);
         }
       }
       LimitData data = new LimitData(symbol, limit, rule, direction);
       IExpr result = evalLimit(function, data, engine);
 
-      // An oo - oo cancellation at a FINITE limit point - each term has a pole, so a
-      // term-by-term limit is Indeterminate - becomes a resolvable 0/0 once combined over a
-      // common denominator. Concrete-exponent forms auto-combine, but a symbolic exponent does
-      // not (thesis (n+1)*x^(n+1)/(x^(n+1)-1) - x/(x-1) at x->1 -> n/2). Retry once with
-      // Together and reduce the correct-but-unsimplified result.
-      if (result.isPresent() && result.isIndeterminate() && function.isPlus()
-          && limit.isNumericFunction() && !limit.isInfinity() && !limit.isNegativeInfinity()
-          && !limit.isDirectedInfinity() && !TOGETHER_LIMIT_RETRY.get()) {
-        IExpr combined = engine.evalQuiet(F.Together(function));
-        if (combined.isPresent() && !combined.equals(function)) {
-          TOGETHER_LIMIT_RETRY.set(Boolean.TRUE);
-          try {
-            IExpr retry = evalLimit(combined, data, engine);
-            if (retry.isPresent() && retry.isFree(S.Limit) && retry.isIndeterminateFree()) {
-              return engine.evaluate(F.Simplify(retry));
-            }
-          } finally {
-            TOGETHER_LIMIT_RETRY.set(Boolean.FALSE);
+      // LAST-RESORT SERIES RETRY.
+      // The leading-term fast path runs structurally only, because letting it expand a series on
+      // every call costs far more than it saves. Here, though, every heuristic has already
+      // declined, so the expansion is worth paying for once: it is what resolves a difference of
+      // poles whose singular parts cancel, including with a symbolic exponent - the shape
+      // (n+1)*x^(n+1)/(x^(n+1)-1) - x/(x-1) at x -> 1, whose answer n/2 no other path finds.
+      if ((result.isNIL() || result.isIndeterminate()) && !SERIES_LIMIT_RETRY.get()
+          && limit.isNumericFunction() && !limit.isDirectedInfinity()) {
+        SERIES_LIMIT_RETRY.set(Boolean.TRUE);
+        try {
+          IExpr seriesResult = seriesLeadingTermLimit(function, data, engine);
+          if (seriesResult.isPresent()) {
+            return hit(Strategy.SERIES_RETRY, seriesResult);
           }
+        } finally {
+          SERIES_LIMIT_RETRY.set(Boolean.FALSE);
         }
       }
+
       return result;
 
     } catch (RuntimeException rex) {
@@ -1968,17 +2266,6 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Test if <code>y</code> matches pattern <code>Sqrt(_)</code> or
-   * <code>Times(f1,...,Sqrt(_),...,fn)</code> * @param y * @return
-   */
-  private static boolean isSqrtExpression(IExpr y) {
-    if (y.isTimes()) {
-      return ((IAST) y).exists(x -> x.isSqrt());
-    }
-    return y.isSqrt();
-  }
-
-  /**
    * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">
    * Wikipedia L'Hôpital's rule</a>
    *
@@ -2027,7 +2314,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
       }
       if (numerator.isPowerFraction()) {
-        return lHospitalesRuleWithNumeratorRoot((IAST) numerator, denominator, data, engine);
+        return hit(Strategy.LHOSPITAL,
+            lHospitalesRuleWithNumeratorRoot((IAST) numerator, denominator, data, engine));
       }
       IExpr expr =
           engine.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
@@ -2143,6 +2431,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * @return {@link F#NIL} if evaluation wasn't successful
    */
   private static IExpr limitNumericFunctionArgs(IAST function, LimitData data, EvalEngine engine) {
+    if (hasJumpAtLimitPoint(function, data, engine)) {
+      // substituting the arguments' limits into the head assumes continuity, which is exactly
+      // what these heads lack at a jump
+      return F.NIL;
+    }
     IASTMutable functionLimitArgs = F.NIL;
     for (int i = 1; i < function.size(); i++) {
       IExpr arg = function.get(i);
@@ -2246,13 +2539,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         } else if (denValue.isZero()) {
           numValue = evalLimitQuiet(numerator, data);
           if (numValue.isZero()) {
-            return lHospitalesRule(numerator, denominator, data, engine);
+            return hit(Strategy.LHOSPITAL, lHospitalesRule(numerator, denominator, data, engine));
           }
           return F.NIL;
         } else if (denValue.isInfinity()) {
           numValue = evalLimitQuiet(numerator, data);
           if (numValue.isInfinity()) {
-            return lHospitalesRule(numerator, denominator, data, engine);
+            return hit(Strategy.LHOSPITAL, lHospitalesRule(numerator, denominator, data, engine));
           } else if (numValue.isNegativeInfinity()) {
             numerator = engine.evaluate(numerator.negate());
             numValue = evalLimitQuiet(numerator, data);
@@ -2278,7 +2571,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               numerator = engine.evaluate(numerator.negate());
               numValue = evalLimitQuiet(numerator, data);
               if (numValue.isInfinity()) {
-                return lHospitalesRule(numerator, denominator, data, engine);
+                return hit(Strategy.LHOSPITAL, lHospitalesRule(numerator, denominator, data, engine));
               }
             }
           }
@@ -2490,7 +2783,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         // x*Log(x) - x + Log(2*Pi/x)/2 came back -Infinity instead of +Infinity.
         IExpr growth = plusLeadingGrowthLimit(plusAST, symbol, engine);
         if (growth.isPresent()) {
-          return growth;
+          return hit(Strategy.PLUS_LEADING_GROWTH, growth);
         }
       }
       try {
@@ -2499,28 +2792,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         IExpr coeff = poly.leadingBaseCoefficient();
         long oddDegree = poly.degree() % 2;
         if (oddDegree == 1) {
-          return evalLimitQuiet(F.Times(coeff, limit), data);
+          return hit(Strategy.PLUS_POLYNOMIAL, evalLimitQuiet(F.Times(coeff, limit), data));
         }
-        return evalLimitQuiet(F.Times(coeff, F.CInfinity), data);
+        return hit(Strategy.PLUS_POLYNOMIAL,
+            evalLimitQuiet(F.Times(coeff, F.CInfinity), data));
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
       }
     }
     IExpr mapLimit = data.mapLimit(plusAST);
     if (mapLimit.isPresent() && !mapLimit.isIndeterminate()) {
-      if (mapLimit.isFree(x -> x == S.Limit, true)) {
-        IExpr temp = F.eval(mapLimit);
-        if (temp.isIndeterminate() && plusAST.isPlus()) {
-          int indexOf = plusAST.indexOf(x -> isSqrtExpression(x));
-          if (indexOf > 0) {
-            temp = timesConjugateLHospital(plusAST, indexOf, data);
-            if (temp.isPresent()) {
-              return temp;
-            }
-          }
-        }
-      }
-      return mapLimit;
+      return hit(Strategy.PLUS_MAP, mapLimit);
     }
     return F.NIL;
   }
@@ -3660,7 +3942,75 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * 
    * @return the resolved limit, or F.NIL if not applicable
    */
+  /**
+   * The value at <code>+Infinity</code> of a function that saturates there, or {@link F#NIL} for a
+   * head that does not. These are all odd, so the value at <code>-Infinity</code> is the negation.
+   */
+  private static IExpr saturationValue(IExpr head) {
+    if (head.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) head).ordinal()) {
+        case ID.ArcTan:
+        case ID.SinIntegral:
+          return F.CPiHalf;
+        case ID.Tanh:
+        case ID.Erf:
+          return F.C1;
+        default:
+          break;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The direction of an infinite expression: <code>z</code> for <code>DirectedInfinity(z)</code>,
+   * and the product of the finite factors for a product carrying one infinite factor - the shape a
+   * limit like <code>Limit(c*t, t -&gt; Infinity)</code> actually produces, which is
+   * <code>Times(c, Infinity)</code> rather than <code>DirectedInfinity(c)</code>.
+   *
+   * @return the direction, or {@link F#NIL} when the expression is not infinite in this sense
+   */
+  private static IExpr infiniteDirection(IExpr expr) {
+    if (expr.isDirectedInfinity() && expr.isAST1()) {
+      return expr.first();
+    }
+    if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      IExpr direction = F.NIL;
+      IASTAppendable finiteFactors = F.TimesAlloc(times.argSize());
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        if (factor.isDirectedInfinity()) {
+          if (direction.isPresent() || !factor.isAST1()) {
+            return F.NIL; // more than one infinite factor, or ComplexInfinity
+          }
+          direction = factor.first();
+        } else {
+          finiteFactors.append(factor);
+        }
+      }
+      if (direction.isPresent()) {
+        return F.eval(F.Times(direction, finiteFactors.oneIdentity1()));
+      }
+    }
+    return F.NIL;
+  }
+
   private static IExpr directedInfinityLimit(IAST ast) {
+    // A SYMBOLIC direction. f(c*Infinity) for an odd f that saturates at +-Infinity is +-L
+    // according to the sign of c, and when c is a free parameter that sign is exactly the condition
+    // to report - the same shape the engine already produces for b^x, namely
+    // ConditionalExpression(Infinity, Log(b) > 0).
+    if (ast.isAST1()) {
+      IExpr direction = infiniteDirection(ast.arg1());
+      if (direction.isPresent() && !direction.isNumericFunction()
+          && direction.isFree(S.DirectedInfinity)) {
+        IExpr saturation = saturationValue(ast.head());
+        if (saturation.isPresent()) {
+          return F.ConditionalExpression(saturation, F.Greater(direction, F.C0));
+        }
+      }
+    }
     if (ast.isAST1() && ast.arg1().isDirectedInfinity()) {
       IExpr head = ast.head();
       IExpr z = ((IAST) ast.arg1()).arg1();
@@ -3826,17 +4176,6 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
-  private static IExpr timesConjugateLHospital(final IAST plusAST, int indexOf, LimitData data) {
-    IExpr factor1 = plusAST.removeAtCopy(indexOf).oneIdentity0();
-    IExpr factor2 = plusAST.get(indexOf);
-    IExpr numerator = F.evalExpand(F.Subtract(F.Sqr(factor1), F.Sqr(factor2)));
-    IExpr denominator = F.eval(F.Subtract(factor1, factor2));
-    // IASTMutable timesConjugate = F.Times(numerator, F.Power(denominator, F.CN1));
-    return numeratorDenominatorLimit(numerator, denominator, data, EvalEngine.get());
-    // temp = evalLimitQuiet(timesConjugate, data);
-
-  }
-
   private static IExpr timesLimit(final IAST timesAST, LimitData data, EvalEngine engine) {
     IAST isFreeResult =
         timesAST.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
@@ -3890,7 +4229,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             IExpr newTimes =
                 timesAST.replaceAll(F.Rule(data.variable, F.Power(data.variable, F.CN1)));
             if (newTimes.isPresent()) {
-              temp = reciprocalZeroLimit(newTimes, data, engine);
+              temp = hit(Strategy.RECIPROCAL_ZERO, reciprocalZeroLimit(newTimes, data, engine));
               if (temp.isPresent()) {
                 return temp;
               }
@@ -3912,8 +4251,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           ExprPolynomialRing ring = new ExprPolynomialRing(symbol);
           ExprPolynomial denominatorPoly = ring.create(expDenominator);
           ExprPolynomial numeratorPoly = ring.create(expNumerator);
-          return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
-              data);
+          // NOTE: this returns unconditionally, NIL included. Cutting the search off here for a
+          // rational shape is the point: the partial-fraction and L'Hopital paths below are
+          // enormously more expensive on high-degree polynomials, and for a rational function at
+          // infinity the degree comparison is already the complete answer.
+          return hit(Strategy.RATIONAL_DEGREE,
+              limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
+                  data));
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
         }
@@ -3928,7 +4272,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
       if (denominator.isOne()) {
         if (limit.isInfinity() || limit.isNegativeInfinity()) {
-          IExpr temp = substituteInfinity(timesAST, data, engine);
+          IExpr temp = hit(Strategy.SUBSTITUTE_INFINITY, substituteInfinity(timesAST, data, engine));
           if (temp.isPresent()) {
             return temp;
           }
@@ -4193,26 +4537,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      // see isExpGammaTowerShape - routed to Gruntz FIRST at the builtin boundary; adopt
-      // only a clean result
       ISymbol limitVar = (ISymbol) rule.arg1();
       IExpr limitPoint = rule.arg2();
-      if ((limitPoint.isInfinity() || limitPoint.isNegativeInfinity()) && !LimitGruntz.isActive()
-          && !LimitGruntz.isInGruntzSeries() && isExpGammaTowerShape(arg1, limitVar)
-          && arg1.isNumericFunction(new VariablesSet(arg1))) {
-        IExpr gruntzFirst =
-            LimitGruntz.evaluateLimit(arg1, limitVar, limitPoint, direction, engine);
-        if (gruntzFirst.isPresent() && gruntzFirst.isFree(S.Limit)
-            && gruntzFirst.isIndeterminateFree() && !hasNestedDirectedInfinity(gruntzFirst)) {
-          return gruntzFirst;
-        }
-      }
-
       // A sum of bounded oscillations has an accumulation RANGE, not a limit. It is resolved at
       // the builtin boundary and returned directly: the answer is an Interval, and the
       // toAccumBoundsIndeterminate() call below (rightly) collapses every Interval that reaches
       // it to Indeterminate.
-      IExpr envelope = oscillatingEnvelope(arg1, rule, direction, engine);
+      IExpr envelope = hit(Strategy.OSC_ENVELOPE, oscillatingEnvelope(arg1, rule, direction, engine));
       if (envelope.isPresent()) {
         return envelope;
       }
@@ -4227,7 +4558,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         IExpr radical =
             finiteRadicalLimitRetry(arg1, rule, limitVar, limitPoint, direction, engine);
         if (radical.isPresent()) {
-          return radical;
+          return hit(Strategy.RADICAL_RETRY, radical);
         }
       }
       if (temp.isPresent()) {
@@ -4247,6 +4578,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
                 System.out.println("LEAK-GUARD input=" + ast + " raw=" + temp + " leakedVar="
                     + resultVar + " allowed=" + allowedVars);
               }
+              count(Strategy.LEAK_GUARD);
               leakedSymbol = true;
               break;
             }

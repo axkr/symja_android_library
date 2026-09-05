@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import org.matheclipse.core.interfaces.Attribute;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.Divide;
@@ -49,7 +47,6 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.CombinatoricUtil;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
@@ -76,6 +73,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -88,11 +87,11 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITensorAccess;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.external.fastutil.ints.IntList;
 import com.google.common.math.LongMath;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.vector.GenMatrix;
-import org.matheclipse.external.fastutil.ints.IntArrayList;
-import org.matheclipse.external.fastutil.ints.IntList;
 
 public final class LinearAlgebra {
   public static class Adjugate extends AbstractMatrix1Matrix {

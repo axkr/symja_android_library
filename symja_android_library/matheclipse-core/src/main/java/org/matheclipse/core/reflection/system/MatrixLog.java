@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
@@ -118,7 +119,10 @@ public class MatrixLog extends MatrixExp {
     if (n == 2 && !engine.isNumericMode() && !arg1.isNumericArgument(true)) {
       IExpr result2x2 = computeMatrixLog2x2((ITensorAccess) arg1, engine);
       if (result2x2.isPresent()) {
-        return result2x2;
+        // Sylvester's formula combines raw `Log(lambda)` terms, so the entries arrive unreduced -
+        // `MatrixLog({{3,1},{1,3}})` carries a summand which is exactly 0. Normalize them the same
+        // way the eigensystem path below does.
+        return Convert.simplifyMatrixEntries(result2x2, engine);
       }
     }
 

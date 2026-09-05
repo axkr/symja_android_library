@@ -624,6 +624,13 @@ public class EvalEngine implements Serializable {
   transient boolean fTogetherMode;
 
   /**
+   * if <code>true</code> the engine distributes a product over a {@link S#Plus} argument in the
+   * {@link IExpr#multiply(IExpr)} method. Set around the JAS polynomial GCD, whose coefficient
+   * arithmetic otherwise accumulates undistributed products.
+   */
+  transient boolean fExpandCoefficientsMode;
+
+  /**
    * If <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
    * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
    */
@@ -1281,6 +1288,7 @@ public class EvalEngine implements Serializable {
     engine.fSessionID = fSessionID;
     // engine.fStopRequested = false;
     engine.fTogetherMode = fTogetherMode;
+    engine.fExpandCoefficientsMode = fExpandCoefficientsMode;
     engine.fNoSimplifyMode = fNoSimplifyMode;
     engine.fTraceMode = fTraceMode;
     engine.fTraceStack = fTraceStack;
@@ -4227,6 +4235,7 @@ public class EvalEngine implements Serializable {
     fDisabledTrigRules = false;
     fRecursionCounter = 0;
     fTogetherMode = false;
+    fExpandCoefficientsMode = false;
     fNoSimplifyMode = false;
     fTraceMode = false;
     fTraceStack = null;
@@ -4451,6 +4460,36 @@ public class EvalEngine implements Serializable {
    */
   public final boolean isTogetherMode() {
     return fTogetherMode;
+  }
+
+  /**
+   * If this mode is set, {@link IExpr#multiply(IExpr)} distributes a product over a {@link S#Plus}
+   * argument instead of only evaluating it.
+   *
+   * @return <code>true</code> if products are distributed over sums in
+   *         {@link IExpr#multiply(IExpr)}, <code>false</code> otherwise.
+   * @see #setExpandCoefficientsMode(boolean)
+   */
+  public final boolean isExpandCoefficientsMode() {
+    return fExpandCoefficientsMode;
+  }
+
+  /**
+   * Distribute a product over a {@link S#Plus} argument in {@link IExpr#multiply(IExpr)}, the
+   * arithmetic JAS uses for polynomial coefficients. Without it a coefficient built by a chain of
+   * pseudo-remainder steps keeps every intermediate product unexpanded and grows without bound.
+   *
+   * <p>
+   * Unlike {@link #setTogetherMode(boolean)} this does <b>not</b> bump
+   * {@link EvalEngine#SYSTEM_EPOCH}: the mode does not change what a given expression evaluates to,
+   * only which expression {@link IExpr#multiply(IExpr)} builds, so no cached evaluation result can
+   * become stale. Callers must restore the previous value in a <code>finally</code> block.
+   *
+   * @param expandCoefficientsMode
+   * @see #isExpandCoefficientsMode()
+   */
+  public void setExpandCoefficientsMode(boolean expandCoefficientsMode) {
+    fExpandCoefficientsMode = expandCoefficientsMode;
   }
 
   /**

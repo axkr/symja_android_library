@@ -979,12 +979,21 @@ public class SimplifyUtil extends VisitorExpr {
    * <code>Log(x)+Log(y)+p*Log(z)</code> becomes <code>Log(x*y*z^p)</code> for an integer
    * <code>p</code>. Summands that are not logarithms are kept.
    *
+   * <p>
+   * A pair of logarithms with non-real arguments is folded too, when
+   * {@link #foldsToLogOfProduct(IExpr, IExpr)} proves it is allowed - see there for the branch cut
+   * argument. That case is what a complex conjugate pair of eigenvalues produces, so
+   * <code>MatrixLog</code> depends on it.
+   *
    * @param plusAST the sum to fold
    * @return the folded sum, or {@link F#NIL} if fewer than two summands are logarithms
    */
   private IExpr tryPlusLog(IAST plusAST) {
     if (plusAST.size() > 2) {
       IASTAppendable logPlus = F.PlusAlloc(plusAST.size());
+      // logarithms whose argument is not (provably) real: they cannot join `a1` one at a time,
+      // because only the product of a whole pair is real again
+      IASTAppendable pendingComplexLogs = F.ListAlloc(plusAST.size());
       IExpr a1 = F.NIL;
       boolean evaled = false;
       for (int i = 1; i < plusAST.size(); i++) {
@@ -1005,8 +1014,40 @@ public class SimplifyUtil extends VisitorExpr {
           }
           continue;
         }
+        if (a2.isLog()) {
+          pendingComplexLogs.append(a2);
+          continue;
+        }
         logPlus.append(a2);
       }
+
+      // pair up the complex logarithms; an unpaired one stays a summand of its own
+      for (int i = 1; i < pendingComplexLogs.size(); i++) {
+        IExpr logI = pendingComplexLogs.get(i);
+        if (logI.isNIL()) {
+          continue;
+        }
+        for (int j = i + 1; j < pendingComplexLogs.size(); j++) {
+          IExpr logJ = pendingComplexLogs.get(j);
+          if (logJ.isNIL()) {
+            continue;
+          }
+          IExpr product = foldsToLogOfProduct(logI.first(), logJ.first());
+          if (product.isPresent()) {
+            a1 = a1.isPresent() ? a1.multiply(product) : product;
+            evaled = true;
+            pendingComplexLogs.set(i, F.NIL);
+            pendingComplexLogs.set(j, F.NIL);
+            break;
+          }
+        }
+      }
+      for (int i = 1; i < pendingComplexLogs.size(); i++) {
+        if (pendingComplexLogs.get(i).isPresent()) {
+          logPlus.append(pendingComplexLogs.get(i));
+        }
+      }
+
       if (evaled) {
         a1 = eval(a1);
         if (logPlus.isEmpty()) {
@@ -1018,6 +1059,38 @@ public class SimplifyUtil extends VisitorExpr {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Decide whether <code>Log(z) + Log(w) == Log(z*w)</code> holds, and return the evaluated product
+   * if it does.
+   *
+   * <p>
+   * The identity holds exactly when <code>Arg(z)+Arg(w)</code> stays inside <code>(-Pi, Pi]</code>.
+   * If <code>z*w</code> is a positive real then that sum is a multiple of <code>2*Pi</code>; since
+   * each argument lies in <code>(-Pi, Pi]</code> their sum lies in <code>(-2*Pi, 2*Pi]</code>, so it
+   * is either <code>0</code> or <code>2*Pi</code>, and it can only be <code>2*Pi</code> when both
+   * arguments equal <code>Pi</code>, that is when <code>z</code> and <code>w</code> are both
+   * negative reals. Excluding that one case makes the fold sound.
+   *
+   * <p>
+   * The excluded case is not academic: <code>Log(-5)+Log(-5)</code> is
+   * <code>I*2*Pi+2*Log(5)</code>, and a conjugate test would not catch it, because a negative real
+   * is its own conjugate. This test needs no <code>Conjugate</code> call and is more general than
+   * a conjugate pair; a symbolic argument is rejected because its product does not evaluate to a
+   * positive real.
+   *
+   * @param z the argument of the first logarithm
+   * @param w the argument of the second logarithm
+   * @return the evaluated product <code>z*w</code>, or {@link F#NIL} if the fold is not allowed
+   */
+  private IExpr foldsToLogOfProduct(IExpr z, IExpr w) {
+    if (z.isNegativeResult() && w.isNegativeResult()) {
+      // both arguments have Arg == Pi, so the folded logarithm would lose a term of I*2*Pi
+      return F.NIL;
+    }
+    IExpr product = eval(F.Times(z, w));
+    return product.isPositiveResult() ? product : F.NIL;
   }
 
   private static IExpr tryTimesLog(IAST timesAST) {

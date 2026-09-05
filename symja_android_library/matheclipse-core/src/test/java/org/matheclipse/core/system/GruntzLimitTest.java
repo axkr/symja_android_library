@@ -12,7 +12,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.LimitGruntz;
-import org.matheclipse.core.sympy.simplify.Simplify;
 
 /**
  * Unit tests for the {@link LimitGruntz} helpers plus evaluator-level regressions for the bugs
@@ -38,30 +37,30 @@ public class GruntzLimitTest extends ExprEvaluatorTestCase {
   public void testSingleLogTermPartsTwoLogProduct() {
     engine();
     IExpr twoLogs = evaluator.eval("Log(x)*Log(Log(x))");
-    assertNull(Simplify.singleLogTermParts(twoLogs));
+    assertNull(LimitGruntz.singleLogTermParts(twoLogs));
 
     IExpr plain = evaluator.eval("Log(x)");
-    IExpr[] parts = Simplify.singleLogTermParts(plain);
+    IExpr[] parts = LimitGruntz.singleLogTermParts(plain);
     assertNotNull(parts);
     assertEquals("1", parts[0].toString());
     assertEquals("x", parts[1].toString());
 
     // -Log(x): the numeric -1 moves into the argument so subtraction merges into a quotient
     IExpr negated = evaluator.eval("-Log(x)");
-    parts = Simplify.singleLogTermParts(negated);
+    parts = LimitGruntz.singleLogTermParts(negated);
     assertNotNull(parts);
     assertEquals("1", parts[0].toString());
     assertEquals("1/x", parts[1].toString());
 
     // coefficient extraction
     IExpr scaled = evaluator.eval("3*z*Log(a)");
-    parts = Simplify.singleLogTermParts(scaled);
+    parts = LimitGruntz.singleLogTermParts(scaled);
     assertNotNull(parts);
     assertEquals("3*z", parts[0].toString());
     assertEquals("a", parts[1].toString());
 
     // no Log factor at all
-    assertNull(Simplify.singleLogTermParts(evaluator.eval("3*z")));
+    assertNull(LimitGruntz.singleLogTermParts(evaluator.eval("3*z")));
   }
 
   /** logCombine must preserve the VALUE of a sum containing a two-Log product term. */
@@ -70,7 +69,7 @@ public class GruntzLimitTest extends ExprEvaluatorTestCase {
     EvalEngine engine = engine();
     ISymbol x = (ISymbol) evaluator.eval("x");
     IExpr input = evaluator.eval("Log(x)*Log(Log(x)) - Log(x)");
-    IExpr combined = LimitGruntz.logCombine(input, true, x);
+    IExpr combined = LimitGruntz.logCombine(input, true);
     // numeric value-preservation probe at x = 100 (robust against representation changes)
     IExpr difference = engine.evaluate(F.subst(F.Subtract(combined, input), x, F.ZZ(100)));
     double error = Math.abs(engine.evaluate(F.N(difference)).evalDouble());
@@ -166,4 +165,21 @@ public class GruntzLimitTest extends ExprEvaluatorTestCase {
     check("Limit(x*E^(1/x), x->0, Direction->\"FromBelow\")", //
         "0");
   }
+  /**
+   * Exponential races between different bases. Rewriting in w produces an irrational w-power such
+   * as <code>w^(1-Log(5)/Log(3))</code>, whose exponent the rational-only Puiseux lattice cannot
+   * represent - it used to drop the term silently and report the wrong finite limit 1 for the
+   * first case below. The leading-term primitive carries the exponent as a plain real, so the
+   * ordinary algorithm handles it.
+   */
+  @Test
+  public void testIrrationalExponentRace() {
+    // 5^x outruns 3^x, so the quotient vanishes
+    assertEquals("0", evaluator.eval("Limit(3^x/(3^x+5^x), x->Infinity)").toString());
+    // and the other way round the quotient tends to 1
+    assertEquals("1", evaluator.eval("Limit(5^x/(3^x+5^x), x->Infinity)").toString());
+    // equal bases: the race is a tie
+    assertEquals("1/2", evaluator.eval("Limit(3^x/(3^x+3^x), x->Infinity)").toString());
+  }
+
 }

@@ -14,12 +14,12 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.statistics.IStatistics;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
 import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.statistics.IGeneratingFunction;
+import org.matheclipse.core.interfaces.statistics.IStatistics;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class StatisticalMomentFunctions {

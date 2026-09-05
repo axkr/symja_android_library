@@ -7,6 +7,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -18,6 +19,73 @@ import com.google.common.math.DoubleMath;
  */
 public class NumberUtil {
   public static final BigInteger MINUS_ONE = BigInteger.valueOf(-1);
+
+  /**
+   * The greatest common divisor of the <i>rational content</i> of two expressions, for use as a
+   * ring-level GCD of coefficients which are not themselves rational.
+   *
+   * <p>
+   * Over the ring of constant {@link IExpr} coefficients every non-zero element is a unit, so a GCD
+   * is only defined up to units and any consistent choice is sound. What a polynomial GCD engine
+   * needs from it is a divisor that divides every coefficient exactly, so that dividing the
+   * polynomial by it leaves ring elements: the rational content satisfies that, because
+   * <code>2*Sqrt(3)</code> divided by <code>2</code> is exactly <code>Sqrt(3)</code>. Answering
+   * <code>1</code> instead, as the previous fallback did, loses the content of a polynomial such as
+   * <code>2*x^2+2*Sqrt(3)</code> and leaves the fraction it came from uncancelled.
+   *
+   * @param a the first expression
+   * @param b the second expression
+   * @return the {@link IRational} GCD of the rational contents of <code>a</code> and
+   *         <code>b</code>, or {@link F#C1} if there is no common rational factor
+   */
+  public static IExpr rationalContentGCD(IExpr a, IExpr b) {
+    IRational contentA = rationalContent(a);
+    IRational contentB = rationalContent(b);
+    IRational gcd = contentA.isOne() || contentB.isOne() ? F.C1 : contentA.gcd(contentB);
+    IExpr restA = withoutRationalContent(a, contentA);
+    if (restA.equals(withoutRationalContent(b, contentB))) {
+      // The two differ only in their rational factor, so the shared non-rational part divides both:
+      // gcd(Sqrt(3), 2*Sqrt(3)) is Sqrt(3), not 1.
+      return gcd.isOne() ? restA : restA.times(gcd);
+    }
+    return gcd.isOne() ? F.C1 : gcd;
+  }
+
+  /**
+   * The rational factor of <code>expr</code>: the expression itself if it is rational, its first
+   * argument if it is a {@link S#Times} with a rational first argument (<code>Times</code> is
+   * orderless, so a number sorts to the front), and {@link F#C1} otherwise.
+   *
+   * @param expr
+   * @return the rational content of <code>expr</code>, never <code>null</code>
+   */
+  private static IRational rationalContent(IExpr expr) {
+    if (expr.isRational()) {
+      return (IRational) expr;
+    }
+    if (expr.isTimes() && expr.first().isRational()) {
+      return (IRational) expr.first();
+    }
+    return F.C1;
+  }
+
+  /**
+   * <code>expr</code> divided by its rational content, i.e. the part {@link #rationalContent(IExpr)}
+   * did not return.
+   *
+   * @param expr
+   * @param content the value {@link #rationalContent(IExpr)} returned for <code>expr</code>
+   * @return the non-rational part of <code>expr</code>, or {@link F#C1} if there is none
+   */
+  private static IExpr withoutRationalContent(IExpr expr, IRational content) {
+    if (content.isOne()) {
+      return expr;
+    }
+    if (expr.isRational()) {
+      return F.C1;
+    }
+    return ((IAST) expr).rest().oneIdentity1();
+  }
 
   private static boolean[] bad255 = {false, false, true, true, false, true, true, true, true, false,
       true, true, true, true, true, false, false, true, true, false, true, false, true, true, true,

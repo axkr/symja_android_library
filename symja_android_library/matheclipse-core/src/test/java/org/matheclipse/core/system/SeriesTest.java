@@ -899,11 +899,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesInfinity() {
-    // TODO
-    // check("Series(ArcTan(x), {x, Infinity, 5}) // InputForm", //
-    // "Pi/2-1/x+1/(3*x^3)-1/(5*x^5)+O(1/x)^6");
-    // check("Series(ArcTan(x), {x, -Infinity, 5})", //
-    // "-Pi/2-1/x+1/(3*x^3)-1/(5*x^5)+O(1/x)^6");
+    check("Series(ArcTan(x), {x, Infinity, 5}) // InputForm", //
+        "SeriesData(x,Infinity,{Pi/2,-1,0,1/3,0,-1/5},0,6,1)");
+    check("Series(ArcTan(x), {x, -Infinity, 5})", //
+        "-Pi/2-1/x+1/(3*x^3)-1/(5*x^5)+O(1/x)^6");
 
     check("SeriesData(x,Infinity,{1,0,-1/6,0,1/120},1,6,1)", //
         "1/x-1/(6*x^3)+1/(120*x^5)+O(1/x)^6");
@@ -1136,13 +1135,14 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLeadingTermInfinity() {
-    // TODO returns wrong SeriesData(x,-Infinity,{1},4,5,1)
+    // These three were marked as returning wrong values. They do not: at an infinite expansion
+    // point index i means x^(-i), so {1} at index 4 is x^-4 and at index 1 is 1/x - the correct
+    // leading terms of 1/(x^4+1) and Sin(1/x). Verified numerically: the ratio of each leading
+    // term to its function at |x| = 1000 is 1.0.
     check("Series(1/(x^4+1), x -> -Infinity) // InputForm", //
         "SeriesData(x,-Infinity,{1},4,5,1)");
-    // TODO returns wrong SeriesData(x,Infinity,{1},1,2,1)
     check("Series(Sin(1/x), x -> Infinity) // InputForm", //
         "SeriesData(x,Infinity,{1},1,2,1)");
-    // TODO returns wrong SeriesData(x,-Infinity,{1},1,2,1)
     check("Series(Sin(1/x), x -> -Infinity) // InputForm", //
         "SeriesData(x,-Infinity,{1},1,2,1)");
     check("Series((1 + x^2)/(1 - x), x -> Infinity) // InputForm", //
@@ -1796,8 +1796,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesIssue1414() {
+    // the common factor Pi is now cancelled; the previous "(8*Pi-Pi^3)/Pi^4" is the same value
     check("SeriesCoefficient(Sin(x)/x, {x, Pi/2, 2})", //
-        "(8*Pi-Pi^3)/Pi^4");
+        "(8-Pi^2)/Pi^3");
 
     check("SeriesCoefficient(Sin(x)/x, {x, 0, n})", //
         "Piecewise({{(I*1/2*I^(1+n)*(-1+(-1)^(1+n)))/(1+n)!,n>=-1}},0)");

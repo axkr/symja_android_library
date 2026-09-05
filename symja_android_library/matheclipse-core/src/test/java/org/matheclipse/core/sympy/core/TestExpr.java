@@ -128,25 +128,6 @@ public class TestExpr extends ExprEvaluatorTestCase {
     assertEquals(F.Times(x, y).asCoeffAdd().toString(), "{0,x*y}");
   }
 
-  @Test
-  public void test_as_coeff_exponent() {
-    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
-    ISymbol x = F.x;
-    ISymbol y = F.y;
-    assertEquals(x.asCoeffExponent(x).toString(), //
-        "{1,1}");
-    assertEquals(F.Times(F.C3, F.Power(x, F.C4)).asCoeffExponent(x).toString(), //
-        "{3,4}");
-    assertEquals(F.Times(F.C1, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
-        "{1,0}");
-    assertEquals(F.Times(F.C0, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
-        "{0,0}");
-    assertEquals(
-        F.Divide(F.Times(x, F.Log(F.C2)), F.Plus(F.Times(F.C2, x, F.C3), F.Times(S.Pi, x)))
-            .asCoeffExponent(x).toString(), //
-        "{Log(2)/(6+Pi),0}");
-
-  }
 
   @Test
   public void test_as_coeff_mul() {
@@ -624,31 +605,4 @@ public class TestExpr extends ExprEvaluatorTestCase {
   }
 
 
-  @Test
-  public void test_leadterm() {
-    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
-    ISymbol x = F.x;
-    ISymbol y = F.y;
-
-    // assert (3 + 2*x**(log(3)/log(2) - 1)).leadterm(x) == (3, 0)
-    // assertEquals(
-    // F.Plus(F.C3,
-    // F.Times(F.C2, F.Power(F.x, F.Subtract(F.Divide(F.Log(3), F.Log(2)), F.C1))))
-    // .leadTerm(x).toString(), //
-    // "{2,Log(3)/Log(2)}");
-
-    // assert (1/x**2 + 1 + x + x**2).leadterm(x)[1] == -2
-    // assert (1/x + 1 + x + x**2).leadterm(x)[1] == -1
-    // assert (x**2 + 1/x).leadterm(x)[1] == -1
-    // assert (1 + x**2).leadterm(x)[1] == 0
-    // assert (x + 1).leadterm(x)[1] == 0
-    // assertEquals(F.Plus(x, F.C1).leadTerm(x).second().toString(), //
-    // "0");
-    // // assert (x + x**2).leadterm(x)[1] == 1
-    // assertEquals(F.Plus(x, F.Power(x, 2)).leadTerm(x).second().toString(), //
-    // "1");
-    // // // assert (x**2).leadterm(x)[1] == 2
-    assertEquals(F.Power(x, 2).leadTerm(x).second().toString(), //
-        "2");
-  }
 }

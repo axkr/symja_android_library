@@ -1,6 +1,7 @@
 package org.matheclipse.io.form.mathml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.StringWriter;
 import org.apfloat.Apcomplex;
@@ -628,6 +629,38 @@ public class MathMLPresentationTestCase {
   public void testAPictureInsideALayoutIsDrawn() {
     String out = mathML(EvalEngine.get().evaluate("Column({Graphics(Disk()), 1})"));
     assertTrue(out.contains("<mtext><svg"), out);
+  }
+
+  /**
+   * A cell wrapped in a <code>Tooltip</code> draws the picture, not the text of the call.
+   *
+   * <p>
+   * This is the shape a grid of labelled plots takes -
+   * <code>Grid(Table(Tooltip(ParametricPlot(...), label), ...))</code>. The wrapper had no
+   * converter, so each cell drew its picture with the literal <code>Tooltip[</code> ... and the
+   * label printed around it.
+   */
+  @Test
+  public void testATooltipAroundAPictureInAGridIsDrawn() {
+    String out = mathML(EvalEngine.get().evaluate("Grid({{Tooltip(Graphics(Disk()), \"d\")}})"));
+    assertTrue(out.contains("<mtext><svg"), out);
+    assertTrue(out.contains("<title>d</title>"), out);
+    assertFalse(out.contains("<mi>Tooltip</mi>"), "the wrapper printed as text: " + out);
+  }
+
+  /** The same wrapper on its own, which is the one line form of the same defect. */
+  @Test
+  public void testATooltipAroundAWholePictureIsDrawn() {
+    String out = mathML(EvalEngine.get().evaluate("Tooltip(Graphics(Disk()), \"d\")"));
+    assertTrue(out.contains("<mtext><svg"), out);
+    assertFalse(out.contains("<mi>Tooltip</mi>"), out);
+  }
+
+  /** A tooltip on something that is not a picture still prints as itself. */
+  @Test
+  public void testATooltipAroundAPlainExpressionPrintsAsItself() {
+    String out = mathML(EvalEngine.get().evaluate("Tooltip(1, \"d\")"));
+    assertTrue(out.contains("<mi>Tooltip</mi>"), out);
   }
 
   /** An <code>Overlay</code> holding no picture is not a picture, and prints as itself. */
