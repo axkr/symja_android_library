@@ -314,8 +314,10 @@ final class DSolveSystem {
     IExpr[] system = LinearODEForm.extractSystem(residuals, dependentFunctions, indepentVariable,
         engine);
     if (system == null) {
-      // Not linear in the unknowns, so no matrix describes it.
-      return F.NIL;
+      // Not linear in the unknowns, so no matrix describes it. A system of two equations without
+      // the variable in them can still be solved through the curve its solutions trace out.
+      return solveAutonomous2D(residuals, dependentFunctions, indepentVariable, boundaryConditions,
+          outputFunctions, ctx);
     }
     IAST mdAST = (IAST) system[0];
     IAST mvAST = (IAST) system[1];
@@ -348,7 +350,8 @@ final class DSolveSystem {
       engine.setConstantCounter(savedCounter);
     }
 
-    return F.NIL;
+    return solveAutonomous2D(residuals, dependentFunctions, indepentVariable, boundaryConditions,
+        outputFunctions, ctx);
   }
 
   /**
@@ -597,6 +600,9 @@ final class DSolveSystem {
     return constants.argSize();
   }
 
+  /** How big a curve is still worth reconstructing the variable from. */
+  private static final int MAX_ORBIT_LEAF_COUNT = 200;
+
   /** How large a system this augments to a first order one. */
   private static final int MAX_AUGMENTED_SIZE = 6;
 
@@ -763,6 +769,138 @@ final class DSolveSystem {
     } finally {
       engine.setConstantCounter(savedCounter);
     }
+  }
+
+  /**
+   * A system of two equations of the first order in which the variable does not appear, solved
+   * through the curve its solutions trace out.
+   *
+   * <p>
+   * For <code>x' == f(x,y)</code>, <code>y' == g(x,y)</code> that curve satisfies
+   * <code>dy/dx == g/f</code>, which is one equation for one unknown and so a job for the scalar
+   * cascade. Knowing <code>y</code> along the curve turns the first equation into
+   * <code>x' == f(x, y(x))</code>, which is a job for it as well, and the two together give the
+   * solution as a function of the variable. This is the one method here which solves nonlinear
+   * systems.
+   */
+  static IExpr solveAutonomous2D(IAST residuals, IAST dependentFunctions, IExpr xVar,
+      IAST boundaryConditions, IExpr outputFunctions, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    if (dependentFunctions.argSize() != 2 || residuals.argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr firstUnknown = dependentFunctions.arg1();
+    IExpr secondUnknown = dependentFunctions.arg2();
+    IExpr firstDerivative = engine.evaluate(F.D(firstUnknown, xVar));
+    IExpr secondDerivative = engine.evaluate(F.D(secondUnknown, xVar));
+
+    // Solve does not take a derivative as something to solve for, so the two of them stand in as
+    // plain symbols while the equations are solved for them.
+    IExpr firstRate = F.Dummy("dx");
+    IExpr secondRate = F.Dummy("dy");
+    IAST equations = residuals.map(residual -> F.Equal(
+        F.subst(F.subst(residual, firstDerivative, firstRate), secondDerivative, secondRate),
+        F.C0));
+    for (int i = 1; i <= equations.argSize(); i++) {
+      if (!equations.get(i).isFree(S.Derivative, true)) {
+        // A derivative of a higher order is not this method's to solve.
+        return F.NIL;
+      }
+    }
+    IExpr solved = engine.evaluate(F.Solve(equations, F.List(firstRate, secondRate)));
+    if (!solved.isList() || ((IAST) solved).argSize() == 0
+        || !((IAST) solved).arg1().isList()) {
+      return F.NIL;
+    }
+    // The rules are matched by what they are for; Solve does not promise the order they were
+    // asked for.
+    IAST solution = (IAST) ((IAST) solved).arg1();
+    IExpr firstField = ruleFor(solution, firstRate);
+    IExpr secondField = ruleFor(solution, secondRate);
+    if (firstField.isNIL() || secondField.isNIL()) {
+      return F.NIL;
+    }
+
+    // The variable itself must not appear, and the field has to be a field.
+    IExpr firstDummy = F.Dummy("X");
+    IExpr secondDummy = F.Dummy("Y");
+    firstField = engine.evaluate(F.subst(F.subst(firstField, firstUnknown, firstDummy),
+        secondUnknown, secondDummy));
+    secondField = engine.evaluate(F.subst(F.subst(secondField, firstUnknown, firstDummy),
+        secondUnknown, secondDummy));
+    if (!firstField.isFree(xVar) || !secondField.isFree(xVar) || firstField.isZero()) {
+      return F.NIL;
+    }
+    for (IExpr field : new IExpr[] {firstField, secondField}) {
+      if (!field.isFree(firstUnknown.head(), true) || !field.isFree(secondUnknown.head(), true)) {
+        return F.NIL;
+      }
+    }
+
+    int savedCounter = engine.getConstantCounter();
+    try {
+      IExpr reconstructionConstant = ctx.nextConstant();
+      IExpr orbitConstant = ctx.nextConstant();
+
+      // The curve the solutions trace out.
+      IExpr curve = F.unaryAST1(F.Dummy("Yc"), firstDummy);
+      IExpr slope = engine.evaluate(F.Cancel(F.Together(F.Divide(secondField, firstField))));
+      IExpr orbitEquation = F.Equal(F.Subtract(engine.evaluate(F.D(curve, firstDummy)),
+          F.subst(slope, secondDummy, curve)), F.C0);
+      IAST orbits = DSolveODE.solveSubODE(orbitEquation, firstDummy, curve, orbitConstant, ctx);
+
+      for (int i = 1; i <= orbits.argSize(); i++) {
+        IExpr orbit = orbits.get(i);
+        IExpr speed = engine.evaluate(F.subst(firstField, secondDummy, orbit));
+        if (hasRadical(orbit, firstDummy) || hasRadical(speed, firstDummy)
+            || orbit.leafCount() > MAX_ORBIT_LEAF_COUNT
+            || speed.leafCount() > MAX_ORBIT_LEAF_COUNT) {
+          // A root of the curve makes the equation for the variable one the cascade spends a long
+          // time on and rarely answers.
+          continue;
+        }
+        IExpr reconstruction = F.Equal(F.Subtract(firstDerivative,
+            F.subst(speed, firstDummy, firstUnknown)), F.C0);
+        IAST paths =
+            DSolveODE.solveSubODE(reconstruction, xVar, firstUnknown, reconstructionConstant, ctx);
+        for (int j = 1; j <= paths.argSize(); j++) {
+          IExpr path = paths.get(j);
+          IExpr other = engine.evaluate(F.subst(orbit, firstDummy, path));
+          IAST bodies = F.List(path, other);
+          // A curve which was inverted to get here is one branch of several, so the pair has to be
+          // seen to solve the system rather than merely not seen to fail.
+          if (!DSolveVerify.acceptSystemStrict(residuals, dependentFunctions, xVar, bodies,
+              engine)) {
+            continue;
+          }
+          IExpr result = formatSystemResult(bodies, dependentFunctions, xVar, boundaryConditions,
+              outputFunctions, ctx);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
+      }
+      return F.NIL;
+    } finally {
+      engine.setConstantCounter(savedCounter);
+    }
+  }
+
+  /** The right hand side of the rule for the given left hand side. */
+  private static IExpr ruleFor(IAST rules, IExpr lhs) {
+    for (int i = 1; i <= rules.argSize(); i++) {
+      IExpr rule = rules.get(i);
+      if (rule.isRule() && rule.first().equals(lhs)) {
+        return rule.second();
+      }
+    }
+    return F.NIL;
+  }
+
+  /** Whether a root of something which depends on the variable was left behind. */
+  private static boolean hasRadical(IExpr expr, IExpr variable) {
+    return !expr.isFree(x -> x.isPower() && !x.exponent().isInteger()
+        && !x.base().isFree(variable, true), true);
   }
 
   /**

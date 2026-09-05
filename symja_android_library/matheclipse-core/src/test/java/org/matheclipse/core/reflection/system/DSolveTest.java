@@ -490,6 +490,26 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveSystemAutonomous() {
+    // The variable does not appear, so the curve the solutions trace out satisfies one equation
+    // for one unknown, and knowing it turns the first equation into another. This is the one
+    // system solver here which answers a nonlinear system.
+    check("DSolve({x'(t) == y(t), y'(t) == y(t)^2/x(t)}, {x(t), y(t)}, t)", //
+        "{{x(t)->E^(t*C(2))*C(1),y(t)->E^(t*C(2))*C(1)*C(2)}}");
+
+    check("DSolve({x'(t) == -1/y(t), y'(t) == 1/x(t)}, {x(t), y(t)}, t)", //
+        "{{x(t)->C(1)/E^(t/C(2)),y(t)->(E^(t/C(2))*C(2))/C(1)}}");
+
+    check("DSolve({x'(t) == 1/y(t), y'(t) == 1/x(t)}, {x(t), y(t)}, t)", //
+        "{{x(t)->-Sqrt(-C(1)+(2*t)/C(2)),y(t)->-Sqrt(-C(1)+(2*t)/C(2))*C(2)}}");
+
+    // The curve here carries a root, which makes the equation for the variable one the cascade
+    // rarely answers, so this declines rather than spending the time.
+    check("DSolve({x'(t) == y(t)/(x(t)-y(t)), y'(t) == x(t)/(x(t)-y(t))}, {x(t), y(t)}, t)", //
+        "DSolve({x'(t)==y(t)/(x(t)-y(t)),y'(t)==x(t)/(x(t)-y(t))},{x(t),y(t)},t)");
+  }
+
+  @Test
   public void testDSolveSystemVariableCoefficients() {
     // A rotation whose radius grows: the matrix is (1/t)*I plus a constant one, so it commutes
     // with its own integral and has an exponential.
