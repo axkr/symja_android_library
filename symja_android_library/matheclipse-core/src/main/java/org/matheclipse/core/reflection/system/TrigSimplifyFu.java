@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1888,58 +1889,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     if (!expr.isAST()) {
       return expr;
     }
-    IAST was = (IAST) expr;
-    Function<IExpr, Long> measure = createComplexityFunction(complexityFunctionHead, engine);
-
-    IExpr rv = tr1(was);
-    if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
-      IExpr rv1 = rl1(rv);
-      if (measure.apply(rv1) < measure.apply(rv)) {
-        rv = rv1;
-      }
-      if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
-        rv = tr2(rv);
-      }
-    }
-
-    if (rv.has(x -> x.isSin() || x.isCos(), true)) {
-      IExpr rv1 = rl2(rv, measure);
-      IExpr trMorrie = trMorrie(rv1);
-      IExpr rv2 = tr8(trMorrie, true);
-      if (measure.apply(was) < measure.apply(rv)) {
-        rv = was;
-      }
-      if (measure.apply(rv1) < measure.apply(rv)) {
-        rv = rv1;
-      }
-      if (measure.apply(rv2) < measure.apply(rv)) {
-        rv = rv2;
-      }
-    }
-
-    IExpr rv3 = tr2i(rv, false);
-    if (measure.apply(rv3) < measure.apply(rv)) {
-      rv = rv3;
-    }
-
-    IExpr rv4 = tr0(tr15(rv));
-    if (measure.apply(rv4) < measure.apply(rv)) {
-      rv = rv4;
-    }
-    IExpr rv5 = tr0(tr16(rv));
-    if (measure.apply(rv5) < measure.apply(rv)) {
-      rv = rv5;
-    }
-    IExpr rv6 = tr0(tr22(rv));
-    if (measure.apply(rv6) < measure.apply(rv)) {
-      rv = rv6;
-    }
-    IExpr rv7 = tr0(tr111(rv));
-    if (measure.apply(rv7) < measure.apply(rv)) {
-      rv = rv7;
-    }
-
-    return rv;
+    return simplifyFuCore(expr, createComplexityFunction(complexityFunctionHead, engine), engine);
   }
 
   private IExpr simplifyFuCore(IExpr expr, Function<IExpr, Long> measure, EvalEngine engine) {
@@ -1976,21 +1926,29 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       rv = rv3;
     }
 
-    IExpr rv4 = tr0(tr15(rv));
-    if (measure.apply(rv4) < measure.apply(rv)) {
-      rv = rv4;
-    }
-    IExpr rv5 = tr0(tr16(rv));
-    if (measure.apply(rv5) < measure.apply(rv)) {
-      rv = rv5;
-    }
-    IExpr rv6 = tr0(tr22(rv));
-    if (measure.apply(rv6) < measure.apply(rv)) {
-      rv = rv6;
-    }
-    IExpr rv7 = tr0(tr111(rv));
-    if (measure.apply(rv7) < measure.apply(rv)) {
-      rv = rv7;
+    // tr15, tr16, tr22 and tr111 leave most inputs unchanged, while tr0 - Factor followed by
+    // Expand - is the expensive part of each step. So tr0 of an unchanged input is computed once
+    // and shared by the steps that did not change it.
+    IExpr tr0Input = F.NIL;
+    IExpr tr0Output = F.NIL;
+    List<Function<IExpr, IExpr>> steps = List.of(TrigSimplifyFu::tr15, TrigSimplifyFu::tr16,
+        TrigSimplifyFu::tr22, TrigSimplifyFu::tr111);
+    for (Function<IExpr, IExpr> step : steps) {
+      // the bottom-up traversals answer NIL when nothing changed
+      IExpr stepped = step.apply(rv);
+      IExpr candidate;
+      if (stepped.isNIL() || stepped.equals(rv)) {
+        if (tr0Input != rv) {
+          tr0Input = rv;
+          tr0Output = tr0(rv);
+        }
+        candidate = tr0Output;
+      } else {
+        candidate = tr0(stepped);
+      }
+      if (measure.apply(candidate) < measure.apply(rv)) {
+        rv = candidate;
+      }
     }
 
     return rv;

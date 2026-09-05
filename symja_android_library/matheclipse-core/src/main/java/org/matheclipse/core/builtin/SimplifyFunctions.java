@@ -5,6 +5,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SimplifyUtil;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -209,16 +210,24 @@ public class SimplifyFunctions {
 
         IExpr currentResult = temp.isPresent() ? temp : defaultResult;
 
-        if (currentResult.isAST()) {
-          IExpr trigTemp =
-              TrigSimplifyFu.simplify((IAST) currentResult, engine, complexityFunction);
-
-          if (trigTemp.isPresent() && !trigTemp.equals(currentResult)) {
-            long trigCount = complexityFunction.apply(trigTemp);
-            if (trigCount < minCounter) {
-              minCounter = trigCount;
-              temp = trigTemp;
+        // The Fu trigonometric search factors and expands the whole expression several times over,
+        // which is prohibitive for a large one: 800ms for a third derivative of
+        // E^Sin(x)*Log(1+x^2)/Cosh(x) before it ran into the AST size limit. Its wins are the
+        // contractions of small sums, so it gets the same bound as the factorization step.
+        if (currentResult.isAST()
+            && currentResult.leafCount() < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+          try {
+            IExpr trigTemp =
+                TrigSimplifyFu.simplify((IAST) currentResult, engine, complexityFunction);
+            if (trigTemp.isPresent() && !trigTemp.equals(currentResult)) {
+              long trigCount = complexityFunction.apply(trigTemp);
+              if (trigCount < minCounter) {
+                minCounter = trigCount;
+                temp = trigTemp;
+              }
             }
+          } catch (LimitException le) {
+            // the trigonometric candidate hit an evaluation limit; keep what the pipeline found
           }
         }
 
@@ -418,7 +427,6 @@ public class SimplifyFunctions {
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions), //
               F.Rule(S.ComplexityFunction, S.Automatic)));
-      SimplifyUtil.TIMES_ORDERLESS_MATCHER = SimplifyUtil.initTimesHashMatcher();
     }
   }
 

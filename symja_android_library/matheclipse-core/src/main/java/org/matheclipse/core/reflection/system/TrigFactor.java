@@ -21,6 +21,13 @@ public class TrigFactor extends AbstractFunctionEvaluator {
   private static final int TRIG_FACTOR_ATOM_THRESHOLD = 2;
   private static final int TRIG_FACTOR_DEGREE_THRESHOLD = 4;
   private static final int TRIG_FACTOR_TOTAL_ATOM_THRESHOLD = 3;
+  /**
+   * Highest power of a single trigonometric function for which the final <code>Factor()</code> of
+   * the pipeline is still affordable. The cost grows exponentially with the degree: the expanded
+   * form of <code>Cos(5*x)*Sin(5*x)</code>, of degree 9, factors in 16ms, the one of
+   * <code>Cos(6*x)*Sin(6*x)</code>, of degree 11, in 1.8s.
+   */
+  private static final int TRIG_FACTOR_FINAL_DEGREE_THRESHOLD = 10;
 
   // Dummies used to shield polynomials from Symja's auto-evaluator during Factor/Together
   private static final ISymbol DSIN = F.Dummy("DSIN");
@@ -56,8 +63,11 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       return resultA;
     }
 
-    // PATH B: Expand angle-sums first to expose hidden structure, then run pipeline
-    if (!hasCompoundTrigStructure(arg)) {
+    // PATH B: Expand angle-sums first to expose hidden structure, then run pipeline. Pointless
+    // for a monomial like Cos(6*x)*Sin(6*x): expanding every factor and refactoring the product
+    // can only give back the factors it started from, at the price of factoring a polynomial of
+    // degree 12 (1.8s).
+    if (!hasCompoundTrigStructure(arg) || arg.isFree(x -> x.isPlus(), true)) {
       return resultA;
     }
 
@@ -98,7 +108,9 @@ public class TrigFactor extends AbstractFunctionEvaluator {
     IExpr postReduced = applyPostReduce(recombined, engine);
 
     // Final algebraic cleanup to cleanly group fractions and sub-expressions
-    IExpr regrouped = engine.evaluate(F.Factor(postReduced));
+    IExpr regrouped = maxTrigPower(postReduced) <= TRIG_FACTOR_FINAL_DEGREE_THRESHOLD
+        ? engine.evaluate(F.Factor(postReduced))
+        : postReduced;
 
     // Stage 8: Condense the single-angle powers which Factor() introduced back into multiple angles
     return condenseMultipleAngles(regrouped, engine);
@@ -500,6 +512,26 @@ public class TrigFactor extends AbstractFunctionEvaluator {
   // ==========================================
   // Pipeline Analysis Guards
   // ==========================================
+
+  /**
+   * The highest integer power of a trigonometric or hyperbolic function in <code>expr</code>; the
+   * degree of the polynomial that <code>Factor()</code> would have to factor.
+   */
+  private static int maxTrigPower(IExpr expr) {
+    if (!expr.isAST()) {
+      return 0;
+    }
+    IAST ast = (IAST) expr;
+    int max = 0;
+    if (ast.isPower() && ast.exponent().isInteger()
+        && (ast.base().isTrigFunction() || ast.base().isHyperbolicFunction())) {
+      max = Math.abs(ast.exponent().toIntDefault(0));
+    }
+    for (int i = 1; i < ast.size(); i++) {
+      max = Math.max(max, maxTrigPower(ast.get(i)));
+    }
+    return max;
+  }
 
   private boolean hasCompoundTrigStructure(IExpr expr) {
     CompoundTrigVisitor v = new CompoundTrigVisitor();

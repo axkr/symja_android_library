@@ -261,7 +261,8 @@ public class SimplifyUtil extends VisitorExpr {
   public static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER =
       new HashedOrderlessMatcherPlus();
 
-  public static HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER;
+  public static final HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER =
+      initTimesHashMatcher();
 
   static {
     // Cosh(x)+Sinh(x) -> Exp(x)
@@ -457,7 +458,7 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
 
-  public static HashedOrderlessMatcherTimes initTimesHashMatcher() {
+  private static HashedOrderlessMatcherTimes initTimesHashMatcher() {
     HashedOrderlessMatcherTimes timesMatcher = new HashedOrderlessMatcherTimes();
     // Abs(x_)*Sign(x_) := x
     timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
@@ -535,7 +536,7 @@ public class SimplifyUtil extends VisitorExpr {
     // consult it to skip their own internal simplification while we are already running.
     engine.incSimplifyDepth();
     try {
-      temp = arg1.accept(
+      temp = runPass(arg1,
           new SimplifyUtil(complexityFunction, fullSimplify, engine, noApart, transformationCache));
       while (temp.isPresent()) {
         // No early exit on an atom: leafCountSimplify() charges an integer by its number of digits,
@@ -549,7 +550,7 @@ public class SimplifyUtil extends VisitorExpr {
         if (count < minCounter) {
           minCounter = count;
           defaultResult = temp;
-          temp = defaultResult.accept(new SimplifyUtil(complexityFunction, fullSimplify, engine,
+          temp = runPass(defaultResult, new SimplifyUtil(complexityFunction, fullSimplify, engine,
               noApart, transformationCache));
         } else {
           return defaultResult;
@@ -562,32 +563,25 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   /**
-   * Simplify <code>Log(x)+Log(y)+p*Log(z)</code> if x, y, z are real numbers and p is an integer
-   * number
+   * One pass of the fixpoint loop in {@link #simplifyStep}. A pass that runs into an evaluation
+   * limit — typically an intermediate that grows past the AST size limit — is abandoned, so that
+   * the caller keeps the best result found so far instead of failing the whole
+   * <code>Simplify</code>. {@link #tryTransformations(IExpr)} treats a limit inside the rewrite
+   * pipeline the same way; this covers the rewrites that run outside of it.
    *
-   * @param plusAST
-   * @return
+   * @param expr the expression to simplify
+   * @param visitor the visitor of this pass
+   * @return the simplified expression, or {@link F#NIL} if nothing was found or the pass was
+   *         abandoned
    */
-  /**
-   * Rewrite a sum of logarithms that all carry the same integer factor by pulling that factor out:
-   * <code>4*Log(2)+4*Log(3)</code> becomes <code>4*Log(6)</code>.
-   *
-   * <p>
-   * {@link #tryPlusLog(IAST)} folds the whole sum into a single logarithm, which is only an
-   * improvement while the resulting integer stays short: <code>Log(1296)</code> weighs 5 against
-   * the 4 of <code>4*Log(6)</code>. The candidate is offered with a strict comparison, so a tie
-   * keeps the single logarithm — <code>3*Log(2)+3*Log(3)</code> stays <code>Log(216)</code>, where
-   * both forms weigh 4.
-   *
-   * <p>
-   * Reducing an already collapsed <code>Log(n)</code> by its perfect powers would be the more
-   * general rule, but a wrong one: it turns <code>2*Log(100)</code> into <code>4*Log(10)</code> (5)
-   * instead of the expected <code>Log(10000)</code> (6). Only a factor the input itself shares is
-   * pulled out.
-   *
-   * @param plusAST a sum whose summands are all logarithms or integer multiples of logarithms
-   * @return the factored sum, or {@link F#NIL} if there is no common factor greater than 1
-   */
+  private static IExpr runPass(IExpr expr, SimplifyUtil visitor) {
+    try {
+      return expr.accept(visitor);
+    } catch (LimitException le) {
+      return F.NIL;
+    }
+  }
+
   /**
    * Split a positive integer into <code>base^exponent</code> with the largest possible exponent,
    * e.g. <code>16</code> into <code>2^4</code> and <code>1296</code> into <code>6^4</code>.
@@ -625,15 +619,6 @@ public class SimplifyUtil extends VisitorExpr {
     return new IInteger[] {(IInteger) root, exponent};
   }
 
-  /**
-   * Put each group of summands that share a denominator over that denominator, instead of putting
-   * the whole sum over one common denominator: <code>a/x+b/x+c/y</code> becomes
-   * <code>(a+b)/x+c/y</code>, where {@link S#Together} on the whole sum would give the heavier
-   * <code>(c*x+a*y+b*y)/(x*y)</code>.
-   *
-   * @param plusAST the sum to regroup
-   * @return the regrouped sum, or {@link F#NIL} if there is nothing to group
-   */
   /**
    * Test whether the given denominators share no factor, so that putting each group over its own
    * denominator does not throw away a cancellation.
@@ -738,6 +723,15 @@ public class SimplifyUtil extends VisitorExpr {
     }
   }
 
+  /**
+   * Put each group of summands that share a denominator over that denominator, instead of putting
+   * the whole sum over one common denominator: <code>a/x+b/x+c/y</code> becomes
+   * <code>(a+b)/x+c/y</code>, where {@link S#Together} on the whole sum would give the heavier
+   * <code>(c*x+a*y+b*y)/(x*y)</code>.
+   *
+   * @param plusAST the sum to regroup
+   * @return the regrouped sum, or {@link F#NIL} if there is nothing to group
+   */
   private IExpr tryGroupwiseTogether(IAST plusAST) {
     if (plusAST.argSize() < 3) {
       // with two summands the grouping is what Together() already does
@@ -916,6 +910,26 @@ public class SimplifyUtil extends VisitorExpr {
     return best.result;
   }
 
+  /**
+   * Rewrite a sum of logarithms that all carry the same integer factor by pulling that factor out:
+   * <code>4*Log(2)+4*Log(3)</code> becomes <code>4*Log(6)</code>.
+   *
+   * <p>
+   * {@link #tryPlusLog(IAST)} folds the whole sum into a single logarithm, which is only an
+   * improvement while the resulting integer stays short: <code>Log(1296)</code> weighs 5 against
+   * the 4 of <code>4*Log(6)</code>. The candidate is offered with a strict comparison, so a tie
+   * keeps the single logarithm — <code>3*Log(2)+3*Log(3)</code> stays <code>Log(216)</code>, where
+   * both forms weigh 4.
+   *
+   * <p>
+   * Reducing an already collapsed <code>Log(n)</code> by its perfect powers would be the more
+   * general rule, but a wrong one: it turns <code>2*Log(100)</code> into <code>4*Log(10)</code> (5)
+   * instead of the expected <code>Log(10000)</code> (6). Only a factor the input itself shares is
+   * pulled out.
+   *
+   * @param plusAST a sum whose summands are all logarithms or integer multiples of logarithms
+   * @return the factored sum, or {@link F#NIL} if there is no common factor greater than 1
+   */
   private IExpr tryPlusLogCommonFactor(IAST plusAST) {
     if (plusAST.size() <= 2) {
       return F.NIL;
@@ -960,6 +974,14 @@ public class SimplifyUtil extends VisitorExpr {
     return F.Times(gcd, F.Log(eval(product)));
   }
 
+  /**
+   * Fold the logarithms of real arguments in a sum into a single logarithm:
+   * <code>Log(x)+Log(y)+p*Log(z)</code> becomes <code>Log(x*y*z^p)</code> for an integer
+   * <code>p</code>. Summands that are not logarithms are kept.
+   *
+   * @param plusAST the sum to fold
+   * @return the folded sum, or {@link F#NIL} if fewer than two summands are logarithms
+   */
   private IExpr tryPlusLog(IAST plusAST) {
     if (plusAST.size() > 2) {
       IASTAppendable logPlus = F.PlusAlloc(plusAST.size());
@@ -1128,15 +1150,13 @@ public class SimplifyUtil extends VisitorExpr {
             expr = sResult.result;
           }
 
-          if (TIMES_ORDERLESS_MATCHER != null) {
-            IAST temp = TIMES_ORDERLESS_MATCHER.evaluateRepeatedNoCache((IAST) expr, fEngine);
-            if (temp.isPresent()) {
-              // The matcher hands back an unevaluated result — Abs(a)*Abs(b) comes out as
-              // Times(Abs(a*b)^1), still carrying the Power(..,1) wrapper and the one-element
-              // Times. Weighing that against the input makes a correct contraction lose on leaf
-              // count, so evaluate it first, exactly as visitPlus() does for the Plus matcher.
-              sResult.checkLessPlusTimesPower(eval(temp));
-            }
+          IAST temp = TIMES_ORDERLESS_MATCHER.evaluateRepeatedNoCache((IAST) expr, fEngine);
+          if (temp.isPresent()) {
+            // The matcher hands back an unevaluated result — Abs(a)*Abs(b) comes out as
+            // Times(Abs(a*b)^1), still carrying the Power(..,1) wrapper and the one-element
+            // Times. Weighing that against the input makes a correct contraction lose on leaf
+            // count, so evaluate it first, exactly as visitPlus() does for the Plus matcher.
+            sResult.checkLessPlusTimesPower(eval(temp));
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
@@ -1383,7 +1403,10 @@ public class SimplifyUtil extends VisitorExpr {
         if (restTimes.isAST0()) {
           return temp;
         }
-        return F.Times(temp, restTimes);
+        // evaluated, so that the product is flat: F.Times(temp, restTimes) nested a one-element
+        // Times(...) into the tree, which then fooled every leaf count downstream
+        restTimes.append(temp);
+        return eval(restTimes);
       }
     }
     return F.NIL;
@@ -1426,7 +1449,9 @@ public class SimplifyUtil extends VisitorExpr {
             } else {
               result.set(indx[0] - 1, F.Power(transformResult, F.C2));
             }
-            IExpr temp = result.oneIdentity0();
+            // evaluated: the rewritten summand can merge with another one, and an unevaluated
+            // Sin(y)^2+Sin(y)^2 would be weighed and returned as it is
+            IExpr temp = eval(result.oneIdentity0());
             if (temp.isPlus()) {
               sResult.checkLessPlusTimesPower(temp);
               return F.NIL;
@@ -1492,38 +1517,50 @@ public class SimplifyUtil extends VisitorExpr {
    */
   private void tryPolynomialQuotientRemainder(IExpr numerator, IExpr denominator,
       SimplifiedResult sResult) {
-    IExpr temp;
     VariablesSet variables = new VariablesSet(numerator);
     variables.addVarList(denominator);
-    List<IExpr> vars = variables.getArrayList();
-    boolean evaled = false;
-    for (int i = 0; i < vars.size(); i++) {
-      temp = EvalEngine.get()
-          .evaluate(F.PolynomialQuotientRemainder(numerator, denominator, vars.get(i)));
-      if (temp.isList2() && //
-          temp.second().isZero()) {
-        // the remainder is 0 here:
-        IExpr arg1 = temp.first();
-        if (sResult.checkLessPlusTimesPower(arg1)) {
-          evaled = true;
-          break;
-        }
+    IAST varList = variables.getVarList();
+    for (int i = 1; i < varList.size(); i++) {
+      IExpr quotient = polynomialQuotient(numerator, denominator, varList.get(i));
+      if (quotient.isPresent() && sResult.checkLessPlusTimesPower(quotient)) {
+        return;
       }
     }
-    if (!evaled) {
-      for (int i = 0; i < vars.size(); i++) {
-        temp = EvalEngine.get()
-            .evaluate(F.PolynomialQuotientRemainder(denominator, numerator, vars.get(i)));
-        if (temp.isList2() && //
-            temp.second().isZero()) {
-          // the remainder is 0 here:
-          IExpr arg1 = temp.first().reciprocal();
-          if (sResult.checkLessPlusTimesPower(arg1)) {
-            break;
-          }
-        }
+    for (int i = 1; i < varList.size(); i++) {
+      IExpr quotient = polynomialQuotient(denominator, numerator, varList.get(i));
+      if (quotient.isPresent() && sResult.checkLessPlusTimesPower(quotient.reciprocal())) {
+        return;
       }
     }
+  }
+
+  /**
+   * Divide <code>dividend</code> by <code>divisor</code> as polynomials in <code>variable</code>.
+   *
+   * <p>
+   * A quotient with a sum in a denominator is rejected. The division works over rational functions
+   * in the other variables, so a divisor that does not divide the dividend can still come back with
+   * a zero remainder and a quotient that merely rearranges the fraction: dividing
+   * <code>-c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i</code> by <code>-f*h+e*i</code> in <code>a</code>
+   * gives <code>a+(-c*e*g+b*f*g+c*d*h-b*d*i)/(-f*h+e*i)</code>, and the reciprocal of that nested
+   * fraction weighed one leaf less than the matrix inverse entry it replaced. A quotient like
+   * <code>b+c*Tanh(x)</code> — from <code>Cosh(x)/(b*Cosh(x)+c*Sinh(x))</code> divided in
+   * <code>Cosh(x)</code> — is still accepted.
+   *
+   * @param dividend the dividend
+   * @param divisor the divisor
+   * @param variable the variable to divide in
+   * @return the quotient, or {@link F#NIL} if the division leaves a remainder or a quotient with
+   *         a sum in a denominator
+   */
+  private static IExpr polynomialQuotient(IExpr dividend, IExpr divisor, IExpr variable) {
+    IExpr temp =
+        EvalEngine.get().evaluate(F.PolynomialQuotientRemainder(dividend, divisor, variable));
+    if (temp.isList2() && temp.second().isZero() && !temp.first().has(
+        x -> x.isPower() && x.base().isPlus() && isNegativeExponent(x.exponent()), true)) {
+      return temp.first();
+    }
+    return F.NIL;
   }
 
   /**
@@ -1692,6 +1729,115 @@ public class SimplifyUtil extends VisitorExpr {
     }
   }
 
+  /*
+   * The gates below decide, from the shape of an expression alone, whether a rewrite of the
+   * pipeline can change it at all. They exist because the pipeline runs on every node of the
+   * expression tree in every pass of the fixpoint loop, and measured over the Simplify tests most
+   * of the rewrites come back with their input unchanged: 82% of the Together calls and 84% of
+   * the ExpandAll calls were no-ops. Each gate was checked against the candidates that actually
+   * won in those tests; none of them cuts a winning candidate.
+   */
+
+  /**
+   * Test whether <code>expr</code> contains a denominator: a reciprocal power or a fraction.
+   * Without one, {@link S#Together} has nothing to put over a common denominator and
+   * {@link S#Apart} has nothing to split.
+   */
+  private static boolean hasDenominator(IExpr expr) {
+    return expr.has(x -> x.isFraction() || x.isComplex()
+        || (x.isPower() && isNegativeExponent(x.exponent())), true);
+  }
+
+  private static boolean isNegativeExponent(IExpr exponent) {
+    return exponent.isNegative() || exponent.isNegativeResult()
+        || (exponent.isTimes() && exponent.first().isNegative());
+  }
+
+  /**
+   * {@link S#Together} needs a denominator to combine, and for a product it also needs a sum
+   * among the factors: <code>(x^2+x)/x</code> cancels to <code>1+x</code>, but a product of
+   * atoms and functions is already canonical.
+   */
+  private static boolean isTogetherCandidate(IExpr expr) {
+    if (!hasDenominator(expr)) {
+      return false;
+    }
+    if (expr.isTimes()) {
+      return ((IAST) expr)
+          .exists(factor -> factor.isPlus() || (factor.isPower() && factor.base().isPlus()));
+    }
+    return true;
+  }
+
+  /**
+   * {@link S#Apart} is only offered for a fraction in <b>one</b> variable. With several symbols it
+   * picks an arbitrary main variable and, because it makes the denominator monic in that variable,
+   * trades a flat quotient for nested ones: the matrix inverse entry
+   * <code>(-f*h+e*i)/(-c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i)</code> came back as
+   * <code>1/(a+(-c*e*g+b*f*g+c*d*h-b*d*i)/(-f*h+e*i))</code>, one leaf lighter and much harder
+   * to read. No multivariate Apart candidate has ever won in the Simplify tests.
+   */
+  private static boolean isApartCandidate(IExpr expr) {
+    return hasDenominator(expr) && new VariablesSet(expr).size() == 1;
+  }
+
+  /**
+   * {@link S#ExpandAll} can only change a product with a sum among its factors or an integer power
+   * of a sum.
+   */
+  private static boolean isExpandable(IExpr expr) {
+    return expr.has(x -> (x.isTimes() && ((IAST) x).exists(y -> y.isPlus()))
+        || (x.isPower() && x.base().isPlus() && x.exponent().isInteger()
+            && !x.exponent().isOne()),
+        true);
+  }
+
+  /**
+   * {@link S#Factor} and {@link S#FactorSquareFree} can only change an expression with a sum in
+   * it. A variable-free sum still counts: <code>Factor</code> is what collapses a constant like
+   * <code>(1/3+1/3*(-2)^(-1/3)*2^(-2/3)*(1+I*Sqrt(3))+...)^2</code> to <code>1</code>.
+   */
+  private static boolean isFactorable(IExpr expr) {
+    return expr.has(x -> x.isPlus(), true);
+  }
+
+  /**
+   * {@link S#TrigExpand} only rewrites a trigonometric or hyperbolic function of a sum or of a
+   * multiple angle.
+   */
+  private static boolean isTrigExpandable(IExpr expr) {
+    return expr.has(x -> (x.isTrigFunction() || x.isHyperbolicFunction()) && x.isAST1()
+        && (x.first().isPlus() || (x.first().isTimes() && x.first().first().isNumber()
+            && !x.first().first().isMinusOne())),
+        true);
+  }
+
+  /**
+   * {@link S#TrigToExp} of a lone trigonometric function is never lighter than the function. The
+   * rewrite pays off when two of them, or one and an exponential, cancel or combine — or when the
+   * expression is a constant that collapses to a number, like <code>Sinh(Log(3)/2)</code>.
+   */
+  private static boolean isTrigToExpCandidate(IExpr expr) {
+    return expr.isNumericFunction() || countTrigOrExp(expr) > 1;
+  }
+
+  /**
+   * Count the trigonometric functions, hyperbolic functions and powers of <code>E</code> in
+   * <code>expr</code>.
+   */
+  private static int countTrigOrExp(IExpr expr) {
+    if (!expr.isAST()) {
+      return 0;
+    }
+    IAST ast = (IAST) expr;
+    int count = (ast.isTrigFunction() || ast.isHyperbolicFunction()
+        || (ast.isPower() && ast.base().isE())) ? 1 : 0;
+    for (int i = 1; i < ast.size(); i++) {
+      count += countTrigOrExp(ast.get(i));
+    }
+    return count;
+  }
+
   /** One named entry of the ordered rewrite pipeline. */
   private static final class Step {
     final String name;
@@ -1740,7 +1886,7 @@ public class SimplifyUtil extends VisitorExpr {
         if (ctx.expr.isTimes()) {
           IExpr temp = tryTimesLog(ctx.ast());
           if (temp.isPresent()) {
-            ctx.result.checkLessEqual(temp);
+            ctx.result.checkLessEqual(ctx.util.eval(temp));
           }
         } else if (ctx.expr.isPlus()) {
           IExpr temp = AlgebraUtil.factorTermsPlus(ctx.ast(), EvalEngine.get());
@@ -1753,18 +1899,22 @@ public class SimplifyUtil extends VisitorExpr {
       }), //
       new Step("Rebase", CatchPolicy.NONE, RewriteContext::rebase), //
       new Step("ExpandAll", CatchPolicy.RUNTIME, ctx -> {
+        if (!isExpandable(ctx.expr)) {
+          ctx.expandAllCounter = ctx.util.fComplexityFunction.apply(ctx.expr);
+          return;
+        }
         IExpr temp = F.evalExpandAll(ctx.expr);
         ctx.expandAllCounter = ctx.util.fComplexityFunction.apply(temp);
         ctx.result.checkLessPlusTimesPower(temp);
       }), //
       new Step("Rebase", CatchPolicy.NONE, RewriteContext::rebase), //
       new Step("TrigExpand", CatchPolicy.VALIDATE, ctx -> {
-        if (ctx.ast().hasTrigonometricFunction()) {
+        if (ctx.ast().hasTrigonometricFunction() && isTrigExpandable(ctx.expr)) {
           ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.TrigExpand(ctx.expr)));
         }
       }), //
       new Step("TrigToExp", CatchPolicy.VALIDATE, ctx -> {
-        if (ctx.ast().hasTrigonometricFunction()) {
+        if (ctx.ast().hasTrigonometricFunction() && isTrigToExpCandidate(ctx.expr)) {
           IExpr temp = ctx.util.eval(F.TrigToExp(ctx.expr));
           if (!ctx.result.checkLessPlusTimesPower(temp) && ctx.util.fFullSimplify
           // Same bound the Factorization step below applies, and for the same reason: nested
@@ -1783,6 +1933,11 @@ public class SimplifyUtil extends VisitorExpr {
         }
       }), //
       new Step("TrigFactor", CatchPolicy.VALIDATE, ctx -> {
+        // Not gated on the number of trigonometric functions, although the identities want two:
+        // TrigFactor's pipeline also runs Together and Factor over the whole expression, and that
+        // is what turns (-4+x)*(Sqrt(4+x)/Sqrt(4-x)-ArcTan(u)-(4+x)*ArcTan(u)/(4-x)) into
+        // -Sqrt(16-x^2)+8*ArcTan(u). Skipping it there left a fraction that Limit could not
+        // resolve, and Limit((-4+x)*(...),x->4) ran forever.
         if (ctx.ast().hasTrigonometricFunction()) {
           // contracts a trigonometric sum into a product, which neither TrigReduce nor TrigExpand
           // reaches: 3*Cos(x)^2*Sin(x)^2+Sin(x)^4 becomes (2+Cos(2*x))*Sin(x)^2.
@@ -1792,10 +1947,10 @@ public class SimplifyUtil extends VisitorExpr {
       }), //
       new Step("TogetherAndFractionParts", CatchPolicy.VALIDATE, ctx -> {
         ctx.together = ctx.expr;
-        if (ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+        if (ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
+            && isTogetherCandidate(ctx.expr)) {
           ctx.together = ctx.util.eval(F.Together(ctx.expr));
           ctx.result.checkLessPlusTimesPower(ctx.together);
-
         }
         if (ctx.util.fFullSimplify) {
           if (ctx.together.isTimes()) {
@@ -1812,7 +1967,24 @@ public class SimplifyUtil extends VisitorExpr {
               ctx.util.tryPolynomialQuotientRemainder(numerator, denominator, ctx.result);
             }
           }
+        }
+      }), //
+      // In FullSimplify mode this is offered for every expression, as it always was — it reaches
+      // further than powers of E, and rewriting -I/2*Log(4-I*4)+I/2*Log(4+I*4) is what gives the
+      // -Pi/4 in a MatrixLog. Plain Simplify only offers it for an expression that has a power in
+      // it, and only takes a rewrite that contracts the exponentials into a single term: WMA
+      // turns E^(I*x)+E^(-I*x) into 2*Cos(x) and (E^x-E^(-x))/2 into Sinh(x), but leaves
+      // 3*E^(-x)+7*E^x alone although 10*Cosh(x)+4*Sinh(x) weighs less — that form is
+      // FullSimplify's.
+      new Step("ExpToTrig", CatchPolicy.VALIDATE, ctx -> {
+        if (ctx.util.fFullSimplify) {
           ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.ExpToTrig(ctx.expr)));
+        } else if (ctx.expr.has(x -> x.isPower() && (x.base().isE() || x.base().isNumber()),
+            true)) {
+          IExpr temp = ctx.util.eval(F.ExpToTrig(ctx.expr));
+          if (!temp.isPlus()) {
+            ctx.result.checkLessPlusTimesPower(temp);
+          }
         }
       }), //
       // Runs in its own step with CatchPolicy.RUNTIME on purpose. Folded into
@@ -1852,6 +2024,9 @@ public class SimplifyUtil extends VisitorExpr {
         }
       }), //
       new Step("Factorization", CatchPolicy.VALIDATE, ctx -> {
+        if (!isFactorable(ctx.expr)) {
+          return;
+        }
         // TODO: Factor is not fast enough for large expressions!
         // Maybe restricting factoring to smaller expressions is necessary here
         if (ctx.util.fFullSimplify && ctx.expandAllCounter < 50) {
@@ -1863,7 +2038,8 @@ public class SimplifyUtil extends VisitorExpr {
       }), //
       new Step("Apart", CatchPolicy.VALIDATE, ctx -> {
         if (!ctx.util.fNoApart //
-            && ctx.result.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+            && ctx.result.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT
+            && isApartCandidate(ctx.expr)) {
           ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Apart(ctx.expr)));
         }
       }), //
@@ -1953,6 +2129,50 @@ public class SimplifyUtil extends VisitorExpr {
     return result;
   }
 
+  /**
+   * Rewrite the arguments, except those a hold attribute of the head keeps from evaluation. The
+   * simplifier only offers rewrites that evaluation would apply anyway, so
+   * <code>Simplify(Hold(x+x))</code> stays <code>Hold(x+x)</code> and the body of a
+   * <code>Function</code> or the right-hand side of a <code>RuleDelayed</code> is left alone.
+   */
+  @Override
+  protected IExpr visitAST(IAST ast) {
+    final IExpr head = ast.head();
+    if (head.isSymbol()) {
+      final int attributes = ((ISymbol) head).getAttributes();
+      if ((attributes & ISymbol.HOLDALL) == ISymbol.HOLDALL
+          || (attributes & ISymbol.HOLDALLCOMPLETE) == ISymbol.HOLDALLCOMPLETE) {
+        return F.NIL;
+      }
+      if ((attributes & ISymbol.HOLDFIRST) == ISymbol.HOLDFIRST) {
+        return visitArguments(ast, 2, ast.size());
+      }
+      if ((attributes & ISymbol.HOLDREST) == ISymbol.HOLDREST) {
+        return visitArguments(ast, 1, Math.min(2, ast.size()));
+      }
+    }
+    return super.visitAST(ast);
+  }
+
+  /**
+   * Rewrite the arguments at the indices <code>[from, to)</code>.
+   *
+   * @return the rewritten expression, or {@link F#NIL} if no argument changed
+   */
+  private IExpr visitArguments(IAST ast, int from, int to) {
+    IASTMutable result = F.NIL;
+    for (int i = from; i < to; i++) {
+      IExpr temp = ast.get(i).accept(this);
+      if (temp.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, temp);
+      }
+    }
+    return result;
+  }
+
   @Override
   public IExpr visit(IASTMutable ast) {
     SimplifiedResult sResult = new SimplifiedResult(ast, fComplexityFunction);
@@ -1975,21 +2195,10 @@ public class SimplifyUtil extends VisitorExpr {
       if (sResult.checkLessEqual(temp)) {
         if (temp.isAST()) {
           ast = (IASTMutable) temp;
-          // result = temp;
         } else {
           return temp;
         }
       }
-      // long count = fComplexityFunction.apply(temp);
-      // if (count <= minCounter[0]) {
-      // minCounter[0] = count;
-      // if (temp.isAST()) {
-      // ast = (IASTMutable) temp;
-      // result = temp;
-      // } else {
-      // return temp;
-      // }
-      // }
     }
     if (ast.isPower()) {
       temp = visitPower(ast, sResult);
@@ -2016,9 +2225,6 @@ public class SimplifyUtil extends VisitorExpr {
         return temp;
       }
     }
-    // temp = F.evalExpandAll(ast);
-    // sResult.checkLess(temp);
-
     functionExpand(ast, sResult);
     return sResult.result;
   }
@@ -2255,6 +2461,36 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
 
+  /**
+   * Test whether <code>numerator/denominator</code> is <code>1</code> although the two are written
+   * differently. Both are expanded first. For two polynomials the expanded forms are canonical, so
+   * they are equal exactly when they are structurally equal; only a quotient with a radical or a
+   * function in it — like <code>(x^2*Sqrt(-4+x^2)-...)/((4-5*x^2+x^4)*(x/Sqrt(-4+x^2)+...))</code>
+   * — needs the numeric test of {@link S#PossibleZeroQ}, which is the expensive part.
+   *
+   * @param numerator the numerator of the fraction
+   * @param denominator the denominator of the fraction
+   * @return <code>true</code> if the fraction is <code>1</code>
+   */
+  private static boolean isQuotientOne(IExpr numerator, IExpr denominator) {
+    try {
+      IExpr numer = F.evalExpandAll(numerator);
+      IExpr denom = F.evalExpandAll(denominator);
+      if (numer.equals(denom)) {
+        return true;
+      }
+      VariablesSet variables = new VariablesSet(numer);
+      variables.addVarList(denom);
+      IAST varList = variables.getVarList();
+      if (numer.isPolynomial(varList) && denom.isPolynomial(varList)) {
+        return false;
+      }
+      return S.PossibleZeroQ.ofQ(F.Subtract(numer, denom));
+    } catch (LimitException le) {
+      return false;
+    }
+  }
+
   private IExpr visitTimes(IASTMutable timesAST, SimplifiedResult sResult) {
     final IExpr denominator = eval(F.Denominator(timesAST));
     if (!denominator.isNumber()) {
@@ -2272,12 +2508,9 @@ public class SimplifyUtil extends VisitorExpr {
         // Piecewise({{-1,rest<(-n)}},1)
         return F.Piecewise(F.list(F.list(F.CN1, F.Less(rest, n.negate()))), F.C1);
       }
-      if (fFullSimplify || numerator.isTimes() || denominator.isTimes()) {
-        IExpr numer = F.evalExpandAll(numerator);
-        IExpr denom = F.evalExpandAll(denominator);
-        if (S.PossibleZeroQ.ofQ(F.Subtract(numer, denom))) {
-          return F.C1;
-        }
+      if ((fFullSimplify || numerator.isTimes() || denominator.isTimes())
+          && isQuotientOne(numerator, denominator)) {
+        return F.C1;
       }
     }
 
@@ -2314,20 +2547,13 @@ public class SimplifyUtil extends VisitorExpr {
         }
       }
     }
-    // IExpr evalExpand = tryExpandTransformation(timesAST, timesAST);
-    // // IExpr evalExpand = F.evalExpand(powerAST);
-    // // IExpr powerSimplified = evalExpand.accept(this);
-    // if (evalExpand.isPresent()) {
-    // return evalExpand;
-    // }
-
     temp = tryTransformations(sResult.result.orElse(timesAST));
     if (temp.isPresent()) {
       sResult.result = temp;
     }
     temp = sResult.result.orElse(timesAST);
     sResult.minCounter = fComplexityFunction.apply(temp);
-    functionExpand(temp, sResult); // minCounter[0], result);
+    functionExpand(temp, sResult);
     return F.NIL;
   }
 }

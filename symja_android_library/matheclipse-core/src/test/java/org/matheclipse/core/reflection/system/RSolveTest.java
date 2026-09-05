@@ -120,11 +120,13 @@ public class RSolveTest {
   @Test
   public void testTrigonometricCanonicalization() {
     // a(n+1) - a(n) = Sin(n)
-    // The engine should automatically convert Sin(n) to complex exponentials
-    // (I/2*E^(-I*n) - I/2*E^(I*n)) and solve it as a non-homogeneous linear equation.
-    // This expects the canonicalized rational/exponential particular solution.
+    // The engine converts Sin(n) to complex exponentials (I/2*E^(-I*n) - I/2*E^(I*n)) and solves
+    // it as a non-homogeneous linear equation. Simplify then contracts the exponential particular
+    // solution back into a trigonometric one, which weighs 25 leaves against the 64 of
+    // (-I*E^(I+I*n))/(-2*E^I+2*E^(I*2))+I/(2/E^(I-I*n)-2*E^(I*n))+C(1). Both are general
+    // solutions of the recurrence and differ by a constant, which C(1) absorbs.
     check("RSolve(a(n+1) - a(n) == Sin(n), a(n), n)", //
-        "{{a(n)->(-I*E^(I+I*n))/(-2*E^I+2*E^(I*2))+I/(2/E^(I-I*n)-2*E^(I*n))+C(1)}}");
+        "{{a(n)->C(1)-Csc(1/2)*Sin(1/2-n/2)*Sin(n/2)}}");
 
   }
 
