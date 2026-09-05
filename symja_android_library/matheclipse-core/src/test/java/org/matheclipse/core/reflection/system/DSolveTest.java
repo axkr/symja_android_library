@@ -649,6 +649,27 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveKovacicAlgebraicPair() {
+    // The logarithmic derivative is -1/(4*x) +- Sqrt(x)/2, which is not rational; what is rational
+    // is the sum of the two, and that is what the search looks for.
+    check("DSolve(y''(x) == (x/4 + 5/(16*x^2))*y(x), y(x), x)", //
+        "{{y(x)->(E^(x^(3/2)/3)*C(1))/x^(1/4)+C(2)/(E^(x^(3/2)/3)*x^(1/4))}}");
+
+    checkResidual("y''(x) == ((x-1)/4 + 5/(16*(x-1)^2))*y(x)",
+        "D(y(x),{x,2}) - ((x-1)/4 + 5/(16*(x-1)^2))*y(x)",
+        "{x->17/13, C(1)->3/7, C(2)->5/11}");
+
+    check("With({b=(y(x) /. DSolve(y''(x) == (x/4 + 5/(16*x^2))*y(x), y(x), x)[[1,1]])},"
+        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
+        "True");
+
+    // A solution of this kind is algebraic, and where the equation has none the method declines
+    // rather than returning one of the roots on its own.
+    check("DSolve(y''(x) == (3/(16*x^2) + 2/(9*(x-1)^2) - 3/(16*x*(x-1)))*y(x), y(x), x)", //
+        "DSolve(y''(x)==(2/(9*(1-x)^2)+3/(16*x^2)-3/(16*(-1+x)*x))*y(x),y(x),x)");
+  }
+
+  @Test
   public void testDSolveKovacicApparentSingularities() {
     // Chebyshev's equation. Its solutions have zeros where r has no pole, which the guess of the
     // plain case cannot put anywhere; those zeros go into a polynomial factor of their own.

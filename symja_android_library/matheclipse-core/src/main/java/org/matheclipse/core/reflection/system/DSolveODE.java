@@ -1019,7 +1019,7 @@ final class DSolveODE {
         // of what kind of function a solution of it is. This runs last of the second order
         // methods: it answers more equations than they do, but in a form which is theirs when
         // they own it.
-        IExpr kovacicSol = DSolveKovacic.solve(lf, xVar, C_1, ctx);
+        IExpr kovacicSol = DSolveKovacic.solve(lf, yFunction, xVar, C_1, ctx);
         if (kovacicSol.isPresent())
           return kovacicSol;
       }

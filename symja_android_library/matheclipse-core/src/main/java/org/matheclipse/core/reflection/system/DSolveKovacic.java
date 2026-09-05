@@ -38,7 +38,8 @@ final class DSolveKovacic {
   private static final int MAX_LEAF_COUNT = 400;
 
   /** The general solution, or {@link F#NIL} if it is not of this kind. */
-  static IExpr solve(LinearODEForm lf, IExpr xVar, IExpr c_n, DSolveContext ctx) {
+  static IExpr solve(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n,
+      DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero() || lf.constantCoefficients) {
       return F.NIL;
@@ -125,13 +126,82 @@ final class DSolveKovacic {
       z1 = withPolynomialFactor(r, xVar, ctx);
     }
     if (z1.isNIL()) {
-      return F.NIL;
+      // Nothing rational works, so ask whether the logarithmic derivative is one of a pair which
+      // satisfies a quadratic over the rational functions.
+      return algebraicPair(r, places, xVar, polynomialDegree, recovery, yFunction, lf, c_n, ctx);
     }
     IExpr z2 = secondSolution(z1, xVar, ctx);
     if (z2.isNIL() || !independent(z1, z2, xVar, engine)) {
       return F.NIL;
     }
     return assemble(z1, z2, recovery, c_n, ctx);
+  }
+
+  /**
+   * A solution whose logarithmic derivative is not rational but satisfies a quadratic over the
+   * rational functions.
+   *
+   * <p>
+   * The two roots of that quadratic are the logarithmic derivatives of the two solutions, so their
+   * sum is rational and can be looked for the same way the rational case looks for the derivative
+   * itself. What that sum has to satisfy is <code>d' + 2*s*d == 0</code> with
+   * <code>d == 4*r - 2*s' - s^2</code>, and the two derivatives are then
+   * <code>(s +- Sqrt(d))/2</code>.
+   */
+  private static IExpr algebraicPair(IExpr r, IAST places, IExpr xVar, int polynomialDegree,
+      IExpr recovery, IExpr yFunction, LinearODEForm lf, IExpr c_n, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    // A place where r becomes infinite more than once leaves a system which is large and coupled,
+    // and what it would find where the solution has one is already found above.
+    for (int i = 1; i <= places.argSize(); i++) {
+      IExpr entry = places.get(i);
+      if (entry.isList() && entry.argSize() == 2 && !entry.first().isFree(xVar)
+          && engine.evaluate(F.Exponent(entry.first(), xVar)).toIntDefault() >= 2) {
+        return F.NIL;
+      }
+    }
+
+    IASTAppendable unknowns = F.ListAlloc();
+    IExpr guess = ansatz(places, xVar, polynomialDegree, unknowns, engine);
+    IExpr discriminant = engine.evaluate(F.Subtract(
+        F.Subtract(F.Times(F.C4, r), F.Times(F.C2, F.D(guess, xVar))), F.Sqr(guess)));
+    IExpr equation = engine.evaluate(
+        F.Plus(F.D(discriminant, xVar), F.Times(F.C2, guess, discriminant)));
+    IExpr sum = fitCoefficientList(equation, guess, unknowns, xVar, ctx);
+    if (sum.isNIL()) {
+      return F.NIL;
+    }
+
+    IExpr fitted = engine.evaluate(F.Simplify(F.Subtract(
+        F.Subtract(F.Times(F.C4, r), F.Times(F.C2, F.D(sum, xVar))), F.Sqr(sum))));
+    // Zeroing the unknowns the solution left free is a choice, so the sum is put back.
+    if (!DSolveODE.isVanishing(engine.evaluate(F.Together(
+        F.Plus(F.D(fitted, xVar), F.Times(F.C2, sum, fitted)))), engine)) {
+      return F.NIL;
+    }
+    if (fitted.isZero()) {
+      // The two derivatives coincide, so this gives one solution rather than two.
+      return F.NIL;
+    }
+
+    IExpr root = engine.evaluate(F.Sqrt(fitted));
+    IExpr z1 = expIntegral(engine.evaluate(F.Divide(F.Plus(sum, root), F.C2)), xVar, ctx);
+    IExpr z2 = expIntegral(engine.evaluate(F.Divide(F.Subtract(sum, root), F.C2)), xVar, ctx);
+    if (z1.isNIL() || z2.isNIL() || !independent(z1, z2, xVar, engine)) {
+      return F.NIL;
+    }
+    IExpr body = assemble(z1, z2, recovery, c_n, ctx);
+    if (body.isNIL()) {
+      return F.NIL;
+    }
+    // A solution which is algebraic cannot be seen to satisfy the equation by rearranging it, so
+    // it is required to be seen to satisfy it numerically before it is returned.
+    IExpr residual = engine.evaluate(F.Plus(
+        F.Times(lf.a[2], F.D(yFunction, F.List(xVar, F.C2))),
+        F.Times(lf.a[1], F.D(yFunction, xVar)), F.Times(lf.a[0], yFunction)));
+    return DSolveVerify.acceptODEStrict(F.List(residual), yFunction, xVar, body, engine) //
+        ? body
+        : F.NIL;
   }
 
   /** How high a degree the polynomial of the apparent singularities may have. */
