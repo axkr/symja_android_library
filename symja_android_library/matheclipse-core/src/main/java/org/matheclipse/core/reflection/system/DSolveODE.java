@@ -1,8 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -97,8 +95,7 @@ final class DSolveODE {
    * Solves homogeneous first-order ODEs by applying the substitution y = v * x to reduce the
    * equation to a separable form.
    */
-  static IExpr odeHomogeneous(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y,
-      IExpr C_1) {
+  static IExpr odeHomogeneous(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
     // Substitute y -> x * v
     IExpr v = F.Dummy("v");
 
@@ -200,8 +197,7 @@ final class DSolveODE {
     return F.NIL;
   }
 
-  static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y,
-      IExpr C_1) {
+  static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
     if (n.isOne()) {
       IExpr fxExpr = F.NIL;
       IExpr gyExpr = F.NIL;
@@ -243,6 +239,18 @@ final class DSolveODE {
         }
         IExpr yEquation = S.Subtract.of(engine, gyExpr, fxExpr);
         IExpr result = Eliminate.extractVariable(yEquation, y, false, engine);
+        if (result.isNIL()) {
+          // The antiderivative is not always in a form the equation can be solved for y in. A sum
+          // of logarithms is the usual case: Integrate answers 1/(1-y^2) with
+          // -Log(1-y)/2 + Log(1+y)/2, which nothing here can invert, while the ArcTanh(y) it is
+          // equal to inverts at once. So the integral is collected once and the equation offered
+          // again, which is what makes y'(x) == (y(x)^2 + x*y(x) - x^2)/x^2 solvable.
+          IExpr collected = engine.evaluate(F.FullSimplify(gyExpr));
+          if (collected.isPresent() && !collected.equals(gyExpr)) {
+            result = Eliminate.extractVariable(S.Subtract.of(engine, collected, fxExpr), y, false,
+                engine);
+          }
+        }
         if (result.isPresent()) {
           result = DSolveUtil.stripConditionalExpression(result);
           return engine.evaluate(result);
@@ -308,8 +316,8 @@ final class DSolveODE {
     if (n.isZero()) {
       return null;
     }
-    IExpr remainder = engine
-        .evaluate(F.ExpandAll(F.Subtract(numerator, F.Plus(m, F.Times(n, dyx)))));
+    IExpr remainder =
+        engine.evaluate(F.ExpandAll(F.Subtract(numerator, F.Plus(m, F.Times(n, dyx)))));
     if (!remainder.isZero() || !m.isFree(dyx, true) || !n.isFree(dyx, true)) {
       return null;
     }
@@ -494,8 +502,8 @@ final class DSolveODE {
     if (leadingDerivative.isZero()) {
       return F.NIL;
     }
-    IExpr centre = engine.evaluate(F.Cancel(F.Together(
-        F.Subtract(xVar, F.Divide(F.Times(F.ZZ(n), lf.a[n]), leadingDerivative)))));
+    IExpr centre = engine.evaluate(F.Cancel(
+        F.Together(F.Subtract(xVar, F.Divide(F.Times(F.ZZ(n), lf.a[n]), leadingDerivative)))));
     if (!centre.isFree(xVar)) {
       return F.NIL;
     }
@@ -530,8 +538,8 @@ final class DSolveODE {
       }
     }
     if (!lf.g.isZero()) {
-      newLhsTerms.append(engine.evaluate(
-          F.Negate(F.subst(lf.g, xVar, F.Plus(centre, F.Exp(tVar))))));
+      newLhsTerms
+          .append(engine.evaluate(F.Negate(F.subst(lf.g, xVar, F.Plus(centre, F.Exp(tVar))))));
     }
 
     IExpr newLhs = engine.evaluate(newLhsTerms);
@@ -1011,7 +1019,8 @@ final class DSolveODE {
       // --- FIRST ORDER SOLVERS (n == 1) ---
       IExpr coeffDyx = engine.evaluate(F.Coefficient(lhs, dyx));
 
-      if (!coeffDyx.isZero() && coeffDyx.isFree(head, true) && isLinearInDerivative(lhs, dyx, engine)) {
+      if (!coeffDyx.isZero() && coeffDyx.isFree(head, true)
+          && isLinearInDerivative(lhs, dyx, engine)) {
         IExpr rest = engine.evaluate(F.Subtract(lhs, F.Times(coeffDyx, dyx)));
         IExpr coeffY = engine.evaluate(F.Coefficient(rest, yFunction));
 
@@ -1107,7 +1116,7 @@ final class DSolveODE {
 
     if (n == 1) {
       // A substitution u == phi(y) can make an equation linear which is not linear as it stands.
-      // This runs before the M + N*y' == 0 solvers, which is where mathilda places it: it produces
+      // This runs before the M + N*y' == 0 solvers: it produces
       // an explicit y for the equations whose right hand side is transcendental in y, and gets
       // there before an integrating factor search can spin on one of those.
       IExpr linearizableSol = DSolveLinearizable.solve(lhs, yFunction, xVar, C_1, ctx);
@@ -1139,8 +1148,8 @@ final class DSolveODE {
    */
   static boolean isLinearInDerivative(IExpr lhs, IExpr dyx, EvalEngine engine) {
     IExpr expanded = engine.evaluate(F.ExpandAll(lhs));
-    IExpr remainder = engine.evaluate(F.ExpandAll(F.Subtract(expanded,
-        F.Plus(F.Coefficient(expanded, dyx, F.C0),
+    IExpr remainder =
+        engine.evaluate(F.ExpandAll(F.Subtract(expanded, F.Plus(F.Coefficient(expanded, dyx, F.C0),
             F.Times(F.Coefficient(expanded, dyx, F.C1), dyx)))));
     return remainder.isZero();
   }
@@ -1341,14 +1350,14 @@ final class DSolveODE {
         IExpr alpha = engine.evaluate(F.Re(root));
         IExpr beta = engine.evaluate(F.Abs(F.Im(root)));
         for (int j = 0; j < multiplicities[i]; j++) {
-          IExpr factor = engine.evaluate(F.Times(F.Power(xVar, F.ZZ(j)), F.Exp(F.Times(alpha, xVar))));
+          IExpr factor =
+              engine.evaluate(F.Times(F.Power(xVar, F.ZZ(j)), F.Exp(F.Times(alpha, xVar))));
           basis.add(engine.evaluate(F.Times(factor, F.Cos(F.Times(beta, xVar)))));
           basis.add(engine.evaluate(F.Times(factor, F.Sin(F.Times(beta, xVar)))));
         }
       } else {
         for (int j = 0; j < multiplicities[i]; j++) {
-          basis.add(engine.evaluate(
-              F.Times(F.Power(xVar, F.ZZ(j)), F.Exp(F.Times(root, xVar)))));
+          basis.add(engine.evaluate(F.Times(F.Power(xVar, F.ZZ(j)), F.Exp(F.Times(root, xVar)))));
         }
       }
     }
@@ -1480,8 +1489,8 @@ final class DSolveODE {
     IExpr highest = engine.evaluate(F.D(yFunction, F.List(xVar, F.ZZ(n))));
     IExpr dummy = F.Dummy("d");
     IExpr substituted = engine.evaluate(F.ExpandAll(F.subst(lhs, highest, dummy)));
-    IExpr linearPart = engine.evaluate(F.ExpandAll(F.Subtract(substituted,
-        F.Plus(F.Coefficient(substituted, dummy, F.C0),
+    IExpr linearPart = engine.evaluate(
+        F.ExpandAll(F.Subtract(substituted, F.Plus(F.Coefficient(substituted, dummy, F.C0),
             F.Times(F.Coefficient(substituted, dummy, F.C1), dummy)))));
     if (linearPart.isZero()) {
       // Linear in the highest derivative, so the ordinary solvers already had their chance.
@@ -1513,6 +1522,7 @@ final class DSolveODE {
     }
     return roots.argSize() == 1 ? roots.arg1() : roots;
   }
+
   /**
    * Determines the constant of the first integral <code>y' == v(y)</code> from the initial
    * conditions <code>y(x0)</code> and <code>y'(x0)</code>, if the context carries both of them.
@@ -1522,8 +1532,8 @@ final class DSolveODE {
    * @return the first integral with <code>c_n</code> replaced, the unchanged first integral when
    *         the conditions do not determine it, or {@link F#NIL} when they contradict this branch
    */
-  private static IExpr fitFirstIntegral(IExpr vSol, IExpr yDummy, IExpr head, IExpr xVar,
-      IExpr c_n, DSolveContext ctx) {
+  private static IExpr fitFirstIntegral(IExpr vSol, IExpr yDummy, IExpr head, IExpr xVar, IExpr c_n,
+      DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     if (ctx.conditions.argSize() < 2 || vSol.isFree(c_n, true)) {
       return vSol;
@@ -1598,8 +1608,8 @@ final class DSolveODE {
     if (!head.isSymbol()) {
       return F.NIL;
     }
-    IExpr term = org.matheclipse.core.eval.util.ODEUtils.derivative((org.matheclipse.core.interfaces.ISymbol) head,
-        order, point);
+    IExpr term = org.matheclipse.core.eval.util.ODEUtils
+        .derivative((org.matheclipse.core.interfaces.ISymbol) head, order, point);
     for (int i = 1; i <= conditions.argSize(); i++) {
       IExpr condition = conditions.get(i);
       if (condition.isFree(term, true)) {

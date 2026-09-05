@@ -678,6 +678,26 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveRiccatiWithAiryReduction() {
+    // y' == x + y^2 reduces to u''(x) + x*u(x) == 0, whose solutions are Airy functions of
+    // (-1)^(1/3)*x. Putting the answer over a common denominator used to change its value, so it
+    // was rejected by the back substitution and the equation was declined.
+    checkResidual("y'(x) == x + y(x)^2", "y'(x) - x - y(x)^2", "{C(1)->7/5, x->13/10}");
+
+    // The same equation with the other sign, whose Airy functions are real.
+    checkResidual("y'(x) == -x + y(x)^2", "y'(x) + x - y(x)^2", "{C(1)->7/5, x->13/10}");
+  }
+
+  @Test
+  public void testDSolveHomogeneousLogarithmicIntegral() {
+    // Separating the variables here leaves Integrate(1/(1-v^2), v), which Symja answers with a sum
+    // of logarithms that nothing could solve for v; collecting it into ArcTanh(v) first makes the
+    // inversion succeed.
+    check("DSolve(y'(x) == (y(x)^2 + x*y(x) - x^2)/x^2, y(x), x)", //
+        "{{y(x)->x*Tanh(C(1)-Log(x))}}");
+  }
+
+  @Test
   public void testDSolveLegendre() {
     // (1-x^2)*y'' - 2*x*y' + nu*(nu+1)*y == 0 with nu*(nu+1) == 15/4, so nu == 3/2.
     check("DSolve((1-x^2)*y''(x) - 2*x*y'(x) + 15/4*y(x) == 0, y(x), x)", //
