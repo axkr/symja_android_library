@@ -172,11 +172,23 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
               // One equation together with the conditions it has to satisfy. The equation is the
               // one which differentiates the unknown; the others prescribe values.
               IExpr head = arg2.isAST() ? arg2.head() : arg2;
+              IAST pdeVars = (IAST) arg3;
+              if (pdeVars.argSize() != 2) {
+                return F.NIL;
+              }
+              // A condition may prescribe a derivative as well as a value, so it is not the
+              // derivatives which tell it from the equation but where it is asked for: a condition
+              // holds one of the variables fixed, the equation holds neither.
+              IExpr pdeApplied = arg2.isAST() //
+                  ? arg2
+                  : F.binaryAST2(arg2, pdeVars.arg1(), pdeVars.arg2());
               IASTAppendable conditions = F.ListAlloc(arg1.argSize());
               IExpr found = F.NIL;
               for (int i = 1; i <= arg1.argSize(); i++) {
                 IExpr candidate = ((IAST) arg1).get(i);
-                if (DSolvePDE.differentiates(candidate, head)) {
+                if (DSolvePDE.differentiates(candidate, head) && !DSolvePDEInitialValue
+                    .prescribesValue(candidate, pdeApplied, pdeVars.arg1(), pdeVars.arg2(),
+                        engine)) {
                   if (found.isPresent()) {
                     return F.NIL;
                   }

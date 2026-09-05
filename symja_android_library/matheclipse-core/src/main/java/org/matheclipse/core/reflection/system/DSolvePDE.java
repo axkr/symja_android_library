@@ -57,31 +57,43 @@ final class DSolvePDE {
     // A method which declines has usually taken arbitrary constants out of the counter already, so
     // it is reset before the next one is tried and the answer starts at C(1).
     int counter = engine.getConstantCounter();
-    if (order == 1) {
-      body = pdeCharacteristics(lhs, uApplied, x, y, ctx);
+    // The problems whose answer is a formula in the data, which is written down rather than found
+    // by fitting the conditions to a general solution afterwards.
+    boolean conditionsUsed = false;
+    if (ctx.conditions.argSize() > 0) {
+      body = DSolvePDEInitialValue.solve(lhs, uApplied, x, y, ctx);
+      conditionsUsed = body.isPresent();
       if (body.isNIL()) {
         engine.setConstantCounter(counter);
-        body = pdeSingleDerivative(lhs, uApplied, x, y, ctx);
       }
-      if (body.isNIL()) {
-        engine.setConstantCounter(counter);
-        body = pdeSingleDerivative(lhs, uApplied, y, x, ctx);
+    }
+    if (body.isNIL()) {
+      if (order == 1) {
+        body = pdeCharacteristics(lhs, uApplied, x, y, ctx);
+        if (body.isNIL()) {
+          engine.setConstantCounter(counter);
+          body = pdeSingleDerivative(lhs, uApplied, x, y, ctx);
+        }
+        if (body.isNIL()) {
+          engine.setConstantCounter(counter);
+          body = pdeSingleDerivative(lhs, uApplied, y, x, ctx);
+        }
+        if (body.isNIL()) {
+          engine.setConstantCounter(counter);
+          body = pdeClairaut(lhs, uApplied, x, y, ctx);
+        }
+        if (body.isNIL()) {
+          engine.setConstantCounter(counter);
+          body = pdeCharpit(lhs, uApplied, x, y, ctx);
+        }
+      } else if (order == 2) {
+        body = pdeSecondOrderConstant(lhs, uApplied, x, y, ctx);
       }
-      if (body.isNIL()) {
-        engine.setConstantCounter(counter);
-        body = pdeClairaut(lhs, uApplied, x, y, ctx);
-      }
-      if (body.isNIL()) {
-        engine.setConstantCounter(counter);
-        body = pdeCharpit(lhs, uApplied, x, y, ctx);
-      }
-    } else if (order == 2) {
-      body = pdeSecondOrderConstant(lhs, uApplied, x, y, ctx);
     }
     if (body.isNIL()) {
       return F.NIL;
     }
-    if (ctx.conditions.argSize() > 0) {
+    if (ctx.conditions.argSize() > 0 && !conditionsUsed) {
       if (body.isList()) {
         return F.NIL;
       }
@@ -96,7 +108,8 @@ final class DSolvePDE {
     IASTAppendable result = F.ListAlloc(branches.argSize());
     for (int i = 1; i <= branches.argSize(); i++) {
       IExpr branch = branches.get(i);
-      if (!DSolveVerify.acceptPDE(F.list(lhs), uApplied, xVars, branch, engine)) {
+      if (!conditionsUsed
+          && !DSolveVerify.acceptPDE(F.list(lhs), uApplied, xVars, branch, engine)) {
         continue;
       }
       if (uFunc.isSymbol()) {

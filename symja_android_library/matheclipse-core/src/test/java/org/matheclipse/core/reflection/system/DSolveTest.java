@@ -649,6 +649,53 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolvePDEInitialValue() {
+    // d'Alembert: what starts at a point of the string reaches it again from both sides at the
+    // speed the equation names, so the shape contributes its value at the two ends of the interval
+    // the signal has crossed and the speed contributes its mean over that interval.
+    check("DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x),"
+        + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
+        "{{u(x,t)->1/2*(f(-t+x)+f(t+x))+Integrate(g(K),{K,-t+x,t+x})/2}}");
+
+    // The speed of the signal is read off the equation, and shows up in both places.
+    check("DSolve({D(u(x,t),{t,2}) == 4*D(u(x,t),{x,2}), u(x,0) == f(x),"
+        + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
+        "{{u(x,t)->1/2*(f(-2*t+x)+f(2*t+x))+Integrate(g(K),{K,-2*t+x,2*t+x})/4}}");
+
+    // The conditions need not be given at t == 0, nor in any particular order.
+    check("DSolve({f(x) == u(x,1), D(u(x,t),{t,2}) == D(u(x,t),{x,2}),"
+        + " Derivative(0,1)[u][x,1] == g(x)}, u(x,t), {x,t})", //
+        "{{u(x,t)->1/2*(f(1-t+x)+f(-1+t+x))+Integrate(g(K),{K,1-t+x,-1+t+x})/2}}");
+
+    // The heat kernel: every point of the starting temperature contributes everywhere, weighted by
+    // the temperature a single hot point would have spread to. The integral is left as it stands,
+    // having no closed form for a temperature which is not given.
+    check("DSolve({D(u(x,t),t) == D(u(x,t),{x,2}), u(x,0) == f(x)}, u(x,t), {x,t})", //
+        "{{u(x,t)->Integrate((E^(-(-K+x)^2/(4*t))*f(K))/Sqrt(4*Pi*t),{K,-Infinity,Infinity})}}");
+
+    check("DSolve({D(u(x,t),t) == 3*D(u(x,t),{x,2}), u(x,0) == f(x)}, u(x,t), {x,t})", //
+        "{{u(x,t)->Integrate((E^(-(-K+x)^2/(12*t))*f(K))/Sqrt(12*Pi*t),{K,-Infinity,Infinity})}}");
+
+    // Only these two shapes: a term of lower order, a drift along the rod, a diffusivity of the
+    // wrong sign, or two displacements instead of a displacement and a speed are all declined.
+    check("DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}) - u(x,t), u(x,0) == f(x),"
+        + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
+        "DSolve({Derivative(0,2)[u][x,t]==-u(x,t)+Derivative(2,0)[u][x,t],u(x,0)==f(x),Derivative(\n"
+            + "0,1)[u][x,0]==g(x)},u(x,t),{x,t})");
+
+    check("DSolve({D(u(x,t),t) == -D(u(x,t),{x,2}), u(x,0) == f(x)}, u(x,t), {x,t})", //
+        "DSolve({Derivative(0,1)[u][x,t]==-Derivative(2,0)[u][x,t],u(x,0)==f(x)},u(x,t),{x,t})");
+
+    check("DSolve({D(u(x,t),t) == D(u(x,t),{x,2}) + D(u(x,t),x), u(x,0) == f(x)}, u(x,t), {x,t})", //
+        "DSolve({Derivative(0,1)[u][x,t]==Derivative(1,0)[u][x,t]+Derivative(2,0)[u][x,t],u(x,\n"
+            + "0)==f(x)},u(x,t),{x,t})");
+
+    check("DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x), u(x,1) == g(x)},"
+        + " u(x,t), {x,t})", //
+        "DSolve({Derivative(0,2)[u][x,t]==Derivative(2,0)[u][x,t],u(x,0)==f(x),u(x,1)==g(x)},u(x,t),{x,t})");
+  }
+
+  @Test
   public void testDSolveTriangularSystem() {
     // Coupled, so the system does not split into blocks, but one equation mentions only x and
     // solving it makes the other one a scalar equation in y. The coefficients depend on the
