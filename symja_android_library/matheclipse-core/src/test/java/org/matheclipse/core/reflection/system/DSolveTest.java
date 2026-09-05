@@ -649,6 +649,28 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveFirstOrderReduction() {
+    // The right hand side depends on x and y only through x + y, so in that combination the
+    // equation has no x left and is separable.
+    check("DSolve(y'(x) == (x + y(x))^2, y(x), x)", //
+        "{{y(x)->-x+Tan(x+C(1))}}");
+
+    check("DSolve(y'(x) == (x + y(x) + 1)^2, y(x), x)", //
+        "{{y(x)->-1-x+Tan(x+C(1))}}");
+
+    // The two lines in the ratio meet at (1, 2); moving the origin there cancels both constant
+    // terms and leaves an equation which is homogeneous of degree zero.
+    checkResidual("y'(x) == (y(x) - 2)/(x + y(x) - 3)",
+        "D(y(x),x)*(x + y(x) - 3) - (y(x) - 2)", "{x->17/13, C(1)->3/7}");
+
+    // Not every such reduction ends in something which can be solved for y: this one leaves
+    // 2*Sqrt(v) - 2*Log(1+Sqrt(v)) == x + C, which is not invertible, so the equation is declined
+    // rather than answered in a shape DSolve does not otherwise return.
+    check("DSolve(y'(x) == Sqrt(x + y(x)), y(x), x)", //
+        "DSolve(y'(x)==Sqrt(x+y(x)),y(x),x)");
+  }
+
+  @Test
   public void testDSolveLinearizable() {
     // u == Log(y) makes this linear in u.
     check("DSolve(y'(x) == y(x)*(E^x + Log(y(x))), y(x), x)", //

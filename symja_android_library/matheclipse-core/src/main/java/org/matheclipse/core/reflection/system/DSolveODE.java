@@ -1115,6 +1115,14 @@ final class DSolveODE {
     }
 
     if (n == 1) {
+      // A change of the variables can make the equation one of the kinds already solved: seen
+      // through one linear combination of x and y it may lose its x, and a ratio of two linear
+      // expressions loses its constant terms when the origin moves to where the two lines meet.
+      IExpr reducedSol = DSolveFirstOrderReduction.solve(lhs, yFunction, xVar, C_1, ctx);
+      if (reducedSol.isPresent()) {
+        return reducedSol;
+      }
+
       // A substitution u == phi(y) can make an equation linear which is not linear as it stands.
       // This runs before the M + N*y' == 0 solvers: it produces
       // an explicit y for the equations whose right hand side is transcendental in y, and gets
