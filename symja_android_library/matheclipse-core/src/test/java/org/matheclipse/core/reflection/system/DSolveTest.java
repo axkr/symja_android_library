@@ -451,6 +451,44 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->BesselJ(3,2*x)*C(1)+BesselY(3,2*x)*C(2)}}");
   }
 
+  /**
+   * Puts the solution back into the equation and evaluates the residual at one point. This is for
+   * the answers whose printed form is long or carries logarithms and radicals, where pinning the
+   * exact string says less than seeing the equation solved.
+   */
+  private void checkResidual(String equation, String residual, String point) {
+    check("With({s=DSolve(" + equation + ", y, x)}, Head(s)===List && Abs(N((" + residual
+        + ") /. s[[1]] /. " + point + ")) < 10^-6)", //
+        "True");
+  }
+
+  @Test
+  public void testDSolveEulerShiftedCentre() {
+    // A Cauchy-Euler equation need not be centred at 0; the centre is read off the leading
+    // coefficient as x - n*c(n)/c(n)'.
+    check("DSolve((x+1)^2*y''(x) - 3*(x+1)*y'(x) + 3*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)+x*C(1)+C(2)+3*x*C(2)+3*x^2*C(2)+x^3*C(2)}}");
+
+    checkResidual("(x+1)^2*y''(x) - 3*(x+1)*y'(x) + 3*y(x) == x^2",
+        "(x+1)^2*y''(x) - 3*(x+1)*y'(x) + 3*y(x) - x^2", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+  }
+
+  @Test
+  public void testDSolveCoefficientNormalization() {
+    // Solved for the highest derivative the equation has a rational right hand side; multiplying
+    // by the denominators makes it the Cauchy-Euler equation x^3*y'''(x) - 24*y(x) == 24*x.
+    checkResidual("y'''(x) == (24*x + 24*y(x))/x^3", "y'''(x) - (24*x + 24*y(x))/x^3",
+        "{C(1)->7/5, C(2)->3/4, C(3)->2/3, x->13/10}");
+
+    // Every coefficient carries a factor of x; dividing it out leaves constant coefficients.
+    checkResidual("x*y'''(x) + 2*x*y''(x) - x*y'(x) - 2*x*y(x) == 1",
+        "x*y'''(x) + 2*x*y''(x) - x*y'(x) - 2*x*y(x) - 1",
+        "{C(1)->7/5, C(2)->3/4, C(3)->2/3, x->13/10}");
+
+    check("DSolve(x*y''(x) + 3*x*y'(x) + 2*x*y(x) == 1, y(x), x)", //
+        "{{y(x)->C(1)/E^(2*x)+C(2)/E^x+ExpIntegralEi(x)/E^x-ExpIntegralEi(2*x)/E^(2*x)}}");
+  }
+
   @Test
   public void testDSolveLegendre() {
     // (1-x^2)*y'' - 2*x*y' + nu*(nu+1)*y == 0 with nu*(nu+1) == 15/4, so nu == 3/2.

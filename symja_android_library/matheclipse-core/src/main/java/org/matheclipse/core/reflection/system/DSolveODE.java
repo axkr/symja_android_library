@@ -473,85 +473,78 @@ final class DSolveODE {
    * Solves Euler-Cauchy differential equations of the form: a_n * x^n * y^(n) + ... + a_1 * x * y'
    * + a_0 * y = f(x)
    */
-  static IExpr solveEulerCauchyODE(IExpr lhs, IExpr yFunction, IExpr xVar, int n, IExpr c_n,
+  static IExpr solveEulerCauchyODE(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    IExpr head = yFunction.head();
-    IExpr[] a = new IExpr[n + 1];
-    IExpr rest = lhs;
-
-    // Extract coefficients a_k for each derivative
-    for (int k = n; k >= 1; k--) {
-      IExpr dyx = engine.evaluate(F.D(yFunction, F.List(xVar, F.ZZ(k))));
-      IExpr coeff = engine.evaluate(F.Coefficient(rest, dyx));
-
-      if (coeff.isZero()) {
-        a[k] = F.C0;
-      } else {
-        // Normalize by removing the expected x^k factor
-        // IExpr a_k = engine.evaluate(F.Simplify(F.Divide(coeff, F.Power(xVar, F.ZZ(k)))));
-        IExpr a_k = engine.evaluate(F.Divide(coeff, F.Power(xVar, F.ZZ(k))));
-        if (!a_k.isFree(xVar) || !a_k.isFree(head)) {
-          return F.NIL; // Fails the Euler-Cauchy structural requirement
-        }
-        a[k] = a_k;
-      }
-      // rest = engine.evaluate(F.Simplify(F.Subtract(rest, F.Times(coeff, dyx))));
-      rest = engine.evaluate(F.Subtract(rest, F.Times(coeff, dyx)));
-    }
-
-    // Extract the base function coefficient a_0
-    IExpr coeff0 = engine.evaluate(F.Coefficient(rest, yFunction));
-    IExpr a_0 = F.C0;
-    if (!coeff0.isZero()) {
-      // a_0 = engine.evaluate(F.Simplify(coeff0));
-      a_0 = coeff0;
-      if (!a_0.isFree(xVar) || !a_0.isFree(head)) {
-        return F.NIL;
-      }
-    }
-    a[0] = a_0;
-
-    // The remaining expression is the non-homogeneous free term (-f(x))
-    IExpr freeTerm = engine.evaluate(F.Subtract(rest, F.Times(coeff0, yFunction)));
-    if (!freeTerm.isFree(head)) {
+    int n = lf.order;
+    if (n < 1 || lf.a[n].isZero()) {
       return F.NIL;
     }
 
-    // Create dummy variables for the t-domain transformation: x = e^t
+    // The centre is read off the leading coefficient: c[n](x) == a[n]*(x-b)^n gives
+    // n*c[n]/c[n]' == x-b. A leading coefficient which does not depend on x has no centre and
+    // belongs to the constant coefficient solver.
+    IExpr leadingDerivative = engine.evaluate(F.D(lf.a[n], xVar));
+    if (leadingDerivative.isZero()) {
+      return F.NIL;
+    }
+    IExpr centre = engine.evaluate(F.Cancel(F.Together(
+        F.Subtract(xVar, F.Divide(F.Times(F.ZZ(n), lf.a[n]), leadingDerivative)))));
+    if (!centre.isFree(xVar)) {
+      return F.NIL;
+    }
+    IExpr shifted = engine.evaluate(F.Subtract(xVar, centre));
+
+    IExpr[] a = new IExpr[n + 1];
+    for (int k = 0; k <= n; k++) {
+      if (lf.a[k].isZero()) {
+        a[k] = F.C0;
+        continue;
+      }
+      a[k] = engine.evaluate(F.Cancel(F.Together(F.Divide(lf.a[k], F.Power(shifted, F.ZZ(k))))));
+      if (!a[k].isFree(xVar)) {
+        // Not of the Cauchy-Euler shape about this centre.
+        return F.NIL;
+      }
+    }
+    if (a[n].isZero()) {
+      return F.NIL;
+    }
+
+    // Substituting x - b == E^t turns (x-b)^k*y^(k) into a product of the operators t d/dt, so the
+    // equation becomes one with constant coefficients.
     IExpr tVar = F.Dummy("t");
     IExpr uDummy = F.Dummy("u");
     IExpr uFunc = F.unaryAST1(uDummy, tVar);
 
-    // Construct the constant coefficient ODE in terms of t
-    IASTAppendable newLhsTerms = F.PlusAlloc();
+    IASTAppendable newLhsTerms = F.PlusAlloc(n + 2);
     for (int k = 0; k <= n; k++) {
       if (!a[k].isZero()) {
-        IExpr op_k = getEulerCauchyOperator(k, uFunc, tVar, engine);
-        newLhsTerms.append(F.Times(a[k], op_k));
+        newLhsTerms.append(F.Times(a[k], getEulerCauchyOperator(k, uFunc, tVar, engine)));
       }
     }
-
-    // Transform the free term: substitute x -> e^t
-    IExpr rhsT = engine.evaluate(F.subst(freeTerm, xVar, F.Exp(tVar)));
-    newLhsTerms.append(rhsT);
+    if (!lf.g.isZero()) {
+      newLhsTerms.append(engine.evaluate(
+          F.Negate(F.subst(lf.g, xVar, F.Plus(centre, F.Exp(tVar))))));
+    }
 
     IExpr newLhs = engine.evaluate(newLhsTerms);
-    // System.out.println(newLhs);
-    // Solve the transformed equation using the existing linear system solver
     LinearODEForm tForm = LinearODEForm.extract(newLhs, uFunc, tVar, engine);
     if (tForm == null || tForm.order != n) {
       return F.NIL;
     }
     IExpr tSol = solveLinearConstantCoefficients(tForm, tVar, c_n, ctx);
-    if (tSol.isPresent()) {
-      // Substitute t -> Log(x) to map back to the original x-domain
-      IExpr xSol = engine.evaluate(F.subst(tSol, tVar, F.Log(xVar)));
-      // return engine.evaluate(F.Simplify(xSol));
-      return engine.evaluate(xSol);
+    if (tSol.isNIL()) {
+      // Variation of parameters does not close every integral the transformed forcing leads to.
+      // The transformed equation is an ordinary one with constant coefficients, so the rest of the
+      // cascade, and the Laplace transform at the end of it, can be asked for it instead.
+      IAST branches = solveSubODE(F.Equal(newLhs, F.C0), tVar, uFunc, c_n, ctx);
+      if (branches.argSize() != 1) {
+        return F.NIL;
+      }
+      tSol = branches.arg1();
     }
-
-    return F.NIL;
+    return engine.evaluate(F.subst(tSol, tVar, F.Log(shifted)));
   }
 
   /**
@@ -953,11 +946,16 @@ final class DSolveODE {
     // Route higher-order and first-order to their specific solvers
     if (n > 1) {
       if (lf != null) {
-        IExpr linearSol = solveLinearConstantCoefficients(lf, xVar, C_1, ctx);
+        // Clearing denominators and a common factor is worth doing on the equation which was
+        // asked about, and only there: inside a recursion it costs time and hands the inner
+        // method a form it did not ask for.
+        LinearODEForm normalized = ctx.depth() == 1 ? lf.normalized(xVar, engine) : lf;
+
+        IExpr linearSol = solveLinearConstantCoefficients(normalized, xVar, C_1, ctx);
         if (linearSol.isPresent())
           return linearSol;
 
-        IExpr eulerCauchySol = solveEulerCauchyODE(lhs, yFunction, xVar, n, C_1, ctx);
+        IExpr eulerCauchySol = solveEulerCauchyODE(normalized, yFunction, xVar, C_1, ctx);
         if (eulerCauchySol.isPresent())
           return eulerCauchySol;
       }

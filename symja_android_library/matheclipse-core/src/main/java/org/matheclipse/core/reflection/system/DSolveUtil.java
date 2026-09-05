@@ -143,6 +143,7 @@ final class DSolveUtil {
     // Use LinkedHashMap to ensure deterministic assignment of C constants
     java.util.Map<IExpr, IASTAppendable> basisMap = new java.util.LinkedHashMap<>();
     java.util.Set<IExpr> basisWithC = new java.util.HashSet<>();
+    java.util.Map<IExpr, java.util.Set<IExpr>> basesOfConstant = new java.util.HashMap<>();
 
     for (IExpr term : terms) {
       IExpr[] cPart = new IExpr[] {null};
@@ -153,6 +154,7 @@ final class DSolveUtil {
 
       if (cPart[0] != null) {
         basisWithC.add(basis);
+        basesOfConstant.computeIfAbsent(cPart[0], k -> new java.util.HashSet<>()).add(basis);
       }
     }
 
@@ -163,7 +165,7 @@ final class DSolveUtil {
       IExpr basis = entry.getKey();
       IASTAppendable sumOfTerms = entry.getValue();
 
-      if (basisWithC.contains(basis)) {
+      if (basisWithC.contains(basis) && isAbsorbable(sumOfTerms, cSet, basesOfConstant)) {
         if (cIndex <= cVector.argSize()) {
           IExpr freshC = cVector.get(cIndex++);
 
@@ -190,6 +192,32 @@ final class DSolveUtil {
     }
 
     return engine.evaluate(resultPlus);
+  }
+
+  /**
+   * Whether the terms of one basis may be collected into a single arbitrary constant.
+   *
+   * <p>
+   * Absorbing a term of the particular solution into a constant is only sound when the constant
+   * belongs to that basis alone. Expanding a solution can spread one constant over several bases,
+   * as <code>C(1)*(1+x)</code> becomes <code>C(1) + x*C(1)</code>; collecting one of those and not
+   * the other would change the solution, and the term of the particular solution which shares the
+   * basis would simply be lost. That is what used to happen to the constant term of the solution of
+   * <code>(x+1)^2*y''(x) - 3*(x+1)*y'(x) + 3*y(x) == x^2</code>.
+   */
+  private static boolean isAbsorbable(IAST sumOfTerms, java.util.Set<IExpr> cSet,
+      java.util.Map<IExpr, java.util.Set<IExpr>> basesOfConstant) {
+    for (int i = 1; i <= sumOfTerms.argSize(); i++) {
+      IExpr[] cPart = new IExpr[] {null};
+      extractBasis(sumOfTerms.get(i), cSet, cPart);
+      if (cPart[0] != null) {
+        java.util.Set<IExpr> bases = basesOfConstant.get(cPart[0]);
+        if (bases != null && bases.size() > 1) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**
