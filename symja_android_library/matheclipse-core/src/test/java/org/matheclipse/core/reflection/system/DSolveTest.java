@@ -649,6 +649,31 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveKovacicCase1() {
+    // z1 == x*(x-1) solves the reduced form, so the logarithmic derivative 1/x + 1/(x-1) is
+    // rational and the pole part of the guess reaches it.
+    checkResidual("y''(x) == 2*y(x)/(x*(x-1))", "D(y(x),{x,2}) - 2*y(x)/(x*(x-1))",
+        "{x->17/13, C(1)->3/7, C(2)->5/11}");
+
+    // A polynomial part in the guess as well as a pole part.
+    checkResidual("y''(x) == (1 + 2/x)*y(x)", "D(y(x),{x,2}) - (1 + 2/x)*y(x)",
+        "{x->17/13, C(1)->3/7, C(2)->5/11}");
+
+    checkResidual("y''(x) == (2/x^2 + 2/x + 1)*y(x)", "D(y(x),{x,2}) - (2/x^2 + 2/x + 1)*y(x)",
+        "{x->17/13, C(1)->3/7, C(2)->5/11}");
+
+    // A first derivative in the equation, which the reduction to the normal form takes out. The
+    // two solutions are conjugates of one another, and are given back as the real pair they span.
+    check("DSolve(y''(x) - (2/x)*y'(x) + (2/x^2 + 1)*y(x) == 0, y(x), x)", //
+        "{{y(x)->x*C(1)*Cos(x)-x*C(2)*Sin(x)}}");
+
+    // Two solutions, and they are different ones.
+    check("With({b=(y(x) /. DSolve(y''(x) == 2*y(x)/(x*(x-1)), y(x), x)[[1,1]])},"
+        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
+        "True");
+  }
+
+  @Test
   public void testDSolveOperatorFactor() {
     // The operator of this equation is (D^2 - 1)(D + 2/x), so 1/x^2 solves it and dividing that
     // factor out leaves an equation of the second order which the cascade already answers.

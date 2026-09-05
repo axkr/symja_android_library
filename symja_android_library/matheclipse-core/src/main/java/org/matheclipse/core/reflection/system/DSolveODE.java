@@ -1014,6 +1014,14 @@ final class DSolveODE {
         IExpr changedSol = DSolveChangeOfVariable.solve(lf, yFunction, xVar, C_1, ctx);
         if (changedSol.isPresent())
           return changedSol;
+
+        // Nothing above recognized the equation as one with a name, so ask the general question
+        // of what kind of function a solution of it is. This runs last of the second order
+        // methods: it answers more equations than they do, but in a form which is theirs when
+        // they own it.
+        IExpr kovacicSol = DSolveKovacic.solve(lf, xVar, C_1, ctx);
+        if (kovacicSol.isPresent())
+          return kovacicSol;
       }
 
       if (lf == null && n == 2) {
