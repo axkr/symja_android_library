@@ -985,6 +985,12 @@ final class DSolveODE {
         IExpr specialSol = DSolveSpecialFunctions.solve(lf, xVar, C_1, ctx);
         if (specialSol.isPresent())
           return specialSol;
+
+        // The coefficients may become rational, and the equation one of those above, in another
+        // variable. This runs after them because it asks them about the equation it produces.
+        IExpr changedSol = DSolveChangeOfVariable.solve(lf, yFunction, xVar, C_1, ctx);
+        if (changedSol.isPresent())
+          return changedSol;
       }
 
       if (lf == null && n == 2) {

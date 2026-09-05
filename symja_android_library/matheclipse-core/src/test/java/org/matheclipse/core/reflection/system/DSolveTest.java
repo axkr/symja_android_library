@@ -613,6 +613,29 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveChangeOfVariable() {
+    // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.
+    for (int k : new int[] {1, 2, 3, 4}) {
+      int degree = k * (k + 1);
+      checkResidual("y''(x) + Cot(x)*y'(x) + " + degree + "*y(x) == 0",
+          "y''(x) + Cot(x)*y'(x) + " + degree + "*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    }
+
+    // The same equation multiplied through by Sin(x).
+    for (int m : new int[] {1, 2, 3}) {
+      int degree = m * (m + 1);
+      checkResidual("y''(x)*Sin(x) + y'(x)*Cos(x) + " + degree + "*y(x)*Sin(x) == 0",
+          "y''(x)*Sin(x) + y'(x)*Cos(x) + " + degree + "*y(x)*Sin(x)",
+          "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    }
+
+    // Nothing of this kind makes these coefficients rational, so it declines rather than spending
+    // the time on every equation with a sine in it.
+    check("DSolve(y''(x) + Sin(x)*y(x) == 0, y(x), x)", //
+        "DSolve(Sin(x)*y(x)+y''(x)==0,y(x),x)");
+  }
+
+  @Test
   public void testDSolveSymmetricSquare() {
     // The solutions are the products of the solutions of u''(x) == (x+2)*u(x), which is Airy's
     // equation about the centre -2.
