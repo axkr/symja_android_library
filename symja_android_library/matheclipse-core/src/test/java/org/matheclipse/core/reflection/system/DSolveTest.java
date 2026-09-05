@@ -649,6 +649,32 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveKovacicPolynomialFactor() {
+    // A solution with zeros in it has no polynomial logarithmic derivative, so the guess which
+    // looks only for one misses it. Splitting the zeros off into a factor of their own leaves an
+    // exponential: here x*Exp(x^2/2) solves the reduced equation.
+    checkResidual("y''(x) == (x^2 + 3)*y(x)", "D(y(x),{x,2}) - (x^2 + 3)*y(x)",
+        "{x->17/13, C(1)->3/7, C(2)->5/11}");
+
+    // The factor may be the constant one, in which case the solution is the exponential itself.
+    check("DSolve(y''(x) == (x^2 - 1)*y(x), y(x), x)", //
+        "{{y(x)->C(1)/E^(x^2/2)+(C(2)*Erfi(x))/E^(x^2/2)}}");
+
+    // Hermite's equation of the first degree, whose first solution is x.
+    checkResidual("y''(x) - 2*x*y'(x) + 2*y(x) == 0",
+        "D(y(x),{x,2}) - 2*x*D(y(x),x) + 2*y(x)", "{x->17/13, C(1)->3/7, C(2)->5/11}");
+
+    check("With({b=(y(x) /. DSolve(y''(x) == (x^2 + 3)*y(x), y(x), x)[[1,1]])},"
+        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
+        "True");
+
+    // The degree the factor would have to have is not always a whole number, and where it is not
+    // there is no solution of this kind.
+    check("DSolve(y''(x) == (x^2 + 2)*y(x), y(x), x)", //
+        "DSolve(y''(x)==(2+x^2)*y(x),y(x),x)");
+  }
+
+  @Test
   public void testDSolveKovacicCase1() {
     // z1 == x*(x-1) solves the reduced form, so the logarithmic derivative 1/x + 1/(x-1) is
     // rational and the pole part of the guess reaches it.

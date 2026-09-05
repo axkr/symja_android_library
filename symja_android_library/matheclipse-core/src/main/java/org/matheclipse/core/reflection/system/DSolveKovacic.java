@@ -102,11 +102,17 @@ final class DSolveKovacic {
     IExpr equation = engine.evaluate(
         F.Subtract(F.Plus(F.D(guess, xVar), F.Sqr(guess)), r));
     IExpr logarithmicDerivative = fit(equation, guess, unknowns, r, xVar, ctx);
-    if (logarithmicDerivative.isNIL()) {
-      return F.NIL;
-    }
 
-    IExpr z1 = expIntegral(logarithmicDerivative, xVar, ctx);
+    IExpr z1 = F.NIL;
+    if (logarithmicDerivative.isPresent()) {
+      z1 = expIntegral(logarithmicDerivative, xVar, ctx);
+    }
+    if (z1.isNIL() && denominatorDegree == 0) {
+      // The guess above can only be a polynomial here, and a polynomial cannot be the logarithmic
+      // derivative of a solution which has zeros in it. Those zeros are what the factor below
+      // carries.
+      z1 = withPolynomialFactor(r, xVar, ctx);
+    }
     if (z1.isNIL()) {
       return F.NIL;
     }
@@ -115,6 +121,101 @@ final class DSolveKovacic {
       return F.NIL;
     }
     return assemble(z1, z2, recovery, c_n, ctx);
+  }
+
+  /** How high a degree the polynomial factor may have. */
+  private static final int MAX_FACTOR_DEGREE = 32;
+
+  /**
+   * A solution of <code>z'' == r*z</code> for a polynomial <code>r</code>, as a polynomial times an
+   * exponential.
+   *
+   * <p>
+   * A solution with zeros in it does not have a polynomial logarithmic derivative, so the guess
+   * which only looks for one misses it. Splitting the zeros off into a factor of their own leaves
+   * an exponential, whose logarithmic derivative is the polynomial part of one of the two square
+   * roots of <code>r</code>, and the factor is then a polynomial of a degree the equation itself
+   * fixes.
+   */
+  private static IExpr withPolynomialFactor(IExpr r, IExpr xVar, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    int degree = engine.evaluate(F.Exponent(r, xVar)).toIntDefault();
+    if (degree < 2 || degree % 2 != 0) {
+      return F.NIL;
+    }
+    int half = degree / 2;
+    IExpr leading = engine.evaluate(F.Coefficient(r, xVar, F.ZZ(degree)));
+
+    for (int sign = 1; sign >= -1; sign -= 2) {
+      if (ctx.expired()) {
+        return F.NIL;
+      }
+      IExpr top = engine.evaluate(F.Simplify(F.Times(F.ZZ(sign), F.Sqrt(leading))));
+      IASTAppendable unknowns = F.ListAlloc(half);
+      IASTAppendable terms = F.PlusAlloc(half + 1);
+      terms.append(F.Times(top, F.Power(xVar, F.ZZ(half))));
+      for (int j = 0; j < half; j++) {
+        IExpr unknown = F.Dummy("kb" + j);
+        unknowns.append(unknown);
+        terms.append(F.Times(unknown, F.Power(xVar, F.ZZ(j))));
+      }
+      IExpr guess = engine.evaluate(terms);
+
+      // Only the top half of the coefficients fixes the exponential; what is left over is what the
+      // polynomial factor has to answer for.
+      IExpr excess =
+          engine.evaluate(F.Subtract(F.Plus(F.D(guess, xVar), F.Sqr(guess)), r));
+      IASTAppendable equations = F.ListAlloc(half + 1);
+      for (int k = 2 * half; k >= half; k--) {
+        IExpr coefficient = engine.evaluate(F.Coefficient(excess, xVar, F.ZZ(k)));
+        if (!coefficient.isZero()) {
+          equations.append(F.Equal(coefficient, F.C0));
+        }
+      }
+      IExpr exponent = solveFor(equations, unknowns, guess, ctx);
+      if (exponent.isNIL()) {
+        continue;
+      }
+
+      IExpr remainder = engine.evaluate(F.Simplify(
+          F.Subtract(F.Plus(F.D(exponent, xVar), F.Sqr(exponent)), r)));
+      IExpr wanted = engine.evaluate(F.Simplify(F.Divide(
+          F.Negate(F.Coefficient(remainder, xVar, F.ZZ(half - 1))), F.Times(F.C2, top))));
+      int factorDegree = wanted.toIntDefault();
+      if (factorDegree < 0 || factorDegree > MAX_FACTOR_DEGREE) {
+        continue;
+      }
+
+      // The factor is monic: a constant in front of it belongs in the arbitrary constant.
+      IASTAppendable factorUnknowns = F.ListAlloc(factorDegree);
+      IASTAppendable factorTerms = F.PlusAlloc(factorDegree + 1);
+      factorTerms.append(F.Power(xVar, F.ZZ(factorDegree)));
+      for (int i = 0; i < factorDegree; i++) {
+        IExpr unknown = F.Dummy("kp" + i);
+        factorUnknowns.append(unknown);
+        factorTerms.append(F.Times(unknown, F.Power(xVar, F.ZZ(i))));
+      }
+      IExpr factorGuess = engine.evaluate(factorTerms);
+      IExpr factorEquation = engine.evaluate(F.Plus(F.D(factorGuess, F.List(xVar, F.C2)),
+          F.Times(F.C2, exponent, F.D(factorGuess, xVar)), F.Times(remainder, factorGuess)));
+      IExpr factor =
+          fitCoefficientList(factorEquation, factorGuess, factorUnknowns, xVar, ctx);
+      if (factor.isNIL()) {
+        continue;
+      }
+      // Zeroing the unknowns the solution left free is a choice, so the factor is put back.
+      IExpr check = engine.evaluate(F.Simplify(F.Plus(F.D(factor, F.List(xVar, F.C2)),
+          F.Times(F.C2, exponent, F.D(factor, xVar)), F.Times(remainder, factor))));
+      if (!DSolveODE.isVanishing(check, engine)) {
+        continue;
+      }
+
+      IExpr exponential = expIntegral(exponent, xVar, ctx);
+      if (exponential.isPresent()) {
+        return engine.evaluate(F.Simplify(F.Times(factor, exponential)));
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -168,6 +269,21 @@ final class DSolveKovacic {
   private static IExpr fit(IExpr equation, IExpr guess, IAST unknowns, IExpr r, IExpr xVar,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
+    IExpr fitted = fitCoefficientList(equation, guess, unknowns, xVar, ctx);
+    if (fitted.isNIL()) {
+      return F.NIL;
+    }
+    // Setting the unfixed unknowns to zero is a choice rather than a consequence, so what comes
+    // out is put back into the equation it had to satisfy.
+    IExpr residual = engine.evaluate(
+        F.Together(F.Subtract(F.Plus(F.D(fitted, xVar), F.Sqr(fitted)), r)));
+    return DSolveODE.isVanishing(residual, engine) ? fitted : F.NIL;
+  }
+
+  /** The guess fitted so that every coefficient of the equation vanishes. */
+  private static IExpr fitCoefficientList(IExpr equation, IExpr guess, IAST unknowns, IExpr xVar,
+      DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
     IExpr numerator = engine.evaluate(F.Numerator(F.Together(equation)));
     IExpr coefficients = engine.evaluate(F.CoefficientList(numerator, xVar));
     if (!coefficients.isList()) {
@@ -180,6 +296,18 @@ final class DSolveKovacic {
         equations.append(F.Equal(coefficient, F.C0));
       }
     }
+    return solveFor(equations, unknowns, guess, ctx);
+  }
+
+  /**
+   * The guess with the unknowns solved for, or {@link F#NIL} if they cannot be.
+   *
+   * <p>
+   * Unknowns the solution leaves free are set to zero. That is a choice rather than a consequence,
+   * so every caller puts what comes out back into what it had to satisfy.
+   */
+  private static IExpr solveFor(IAST equations, IAST unknowns, IExpr guess, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
     if (unknowns.argSize() == 0) {
       return equations.argSize() == 0 ? guess : F.NIL;
     }
@@ -198,12 +326,7 @@ final class DSolveKovacic {
     for (int i = 1; i <= unknowns.argSize(); i++) {
       fitted = F.subst(fitted, unknowns.get(i), F.C0);
     }
-    fitted = engine.evaluate(F.Cancel(F.Together(fitted)));
-    // Setting the unfixed unknowns to zero is a choice rather than a consequence, so what comes
-    // out is put back into the equation it had to satisfy.
-    IExpr residual = engine.evaluate(
-        F.Together(F.Subtract(F.Plus(F.D(fitted, xVar), F.Sqr(fitted)), r)));
-    return DSolveODE.isVanishing(residual, engine) ? fitted : F.NIL;
+    return engine.evaluate(F.Cancel(F.Together(fitted)));
   }
 
   /** How long one search step may take. */
