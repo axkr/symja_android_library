@@ -325,91 +325,16 @@ final class DSolveSystem {
     IExpr matrixA = engine.evaluate(F.Dot(F.Times(F.CN1, mdInv), mvAST));
     IExpr vectorB = engine.evaluate(F.Dot(mdInv, bAST));
 
-    IExpr expA = matrixExponential(matrixA, n, indepentVariable, ctx);
-    if (expA.isNIL()) {
-      return F.NIL;
-    }
-
-    IASTAppendable cVector = F.ListAlloc(n);
     int savedCounter = engine.getConstantCounter();
     try {
-      for (int i = 1; i <= n; i++) {
-        cVector.append(F.C(engine.incConstantCounter()));
-      }
-
-      IExpr solFinal = engine.evaluate(F.Expand(F.Dot(expA, cVector)));
-
-      boolean hasB = false;
-      for (int i = 1; i <= n; i++) {
-        if (!vectorB.isAST() || !((IAST) vectorB).get(i).isZero()) {
-          hasB = true;
-          break;
-        }
-      }
-
-      if (hasB) {
-        // The particular solution exp(A*x).Integrate(exp(-A*x).b, x) of variation of parameters.
-        IExpr expMinusA = engine.evaluate(F.subst(expA, indepentVariable,
-            F.Negate(indepentVariable)));
-        IExpr integrand = engine.evaluate(F.Expand(F.Dot(expMinusA, vectorB)));
-        IExpr integral = ctx.integrate(integrand, indepentVariable);
-        if (integral.isNIL()) {
+      IExpr bodies = solveLinearFirstOrderSystem(matrixA, vectorB, n, indepentVariable, ctx);
+      if (bodies.isList()) {
+        if (!DSolveVerify.acceptSystem(residuals, dependentFunctions, indepentVariable,
+            (IAST) bodies, engine)) {
           return F.NIL;
         }
-        IExpr solP = engine.evaluate(F.Expand(F.Dot(expA, integral)));
-        solFinal = engine.evaluate(F.Expand(F.Plus(solFinal, solP)));
-        IExpr reduced = engine.evaluate(F.Expand(F.TrigReduce(solFinal)));
-        if (reduced.isPresent() && reduced.leafCount() <= solFinal.leafCount()) {
-          solFinal = reduced;
-        }
-      }
-
-      if (solFinal.isList()) {
-        // Build temporary rules using dependentFunctions (which are ASTs like y1(x))
-        IASTAppendable tempRules = F.ListAlloc(n);
-        for (int i = 1; i <= n; i++) {
-          IExpr v = dependentFunctions.get(i);
-          IExpr rawResult = DSolveUtil.stripConditionalExpression(((IAST) solFinal).get(i));
-          tempRules.append(F.Rule(v, rawResult));
-        }
-
-        IExpr systemRoots = tempRules;
-        if (boundaryConditions.isPresent() && boundaryConditions.isAST()
-            && boundaryConditions.argSize() > 0) {
-          systemRoots = applySystemBCs(systemRoots, dependentFunctions, indepentVariable,
-              boundaryConditions, ctx);
-          if (systemRoots.isNIL()) {
-            return F.NIL;
-          }
-        }
-
-        // Map the solved roots to the final output format using outputFunctions
-        IASTAppendable rules = F.ListAlloc(n);
-        for (int i = 1; i <= n; i++) {
-          IExpr v = dependentFunctions.get(i);
-
-          // Extract the final solved raw result for this variable
-          IExpr rawResult = F.NIL;
-          for (int j = 1; j <= ((IAST) systemRoots).argSize(); j++) {
-            IExpr rule = ((IAST) systemRoots).get(j);
-            if (rule.isRule() && rule.first().equals(v)) {
-              rawResult = rule.second();
-              break;
-            }
-          }
-          if (rawResult.isNIL())
-            return F.NIL;
-
-          IExpr arg2Var =
-              outputFunctions.isList() ? ((IAST) outputFunctions).get(i) : outputFunctions;
-
-          if (arg2Var.isSymbol() && indepentVariable.isSymbol()) {
-            rules.append(F.Rule(arg2Var, F.Function(F.List(indepentVariable), rawResult)));
-          } else {
-            rules.append(F.Rule(arg2Var, rawResult));
-          }
-        }
-        return F.List(rules);
+        return formatSystemResult((IAST) bodies, dependentFunctions, indepentVariable,
+            boundaryConditions, outputFunctions, ctx);
       }
     } finally {
       engine.setConstantCounter(savedCounter);
@@ -662,5 +587,100 @@ final class DSolveSystem {
     IASTAppendable constants = F.ListAlloc();
     DSolveUtil.extractCVars(rules, constants);
     return constants.argSize();
+  }
+
+  /**
+   * The general solution of a first order system <code>Y' == A.Y + b</code> with a constant
+   * coefficient matrix, as one body per unknown.
+   *
+   * <p>
+   * The homogeneous part is <code>Exp(A*x)</code> applied to a vector of arbitrary constants, and
+   * the forced part is the variation of parameters integral
+   * <code>Exp(A*x).Integrate(Exp(-A*x).b, x)</code>.
+   */
+  static IExpr solveLinearFirstOrderSystem(IExpr matrixA, IExpr vectorB, int n, IExpr xVar,
+      DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    IExpr expA = matrixExponential(matrixA, n, xVar, ctx);
+    if (expA.isNIL()) {
+      return F.NIL;
+    }
+    IASTAppendable cVector = F.ListAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      cVector.append(ctx.nextConstant());
+    }
+    IExpr solFinal = engine.evaluate(F.Expand(F.Dot(expA, cVector)));
+
+    boolean hasB = false;
+    for (int i = 1; i <= n; i++) {
+      if (!vectorB.isAST() || !((IAST) vectorB).get(i).isZero()) {
+        hasB = true;
+        break;
+      }
+    }
+    if (hasB) {
+      IExpr expMinusA = engine.evaluate(F.subst(expA, xVar, F.Negate(xVar)));
+      IExpr integrand = engine.evaluate(F.Expand(F.Dot(expMinusA, vectorB)));
+      IExpr integral = ctx.integrate(integrand, xVar);
+      if (integral.isNIL()) {
+        return F.NIL;
+      }
+      IExpr solP = engine.evaluate(F.Expand(F.Dot(expA, integral)));
+      solFinal = engine.evaluate(F.Expand(F.Plus(solFinal, solP)));
+      IExpr reduced = engine.evaluate(F.Expand(F.TrigReduce(solFinal)));
+      if (reduced.isPresent() && reduced.leafCount() <= solFinal.leafCount()) {
+        solFinal = reduced;
+      }
+    }
+    return solFinal.isList() ? solFinal : F.NIL;
+  }
+
+  /**
+   * Turns one body per unknown into the rules {@link DSolve} answers with, after fitting whatever
+   * boundary conditions were given.
+   */
+  static IExpr formatSystemResult(IAST bodies, IAST dependentFunctions, IExpr xVar,
+      IAST boundaryConditions, IExpr outputFunctions, DSolveContext ctx) {
+    int n = dependentFunctions.argSize();
+    if (bodies.argSize() != n) {
+      return F.NIL;
+    }
+    IASTAppendable tempRules = F.ListAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      tempRules.append(F.Rule(dependentFunctions.get(i),
+          DSolveUtil.stripConditionalExpression(bodies.get(i))));
+    }
+
+    IExpr systemRoots = tempRules;
+    if (boundaryConditions.isPresent() && boundaryConditions.isAST()
+        && boundaryConditions.argSize() > 0) {
+      systemRoots = applySystemBCs(systemRoots, dependentFunctions, xVar, boundaryConditions, ctx);
+      if (systemRoots.isNIL()) {
+        return F.NIL;
+      }
+    }
+
+    IASTAppendable rules = F.ListAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      IExpr v = dependentFunctions.get(i);
+      IExpr rawResult = F.NIL;
+      for (int j = 1; j <= ((IAST) systemRoots).argSize(); j++) {
+        IExpr rule = ((IAST) systemRoots).get(j);
+        if (rule.isRule() && rule.first().equals(v)) {
+          rawResult = rule.second();
+          break;
+        }
+      }
+      if (rawResult.isNIL()) {
+        return F.NIL;
+      }
+      IExpr arg2Var = outputFunctions.isList() ? ((IAST) outputFunctions).get(i) : outputFunctions;
+      if (arg2Var.isSymbol() && xVar.isSymbol()) {
+        rules.append(F.Rule(arg2Var, F.Function(F.List(xVar), rawResult)));
+      } else {
+        rules.append(F.Rule(arg2Var, rawResult));
+      }
+    }
+    return F.List(rules);
   }
 }

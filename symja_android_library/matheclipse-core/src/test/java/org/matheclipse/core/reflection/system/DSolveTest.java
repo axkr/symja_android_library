@@ -452,6 +452,47 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveLegendre() {
+    // (1-x^2)*y'' - 2*x*y' + nu*(nu+1)*y == 0 with nu*(nu+1) == 15/4, so nu == 3/2.
+    check("DSolve((1-x^2)*y''(x) - 2*x*y'(x) + 15/4*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*LegendreP(3/2,x)+C(2)*LegendreQ(3/2,x)}}");
+  }
+
+  @Test
+  public void testDSolveBesselFamilies() {
+    // y'' == A*x^m*y is Bessel's equation of order 1/(m+2) in x^((m+2)/2).
+    check("DSolve(y''(x) - x^4*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselI(1/6,x^3/3)*C(1)+Sqrt(x)*BesselK(1/6,x^3/3)*C(2)}}");
+
+    // y'' == A*E^(lambda*x)*y is Bessel's equation of order 0 in E^(lambda*x/2).
+    check("DSolve(y''(x) - E^(5*x)*y(x) == 0, y(x), x)", //
+        "{{y(x)->BesselI(0,2/5*E^(5/2*x))*C(1)+BesselK(0,2/5*E^(5/2*x))*C(2)}}");
+
+    // The form without a first derivative, which neither of the two rows above covers.
+    check("DSolve(y''(x) + (a + b/x^2)*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselJ(Sqrt(1/4-b),Sqrt(a)*x)*C(1)+Sqrt(x)*BesselY(Sqrt(1/4-b),Sqrt(a)*x)*C(\n" //
+            + "2)}}");
+
+    // Airy's equation is of the pure power form as well, so it has to be recognized first.
+    check("DSolve(y''(x) - (x + 2)*y(x) == 0, y(x), x)", //
+        "{{y(x)->AiryAi(2+x)*C(1)+AiryBi(2+x)*C(2)}}");
+  }
+
+  @Test
+  public void testDSolveHypergeometric() {
+    check("DSolve(x*y''(x) + (b - x)*y'(x) - a*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Hypergeometric1F1(a,b,x)+x^(1-b)*C(2)*Hypergeometric1F1(1+a-b,2-b,x)}}");
+
+    check("DSolve((x^2 - x)*y''(x) + ((a + b + 1)*x - c)*y'(x) + a*b*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Hypergeometric2F1(a,b,c,x)+x^(1-c)*C(2)*Hypergeometric2F1(1+a-c,1+b-c,\n" //
+            + "2-c,x)}}");
+
+    // An integer c makes the second solution a copy of the first, so this is not a basis.
+    check("DSolve((x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x) == 0, y(x), x)", //
+        "DSolve(a*b*y(x)+(-2+(1+a+b)*x)*y'(x)+(-x+x^2)*y''(x)==0,y(x),x)");
+  }
+
+  @Test
   public void testDSolveInvalidInput() {
     // DSolve: The function Derivative(2)[y] appears with no arguments.
     check("DSolve(y'' - x*y(x) == 0, y(x), x)", //

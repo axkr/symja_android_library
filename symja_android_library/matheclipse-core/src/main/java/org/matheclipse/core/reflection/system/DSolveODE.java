@@ -851,6 +851,46 @@ final class DSolveODE {
 
   static IExpr solveSingleODE(IExpr equation, IExpr xVar, IAST listOfVariables, IExpr C_1,
       DSolveContext ctx) {
+    ctx.enter();
+    try {
+      return solveSingleODEImpl(equation, xVar, listOfVariables, C_1, ctx);
+    } finally {
+      ctx.leave();
+    }
+  }
+
+  /**
+   * Solves the equation which one of the sub-solvers has produced, and returns its branches.
+   *
+   * <p>
+   * A method which reduces an equation to a simpler one hands that one back to the cascade, exactly
+   * as {@link #unaryODE} does for the equation the user asked about, including the fallback to
+   * {@link #odeSolve} for a first order equation the cascade does not recognize.
+   *
+   * @return the branches of the solution, empty if there are none
+   */
+  static IAST solveSubODE(IExpr equation, IExpr xVar, IExpr yFunction, IExpr constant,
+      DSolveContext ctx) {
+    IExpr solution = solveSingleODE(equation, xVar, F.List(yFunction), constant, ctx);
+    if (solution.isNIL()) {
+      solution = odeSolve(ctx.engine, equation, xVar, yFunction, constant);
+    }
+    if (solution.isNIL()) {
+      return F.CEmptyList;
+    }
+    IAST branches = DSolveUtil.stripConditionalExpression(solution).makeList();
+    IASTAppendable usable = F.ListAlloc(branches.argSize());
+    for (int i = 1; i <= branches.argSize(); i++) {
+      IExpr branch = DSolveUtil.stripConditionalExpression(branches.get(i));
+      if (branch.isPresent()) {
+        usable.append(branch);
+      }
+    }
+    return usable;
+  }
+
+  private static IExpr solveSingleODEImpl(IExpr equation, IExpr xVar, IAST listOfVariables,
+      IExpr C_1, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     IExpr yFunction = listOfVariables.arg1();
     IExpr head = yFunction.head();
@@ -926,8 +966,8 @@ final class DSolveODE {
       if (reductionOfOrderSol.isPresent())
         return reductionOfOrderSol;
 
-      if (lf != null) {
-        IExpr specialSol = solveSpecialFunctionsODE(lhs, yFunction, xVar, n, C_1, engine);
+      if (lf != null && n == 2) {
+        IExpr specialSol = DSolveSpecialFunctions.solve(lf, xVar, C_1, ctx);
         if (specialSol.isPresent())
           return specialSol;
       }
@@ -1057,92 +1097,12 @@ final class DSolveODE {
    * Whether the equation contains the derivative <code>dyx</code> in the first power only, so that
    * reading a coefficient of it accounts for every term it appears in.
    */
-  private static boolean isLinearInDerivative(IExpr lhs, IExpr dyx, EvalEngine engine) {
+  static boolean isLinearInDerivative(IExpr lhs, IExpr dyx, EvalEngine engine) {
     IExpr expanded = engine.evaluate(F.ExpandAll(lhs));
     IExpr remainder = engine.evaluate(F.ExpandAll(F.Subtract(expanded,
         F.Plus(F.Coefficient(expanded, dyx, F.C0),
             F.Times(F.Coefficient(expanded, dyx, F.C1), dyx)))));
     return remainder.isZero();
-  }
-
-  /**
-   * Solves linear second-order ODEs with variable coefficients that perfectly match known special
-   * functions (e.g., Airy and Bessel equations) using pattern matching.
-   */
-  static IExpr solveSpecialFunctionsODE(IExpr lhs, IExpr yFunction, IExpr xVar, int n, IExpr c_n,
-      EvalEngine engine) {
-    if (n != 2)
-      return F.NIL;
-
-    IExpr dyx1 = engine.evaluate(F.D(yFunction, xVar));
-    IExpr dyx2 = engine.evaluate(F.D(yFunction, F.List(xVar, F.C2)));
-
-    // Extract polynomial coefficients: A(x)y'' + B(x)y' + C(x)y = 0
-    IExpr A = engine.evaluate(F.Coefficient(lhs, dyx2));
-    IExpr B = engine.evaluate(F.Coefficient(lhs, dyx1));
-    IExpr C = engine.evaluate(F.Coefficient(lhs, yFunction));
-
-    // Ensure it is strictly a homogeneous linear 2nd-order ODE
-    IExpr rest = engine.evaluate(F.Simplify(
-        F.Subtract(lhs, F.Plus(F.Times(A, dyx2), F.Times(B, dyx1), F.Times(C, yFunction)))));
-    if (!rest.isZero()) {
-      return F.NIL;
-    }
-
-    // ---------------------------------------------------------
-    // 1. Airy's Equation Pattern: A*y'' + C*y = 0 => y'' + k*x*y = 0
-    // ---------------------------------------------------------
-    if (B.isZero()) {
-      IExpr ratio = engine.evaluate(F.Simplify(F.Divide(C, A)));
-      IExpr k = engine.evaluate(F.Simplify(F.Divide(ratio, xVar)));
-
-      // If the ratio evaluates exactly to k*x, we have an Airy equation
-      if (k.isFree(xVar) && !k.isZero()) {
-        IExpr C1 = c_n;
-        IExpr C2 = F.C(engine.incConstantCounter());
-
-        // Standard form: y'' - q*x*y = 0 => y = C1*AiryAi(q^(1/3)*x) + C2*AiryBi(q^(1/3)*x)
-        // We have y'' + k*x*y = 0 => q = -k
-        IExpr q = engine.evaluate(F.Negate(k));
-        IExpr qPow = engine.evaluate(F.Power(q, F.QQ(1, 3))); // q^(1/3)
-        IExpr arg = engine.evaluate(F.Simplify(F.Times(qPow, xVar)));
-
-        // Return the raw algebraic expression, NOT wrapped in F.Rule
-        return F.Plus(F.Times(C1, F.AiryAi(arg)),
-            F.Times(C2, F.AiryBi(arg)));
-      }
-    }
-
-    // ---------------------------------------------------------
-    // 2. Bessel's Equation Pattern: x^2 y'' + x y' + (a^2 x^2 - nu^2) y = 0
-    // ---------------------------------------------------------
-    IExpr bCheck = engine.evaluate(F.Simplify(F.Divide(F.Times(xVar, B), A)));
-    if (bCheck.isOne()) {
-      IExpr expr = engine.evaluate(F.Expand(F.Simplify(F.Times(F.Sqr(xVar), F.Divide(C, A)))));
-
-      IExpr aSquared = engine.evaluate(F.Coefficient(expr, F.Sqr(xVar)));
-      if (aSquared.isFree(xVar) && !aSquared.isZero()) {
-
-        IExpr minusNuSquared =
-            engine.evaluate(F.Simplify(F.Subtract(expr, F.Times(aSquared, F.Sqr(xVar)))));
-        if (minusNuSquared.isFree(xVar)) {
-          IExpr C1 = c_n;
-          IExpr C2 = F.C(engine.incConstantCounter());
-
-          IExpr nuSquared = engine.evaluate(F.Simplify(F.Negate(minusNuSquared)));
-
-          // Use PowerExpand to gracefully simplify Sqrt(a^2) -> a and Sqrt(4*a^2) -> 2*a
-          IExpr nu = engine.evaluate(F.Simplify(F.PowerExpand(F.Sqrt(nuSquared))));
-          IExpr a = engine.evaluate(F.Simplify(F.PowerExpand(F.Sqrt(aSquared))));
-          IExpr arg = engine.evaluate(F.Simplify(F.Times(a, xVar)));
-
-          return F.Plus(F.Times(C1, F.BesselJ(nu, arg)),
-              F.Times(C2, F.BesselY(nu, arg)));
-        }
-      }
-    }
-
-    return F.NIL;
   }
 
   static IExpr unaryODE(IAST uFunction1Arg, IExpr arg2, IExpr xVar, IASTAppendable listOfEquations,

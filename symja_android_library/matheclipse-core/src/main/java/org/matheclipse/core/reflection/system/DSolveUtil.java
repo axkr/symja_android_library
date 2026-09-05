@@ -286,4 +286,23 @@ final class DSolveUtil {
     }
     return res;
   }
+
+  /**
+   * Whether the expression names one of the special functions a solution can be built from.
+   *
+   * <p>
+   * {@link org.matheclipse.core.expression.S#Simplify} has no useful identities for these and can
+   * spend a long time looking for one, so a result which mentions them is returned in the form it
+   * was built in.
+   */
+  static boolean hasSpecialFunction(IExpr expr) {
+    return !expr.isFree(x -> x.isAST() && x.head().isSymbol() && SPECIAL_FUNCTIONS.contains(
+        x.head().toString()), true);
+  }
+
+  private static final java.util.Set<String> SPECIAL_FUNCTIONS =
+      new java.util.HashSet<>(java.util.Arrays.asList("LegendreP", "LegendreQ", "AiryAi", "AiryBi",
+          "AiryAiPrime", "AiryBiPrime", "BesselJ", "BesselY", "BesselI", "BesselK",
+          "Hypergeometric1F1", "Hypergeometric2F1", "HypergeometricPFQ", "HypergeometricU",
+          "WhittakerM", "WhittakerW", "MathieuC", "MathieuS"));
 }

@@ -91,6 +91,59 @@ final class LinearODEForm {
   }
 
   /**
+   * The same equation with the coefficients cleared of denominators and of a common factor.
+   *
+   * <p>
+   * Multiplying by the denominators turns an equation which was solved for its highest derivative
+   * back into the polynomial form the constant coefficient and Cauchy-Euler tests look for:
+   * <code>y'''(x) == (24*x + 24*y(x))/x^3</code> is <code>x^3*y'''(x) - 24*y(x) == 24*x</code>.
+   * Dividing by the greatest common divisor removes a factor the whole equation carries, which is
+   * what makes <code>x*y'''(x) + 2*x*y''(x) - x*y'(x) - 2*x*y(x) == 1</code> an equation with
+   * constant coefficients. Both rewrites keep the solutions, and the right hand side is scaled with
+   * the coefficients.
+   */
+  LinearODEForm normalized(IExpr xVar, EvalEngine engine) {
+    IExpr[] c = new IExpr[order + 1];
+    System.arraycopy(a, 0, c, 0, order + 1);
+    IExpr rhs = g;
+
+    IASTAppendable denominators = F.TimesAlloc(order + 2);
+    for (int k = 0; k <= order; k++) {
+      denominators.append(F.Denominator(c[k]));
+    }
+    denominators.append(F.Denominator(rhs));
+    IExpr multiplier = engine.evaluate(denominators);
+    if (!multiplier.isFree(xVar) && !multiplier.isZero()) {
+      for (int k = 0; k <= order; k++) {
+        c[k] = engine.evaluate(F.Cancel(F.Times(c[k], multiplier)));
+      }
+      rhs = engine.evaluate(F.Cancel(F.Times(rhs, multiplier)));
+    }
+
+    IExpr divisor = F.NIL;
+    for (int k = 0; k <= order; k++) {
+      if (!c[k].isZero()) {
+        divisor = divisor.isNIL() ? c[k] : engine.evaluate(F.PolynomialGCD(divisor, c[k]));
+      }
+    }
+    if (divisor.isPresent() && !divisor.isZero() && !divisor.isFree(xVar)) {
+      for (int k = 0; k <= order; k++) {
+        c[k] = engine.evaluate(F.Cancel(F.Divide(c[k], divisor)));
+      }
+      rhs = engine.evaluate(F.Cancel(F.Divide(rhs, divisor)));
+    }
+
+    boolean constant = true;
+    for (int k = 0; k <= order; k++) {
+      if (!c[k].isFree(xVar)) {
+        constant = false;
+        break;
+      }
+    }
+    return new LinearODEForm(order, c, rhs, constant);
+  }
+
+  /**
    * The highest order in which <code>head</code> applied to <code>xVar</code> is differentiated,
    * <code>0</code> if it occurs undifferentiated only and <code>-1</code> if it does not occur.
    *
