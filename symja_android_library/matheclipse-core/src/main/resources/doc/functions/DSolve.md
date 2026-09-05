@@ -141,6 +141,62 @@ trace out, which is the one shape of nonlinear system answered here.
 {{x(t)->E^(t*C(2))*C(1),y(t)->E^(t*C(2))*C(1)*C(2)}}
 ```
 
+A change of the variables can make a first order equation one of the kinds above. When the right
+hand side depends on `x` and `y` only through one combination of them, the equation has no `x` left
+in that combination and is separable; when it is a ratio of two linear expressions, moving the
+origin to where the two lines meet cancels the constant terms.
+
+```
+>> DSolve(y'(x) == (x + y(x))^2, y(x), x)
+{{y(x)->-x+Tan(x+C(1))}}
+
+>> DSolve(y'(x) == (y(x) - 2)/(x + y(x) - 3), y(x), x)
+{{y(x)->2-1/ProductLog(-1/E^C(1)+x/E^C(1))+x/ProductLog(-1/E^C(1)+x/E^C(1))}}
+```
+
+An equation which factors as a product is split, since anything solving one factor solves the
+product. The branches are alternatives, so each names its constants from the same place.
+
+```
+>> DSolve(x*y'(x)^2 - (x + y(x))*y'(x) + y(x) == 0, y(x), x)
+{{y(x)->x+C(1)},{y(x)->x*C(1)}}
+```
+
+An operator of order three or above may split off a factor of the first order, which leaves an
+equation of one order less.
+
+```
+>> DSolve(x^3*y'''(x) + 2*x^2*y''(x) - 4*x*y'(x) + 4*y(x) - x^3*y'(x) - 2*x^2*y(x) == 0, y(x), x)
+{{y(x)->-C(1)/E^x+(-2*C(1))/(E^x*x^2)+(-2*C(1))/(E^x*x)+E^x*C(2)+(2*E^x*C(2))/x^
+2+(-2*E^x*C(2))/x+C(3)/x^2}}
+```
+
+An equation of the second order which is not one of the named ones is asked what kind of function
+its solutions are. Under `y == w*z` with `w == Exp(-Integrate(p/2))` it becomes `z'' == r*z`, and a
+solution of that is `Exp(Integrate(w))` for a logarithmic derivative satisfying `w' + w^2 == r`.
+That derivative may be rational, or rational after the zeros of the solution are taken out into a
+polynomial factor of their own, or one of a pair satisfying a quadratic over the rational functions.
+
+```
+>> DSolve(y''(x) == (x^2 - 1)*y(x), y(x), x)
+{{y(x)->C(1)/E^(x^2/2)+(C(2)*Erfi(x))/E^(x^2/2)}}
+
+>> DSolve((1-x^2)*y''(x) - x*y'(x) + 4*y(x) == 0, y(x), x)
+{{y(x)->-C(1)/2+x^2*C(1)+x*Sqrt(1-x^2)*C(2)}}
+
+>> DSolve(y''(x) == (x/4 + 5/(16*x^2))*y(x), y(x), x)
+{{y(x)->(E^(x^(3/2)/3)*C(1))/x^(1/4)+C(2)/(E^(x^(3/2)/3)*x^(1/4))}}
+```
+
+A system whose unknowns can be found one at a time is solved that way, which reaches the coupled
+systems whose coefficients depend on the variable.
+
+```
+>> DSolve({y'(t) == t^2*y(t), x'(t) == y(t)}, {x(t), y(t)}, t)
+{{x(t)->C(2)+(-t*C(1)*Gamma(1/3,-t^3/3))/(3^(2/3)*(-t^3)^(1/3)),y(t)->E^(t^3/3)*C(
+1)}}
+```
+
 The general solution of a partial differential equation contains an arbitrary function rather than
 an arbitrary constant.
 
@@ -187,6 +243,18 @@ initial profile is carried along the characteristics.
 ```
 >> DSolve({D(u(t,x),t) + c*D(u(t,x),x) == 0, u(0,x) == E^(-x^2)}, u, {t, x})
 {{u->Function({t,x},E^(-(-c*t+x)^2))}}
+```
+
+Two initial value problems are answered by a formula in the data rather than by fitting the
+conditions to a general solution afterwards. The heat integral is left as it stands, having no
+closed form for a temperature which is not given.
+
+```
+>> DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x), Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})
+{{u(x,t)->1/2*(f(-t+x)+f(t+x))+Integrate(g(K),{K,-t+x,t+x})/2}}
+
+>> DSolve({D(u(x,t),t) == D(u(x,t),{x,2}), u(x,0) == f(x)}, u(x,t), {x,t})
+{{u(x,t)->Integrate((E^(-(-K+x)^2/(4*t))*f(K))/Sqrt(4*Pi*t),{K,-Infinity,Infinity})}}
 ```
 
 ### Related terms
