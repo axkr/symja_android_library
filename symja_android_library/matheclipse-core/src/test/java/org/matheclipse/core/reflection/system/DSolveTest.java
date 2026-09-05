@@ -490,6 +490,35 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveLinearizable() {
+    // u == Log(y) makes this linear in u.
+    check("DSolve(y'(x) == y(x)*(E^x + Log(y(x))), y(x), x)", //
+        "{{y(x)->E^(E^x*x+E^x*C(1))}}");
+
+    // u == Exp(y).
+    check("DSolve(y'(x) == E^(x - y(x))*(E^x - E^y(x)), y(x), x)", //
+        "{{y(x)->Log(-1+E^x+C(1)/E^E^x)}}");
+
+    // u == Sin(y), which the Tan and Sec of the equation are made of.
+    check("DSolve(y'(x) - Tan(y(x))/(x+1) == (x+1)*E^x*Sec(y(x)), y(x), x)", //
+        "{{y(x)->ArcSin(E^x+E^x*x+C(1)+x*C(1))}}");
+
+    // u == Sin(y) again, leaving a Bernoulli equation rather than a linear one. The coefficient of
+    // the derivative depends on y here, which is no obstacle to solving for the derivative.
+    check("DSolve(y'(x)*Cos(y(x)) - Cos(x)*Sin(y(x))^2 - Sin(y(x)) == 0, y(x), x)", //
+        "{{y(x)->ArcSin(1/(C(1)/E^x-Cos(x)/2-Sin(x)/2))}}");
+
+    // u == Cos(y); the Cos(2*y) has to be written in Cos(y) before the substitution is made.
+    check("DSolve(y'(x) == (-2*Cos(y(x)) + x^3*Cos(2*y(x))*Log(x) + x^3*Log(x))"
+        + "/(2*Sin(y(x))*Log(x)*x), y(x), x)", //
+        "{{y(x)->ArcCos(1/(x^3/3-x^3/(9*Log(x))+C(1)/Log(x)))}}");
+
+    // A separable equation is left to the solver for those, which answers it in a simpler form.
+    check("DSolve(y'(x) == Sin(x)*y(x), y(x), x)", //
+        "{{y(x)->C(1)/E^Cos(x)}}");
+  }
+
+  @Test
   public void testDSolveLegendre() {
     // (1-x^2)*y'' - 2*x*y' + nu*(nu+1)*y == 0 with nu*(nu+1) == 15/4, so nu == 3/2.
     check("DSolve((1-x^2)*y''(x) - 2*x*y'(x) + 15/4*y(x) == 0, y(x), x)", //

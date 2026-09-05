@@ -1073,6 +1073,15 @@ final class DSolveODE {
     }
 
     if (n == 1) {
+      // A substitution u == phi(y) can make an equation linear which is not linear as it stands.
+      // This runs before the M + N*y' == 0 solvers, which is where mathilda places it: it produces
+      // an explicit y for the equations whose right hand side is transcendental in y, and gets
+      // there before an integrating factor search can spin on one of those.
+      IExpr linearizableSol = DSolveLinearizable.solve(lhs, yFunction, xVar, C_1, ctx);
+      if (linearizableSol.isPresent()) {
+        return linearizableSol;
+      }
+
       IExpr algebraicSol = solveForHighestDerivative(lhs, yFunction, xVar, n, C_1, ctx);
       if (algebraicSol.isPresent()) {
         return algebraicSol;
