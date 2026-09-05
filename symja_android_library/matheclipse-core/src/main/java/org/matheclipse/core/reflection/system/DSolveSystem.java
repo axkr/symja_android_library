@@ -191,6 +191,15 @@ final class DSolveSystem {
       }
     }
 
+    // A system in which an unknown is differentiated more than once is carried to a first order
+    // one before the shapes below are looked for, because the test for an algebraic variable knows
+    // only about first derivatives and would read a second order equation as one.
+    IExpr higherOrder = solveHigherOrderSystem(equations, dependentFunctions, indepentVariable,
+        boundaryConditions, outputFunctions, ctx);
+    if (higherOrder.isPresent()) {
+      return higherOrder;
+    }
+
     // Step 1: Detect DAE (Algebraic variable presence without derivatives)
     IASTAppendable dVars = F.ListAlloc();
     IASTAppendable aVars = F.ListAlloc();
@@ -201,7 +210,8 @@ final class DSolveSystem {
       IExpr dv = engine.evaluate(F.D(v, indepentVariable));
       boolean hasDv = false;
       for (int j = 1; j <= equations.argSize(); j++) {
-        if (!equations.get(j).isFree(dv)) {
+        if (LinearODEForm.highestDerivativeOrder(equations.get(j), v.head(),
+            indepentVariable) >= 1) {
           hasDv = true;
           break;
         }
@@ -587,6 +597,174 @@ final class DSolveSystem {
     IASTAppendable constants = F.ListAlloc();
     DSolveUtil.extractCVars(rules, constants);
     return constants.argSize();
+  }
+
+  /** How large a system this augments to a first order one. */
+  private static final int MAX_AUGMENTED_SIZE = 6;
+
+  /**
+   * A coupled system in which some unknown is differentiated more than once, solved by carrying the
+   * lower derivatives as unknowns of their own.
+   *
+   * <p>
+   * With the state <code>(u1, u1', ..., u2, u2', ...)</code> every entry advances into the next one,
+   * and the last of each unknown advances into its highest derivative, which comes from solving the
+   * equations for those. That leaves a first order system with a constant coefficient matrix, which
+   * is the one shape the engine below already solves.
+   */
+  static IExpr solveHigherOrderSystem(IASTAppendable equations, IAST dependentFunctions,
+      IExpr xVar, IAST boundaryConditions, IExpr outputFunctions, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    int n = dependentFunctions.argSize();
+    if (n < 2 || equations.argSize() != n) {
+      return F.NIL;
+    }
+
+    IAST residuals = equations.map(eq -> eq.isEqual() //
+        ? engine.evaluate(F.Subtract(eq.first(), eq.second()))
+        : eq);
+
+    int[] orders = new int[n];
+    int[] offsets = new int[n];
+    int size = 0;
+    boolean higher = false;
+    for (int j = 0; j < n; j++) {
+      IExpr head = dependentFunctions.get(j + 1).head();
+      int order = 0;
+      for (int e = 1; e <= residuals.argSize(); e++) {
+        order = Math.max(order, LinearODEForm.highestDerivativeOrder(residuals.get(e), head, xVar));
+      }
+      if (order < 1) {
+        return F.NIL;
+      }
+      if (order >= 2) {
+        higher = true;
+      }
+      orders[j] = order;
+      offsets[j] = size;
+      size += order;
+    }
+    if (!higher || size > MAX_AUGMENTED_SIZE) {
+      // Without a higher derivative this is the first order system the engine below solves.
+      return F.NIL;
+    }
+
+    // One symbol per state, and one for the highest derivative of each unknown.
+    IExpr[][] states = new IExpr[n][];
+    IExpr[] tops = new IExpr[n];
+    for (int j = 0; j < n; j++) {
+      states[j] = new IExpr[orders[j]];
+      for (int k = 0; k < orders[j]; k++) {
+        states[j][k] = F.Dummy("s" + j + "x" + k);
+      }
+      tops[j] = F.Dummy("d" + j);
+    }
+
+    IASTAppendable algebraic = F.ListAlloc(n);
+    for (int e = 1; e <= residuals.argSize(); e++) {
+      IExpr residual = residuals.get(e);
+      for (int j = 0; j < n; j++) {
+        IExpr unknown = dependentFunctions.get(j + 1);
+        for (int k = orders[j]; k >= 0; k--) {
+          IExpr derivative = k == 0 //
+              ? unknown
+              : engine.evaluate(F.D(unknown, F.List(xVar, F.ZZ(k))));
+          residual = F.subst(residual, derivative, k == orders[j] ? tops[j] : states[j][k]);
+        }
+      }
+      residual = engine.evaluate(F.ExpandAll(residual));
+      for (int j = 0; j < n; j++) {
+        if (!residual.isFree(dependentFunctions.get(j + 1).head(), true)) {
+          // A derivative higher than the order counted, or the unknown in a form not accounted for.
+          return F.NIL;
+        }
+      }
+      algebraic.append(residual);
+    }
+
+    // The equations are solved for the highest derivatives, which asks them to be linear in those.
+    IASTAppendable leading = F.ListAlloc(n);
+    IASTAppendable rightHand = F.ListAlloc(n);
+    for (int e = 0; e < n; e++) {
+      IExpr residual = algebraic.get(e + 1);
+      IASTAppendable row = F.ListAlloc(n);
+      for (int j = 0; j < n; j++) {
+        IExpr coefficient = engine.evaluate(F.D(residual, tops[j]));
+        for (int i = 0; i < n; i++) {
+          if (!coefficient.isFree(tops[i], true)) {
+            return F.NIL;
+          }
+        }
+        row.append(coefficient);
+      }
+      leading.append(row);
+      IExpr constant = residual;
+      for (int j = 0; j < n; j++) {
+        constant = F.subst(constant, tops[j], F.C0);
+      }
+      rightHand.append(engine.evaluate(F.Negate(constant)));
+    }
+    IExpr solved = engine.evaluate(F.LinearSolve(leading, rightHand));
+    if (!solved.isList() || ((IAST) solved).argSize() != n
+        || !solved.isFree(S.LinearSolve, true)) {
+      return F.NIL;
+    }
+
+    // The matrix of the augmented system, which has to be a constant one.
+    IASTAppendable matrix = F.ListAlloc(size);
+    IASTAppendable forcing = F.ListAlloc(size);
+    for (int j = 0; j < n; j++) {
+      for (int k = 0; k < orders[j]; k++) {
+        IExpr advance = k < orders[j] - 1 //
+            ? states[j][k + 1]
+            : ((IAST) solved).get(j + 1);
+        IASTAppendable row = F.ListAlloc(size);
+        for (int i = 0; i < n; i++) {
+          for (int l = 0; l < orders[i]; l++) {
+            IExpr entry = engine.evaluate(F.D(advance, states[i][l]));
+            if (!entry.isFree(xVar)) {
+              // Variable coefficients are not this method's to solve.
+              return F.NIL;
+            }
+            for (int i2 = 0; i2 < n; i2++) {
+              for (int l2 = 0; l2 < orders[i2]; l2++) {
+                if (!entry.isFree(states[i2][l2], true)) {
+                  return F.NIL;
+                }
+              }
+            }
+            row.append(entry);
+          }
+        }
+        matrix.append(row);
+        IExpr constant = advance;
+        for (int i = 0; i < n; i++) {
+          for (int l = 0; l < orders[i]; l++) {
+            constant = F.subst(constant, states[i][l], F.C0);
+          }
+        }
+        forcing.append(engine.evaluate(constant));
+      }
+    }
+
+    int savedCounter = engine.getConstantCounter();
+    try {
+      IExpr bodies = solveLinearFirstOrderSystem(matrix, forcing, size, xVar, ctx);
+      if (!bodies.isList()) {
+        return F.NIL;
+      }
+      IASTAppendable unknowns = F.ListAlloc(n);
+      for (int j = 0; j < n; j++) {
+        unknowns.append(((IAST) bodies).get(offsets[j] + 1));
+      }
+      if (!DSolveVerify.acceptSystem(residuals, dependentFunctions, xVar, unknowns, engine)) {
+        return F.NIL;
+      }
+      return formatSystemResult(unknowns, dependentFunctions, xVar, boundaryConditions,
+          outputFunctions, ctx);
+    } finally {
+      engine.setConstantCounter(savedCounter);
+    }
   }
 
   /**

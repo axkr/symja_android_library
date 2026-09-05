@@ -490,6 +490,34 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveSystemHigherOrder() {
+    // Carrying the first derivatives as unknowns of their own turns these into first order
+    // systems, which is the shape the matrix engine solves.
+    check("With({s=DSolve({x''(t) == 4*y(t), y''(t) == 4*x(t)}, {x, y}, t)}, Head(s)===List && "
+        + "Max(Abs(N({x''(t) - 4*y(t), y''(t) - 4*x(t)} /. s[[1]] /. "
+        + "{C(1)->7/5, C(2)->3/4, C(3)->2/3, C(4)->5/6, t->13/10}))) < 10^-6)", //
+        "True");
+
+    // The two unknowns need not be differentiated equally often.
+    check("With({s=DSolve({x''(t) + x'(t) + y'(t) - 2*y(t) == 0, x'(t) + x(t) - y'(t) == 0}, "
+        + "{x, y}, t)}, Head(s)===List && "
+        + "Max(Abs(N({x''(t) + x'(t) + y'(t) - 2*y(t), x'(t) + x(t) - y'(t)} /. s[[1]] /. "
+        + "{C(1)->7/5, C(2)->3/4, C(3)->2/3, t->13/10}))) < 10^-6)", //
+        "True");
+
+    // With a forcing term the particular solution comes from variation of parameters.
+    check("With({s=DSolve({x''(t) == 4*y(t) + E^t, y''(t) == 4*x(t) - E^t}, {x, y}, t)}, "
+        + "Head(s)===List && Max(Abs(N({x''(t) - 4*y(t) - E^t, y''(t) - 4*x(t) + E^t} /. s[[1]] "
+        + "/. {C(1)->7/5, C(2)->3/4, C(3)->2/3, C(4)->5/6, t->13/10}))) < 10^-6)", //
+        "True");
+
+    // Two equations of the second order carry four arbitrary constants.
+    check("Length(Union(Cases(DSolve({x''(t) == 2*x(t) - 3*y(t), y''(t) == x(t) - 2*y(t)}, "
+        + "{x, y}, t), C(_), Infinity)))", //
+        "4");
+  }
+
+  @Test
   public void testDSolveSymmetricSquare() {
     // The solutions are the products of the solutions of u''(x) == (x+2)*u(x), which is Airy's
     // equation about the centre -2.
