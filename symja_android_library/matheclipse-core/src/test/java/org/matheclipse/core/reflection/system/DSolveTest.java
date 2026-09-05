@@ -649,6 +649,31 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveOperatorFactor() {
+    // The operator of this equation is (D^2 - 1)(D + 2/x), so 1/x^2 solves it and dividing that
+    // factor out leaves an equation of the second order which the cascade already answers.
+    checkResidual(
+        "y'''(x) + 2*y''(x)/x - 4*y'(x)/x^2 + 4*y(x)/x^3 - y'(x) - 2*y(x)/x == 0",
+        "D(y(x),{x,3}) + 2*D(y(x),{x,2})/x - 4*D(y(x),x)/x^2 + 4*y(x)/x^3 - D(y(x),x)"
+            + " - 2*y(x)/x",
+        "{x->17/13, C(1)->3/7, C(2)->5/11, C(3)->2/9}");
+
+    // The same equation cleared of its denominators.
+    checkResidual(
+        "x^3*y'''(x) + 2*x^2*y''(x) - 4*x*y'(x) + 4*y(x) - x^3*y'(x) - 2*x^2*y(x) == 0",
+        "x^3*D(y(x),{x,3}) + 2*x^2*D(y(x),{x,2}) - 4*x*D(y(x),x) + 4*y(x)"
+            + " - x^3*D(y(x),x) - 2*x^2*y(x)",
+        "{x->17/13, C(1)->3/7, C(2)->5/11, C(3)->2/9}");
+
+    // An equation of the third order has a solution space of three dimensions, and the answer
+    // spans it: the three solutions it is built from are independent.
+    check("With({b=(y(x) /. DSolve(y'''(x) + 2*y''(x)/x - 4*y'(x)/x^2 + 4*y(x)/x^3 - y'(x)"
+        + " - 2*y(x)/x == 0, y(x), x)[[1,1]])},"
+        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2)), D(b,C(3))}, x) /. x->17/13)) > 10^-6)", //
+        "True");
+  }
+
+  @Test
   public void testDSolvePDEInitialValue() {
     // d'Alembert: what starts at a point of the string reaches it again from both sides at the
     // speed the equation names, so the shape contributes its value at the two ends of the interval

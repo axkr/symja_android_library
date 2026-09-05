@@ -996,6 +996,14 @@ final class DSolveODE {
       if (reductionOfOrderSol.isPresent())
         return reductionOfOrderSol;
 
+      if (lf != null && n >= 3) {
+        // The operator which makes the equation may split off a factor of the first order, and
+        // what is left of it is an equation of one order less which the cascade is asked about.
+        IExpr operatorSol = DSolveOperatorFactor.solve(lf, yFunction, xVar, C_1, ctx);
+        if (operatorSol.isPresent())
+          return operatorSol;
+      }
+
       if (lf != null && n == 2) {
         IExpr specialSol = DSolveSpecialFunctions.solve(lf, xVar, C_1, ctx);
         if (specialSol.isPresent())
