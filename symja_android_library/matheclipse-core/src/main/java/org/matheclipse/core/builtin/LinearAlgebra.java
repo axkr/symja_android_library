@@ -2787,6 +2787,203 @@ public final class LinearAlgebra {
   }
 
 
+  /**
+   *
+   *
+   * <pre>
+   * HadamardMatrix(n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the order <code>n</code> Hadamard matrix, normalized so that its entries are
+   * <code>1/Sqrt(n)</code> and <code>-1/Sqrt(n)</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; HadamardMatrix(4)
+   * {{1/2,1/2,1/2,1/2},
+   *  {1/2,1/2,-1/2,-1/2},
+   *  {1/2,-1/2,-1/2,1/2},
+   *  {1/2,-1/2,1/2,-1/2}}
+   * </pre>
+   */
+  private static class HadamardMatrix extends AbstractFunctionOptionEvaluator {
+
+    /** {@link S#Method} <code>"Sequency"</code> - Walsh ordering; the default. */
+    private static final int SEQUENCY = 0;
+
+    /** {@link S#Method} <code>"BitComplement"</code> - Sylvester (natural) ordering. */
+    private static final int BIT_COMPLEMENT = 1;
+
+    /** {@link S#Method} <code>"GrayCode"</code> - dyadic (Paley) ordering. */
+    private static final int GRAY_CODE = 2;
+
+    /** {@link S#TargetStructure} <code>"Dense"</code>; the default. */
+    private static final int DENSE = 0;
+
+    /** {@link S#TargetStructure} <code>"Sparse"</code>. */
+    private static final int SPARSE = 1;
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      IExpr arg1 = ast.arg1();
+      int order = arg1.toIntDefault();
+      if (order <= 0) {
+        if (arg1.isNumber()) {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(S.HadamardMatrix, "intpm", F.list(ast, F.C1), engine);
+        }
+        return F.NIL;
+      }
+      if (Integer.bitCount(order) != 1) {
+        // The order `1` in `2` is restricted to a power of 2.
+        return Errors.printMessage(S.HadamardMatrix, "hdmpow2", F.list(arg1, ast), engine);
+      }
+
+      final int method = methodValue(options[0]);
+      if (method < 0) {
+        return unsupportedOption(S.Method, options[0], engine);
+      }
+      IExpr scale = scaleFactor(order, options[1], engine);
+      if (!scale.isPresent()) {
+        return unsupportedOption(S.WorkingPrecision, options[1], engine);
+      }
+      int structure = targetStructureValue(options[2]);
+      if (structure < 0) {
+        return unsupportedOption(S.TargetStructure, options[2], engine);
+      }
+
+      final IExpr plus = scale;
+      final IExpr minus = engine.evaluate(scale.negate());
+      final int bits = Integer.numberOfTrailingZeros(order);
+      if (structure == SPARSE) {
+        return F.sparseMatrix((i, j) -> entry(method, bits, i, j, plus, minus), order, order);
+      }
+      return F.matrix((i, j) -> entry(method, bits, i, j, plus, minus), order, order);
+    }
+
+    /**
+     * The <code>(row, column)</code> entry of the normalized Hadamard matrix.
+     *
+     * @param method one of {@link #SEQUENCY}, {@link #BIT_COMPLEMENT}, {@link #GRAY_CODE}
+     * @param bits the number of index bits, i.e. <code>Log2(order)</code>
+     * @param plus the matrix entry <code>1/Sqrt(order)</code>
+     * @param minus the matrix entry <code>-1/Sqrt(order)</code>
+     */
+    private static IExpr entry(int method, int bits, int row, int column, IExpr plus,
+        IExpr minus) {
+      return (Integer.bitCount(rowIndex(method, bits, row) & column) & 1) == 0 ? plus : minus;
+    }
+
+    /**
+     * Map a row of the requested ordering onto the row of the natural (Sylvester) Hadamard matrix
+     * it is built from.
+     */
+    private static int rowIndex(int method, int bits, int row) {
+      switch (method) {
+        case BIT_COMPLEMENT:
+          return row;
+        case GRAY_CODE:
+          return bitReverse(row, bits);
+        default:
+          // "Sequency" - the rows are ordered by an increasing number of sign changes
+          return bitReverse(row ^ (row >>> 1), bits);
+      }
+    }
+
+    /** Reverse the lowest <code>bits</code> bits of <code>value</code>. */
+    private static int bitReverse(int value, int bits) {
+      return bits == 0 ? 0 : Integer.reverse(value) >>> (32 - bits);
+    }
+
+    private static int methodValue(IExpr method) {
+      if (method == S.Automatic) {
+        return SEQUENCY;
+      }
+      if (method.isString()) {
+        String str = method.toString();
+        if ("Sequency".equals(str)) {
+          return SEQUENCY;
+        }
+        if ("BitComplement".equals(str)) {
+          return BIT_COMPLEMENT;
+        }
+        if ("GrayCode".equals(str)) {
+          return GRAY_CODE;
+        }
+      }
+      return -1;
+    }
+
+    private static int targetStructureValue(IExpr targetStructure) {
+      if (targetStructure == S.Automatic) {
+        return DENSE;
+      }
+      if (targetStructure.isString()) {
+        String str = targetStructure.toString();
+        if ("Dense".equals(str)) {
+          return DENSE;
+        }
+        if ("Sparse".equals(str)) {
+          return SPARSE;
+        }
+      }
+      return -1;
+    }
+
+    /**
+     * <code>1/Sqrt(order)</code> in the precision requested by the {@link S#WorkingPrecision}
+     * option.
+     *
+     * @return {@link F#NIL} if the option value isn't supported
+     */
+    private static IExpr scaleFactor(int order, IExpr workingPrecision, EvalEngine engine) {
+      IExpr exact = engine.evaluate(F.Power(F.ZZ(order), F.CN1D2));
+      if (workingPrecision.isInfinity() || workingPrecision == S.Automatic) {
+        return exact;
+      }
+      if (workingPrecision == S.MachinePrecision) {
+        return F.num(1.0 / Math.sqrt(order));
+      }
+      int precision = workingPrecision.toIntDefault();
+      if (precision > 0) {
+        return S.N.of(engine, exact, F.ZZ(precision));
+      }
+      return F.NIL;
+    }
+
+    private static IExpr unsupportedOption(IBuiltInSymbol option, IExpr value, EvalEngine engine) {
+      // `1` currently not supported in `2`.
+      return Errors.printMessage(S.HadamardMatrix, "unsupported",
+          F.list(F.Rule(option, value), S.HadamardMatrix), engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, //
+          new IBuiltInSymbol[] {S.Method, S.WorkingPrecision, S.TargetStructure}, //
+          new IExpr[] {S.Automatic, F.CInfinity, S.Automatic});
+    }
+
+    /** The structured <code>TargetStructure</code> values aren't supported. */
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+
   private static class HankelMatrix extends AbstractFunctionEvaluator {
 
     @Override
@@ -3028,6 +3225,7 @@ public final class LinearAlgebra {
       S.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
       S.FromSphericalCoordinates.setEvaluator(new FromSphericalCoordinates());
       S.HessenbergDecomposition.setEvaluator(new HessenbergDecomposition());
+      S.HadamardMatrix.setEvaluator(new HadamardMatrix());
       S.HankelMatrix.setEvaluator(new HankelMatrix());
       S.HilbertMatrix.setEvaluator(new HilbertMatrix());
       S.IdentityMatrix.setEvaluator(new IdentityMatrix());
@@ -6723,6 +6921,9 @@ public final class LinearAlgebra {
     // a1 * b2 - b1 * a2
     IExpr denominator = determinant2x2(matrix);
     if (denominator.isZero()) {
+      if (quiet) {
+        return F.NIL;
+      }
       return Errors.printMessage(S.RowReduce, "Row reduced linear equations have no solution.");
     }
     // c1 * b2 - b1 * c2
@@ -6754,6 +6955,9 @@ public final class LinearAlgebra {
     FieldMatrix<IExpr> denominatorMatrix = matrix.getSubMatrix(0, 2, 0, 2);
     IExpr denominator = determinant3x3(denominatorMatrix);
     if (denominator.isZero()) {
+      if (quiet) {
+        return F.NIL;
+      }
       return Errors.printMessage(S.RowReduce, "Row reduced linear equations have no solution.");
     }
 
@@ -7697,6 +7901,9 @@ public final class LinearAlgebra {
       if (pivot < 0) {
         // an overdetermined system has rows without a pivot; they are only solvable if `0 == 0`
         if (!isZeroEntry(rowReduced.getEntry(i, variables))) {
+          if (quiet) {
+            return F.NIL;
+          }
           return Errors.printMessage(S.RowReduce, "Row reduced linear equations have no solution.");
         }
       } else {

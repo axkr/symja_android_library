@@ -8921,6 +8921,16 @@ public class S {
   public final static IBuiltInSymbol GumbelDistribution =
       S.initFinalSymbol("GumbelDistribution", ID.GumbelDistribution);
 
+  /**
+   * HadamardMatrix(x) - TODO describe `HadamardMatrix`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HadamardMatrix.md">HadamardMatrix
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HadamardMatrix =
+      S.initFinalSymbol("HadamardMatrix", ID.HadamardMatrix);
+
   public final static IBuiltInSymbol HalfLine = S.initFinalSymbol("HalfLine", ID.HalfLine);
 
   public final static IBuiltInSymbol HalfNormalDistribution =
@@ -20630,6 +20640,16 @@ public class S {
 
   public final static IBuiltInSymbol TargetFunctions =
       S.initFinalSymbol("TargetFunctions", ID.TargetFunctions);
+
+  /**
+   * TargetStructure(x) - TODO describe `TargetStructure`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TargetStructure.md">TargetStructure
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TargetStructure =
+      S.initFinalSymbol("TargetStructure", ID.TargetStructure);
 
   /**
    * TargetUnits(x) - TODO describe `TargetUnits`.

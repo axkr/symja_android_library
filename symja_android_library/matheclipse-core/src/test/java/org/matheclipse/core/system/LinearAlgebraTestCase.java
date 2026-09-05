@@ -1329,6 +1329,70 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHadamardMatrix() {
+    check("HadamardMatrix(1)", //
+        "{{1}}");
+    check("HadamardMatrix(2)", //
+        "{{1/Sqrt(2),1/Sqrt(2)},\n" //
+            + " {1/Sqrt(2),-1/Sqrt(2)}}");
+    // Method->Automatic is "Sequency", so the rows have 0,1,2,3 sign changes
+    check("HadamardMatrix(4)", //
+        "{{1/2,1/2,1/2,1/2},\n" //
+            + " {1/2,1/2,-1/2,-1/2},\n" //
+            + " {1/2,-1/2,-1/2,1/2},\n" //
+            + " {1/2,-1/2,1/2,-1/2}}");
+    check("HadamardMatrix(4,Method->\"Sequency\")==HadamardMatrix(4)", //
+        "True");
+    check("HadamardMatrix(4,Method->\"BitComplement\")", //
+        "{{1/2,1/2,1/2,1/2},\n" //
+            + " {1/2,-1/2,1/2,-1/2},\n" //
+            + " {1/2,1/2,-1/2,-1/2},\n" //
+            + " {1/2,-1/2,-1/2,1/2}}");
+    check("HadamardMatrix(4,Method->\"GrayCode\")", //
+        "{{1/2,1/2,1/2,1/2},\n" //
+            + " {1/2,1/2,-1/2,-1/2},\n" //
+            + " {1/2,-1/2,1/2,-1/2},\n" //
+            + " {1/2,-1/2,-1/2,1/2}}");
+
+    // the number of sign changes per row identifies the ordering
+    check("Map(Count(Most(#)*Rest(#),_?Negative)&, HadamardMatrix(8))", //
+        "{0,1,2,3,4,5,6,7}");
+    check("Map(Count(Most(#)*Rest(#),_?Negative)&, HadamardMatrix(8,Method->\"BitComplement\"))", //
+        "{0,7,3,4,1,6,2,5}");
+    check("Map(Count(Most(#)*Rest(#),_?Negative)&, HadamardMatrix(8,Method->\"GrayCode\"))", //
+        "{0,1,3,2,7,6,4,5}");
+
+    // every ordering is symmetric, orthogonal and therefore self-inverse
+    check("Transpose(HadamardMatrix(8))==HadamardMatrix(8)", //
+        "True");
+    check("HadamardMatrix(8).HadamardMatrix(8)==IdentityMatrix(8)", //
+        "True");
+    check("HadamardMatrix(16,Method->\"GrayCode\")" //
+        + ".HadamardMatrix(16,Method->\"GrayCode\")==IdentityMatrix(16)", //
+        "True");
+
+    check("HadamardMatrix(4,WorkingPrecision->MachinePrecision)", //
+        "{{0.5,0.5,0.5,0.5},\n" //
+            + " {0.5,0.5,-0.5,-0.5},\n" //
+            + " {0.5,-0.5,-0.5,0.5},\n" //
+            + " {0.5,-0.5,0.5,-0.5}}");
+
+    check("Normal(HadamardMatrix(4,TargetStructure->\"Sparse\"))==HadamardMatrix(4)", //
+        "True");
+
+    // the order is restricted to a power of 2
+    check("HadamardMatrix(3)", //
+        "HadamardMatrix(3)");
+    check("HadamardMatrix(-2)", //
+        "HadamardMatrix(-2)");
+    check("HadamardMatrix(n)", //
+        "HadamardMatrix(n)");
+    // the structured TargetStructure values aren't supported
+    check("HadamardMatrix(4,TargetStructure->\"Symmetric\")", //
+        "HadamardMatrix(4,TargetStructure->Symmetric)");
+  }
+
+  @Test
   public void testHankelMatrix() {
 
     // no message
