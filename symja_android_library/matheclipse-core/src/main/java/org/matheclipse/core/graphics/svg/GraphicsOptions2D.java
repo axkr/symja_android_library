@@ -44,6 +44,16 @@ public final class GraphicsOptions2D {
   public boolean imageSizeExplicit = false;
 
   /**
+   * The label a {@code Tooltip} around the whole picture asks for, or {@code null}.
+   *
+   * <p>
+   * It becomes a {@code <title>} first child of the root, which is what a viewer shows on hover.
+   * A tooltip around a single primitive is a different thing and is carried by {@link Style2D}
+   * instead - this one answers a hover anywhere on the picture.
+   */
+  public String pictureTooltip = null;
+
+  /**
    * True when this graphic is one layer of an {@code Overlay} and so must not paint a canvas of
    * its own. A layer that asked for a {@code Background} still gets one, and hides what is under
    * it - which is why the Wolfram documentation reaches for a translucent one.
@@ -239,7 +249,8 @@ public final class GraphicsOptions2D {
         applyAlignment(value);
         break;
       case ID.PlotLabel:
-        plotLabel = value.isNone() ? null : value;
+        // Automatic is not a title: nothing here can invent one, and the symbol used to be drawn
+        plotLabel = value.isNone() || value.isAutomatic() ? null : value;
         break;
       case ID.Ticks:
         ticks = value;

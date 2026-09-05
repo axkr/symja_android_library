@@ -101,6 +101,16 @@ public final class LayoutSpec {
   public final IExpr[] rowDividers;
 
   /** The gap after each column, {@code cols - 1} entries. */
+  /**
+   * Whether {@code Spacings} was written out, as opposed to left at its default.
+   *
+   * <p>
+   * The default gap is a text measure - room between columns of characters - and a consumer laying
+   * out pictures rather than words has reason to drop it. One the caller asked for is honoured
+   * whatever the cells hold.
+   */
+  public boolean spacingsExplicit = false;
+
   public Spacing[] colGaps;
   /** The gap after each row, {@code rows - 1} entries. */
   public Spacing[] rowGaps;
@@ -629,6 +639,7 @@ public final class LayoutSpec {
     if (value.isAutomatic()) {
       return;
     }
+    spacingsExplicit = true;
     if (value.isList() && ((IAST) value).argSize() == 2 && !isRuleList((IAST) value)) {
       IAST pair = (IAST) value;
       fillGaps(colGaps, pair.arg1());

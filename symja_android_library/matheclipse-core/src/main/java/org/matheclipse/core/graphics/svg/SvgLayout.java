@@ -816,6 +816,7 @@ final class SvgLayout {
   }
 
   private String wrap(List<DomContent> elements, double w, double h, boolean withSVGTag) {
+    elements = SvgGraphics2D.withPictureTitle(elements, options);
     if (!withSVGTag) {
       return elements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
     }

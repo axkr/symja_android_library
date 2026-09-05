@@ -111,10 +111,14 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       // the label was already distributed over the surfaces above, so it must not be applied a
       // second time around all of them - the outer one would win and every surface would read the
       // same
+      // AxesLabel -> Automatic names the axes after what was plotted. The z axis is the function
+      // itself, which only one of them can be - a list of surfaces has no single name, so that
+      // axis stays unlabelled rather than reading as one of them.
+      IExpr zLabel = functions.argSize() == 1 ? ((IAST) functions).arg1() : F.NIL;
       return Plot3DTools.graphics3D(surfaces, originalAST, argSize,
           new IExpr[] {F.Rule(S.PlotRange, options[X_PLOT_RANGE]), F.Rule(S.BoxRatios, boxRatios),
               F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)},
-          false);
+          false, new IExpr[] {xVar, yVar, zLabel});
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(S.Plot3D, rex, engine);

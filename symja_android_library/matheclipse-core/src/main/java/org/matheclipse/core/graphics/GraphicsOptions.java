@@ -2172,6 +2172,26 @@ public class GraphicsOptions {
     this.axesLabel = axesLabel;
   }
 
+  /**
+   * {@code AxesLabel -> Automatic} as the names of what was plotted.
+   *
+   * <p>
+   * Only the plot knows them, so it resolves the option here rather than leaving {@code Automatic}
+   * for the renderer, which has nothing to derive a name from and used to draw the symbol itself.
+   * A setting the caller wrote out is left alone, and so is the {@code None} default - this fires
+   * only for a plot that was actually asked for automatic labels.
+   *
+   * @param xLabel the name of the horizontal axis, {@link F#NIL} to leave it unlabelled
+   * @param yLabel the name of the vertical axis, {@link F#NIL} to leave it unlabelled
+   */
+  public void resolveAutomaticAxesLabel(IExpr xLabel, IExpr yLabel) {
+    if (!axesLabel.isAutomatic()) {
+      return;
+    }
+    setAxesLabel(F.List(xLabel != null && xLabel.isPresent() ? xLabel : S.None,
+        yLabel != null && yLabel.isPresent() ? yLabel : S.None));
+  }
+
   public void setBoundingBox(double[] boundingbox) {
     this.boundingbox = boundingbox;
   }

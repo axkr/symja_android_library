@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import j2html.tags.ContainerTag;
@@ -96,6 +97,7 @@ public class SvgGraphics2D {
    */
   public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
     try {
+      graphicsExpr = unwrapPicture(graphicsExpr);
       if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
         return new SvgLayout(options).row(graphicsExpr, withSVGTag);
       }
@@ -115,8 +117,10 @@ public class SvgGraphics2D {
       if (withSVGTag) {
         return svgRoot(elements).render();
       }
-      // the caller provides its own root, so hand back only the children
-      return elements.stream().map(DomContent::render).collect(Collectors.joining());
+      // the caller provides its own root, so hand back only the children - the title among them,
+      // since the caller's root is what a layout cell hovers over
+      return withPictureTitle(elements).stream().map(DomContent::render)
+          .collect(Collectors.joining());
     } catch (RuntimeException rex) {
       Errors.printMessage(S.Graphics, rex);
       if (Config.SHOW_STACKTRACE) {
@@ -188,6 +192,7 @@ public class SvgGraphics2D {
     viewport.configure(bounds, estimatePadding(0, hasLegend));
     double labelWidth = AxesFrameRenderer.estimateYLabelWidth(viewport, options);
     double[] padding = estimatePadding(labelWidth, hasLegend);
+    fitPaddingToWidth(padding);
     fitHeightToAspectRatio(padding);
     viewport.configure(bounds, padding);
 
@@ -281,7 +286,30 @@ public class SvgGraphics2D {
     renderer.draw(collector.primitives(), parent);
   }
 
+  /**
+   * The elements with a whole picture {@code Tooltip} in front of them.
+   *
+   * <p>
+   * A {@code <title>} answers a hover over anything its parent draws, so as the first child of the
+   * root it covers the picture; a primitive that carries a tooltip of its own sits deeper and wins
+   * over it, which is the nesting a viewer already applies.
+   */
+  static List<DomContent> withPictureTitle(List<DomContent> elements, GraphicsOptions2D options) {
+    if (options.pictureTooltip == null) {
+      return elements;
+    }
+    List<DomContent> titled = new ArrayList<>(elements.size() + 1);
+    titled.add(tag("title").withText(options.pictureTooltip));
+    titled.addAll(elements);
+    return titled;
+  }
+
+  private List<DomContent> withPictureTitle(List<DomContent> elements) {
+    return withPictureTitle(elements, options);
+  }
+
   private ContainerTag<?> svgRoot(List<DomContent> elements) {
+    elements = withPictureTitle(elements);
     return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", SvgRenderer2D.fmt(options.imageSize[0]))
         .attr("height", SvgRenderer2D.fmt(options.imageSize[1]))
@@ -302,6 +330,31 @@ public class SvgGraphics2D {
    *
    * @param padding room reserved around the drawing, as left, right, bottom, top
    */
+  /**
+   * Keep the decoration from consuming the whole canvas.
+   *
+   * <p>
+   * The room a frame and its numbers ask for does not shrink with the picture, so a small enough
+   * {@code ImageSize} leaves nothing to draw in: at {@code ImageSize -> 70} a framed plot wants
+   * more than 70 pixels for its left and right margins alone. That used to make the drawing width
+   * zero or negative, which {@link #fitHeightToAspectRatio} read as "cannot tell" and gave up on -
+   * leaving the height at whatever the caller had passed in, so a cell asked for at 70 pixels came
+   * back 70 by 400 and drew as a sliver. Scaling the margins down instead keeps the picture the
+   * shape it asked for; the numbers are cramped, which is what asking for a tiny framed plot means.
+   */
+  private void fitPaddingToWidth(double[] padding) {
+    double share = MAX_PADDING_SHARE * options.imageSize[0];
+    double wanted = padding[0] + padding[1];
+    if (wanted > share && wanted > 0) {
+      double scale = share / wanted;
+      padding[0] *= scale;
+      padding[1] *= scale;
+    }
+  }
+
+  /** The most of the width the left and right margins together may take. */
+  private static final double MAX_PADDING_SHARE = 0.6;
+
   private void fitHeightToAspectRatio(double[] padding) {
     if (fixedHeight || options.imageSizeHeightSet) {
       return;
@@ -331,6 +384,32 @@ public class SvgGraphics2D {
     options.imageSize[1] = drawHeight + padding[2] + padding[3];
   }
 
+  /**
+   * Whether one half of a label pair says anything.
+   *
+   * @param axis 0 for the horizontal label, which is drawn below the picture, 1 for the vertical
+   *        one, which is drawn at its left
+   */
+  private boolean hasLabel(IExpr spec, int axis) {
+    return spec != null && labelPair(spec)[axis] != null;
+  }
+
+  /**
+   * The room an unlabelled edge needs.
+   *
+   * <p>
+   * A frame is the outermost thing drawn on that side, so it needs only enough not to have its own
+   * stroke clipped; insetting it as far as a free edge wastes the room on a small picture and
+   * shows up as a margin around every cell of a grid. An edge with no frame keeps the larger inset,
+   * because there a curve or a disk may itself run to the boundary.
+   */
+  private static double edgePadding(boolean framed) {
+    return framed ? FRAME_EDGE_PADDING : MIN_PADDING;
+  }
+
+  /** Enough that a frame line drawn at the boundary is not cut in half. */
+  private static final double FRAME_EDGE_PADDING = 2.0;
+
   /** Smallest drawing area an automatically sized image is allowed to shrink to. */
   private static final double MIN_DRAWING_HEIGHT = 40.0;
 
@@ -346,19 +425,30 @@ public class SvgGraphics2D {
       double[] p = options.imagePadding;
       return new double[] {p[0], p[1] + (hasLegend ? LegendRenderer.LEGEND_WIDTH : 0), p[2], p[3]};
     }
-    boolean labelsLeft = options.axesY || options.frame[0];
-    boolean labelsBottom = options.axesX || options.frame[2];
+    // Room is needed for the numbers along an edge, not for the edge itself. Asking only whether
+    // there is an axis or a frame there reserved it even when the ticks had been switched off, and
+    // a small picture then spent most of its width on margins holding nothing - which is what made
+    // the cells of a grid of framed plots draw a fraction of the size they were given.
+    boolean axesTicks = !(options.ticks.isNone() || options.ticks.isFalse());
+    boolean frameTicks = !(options.frameTicks.isNone() || options.frameTicks.isFalse());
+    boolean labelsLeft = (options.axesY && axesTicks) || (options.frame[0] && frameTicks);
+    boolean labelsBottom = (options.axesX && axesTicks) || (options.frame[2] && frameTicks);
 
-    double left = labelsLeft ? Math.max(24.0, yLabelWidth + 12.0) : MIN_PADDING;
-    double right = options.frame[1] ? 24.0 : MIN_PADDING;
-    double bottom = labelsBottom ? TICK_LABEL_HEIGHT + 8.0 : MIN_PADDING;
-    double top = options.frame[3] ? TICK_LABEL_HEIGHT + 8.0 : MIN_PADDING;
+    double left = labelsLeft ? Math.max(24.0, yLabelWidth + 12.0) : edgePadding(options.frame[0]);
+    double right = options.frame[1] && frameTicks ? 24.0 : edgePadding(options.frame[1]);
+    double bottom = labelsBottom ? TICK_LABEL_HEIGHT + 8.0 : edgePadding(options.frame[2]);
+    double top = options.frame[3] && frameTicks ? TICK_LABEL_HEIGHT + 8.0 : edgePadding(options.frame[3]);
 
     if (options.plotLabel != null) {
       top += PLOT_LABEL_HEIGHT;
     }
-    if (options.axesLabel != null || options.frameLabel != null) {
+    // Only for a label that is actually written. Testing the option for null counted
+    // `AxesLabel -> None`, which every plot emits by default, so each picture reserved a strip on
+    // two sides for text it never drew - 18 pixels of a 70 pixel cell on each of them.
+    if (hasLabel(options.axesLabel, 0) || hasLabel(options.frameLabel, 0)) {
       bottom += AXIS_LABEL_HEIGHT;
+    }
+    if (hasLabel(options.axesLabel, 1) || hasLabel(options.frameLabel, 1)) {
       left += AXIS_LABEL_HEIGHT;
     }
     if (hasLegend) {
@@ -529,16 +619,29 @@ public class SvgGraphics2D {
     String[] out = new String[2];
     if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
-      if (!list.arg1().isNone()) {
+      if (!unlabelled(list.arg1())) {
         out[0] = labelText(list.arg1());
       }
-      if (!list.arg2().isNone()) {
+      if (!unlabelled(list.arg2())) {
         out[1] = labelText(list.arg2());
       }
-    } else if (!expr.isNone()) {
+    } else if (!unlabelled(expr)) {
       out[0] = labelText(expr);
     }
     return out;
+  }
+
+  /**
+   * Whether a label setting asks for no label at all.
+   *
+   * <p>
+   * {@code Automatic} counts, for the same reason it does in three dimensions: only the plot knows
+   * the names of its own variables, so it resolves the option before the picture is built. What
+   * reaches here still holding {@code Automatic} has nothing to derive a name from, and drawing the
+   * symbol put the word "Automatic" on the axis.
+   */
+  private static boolean unlabelled(IExpr expr) {
+    return expr.isNone() || expr.isAutomatic();
   }
 
   // ------------------------------------------------------------ range work
@@ -639,6 +742,30 @@ public class SvgGraphics2D {
       this.width = width;
       this.height = height;
     }
+  }
+
+  /**
+   * Take a display wrapper off a whole picture, keeping what it said.
+   *
+   * <p>
+   * {@code Tooltip(Plot(...), "s")} draws the plot and answers a hover with {@code s}, so the
+   * wrapper comes off here and the label is handed to the root emitter. {@code Labeled} and
+   * {@code Legended} are peeled too, but their label is meant to be drawn rather than hovered and
+   * nothing here draws it yet - the picture is the part worth keeping.
+   *
+   * <p>
+   * The guard is {@link IExpr#isGraphicsObject()} rather than the head alone, so
+   * {@code Tooltip(1, "s")} is left as it is and keeps printing as itself.
+   */
+  private IAST unwrapPicture(IAST graphicsExpr) {
+    if (!IExpr.isPictureWrapperHead(graphicsExpr.head()) || !graphicsExpr.isGraphicsObject()) {
+      return graphicsExpr;
+    }
+    PlotWrapper wrapper = PlotWrapper.of(graphicsExpr);
+    if (options.pictureTooltip == null) {
+      options.pictureTooltip = PlotWrapper.tooltipLabel(wrapper.tooltip);
+    }
+    return wrapper.datum.isAST() ? (IAST) wrapper.datum : graphicsExpr;
   }
 
   /**

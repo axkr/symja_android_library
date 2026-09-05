@@ -238,7 +238,7 @@ public final class GraphicsOptions3D {
           prolog = value.isNone() ? null : value;
           break;
         case ID.PlotLabel:
-          if (!value.isNone()) {
+          if (!unlabelled(value)) {
             plotLabel = text(value);
           }
           break;
@@ -379,20 +379,34 @@ public final class GraphicsOptions3D {
   }
 
   private void parseAxesLabel(IExpr value) {
-    if (value.isNone()) {
+    if (unlabelled(value)) {
       return;
     }
     if (value.isList()) {
       IAST list = (IAST) value;
       for (int i = 0; i < 3 && i < list.argSize(); i++) {
         IExpr label = list.get(i + 1);
-        if (!label.isNone()) {
+        if (!unlabelled(label)) {
           axesLabel[i] = text(label);
         }
       }
       return;
     }
     axesLabel[2] = text(value);
+  }
+
+  /**
+   * Whether a label setting asks for no label at all.
+   *
+   * <p>
+   * {@code Automatic} counts: it asks for a label to be chosen, and the only thing that can choose
+   * one is the plot that knows its own variables - it resolves the option before the picture is
+   * built. Anything still holding {@code Automatic} by the time it reaches here, such as a hand
+   * written {@code Graphics3D}, has nothing to derive a name from. Drawing the symbol itself, which
+   * is what used to happen, put the word "Automatic" along the z axis.
+   */
+  private static boolean unlabelled(IExpr value) {
+    return value.isNone() || value.isAutomatic();
   }
 
   private void parseAxesEdge(IExpr value) {

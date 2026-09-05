@@ -65,6 +65,11 @@ public class Plot extends ListPlot {
       final IAST rangeList = (IAST) ast.arg2();
       IExpr variable = rangeList.arg1();
       if (variable.isVariable()) {
+        // the vertical axis is named after the function, which only a single one can be; a list of
+        // curves has no one name, so that axis stays unlabelled rather than reading as one of them
+        IExpr plotted = PlotWrapper.strip(function);
+        graphicsOptions.resolveAutomaticAxesLabel(variable,
+            plotted.isList() ? F.NIL : plotted);
         try {
           if (rangeList.isList3()) {
 

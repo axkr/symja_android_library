@@ -1134,12 +1134,23 @@ public final class Plot3DTools {
    */
   public static IExpr graphics3D(IExpr content, IAST originalAST, int argSize, IExpr[] defaults,
       boolean applyArgumentWrapper) {
+    return graphics3D(content, originalAST, argSize, defaults, applyArgumentWrapper, null);
+  }
+
+  /**
+   * The same, for a plot that can say what its axes are called.
+   *
+   * @param autoAxesLabels the three names {@code AxesLabel -> Automatic} resolves to, any of them
+   *        {@link F#NIL} to leave that axis unlabelled, or {@code null} for a plot that cannot say
+   */
+  public static IExpr graphics3D(IExpr content, IAST originalAST, int argSize, IExpr[] defaults,
+      boolean applyArgumentWrapper, IExpr[] autoAxesLabels) {
     IASTAppendable result = F.ast(S.Graphics3D, 4 + (defaults == null ? 0 : defaults.length));
     if (applyArgumentWrapper && originalAST != null && originalAST.size() > 1) {
       content = PlotWrapper.of(originalAST.arg1()).wrapTooltip(content);
     }
     result.append(content);
-    forwardOptions(result, originalAST, argSize);
+    forwardOptions(result, originalAST, argSize, autoAxesLabels);
     if (defaults != null) {
       for (IExpr rule : defaults) {
         if (rule != null && rule.isRuleAST() && !hasOption(result, ((IAST) rule).arg1())) {
@@ -1200,7 +1211,8 @@ public final class Plot3DTools {
    * option such as {@code PlotPoints} into the graphic, where a later reader would find a rule it
    * has no meaning for.
    */
-  private static void forwardOptions(IASTAppendable result, IAST originalAST, int argSize) {
+  private static void forwardOptions(IASTAppendable result, IAST originalAST, int argSize,
+      IExpr[] autoAxesLabels) {
     if (originalAST == null) {
       return;
     }
@@ -1211,9 +1223,36 @@ public final class Plot3DTools {
       }
       IExpr key = ((IAST) arg).arg1();
       if (isGraphics3DOption(key)) {
-        result.append(arg);
+        result.append(resolveAxesLabel(key, (IAST) arg, autoAxesLabels));
       }
     }
+  }
+
+  /**
+   * {@code AxesLabel -> Automatic} as the names the plot actually used.
+   *
+   * <p>
+   * This has to happen while the user's rules are being copied rather than through the defaults
+   * array: a rule the user wrote is copied first, and {@link #hasOption} then refuses any default
+   * for the same name, so a resolved label appended later would never be reached.
+   *
+   * <p>
+   * Reading the option array instead would be wrong for a subtler reason - {@code base3D()}
+   * registers {@code AxesLabel} with a default of {@code Automatic}, so every three dimensional
+   * plot would look like it had asked for labels and every one of them would get them. Only a rule
+   * the caller actually wrote passes through here.
+   */
+  private static IExpr resolveAxesLabel(IExpr key, IAST rule, IExpr[] autoAxesLabels) {
+    if (key != S.AxesLabel || autoAxesLabels == null || !rule.arg2().isAutomatic()) {
+      return rule;
+    }
+    IASTAppendable labels = F.ListAlloc(3);
+    for (int axis = 0; axis < 3; axis++) {
+      IExpr label = axis < autoAxesLabels.length ? autoAxesLabels[axis] : F.NIL;
+      // None leaves that axis alone, which is what an unnamable one needs
+      labels.append(label != null && label.isPresent() ? label : S.None);
+    }
+    return F.Rule(S.AxesLabel, labels);
   }
 
   private static boolean hasOption(IAST ast, IExpr name) {
