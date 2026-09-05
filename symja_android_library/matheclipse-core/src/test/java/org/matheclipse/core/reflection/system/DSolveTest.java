@@ -139,7 +139,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
     // Full Riccati Equation with different constants: y'(x) = y(x)^2 - 1
     check("DSolve(y'(x) == y(x)^2 - 1, y(x), x)", //
-        "{{y(x)->-E^x/(E^x+C(1)/E^x)+C(1)/(E^x*(E^x+C(1)/E^x))}}");
+        "{{y(x)->-E^(2*x)/(E^(2*x)+C(1))+C(1)/(E^(2*x)+C(1))}}");
   }
 
   @Test
@@ -487,6 +487,48 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
     check("DSolve(x*y''(x) + 3*x*y'(x) + 2*x*y(x) == 1, y(x), x)", //
         "{{y(x)->C(1)/E^(2*x)+C(2)/E^x+ExpIntegralEi(x)/E^x-ExpIntegralEi(2*x)/E^(2*x)}}");
+  }
+
+  @Test
+  public void testDSolveSecondOrderSymmetry() {
+    // A projective symmetry: the coordinates in which it is a translation reduce the equation to
+    // one of the first order.
+    check("DSolve(x^3*y''(x) == (y(x) - x*y'(x))^2, y(x), x)", //
+        "{{y(x)->x*C(1)+x*Log(x)-x*Log(1+x*C(2))}}");
+
+    check("DSolve(y''(x) == (x*y'(x) - y(x))^2/x^3, y(x), x)", //
+        "{{y(x)->x*C(1)+x*Log(x)-x*Log(1+x*C(2))}}");
+
+    // A scaling symmetry. The coefficient of the second derivative depends on y here.
+    check("DSolve(2*x^2*y''(x)*y(x) + y(x)^2 == x^2*y'(x)^2, y(x), x)", //
+        "{{y(x)->E^C(1)*x*C(2)^2+2*E^C(1)*x*C(2)*Log(x)+E^C(1)*x*Log(x)^2}}");
+
+    checkResidual("x^2*(x + y(x))*y''(x) == (x*y'(x) - y(x))^2",
+        "x^2*(x + y(x))*y''(x) - (x*y'(x) - y(x))^2", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+  }
+
+  @Test
+  public void testDSolveSecondOrderSymmetryFamilies() {
+    // The same symmetry with other coefficients, so that the method is not fitted to one equation.
+    for (int k : new int[] {1, 2, 3, -1, -2}) {
+      checkResidual("x^3*y''(x) == " + k + "*(y(x) - x*y'(x))^2",
+          "x^3*y''(x) - " + k + "*(y(x) - x*y'(x))^2", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    }
+    for (int m : new int[] {2, 3, -1}) {
+      checkResidual(m + "*x^2*y''(x)*y(x) + y(x)^2 == x^2*y'(x)^2",
+          m + "*x^2*y''(x)*y(x) + y(x)^2 - x^2*y'(x)^2", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    }
+  }
+
+  @Test
+  public void testDSolveSymmetryLeavesLinearAlone() {
+    // A linear equation of the second order has an eight dimensional symmetry algebra, so the
+    // search would always succeed and answer nothing the methods before it do not own. It is not
+    // asked.
+    check("DSolve(y''(x) + y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Cos(x)+C(2)*Sin(x)}}");
+    check("DSolve(y''(x) - x*y(x) == 0, y(x), x)", //
+        "{{y(x)->AiryAi(x)*C(1)+AiryBi(x)*C(2)}}");
   }
 
   @Test

@@ -23,6 +23,12 @@ final class DSolveODE {
    */
   static final int MAX_DERIVATIVE_ORDER = 10;
 
+  /** How deep in the cascade the reduction of a Riccati equation is still attempted. */
+  private static final int MAX_RICCATI_DEPTH = 3;
+
+  /** How big the coefficient of the equation that reduction leaves may be. */
+  private static final int MAX_RICCATI_LEAF_COUNT = 60;
+
   static IExpr odeExact(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
     // Substitute y(x) with a dummy variable Y to treat it as an independent variable
     // for partial differentiation and integration without triggering the chain rule.
@@ -804,8 +810,14 @@ final class DSolveODE {
     IExpr uEq =
         F.Equal(F.Plus(uDoublePrime, F.Times(F.CN1, coeffUPrime, uPrime), F.Times(a, c, u)), F.C0);
 
-    // Prevent infinite recursion: ensure transformed ODE remains natively solvable
-    if (coeffUPrime.isFree(xVar) && engine.evaluate(F.Times(a, c)).isFree(xVar)) {
+    // The equation this leaves is linear, and the methods for those do not lead back here, so a
+    // coefficient which depends on the variable is no reason to decline: the Riccati equation
+    // q'(r) == -(1 + r^2*q(r)^2)/2/r^2 leaves the Cauchy-Euler equation u''(r) + u(r)/(4*r^2) == 0.
+    // The depth is bounded because the reduction of order of a second order equation can produce
+    // a first order one which arrives back here.
+    IExpr product = engine.evaluate(F.Times(a, c));
+    if (coeffUPrime.isFree(xVar) && ctx.depth() <= MAX_RICCATI_DEPTH
+        && product.leafCount() <= MAX_RICCATI_LEAF_COUNT) {
       IExpr uSols = engine.evaluate(F.DSolve(F.List(uEq), F.List(u), xVar));
       IAST extracted = DSolveUtil.extractSolveResults(uSols);
       if (extracted.argSize() > 0) {
@@ -834,8 +846,7 @@ final class DSolveODE {
           ySol = engine.evaluate(F.subst(ySol, replaceRules));
         }
 
-        // return engine.evaluate(F.Simplify(ySol));
-        return engine.evaluate(ySol);
+        return DSolveUtil.togetherSolution(engine.evaluate(ySol), engine);
       }
     }
 
@@ -974,6 +985,16 @@ final class DSolveODE {
         IExpr specialSol = DSolveSpecialFunctions.solve(lf, xVar, C_1, ctx);
         if (specialSol.isPresent())
           return specialSol;
+      }
+
+      if (lf == null && n == 2) {
+        // Nothing above recognized it, so look for a symmetry of it. Only a nonlinear equation is
+        // worth the search: a linear one of the second order has an eight dimensional symmetry
+        // algebra, so the search always succeeds and costs a great deal without answering anything
+        // the methods above do not already own.
+        IExpr symmetrySol = DSolveSymmetry.solveSecondOrder(lhs, yFunction, xVar, C_1, ctx);
+        if (symmetrySol.isPresent())
+          return symmetrySol;
       }
 
       IExpr algebraicSol = solveForHighestDerivative(lhs, yFunction, xVar, n, C_1, ctx);

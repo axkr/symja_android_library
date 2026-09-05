@@ -144,6 +144,7 @@ final class DSolveUtil {
     java.util.Map<IExpr, IASTAppendable> basisMap = new java.util.LinkedHashMap<>();
     java.util.Set<IExpr> basisWithC = new java.util.HashSet<>();
     java.util.Map<IExpr, java.util.Set<IExpr>> basesOfConstant = new java.util.HashMap<>();
+    java.util.Set<IExpr> hiddenInBasis = new java.util.HashSet<>();
 
     for (IExpr term : terms) {
       IExpr[] cPart = new IExpr[] {null};
@@ -156,6 +157,12 @@ final class DSolveUtil {
         basisWithC.add(basis);
         basesOfConstant.computeIfAbsent(cPart[0], k -> new java.util.HashSet<>()).add(basis);
       }
+      // A constant which also sits inside what is left of the term is not simply a factor of it.
+      for (IExpr constant : cSet) {
+        if (!basis.isFree(constant, true)) {
+          hiddenInBasis.add(constant);
+        }
+      }
     }
 
     IASTAppendable resultPlus = F.PlusAlloc();
@@ -165,7 +172,8 @@ final class DSolveUtil {
       IExpr basis = entry.getKey();
       IASTAppendable sumOfTerms = entry.getValue();
 
-      if (basisWithC.contains(basis) && isAbsorbable(sumOfTerms, cSet, basesOfConstant)) {
+      if (basisWithC.contains(basis)
+          && isAbsorbable(sumOfTerms, cSet, basesOfConstant, hiddenInBasis)) {
         if (cIndex <= cVector.argSize()) {
           IExpr freshC = cVector.get(cIndex++);
 
@@ -206,13 +214,21 @@ final class DSolveUtil {
    * <code>(x+1)^2*y''(x) - 3*(x+1)*y'(x) + 3*y(x) == x^2</code>.
    */
   private static boolean isAbsorbable(IAST sumOfTerms, java.util.Set<IExpr> cSet,
-      java.util.Map<IExpr, java.util.Set<IExpr>> basesOfConstant) {
+      java.util.Map<IExpr, java.util.Set<IExpr>> basesOfConstant,
+      java.util.Set<IExpr> hiddenInBasis) {
     for (int i = 1; i <= sumOfTerms.argSize(); i++) {
       IExpr[] cPart = new IExpr[] {null};
       extractBasis(sumOfTerms.get(i), cSet, cPart);
       if (cPart[0] != null) {
         java.util.Set<IExpr> bases = basesOfConstant.get(cPart[0]);
         if (bases != null && bases.size() > 1) {
+          return false;
+        }
+        if (hiddenInBasis.contains(cPart[0])) {
+          // The constant appears somewhere other than as a factor, so collecting the terms it is a
+          // factor of does not account for it. The solution of a Riccati equation is a quotient
+          // whose denominator carries the constant, and collecting there dropped a term of the
+          // numerator.
           return false;
         }
       }
