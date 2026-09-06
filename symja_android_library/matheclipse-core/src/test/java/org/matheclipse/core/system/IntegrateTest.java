@@ -1148,4 +1148,35 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "Integrate(1/x^2,{x,-1,1})");
   }
 
+  /**
+   * Regression: an exponential over a quadratic which is a perfect square. Rubi's own rule for a
+   * polynomial power (2007) builds the candidate root as {@code Rt(a0,n) + Rt(an,n)*x}, whose
+   * middle term is always positive, so it sees {@code (1+x)^2} in {@code 1+2*x+x^2} but misses
+   * {@code (1-x)^2} in {@code 1-2*x+x^2}. The next rule which matched (2698) then rewrote the
+   * integrand to itself and was applied again until the endless-iteration guard stopped it.
+   */
+  @Test
+  public void testExponentialOverPerfectSquare() {
+    check("Integrate(E^x/(x^2-2*x+1), x)", //
+        "E^x/(1-x)+E*ExpIntegralEi(-1+x)");
+    // the sign the rules already read correctly, unchanged
+    check("Integrate(E^x/(x^2+2*x+1), x)", //
+        "-E^x/(1+x)+ExpIntegralEi(1+x)/E");
+    check("Integrate(E^(2*x)/(x^2-2*x+1), x)", //
+        "E^(2*x)/(1-x)+2*E^2*ExpIntegralEi(-2*(1-x))");
+
+    // Factoring is no use for these: Factor leaves them alone, so the square has to be found
+    // through the discriminant instead.
+    check("Integrate(E^x/(6*(3+2*Sqrt(3)) - 6*(1+Sqrt(3))*x + Sqrt(3)*x^2), x)", //
+        "E^x/(Sqrt(3)*(3+Sqrt(3)-x))+(E^(3+Sqrt(3))*ExpIntegralEi(-3-Sqrt(3)+x))/Sqrt(3)");
+
+    // The composite these came from used to come back partly evaluated, with four unevaluated
+    // Integrate() subexpressions left inside an otherwise closed form.
+    check("Cases(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), Integrate(__), Infinity) // Length", //
+        "0");
+    check("Max(Abs(N(Table(D(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), x)"
+        + " - E^x/(x^2*(6-6*x+x^2)^2) /. x->pt, {pt, {17/13, -7/5, 11/3}})))) < 10^-8", //
+        "True");
+  }
+
 }

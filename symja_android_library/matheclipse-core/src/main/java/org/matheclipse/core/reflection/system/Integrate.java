@@ -607,7 +607,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             return result;
           }
         }
-        result = integrateByRubiRulesWithBudget(fx, x, ast, engine);
+        // A polynomial which is a perfect power is handed to the rules already written as one.
+        // Their own rule for this (2007) builds the candidate root as Rt(a0,n) + Rt(an,n)*x, which
+        // only ever has a *positive* middle term, so it recognizes (1+x)^2 in 1+2*x+x^2 but not
+        // (1-x)^2 in 1-2*x+x^2. When it misses, the next rule which matches (2698) rewrites the
+        // integrand to itself and is applied again, forever, and the endless-iteration guard turns
+        // that into an unevaluated - or, inside a larger integral, a partly evaluated - answer.
+        IExpr normalized = normalizePerfectPowerBase(fx, x, engine);
+        result = normalized.isPresent() //
+            ? integrateByRubiRulesWithBudget((IAST) normalized, x, ast.setAtCopy(1, normalized),
+                engine)
+            : integrateByRubiRulesWithBudget(fx, x, ast, engine);
         if (result.isPresent()) {
           IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
@@ -1457,6 +1467,92 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * another thread - which matters because {@link EvalEngine} is thread-local. Only an interrupt
    * this method raised itself is swallowed; one from the outside stays an abort.
    */
+  /** How big a base is still worth factoring to see whether it is a perfect power. */
+  private static final int MAX_PERFECT_POWER_LEAF_COUNT = 60;
+
+  /**
+   * The integrand with a polynomial base which is a perfect power written as that power.
+   *
+   * <p>
+   * <code>u*(1-2*x+x^2)^p</code> becomes <code>u*(1-x)^(2*p)</code>. Only an integer
+   * <code>p</code> qualifies: for a fractional one the two are different functions, since
+   * <code>((1-x)^2)^(1/2)</code> is <code>Abs(1-x)</code> rather than <code>1-x</code>.
+   *
+   * @return {@link F#NIL} if nothing in the integrand is of that shape
+   */
+  private static IExpr normalizePerfectPowerBase(IAST fx, IExpr x, EvalEngine engine) {
+    if (!x.isSymbol()) {
+      return F.NIL;
+    }
+    if (fx.isPower()) {
+      IExpr rewritten = perfectPower(fx, x, engine);
+      return rewritten.isPresent() && rewritten.isAST() ? rewritten : F.NIL;
+    }
+    if (!fx.isTimes()) {
+      return F.NIL;
+    }
+    IASTAppendable product = F.NIL;
+    for (int i = 1; i <= fx.argSize(); i++) {
+      IExpr rewritten = perfectPower(fx.get(i), x, engine);
+      if (rewritten.isPresent()) {
+        if (product.isNIL()) {
+          product = fx.copyAppendable();
+        }
+        product.set(i, rewritten);
+      }
+    }
+    if (product.isNIL()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(product);
+    return result.isAST() ? result : F.NIL;
+  }
+
+  /**
+   * One factor of the integrand, written as a power of the root of its base.
+   *
+   * <p>
+   * Only a quadratic is looked at, and only through its discriminant, so that no factorization is
+   * needed: <code>a + b*x + c*x^2</code> with <code>b^2 == 4*a*c</code> is
+   * <code>c*(x + b/(2*c))^2</code> whatever the coefficients are made of. Factoring would not do
+   * here anyway - it leaves <code>Sqrt(3)*x^2 - 6*(1+Sqrt(3))*x + 6*(3+2*Sqrt(3))</code> alone,
+   * and that is one of the squares this has to see.
+   */
+  private static IExpr perfectPower(IExpr factor, IExpr x, EvalEngine engine) {
+    if (!factor.isPower() || !factor.exponent().isInteger() || factor.exponent().isZero()) {
+      return F.NIL;
+    }
+    IExpr base = factor.base();
+    if (!base.isPlus() || base.leafCount() > MAX_PERFECT_POWER_LEAF_COUNT
+        || !engine.evaluate(F.PolynomialQ(base, x)).isTrue()
+        || engine.evaluate(F.Exponent(base, x)).toIntDefault() != 2) {
+      return F.NIL;
+    }
+    IExpr c = engine.evaluate(F.Coefficient(base, x, F.C2));
+    IExpr b = engine.evaluate(F.Coefficient(base, x, F.C1));
+    IExpr a = engine.evaluate(F.Coefficient(base, x, F.C0));
+    if (c.isZero() || b.isZero()) {
+      // A missing middle term is the case the rules already read correctly.
+      return F.NIL;
+    }
+    IExpr discriminant =
+        engine.evaluate(F.Simplify(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c))));
+    if (!discriminant.isZero()) {
+      return F.NIL;
+    }
+    IExpr root = engine.evaluate(F.Plus(x, F.Divide(b, F.Times(F.C2, c))));
+    // The discriminant was simplified to reach zero, so what it implies is checked rather than
+    // taken: a wrong root here would silently change the integrand.
+    IExpr residual =
+        engine.evaluate(F.Simplify(F.Subtract(F.Times(c, F.Sqr(root)), base)));
+    if (!residual.isZero()) {
+      return F.NIL;
+    }
+    IExpr exponent = factor.exponent();
+    return engine.evaluate(
+        F.Times(F.Power(c, exponent), F.Power(root, F.Times(F.C2, exponent))));
+  }
+
   private static IExpr integrateByRubiRulesWithBudget(IAST arg1, IExpr x, IAST ast,
       EvalEngine engine) {
     long budgetMillis = rubiBudgetMillis(engine);

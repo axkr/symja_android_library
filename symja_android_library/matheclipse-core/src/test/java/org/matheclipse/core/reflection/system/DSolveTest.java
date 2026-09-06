@@ -687,6 +687,13 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("With({b=(y(x) /. DSolve((1-x^2)*y''(x) - 3*x*y'(x) + 3*y(x) == 0, y(x), x)[[1,1]])},"
         + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->1/3)) > 10^-6)", //
         "True");
+    // Laguerre's equation. Kovacic finds its polynomial x^2-6*x+6, and the integral which carries
+    // that first solution to a second is E^x/(x^2*(x^2-6*x+6)^2) - which used to come back partly
+    // evaluated, so the whole equation was declined.
+    checkResidual("x*y''(x) + (2-x)*y'(x) + 2*y(x) == 0",
+        "x*D(y(x),{x,2}) + (2-x)*D(y(x),x) + 2*y(x)",
+        "{x->11/3, C(1)->3/7, C(2)->5/11}");
+
   }
 
   @Test
