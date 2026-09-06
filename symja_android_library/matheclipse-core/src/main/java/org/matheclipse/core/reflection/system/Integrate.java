@@ -467,20 +467,45 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           boolean forcedDiffUnderInt =
               forcedMethod != null && DiffUnderIntegral.isMethodName(forcedMethod);
           if (forcedDiffUnderInt || forcedMethod == null) {
-            IExpr byParameter = DiffUnderIntegral.integrate(arg1, xList.arg1(), xList.arg2(),
+            IExpr byShape = DiffUnderIntegral.integrate(arg1, xList.arg1(), xList.arg2(),
                 xList.arg3(), engine);
-            if (byParameter.isPresent() || forcedDiffUnderInt) {
-              return byParameter;
+            if (byShape.isPresent()) {
+              return byShape;
+            }
+            if (forcedDiffUnderInt) {
+              // Asked for by name, so the general loop is tried here rather than in its usual
+              // place below, and nothing else is.
+              return DiffUnderIntegral.general(arg1, xList.arg1(), xList.arg2(), xList.arg3(),
+                  engine);
             }
           }
           // Integrate(f(x), {x,a,b})
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());
           IExpr temp = engine.evaluate(copy);
-          if (temp.isFreeAST(h -> h == S.Integrate || h == S.Boole) //
-              && temp.isSpecialsFree()) {
-            return definiteIntegral(temp, xList, holdallAST, engine);
+          boolean antiderivative = temp.isFreeAST(h -> h == S.Integrate || h == S.Boole) //
+              && temp.isSpecialsFree();
+          if (antiderivative) {
+            IExpr value = definiteIntegral(temp, xList, holdallAST, engine);
+            if (value.isPresent()) {
+              return value;
+            }
           }
-          return integrateBooleTimesFxRegion(arg1, xList, false, engine);
+          if (forcedMethod == null) {
+            // Newton-Leibniz got nowhere - either there is no antiderivative to be had or it
+            // could not be evaluated at the limits - so try differentiating under the integral
+            // sign by a parameter the integrand already carries. Here and not above: this one has
+            // no shape to recognize and costs two integrals per parameter, which an integral that
+            // Newton-Leibniz can do must not pay for.
+            IExpr byParameter = DiffUnderIntegral.general(arg1, xList.arg1(), xList.arg2(),
+                xList.arg3(), engine);
+            if (byParameter.isPresent()) {
+              return byParameter;
+            }
+          }
+          // An antiderivative was found but would not evaluate at the limits. That is not a region
+          // problem, so it stays unevaluated, as it did before there was anything to try here.
+          return antiderivative ? F.NIL
+              : integrateBooleTimesFxRegion(arg1, xList, false, engine);
         }
         // Invalid integration variable or limit(s) in `1`.
         return Errors.printMessage(S.Integrate, "ilim", F.List(arg2), engine);

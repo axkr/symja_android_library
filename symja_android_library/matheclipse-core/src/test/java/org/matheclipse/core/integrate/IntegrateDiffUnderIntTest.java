@@ -123,6 +123,34 @@ public class IntegrateDiffUnderIntTest {
     checkDeclines("Csc(2*x)^2*Log(1+Tan(x)^2)", "Pi/3");
   }
 
+  /** The value the general loop gives for an integral that carries a parameter of its own. */
+  private IExpr generalValue(String integrand, String lower, String upper) {
+    return DiffUnderIntegral.general(evaluator.eval(integrand), evaluator.eval("x"),
+        evaluator.eval(lower), evaluator.eval(upper), engine);
+  }
+
+  /**
+   * Differentiating by a parameter the integrand already has. <code>D((x^a-1)/Log(x), a)</code> is
+   * <code>x^a</code>, whose integral is <code>1/(1+a)</code>, whose integral over the parameter is
+   * <code>Log(1+a)</code>; at <code>a == 0</code> the integrand vanishes, which fixes the constant
+   * at zero. The condition is the one the inner integral came back with.
+   */
+  @Test
+  public void generalParameter() {
+    assertEquals(evaluator.eval("ConditionalExpression(Log(1+a), a>-1)"),
+        engine.evaluate(generalValue("(x^a-1)/Log(x)", "0", "1")));
+  }
+
+  /** What the general loop must not touch. */
+  @Test
+  public void generalDeclines() {
+    // no parameter to differentiate by
+    assertEquals(F.NIL, generalValue("x^2", "0", "1"));
+    assertEquals(F.NIL, generalValue("Sin(x)/x", "0", "1"));
+    // the parameter is a limit of integration, so it cannot be moved independently
+    assertEquals(F.NIL, generalValue("x^a", "0", "a"));
+  }
+
   /** Switched off, the stage claims nothing at all. */
   @Test
   public void killSwitch() {

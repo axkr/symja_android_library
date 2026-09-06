@@ -333,6 +333,18 @@ public final class DiffUnderIntegral {
     return agreed >= 2;
   }
 
+  /** How big an integrand the general loop will look at. */
+  private static final int MAX_GENERAL_LEAF_COUNT = 200;
+
+  /** How long the inner integral, and the one back over the parameter, may each take. */
+  private static final int INTEGRAL_SECONDS = 5;
+
+  /** Values of the parameter tried as the one where the integral is already known. */
+  private static final int[] BASE_VALUES = {0, 1, -1};
+
+  /** At most this many parameters are tried, so a miss costs a bounded number of integrals. */
+  private static final int MAX_PARAMETERS = 2;
+
   /** Generic values for the parameters, each above one so an exponent stays convergent. */
   private static final double[] PARAMETER_VALUES = {2.3, 1.7, 3.1, 1.3};
 
@@ -350,6 +362,176 @@ public final class DiffUnderIntegral {
         collectParameters(ast.get(i), x, out);
       }
     }
+  }
+
+  /**
+   * The value of a definite integral carrying a parameter of its own, or {@link F#NIL}.
+   *
+   * <p>
+   * This is Leibniz's rule used the way it is normally taught, on an integral that already has a
+   * parameter in it: differentiate by the parameter, do the inner integral, integrate the answer
+   * back over the parameter, and fix the constant of integration at a value of the parameter where
+   * the integral is known -- usually one where the integrand vanishes, so that the integral is
+   * zero. Only that case is done here, where the inner integral is a plain quadrature; an
+   * integrand whose derivative is a multiple of itself needs an integrating factor and is not
+   * attempted.
+   *
+   * <p>
+   * Tried only after the antiderivative has failed, unlike the three closers above: there is no
+   * shape to recognize, so every attempt costs two integrals, and an integral that Newton-Leibniz
+   * can do should never pay for them.
+   */
+  public static IExpr general(IExpr f, IExpr x, IExpr lower, IExpr upper, EvalEngine engine) {
+    if (!Config.INTEGRATE_ALGORITHMS || !Config.INTEGRATE_ALGORITHM_DIFF_UNDER_INT
+        || !x.isSymbol() || f.leafCount() > MAX_GENERAL_LEAF_COUNT
+        || !f.isFreeAST(h -> h == S.Integrate || h == S.Sum || h == S.Product)) {
+      return F.NIL;
+    }
+    IASTAppendable parameters = F.ListAlloc();
+    collectParameters(f, x, parameters);
+    try {
+      for (int i = 1; i <= parameters.argSize() && i <= MAX_PARAMETERS; i++) {
+        IExpr parameter = parameters.get(i);
+        if (!lower.isFree(parameter, true) || !upper.isFree(parameter, true)) {
+          // A parameter that is also a limit of integration is not one this rule can move.
+          continue;
+        }
+        IExpr value = byParameter(f, x, lower, upper, parameter, parameters, engine);
+        if (value.isPresent()) {
+          return value;
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /** One pass of the rule, differentiating by the given parameter. */
+  private static IExpr byParameter(IExpr f, IExpr x, IExpr lower, IExpr upper, IExpr parameter,
+      IAST parameters, EvalEngine engine) {
+    IExpr derivative = engine.evaluate(F.D(f, parameter));
+    if (derivative.isZero()) {
+      return F.NIL;
+    }
+    IASTAppendable conditions = F.ListAlloc();
+    IExpr inner =
+        cleanIntegral(F.Integrate(derivative, F.List(x, lower, upper)), conditions, engine);
+    if (inner.isNIL() || !inner.isFree(x, true)) {
+      return F.NIL;
+    }
+    IExpr back = cleanIntegral(F.Integrate(inner, parameter), conditions, engine);
+    if (back.isNIL() || !back.isFree(x, true)) {
+      return F.NIL;
+    }
+
+    IExpr[] base = baseValue(f, x, lower, upper, parameter, parameters, conditions, engine);
+    if (base == null) {
+      return F.NIL;
+    }
+    IExpr shifted = engine.evaluate(F.subst(back, parameter, base[0]));
+    if (!isUsable(shifted)) {
+      return F.NIL;
+    }
+    IExpr value = engine.evaluate(F.Plus(back, F.Negate(shifted), base[1]));
+    if (!isUsable(value) || !value.isFree(x, true)) {
+      return F.NIL;
+    }
+
+    // What is checked is that the answer really does differentiate back to the inner integral.
+    // It is nearly true by construction, which is the point: what it catches is the substitution
+    // or the evaluation having gone wrong, not the rule being misapplied.
+    IExpr residual = engine.evaluate(F.Together(F.Subtract(F.D(value, parameter), inner)));
+    if (!residual.isZero()) {
+      residual = engine.evalTimeConstrained(F.Simplify(residual),
+          STEP_SECONDS);
+      if (residual.isNIL() || !residual.isZero()) {
+        return F.NIL;
+      }
+    }
+    return conditions.argSize() == 0 ? value
+        : F.ConditionalExpression(value, conditions.argSize() == 1 ? conditions.arg1()
+            : conditions.apply(S.And));
+  }
+
+  /**
+   * The parameter value where the integral is known and its value there, or <code>null</code>.
+   *
+   * <p>
+   * First a value that makes the integrand vanish identically, where the integral is zero without
+   * anything having to be computed; then one of the other parameters, which is what the Frullani
+   * integral needs; and only then a value where the integral itself can be done.
+   */
+  private static IExpr[] baseValue(IExpr f, IExpr x, IExpr lower, IExpr upper, IExpr parameter,
+      IAST parameters, IASTAppendable conditions, EvalEngine engine) {
+    IASTAppendable candidates = F.ListAlloc(BASE_VALUES.length + parameters.argSize());
+    for (int value : BASE_VALUES) {
+      candidates.append(F.ZZ(value));
+    }
+    for (int i = 1; i <= parameters.argSize(); i++) {
+      if (!parameters.get(i).equals(parameter)) {
+        candidates.append(parameters.get(i));
+      }
+    }
+    IASTAppendable integrable = F.ListAlloc(candidates.argSize());
+    for (int i = 1; i <= candidates.argSize(); i++) {
+      IExpr candidate = candidates.get(i);
+      IExpr at = engine.evaluate(F.subst(f, parameter, candidate));
+      if (!isUsable(at)) {
+        continue;
+      }
+      if (at.isZero() || engine.evaluate(F.Simplify(at)).isZero()) {
+        return new IExpr[] {candidate, F.C0};
+      }
+      integrable.append(candidate);
+    }
+    for (int i = 1; i <= integrable.argSize(); i++) {
+      IExpr candidate = integrable.get(i);
+      IExpr at = engine.evaluate(F.subst(f, parameter, candidate));
+      IExpr known = cleanIntegral(F.Integrate(at, F.List(x, lower, upper)), conditions, engine);
+      if (known.isPresent() && known.isFree(x, true)) {
+        return new IExpr[] {candidate, known};
+      }
+    }
+    return null;
+  }
+
+  /**
+   * The integral if it comes back as something this rule can go on using, else {@link F#NIL}.
+   *
+   * <p>
+   * A condition the engine attaches is kept rather than thrown away or ignored: it is a condition
+   * on the answer too, and the result carries every one collected here.
+   */
+  private static IExpr cleanIntegral(IExpr integral, IASTAppendable conditions,
+      EvalEngine engine) {
+    // Through the budget rather than TimeConstrained: this runs the Rubi rules, which do not come
+    // back to the evaluation loop often enough for a TimeConstrained to end them, while the
+    // budget's watchdog interrupts the thread they are running on.
+    IExpr value = IntegrateTimeBudget.runWithin(() -> engine.evaluate(integral),
+        INTEGRAL_SECONDS * 1000L);
+    if (value.isNIL() || value.isAST(S.$Aborted)) {
+      return F.NIL;
+    }
+    if (value.isAST(S.ConditionalExpression, 3)) {
+      IExpr condition = value.second();
+      if (!conditions.contains(condition)) {
+        conditions.append(condition);
+      }
+      value = engine.evaluate(value.first());
+    }
+    if (!isUsable(value) || !value.isFreeAST(
+        h -> h == S.Integrate || h == S.ConditionalExpression || h == S.Piecewise
+            || h == S.Boole)) {
+      return F.NIL;
+    }
+    return value;
+  }
+
+  /** Whether the engine came back with a value rather than with a way of saying it could not. */
+  private static boolean isUsable(IExpr expr) {
+    return expr.isPresent() && expr.isSpecialsFree() && !expr.isIndeterminate()
+        && !expr.isDirectedInfinity() && !expr.isAST(S.$Aborted);
   }
 
   /** The expression as a real number at one point, or {@link F#NIL}. */
