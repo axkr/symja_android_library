@@ -180,6 +180,12 @@ public class ExpToTrig extends AbstractEvaluator {
           // Log(A) - Log(B) = 2 * ArcTanh((A - B) / (A + B))
           IExpr newTerm = engine.evaluate(F.Times(F.C2, c_i, F.ArcTanh(ratio)));
 
+          IExpr before = engine.evaluate(
+              F.Plus(F.Times(c_i, F.Log(a_i)), F.Times(c_j, F.Log(a_j))));
+          if (!sameValue(before, newTerm, engine)) {
+            continue;
+          }
+
           newPlus.append(newTerm);
           used[i] = true;
           used[j] = true;
@@ -199,6 +205,76 @@ public class ExpToTrig extends AbstractEvaluator {
     }
 
     return engine.evaluate(newPlus.oneIdentity0());
+  }
+
+  /** Where the rewrite is looked at, chosen to sit on both sides of the origin. */
+  private static final IExpr[] SAMPLE_POINTS =
+      new IExpr[] {F.QQ(17, 13), F.QQ(-7, 5), F.QQ(11, 3), F.QQ(-23, 7), F.QQ(5, 9)};
+
+  /**
+   * Whether the rewritten term is the same function as the pair of logarithms it replaces.
+   *
+   * <p>
+   * <code>Log(A) - Log(B) == Log(A/B)</code>, which is what the ArcTanh identity rests on, holds
+   * only while <code>Arg(A) - Arg(B)</code> stays in <code>(-Pi, Pi]</code>; outside it the two
+   * differ by <code>2*Pi*I</code>. Whether that happens cannot be read off the expressions -
+   * <code>Log(2+x) - Log(2-x)</code> is safe for every real <code>x</code>, and so is
+   * <code>Log(1+I*x) - Log(1-I*x)</code>, while <code>Log(a+x) - Log(x-a)</code> is not once
+   * <code>a</code> is one of the fourth roots of <code>-1</code> and <code>x</code> is negative.
+   * That last one is what a sum over the roots of <code>x^4+1</code> is made of, and it used to be
+   * rewritten into an ArcTanh which is a different number.
+   *
+   * <p>
+   * So the rewrite is looked at instead of assumed. A point where the two disagree settles it: the
+   * identity does not hold and the pair is left alone. Points where nothing numeric comes out say
+   * nothing either way, and if no point says anything the rewrite is not made.
+   */
+  private static boolean sameValue(IExpr before, IExpr after, EvalEngine engine) {
+    if (before.equals(after)) {
+      return true;
+    }
+    IASTAppendable symbols = F.ListAlloc();
+    collectSymbols(before, symbols);
+    collectSymbols(after, symbols);
+    boolean seenAgreeing = false;
+    for (int k = 0; k < SAMPLE_POINTS.length; k++) {
+      IASTAppendable rules = F.ListAlloc(symbols.argSize());
+      for (int m = 1; m <= symbols.argSize(); m++) {
+        // A different value for each symbol, so that two of them cannot cancel by coincidence.
+        rules.append(F.Rule(symbols.get(m), SAMPLE_POINTS[(k + m) % SAMPLE_POINTS.length]));
+      }
+      IExpr difference;
+      try {
+        difference = engine.evaluate(
+            F.N(F.Abs(F.Subtract(F.subst(after, rules), F.subst(before, rules)))));
+      } catch (RuntimeException rex) {
+        org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+        return false;
+      }
+      if (difference.isReal()) {
+        if (difference.evalf() > 1.0e-8) {
+          return false;
+        }
+        seenAgreeing = true;
+      }
+    }
+    return seenAgreeing;
+  }
+
+  /** The free symbols of an expression, which are what the sampling above substitutes. */
+  private static void collectSymbols(IExpr expr, IASTAppendable symbols) {
+    if (expr.isSymbol()) {
+      if (!((ISymbol) expr).isBuiltInSymbol() && !symbols.contains(expr)) {
+        symbols.append(expr);
+      }
+      return;
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      for (int i = 0; i < ast.size(); i++) {
+        collectSymbols(ast.get(i), symbols);
+      }
+    }
   }
 
   /**

@@ -8116,6 +8116,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2*ArcTanh(x/2)");
     check("ExpToTrig(Log(1+I*x)-Log(1-I*x))", //
         "I*2*ArcTan(x)");
+    // Log(A) - Log(B) == Log(A/B), which the ArcTanh identity rests on, holds only while
+    // Arg(A) - Arg(B) stays in (-Pi, Pi]. With `a` a fourth root of -1 and `x` negative it does
+    // not, and the two differ by 2*Pi*I, so the pair is left alone rather than condensed.
+    check("ExpToTrig(Log(a+x)-Log(x-a))", //
+        "-Log(-a+x)+Log(a+x)");
+    check("N(Log(a+x)-Log(x-a) /. {a->(-1)^(1/4), x->-2}) == N(2*ArcTanh(a/x) /. {a->(-1)^(1/4), x->-2})", //
+        "False");
     check("TrigToExp(Sin(x))", //
         "(I*1/2)/E^(I*x)-I*1/2*E^(I*x)");
     check("ExpToTrig((I*1/2)/E^(I*x))", //

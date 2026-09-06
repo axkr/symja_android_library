@@ -115,13 +115,16 @@ public class RootSumTest extends ExprEvaluatorTestCase {
    * Java stack overflowed. The explicit sum is now returned even when the cosmetic simplify fails.
    *
    * <p>
-   * The expansion is no longer automatic - it has to be requested with {@code Normal}.
+   * The expansion is no longer automatic - it has to be requested with {@code Normal}. The sum is
+   * left as an explicit sum of logarithms: condensing the pairs into {@code ArcTanh} would cross a
+   * branch cut here and give a different number once {@code x} is negative, which
+   * {@code ExpToTrig} now checks for.
    */
   @Test
   public void testSolvableQuarticLogSummand() {
     check("Normal(RootSum(#^4+1 &, Log(x-#1)/(4*#1^3) &))", //
-        "-1/4*(-1)^(1/4)*Log(-(-1)^(1/4)+x)+1/4*(-1)^(1/4)*Log((-1)^(1/4)+x)-1/4*(-1)^(3/\n"
-            + "4)*Log(-(-1)^(3/4)+x)+1/4*(-1)^(3/4)*Log((-1)^(3/4)+x)");
+        "1/4*(-(-1)^(1/4)*Log(-(-1)^(1/4)+x)+(-1)^(1/4)*Log((-1)^(1/4)+x)-(-1)^(3/4)*Log(-(-\n"
+            + "1)^(3/4)+x)+(-1)^(3/4)*Log((-1)^(3/4)+x))");
   }
 
   @Test
