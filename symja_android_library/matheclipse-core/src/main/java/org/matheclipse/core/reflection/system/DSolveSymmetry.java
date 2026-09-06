@@ -27,9 +27,7 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <p>
  * This is a search rather than a recognition, so every branch of the inversion at the end is
- * required to be seen to solve the equation numerically. Keeping what merely cannot be disproved
- * would return one of the wrong branches, which is how the same method in mathilda shipped two
- * wrong answers before the check was added.
+ * required to be seen to solve the equation numerically.
  */
 final class DSolveSymmetry {
 
@@ -98,8 +96,8 @@ final class DSolveSymmetry {
           if (ctx.expired()) {
             return F.NIL;
           }
-          IExpr body = reduce(lhs, symmetry[0], symmetry[1], field, yFunction, xVar, yDummy,
-              pDummy, c_n, ctx);
+          IExpr body = reduce(lhs, symmetry[0], symmetry[1], field, yFunction, xVar, yDummy, pDummy,
+              c_n, ctx);
           if (body.isPresent()) {
             return body;
           }
@@ -136,8 +134,8 @@ final class DSolveSymmetry {
       return found;
     }
     IAST variables = F.List(xVar, yDummy, pDummy);
-    IExpr forms = ctx.evalTimeConstrained(F.Flatten(F.CoefficientList(numerator, variables)),
-        STEP_SECONDS);
+    IExpr forms =
+        ctx.evalTimeConstrained(F.Flatten(F.CoefficientList(numerator, variables)), STEP_SECONDS);
     if (forms.isNIL() || !forms.isList()) {
       return found;
     }
@@ -180,8 +178,8 @@ final class DSolveSymmetry {
    * The condition a point symmetry satisfies, which is the second prolongation of the infinitesimal
    * generator applied to the equation.
    */
-  private static IExpr symmetryCondition(IExpr xi, IExpr eta, IExpr field, IExpr xVar,
-      IExpr yDummy, IExpr pDummy, EvalEngine engine) {
+  private static IExpr symmetryCondition(IExpr xi, IExpr eta, IExpr field, IExpr xVar, IExpr yDummy,
+      IExpr pDummy, EvalEngine engine) {
     try {
       IExpr etaX = engine.evaluate(F.D(eta, xVar));
       IExpr etaY = engine.evaluate(F.D(eta, yDummy));
@@ -202,11 +200,11 @@ final class DSolveSymmetry {
           F.Times(F.Subtract(F.Times(F.C2, etaXY), xiXX), pDummy), //
           F.Times(F.Subtract(etaYY, F.Times(F.C2, xiXY)), F.Sqr(pDummy)), //
           F.Times(F.CN1, xiYY, F.Power(pDummy, F.C3)), //
-          F.Times(F.Subtract(F.Subtract(etaY, F.Times(F.C2, xiX)),
-              F.Times(F.C3, xiY, pDummy)), field));
+          F.Times(F.Subtract(F.Subtract(etaY, F.Times(F.C2, xiX)), F.Times(F.C3, xiY, pDummy)),
+              field));
       // The first prolongation, which is what the derivative of the equation is contracted with.
-      IExpr first = F.Plus(etaX, F.Times(F.Subtract(etaY, xiX), pDummy),
-          F.Times(F.CN1, xiY, F.Sqr(pDummy)));
+      IExpr first =
+          F.Plus(etaX, F.Times(F.Subtract(etaY, xiX), pDummy), F.Times(F.CN1, xiY, F.Sqr(pDummy)));
       return engine.evaluate(F.Plus(prolongation, //
           F.Times(F.CN1, xi, fieldX), //
           F.Times(F.CN1, eta, fieldY), //
@@ -254,8 +252,9 @@ final class DSolveSymmetry {
     } else {
       IExpr constant = F.Dummy("c");
       IExpr slope = engine.evaluate(F.Cancel(F.Together(F.Divide(eta, xi))));
-      IExpr equation = F.Equal(F.Subtract(engine.evaluate(F.D(yFunction, xVar)),
-          F.subst(slope, yDummy, yFunction)), F.C0);
+      IExpr equation = F.Equal(
+          F.Subtract(engine.evaluate(F.D(yFunction, xVar)), F.subst(slope, yDummy, yFunction)),
+          F.C0);
       IAST curves = DSolveODE.solveSubODE(equation, xVar, yFunction, constant, ctx);
       if (curves.argSize() == 0 || ctx.expired()) {
         return F.NIL;
@@ -281,8 +280,8 @@ final class DSolveSymmetry {
     if (rate.isZero()) {
       return F.NIL;
     }
-    IExpr q = engine.evaluate(F.Cancel(F.Together(F.Divide(
-        F.Plus(F.D(s, xVar), F.Times(F.D(s, yDummy), pDummy)), rate))));
+    IExpr q = engine.evaluate(F
+        .Cancel(F.Together(F.Divide(F.Plus(F.D(s, xVar), F.Times(F.D(s, yDummy), pDummy)), rate))));
     IExpr slope = engine.evaluate(F.Cancel(F.Together(F.Divide(
         F.Plus(F.D(q, xVar), F.Times(F.D(q, yDummy), pDummy), F.Times(F.D(q, pDummy), field)),
         rate))));
@@ -317,8 +316,9 @@ final class DSolveSymmetry {
 
     // One equation of the first order, which the cascade is asked for.
     IExpr qFunction = F.unaryAST1(F.Dummy("qf"), rSymbol);
-    IExpr qEquation = F.Equal(F.Subtract(engine.evaluate(F.D(qFunction, rSymbol)),
-        F.subst(reduced, qSymbol, qFunction)), F.C0);
+    IExpr qEquation = F.Equal(
+        F.Subtract(engine.evaluate(F.D(qFunction, rSymbol)), F.subst(reduced, qSymbol, qFunction)),
+        F.C0);
     IAST rates = DSolveODE.solveSubODE(qEquation, rSymbol, qFunction, c_n, ctx);
     if (rates.argSize() == 0 || ctx.expired()) {
       return F.NIL;
@@ -330,8 +330,7 @@ final class DSolveSymmetry {
         continue;
       }
       IExpr constant = ctx.nextConstant();
-      IExpr relation = F.Equal(s, engine.evaluate(
-          F.subst(F.Plus(integral, constant), rSymbol, r)));
+      IExpr relation = F.Equal(s, engine.evaluate(F.subst(F.Plus(integral, constant), rSymbol, r)));
       IExpr solutions = ctx.evalTimeConstrained(F.Solve(relation, yDummy), STEP_SECONDS);
       if (solutions.isNIL()) {
         continue;
@@ -339,9 +338,8 @@ final class DSolveSymmetry {
       IAST candidates = DSolveUtil.extractSolveResults(solutions);
       for (int j = 1; j <= candidates.argSize(); j++) {
         IExpr body = candidates.get(j);
-        if (body.isFree(xVar) || body.leafCount() > MAX_BODY_LEAF_COUNT
-            || !body.isFree(x -> x.isAST(S.Solve) || x.isAST(S.Integrate) || x.isAST(S.Root),
-                true)) {
+        if (body.isFree(xVar) || body.leafCount() > MAX_BODY_LEAF_COUNT || !body
+            .isFree(x -> x.isAST(S.Solve) || x.isAST(S.Integrate) || x.isAST(S.Root), true)) {
           continue;
         }
         if (DSolveVerify.acceptODEStrict(F.List(lhs), yFunction, xVar, body, engine)) {
@@ -388,7 +386,8 @@ final class DSolveSymmetry {
    * looked for among polynomials and whose quadratures would not close.
    */
   private static boolean hasUndefinedFunction(IExpr expr) {
-    return !expr.isFree(x -> x.isAST() && (x.head().isAST(S.Derivative)
-        || (x.head().isSymbol() && !x.head().isBuiltInSymbol())), true);
+    return !expr.isFree(x -> x.isAST()
+        && (x.head().isAST(S.Derivative) || (x.head().isSymbol() && !x.head().isBuiltInSymbol())),
+        true);
   }
 }

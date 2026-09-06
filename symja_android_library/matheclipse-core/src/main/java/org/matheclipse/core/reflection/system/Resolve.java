@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -243,8 +244,32 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
       // holds for every value iff the solution set is the whole domain
       return isFullDomain(reduced, boundVars) ? S.True : F.NIL;
     }
-    // Exists: the solution set has to name a value which the variables actually attain
-    return reduced.isFree(S.Reduce) && isAttainedSolution(reduced) ? S.True : F.NIL;
+    // Exists: the solution set has to name a value which the variables actually attain, and it
+    // must not depend on the free parameters of the condition - a parametric solution set like
+    // `x == -b/2 + Sqrt(b^2-4*c)/2` only names a real value for some of the parameter values
+    if (!reduced.isFree(S.Reduce) || !isAttainedSolution(reduced)) {
+      return F.NIL;
+    }
+    return isParameterFree(reduced, boundVars) ? S.True : F.NIL;
+  }
+
+  /**
+   * Test whether a solution set only names the quantified variables (and the generated integer
+   * constants of a periodic solution family), so that it describes a witness for every value of the
+   * remaining free parameters.
+   *
+   * @param reduced the solution set which {@code Reduce} computed
+   * @param boundVars the quantified variables
+   */
+  private static boolean isParameterFree(IExpr reduced, IAST boundVars) {
+    IAST variables = new VariablesSet(reduced).getVarList();
+    for (int i = 1; i < variables.size(); i++) {
+      IExpr variable = variables.get(i);
+      if (!boundVars.contains(variable) && !variable.isAST(S.C, 2)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -412,6 +437,14 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    if (headID == ID.Equal && vars.isList1()) {
+      // a linear or quadratic equation has an exact criterion for a real root
+      IExpr rootCondition = realRootCondition(f, vars.arg1(), engine);
+      if (rootCondition.isPresent()) {
+        return rootCondition;
+      }
+    }
+
     switch (headID) {
       case ID.Unequal:
         // a non constant polynomial isn't identically zero
@@ -437,6 +470,49 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
       default:
         return F.NIL;
     }
+  }
+
+  /**
+   * The condition under which the polynomial <code>f</code> of degree <code>1</code> or
+   * <code>2</code> has a real root in <code>variable</code>:
+   *
+   * <ul>
+   * <li><code>a1*x+a0</code> has one iff <code>a1 != 0 || a0 == 0</code></li>
+   * <li><code>a2*x^2+a1*x+a0</code> has one iff the discriminant <code>a1^2-4*a2*a0</code> is non
+   * negative (or the equation degenerates to the linear case)</li>
+   * </ul>
+   *
+   * @param f the polynomial
+   * @param variable the (single) quantified variable
+   * @param engine the evaluation engine
+   * @return the condition on the coefficients of <code>f</code> or {@link F#NIL} if the degree
+   *         isn't <code>1</code> or <code>2</code>
+   */
+  private static IExpr realRootCondition(IExpr f, IExpr variable, EvalEngine engine) {
+    IExpr coefficients = S.CoefficientList.ofNIL(engine, f, variable);
+    if (!coefficients.isList()) {
+      return F.NIL;
+    }
+    IAST coefficientList = (IAST) coefficients;
+    if (coefficientList.argSize() == 2) {
+      IExpr a0 = coefficientList.arg1();
+      IExpr a1 = coefficientList.arg2();
+      return engine.evaluate(F.Or(F.Unequal(a1, F.C0), F.Equal(a0, F.C0)));
+    }
+    if (coefficientList.argSize() == 3) {
+      IExpr a0 = coefficientList.arg1();
+      IExpr a1 = coefficientList.arg2();
+      IExpr a2 = coefficientList.arg3();
+      IExpr discriminant = F.Subtract(F.Sqr(a1), F.Times(F.C4, a2, a0));
+      IExpr quadraticCase = F.And(F.Unequal(a2, F.C0), F.GreaterEqual(discriminant, F.C0));
+      if (engine.evalTrue(F.Unequal(a2, F.C0))) {
+        return engine.evaluate(F.GreaterEqual(discriminant, F.C0));
+      }
+      IExpr linearCase =
+          F.And(F.Equal(a2, F.C0), F.Or(F.Unequal(a1, F.C0), F.Equal(a0, F.C0)));
+      return engine.evaluate(F.Or(quadraticCase, linearCase));
+    }
+    return F.NIL;
   }
 
   /**

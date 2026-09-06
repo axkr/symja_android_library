@@ -16,10 +16,11 @@ Solve(equations, vars, domain)
 
 - `GenerateConditions` - if `True` (default value) the solutions for multi-valued inverse functions are generated with the `ConditionalExpression` function; if `False` some solutions for multi-valued inverse functions get lost. 
 - `MaxRoots` the maximum number of roots, which should be returned 
+- `Modulus` - if a positive integer `n` is given, solve the equations modulo `n`, i.e. return all solutions in the complete residue system `{0, 1, ..., n-1}` 
 
 ### Examples
 
-It's important to use the `==` operator to define the equations. If you have unintentionally assigned a value to the variables `x, y` with the `=` operator you have to call `Clear(x,y)` to clear the definitions for these variables.
+It's important to use the `==` operator to define the equations. If you have unintentionally assigned a value to the variables `x, y` with the `=` operator you have to call `Clear(x,y)` to clear the definitions for these variables. An argument which isn't a quantified system of equations and inequalities - a bare expression like `x^2-4` instead of the equation `x^2-4==0` - reports the message `naqs` and stays unevaluated.
 
 ```
 >> Solve({x^2==4,x+y^2==6}, {x,y})
@@ -48,8 +49,18 @@ The solutions for multi-valued inverse functions are generated with the `Conditi
 {{x->0}}    
 ```
 
+With the `Modulus` option the equations are solved in the residue class ring of the given modulus.
+
+```
+>> Solve({x^2 == 2, y == x}, {x, y}, Modulus -> 7)
+{{x->3,y->3},{x->4,y->4}}
+
+>> Solve({x^2 == 3, y == x}, {x, y}, Modulus -> 7)
+{}
+```
+
 ### Related terms 
-[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindInstance](FindInstance.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [NSolve](NSolve.md), [Reduce](Reduce.md), [Roots](Roots.md) 
+[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindInstance](FindInstance.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [NSolve](NSolve.md), [NSolveValues](NSolveValues.md), [Reduce](Reduce.md), [Roots](Roots.md), [SolveValues](SolveValues.md) 
 
 
 ### Implementation status

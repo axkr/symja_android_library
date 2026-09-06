@@ -135,10 +135,11 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(a*x^2 + b*x + c == 0, x)", //
         "(a!=0&&(x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)))||(a==\n"
             + "0&&b!=0&&x==-c/b)||(a==0&&b==0&&c==0)");
-    // parametric quadratic equation with a positivity constraint: left unevaluated
-    // (previously returned the incorrect "x>0", which silently dropped the equation)
+    // parametric quadratic equation with a positivity constraint: the reduction of the equation
+    // needs a condition on the parameters which the interval engine can't express, so the equation
+    // is kept beside the constraint instead of being dropped
     check("Reduce(a*x^2 + b*x + c == 0&&x>0, x)", //
-        "Reduce(c+b*x+a*x^2==0&&x>0,x)");
+        "x>0&&c+b*x+a*x^2==0");
   }
 
   /**
@@ -534,5 +535,411 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     // non-strict relations include the root -> single point solution
     check("Reduce(x<=a&&x>=a,x)", //
         "x==a");
+  }
+
+  /**
+   * A condition of a conjunction which the interval reduction cannot absorb has to be kept in the
+   * result - dropping it would answer a statement which wasn't reduced.
+   */
+  @Test
+  public void testReduceConjunctionKeepsConditions() {
+    // the second condition is unsatisfiable, so the conjunction is
+    check("Reduce(x > 0 && x^2 + 1 < 0, x)", //
+        "False");
+    check("Reduce(x^2 + 1 < 0 && x > 0, x)", //
+        "False");
+    check("Reduce({x > 0, x^2 + 1 < 0}, x)", //
+        "False");
+    check("Reduce(x^2 == 4 && x^2 + 1 < 0, x)", //
+        "False");
+    // a condition which isn't reduced is neither dropped nor guessed
+    check("Reduce(Sin(x) < 1/2 && x > 0, x)", //
+        "x>0&&Sin(x)<1/2");
+  }
+
+  /**
+   * Every root of an equation is a solution; the reduction must not keep only the principal branch
+   * of an inverse function.
+   */
+  @Test
+  public void testReduceAllRoots() {
+    check("Reduce(Abs(x) == 1, x, Reals)", //
+        "x==-1||x==1");
+    // over the complexes `Abs(x)==1` is the unit circle, which the real reduction can't describe
+    check("Reduce(Abs(x) == 1, x)", //
+        "Abs(x)==1");
+    check("Reduce(Log(x)^2 == 1, x, Reals)", //
+        "x==1/E||x==E");
+    check("Reduce(Sin(x)^2 == 1/4 && 0 < x < Pi, x)", //
+        "x==Pi/6||x==5/6*Pi");
+  }
+
+  /**
+   * `Roots` returns `False` for every equation it cannot solve, so only a polynomial equation may
+   * be handed to it - a non polynomial one is solved with `Solve` instead.
+   */
+  @Test
+  public void testReduceNonPolynomialEquation() {
+    check("Reduce(Sqrt(x) == 2, x)", //
+        "x==4");
+    check("Reduce(Sqrt(x) == x - 2, x, Reals)", //
+        "x==4");
+    check("Reduce(Sqrt(x - 1) == 2, x, Reals)", //
+        "x==5");
+    check("Reduce(x^x == 4, x, Reals)", //
+        "x==Log(4)/ProductLog(Log(4))");
+    check("Reduce(E^(2*x) - 3*E^x + 2 == 0, x, Reals)", //
+        "x==0||x==Log(2)");
+    check("Reduce(Sin(x) == Cos(x), x)", //
+        "C(1)∈Integers&&(x==-3/4*Pi+2*Pi*C(1)||x==Pi/4+2*Pi*C(1))");
+  }
+
+  /**
+   * Over the reals only the real members of a periodic solution family are solutions: a family with
+   * a real period needs a real offset, a family with an imaginary period contributes at most one
+   * member.
+   */
+  @Test
+  public void testReducePeriodicRealDomain() {
+    check("Reduce(Sin(x) == 2, x, Reals)", //
+        "False");
+    check("Reduce(Cos(x) == 3, x, Reals)", //
+        "False");
+    check("Reduce(Cosh(x) == 1/2, x, Reals)", //
+        "False");
+    // the complex solutions are kept over the complexes
+    check("Reduce(Sin(x) == 2, x, Complexes)", //
+        "C(1)∈Integers&&(x==Pi-ArcSin(2)+2*Pi*C(1)||x==ArcSin(2)+2*Pi*C(1))");
+    // an imaginary period leaves the members with `C(1)==0`
+    check("Reduce(Sinh(x) == 1, x, Reals)", //
+        "x==ArcSinh(1)");
+    check("Reduce(Cosh(x) == 2, x, Reals)", //
+        "x==-ArcCosh(2)||x==ArcCosh(2)");
+    check("Reduce(Sinh(y) == 0, y, Reals)", //
+        "y==0");
+  }
+
+  /**
+   * An exponential equation has the same kind of periodic solution family as a trigonometric
+   * one.
+   */
+  @Test
+  public void testReduceExponentialEquation() {
+    check("Reduce(E^x == 2, x)", //
+        "C(1)∈Integers&&x==I*2*Pi*C(1)+Log(2)");
+    check("Reduce(E^x == 2, x, Reals)", //
+        "x==Log(2)");
+    check("Reduce(E^x == 2 && x > 0, x)", //
+        "x==Log(2)");
+    check("Reduce(Exp(x) == -1, x, Reals)", //
+        "False");
+    // a power of a non zero base is never zero
+    check("Reduce(E^x == 0, x)", //
+        "False");
+    check("Reduce(2^x == 8, x, Reals)", //
+        "x==3");
+  }
+
+  /**
+   * A periodic equation which is restricted to a bounded window has finitely many solutions, which
+   * are enumerated and verified.
+   */
+  @Test
+  public void testReducePeriodicRegion() {
+    check("Reduce(Sin(x) == 1/2 && 0 < x < 2*Pi, x)", //
+        "x==Pi/6||x==5/6*Pi");
+    check("Reduce(Cos(x) == 1/2 && 0 < x < 2*Pi, x)", //
+        "x==Pi/3||x==5/3*Pi");
+    check("Reduce(Tan(x) == 1 && 0 < x < 2*Pi, x)", //
+        "x==Pi/4||x==5/4*Pi");
+    check("Reduce(Sin(x) == 0 && 0 <= x <= 2*Pi, x)", //
+        "x==0||x==Pi||x==2*Pi");
+    check("Reduce(Sin(x) == 0 && 0 < x < 10, x)", //
+        "x==Pi||x==2*Pi||x==3*Pi");
+    check("Reduce({Sin(x) == 0, 0 < x, x < 10}, x)", //
+        "x==Pi||x==2*Pi||x==3*Pi");
+    check("Reduce(Cos(2*x) == 0 && 0 < x < Pi, x)", //
+        "x==Pi/4||x==3/4*Pi");
+    check("Reduce(Sin(x) == 1/2 && -2*Pi < x < 2*Pi, x)", //
+        "x==-11/6*Pi||x==-7/6*Pi||x==Pi/6||x==5/6*Pi");
+    check("Reduce(Sin(x) == Cos(x) && 0 < x < 2*Pi, x)", //
+        "x==Pi/4||x==5/4*Pi");
+    check("Reduce(Sinh(x) == 2 && 0 < x < 10, x)", //
+        "x==ArcSinh(2)");
+    check("Reduce(Sinh(x) == 2 && x < 0, x)", //
+        "False");
+    // no member of the window solves the equation
+    check("Reduce(Sin(x) == 2 && 0 < x < 2*Pi, x)", //
+        "False");
+    // an unbounded window can't be enumerated, so the family is kept beside the bound
+    check("Reduce(Sin(x) == 1/2 && x > 0, x)", //
+        "C(1)∈Integers&&(x==Pi/6+2*Pi*C(1)||x==5/6*Pi+2*Pi*C(1))&&x>0");
+  }
+
+  /**
+   * A trigonometric inequality over a bounded window is decided cell by cell between the zeros of
+   * its two sides.
+   */
+  @Test
+  public void testReduceTrigInequalityRegion() {
+    check("Reduce(Sin(x) > 1/2 && 0 < x < 2*Pi, x)", //
+        "x>Pi/6&&x<5/6*Pi");
+    check("Reduce(Sin(x) >= 1/2 && 0 < x < 2*Pi, x)", //
+        "x>=Pi/6&&x<=5/6*Pi");
+    check("Reduce(Sin(x) < 1/2 && 0 < x < 2*Pi, x)", //
+        "(x>0&&x<Pi/6)||(x>5/6*Pi&&x<2*Pi)");
+    check("Reduce(Cos(x) > 0 && 0 < x < 2*Pi, x)", //
+        "(x>0&&x<Pi/2)||(x>3/2*Pi&&x<2*Pi)");
+    check("Reduce(Sin(x) != 1/2 && 0 < x < 2*Pi, x)", //
+        "(x>0&&x<Pi/6)||(x>Pi/6&&x<5/6*Pi)||(x>5/6*Pi&&x<2*Pi)");
+    check("Reduce(Sin(x) > 2 && 0 < x < 2*Pi, x)", //
+        "False");
+    check("Reduce(Sin(x) > -2 && 0 < x < 2*Pi, x)", //
+        "x>0&&x<2*Pi");
+    check("Reduce(x^2 < 1 && Sin(x) > 0, x)", //
+        "x>0&&x<1");
+    // a pole is a sign change which isn't a zero, so a pole bearing head isn't decided this way
+    check("Reduce(Tan(x) > 1 && 0 < x < 2*Pi, x)", //
+        "x>0&&x<2*Pi&&Tan(x)>1");
+  }
+
+  /** An inequality whose two sides never meet is decided by the range of the function. */
+  @Test
+  public void testReduceInequalityByRange() {
+    check("Reduce(Sin(x) <= 1, x, Reals)", //
+        "x∈Reals");
+    check("Reduce(Sin(x) > 1, x, Reals)", //
+        "False");
+    check("Reduce(Tanh(x) < 1, x, Reals)", //
+        "x∈Reals");
+    check("Reduce(E^x > 0, x, Reals)", //
+        "x∈Reals");
+    check("Reduce(E^x < 0, x, Reals)", //
+        "False");
+    // the function isn't defined at `x==0`, so the range alone doesn't prove the universal claim
+    check("Reduce(1/x^2 > 0, x, Reals)", //
+        "x<0||x>0");
+  }
+
+  /**
+   * `Inequality` is a comparator function too, so a chained relation has to be recognized before
+   * the chained comparators - its arguments alternate between values and relation heads.
+   */
+  @Test
+  public void testReduceChainedInequality() {
+    check("Reduce(-5 < 3*x + 7 <= 22, x)", //
+        "x>-4&&x<=5");
+    check("Reduce(-5 < 3*x + 7/x <= 22, x)", //
+        "x>=1/3&&x<=7");
+    check("Reduce(0 < x + 1 < 2, x)", //
+        "x>-1&&x<1");
+  }
+
+  /** The poles of a rational function are breakpoints of its sign and never solutions. */
+  @Test
+  public void testReduceRationalInequality() {
+    check("Reduce(1/x < 1, x, Reals)", //
+        "x<0||x>1");
+    check("Reduce(7/x < 22, x, Reals)", //
+        "x<0||x>7/22");
+    check("Reduce(1/x >= 0, x, Reals)", //
+        "x>0");
+    check("Reduce(1/x == 0, x, Reals)", //
+        "False");
+    check("Reduce(1/(x^2 - 1) < 0, x, Reals)", //
+        "x>-1&&x<1");
+    check("Reduce(1/(x^2 + 1) < 0, x, Reals)", //
+        "False");
+    check("Reduce((x - 1)/(x - 2) > 0, x, Reals)", //
+        "x<1||x>2");
+    check("Reduce(x + 1/x > 2, x, Reals)", //
+        "(x>0&&x<1)||x>1");
+  }
+
+  /** A polynomial relation of any degree is reduced inside a boolean combination too. */
+  @Test
+  public void testReducePolynomialAtomsInBooleanCombination() {
+    check("Reduce(x^2 > 1 || x < -5, x, Reals)", //
+        "x<-1||x>1");
+    check("Reduce(x^2 <= 1 || x >= 3, x, Reals)", //
+        "(x>=-1&&x<=1)||x>=3");
+    check("Reduce(x^3 - x > 0 && x < 2, x)", //
+        "(x>-1&&x<0)||(x>1&&x<2)");
+    check("Reduce(x^2 != 1, x, Reals)", //
+        "x<-1||(x>-1&&x<1)||x>1");
+    check("Reduce(x^2 < 5 && x > -3, x, Reals)", //
+        "x>-Sqrt(5)&&x<Sqrt(5)");
+    check("Reduce(x^2 - 2 > 0 && x^2 - 3 < 0, x)", //
+        "(x>-Sqrt(3)&&x<-Sqrt(2))||(x>Sqrt(2)&&x<Sqrt(3))");
+  }
+
+  /**
+   * A piecewise defined function of a real variable is reduced by the case analysis of its
+   * branches.
+   */
+  @Test
+  public void testReducePiecewiseFunctions() {
+    check("Reduce(Abs(x) < 1, x, Reals)", //
+        "x>-1&&x<1");
+    check("Reduce(Abs(x - 1) > 2, x, Reals)", //
+        "x<-1||x>3");
+    check("Reduce(Abs(x - 2) + Abs(x - 3) == 1, x, Reals)", //
+        "x>=2&&x<=3");
+    check("Reduce(Abs(Abs(x) - 2) + Abs(Abs(x) - 5) == 3, x, Reals)", //
+        "(x>=-5&&x<=-2)||(x>=2&&x<=5)");
+    check("Reduce(Abs(x - 3) - Abs(x + 1) == -4, x, Reals)", //
+        "x>=3");
+    check("Reduce(Max(x, 1) > 2, x, Reals)", //
+        "x>2");
+    check("Reduce(Max(x, -x) < 3, x, Reals)", //
+        "x>-3&&x<3");
+    check("Reduce(Min(x, 1 - x) > 1/4, x, Reals)", //
+        "x>1/4&&x<3/4");
+    check("Reduce(Max(x^2 - 1, 1 - x^2) > 1/2, x, Reals)", //
+        "x<-Sqrt(3/2)||(x>-1/Sqrt(2)&&x<1/Sqrt(2))||x>Sqrt(3/2)");
+    check("Reduce(Sign(x - 1) < 0, x, Reals)", //
+        "x<1");
+    check("Reduce(UnitStep(x - 3) == 1, x, Reals)", //
+        "x>=3");
+    check("Reduce(Ramp(x) > 2, x, Reals)", //
+        "x>2");
+    check("Reduce(Clip(x, {-2, 2}) < 1, x, Reals)", //
+        "x<1");
+    check("Reduce(Boole(x > 0) + Boole(x > 1) == 2, x, Reals)", //
+        "x>1");
+    check("Reduce(UnitBox(x) == 1, x, Reals)", //
+        "x>=-1/2&&x<=1/2");
+    check("Reduce(Piecewise({{x^2, x > 0}}, -x) > 2, x, Reals)", //
+        "x<-2||x>Sqrt(2)");
+    // an ordering in the input makes the variable real
+    check("Reduce(x^2 > 3 || Abs(x) < 1, x, Reals)", //
+        "x<-Sqrt(3)||(x>-1&&x<1)||x>Sqrt(3)");
+  }
+
+  /**
+   * A system is reduced by eliminating the variables which an equation determines uniquely first,
+   * so that the back substitution doesn't collapse different solution branches into one.
+   */
+  @Test
+  public void testReduceSystemEliminationOrder() {
+    check("Reduce(x^2 + y^2 == 1 && x == 0, {x, y})", //
+        "(x==0&&y==-1)||(x==0&&y==1)");
+    // more than one equation in the reduced variable determines the parameters too
+    check("Reduce(a*x == 1 && x == 2, x)", //
+        "x==2&&a==1/2");
+    check("Reduce(x^2 == 4 && x^3 == 8, x)", //
+        "x==2");
+  }
+
+  /** A system whose relations each constrain a single variable is reduced variable by variable. */
+  @Test
+  public void testReduceMultivariateInequalities() {
+    check("Reduce(x > 1 && x < 0 && y > 0, {x, y}, Reals)", //
+        "False");
+    check("Reduce(x^2 > 1 && y < 3, {x, y}, Reals)", //
+        "(x<-1||x>1)&&y<3");
+    check("Reduce(x > 0 && y > 0, {x, y})", //
+        "x>0&&y>0");
+    // a relation which couples the variables needs a multivariate engine, so it stays unevaluated
+    check("Reduce(x + y < 1 && x > 0 && y > 0, {x, y}, Reals)", //
+        "Reduce(x+y<1&&x>0&&y>0,{x,y},Reals)");
+  }
+
+  /** An unbounded integer solution set is described by a ray instead of an enumeration. */
+  @Test
+  public void testReduceIntegerRays() {
+    check("Reduce(x > 0, x, Integers)", //
+        "x>=1");
+    check("Reduce(x < 5, x, Integers)", //
+        "x<=4");
+    check("Reduce(x^2 > 1, x, Integers)", //
+        "x<=-2||x>=2");
+    check("Reduce(x^2 >= 9, x, Integers)", //
+        "x<=-3||x>=3");
+    check("Reduce(x^2 >= 0, x, Integers)", //
+        "x∈Integers");
+    // an irrational bound is rounded to the enclosed integers
+    check("Reduce(x^2 < 5 && x > -3, x, Integers)", //
+        "x==-2||x==-1||x==0||x==1||x==2");
+    // an unbounded set of primes can't be described by a ray
+    check("Reduce(x > 0, x, Primes)", //
+        "Reduce(x>0,x,Primes)");
+  }
+
+  /** A system over a discrete domain is enumerated with `Solve`. */
+  @Test
+  public void testReduceIntegerSystem() {
+    check("Reduce(x + y == 5 && x > 0 && y > 0, {x, y}, Integers)", //
+        "(x==1&&y==4)||(x==2&&y==3)||(x==3&&y==2)||(x==4&&y==1)");
+  }
+
+  /** Equations are reduced over the rational numbers too. */
+  @Test
+  public void testReduceRationals() {
+    check("Reduce(x^2 == 4, x, Rationals)", //
+        "x==-2||x==2");
+    check("Reduce(x^2 == 2, x, Rationals)", //
+        "False");
+    check("Reduce(2*x == 1, x, Rationals)", //
+        "x==1/2");
+    // the rational solutions of an inequality are dense, so they aren't described
+    check("Reduce(x > 0, x, Rationals)", //
+        "Reduce(x>0,x,Rationals)");
+  }
+
+  /** The condition which the quantifier elimination leaves is reduced in turn. */
+  @Test
+  public void testReduceQuantifierResult() {
+    check("Reduce(ForAll(y, x^2 + y^2 >= 1), {x}, Reals)", //
+        "x<=-1||x>=1");
+    check("Reduce(Exists(y, x^2 + y^2 < 1), {x}, Reals)", //
+        "x>-1&&x<1");
+    check("Reduce(ForAll(y, y^2 + x^2 > 0), {x}, Reals)", //
+        "x<0||x>0");
+  }
+
+  /**
+   * The roots of a parametric equation aren't real for every value of the parameters, so over the
+   * reals every case of the leading-coefficient analysis carries the condition under which its
+   * roots are real.
+   */
+  @Test
+  public void testReduceParametricEquationReals() {
+    check("Reduce(x^2 == a, x, Reals)", //
+        "a>=0&&(x==-Sqrt(a)||x==Sqrt(a))");
+    check("Reduce(a*x^2 == 1, x, Reals)", //
+        "a>0&&(x==-1/Sqrt(a)||x==1/Sqrt(a))");
+    check("Reduce(x^2 + b*x + c == 0, x, Reals)", //
+        "b^2-4*c>=0&&(x==-b/2-Sqrt(b^2-4*c)/2||x==-b/2+Sqrt(b^2-4*c)/2)");
+    check("Reduce(a*x^2 + b*x + c == 0, x, Reals)", //
+        "(a!=0&&b^2-4*a*c>=0&&(x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(\n"
+            + "2*a)))||(a==0&&b!=0&&x==-c/b)||(a==0&&b==0&&c==0)");
+    // a linear equation always has a real root, so only the leading coefficient is analyzed
+    check("Reduce(a*x == b, x, Reals)", //
+        "(a!=0&&x==b/a)||(a==0&&b==0)");
+    // the parameters are real over the reals, which makes this discriminant trivially non negative
+    check("Reduce(x^2 == a^2, x, Reals)", //
+        "x==-a||x==a");
+    // over the complexes every root is a solution, so no condition is generated
+    check("Reduce(x^2 == a, x)", //
+        "x==-Sqrt(a)||x==Sqrt(a)");
+    // the condition isn't known for a cubic, so the equation stays unevaluated instead of
+    // asserting roots which are non-real for some parameter values
+    check("Reduce(x^3 == a, x, Reals)", //
+        "x^3==a");
+    // an equation without parameters is reduced exactly
+    check("Reduce(x^2 == 4, x, Reals)", //
+        "x==-2||x==2");
+    check("Reduce(x^2 == EulerGamma, x, Reals)", //
+        "x==-Sqrt(EulerGamma)||x==Sqrt(EulerGamma)");
+  }
+
+  /** The variables of the reduction have to be symbols. */
+  @Test
+  public void testReduceInvalidVariable() {
+    check("Reduce(x == 1, 5)", //
+        "Reduce(x==1,5)");
+    check("Reduce(x == 1, {})", //
+        "Reduce(x==1,{})");
   }
 }
