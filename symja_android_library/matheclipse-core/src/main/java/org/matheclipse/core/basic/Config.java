@@ -511,6 +511,12 @@ public class Config {
   public static boolean INTEGRATE_ALGORITHM_GOURSAT = false;
 
   /**
+   * Enable the differentiation-under-the-integral-sign stage for definite integrals in
+   * <code>Integrate()</code>.
+   */
+  public static boolean INTEGRATE_ALGORITHM_DIFF_UNDER_INT = true;
+
+  /**
    * Enable the Weierstrass/Jeffrey substitution stage for rational trig in
    * <code>Integrate()</code>.
    */

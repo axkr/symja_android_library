@@ -42,6 +42,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
 import org.matheclipse.core.integrate.ChebyshevIntegration;
 import org.matheclipse.core.integrate.DerivativeDivides;
+import org.matheclipse.core.integrate.DiffUnderIntegral;
 import org.matheclipse.core.integrate.IntegralTable;
 import org.matheclipse.core.integrate.PrimitiveTowerIntegration;
 import org.matheclipse.core.integrate.ProductPowerIntegration;
@@ -458,6 +459,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               integrateDiracDelta(arg1, xList.arg1(), xList.arg2(), xList.arg3(), engine);
           if (sifted.isPresent()) {
             return sifted;
+          }
+          // Integrate(f(x), {x,a,b}) by differentiating under the integral sign. Before the
+          // antiderivative is attempted, not after: these are exact shapes, recognized or declined
+          // in a millisecond, and none of them has an antiderivative for the Rubi rules to spend
+          // their budget looking for. A forced Method -> "DiffUnderInt" stops here either way.
+          boolean forcedDiffUnderInt =
+              forcedMethod != null && DiffUnderIntegral.isMethodName(forcedMethod);
+          if (forcedDiffUnderInt || forcedMethod == null) {
+            IExpr byParameter = DiffUnderIntegral.integrate(arg1, xList.arg1(), xList.arg2(),
+                xList.arg3(), engine);
+            if (byParameter.isPresent() || forcedDiffUnderInt) {
+              return byParameter;
+            }
           }
           // Integrate(f(x), {x,a,b})
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());

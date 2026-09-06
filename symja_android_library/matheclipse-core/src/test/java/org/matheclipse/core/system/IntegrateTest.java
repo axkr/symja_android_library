@@ -1179,4 +1179,41 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  /**
+   * Definite integrals done by differentiating under the integral sign, through the ordinary
+   * cascade and by asking for the stage by name. The stage itself is tested in
+   * {@code IntegrateDiffUnderIntTest}; what is checked here is that the cascade reaches it, that a
+   * symbolic exponent brings its convergence condition with it, and that ordinary definite
+   * integrals are unchanged by its being there.
+   */
+  @Test
+  public void testIntegrateDiffUnderInt() {
+    check("Integrate(Log(1+x)/(x*Sqrt(1-x^2)), {x,0,1})", //
+        "Pi^2/8");
+    check("Integrate(Log(1+x/2)/(x*Sqrt(1-x^2)), {x,0,1})", //
+        "5/72*Pi^2");
+    check("Integrate(Log(1+x^2)/(x*Sqrt(1-x^4)), {x,0,1})", //
+        "Pi^2/16");
+    check("Integrate(Sec(2*x)*Log(1+Sqrt(1-Tan(x)^2)), {x,0,Pi/4})", //
+        "Pi^2/8");
+    check("Integrate(Csc(2*x)^2*Log(1+Tan(x)^3), {x,0,Pi/4})", //
+        "1/4*(-3+(2*Pi)/Sqrt(3))");
+    check("Integrate(Log(1+Tan(x)^a)/Sin(2*x)^2, {x,0,Pi/4})", //
+        "ConditionalExpression(1/4*(-a+Pi*Csc(Pi/a)),a>1)");
+
+    check("Integrate(Log(1+x)/(x*Sqrt(1-x^2)), {x,0,1}, Method->\"DiffUnderInt\")", //
+        "Pi^2/8");
+    // the stage does not apply, and forcing it does not fall back to the cascade
+    check("Integrate(x^2, {x,0,1}, Method->\"DiffUnderInt\")", //
+        "Integrate(x^2,{x,0,1},Method->DiffUnderInt)");
+
+    // unchanged: an ordinary definite integral, and a near miss the stage must not claim
+    check("Integrate(x^2, {x,0,1})", //
+        "1/3");
+    check("Integrate(Sin(x), {x,0,Pi/4})", //
+        "1-1/Sqrt(2)");
+    check("Integrate(Log(1+x)/(x*Sqrt(1-x^3)), {x,0,1})", //
+        "Integrate(Log(1+x)/(x*Sqrt(1-x^3)),{x,0,1})");
+  }
+
 }
