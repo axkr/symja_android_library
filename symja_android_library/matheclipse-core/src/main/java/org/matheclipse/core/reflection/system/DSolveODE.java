@@ -1005,7 +1005,7 @@ final class DSolveODE {
       }
 
       if (lf != null && n == 2) {
-        IExpr specialSol = DSolveSpecialFunctions.solve(lf, xVar, C_1, ctx);
+        IExpr specialSol = DSolveSpecialFunctions.solve(lf, yFunction, xVar, C_1, ctx);
         if (specialSol.isPresent())
           return specialSol;
 

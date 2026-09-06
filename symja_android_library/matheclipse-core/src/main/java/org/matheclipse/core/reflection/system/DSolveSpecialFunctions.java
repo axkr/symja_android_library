@@ -2,7 +2,9 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 
@@ -30,7 +32,8 @@ final class DSolveSpecialFunctions {
    * The general solution of the equation, or {@link F#NIL} if it is not one of the equations known
    * here.
    */
-  static IExpr solve(LinearODEForm lf, IExpr xVar, IExpr c_n, DSolveContext ctx) {
+  static IExpr solve(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n,
+      DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero()) {
       return F.NIL;
@@ -62,6 +65,11 @@ final class DSolveSpecialFunctions {
     }
     if (basis == null) {
       basis = gauss(p, q, xVar, engine);
+    }
+    if (basis == null) {
+      // Last, because every row above reads a rational coefficient and none of them can claim a
+      // potential built from Csc and Sec.
+      basis = poschlTeller(p, q, yFunction, xVar, engine);
     }
     if (basis == null) {
       return F.NIL;
@@ -298,6 +306,148 @@ final class DSolveSpecialFunctions {
         F.Times(F.Power(xVar, F.Subtract(F.C1, c)),
             F.Hypergeometric2F1(F.Plus(a, F.Subtract(F.C1, c)), F.Plus(b, F.Subtract(F.C1, c)),
                 F.Subtract(F.C2, c), xVar))};
+  }
+
+  /** How big a coefficient is still worth looking at for a trigonometric potential. */
+  private static final int MAX_POTENTIAL_LEAF_COUNT = 200;
+
+  /**
+   * A potential built from <code>Csc(x)^2</code> and <code>Sec(x)^2</code>:
+   * <code>y'' == (a + p*(p-1)*Csc(x)^2 + q*(q-1)*Sec(x)^2)*y</code>, which is Pöschl and Teller's.
+   *
+   * <p>
+   * Multiplying the coefficient by <code>Sin(x)^2*Cos(x)^2</code> clears both, and what is left is
+   * an even quadratic in <code>Cos(x)</code> exactly when the equation is of this kind. Reading the
+   * three numbers off it gives the two exponents and the rate, and the solutions are
+   * <code>Sin(x)^p*Cos(x)^q</code> times a hypergeometric function of <code>Sin(x)^2</code>, with
+   * the second one having <code>1-p</code> in place of <code>p</code>.
+   *
+   * <p>
+   * The same row answers the spellings <code>(a*Cos(x)^2 + b*Sin(x)^2 + c)/Sin(x)^2</code> and
+   * <code>a + b*Cot(x)^2</code>, which are the same potential written differently.
+   *
+   * @param yFunction the unknown, needed because this row checks its own answer
+   */
+  private static IExpr[] poschlTeller(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
+      EvalEngine engine) {
+    if (!p.isZero() || q.leafCount() > MAX_POTENTIAL_LEAF_COUNT || !hasCircular(q, xVar)) {
+      return null;
+    }
+    // The sine and the cosine become plain unknowns before anything is multiplied out. Left as
+    // trigonometric functions they do not survive it: the evaluator writes Cos(x)^2/Sin(x)^2 back
+    // as Cot(x)^2 on its own, and the rewrite below would then have nothing to work on.
+    IExpr sine = F.Dummy("pts");
+    IExpr cosine = F.Dummy("ptc");
+    IExpr inUnknowns = engine.evaluate(F.subst(q, F.List( //
+        F.Rule(F.Csc(xVar), F.Power(sine, F.CN1)), //
+        F.Rule(F.Sec(xVar), F.Power(cosine, F.CN1)), //
+        F.Rule(F.Cot(xVar), F.Divide(cosine, sine)), //
+        F.Rule(F.Tan(xVar), F.Divide(sine, cosine)), //
+        F.Rule(F.Sin(xVar), sine), //
+        F.Rule(F.Cos(xVar), cosine))));
+    // Anything the substitution did not reach is still written in the variable, which is what
+    // sends Sin(2*x) or x*Sin(x) away without further work.
+    if (!inUnknowns.isFree(xVar, true)) {
+      return null;
+    }
+    IExpr cleared =
+        engine.evaluate(F.Expand(F.Times(inUnknowns, F.Sqr(sine), F.Sqr(cosine))));
+
+    // Every even power of the sine becomes one of the cosine, so that what is left is a polynomial
+    // in the cosine alone; an odd power survives and the row declines just below.
+    IExpr oneMinus = F.Subtract(F.C1, F.Sqr(cosine));
+    IExpr polynomial = engine.evaluate(F.Expand(F.subst(cleared, F.List( //
+        F.Rule(F.Power(sine, F.C6), F.Power(oneMinus, F.C3)), //
+        F.Rule(F.Power(sine, F.C4), F.Sqr(oneMinus)), //
+        F.Rule(F.Sqr(sine), oneMinus)))));
+    if (!polynomial.isFree(sine, true)
+        || !engine.evaluate(F.PolynomialQ(polynomial, cosine)).isTrue()
+        || engine.evaluate(F.Exponent(polynomial, cosine)).toIntDefault() > 4) {
+      return null;
+    }
+    IExpr k0 = engine.evaluate(F.Coefficient(polynomial, cosine, F.C0));
+    IExpr k1 = engine.evaluate(F.Coefficient(polynomial, cosine, F.C1));
+    IExpr k2 = engine.evaluate(F.Coefficient(polynomial, cosine, F.C2));
+    IExpr k3 = engine.evaluate(F.Coefficient(polynomial, cosine, F.C3));
+    IExpr k4 = engine.evaluate(F.Coefficient(polynomial, cosine, F.C4));
+    // An odd power means the potential is not one of these, whatever the rest looks like.
+    if (!DSolveODE.isVanishing(k1, engine) || !DSolveODE.isVanishing(k3, engine)) {
+      return null;
+    }
+
+    IExpr c0 = engine.evaluate(F.Negate(k4));
+    IExpr c2 = k0;
+    IExpr c1 = engine.evaluate(F.Simplify(F.Plus(F.Subtract(k2, c0), c2)));
+    if (!c0.isFree(xVar) || !c1.isFree(xVar) || !c2.isFree(xVar)) {
+      return null;
+    }
+
+    // The two exponents solve t*(t-1) == -c, so the root has to be taken of a square; Factor first
+    // for the same reason as in the Gauss row above.
+    IExpr exponentSin = root(c1, engine);
+    IExpr exponentCos = root(c2, engine);
+    IExpr rate = engine.evaluate(F.PowerExpand(F.Sqrt(F.Factor(c0))));
+    if (exponentSin.isNIL() || exponentCos.isNIL() || rate.isNIL()) {
+      return null;
+    }
+    // Where the two exponents meet, the pair below is one solution twice.
+    if (DSolveODE.isVanishing(engine.evaluate(F.Subtract(F.Times(F.C2, exponentSin), F.C1)),
+        engine)) {
+      return null;
+    }
+
+    IExpr first = hypergeometricBranch(exponentSin, exponentCos, rate, xVar, engine);
+    IExpr second = hypergeometricBranch(engine.evaluate(F.Subtract(F.C1, exponentSin)), exponentCos,
+        rate, xVar, engine);
+
+    // The residual is a hypergeometric function which cannot be rearranged to zero, so this row
+    // checks its answer numerically instead of leaving it to the lenient check the cascade ends
+    // with - that one accepts whatever it cannot decide, which here would be everything.
+    IAST residuals = F.list(engine.evaluate(F.Plus( //
+        F.D(yFunction, F.list(xVar, F.C2)), //
+        F.Times(p, F.D(yFunction, xVar)), //
+        F.Times(q, yFunction))));
+    if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, first, engine)
+        || !DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, second, engine)) {
+      return null;
+    }
+    return new IExpr[] {first, second};
+  }
+
+  /**
+   * Whether the coefficient is trigonometric in the variable at all.
+   *
+   * <p>
+   * Without this the row claims equations it has no business with. A coefficient which is a plain
+   * constant is free of the variable, so it survives the substitution below and comes out as a
+   * potential with both exponents equal to one - <code>y'' - y == 0</code> answered with a
+   * hypergeometric pair. That pair is not wrong, but it is not the answer that equation is known
+   * by, and the constant coefficient row is the one which owns it.
+   */
+  private static boolean hasCircular(IExpr expr, IExpr xVar) {
+    return !expr.isFree(x -> x.isAST1() && x.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec,
+        ID.Csc) && !x.first().isFree(xVar), true);
+  }
+
+  /** The exponent <code>t</code> with <code>t*(t-1) == -c</code>, taking the larger root. */
+  private static IExpr root(IExpr c, EvalEngine engine) {
+    IExpr discriminant = engine.evaluate(
+        F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.C1, F.Times(F.C4, c))))));
+    return discriminant.isPresent() //
+        ? engine.evaluate(F.Divide(F.Plus(F.C1, discriminant), F.C2))
+        : F.NIL;
+  }
+
+  /** <code>Sin(x)^s*Cos(x)^c*Hypergeometric2F1((s+c+r)/2, (s+c-r)/2, s+1/2, Sin(x)^2)</code>. */
+  private static IExpr hypergeometricBranch(IExpr exponentSin, IExpr exponentCos, IExpr rate,
+      IExpr xVar, EvalEngine engine) {
+    IExpr sum = F.Plus(exponentSin, exponentCos);
+    return engine.evaluate(F.Times( //
+        F.Power(F.Sin(xVar), exponentSin), //
+        F.Power(F.Cos(xVar), exponentCos), //
+        F.Hypergeometric2F1(F.Divide(F.Plus(sum, rate), F.C2),
+            F.Divide(F.Subtract(sum, rate), F.C2), F.Plus(exponentSin, F.C1D2),
+            F.Sqr(F.Sin(xVar)))));
   }
 
   private static IExpr cancel(IExpr expr, EvalEngine engine) {

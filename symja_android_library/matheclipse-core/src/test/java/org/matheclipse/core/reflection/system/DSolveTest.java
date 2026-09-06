@@ -723,6 +723,41 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolvePoschlTeller() {
+    // A potential built from Csc(x)^2 and Sec(x)^2. Multiplying the coefficient by
+    // Sin(x)^2*Cos(x)^2 clears both and leaves an even quadratic in Cos(x), which is where the two
+    // exponents and the rate are read off; the solutions are hypergeometric in Sin(x)^2.
+    checkResidual("y''(x) == (a + p*(p-1)*Csc(x)^2 + q*(q-1)*Sec(x)^2)*y(x)",
+        "D(y(x),{x,2}) - (a + p*(p-1)*Csc(x)^2 + q*(q-1)*Sec(x)^2)*y(x)",
+        "{x->13/10, C(1)->7/5, C(2)->3/4, a->-3/10, p->13/10, q->7/10}");
+
+    checkResidual("y''(x) + a*Csc(x)^2*y(x) == 0", "D(y(x),{x,2}) + a*Csc(x)^2*y(x)",
+        "{x->13/10, C(1)->7/5, C(2)->3/4, a->-3/10}");
+
+    // The same potential written two other ways.
+    checkResidual("y''(x) == ((a*Cos(x)^2 + b*Sin(x)^2 + c)*y(x))/Sin(x)^2",
+        "D(y(x),{x,2}) - ((a*Cos(x)^2 + b*Sin(x)^2 + c)*y(x))/Sin(x)^2",
+        "{x->13/10, C(1)->7/5, C(2)->3/4, a->-3/10, b->1/5, c->1/10}");
+    checkResidual("y''(x) == (a + b*Cot(x)^2)*y(x)", "D(y(x),{x,2}) - (a + b*Cot(x)^2)*y(x)",
+        "{x->13/10, C(1)->7/5, C(2)->3/4, a->-3/10, b->1/5}");
+
+    // An odd power of the cosecant is not this shape, and the row must not claim it.
+    check("DSolve(y''(x) == (a + b*Csc(x)^3)*y(x), y(x), x)", //
+        "DSolve(y''(x)==(a+b*Csc(x)^3)*y(x),y(x),x)");
+
+    // The row runs last, so an equation one of the others owns keeps the answer it had: this one
+    // stays elementary rather than becoming a hypergeometric pair.
+    check("FreeQ(DSolve(y''(x) == (2*Csc(x)^2 - 1)*y(x), y(x), x), Hypergeometric2F1)", //
+        "True");
+
+    // A symbolic degree already worked, through the change of variable t == Cos(x); pinned here
+    // because it is the case whose verification mathilda had to fix and Symja's already handles.
+    checkResidual("y''(x) + Cot(x)*y'(x) + k*(k+1)*y(x) == 0",
+        "D(y(x),{x,2}) + Cot(x)*D(y(x),x) + k*(k+1)*y(x)",
+        "{x->13/10, C(1)->7/5, C(2)->3/4, k->7/10}");
+  }
+
+  @Test
   public void testDSolveKovacicCase1() {
     // z1 == x*(x-1) solves the reduced form, so the logarithmic derivative 1/x + 1/(x-1) is
     // rational and the pole part of the guess reaches it.
