@@ -4,6 +4,54 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- The wall-clock budgets which bound `Integrate`, `DSolve` and a few other functions can be
+  adapted to the machine they run on.
+
+  Several algorithms give themselves a deadline in seconds rather than in work: the Rubi rules
+  get 45 seconds inside `Integrate`, one step of the symmetry search for `DSolve` gets 3, and
+  so on. Those numbers were measured on one machine, and on a slower one they cut off
+  evaluations which would have finished. That is not merely a longer wait: a budget which runs
+  out looks exactly like a method which does not apply, so the cascade moves on and answers
+  something worse, or nothing at all.
+
+  One factor now scales all of them at once. It is `1.0` on the machine they were tuned on, so
+  nothing changes there, and a machine which needs twice as long is given twice as long
+  everywhere:
+
+  ```
+  java -Dsymja.timeScale=2.5 ...
+  java -Dsymja.machineProfile=slow ...      # fast, normal, slow or auto
+  SYMJA_TIME_SCALE=2.5 java ...
+  ```
+
+  ```java
+  MachineProfile.setScale(2.5);
+  Config.autoCalibrateTimeScale();          // measure this machine instead of assuming it
+  ```
+
+  The `auto` profile measures the machine with `Config.calibrateTimeScale()`, which times a
+  fixed piece of big-integer arithmetic and hash-table traffic against the same measurement on
+  the machine the budgets were tuned on. It has to be asked for, because a measurement taken on
+  a shared or thermally throttled host describes that moment rather than the machine.
+
+  What the factor deliberately does not touch is a limit which says how long somebody is
+  willing to wait rather than how fast the machine is: a `TimeConstrained` written by the user,
+  the timeout of a server request, and the timeouts of the consoles.
+
+  Set the factor before the first `Integrate`. The limit the Rubi rules use internally is bound
+  to a symbol when those rules are loaded, and a factor which arrives afterwards reaches every
+  budget except that one.
+
+  The unused `Config.INTEGRATE_RADICAL_TIMELIMIT_MILLIS` was removed: it documented a limit
+  which the radical substitution stage never had.
+
+  Two pieces of tidying came with it. `Integrate` carried its own copy of the watchdog which
+  bounds the Rubi rules, with a second thread pool of its own, and now uses the one in
+  `IntegrateTimeBudget` that the rational stage already used. And
+  `Config.INTEGRATE_RUBI_TIMELIMIT` is now `Config.INTEGRATE_RUBI_RULE_TIMELIMIT_SECONDS`,
+  because it stood next to `INTEGRATE_RUBI_TIMELIMIT_MILLIS` while bounding something else
+  entirely: one `TimeConstrained` inside a rule, rather than the whole run of the rules.
+
 ## [v3.2.0](https://github.com/axkr/symja_android_library/compare/v3.1.1...v3.2.0) - 2026-04-30
 
 - Internal improvements, bug fixes and performance improvements.

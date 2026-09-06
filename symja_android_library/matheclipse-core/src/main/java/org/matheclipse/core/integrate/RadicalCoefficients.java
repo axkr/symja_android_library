@@ -2,6 +2,7 @@ package org.matheclipse.core.integrate;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
@@ -35,6 +36,13 @@ import org.matheclipse.core.interfaces.IExpr;
  * rules.
  */
 public class RadicalCoefficients {
+
+  /**
+   * How long one candidate check may take, on the machine this stage was tuned on.
+   *
+   * @see MachineProfile
+   */
+  private static final int TIME_LIMIT_SECONDS = 2;
 
   /**
    * Re-entrancy guard: the pass evaluates expressions and must not collect its own intermediates.
@@ -184,7 +192,8 @@ public class RadicalCoefficients {
 
   /** Evaluate {@code expr} with a time limit, {@link F#NIL} if it does not finish. */
   private static IExpr timeConstrained(IExpr expr, EvalEngine engine) {
-    IExpr result = engine.evaluate(F.TimeConstrained(expr, F.num(2.0), S.$Aborted));
+    IExpr result = engine.evaluate(
+        F.TimeConstrained(expr, F.ZZ(MachineProfile.seconds(TIME_LIMIT_SECONDS)), S.$Aborted));
     return result == S.$Aborted ? F.NIL : result;
   }
 

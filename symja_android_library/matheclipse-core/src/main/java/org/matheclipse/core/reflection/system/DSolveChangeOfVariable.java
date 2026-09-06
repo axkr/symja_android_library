@@ -47,7 +47,11 @@ final class DSolveChangeOfVariable {
 
   private static final int MAX_LEAF_COUNT = 200;
 
-  /** How long one of the evaluations inside may take. */
+  /**
+   * How long one of the evaluations inside may take. The number is what it is on the machine
+   * the solvers were tuned on; a slower machine is given proportionally longer, see
+   * {@link org.matheclipse.core.basic.MachineProfile}.
+   */
   private static final int STEP_SECONDS = 3;
 
   /**

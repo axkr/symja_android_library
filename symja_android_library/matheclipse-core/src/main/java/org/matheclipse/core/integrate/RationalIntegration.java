@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -104,7 +105,9 @@ public class RationalIntegration {
     // explicit radicals and FullSimplified, which can take tens of seconds. Bound that work: an
     // expansion that does not finish in time is dropped so the integral falls through rather than
     // grinding. DEFER never emits a degree 3/4 RootSum, so it needs no budget.
-    long budgetMillis = mode == RootSumMode.EMIT ? Config.INTEGRATE_RATIONAL_TIMELIMIT_MILLIS : 0;
+    long budgetMillis = mode == RootSumMode.EMIT
+        ? MachineProfile.millis(Config.INTEGRATE_RATIONAL_TIMELIMIT_MILLIS)
+        : 0;
     IExpr result = IntegrateTimeBudget
         .runWithin(() -> integrateRationalFunction(integrand, x, engine, mode), budgetMillis);
     if (mode == RootSumMode.DEFER && result.isPresent() && !result.isPlus()

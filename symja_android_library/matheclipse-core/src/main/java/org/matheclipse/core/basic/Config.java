@@ -274,6 +274,9 @@ public class Config {
   /** Set to <code>true</code> to collect rule dispatch counters. */
   public static boolean RULE_DISPATCH_STATISTICS = false;
 
+  // The wall-clock evaluation budgets are configured with -Dsymja.timeScale=<factor> or
+  // -Dsymja.machineProfile=fast|normal|slow|auto, see MachineProfile.
+
   /**
    * Substitute the right-hand-side of a rewrite rule with a precompiled
    * {@link org.matheclipse.core.patternmatching.SubstitutionPlan} instead of walking the whole
@@ -454,14 +457,21 @@ public class Config {
   public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 100;
 
   /**
-   * Define the Rubi time limit in <b>seconds</b> for the <code>TimeConstrained()</code> function
-   * used <i>inside</i> the Rubi rules (the Rubi <code>§$timelimit</code> variable).
+   * How long one <code>TimeConstrained()</code> <i>inside</i> a Rubi rule may take, in seconds:
+   * the Rubi <code>§$timelimit</code> variable.
    *
    * <p>
    * This is independent of {@link #INTEGRATE_RUBI_TIMELIMIT_MILLIS}, which is the total wall-clock
    * budget the <code>Integrate()</code> watchdog grants to one top-level run of the Rubi rules.
+   *
+   * <p>
+   * The value is the limit on the machine the rules were tuned on; the limit which is used is
+   * {@link MachineProfile#seconds(long)} of it. It is bound to the Rubi symbol
+   * <code>§$timelimit</code> when the rules are loaded, on the first call of
+   * <code>Integrate()</code>, so a factor which is set programmatically after that does not reach
+   * it - see {@link MachineProfile#setScale(double)}.
    */
-  public static int INTEGRATE_RUBI_TIMELIMIT = 8;
+  public static int INTEGRATE_RUBI_RULE_TIMELIMIT_SECONDS = 8;
 
   /**
    * Maximum number of entries in the per-engine LRU cache which memoizes the results of the Rubi
@@ -548,7 +558,7 @@ public class Config {
    * exceed it, they are interrupted and the native post-Rubi stages get their turn instead of the
    * whole evaluation running into the caller's deadline. <code>0</code> disables the budget (the
    * rules then run until they finish or the evaluation is aborted). Not to be confused with
-   * {@link #INTEGRATE_RUBI_TIMELIMIT}, the <b>seconds</b> limit for a single
+   * {@link #INTEGRATE_RUBI_RULE_TIMELIMIT_SECONDS}, the <b>seconds</b> limit for a single
    * <code>TimeConstrained()</code> call inside the Rubi rules themselves.
    *
    * <p>
@@ -563,6 +573,8 @@ public class Config {
   // and at 30s the watchdog cut it off and the answer was lost - testIntegrateRationalizeSurdDenominator
   // went red not on a wrong answer but on a missing one. Measured at 45s: matheclipse-core is
   // fully green (4336/0) and the independent Rubi corpus improves 44 -> 39 failures.
+  // The value is the budget on the machine it was measured on; the budget which is used is
+  // MachineProfile.millis() of it.
   public static long INTEGRATE_RUBI_TIMELIMIT_MILLIS = 45000L;
 
   /** Fraction of the remaining evaluation time the Rubi rules may use, see above. */
@@ -575,13 +587,16 @@ public class Config {
    * Everything else - degree 1/2 factors, the inert degree &gt;= 5 RootSum - returns in
    * milliseconds and never approaches the limit. An expansion that overruns is dropped and the
    * integral falls through.
+   *
+   * <p>
+   * The value is the budget on the machine it was measured on, scaled by {@link MachineProfile}.
    */
   public static long INTEGRATE_RATIONAL_TIMELIMIT_MILLIS = 3000L;
 
-  /** Time limit in milliseconds for the radical substitution stage. */
-  public static long INTEGRATE_RADICAL_TIMELIMIT_MILLIS = 1000L;
-
-  /** Time limit in milliseconds for the Risch-Norman stage. */
+  /**
+   * Time limit in milliseconds for the Risch-Norman stage, on the machine it was measured on and
+   * scaled by {@link MachineProfile}.
+   */
   public static long INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS = 2000L;
 
   /** Maximum recursion depth for the derivative-divides heuristic. */
@@ -1043,4 +1058,183 @@ public class Config {
 
   // load version string from MAVEN
   public static String VERSION = "?";
+
+  /**
+   * How long one run of {@link #calibrationWorkload()} takes, in nanoseconds, on the machine the
+   * wall-clock budgets were tuned on.
+   *
+   * <p>
+   * This is the whole of what "the baseline machine" means. An embedder which would rather
+   * calibrate against its own reference machine measures that machine once, with
+   * {@link #measureCalibrationWorkload()}, and assigns the result here before asking for a
+   * calibration. A value of zero or less switches the calibration off: it then answers
+   * <code>1.0</code>, which is the same as not calibrating at all.
+   *
+   * <p>
+   * Measured 2026-09-06 on an Apple M5 with a Java 26 virtual machine: the first calibration of a
+   * freshly started machine took between 9.9 and 10.3 milliseconds, and the value below is the
+   * middle of that. A machine which needs twice as long is given twice the budget everywhere.
+   */
+  public static long TIME_SCALE_REFERENCE_NANOS = 10_100_000L;
+
+  /** Narrowest and widest factor a measurement is allowed to produce. */
+  private static final double MIN_CALIBRATED_SCALE = 0.25;
+
+  private static final double MAX_CALIBRATED_SCALE = 20.0;
+
+  /** How often the workload runs before the measurement starts, to let it be compiled. */
+  private static final int CALIBRATION_WARMUP_RUNS = 3;
+
+  /** How often the workload is measured; the fastest run is the one which counts. */
+  private static final int CALIBRATION_MEASURED_RUNS = 12;
+
+  /** The result of the one calibration this virtual machine performs, or <code>null</code>. */
+  private static volatile Double calibratedTimeScale = null;
+
+  /**
+   * Measures this machine and answers how much longer it needs than the machine the wall-clock
+   * evaluation budgets were tuned on.
+   *
+   * <p>
+   * The answer is what {@link MachineProfile} multiplies every budget by: <code>1.0</code> for a
+   * machine as fast as the baseline, <code>3.0</code> for one which needs three times as long. It
+   * is clamped to a sane range and rounded to two decimals, so that two calibrations of the same
+   * machine agree with each other, and it is measured only once - the runs afterwards answer from
+   * the remembered value and cost nothing.
+   *
+   * <p>
+   * A measurement is a weaker statement than it looks. It describes the machine as it was during
+   * those few hundred milliseconds, which on a shared build host or a laptop which is thermally
+   * throttled is not the machine the evaluation will run on. That is why this is never consulted
+   * unless it is asked for, by <code>-Dsymja.machineProfile=auto</code> or by
+   * {@link #autoCalibrateTimeScale()}.
+   *
+   * <p>
+   * The measurement itself does not touch the evaluation engine - it cannot, since the budgets are
+   * read long before an engine exists - so it is arithmetic on big integers and traffic through a
+   * hash table, which is where Symja spends most of its time in any case.
+   *
+   * @return the factor for this machine, or <code>1.0</code> if
+   *         {@link #TIME_SCALE_REFERENCE_NANOS} says the baseline is unknown
+   */
+  public static double calibrateTimeScale() {
+    Double remembered = calibratedTimeScale;
+    if (remembered != null) {
+      return remembered.doubleValue();
+    }
+    synchronized (Config.class) {
+      remembered = calibratedTimeScale;
+      if (remembered == null) {
+        double factor = 1.0;
+        long reference = TIME_SCALE_REFERENCE_NANOS;
+        if (reference > 0L) {
+          double measured = (double) measureCalibrationWorkload() / (double) reference;
+          if (measured < MIN_CALIBRATED_SCALE) {
+            measured = MIN_CALIBRATED_SCALE;
+          } else if (measured > MAX_CALIBRATED_SCALE) {
+            measured = MAX_CALIBRATED_SCALE;
+          }
+          factor = Math.round(measured * 100.0) / 100.0;
+        }
+        remembered = Double.valueOf(factor);
+        calibratedTimeScale = remembered;
+      }
+    }
+    return remembered.doubleValue();
+  }
+
+  /**
+   * Measures this machine with {@link #calibrateTimeScale()} and uses the result for every
+   * wall-clock evaluation budget from now on.
+   *
+   * <p>
+   * Call it before the first <code>Integrate()</code>. The limit which the Rubi rules use
+   * internally is bound to a symbol when those rules are loaded, and a factor which arrives after
+   * that reaches every budget except that one.
+   *
+   * @return the factor which was applied
+   */
+  public static double autoCalibrateTimeScale() {
+    double factor = calibrateTimeScale();
+    MachineProfile.setScale(factor);
+    return factor;
+  }
+
+  /**
+   * How long one run of {@link #calibrationWorkload()} takes on this machine, in nanoseconds.
+   *
+   * <p>
+   * The workload runs a few times unmeasured first, so that what is timed is compiled code rather
+   * than the interpreter, and the fastest of the timed runs is the answer: the shortest run is the
+   * one which was least interrupted by the rest of the machine, and taking an average would report
+   * the interruptions instead of the speed.
+   *
+   * <p>
+   * Use this to measure a new baseline machine, and put the result in
+   * {@link #TIME_SCALE_REFERENCE_NANOS}.
+   */
+  public static long measureCalibrationWorkload() {
+    long sink = 0L;
+    for (int i = 0; i < CALIBRATION_WARMUP_RUNS; i++) {
+      sink += calibrationWorkload();
+    }
+    long fastest = Long.MAX_VALUE;
+    for (int i = 0; i < CALIBRATION_MEASURED_RUNS; i++) {
+      long start = System.nanoTime();
+      sink += calibrationWorkload();
+      long elapsed = System.nanoTime() - start;
+      if (elapsed < fastest) {
+        fastest = elapsed;
+      }
+    }
+    // consume the accumulated value, so that the work cannot be compiled away as unused
+    if (sink == Long.MIN_VALUE) {
+      System.err.println("Config.measureCalibrationWorkload: " + sink);
+    }
+    return fastest;
+  }
+
+  /**
+   * A fixed amount of the kind of work Symja does, whose duration says how fast this machine is.
+   *
+   * <p>
+   * Two kinds, in the proportion they tend to appear in: arithmetic on big integers, which is what
+   * the polynomial and number theory code spends its time on, and building small objects and
+   * looking them up in a hash table, which is what pattern matching does. Neither part depends on
+   * anything which has to be initialized first, and the whole of it is deterministic, so the same
+   * machine measures the same on every run.
+   *
+   * <p>
+   * The sizes are chosen so that one run takes roughly ten milliseconds on the baseline machine.
+   * Shorter than that and the measurement says more about how far the compiler has got than about
+   * the machine; much longer and asking for a calibration becomes something one notices.
+   *
+   * @return a value which depends on everything the method computed, so that none of it can be
+   *         optimized away
+   */
+  private static long calibrationWorkload() {
+    java.math.BigInteger accumulator = java.math.BigInteger.ONE;
+    for (int i = 2; i < 4200; i++) {
+      accumulator = accumulator.multiply(java.math.BigInteger.valueOf(i));
+    }
+    java.math.BigInteger modulus = java.math.BigInteger.valueOf(1000003L);
+    java.math.BigInteger residue = accumulator.mod(modulus);
+    java.math.BigInteger power = residue.modPow(java.math.BigInteger.valueOf(65537L), modulus);
+    long sink = power.longValue() + accumulator.bitLength();
+
+    HashMap<String, long[]> table = new HashMap<String, long[]>();
+    for (int i = 0; i < 600000; i++) {
+      String key = "sym" + (i % 16384);
+      long[] counter = table.get(key);
+      if (counter == null) {
+        counter = new long[] {0L};
+        table.put(key, counter);
+      }
+      counter[0] += i;
+    }
+    for (long[] counter : table.values()) {
+      sink += counter[0];
+    }
+    return sink;
+  }
 }

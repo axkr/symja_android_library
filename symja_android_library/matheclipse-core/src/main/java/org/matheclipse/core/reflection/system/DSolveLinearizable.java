@@ -29,6 +29,13 @@ final class DSolveLinearizable {
 
   private DSolveLinearizable() {}
 
+  /**
+   * How long one of the evaluations inside may take. The number is what it is on the machine
+   * the solvers were tuned on; a slower machine is given proportionally longer, see
+   * {@link org.matheclipse.core.basic.MachineProfile}.
+   */
+  private static final int STEP_SECONDS = 3;
+
   /** How big a right hand side is still worth substituting into. */
   private static final int MAX_LEAF_COUNT = 300;
 
@@ -105,7 +112,7 @@ final class DSolveLinearizable {
     IExpr base = engine.evaluate(F.Cancel(F.Together(F.Times(derivative, right))));
     IExpr transformed = substituteInverse(base, yDummy, inverse, uDummy, ctx);
     if (transformed.isNIL()) {
-      IExpr simplified = ctx.evalTimeConstrained(F.Simplify(base), 3);
+      IExpr simplified = ctx.evalTimeConstrained(F.Simplify(base), STEP_SECONDS);
       if (simplified.isNIL()) {
         return F.NIL;
       }
@@ -167,7 +174,7 @@ final class DSolveLinearizable {
     }
     if (!transformed.isFree(x -> x.isAST(S.ArcSin) || x.isAST(S.ArcCos) || x.isAST(S.ArcTan),
         true)) {
-      IExpr simplified = ctx.evalTimeConstrained(F.Simplify(transformed), 3);
+      IExpr simplified = ctx.evalTimeConstrained(F.Simplify(transformed), STEP_SECONDS);
       if (simplified.isNIL() || !simplified.isFree(
           x -> x.isAST(S.ArcSin) || x.isAST(S.ArcCos) || x.isAST(S.ArcTan), true)
           || hasFractionalPower(simplified, uDummy)) {

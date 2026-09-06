@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -21,7 +22,10 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 final class DSolveContext {
 
-  /** How long a single integration inside the cascade may take. */
+  /**
+   * How long a single integration inside the cascade may take, on the machine the cascade was
+   * tuned on. What it may take here is {@link MachineProfile#seconds(int)} of that.
+   */
   private static final int INTEGRATE_SECONDS = 5;
 
   /**
@@ -103,9 +107,14 @@ final class DSolveContext {
     state.linearizableActive = false;
   }
 
-  /** Gives the caller the given number of seconds from now. */
-  void startDeadline(int seconds) {
-    state.deadlineNanos = System.nanoTime() + seconds * 1_000_000_000L;
+  /**
+   * Gives the caller the given number of seconds from now, as they are meant on the machine the
+   * solvers were tuned on: a slower machine is given proportionally longer, see
+   * {@link MachineProfile}.
+   */
+  void startDeadline(int baseSeconds) {
+    state.deadlineNanos =
+        System.nanoTime() + MachineProfile.seconds((long) baseSeconds) * 1_000_000_000L;
   }
 
   /** Withdraws a deadline, so that the methods after the caller are not bound by it. */
@@ -129,14 +138,19 @@ final class DSolveContext {
    * Evaluates <code>expr</code> with a time limit, or {@link F#NIL} if it does not finish in time.
    *
    * <p>
+   * The limit is given as it is meant on the machine the solvers were tuned on, and scaled to
+   * this machine by {@link MachineProfile}.
+   *
+   * <p>
    * Note that a time limit is not a reliable bound on its own: an integration which has entered a
    * long chain of rules does not observe it. A method which can grow its input has to keep it small
    * by structural means first, and use this as a second line of defence.
    */
-  IExpr evalTimeConstrained(IExpr expr, int seconds) {
+  IExpr evalTimeConstrained(IExpr expr, int baseSeconds) {
     IExpr result;
     try {
-      result = engine.evaluate(F.TimeConstrained(expr, F.ZZ(seconds), S.$Aborted));
+      result = engine.evaluate(
+          F.TimeConstrained(expr, F.ZZ(MachineProfile.seconds(baseSeconds)), S.$Aborted));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
@@ -192,7 +206,7 @@ final class DSolveContext {
     IExpr result;
     try {
       result = engine.evaluate(F.TimeConstrained(F.Integrate(function, variable),
-          F.ZZ(INTEGRATE_SECONDS), S.$Aborted));
+          F.ZZ(MachineProfile.seconds(INTEGRATE_SECONDS)), S.$Aborted));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;

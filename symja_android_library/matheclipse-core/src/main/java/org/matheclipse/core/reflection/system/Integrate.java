@@ -13,14 +13,12 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -183,7 +181,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
       F.ISet(F.$s("§simplifyflag"), S.False);
 
-      F.ISet(F.$s("§$timelimit"), F.ZZ(Config.INTEGRATE_RUBI_TIMELIMIT));
+      F.ISet(F.$s("§$timelimit"),
+          F.ZZ(MachineProfile.seconds((long) Config.INTEGRATE_RUBI_RULE_TIMELIMIT_SECONDS)));
       F.ISet(F.$s("§$showsteps"), S.False);
       UtilityFunctionCtors.ReapList.setAttributes(Attribute.HOLDFIRST);
       F.ISet(F.$s("§$trigfunctions"), F.List(S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc));
@@ -249,9 +248,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    */
   private static final ThreadLocal<java.util.Set<IExpr>> DEFERRED_ROOTSUM =
       ThreadLocal.withInitial(java.util.HashSet::new);
-
-  /** Lazily created daemon scheduler for the Rubi time budget. */
-  private static ScheduledExecutorService WATCHDOG_SCHEDULER = null;
 
   @Override
   public IExpr evaluate(IAST holdallAST, final int argSize, final IExpr[] option,
@@ -1592,49 +1588,26 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         F.Times(F.Power(c, exponent), F.Power(root, F.Times(F.C2, exponent))));
   }
 
+  /**
+   * Run the Rubi rules under the budget of {@link #rubiBudgetMillis(EvalEngine)}.
+   *
+   * <p>
+   * Only the integral the user asked for arms a watchdog. A nested {@code Integrate} is already
+   * covered by the one its caller armed, and a second watchdog would interrupt the same thread a
+   * second time for a budget which is not its own.
+   */
   private static IExpr integrateByRubiRulesWithBudget(IAST arg1, IExpr x, IAST ast,
       EvalEngine engine) {
-    long budgetMillis = rubiBudgetMillis(engine);
-    // one watchdog per user-level integral: nested Integrate calls are covered by the outer one
-    if (budgetMillis <= 0 || Config.JAS_NO_THREADS || EVAL_DEPTH.get() != 1) {
+    if (EVAL_DEPTH.get() != 1) {
       return integrateByRubiRules(arg1, x, ast, engine);
     }
-    final Thread evaluationThread = Thread.currentThread();
-    final boolean[] finished = new boolean[] {false};
-    final boolean[] budgetExceeded = new boolean[] {false};
-    final Object lock = new Object();
-    ScheduledFuture<?> watchdog = watchdogScheduler().schedule(() -> {
-      synchronized (lock) {
-        if (!finished[0]) {
-          budgetExceeded[0] = true;
-          evaluationThread.interrupt();
-        }
-      }
-    }, budgetMillis, TimeUnit.MILLISECONDS);
-    try {
-      return integrateByRubiRules(arg1, x, ast, engine);
-    } catch (RuntimeException rex) {
-      synchronized (lock) {
-        if (!budgetExceeded[0]) {
-          throw rex; // not our interrupt - the caller's deadline or a real failure
-        }
-      }
-      return F.NIL;
-    } finally {
-      synchronized (lock) {
-        finished[0] = true;
-      }
-      watchdog.cancel(false);
-      if (budgetExceeded[0]) {
-        // clear the flag we raised, or the stages after this one abort immediately
-        Thread.interrupted();
-      }
-    }
+    return IntegrateTimeBudget.runWithin(() -> integrateByRubiRules(arg1, x, ast, engine),
+        rubiBudgetMillis(engine));
   }
 
   /** The Rubi budget for this evaluation, or {@code <= 0} to run the rules unbounded. */
   private static long rubiBudgetMillis(EvalEngine engine) {
-    long budgetMillis = Config.INTEGRATE_RUBI_TIMELIMIT_MILLIS;
+    long budgetMillis = MachineProfile.millis(Config.INTEGRATE_RUBI_TIMELIMIT_MILLIS);
     if (budgetMillis <= 0) {
       return 0;
     }
@@ -1645,20 +1618,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       budgetMillis = Math.min(budgetMillis, share);
     }
     return budgetMillis;
-  }
-
-  private static synchronized ScheduledExecutorService watchdogScheduler() {
-    if (WATCHDOG_SCHEDULER == null) {
-      ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1, runnable -> {
-        Thread thread = Config.THREAD_FACTORY.newThread(runnable);
-        thread.setDaemon(true);
-        thread.setName("symja-integrate-watchdog");
-        return thread;
-      });
-      scheduler.setRemoveOnCancelPolicy(true);
-      WATCHDOG_SCHEDULER = scheduler;
-    }
-    return WATCHDOG_SCHEDULER;
   }
 
   private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast, EvalEngine engine) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -27,7 +28,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
   private final static boolean DEBUG = false;
 
-  /** Budget (seconds) for one bounded Series attempt; $Aborted counts as "cannot solve". */
+  /**
+   * Budget (seconds) for one bounded Series attempt; $Aborted counts as "cannot solve".
+   *
+   * <p>
+   * The value is the budget on the machine it was measured on; what one attempt actually gets is
+   * {@link MachineProfile#seconds(long)} of it.
+   */
   private final static long SERIES_BUDGET_SECONDS = 10;
 
   public AsymptoticRSolveValue() {}
@@ -35,6 +42,9 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
+
+    // The Series budgets below are stated for the machine this was tuned on; scale them once.
+    final long seriesBudget = MachineProfile.seconds(SERIES_BUDGET_SECONDS);
 
     // 1. Parse arguments and series specification
     IAST eqns = ast.arg1().makeList();
@@ -128,7 +138,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         IExpr seriesRes;
         try {
           seriesRes =
-              engine.evalTimeConstrained(F.Series(exactSol, seriesSpec), SERIES_BUDGET_SECONDS);
+              engine.evalTimeConstrained(F.Series(exactSol, seriesSpec), seriesBudget);
         } finally {
           engine.setSeconds(savedSeconds);
         }
@@ -215,20 +225,19 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         IExpr seriesN;
         try {
           seriesN = engine.evalTimeConstrained(
-              F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))),
-              SERIES_BUDGET_SECONDS);
+              F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))), seriesBudget);
 
           if (seriesN.isAST(S.Series)) {
             // If Series initially fails, attempt a simplification first
             IExpr simplified =
-                engine.evalTimeConstrained(F.Simplify(subbed), SERIES_BUDGET_SECONDS);
+                engine.evalTimeConstrained(F.Simplify(subbed), seriesBudget);
             if (simplified == S.$Aborted || simplified.isNIL()) {
               return F.NIL;
             }
             subbed = simplified;
             seriesN = engine.evalTimeConstrained(
                 F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))),
-                SERIES_BUDGET_SECONDS);
+                seriesBudget);
           }
         } finally {
           engine.setSeconds(oldSeconds);

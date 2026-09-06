@@ -33,10 +33,18 @@ final class DSolveSymmetry {
 
   private DSolveSymmetry() {}
 
-  /** How long the whole search may take. */
+  /**
+   * How long the whole search may take. The number is what it is on the machine
+   * the solvers were tuned on; a slower machine is given proportionally longer, see
+   * {@link org.matheclipse.core.basic.MachineProfile}.
+   */
   private static final int DEADLINE_SECONDS = 8;
 
-  /** How long one of the evaluations inside it may take. */
+  /**
+   * How long one of the evaluations inside it may take. The number is what it is on the machine
+   * the solvers were tuned on; a slower machine is given proportionally longer, see
+   * {@link org.matheclipse.core.basic.MachineProfile}.
+   */
   private static final int STEP_SECONDS = 3;
 
   /** The highest total degree of the polynomials the infinitesimals are looked for among. */

@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -63,8 +64,8 @@ public class RischNorman {
       return F.NIL;
     }
     ACTIVE.set(Boolean.TRUE);
-    final long deadline =
-        System.currentTimeMillis() + Config.INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS;
+    final long deadline = System.currentTimeMillis()
+        + MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS);
     try {
       return integrateInternal(integrand, x, engine, deadline);
     } catch (RuntimeException rex) {

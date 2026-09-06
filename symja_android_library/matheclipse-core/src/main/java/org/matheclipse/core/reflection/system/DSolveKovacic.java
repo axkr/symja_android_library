@@ -749,7 +749,11 @@ final class DSolveKovacic {
     return engine.evaluate(F.Cancel(F.Together(fitted)));
   }
 
-  /** How long one search step may take. */
+  /**
+   * How long one search step may take. The number is what it is on the machine
+   * the solvers were tuned on; a slower machine is given proportionally longer, see
+   * {@link org.matheclipse.core.basic.MachineProfile}.
+   */
   private static final int STEP_SECONDS = 5;
 
   /** <code>Exp(Integrate(w))</code>, with the antiderivative checked. */

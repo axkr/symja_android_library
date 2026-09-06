@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -169,7 +170,8 @@ public class Wronskian extends AbstractFunctionEvaluator {
     IExpr simplified;
     try {
       simplified = engine.evaluate(
-          F.TimeConstrained(F.Simplify(best), F.ZZ(SIMPLIFY_SECONDS), S.$Aborted));
+          F.TimeConstrained(F.Simplify(best),
+              F.ZZ(MachineProfile.seconds(SIMPLIFY_SECONDS)), S.$Aborted));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return best;
