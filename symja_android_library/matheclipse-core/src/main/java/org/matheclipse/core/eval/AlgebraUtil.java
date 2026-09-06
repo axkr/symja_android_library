@@ -3632,6 +3632,17 @@ public class AlgebraUtil {
         // Check if X and Y are reciprocals (X * Y == 1)
         IExpr product = engine.evaluate(F.Cancel(F.Times(x, y)));
         if (product.isOne()) {
+          // The merge below replaces c2*Y^p by c2/X^p, so Y^p and X^(-p) have to be the same
+          // number. X*Y == 1 does not say that: on the principal branch (1/X)^p and X^(-p) differ
+          // by Exp(-2*Pi*I*p) whenever X is a negative real. X == Y == -1 is such a case, and it
+          // is not an exotic one - it is what the cube roots in an Airy solution look like - so
+          // c1*(-1)^(1/3) + c2*(-1)^(1/3) used to come back with the second coefficient replaced
+          // by its complex conjugate, a wrong value rather than a wrong form.
+          IExpr difference =
+              engine.evaluate(F.Subtract(F.Power(y, p), F.Power(x, F.Negate(p))));
+          if (!difference.isZero()) {
+            continue;
+          }
           // Merge: (c1 * X^(2p) + c2) / X^p
           IExpr x2p = engine.evaluate(F.Power(x, F.Times(F.C2, p)));
           IExpr mergedNumerator = engine.evaluate(F.Plus(F.Times(c1, x2p), c2));

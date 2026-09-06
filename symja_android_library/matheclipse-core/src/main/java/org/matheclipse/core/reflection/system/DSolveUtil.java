@@ -256,67 +256,12 @@ final class DSolveUtil {
       return F.Rule(expr.first(), togetherSolution(expr.second(), engine));
     }
     IExpr together = S.Together.of(engine, expr);
-    if (together.isPresent() && together.leafCount() <= expr.leafCount()
-        && keepsValue(expr, together, engine)) {
+    if (together.isPresent() && together.leafCount() <= expr.leafCount()) {
       return together;
     }
     return expr;
   }
 
-  /**
-   * Whether the rewritten expression still has the value of the one it came from, tested at a
-   * sample point.
-   *
-   * <p>
-   * This is not a rewriting which should need checking. It is checked because
-   * {@link org.matheclipse.core.expression.S#Together} does not preserve the value of an expression
-   * whose coefficients are roots of a negative number: it answers
-   * <code>-(-1)^(1/3)*a - (-1)^(1/3)*b</code> with <code>-(-1)^(1/3)*a + (-1)^(2/3)*b</code>, which
-   * is a different number. That turns the correct solution of a Riccati equation into a wrong one,
-   * and the wrong one is then rightly rejected by the back substitution, so the equation is
-   * declined rather than answered.
-   */
-  private static boolean keepsValue(IExpr before, IExpr after, EvalEngine engine) {
-    IASTAppendable symbols = F.ListAlloc();
-    collectSymbols(before, symbols);
-    IASTAppendable rules = F.ListAlloc(symbols.argSize());
-    for (int i = 1; i <= symbols.argSize(); i++) {
-      rules.append(F.Rule(symbols.get(i), F.QQ(7 + 2 * i, 13)));
-    }
-    try {
-      IExpr difference = engine.evalN(F.subst(F.Subtract(before, after), rules));
-      if (!difference.isNumber()) {
-        // Nothing can be concluded, so the rewriting is kept as before.
-        return true;
-      }
-      double magnitude = ((org.matheclipse.core.interfaces.INumber) difference).abs().evalf();
-      return !Double.isFinite(magnitude) || magnitude < 1.0e-8;
-    } catch (RuntimeException rex) {
-      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-      return true;
-    }
-  }
-
-  private static void collectSymbols(IExpr expr, IASTAppendable symbols) {
-    if (expr.isSymbol()) {
-      if (!expr.isBuiltInSymbol() && !symbols.contains(expr)) {
-        symbols.append(expr);
-      }
-      return;
-    }
-    if (expr.isAST(S.C, 2)) {
-      if (!symbols.contains(expr)) {
-        symbols.append(expr);
-      }
-      return;
-    }
-    if (expr.isAST()) {
-      IAST ast = (IAST) expr;
-      for (int i = 0; i < ast.size(); i++) {
-        collectSymbols(ast.get(i), symbols);
-      }
-    }
-  }
 
   static IExpr extractBasis(IExpr term, java.util.Set<IExpr> cSet, IExpr[] cPart) {
     if (term.isTimes()) {

@@ -26742,6 +26742,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogether() {
+    // Together used to merge c1*X^p + c2*Y^p whenever X*Y == 1, which assumes Y^p == X^(-p).
+    // For a negative real X the principal branches of those differ by Exp(-2*Pi*I*p), so the
+    // second coefficient came back as its own complex conjugate - a wrong value, not a wrong form.
+    check("Together(-(-1)^(1/3)*a - (-1)^(1/3)*b)", //
+        "-(-1)^(1/3)*a-(-1)^(1/3)*b");
+    check("Together((-1)^(1/3)*a + (-1)^(1/3)*b)", //
+        "(-1)^(1/3)*a+(-1)^(1/3)*b");
+    check("Together((-1)^(1/5)*a + (-1)^(1/5)*b)", //
+        "(-1)^(1/5)*a+(-1)^(1/5)*b");
+    check("N(Together(-(-1)^(1/3)*a - (-1)^(1/3)*b) /. {a->1, b->1})", //
+        "-1.0+I*(-1.73205)");
+    check("Factor((-1)^(1/3)*a + (-1)^(1/3)*b)", //
+        "(-1)^(1/3)*a+(-1)^(1/3)*b");
     // Together must not invert the base of a non-integer power (Sqrt(1/z) != 1/Sqrt(z)), so
     // these keep the Sqrt(...) of the original base rather than combining through it
     check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
