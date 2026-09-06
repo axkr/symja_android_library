@@ -91,6 +91,22 @@ final class LinearODEForm {
   }
 
   /**
+   * Whether the expression is a ratio of two polynomials in the variable.
+   *
+   * <p>
+   * The test is made on the expression put over a common denominator, so that a sum of fractions
+   * counts as one.
+   */
+  static boolean isRationalIn(IExpr expr, IExpr xVar, EvalEngine engine) {
+    if (expr.isFree(xVar, true)) {
+      return true;
+    }
+    IExpr together = engine.evaluate(F.Together(expr));
+    return engine.evaluate(F.PolynomialQ(F.Numerator(together), xVar)).isTrue()
+        && engine.evaluate(F.PolynomialQ(F.Denominator(together), xVar)).isTrue();
+  }
+
+  /**
    * The same equation with the coefficients cleared of denominators and of a common factor.
    *
    * <p>
@@ -103,15 +119,32 @@ final class LinearODEForm {
    * the coefficients.
    */
   LinearODEForm normalized(IExpr xVar, EvalEngine engine) {
+    // Everything below is a rewriting of polynomials: clearing denominators and dividing by a
+    // common divisor. A coefficient which is not a rational function of the variable - E^(k*x),
+    // Sin(x), 1/(1+E^(x^2/2))^2 - has nothing for those to work on, and handing it to them costs
+    // time and hands the methods below a form they did not ask for. Such an equation is never one
+    // with constant coefficients nor a Cauchy-Euler one, which are the two this is for, so leaving
+    // it alone loses nothing.
+    for (int k = 0; k <= order; k++) {
+      if (!isRationalIn(a[k], xVar, engine)) {
+        return this;
+      }
+    }
+    if (!isRationalIn(g, xVar, engine)) {
+      return this;
+    }
+
     IExpr[] c = new IExpr[order + 1];
     System.arraycopy(a, 0, c, 0, order + 1);
     IExpr rhs = g;
 
+    // Together first: a coefficient written as a sum of fractions, 1/x + 1/(x-1), reports its
+    // denominator as 1 and the equation would go on carrying them.
     IASTAppendable denominators = F.TimesAlloc(order + 2);
     for (int k = 0; k <= order; k++) {
-      denominators.append(F.Denominator(c[k]));
+      denominators.append(F.Denominator(F.Together(c[k])));
     }
-    denominators.append(F.Denominator(rhs));
+    denominators.append(F.Denominator(F.Together(rhs)));
     IExpr multiplier = engine.evaluate(denominators);
     if (!multiplier.isFree(xVar) && !multiplier.isZero()) {
       for (int k = 0; k <= order; k++) {

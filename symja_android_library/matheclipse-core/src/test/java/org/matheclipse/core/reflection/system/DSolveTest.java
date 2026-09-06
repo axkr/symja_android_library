@@ -723,6 +723,24 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveNormalizedCoefficients() {
+    // Both coefficients are a sum of two fractions. Reading the denominator without putting them
+    // over a common one first reports 1, so nothing was cleared, the equation was not recognized
+    // as one with constant coefficients, and the cascade below spent minutes on it.
+    check("DSolve(y''(x)/x + y''(x)/(x-1) - y(x)/x - y(x)/(x-1) == 0, y(x), x)", //
+        "{{y(x)->C(1)/E^x+E^x*C(2)}}");
+
+    // A coefficient which is not a rational function of x is left alone rather than handed to the
+    // polynomial routines, and the equation declines quickly instead of grinding.
+    check("DSolve(y''(x) + (1+E^(x^2/2))^(-2)*y(x) == 0, y(x), x)", //
+        "DSolve(y(x)/(1+E^(x^2/2))^2+y''(x)==0,y(x),x)");
+
+    // The clearing and the division by a common factor still work.
+    check("DSolve(x^2*y''(x) + x*y'(x) - y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/x+x*C(2)}}");
+  }
+
+  @Test
   public void testDSolvePoschlTeller() {
     // A potential built from Csc(x)^2 and Sec(x)^2. Multiplying the coefficient by
     // Sin(x)^2*Cos(x)^2 clears both and leaves an even quadratic in Cos(x), which is where the two
