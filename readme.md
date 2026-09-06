@@ -32,6 +32,7 @@ Read the [Symja Manual](symja_android_library/doc/index.md) :blue_book: for the 
 - [Github GIT](#github-git)
 - [Contact](#contact)
 - [License](#license)
+- [Science and math library dependencies](#science-and-math-library-dependencies-by-maven-module)
 
 ### 🔧 Installation <a name="installation"></a>
 
@@ -254,19 +255,124 @@ If you would like to use parts of the system here are some Maven module licenses
 * the maven modules: `parser, external, core` are published under LGPL license.
 * the maven modules: `gpl, api, io` are published under GPL license.
 
-Here are some of the associated **Java** library dependency licenses:
-* the [TilmanNeumann/java-math-library](https://github.com/TilmanNeumann/java-math-library) is published under the GNU GENERAL PUBLIC LICENSE license.
-* the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. The Java bytecode is dual licenced also under the Apache 2.0 license to allow usage in Android projects. 
-* the [JGraphT Library](https://jgrapht.org/)  is published under the Eclipse Public License (EPL) or (LESSER) GNU GENERAL PUBLIC LICENSE license.
-* the [apfloat project](https://github.com/mtommila/apfloat) is published under the MIT License. 
-* the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software license
-* the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software license
-* the [Tablesaw](https://github.com/jtablesaw/tablesaw) is published under the Apache software license 
-
 Here are some of the associated **JavaScript** licenses:
 * the [Paul Masson's Math project](https://github.com/paulmasson/math) is published under the MIT license. 
 * the [Paul Masson's MathCell project](https://github.com/paulmasson/mathcell) is published under the MIT license. 
 * the [JSXGraph project](https://github.com/jsxgraph/jsxgraph) is published under the GNU LGPL or MIT license.  
+* the [KaTeX project](https://katex.org/) is published under the MIT license. 
+
+### Science and math library dependencies by Maven module
+
+The Maven modules below all build on `matheclipse-core`. A module inherits the dependencies of every module it depends on, so the licenses of `matheclipse-core` apply everywhere. `matheclipse-core` itself depends on `matheclipse-parser` and `matheclipse-external`; the third-party code vendored inside `matheclipse-external` is therefore listed together with `core`.
+
+#### matheclipse-core
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [Hipparchus](https://www.hipparchus.org/) | linear algebra, ODE solvers, optimization, statistics, FFT, geometry, clustering, curve fitting | Apache License 2.0 |
+| [apfloat](https://github.com/mtommila/apfloat) | arbitrary precision arithmetic | MIT License |
+| [LogicNG](https://github.com/logic-ng/LogicNG) | boolean logic, SAT solving | Apache License 2.0 |
+| [Choco-solver](https://choco-solver.org/) | constraint programming | BSD 3-Clause License |
+| [AdaptiveQuadrature](https://github.com/jonathanschilling/AdaptiveQuadrature) | adaptive Gauss-Kronrod numerical integration | Apache License 2.0 |
+| [RoaringBitmap](https://github.com/RoaringBitmap/RoaringBitmap) | compressed bitsets | Apache License 2.0 |
+| [MFL](https://github.com/HebiRobotics/MFL) | MATLAB `.mat` file import and export | Apache License 2.0 |
+| [Paguro](https://github.com/GlenKPeterson/Paguro) | persistent (immutable) collections | Apache License 2.0 or EPL 1.0 |
+| [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) (vendored in `matheclipse-external`) | polynomial arithmetic, factorization, Groebner bases | LGPL; the Java bytecode is dual licensed under Apache 2.0 to allow usage in Android projects |
+| [Cream](https://bach.istc.kobe-u.ac.jp/cream/) (vendored in `matheclipse-external`) | finite domain constraint solving | LGPL |
+| [Diophantine](https://github.com/Mangara/Diophantine) (vendored in `matheclipse-external`) | solving Diophantine equations | MIT License |
+| [SnuggleTeX](https://www2.ph.ed.ac.uk/snuggletex/) (vendored in `matheclipse-external`) | LaTeX to MathML conversion | BSD License |
+| [fastutil](https://fastutil.di.unimi.it/) (slim fork vendored in `matheclipse-external`) | primitive type collections | Apache License 2.0 |
+
+#### matheclipse-gpl
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [java-math-library](https://github.com/TilmanNeumann/java-math-library) (vendored as `de.tilman_neumann.jml`) | integer factorization, prime numbers, partitions, modular arithmetic, quadratic residues | GNU GPL v3 |
+
+This module is the reason a distribution containing it has to be published under the GPL.
+
+#### matheclipse-graphtheory
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [JGraphT](https://jgrapht.org/) | graph data structures and graph algorithms | EPL 2.0 or LGPL 2.1 |
+
+#### matheclipse-image
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [BoofCV](https://boofcv.org/) | image processing and computer vision | Apache License 2.0 |
+| [Hipparchus](https://www.hipparchus.org/) | numerics and statistics for image operations | Apache License 2.0 |
+| [JSVG](https://github.com/weisJ/jsvg) | SVG rendering | MIT License |
+| [TwelveMonkeys ImageIO](https://github.com/haraldk/TwelveMonkeys) | additional raster image formats (JPEG, BMP, TIFF, WebP, PNM) | BSD 3-Clause License |
+
+#### matheclipse-astro
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [Orekit](https://www.orekit.org/) | astronomy and space flight dynamics | Apache License 2.0 |
+| [Hipparchus](https://www.hipparchus.org/) | linear algebra and geometry | Apache License 2.0 |
+
+#### matheclipse-bio
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [BioJava](https://biojava.org/) | bioinformatics, sequence alignment, amino acid properties | LGPL 2.1 |
+
+#### matheclipse-chem
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [Chemistry Development Kit (CDK)](https://cdk.github.io/) | chemoinformatics, molecular formulas, SMILES/SMARTS, structure diagrams | LGPL 2.1 or later |
+
+#### matheclipse-nlp
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [ICU4J](https://icu.unicode.org/) | Unicode, locale, transliteration and unit data | Unicode License v3 |
+
+#### matheclipse-dataset
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [Tablesaw](https://github.com/jtablesaw/tablesaw) (vendored fork) | dataframes and table operations | Apache License 2.0 |
+| [Apache Arrow](https://arrow.apache.org/) | columnar in-memory data format | Apache License 2.0 |
+| [Apache POI](https://poi.apache.org/) | Excel import and export | Apache License 2.0 |
+| [fastutil](https://fastutil.di.unimi.it/) | primitive type collections | Apache License 2.0 |
+| [RoaringBitmap](https://github.com/RoaringBitmap/RoaringBitmap) | compressed bitsets | Apache License 2.0 |
+| [ICU4J](https://icu.unicode.org/) | locale aware parsing and formatting | Unicode License v3 |
+| [jsoup](https://jsoup.org/) | HTML table import | MIT License |
+
+#### matheclipse-compile
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [Janino](https://janino-compiler.github.io/janino/) | runtime Java compiler | BSD 3-Clause License |
+| [JavaPoet](https://github.com/square/javapoet) | Java source code generation | Apache License 2.0 |
+
+#### matheclipse-script
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [apfloat](https://github.com/mtommila/apfloat) | arbitrary precision arithmetic | MIT License |
+
+This module also depends on `matheclipse-gpl` and therefore inherits the GPL.
+
+#### matheclipse-md2html
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [commonmark-java](https://github.com/commonmark/commonmark-java) | Markdown parsing and HTML rendering | BSD 2-Clause License |
+
+#### matheclipse-discord
+
+| Project | Purpose | License |
+| --- | --- | --- |
+| [Discord4J](https://discord4j.com/) | Discord bot client | LGPL 3.0 |
+
+#### matheclipse-io
+
+This module aggregates `image, nlp, astro, gpl, bio, chem, graphtheory, compile` and `dataset` and therefore inherits all libraries listed above. In addition it bundles the JavaScript libraries listed in the License section, including KaTeX for math typesetting.
 
 [1]: mailto:axelclk@gmail.com
 [2]: http://www.vogella.com/tutorials/EclipseGit/article.html
