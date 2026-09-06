@@ -633,6 +633,24 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // the time on every equation with a sine in it.
     check("DSolve(y''(x) + Sin(x)*y(x) == 0, y(x), x)", //
         "DSolve(Sin(x)*y(x)+y''(x)==0,y(x),x)");
+
+    // Under t == E^x the coefficients are rational in t and the equation is then Liouvillian, so
+    // Kovacic's method finds it; one solution is E^(-E^x) and the other carries ExpIntegralEi.
+    checkResidual("y''(x) + (E^x - E^(2*x))*y(x) == 0", //
+        "y''(x) + (E^x - E^(2*x))*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+
+    // With the rate and the coefficient left symbolic the substitution still does its work -- the
+    // coefficients come out as 1/t and a*(b-a*t)/(b^2*t) -- but the equation it hands on is one
+    // Kovacic's method does not solve with symbolic parameters, so this one still declines.
+
+    // Two rates whose ratio is not an integer: no substitution of this kind makes both of them
+    // polynomial, so it declines instead of simplifying its way through the whole budget.
+    check("Head(DSolve(y''(x) + (E^x + E^(Sqrt(2)*x))*y(x) == 0, y(x), x))", //
+        "DSolve");
+
+    // An exponential of something other than a multiple of x is not reached by this either.
+    check("Head(DSolve(y''(x) + (1+E^(x^2/2))^(-2)*y(x) == 0, y(x), x))", //
+        "DSolve");
   }
 
   @Test
