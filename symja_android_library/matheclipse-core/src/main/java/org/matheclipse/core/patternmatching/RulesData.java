@@ -573,24 +573,24 @@ public final class RulesData implements Serializable {
 
     IExpr result = evalMatcher(patternEvaluator, expr, engine);
     if (result.isPresent()) {
-      if (patternEvaluator.getLHS().isAST(S.Integrate)) {
-        if (!expr.equals(result)) {
-          return result;
-        }
-        boolean quietMode = engine.isQuietMode();
-        try {
-          engine.setQuietMode(false);
-          // Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.
-          Errors.printMessage(S.Integrate, "rubiendless",
-              F.list(expr, F.ZZ(patternEvaluator.getLHSPriority())), engine);
-        } finally {
-          engine.setQuietMode(quietMode);
-        }
-        // The rule rewrote the integral to itself. Returning the unevaluated integral stops the
-        // search here. Trying the remaining rules instead lets the expression cycle through the
-        // evaluation loop until $IterationLimit is reached, which costs the same result but a
-        // multiple of the time.
-        return expr;
+      if (patternEvaluator.getLHS().isAST(S.Integrate) && expr.equals(result)) {
+        // The rule rewrote the integral to itself, which is what a Rubi rule delegating to
+        // ExpandIntegrand does when the integrand cannot be expanded: rule 2698 is
+        // Int[F^(g*(d+e*x)^n)/(a+b*x+c*x^2)] -> Int[ExpandIntegrand[...]], and where that
+        // expansion is not a sum ExpandIntegrand hands the integrand straight back. Around 300
+        // rules have that shape.
+        //
+        // So it is a rule which did not apply, and the scan carries on with the ones after it.
+        // Returning the integral instead would end the search at this rule, and returning the
+        // rewrite would send the same expression round the evaluation loop until the iteration
+        // limit. The message stays, because it names the rule and that is what makes such a rule
+        // findable, but it no longer forces its way past quiet mode: the condition is handled
+        // here rather than being the end of the road.
+        //
+        // Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.
+        Errors.printMessage(S.Integrate, "rubiendless",
+            F.list(expr, F.ZZ(patternEvaluator.getLHSPriority())), engine);
+        return F.NIL;
       }
       return result;
     }
