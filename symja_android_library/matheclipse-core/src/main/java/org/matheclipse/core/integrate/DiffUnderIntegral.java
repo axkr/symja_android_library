@@ -1,6 +1,7 @@
 package org.matheclipse.core.integrate;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
@@ -65,7 +66,11 @@ public final class DiffUnderIntegral {
   /** How big an integrand is still worth looking at. */
   private static final int MAX_LEAF_COUNT = 120;
 
-  /** How long the one simplification this needs may take. */
+  /**
+   * How long the one simplification this needs may take. The number is what it is on the machine
+   * the stage was tuned on; a slower machine is given proportionally longer, see
+   * {@link MachineProfile}.
+   */
   private static final int STEP_SECONDS = 2;
 
   /** Whether the name of a <code>Method</code> option asks for this. */
@@ -286,7 +291,7 @@ public final class DiffUnderIntegral {
     IExpr ratio = engine.evaluate(F.Cancel(F.Together(F.Divide(f, shape))));
     if (!ratio.isFree(x, true)) {
       ratio = engine.evalTimeConstrained(F.Simplify(F.PowerExpand(F.Divide(f, shape))),
-          STEP_SECONDS);
+          MachineProfile.seconds(STEP_SECONDS));
     }
     if (ratio.isNIL() || !ratio.isFree(x, true) || ratio.isZero() || ratio.isIndeterminate()
         || !ratio.isFree(S.Integrate, true)) {
@@ -336,7 +341,10 @@ public final class DiffUnderIntegral {
   /** How big an integrand the general loop will look at. */
   private static final int MAX_GENERAL_LEAF_COUNT = 200;
 
-  /** How long the inner integral, and the one back over the parameter, may each take. */
+  /**
+   * How long the inner integral, and the one back over the parameter, may each take. Scaled for
+   * this machine like {@link #STEP_SECONDS}.
+   */
   private static final int INTEGRAL_SECONDS = 5;
 
   /** Values of the parameter tried as the one where the integral is already known. */
@@ -444,7 +452,7 @@ public final class DiffUnderIntegral {
     IExpr residual = engine.evaluate(F.Together(F.Subtract(F.D(value, parameter), inner)));
     if (!residual.isZero()) {
       residual = engine.evalTimeConstrained(F.Simplify(residual),
-          STEP_SECONDS);
+          MachineProfile.seconds(STEP_SECONDS));
       if (residual.isNIL() || !residual.isZero()) {
         return F.NIL;
       }
@@ -509,7 +517,7 @@ public final class DiffUnderIntegral {
     // back to the evaluation loop often enough for a TimeConstrained to end them, while the
     // budget's watchdog interrupts the thread they are running on.
     IExpr value = IntegrateTimeBudget.runWithin(() -> engine.evaluate(integral),
-        INTEGRAL_SECONDS * 1000L);
+        MachineProfile.seconds((long) INTEGRAL_SECONDS) * 1000L);
     if (value.isNIL() || value.isAST(S.$Aborted)) {
       return F.NIL;
     }
