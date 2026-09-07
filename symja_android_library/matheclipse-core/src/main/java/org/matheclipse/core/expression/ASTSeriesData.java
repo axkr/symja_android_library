@@ -2252,12 +2252,53 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       return series;
     }
+    if (expansionPoint.isDirectedInfinity()) {
+      // seriesDataRecursive() expands around a finite point only; at an infinite expansion point it
+      // would write the expansion point itself into the constant coefficient. The `isFree` branch
+      // above is the only sound one here.
+      return null;
+    }
+    if (!isAnalyticSummand(b)) {
+      return null;
+    }
     ASTSeriesData bSeries =
         seriesDataRecursive(b, expansionVariable, expansionPoint, truncateOrder, EvalEngine.get());
     if (bSeries == null) {
       return null;
     }
     return plusPS(bSeries);
+  }
+
+  /**
+   * Test if the summand {@code b} may be expanded into a series and folded into the coefficients.
+   *
+   * <p>
+   * A branch discriminator such as <code>Pi*Floor[(Pi/2 - Arg[x - x0])/(2*Pi)]</code> -- which
+   * <code>Series</code> emits alongside the expansion of the inverse trigonometric functions -- is
+   * piecewise constant, so expanding it collapses it to its value at the expansion point and the
+   * branch information is lost. Such summands must stay an explicit member of the enclosing
+   * <code>Plus</code>, the same way {@link #isScalarTimesFactor(IExpr)} keeps them out of a product.
+   *
+   * @param b a summand which depends on the expansion variable
+   * @return {@code false} if {@code b} selects a branch and must not be expanded
+   */
+  private static boolean isAnalyticSummand(IExpr b) {
+    return b.isFreeAST(head -> head == S.Floor //
+        || head == S.Ceiling //
+        || head == S.Round //
+        || head == S.IntegerPart //
+        || head == S.Arg //
+        || head == S.Sign //
+        || head == S.UnitStep //
+        || head == S.Boole //
+        || head == S.Piecewise //
+        || head == S.KroneckerDelta //
+        || head == S.Mod //
+        || head == S.Quotient //
+        || head == S.Abs //
+        || head == S.Re //
+        || head == S.Im //
+        || head == S.Conjugate);
   }
 
   public ASTSeriesData plusPS(ASTSeriesData that) {

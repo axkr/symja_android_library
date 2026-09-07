@@ -1972,6 +1972,36 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "x+x^3/6+3/40*x^5");
   }
 
+  /**
+   * A sum which contains a series folds the remaining summands into its coefficients. This used to
+   * happen only when the sum also had a constant term, because that was the only way the
+   * <code>Plus</code> operator noticed it had evaluated anything.
+   */
+  @Test
+  public void testPlusSeries() {
+    check("x + O(x)^6 // InputForm", //
+        "SeriesData(x,0,{1},1,6,1)");
+    check("x^2 + O(x)^8 // InputForm", //
+        "SeriesData(x,0,{1},2,8,1)");
+    check("2*x + O(x)^6 // InputForm", //
+        "SeriesData(x,0,{2},1,6,1)");
+    check("a*x + b*x^2 + O(x)^3 // InputForm", //
+        "SeriesData(x,0,{a,b},1,3,1)");
+    // a summand which is free of the expansion variable joins the constant coefficient
+    check("y + Series(Exp(x), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1+y,1,1/2,1/6},0,4,1)");
+    // the series and the `x` used to be returned as an unreduced sum
+    check("InverseSeries(Series(Sin(x), {x, 0, 5})) + x // InputForm", //
+        "SeriesData(x,0,{2,0,1/6,0,3/40},1,6,1)");
+    // a branch discriminator is piecewise constant: expanding it would collapse it to its value at
+    // the expansion point and lose the branch, so it stays an explicit summand
+    check("1 + Series(ArcTan(x), {x, I, 3}) // InputForm", //
+        "SeriesData(x,I,{1+1/4*(Pi+I*2*Log(2)-I*2*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1) + Pi*Floor((Pi/2 - Arg( - I + x))/(2*Pi))");
+    // an infinite expansion point is out of reach of the expansion engine used here
+    check("x + Series(Exp(1/x), {x, Infinity, 3}) // InputForm", //
+        "SeriesData(x,Infinity,{1,1,1/2,1/6},0,4,1) + x");
+  }
+
   @Test
   public void testComposeSeries002() {
     check("ComposeSeries(Series(Exp(x), {x, 0, 3}), Series(Sin(x), {x, 0, 3}))", //

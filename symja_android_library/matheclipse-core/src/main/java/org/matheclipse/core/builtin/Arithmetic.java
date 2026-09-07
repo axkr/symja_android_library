@@ -3242,8 +3242,9 @@ public final class Arithmetic {
       if (temp.isPresent()) {
         return temp;
       }
-      if (plusOp.isEvaled()) {
-        return plusOp.getSum();
+      IExpr sum = plusOp.getSumIfEvaled();
+      if (sum.isPresent()) {
+        return sum;
       }
 
       if (!engine.isNumericMode()) {

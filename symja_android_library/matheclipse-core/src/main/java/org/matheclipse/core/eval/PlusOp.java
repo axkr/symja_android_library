@@ -23,8 +23,8 @@ import org.matheclipse.core.units.QuantityOps;
 
 /**
  * Plus operator for adding multiple arguments with the <code>plus(argument)</code> method and
- * returning the result, with the <code>getSum()</code> method, if <code>isEvaled()</code> returns
- * <code>true</code>. See:
+ * returning the result with the <code>getSumIfEvaled()</code> method, which yields {@link F#NIL}
+ * when nothing was evaluated. See:
  * <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded
  * Algebraic Simplification</a>
  */
@@ -101,6 +101,9 @@ public final class PlusOp {
   /** <code>true</code> if plus was really evaluated */
   private boolean evaled;
 
+  /** <code>true</code> once {@link #foldIntoSeries()} has run for the current set of summands. */
+  private boolean seriesFolded;
+
   /** The value of the addition of numbers. */
   private IExpr numberValue;
 
@@ -115,6 +118,7 @@ public final class PlusOp {
     this.capacity = capacity;
     this.plusMap = null;
     this.evaled = false;
+    this.seriesFolded = false;
     this.numberValue = F.NIL;
   }
 
@@ -170,27 +174,7 @@ public final class PlusOp {
       }
       return F.C0;
     }
-    if (numberValue instanceof ASTSeriesData && !plusMap.isEmpty()) {
-      // Fold the remaining symbolic terms (e.g. a polynomial term like `x` which
-      // depends on the
-      // expansion variable) into the series coefficients instead of keeping them as a
-      // separate
-      // Plus() term.
-      ASTSeriesData series = (ASTSeriesData) numberValue;
-      Iterator<Entry<IExpr, IExpr>> iterator = plusMap.entrySet().iterator();
-      while (iterator.hasNext()) {
-        Entry<IExpr, IExpr> entry = iterator.next();
-        final IExpr key = entry.getKey();
-        final IExpr value = entry.getValue();
-        IExpr term = value.isOne() ? key : F.eval(F.Times(value, key));
-        ASTSeriesData merged = series.plusExpr(term);
-        if (merged != null) {
-          series = merged;
-          iterator.remove();
-        }
-      }
-      numberValue = series;
-    }
+    foldIntoSeries();
     IASTAppendable result = F.PlusAlloc(plusMap.size() + 1);
     if (numberValue.isPresent() && !numberValue.isZero()) {
       if (numberValue.isComplexInfinity()) {
@@ -231,12 +215,69 @@ public final class PlusOp {
   }
 
   /**
+   * Fold the symbolic terms collected in {@link #plusMap} into the series held in
+   * {@link #numberValue}, so that a polynomial term like <code>x</code> lands in the coefficient of
+   * its own power instead of being kept as a separate <code>Plus()</code> summand.
+   *
+   * <p>
+   * Runs at most once per set of summands: {@link ASTSeriesData#plusExpr(IExpr)} expands each term
+   * with <code>seriesDataRecursive()</code>, which evaluates, differentiates and takes limits.
+   *
+   * @return <code>true</code> if at least one term was absorbed into the series
+   */
+  private boolean foldIntoSeries() {
+    if (seriesFolded || plusMap == null || plusMap.isEmpty()
+        || !(numberValue instanceof ASTSeriesData)) {
+      return false;
+    }
+    seriesFolded = true;
+    boolean folded = false;
+    Iterator<Entry<IExpr, IExpr>> iterator = plusMap.entrySet().iterator();
+    try {
+      while (iterator.hasNext()) {
+        Entry<IExpr, IExpr> entry = iterator.next();
+        final IExpr key = entry.getKey();
+        final IExpr value = entry.getValue();
+        IExpr term = value.isOne() ? key : F.eval(F.Times(value, key));
+        ASTSeriesData merged = ((ASTSeriesData) numberValue).plusExpr(term);
+        if (merged != null) {
+          // commit before removing, so a throw further down cannot lose an absorbed summand
+          numberValue = merged;
+          iterator.remove();
+          folded = true;
+        }
+      }
+    } catch (ValidateException | LimitException e) {
+      throw e;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      // leave the remaining terms in plusMap; numberValue already holds what was absorbed
+    }
+    return folded;
+  }
+
+  /**
    * Test if any evaluation occurred by calling the <code>plus()</code> method
    *
    * @return <code>true</code> if an evaluation occurred.
    */
   public boolean isEvaled() {
     return evaled;
+  }
+
+  /**
+   * The evaluated result of the summation, or {@link F#NIL} if neither {@link #plus(IExpr)} nor the
+   * series folding changed anything.
+   *
+   * <p>
+   * Prefer this over {@link #isEvaled()} followed by {@link #getSum()}: folding a symbolic term into
+   * a series is an evaluation too, but it can only be detected once every summand has been seen.
+   *
+   * @return the sum, or {@link F#NIL}
+   */
+  public IExpr getSumIfEvaled() {
+    boolean folded = foldIntoSeries();
+    return (evaled || folded) ? getSum() : F.NIL;
   }
 
   private IExpr negativeInfinityPlus(final IExpr o1) {
@@ -261,6 +302,8 @@ public final class PlusOp {
     if (arg.isIndeterminate()) {
       return S.Indeterminate;
     }
+    // a new summand invalidates a fold that has already been computed
+    seriesFolded = false;
 
     try {
       if (numberValue.isPresent() && numberValue.isDirectedInfinity()) {
