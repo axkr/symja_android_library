@@ -435,6 +435,66 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->3/2}}");
   }
 
+  /**
+   * The solution set is enumerated only once every variable is proved to lie in a finite range.
+   * The constraint solver searched a fixed interval instead, so a system whose solutions lay
+   * outside it was reported as having none.
+   */
+  @Test
+  public void testSolveIntegersBoundsAreProved() {
+    // x is bounded directly and the equality carries that bound over to y, far outside the old box
+    check("Solve(x + y == 20000 && x >= 0 && y >= 0 && x <= 3, {x, y}, Integers)", //
+        "{{x->0,y->20000},{x->1,y->19999},{x->2,y->19998},{x->3,y->19997}}");
+    // a disjunction and a disequality are part of the condition, not something to drop
+    check("Solve(0 <= x <= 3 && x != 1 && (x == 0 || x >= 2), x, Integers)", //
+        "{{x->0},{x->2},{x->3}}");
+    check("Solve(r == 0 && g >= 0 && h >= 0 && h <= 8 && m >= 0 && g + h == 4 && 2*m == g "
+        + "&& Mod(g + 2*h, 4) == 0 && m != 1, {r, g, h, m}, Integers)", //
+        "{{r->0,g->0,h->4,m->0},{r->0,g->4,h->0,m->2}}");
+    // a coefficient beyond the range of a machine integer is not rounded
+    check("Solve(9007199254740993*x == 9007199254740993 && 0 <= x <= 2, x, Integers)", //
+        "{{x->1}}");
+  }
+
+  /** Congruences are solved as congruences rather than by testing every candidate. */
+  @Test
+  public void testSolveIntegersCongruences() {
+    check("Solve(0 <= x <= 20 && Mod(6*x + 4, 10) == 0, x, Integers)", //
+        "{{x->1},{x->6},{x->11},{x->16}}");
+    // an odd number is never divisible by four
+    check("Solve(0 <= x <= 20 && Mod(2*x + 1, 4) == 0, x, Integers)", //
+        "{}");
+    check("Solve(Mod(x, 3) == 1 && Mod(x, 5) == 2 && 0 <= x < 30, x, Integers)", //
+        "{{x->7},{x->22}}");
+    check("Solve(0 <= x <= 5 && 0 <= y <= 5 && Mod(x + 2*y, 4) == 3, {x, y}, Integers)", //
+        "{{x->1,y->1},{x->1,y->3},{x->1,y->5},{x->3,y->0},{x->3,y->2},{x->3,y->4},{x->5,y->\n"
+            + "1},{x->5,y->3},{x->5,y->5}}");
+  }
+
+  /**
+   * An integer condition whose solution set was not proved finite stays unevaluated. Enumerating a
+   * search window answers a different question, and an empty list would be plainly wrong.
+   */
+  @Test
+  public void testSolveIntegersUnboundedStaysUnevaluated() {
+    check("Solve(x >= 0, x, Integers)", //
+        "Solve(x>=0,x,Integers)");
+    check("Solve(Mod(x, 3) == 1, x, Integers)", //
+        "Solve(Mod(x,3)==1,x,Integers)");
+    // finite, but beyond the enumeration budget
+    check("Solve(0 <= x <= 1000001, x, Integers)", //
+        "Solve(0<=x<=1000001,x,Integers)");
+  }
+
+  /** A domain does not change a tautology or a contradiction. */
+  @Test
+  public void testSolveIntegersTruthValues() {
+    check("Solve(False, x, Integers)", //
+        "{}");
+    check("Solve(True, x, Integers)", //
+        "{{}}");
+  }
+
   @Test
   public void testSolveIntegersBounded() {
     // The inequality constraints bound every variable, so the constraint solver can enumerate the

@@ -250,6 +250,61 @@ public final class Emitter {
     return F.list(rules);
   }
 
+  /**
+   * A finite solution set as a disjunction of solved equations, which is how <code>Reduce</code>
+   * reports it: <code>(x == 1 &amp;&amp; y == 4) || (x == 2 &amp;&amp; y == 3)</code>.
+   */
+  public static IExpr tuplesToOr(IntegerSolveResult result, IntegerDomain domain) {
+    List<BigInteger[]> solutions = result.solutions();
+    if (solutions.isEmpty()) {
+      return S.False;
+    }
+    IASTAppendable disjuncts = F.ast(S.Or, solutions.size());
+    for (BigInteger[] solution : solutions) {
+      IASTAppendable conjuncts = F.ast(S.And, solution.length);
+      for (int index = 0; index < solution.length; index++) {
+        conjuncts.append(F.Equal(result.variables().get(index).symbol(), F.ZZ(solution[index])));
+      }
+      disjuncts.append(conjuncts.argSize() == 1 ? conjuncts.arg1() : conjuncts);
+    }
+    IExpr disjunction = disjuncts.argSize() == 1 ? disjuncts.arg1() : disjuncts;
+    if (result.untouched().isEmpty()) {
+      return disjunction;
+    }
+    IASTAppendable conjuncts = F.ast(S.And, result.untouched().size() + 1);
+    for (Variable variable : result.untouched()) {
+      conjuncts.append(F.Element(variable.symbol(), domain.symbol()));
+    }
+    conjuncts.append(disjunction);
+    return conjuncts;
+  }
+
+  /**
+   * The same finite solution set as the list of rules {@code Solve} returns. A variable the
+   * condition does not mention is unconstrained, and travels as the condition of every value.
+   */
+  public static IExpr tuplesToRules(IntegerSolveResult result, IntegerDomain domain) {
+    IExpr condition = F.NIL;
+    if (!result.untouched().isEmpty()) {
+      IASTAppendable conditions = F.ast(S.And, result.untouched().size());
+      for (Variable variable : result.untouched()) {
+        conditions.append(F.Element(variable.symbol(), domain.symbol()));
+      }
+      condition = conditions.argSize() == 1 ? conditions.arg1() : conditions;
+    }
+    IASTAppendable rules = F.ListAlloc(result.solutions().size());
+    for (BigInteger[] solution : result.solutions()) {
+      IASTAppendable tuple = F.ListAlloc(solution.length);
+      for (int index = 0; index < solution.length; index++) {
+        IExpr value = F.ZZ(solution[index]);
+        tuple.append(F.Rule(result.variables().get(index).symbol(),
+            condition.isNIL() ? value : F.ConditionalExpression(value, condition)));
+      }
+      rules.append(tuple);
+    }
+    return rules;
+  }
+
   /** <code>Element(C(1), Integers)</code>, or one membership for all parameters at once. */
   private static IExpr parameterMembership(int count, IntegerDomain domain) {
     if (count == 0) {

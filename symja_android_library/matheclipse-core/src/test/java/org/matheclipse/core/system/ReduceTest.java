@@ -282,6 +282,35 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  /**
+   * A system whose constraints prove every variable bounded is enumerated completely. The bounds
+   * come from the constraints, including those which only follow from a combination of them,
+   * rather than from a fixed search interval.
+   */
+  @Test
+  public void testReduceIntegerBoundedSystem() {
+    check("Reduce(x + 2*y + 3*z == 0 && x > 0 && y > 0 && z > 0, {x, y, z}, Integers)", //
+        "False");
+    check("Reduce(2*x + 3*y + 5*z == 1 && x >= 0 && y >= 0 && z >= 0, {x, y, z}, Integers)", //
+        "False");
+    check("Reduce(0 <= x <= 10 && Mod(x, 3) == 1, x, Integers)", //
+        "x==1||x==4||x==7||x==10");
+    check("Reduce(1 <= x <= 4 && x != 2, x, Integers)", //
+        "x==1||x==3||x==4");
+    check("Reduce(Mod(x, 5) == 0 && 1 <= x <= 4, x, Integers)", //
+        "False");
+  }
+
+  /**
+   * Over the primes every variable is at least two, which is often what makes a system finite. It
+   * also excludes the negative values a bare primality test accepts.
+   */
+  @Test
+  public void testReducePrimesIsPositive() {
+    check("Reduce(x + y == 10, {x, y}, Primes)", //
+        "(x==3&&y==7)||(x==5&&y==5)||(x==7&&y==3)");
+  }
+
   @Test
   public void testReduceElementInput() {
     check("Reduce(x > 0 && x < 4 && Element(x, Integers))", //

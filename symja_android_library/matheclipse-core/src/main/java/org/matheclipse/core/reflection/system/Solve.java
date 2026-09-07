@@ -1938,6 +1938,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               return BooleanFunctions.solveInstances(ast.arg1(), variables, maxRoots);
             }
             if (domain == S.Integers || domain == S.Primes) {
+              // a domain does not change a tautology or a contradiction. Without this the
+              // constraint solver is handed a model with no constraint at all.
+              if (ast.arg1().isTrue()) {
+                return F.list(F.CEmptyList);
+              }
+              if (ast.arg1().isFalse()) {
+                return F.CEmptyList;
+              }
               // An infinite solution family may only be answered in closed form when the caller
               // didn't ask for a specific finite number of individual solutions: MaxRoots->10 is a
               // request to enumerate ten of them. S#Primes is always enumerated - the parametric
@@ -2596,12 +2604,28 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         // which the constraint solver can only do by exhausting its box.
         IntegerSolveResult exact =
             IntegerReduceEngine.solve(equationsAndInequations, userDefinedVariables, domain);
-        if (exact.is(IntegerSolveResult.Kind.INFEASIBLE)) {
-          return F.CEmptyList;
-        }
-        if (allowParametricSolution && exact.is(IntegerSolveResult.Kind.PARAMETRIC)) {
-          return Emitter.latticeSolveRules(exact.family(), exact.untouched(),
-              IntegerDomain.INTEGERS);
+        switch (exact.kind()) {
+          case INFEASIBLE:
+            return F.CEmptyList;
+          case FINITE:
+            return checkDomain(
+                Emitter.tuplesToRules(exact, IntegerDomain.of((ISymbol) domain)), domain,
+                maximumNumberOfResults);
+          case PARAMETRIC:
+            if (allowParametricSolution) {
+              return Emitter.latticeSolveRules(exact.family(), exact.untouched(),
+                  IntegerDomain.INTEGERS);
+            }
+            // the caller asked for a specific number of individual solutions, so fall through to
+            // the enumeration below
+            break;
+          case UNSUPPORTED:
+            // the condition is integer arithmetic whose solution set was not proved finite.
+            // Enumerating a search box would answer a different question, and answering the empty
+            // set would be plainly wrong, so the expression stays unevaluated.
+            return F.NIL;
+          default:
+            break;
         }
 
         // for model#table() method

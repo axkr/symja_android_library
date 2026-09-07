@@ -913,6 +913,20 @@ public final class Validate {
       termsEqualZeroList.append(arg);
       return;
     }
+    if (arg.isAST(S.Inequality) && arg.size() >= 6 && (arg.size() % 2) == 0) {
+      // a chain with mixed relations, such as `0 <= x < 30`, is the conjunction of its links
+      IAST inequality = (IAST) arg;
+      for (int j = 2; j < inequality.size(); j += 2) {
+        IExpr operator = inequality.get(j);
+        if (!(operator instanceof IBuiltInSymbol)) {
+          termsEqualZeroList.append(arg);
+          return;
+        }
+        termsEqualZeroList.append(F.binaryAST2(operator, inequality.get(j - 1),
+            inequality.get(j + 1)));
+      }
+      return;
+    }
     if (arg.size() > 3 //
         && (arg.isAST(S.Less) //
             || arg.isAST(S.LessEqual) //

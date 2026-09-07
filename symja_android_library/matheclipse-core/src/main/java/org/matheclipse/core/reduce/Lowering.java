@@ -392,19 +392,12 @@ public final class Lowering {
   }
 
   private Formula comparison(Relation relation, IExpr left, IExpr right) {
-    if (relation == Relation.EQUAL || relation == Relation.NOT_EQUAL) {
-      Formula congruence = congruence(relation, left, right);
-      if (congruence != null) {
-        return congruence;
-      }
-      congruence = congruence(relation, right, left);
-      if (congruence != null) {
-        return congruence;
-      }
-    }
     if (containsMod(left) || containsMod(right)) {
-      // Mod in any other position is outside the grammar
-      return null;
+      if (relation != Relation.EQUAL && relation != Relation.NOT_EQUAL) {
+        // an ordered comparison of a residue is not a congruence class
+        return null;
+      }
+      return congruence(relation, left, right);
     }
     AffineTerm leftTerm = term(left);
     AffineTerm rightTerm = term(right);
@@ -415,25 +408,50 @@ public final class Lowering {
   }
 
   /**
-   * Lower <code>Mod(term, m) REL residue</code>. <code>Mod</code> always returns a value in
-   * <code>[0, m)</code>, so a residue outside that range decides the atom rather than describing a
-   * congruence class.
+   * Lower a comparison which mentions <code>Mod</code> into a congruence.
+   *
+   * <p>
+   * The comparison need not be written as <code>Mod(t, m) == r</code>: an equation is normally
+   * rearranged to <code>-1 + Mod(x, 3) == 0</code> before it reaches here, so the residue is
+   * collected from both sides. <code>Mod</code> always returns a value in <code>[0, m)</code>, so
+   * a residue outside that range decides the atom rather than describing a congruence class.
    */
-  private Formula congruence(Relation relation, IExpr modExpr, IExpr residueExpr) {
-    if (!modExpr.isAST(S.Mod, 3)) {
+  private Formula congruence(Relation relation, IExpr left, IExpr right) {
+    ModSplit leftSplit = split(left);
+    ModSplit rightSplit = split(right);
+    if (leftSplit == null || rightSplit == null) {
       return null;
     }
-    IAST mod = (IAST) modExpr;
-    if (!mod.arg2().isInteger() || !residueExpr.isRational()) {
+    ModSplit withMod;
+    AffineTerm otherSide;
+    if (leftSplit.mod != null && rightSplit.mod == null) {
+      withMod = leftSplit;
+      otherSide = rightSplit.affine;
+    } else if (rightSplit.mod != null && leftSplit.mod == null) {
+      withMod = rightSplit;
+      otherSide = leftSplit.affine;
+    } else {
+      // no Mod at all, or one on each side
       return null;
     }
-    BigInteger modulus = ((IRational) mod.arg2()).numerator().toBigNumerator();
+    if (!withMod.mod.arg2().isInteger()) {
+      return null;
+    }
+    BigInteger modulus = ((IRational) withMod.mod.arg2()).numerator().toBigNumerator();
     if (modulus.signum() <= 0) {
       // a negative or zero modulus changes the sign convention of Mod; stay out of it
       return null;
     }
-    IRational residue = (IRational) residueExpr;
+    // sign * Mod(t, m) == otherSide - affine
+    AffineTerm residueTerm = otherSide.subtract(withMod.affine);
+    if (withMod.negative) {
+      residueTerm = residueTerm.negate();
+    }
     boolean negated = relation == Relation.NOT_EQUAL;
+    if (!residueTerm.isConstant()) {
+      return null;
+    }
+    IRational residue = residueTerm.constant();
     if (!residue.isInteger()) {
       return Formula.of(negated);
     }
@@ -441,12 +459,75 @@ public final class Lowering {
     if (value.signum() < 0 || value.compareTo(modulus) >= 0) {
       return Formula.of(negated);
     }
-    AffineTerm term = term(mod.arg1());
+    AffineTerm term = term(withMod.mod.arg1());
     if (term == null) {
       return null;
     }
-    return Formula
-        .atom(Atom.divides(modulus, term.subtract(AffineTerm.integer(value)), negated));
+    return Formula.atom(Atom.divides(modulus, term.subtract(AffineTerm.integer(value)), negated));
+  }
+
+  /** An expression split into an affine part and at most one <code>Mod</code> term. */
+  private static final class ModSplit {
+    private final AffineTerm affine;
+    private final IAST mod;
+    private final boolean negative;
+
+    ModSplit(AffineTerm affine, IAST mod, boolean negative) {
+      this.affine = affine;
+      this.mod = mod;
+      this.negative = negative;
+    }
+  }
+
+  /**
+   * Split an expression into an affine term plus at most one <code>Mod</code> summand with
+   * coefficient <code>1</code> or <code>-1</code>. Anything else, in particular two residues or a
+   * scaled one, is outside the grammar.
+   */
+  private ModSplit split(IExpr expr) {
+    if (!containsMod(expr)) {
+      AffineTerm affine = term(expr);
+      return affine == null ? null : new ModSplit(affine, null, false);
+    }
+    if (expr.isAST(S.Mod, 3)) {
+      return new ModSplit(AffineTerm.ZERO, (IAST) expr, false);
+    }
+    if (expr.isTimes() && expr.isAST2() && expr.first().isMinusOne()
+        && expr.second().isAST(S.Mod, 3)) {
+      return new ModSplit(AffineTerm.ZERO, (IAST) expr.second(), true);
+    }
+    if (!expr.isPlus()) {
+      return null;
+    }
+    IAST plus = (IAST) expr;
+    AffineTerm affine = AffineTerm.ZERO;
+    IAST mod = null;
+    boolean negative = false;
+    for (int i = 1; i < plus.size(); i++) {
+      IExpr summand = plus.get(i);
+      if (!containsMod(summand)) {
+        AffineTerm part = term(summand);
+        if (part == null) {
+          return null;
+        }
+        affine = affine.add(part);
+        continue;
+      }
+      if (mod != null) {
+        // two residues in one comparison are not one congruence class
+        return null;
+      }
+      if (summand.isAST(S.Mod, 3)) {
+        mod = (IAST) summand;
+      } else if (summand.isTimes() && summand.isAST2() && summand.first().isMinusOne()
+          && summand.second().isAST(S.Mod, 3)) {
+        mod = (IAST) summand.second();
+        negative = true;
+      } else {
+        return null;
+      }
+    }
+    return new ModSplit(affine, mod, negative);
   }
 
   private static boolean containsMod(IExpr expr) {

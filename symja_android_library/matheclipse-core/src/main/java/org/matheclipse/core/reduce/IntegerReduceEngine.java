@@ -1,6 +1,8 @@
 package org.matheclipse.core.reduce;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.matheclipse.core.eval.EvalEngine;
@@ -59,8 +61,8 @@ public final class IntegerReduceEngine {
   public static IExpr reduce(IExpr condition, IAST variables, ISymbol domainSymbol,
       EvalEngine engine) {
     IntegerDomain domain = IntegerDomain.of(domainSymbol);
-    if (domain != IntegerDomain.INTEGERS) {
-      // the prime and rational domains are not decided by the linear engine yet
+    if (domain == null || domain == IntegerDomain.RATIONALS) {
+      // the rational solutions of an inequality are dense, so this engine does not decide them
       return F.NIL;
     }
     Lowering.LinearRequest request = Lowering.request(condition, variables, domain);
@@ -68,6 +70,9 @@ public final class IntegerReduceEngine {
       return F.NIL;
     }
     if (request.formula().containsQuantifier()) {
+      if (domain != IntegerDomain.INTEGERS) {
+        return F.NIL;
+      }
       Formula result = Presburger.eliminateQuantifiers(request.formula());
       if (result == null) {
         return F.NIL;
@@ -75,20 +80,33 @@ public final class IntegerReduceEngine {
       IExpr expression = Emitter.formula(result, request.targets());
       return engine.evaluate(Emitter.withDomainConditions(expression, request.targets(), domain));
     }
-    IntegerSolveResult system = solveLinearSystem(request);
-    switch (system.kind()) {
+    if (domain == IntegerDomain.INTEGERS) {
+      IntegerSolveResult system = solveLinearSystem(request);
+      if (system.is(IntegerSolveResult.Kind.INFEASIBLE)) {
+        return S.False;
+      }
+      if (system.is(IntegerSolveResult.Kind.PARAMETRIC)) {
+        return engine
+            .evaluate(Emitter.latticeReduceForm(system.family(), system.untouched(), domain));
+      }
+      if (system.is(IntegerSolveResult.Kind.FINITE)) {
+        return engine.evaluate(Emitter.tuplesToOr(system, domain));
+      }
+    }
+    IntegerSolveResult finite =
+        FiniteIntegerSolver.solve(request.formula(), request.targets(), domain);
+    switch (finite.kind()) {
       case INFEASIBLE:
         return S.False;
-      case PARAMETRIC:
-        return engine.evaluate(
-            Emitter.latticeReduceForm(system.family(), system.untouched(), domain));
+      case FINITE:
+        return engine.evaluate(Emitter.tuplesToOr(finite, domain));
       default:
         return F.NIL;
     }
   }
 
   /**
-   * Solve a condition over the integers.
+   * Solve a condition over a discrete domain.
    *
    * @param condition the equations and inequalities
    * @param variables the variables to solve for
@@ -97,14 +115,20 @@ public final class IntegerReduceEngine {
    */
   public static IntegerSolveResult solve(IExpr condition, IAST variables, ISymbol domainSymbol) {
     IntegerDomain domain = IntegerDomain.of(domainSymbol);
-    if (domain != IntegerDomain.INTEGERS) {
+    if (domain == null || domain == IntegerDomain.RATIONALS) {
       return IntegerSolveResult.notApplicable();
     }
     Lowering.LinearRequest request = Lowering.request(condition, variables, domain);
     if (request == null || request.formula().containsQuantifier()) {
       return IntegerSolveResult.notApplicable();
     }
-    return solveLinearSystem(request);
+    if (domain == IntegerDomain.INTEGERS) {
+      IntegerSolveResult system = solveLinearSystem(request);
+      if (!system.is(IntegerSolveResult.Kind.NOT_APPLICABLE)) {
+        return system;
+      }
+    }
+    return FiniteIntegerSolver.solve(request.formula(), request.targets(), domain);
   }
 
   /**
@@ -153,8 +177,16 @@ public final class IntegerReduceEngine {
       return IntegerSolveResult.notApplicable();
     }
     LatticeSolver.Solution solution = LatticeSolver.solve(equations, present);
-    return solution == null ? IntegerSolveResult.infeasible()
-        : IntegerSolveResult.parametric(solution, untouched);
+    if (solution == null) {
+      return IntegerSolveResult.infeasible();
+    }
+    if (solution.parameterCount() == 0) {
+      // the system determines every unknown, so the solution set is a single point
+      List<BigInteger[]> single = new ArrayList<BigInteger[]>(1);
+      single.add(solution.offset());
+      return IntegerSolveResult.finite(present, single, untouched);
+    }
+    return IntegerSolveResult.parametric(solution, untouched);
   }
 
   /** The atoms of a conjunction, or <code>null</code> if the formula is not one. */
