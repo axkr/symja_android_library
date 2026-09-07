@@ -1209,12 +1209,22 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
+   * Test if this series is a bare <code>O(x^n)</code> term, i.e. carries no coefficient at all. Only
+   * its truncation order is then meaningful.
+   *
+   * @return {@code true} if the representable coefficient range is empty
+   */
+  private boolean isPureOrderTerm() {
+    return minExponent >= truncateOrder;
+  }
+
+  /**
    * Multiply this Puiseux series by (expansionVariable)^(p/q), producing a new SeriesData with
    * adjusted exponent indices and Puiseux denominator.
    *
    * @param p numerator of the rational exponent
    * @param q denominator of the rational exponent (must be > 0)
-   * @return the product as a new ASTSeriesData, or null if not applicable
+   * @return the product as a new ASTSeriesData
    */
   private ASTSeriesData timesPuiseux(int p, int q) {
     int newDen = ArithmeticUtils.lcm(puiseuxDenominator, q);
@@ -1224,7 +1234,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
     int newMin;
     int newTruncate;
-    if (scaleDen > 1) {
+    if (isPureOrderTerm()) {
+      // Nothing to drop: O(x^a) * x^(p/q) is exactly O(x^(a + p/q)).
+      newTruncate = truncateOrder * scaleDen + shift;
+      newMin = newTruncate;
+    } else if (scaleDen > 1) {
       // last original coefficient maps to the new truncation boundary and is dropped.
       newMin = minExponent * scaleDen + shift;
       newTruncate = (truncateOrder - 1) * scaleDen + shift;
@@ -1235,7 +1249,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
 
     if (newTruncate <= newMin) {
-      return null; // degenerate — caller falls back to unevaluated
+      // every coefficient falls outside the shifted range: the product is the pure O() term at the
+      // new truncation order, which is an answer rather than a failure
+      newMin = newTruncate;
     }
 
     ASTSeriesData result =
@@ -2258,7 +2274,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       // above is the only sound one here.
       return null;
     }
-    if (!isAnalyticSummand(b)) {
+    if (!isAnalyticTerm(b)) {
       return null;
     }
     ASTSeriesData bSeries =
@@ -2270,19 +2286,19 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   * Test if the summand {@code b} may be expanded into a series and folded into the coefficients.
+   * Test if the term {@code b} may be expanded into a series and combined coefficient-wise.
    *
    * <p>
    * A branch discriminator such as <code>Pi*Floor[(Pi/2 - Arg[x - x0])/(2*Pi)]</code> -- which
    * <code>Series</code> emits alongside the expansion of the inverse trigonometric functions -- is
    * piecewise constant, so expanding it collapses it to its value at the expansion point and the
-   * branch information is lost. Such summands must stay an explicit member of the enclosing
-   * <code>Plus</code>, the same way {@link #isScalarTimesFactor(IExpr)} keeps them out of a product.
+   * branch information is lost. Such terms must stay an explicit member of the enclosing
+   * <code>Plus</code> or <code>Times</code>.
    *
-   * @param b a summand which depends on the expansion variable
+   * @param b a summand or factor which depends on the expansion variable
    * @return {@code false} if {@code b} selects a branch and must not be expanded
    */
-  private static boolean isAnalyticSummand(IExpr b) {
+  private static boolean isAnalyticTerm(IExpr b) {
     return b.isFreeAST(head -> head == S.Floor //
         || head == S.Ceiling //
         || head == S.Round //
@@ -2940,6 +2956,41 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       series.setCoeff(i, this.coefficient(i).times(b));
     }
     return series;
+  }
+
+  /**
+   * Multiply this series by the expression {@code b}. In contrast to {@link #times(IExpr)}, a factor
+   * which depends on the expansion variable in a way the Puiseux shift cannot express (for example
+   * <code>Sin(x)</code> or <code>1+x</code>) is expanded into a series and multiplied
+   * coefficient-wise, instead of being kept as a symbolic product.
+   *
+   * @param b the multiplicative factor
+   * @return the resulting series or {@code null} if {@code b} depends on the expansion variable but
+   *         cannot be expanded into a series
+   */
+  public ASTSeriesData timesExpr(IExpr b) {
+    if (b instanceof ASTSeriesData) {
+      return timesPS((ASTSeriesData) b);
+    }
+    if (b.isOne()) {
+      return this;
+    }
+    if (isScalarTimesFactor(b)) {
+      return times(b);
+    }
+    if (expansionPoint.isDirectedInfinity()) {
+      // seriesDataRecursive() expands around a finite point only; see plusExpr()
+      return null;
+    }
+    if (!isAnalyticTerm(b)) {
+      return null;
+    }
+    ASTSeriesData bSeries =
+        seriesDataRecursive(b, expansionVariable, expansionPoint, truncateOrder, EvalEngine.get());
+    if (bSeries == null) {
+      return null;
+    }
+    return timesPS(bSeries);
   }
 
   public ASTSeriesData timesPS(ASTSeriesData b) {

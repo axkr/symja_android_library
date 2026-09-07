@@ -2002,6 +2002,40 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,Infinity,{1,1,1/2,1/6},0,4,1) + x");
   }
 
+  /**
+   * A product containing a power series multiplies through it. A factor which the Puiseux shift
+   * cannot express is expanded into a series of its own instead of being kept beside the series, and
+   * a bare <code>O()</code> term shifts rather than losing its order.
+   */
+  @Test
+  public void testTimesSeries() {
+    // a bare O() term used to keep its order instead of shifting it
+    check("x * O(x)^4 // InputForm", //
+        "SeriesData(x,0,{},5,5,1)");
+    check("x^2 * O(x)^4 // InputForm", //
+        "SeriesData(x,0,{},6,6,1)");
+    check("Sqrt(x) * O(x)^4 // InputForm", //
+        "SeriesData(x,0,{},9,9,2)");
+    check("1/x * O(x)^4 // InputForm", //
+        "SeriesData(x,0,{},3,3,1)");
+    // a factor which the Puiseux shift cannot express is expanded into a series of its own; Sin(x)
+    // has a simple zero, so it raises the order and 1+x does not
+    check("Sin(x) * O(x)^4 // InputForm", //
+        "SeriesData(x,0,{},5,5,1)");
+    check("(1+x) * O(x)^4 // InputForm", //
+        "SeriesData(x,0,{},4,4,1)");
+    // a factor free of the expansion variable still goes into the coefficients
+    check("y * O(x)^4 // InputForm", //
+        "SeriesData(x,0,{},4,4,1)");
+    check("Sin(x) * Series(Exp(x), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,1,1/3},1,5,1)");
+    check("(1+x) * Series(Exp(x), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,2,3/2,2/3},0,4,1)");
+    // an infinite expansion point is out of reach of the expansion engine used here
+    check("x * Series(Exp(1/x), {x, Infinity, 3}) // InputForm", //
+        "SeriesData(x,Infinity,{1,1,1/2,1/6},0,4,1)*x");
+  }
+
   @Test
   public void testComposeSeries002() {
     check("ComposeSeries(Series(Exp(x), {x, 0, 3}), Series(Sin(x), {x, 0, 3}))", //

@@ -7099,13 +7099,10 @@ public final class Arithmetic {
             break;
           case ID.SeriesData:
             if (arg1 instanceof ASTSeriesData) {
-              ASTSeriesData sd = (ASTSeriesData) arg1;
-              if (!sd.isScalarTimesFactor(arg2)) {
-                // keep an explicit symbolic product for variable-dependent factors such as a
-                // branch discriminator (-1)^Floor[...Arg[x-x0]...]
-                return F.NIL;
-              }
-              return sd.times(arg2);
+              ASTSeriesData product = ((ASTSeriesData) arg1).timesExpr(arg2);
+              // keep an explicit symbolic product for a factor which cannot be expanded, such as a
+              // branch discriminator (-1)^Floor[...Arg[x-x0]...]
+              return product == null ? F.NIL : product;
             }
             break;
           default:
@@ -7182,13 +7179,10 @@ public final class Arithmetic {
             break;
           case ID.SeriesData:
             if (arg2 instanceof ASTSeriesData) {
-              ASTSeriesData sd = (ASTSeriesData) arg2;
-              if (!sd.isScalarTimesFactor(arg1)) {
-                // keep an explicit symbolic product for variable-dependent factors such as a
-                // branch discriminator (-1)^Floor[...Arg[x-x0]...]
-                return F.NIL;
-              }
-              return sd.times(arg1);
+              ASTSeriesData product = ((ASTSeriesData) arg2).timesExpr(arg1);
+              // keep an explicit symbolic product for a factor which cannot be expanded, such as a
+              // branch discriminator (-1)^Floor[...Arg[x-x0]...]
+              return product == null ? F.NIL : product;
             }
             break;
           default:
