@@ -651,6 +651,77 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "DSolve(y'(x)==x+(2-x^2)*y(x),y(x),x)");
   }
 
+  /**
+   * Whittaker's equation, whose potential has one double pole and a constant term. The Bessel row
+   * takes the same potential without the <code>1/x</code> term, so what reaches this is what that
+   * one did not want.
+   */
+  @Test
+  public void testDSolveWhittaker() {
+    checkResidual("y''(x) + (-1/4 + k/x + (1/4-m^2)/x^2)*y(x) == 0", //
+        "y''(x) + (-1/4 + k/x + (1/4-m^2)/x^2)*y(x)",
+        "{C(1)->7/5, C(2)->3/4, k->3/10, m->7/10, x->13/10}");
+    // the same equation multiplied through, which is how the corpus writes it
+    checkResidual("x^2*y''(x) + (c*x^2 + b*x + a)*y(x) == 0", //
+        "x^2*y''(x) + (c*x^2 + b*x + a)*y(x)",
+        "{C(1)->7/5, C(2)->3/4, a->-3/10, b->1/5, c->-1/10, x->13/10}");
+    check("FreeQ(DSolve(y''(x) + (-1/4 + k/x + (1/4-m^2)/x^2)*y(x) == 0, y(x), x),"
+        + " Hypergeometric1F1)", //
+        "False");
+
+    // twice the order is a whole number here, so the two solutions are one and the second does
+    // not exist; this is left to the methods which can say something about it
+    check("Head(DSolve(y''(x) + (-1/4 + 2/x - 3/(4*x^2))*y(x) == 0, y(x), x))", //
+        "DSolve");
+    // a potential with no 1/x term belongs to the Bessel row above and still goes there
+    check("DSolve(y''(x) + (1 + (1/4-m^2)/x^2)*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselJ(Sqrt(m^2),x)*C(1)+Sqrt(x)*BesselY(Sqrt(m^2),x)*C(2)}}");
+  }
+
+  /**
+   * The hypergeometric equation about two finite singular points which are not <code>0</code> and
+   * <code>1</code>, which is what Gegenbauer's and Jacobi's equations are once the degree is left
+   * symbolic.
+   */
+  @Test
+  public void testDSolveFuchsian() {
+    checkResidual("(1-x^2)*y''(x) - (2*a+1)*x*y'(x) + n*(n+2*a)*y(x) == 0", //
+        "(1-x^2)*y''(x) - (2*a+1)*x*y'(x) + n*(n+2*a)*y(x)",
+        "{C(1)->7/5, C(2)->3/4, a->3/10, n->7/10, x->3/10}");
+    checkResidual("(1-x^2)*y''(x) + (b-a-(a+b+2)*x)*y'(x) + n*(n+a+b+1)*y(x) == 0", //
+        "(1-x^2)*y''(x) + (b-a-(a+b+2)*x)*y'(x) + n*(n+a+b+1)*y(x)",
+        "{C(1)->7/5, C(2)->3/4, a->3/10, b->1/5, n->7/10, x->3/10}");
+    checkResidual("(x^2-1)*y''(x) + (a*x+b)*y'(x) + c*y(x) == 0", //
+        "(x^2-1)*y''(x) + (a*x+b)*y'(x) + c*y(x)",
+        "{C(1)->7/5, C(2)->3/4, a->3/10, b->1/5, c->7/10, x->3/10}");
+    // a singular point which is a parameter of the equation
+    checkResidual("x*(a0+x)*y''(x) + (b1*x+a1)*y'(x) + a2*y(x) == 0", //
+        "x*(a0+x)*y''(x) + (b1*x+a1)*y'(x) + a2*y(x)",
+        "{C(1)->7/5, C(2)->3/4, a0->-2, a1->1/5, a2->7/10, b1->3/10, x->13/10}");
+    check("FreeQ(DSolve((1-x^2)*y''(x) - (2*a+1)*x*y'(x) + n*(n+2*a)*y(x) == 0, y(x), x),"
+        + " Integrate)", //
+        "True");
+
+    // one finite singular point is a confluent equation, which the rows above answer, and this
+    // one is not asked about it
+    check("Head(DSolve(x^2*y''(x) + x*y'(x) + (x^3-1)*y(x) == 0, y(x), x))", //
+        "DSolve");
+  }
+
+  /**
+   * An equation which is Airy's or Bessel's only once its first derivative has been taken out of
+   * it by <code>y == Exp(-Integrate(p/2))*z</code>.
+   */
+  @Test
+  public void testDSolveNormalFormPrePass() {
+    check("DSolve(y''(x) + 2*y'(x) + (1-x)*y(x) == 0, y(x), x)", //
+        "{{y(x)->(AiryAi(x)*C(1))/E^x+(AiryBi(x)*C(2))/E^x}}");
+    check("DSolve(y''(x) - 2*x*y'(x) + (x^2-1)*y(x) == 0, y(x), x)", //
+        "{{y(x)->E^(x^2/2)*C(1)+E^(x^2/2)*x*C(2)}}");
+    checkResidual("y''(x) + (2/x)*y'(x) + y(x) == 0", //
+        "y''(x) + (2/x)*y'(x) + y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+  }
+
   @Test
   public void testDSolveChangeOfVariable() {
     // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.
@@ -1084,9 +1155,15 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->C(1)*Hypergeometric2F1(a,b,c,x)+x^(1-c)*C(2)*Hypergeometric2F1(1+a-c,1+b-c,\n" //
             + "2-c,x)}}");
 
-    // An integer c makes the second solution a copy of the first, so this is not a basis.
-    check("DSolve((x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x) == 0, y(x), x)", //
-        "DSolve(a*b*y(x)+(-2+(1+a+b)*x)*y'(x)+(-x+x^2)*y''(x)==0,y(x),x)");
+    // An integer c makes the second solution a copy of the first, so this row has no basis for
+    // it. The row which maps the singular points about instead answers it: the exponents there
+    // are not the ones this row divides out, and the pair it builds from them is independent.
+    check("FreeQ(DSolve((x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x) == 0, y(x), x),"
+        + " Hypergeometric2F1)", //
+        "False");
+    checkResidual("(x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x) == 0", //
+        "(x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x)",
+        "{C(1)->7/5, C(2)->3/4, a->3/10, b->1/5, x->3/10}");
   }
 
   @Test

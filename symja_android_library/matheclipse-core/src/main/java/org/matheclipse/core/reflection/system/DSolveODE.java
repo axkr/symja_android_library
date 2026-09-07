@@ -1022,6 +1022,14 @@ final class DSolveODE {
         IExpr kovacicSol = DSolveKovacic.solve(lf, yFunction, xVar, C_1, ctx);
         if (kovacicSol.isPresent())
           return kovacicSol;
+
+        // Last of all, the equations which are one of the named ones only after being rewritten.
+        // After Kovacic and not with the rows it belongs to, because several of them have
+        // elementary solutions which Kovacic writes out and this would answer with a
+        // hypergeometric function instead.
+        IExpr rewrittenSol = DSolveSpecialFunctions.solveByRewriting(lf, yFunction, xVar, C_1, ctx);
+        if (rewrittenSol.isPresent())
+          return rewrittenSol;
       }
 
       if (lf == null && n == 2) {

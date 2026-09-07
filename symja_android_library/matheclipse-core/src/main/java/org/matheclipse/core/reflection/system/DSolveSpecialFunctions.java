@@ -1,10 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 
@@ -32,8 +35,7 @@ final class DSolveSpecialFunctions {
    * The general solution of the equation, or {@link F#NIL} if it is not one of the equations known
    * here.
    */
-  static IExpr solve(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n,
-      DSolveContext ctx) {
+  static IExpr solve(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero()) {
       return F.NIL;
@@ -61,6 +63,11 @@ final class DSolveSpecialFunctions {
       basis = besselNormalForm(p, q, xVar, engine);
     }
     if (basis == null) {
+      // After the Bessel rows, whose potential has no 1/x term and so cannot be this, and before
+      // Kummer, which wants a first derivative where this wants none.
+      basis = whittaker(p, q, yFunction, xVar, engine);
+    }
+    if (basis == null) {
       basis = kummer(p, q, xVar, engine);
     }
     if (basis == null) {
@@ -70,6 +77,38 @@ final class DSolveSpecialFunctions {
       // Last, because every row above reads a rational coefficient and none of them can claim a
       // potential built from Csc and Sec.
       basis = poschlTeller(p, q, yFunction, xVar, engine);
+    }
+    if (basis == null) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Plus(F.Times(c_n, basis[0]), F.Times(ctx.nextConstant(), basis[1])));
+  }
+
+  /**
+   * The general solution of an equation which is one of those above only after being rewritten, or
+   * {@link F#NIL}.
+   *
+   * <p>
+   * Separate from {@link #solve} and asked later, once {@link DSolveKovacic} has declined. Both
+   * rows here answer with hypergeometric functions or with a quadrature where a method which knows
+   * the equation would answer with something shorter, and the equations they recognize include
+   * ones whose solutions are elementary: <code>y'' == (2/(9*(1-x)^2) + ...)*y</code> is
+   * hypergeometric, and is also a product of powers, which is the answer worth having.
+   */
+  static IExpr solveByRewriting(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n,
+      DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero()) {
+      return F.NIL;
+    }
+    IExpr p = cancel(F.Divide(lf.a[1], lf.a[2]), engine);
+    IExpr q = cancel(F.Divide(lf.a[0], lf.a[2]), engine);
+    if (q.isZero()) {
+      return F.NIL;
+    }
+    IExpr[] basis = fuchsian(p, q, yFunction, xVar, ctx);
+    if (basis == null) {
+      basis = normalFormPrePass(p, q, yFunction, xVar, ctx);
     }
     if (basis == null) {
       return F.NIL;
@@ -93,14 +132,13 @@ final class DSolveSpecialFunctions {
     if (!c0.isFree(xVar) || !c2.isFree(xVar)) {
       return null;
     }
-    IExpr rest = engine.evaluate(
-        F.Expand(F.Subtract(qq, F.Plus(c0, F.Times(c2, F.Sqr(xVar))))));
+    IExpr rest = engine.evaluate(F.Expand(F.Subtract(qq, F.Plus(c0, F.Times(c2, F.Sqr(xVar))))));
     if (!DSolveODE.isVanishing(rest, engine)) {
       return null;
     }
     IExpr degree = engine.evaluate(F.Negate(c2));
-    IExpr nu = engine.evaluate(
-        F.Divide(F.Plus(F.CN1, F.Sqrt(F.Plus(F.C1, F.Times(F.C4, degree)))), F.C2));
+    IExpr nu =
+        engine.evaluate(F.Divide(F.Plus(F.CN1, F.Sqrt(F.Plus(F.C1, F.Times(F.C4, degree)))), F.C2));
     IExpr orderSquared = engine.evaluate(F.Subtract(degree, c0));
     if (orderSquared.isZero()) {
       return new IExpr[] {F.LegendreP(nu, xVar), F.LegendreQ(nu, xVar)};
@@ -149,8 +187,8 @@ final class DSolveSpecialFunctions {
     if (!negatedOrder.isFree(xVar)) {
       return null;
     }
-    IExpr nu = engine
-        .evaluate(F.Simplify(F.PowerExpand(F.Sqrt(engine.evaluate(F.Negate(negatedOrder))))));
+    IExpr nu =
+        engine.evaluate(F.Simplify(F.PowerExpand(F.Sqrt(engine.evaluate(F.Negate(negatedOrder))))));
     IExpr scale = engine.evaluate(F.Simplify(F.PowerExpand(F.Sqrt(squared))));
     IExpr argument = engine.evaluate(F.Simplify(F.Times(scale, xVar)));
     return new IExpr[] {F.BesselJ(nu, argument), F.BesselY(nu, argument)};
@@ -183,8 +221,8 @@ final class DSolveSpecialFunctions {
     IExpr magnitude = engine.evaluate(sign > 0 ? factor : F.Negate(factor));
     IExpr half = engine.evaluate(F.Divide(shifted, F.C2));
     IExpr nu = engine.evaluate(F.Divide(F.C1, F.Abs(shifted)));
-    IExpr argument = engine.evaluate(
-        F.Times(F.Divide(F.Sqrt(magnitude), F.Abs(half)), F.Power(xVar, half)));
+    IExpr argument =
+        engine.evaluate(F.Times(F.Divide(F.Sqrt(magnitude), F.Abs(half)), F.Power(xVar, half)));
     IExpr root = F.Sqrt(xVar);
     return sign > 0 //
         ? new IExpr[] {F.Times(root, F.BesselI(nu, argument)),
@@ -215,8 +253,9 @@ final class DSolveSpecialFunctions {
       return null;
     }
     IExpr magnitude = engine.evaluate(sign > 0 ? factor : F.Negate(factor));
-    IExpr argument = engine.evaluate(F.Times(F.Divide(F.Times(F.C2, F.Sqrt(magnitude)),
-        F.Abs(rate)), F.Exp(F.Times(F.Divide(rate, F.C2), xVar))));
+    IExpr argument =
+        engine.evaluate(F.Times(F.Divide(F.Times(F.C2, F.Sqrt(magnitude)), F.Abs(rate)),
+            F.Exp(F.Times(F.Divide(rate, F.C2), xVar))));
     return sign > 0 //
         ? new IExpr[] {F.BesselI(F.C0, argument), F.BesselK(F.C0, argument)}
         : new IExpr[] {F.BesselJ(F.C0, argument), F.BesselY(F.C0, argument)};
@@ -236,8 +275,8 @@ final class DSolveSpecialFunctions {
     if (!squared.isFree(xVar) || !constant.isFree(xVar) || squared.isZero()) {
       return null;
     }
-    IExpr rest = engine.evaluate(
-        F.Expand(F.Subtract(scaled, F.Plus(F.Times(squared, F.Sqr(xVar)), constant))));
+    IExpr rest = engine
+        .evaluate(F.Expand(F.Subtract(scaled, F.Plus(F.Times(squared, F.Sqr(xVar)), constant))));
     if (!DSolveODE.isVanishing(rest, engine)) {
       return null;
     }
@@ -268,9 +307,8 @@ final class DSolveSpecialFunctions {
       // The two solutions coincide, so this is not a basis.
       return null;
     }
-    return new IExpr[] {F.Hypergeometric1F1(a, b, xVar),
-        F.Times(F.Power(xVar, F.Subtract(F.C1, b)),
-            F.Hypergeometric1F1(F.Plus(a, F.Subtract(F.C1, b)), F.Subtract(F.C2, b), xVar))};
+    return new IExpr[] {F.Hypergeometric1F1(a, b, xVar), F.Times(F.Power(xVar, F.Subtract(F.C1, b)),
+        F.Hypergeometric1F1(F.Plus(a, F.Subtract(F.C1, b)), F.Subtract(F.C2, b), xVar))};
   }
 
   /**
@@ -288,8 +326,7 @@ final class DSolveSpecialFunctions {
       return null;
     }
     IExpr c = engine.evaluate(F.Negate(F.subst(linear, xVar, F.C0)));
-    IExpr rest = engine.evaluate(
-        F.Expand(F.Subtract(linear, F.Subtract(F.Times(slope, xVar), c))));
+    IExpr rest = engine.evaluate(F.Expand(F.Subtract(linear, F.Subtract(F.Times(slope, xVar), c))));
     if (!DSolveODE.isVanishing(rest, engine)) {
       return null;
     }
@@ -298,14 +335,300 @@ final class DSolveSpecialFunctions {
     }
     IExpr sum = engine.evaluate(F.Subtract(slope, F.C1));
     // The discriminant is (a-b)^2, which has to be factored before the root can be taken of it.
-    IExpr difference = engine.evaluate(
-        F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.Sqr(sum), F.Times(F.C4, product))))));
+    IExpr difference = engine
+        .evaluate(F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.Sqr(sum), F.Times(F.C4, product))))));
     IExpr a = engine.evaluate(F.Divide(F.Subtract(sum, difference), F.C2));
     IExpr b = engine.evaluate(F.Divide(F.Plus(sum, difference), F.C2));
     return new IExpr[] {F.Hypergeometric2F1(a, b, c, xVar),
         F.Times(F.Power(xVar, F.Subtract(F.C1, c)),
             F.Hypergeometric2F1(F.Plus(a, F.Subtract(F.C1, c)), F.Plus(b, F.Subtract(F.C1, c)),
                 F.Subtract(F.C2, c), xVar))};
+  }
+
+  /** How big an exponent may be before the equation is left to another method. */
+  private static final int MAX_EXPONENT_LEAF_COUNT = 80;
+
+  /** How big the rewritten equation and its solutions may become. */
+  private static final int MAX_REWRITTEN_LEAF_COUNT = 300;
+
+  /**
+   * How long one rewriting may take. The number is what it is on the machine this was tuned on; a
+   * slower one is given proportionally longer, see
+   * {@link org.matheclipse.core.basic.MachineProfile}.
+   */
+  private static final int STEP_SECONDS = 3;
+
+  /** How long all four exponent pairs together may take. */
+  private static final int TOTAL_SECONDS = 6;
+
+  /** Where the two singular points are sampled, as fractions of the way from one to the other. */
+  private static final int[][] BETWEEN_POLES =
+      new int[][] {{3, 20}, {3, 10}, {9, 20}, {3, 5}, {17, 20}};
+
+  /**
+   * The hypergeometric equation about any two finite singular points, rather than about
+   * <code>0</code> and <code>1</code>.
+   *
+   * <p>
+   * An equation whose coefficients become infinite at exactly two places <code>x1</code> and
+   * <code>x2</code> is carried to the row above by <code>s == (x-x1)/(x2-x1)</code>, which is a
+   * change of variable with no second derivative of its own and so adds no term. What it leaves is
+   * hypergeometric only after the behaviour at each end has been divided out: the solutions go like
+   * <code>s^r0</code> at one end and <code>(1-s)^r1</code> at the other, with the exponents being
+   * the roots of <code>rho^2 - (1-p)*rho + q == 0</code> for the limits <code>p</code> and
+   * <code>q</code> of <code>s*P</code> and <code>s^2*Q</code> there. Writing
+   * <code>Y == s^r0*(1-s)^r1*F</code> and asking what equation <code>F</code> satisfies gives one
+   * the row above can read.
+   *
+   * <p>
+   * There are two exponents at each end, so four ways to divide out, and only some of them leave a
+   * hypergeometric equation with usable parameters. Each is tried and the first whose answer solves
+   * the original equation is taken.
+   *
+   * <p>
+   * This is what answers Gegenbauer's, Jacobi's and the associated Legendre equations with a degree
+   * left symbolic, which are singular at <code>-1</code> and <code>1</code>.
+   */
+  private static IExpr[] fuchsian(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
+      DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    IExpr common = engine.evaluate(S.PolynomialLCM.of(engine, //
+        F.Denominator(F.Together(p)), F.Denominator(F.Together(q))));
+    if (!engine.evaluate(F.PolynomialQ(common, xVar)).isTrue()) {
+      return null;
+    }
+    IAST poles = DSolveUtil.polesOf(common, xVar, engine);
+    if (poles == null || poles.argSize() != 2) {
+      // One place is a confluent equation, which the Bessel and Whittaker rows above answer;
+      // three is Heun's, which is not written with hypergeometric functions at all.
+      return null;
+    }
+    IExpr x1 = poles.arg1().first();
+    IExpr x2 = poles.arg2().first();
+    if (DSolveUtil.hasRadical(x1) || DSolveUtil.hasRadical(x2)) {
+      return null;
+    }
+    IExpr width = engine.evaluate(F.Subtract(x2, x1));
+    if (DSolveODE.isVanishing(width, engine)) {
+      return null;
+    }
+
+    IExpr s = F.Dummy("s");
+    IExpr back = engine.evaluate(F.Plus(x1, F.Times(width, s)));
+    IExpr mappedP = cancel(F.Times(width, F.subst(p, xVar, back)), engine);
+    IExpr mappedQ = cancel(F.Times(F.Sqr(width), F.subst(q, xVar, back)), engine);
+    if (!mappedP.isFree(xVar) || !mappedQ.isFree(xVar)) {
+      return null;
+    }
+
+    IExpr[] atZero = exponentsAt(mappedP, mappedQ, s, F.C0, engine);
+    IExpr[] atOne = exponentsAt(mappedP, mappedQ, s, F.C1, engine);
+    if (atZero == null || atOne == null) {
+      return null;
+    }
+
+    IAST residuals = F.list(engine.evaluate(F.Plus( //
+        F.D(yFunction, F.list(xVar, F.C2)), //
+        F.Times(p, F.D(yFunction, xVar)), //
+        F.Times(q, yFunction))));
+    IASTAppendable samples = F.ListAlloc(BETWEEN_POLES.length);
+    for (int[] fraction : BETWEEN_POLES) {
+      samples.append(F.Plus(x1, F.Times(F.QQ(fraction[0], fraction[1]), width)));
+    }
+
+    final IExpr forward = cancel(F.Divide(F.Subtract(xVar, x1), width), engine);
+    final IExpr mapP = mappedP;
+    final IExpr mapQ = mappedQ;
+    long deadline = System.nanoTime()
+        + MachineProfile.seconds((long) TOTAL_SECONDS) * 1_000_000_000L;
+    for (IExpr exponentAtZero : atZero) {
+      for (IExpr exponentAtOne : atOne) {
+        if (System.nanoTime() > deadline) {
+          // The pairs already tried were expensive enough that the rest are not worth it.
+          return null;
+        }
+        final IExpr r0 = exponentAtZero;
+        final IExpr r1 = exponentAtOne;
+        // Under a watchdog, not a TimeConstrained: what an exponent which is a root makes
+        // expensive is the factoring inside the row this hands the reduced equation to, and that
+        // does not come back to the evaluation loop often enough to be stopped by one. Three of
+        // the four pairs are usually cheap, and the equation whose exponents are sixths of the
+        // root of seventeen is left alone rather than spending minutes on it.
+        IExpr packed = IntegrateTimeBudget.runWithin( //
+            () -> {
+              IExpr[] attempt = homotopy(mapP, mapQ, s, r0, r1, forward, ctx);
+              return attempt == null ? F.NIL : F.list(attempt[0], attempt[1]);
+            }, MachineProfile.seconds((long) STEP_SECONDS) * 1000L);
+        if (!packed.isList2()) {
+          continue;
+        }
+        IExpr[] basis = new IExpr[] {packed.first(), packed.second()};
+        if (DSolveVerify.acceptODEStrictAt(residuals, yFunction, xVar, basis[0], samples, engine)
+            && DSolveVerify.acceptODEStrictAt(residuals, yFunction, xVar, basis[1], samples,
+                engine)) {
+          return basis;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * The two exponents the solutions may behave with at one of the singular points, or
+   * <code>null</code>.
+   *
+   * <p>
+   * The limits are taken by cancelling first and substituting afterwards, because <code>s*P</code>
+   * at <code>s == 0</code> is otherwise <code>0</code> times something infinite.
+   */
+  private static IExpr[] exponentsAt(IExpr mappedP, IExpr mappedQ, IExpr s, IExpr place,
+      EvalEngine engine) {
+    IExpr shifted = F.Subtract(s, place);
+    IExpr limitP = engine.evaluate(F.subst(cancel(F.Times(shifted, mappedP), engine), s, place));
+    IExpr limitQ =
+        engine.evaluate(F.subst(cancel(F.Times(F.Sqr(shifted), mappedQ), engine), s, place));
+    if (!limitP.isFree(s) || !limitQ.isFree(s) || !isFinite(limitP) || !isFinite(limitQ)) {
+      return null;
+    }
+    IExpr sum = engine.evaluate(F.Subtract(F.C1, limitP));
+    IExpr difference = engine
+        .evaluate(F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.Sqr(sum), F.Times(F.C4, limitQ))))));
+    IExpr first = engine.evaluate(F.Divide(F.Subtract(sum, difference), F.C2));
+    IExpr second = engine.evaluate(F.Divide(F.Plus(sum, difference), F.C2));
+    if (first.leafCount() > MAX_EXPONENT_LEAF_COUNT
+        || second.leafCount() > MAX_EXPONENT_LEAF_COUNT) {
+      return null;
+    }
+    // An exponent which is a root of a number is what makes the rewriting below grow: the reduced
+    // coefficients become sums of radicals over a common denominator and the row this hands them
+    // to spends minutes factoring one. Those equations are left to the method which answers them
+    // in closed form when they have one, and to nothing when they do not. The equations this row
+    // is for -- Gegenbauer's, Jacobi's, and the ones written with a parameter for a singular
+    // point -- have exponents built from the parameters without roots of them.
+    if (DSolveUtil.hasRadical(first) || DSolveUtil.hasRadical(second)) {
+      return null;
+    }
+    return new IExpr[] {first, second};
+  }
+
+  /**
+   * The hypergeometric pair left once <code>s^r0*(1-s)^r1</code> is divided out, written back in
+   * the original variable, or <code>null</code> if what is left is not hypergeometric.
+   */
+  private static IExpr[] homotopy(IExpr mappedP, IExpr mappedQ, IExpr s, IExpr r0, IExpr r1,
+      IExpr forward, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    IExpr logarithmicDerivative =
+        cancel(F.Subtract(F.Divide(r0, s), F.Divide(r1, F.Subtract(F.C1, s))), engine);
+    IExpr secondOverFirst =
+        engine.evaluate(F.Plus(F.D(logarithmicDerivative, s), F.Sqr(logarithmicDerivative)));
+    // An exponent which is a root rather than a number makes these grow: putting the reduced
+    // coefficients over a common denominator multiplies sums of radicals together, and the
+    // equation whose exponents are sixths of the root of seventeen spent minutes there. Both the
+    // size and the time are bounded, and a pair which exceeds either is passed over -- one of the
+    // other three often is not.
+    IExpr reducedP = ctx.evalTimeConstrained(
+        F.Cancel(F.Together(F.Plus(mappedP, F.Times(F.C2, logarithmicDerivative)))), STEP_SECONDS);
+    if (reducedP.isNIL() || reducedP.leafCount() > MAX_REWRITTEN_LEAF_COUNT) {
+      return null;
+    }
+    IExpr reducedQ = ctx.evalTimeConstrained(F.Cancel(F.Together(
+        F.Plus(mappedQ, F.Times(mappedP, logarithmicDerivative), secondOverFirst))), STEP_SECONDS);
+    if (reducedQ.isNIL() || reducedQ.leafCount() > MAX_REWRITTEN_LEAF_COUNT) {
+      return null;
+    }
+
+    IExpr[] hypergeometric = gauss(reducedP, reducedQ, s, engine);
+    if (hypergeometric == null) {
+      return null;
+    }
+    IExpr weight = F.Times(F.Power(s, r0), F.Power(F.Subtract(F.C1, s), r1));
+    IExpr[] basis = new IExpr[2];
+    for (int i = 0; i < 2; i++) {
+      IExpr written = ctx.evalTimeConstrained(
+          F.subst(F.Times(weight, hypergeometric[i]), s, forward), STEP_SECONDS);
+      if (written.isNIL() || !written.isFree(s, true)
+          || written.leafCount() > MAX_REWRITTEN_LEAF_COUNT) {
+        return null;
+      }
+      basis[i] = written;
+    }
+    return basis;
+  }
+
+  /** Whether the limit came out as a number rather than as a way of saying there is none. */
+  private static boolean isFinite(IExpr expr) {
+    return expr.isPresent() && !expr.isIndeterminate() && !expr.isDirectedInfinity()
+        && expr.isFree(x -> x.isIndeterminate() || x.isDirectedInfinity(), true);
+  }
+
+  /** How big the potential of the reduced equation may be before it is left alone. */
+  private static final int MAX_REDUCED_POTENTIAL_LEAF_COUNT = 50;
+
+  /**
+   * The equation with its first derivative removed, offered to the rows which want a potential and
+   * nothing else.
+   *
+   * <p>
+   * <code>y == Exp(-Integrate(p/2))*z</code> leaves <code>z'' == r*z</code>, so an equation which
+   * is Airy's or Bessel's only after that is written this way is recognized here rather than not at
+   * all: <code>y'' + 2*y'/x + y == 0</code> becomes <code>z'' == -z</code> and comes back as
+   * <code>Sin(x)/x</code> and <code>Cos(x)/x</code>.
+   *
+   * <p>
+   * Only for the equation the caller asked about, not for the ones the methods below reach on their
+   * own. An equation arriving here a second time has already been rewritten once, and the powers
+   * the two rewritings leave share a base without being collected, which the verification of the
+   * answer then cannot finish.
+   */
+  private static IExpr[] normalFormPrePass(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
+      DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    if (p.isZero() || ctx.depth() > 1) {
+      return null;
+    }
+    DSolveNormalForm normalForm = DSolveNormalForm.of(p, q, xVar, MAX_POTENTIAL_LEAF_COUNT, ctx);
+    if (normalForm == null) {
+      return null;
+    }
+    IExpr potential = engine.evaluate(F.Negate(normalForm.r));
+    if (potential.leafCount() > MAX_REDUCED_POTENTIAL_LEAF_COUNT) {
+      return null;
+    }
+
+    IExpr[] reduced;
+    if (potential.isZero()) {
+      // z'' == 0. None of the rows below takes a potential which is not there, and the method
+      // which reads a rational one declines it too, so the two solutions are written out here.
+      reduced = new IExpr[] {F.C1, xVar};
+    } else {
+      reduced = airy(F.C0, potential, xVar, engine);
+      if (reduced == null) {
+        reduced = besselPurePower(F.C0, potential, xVar, engine);
+      }
+      if (reduced == null) {
+        reduced = besselExponential(F.C0, potential, xVar, engine);
+      }
+      if (reduced == null) {
+        reduced = besselNormalForm(F.C0, potential, xVar, engine);
+      }
+    }
+    if (reduced == null) {
+      return null;
+    }
+
+    IAST residuals = F.list(engine.evaluate(F.Plus( //
+        F.D(yFunction, F.list(xVar, F.C2)), //
+        F.Times(p, F.D(yFunction, xVar)), //
+        F.Times(q, yFunction))));
+    IExpr[] basis = new IExpr[2];
+    for (int i = 0; i < 2; i++) {
+      basis[i] = engine.evaluate(F.Times(normalForm.recovery, reduced[i]));
+      if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, basis[i], engine)) {
+        return null;
+      }
+    }
+    return basis;
   }
 
   /** How big a coefficient is still worth looking at for a trigonometric potential. */
@@ -350,8 +673,7 @@ final class DSolveSpecialFunctions {
     if (!inUnknowns.isFree(xVar, true)) {
       return null;
     }
-    IExpr cleared =
-        engine.evaluate(F.Expand(F.Times(inUnknowns, F.Sqr(sine), F.Sqr(cosine))));
+    IExpr cleared = engine.evaluate(F.Expand(F.Times(inUnknowns, F.Sqr(sine), F.Sqr(cosine))));
 
     // Every even power of the sine becomes one of the cosine, so that what is left is a polynomial
     // in the cosine alone; an odd power survives and the row declines just below.
@@ -425,14 +747,15 @@ final class DSolveSpecialFunctions {
    * by, and the constant coefficient row is the one which owns it.
    */
   private static boolean hasCircular(IExpr expr, IExpr xVar) {
-    return !expr.isFree(x -> x.isAST1() && x.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec,
-        ID.Csc) && !x.first().isFree(xVar), true);
+    return !expr
+        .isFree(x -> x.isAST1() && x.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc)
+            && !x.first().isFree(xVar), true);
   }
 
   /** The exponent <code>t</code> with <code>t*(t-1) == -c</code>, taking the larger root. */
   private static IExpr root(IExpr c, EvalEngine engine) {
-    IExpr discriminant = engine.evaluate(
-        F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.C1, F.Times(F.C4, c))))));
+    IExpr discriminant =
+        engine.evaluate(F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.C1, F.Times(F.C4, c))))));
     return discriminant.isPresent() //
         ? engine.evaluate(F.Divide(F.Plus(F.C1, discriminant), F.C2))
         : F.NIL;
@@ -448,6 +771,109 @@ final class DSolveSpecialFunctions {
         F.Hypergeometric2F1(F.Divide(F.Plus(sum, rate), F.C2),
             F.Divide(F.Subtract(sum, rate), F.C2), F.Plus(exponentSin, F.C1D2),
             F.Sqr(F.Sin(xVar)))));
+  }
+
+  /**
+   * Whittaker's equation <code>y'' + (-1/4 + k/z + (1/4 - m^2)/z^2)*y == 0</code>, in a variable
+   * which is any multiple of <code>x - x0</code>.
+   *
+   * <p>
+   * What identifies it is the shape of the potential: one double pole and nothing else, so that
+   * <code>q*(x-x0)^2</code> is a quadratic. Writing that quadratic as
+   * <code>b2 + b1/(x-x0) + b0/(x-x0)^2</code> and matching gives
+   * <code>z == 2*Sqrt(-b2)*(x-x0)</code>, <code>k == b1/(2*Sqrt(-b2))</code> and
+   * <code>m == Sqrt(1/4-b0)</code>.
+   *
+   * <p>
+   * The answer is written with {@link S#Hypergeometric1F1} rather than with
+   * <code>WhittakerM</code>: the two say the same thing, but only the first evaluates to a number,
+   * and a row which checks its own answer numerically may only emit something that does.
+   *
+   * <p>
+   * The Bessel row above accepts a potential of the form <code>A + B/x^2</code>, which is this one
+   * without the <code>1/x</code> term, so it answers those before this is reached and this only
+   * ever sees the equations it did not want.
+   */
+  private static IExpr[] whittaker(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
+      EvalEngine engine) {
+    if (!p.isZero()) {
+      return null;
+    }
+    IExpr potential = cancel(q, engine);
+    IExpr denominator = engine.evaluate(F.Denominator(potential));
+    if (!engine.evaluate(F.PolynomialQ(denominator, xVar)).isTrue()
+        || engine.evaluate(F.Exponent(denominator, xVar)).toIntDefault() != 2) {
+      return null;
+    }
+    IAST poles = DSolveUtil.polesOf(denominator, xVar, engine);
+    if (poles == null || poles.argSize() != 1 || poles.arg1().second().toIntDefault() != 2) {
+      return null;
+    }
+    IExpr pole = poles.arg1().first();
+    if (DSolveUtil.hasRadical(pole)) {
+      return null;
+    }
+
+    IExpr shifted = F.Subtract(xVar, pole);
+    IExpr quadratic = cancel(F.Times(q, F.Sqr(shifted)), engine);
+    if (!engine.evaluate(F.PolynomialQ(quadratic, xVar)).isTrue()
+        || engine.evaluate(F.Exponent(quadratic, xVar)).toIntDefault() != 2) {
+      return null;
+    }
+    IExpr b0 = engine.evaluate(F.subst(quadratic, xVar, pole));
+    // Differentiated before the point goes in, or the substitution reaches the variable of the
+    // derivative as well and asks for D(..., 0).
+    IExpr b1 =
+        engine.evaluate(F.subst(engine.evaluate(F.D(quadratic, xVar)), xVar, pole));
+    IExpr b2 = engine.evaluate(F.Coefficient(quadratic, xVar, F.C2));
+    if (b2.isZero()) {
+      return null;
+    }
+    IExpr order = engine.evaluate(F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.C1D4, b0)))));
+    IExpr scale = engine.evaluate(F.Times(F.C2, F.Sqrt(F.Negate(b2))));
+    IExpr kappa = cancel(F.Divide(b1, scale), engine);
+    IExpr z = engine.evaluate(F.Times(scale, shifted));
+    // Twice the order being a whole number makes the two solutions one: either they coincide, or
+    // the lower parameter of one of them is a non positive integer and it does not exist.
+    if (isProvableInteger(engine.evaluate(F.Times(F.C2, order)), engine)) {
+      return null;
+    }
+
+    IExpr first = whittakerBranch(order, kappa, z, engine);
+    IExpr second = whittakerBranch(engine.evaluate(F.Negate(order)), kappa, z, engine);
+
+    // As for the trigonometric potential below: a hypergeometric residual is not something the
+    // lenient check the cascade ends with can decide, so it would accept anything, and this row
+    // checks its own answer instead.
+    //
+    // The first solution is the one checked. The equation contains the order only as m^2, so it
+    // is the same equation for m and for -m, and the second solution is the first one written
+    // with -m -- there is nothing left for a second check to find. It would also fail for a
+    // reason of its own: the lower parameter of the second solution is 1-2*m, and half of the
+    // values the check gives a free parameter are halves, at which that is zero or a negative
+    // whole number and the function does not exist. The second solution still has to pass the
+    // lenient check, which asks only that it not be seen to fail.
+    IAST residuals = F.list(engine.evaluate(F.Plus( //
+        F.D(yFunction, F.list(xVar, F.C2)), //
+        F.Times(q, yFunction))));
+    if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, first, engine)
+        || !DSolveVerify.acceptODE(residuals, yFunction, xVar, second, engine)) {
+      return null;
+    }
+    return new IExpr[] {first, second};
+  }
+
+  /**
+   * One solution of Whittaker's equation,
+   * <code>Exp(-z/2)*z^(1/2+m)*Hypergeometric1F1(1/2+m-k, 1+2*m, z)</code>, which is
+   * <code>WhittakerM(k, m, z)</code> written so that it evaluates.
+   */
+  private static IExpr whittakerBranch(IExpr order, IExpr kappa, IExpr z, EvalEngine engine) {
+    IExpr exponent = engine.evaluate(F.Plus(F.C1D2, order));
+    return engine.evaluate(F.Times( //
+        F.Exp(F.Times(F.CN1D2, z)), //
+        F.Power(z, exponent), //
+        F.Hypergeometric1F1(F.Subtract(exponent, kappa), F.Plus(F.C1, F.Times(F.C2, order)), z)));
   }
 
   private static IExpr cancel(IExpr expr, EvalEngine engine) {
