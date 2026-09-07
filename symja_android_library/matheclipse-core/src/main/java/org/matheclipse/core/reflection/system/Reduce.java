@@ -3162,6 +3162,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr reduceIntegers(IExpr arg1, IAST vars, ISymbol domain, EvalEngine engine) {
     IExpr expr = arg1.isList() ? ((IAST) arg1).setAtCopy(0, S.And) : arg1;
+    // the exact engine first: it parametrizes a linear system instead of enumerating a prefix of
+    // its infinitely many solutions, and it decides congruences and quantifiers
+    IExpr exact = IntegerReduceEngine.reduce(expr, vars, domain, engine);
+    if (exact.isPresent()) {
+      return exact;
+    }
     if (vars.isList1()) {
       return reduceIntegersUnivariate(expr, vars.arg1(), domain, engine);
     }

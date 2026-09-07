@@ -216,10 +216,51 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x==2||x==3||x==5||x==7");
   }
 
+  /**
+   * A linear system over the integers is a lattice coset, reported with one fresh parameter per
+   * degree of freedom. The basis is in Hermite normal form and the offset is reduced against it,
+   * so the same solution set is always reported the same way.
+   */
   @Test
   public void testReduceLinearDiophantine() {
     check("Reduce(2*x + 3*y == 1, {x, y}, Integers)", //
-        "C(1)∈Integers&&x==-1+3*C(1)&&y==1-2*C(1)");
+        "C(1)∈Integers&&x==2+3*C(1)&&y==-1-2*C(1)");
+    // 2 x == 4 y is x == 2 t, y == t; it is not y == x/2, which is not an integer for odd x
+    check("Reduce(2*x == 4*y, {x, y}, Integers)", //
+        "C(1)∈Integers&&x==2*C(1)&&y==C(1)");
+    check("Reduce(3*x + 5*y == 7, {x, y}, Integers)", //
+        "C(1)∈Integers&&x==4+5*C(1)&&y==-1-3*C(1)");
+    // the greatest common divisor of the coefficients does not divide the right hand side
+    check("Reduce(2*x + 4*y == 5, {x, y}, Integers)", //
+        "False");
+    // a variable the equation never mentions stays itself under its own membership
+    check("Reduce(2*x == 4, {x, y}, Integers)", //
+        "y∈Integers&&x==2");
+  }
+
+  /**
+   * More unknowns than equations means more degrees of freedom, and the parameters share one
+   * membership condition. Enumerating a prefix of such a set, as the constraint solver did, is an
+   * arbitrary answer to a question with infinitely many solutions.
+   */
+  @Test
+  public void testReduceLinearSystem() {
+    check("Reduce(2*x + 3*y == 5*z, {x, y, z}, Integers)", //
+        "(C(1)|C(2))∈Integers&&x==C(1)&&y==C(1)+5*C(2)&&z==C(1)+3*C(2)");
+    check("Reduce(x + y + z == 1, {x, y, z}, Integers)", //
+        "(C(1)|C(2))∈Integers&&x==C(1)&&y==C(2)&&z==1-C(1)-C(2)");
+    check("Reduce(2*x + 3*y == 5*z, {x, y, z, w}, Integers)", //
+        "w∈Integers&&(C(1)|C(2))∈Integers&&x==C(1)&&y==C(1)+5*C(2)&&z==C(1)+3*C(2)");
+    check("Reduce(x == 2*y && y == 3*z, {x, y, z}, Integers)", //
+        "C(1)∈Integers&&x==6*C(1)&&y==3*C(1)&&z==C(1)");
+    // a redundant equation does not change the solution set
+    check("Reduce(x + 2*y == 1 && 2*x + 4*y == 2, {x, y}, Integers)", //
+        "C(1)∈Integers&&x==1+2*C(1)&&y==-C(1)");
+    // an inconsistent system is decided from the coefficients, not by searching
+    check("Reduce(x + 2*y == 1 && 2*x + 4*y == 3, {x, y}, Integers)", //
+        "False");
+    check("Reduce(2*x + 3*y - 5*z == 1 && 3*x - 4*y + 7*z == 3, {x, y, z}, Integers)", //
+        "C(1)∈Integers&&x==C(1)&&y==22-29*C(1)&&z==13-17*C(1)");
   }
 
   /**

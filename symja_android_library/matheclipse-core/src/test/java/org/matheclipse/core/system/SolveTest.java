@@ -356,12 +356,40 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x + y - 5 == 0, {x, y}, Integers)", //
         "{{x->ConditionalExpression(C(1),C(1)∈Integers),y->ConditionalExpression(5-C(1),C(\n"
             + "1)∈Integers)}}");
+    // the offset of the family is reduced against its own lattice, so the particular solution is
+    // the smallest non negative one rather than whichever point the elimination happened to reach
     check("Solve({15*n + 17*m == 200}, {n, m}, Integers)", //
-        "{{n->ConditionalExpression(1600+17*C(1),C(1)∈Integers),m->ConditionalExpression(-\n"
-            + "1400-15*C(1),C(1)∈Integers)}}");
+        "{{n->ConditionalExpression(2+17*C(1),C(1)∈Integers),m->ConditionalExpression(10-\n"
+            + "15*C(1),C(1)∈Integers)}}");
     // gcd(2, 4) does not divide 5, so there is no integer solution
     check("Solve({2*x + 4*y == 5}, {x, y}, Integers)", //
         "{}");
+    // 2 x == 4 y is x == 2 t, y == t; it is not y == x/2, which is not an integer for odd x
+    check("Solve(2*x == 4*y, {x, y}, Integers)", //
+        "{{x->ConditionalExpression(2*C(1),C(1)∈Integers),y->ConditionalExpression(C(1),C(\n"
+            + "1)∈Integers)}}");
+    // an inconsistent system is decided from the coefficients rather than by exhausting a search
+    // box, which is what made this answer take seconds
+    check("Solve(x + 2*y == 1 && 2*x + 4*y == 3, {x, y}, Integers)", //
+        "{}");
+  }
+
+  /**
+   * More unknowns than independent equations means the solution set is an unbounded lattice. It is
+   * reported with one fresh parameter per degree of freedom; enumerating a prefix of it out of a
+   * default search box, as the constraint solver did, is an arbitrary answer.
+   */
+  @Test
+  public void testSolveIntegersLinearSystem() {
+    check("Solve(2*x + 3*y - 5*z == 1 && 3*x - 4*y + 7*z == 3, {x, y, z}, Integers)", //
+        "{{x->ConditionalExpression(C(1),C(1)∈Integers),y->ConditionalExpression(22-29*C(\n"
+            + "1),C(1)∈Integers),z->ConditionalExpression(13-17*C(1),C(1)∈Integers)}}");
+    check("Solve(x + y + z == 1, {x, y, z}, Integers)", //
+        "{{x->ConditionalExpression(C(1),(C(1)|C(2))∈Integers),y->ConditionalExpression(C(\n"
+            + "2),(C(1)|C(2))∈Integers),z->ConditionalExpression(1-C(1)-C(2),(C(1)|C(2))∈Integers)}}");
+    // asking for a specific number of solutions asks for instances, not for the family
+    check("Solve(x + y == 5, {x, y}, Integers, MaxRoots -> 3)", //
+        "{{x->-1,y->6},{x->0,y->5},{x->1,y->4}}");
   }
 
   @Test
@@ -1580,12 +1608,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIntegers() {
     check("Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Integers)", //
         "{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
-    if (Config.EXPENSIVE_JUNIT_TESTS) {
-      check("Solve(2 x + 3 y - 5 z == 1 && 3 x - 4 y + 7 z == 3, {x, y, z}, Integers)", //
-          "{{x->-564,y->16378,z->9601},{x->-563,y->16349,z->9584},{x->-562,y->16320,z->9567},{x->-\n"
-              + "561,y->16291,z->9550},{x->-560,y->16262,z->9533},{x->-559,y->16233,z->95<<SHORT>>",
-          160);
-    }
+    // this system used to enumerate a truncated prefix of its infinitely many solutions out of the
+    // constraint solver's search box; it is now the parametrized family, in milliseconds.
+    // See testSolveIntegersLinearSystem.
 
     // check("Roots(x^4 == 1 - I, x)", //
     // "x==-(-1+I)^(1/4)||x==(-1+I)^(1/4)||x==I*(-1+I)^(1/4)||x==-I*(-1+I)^(1/4)");

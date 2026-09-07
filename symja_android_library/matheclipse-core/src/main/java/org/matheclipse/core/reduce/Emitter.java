@@ -193,4 +193,97 @@ public final class Emitter {
     }
     return conditions;
   }
+
+  /**
+   * The Wolfram Language form of a parametrized integer solution set.
+   *
+   * <p>
+   * A variable the system never mentions is unconstrained and keeps its own membership; the fresh
+   * parameters share one membership written with <code>Alternatives</code>; then every solved
+   * variable is given in terms of those parameters. So
+   * <code>Reduce(2*x == 4*y, {x, y}, Integers)</code> is
+   * <code>C(1)&isin;Integers &amp;&amp; x == 2*C(1) &amp;&amp; y == C(1)</code>.
+   *
+   * @param solution the parametrized solution set
+   * @param untouched the requested variables which do not occur in the system, in order
+   * @param domain the domain of the reduction
+   */
+  public static IExpr latticeReduceForm(LatticeSolver.Solution solution, List<Variable> untouched,
+      IntegerDomain domain) {
+    IASTAppendable conjuncts = F.ast(S.And, untouched.size() + solution.variables().size() + 1);
+    for (Variable variable : untouched) {
+      conjuncts.append(F.Element(variable.symbol(), domain.symbol()));
+    }
+    IExpr membership = parameterMembership(solution.parameterCount(), domain);
+    if (membership.isPresent()) {
+      conjuncts.append(membership);
+    }
+    for (int index = 0; index < solution.variables().size(); index++) {
+      conjuncts
+          .append(F.Equal(solution.variables().get(index).symbol(), latticeValue(solution, index)));
+    }
+    return conjuncts.argSize() == 1 ? conjuncts.arg1() : conjuncts;
+  }
+
+  /**
+   * The same solution set in the shape {@code Solve} returns: one rule per variable, each value
+   * carrying the condition on the generated parameters.
+   */
+  public static IExpr latticeSolveRules(LatticeSolver.Solution solution, List<Variable> untouched,
+      IntegerDomain domain) {
+    IASTAppendable conditions = F.ast(S.And, untouched.size() + 1);
+    for (Variable variable : untouched) {
+      conditions.append(F.Element(variable.symbol(), domain.symbol()));
+    }
+    IExpr membership = parameterMembership(solution.parameterCount(), domain);
+    if (membership.isPresent()) {
+      conditions.append(membership);
+    }
+    IExpr condition = conditions.argSize() == 0 ? F.NIL
+        : (conditions.argSize() == 1 ? conditions.arg1() : conditions);
+    IASTAppendable rules = F.ListAlloc(solution.variables().size());
+    for (int index = 0; index < solution.variables().size(); index++) {
+      IExpr value = latticeValue(solution, index);
+      rules.append(F.Rule(solution.variables().get(index).symbol(),
+          condition.isNIL() ? value : F.ConditionalExpression(value, condition)));
+    }
+    return F.list(rules);
+  }
+
+  /** <code>Element(C(1), Integers)</code>, or one membership for all parameters at once. */
+  private static IExpr parameterMembership(int count, IntegerDomain domain) {
+    if (count == 0) {
+      return F.NIL;
+    }
+    if (count == 1) {
+      return F.Element(F.C(1), domain.symbol());
+    }
+    IASTAppendable alternatives = F.ast(S.Alternatives, count);
+    for (int index = 1; index <= count; index++) {
+      alternatives.append(F.C(index));
+    }
+    return F.Element(alternatives, domain.symbol());
+  }
+
+  /** The value of one variable of the solution set, as <code>offset + basis . C</code>. */
+  private static IExpr latticeValue(LatticeSolver.Solution solution, int index) {
+    IASTAppendable sum = F.PlusAlloc(solution.parameterCount() + 1);
+    BigInteger offset = solution.offset()[index];
+    if (offset.signum() != 0) {
+      sum.append(F.ZZ(offset));
+    }
+    for (int row = 0; row < solution.parameterCount(); row++) {
+      BigInteger coefficient = solution.basis()[row][index];
+      if (coefficient.signum() == 0) {
+        continue;
+      }
+      IExpr parameter = F.C(row + 1);
+      sum.append(
+          coefficient.equals(BigInteger.ONE) ? parameter : F.Times(F.ZZ(coefficient), parameter));
+    }
+    if (sum.argSize() == 0) {
+      return F.C0;
+    }
+    return sum.argSize() == 1 ? sum.arg1() : sum;
+  }
 }

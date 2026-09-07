@@ -325,7 +325,7 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
         "x==-1||x==1");
     // GeneratedParameters names the parameters which a solution generates
     check("Reduce(2*x + 3*y == 1, {x, y}, Integers, GeneratedParameters -> K)", //
-        "K(1)∈Integers&&x==-1+3*K(1)&&y==1-2*K(1)");
+        "K(1)∈Integers&&x==2+3*K(1)&&y==-1-2*K(1)");
     // WorkingPrecision applies the requested precision to the exact result
     check("Reduce(x^2 == 2, x, WorkingPrecision -> 30)", //
         "x==-1.4142135623730950488016887242||x==1.4142135623730950488016887242");

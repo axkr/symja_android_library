@@ -53,6 +53,10 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reduce.Emitter;
+import org.matheclipse.core.reduce.IntegerDomain;
+import org.matheclipse.core.reduce.IntegerReduceEngine;
+import org.matheclipse.core.reduce.IntegerSolveResult;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.parser.client.ParserConfig;
@@ -2554,90 +2558,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return result;
   }
 
-  /**
-   * Solve a single linear Diophantine equation whose variables aren't bounded by any inequality.
-   *
-   * <p>
-   * Such a system has infinitely many integer solutions, so there is nothing for a finite-domain
-   * constraint solver to enumerate: it would silently fall back on a default search box and return
-   * an arbitrary truncated prefix of the solution family (for <code>x + y == 5</code> that used to
-   * be a thousand tuples starting at <code>x == -499</code>). Instead the family is returned in
-   * closed form, parametrized by <code>C(1)</code>, e.g.
-   * <code>{{x -> ConditionalExpression(C(1), C(1) &isin; Integers), y -> ConditionalExpression(5 -
-   * C(1), C(1) &isin; Integers)}}</code>.
-   *
-   * <p>
-   * {@link S#Reduce} already solves linear Diophantine equations with the extended Euclidean
-   * algorithm and reports <code>False</code> when the gcd of the coefficients doesn't divide the
-   * right hand side; this method only rewrites its <code>And(...)</code> answer into the "list of
-   * solution rules" shape that {@link S#Solve} returns.
-   *
-   * @return the parametrized solution, {@link F#CEmptyList} if no integer solution exists, or
-   *         {@link F#NIL} if this isn't an unbounded single linear equation
-   */
-  private static IExpr solveIntegersLinearParametric(IAST equationsAndInequations,
-      IAST userDefinedVariables, EvalEngine engine) {
-    // argSize() == 1 also guarantees there are no inequality constraints: with bounds the
-    // constraint solver can enumerate the finite solution set, which is more informative
-    if (equationsAndInequations.argSize() != 1 || userDefinedVariables.argSize() < 2) {
-      return F.NIL;
-    }
-    IExpr equation = equationsAndInequations.arg1();
-    if (!equation.isEqual() || !equation.isAST2()) {
-      return F.NIL;
-    }
-    IExpr difference = F.Subtract(equation.first(), equation.second());
-    for (int i = 1; i < userDefinedVariables.size(); i++) {
-      IExpr variable = userDefinedVariables.get(i);
-      if (!variable.isSymbol() || !S.Exponent.of(engine, difference, variable).isOne()) {
-        // every solve variable has to occur, and occur linearly
-        return F.NIL;
-      }
-    }
-
-    IExpr reduced = engine.evaluate(F.Reduce(equation, userDefinedVariables, S.Integers));
-    if (reduced.isFalse()) {
-      return F.CEmptyList;
-    }
-    if (!reduced.isAnd()) {
-      return F.NIL;
-    }
-    IAST and = (IAST) reduced;
-    IExpr condition = F.NIL;
-    IASTAppendable equations = F.ListAlloc(and.argSize());
-    for (int i = 1; i < and.size(); i++) {
-      IExpr arg = and.get(i);
-      if (arg.isAST(S.Element, 3)) {
-        condition = condition.isNIL() ? arg : F.And(condition, arg);
-      } else if (arg.isEqual() && arg.isAST2() && arg.first().isSymbol()
-          && userDefinedVariables.indexOf(arg.first()) > 0) {
-        equations.append(arg);
-      } else {
-        return F.NIL;
-      }
-    }
-    if (condition.isNIL() || equations.argSize() != userDefinedVariables.argSize()) {
-      return F.NIL;
-    }
-
-    IASTAppendable rules = F.ListAlloc(equations.argSize());
-    for (int i = 1; i < userDefinedVariables.size(); i++) {
-      IExpr variable = userDefinedVariables.get(i);
-      IExpr value = F.NIL;
-      for (int j = 1; j < equations.size(); j++) {
-        if (equations.get(j).first().equals(variable)) {
-          value = equations.get(j).second();
-          break;
-        }
-      }
-      if (value.isNIL()) {
-        return F.NIL;
-      }
-      rules.append(F.Rule(variable, F.ConditionalExpression(value, condition)));
-    }
-    return F.list(rules);
-  }
-
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
       IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain, EvalEngine engine) {
     return solveIntegers(ast, equationVariables, userDefinedVariables, maximumNumberOfResults,
@@ -2669,15 +2589,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           return exactResult;
         }
 
-        // Unbounded single linear equation: the solution family is infinite, so return it in
-        // closed form. This runs before the Diophantine / constraint-solver paths below, which
-        // would otherwise enumerate an arbitrary prefix out of a default search box.
-        if (allowParametricSolution) {
-          IExpr parametricResult =
-              solveIntegersLinearParametric(equationsAndInequations, userDefinedVariables, engine);
-          if (parametricResult.isPresent()) {
-            return parametricResult;
-          }
+        // A system of linear equations has a lattice of solutions, which is infinite whenever
+        // there are more unknowns than independent equations. Enumerating a prefix of it out of a
+        // default search box is an arbitrary answer, so the family is returned in closed form.
+        // The engine also proves the absence of a solution from the coefficients themselves,
+        // which the constraint solver can only do by exhausting its box.
+        IntegerSolveResult exact =
+            IntegerReduceEngine.solve(equationsAndInequations, userDefinedVariables, domain);
+        if (exact.is(IntegerSolveResult.Kind.INFEASIBLE)) {
+          return F.CEmptyList;
+        }
+        if (allowParametricSolution && exact.is(IntegerSolveResult.Kind.PARAMETRIC)) {
+          return Emitter.latticeSolveRules(exact.family(), exact.untouched(),
+              IntegerDomain.INTEGERS);
         }
 
         // for model#table() method
