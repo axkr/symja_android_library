@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
+import org.matheclipse.core.reduce.QuadraticDiophantine;
 
 public class Reduce extends AbstractFunctionOptionEvaluator {
   // Internal signal to indicate successful absorption into the variable interval
@@ -3424,11 +3425,30 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return linear;
       }
     }
-    IAST solutions = NumberTheory.diophantinePolynomial(poly, vars, MAX_DIOPHANTINE_RESULTS);
-    if (solutions.isPresent()) {
-      return diophantineSolutionsToOr(solutions, domain);
+    // A quadratic equation in two unknowns has infinitely many solutions unless its shape says
+    // otherwise: a Pell equation, a parabola and a pair of lines all carry infinite families. Only
+    // a solution set which is proved finite may be reported as a disjunction of its members.
+    BigInteger[] coefficients = QuadraticDiophantine.coefficients(poly, x, y, engine);
+    if (coefficients == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    List<BigInteger[]> finite = QuadraticDiophantine.finiteSolutions(coefficients[0],
+        coefficients[1], coefficients[2], coefficients[3], coefficients[4], coefficients[5],
+        MAX_INTEGER_INTERVAL);
+    if (finite == null) {
+      return F.NIL;
+    }
+    // the vendored solvers emit in the order their construction reaches the points; report them
+    // in a deterministic one
+    finite.sort((left, right) -> {
+      int byFirst = left[0].compareTo(right[0]);
+      return byFirst != 0 ? byFirst : left[1].compareTo(right[1]);
+    });
+    IASTAppendable solutions = F.ListAlloc(finite.size());
+    for (BigInteger[] pair : finite) {
+      solutions.append(F.list(F.Rule(x, F.ZZ(pair[0])), F.Rule(y, F.ZZ(pair[1]))));
+    }
+    return diophantineSolutionsToOr(solutions, domain);
   }
 
   /**

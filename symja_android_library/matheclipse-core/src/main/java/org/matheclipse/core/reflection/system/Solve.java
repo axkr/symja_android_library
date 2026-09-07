@@ -57,6 +57,7 @@ import org.matheclipse.core.reduce.Emitter;
 import org.matheclipse.core.reduce.IntegerDomain;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.IntegerSolveResult;
+import org.matheclipse.core.reduce.QuadraticDiophantine;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.parser.client.ParserConfig;
@@ -2567,6 +2568,25 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return result;
   }
 
+  /**
+   * Test whether a two variable equation has finitely many integer solutions, and few enough of
+   * them to report.
+   *
+   * @param polynomial the left hand side of an equation whose right hand side is zero
+   * @param variables the two unknowns
+   * @param limit the largest number of solutions to accept
+   */
+  private static boolean isFiniteQuadratic(IExpr polynomial, IAST variables, int limit,
+      EvalEngine engine) {
+    java.math.BigInteger[] coefficients = QuadraticDiophantine.coefficients(polynomial,
+        variables.arg1(), variables.arg2(), engine);
+    if (coefficients == null) {
+      return false;
+    }
+    return QuadraticDiophantine.finiteSolutions(coefficients[0], coefficients[1], coefficients[2],
+        coefficients[3], coefficients[4], coefficients[5], limit) != null;
+  }
+
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
       IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain, EvalEngine engine) {
     return solveIntegers(ast, equationVariables, userDefinedVariables, maximumNumberOfResults,
@@ -2637,6 +2657,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           if (equationsAndInequations.argSize() == 1) {
             IExpr eq1 = equationsAndInequations.arg1();
             if (eq1.isEqual() && eq1.second().isZero() && equationVariables.argSize() == 2) {
+              // A quadratic equation in two unknowns usually has infinitely many solutions: a Pell
+              // equation, a parabola and a pair of lines all carry infinite families. Unless the
+              // caller asked for a specific number of individual solutions, only a solution set
+              // proved finite may be reported.
+              if (allowParametricSolution && !isFiniteQuadratic(eq1.first(), equationVariables,
+                  maximumNumberOfResults, engine)) {
+                return F.NIL;
+              }
               IAST diophantineResult = NumberTheory.diophantinePolynomial(eq1.first(),
                   equationVariables, maximumNumberOfResults);
               if (diophantineResult.isPresent()) {

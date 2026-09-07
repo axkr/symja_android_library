@@ -305,6 +305,37 @@ public class ReduceTest extends ExprEvaluatorTestCase {
    * Over the primes every variable is at least two, which is often what makes a system finite. It
    * also excludes the negative values a bare primality test accepts.
    */
+  /**
+   * A quadratic equation in two unknowns is reported completely only when its shape proves the
+   * solution set finite. An ellipse encloses finitely many lattice points and a product of two
+   * linear forms equal to a non zero constant has finitely many divisor pairs; a Pell equation, a
+   * parabola and a pair of lines all carry infinite families, and used to be reported as the first
+   * twenty of their solutions.
+   */
+  @Test
+  public void testReduceQuadraticTwoVariables() {
+    check("Reduce(x^2 + y^2 == 25, {x, y}, Integers)", //
+        "(x==-5&&y==0)||(x==-4&&y==-3)||(x==-4&&y==3)||(x==-3&&y==-4)||(x==-3&&y==4)||(x==\n"
+            + "0&&y==-5)||(x==0&&y==5)||(x==3&&y==-4)||(x==3&&y==4)||(x==4&&y==-3)||(x==4&&y==3)||(x==\n"
+            + "5&&y==0)");
+    check("Reduce(x^2 + y^2 == 3, {x, y}, Integers)", //
+        "False");
+    check("Reduce(x^2 - y^2 == 5, {x, y}, Integers)", //
+        "(x==-3&&y==-2)||(x==-3&&y==2)||(x==3&&y==-2)||(x==3&&y==2)");
+    check("Reduce(x*y == 6, {x, y}, Integers)", //
+        "(x==-6&&y==-1)||(x==-3&&y==-2)||(x==-2&&y==-3)||(x==-1&&y==-6)||(x==1&&y==6)||(x==\n"
+            + "2&&y==3)||(x==3&&y==2)||(x==6&&y==1)");
+    // a Pell equation has infinitely many solutions
+    check("Reduce(x^2 - 2*y^2 == 1, {x, y}, Integers)", //
+        "Reduce(x^2-2*y^2==1,{x,y},Integers)");
+    // so does a parabola
+    check("Reduce(x^2 == y, {x, y}, Integers)", //
+        "Reduce(x^2==y,{x,y},Integers)");
+    // and so does each line of a degenerate pair
+    check("Reduce(x*y == 0, {x, y}, Integers)", //
+        "Reduce(x*y==0,{x,y},Integers)");
+  }
+
   @Test
   public void testReducePrimesIsPositive() {
     check("Reduce(x + y == 10, {x, y}, Primes)", //
