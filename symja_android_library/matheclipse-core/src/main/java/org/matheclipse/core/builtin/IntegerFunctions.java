@@ -1598,6 +1598,9 @@ public class IntegerFunctions {
       if (div.isIndeterminate()) {
         return S.Indeterminate;
       }
+      if (div.isNumber() && !div.isReal()) {
+        return modComplex(m, n, div, engine);
+      }
       if (div.isNumericFunction(true) //
           || div.isDirectedInfinity() || div.isComplexInfinity()) {
         return F.Subtract(m, F.Times(n, F.Floor(div)));
@@ -1653,14 +1656,32 @@ public class IntegerFunctions {
         }
         if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
             || n.isComplexNumeric() || d.isComplexNumeric()) {
-          // https://mathematica.stackexchange.com/a/114373/21734
-          IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-          IExpr re = S.Round.funEval(engine, subExpr.re());
-          IExpr im = S.Round.funEval(engine, subExpr.im());
-          return F.Plus(m, F.Times(F.CN1, n, re), F.Times(F.CI, im));
+          return modComplex(m, n, engine.evaluate(F.Divide(F.Subtract(m, d), n)), engine);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The Gaussian remainder <code>m - n*Round(quotient)</code>, where <code>quotient</code> is
+     * <code>m/n</code> (or <code>(m-d)/n</code> for the 3-argument form) and <code>Round</code> is
+     * taken on the real and imaginary parts separately.
+     *
+     * <p>
+     * Complex arguments need {@link S#Round}, not {@link S#Floor}: there is no ordering on the
+     * Gaussian integers to floor towards, and rounding each part is what selects the representative
+     * of least norm. Flooring gave <code>Mod(7+3*I, 2) == 1+I</code>, contradicting Symja's own
+     * <code>Quotient(7+3*I, 2) == 4+2*I</code>.
+     *
+     * @see <a href="https://mathematica.stackexchange.com/a/114373/21734">Mod for Gaussian
+     *      integers</a>
+     */
+    private static IExpr modComplex(IExpr m, IExpr n, IExpr quotient, EvalEngine engine) {
+      IExpr re = S.Round.funEval(engine, quotient.re());
+      IExpr im = S.Round.funEval(engine, quotient.im());
+      // The whole rounded quotient is multiplied by n. Scaling only the real part and then adding a
+      // bare I*im broke Mod(m, n, 0) == Mod(m, n).
+      return F.Subtract(m, F.Times(n, F.Plus(re, F.Times(F.CI, im))));
     }
 
     @Override
