@@ -57,7 +57,7 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
@@ -1250,7 +1250,7 @@ public class F extends S {
    * @return IPattern
    */
   public static IPatternSequence $ps(final ISymbol symbol) {
-    return PatternSequence.valueOf(symbol, false);
+    return org.matheclipse.core.expression.PatternSequence.valueOf(symbol, false);
   }
 
   /**
@@ -1261,7 +1261,7 @@ public class F extends S {
    *        arguments has to be >= 1.
    */
   public static IPatternSequence $ps(final ISymbol symbol, boolean zeroArgsAllowed) {
-    return PatternSequence.valueOf(symbol, zeroArgsAllowed);
+    return org.matheclipse.core.expression.PatternSequence.valueOf(symbol, zeroArgsAllowed);
   }
 
   /**
@@ -1272,7 +1272,7 @@ public class F extends S {
    * @return IPatternSequence
    */
   public static IPatternSequence $ps(final ISymbol symbol, final IExpr check) {
-    return PatternSequence.valueOf(symbol, check, false);
+    return org.matheclipse.core.expression.PatternSequence.valueOf(symbol, check, false);
   }
 
   /**
@@ -1287,7 +1287,7 @@ public class F extends S {
    */
   public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def,
       boolean zeroArgsAllowed) {
-    return PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
+    return org.matheclipse.core.expression.PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
   }
 
   /**
@@ -1297,7 +1297,7 @@ public class F extends S {
    * @return IPattern
    */
   public static IPatternSequence $ps(final String symbolName) {
-    return PatternSequence.valueOf($s(symbolName), false);
+    return org.matheclipse.core.expression.PatternSequence.valueOf($s(symbolName), false);
   }
 
   /**
@@ -4026,7 +4026,7 @@ public class F extends S {
     }
     ISymbol symbol = new Symbol(name, org.matheclipse.core.expression.Context.DUMMY);
     if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
+      IExpr temp = PureFunctions.substituteSlot1(assumptionAST, symbol).orElse(assumptionAST);
       if (temp.isAST()) {
         EvalEngine engine = EvalEngine.get();
         IAssumptions assumptions = engine.getAssumptions();
@@ -5735,7 +5735,8 @@ public class F extends S {
 
   public static IPatternSequence initPredefinedPatternSequence(final ISymbol symbol,
       boolean zeroArgsAllowed) {
-    PatternSequence temp = PatternSequence.valueOf(symbol, zeroArgsAllowed);
+    org.matheclipse.core.expression.PatternSequence temp =
+        org.matheclipse.core.expression.PatternSequence.valueOf(symbol, zeroArgsAllowed);
     PREDEFINED_PATTERNSEQUENCE_MAP.put(symbol.toString(), temp);
     return temp;
   }
@@ -11442,7 +11443,7 @@ public class F extends S {
     ISymbol symbol =
         engine.getContextPath().symbol(symbolName, engine.getContext(), engine.isRelaxedSyntax());
     if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
+      IExpr temp = PureFunctions.substituteSlot1(assumptionAST, symbol).orElse(assumptionAST);
       if (temp.isAST()) {
         IAssumptions assumptions = engine.getAssumptions();
         if (assumptions == null) {
@@ -11469,7 +11470,7 @@ public class F extends S {
     // }
     symbol = ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
     if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
+      IExpr temp = PureFunctions.substituteSlot1(assumptionAST, symbol).orElse(assumptionAST);
       if (temp.isAST()) {
         IAssumptions assumptions = engine.getAssumptions();
         if (assumptions == null) {

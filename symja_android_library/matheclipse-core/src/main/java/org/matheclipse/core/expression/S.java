@@ -331,6 +331,15 @@ public class S {
    */
   public final static IBuiltInSymbol Accumulate = S.initFinalSymbol("Accumulate", ID.Accumulate);
 
+  /**
+   * Accuracy(x) - TODO describe `Accuracy`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Accuracy.md">Accuracy
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Accuracy = S.initFinalSymbol("Accuracy", ID.Accuracy);
+
   public final static IBuiltInSymbol AccuracyGoal =
       S.initFinalSymbol("AccuracyGoal", ID.AccuracyGoal);
 
@@ -4137,6 +4146,16 @@ public class S {
    */
   public final static IBuiltInSymbol ConvexHullRegion =
       S.initFinalSymbol("ConvexHullRegion", ID.ConvexHullRegion);
+
+  /**
+   * ConvexPolyhedronQ(x) - TODO describe `ConvexPolyhedronQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConvexPolyhedronQ.md">ConvexPolyhedronQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ConvexPolyhedronQ =
+      S.initFinalSymbol("ConvexPolyhedronQ", ID.ConvexPolyhedronQ);
 
   /**
    * ConvexRegionQ(x) - TODO describe `ConvexRegionQ`.
@@ -8396,6 +8415,16 @@ public class S {
    */
   public final static IBuiltInSymbol GeometricMean =
       S.initFinalSymbol("GeometricMean", ID.GeometricMean);
+
+  /**
+   * GeometricTest(x) - TODO describe `GeometricTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeometricTest.md">GeometricTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GeometricTest =
+      S.initFinalSymbol("GeometricTest", ID.GeometricTest);
 
   public final static IBuiltInSymbol GeometricTransformation =
       S.initFinalSymbol("GeometricTransformation", ID.GeometricTransformation);
@@ -15485,6 +15514,16 @@ public class S {
   public final static IBuiltInSymbol Orderless = S.initFinalSymbol("Orderless", ID.Orderless);
 
   /**
+   * OrderlessPatternSequence(x) - TODO describe `OrderlessPatternSequence`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OrderlessPatternSequence.md">OrderlessPatternSequence
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol OrderlessPatternSequence =
+      S.initFinalSymbol("OrderlessPatternSequence", ID.OrderlessPatternSequence);
+
+  /**
    * Orthogonalize(matrix) - returns a basis for the orthogonalized set of vectors defined by
    * `matrix`.
    * 
@@ -15815,6 +15854,16 @@ public class S {
 
   public final static IBuiltInSymbol PatternOrder =
       S.initFinalSymbol("PatternOrder", ID.PatternOrder);
+
+  /**
+   * PatternSequence(x) - TODO describe `PatternSequence`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PatternSequence.md">PatternSequence
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PatternSequence =
+      S.initFinalSymbol("PatternSequence", ID.PatternSequence);
 
   /**
    * PatternTest(pattern, test) - constrains `pattern` to match `expr` only if the evaluation of
@@ -16385,6 +16434,16 @@ public class S {
       S.initFinalSymbol("PolygonCoordinates", ID.PolygonCoordinates);
 
   public final static IBuiltInSymbol Polyhedron = S.initFinalSymbol("Polyhedron", ID.Polyhedron);
+
+  /**
+   * PolyhedronData(x) - TODO describe `PolyhedronData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolyhedronData.md">PolyhedronData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PolyhedronData =
+      S.initFinalSymbol("PolyhedronData", ID.PolyhedronData);
 
   /**
    * PolyLog(s, z) - returns the polylogarithm function.
@@ -17715,6 +17774,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol RegionPlot = S.initFinalSymbol("RegionPlot", ID.RegionPlot);
+
+  /**
+   * RegionProduct(x) - TODO describe `RegionProduct`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionProduct.md">RegionProduct
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionProduct =
+      S.initFinalSymbol("RegionProduct", ID.RegionProduct);
 
   /**
    * RegionQ(x) - TODO describe `RegionQ`.

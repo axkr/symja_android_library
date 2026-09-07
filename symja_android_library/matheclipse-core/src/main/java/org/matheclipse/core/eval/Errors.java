@@ -532,6 +532,7 @@ public class Errors {
       "setps", "`1` in the part assignment is not a symbol.", //
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shapespec", "Shape specification `1` is invalid.", //
+      "slotn", "Slot number `1` in `2` cannot be filled from `3`.", //
       "smplen", "The elements of `1` are not compatible with the sample size `2`.", //
       "shlen", "The argument `1` should have at least `2` elements.", //
       "sing", "Matrix `1` is singular.", //
