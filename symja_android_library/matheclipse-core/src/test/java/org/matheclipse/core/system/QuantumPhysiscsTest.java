@@ -36,6 +36,25 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
             + " {0,0,7,0,0},\n" //
             + " {0,0,0,9,0},\n" //
             + " {0,0,0,0,11}}");
+    // the three angular momenta must couple: j1+j2+j3 has to be an integer
+    // ClebschGordan: ClebschGordan({1/2,1/2},{1/2,-1/2},{1/2,0}) is not triangular.
+    check("ClebschGordan({1/2, 1/2}, {1/2, -1/2}, {1/2, 0})", //
+        "0");
+    // ClebschGordan: ClebschGordan({1/2,1/2},{1,0},{1,1/2}) is not triangular.
+    check("ClebschGordan({1/2, 1/2}, {1, 0}, {1, 1/2})", //
+        "0");
+
+    // a single symbolic projection is forced by the selection rule m1+m2==m3
+    check("ClebschGordan({1, m}, {1, 0}, {2, 1})", //
+        "Piecewise({{1/Sqrt(2),m==1}},0)");
+    check("ClebschGordan({1, 1}, {1, m}, {2, 1})", //
+        "Piecewise({{1/Sqrt(2),m==0}},0)");
+    check("ClebschGordan({1, 1}, {1, 0}, {2, m})", //
+        "Piecewise({{1/Sqrt(2),m==1}},0)");
+
+    // an inexact argument evaluates numerically at its own precision
+    check("ClebschGordan({3/2`40, -3/2}, {3/2, 3/2}, {1, 0})", //
+        "0.6708203932499369089227521006193828706321");
   }
 
   @Test
@@ -66,6 +85,28 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
         "1/(5*Sqrt(21))");
     check("SixJSymbol({1, 2, 3}, {1,2,2})", //
         "1/15");
+    // the four triads must couple: {1/2,1,1} and {1/2,1/2,1/2} do not add up to an integer
+    // SixJSymbol: SixJSymbol({1/2,1/2,1},{1,1,1}) is not triangular.
+    check("SixJSymbol({1/2, 1/2, 1}, {1, 1, 1})", //
+        "0");
+    // SixJSymbol: SixJSymbol({1/2,1,1},{1,1,1}) is not triangular.
+    check("SixJSymbol({1/2, 1, 1}, {1, 1, 1})", //
+        "0");
+    // SixJSymbol: SixJSymbol({1/2,1/2,1/2},{1,1,3/2}) is not triangular.
+    check("SixJSymbol({1/2, 1/2, 1/2}, {1, 1, 3/2})", //
+        "0");
+    // SixJSymbol: SixJSymbol({0,1/2,1/2},{1/2,1/2,1/2}) is not triangular.
+    check("SixJSymbol({0, 1/2, 1/2}, {1/2, 1/2, 1/2})", //
+        "0");
+
+    check("SixJSymbol({8, 8, 8}, {8, 8, 8})", //
+        "-12219/965770");
+    check("SixJSymbol({20, 20, 20}, {20, 20, 20})", //
+        "-33188637458619/6598917336119836");
+
+    // an inexact argument evaluates numerically at its own precision
+    check("SixJSymbol({1`30, 2, 3}, {1, 2, 3})", //
+        "0.0095238095238095238095238095238");
   }
 
   @Test
@@ -113,6 +154,28 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
         + "      m2}, {ji, -(m1 + m2)})), {m1, -j1, j1}, {m2, -j2, j2}), {j, \n" //
         + "  Abs(j1 - j2), j1 + j2}, {ji, Abs(j1 - j2), j1 + j2})", //
         "{{3,0,0,0,0},{0,5,0,0,0},{0,0,7,0,0},{0,0,0,9,0},{0,0,0,0,11}}");
+    // the three angular momenta must couple: j1+j2+j3 has to be an integer
+    // ThreeJSymbol: ThreeJSymbol({1/2,1/2},{1,0},{1,-1/2}) is not triangular.
+    check("ThreeJSymbol({1/2, 1/2}, {1, 0}, {1, -1/2})", //
+        "0");
+    // ThreeJSymbol: ThreeJSymbol({1/2,1/2},{5/2,-1/2},{5/2,0}) is not triangular.
+    check("ThreeJSymbol({1/2, 1/2}, {5/2, -1/2}, {5/2, 0})", //
+        "0");
+    // every j-m has to be an integer
+    // ThreeJSymbol: ThreeJSymbol({1/2,0},{1/2,0},{1,0}) is not physical.
+    check("ThreeJSymbol({1/2, 0}, {1/2, 0}, {1, 0})", //
+        "0");
+    // ThreeJSymbol: ThreeJSymbol({1,1/2},{1,-1/2},{1,0}) is not physical.
+    check("ThreeJSymbol({1, 1/2}, {1, -1/2}, {1, 0})", //
+        "0");
+
+    // a symbolic projection in the last column is forced too
+    check("ThreeJSymbol({1, 0}, {1, 1}, {2, m})", //
+        "Piecewise({{-1/Sqrt(10),m==-1}},0)");
+
+    // an inexact argument evaluates numerically at its own precision
+    check("ThreeJSymbol({2`30, 0}, {6, 0}, {4, 0})", //
+        "0.186989398001691435561930024532");
   }
 
 
@@ -151,6 +214,19 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
     // check("WignerD({1, 1/2, 1/2}, 1.34, Pi/3, Pi/4)", //
     // "");
 
+    // two angles are the Euler angles beta and gamma
+    check("WignerD({1/2, 1/2, -1/2}, b, c)", //
+        "Sin(b/2)/E^(I*1/2*c)");
+    check("WignerD({2, 2, 2}, a, b, c)", //
+        "E^(I*2*a+I*2*c)*Cos(b/2)^4");
+    check("WignerD({0, 0, 0}, a, b, c)", //
+        "1");
+    // |m| <= j is required
+    check("WignerD({1/2, 3/2, 1/2}, b)", //
+        "WignerD({1/2,3/2,1/2},b)");
+    // an inexact argument evaluates numerically at its own precision
+    check("WignerD({1`30, 0, 1}, 0.5)", //
+        "-0.339005049421044863954942262049");
   }
 
 
