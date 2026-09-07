@@ -26972,6 +26972,57 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Pi^2*Csc(a*Pi)^2*Gamma(a)");
   }
 
+  /**
+   * <code>a^c*b^c</code> is <code>(a*b)^c</code> only while the arguments of the two still add up
+   * to one, which two negative bases do not do. The sign is collected into a power of
+   * <code>-1</code> of its own instead, and the numbers underneath it are multiplied as before.
+   */
+  @Test
+  public void testTimesNegativeBasesOfEqualExponent() {
+    check("(-2)^(1/3)*(-3)^(1/3)", //
+        "(-1)^(2/3)*6^(1/3)");
+    check("(-12)^(1/3)*(-18)^(1/3)", //
+        "6*(-1)^(2/3)");
+    check("(-2)^(1/4)*(-3)^(1/4)", //
+        "I*6^(1/4)");
+    check("(-2/3)^(1/3)*(-3/5)^(1/3)", //
+        "(-1)^(2/3)*(2/5)^(1/3)");
+    check("(-2)^(1/3)*(-3)^(1/3)*(-5)^(1/3)", //
+        "(-30)^(1/3)*(-1)^(2/3)");
+
+    // each of these is the number the factors multiply to, which is what the old answers 6^(1/3),
+    // 6^(1/4) and (-30)^(1/3) were not
+    check("Abs(N((-2)^(1/3)*(-3)^(1/3),30) - N((-2)^(1/3),30)*N((-3)^(1/3),30)) < 10^-25", //
+        "True");
+    check("Abs(N((-2)^(1/4)*(-3)^(1/4),30) - N((-2)^(1/4),30)*N((-3)^(1/4),30)) < 10^-25", //
+        "True");
+    check("Abs(N((-2)^(1/3)*(-3)^(1/3)*(-5)^(1/3),30)"
+        + " - N((-2)^(1/3),30)*N((-3)^(1/3),30)*N((-5)^(1/3),30)) < 10^-25", //
+        "True");
+
+    // one non negative base is enough for the arguments to add up, so these keep their answers
+    check("(-2)^(1/3)*3^(1/3)", //
+        "(-6)^(1/3)");
+    check("2^(1/3)*3^(1/3)", //
+        "6^(1/3)");
+    check("2^(a+b)*E^(a+b)", //
+        "(2*E)^(a+b)");
+    // and so does a pair the number rules answer before reaching this
+    check("Sqrt(-2)*Sqrt(-3)", //
+        "-Sqrt(6)");
+    check("(-2)^(3/2)*(-3)^(3/2)", //
+        "-6*Sqrt(6)");
+    check("(-8)^(1/3)*(-1)^(1/3)", //
+        "2*(-1)^(2/3)");
+
+    // beyond one turn the collected sign is written back as a factor of its own, which would be
+    // collected again, so the two are left as they are rather than rewritten into each other
+    check("(-2)^(2/3)*(-3)^(2/3)", //
+        "(-3)^(2/3)*(-2)^(2/3)");
+    check("(-2)^(4/3)", //
+        "-2*(-2)^(1/3)");
+  }
+
   @Test
   public void testTimesBy() {
     check("a = 10", //

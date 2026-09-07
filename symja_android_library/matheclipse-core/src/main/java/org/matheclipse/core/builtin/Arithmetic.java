@@ -7908,11 +7908,44 @@ public final class Arithmetic {
         && (!exponent1.isInteger()) && (!exponent1.isMinusOne())
         // && (!power0Arg2.isNegativeResult())
         && (base1.isNumber() || base1.isRealConstant())//
-        && (base2.isNumber() || base2.isRealConstant())) {
+        && (base2.isNumber() || base2.isRealConstant())
+        // a^c*b^c is (a*b)^c only while the two arguments still add up to one, which a base that
+        // is a non negative real number guarantees whatever the other one is. Two negative bases
+        // do not: (-2)^(1/3)*(-3)^(1/3) is not 6^(1/3) but (-1)^(2/3)*6^(1/3), and the two differ
+        // in more than sign.
+        && (base1.isNonNegativeResult() || base2.isNonNegativeResult())) {
       // 2^(a+b)*E^(a+b) => (2*E)^(a+b)
       return F.Power(base1.times(base2), exponent1);
     }
     return F.NIL;
+  }
+
+  /**
+   * Whether the sign of two negative bases is worth collecting into a single power of
+   * <code>-1</code>.
+   *
+   * <p>
+   * The sign is one of the factors the prime decomposition separates out, and two negative bases
+   * each contribute one: <code>(-2)^(1/3)*(-3)^(1/3)</code> is
+   * <code>(-1)^(1/3)*2^(1/3)*(-1)^(1/3)*3^(1/3)</code>, whose signs belong together as
+   * <code>(-1)^(2/3)</code>. Splitting a positive factor off a base is always allowed, and
+   * <code>(-1)^a*(-1)^b</code> is <code>(-1)^(a+b)</code> for every <code>a</code> and
+   * <code>b</code>, so collecting them is exact -- unlike multiplying the two bases, which is what
+   * the rules further down would otherwise do.
+   *
+   * <p>
+   * Only worth doing while the collected exponent stays inside one turn. Beyond that
+   * <code>(-1)^(4/3)</code> is written back as <code>-(-1)^(1/3)</code>, whose sign this method
+   * would collect again, and the two forms would be rewritten into each other for as long as the
+   * evaluation loop allows. An exponent which is already a whole number is a plain sign rather
+   * than a root, and collecting it buys nothing while risking the same.
+   */
+  private static boolean isSignToCollect(int base, IExpr exponent1, IExpr exponent2) {
+    if (base != -1 || exponent1.isInteger() || exponent2.isInteger()) {
+      return false;
+    }
+    IExpr sum = exponent1.plus(exponent2);
+    return sum.isRational() && sum.isPositive() && !sum.subtract(F.C1).isPositive();
   }
 
   /**
@@ -7949,7 +7982,7 @@ public final class Arithmetic {
             evaled[0] = true;
             break;
           }
-          if ((exp1.isInteger() && exp2.isInteger())) {
+          if (isSignToCollect(base, exp1, exp2) || (exp1.isInteger() && exp2.isInteger())) {
             evaled[0] = true;
             break;
           }
