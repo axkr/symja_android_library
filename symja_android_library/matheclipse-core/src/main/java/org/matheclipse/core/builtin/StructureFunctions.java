@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
+import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.eval.util.positions.FlattenPositions;
 import org.matheclipse.core.eval.util.positions.MapPositions;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -891,26 +892,20 @@ public class StructureFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Function) {
-        if (!validateArgs(engine, ast)) {
+        // the Function(...) itself, not an application of it
+        if (!PureFunctions.validate(ast, engine)) {
           return F.NIL;
         }
         IExpr temp = engine.evalHoldPattern(ast, true, false);
-        if (temp.isPresent() && !temp.equals(ast)) {
-          return temp;
-        }
-        // ast.builtinEvaled();
-        return F.NIL;
+        return (temp.isPresent() && !temp.equals(ast)) ? temp : F.NIL;
       }
 
       if (ast.head().isAST()) {
         final IAST function = (IAST) ast.head();
-        if (!validateArgs(engine, function)) {
+        if (!PureFunctions.validate(function, engine)) {
           return F.NIL;
         }
-        final int attributes = (function.argSize() == 3) ? //
-            AttributeFunctions.getSymbolsAsAttributes(function.arg3().makeList(), engine) : //
-            ISymbol.NOATTRIBUTE;
-
+        final int attributes = PureFunctions.attributes(function, engine);
         IAST astEvaled = engine.evalArgs(ast, attributes, false).orElse(ast);
 
         if (Attribute.LISTABLE.isSetIn(attributes)) {
@@ -924,86 +919,14 @@ public class StructureFunctions {
           }
         }
 
-        IExpr arg1 = function.arg1();
         if (function.isAST1()) {
-          return Lambda.replaceSlotsOrElse(arg1, astEvaled, arg1);
-        } else if (function.isAST2() || function.isAST3()) {
-          IExpr arg2 = function.arg2();
-          IAST symbolSlots = arg1.makeList();
-          if (symbolSlots.size() > astEvaled.size()) {
-            // To many parameters in `1` to be filled from `2`.
-            return Errors.printMessage(S.Function, "fpct", F.list(symbolSlots, function), engine);
-          }
-          java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
-              new IdentityHashMap<ISymbol, IExpr>();
-          IExpr subst = arg2
-              .accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
-          if (subst.isPresent()) {
-            arg2 = subst;
-          }
-
-          IExpr result = F.subst(arg2, x -> { //
-            IExpr temp = getRulesMap(symbolSlots, astEvaled).get(x);
-            return temp != null ? temp : F.NIL;
-          });
-          if (result.isAST()) {
-            if (function.argSize() == 3) {
-              // LISTABLE is already applied to the arguments above, applying it to the result as
-              // well would thread an unrelated list produced by the body
-              int resultAttributes = attributes & ~ISymbol.LISTABLE;
-              if (resultAttributes != ISymbol.NOATTRIBUTE) {
-                IASTMutable copy = ((IAST) result).copy();
-                return engine.evalAttributes(copy, copy.size(), S.None, resultAttributes)
-                    .orElse(result);
-              }
-            }
-          }
-          return engine.evaluate(result);
+          return PureFunctions.applySlotForm(function, astEvaled, engine);
         }
-
+        if (function.isAST2() || function.isAST3()) {
+          return PureFunctions.applyNamedForm(function, astEvaled, attributes, engine);
+        }
       }
-      // ast.builtinEvaled();
       return F.NIL;
-    }
-
-    private static boolean validateArgs(EvalEngine engine, final IAST function) {
-      if (function.argSize() > 3 || function.argSize() <= 0) {
-        // `1` called with `2` arguments; between `3` and `4` arguments are expected.
-        Errors.printMessage(S.Function, "argb",
-            F.List(S.Function, F.ZZ(function.argSize()), F.C1, F.C3), engine);
-        return false;
-      }
-      if (function.isAST2()) {
-        IExpr arg1 = function.arg1();
-        if (arg1.isList()) {
-          IAST listOfSymbols = (IAST) arg1;
-          for (int i = 1; i < listOfSymbols.size(); i++) {
-            if (!listOfSymbols.get(i).isSymbol()) {
-              // Parameter specification `1` in `2` should be a symbol or a list of symbols.
-              Errors.printMessage(S.Function, "flpar", F.List(arg1, function), engine);
-              return false;
-            }
-          }
-        } else if (!arg1.isSymbol()) {
-          // Parameter specification `1` in `2` should be a symbol or a list of symbols.
-          Errors.printMessage(S.Function, "flpar", F.List(arg1, function), engine);
-        }
-      }
-      return true;
-    }
-
-    private static java.util.Map<IExpr, IExpr> getRulesMap(final IAST symbolSlots, final IAST ast) {
-      int size = symbolSlots.argSize();
-      final java.util.Map<IExpr, IExpr> rulesMap;
-      if (size <= 5) {
-        rulesMap = new OpenFixedSizeMap<IExpr, IExpr>(size * 3 - 1);
-      } else {
-        rulesMap = new HashMap<IExpr, IExpr>();
-      }
-      for (int i = 1; i <= size; i++) {
-        rulesMap.put(symbolSlots.get(i), ast.get(i));
-      }
-      return rulesMap;
     }
 
     @Override

@@ -70,6 +70,12 @@ public final class Sequence extends ListSizeSequence {
           sequArray[j++] = sequ;
           continue;
         }
+      } else if (element.isAST(S.Span, 3) || element.isAST(S.Span, 4)) {
+        // `Span(m, n)` and `Span(m, n, s)` denote the same range as the list specifications
+        // `{m, n}` and `{m, n, s}`, so `Take(list, 2;;4)` is `Take(list, {2, 4})`.
+        sequ = new Sequence(spanToListSpec((IAST) element));
+        sequArray[j++] = sequ;
+        continue;
       } else if (element == S.All) {
         sequ = new Sequence(1, Integer.MAX_VALUE);
         sequArray[j++] = sequ;
@@ -85,6 +91,20 @@ public final class Sequence extends ListSizeSequence {
       return null;
     }
     return sequArray;
+  }
+
+  /**
+   * The <code>{m, n}</code> or <code>{m, n, s}</code> list specification a <code>Span</code>
+   * denotes.
+   *
+   * <p>
+   * An open bound is written <code>All</code>: <code>2;;</code> parses as
+   * <code>Span(2, All)</code>, which runs to the last element and so is <code>-1</code> here.
+   */
+  public static IAST spanToListSpec(final IAST span) {
+    IExpr from = span.arg1() == S.All ? F.C1 : span.arg1();
+    IExpr to = span.arg2() == S.All ? F.CN1 : span.arg2();
+    return span.isAST3() ? F.List(from, to, span.arg3()) : F.List(from, to);
   }
 
   private static int getASTFrom(final IAST lst) {

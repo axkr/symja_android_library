@@ -1396,10 +1396,12 @@ public class ExprParser extends Scanner {
       span.append(S.All);
       getNextToken();
     } else {
-      // Precedence.SPAN, not 0: `;;` is scanned as its own TT_SPAN token, so the operator table
-      // never gets consulted for it and a 0 here let every weaker operator bind into the Span's
-      // own operand -- `1 ;; 2 -> b` parsed as Span(1, Rule(2, b)) rather than Rule(Span(1,2), b).
-      span.append(parseExpression(parsePrimary(0), Precedence.SPAN));
+      // Precedence.SPAN + 1, not 0: `;;` is scanned as its own TT_SPAN token, so a 0 here let
+      // every weaker operator bind into the Span's own operand -- `1 ;; 2 -> b` parsed as
+      // Span(1, Rule(2, b)) rather than Rule(Span(1,2), b). The +1 leaves a following `;;` of
+      // equal precedence to the step handling below, so `1;;-1;;2` stays a three-part Span
+      // instead of nesting into Span(1, Span(-1, 2)).
+      span.append(parseExpression(parsePrimary(0), Precedence.SPAN + 1));
     }
     if (fToken == TT_SPAN) {
       // the step, as in a[[1;;10;;2]]
@@ -1407,7 +1409,7 @@ public class ExprParser extends Scanner {
       if (isSpanEnd()) {
         return span;
       }
-      span.append(parseExpression(parsePrimary(0), Precedence.SPAN));
+      span.append(parseExpression(parsePrimary(0), Precedence.SPAN + 1));
     }
     return span;
   }
@@ -1561,6 +1563,18 @@ public class ExprParser extends Scanner {
       }
       if (fToken == TT_DERIVATIVE) {
         lhs = parseDerivative(lhs);
+      }
+      if (fToken == TT_SPAN) {
+        // `;;` is scanned as its own token, so it never reaches the operator table below and the
+        // loop used to stop here - leaving the Span to be built around whatever had already been
+        // parsed. That made `s = 2;;4` into Span(Set(s, 2), 4). Climbing it like any other infix
+        // operator of Precedence.SPAN puts it where the table says it belongs.
+        if (foldEqualPrecedence ? Precedence.SPAN >= min_precedence
+            : Precedence.SPAN > min_precedence) {
+          lhs = parseSpanAfterFirstPart(lhs);
+          continue;
+        }
+        break;
       }
       if (fToken != TT_OPERATOR) {
         break;

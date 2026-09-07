@@ -772,6 +772,23 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringTake() {
+    // a Span is the same specification as the equivalent list
+    check("StringTake(\"hello\", 2;;4)", //
+        "ell");
+    check("StringTake(\"hello\", ;;-2)", //
+        "hell");
+    check("StringTake(\"hello\", 2;;)", //
+        "ello");
+    check("StringDrop(\"hello\", 2;;4)", //
+        "ho");
+    // the list form of StringDrop, which the Span rewrite needs
+    check("StringDrop(\"hello\", {2,4})", //
+        "ho");
+    check("StringDrop(\"hello\", {2})", //
+        "hllo");
+    check("StringDrop(\"hello\", {-2,-1})", //
+        "hel");
+
     // TODO
     // check(
     // "StringTake( \"abc\",{{1,1},{1,3},{0,0},{1,2},{-1},{4}}) // InputForm", //

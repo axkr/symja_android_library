@@ -32,6 +32,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -430,7 +431,18 @@ public final class ListFunctions {
      */
     private IExpr tableRecursive(boolean throwOnInvalidIterator) {
       if (fIndex >= fIterList.size()) {
-        return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
+        try {
+          return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
+        } catch (final ReturnException e) {
+          // A `Return` in the body of a Table is not control flow for the function around it.
+          // Letting the exception through made `f() := (Table(Return(1), {2}); 9)` answer 1
+          // instead of 9 - the Return escaped two levels out.
+          //
+          // The returned value becomes the element. Mathematica instead leaves an unevaluated
+          // `Return(1)` sitting in the list, which cannot be reproduced here: `Return` throws
+          // whenever it is evaluated, and the result list is evaluated again on the way out.
+          return e.getValue();
+        }
       }
       final IIterator<IExpr> iter = fIterList.get(fIndex);
       try {
@@ -713,6 +725,33 @@ public final class ListFunctions {
    * AppendTo(a, b)
    * </pre>
    */
+  /**
+   * Apply an in-place update to an indexed target such as {@code AppendTo(bucket["a"], 3)}.
+   *
+   * <p>
+   * The target has to have a value already - from a specific down value, or from a general one like
+   * {@code bucket[_] := {}}. {@code Set} then writes back the specific rule.
+   *
+   * @return {@link F#NIL} if {@code target} is not an indexed expression with a value
+   */
+  private static IExpr assignIndexedTo(IExpr target, Function<IExpr, IExpr> update, IExpr value,
+      EvalEngine engine) {
+    if (!target.isAST() || !target.head().isSymbol() || target.isBuiltInFunction()) {
+      return F.NIL;
+    }
+    IExpr oldValue = engine.evaluate(target);
+    if (oldValue.equals(target)) {
+      // nothing evaluated, so the target has no value to update
+      return F.NIL;
+    }
+    IExpr newValue = update.apply(oldValue);
+    if (newValue.isNIL()) {
+      return F.NIL;
+    }
+    engine.evaluate(F.Set(target, newValue));
+    return newValue;
+  }
+
   private static final class AppendTo extends AbstractCoreFunctionEvaluator {
 
     private static class AppendToFunction implements Function<IExpr, IExpr> {
@@ -747,6 +786,11 @@ public final class ListFunctions {
       if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Append, ast, engine);
+      }
+      IExpr indexed =
+          assignIndexedTo(arg1, new AppendToFunction(engine.evaluate(ast.arg2())), ast.arg2(), engine);
+      if (indexed.isPresent()) {
+        return indexed;
       }
 
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);
@@ -5239,6 +5283,11 @@ public final class ListFunctions {
       if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Prepend, ast, engine);
+      }
+      IExpr indexed =
+          assignIndexedTo(arg1, new PrependToFunction(engine.evaluate(ast.arg2())), ast.arg2(), engine);
+      if (indexed.isPresent()) {
+        return indexed;
       }
 
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);

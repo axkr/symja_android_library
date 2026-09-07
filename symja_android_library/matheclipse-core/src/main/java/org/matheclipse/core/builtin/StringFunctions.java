@@ -1297,11 +1297,35 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // `Span(m, n)` denotes the same range as the list `{m, n}`, which the code below already
+      // understands, so `StringDrop("hello", 2;;4)` needs no separate branch.
+      if (ast.isAST2() && (ast.arg2().isAST(S.Span, 3) || ast.arg2().isAST(S.Span, 4))) {
+        return engine.evaluate(ast.setAtCopy(2,
+            org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) ast.arg2())));
+      }
       int from = 1;
       int to = 1;
       try {
         if (ast.arg1().isString()) {
           String s = ast.arg1().toString();
+          if (ast.arg2().isList()) {
+            // `{m, n}` drops the characters m through n and keeps the rest; `{m}` drops one
+            int[] sequ =
+                Validate.checkListOfInts(ast, ast.arg2(), Integer.MIN_VALUE, Integer.MAX_VALUE,
+                    engine);
+            if (sequ == null || sequ.length < 1 || sequ.length > 2) {
+              return F.NIL;
+            }
+            from = sequ[0] < 0 ? s.length() + sequ[0] + 1 : sequ[0];
+            int last = sequ.length == 1 ? from : sequ[1];
+            to = last < 0 ? s.length() + last + 1 : last;
+            if (from < 1 || to > s.length() || from > to + 1) {
+              // Cannot drop positions `1` through `2` in `3`.
+              return Errors.printMessage(ast.topHead(), "drop",
+                  F.list(F.ZZ(from), F.ZZ(to), ast.arg1()), engine);
+            }
+            return F.$str(s.substring(0, from - 1) + s.substring(to));
+          }
           from = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
           if (from >= 0) {
             from++;
@@ -2503,6 +2527,12 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // `Span(m, n)` denotes the same range as the list `{m, n}`, which the code below already
+      // understands, so `StringTake("hello", 2;;4)` needs no separate branch.
+      if (ast.isAST2() && (ast.arg2().isAST(S.Span, 3) || ast.arg2().isAST(S.Span, 4))) {
+        return engine.evaluate(ast.setAtCopy(2,
+            org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) ast.arg2())));
+      }
       int from = 1;
       int to = 1;
       IExpr arg1 = ast.arg1();

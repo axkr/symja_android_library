@@ -27,6 +27,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
@@ -2208,14 +2209,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           }
           break;
         case ID.Slot:
-          if ((list.isAST1()) && (list.arg1() instanceof IInteger)) {
-            convertSlot(buf, list);
-            return;
-          }
-          break;
         case ID.SlotSequence:
-          if ((list.isAST1()) && (list.arg1() instanceof IInteger)) {
-            convertSlotSequence(buf, list);
+          if (convertSlot(buf, list)) {
             return;
           }
           break;
@@ -3085,24 +3080,18 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     return call;
   }
 
-  public void convertSlot(final StringBuilder buf, final IAST list) {
-    try {
-      final int slot = ((IReal) list.arg1()).toInt();
-      // append(buf, "#" + slot);
-      tag(buf, "mi", "#" + slot);
-    } catch (final ArithmeticException e) {
-      // add message to evaluation problemReporter
+  /**
+   * Write a <code>Slot</code> or <code>SlotSequence</code> in its short form.
+   *
+   * @return <code>false</code> if it has no short form and must be printed as an ordinary function
+   */
+  public boolean convertSlot(final StringBuilder buf, final IAST list) {
+    String token = PureFunctions.slotToken(list);
+    if (token == null) {
+      return false;
     }
-  }
-
-  public void convertSlotSequence(final StringBuilder buf, final IAST list) {
-    try {
-      final int slotSequenceStartPosition = ((IReal) list.arg1()).toInt();
-      // append(buf, "##" + slotSequenceStartPosition);
-      tag(buf, "mi", "##" + slotSequenceStartPosition);
-    } catch (final ArithmeticException e) {
-      // add message to evaluation problemReporter
-    }
+    tag(buf, "mi", token);
+    return true;
   }
 
   @Override
