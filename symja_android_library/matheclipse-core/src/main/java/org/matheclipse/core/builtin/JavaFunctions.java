@@ -9,6 +9,7 @@ import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.InvalidPathException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -68,7 +69,7 @@ public class JavaFunctions {
         if (child != null) {
           Config.URL_CLASS_LOADER = child;
         }
-      } catch (MalformedURLException ex) {
+      } catch (InvalidPathException | MalformedURLException ex) {
         return Errors.printMessage(S.AddToClassPath, ex, engine);
       }
       return F.NIL;

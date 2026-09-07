@@ -344,11 +344,17 @@ public class CurveFitterFunctions {
           IExpr m = arg1.first();
           IExpr v = arg1.second();
           IExpr model = FittedModelExpr.linearModelFit(m, v);
-          if (model instanceof FittedModelExpr) {
-            // return the best fit (coefficient) vector
-            return F.List(((FittedModelExpr) model).toData().estimateRegressionParameters());
+          try {
+            if (model instanceof FittedModelExpr) {
+              // return the best fit (coefficient) vector
+              return F.List(((FittedModelExpr) model).toData().estimateRegressionParameters());
+            }
+            return model;
+          } catch (MathIllegalArgumentException miae) {
+            return Errors.printMessage(null, miae);
+            // if (miae.getSpecifier().equals(LocalizedCoreFormats.SINGULAR_MATRIX)) {
+            // }
           }
-          return model;
         }
         return F.NIL;
       }
