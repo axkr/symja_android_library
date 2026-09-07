@@ -215,15 +215,27 @@ public class LeadTerm {
     if (sign == 0) {
       return coefficient;
     }
-    // e < 0: the magnitude diverges, and the coefficient's sign says in which direction
-    if (!coefficient.isRealResult()) {
+    // e < 0: the magnitude diverges, and the coefficient says in which direction
+    if (coefficient.isRealResult()) {
+      if (engine.evalTrue(F.Greater(coefficient, F.C0))) {
+        return F.CInfinity;
+      }
+      if (engine.evalTrue(F.Less(coefficient, F.C0))) {
+        return F.CNInfinity;
+      }
       return F.NIL;
     }
-    if (engine.evalTrue(F.Greater(coefficient, F.C0))) {
-      return F.CInfinity;
-    }
-    if (engine.evalTrue(F.Less(coefficient, F.C0))) {
-      return F.CNInfinity;
+    // A complex coefficient diverges along its own ray rather than towards +/-Infinity. This is
+    // what a one-sided limit from below of a non-integer power looks like: approaching 0 through
+    // negative values turns x^(-Pi) into (-1)^(-Pi)*t^(-Pi), whose coefficient is off the real
+    // axis. DirectedInfinity normalises the ray to unit modulus itself, so the coefficient can be
+    // handed over as it is.
+    //
+    // A finite non-zero magnitude is what makes the ray well defined, and it also rejects a
+    // coefficient which still carries a free symbol - Abs of that does not evaluate to a positive
+    // number, exactly as the two comparisons above decline a symbolic real coefficient.
+    if (engine.evalQuiet(F.Abs(coefficient)).isPositiveResult()) {
+      return F.DirectedInfinity(coefficient);
     }
     return F.NIL;
   }

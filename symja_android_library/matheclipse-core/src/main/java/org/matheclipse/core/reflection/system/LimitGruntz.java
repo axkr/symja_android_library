@@ -122,12 +122,68 @@ public class LimitGruntz {
      */
     final Map<String, IExpr> rewriteRatioCache = new HashMap<>();
 
+    /**
+     * Memoizes {@link #evalGruntz} within one user-level Limit call, keyed like
+     * {@link #compareGrowthCache} on the variable-prefixed printed form.
+     *
+     * <p>
+     * The recursion re-derives the same sub-limits enormously often: the mrv rewrite of one branch
+     * produces the same normalized subexpression as another, and each of those runs a full Gruntz
+     * evaluation of its own. Measured on <code>Limit(E^Gamma(x)/Gamma(x), x -&gt; Infinity)</code>:
+     * <b>153,493 moveUp calls for 283 distinct subproblems</b>, <code>u -&gt; E^u</code> alone
+     * 52,384 times. That is what made the limit look like a hang rather than a slow computation.
+     *
+     * <p>
+     * The depth is stored with the result because {@link #evalGruntz} bails at a depth cap: a
+     * {@link F#NIL} produced by exhausting the budget must not be served to a caller which still
+     * has budget left. A cached failure is reused only when it was reached with at least as much
+     * budget as the current call has; a cached <i>value</i> is a mathematical fact and always
+     * reusable.
+     */
+    final Map<String, GruntzResult> evalGruntzCache = new HashMap<>();
+
+    /** Uncached {@link #evalGruntz} evaluations in the current user-level Limit call. */
+    int evalGruntzSteps;
+
     /** One-slot cache for the ubiquitous "variable -> +Infinity from below" LimitData. */
     ISymbol infinityDataVariable;
 
     /** See {@link #infinityDataVariable}. */
     LimitData infinityData;
   }
+
+  /** A memoized {@link #evalGruntz} outcome and the recursion depth it was reached at. */
+  private static final class GruntzResult {
+    final IExpr value;
+    final int depth;
+
+    GruntzResult(IExpr value, int depth) {
+      this.value = value;
+      this.depth = depth;
+    }
+  }
+
+  /**
+   * How many {@link #evalGruntz} evaluations one user-level {@code Limit} may spend.
+   *
+   * <p>
+   * The recursion depth is already capped, but depth alone does not bound the work: each level
+   * fans out into several sub-limits, so a pathological input explores an exponential tree of ever
+   * larger expressions and looks like a hang rather than a failure.
+   * {@code Limit(E^Gamma(x)/Gamma(x), x -> Infinity)} is the case which motivated this - Stirling
+   * turns the exponent into a tower the mrv ranking cannot resolve, and it ran for over ten
+   * minutes.
+   *
+   * <p>
+   * Measured headroom: the most any limit in the Gruntz, Limit, oscillating-Limit and Series suites
+   * needs is <b>64</b> evaluations, so this is roughly fifteen times the worst legitimate case.
+   * Exceeding it abandons the Gruntz attempt ({@link F#NIL}), which leaves {@code Limit} to its
+   * other strategies exactly as any other Gruntz failure does.
+   *
+   * <p>
+   * Pairs with {@code Limit#MAX_LIMIT_STEPS}: neither cap resolves the tower alone.
+   */
+  private static final int MAX_GRUNTZ_STEPS = 1000;
 
   private static final ThreadLocal<RunState> RUN = ThreadLocal.withInitial(RunState::new);
 
@@ -160,6 +216,11 @@ public class LimitGruntz {
     run.compareGrowthCache.clear();
     run.signInfCache.clear();
     run.rewriteRatioCache.clear();
+    run.evalGruntzCache.clear();
+    if (DEBUG && run.evalGruntzSteps > 0) {
+      System.out.println("GRUNTZ steps " + run.evalGruntzSteps);
+    }
+    run.evalGruntzSteps = 0;
   }
 
   /**
@@ -538,6 +599,27 @@ public class LimitGruntz {
     if (depth > 10) {
       return F.NIL; // Guard against infinite Gruntz recursion
     }
+
+    final Map<String, GruntzResult> cache = RUN.get().evalGruntzCache;
+    final String key = x.toString() + '\0' + expr.toString();
+    GruntzResult cached = cache.get(key);
+    if (cached != null && (cached.value.isPresent() || cached.depth <= depth)) {
+      return cached.value;
+    }
+    RunState run = RUN.get();
+    if (++run.evalGruntzSteps > MAX_GRUNTZ_STEPS) {
+      return F.NIL;
+    }
+    IExpr result = evalGruntzUncached(expr, x, engine, depth);
+    // keep the entry reached with the most budget - it is the most reusable
+    if (cached == null || cached.depth > depth) {
+      cache.put(key, new GruntzResult(result, depth));
+    }
+    return result;
+  }
+
+  /** {@link #evalGruntz} without the memoization - see {@link RunState#evalGruntzCache}. */
+  private static IExpr evalGruntzUncached(IExpr expr, ISymbol x, EvalEngine engine, int depth) {
 
     IExpr breaker = oscillationBreakerLimit(expr, x, engine);
     if (breaker.isPresent()) {

@@ -290,6 +290,38 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   private static final ThreadLocal<Integer> LIMIT_BUILTIN_DEPTH = ThreadLocal.withInitial(() -> 0);
 
   /**
+   * How many {@link #evalLimit} entries one user-level {@code Limit} may spend.
+   *
+   * <p>
+   * Every strategy - the heuristics, the ExpandAll retry, L'Hopital, Gruntz - recurses back into
+   * {@code evalLimit} for its sub-limits, so a problem the strategies keep handing back and forth
+   * explores an unbounded tree of them. No single step looks expensive; there are simply hundreds of
+   * thousands of them, and the expressions grow as it goes, so the run stops looking like a slow
+   * computation and starts looking like a hang.
+   * {@code Limit(E^Gamma(x)/Gamma(x), x -> Infinity)} is the case which motivated this: Stirling
+   * turns the exponent into a tower, and it ran for over ten minutes.
+   *
+   * <p>
+   * A count rather than a deadline, so the cut-off is the same on every machine - a limit must not
+   * resolve differently because the box was busy. Measured headroom: the most any limit in the
+   * Gruntz, Limit, oscillating-Limit, Series and Lowercase suites needs is <b>48,831</b> entries
+   * (the {@code Gamma(x+1/Gamma(x))-Gamma(x)} difference), so this is a little above the worst
+   * legitimate case. Running out abandons that sub-limit ({@link F#NIL}), which leaves the other
+   * strategies to run exactly as they do for any other failure - it never turns a hang into a wrong
+   * answer.
+   *
+   * <p>
+   * This alone is not enough: it has to be paired with the much tighter
+   * {@code LimitGruntz#MAX_GRUNTZ_STEPS}. Neither cap fixes the tower on its own - only pruning the
+   * Gruntz recursion early <i>and</i> bounding the outer strategy tree makes it resolve, and it then
+   * resolves <i>correctly</i> to {@code Infinity} in about three seconds rather than failing.
+   */
+  private static final int MAX_LIMIT_STEPS = 60000;
+
+  private static final ThreadLocal<int[]> LIMIT_STEPS = ThreadLocal.withInitial(() -> new int[1]);
+
+
+  /**
    * The strategies this evaluator tries, for the hit counters below.
    *
    * <p>
@@ -374,6 +406,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * @return {@link S#NIL} if no limit could be found
    */
   private static IExpr evalLimit(IExpr evaledExpr, LimitData data, EvalEngine engine) {
+    if (++LIMIT_STEPS.get()[0] > MAX_LIMIT_STEPS) {
+      return F.NIL;
+    }
     final ISymbol symbol = data.variable();
     final IExpr limitValue = data.limitValue();
 
@@ -4463,6 +4498,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         // fresh user-level Limit call: assumptions may differ from the previous call and the
         // sign cache is also fed outside Gruntz runs - start clean (see clearSessionCaches)
         LimitGruntz.clearSessionCaches();
+        LIMIT_STEPS.get()[0] = 0;
       }
       engine.setNumericMode(false);
       Direction direction = Direction.TWO_SIDED; // no direction as default

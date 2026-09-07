@@ -351,6 +351,29 @@ public class LimitTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimitDirectedInfinity() {
+    // Approaching 0 from below turns x^n into (-1)^n * t^n, so a non-integer exponent leaves a
+    // coefficient off the real axis and the magnitude diverges along that ray rather than towards
+    // +/-Infinity. This used to stay unevaluated while the rational exponents below already worked.
+    check("Limit(x^(-Pi), x->0, Direction->1)", //
+        "DirectedInfinity((-1)^(-Pi))");
+    check("Limit(x^(-Pi), x->0, Direction->\"FromBelow\")", //
+        "DirectedInfinity((-1)^(-Pi))");
+    // from above the coefficient is 1, so the ray is the positive real axis
+    check("Limit(x^(-Pi), x->0, Direction->-1)", //
+        "Infinity");
+    // the two one-sided limits disagree, which is Indeterminate as for 1/x and Sign(x)
+    check("Limit(x^(-Pi), x->0)", //
+        "Indeterminate");
+    // rational exponents keep answering as before
+    check("Limit(x^(-2), x->0, Direction->1)", //
+        "Infinity");
+    check("Limit(x^(-3), x->0, Direction->1)", //
+        "-Infinity");
+    check("Limit(x^(-1/2), x->0, Direction->1)", //
+        "-I*Infinity");
+    check("Limit(1/x, x->0, Direction->1)", //
+        "-Infinity");
+
     check("Limit(x^(-37/4),x->0 , Direction->1)", //
         "DirectedInfinity((-1)^(3/4))");
     // check("Limit(x^(-37/4),x->0)", //
