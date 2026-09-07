@@ -1049,7 +1049,12 @@ final class DSolveODE {
 
         // Attempt 1: Standard First-Order Linear ODE
         if (coeffY.isFree(head)) {
-          IExpr freeTerm = engine.evaluate(F.Subtract(rest, F.Times(coeffY, yFunction)));
+          // Expanded, or the coefficient which was just read off does not cancel against the term
+          // it came from: -y(x) - x*y(x) + (1+x)*y(x) is zero without being written that way, and
+          // an unexpanded difference still mentions the unknown, which reads as a forcing term
+          // that is not free of it and sends the equation past this method.
+          IExpr freeTerm =
+              engine.evaluate(F.Expand(F.Subtract(rest, F.Times(coeffY, yFunction))));
 
           if (freeTerm.isFree(head)) {
             if (!freeTerm.isFree(x -> x.isFunctionID(ID.DiracDelta, ID.HeavisideTheta), false)) {
@@ -1063,7 +1068,8 @@ final class DSolveODE {
         }
 
         // Attempt 1.5: General Bernoulli Equation
-        IExpr nonLinearPart = engine.evaluate(F.Subtract(rest, F.Times(coeffY, yFunction)));
+        IExpr nonLinearPart =
+            engine.evaluate(F.Expand(F.Subtract(rest, F.Times(coeffY, yFunction))));
         IExpr nExpr = F.NIL;
         IExpr coeffYn = F.NIL;
 

@@ -612,6 +612,45 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "4");
   }
 
+  /**
+   * A coefficient which is a sum, as in <code>y'(x) == (1+x)*y(x)</code>. Reading the coefficient
+   * of the unknown off the equation and subtracting it back leaves nothing, but only once the
+   * difference is expanded; unexpanded it still mentions the unknown, which used to be read as a
+   * forcing term that is not free of it, and the equation went past the linear and Bernoulli
+   * methods to the ones which cannot answer it.
+   */
+  @Test
+  public void testDSolveFirstOrderSummedCoefficient() {
+    check("DSolve(y'(x) == (1+x)*y(x), y(x), x)", //
+        "{{y(x)->E^(x+x^2/2)*C(1)}}");
+    check("DSolve(y'(x) == (k-x^2)*y(x), y(x), x)", //
+        "{{y(x)->E^(k*x-x^3/3)*C(1)}}");
+    check("DSolve(y'(x) == (Sin(x)+1)*y(x), y(x), x)", //
+        "{{y(x)->E^(x-Cos(x))*C(1)}}");
+    check("DSolve(y'(x) == (2/x+1/x^2)*y(x), y(x), x)", //
+        "{{y(x)->(x^2*C(1))/E^(1/x)}}");
+
+    // with a forcing term, and the same coefficient
+    check("DSolve(y'(x) + (1+x)*y(x) == 1+x, y(x), x)", //
+        "{{y(x)->1+C(1)/E^(x+x^2/2)}}");
+    check("DSolve(y'(x) == (1+1/x)*y(x) + x, y(x), x)", //
+        "{{y(x)->-x+E^x*x*C(1)}}");
+
+    // Bernoulli reads its coefficient the same way
+    checkResidual("y'(x) == (1+x)*y(x) + x*y(x)^3", //
+        "y'(x) - (1+x)*y(x) - x*y(x)^3", "{C(1)->7/5, x->13/10}");
+
+    // a coefficient which is one term is unchanged
+    check("DSolve(y'(x) == 2*x*y(x)^2, y(x), x)", //
+        "{{y(x)->1/(-x^2-C(1))}}");
+    check("DSolve(y'(x) == -x^2*y(x), y(x), x)", //
+        "{{y(x)->C(1)/E^(x^3/3)}}");
+
+    // no elementary antiderivative for the forcing term, so this one still declines
+    check("DSolve(y'(x) == (2-x^2)*y(x) + x, y(x), x)", //
+        "DSolve(y'(x)==x+(2-x^2)*y(x),y(x),x)");
+  }
+
   @Test
   public void testDSolveChangeOfVariable() {
     // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.
