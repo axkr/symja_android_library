@@ -166,20 +166,14 @@ public class SemanticImportTestCase extends AbstractTestCase {
         " 2014/1/3\\tBoston\\t196\r\n" + //
         " 2014/1/3\\tNew York\\t235\")", //
         "                                   \r\n" + "   Date    |    City    |  Sales  |\r\n"
-            + "-----------------------------------\r\n"
-            + " 2014/1/1  |    Boston  |    198  |\r\n"
-            + " 2014/1/1  |  New York  |    220  |\r\n"
-            + " 2014/1/1  |     Paris  |    215  |\r\n"
-            + " 2014/1/1  |    London  |    225  |\r\n"
-            + " 2014/1/1  |  Shanghai  |    241  |\r\n"
-            + " 2014/1/1  |     Tokio  |    218  |\r\n"
-            + " 2014/1/2  |    Boston  |    189  |\r\n"
-            + " 2014/1/2  |  New York  |    232  |\r\n"
-            + " 2014/1/2  |     Paris  |    211  |\r\n"
-            + " 2014/1/2  |    London  |    228  |\r\n"
-            + " 2014/1/2  |  Shanghai  |    242  |\r\n"
-            + " 2014/1/2  |     Tokio  |    229  |\r\n"
-            + " 2014/1/3  |    Boston  |    196  |\r\n" + " 2014/1/3  |  New York  |    235  |");
+            + "-----------------------------------\r\n" + " 2014/1/1  |    Boston  |    198  |\r\n"
+            + " 2014/1/1  |  New York  |    220  |\r\n" + " 2014/1/1  |     Paris  |    215  |\r\n"
+            + " 2014/1/1  |    London  |    225  |\r\n" + " 2014/1/1  |  Shanghai  |    241  |\r\n"
+            + " 2014/1/1  |     Tokio  |    218  |\r\n" + " 2014/1/2  |    Boston  |    189  |\r\n"
+            + " 2014/1/2  |  New York  |    232  |\r\n" + " 2014/1/2  |     Paris  |    211  |\r\n"
+            + " 2014/1/2  |    London  |    228  |\r\n" + " 2014/1/2  |  Shanghai  |    242  |\r\n"
+            + " 2014/1/2  |     Tokio  |    229  |\r\n" + " 2014/1/3  |    Boston  |    196  |\r\n"
+            + " 2014/1/3  |  New York  |    235  |");
 
     check("ds=SemanticImportString(\"Products,Sales,Market_Share,Date,Time\n" + //
         "a,12200,4,1950-01-03,11:10:00\n" + //
@@ -298,12 +292,12 @@ public class SemanticImportTestCase extends AbstractTestCase {
             " Market_Share  |  4  |");
     // print: "Dataset: Column Invalid is not present in table"
     check("ds(Select(#Invalid < 13000 &) ,All)", //
-        "                                                                   \r\n" + //
-            " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
-            "-------------------------------------------------------------------\r\n" + //
-            "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n" + //
-            "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
-            "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |[Select(Slot(Invalid)<13000&),All]");
+        "                                                                   \n" //
+            + " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\n" //
+            + "-------------------------------------------------------------------\n" //
+            + "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\n" //
+            + "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\n" //
+            + "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |[Select(#Invalid<13000&),All]");
     check("ds(All, \"Sales\") // Normal", //
         "{12200,5500,60000}");
 
@@ -457,8 +451,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testDatasetFunctions() {
     Config.FILESYSTEM_ENABLED = true;
-    check("l = SemanticImportString(\"id,city,sales\n1,Boston,100\n2,Berlin,200\n3,Boston,50\n\");"
-        + "r = SemanticImportString(\"id,owner\nann,1\nbob,2\n\");Head(l)", //
+    check(
+        "l = SemanticImportString(\"id,city,sales\n1,Boston,100\n2,Berlin,200\n3,Boston,50\n\");"
+            + "r = SemanticImportString(\"id,owner\nann,1\nbob,2\n\");Head(l)", //
         "Dataset");
 
     // ToDataset takes a header row plus data rows, which the Dataset(...) head has no form for
@@ -515,9 +510,10 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testDatasetDisplayOptions() {
     Config.FILESYSTEM_ENABLED = true;
-    check("rows = {<|\"city\" -> \"Boston\", \"sales\" -> 100, \"rank\" -> 1|>,"
-        + "<|\"city\" -> \"Berlin\", \"sales\" -> 200, \"rank\" -> 2|>,"
-        + "<|\"city\" -> \"Oslo\", \"sales\" -> 50, \"rank\" -> 3|>};Head(Dataset(rows))", //
+    check(
+        "rows = {<|\"city\" -> \"Boston\", \"sales\" -> 100, \"rank\" -> 1|>,"
+            + "<|\"city\" -> \"Berlin\", \"sales\" -> 200, \"rank\" -> 2|>,"
+            + "<|\"city\" -> \"Oslo\", \"sales\" -> 50, \"rank\" -> 3|>};Head(Dataset(rows))", //
         "Dataset");
 
     // MaxItems drops rows, and {rows, columns} drops columns too
@@ -533,33 +529,41 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
     check("StringContainsQ(ToString(Dataset(rows, HiddenItems -> \"rank\")), \"rank\")", //
         "False");
-    check("StringContainsQ(ToString(Dataset(rows, HiddenItems -> {\"rank\", \"sales\"})), \"sales\")", //
+    check(
+        "StringContainsQ(ToString(Dataset(rows, HiddenItems -> {\"rank\", \"sales\"})), \"sales\")", //
         "False");
 
-    check("StringContainsQ(ToString(Dataset(rows, HeaderDisplayFunction -> ToUpperCase)), \"CITY\")", //
+    check(
+        "StringContainsQ(ToString(Dataset(rows, HeaderDisplayFunction -> ToUpperCase)), \"CITY\")", //
         "True");
-    check("StringContainsQ(ToString(Dataset(rows, ItemDisplayFunction -> Function(\"<\" <> # <> \">\"))),"
-        + " \"<Boston>\")", //
+    check(
+        "StringContainsQ(ToString(Dataset(rows, ItemDisplayFunction -> Function(\"<\" <> # <> \">\"))),"
+            + " \"<Boston>\")", //
         "True");
 
-    check("StringContainsQ(ToString(Dataset(rows, DatasetDisplayFormat -> \"Associations\")), \"<|\")", //
+    check(
+        "StringContainsQ(ToString(Dataset(rows, DatasetDisplayFormat -> \"Associations\")), \"<|\")", //
         "True");
 
     // the styling reaches the HTML the servlets send, and nothing else
-    check("StringContainsQ(JSForm(Dataset(rows, HeaderBackground -> Red)), \"background:rgb(255,0,0)\")", //
+    check(
+        "StringContainsQ(JSForm(Dataset(rows, HeaderBackground -> Red)), \"background:rgb(255,0,0)\")", //
         "True");
     check("StringContainsQ(JSForm(Dataset(rows, Alignment -> Right)), \"text-align:right\")", //
         "True");
-    check("StringContainsQ(JSForm(Dataset(rows, ItemStyle -> {Bold, Blue})),"
-        + " \"font-weight:bold;color:rgb(0,0,255)\")", //
+    check(
+        "StringContainsQ(JSForm(Dataset(rows, ItemStyle -> {Bold, Blue})),"
+            + " \"font-weight:bold;color:rgb(0,0,255)\")", //
         "True");
     check("StringContainsQ(JSForm(Dataset(rows, ItemSize -> 12)), \"width:12ch\")", //
         "True");
-    check("StringContainsQ(JSForm(Dataset(rows, DatasetTheme -> \"Striped\")), \"background:#f7f7f7\")", //
+    check(
+        "StringContainsQ(JSForm(Dataset(rows, DatasetTheme -> \"Striped\")), \"background:#f7f7f7\")", //
         "True");
     // an explicit option replaces what the theme set rather than being appended after it
-    check("StringContainsQ(JSForm(Dataset(rows, DatasetTheme -> \"Striped\", HeaderBackground -> Red)),"
-        + " \"background:#eeeeee\")", //
+    check(
+        "StringContainsQ(JSForm(Dataset(rows, DatasetTheme -> \"Striped\", HeaderBackground -> Red)),"
+            + " \"background:#eeeeee\")", //
         "False");
     // with no options the markup still carries the default grid and header shading
     check("StringContainsQ(JSForm(Dataset(rows)), \"border:1px solid darkgray\")", //
@@ -567,19 +571,23 @@ public class SemanticImportTestCase extends AbstractTestCase {
     check("StringContainsQ(JSForm(Dataset(rows)), \"background:lightgray\")", //
         "True");
     // ... which an option of the same property replaces, leaving the grid alone
-    check("StringContainsQ(JSForm(Dataset(rows, HeaderBackground -> Red)), \"background:lightgray\")", //
+    check(
+        "StringContainsQ(JSForm(Dataset(rows, HeaderBackground -> Red)), \"background:lightgray\")", //
         "False");
-    check("StringContainsQ(JSForm(Dataset(rows, HeaderBackground -> Red)),"
-        + " \"border:1px solid darkgray\")", //
+    check(
+        "StringContainsQ(JSForm(Dataset(rows, HeaderBackground -> Red)),"
+            + " \"border:1px solid darkgray\")", //
         "True");
 
     // the options survive a selection
-    check("StringContainsQ(ToString(Dataset(rows, HeaderDisplayFunction -> ToUpperCase)[All, {\"city\"}]),"
-        + " \"CITY\")", //
+    check(
+        "StringContainsQ(ToString(Dataset(rows, HeaderDisplayFunction -> ToUpperCase)[All, {\"city\"}]),"
+            + " \"CITY\")", //
         "True");
     // ... and a bare column name selects a vector, which has no header to display at all
-    check("StringContainsQ(ToString(Dataset(rows, HeaderDisplayFunction -> ToUpperCase)[All, \"city\"]),"
-        + " \"CITY\")", //
+    check(
+        "StringContainsQ(ToString(Dataset(rows, HeaderDisplayFunction -> ToUpperCase)[All, \"city\"]),"
+            + " \"CITY\")", //
         "False");
 
     // AllowedDimensions constrains the data, not its appearance
@@ -623,14 +631,15 @@ public class SemanticImportTestCase extends AbstractTestCase {
   /**
    * <code>dataset[[{i, j}]]</code> is one dataset of those rows. It used to be
    * <code>Dataset(row, row)</code> - the head applied to one-row datasets - because the generic
-   * <code>Part</code> builds <code>head(items...)</code>, which is right for an ordinary
-   * expression and not for this.
+   * <code>Part</code> builds <code>head(items...)</code>, which is right for an ordinary expression
+   * and not for this.
    */
   @Test
   public void testPartOfADataset() {
     Config.FILESYSTEM_ENABLED = true;
-    check("v = SemanticImportString(\"name,n\nAnn,1\nBob,2\nCid,3\n\");"
-        + "w = SemanticImportString(\"name,n\nAnn,1\n\");Head(v)", //
+    check(
+        "v = SemanticImportString(\"name,n\nAnn,1\nBob,2\nCid,3\n\");"
+            + "w = SemanticImportString(\"name,n\nAnn,1\n\");Head(v)", //
         "Dataset");
 
     check("Head(Part(v, {2,1}))", //
@@ -675,14 +684,16 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testAssociationsGetTypedColumns() {
     Config.FILESYSTEM_ENABLED = true;
-    check("s = Dataset({<|\"g\" -> \"a\", \"v\" -> 1|>, <|\"g\" -> \"a\", \"v\" -> 2|>,"
-        + "<|\"g\" -> \"b\", \"v\" -> 3|>});Head(s)", //
+    check(
+        "s = Dataset({<|\"g\" -> \"a\", \"v\" -> 1|>, <|\"g\" -> \"a\", \"v\" -> 2|>,"
+            + "<|\"g\" -> \"b\", \"v\" -> 3|>});Head(s)", //
         "Dataset");
 
     check("Normal(AggregateBy(s, \"g\", \"v\", Total))", //
         "{<|g->a,Sum [v]->3.0|>,<|g->b,Sum [v]->3.0|>}");
     // and it agrees with the same data read as a CSV
-    check("Normal(AggregateBy(SemanticImportString(\"g,v\na,1\na,2\nb,3\n\"), \"g\", \"v\", Total))", //
+    check(
+        "Normal(AggregateBy(SemanticImportString(\"g,v\na,1\na,2\nb,3\n\"), \"g\", \"v\", Total))", //
         "{<|g->a,Sum [v]->3.0|>,<|g->b,Sum [v]->3.0|>}");
     // Summary now has something to say beyond the row count
     check("MemberQ(Normal(Summary(s))[[All, \"Summary\"]], \"Mean\")", //
@@ -743,8 +754,8 @@ public class SemanticImportTestCase extends AbstractTestCase {
    * expectation here was read off a real Mathematica.
    *
    * <p>
-   * The rule they follow is that a dataset wraps a collection and a scalar comes back bare, which is
-   * why <code>Total</code> of a vector dataset is a number and not a dataset of one.
+   * The rule they follow is that a dataset wraps a collection and a scalar comes back bare, which
+   * is why <code>Total</code> of a vector dataset is a number and not a dataset of one.
    */
   /**
    * A cell holding a <code>Graphics</code> is drawn, not printed: <code>data[All, PieChart]</code>
@@ -752,8 +763,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
    */
   @Test
   public void testGraphicsCellsAreDrawn() {
-    check("data = Dataset(<|\"a\" -> <|\"x\"->1,\"y\"->2,\"z\"->3|>,"
-        + " \"b\" -> <|\"x\"->5,\"y\"->10,\"z\"->7|>|>);", //
+    check(
+        "data = Dataset(<|\"a\" -> <|\"x\"->1,\"y\"->2,\"z\"->3|>,"
+            + " \"b\" -> <|\"x\"->5,\"y\"->10,\"z\"->7|>|>);", //
         "");
 
     // one picture per key ...
@@ -771,7 +783,8 @@ public class SemanticImportTestCase extends AbstractTestCase {
         "True");
 
     // a graphic in an ordinary table cell is drawn too
-    check("StringCount(JSForm(Dataset({<|\"name\"->\"a\",\"chart\"->PieChart({1,2,3})|>})), \"<svg\")", //
+    check(
+        "StringCount(JSForm(Dataset({<|\"name\"->\"a\",\"chart\"->PieChart({1,2,3})|>})), \"<svg\")", //
         "1");
 
     // a Graphics3D is drawn too, as the WebGL canvas and the script that fills it
@@ -785,25 +798,31 @@ public class SemanticImportTestCase extends AbstractTestCase {
         "False");
     // each canvas needs a container of its own: two cells sharing an id renders both scenes into
     // the first cell and leaves the second empty
-    check("Length(DeleteDuplicates(StringCases(JSForm(threeD),"
-        + " RegularExpression(\"webgl_[0-9]+_[0-9]+\"))))", //
+    check(
+        "Length(DeleteDuplicates(StringCases(JSForm(threeD),"
+            + " RegularExpression(\"webgl_[0-9]+_[0-9]+\"))))", //
         "2");
     // a plot and a Legended plot are the same thing underneath, and both draw
-    check("StringCount(JSForm(Dataset(<|\"a\" -> Plot3D(Sin(x*y),{x,0,3},{y,0,3})|>)), \"data-type\")", //
+    check(
+        "StringCount(JSForm(Dataset(<|\"a\" -> Plot3D(Sin(x*y),{x,0,3},{y,0,3})|>)), \"data-type\")", //
         "1");
-    check("StringCount(JSForm(Dataset(<|\"l\" -> Legended(Graphics3D(Sphere()), \"s\")|>)), \"data-type\")", //
+    check(
+        "StringCount(JSForm(Dataset(<|\"l\" -> Legended(Graphics3D(Sphere()), \"s\")|>)), \"data-type\")", //
         "1");
     // 2D and 3D in one table, each drawn its own way
-    check("StringCount(JSForm(Dataset(<|\"2d\" -> PieChart({1,2}), \"3d\" -> Graphics3D(Sphere())|>)),"
-        + " \"<svg\")", //
+    check(
+        "StringCount(JSForm(Dataset(<|\"2d\" -> PieChart({1,2}), \"3d\" -> Graphics3D(Sphere())|>)),"
+            + " \"<svg\")", //
         "1");
-    check("StringCount(JSForm(Dataset(<|\"2d\" -> PieChart({1,2}), \"3d\" -> Graphics3D(Sphere())|>)),"
-        + " \"data-type\")", //
+    check(
+        "StringCount(JSForm(Dataset(<|\"2d\" -> PieChart({1,2}), \"3d\" -> Graphics3D(Sphere())|>)),"
+            + " \"data-type\")", //
         "1");
 
     // only markup the column produced itself goes through unescaped - a string that looks like
     // markup is still escaped
-    check("StringContainsQ(JSForm(Dataset(<|\"s\" -> \"<b>bold</b>\"|>)), \"&lt;b&gt;bold&lt;/b&gt;\")", //
+    check(
+        "StringContainsQ(JSForm(Dataset(<|\"s\" -> \"<b>bold</b>\"|>)), \"&lt;b&gt;bold&lt;/b&gt;\")", //
         "True");
     check("StringContainsQ(JSForm(Dataset(<|\"s\" -> \"<b>bold</b>\"|>)), \"<b>bold</b>\")", //
         "False");
@@ -817,8 +836,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
    */
   @Test
   public void testAMissingCellIsDrawnAsAHyphen() {
-    check("dm = Dataset({<|\"a\" -> 1, \"c\" -> {1}|>, <|\"a\" -> 5, \"c\" -> {5, 6, 7}|>,"
-        + "<|\"a\" -> 6, \"c\" -> {}|>});", //
+    check(
+        "dm = Dataset({<|\"a\" -> 1, \"c\" -> {1}|>, <|\"a\" -> 5, \"c\" -> {5, 6, 7}|>,"
+            + "<|\"a\" -> 6, \"c\" -> {}|>});", //
         "");
 
     // one absent part, drawn as a hyphen in the colour of the grid
@@ -858,8 +878,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
    */
   @Test
   public void testTakeLargestOnADataset() {
-    check("tl = Dataset({<|\"a\" -> 1|>, <|\"a\" -> 3|>, <|\"a\" -> 2|>});"
-        + "col = tl[All, \"a\"];Head(col)", //
+    check(
+        "tl = Dataset({<|\"a\" -> 1|>, <|\"a\" -> 3|>, <|\"a\" -> 2|>});"
+            + "col = tl[All, \"a\"];Head(col)", //
         "Dataset");
 
     check("Head(TakeLargest(col, 2))", //
@@ -883,8 +904,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
     // rows of more than one field cannot be ordered by size, so that is reported - which is the
     // behaviour of the rows on their own, and no longer an abort
-    check("wide = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 3, \"b\" -> \"y\"|>});"
-        + "Head(TakeLargest(wide, 1))", //
+    check(
+        "wide = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 3, \"b\" -> \"y\"|>});"
+            + "Head(TakeLargest(wide, 1))", //
         "TakeLargest");
     check("Head(TakeLargest(Normal(wide), 1))", //
         "TakeLargest");
@@ -895,10 +917,10 @@ public class SemanticImportTestCase extends AbstractTestCase {
   }
 
   /**
-   * <code>Keys</code> and <code>Values</code> answer for <b>each row</b>, and answer with a
-   * dataset - verified against a real Mathematica, which gives
-   * <code>Keys[ds]</code> as <code>Dataset[{{"a","b"}, {"a","b"}, {"a","b"}}]</code> and
-   * <code>Values[ds]</code> as <code>Dataset[{{1,"x"}, {2,"y"}, {3,"x"}}]</code>.
+   * <code>Keys</code> and <code>Values</code> answer for <b>each row</b>, and answer with a dataset
+   * - verified against a real Mathematica, which gives <code>Keys[ds]</code> as
+   * <code>Dataset[{{"a","b"}, {"a","b"}, {"a","b"}}]</code> and <code>Values[ds]</code> as
+   * <code>Dataset[{{1,"x"}, {2,"y"}, {3,"x"}}]</code>.
    */
   @Test
   public void testKeysAndValuesOfADataset() {
@@ -921,8 +943,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
     // a dataset whose rows are named answers with those names, and no longer with the column the
     // names are stored in - that used to come out as {"", "a"}, which is the storage showing
-    check("named = Dataset(<|\"r1\" -> <|\"a\" -> 1|>, \"r2\" -> <|\"a\" -> 2|>|>);"
-        + "Normal(Keys(named)) // InputForm", //
+    check(
+        "named = Dataset(<|\"r1\" -> <|\"a\" -> 1|>, \"r2\" -> <|\"a\" -> 2|>|>);"
+            + "Normal(Keys(named)) // InputForm", //
         "{\"r1\",\"r2\"}");
     check("StringContainsQ(ToString(Normal(Keys(named))), \"\\\"\\\"\")", //
         "False");
@@ -937,9 +960,10 @@ public class SemanticImportTestCase extends AbstractTestCase {
   /** A dataset lays its rows out, like any other collection. */
   @Test
   public void testMulticolumnOfADataset() {
-    check("mc = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 2, \"b\" -> \"y\"|>,"
-        + "<|\"a\" -> 3, \"b\" -> \"z\"|>, <|\"a\" -> 4, \"b\" -> \"w\"|>});"
-        + "Head(Multicolumn(mc, 2))", //
+    check(
+        "mc = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 2, \"b\" -> \"y\"|>,"
+            + "<|\"a\" -> 3, \"b\" -> \"z\"|>, <|\"a\" -> 4, \"b\" -> \"w\"|>});"
+            + "Head(Multicolumn(mc, 2))", //
         "Grid");
     check("Multicolumn(mc, 2) // InputForm", //
         "Grid({{<|\"a\"->1,\"b\"->\"x\"|>,<|\"a\"->3,\"b\"->\"z\"|>},"
@@ -961,8 +985,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
    */
   @Test
   public void testQueryOnADataset() {
-    check("qd = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 2, \"b\" -> \"y\"|>,"
-        + "<|\"a\" -> 3, \"b\" -> \"x\"|>});Head(qd)", //
+    check(
+        "qd = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 2, \"b\" -> \"y\"|>,"
+            + "<|\"a\" -> 3, \"b\" -> \"x\"|>});Head(qd)", //
         "Dataset");
 
     // an aggregate: a dataset, and the same one dataset[Total] gives
@@ -1002,10 +1027,11 @@ public class SemanticImportTestCase extends AbstractTestCase {
    */
   @Test
   public void testTheQuerySurfaceTakesADataset() {
-    check("qs = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 2, \"b\" -> \"y\"|>,"
-        + "<|\"a\" -> 3, \"b\" -> \"x\"|>});"
-        + "qs2 = Dataset({<|\"a\" -> 1, \"c\" -> 10|>, <|\"a\" -> 2, \"c\" -> 20|>});"
-        + "L = Normal(qs);Head(qs)", //
+    check(
+        "qs = Dataset({<|\"a\" -> 1, \"b\" -> \"x\"|>, <|\"a\" -> 2, \"b\" -> \"y\"|>,"
+            + "<|\"a\" -> 3, \"b\" -> \"x\"|>});"
+            + "qs2 = Dataset({<|\"a\" -> 1, \"c\" -> 10|>, <|\"a\" -> 2, \"c\" -> 20|>});"
+            + "L = Normal(qs);Head(qs)", //
         "Dataset");
 
     // the operator forms, on plain lists first
@@ -1040,8 +1066,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
         "<|\"a\"->6,\"b\"->2*\"x\" + \"y\"|>");
     check("Normal(PositionIndex(qs[All, \"b\"])) // InputForm", //
         "<|\"x\"->{1,3},\"y\"->{2}|>");
-    check("Normal(DeleteMissing(Dataset({<|\"a\" -> 1|>, <|\"a\" -> Missing()|>, <|\"a\" -> 3|>})))"
-        + " // InputForm", //
+    check(
+        "Normal(DeleteMissing(Dataset({<|\"a\" -> 1|>, <|\"a\" -> Missing()|>, <|\"a\" -> 3|>})))"
+            + " // InputForm", //
         "{1,3}");
 
     // grouping on a *column name* is the dataset's own operation and must not be handed the rows,
@@ -1063,15 +1090,14 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
   /**
    * The collection rule across the structural built-ins: each of these already walked a dataset's
-   * rows and simply handed them back bare, where the reference keeps a dataset.
-   * <code>Take</code>, <code>Drop</code>, <code>Reverse</code>, <code>Rest</code> and
-   * <code>First</code> were already right and are checked here beside them.
+   * rows and simply handed them back bare, where the reference keeps a dataset. <code>Take</code>,
+   * <code>Drop</code>, <code>Reverse</code>, <code>Rest</code> and <code>First</code> were already
+   * right and are checked here beside them.
    */
   @Test
   public void testStructuralBuiltInsKeepTheDataset() {
     check("st = Dataset({<|\"a\" -> 3, \"b\" -> \"x\"|>, <|\"a\" -> 1, \"b\" -> \"y\"|>,"
-        + "<|\"a\" -> 2, \"b\" -> \"x\"|>});"
-        + "one = Dataset({<|\"a\" -> 9, \"b\" -> \"z\"|>});"
+        + "<|\"a\" -> 2, \"b\" -> \"x\"|>});" + "one = Dataset({<|\"a\" -> 9, \"b\" -> \"z\"|>});"
         + "r7 = <|\"a\" -> 7, \"b\" -> \"w\"|>;Head(st)", //
         "Dataset");
 
@@ -1160,8 +1186,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
     check("Head(ds[Total, \"a\"])", //
         "Integer");
 
-    check("dsl = Dataset({<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,"
-        + "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>});", //
+    check(
+        "dsl = Dataset({<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,"
+            + "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>});", //
         "");
 
     // a cell holding a list is a dataset of that list
@@ -1233,8 +1260,8 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
   /**
    * A lone record reads down the page in a console too, so the text and the HTML rendering lay a
-   * dataset out the same way. Only the shading and the grid are browser-only: a console has
-   * nowhere to put CSS.
+   * dataset out the same way. Only the shading and the grid are browser-only: a console has nowhere
+   * to put CSS.
    */
   @Test
   public void testConsoleAndBrowserAgreeOnLayout() {
@@ -1281,8 +1308,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
     // DatasetDisplayFormat -> \"Associations\" still asks for the association itself, laid out
     // by nothing
-    check("Dataset(Table(<|\"a\" -> i, \"b\" -> 2 i|>, {i, 2}),"
-        + " DatasetDisplayFormat -> \"Associations\")", //
+    check(
+        "Dataset(Table(<|\"a\" -> i, \"b\" -> 2 i|>, {i, 2}),"
+            + " DatasetDisplayFormat -> \"Associations\")", //
         "{<|a->1,b->2|>,<|a->2,b->4|>}");
   }
 
@@ -1352,8 +1380,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
     check("StringContainsQ(JSForm(Dataset({3,7,11})), \">11</td>\")", //
         "True");
     // ... including one that came out of a selection
-    check("StringCount(JSForm(Dataset({<|\"x\"->1,\"y\"->2|>,<|\"x\"->3,\"y\"->4|>})[All, \"x\"]),"
-        + " \"<th \")", //
+    check(
+        "StringCount(JSForm(Dataset({<|\"x\"->1,\"y\"->2|>,<|\"x\"->3,\"y\"->4|>})[All, \"x\"]),"
+            + " \"<th \")", //
         "0");
 
     // a table of several rows shows its field names across the top
@@ -1382,8 +1411,8 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
   /**
    * A column named on its own reduces to a vector, as in the reference: <code>ds[All, "x"]</code>
-   * is <code>Dataset[{1, 3, 5}]</code>, so its first part is the bare value. Naming the same
-   * column in a list, <code>ds[All, {"x"}]</code>, keeps the field and stays a table.
+   * is <code>Dataset[{1, 3, 5}]</code>, so its first part is the bare value. Naming the same column
+   * in a list, <code>ds[All, {"x"}]</code>, keeps the field and stays a table.
    */
   @Test
   public void testColumnSelectionReducesToAVector() {
@@ -1440,9 +1469,10 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testBareVectorAndAssociationDatasets() {
     Config.FILESYSTEM_ENABLED = true;
-    check("v = Dataset({3, 7, 11});av = Dataset(<|\"a\" -> 3, \"b\" -> 7|>);"
-        + "rows = Dataset({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>,"
-        + "<|\"x\" -> 5, \"y\" -> 6|>});Head(v)", //
+    check(
+        "v = Dataset({3, 7, 11});av = Dataset(<|\"a\" -> 3, \"b\" -> 7|>);"
+            + "rows = Dataset({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>,"
+            + "<|\"x\" -> 5, \"y\" -> 6|>});Head(v)", //
         "Dataset");
 
     // a bare vector
@@ -1494,10 +1524,11 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testDatasetsChapterIdioms() {
     Config.FILESYSTEM_ENABLED = true;
-    check("chap = Dataset(<|\"a\" -> <|\"x\" -> 1, \"y\" -> 2, \"z\" -> 3|>,"
-        + "\"b\" -> <|\"x\" -> 4, \"y\" -> 5, \"z\" -> 6|>|>);"
-        + "planets = Dataset({<|\"name\" -> \"Earth\", \"radius\" -> 6378|>,"
-        + "<|\"name\" -> \"Mars\", \"radius\" -> 3396|>});Head(chap)", //
+    check(
+        "chap = Dataset(<|\"a\" -> <|\"x\" -> 1, \"y\" -> 2, \"z\" -> 3|>,"
+            + "\"b\" -> <|\"x\" -> 4, \"y\" -> 5, \"z\" -> 6|>|>);"
+            + "planets = Dataset({<|\"name\" -> \"Earth\", \"radius\" -> 6378|>,"
+            + "<|\"name\" -> \"Mars\", \"radius\" -> 3396|>});Head(chap)", //
         "Dataset");
 
     // dataset[All, f] applies f to each row. The outer keys name the rows, so they key the result
@@ -1563,7 +1594,8 @@ public class SemanticImportTestCase extends AbstractTestCase {
     check("Head(planets[All, \"radius\"][BarChart])", //
         "Graphics");
     // on a dataset built from an association of associations the key names its row
-    check("Normal(Dataset(<|\"a\" -> <|\"x\" -> 1|>, \"b\" -> <|\"x\" -> 2|>|>)[\"a\"]) // InputForm", //
+    check(
+        "Normal(Dataset(<|\"a\" -> <|\"x\" -> 1|>, \"b\" -> <|\"x\" -> 2|>|>)[\"a\"]) // InputForm", //
         "<|\"x\"->1|>");
     check("Dataset(<|\"a\" -> <|\"x\" -> 1|>, \"b\" -> <|\"x\" -> 2|>|>)[\"a\"]", //
         "    |     |\r\n" + //
@@ -1613,8 +1645,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testStructuralBuiltInsGiveRows() {
     Config.FILESYSTEM_ENABLED = true;
-    check("td = Dataset({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>,"
-        + "<|\"x\" -> 5, \"y\" -> 6|>});Head(td)", //
+    check(
+        "td = Dataset({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>,"
+            + "<|\"x\" -> 5, \"y\" -> 6|>});Head(td)", //
         "Dataset");
 
     // the one that threw
@@ -1639,8 +1672,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
 
     // each of them stays a Dataset, which is what Mathematica gives - none is the Dataset head
     // wrapped round one-row datasets any more, and none is a bare list
-    check("Map(Head, {Rest(td), Take(td, 2), Drop(td, 1), Most(td), Reverse(td), Join(td, td),"
-        + " Cases(td, _), Flatten(td), First(td), Last(td)}) // DeleteDuplicates", //
+    check(
+        "Map(Head, {Rest(td), Take(td, 2), Drop(td, 1), Most(td), Reverse(td), Join(td, td),"
+            + " Cases(td, _), Flatten(td), First(td), Last(td)}) // DeleteDuplicates", //
         "{Dataset}");
 
     // and each agrees with the same question asked of the rows
@@ -1653,8 +1687,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testSortByOnADataset() {
     Config.FILESYSTEM_ENABLED = true;
-    check("sd = Dataset({<|\"x\" -> 3, \"y\" -> 1|>, <|\"x\" -> 1, \"y\" -> 2|>,"
-        + "<|\"x\" -> 2, \"y\" -> 9|>});Head(sd)", //
+    check(
+        "sd = Dataset({<|\"x\" -> 3, \"y\" -> 1|>, <|\"x\" -> 1, \"y\" -> 2|>,"
+            + "<|\"x\" -> 2, \"y\" -> 9|>});Head(sd)", //
         "Dataset");
 
     // column names: still a dataset, sorted on that column
@@ -1693,8 +1728,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
   @Test
   public void testBuiltInsWalkTheRowsOfADataset() {
     Config.FILESYSTEM_ENABLED = true;
-    check("q = Dataset({<|\"n\" -> \"Earth\", \"r\" -> 6378|>, <|\"n\" -> \"Mars\", \"r\" -> 3396|>});"
-        + "col = q[All, \"r\"];Head(col)", //
+    check(
+        "q = Dataset({<|\"n\" -> \"Earth\", \"r\" -> 6378|>, <|\"n\" -> \"Mars\", \"r\" -> 3396|>});"
+            + "col = q[All, \"r\"];Head(col)", //
         "Dataset");
 
     // the four that aborted
@@ -1804,16 +1840,19 @@ public class SemanticImportTestCase extends AbstractTestCase {
     // SeedRandom governs it, and governs it the same way for a dataset and for the rows as a list.
     // RandomSample used to shuffle through hipparchus's own generator, which SeedRandom does not
     // reach, so neither of these held.
-    check("SeedRandom(7); a = Normal(RandomSample(t, 3))[[All, \"name\"]];"
-        + "SeedRandom(7); b = Normal(RandomSample(t, 3))[[All, \"name\"]]; a === b", //
+    check(
+        "SeedRandom(7); a = Normal(RandomSample(t, 3))[[All, \"name\"]];"
+            + "SeedRandom(7); b = Normal(RandomSample(t, 3))[[All, \"name\"]]; a === b", //
         "True");
-    check("SeedRandom(7); a = Normal(RandomSample(t, 3))[[All, \"name\"]];"
-        + "SeedRandom(7); b = RandomSample(Normal(t), 3)[[All, \"name\"]]; a === b", //
+    check(
+        "SeedRandom(7); a = Normal(RandomSample(t, 3))[[All, \"name\"]];"
+            + "SeedRandom(7); b = RandomSample(Normal(t), 3)[[All, \"name\"]]; a === b", //
         "True");
 
     // the display options come along
-    check("StringContainsQ(ToString(RandomSample(Dataset(Normal(t), HiddenItems -> \"age\"), 2)),"
-        + " \"age\")", //
+    check(
+        "StringContainsQ(ToString(RandomSample(Dataset(Normal(t), HiddenItems -> \"age\"), 2)),"
+            + " \"age\")", //
         "False");
 
     // the operator form gives a dataset as well, so the servlet can draw it
