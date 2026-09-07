@@ -57,7 +57,8 @@ final class DSolveVerify {
    */
   static boolean acceptODE(IAST residuals, IExpr yFunction, IExpr xVar, IExpr body,
       EvalEngine engine) {
-    return accept(residuals, F.list(yFunction), F.list(xVar), F.list(body), engine, false);
+    return accept(residuals, F.list(yFunction), F.list(xVar), F.list(body), F.NIL, engine,
+        false);
   }
 
   /**
@@ -73,7 +74,29 @@ final class DSolveVerify {
    */
   static boolean acceptODEStrict(IAST residuals, IExpr yFunction, IExpr xVar, IExpr body,
       EvalEngine engine) {
-    return accept(residuals, F.list(yFunction), F.list(xVar), F.list(body), engine, true);
+    return accept(residuals, F.list(yFunction), F.list(xVar), F.list(body), F.NIL, engine, true);
+  }
+
+  /**
+   * {@link #acceptODEStrict} with the points to sample at given by the caller.
+   *
+   * <p>
+   * The fixed points below are chosen to be positive and away from the usual branch cuts, which
+   * is the right default for a solution written in the variable of the equation. A solution
+   * written in another one is only real, or only defined, on the interval that variable comes
+   * from: a hypergeometric basis about the singular points <code>x1</code> and <code>x2</code>
+   * carries a power of <code>(x-x1)/(x2-x1)</code>, which leaves the reals as soon as the sample
+   * point does. The recognizer knows that interval and passes points inside it.
+   *
+   * <p>
+   * A sample point may itself contain the parameters of the equation. Those are instantiated
+   * first, with the same values they are given in the residual, so that the point stays inside
+   * the interval it was chosen from.
+   */
+  static boolean acceptODEStrictAt(IAST residuals, IExpr yFunction, IExpr xVar, IExpr body,
+      IAST xSamples, EvalEngine engine) {
+    return accept(residuals, F.list(yFunction), F.list(xVar), F.list(body), xSamples, engine,
+        true);
   }
 
   /**
@@ -82,7 +105,7 @@ final class DSolveVerify {
    */
   static boolean acceptSystem(IAST residuals, IAST yFunctions, IExpr xVar, IAST bodies,
       EvalEngine engine) {
-    return accept(residuals, yFunctions, F.list(xVar), bodies, engine, false);
+    return accept(residuals, yFunctions, F.list(xVar), bodies, F.NIL, engine, false);
   }
 
   /**
@@ -91,7 +114,7 @@ final class DSolveVerify {
    */
   static boolean acceptSystemStrict(IAST residuals, IAST yFunctions, IExpr xVar, IAST bodies,
       EvalEngine engine) {
-    return accept(residuals, yFunctions, F.list(xVar), bodies, engine, true);
+    return accept(residuals, yFunctions, F.list(xVar), bodies, F.NIL, engine, true);
   }
 
   /**
@@ -102,11 +125,11 @@ final class DSolveVerify {
    */
   static boolean acceptPDE(IAST residuals, IExpr uFunction, IAST xVars, IExpr body,
       EvalEngine engine) {
-    return accept(residuals, F.list(uFunction), xVars, F.list(body), engine, false);
+    return accept(residuals, F.list(uFunction), xVars, F.list(body), F.NIL, engine, false);
   }
 
   private static boolean accept(IAST residuals, IAST yFunctions, IAST xVars, IAST bodies,
-      EvalEngine engine, boolean strict) {
+      IAST xSamples, EvalEngine engine, boolean strict) {
     if (residuals.argSize() == 0 || yFunctions.argSize() != bodies.argSize()) {
       return !strict;
     }
@@ -131,7 +154,10 @@ final class DSolveVerify {
         if (residual.isNIL()) {
           return !strict;
         }
-        if (strict ? !isNumericallyZero(residual, engine) : isDecidablyNonzero(residual, engine)) {
+        IExpr xVar = xVars.argSize() == 1 ? xVars.arg1() : F.NIL;
+        if (strict //
+            ? !isNumericallyZero(residual, xVar, xSamples, engine)
+            : isDecidablyNonzero(residual, xVar, xSamples, engine)) {
           return false;
         }
       }
@@ -226,11 +252,12 @@ final class DSolveVerify {
    * including an expression which does not evaluate to a number at all, leaves the question open
    * and the candidate is kept.
    */
-  private static boolean isDecidablyNonzero(IExpr residual, EvalEngine engine) {
+  private static boolean isDecidablyNonzero(IExpr residual, IExpr xVar, IAST xSamples,
+      EvalEngine engine) {
     if (residual.isZero()) {
       return false;
     }
-    double[] magnitudes = relativeMagnitudes(residual, engine);
+    double[] magnitudes = relativeMagnitudes(residual, xVar, xSamples, engine);
     for (double magnitude : magnitudes) {
       if (Double.isNaN(magnitude) || magnitude <= TOLERANCE) {
         return false;
@@ -244,11 +271,12 @@ final class DSolveVerify {
    * clearly does not. A point the evaluation cannot reach at all is passed over rather than held
    * against the candidate, because a solution is entitled to a pole.
    */
-  private static boolean isNumericallyZero(IExpr residual, EvalEngine engine) {
+  private static boolean isNumericallyZero(IExpr residual, IExpr xVar, IAST xSamples,
+      EvalEngine engine) {
     if (residual.isZero()) {
       return true;
     }
-    double[] magnitudes = relativeMagnitudes(residual, engine);
+    double[] magnitudes = relativeMagnitudes(residual, xVar, xSamples, engine);
     int zeros = 0;
     for (double magnitude : magnitudes) {
       if (Double.isNaN(magnitude)) {
@@ -268,15 +296,28 @@ final class DSolveVerify {
    * The size of the residual at each sample point, measured against the size of the terms it is
    * made of, or {@link Double#NaN} where it does not evaluate to a finite number.
    */
-  private static double[] relativeMagnitudes(IExpr residual, EvalEngine engine) {
+  private static double[] relativeMagnitudes(IExpr residual, IExpr xVar, IAST xSamples,
+      EvalEngine engine) {
     IASTAppendable symbols = F.ListAlloc();
     collectFreeSymbols(residual, symbols);
-    double[] magnitudes = new double[SAMPLES.length];
-    for (int sample = 0; sample < SAMPLES.length; sample++) {
-      IASTAppendable rules = F.ListAlloc(symbols.argSize());
+    boolean given = xSamples.isPresent() && xVar.isPresent();
+    int count = given ? xSamples.argSize() : SAMPLES.length;
+    double[] magnitudes = new double[count];
+    for (int sample = 0; sample < count; sample++) {
+      IASTAppendable rules = F.ListAlloc(symbols.argSize() + 1);
       for (int i = 1; i <= symbols.argSize(); i++) {
+        if (given && symbols.get(i).equals(xVar)) {
+          // the variable is not one of the parameters here; it takes the point below
+          continue;
+        }
         int[] fraction = SAMPLES[(sample + i) % SAMPLES.length];
         rules.append(F.Rule(symbols.get(i), F.QQ(fraction[0] + i, fraction[1])));
+      }
+      if (given) {
+        // The parameters go into the point before it becomes a rule of its own: a point written
+        // in them, like x1 + (x2-x1)/5, is only inside the interval it was chosen from once they
+        // have the values the residual gives them.
+        rules.append(F.Rule(xVar, engine.evaluate(F.subst(xSamples.get(sample + 1), rules))));
       }
       magnitudes[sample] = Double.NaN;
       IExpr value;

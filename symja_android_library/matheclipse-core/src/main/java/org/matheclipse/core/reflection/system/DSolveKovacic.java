@@ -48,15 +48,12 @@ final class DSolveKovacic {
     IExpr q = engine.evaluate(F.Cancel(F.Together(F.Divide(lf.a[0], lf.a[2]))));
 
     // y == w*z takes the first derivative out of the equation and leaves z'' == r*z.
-    IExpr halfP = engine.evaluate(F.Divide(p, F.C2));
-    IExpr integral = ctx.integrate(halfP, xVar, MAX_LEAF_COUNT);
-    if (integral.isNIL()
-        || !DSolveODE.isVanishing(engine.evaluate(F.Subtract(F.D(integral, xVar), halfP)), engine)) {
+    DSolveNormalForm normalForm = DSolveNormalForm.of(p, q, xVar, MAX_LEAF_COUNT, ctx);
+    if (normalForm == null) {
       return F.NIL;
     }
-    IExpr recovery = engine.evaluate(F.Exp(F.Negate(integral)));
-    IExpr r = engine.evaluate(F.Cancel(F.Together(
-        F.Subtract(F.Plus(F.Divide(F.Sqr(p), F.C4), F.Divide(F.D(p, xVar), F.C2)), q))));
+    IExpr recovery = normalForm.recovery;
+    IExpr r = normalForm.r;
 
     IExpr together = engine.evaluate(F.Together(r));
     IExpr numerator = engine.evaluate(F.Numerator(together));
@@ -228,7 +225,7 @@ final class DSolveKovacic {
     if (atInfinity == null) {
       return F.NIL;
     }
-    IAST poles = polesOf(denominator, xVar, ctx);
+    IAST poles = DSolveUtil.polesOf(denominator, xVar, ctx.engine);
     if (poles == null || poles.argSize() == 0 || poles.argSize() > MAX_POLES) {
       return F.NIL;
     }
@@ -345,38 +342,6 @@ final class DSolveKovacic {
     IExpr check = engine.evaluate(F.Simplify(F.Plus(F.D(fitted, F.List(xVar, F.C2)),
         F.Times(F.C2, exponent, F.D(fitted, xVar)), F.Times(remainder, fitted))));
     return DSolveODE.isVanishing(check, engine) ? fitted : F.NIL;
-  }
-
-  /** The places the coefficients become infinite, each with how many times over. */
-  private static IAST polesOf(IExpr denominator, IExpr xVar, DSolveContext ctx) {
-    EvalEngine engine = ctx.engine;
-    IExpr factorList = engine.evaluate(F.FactorList(denominator));
-    if (!factorList.isList()) {
-      return null;
-    }
-    IASTAppendable poles = F.ListAlloc(((IAST) factorList).argSize());
-    for (int i = 1; i <= ((IAST) factorList).argSize(); i++) {
-      IExpr entry = ((IAST) factorList).get(i);
-      if (!entry.isList() || entry.argSize() != 2 || entry.first().isFree(xVar)) {
-        continue;
-      }
-      int multiplicity = entry.second().toIntDefault();
-      if (multiplicity < 1) {
-        return null;
-      }
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(entry.first(), F.C0), xVar));
-      IAST roots = DSolveUtil.extractSolveResults(solutions);
-      if (roots.argSize() == 0) {
-        return null;
-      }
-      for (int j = 1; j <= roots.argSize(); j++) {
-        if (!roots.get(j).isFree(xVar, true)) {
-          return null;
-        }
-        poles.append(F.List(roots.get(j), F.ZZ(multiplicity)));
-      }
-    }
-    return poles;
   }
 
   /**

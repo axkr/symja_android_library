@@ -67,25 +67,12 @@ final class DSolveSymmetry {
   static IExpr solveSecondOrder(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr c_n,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    IExpr head = yFunction.head();
-    IExpr second = engine.evaluate(F.D(yFunction, F.List(xVar, F.C2)));
-    IExpr coefficient = engine.evaluate(F.Coefficient(lhs, second));
-    // The coefficient of the second derivative may depend on the unknown, as it does in
-    // 2*x^2*y''(x)*y(x) + ... == ...; all that is needed is to be able to solve for that
-    // derivative, which asks for the equation to be of the first degree in it.
-    if (coefficient.isZero() || !DSolveODE.isLinearInDerivative(lhs, second, engine)) {
-      return F.NIL;
-    }
     IExpr yDummy = F.Dummy("Y");
     IExpr pDummy = F.Dummy("p");
-    IExpr rest = engine.evaluate(F.Subtract(lhs, F.Times(coefficient, second)));
-    IExpr field = engine.evaluate(F.Cancel(F.Together(F.Divide(F.Negate(rest), coefficient))));
-    // The first derivative is replaced before the function itself, or the function would be found
-    // inside the derivative.
-    field = engine.evaluate(F.subst(field, engine.evaluate(F.D(yFunction, xVar)), pDummy));
-    field = engine.evaluate(F.subst(field, yFunction, yDummy));
-    if (!field.isFree(head, true) || field.leafCount() > MAX_PHI_LEAF_COUNT
-        || hasUndefinedFunction(field)) {
+    IExpr field =
+        DSolveUtil.solveForSecondDerivative(lhs, yFunction, xVar, yDummy, pDummy, engine);
+    if (field.isNIL() || field.leafCount() > MAX_PHI_LEAF_COUNT
+        || DSolveUtil.hasUndefinedFunction(field)) {
       return F.NIL;
     }
     IAST variables = F.List(xVar, yDummy, pDummy);
@@ -351,32 +338,11 @@ final class DSolveSymmetry {
           continue;
         }
         if (DSolveVerify.acceptODEStrict(F.List(lhs), yFunction, xVar, body, engine)) {
-          return renumberConstants(body, c_n, engine);
+          return DSolveUtil.renumberConstants(body, c_n, engine);
         }
       }
     }
     return F.NIL;
-  }
-
-  /**
-   * Numbers the arbitrary constants of the answer from the one this call was given.
-   *
-   * <p>
-   * The search solves equations of its own along the way, and those take constants out of the same
-   * supply, so what is left in the answer is not the first two of them.
-   */
-  private static IExpr renumberConstants(IExpr body, IExpr c_n, EvalEngine engine) {
-    int first = c_n.isAST(S.C, 2) ? c_n.first().toIntDefault() : -1;
-    if (first < 0) {
-      return body;
-    }
-    IASTAppendable constants = F.ListAlloc();
-    DSolveUtil.extractCVars(body, constants);
-    IASTAppendable rules = F.ListAlloc(constants.argSize());
-    for (int i = 1; i <= constants.argSize(); i++) {
-      rules.append(F.Rule(constants.get(i), F.C(first + i - 1)));
-    }
-    return rules.argSize() == 0 ? body : engine.evaluate(F.subst(body, rules));
   }
 
   /** The first solution of one equation for one unknown. */
@@ -389,13 +355,4 @@ final class DSolveSymmetry {
     return values.argSize() == 0 ? F.NIL : values.arg1();
   }
 
-  /**
-   * Whether the equation mentions a function which is not defined, whose symmetries cannot be
-   * looked for among polynomials and whose quadratures would not close.
-   */
-  private static boolean hasUndefinedFunction(IExpr expr) {
-    return !expr.isFree(x -> x.isAST()
-        && (x.head().isAST(S.Derivative) || (x.head().isSymbol() && !x.head().isBuiltInSymbol())),
-        true);
-  }
 }

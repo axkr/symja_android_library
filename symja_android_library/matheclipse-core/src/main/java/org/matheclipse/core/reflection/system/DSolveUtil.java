@@ -350,4 +350,97 @@ final class DSolveUtil {
           "AiryAiPrime", "AiryBiPrime", "BesselJ", "BesselY", "BesselI", "BesselK",
           "Hypergeometric1F1", "Hypergeometric2F1", "HypergeometricPFQ", "HypergeometricU",
           "WhittakerM", "WhittakerW", "MathieuC", "MathieuS"));
+
+  /** The places a polynomial vanishes, each with how many times over, or <code>null</code>. */
+  static IAST polesOf(IExpr polynomial, IExpr xVar, EvalEngine engine) {
+    IExpr factorList = engine.evaluate(F.FactorList(polynomial));
+    if (!factorList.isList()) {
+      return null;
+    }
+    IASTAppendable poles = F.ListAlloc(((IAST) factorList).argSize());
+    for (int i = 1; i <= ((IAST) factorList).argSize(); i++) {
+      IExpr entry = ((IAST) factorList).get(i);
+      if (!entry.isList() || entry.argSize() != 2 || entry.first().isFree(xVar)) {
+        continue;
+      }
+      int multiplicity = entry.second().toIntDefault();
+      if (multiplicity < 1) {
+        return null;
+      }
+      IExpr solutions = engine.evaluate(F.Solve(F.Equal(entry.first(), F.C0), xVar));
+      IAST roots = extractSolveResults(solutions);
+      if (roots.argSize() == 0) {
+        return null;
+      }
+      for (int j = 1; j <= roots.argSize(); j++) {
+        if (!roots.get(j).isFree(xVar, true)) {
+          return null;
+        }
+        poles.append(F.List(roots.get(j), F.ZZ(multiplicity)));
+      }
+    }
+    return poles;
+  }
+
+  /**
+   * Whether the expression mentions a function which is not defined, whose symmetries cannot be
+   * looked for among polynomials and whose quadratures would not close.
+   */
+  static boolean hasUndefinedFunction(IExpr expr) {
+    return !expr.isFree(x -> x.isAST()
+        && (x.head().isAST(S.Derivative) || (x.head().isSymbol() && !x.head().isBuiltInSymbol())),
+        true);
+  }
+
+  /** Whether a root of something appears anywhere, rather than a whole power. */
+  static boolean hasRadical(IExpr expr) {
+    return !expr.isFree(x -> x.isPower() && !x.exponent().isInteger(), true);
+  }
+
+  /**
+   * Numbers the arbitrary constants of a solution consecutively from <code>c_n</code>.
+   *
+   * <p>
+   * A method which solves equations of its own along the way takes constants out of the same
+   * supply, so what is left in its answer is not the first two of them.
+   */
+  static IExpr renumberConstants(IExpr body, IExpr c_n, EvalEngine engine) {
+    int first = c_n.isAST(S.C, 2) ? c_n.first().toIntDefault() : -1;
+    if (first < 0) {
+      return body;
+    }
+    IASTAppendable constants = F.ListAlloc();
+    extractCVars(body, constants);
+    IASTAppendable rules = F.ListAlloc(constants.argSize());
+    for (int i = 1; i <= constants.argSize(); i++) {
+      rules.append(F.Rule(constants.get(i), F.C(first + i - 1)));
+    }
+    return rules.argSize() == 0 ? body : engine.evaluate(F.subst(body, rules));
+  }
+
+  /**
+   * The second derivative isolated as <code>Phi(x, yDummy, pDummy)</code>, with the first
+   * derivative written as <code>pDummy</code> and the unknown as <code>yDummy</code>, or
+   * {@link F#NIL}.
+   *
+   * <p>
+   * The coefficient of the second derivative may itself depend on the unknown, as it does in
+   * <code>2*x^2*y''(x)*y(x) + ... == ...</code>; all that is asked is that the equation be of the
+   * first degree in that derivative, so that it can be solved for.
+   */
+  static IExpr solveForSecondDerivative(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr yDummy,
+      IExpr pDummy, EvalEngine engine) {
+    IExpr second = engine.evaluate(F.D(yFunction, F.List(xVar, F.C2)));
+    IExpr coefficient = engine.evaluate(F.Coefficient(lhs, second));
+    if (coefficient.isZero() || !DSolveODE.isLinearInDerivative(lhs, second, engine)) {
+      return F.NIL;
+    }
+    IExpr rest = engine.evaluate(F.Subtract(lhs, F.Times(coefficient, second)));
+    IExpr field = engine.evaluate(F.Cancel(F.Together(F.Divide(F.Negate(rest), coefficient))));
+    // The first derivative is replaced before the function itself, or the function would be found
+    // inside the derivative.
+    field = engine.evaluate(F.subst(field, engine.evaluate(F.D(yFunction, xVar)), pDummy));
+    field = engine.evaluate(F.subst(field, yFunction, yDummy));
+    return field.isFree(yFunction.head(), true) ? field : F.NIL;
+  }
 }

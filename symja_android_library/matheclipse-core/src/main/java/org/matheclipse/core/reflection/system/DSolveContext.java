@@ -186,10 +186,18 @@ final class DSolveContext {
    * {@link #evalTimeConstrained(IExpr, int)} on why the time limit alone does not.
    */
   IExpr integrate(IExpr function, IExpr variable, int maxLeafCount) {
+    return integrate(function, variable, maxLeafCount, INTEGRATE_SECONDS);
+  }
+
+  /**
+   * {@link #integrate(IExpr, IExpr, int)} with a budget of its own, for a method which does
+   * several integrals in a row and has to finish inside a deadline covering all of them.
+   */
+  IExpr integrate(IExpr function, IExpr variable, int maxLeafCount, int baseSeconds) {
     if (function.leafCount() > maxLeafCount) {
       return F.NIL;
     }
-    return integrate(function, variable, engine);
+    return integrate(function, variable, baseSeconds, engine);
   }
 
   /**
@@ -203,10 +211,15 @@ final class DSolveContext {
    * reaches such an integral through reduction of order, and used to stop responding there.
    */
   static IExpr integrate(IExpr function, IExpr variable, EvalEngine engine) {
+    return integrate(function, variable, INTEGRATE_SECONDS, engine);
+  }
+
+  /** {@link #integrate(IExpr, IExpr, EvalEngine)} with a budget of its own. */
+  static IExpr integrate(IExpr function, IExpr variable, int baseSeconds, EvalEngine engine) {
     IExpr result;
     try {
       result = engine.evaluate(F.TimeConstrained(F.Integrate(function, variable),
-          F.ZZ(MachineProfile.seconds(INTEGRATE_SECONDS)), S.$Aborted));
+          F.ZZ(MachineProfile.seconds(baseSeconds)), S.$Aborted));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
