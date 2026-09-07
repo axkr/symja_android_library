@@ -8,8 +8,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.visit.VisitorReplaceArgs;
-import org.matheclipse.core.visit.VisitorReplaceSlots;
 
 public class Lambda {
   private Lambda() {}
@@ -25,28 +23,22 @@ public class Lambda {
    * @param slotsList the values for the slots.
    * @return <code>F.NIL</code> if no substitution occurred.
    */
+  /**
+   * @deprecated use
+   *             {@link org.matheclipse.core.eval.util.PureFunctions#substituteSlots(IExpr, IAST)}
+   */
+  @Deprecated
   public static IExpr replaceSlots(IExpr expr, final IAST slotsList) {
-    return expr.accept(new VisitorReplaceSlots(slotsList));
-  }
-
-  public static IExpr replaceSlotsOrElse(IExpr expr, final IExpr slotsList, IExpr elseExpr) {
-    if (slotsList.isAST()) {
-      IExpr temp = expr.accept(new VisitorReplaceSlots((IAST) slotsList));
-      return temp.orElse(elseExpr);
-    }
-    return elseExpr;
+    return PureFunctions.substituteSlots(expr, slotsList);
   }
 
   /**
-   * Replace all occurrences of the expressions in the given list with the appropriate <code>
-   * Slot(index)</code>.
-   *
-   * @param expr
-   * @param exprsList the values for the slots.
-   * @return <code>F.NIL</code> if no substitution occurred.
+   * @deprecated use
+   *             {@link org.matheclipse.core.eval.util.PureFunctions#substituteSlotsOrElse(IExpr, IExpr, IExpr)}
    */
-  public static IExpr replaceArgs(IExpr expr, final IAST exprsList) {
-    return expr.accept(new VisitorReplaceArgs(exprsList));
+  @Deprecated
+  public static IExpr replaceSlotsOrElse(IExpr expr, final IExpr slotsList, IExpr elseExpr) {
+    return PureFunctions.substituteSlotsOrElse(expr, slotsList, elseExpr);
   }
 
   /**
@@ -151,50 +143,5 @@ public class Lambda {
       }
     }
     return true;
-  }
-
-  private static IExpr testMap(IAST ast, Predicate<IExpr> predicate,
-      Function<IExpr, IExpr> function) {
-    IASTAppendable result = F.NIL;
-    int size = ast.size();
-    for (int i = 1; i < size; i++) {
-      IExpr temp = ast.get(i);
-      if (predicate.test(temp)) {
-        if (result.isNIL()) {
-          result = ast.copyAppendable();
-        }
-        temp = function.apply(temp);
-        if (temp != null) {
-          result.set(i, function.apply(temp));
-        }
-        continue;
-      }
-    }
-
-    return result;
-  }
-
-  private static IExpr testMap2(IAST list, Predicate<IExpr> predicate,
-      Function<IExpr, IExpr> function1, Function<IExpr, IExpr> function2) {
-    IASTAppendable result = F.NIL;
-    int size = list.size();
-    for (int i = 1; i < size; i++) {
-      IExpr temp = list.get(i);
-      if (predicate.test(temp)) {
-        if (result.isNIL()) {
-          result = list.copyAppendable();
-          for (int j = 0; j < i; j++) {
-            result.set(j, function2.apply(temp));
-          }
-        }
-        result.set(i, function1.apply(temp));
-        continue;
-      }
-      if (result != null) {
-        result.set(i, function2.apply(temp));
-      }
-    }
-
-    return result;
   }
 }

@@ -21,15 +21,39 @@ import org.matheclipse.core.interfaces.IStringX;
 public class VisitorReplaceSlots extends VisitorExpr {
   final IAST astSlots;
 
+  /**
+   * The number of the first integer <code>Slot</code> which could not be filled, or
+   * {@link F#NIL} if every slot was fillable. Recorded so that the caller can report it; the
+   * visitor itself never emits a message, because it is also used to fill templates where an
+   * unfilled slot is not an error.
+   *
+   * <p>
+   * This makes the visitor stateful, so a fresh one is needed per substitution. All entry points in
+   * {@link org.matheclipse.core.eval.util.PureFunctions} construct one.
+   */
+  private IExpr unfillableSlot = F.NIL;
+
   public VisitorReplaceSlots(IAST ast) {
     super();
     this.astSlots = ast;
+  }
+
+  /**
+   * The number of the first integer <code>Slot</code> which could not be filled from the arguments,
+   * or {@link F#NIL} if there was none. Named and string slots are not reported: an absent key is a
+   * normal outcome for the <code>Dataset</code> and <code>Association</code> forms.
+   */
+  public IExpr getUnfillableSlot() {
+    return unfillableSlot;
   }
 
   private IExpr getSlot(IInteger ii) {
     int i = ii.toIntDefault();
     if (i >= 0 && i < astSlots.size()) {
       return astSlots.get(i);
+    }
+    if (unfillableSlot.isNIL()) {
+      unfillableSlot = ii;
     }
     return F.NIL;
   }
@@ -48,19 +72,30 @@ public class VisitorReplaceSlots extends VisitorExpr {
     return F.NIL;
   }
 
+  /**
+   * A <code>SlotSequence(n)</code> can be filled when <code>1 &lt;= n &lt;= astSlots.size()</code>.
+   * The upper end is inclusive: <code>n == astSlots.size()</code> names the arguments after the
+   * last one, which is the empty sequence. This is the single in-range test; both the standalone
+   * and the spliced form use it, so they cannot disagree.
+   */
+  private boolean isFillableSlotSequence(int n) {
+    return n >= 1 && n <= astSlots.size();
+  }
+
   private IExpr getSlotSequence(IInteger ii) {
     int i = ii.toIntDefault();
-    if (i >= 0 && i <= astSlots.size()) {
+    if (isFillableSlotSequence(i)) {
       return F.mapRange(S.Sequence, i, astSlots.size(), j -> astSlots.get(j));
     }
     return F.NIL;
   }
 
   /**
-   * @param ast
-   * @param pos
-   * @param startSlot it is assumed that <code>startSlot>=0 && startSlot < astSlots.size()</code>
-   * @return
+   * Splice the arguments from <code>startSlot</code> onwards into <code>ast</code> at
+   * <code>pos</code>.
+   *
+   * @param startSlot must satisfy {@link #isFillableSlotSequence(int)}
+   * @return the position just after the spliced arguments
    */
   private int getSlotSequence(IASTAppendable ast, int pos, int startSlot) {
     for (int j = startSlot; j < astSlots.size(); j++) {
@@ -88,58 +123,41 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
   @Override
   protected IExpr visitAST(IAST ast) {
-    IExpr temp;
+    // One pass, one source index and one destination index. The previous two-loop form advanced the
+    // source index only when a SlotSequence was in range, so an out-of-range one was read twice and
+    // removed twice, which threw IndexOutOfBoundsException.
     IASTAppendable result = F.NIL;
-    int i = 0;
-    int j = 0;
-    int size = ast.size();
-    IExpr arg;
-    while (i < size) {
-      arg = ast.get(i);
-      if (!arg.isPureFunction()) {
-        if (arg.isSlotSequence()) {
-          int sequ = ((IAST) arg).arg1().toIntDefault();
-          // something may be evaluated - return a new IAST:
+    int destination = 0;
+    final int size = ast.size();
+    for (int source = 0; source < size; source++) {
+      IExpr arg = ast.get(source);
+      if (arg.isPureFunction()) {
+        // a nested pure function binds its own slots
+        destination++;
+        continue;
+      }
+      if (arg.isSlotSequence()) {
+        int sequ = ((IAST) arg).arg1().toIntDefault();
+        if (!isFillableSlotSequence(sequ)) {
+          // leave an unfillable ##n in place, as the standalone form does
+          destination++;
+          continue;
+        }
+        if (result.isNIL()) {
           result = ast.copyAppendable(astSlots.argSize());
-          result.remove(j);
-          if (sequ >= 0 && sequ < astSlots.size()) {
-            j = getSlotSequence(result, i, sequ);
-            i++;
-          }
-          break;
         }
-        temp = arg.accept(this);
-        if (temp.isPresent()) {
-          // something was evaluated - return a new IAST:
-          result = ast.setAtClone(i++, temp);
-          j++;
-          break;
-        }
+        result.remove(destination);
+        destination = getSlotSequence(result, destination, sequ);
+        continue;
       }
-      j++;
-      i++;
-    }
-    if (result.isPresent()) {
-      while (i < size) {
-        arg = ast.get(i);
-        if (!arg.isPureFunction()) {
-          if (arg.isSlotSequence()) {
-            int sequ = ((IAST) arg).arg1().toIntDefault();
-            result.remove(j);
-            if (sequ >= 0 && sequ < astSlots.size()) {
-              j = getSlotSequence(result, j, sequ);
-            }
-            i++;
-            continue;
-          }
-          temp = arg.accept(this);
-          if (temp.isPresent()) {
-            result.set(j, temp);
-          }
+      IExpr temp = arg.accept(this);
+      if (temp.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copyAppendable(astSlots.argSize());
         }
-        i++;
-        j++;
+        result.set(destination, temp);
       }
+      destination++;
     }
     return result;
   }

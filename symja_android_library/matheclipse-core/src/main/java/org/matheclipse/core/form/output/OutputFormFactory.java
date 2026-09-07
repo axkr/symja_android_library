@@ -21,6 +21,7 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.DataExpr;
+import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
@@ -1623,14 +1624,8 @@ public class OutputFormFactory {
               }
               break;
             case ID.Slot:
-              if (list.isAST1() && list.arg1().isInteger()) {
-                convertSlot(buf, list);
-                return;
-              }
-              break;
             case ID.SlotSequence:
-              if (list.isAST1() && list.arg1().isInteger()) {
-                convertSlotSequence(buf, list);
+              if (convertSlot(buf, list)) {
                 return;
               }
               break;
@@ -1931,22 +1926,18 @@ public class OutputFormFactory {
     return preferred;
   }
 
-  public void convertSlot(final Appendable buf, final IAST list) throws IOException {
-    try {
-      final int slot = ((IReal) list.arg1()).toInt();
-      append(buf, "#" + slot);
-    } catch (final ArithmeticException e) {
-      // add message to evaluation problemReporter
+  /**
+   * Write a <code>Slot</code> or <code>SlotSequence</code> in its short form.
+   *
+   * @return <code>false</code> if it has no short form and must be printed as an ordinary function
+   */
+  public boolean convertSlot(final Appendable buf, final IAST list) throws IOException {
+    String token = PureFunctions.slotToken(list);
+    if (token == null) {
+      return false;
     }
-  }
-
-  public void convertSlotSequence(final Appendable buf, final IAST list) throws IOException {
-    try {
-      final int slotSequenceStartPosition = ((IReal) list.arg1()).toInt();
-      append(buf, "##" + slotSequenceStartPosition);
-    } catch (final ArithmeticException e) {
-      // add message to evaluation problemReporter
-    }
+    append(buf, token);
+    return true;
   }
 
   public void convertList(final Appendable buf, final IAST list, boolean isMatrix)
