@@ -213,7 +213,12 @@ public class TensorProduct extends AbstractEvaluator {
    * @param engine
    * @return
    */
-  protected static IExpr tensorProduct(final IAST tensor1, final IAST tensor2, int tensor1Depth,
+  /**
+   * The outer product of two explicit tensors: every element of {@code tensor1} is multiplied by
+   * the whole of {@code tensor2}. Shared with {@code KroneckerProduct}, which folds this product
+   * and then flattens the result.
+   */
+  public static IExpr tensorProduct(final IAST tensor1, final IAST tensor2, int tensor1Depth,
       EvalEngine engine) {
     return engine
         .evaluate(F.Map(F.Function(F.Times(F.Slot1, tensor2)), tensor1, F.List(tensor1Depth)));

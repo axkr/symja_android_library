@@ -220,6 +220,10 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "{4,2}");
     check("m = SparseArray({{1, 2, 3} -> a}, {2, 3, 4});TensorDimensions(m)", //
         "{2,3,4}");
+
+    // the Assumptions option registered by setUp is now reachable, as it is for TensorRank
+    check("TensorDimensions({{1,2},{3,4}}, Assumptions->True)", //
+        "{2,2}");
   }
 
   @Test
@@ -254,6 +258,23 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "ZeroSymmetric({})");
     check("TensorSymmetry({{a,b}, {b,c}})", //
         "Symmetric({1,2})");
+
+    // the symmetric and antisymmetric hypotheses are independent: a leading row of zeros satisfies
+    // the symmetric test without saying anything about antisymmetry
+    check("TensorSymmetry({{0,0,0},{0,0,1},{0,-1,0}})", //
+        "Antisymmetric({1,2})");
+    check("TensorSymmetry({{0,0,0,0},{0,0,0,1},{0,0,0,0},{0,-1,0,0}})", //
+        "Antisymmetric({1,2})");
+    // an antisymmetric matrix has a zero diagonal
+    check("TensorSymmetry({{1,2},{-2,3}})", //
+        "{}");
+    check("TensorSymmetry({{0,2},{-2,0}})", //
+        "Antisymmetric({1,2})");
+    // SameTest->Automatic is the registered default and means SameQ
+    check("TensorSymmetry({{1,2},{2,3}}, SameTest->Automatic)", //
+        "Symmetric({1,2})");
+    check("TensorSymmetry({{0,1},{-1,0}}, SameTest->Automatic)", //
+        "Antisymmetric({1,2})");
   }
 
   @Test
@@ -328,6 +349,10 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "");
     check("KroneckerProduct(a, b)", //
         "{{a11*b11,a11*b12,a12*b11,a12*b12},{a11*b21,a11*b22,a12*b21,a12*b22},{a21*b11,a21*b12,a22*b11,a22*b12},{a21*b21,a21*b22,a22*b21,a22*b22}}");
+
+    // unlike TensorProduct, KroneckerProduct is neither Flat nor OneIdentity in WMA
+    check("Attributes(KroneckerProduct)", //
+        "{NonThreadable,Protected}");
   }
 
   @Test
@@ -391,6 +416,30 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "TransformationFunction({{1,0,1},{0,1,2},{0,0,1}})");
     check("AffineTransform({{a, b}, {c, d}})[{x, y}]", //
         "{a*x+b*y,c*x+d*y}");
+  }
+
+  @Test
+  public void testGeometricTransformation() {
+    // a TransformationFunction is shown as the pair {linear, translation}
+    check("GeometricTransformation(Line({{0, 0}, {2, 0}}), ReflectionTransform({-1, 1}))", //
+        "GeometricTransformation(Line({{0,0},{2,0}}),{{{0,1},{1,0}},{0,0}})");
+    check("GeometricTransformation(Point({0, 0}), TranslationTransform({3, 4}))", //
+        "GeometricTransformation(Point({0,0}),{{{1,0},{0,1}},{3,4}})");
+    check("GeometricTransformation(Point({0, 0, 0}), TranslationTransform({1, 2, 3}))", //
+        "GeometricTransformation(Point({0,0,0}),{{{1,0,0},{0,1,0},{0,0,1}},{1,2,3}})");
+    // every transformation in a list is rewritten
+    check("GeometricTransformation(Point({0, 0}), "
+        + "{TranslationTransform({1, 0}), TranslationTransform({0, 1})})", //
+        "GeometricTransformation(Point({0,0}),{{{{1,0},{0,1}},{1,0}},{{{1,0},{0,1}},{0,1}}})");
+    // a pair or a bare matrix is already in a displayable form and is left alone
+    check("GeometricTransformation(Line({{0, 0}, {2, 0}}), {{{0, 1}, {1, 0}}, {0, 0}})", //
+        "GeometricTransformation(Line({{0,0},{2,0}}),{{{0,1},{1,0}},{0,0}})");
+    check("GeometricTransformation(Line({{0, 0}, {2, 0}}), {{0, 1}, {1, 0}})", //
+        "GeometricTransformation(Line({{0,0},{2,0}}),{{0,1},{1,0}})");
+    // a matrix whose last row is not {0, ..., 0, 1} is projective: it has no
+    // {linear, translation} form, so it stays wrapped
+    check("GeometricTransformation(Point({0}), TransformationFunction({{1,0},{1,1}}))", //
+        "GeometricTransformation(Point({0}),TransformationFunction({{1,0},{1,1}}))");
   }
 
   @Test
@@ -714,6 +763,59 @@ public class TensorTest extends ExprEvaluatorTestCase {
     super.setUp();
     Config.MAX_AST_SIZE = 1000000;
     EvalEngine.get().setIterationLimit(50000);
+  }
+
+
+  @Test
+  public void testListCorrelateHigherRank() {
+    // a one-element kernel reproduces the tensor
+    check("ListCorrelate({{{1}}}, Array(f,{2,2,2}))", //
+        "{{{f(1,1,1),f(1,1,2)},{f(1,2,1),f(1,2,2)}},{{f(2,1,1),f(2,1,2)},{f(2,2,1),f(2,2,\n"
+            + "2)}}}");
+    // an all-ones kernel gives the moving block sums
+    check("ListCorrelate({{{1,1},{1,1}},{{1,1},{1,1}}}, ArrayReshape(Range(27),{3,3,3}))", //
+        "{{{60,68},{84,92}},{{132,140},{156,164}}}");
+    check("ListConvolve({{{1,2},{3,4}},{{5,6},{7,8}}}, ArrayReshape(Range(27),{3,3,3}))", //
+        "{{{184,220},{292,328}},{{508,544},{616,652}}}");
+    // ListConvolve is ListCorrelate with the kernel reversed on every level
+    check("ListConvolve({x,y},{a,b,c,d}) == ListCorrelate({y,x},{a,b,c,d})", //
+        "True");
+    // a SparseArray kernel is accepted, as it already was for ListCorrelate
+    check("ListConvolve(SparseArray({x,y}),{a,b,c,d})", //
+        "{b*x+a*y,c*x+b*y,d*x+c*y}");
+    check("Dimensions(ListCorrelate(Array(k,{2,2,2}), Array(f,{4,3,5})))", //
+        "{3,2,4}");
+  }
+
+  @Test
+  public void testOrderingArgument() {
+    // a second argument that is neither All nor a number of elements is not silently taken as All
+    // Ordering: Integer expected at position 2 in Ordering({3,1,2},x).
+    check("Ordering({3,1,2}, x)", //
+        "Ordering({3,1,2},x)");
+    // Ordering: Integer expected at position 2 in Ordering({3,1,2},2.5).
+    check("Ordering({3,1,2}, 2.5)", //
+        "Ordering({3,1,2},2.5)");
+    check("Ordering({3,1,2}, All)", //
+        "{2,3,1}");
+    // |n| larger than the list is clamped, as in WMA
+    check("Ordering({3,1,2}, 20)", //
+        "{2,3,1}");
+  }
+
+  @Test
+  public void testSymbolicShapeArrays() {
+    check("Normal(SymbolicOnesArray({2,3}))", //
+        "{{1,1,1},{1,1,1}}");
+    check("Normal(SymbolicZerosArray({2,3}))", //
+        "{{0,0,0},{0,0,0}}");
+    check("TensorDimensions(SymbolicOnesArray({2,3}))", //
+        "{2,3}");
+    check("TensorRank(SymbolicZerosArray({2,3,4}))", //
+        "3");
+    // the shape of SymbolicIdentityArray({d}) is written twice
+    check("TensorDimensions(SymbolicIdentityArray({2}))", //
+        "{2,2}");
   }
 
 }
