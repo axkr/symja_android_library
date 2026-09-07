@@ -988,7 +988,11 @@ public class Functors {
     @Override
     public boolean test(IExpr input) {
       return input.isBlank() || input.isPattern() || input.isPatternSequence(false)
-          || input.isAlternatives() || input.isExcept();
+          || input.isAlternatives() || input.isExcept()
+          // still plain ASTs at this point - PatternMatcher turns them into a
+          // FixedPatternSequence, but the rule is classified before that happens, and one whose
+          // sub-patterns are all literal would otherwise look like an equality rule
+          || input.isAST(S.PatternSequence) || input.isAST(S.OrderlessPatternSequence);
     }
   };
 

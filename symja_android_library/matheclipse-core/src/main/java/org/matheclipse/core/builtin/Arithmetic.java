@@ -113,6 +113,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
@@ -392,6 +393,19 @@ public final class Arithmetic {
           }
           // `1` is not a variable with a value, so its value cannot be changed.
           return Errors.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
+        }
+        if (leftHandSide.isAST() && leftHandSide.head().isSymbol()
+            && !leftHandSide.isBuiltInFunction()) {
+          // An indexed target such as `counter["a"] += 1`. The value may come from a specific down
+          // value or from a general one like `counter[_] := 0`; either way `Set` writes back the
+          // specific rule, which is what makes accumulating into `f[i]` work at all.
+          IExpr oldValue = engine.evaluate(leftHandSide);
+          if (oldValue.equals(leftHandSide)) {
+            // nothing evaluated, so the target has no value to update
+            // `1` is not a variable with a value, so its value cannot be changed.
+            return Errors.printMessage(getFunctionSymbol(), "rvalue", F.list(leftHandSide), engine);
+          }
+          return assignPart(leftHandSide, ast.arg2(), engine);
         }
         if (leftHandSide.isSymbol()) {
           ISymbol sym = (ISymbol) leftHandSide;
@@ -1133,6 +1147,15 @@ public final class Arithmetic {
           }
           // `1` is not a variable with a value, so its value cannot be changed.
           return Errors.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
+        }
+        if (arg1.isAST() && arg1.head().isSymbol() && !arg1.isBuiltInFunction()) {
+          // an indexed target such as `counter["a"]++` - see the same branch in AddTo
+          IExpr oldValue = engine.evaluate(arg1);
+          if (oldValue.equals(arg1)) {
+            // `1` is not a variable with a value, so its value cannot be changed.
+            return Errors.printMessage(ast.topHead(), "rvalue", F.list(arg1), engine);
+          }
+          return assignPart(arg1, F.CN1, engine);
         }
         if (arg1.isSymbol()) {
           ISymbol sym = (ISymbol) arg1;
@@ -2721,6 +2744,7 @@ public final class Arithmetic {
       S.MantissaExponent.setEvaluator(new MantissaExponent());
       S.Overflow.setEvaluator(new Overflow());
       S.Pochhammer.setEvaluator(new Pochhammer());
+      S.Accuracy.setEvaluator(new Accuracy());
       S.Precision.setEvaluator(new Precision());
       S.PreDecrement.setEvaluator(new PreDecrement());
       S.PreIncrement.setEvaluator(new PreIncrement());
@@ -5193,6 +5217,74 @@ public final class Arithmetic {
     }
   }
 
+   
+  private static final class Accuracy extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      double accuracy = accuracy(engine.evaluate(ast.arg1()));
+      return Double.isInfinite(accuracy) ? F.CInfinity : F.num(accuracy);
+    }
+
+    /**
+     * The accuracy of an expression, or {@link Double#POSITIVE_INFINITY} when it is exact.
+     *
+     * <p>
+     * A compound expression takes the accuracy of its least accurate part, which is why this
+     * recurses over the whole tree rather than looking only at the head argument.
+     */
+    private static double accuracy(IExpr expr) {
+      if (expr instanceof IComplexNum) {
+        INumber z = (INumber) expr;
+        double re = accuracy(z.re());
+        double im = accuracy(z.im());
+        if (Double.isInfinite(re)) {
+          return im;
+        }
+        if (Double.isInfinite(im)) {
+          return re;
+        }
+        // The two uncertainties add in quadrature.
+        return -Math.log10(Math.sqrt(Math.pow(10.0, -2.0 * re) + Math.pow(10.0, -2.0 * im)));
+      }
+      if (expr instanceof INum) {
+        INum number = (INum) expr;
+        // Symja gives a machine double a nominal precision of 15, but WMA reports
+        // $MachinePrecision for it and defines Accuracy in terms of that value.
+        double precision = number.isMachineNumber() ? ParserConfig.MACHINE_PRECISION_DOUBLE
+            : number.precision();
+        double value = number.doubleValue();
+        if (value == 0.0) {
+          // Zero has no significant digits of its own, so its accuracy is bounded by the
+          // smallest representable magnitude instead of by Log10 of the value.
+          return precision - Math.log10(Double.MIN_NORMAL);
+        }
+        return precision - Math.log10(Math.abs(value));
+      }
+      if (expr.isAST()) {
+        IAST ast = (IAST) expr;
+        double minimum = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < ast.size(); i++) {
+          minimum = Math.min(minimum, accuracy(ast.get(i)));
+        }
+        return minimum;
+      }
+      // Exact numbers, symbols and strings are known exactly.
+      return Double.POSITIVE_INFINITY;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      // Only partial: Symja has no literal for an arbitrary-precision number of a stated
+      // precision (WMA's 3.1416`2), so accuracy below machine precision cannot be expressed.
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
 
   private static final class Precision extends AbstractCoreFunctionEvaluator {
 

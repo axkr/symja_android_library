@@ -191,6 +191,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAccuracy() {
+    // exact quantities are known exactly
+    check("Accuracy(1)", //
+        "Infinity");
+    check("Accuracy(2/3)", //
+        "Infinity");
+    check("Accuracy(A)", //
+        "Infinity");
+    check("Accuracy(F(1, Pi, A))", //
+        "Infinity");
+    // an inexact number loses accuracy as its magnitude grows
+    check("Accuracy(1.3)", //
+        "15.84065");
+    // an expression is only as accurate as its least accurate part
+    check("Accuracy({{1, 1.0}, {2, 3}})", //
+        "15.95459");
+  }
+
+  @Test
   public void testAccumulate() {
     check("Accumulate({{a, b}, {c, d}, {e, f}})", //
         "{{a,b},{a+c,b+d},{a+c+e,b+d+f}}");
@@ -257,6 +276,28 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testAddTo() {
+    // an indexed target, not just a plain symbol: `+=` and friends used to report
+    // "not a variable with a value" and lose the update, so accumulating into f[i] was a no-op
+    check("d[1] = 0; d[1] += 3; d[1]", //
+        "3");
+    check("d[1] = 5; d[1] -= 3; d[1]", //
+        "2");
+    check("d[1] = 5; d[1] *= 3; d[1]", //
+        "15");
+    check("d[1] = 6; d[1] /= 3; d[1]", //
+        "2");
+    // the value may come from a general down value rather than a specific one
+    check("bucket[_] := 0; bucket[\"a\"] += 1; bucket[\"a\"] += 1; {bucket[\"a\"], bucket[\"b\"]}", //
+        "{2,0}");
+    check("state[\"pos\"] = 0; state[\"pos\"] += 8; state[\"pos\"]", //
+        "8");
+    // arguments are evaluated, so this writes d[2]
+    check("d[2] = 0; d[1+1] += 7; d[2]", //
+        "7");
+    // a target with no value at all is still an error
+    check("nodef[9] += 1", //
+        "nodef(9)+=1");
+
     // print: AddTo: d is not a variable with a value, so its value cannot be changed.
     check("d += 7", //
         "d+=7");
@@ -384,6 +425,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testAppendTo() {
+    check("d[1] = {}; AppendTo(d[1], 5); d[1]", //
+        "{5}");
+    check("d[1] = {9}; PrependTo(d[1], 5); d[1]", //
+        "{5,9}");
+
     check("w = f({1}, {2}, {3});w[[2]]={2,a}", //
         "{2,a}");
     check("w", //
@@ -12045,6 +12091,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIncrement() {
+    check("d[1] = 0; d[1]++; d[1]", //
+        "1");
+    check("d[1] = 0; ++d[1]; d[1]", //
+        "1");
+    check("d[1] = 3; d[1]--; d[1]", //
+        "2");
+    // post-increment answers the old value, pre-increment the new one
+    check("d[1] = 4; d[1]++", //
+        "4");
+    check("d[1] = 4; ++d[1]", //
+        "5");
+
     check("a = 2", //
         "2");
     check("a++", //
@@ -15528,6 +15586,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMod() {
+    // Gaussian remainder: m-n*Round(m/n), rounding the real and imaginary parts separately. Floor
+    // has no meaning here - there is no ordering on the Gaussian integers - and flooring used to
+    // return 1+I for the first case, contradicting Quotient(7+3*I,2)==4+2*I.
+    check("Mod(7+3*I, 2)", //
+        "-1-I");
+    check("Mod(7, 2+I)", //
+        "-I");
+    check("Mod(5+5*I, 3)", //
+        "-1-I");
+    check("Mod(3+I, 2)", //
+        "-1+I");
+    check("Mod(7/2+3*I, 2)", //
+        "-1/2-I");
+    check("Mod(7+3*I, -2)", //
+        "-1-I");
+    check("Mod(7+3*I, I)", //
+        "0");
+    check("Mod(4+2*I, 2)", //
+        "0");
+    // Round is half-to-even, so 9/2 and 5/2 both round down here.
+    check("Mod(9+5*I, 2)", //
+        "1+I");
+    // Mod(m,n,0) has to agree with Mod(m,n); the 3-argument complex branch scaled only the real
+    // part by n and then added a bare I*im, which broke this.
+    check("Mod(7+3*I, 2, 0)", //
+        "-1-I");
     check("Mod(m,n) // FunctionExpand", //
         "m-n*Floor(m/n)");
     check("Mod(m,n,d) // FunctionExpand", //
@@ -16115,8 +16199,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // The three n-ary bitwise operations carry {Flat, Listable, OneIdentity, Orderless}. BitNot,
     // BitLength, BitSet and the rest are unary or positional and keep
     // Listable alone, so they are absent from this list.
+    // KroneckerProduct is absent too: unlike TensorProduct it is neither Flat nor OneIdentity.
     check("Select(sysnames, MemberQ(Attributes(#), OneIdentity) &) // InputForm", //
-        "{\"And\",\"BitAnd\",\"BitOr\",\"BitXor\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"KroneckerProduct\",\"Max\",\"Min\",\"NonCommutativeMultiply\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
+        "{\"And\",\"BitAnd\",\"BitOr\",\"BitXor\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"Max\",\"Min\",\"NonCommutativeMultiply\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
     check("Names(\"System`\" ~~ _ ~~ _) // InputForm", //
         "{\"Do\",\"Dt\",\"If\",\"Im\",\"In\",\"ND\",\"On\",\"Or\",\"Pi\",\"Re\",\"Tr\"}");
     check("Names(RegularExpression(\"System`...\")) // InputForm", //
@@ -18228,6 +18313,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPatternSequence() {
+    // PatternSequence consumes exactly as many arguments as it has sub-patterns; a name attached
+    // to it binds the whole Sequence
+    check("f(1,2) /. f(PatternSequence(_,_)) -> ok", //
+        "ok");
+    check("f(1,2) /. f(x : PatternSequence(_,_)) -> {x}", //
+        "{1,2}");
+    check("MatchQ(f(1,2), f(PatternSequence(_,_)))", //
+        "True");
+    // the sub-patterns are real patterns: their head tests apply and their names bind
+    check("f(1,2) /. f(x : PatternSequence(_Integer,_Integer)) -> {x}", //
+        "{1,2}");
+    check("f(1,b) /. f(x : PatternSequence(_Integer,_Integer)) -> {x}", //
+        "f(1,b)");
+    check("f(1,2) /. f(PatternSequence(1, y_)) -> y", //
+        "2");
+    // the length is fixed, so a longer argument list does not match
+    check("f(1,2,3) /. f(x : PatternSequence(_,_)) -> {x}", //
+        "f(1,2,3)");
+    // OrderlessPatternSequence matches the same arguments in any order
+    check("{3,1,2} /. {OrderlessPatternSequence(1,x_),___} :> x", //
+        "3");
+    check("f(1,2) /. f(OrderlessPatternSequence(2,1)) -> ok", //
+        "ok");
+
     check("integersQ(__Integer) = True", //
         "True");
     check("integersQ(__) = False", //
@@ -22571,6 +22680,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRepeated() {
+    // Longest/Shortest choose which of several possible sequence splits is taken. The default is
+    // the shortest, so Shortest is the order the matcher already enumerates in.
+    check("{1,2,3} /. {Longest(x__), y__} :> {{x},{y}}", //
+        "{{1,2},{3}}");
+    check("{1,2,3} /. {Shortest(x__), y__} :> {{x},{y}}", //
+        "{{1},{2,3}}");
+    check("{1,2,3} /. {x__, y__} :> {{x},{y}}", //
+        "{{1},{2,3}}");
+    check("{1,2,3,4} /. {Longest(x__), y_} :> {{x},y}", //
+        "{{1,2,3},4}");
+    // the wrapper used to make the whole rule fail to match rather than change which match is used
+    check("MatchQ({1,2}, {Longest(__),_})", //
+        "True");
+    // on a pattern of fixed length there is only one match, so the qualifier says nothing
+    check("{1,2,3} /. {Longest(x_), ___} :> x", //
+        "1");
+
 
     check("f(x: {{_, _} ..}) := Norm(N(x))", //
         "");
@@ -23374,6 +23500,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testReturn() {
+    // a Return in the body of a Table is not control flow for the enclosing function; it used to
+    // escape two levels and make this answer 1
+    check("f45[] := (Table(Return(1), {2}); 9); f45[]", //
+        "9");
+    check("Table(Return(1), {2})", //
+        "{1,1}");
+    // Do keeps its own semantics: the Return ends the iteration and gives its value
+    check("h45[] := (Do(Return(1), {2}); 9); h45[]", //
+        "9");
+
     check("retother:=(Return();hello);retother", //
         "");
     check("f(x_) := (If(x < 0, Return(0)); x)", //
@@ -24660,6 +24796,44 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "#1");
     check("#42", //
         "#42");
+    // a nested pure function binds its own slots; the outer arguments must not reach into it
+    check("Function(Function(#1))[a]", //
+        "#1&");
+    check("Function(Function(#1))[a][b]", //
+        "b");
+    check("(#1&)&[a][b]", //
+        "b");
+    // Function(x, body) is the named form and does not bind slots
+    check("Function(Function({x},#1))[a]", //
+        "Function({x},a)");
+    // an inner pure function in argument position was already left alone
+    // (ff, because f is bound to a pure function earlier in this test)
+    check("Function(ff(Function(#1)))[a]", //
+        "ff(#1&)");
+    // a slot which names an argument that was not supplied is reported, and the value is the
+    // partially substituted body, as in WMA
+    // Function: Slot number 2 in #2& cannot be filled from #2&[a].
+    check("#2 &[a]", //
+        "#2");
+    // Function: Slot number 3 in ff(#1,#3)& cannot be filled from ff(#1,#3)&[a,b].
+    check("ff(#1,#3) &[a,b]", //
+        "ff(a,#3)");
+
+    // a named slot prints as #name and so parses back to the same expression
+    check("Slot(\"x\")", //
+        "#x");
+    check("FullForm(#x)", //
+        "Slot(\"x\")");
+    check("#x & [<|\"x\"->7|>]", //
+        "7");
+    // a name which is not an identifier keeps its quotes
+    check("Slot(\"a b\")", //
+        "#\"a b\"");
+    // anything with no short form is still printed as an ordinary function
+    check("Slot(y)", //
+        "Slot(y)");
+    check("Slot(2.5)", //
+        "Slot(2.5)");
   }
 
   @Test
@@ -24688,6 +24862,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(b,c,d)");
     check("{##2} &[a, b, c]", //
         "{b,c}");
+    // an out-of-range ##n is left in place and no longer removes the arguments after it
+    check("Function(ff(x,##3,y))[a,b]", //
+        "ff(x,y)");
+    check("Function(ff(x,##4,y))[a,b]", //
+        "ff(x,##4,y)");
+    // ##n is fillable up to and including one past the last argument, where it is empty.
+    // These four used to throw an IndexOutOfBoundsException.
+    check("Function(ff(##3))[a,b]", //
+        "ff()");
+    check("Function(ff(##2))[a]", //
+        "ff()");
+    check("Function(ff(##1))[]", //
+        "ff()");
+    check("Function(ff(##4))[a,b]", //
+        "ff(##4)");
+    // written out, because the parser reads ##-1 as ## - 1
+    check("Function(ff(SlotSequence(-1)))[a,b]", //
+        "ff(##-1)");
+    // the spliced form now agrees with the standalone form on the boundary
+    check("Function(##3)[a,b]", //
+        "Identity()");
+    check("Function(##4)[a,b]", //
+        "##4");
   }
 
   @Test
@@ -25004,8 +25201,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Rule(Span(1, 2), b)");
     check("FullForm(a ;; b == c)", //
         "Equal(Span(a, b), c)");
+    // `;;` binds tighter than `&&` and `>`, so the Span is the right operand of `>` rather than
+    // wrapping the whole conjunction: And(Power(OddQ,n), Greater(n, Span(0, All)))
     check("OddQ^(n) && n > 0;;", //
-        "(OddQ^n&&n>0);;All");
+        "OddQ^n&&n>0;;All");
+    check("FullForm(OddQ^(n) && n > 0;;)", //
+        "And(Power(OddQ, n), Greater(n, Span(0, All)))");
+    // an operator that binds tighter than Span still wins
+    check("FullForm(1 + 2;;5)", //
+        "Span(3, 5)");
+    // a variable holding a Span can be used as a part specification
+    check("sp=2;;4; Range(6)[[sp]]", //
+        "{2,3,4}");
     check("Infinity[[2;;4]]", //
         "Infinity[[2;;4]]");
 
@@ -25933,6 +26140,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTake() {
+    // a Span is the same specification as the equivalent list
+    check("Take({1,2,3,4,5}, 2;;4)", //
+        "{2,3,4}");
+    check("Take({1,2,3,4,5}, 1;;-1;;2)", //
+        "{1,3,5}");
+    check("Take({1,2,3,4,5}, 2;;)", //
+        "{2,3,4,5}");
+    check("Take({1,2,3,4,5}, ;;3)", //
+        "{1,2,3}");
+    check("Drop({1,2,3,4,5}, 2;;4)", //
+        "{1,5}");
+    check("Take({{1,2},{3,4}}, All, 1;;1)", //
+        "{{1},{3}}");
+
     check("Take({1, 2, 3}, 5)", //
         "Take({1,2,3},5)");
     check("Take({1, 2}, -5)", //
