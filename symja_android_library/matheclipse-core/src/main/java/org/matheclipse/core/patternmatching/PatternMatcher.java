@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FixedPatternSequence;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
@@ -540,6 +541,68 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
 
   /** Needed for serialization */
+  /**
+   * Rewrite <code>Longest(p)</code> and <code>Shortest(p)</code> in a pattern into <code>p</code>
+   * itself, carrying the preference on the pattern sequence.
+   *
+   * <p>
+   * The matcher dispatches on {@link IExpr#isPatternSequence(boolean)}, which a
+   * <code>Longest(x__)</code> is not - so the wrapper made the whole rule fail to match rather than
+   * changing which match was chosen. Done once here, when the matcher is built, rather than on
+   * every match attempt.
+   *
+   * <p>
+   * A wrapper whose pattern cannot express the preference is left alone, so it keeps failing to
+   * match instead of quietly matching with the wrong one.
+   */
+  private static IExpr normalizeLengthPreference(final IExpr patternExpr) {
+    if (!patternExpr.isAST()) {
+      return patternExpr;
+    }
+    return patternExpr.replaceAll(x -> {
+      IExpr fixed = fixedSequenceOf(x, null);
+      if (fixed.isPresent()) {
+        return fixed;
+      }
+      // `x : PatternSequence(...)` names the whole sequence. It is held as a PatternNested, an
+      // atom, so the walk never reaches the sequence inside it - the name has to be moved onto the
+      // sequence object here.
+      if (x instanceof PatternNested) {
+        PatternNested nested = (PatternNested) x;
+        IExpr named = fixedSequenceOf(nested.getPatternExpr(), nested.getSymbol());
+        if (named.isPresent()) {
+          return named;
+        }
+      }
+      boolean longest = x.isAST(S.Longest, 2);
+      if (!longest && !x.isAST(S.Shortest, 2)) {
+        return F.NIL;
+      }
+      IExpr inner = x.first();
+      if (inner instanceof IPatternSequence) {
+        IPatternSequence preferred = ((IPatternSequence) inner).withLongest(longest);
+        return preferred.isLongest() == longest ? (IExpr) preferred : F.NIL;
+      }
+      // on a pattern of fixed length there is only one match, so the preference says nothing
+      return inner instanceof IPatternObject ? inner : F.NIL;
+    }).orElse(patternExpr);
+  }
+
+  /**
+   * The {@link FixedPatternSequence} a <code>PatternSequence(...)</code> or
+   * <code>OrderlessPatternSequence(...)</code> denotes.
+   *
+   * @param symbol the name the sequence binds to, or <code>null</code>
+   * @return {@link F#NIL} if <code>expr</code> is neither of those heads
+   */
+  private static IExpr fixedSequenceOf(final IExpr expr, final ISymbol symbol) {
+    boolean orderless = expr.isAST(S.OrderlessPatternSequence);
+    if (!orderless && !expr.isAST(S.PatternSequence)) {
+      return F.NIL;
+    }
+    return FixedPatternSequence.valueOf(symbol, (IAST) expr, orderless);
+  }
+
   public PatternMatcher() {
     super(null);
     this.fSetFlags = NOFLAG;
@@ -554,7 +617,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   public PatternMatcher(final int setSymbol, final IExpr patternExpr, boolean initAll) {
-    super(patternExpr);
+    super(normalizeLengthPreference(patternExpr));
     this.fSetFlags = setSymbol;
     this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
     this.fThrowIfTrue = false;
@@ -1910,7 +1973,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       startPosition = 1;
       lhsEvalIndex = 1;
     }
-    while (lhsEvalIndex <= lhsEvalSize) {
+    // `Longest(p)` wants the last candidate this loop would otherwise reach, so it walks the same
+    // range in the opposite direction and takes the first match it finds there
+    final boolean longest = patternSequence.isLongest();
+    final int firstIndex = longest ? lhsEvalSize : lhsEvalIndex;
+    final int lastIndex = longest ? lhsEvalIndex : lhsEvalSize;
+    lhsEvalIndex = firstIndex;
+    while (longest ? lhsEvalIndex >= lastIndex : lhsEvalIndex <= lastIndex) {
       try {
         IASTAppendable seq = F.ast(S.Sequence, lhsEvalIndex - startPosition);
         seq.appendAll(lhsEvalAST, startPosition, lhsEvalIndex);
@@ -1927,7 +1996,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           fPatternMap.resetPattern(patternValues);
         }
       }
-      lhsEvalIndex++;
+      lhsEvalIndex += longest ? -1 : 1;
     }
     return false;
   }

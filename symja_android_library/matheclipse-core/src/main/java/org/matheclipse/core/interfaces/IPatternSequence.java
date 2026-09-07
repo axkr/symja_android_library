@@ -119,4 +119,20 @@ public interface IPatternSequence extends IPatternObject, IExpr {
   public boolean isDefault();
 
   public boolean isNullSequence();
+
+  /**
+   * Whether the longest matching sequence should be preferred over the shortest.
+   *
+   * @return <code>true</code> for a sequence written as <code>Longest(p)</code>
+   */
+  public boolean isLongest();
+
+  /**
+   * A copy of this pattern sequence which prefers the longest or the shortest match.
+   *
+   * @param longest <code>true</code> for <code>Longest(p)</code>, <code>false</code> for
+   *        <code>Shortest(p)</code> and for the default
+   * @return this, when the preference is already the one asked for
+   */
+  public IPatternSequence withLongest(boolean longest);
 }

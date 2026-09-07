@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -356,6 +357,16 @@ public class PatternSequence extends AbstractPatternSequence {
   @Override
   public IExpr copy() {
     return this;
+  }
+
+  @Override
+  public IPatternSequence withLongest(boolean longest) {
+    if (fLongest == longest) {
+      return this;
+    }
+    PatternSequence p = valueOf(fSymbol, fHeadTest, fDefault, fZeroArgsAllowed);
+    p.fLongest = longest;
+    return p;
   }
 
   @Override

@@ -74,6 +74,13 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
   protected boolean fDefault = false;
   protected boolean fZeroArgsAllowed = false;
 
+  /**
+   * Whether the longest matching sequence is preferred, as written by {@code Longest(p)}. The
+   * default, and what {@code Shortest(p)} asks for, is the shortest - which is the order
+   * {@code PatternMatcher#matchBlankSequence} enumerates in.
+   */
+  protected boolean fLongest = false;
+
   public AbstractPatternSequence() {
     super();
   }
@@ -153,6 +160,24 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
 
 
   /** @return */
+  @Override
+  public boolean isLongest() {
+    return fLongest;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>
+   * The base class does not support a length preference and answers <code>this</code> unchanged.
+   * A caller which asked for <code>Longest</code> can see that from {@link #isLongest()} and leave
+   * the wrapper in place rather than dropping it silently.
+   */
+  @Override
+  public IPatternSequence withLongest(boolean longest) {
+    return this;
+  }
+
   @Override
   public ISymbol getSymbol() {
     return fSymbol;
