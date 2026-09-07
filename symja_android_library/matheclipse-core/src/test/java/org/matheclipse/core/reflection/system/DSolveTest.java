@@ -722,6 +722,39 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "y''(x) + (2/x)*y'(x) + y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
   }
 
+  /**
+   * Nonlinear equations of the second order which can be integrated once, leaving a first order
+   * equation the cascade then solves. The method above is the first order one, which multiplies
+   * an equation into an exact one rather than integrating it.
+   */
+  @Test
+  public void testDSolveSecondOrderIntegratingFactor() {
+    checkResidual("y(x)*y'(x) + y''(x) == 1", //
+        "y(x)*y'(x) + y''(x) - 1", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    checkResidual("y''(x) - y(x)*y'(x) == 6", //
+        "y''(x) - y(x)*y'(x) - 6", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    checkResidual("y''(x) == a*(1 + 2*y(x)*y'(x))", //
+        "y''(x) - a*(1 + 2*y(x)*y'(x))", "{C(1)->7/5, C(2)->3/4, a->3/10, x->13/10}");
+    check("DSolve(y''(x) + 2*y(x)*y'(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(C(1))*Tanh(x*Sqrt(C(1))+Sqrt(C(1))*C(2))}}");
+
+    // the factor of the second kind, which is a solution of a linear equation in x times a
+    // function of y
+    check("DSolve(y(x)*y''(x) - y'(x)^2 + 2*x*y(x)^2 == 0, y(x), x)", //
+        "{{y(x)->E^(-x^3/3+x*C(1)+C(2))}}");
+    check("DSolve(y(x)*y''(x) == y'(x)^2, y(x), x)", //
+        "{{y(x)->E^(x*C(1))*C(2)}}");
+
+    // a linear equation has one too, and the methods for those answer it better
+    check("DSolve(y''(x) + y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Cos(x)+C(2)*Sin(x)}}");
+    check("DSolve(y''(x) + (2/x)*y'(x) + y(x) == 0, y(x), x)", //
+        "{{y(x)->(C(1)*Cos(x))/x+(-C(2)*Sin(x))/x}}");
+    // and an equation with no y in it is reduced in order rather than integrated
+    check("DSolve(y''(x) == y'(x)^3, y(x), x)", //
+        "{{y(x)->Sqrt(-2*x-C(1))+C(2)},{y(x)->-Sqrt(-2*x-C(1))+C(2)}}");
+  }
+
   @Test
   public void testDSolveChangeOfVariable() {
     // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.

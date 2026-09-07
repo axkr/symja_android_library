@@ -1033,6 +1033,7 @@ final class DSolveODE {
       }
 
       if (lf == null && n == 2) {
+
         // Nothing above recognized it, so look for a symmetry of it. Only a nonlinear equation is
         // worth the search: a linear one of the second order has an eight dimensional symmetry
         // algebra, so the search always succeeds and costs a great deal without answering anything
@@ -1040,6 +1041,16 @@ final class DSolveODE {
         IExpr symmetrySol = DSolveSymmetry.solveSecondOrder(lhs, yFunction, xVar, C_1, ctx);
         if (symmetrySol.isPresent())
           return symmetrySol;
+
+        // An equation which can be integrated once is, and what is left is of the first order.
+        // After the symmetry search rather than before it: the two answer some of the same
+        // equations, and where they do, the search writes the answer with the two constants the
+        // equation should have while this one carries the constant of the quadrature besides
+        // them.
+        IExpr integratedSol = DSolveIntegratingFactor.solve(lhs, yFunction, xVar, C_1, ctx);
+        if (integratedSol.isPresent()) {
+          return integratedSol;
+        }
       }
 
       IExpr algebraicSol = solveForHighestDerivative(lhs, yFunction, xVar, n, C_1, ctx);
