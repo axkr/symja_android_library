@@ -32,6 +32,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reduce.IntegerReduceEngine;
 
 public class Reduce extends AbstractFunctionOptionEvaluator {
   // Internal signal to indicate successful absorption into the variable interval
@@ -2362,6 +2363,17 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     IExpr arg1 = ast.arg1();
     if (arg1.isTrue() || arg1.isFalse()) {
       return arg1;
+    }
+
+    if (ast.isAST3() && ast.arg3() == S.Integers && ast.arg2().isPresent()) {
+      // Cooper elimination decides a quantified integer condition exactly. It has to run before
+      // the `Resolve` route below, whose strategies reason over a continuum: they answer
+      // `Exists(y, x == 2*y + 1)` with True instead of the parity condition on `x`.
+      IExpr integers = IntegerReduceEngine.reduce(arg1, ast.arg2().makeList(),
+          (ISymbol) ast.arg3(), engine);
+      if (integers.isPresent()) {
+        return integers;
+      }
     }
 
     // quantifier elimination is implemented in `Resolve`

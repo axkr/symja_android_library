@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reduce.IntegerReduceEngine;
 
 /**
  * Resolve(expr) and Resolve(expr, domain) - eliminate the {@link S#ForAll} and {@link S#Exists}
@@ -89,6 +90,11 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
     ISymbol domain = null;
     if (ast.isAST2()) {
       IExpr arg2 = ast.arg2();
+      if (arg2 == S.Integers) {
+        // the integers are decided by Cooper elimination; the strategies below reason over a
+        // continuum and would answer `Exists(x, 2*x == 1)` with True
+        return IntegerReduceEngine.resolve(ast.arg1(), engine);
+      }
       if (arg2 != S.Reals && arg2 != S.Complexes) {
         return F.NIL;
       }

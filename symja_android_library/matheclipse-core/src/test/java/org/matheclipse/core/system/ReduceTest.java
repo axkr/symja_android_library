@@ -222,6 +222,25 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "C(1)∈Integers&&x==-1+3*C(1)&&y==1-2*C(1)");
   }
 
+  /**
+   * A quantifier over the integers is eliminated by Cooper's method. Deciding it over a continuum
+   * instead answers `Exists(y, x == 2*y + 1)` with True, losing the parity condition on `x`.
+   */
+  @Test
+  public void testReduceIntegerQuantifier() {
+    check("Reduce(Exists(y, x == 2*y + 1), x, Integers)", //
+        "x∈Integers&&Mod(x,2)==1");
+    check("Reduce(Exists(y, x == 2*y), x, Integers)", //
+        "x∈Integers&&Mod(x,2)==0");
+    check("Reduce(Exists(y, x == 3*y + 2), x, Integers)", //
+        "x∈Integers&&Mod(x,3)==2");
+    check("Reduce(ForAll(y, y <= x || y > x), x, Integers)", //
+        "True");
+    // an equation with no integer solution is decided, not searched for
+    check("Reduce(Exists(y, 2*y == 1), x, Integers)", //
+        "False");
+  }
+
   @Test
   public void testReduceElementInput() {
     check("Reduce(x > 0 && x < 4 && Element(x, Integers))", //
