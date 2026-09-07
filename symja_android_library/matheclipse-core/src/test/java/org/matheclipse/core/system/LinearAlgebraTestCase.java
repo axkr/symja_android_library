@@ -806,6 +806,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDimensions() {
+    // ASTAssociation reports isAST() == false, so an association used to fall through to the
+    // empty list instead of being measured like any other collection.
+    check("Dimensions(<|\"a\" -> {1, 2}|>)", //
+        "{1}");
+    check("Dimensions(<|1 -> <|2 -> 3|>|>)", //
+        "{1,1}");
     check("Dimensions({{{1,0},{0,1}},{0,0}})", //
         "{2,2}");
     check("Options(Dimensions)", //
@@ -3435,6 +3441,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTranspose() {
+    // A permutation shorter than the tensor left the trailing entries of the internal positions
+    // array at 0, and index 0 is the head: this returned {List,List} instead of declining.
+    check("Transpose({{1,2},{3,4}}, {1})", //
+        "Transpose({{1,2},{3,4}},{1})");
     check("Transpose({0,1,2,3})", //
         "{0,1,2,3}");
     check("Transpose({{0,0}, {0,0}},-0.8+I*1.2)", //

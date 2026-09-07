@@ -5198,15 +5198,35 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = engine.evaluate(ast.arg1());
-      if (arg1 instanceof INum) {
-        return F.ZZ(((INum) arg1).precision());
+      long precision = precision(engine.evaluate(ast.arg1()));
+      return precision == Long.MAX_VALUE ? F.CInfinity : F.ZZ(precision);
+    }
+
+    /**
+     * The precision of an expression, or {@link Long#MAX_VALUE} when it is exact.
+     *
+     * <p>
+     * A compound expression is only as precise as its least precise part, so this recurses over
+     * the whole tree. Returning {@code Infinity} for anything that was not itself a number made
+     * {@code Precision({1, 1.0})} claim exactness for a list holding an inexact value.
+     */
+    private static long precision(IExpr expr) {
+      if (expr instanceof INum) {
+        return ((INum) expr).precision();
       }
-      if (arg1 instanceof IComplexNum) {
-        return F.ZZ(((IComplexNum) arg1).precision());
+      if (expr instanceof IComplexNum) {
+        return ((IComplexNum) expr).precision();
       }
-      // assume symbolic evaluation
-      return F.CInfinity;
+      if (expr.isAST()) {
+        IAST ast = (IAST) expr;
+        long minimum = Long.MAX_VALUE;
+        for (int i = 0; i < ast.size(); i++) {
+          minimum = Math.min(minimum, precision(ast.get(i)));
+        }
+        return minimum;
+      }
+      // Exact numbers, symbols and strings are known exactly.
+      return Long.MAX_VALUE;
     }
 
     @Override

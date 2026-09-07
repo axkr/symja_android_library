@@ -56,7 +56,9 @@ public class LinearAlgebraUtil {
           IntArrayList sub = new IntArrayList();
           for (int i = 1; i < size; i++) {
             IExpr element = ast.get(i);
-            if (element.isAST() && maxLevel > 0) {
+            // Associations report isAST() == false, so without this a nested association was
+            // never descended into and Dimensions(<|1 -> <|2 -> 3|>|>) stopped at {1}.
+            if (element.isASTOrAssociation() && maxLevel > 0) {
               sub = dimensionsRecursive((IAST) element, header, maxLevel - 1,
                   throwIllegalArgumentException);
             } else {

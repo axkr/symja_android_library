@@ -1380,7 +1380,9 @@ public class IntegerFunctions {
         }
         IInteger iArg1 = (IInteger) ast.arg1();
         if (iArg1.isZero()) {
-          return F.C1;
+          // Zero has no digits: WMA defines IntegerLength[0] as 0, which is also what this
+          // class's own Javadoc above and doc/functions/IntegerLength.md have always said.
+          return F.C0;
         }
         long l = iArg1.integerLength(radix);
 

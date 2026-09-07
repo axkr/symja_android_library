@@ -173,6 +173,19 @@ public class ClusteringFunctions {
       divide = engine.evaluate(divide);
       return divide;
     }
+
+    /**
+     * A scalar argument is a one-element vector, so each {@code Total} above collapses to its
+     * single summand. Left to the inherited implementation this returns {@code F.NIL} and
+     * {@code BrayCurtisDistance[-7, 5]} stays unevaluated instead of giving {@code 6}.
+     *
+     * <p>
+     * The zero denominator is deliberately not guarded, matching the vector case above.
+     */
+    @Override
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      return engine.evaluate(F.Divide(F.Abs(F.Subtract(a, b)), F.Abs(F.Plus(a, b))));
+    }
   }
 
   /**
@@ -215,6 +228,20 @@ public class ClusteringFunctions {
         return F.C0;
       }
       return F.Total(F.Divide(F.Abs(F.Subtract(a, b)), denominator));
+    }
+
+    /**
+     * A scalar argument is a one-element vector, so the {@code Total} above collapses to its
+     * single summand and {@code CanberraDistance[-7, 5]} is {@code 12/12}. Left to the inherited
+     * implementation it stays unevaluated. The zero-denominator guard mirrors the vector case.
+     */
+    @Override
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      IExpr denominator = engine.evaluate(F.Plus(F.Abs(a), F.Abs(b)));
+      if (denominator.isZero()) {
+        return F.C0;
+      }
+      return engine.evaluate(F.Divide(F.Abs(F.Subtract(a, b)), denominator));
     }
 
     @Override
@@ -260,6 +287,16 @@ public class ClusteringFunctions {
       IAST vect2 = (IAST) b.normal(false);
       IASTAppendable maxAST = F.Max();
       return maxAST.appendArgs(a.size(), i -> F.Abs(F.Subtract(vect1.get(i), vect2.get(i))));
+    }
+
+    /**
+     * A scalar argument is a one-element vector, so the {@code Max} above has a single argument
+     * and reduces to the absolute difference. Left to the inherited implementation
+     * {@code ChessboardDistance[-7, 5]} stays unevaluated instead of giving {@code 12}.
+     */
+    @Override
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      return a.subtract(b).abs();
     }
 
     @Override
@@ -765,6 +802,16 @@ public class ClusteringFunctions {
       IASTAppendable plusAST = F.PlusAlloc(size);
       return plusAST.appendArgs(size, i -> F.Abs(F.Subtract(vect1.get(i), vect2.get(i))));
     }
+
+    /**
+     * A scalar argument is a one-element vector, so the sum above has a single term and reduces
+     * to the absolute difference. Left to the inherited implementation
+     * {@code ManhattanDistance[-7, 5]} stays unevaluated instead of giving {@code 12}.
+     */
+    @Override
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      return a.subtract(b).abs();
+    }
   }
 
   /**
@@ -808,6 +855,16 @@ public class ClusteringFunctions {
       int size = a.size();
       IASTAppendable plusAST = F.PlusAlloc(size);
       return plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(vect1.get(i), vect2.get(i)))));
+    }
+
+    /**
+     * A scalar argument is a one-element vector, so the sum above has a single term. Left to the
+     * inherited implementation {@code SquaredEuclideanDistance[-7, 5]} stays unevaluated instead
+     * of giving {@code 144}. {@code Abs} before squaring keeps complex arguments correct.
+     */
+    @Override
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      return engine.evaluate(F.Sqr(F.Abs(F.Subtract(a, b))));
     }
 
     @Override

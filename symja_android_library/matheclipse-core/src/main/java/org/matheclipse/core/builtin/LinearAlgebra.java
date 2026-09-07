@@ -1185,7 +1185,10 @@ public final class LinearAlgebra {
         }
       }
       IExpr arg1 = ast.arg1();
-      if (arg1.isAST()) {
+      // isASTOrAssociation, not isAST: ASTAssociation deliberately reports isAST() == false, so
+      // an association fell straight through to the empty list and Dimensions(<|a -> {1, 2}|>)
+      // answered {} instead of {1}.
+      if (arg1.isASTOrAssociation()) {
         if (maximumLevel > 0) {
           return getDimensions(ast, maximumLevel);
         }
@@ -8025,6 +8028,15 @@ public final class LinearAlgebra {
     if (permutationArray == null) {
       // Invalid permutation specification found at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "permspec", F.List(F.C2, ast), engine);
+    }
+
+    if (permutationArray.length != length) {
+      // A permutation shorter than the tensor is not merely useless, it is unsafe:
+      // TransposePermute iterates over permutation.length while its positions array is sized
+      // by the tensor depth, so the untouched trailing positions stay 0 and getPart reads
+      // index 0 -- the head. Transpose({{1,2},{3,4}}, {1}) returned {List, List} that way.
+      // `1` is not a valid permutation.
+      return Errors.printMessage(ast.topHead(), "perm", F.List(permutation), engine);
     }
 
     IAST dimensionsList = F.List(dimensions.toIntArray());

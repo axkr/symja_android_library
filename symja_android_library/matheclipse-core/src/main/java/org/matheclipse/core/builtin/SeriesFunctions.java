@@ -1800,7 +1800,10 @@ public class SeriesFunctions {
       }
 
       if (nInt == 0) {
-        return function.subs(x, x0);
+        // Evaluate, don't just substitute: a bare subs() leaves the grafted subexpression
+        // carrying its old evaluated flag, so Series(Exp(Sin(x)),{x,0,5}) kept a literal
+        // E^Sin(0) as its constant term instead of collapsing to 1.
+        return engine.evaluate(F.subst(function, x, x0));
       }
 
       // Use efficient truncated Series evaluation before falling back to explosive symbolic
@@ -1814,7 +1817,9 @@ public class SeriesFunctions {
       }
 
       IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
-      IExpr substituted = derivedFunction.subs(x, x0);
+      // Same reason as the nInt == 0 branch above, and the same shape every other
+      // substitution in this file uses.
+      IExpr substituted = engine.evaluate(F.subst(derivedFunction, x, x0));
 
       IExpr rawCoefficient = engine.evaluate(F.Times(F.Power(F.Factorial(n), F.CN1), substituted));
       return engine.evaluate(F.Together(F.ExpandAll(rawCoefficient)));

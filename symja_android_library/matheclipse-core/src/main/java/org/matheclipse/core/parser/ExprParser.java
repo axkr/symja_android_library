@@ -1396,7 +1396,10 @@ public class ExprParser extends Scanner {
       span.append(S.All);
       getNextToken();
     } else {
-      span.append(parseExpression(parsePrimary(0), 0));
+      // Precedence.SPAN, not 0: `;;` is scanned as its own TT_SPAN token, so the operator table
+      // never gets consulted for it and a 0 here let every weaker operator bind into the Span's
+      // own operand -- `1 ;; 2 -> b` parsed as Span(1, Rule(2, b)) rather than Rule(Span(1,2), b).
+      span.append(parseExpression(parsePrimary(0), Precedence.SPAN));
     }
     if (fToken == TT_SPAN) {
       // the step, as in a[[1;;10;;2]]
@@ -1404,18 +1407,20 @@ public class ExprParser extends Scanner {
       if (isSpanEnd()) {
         return span;
       }
-      span.append(parseExpression(parsePrimary(0), 0));
+      span.append(parseExpression(parsePrimary(0), Precedence.SPAN));
     }
     return span;
   }
 
   protected IExpr parseExpression() {
+    // A finished Span is handed back to the climbing loop rather than returned outright: it is a
+    // normal operand of anything weaker, so `1 ;; 2 -> b` can still become Rule(Span(1, 2), b).
     if (fToken == TT_SPAN) {
-      return parseSpanWithoutFirstPart();
+      return parseExpression(parseSpanWithoutFirstPart(), 0);
     }
     IExpr temp = parseExpression(parsePrimary(0), 0);
     if (fToken == TT_SPAN) {
-      return parseSpanAfterFirstPart(temp);
+      return parseExpression(parseSpanAfterFirstPart(temp), 0);
     }
     return temp;
   }

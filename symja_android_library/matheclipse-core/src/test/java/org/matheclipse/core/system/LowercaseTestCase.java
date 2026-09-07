@@ -2255,6 +2255,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBrayCurtisDistance() {
+    // a scalar is a one-element vector; before this was implemented the call stayed
+    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    check("BrayCurtisDistance(-7, 5)", //
+        "6");
     check("-1*{10.5, 10} ", //
         "{-10.5,-10}");
     check("{-1, -1} - 1 * {10.5, 10} ", //
@@ -2724,6 +2728,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testChessboardDistance() {
+    // a scalar is a one-element vector; before this was implemented the call stayed
+    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    check("ChessboardDistance(-7, 5)", //
+        "12");
+    check("ChessboardDistance(-1.5, 1)", //
+        "2.5");
     check("ChessboardDistance({-1, -1.5}, {1, 1})", //
         "2.5");
     check("ChessboardDistance({-1, -1}, {1, 1})", //
@@ -4569,6 +4579,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCanberraDistance() {
+    // a scalar is a one-element vector; before this was implemented the call stayed
+    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    check("CanberraDistance(-7, 5)", //
+        "1");
+    // the zero-denominator guard applies to scalars too
+    check("CanberraDistance(0, 0)", //
+        "0");
     check("CanberraDistance({0,0},{0,0})", //
         "0");
     check("CanberraDistance(SparseArray({11,1,19,2}),SparseArray({5,7,1,23}))", //
@@ -12392,7 +12409,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("IntegerLength(3, -2)", //
         "IntegerLength(3,-2)");
     check("IntegerLength(0)", //
-        "1");
+        "0");
     check("IntegerLength /@ (10 ^ Range(100) - 1) == Range(1, 100)", //
         "True");
   }
@@ -14391,6 +14408,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testManhattanDistance() {
+    // a scalar is a one-element vector; before this was implemented the call stayed
+    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    check("ManhattanDistance(-7, 5)", //
+        "12");
     check("ManhattanDistance({-1, -1}, {1.0, 1})", //
         "4.0");
     check("ManhattanDistance({-1, -1}, {1, 1})", //
@@ -20653,6 +20674,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPrecision() {
+    check("Precision(1)", //
+        "Infinity");
+    check("Precision(2/3)", //
+        "Infinity");
+    // an expression is only as precise as its least precise part; this used to answer Infinity
+    // for any list, however inexact its contents
+    check("Precision({1, 1.0})", //
+        "16");
+    check("Precision({1, 2})", //
+        "Infinity");
+  }
+
+  @Test
   public void testPrime() {
     check("Prime(171)", //
         "1019");
@@ -24082,6 +24117,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   @Test
+  public void testSeriesEvaluatesItsCoefficients() {
+    // The Taylor coefficients were built with a raw subs(), which grafts a subexpression in
+    // without re-evaluating it, so the constant term came out as the literal E^Sin(0).
+    check("Series(Exp(Sin(x)), {x, 0, 5})", //
+        "1+x+x^2/2-x^4/8-x^5/15+O(x)^6");
+    check("Series(Exp(x), {x, 0, 5})", //
+        "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
+  }
+
+  @Test
   public void testSet() {
     check("a=a+1", //
         "Hold(a=1+a)", //
@@ -24934,6 +24979,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquaredEuclideanDistance() {
+    // a scalar is a one-element vector; before this was implemented the call stayed
+    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    check("SquaredEuclideanDistance(-7, 5)", //
+        "144");
     check("SquaredEuclideanDistance({-7, 5.0}, {1, 1})", //
         "80.0");
     check("SquaredEuclideanDistance({-1, -1}, {1.5, 1})", //
@@ -24946,6 +24995,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSpan() {
+    // `;;` is scanned as its own token, so the operator table is not consulted for it. Its
+    // operands used to be parsed at precedence 0, which let every weaker operator bind inside
+    // the Span instead of taking the finished Span as its own left operand.
+    check("Head(1 ;; 2 -> b)", //
+        "Rule");
+    check("FullForm(1 ;; 2 -> b)", //
+        "Rule(Span(1, 2), b)");
+    check("FullForm(a ;; b == c)", //
+        "Equal(Span(a, b), c)");
     check("OddQ^(n) && n > 0;;", //
         "(OddQ^n&&n>0);;All");
     check("Infinity[[2;;4]]", //
