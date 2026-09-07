@@ -73,6 +73,25 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "12");
     check("Area(Circle())", "Undefined");
 
+    // several disjoint components add up
+    check("Area(Polygon({{{0, 0}, {1, 0}, {0, 1}}, {{1, 1}, {2, 1}, {1, 2}}}))", //
+        "1");
+    check("Area(Polygon({{{0,0},{1,0},{0,1}}, {{2,0},{3,0},{2,1}}, {{4,0},{5,0},{4,1}}}))", //
+        "3/2");
+    // outer -> holes subtracts the holes
+    check("Area(Polygon({{0, 0}, {4, 0}, {4, 4}, {0, 4}} -> {{{1, 1}, {3, 1}, {3, 3}, {1, 3}}}))", //
+        "12");
+    check("Area(Polygon({{0,0},{6,0},{6,6},{0,6}} -> "
+        + "{{{1,1},{2,1},{2,2},{1,2}}, {{4,4},{5,4},{5,5},{4,5}}}))", //
+        "34");
+    // a single hole may be given bare, without the enclosing list
+    check("Area(Polygon({{0, 0}, {4, 0}, {4, 4}, {0, 4}} -> {{1, 1}, {3, 1}, {3, 3}, {1, 3}}))", //
+        "12");
+    // the same, for a polygon embedded in space
+    check("Area(Polygon({{0,0,0},{4,0,0},{4,4,0},{0,4,0}} -> "
+        + "{{1,1,0},{3,1,0},{3,3,0},{1,3,0}}))", //
+        "12");
+
     // Ellipsoids
     check("Area(Ellipsoid({0, 0}, {2, 3}))", "6*Pi");
     check("Area(Ellipsoid({1, 2}, {3, 5}))", "15*Pi");
@@ -1393,6 +1412,121 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "7/12");
     check("Head(RegionMember(" + dented + ", {9/10,9/10,9/10}))", //
         "RegionMember");
+  }
+
+  @Test
+  public void testGeometricTest() {
+    check("GeometricTest({{2,3},{4,6},{-2,-3}}, \"Collinear\")", //
+        "True");
+    check("GeometricTest({{0,0},{1,1},{2,3}}, \"Collinear\")", //
+        "False");
+    check("GeometricTest(Polygon({{0,0},{5,1},{4,4},{-2,0}}), \"Convex\")", //
+        "True");
+    check("GeometricTest(Polygon({{0,0},{2,0},{2,2},{0,2}}), \"Regular\")", //
+        "True");
+    check("GeometricTest(Polygon({{0,0},{2,0},{2,2},{0,2}}), \"Rectangle\")", //
+        "True");
+    check("GeometricTest({InfiniteLine({{0,0},{1,1}}), InfiniteLine({{0,1},{1,2}})}, \"Parallel\")", //
+        "True");
+    check("GeometricTest({InfiniteLine({{0,0},{1,1}}), InfiniteLine({{0,0},{1,-1}})}, \"Perpendicular\")", //
+        "True");
+    check("GeometricTest({Triangle({{0,0},{3,0},{0,4}}), Triangle({{0,0},{6,0},{0,8}})}, \"Similar\")", //
+        "True");
+    check("GeometricTest({Triangle({{0,0},{3,0},{0,4}}), Triangle({{0,0},{6,0},{0,8}})}, \"Congruent\")", //
+        "False");
+    // every listed property has to hold
+    check("GeometricTest(Polygon({{0,0},{2,0},{2,2},{0,2}}), \"Convex\", \"Rectangle\")", //
+        "True");
+    // regular means equilateral *and* equiangular: a rhombus is neither a rectangle nor regular,
+    // and an oblong is a rectangle but not regular
+    check("GeometricTest(Polygon({{0,0},{2,1},{4,0},{2,-1}}), \"Regular\")", //
+        "False");
+    check("GeometricTest(Polygon({{0,0},{4,0},{4,2},{0,2}}), \"Rectangle\")", //
+        "True");
+    check("GeometricTest(Polygon({{0,0},{4,0},{4,2},{0,2}}), \"Regular\")", //
+        "False");
+    // an unknown property leaves the expression alone
+    check("GeometricTest(Polygon({{0,0},{2,0},{2,2},{0,2}}), \"Nonsense\")", //
+        "GeometricTest(Polygon({{0,0},{2,0},{2,2},{0,2}}),Nonsense)");
+  }
+
+  @Test
+  public void testConvexPolyhedronQ() {
+    check("ConvexPolyhedronQ(Cube())", //
+        "True");
+    check("ConvexPolyhedronQ(Tetrahedron())", //
+        "True");
+    // convex, but not bounded by flat faces
+    check("ConvexPolyhedronQ(Ball())", //
+        "False");
+    check("ConvexPolyhedronQ(Cylinder())", //
+        "False");
+    // Simplex(n) is n-dimensional; only the 3-simplex is a polyhedron
+    check("ConvexPolyhedronQ(Simplex(2))", //
+        "False");
+    check("ConvexPolyhedronQ(Simplex(3))", //
+        "True");
+    // a genuine prism, then one whose top face is not a translate of the bottom
+    check("ConvexPolyhedronQ(Prism({{0,0,0},{1,0,0},{0,1,0},{0,0,1},{1,0,1},{0,1,1}}))", //
+        "True");
+    check("ConvexPolyhedronQ(Prism({{0,0,0},{1,0,0},{0,1,0},{0,0,1},{5,0,1},{0,1,1}}))", //
+        "False");
+  }
+
+  @Test
+  public void testRegionProduct() {
+    check("RegionProduct(Line({{0},{2}}), Line({{0},{3}}))", //
+        "Rectangle({0,0},{2,3})");
+    check("RegionProduct(Disk({1,2},3), Interval({4,6}))", //
+        "Cylinder({{1,2,4},{1,2,6}},3)");
+    check("RegionProduct(Triangle(), Interval({0,2}))", //
+        "Prism({{0,0,0},{1,0,0},{0,1,0},{0,0,2},{1,0,2},{0,1,2}})");
+    check("RegionMeasure(RegionProduct(Disk(), Line({{0},{1}})))", //
+        "Pi");
+    // a product with no name of its own stays unevaluated
+    check("RegionProduct(Disk(), Disk())", //
+        "RegionProduct(Disk({0,0}),Disk({0,0}))");
+  }
+
+  @Test
+  public void testCircumsphere() {
+    check("Circumsphere({{0,0},{4,0},{0,3}})", //
+        "Sphere({2,3/2},5/2)");
+    check("Circumsphere({{0,0,0},{2,0,0},{0,2,0},{0,0,2}})", //
+        "Sphere({1,1,1},Sqrt(3))");
+    // collinear points have no circumsphere
+    check("Circumsphere({{0,0},{1,1},{2,2}})", //
+        "Circumsphere({{0,0},{1,1},{2,2}})");
+  }
+
+  @Test
+  public void testPolyhedronData() {
+    check("PolyhedronData(\"TruncatedIcosahedron\", \"FaceCount\")", //
+        "32");
+    // 12 pentagons and 20 hexagons - the faces are derived from the icosahedron the solid is cut
+    // from, not tabulated
+    check("Tally(Length /@ PolyhedronData(\"TruncatedIcosahedron\", \"FaceIndices\"))", //
+        "{{5,12},{6,20}}");
+    check("PolyhedronData(\"Icosidodecahedron\", \"Volume\")", //
+        "1/6*(45+17*Sqrt(5))");
+    // its vertices lie on two different spheres, so there is no single circumradius
+    check("PolyhedronData(\"RhombicTriacontahedron\", \"Circumradius\")", //
+        "Missing(NotApplicable)");
+    check("Head(PolyhedronData(\"Icosahedron\", \"Faces\"))", //
+        "GraphicsComplex");
+    check("PolyhedronData(\"Icosahedron\", \"VertexCount\")", //
+        "12");
+    check("PolyhedronData(\"Icosahedron\", \"EdgeCount\")", //
+        "30");
+    check("PolyhedronData(\"Icosahedron\", \"FaceCount\")", //
+        "20");
+    // Euler's formula holds for the derived combinatorics
+    check("PolyhedronData(\"TruncatedIcosahedron\",\"VertexCount\")"
+        + "-PolyhedronData(\"TruncatedIcosahedron\",\"EdgeCount\")"
+        + "+PolyhedronData(\"TruncatedIcosahedron\",\"FaceCount\")", //
+        "2");
+    check("PolyhedronData(\"Icosahedron\", \"Nonsense\")", //
+        "Missing(NotAvailable)");
   }
 
   @Test

@@ -54,6 +54,12 @@ public class ComputationalGeometryFunctions {
       S.CoordinateBounds.setEvaluator(new CoordinateBounds());
       S.CoplanarPoints.setEvaluator(new CoplanarPoints());
 
+      S.GeometricTest.setEvaluator(new GeometricTest());
+      S.ConvexPolyhedronQ.setEvaluator(new ConvexPolyhedronQ());
+      S.RegionProduct.setEvaluator(new RegionProduct());
+      S.Circumsphere.setEvaluator(new Circumsphere());
+      S.PolyhedronData.setEvaluator(new PolyhedronData());
+
       S.VectorGreater.setEvaluator(new VectorGreater());
       S.VectorGreaterEqual.setEvaluator(new VectorGreaterEqual());
       S.VectorLess.setEvaluator(new VectorLess());
@@ -2217,6 +2223,969 @@ public class ComputationalGeometryFunctions {
       return S.LessEqual.ofNIL(engine, v1, v2);
     }
 
+  }
+
+  /**
+   * <code>GeometricTest(objects, "property"...)</code> - test one or more geometric properties of
+   * <code>objects</code>. All the requested properties have to hold.
+   *
+   * <p>
+   * The shape of <code>objects</code> depends on the property, not on the argument count: a point
+   * list for <code>"Collinear"</code>, a single region for <code>"Convex"</code>,
+   * <code>"Regular"</code> and <code>"Rectangle"</code>, and a list of exactly two objects for the
+   * relational properties <code>"Parallel"</code>, <code>"Perpendicular"</code>,
+   * <code>"Similar"</code> and <code>"Congruent"</code>.
+   */
+  private static class GeometricTest extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr objects = ast.arg1();
+      IASTAppendable result = F.ast(S.And, ast.argSize() - 1);
+      for (int i = 2; i < ast.size(); i++) {
+        if (!ast.get(i).isString()) {
+          return F.NIL;
+        }
+        IExpr test = test(objects, ast.get(i).toString(), engine);
+        if (test.isNIL()) {
+          // an unsupported property leaves the whole expression unevaluated rather than silently
+          // dropping a conjunct
+          return F.NIL;
+        }
+        result.append(test);
+      }
+      if (result.argSize() == 1) {
+        return result.arg1();
+      }
+      return engine.evaluate(result);
+    }
+
+    private static IExpr test(IExpr objects, String property, EvalEngine engine) {
+      switch (property) {
+        case "Collinear":
+          return S.CollinearPoints.ofNIL(engine, objects);
+        case "Convex":
+          return S.ConvexRegionQ.ofNIL(engine, objects);
+        case "Regular":
+          return regularQ(vertices(objects), engine);
+        case "Rectangle":
+          return rectangleQ(vertices(objects), engine);
+        case "Parallel":
+        case "Perpendicular":
+          return directionTest(objects, "Parallel".equals(property), engine);
+        case "Similar":
+        case "Congruent":
+          return shapeTest(objects, "Congruent".equals(property), engine);
+        default:
+          return F.NIL;
+      }
+    }
+
+    /**
+     * The corner points of a region, or the list itself if it already is a list of points.
+     *
+     * @return {@link F#NIL} if no point list can be read off
+     */
+    private static IAST vertices(IExpr object) {
+      if (object.isAST(S.Polygon, 2) || object.isAST(S.Triangle, 2) || object.isAST(S.Line, 2)
+          || object.isAST(S.InfiniteLine, 2) || object.isAST(S.HalfLine, 2)) {
+        IExpr points = object.first();
+        return points.isListOfLists() ? (IAST) points : F.NIL;
+      }
+      return object.isListOfLists() ? (IAST) object : F.NIL;
+    }
+
+    /** Equilateral and equiangular: equal side lengths alone would also admit a rhombus. */
+    private static IExpr regularQ(IAST corners, EvalEngine engine) {
+      if (corners.isNIL() || corners.argSize() < 3) {
+        return F.NIL;
+      }
+      IAST sides = squaredSides(corners, engine);
+      IAST radii = squaredCircumradii(corners, engine);
+      if (sides.isNIL() || radii.isNIL()) {
+        return F.NIL;
+      }
+      return allEqual(sides, engine).isTrue() && allEqual(radii, engine).isTrue() //
+          ? S.True
+          : S.False;
+    }
+
+    /** Four corners meeting at four right angles. */
+    private static IExpr rectangleQ(IAST corners, EvalEngine engine) {
+      if (corners.isNIL() || corners.argSize() != 4) {
+        return corners.isNIL() ? F.NIL : S.False;
+      }
+      for (int i = 1; i <= 4; i++) {
+        IAST previous = (IAST) corners.get(i == 1 ? 4 : i - 1);
+        IAST corner = (IAST) corners.get(i);
+        IAST next = (IAST) corners.get(i == 4 ? 1 : i + 1);
+        IExpr dot = dot(difference(previous, corner, engine), difference(next, corner, engine),
+            engine);
+        if (dot.isNIL()) {
+          return F.NIL;
+        }
+        if (!dot.isZero()) {
+          return S.False;
+        }
+      }
+      return S.True;
+    }
+
+    /** Parallel or perpendicular directions of two lines. */
+    private static IExpr directionTest(IExpr objects, boolean parallel, EvalEngine engine) {
+      IAST pair = objectPair(objects);
+      if (pair.isNIL()) {
+        return F.NIL;
+      }
+      IAST first = vertices(pair.arg1());
+      IAST second = vertices(pair.arg2());
+      if (first.isNIL() || second.isNIL() || first.argSize() < 2 || second.argSize() < 2) {
+        return F.NIL;
+      }
+      IAST d1 = direction(first, engine);
+      IAST d2 = direction(second, engine);
+      if (d1.isNIL() || d2.isNIL() || d1.argSize() != d2.argSize()) {
+        return F.NIL;
+      }
+      // Perpendicular is the vanishing dot product; parallel is the vanishing cross product, which
+      // in the plane is the single determinant below.
+      IExpr measure;
+      if (parallel) {
+        if (d1.argSize() != 2) {
+          return F.NIL;
+        }
+        measure = engine.evaluate(F.Subtract(F.Times(d1.arg1(), d2.arg2()), //
+            F.Times(d1.arg2(), d2.arg1())));
+      } else {
+        measure = dot(d1, d2, engine);
+      }
+      return measure.isNIL() ? F.NIL : (measure.isZero() ? S.True : S.False);
+    }
+
+    /** Equal side lengths (congruent) or proportional side lengths (similar). */
+    private static IExpr shapeTest(IExpr objects, boolean congruent, EvalEngine engine) {
+      IAST pair = objectPair(objects);
+      if (pair.isNIL()) {
+        return F.NIL;
+      }
+      IAST first = vertices(pair.arg1());
+      IAST second = vertices(pair.arg2());
+      if (first.isNIL() || second.isNIL() || first.argSize() != second.argSize()) {
+        return first.isNIL() || second.isNIL() ? F.NIL : S.False;
+      }
+      double[] a = sortedSideLengths(first, engine);
+      double[] b = sortedSideLengths(second, engine);
+      if (a == null || b == null) {
+        return F.NIL;
+      }
+      if (congruent) {
+        for (int i = 0; i < a.length; i++) {
+          if (!isClose(a[i], b[i])) {
+            return S.False;
+          }
+        }
+        return S.True;
+      }
+      // Similar: one common ratio across every corresponding pair of sides.
+      if (b[0] == 0.0) {
+        return S.False;
+      }
+      double ratio = a[0] / b[0];
+      for (int i = 1; i < a.length; i++) {
+        if (b[i] == 0.0 || !isClose(a[i] / b[i], ratio)) {
+          return S.False;
+        }
+      }
+      return S.True;
+    }
+
+    private static boolean isClose(double x, double y) {
+      return Math.abs(x - y) <= 1.0e-10 * Math.max(1.0, Math.max(Math.abs(x), Math.abs(y)));
+    }
+
+    /** A list of exactly two geometric objects, as the relational properties expect. */
+    private static IAST objectPair(IExpr objects) {
+      return objects.isList2() ? (IAST) objects : F.NIL;
+    }
+
+    private static IAST direction(IAST points, EvalEngine engine) {
+      return difference((IAST) points.arg2(), (IAST) points.arg1(), engine);
+    }
+
+    private static IAST difference(IAST p, IAST q, EvalEngine engine) {
+      if (p.argSize() != q.argSize()) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(p.argSize());
+      for (int i = 1; i < p.size(); i++) {
+        result.append(engine.evaluate(F.Subtract(p.get(i), q.get(i))));
+      }
+      return result;
+    }
+
+    private static IExpr dot(IAST u, IAST v, EvalEngine engine) {
+      if (u.isNIL() || v.isNIL() || u.argSize() != v.argSize()) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.ast(S.Plus, u.argSize());
+      for (int i = 1; i < u.size(); i++) {
+        sum.append(F.Times(u.get(i), v.get(i)));
+      }
+      return engine.evaluate(sum);
+    }
+
+    /** Squared lengths of the closed edge cycle, so no square roots enter the comparison. */
+    private static IAST squaredSides(IAST corners, EvalEngine engine) {
+      IASTAppendable result = F.ListAlloc(corners.argSize());
+      for (int i = 1; i < corners.size(); i++) {
+        if (!corners.get(i).isList()) {
+          return F.NIL;
+        }
+        IAST from = (IAST) corners.get(i);
+        IAST to = (IAST) corners.get(i == corners.argSize() ? 1 : i + 1);
+        IAST edge = difference(to, from, engine);
+        IExpr squared = dot(edge, edge, engine);
+        if (squared.isNIL()) {
+          return F.NIL;
+        }
+        result.append(squared);
+      }
+      return result;
+    }
+
+    /** Squared distances from the centroid; equal for a regular polygon. */
+    private static IAST squaredCircumradii(IAST corners, EvalEngine engine) {
+      int n = corners.argSize();
+      if (!corners.arg1().isList()) {
+        return F.NIL;
+      }
+      int dimension = ((IAST) corners.arg1()).argSize();
+      IASTAppendable centroid = F.ListAlloc(dimension);
+      for (int c = 1; c <= dimension; c++) {
+        IASTAppendable sum = F.ast(S.Plus, n);
+        for (int i = 1; i < corners.size(); i++) {
+          if (!corners.get(i).isList() || ((IAST) corners.get(i)).argSize() != dimension) {
+            return F.NIL;
+          }
+          sum.append(((IAST) corners.get(i)).get(c));
+        }
+        centroid.append(engine.evaluate(F.Divide(sum, F.ZZ(n))));
+      }
+      IASTAppendable result = F.ListAlloc(n);
+      for (int i = 1; i < corners.size(); i++) {
+        IAST radius = difference((IAST) corners.get(i), centroid, engine);
+        IExpr squared = dot(radius, radius, engine);
+        if (squared.isNIL()) {
+          return F.NIL;
+        }
+        result.append(squared);
+      }
+      return result;
+    }
+
+    private static IExpr allEqual(IAST values, EvalEngine engine) {
+      for (int i = 2; i < values.size(); i++) {
+        IExpr equal = engine.evaluate(F.Equal(values.arg1(), values.get(i)));
+        if (!equal.isTrue()) {
+          return S.False;
+        }
+      }
+      return S.True;
+    }
+
+    /**
+     * Side lengths in ascending order, so two shapes can be compared without knowing which corner
+     * matches which. Returns {@code null} when a length is not a real number.
+     */
+    private static double[] sortedSideLengths(IAST corners, EvalEngine engine) {
+      IAST squared = squaredSides(corners, engine);
+      if (squared.isNIL()) {
+        return null;
+      }
+      double[] lengths = new double[squared.argSize()];
+      for (int i = 1; i < squared.size(); i++) {
+        IExpr value = engine.evalN(squared.get(i));
+        if (!value.isReal()) {
+          return null;
+        }
+        lengths[i - 1] = Math.sqrt(value.evalf());
+      }
+      Arrays.sort(lengths);
+      return lengths;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+  }
+
+  /**
+   * <code>ConvexPolyhedronQ(region)</code> - test whether <code>region</code> is a convex
+   * polyhedron.
+   *
+   * <p>
+   * Two conditions, and both matter: the region has to be a <i>polyhedron</i> - bounded by flat
+   * faces, in three dimensions - and it has to be convex. A <code>Ball</code> is convex but has no
+   * faces, and <code>Simplex(2)</code> is a convex triangle but lives in the plane; both are
+   * <code>False</code>.
+   */
+  private static class ConvexPolyhedronQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.Region, 1)) {
+        arg1 = arg1.first();
+      }
+      arg1 = MeshFunctions.normalizeRegion(arg1);
+      if (!arg1.isAST()) {
+        return F.NIL;
+      }
+      IAST region = (IAST) arg1;
+      if (!region.head().isBuiltInSymbol()) {
+        return F.NIL;
+      }
+      switch (((IBuiltInSymbol) region.head()).ordinal()) {
+        case ID.Cube:
+        case ID.Hexahedron:
+        case ID.Tetrahedron:
+        case ID.Octahedron:
+        case ID.Dodecahedron:
+        case ID.Icosahedron:
+        case ID.Cuboid:
+        case ID.Parallelepiped:
+          return S.True;
+        case ID.Simplex:
+          // Simplex(n) is n-dimensional; only the 3-simplex is a polyhedron.
+          return region.isAST1() ? F.bool(region.arg1().equals(F.C3)) : F.NIL;
+        case ID.Prism:
+          return prismConvexQ(region, engine);
+        case ID.Ball:
+        case ID.Sphere:
+        case ID.Ellipsoid:
+        case ID.Cylinder:
+        case ID.Cone:
+        case ID.Disk:
+        case ID.Circle:
+        case ID.Rectangle:
+        case ID.Triangle:
+        case ID.Polygon:
+          // curved, or not three-dimensional
+          return S.False;
+        default:
+          return F.NIL;
+      }
+    }
+
+    /**
+     * A <code>Prism</code> of <code>2n</code> corners is the solid between two <code>n</code>-gons.
+     * It is convex exactly when the base is convex and the top is the base shifted by one constant
+     * vector; any other top makes the lateral faces non-planar.
+     */
+    private static IExpr prismConvexQ(IAST prism, EvalEngine engine) {
+      if (!prism.isAST1() || !prism.arg1().isListOfLists()) {
+        return F.NIL;
+      }
+      IAST corners = (IAST) prism.arg1();
+      int size = corners.argSize();
+      if (size < 6 || size % 2 != 0) {
+        return F.NIL;
+      }
+      int n = size / 2;
+      IASTAppendable base = F.ListAlloc(n);
+      for (int i = 1; i <= n; i++) {
+        base.append(corners.get(i));
+      }
+      // Every top corner has to sit at the same offset from its base corner.
+      IExpr offset = engine.evaluate(F.Subtract(corners.get(n + 1), corners.arg1()));
+      for (int i = 2; i <= n; i++) {
+        IExpr other = engine.evaluate(F.Subtract(corners.get(n + i), corners.get(i)));
+        if (!engine.evaluate(F.Equal(offset, other)).isTrue()) {
+          return S.False;
+        }
+      }
+      IExpr convexBase = base.arg1().isList2() //
+          ? MeshFunctions.convexPointCycleQ(base, engine)
+          : convexPlanarCycleQ(base, engine);
+      return convexBase.isTrue() ? S.True : (convexBase.isFalse() ? S.False : F.NIL);
+    }
+
+    /**
+     * Convexity of a planar point cycle given in 3D. {@link MeshFunctions#convexPointCycleQ} only
+     * accepts 2D points, but the base face of a prism is embedded in space, so the turn direction
+     * is a cross product rather than a scalar: the polygon is convex when every turn points the
+     * same way, i.e. no two cross products oppose each other.
+     */
+    private static IExpr convexPlanarCycleQ(IAST points, EvalEngine engine) {
+      int size = points.argSize();
+      if (size < 3) {
+        return F.NIL;
+      }
+      IAST reference = F.NIL;
+      for (int i = 1; i <= size; i++) {
+        IExpr a = points.get(i);
+        IExpr b = points.get(i % size + 1);
+        IExpr c = points.get((i + 1) % size + 1);
+        if (!a.isList3() || !b.isList3() || !c.isList3()) {
+          return F.NIL;
+        }
+        IAST turn = cross(difference((IAST) b, (IAST) a, engine),
+            difference((IAST) c, (IAST) b, engine), engine);
+        if (turn.isNIL()) {
+          return F.NIL;
+        }
+        IExpr norm = dot(turn, turn, engine);
+        if (norm.isNIL()) {
+          return F.NIL;
+        }
+        if (norm.isZero()) {
+          // three collinear corners bend neither way
+          continue;
+        }
+        if (reference.isNIL()) {
+          reference = turn;
+          continue;
+        }
+        IExpr orientation = dot(turn, reference, engine);
+        if (orientation.isNIL()) {
+          return F.NIL;
+        }
+        if (orientation.isNegativeResult()) {
+          return S.False;
+        }
+        if (!orientation.isPositiveResult()) {
+          return F.NIL;
+        }
+      }
+      return reference.isNIL() ? F.NIL : S.True;
+    }
+
+    private static IAST cross(IAST u, IAST v, EvalEngine engine) {
+      if (u.isNIL() || v.isNIL() || u.argSize() != 3 || v.argSize() != 3) {
+        return F.NIL;
+      }
+      return F.List( //
+          engine.evaluate(
+              F.Subtract(F.Times(u.arg2(), v.arg3()), F.Times(u.arg3(), v.arg2()))), //
+          engine.evaluate(
+              F.Subtract(F.Times(u.arg3(), v.arg1()), F.Times(u.arg1(), v.arg3()))), //
+          engine.evaluate(
+              F.Subtract(F.Times(u.arg1(), v.arg2()), F.Times(u.arg2(), v.arg1()))));
+    }
+
+    private static IAST difference(IAST p, IAST q, EvalEngine engine) {
+      if (p.argSize() != q.argSize()) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(p.argSize());
+      for (int i = 1; i < p.size(); i++) {
+        result.append(engine.evaluate(F.Subtract(p.get(i), q.get(i))));
+      }
+      return result;
+    }
+
+    private static IExpr dot(IAST u, IAST v, EvalEngine engine) {
+      if (u.isNIL() || v.isNIL() || u.argSize() != v.argSize()) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.ast(S.Plus, u.argSize());
+      for (int i = 1; i < u.size(); i++) {
+        sum.append(F.Times(u.get(i), v.get(i)));
+      }
+      return engine.evaluate(sum);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <code>RegionProduct(r1, r2)</code> - the Cartesian product of two regions.
+   *
+   * <p>
+   * Only products that have a name of their own are built; anything else stays unevaluated rather
+   * than inventing a representation for it.
+   */
+  private static class RegionProduct extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr first = MeshFunctions.normalizeRegion(ast.arg1());
+      IExpr second = MeshFunctions.normalizeRegion(ast.arg2());
+
+      IAST firstExtent = lineExtent(first);
+      IAST secondExtent = lineExtent(second);
+
+      // an interval times an interval is an axis-aligned rectangle
+      if (firstExtent.isPresent() && secondExtent.isPresent()) {
+        return F.binaryAST2(S.Rectangle,
+            F.List(firstExtent.arg1(), secondExtent.arg1()), //
+            F.List(firstExtent.arg2(), secondExtent.arg2()));
+      }
+      // a planar region extruded along an interval
+      if (secondExtent.isPresent()) {
+        return extrude(first, secondExtent.arg1(), secondExtent.arg2(), engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The endpoints of a one-dimensional region. Both <code>Interval({a, b})</code> and a
+     * <code>Line</code> between two 1-coordinate points denote the same segment.
+     */
+    private static IAST lineExtent(IExpr region) {
+      if (region.isAST(S.Interval, 2) && region.first().isList2()) {
+        return (IAST) region.first();
+      }
+      if (region.isAST(S.Line, 2) && region.first().isListOfLists()) {
+        IAST points = (IAST) region.first();
+        if (points.argSize() == 2 && points.arg1().isList1() && points.arg2().isList1()) {
+          return F.List(points.arg1().first(), points.arg2().first());
+        }
+      }
+      return F.NIL;
+    }
+
+    /** Sweep a planar region from height {@code low} to {@code high}. */
+    private static IExpr extrude(IExpr base, IExpr low, IExpr high, EvalEngine engine) {
+      if (base.isAST(S.Disk, 2) || base.isAST(S.Disk, 3)) {
+        IExpr center = base.first();
+        if (!center.isList2()) {
+          return F.NIL;
+        }
+        IExpr radius = base.isAST(S.Disk, 3) ? base.second() : F.C1;
+        return F.binaryAST2(S.Cylinder, F.List( //
+            F.List(center.first(), center.second(), low), //
+            F.List(center.first(), center.second(), high)), radius);
+      }
+      IAST corners = polygonCorners(base);
+      if (corners.isPresent()) {
+        IASTAppendable prism = F.ListAlloc(corners.argSize() * 2);
+        appendLifted(prism, corners, low);
+        appendLifted(prism, corners, high);
+        return F.unaryAST1(S.Prism, prism);
+      }
+      return F.NIL;
+    }
+
+    private static void appendLifted(IASTAppendable result, IAST corners, IExpr height) {
+      for (int i = 1; i < corners.size(); i++) {
+        IAST point = (IAST) corners.get(i);
+        result.append(F.List(point.arg1(), point.arg2(), height));
+      }
+    }
+
+    /** The 2D corner cycle of a polygonal region. {@code Triangle()} is the standard triangle. */
+    private static IAST polygonCorners(IExpr region) {
+      if (region.isAST(S.Triangle, 1)) {
+        return F.List(F.List(F.C0, F.C0), F.List(F.C1, F.C0), F.List(F.C0, F.C1));
+      }
+      if (region.isAST(S.Triangle, 2) || region.isAST(S.Polygon, 2)) {
+        IExpr points = region.first();
+        if (points.isListOfLists() && ((IAST) points).forAll(p -> p.isList2())) {
+          return (IAST) points;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>Circumsphere(points)</code> - the sphere through <code>n + 1</code> points in
+   * <code>n</code> dimensions.
+   *
+   * <p>
+   * The result is a <code>Sphere</code> in every dimension, so the circumcircle of three points in
+   * the plane also comes back as <code>Sphere</code>.
+   */
+  private static class Circumsphere extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isListOfLists()) {
+        return F.NIL;
+      }
+      IAST points = (IAST) ast.arg1();
+      int count = points.argSize();
+      if (count < 2 || !points.arg1().isList()) {
+        return F.NIL;
+      }
+      int dimension = ((IAST) points.arg1()).argSize();
+      if (count != dimension + 1) {
+        return F.NIL;
+      }
+      for (int i = 1; i < points.size(); i++) {
+        if (!points.get(i).isList() || ((IAST) points.get(i)).argSize() != dimension) {
+          return F.NIL;
+        }
+      }
+      // Every point is equidistant from the centre x, so subtracting the equation for p0 from the
+      // one for pi clears the quadratic term and leaves n linear equations:
+      // 2*(pi - p0).x == |pi|^2 - |p0|^2
+      IAST first = (IAST) points.arg1();
+      IExpr firstNorm = squaredNorm(first, engine);
+      IASTAppendable matrix = F.ListAlloc(dimension);
+      IASTAppendable rhs = F.ListAlloc(dimension);
+      for (int i = 2; i < points.size(); i++) {
+        IAST point = (IAST) points.get(i);
+        IASTAppendable row = F.ListAlloc(dimension);
+        for (int c = 1; c <= dimension; c++) {
+          row.append(F.Times(F.C2, F.Subtract(point.get(c), first.get(c))));
+        }
+        matrix.append(row);
+        rhs.append(F.Subtract(squaredNorm(point, engine), firstNorm));
+      }
+      IExpr center = S.LinearSolve.ofNIL(engine, matrix, rhs);
+      if (center.isNIL() || !center.isList() || ((IAST) center).argSize() != dimension) {
+        // degenerate: the points are collinear / coplanar and have no circumsphere
+        return F.NIL;
+      }
+      IExpr radius = engine.evaluate(F.Simplify(F.EuclideanDistance(center, first)));
+      return F.binaryAST2(S.Sphere, center, radius);
+    }
+
+    private static IExpr squaredNorm(IAST point, EvalEngine engine) {
+      IASTAppendable sum = F.ast(S.Plus, point.argSize());
+      for (int i = 1; i < point.size(); i++) {
+        sum.append(F.Sqr(point.get(i)));
+      }
+      return engine.evaluate(sum);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <code>PolyhedronData("name", "property")</code> - properties of a named polyhedron.
+   *
+   * <p>
+   * The combinatorics are <b>derived</b>, not tabulated: vertices come from their coordinate
+   * definition, edges are the shortest vertex pairs, and faces follow from those. Only the scalar
+   * properties that have no such derivation (exact volumes, circumradii) are listed, and a property
+   * that has not been entered returns <code>Missing(NotAvailable)</code> rather than a guess.
+   */
+  private static class PolyhedronData extends AbstractEvaluator {
+
+    private static final double GOLDEN = (1.0 + Math.sqrt(5.0)) / 2.0;
+
+    /** Squared-distance slack when deciding which vertices are nearest neighbours. */
+    private static final double TOLERANCE = 1.0e-6;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.isAST2() || !ast.arg1().isString() || !ast.arg2().isString()) {
+        return F.NIL;
+      }
+      String name = ast.arg1().toString();
+      String property = ast.arg2().toString();
+      double[][] vertices = vertices(name);
+      switch (property) {
+        case "Volume":
+          return volume(name);
+        case "Circumradius":
+          return circumradius(name);
+        default:
+          break;
+      }
+      if (vertices == null) {
+        return F.NIL;
+      }
+      List<int[]> faces = faces(name, vertices);
+      if (faces == null) {
+        return F.Missing(S.NotAvailable);
+      }
+      switch (property) {
+        case "VertexCount":
+          return F.ZZ(vertices.length);
+        case "FaceCount":
+          return F.ZZ(faces.size());
+        case "EdgeCount":
+          return F.ZZ(edges(vertices).size());
+        case "FaceIndices":
+          return faceIndices(faces);
+        case "Faces":
+          return F.binaryAST2(S.GraphicsComplex, coordinates(vertices),
+              F.unaryAST1(S.Polygon, faceIndices(faces)));
+        default:
+          return F.Missing(S.NotAvailable);
+      }
+    }
+
+    private static IExpr volume(String name) {
+      switch (name) {
+        case "Icosidodecahedron":
+          // (45 + 17*Sqrt(5))/6
+          return F.Divide(F.Plus(F.ZZ(45), F.Times(F.ZZ(17), F.Sqrt(F.C5))), F.C6);
+        default:
+          return F.Missing(S.NotAvailable);
+      }
+    }
+
+    private static IExpr circumradius(String name) {
+      switch (name) {
+        case "RhombicTriacontahedron":
+          // Its vertices lie on two different spheres, so no single circumradius exists.
+          return F.Missing(S.NotApplicable);
+        default:
+          return F.Missing(S.NotAvailable);
+      }
+    }
+
+    /** Vertex coordinates, or {@code null} when the solid is not known here. */
+    private static double[][] vertices(String name) {
+      switch (name) {
+        case "Icosahedron":
+          return icosahedron();
+        case "TruncatedIcosahedron":
+          return truncatedIcosahedron();
+        default:
+          return null;
+      }
+    }
+
+    /** The cyclic permutations of {@code (0, +-1, +-golden)}. */
+    private static double[][] icosahedron() {
+      double[][] result = new double[12][];
+      int k = 0;
+      for (int s1 = 1; s1 >= -1; s1 -= 2) {
+        for (int s2 = 1; s2 >= -1; s2 -= 2) {
+          result[k++] = new double[] {0, s1, s2 * GOLDEN};
+          result[k++] = new double[] {s1, s2 * GOLDEN, 0};
+          result[k++] = new double[] {s2 * GOLDEN, 0, s1};
+        }
+      }
+      return result;
+    }
+
+    /** Each icosahedron edge is cut at its two third-points, giving 60 vertices. */
+    private static double[][] truncatedIcosahedron() {
+      double[][] seed = icosahedron();
+      List<int[]> seedEdges = edges(seed);
+      double[][] result = new double[seedEdges.size() * 2][];
+      int k = 0;
+      for (int[] edge : seedEdges) {
+        result[k++] = along(seed[edge[0]], seed[edge[1]], 1.0 / 3.0);
+        result[k++] = along(seed[edge[0]], seed[edge[1]], 2.0 / 3.0);
+      }
+      return result;
+    }
+
+    private static double[] along(double[] from, double[] to, double t) {
+      double[] result = new double[from.length];
+      for (int i = 0; i < from.length; i++) {
+        result[i] = from[i] + (to[i] - from[i]) * t;
+      }
+      return result;
+    }
+
+    /** Vertex pairs at the (equal) shortest distance. */
+    private static List<int[]> edges(double[][] vertices) {
+      double shortest = Double.MAX_VALUE;
+      for (int i = 0; i < vertices.length; i++) {
+        for (int j = i + 1; j < vertices.length; j++) {
+          shortest = Math.min(shortest, squaredDistance(vertices[i], vertices[j]));
+        }
+      }
+      List<int[]> result = new ArrayList<int[]>();
+      for (int i = 0; i < vertices.length; i++) {
+        for (int j = i + 1; j < vertices.length; j++) {
+          if (squaredDistance(vertices[i], vertices[j]) - shortest < TOLERANCE) {
+            result.add(new int[] {i, j});
+          }
+        }
+      }
+      return result;
+    }
+
+    /**
+     * Faces as 0-based vertex index cycles, or {@code null} when they are not derived here.
+     *
+     * <p>
+     * The truncated icosahedron's faces come from the solid it was cut from: one pentagon around
+     * each of the 12 original vertices and one hexagon in each of the 20 original faces. Pentagons
+     * are emitted first, which is the order Mathematica reports.
+     */
+    private static List<int[]> faces(String name, double[][] vertices) {
+      if ("Icosahedron".equals(name)) {
+        return triangularFaces(vertices);
+      }
+      if ("TruncatedIcosahedron".equals(name)) {
+        double[][] seed = icosahedron();
+        List<int[]> result = new ArrayList<int[]>();
+        for (double[] corner : seed) {
+          result.add(cycleAround(vertices, corner, 5));
+        }
+        for (int[] face : triangularFaces(seed)) {
+          double[] centre = centroid(seed, face);
+          result.add(cycleAround(vertices, centre, 6));
+        }
+        return result;
+      }
+      return null;
+    }
+
+    /** For a deltahedron: every mutually adjacent triple of vertices is a face. */
+    private static List<int[]> triangularFaces(double[][] vertices) {
+      boolean[][] adjacent = new boolean[vertices.length][vertices.length];
+      for (int[] edge : edges(vertices)) {
+        adjacent[edge[0]][edge[1]] = true;
+        adjacent[edge[1]][edge[0]] = true;
+      }
+      List<int[]> result = new ArrayList<int[]>();
+      for (int i = 0; i < vertices.length; i++) {
+        for (int j = i + 1; j < vertices.length; j++) {
+          for (int k = j + 1; k < vertices.length; k++) {
+            if (adjacent[i][j] && adjacent[i][k] && adjacent[j][k]) {
+              result.add(new int[] {i, j, k});
+            }
+          }
+        }
+      }
+      return result;
+    }
+
+    /** The {@code expected} vertices nearest {@code centre}, ordered around it. */
+    private static int[] cycleAround(double[][] vertices, double[] centre, int expected) {
+      Integer[] order = new Integer[vertices.length];
+      for (int i = 0; i < vertices.length; i++) {
+        order[i] = Integer.valueOf(i);
+      }
+      Arrays.sort(order, Comparator.comparingDouble(i -> squaredDistance(vertices[i], centre)));
+      int[] face = new int[expected];
+      for (int i = 0; i < expected; i++) {
+        face[i] = order[i].intValue();
+      }
+      return sortAroundCentre(vertices, face, centre);
+    }
+
+    /**
+     * Order a face's vertices by their angle in the face plane, so the result is a boundary cycle
+     * rather than an arbitrary set.
+     */
+    private static int[] sortAroundCentre(double[][] vertices, int[] face, double[] centre) {
+      double[] normal = centre.clone();
+      double[] first = subtract(vertices[face[0]], centre);
+      double[] axis2 = cross(normal, first);
+      Integer[] boxed = new Integer[face.length];
+      for (int i = 0; i < face.length; i++) {
+        boxed[i] = Integer.valueOf(face[i]);
+      }
+      Arrays.sort(boxed, Comparator.comparingDouble(v -> {
+        double[] radial = subtract(vertices[v.intValue()], centre);
+        return Math.atan2(dotProduct(radial, axis2), dotProduct(radial, first));
+      }));
+      int[] result = new int[face.length];
+      for (int i = 0; i < face.length; i++) {
+        result[i] = boxed[i].intValue();
+      }
+      return result;
+    }
+
+    private static double[] centroid(double[][] vertices, int[] face) {
+      double[] result = new double[vertices[face[0]].length];
+      for (int index : face) {
+        for (int c = 0; c < result.length; c++) {
+          result[c] += vertices[index][c] / face.length;
+        }
+      }
+      return result;
+    }
+
+    private static double[] subtract(double[] u, double[] v) {
+      double[] result = new double[u.length];
+      for (int i = 0; i < u.length; i++) {
+        result[i] = u[i] - v[i];
+      }
+      return result;
+    }
+
+    private static double[] cross(double[] u, double[] v) {
+      return new double[] {u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2],
+          u[0] * v[1] - u[1] * v[0]};
+    }
+
+    private static double dotProduct(double[] u, double[] v) {
+      double result = 0;
+      for (int i = 0; i < u.length; i++) {
+        result += u[i] * v[i];
+      }
+      return result;
+    }
+
+    private static double squaredDistance(double[] u, double[] v) {
+      double result = 0;
+      for (int i = 0; i < u.length; i++) {
+        double d = u[i] - v[i];
+        result += d * d;
+      }
+      return result;
+    }
+
+    /** Face vertex indices, 1-based as Mathematica reports them. */
+    private static IAST faceIndices(List<int[]> faces) {
+      IASTAppendable result = F.ListAlloc(faces.size());
+      for (int[] face : faces) {
+        IASTAppendable indices = F.ListAlloc(face.length);
+        for (int index : face) {
+          indices.append(F.ZZ(index + 1));
+        }
+        result.append(indices);
+      }
+      return result;
+    }
+
+    private static IAST coordinates(double[][] vertices) {
+      IASTAppendable result = F.ListAlloc(vertices.length);
+      for (double[] vertex : vertices) {
+        IASTAppendable point = F.ListAlloc(vertex.length);
+        for (double coordinate : vertex) {
+          point.append(F.num(coordinate));
+        }
+        result.append(point);
+      }
+      return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
   }
 
   public static void initialize() {

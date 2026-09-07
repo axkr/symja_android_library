@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -278,11 +279,54 @@ public class Area extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * The area of a <code>Polygon</code> in any of its forms: a single boundary
+   * <code>Polygon({p1, ..., pn})</code>, several disjoint components
+   * <code>Polygon({poly1, poly2, ...})</code>, or components with holes cut out of them,
+   * <code>Polygon(outer -> holes)</code>.
+   */
   private static IExpr polygon(IAST geoForm, EvalEngine engine) {
-    if (geoForm.argSize() == 1 && geoForm.arg1().isList()) {
-      return RegionPrimitives.polygonArea((IAST) geoForm.arg1(), engine);
+    if (geoForm.argSize() != 1) {
+      return F.NIL;
     }
-    return F.NIL;
+    IExpr spec = geoForm.arg1();
+    if (spec.isRuleAST()) {
+      IExpr outer = boundaryArea(spec.first(), engine);
+      IExpr holes = boundaryArea(spec.second(), engine);
+      if (outer.isNIL() || holes.isNIL()) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Subtract(outer, holes));
+    }
+    return boundaryArea(spec, engine);
+  }
+
+  /**
+   * The area enclosed by one boundary, or the summed area of a list of boundaries.
+   *
+   * <p>
+   * A point list and a list of point lists are told apart by looking one level down rather than by
+   * counting: <code>{{1,1},{3,1},{3,3}}</code> is one triangle, while
+   * <code>{{{1,1},{3,1},{3,3}}}</code> is a list holding one. Both spellings occur in the same
+   * position - a single hole may be given bare or wrapped in a list.
+   */
+  private static IExpr boundaryArea(IExpr spec, EvalEngine engine) {
+    if (!spec.isListOfLists()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) spec;
+    if (!list.arg1().isListOfLists()) {
+      return RegionPrimitives.polygonArea(list, engine);
+    }
+    IASTAppendable sum = F.PlusAlloc(list.argSize());
+    for (int i = 1; i < list.size(); i++) {
+      IExpr part = boundaryArea(list.get(i), engine);
+      if (part.isNIL()) {
+        return F.NIL;
+      }
+      sum.append(part);
+    }
+    return engine.evaluate(sum);
   }
 
   private static IExpr ellipsoid(IAST geoForm) {
