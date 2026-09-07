@@ -2088,6 +2088,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   private static boolean isPrime(IExpr listOfRules) {
     if (listOfRules.isListOfRules(false)) {
       return listOfRules.exists(x -> !x.second().isInteger() //
+          || !x.second().isPositive() //
           || !((IInteger) x.second()).isProbablePrime());
     }
     return false;
@@ -2664,10 +2665,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             }
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            // try 2nd solver
-            // if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-            // }
+            // the constraint solver could not build a model for this system; fall through and
+            // leave the expression unevaluated rather than report a stack trace
           }
         } else {
           // call cream solver

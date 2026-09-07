@@ -368,18 +368,32 @@ public class ChocoConvert {
     }
     model.getSolver()
         .setSearch(new IntStrategy(vars, new InputOrder<>(model), new IntDomainClosest()));
-    ReExpression[] array = new ReExpression[list.argSize()];
+    List<ReExpression> constraints = new java.util.ArrayList<ReExpression>(list.argSize());
     for (int i = 1; i < list.size(); i++) {
       IExpr element = list.get(i);
-      if (element instanceof IAST) {
-        ReExpression reLHS = relationalIntegerExpression(model, (IAST) element, map);
-        if (reLHS == null) {
-          return null;
-        }
-        array[i - 1] = reLHS;
+      if (element.isTrue()) {
+        // a constraint which always holds constrains nothing
+        continue;
       }
+      if (element.isFalse()) {
+        // a constraint which never holds makes the whole model unsatisfiable
+        return null;
+      }
+      if (!(element instanceof IAST)) {
+        return null;
+      }
+      ReExpression reLHS = relationalIntegerExpression(model, (IAST) element, map);
+      if (reLHS == null) {
+        return null;
+      }
+      constraints.add(reLHS);
     }
-    NaLoExpression nlExpr = new NaLoExpression(LoExpression.Operator.AND, array);
+    if (constraints.isEmpty()) {
+      // without a constraint every point of the search box is a solution, which is not an answer
+      return null;
+    }
+    NaLoExpression nlExpr = new NaLoExpression(LoExpression.Operator.AND,
+        constraints.toArray(new ReExpression[0]));
     nlExpr.post();
     return model;
   }
@@ -496,7 +510,11 @@ public class ChocoConvert {
       return temp;
     }
     if (expr instanceof IInteger) {
-      int value = ((IInteger) expr).toInt(); // throws ArithmeticException
+      int value = expr.toIntDefault();
+      if (F.isNotPresent(value)) {
+        throw new ArgumentTypeException(
+            expr.toString() + " does not fit into an int variable for Solve(..., Integers)");
+      }
       return net.intVar(value);
     }
     if (expr instanceof IFraction) {
@@ -640,6 +658,9 @@ public class ChocoConvert {
     TreeMap<ISymbol, IntVar> map = new TreeMap<ISymbol, IntVar>();
     Model model =
         expr2IntegerSolver(list, equationVariables, map, hybridVars, hybridTuples, domain);
+    if (model == null) {
+      return F.NIL;
+    }
     List<Solution> res = model.getSolver().findAllSolutions(new SolutionCounter(model,
         maximumNumberOfResults < 0 ? Short.MAX_VALUE : maximumNumberOfResults));
     if (res.size() == 0) {

@@ -3283,7 +3283,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       if (value.isInteger()) {
         if (domain == S.Primes) {
-          if (((IInteger) value).isProbablePrime()) {
+          if (value.isPositive() && ((IInteger) value).isProbablePrime()) {
             result.append(F.Equal(variable, value));
           }
         } else {
@@ -3531,7 +3531,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         }
         IExpr value = rule.second();
         if (domain == S.Primes //
-            && !(value.isInteger() && ((IInteger) value).isProbablePrime())) {
+            && !(value.isInteger() && value.isPositive()
+                && ((IInteger) value).isProbablePrime())) {
           ok = false;
           break;
         }
