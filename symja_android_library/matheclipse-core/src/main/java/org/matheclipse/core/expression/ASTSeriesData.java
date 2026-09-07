@@ -1209,16 +1209,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   * Test if this series is a bare <code>O(x^n)</code> term, i.e. carries no coefficient at all. Only
-   * its truncation order is then meaningful.
-   *
-   * @return {@code true} if the representable coefficient range is empty
-   */
-  private boolean isPureOrderTerm() {
-    return minExponent >= truncateOrder;
-  }
-
-  /**
    * Multiply this Puiseux series by (expansionVariable)^(p/q), producing a new SeriesData with
    * adjusted exponent indices and Puiseux denominator.
    *
@@ -1232,25 +1222,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     int scaleQ = newDen / q;
     int shift = p * scaleQ;
 
-    int newMin;
-    int newTruncate;
-    if (isPureOrderTerm()) {
-      // Nothing to drop: O(x^a) * x^(p/q) is exactly O(x^(a + p/q)).
-      newTruncate = truncateOrder * scaleDen + shift;
-      newMin = newTruncate;
-    } else if (scaleDen > 1) {
-      // last original coefficient maps to the new truncation boundary and is dropped.
-      newMin = minExponent * scaleDen + shift;
-      newTruncate = (truncateOrder - 1) * scaleDen + shift;
-    } else {
-      // Integer multiple of the current denominator: no precision loss.
-      newMin = minExponent * scaleDen + shift;
-      newTruncate = truncateOrder * scaleDen + shift;
-    }
+    // O(x^(t/q1)) * x^(p/q) is exactly O(x^(t/q1 + p/q)), whatever the two denominators are: the
+    // finer lattice contains the coarser one, so every stored exponent lands on a lattice point and
+    // the exponents in between are the zeros the coarser denominator already asserted.
+    int newMin = minExponent * scaleDen + shift;
+    int newTruncate = truncateOrder * scaleDen + shift;
 
     if (newTruncate <= newMin) {
-      // every coefficient falls outside the shifted range: the product is the pure O() term at the
-      // new truncation order, which is an answer rather than a failure
+      // an empty coefficient range: the product is the pure O() term at the new truncation order,
+      // which is an answer rather than a failure
       newMin = newTruncate;
     }
 

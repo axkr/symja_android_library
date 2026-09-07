@@ -434,8 +434,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesData() {
+    // x^(1/3)+x^(4/3)+x^(7/3)/2+O(x)^(10/3): the last coefficient used to be dropped and the
+    // truncation order reported as 7/3
     check("Series(Exp(x),{x,0,2})*x^(1/3) // InputForm", //
-        "SeriesData(x,0,{1,0,0,1},1,7,3)");
+        "SeriesData(x,0,{1,0,0,1,0,0,1/2},1,10,3)");
 
     check("Series(Exp(x), {x,0,2}) // InputForm", //
         "SeriesData(x,0,{1,1,1/2},0,3,1)");
@@ -2034,6 +2036,12 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // an infinite expansion point is out of reach of the expansion engine used here
     check("x * Series(Exp(1/x), {x, Infinity, 3}) // InputForm", //
         "SeriesData(x,Infinity,{1,1,1/2,1/6},0,4,1)*x");
+    // a shift onto a finer lattice is exact: O(x^a)*x^(p/q) is O(x^(a+p/q)), and the last
+    // coefficient used to be dropped along with a whole unit of the truncation order
+    check("Sqrt(x) * Series(Exp(x), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,0,1,0,1/2,0,1/6},1,9,2)");
+    check("x^(1/2) * Series(Sin(x), {x, 0, 5}) // InputForm", //
+        "SeriesData(x,0,{1,0,0,0,-1/6,0,0,0,1/120},3,13,2)");
   }
 
   @Test
