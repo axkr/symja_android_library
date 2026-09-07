@@ -3315,6 +3315,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return S.False;
     }
     IASTAppendable result = F.OrAlloc(intervals.size());
+    boolean unbounded = false;
     for (int i = 1; i < intervals.size(); i++) {
       IAST interval = (IAST) intervals.get(i);
       if (interval.argSize() != 4) {
@@ -3335,6 +3336,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           // an unbounded set of primes cannot be described by a ray
           return F.NIL;
         }
+        unbounded = true;
         if (upperInfinite) {
           IExpr lo = ceilBound(engine.evaluate(min), lowerStrict, engine);
           if (lo.isNIL()) {
@@ -3365,7 +3367,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       for (long k = start; k <= end; k++) {
         IInteger candidate = F.ZZ(k);
-        if (domain == S.Primes && !candidate.isProbablePrime()) {
+        if (domain == S.Primes && !(candidate.isPositive() && candidate.isProbablePrime())) {
+          // a prime is positive by definition, even though the primality test accepts a negative
           continue;
         }
         result.append(F.Equal(variable, candidate));
@@ -3374,7 +3377,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (result.isAST0()) {
       return S.False;
     }
-    return result.isAST1() ? result.arg1() : result;
+    IExpr solutionSet = result.isAST1() ? result.arg1() : result;
+    if (unbounded) {
+      // a ray describes integers only together with the domain membership; a finite set names its
+      // members and needs none
+      return F.And(F.Element(variable, domain), solutionSet);
+    }
+    return solutionSet;
   }
 
   /**

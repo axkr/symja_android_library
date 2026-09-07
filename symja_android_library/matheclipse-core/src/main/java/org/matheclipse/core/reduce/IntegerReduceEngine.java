@@ -101,8 +101,33 @@ public final class IntegerReduceEngine {
       case FINITE:
         return engine.evaluate(Emitter.tuplesToOr(finite, domain));
       default:
-        return F.NIL;
+        break;
     }
+    return symbolic(request, domain, engine);
+  }
+
+  /**
+   * Describe an unbounded solution set instead of enumerating it: a ray, a residue class, or a
+   * Boolean combination of them, together with the domain membership without which the condition
+   * would describe real numbers too.
+   */
+  private static IExpr symbolic(Lowering.LinearRequest request, IntegerDomain domain,
+      EvalEngine engine) {
+    if (domain != IntegerDomain.INTEGERS) {
+      // an unbounded set of primes is not a ray or a residue class
+      return F.NIL;
+    }
+    if (!request.targets().containsAll(request.formula().freeVariables())) {
+      // an integer bound on a parameter would read `x > a` as `x >= 1 + a`, which holds only when
+      // the parameter is itself an integer
+      return F.NIL;
+    }
+    Formula normalized = IntegerNormalizer.normalize(request.formula(), false);
+    if (normalized == null) {
+      return F.NIL;
+    }
+    IExpr expression = Emitter.formula(Presburger.simplify(normalized), request.targets());
+    return engine.evaluate(Emitter.withDomainConditions(expression, request.targets(), domain));
   }
 
   /**

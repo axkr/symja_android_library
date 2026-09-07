@@ -934,19 +934,30 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "Reduce(x+y<1&&x>0&&y>0,{x,y},Reals)");
   }
 
-  /** An unbounded integer solution set is described by a ray instead of an enumeration. */
+  /**
+   * An unbounded integer solution set is described by a ray instead of an enumeration, and carries
+   * the domain membership: the ray alone would describe the real numbers beyond the bound too. A
+   * finite set names its members and needs no membership.
+   */
   @Test
   public void testReduceIntegerRays() {
     check("Reduce(x > 0, x, Integers)", //
-        "x>=1");
+        "x∈Integers&&x>=1");
     check("Reduce(x < 5, x, Integers)", //
-        "x<=4");
+        "x∈Integers&&x<=4");
     check("Reduce(x^2 > 1, x, Integers)", //
-        "x<=-2||x>=2");
+        "x∈Integers&&(x<=-2||x>=2)");
     check("Reduce(x^2 >= 9, x, Integers)", //
-        "x<=-3||x>=3");
+        "x∈Integers&&(x<=-3||x>=3)");
     check("Reduce(x^2 >= 0, x, Integers)", //
         "x∈Integers");
+    // a residue class is unbounded too
+    check("Reduce(Mod(x, 3) == 1, x, Integers)", //
+        "x∈Integers&&Mod(x,3)==1");
+    check("Reduce(Mod(2*x, 6) == 4, x, Integers)", //
+        "x∈Integers&&Mod(x,3)==2");
+    check("Reduce(Divisible(x, 3), x, Integers)", //
+        "x∈Integers&&Mod(x,3)==0");
     // an irrational bound is rounded to the enclosed integers
     check("Reduce(x^2 < 5 && x > -3, x, Integers)", //
         "x==-2||x==-1||x==0||x==1||x==2");
