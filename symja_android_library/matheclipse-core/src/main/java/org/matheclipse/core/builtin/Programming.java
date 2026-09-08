@@ -29,6 +29,7 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.eval.tasks.EventLoop;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -2393,13 +2394,15 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        int pause = ast.arg1().toIntDefault();
-        if (pause > 0) {
-          try {
-            TimeUnit.SECONDS.sleep(pause);
-          } catch (InterruptedException e) {
+        IExpr seconds1 = ast.arg1().isReal() ? ast.arg1() : engine.evalN(ast.arg1());
+        if (seconds1.isReal()) {
+          double seconds = seconds1.evalf();
+          if (seconds >= 0.0) {
+            // a pause is where a Wolfram Language program yields, so it is where the handlers of a
+            // socket and the tasks that are due get to run
+            EventLoop.INSTANCE.pauseAndPump(seconds, engine);
+            return S.Null;
           }
-          return S.Null;
         }
       }
       return engine.checkBuiltinArgsSize(ast, this);

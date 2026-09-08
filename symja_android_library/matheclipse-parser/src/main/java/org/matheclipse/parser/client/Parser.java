@@ -324,21 +324,23 @@ public class Parser extends Scanner {
               fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Association));
           assoc.add(function);
           temp = assoc;
-          getNextToken();
-          if (fToken == TT_PRECEDENCE_OPEN) {
-            if (!fExplicitTimes) {
-              Operator oper = fFactory.get("Times");
-              if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-                return getTimesImplicit(temp);
-              }
-            }
-          }
-          if (fToken == TT_ARGUMENTS_OPEN) {
-            return getFunctionArguments(temp);
-          }
-
         } finally {
           fRecursionDepth--;
+        }
+        // read what follows `|>` only after the depth is back: in a script a newline there ends the
+        // statement, and reading it while still counted as inside the association swallowed it, so
+        // the next definition in the file was multiplied onto this one
+        getNextToken();
+        if (fToken == TT_PRECEDENCE_OPEN) {
+          if (!fExplicitTimes) {
+            Operator oper = fFactory.get("Times");
+            if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+              return getTimesImplicit(temp);
+            }
+          }
+        }
+        if (fToken == TT_ARGUMENTS_OPEN) {
+          return getFunctionArguments(temp);
         }
         return temp;
 

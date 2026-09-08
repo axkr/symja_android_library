@@ -45,6 +45,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.io.net.SocketEntry;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.expression.data.InputStreamExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr;
@@ -221,6 +223,10 @@ public class FileFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      SocketEntry socketTarget = SocketFunctions.entryOf(ast.arg1());
+      if (socketTarget != null) {
+        return SocketFunctions.write(socketTarget, toBytes(ast.arg2()), S.BinaryWrite, engine);
+      }
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IExpr arg1 = ast.arg1();
@@ -295,6 +301,10 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
+        SocketEntry socket = SocketFunctions.entryOf(arg1);
+        if (socket != null) {
+          return SocketFunctions.close(socket);
+        }
         if (arg1 instanceof OutputStreamExpr) {
           OutputStreamExpr out = (OutputStreamExpr) arg1;
           out.close();
@@ -1594,8 +1604,15 @@ public class FileFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      SocketEntry socket = SocketFunctions.entryOf(ast.arg1());
+      if (socket != null) {
+        byte[] bytes = socket.take(-1);
+        if (bytes.length == 0 && (socket.isEndOfStream() || socket.isClosed())) {
+          return S.EndOfFile;
+        }
+        return F.stringx(new String(bytes, StandardCharsets.UTF_8));
+      }
       if (Config.isFileSystemEnabled(engine)) {
-
         if (!(ast.arg1() instanceof IStringX)) {
           return Errors.printMessage(ast.topHead(), "string", F.List(), engine);
         }
@@ -1991,8 +2008,13 @@ public class FileFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      SocketEntry socket = SocketFunctions.entryOf(ast.arg1());
+      if (socket != null && ast.arg2().isString()) {
+        // writing to a socket is not a file operation, so it is not behind the file switch
+        return SocketFunctions.write(socket,
+            ast.arg2().toString().getBytes(StandardCharsets.UTF_8), S.WriteString, engine);
+      }
       if (Config.isFileSystemEnabled(engine)) {
-
         if (!(ast.arg1().isString())) {
           // String expected at position `1` in `2`.
           return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
@@ -2027,6 +2049,25 @@ public class FileFunctions {
       return ARGS_2_2;
     }
 
+  }
+
+  /** The bytes an expression stands for: a <code>ByteArray</code>, a list of them, or a string. */
+  private static byte[] toBytes(IExpr expr) {
+    if (expr instanceof ByteArrayExpr) {
+      return ((ByteArrayExpr) expr).toData();
+    }
+    if (expr.isString()) {
+      return expr.toString().getBytes(StandardCharsets.UTF_8);
+    }
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      byte[] bytes = new byte[list.argSize()];
+      for (int i = 1; i < list.size(); i++) {
+        bytes[i - 1] = (byte) list.get(i).toIntDefault(0);
+      }
+      return bytes;
+    }
+    return new byte[0];
   }
 
   private static DataInput getDataInput(IExpr readerExpr, EvalEngine engine)

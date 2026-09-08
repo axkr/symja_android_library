@@ -945,6 +945,17 @@ public class Config {
    */
   public static boolean PROCESS_MODE = false;
 
+  /**
+   * Enable the built-ins that reach outside the process: TCP sockets, external processes and the
+   * links between two kernels. Separate from {@link #FILESYSTEM_ENABLED} because reading a file and
+   * opening a port are different things to allow, and an embedded Symja usually wants neither.
+   */
+  public static boolean OS_ACCESS_ENABLED = false;
+
+  public static boolean isOSAccessEnabled(EvalEngine engine) {
+    return OS_ACCESS_ENABLED;
+  }
+
   // load version string from MAVEN
   public static String VERSION = "?";
 

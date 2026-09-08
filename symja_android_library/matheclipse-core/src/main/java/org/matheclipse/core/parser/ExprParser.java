@@ -537,22 +537,23 @@ public class ExprParser extends Scanner {
           function.set(0, S.Association);
           temp = function;
           // }
-          getNextToken();
-          if (fToken == TT_PRECEDENCE_OPEN) {
-            if (!fExplicitTimes) {
-              // Operator oper = fFactory.get("Times");
-              if (ParserConfig.DOMINANT_IMPLICIT_TIMES || Precedence.TIMES >= min_precedence) {
-                return getTimesImplicit(temp);
-              }
-            }
-          }
-          if (fToken == TT_ARGUMENTS_OPEN) {
-            return getFunctionArguments(temp);
-          }
-          return temp;
         } finally {
           fRecursionDepth--;
         }
+        // read what follows `|>` only after the depth is back: in a script a newline there ends the
+        // statement, and reading it while still counted as inside the association swallowed it
+        getNextToken();
+        if (fToken == TT_PRECEDENCE_OPEN) {
+          if (!fExplicitTimes) {
+            if (ParserConfig.DOMINANT_IMPLICIT_TIMES || Precedence.TIMES >= min_precedence) {
+              return getTimesImplicit(temp);
+            }
+          }
+        }
+        if (fToken == TT_ARGUMENTS_OPEN) {
+          return getFunctionArguments(temp);
+        }
+        return temp;
       case TT_PRECEDENCE_CLOSE:
         throwSyntaxError("Too much closing ) in factor.");
         break;

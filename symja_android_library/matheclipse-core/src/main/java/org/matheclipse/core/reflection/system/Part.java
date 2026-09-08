@@ -633,6 +633,24 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * @param engine the evaluation engine
    * @return
    */
+  /**
+   * The one part an atom has: position <code>0</code>, its head. <code>Alert[[0]]</code> is
+   * <code>Symbol</code>, and <code>Hold[Alert][[1, 0]]</code> is <code>Symbol</code> too - which is
+   * how a template asks whether the name it collected stands for a symbol or for a call.
+   *
+   * @return {@link F#NIL} when the specification asks for anything else
+   */
+  private static IExpr atomPart(IExpr atom, IAST ast, int pos, EvalEngine engine) {
+    IExpr result = atom;
+    for (int i = pos; i < ast.size(); i++) {
+      if (engine.evaluate(ast.get(i)).toIntDefault() != 0) {
+        return F.NIL;
+      }
+      result = result.head();
+    }
+    return result;
+  }
+
   public static IExpr part(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {
     final IExpr arg2 = engine.evaluate(ast.get(pos));
     int p1 = pos + 1;
@@ -659,6 +677,10 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           } else if (result.isSparseArray()) {
             return sparsePart((ISparseArray) result, ast, p1, engine);
           } else {
+            IExpr headOfAtom = atomPart(result, ast, p1, engine);
+            if (headOfAtom.isPresent()) {
+              return headOfAtom;
+            }
             // Part specification `1` is longer than depth of object.
             return Errors.printMessage(S.Part, "partd", F.list(result), engine);
           }

@@ -177,4 +177,52 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
       Config.FILESYSTEM_ENABLED = fileSystem;
     }
   }
+
+  @Test
+  public void testTheHeadOfAnAtomIsPartZero() {
+    // Hold[Alert][[1, 0]] asks whether the name a template collected stands for a symbol or for a
+    // call. Part refused it because part 1 is an atom, so every WLX page localised its variables
+    // as Extract[…] expressions instead of as symbols and no page rendered.
+    check("Hold(Alert)[[1, 0]]", //
+        "Symbol");
+    check("Extract(Hold(Alert), {1, 0}, Hold)", //
+        "Hold(Symbol)");
+    check("Extract(Hold(f(x)), {1, 0}, Hold)", //
+        "Hold(f)");
+    check("Hold(\"text\")[[1, 0]]", //
+        "String");
+    // and a position that is not the head is still an error
+    check("Hold(Alert)[[1, 2]]", //
+        "Hold(alert)[[1,2]]", //
+        "Part: Part specification alert is longer than depth of object.");
+  }
+
+  @Test
+  public void testANewlineAfterAnAssociationEndsTheStatement(@TempDir Path directory)
+      throws IOException {
+    // In a script a newline separates two statements, but the token after |> was read while the
+    // parser still counted itself as inside the association, so the newline was swallowed and the
+    // next definition in the file was multiplied onto the association.
+    Path file = directory.resolve("Assoc.wl");
+    Files.write(file, ("packet(x_) :=\n" //
+        + "  <|\n" //
+        + "    \"a\" -> x\n" //
+        + "  |>\n" //
+        + "\n" //
+        + "packet(x_, y_) := {x, y}\n").getBytes(StandardCharsets.UTF_8));
+    boolean fileSystem = Config.FILESYSTEM_ENABLED;
+    Config.FILESYSTEM_ENABLED = true;
+    try {
+      check("Get(\"" + file.toString().replace("\\", "\\\\") + "\")", //
+          "");
+      check("Length(DownValues(packet))", //
+          "2");
+      check("packet(1)", //
+          "<|a->1|>");
+      check("packet(1, 2)", //
+          "{1,2}");
+    } finally {
+      Config.FILESYSTEM_ENABLED = fileSystem;
+    }
+  }
 }
