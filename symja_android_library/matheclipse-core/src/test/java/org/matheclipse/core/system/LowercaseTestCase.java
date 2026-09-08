@@ -4130,6 +4130,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testContinuedFraction() {
+    // for a quadratic irrational the requested number of terms must stop the search for the end of
+    // the period, which can be far longer than the requested prefix
+    check("ContinuedFraction(Sqrt(2),3)", //
+        "{1,2,2}");
+    check("ContinuedFraction(Sqrt(13),4)", //
+        "{3,1,1,1}");
+    check("ContinuedFraction(-Sqrt(70),3)", //
+        "{-8,-2,-1}");
+    // the period of Sqrt(10^15) has more than 10^7 terms
+    check("ContinuedFraction(Sqrt(1000000000000000),5)", //
+        "{31622776,1,1,1,1}");
 
     // ContinuedFraction: Warning: ContinuedFraction terminated before 20 terms.
     check("ContinuedFraction(1/2, 20)", //
@@ -7112,7 +7123,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1∈Integers");
 
     check("Element(Sqrt(2), #) & /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
-        "{True,Sqrt(2)∈Algebraics,True,Sqrt(2)∈Rationals,False,False}");
+        "{True,True,True,Sqrt(2)∈Rationals,False,False}");
     check("Element(ComplexInfinity, Complexes)", //
         "False");
     check("{x} \\[Element] Reals", //
@@ -17213,9 +17224,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("NotElement(a, Reals)", //
         "a∉Reals");
-    // TODO improve Rationals and Algebraics domains
+    // TODO improve the Rationals domain
     check("NotElement(Sqrt(2), #)& /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
-        "{False,Sqrt(2)∉Algebraics,False,Sqrt(2)∉Rationals,True,True}");
+        "{False,False,False,Sqrt(2)∉Rationals,True,True}");
   }
 
   @Test
@@ -21240,6 +21251,329 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+
+  @Test
+  public void testRootApproximant() {
+    // exact numbers are returned unchanged
+    check("RootApproximant(2)", //
+        "2");
+    check("RootApproximant(1/3)", //
+        "1/3");
+    check("RootApproximant(0.)", //
+        "0");
+
+    // degree 1: rational reconstruction
+    check("RootApproximant(0.5)", //
+        "1/2");
+    check("RootApproximant(0.1)", //
+        "1/10");
+
+    // degree 2 candidates are converted to radicals by Root()
+    check("RootApproximant(N(Sqrt(2)))", //
+        "Sqrt(2)");
+    check("RootApproximant(N(GoldenRatio))", //
+        "1/2+Sqrt(5)/2");
+    check("RootApproximant(N(Sqrt(-2)))", //
+        "I*Sqrt(2)");
+
+    // higher degrees stay Root() objects
+    check("RootApproximant(N(2^(1/3)))", //
+        "Root(-2+#1^3&,1,0)");
+    // the plastic number
+    check("RootApproximant(1.3247179572447)", //
+        "Root(-1-#1+#1^3&,1,0)");
+    check("RootApproximant(N(Sqrt(2))+N(Sqrt(3)))", //
+        "Root(1-10*#1^2+#1^4&,4,0)");
+    check("RootApproximant(N(2^(1/5),30))", //
+        "Root(-2+#1^5&,1,0)");
+    check("RootApproximant(N(2^(1/7),40),7)", //
+        "Root(-2+#1^7&,1,0)");
+
+    // Gaussian rationals are found from the real and the imaginary part
+    check("RootApproximant(0.5+0.5*I)", //
+        "1/2+I*1/2");
+
+    // arbitrary precision input
+    check("RootApproximant(N(Sqrt(2),50))", //
+        "Sqrt(2)");
+
+    // transcendental numbers are returned unchanged
+    check("RootApproximant(N(Pi))", //
+        "3.14159");
+    check("RootApproximant(N(Pi,30))", //
+        "3.14159265358979323846264338327");
+    // a degree which is too small finds nothing
+    check("RootApproximant(N(Sqrt(2)),1)", //
+        "1.41421");
+
+    // listable
+    check("RootApproximant({0.5,N(Sqrt(3))})", //
+        "{1/2,Sqrt(3)}");
+
+    // symbolic input stays unevaluated
+    check("RootApproximant(x)", //
+        "RootApproximant(x)");
+
+    // RootApproximant: Positive machine-sized integer expected at position 2 in
+    // RootApproximant(1.5,0).
+    check("RootApproximant(1.5,0)", //
+        "RootApproximant(1.5,0)");
+  }
+
+  @Test
+  public void testAlgebraicNumberNorm() {
+    check("AlgebraicNumberNorm(Sqrt(2))", //
+        "-2");
+    check("AlgebraicNumberNorm(1+Sqrt(2))", //
+        "-1");
+    check("AlgebraicNumberNorm(2^(1/3))", //
+        "2");
+    check("AlgebraicNumberNorm((1+Sqrt(5))/2)", //
+        "-1");
+    check("AlgebraicNumberNorm(I)", //
+        "1");
+    check("AlgebraicNumberNorm(Sqrt(-5))", //
+        "5");
+    check("AlgebraicNumberNorm(Sqrt(2)+Sqrt(3))", //
+        "1");
+    check("AlgebraicNumberNorm(Root(-1-#1+#1^3&,1))", //
+        "1");
+    // a rational number is its own norm
+    check("AlgebraicNumberNorm(3)", //
+        "3");
+    check("AlgebraicNumberNorm(Pi)", //
+        "AlgebraicNumberNorm(Pi)");
+    check("AlgebraicNumberNorm({Sqrt(2),1+Sqrt(2)})", //
+        "{-2,-1}");
+  }
+
+  @Test
+  public void testAlgebraicNumberTrace() {
+    check("AlgebraicNumberTrace(Sqrt(2))", //
+        "0");
+    check("AlgebraicNumberTrace(1+Sqrt(2))", //
+        "2");
+    check("AlgebraicNumberTrace((1+Sqrt(5))/2)", //
+        "1");
+    check("AlgebraicNumberTrace(2^(1/3))", //
+        "0");
+    check("AlgebraicNumberTrace(Pi)", //
+        "AlgebraicNumberTrace(Pi)");
+  }
+
+  @Test
+  public void testAlgebraicUnitQ() {
+    check("AlgebraicUnitQ(1+Sqrt(2))", //
+        "True");
+    check("AlgebraicUnitQ((1+Sqrt(5))/2)", //
+        "True");
+    check("AlgebraicUnitQ(2+Sqrt(3))", //
+        "True");
+    check("AlgebraicUnitQ(I)", //
+        "True");
+    check("AlgebraicUnitQ(-1)", //
+        "True");
+    // the plastic number is a root of x^3-x-1 and therefore a unit
+    check("AlgebraicUnitQ(Root(-1-#1+#1^3&,1))", //
+        "True");
+
+    check("AlgebraicUnitQ(Sqrt(2))", //
+        "False");
+    check("AlgebraicUnitQ(2)", //
+        "False");
+    check("AlgebraicUnitQ(1/2)", //
+        "False");
+    check("AlgebraicUnitQ(Pi)", //
+        "False");
+  }
+
+  @Test
+  public void testNumberFieldSignature() {
+    check("NumberFieldSignature(Sqrt(2))", //
+        "{2,0}");
+    check("NumberFieldSignature(Sqrt(-2))", //
+        "{0,1}");
+    check("NumberFieldSignature(I)", //
+        "{0,1}");
+    check("NumberFieldSignature(2^(1/3))", //
+        "{1,1}");
+    check("NumberFieldSignature(2^(1/4))", //
+        "{2,1}");
+    check("NumberFieldSignature(2^(1/6))", //
+        "{2,2}");
+    check("NumberFieldSignature(Sqrt(2)+Sqrt(3))", //
+        "{4,0}");
+    check("NumberFieldSignature(Sqrt(2)+2^(1/3))", //
+        "{2,2}");
+    check("NumberFieldSignature(Root(-1-#1+#1^3&,1))", //
+        "{1,1}");
+    check("NumberFieldSignature(3)", //
+        "{1,0}");
+  }
+
+  @Test
+  public void testNumberFieldDiscriminant() {
+    check("NumberFieldDiscriminant(Sqrt(2))", //
+        "8");
+    check("NumberFieldDiscriminant(Sqrt(3))", //
+        "12");
+    check("NumberFieldDiscriminant(Sqrt(5))", //
+        "5");
+    check("NumberFieldDiscriminant(Sqrt(13))", //
+        "13");
+    check("NumberFieldDiscriminant(I)", //
+        "-4");
+    check("NumberFieldDiscriminant(Sqrt(-3))", //
+        "-3");
+    check("NumberFieldDiscriminant(Sqrt(-5))", //
+        "-20");
+    check("NumberFieldDiscriminant(3)", //
+        "1");
+    // for a degree above 2 the maximal order is only recognized when the polynomial discriminant
+    // is squarefree
+    check("NumberFieldDiscriminant(2^(1/3))", //
+        "NumberFieldDiscriminant(2^(1/3))");
+  }
+
+  @Test
+  public void testNumberFieldIntegralBasis() {
+    check("NumberFieldIntegralBasis(Sqrt(2))", //
+        "{1,Sqrt(2)}");
+    check("NumberFieldIntegralBasis(Sqrt(5))", //
+        "{1,1/2*(1+Sqrt(5))}");
+    check("NumberFieldIntegralBasis(Sqrt(13))", //
+        "{1,1/2*(1+Sqrt(13))}");
+    check("NumberFieldIntegralBasis(I)", //
+        "{1,I}");
+    check("NumberFieldIntegralBasis(Sqrt(-5))", //
+        "{1,I*Sqrt(5)}");
+    check("NumberFieldIntegralBasis(3)", //
+        "{1}");
+  }
+
+  @Test
+  public void testNumberFieldFundamentalUnits() {
+    check("NumberFieldFundamentalUnits(Sqrt(2))", //
+        "{1+Sqrt(2)}");
+    check("NumberFieldFundamentalUnits(Sqrt(3))", //
+        "{2+Sqrt(3)}");
+    check("NumberFieldFundamentalUnits(Sqrt(5))", //
+        "{1/2*(1+Sqrt(5))}");
+    check("NumberFieldFundamentalUnits(Sqrt(13))", //
+        "{1/2*(3+Sqrt(13))}");
+    // an imaginary quadratic field has only roots of unity as units
+    check("NumberFieldFundamentalUnits(Sqrt(-5))", //
+        "{}");
+    check("NumberFieldFundamentalUnits(I)", //
+        "{}");
+  }
+
+  @Test
+  public void testNumberFieldRegulator() {
+    check("NumberFieldRegulator(Sqrt(2))", //
+        "Log(1+Sqrt(2))");
+    check("NumberFieldRegulator(Sqrt(3))", //
+        "Log(2+Sqrt(3))");
+    // the unit group of an imaginary quadratic field is finite
+    check("NumberFieldRegulator(Sqrt(-5))", //
+        "1");
+    check("NumberFieldRegulator(I)", //
+        "1");
+  }
+
+  @Test
+  public void testNumberFieldClassNumber() {
+    check("NumberFieldClassNumber(Sqrt(-1))", //
+        "1");
+    check("NumberFieldClassNumber(Sqrt(-5))", //
+        "2");
+    check("NumberFieldClassNumber(Sqrt(-23))", //
+        "3");
+    check("NumberFieldClassNumber(Sqrt(-14))", //
+        "4");
+    check("NumberFieldClassNumber(Sqrt(-163))", //
+        "1");
+    check("NumberFieldClassNumber(Sqrt(3))", //
+        "1");
+    check("NumberFieldClassNumber(Sqrt(10))", //
+        "2");
+    check("NumberFieldClassNumber(Sqrt(79))", //
+        "3");
+    check("NumberFieldClassNumber(Sqrt(82))", //
+        "4");
+  }
+
+  @Test
+  public void testNumberFieldRootsOfUnity() {
+    check("NumberFieldRootsOfUnity(I)", //
+        "{1,I,-1,-I}");
+    check("NumberFieldRootsOfUnity(Sqrt(-3))", //
+        "{1,1/2+I*1/2*Sqrt(3),-1/2+I*1/2*Sqrt(3),-1,-1/2-I*1/2*Sqrt(3),1/2-I*1/2*Sqrt(3)}");
+    check("NumberFieldRootsOfUnity(Sqrt(2))", //
+        "{1,-1}");
+    check("NumberFieldRootsOfUnity(Sqrt(-5))", //
+        "{1,-1}");
+    check("NumberFieldRootsOfUnity(3)", //
+        "{1,-1}");
+  }
+
+  @Test
+  public void testAlgebraicNumberQ() {
+    check("AlgebraicNumberQ(2)", //
+        "True");
+    check("AlgebraicNumberQ(1/3)", //
+        "True");
+    check("AlgebraicNumberQ(2+3*I)", //
+        "True");
+    check("AlgebraicNumberQ(Sqrt(2))", //
+        "True");
+    check("AlgebraicNumberQ(2^(1/3)+Sqrt(5))", //
+        "True");
+    check("AlgebraicNumberQ((1+Sqrt(5))/2)", //
+        "True");
+    check("AlgebraicNumberQ(3^(-2/3))", //
+        "True");
+    check("AlgebraicNumberQ(Surd(2,3))", //
+        "True");
+    check("AlgebraicNumberQ(CubeRoot(2))", //
+        "True");
+    check("AlgebraicNumberQ(Root(-2+#1^3&,1))", //
+        "True");
+
+    // inexact numbers are never algebraic numbers
+    check("AlgebraicNumberQ(1.5)", //
+        "False");
+    check("AlgebraicNumberQ(Sqrt(2.0))", //
+        "False");
+    // transcendental constants
+    check("AlgebraicNumberQ(Pi)", //
+        "False");
+    check("AlgebraicNumberQ(E)", //
+        "False");
+    check("AlgebraicNumberQ(2^Pi)", //
+        "False");
+    check("AlgebraicNumberQ(Sin(1))", //
+        "False");
+    check("AlgebraicNumberQ(Infinity)", //
+        "False");
+    // symbols are not explicit algebraic numbers, not even GoldenRatio
+    check("AlgebraicNumberQ(x)", //
+        "False");
+    check("AlgebraicNumberQ(Sqrt(x))", //
+        "False");
+    check("AlgebraicNumberQ(GoldenRatio)", //
+        "False");
+    // a Root() object whose polynomial has a non-rational coefficient
+    check("AlgebraicNumberQ(Root(#1^3-Sqrt(2)&,1))", //
+        "False");
+
+    check("AlgebraicNumberQ({1,Sqrt(2),x})", //
+        "{True,True,False}");
+
+    // Element(_, Algebraics) uses the same structural test
+    check("Element(Sqrt(2)+2^(1/3), Algebraics)", //
+        "True");
+  }
 
   @Test
   public void testQuadraticIrrationalQ() {

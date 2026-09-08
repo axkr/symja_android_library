@@ -166,6 +166,119 @@ public final class AlgebraicNumberUtils {
     return false;
   }
 
+  /**
+   * Test whether the given expression is an <i>explicit</i> algebraic number, i.e. whether it is
+   * built up from rational numbers, complex numbers with rational parts, {@code Root[...]} and
+   * {@code AlgebraicNumber[...]} objects with rational coefficients, using {@code Plus},
+   * {@code Times}, {@code Power} with a rational exponent, {@code Sqrt} and {@code Surd}.
+   *
+   * <p>
+   * The check is purely structural, no evaluation and no minimal polynomial computation takes
+   * place. In particular symbols are never algebraic numbers here: neither a free variable
+   * {@code x}, nor a symbolic constant like {@code Pi} (transcendental) or {@code GoldenRatio}
+   * (algebraic, but only after {@code FunctionExpand}).
+   *
+   * @param expr the expression to inspect
+   * @return <code>true</code> if <code>expr</code> is an explicit algebraic number
+   */
+  public static boolean isExplicitAlgebraicNumber(IExpr expr) {
+    if (expr == null) {
+      return false;
+    }
+    if (expr.isRational()) {
+      return true;
+    }
+    if (expr.isComplex()) {
+      // Complex[] in Symja always has IRational real and imaginary parts
+      return true;
+    }
+    if (expr.isNumber()) {
+      // inexact numbers are never algebraic numbers
+      return false;
+    }
+    if (!expr.isAST()) {
+      // symbols (including Pi, E, GoldenRatio, Infinity) and all other atoms
+      return false;
+    }
+    IAST ast = (IAST) expr;
+    IExpr head = ast.head();
+    if (head == S.Root) {
+      return isRationalRootObject(ast);
+    }
+    if (head == S.AlgebraicNumber && ast.argSize() == 2) {
+      IExpr generator = ast.arg1();
+      if (!generator.isRational() && !isRationalRootObject(generator)) {
+        return false;
+      }
+      IExpr coefficients = ast.arg2();
+      if (!coefficients.isList()) {
+        return coefficients.isRational();
+      }
+      IAST list = (IAST) coefficients;
+      for (int i = 1; i < list.size(); i++) {
+        if (!list.get(i).isRational()) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (head == S.Plus || head == S.Times) {
+      for (int i = 1; i < ast.size(); i++) {
+        if (!isExplicitAlgebraicNumber(ast.get(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (head == S.Power && ast.argSize() == 2) {
+      return ast.arg2().isRational() && isExplicitAlgebraicNumber(ast.arg1());
+    }
+    if ((head == S.Sqrt || head == S.CubeRoot) && ast.argSize() == 1) {
+      return isExplicitAlgebraicNumber(ast.arg1());
+    }
+    if (head == S.Surd && ast.argSize() == 2) {
+      return ast.arg2().isInteger() && !ast.arg2().isZero()
+          && isExplicitAlgebraicNumber(ast.arg1());
+    }
+    return false;
+  }
+
+  /**
+   * Test whether the given expression is a {@code Root[f, k]} or {@code Root[f, k, n]} object whose
+   * defining polynomial has rational coefficients only.
+   *
+   * @param expr
+   * @return
+   */
+  private static boolean isRationalRootObject(IExpr expr) {
+    if (!expr.isAST(S.Root, 3) && !expr.isAST(S.Root, 4)) {
+      return false;
+    }
+    IAST root = (IAST) expr;
+    IExpr function = root.arg1();
+    if (!function.isFunction()) {
+      return false;
+    }
+    if (!root.arg2().isInteger() || !root.arg2().isPositive()) {
+      return false;
+    }
+    if (root.isAST(S.Root, 4) && !root.arg3().isZero() && !root.arg3().isOne()) {
+      return false;
+    }
+    IExpr[] coefficients =
+        org.matheclipse.core.reflection.system.Root.polynomialCoefficients(function.first());
+    if (coefficients == null) {
+      return false;
+    }
+    for (int i = 0; i < coefficients.length; i++) {
+      if (!coefficients[i].isRational()) {
+        return false;
+      }
+    }
+    // the root index must not exceed the degree of the polynomial
+    return root.arg2().toIntDefault() <= coefficients.length - 1;
+  }
+
   private static boolean containsI(IAST generators) {
     for (int i = 1; i <= generators.argSize(); i++) {
       if (generators.get(i).isImaginaryUnit()) {

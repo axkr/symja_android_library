@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.AlgebraicNumberUtils;
 
 public class AssumptionFunctions {
   /**
@@ -264,7 +265,11 @@ public class AssumptionFunctions {
         switch (symbolID) {
           case ID.Algebraics:
             truthValue = AbstractAssumptions.assumeAlgebraic(expr);
-            return (truthValue != null) ? truthValue : F.NIL;
+            if (truthValue != null) {
+              return truthValue;
+            }
+            // structural test for a compound expression, e.g. Sqrt(2)+2^(1/3) is algebraic
+            return AlgebraicNumberUtils.isExplicitAlgebraicNumber(expr) ? S.True : F.NIL;
           case ID.Arrays:
             truthValue = AbstractAssumptions.assumeArray(expr);
             return (truthValue != null) ? truthValue : F.NIL;

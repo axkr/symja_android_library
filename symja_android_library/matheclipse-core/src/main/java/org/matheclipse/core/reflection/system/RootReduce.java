@@ -89,7 +89,46 @@ public class RootReduce extends AbstractFunctionEvaluator {
         return engine.evaluate(F.Divide(F.Negate(c0), c1));
       }
 
-      // Step 4: compute numerical roots of the minimal polynomial
+      // Step 5: numerically evaluate the input expression
+      IExpr numericArg1 = S.N.funEval(engine, arg1);
+      if (!numericArg1.isNumber()) {
+        return F.NIL;
+      }
+
+      // Steps 4, 6 and 7: pick the root of the minimal polynomial which is closest to the
+      // numerical value of the input and return it as a Root[] object
+      return nearestRootObject(polyInX, x, minPoly, numericArg1, 1e-6, engine);
+
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * Determine the root of the univariate polynomial <code>polyInX</code> which lies closest to
+   * <code>numericValue</code> and return it as a <code>Root[f, k, 0]</code> object.
+   *
+   * <p>
+   * The roots are ordered the way Wolfram Language indexes them: real roots first (ascending), then
+   * the complex roots (real part ascending, imaginary part ascending). This has to agree with the
+   * sort in {@link ToRadicals#rootToRadicals(IAST, EvalEngine)} so that the resulting
+   * <code>Root[..., k, 0]</code> expands back to the same algebraic number.
+   *
+   * @param polyInX a univariate polynomial in <code>x</code>
+   * @param x the variable of <code>polyInX</code>
+   * @param pureFunction the same polynomial as a pure function of <code>Slot1</code>, or
+   *        {@link F#NIL} to let this method build it from <code>polyInX</code>
+   * @param numericValue the numerical value which selects the root
+   * @param tolerance the maximum accepted distance between <code>numericValue</code> and the
+   *        selected root
+   * @param engine the evaluation engine
+   * @return the <code>Root[f, k, 0]</code> object or {@link F#NIL} if no root is close enough
+   */
+  public static IExpr nearestRootObject(IExpr polyInX, ISymbol x, IExpr pureFunction,
+      IExpr numericValue, double tolerance, EvalEngine engine) {
+    try {
+      // Step 4: compute numerical roots of the polynomial
       IExpr nrootsResult = S.NRoots.funEval(engine, polyInX, x);
       if (!nrootsResult.isList()) {
         return F.NIL;
@@ -139,16 +178,10 @@ public class RootReduce extends AbstractFunctionEvaluator {
         });
       }
 
-      // Step 5: numerically evaluate the input expression
-      IExpr numericArg1 = S.N.funEval(engine, arg1);
-      if (!numericArg1.isNumber()) {
-        return F.NIL;
-      }
-
-      // Step 6: find the root index k (1-based) whose numeric value is closest to arg1,
+      // Step 6: find the root index k (1-based) whose numeric value is closest to the given value,
       // using the sorted ordering so k matches WMA's Root[f, k, 0] convention.
-      double re1 = numericArg1.re().evalfNaN();
-      double im1 = numericArg1.im().evalfNaN();
+      double re1 = numericValue.re().evalfNaN();
+      double im1 = numericValue.im().evalfNaN();
       if (Double.isNaN(re1) || Double.isNaN(im1)) {
         return F.NIL;
       }
@@ -169,14 +202,18 @@ public class RootReduce extends AbstractFunctionEvaluator {
         }
       }
 
-      if (bestK < 1 || minDist > 1e-6) {
+      if (bestK < 1 || minDist > tolerance) {
         return F.NIL;
       }
 
-      // Step 7: build and return Root[minPoly_pure_function, k, 0]. The trailing 0 marks
+      // Step 7: build and return Root[pure_function, k, 0]. The trailing 0 marks
       // WMA's "real-first" ordering convention; quadratic Root expressions will
       // auto-evaluate via Root.evaluate to their radical form.
-      return F.ternaryAST3(S.Root, minPoly, F.ZZ(bestK), F.C0);
+      IExpr function = pureFunction;
+      if (function.isNIL()) {
+        function = F.Function(F.subst(polyInX, x, F.Slot1));
+      }
+      return F.ternaryAST3(S.Root, function, F.ZZ(bestK), F.C0);
 
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);

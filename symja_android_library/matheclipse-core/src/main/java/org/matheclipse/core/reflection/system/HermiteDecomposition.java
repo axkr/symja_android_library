@@ -55,6 +55,26 @@ public class HermiteDecomposition extends AbstractFunctionEvaluator {
   }
 
   /**
+   * Compute the row Hermite normal form of the given matrix. Rows which became zero during the
+   * reduction are moved to the end, so the leading non-zero rows are a basis of the row lattice of
+   * <code>matrix</code>.
+   *
+   * @param matrix the array isn't modified
+   * @return a new matrix in row Hermite normal form
+   */
+  public static BigInteger[][] hermiteNormalForm(BigInteger[][] matrix) {
+    int rows = matrix.length;
+    BigInteger[][] H = new BigInteger[rows][];
+    for (int i = 0; i < rows; i++) {
+      H[i] = matrix[i].clone();
+    }
+    if (rows > 0) {
+      computeHNF(H, createIdentity(rows));
+    }
+    return H;
+  }
+
+  /**
    * Computes the Row Hermite Normal Form (HNF). Modifies H and U in-place.
    */
   private static void computeHNF(BigInteger[][] H, BigInteger[][] U) {

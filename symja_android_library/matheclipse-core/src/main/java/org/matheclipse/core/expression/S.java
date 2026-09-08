@@ -481,6 +481,16 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlgebraicNumberQ.md">AlgebraicNumberQ
    *      documentation</a>
    */
+  /**
+   * AlgebraicNumberNorm(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/AlgebraicNumberNorm.md">AlgebraicNumberNorm
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicNumberNorm =
+      S.initFinalSymbol("AlgebraicNumberNorm", ID.AlgebraicNumberNorm);
+
   public final static IBuiltInSymbol AlgebraicNumberQ =
       S.initFinalSymbol("AlgebraicNumberQ", ID.AlgebraicNumberQ);
 
@@ -494,6 +504,26 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Alignment = S.initFinalSymbol("Alignment", ID.Alignment);
+
+  /**
+   * AlgebraicNumberTrace(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/AlgebraicNumberTrace.md">AlgebraicNumberTrace
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicNumberTrace =
+      S.initFinalSymbol("AlgebraicNumberTrace", ID.AlgebraicNumberTrace);
+
+  /**
+   * AlgebraicUnitQ(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/AlgebraicUnitQ.md">AlgebraicUnitQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicUnitQ =
+      S.initFinalSymbol("AlgebraicUnitQ", ID.AlgebraicUnitQ);
 
   public final static IBuiltInSymbol AlignmentPoint =
       S.initFinalSymbol("AlignmentPoint", ID.AlignmentPoint);
@@ -15153,6 +15183,56 @@ public class S {
 
   public final static IBuiltInSymbol NumberDigit = S.initFinalSymbol("NumberDigit", ID.NumberDigit);
 
+  /**
+   * NumberFieldClassNumber(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/NumberFieldClassNumber.md">NumberFieldClassNumber
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberFieldClassNumber =
+      S.initFinalSymbol("NumberFieldClassNumber", ID.NumberFieldClassNumber);
+
+  /**
+   * NumberFieldDiscriminant(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/NumberFieldDiscriminant.md">NumberFieldDiscriminant
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberFieldDiscriminant =
+      S.initFinalSymbol("NumberFieldDiscriminant", ID.NumberFieldDiscriminant);
+
+  /**
+   * NumberFieldFundamentalUnits(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/NumberFieldFundamentalUnits.md">NumberFieldFundamentalUnits
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberFieldFundamentalUnits =
+      S.initFinalSymbol("NumberFieldFundamentalUnits", ID.NumberFieldFundamentalUnits);
+
+  /**
+   * NumberFieldIntegralBasis(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/NumberFieldIntegralBasis.md">NumberFieldIntegralBasis
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberFieldIntegralBasis =
+      S.initFinalSymbol("NumberFieldIntegralBasis", ID.NumberFieldIntegralBasis);
+
+  /**
+   * NumberFieldRegulator(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/NumberFieldRegulator.md">NumberFieldRegulator
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberFieldRegulator =
+      S.initFinalSymbol("NumberFieldRegulator", ID.NumberFieldRegulator);
+
   public final static IBuiltInSymbol NumberFieldRootsOfUnity =
       S.initFinalSymbol("NumberFieldRootsOfUnity", ID.NumberFieldRootsOfUnity);
 
@@ -15172,6 +15252,16 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumberFormat.md">NumberFormat
    *      documentation</a>
    */
+  /**
+   * NumberFieldSignature(x) - see the documentation page for details.
+   *
+   * @see <a href=
+   *      "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/NumberFieldSignature.md">NumberFieldSignature
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberFieldSignature =
+      S.initFinalSymbol("NumberFieldSignature", ID.NumberFieldSignature);
+
   public final static IBuiltInSymbol NumberFormat =
       S.initFinalSymbol("NumberFormat", ID.NumberFormat);
 

@@ -81,6 +81,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IRational;
@@ -879,6 +880,17 @@ public final class LinearAlgebra {
       IExpr arg1 = ast.arg1();
       if (SymbolicArrayUtil.isArrayValued(arg1)) {
         return SymbolicArrayFunctions.detSymbolic(arg1, engine);
+      }
+      IInteger modulus = ruleModulus(ast, engine);
+      if (modulus != null) {
+        // the determinant of the integer matrix reduced modulo n is the determinant modulo n, so
+        // this also works for a composite modulus
+        IExpr determinant = engine.evaluate(F.Det(arg1));
+        if (determinant.isRational()) {
+          IInteger value = modularValue(determinant, modulus);
+          return value != null ? value : modularFailed(S.Det, arg1, modulus, engine);
+        }
+        return F.NIL;
       }
       return super.evaluate(ast, engine);
     }
@@ -3504,7 +3516,50 @@ public final class LinearAlgebra {
       if (SymbolicArrayUtil.isArrayValued(arg1)) {
         return SymbolicArrayFunctions.inverseSymbolic(arg1, engine);
       }
+      IInteger modulus = modulusOption(options[2]);
+      if (modulus != null) {
+        return inverseModulus(arg1, modulus, engine);
+      }
       return super.evaluate(ast, argSize, options, engine, originalAST);
+    }
+
+    /**
+     * Invert the matrix over the integers modulo <code>modulus</code>, by reducing the matrix
+     * augmented with the identity matrix.
+     */
+    private static IExpr inverseModulus(IExpr arg1, IInteger modulus, EvalEngine engine) {
+      int[] dim = Convert.checkNonEmptySquareMatrix(S.Inverse, arg1);
+      if (dim == null) {
+        return F.NIL;
+      }
+      IInteger[][] matrix = modularMatrix((IAST) arg1.normal(false), modulus);
+      if (matrix == null) {
+        return F.NIL;
+      }
+      final int n = dim[0];
+      IInteger[][] augmented = new IInteger[n][2 * n];
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          augmented[i][j] = matrix[i][j];
+          augmented[i][n + j] = i == j ? F.C1 : F.C0;
+        }
+      }
+      int[] pivotColumns = modularRowReduce(augmented, modulus);
+      if (pivotColumns == null || pivotColumns.length != n) {
+        return modularFailed(S.Inverse, arg1, modulus, engine);
+      }
+      for (int i = 0; i < n; i++) {
+        if (pivotColumns[i] != i) {
+          return modularFailed(S.Inverse, arg1, modulus, engine);
+        }
+      }
+      IASTAppendable result = F.ListAlloc(n);
+      for (int i = 0; i < n; i++) {
+        final int row = i;
+        result.append(F.mapRange(0, n, j -> augmented[row][n + j]));
+      }
+      result.isMatrix(true);
+      return result;
     }
 
     @Override
@@ -3551,8 +3606,8 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance},
-          new IExpr[] {S.Automatic, S.Automatic});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance, S.Modulus},
+          new IExpr[] {S.Automatic, S.Automatic, F.C0});
     }
   }
 
@@ -3753,6 +3808,48 @@ public final class LinearAlgebra {
    */
   private static class LinearSolve extends AbstractFunctionOptionEvaluator {
 
+    /**
+     * Solve <code>matrix . x == vector</code> over the integers modulo <code>modulus</code> by
+     * reducing the augmented matrix. If the system is underdetermined, the free variables are set
+     * to <code>0</code>, which is the convention the exact case uses too.
+     */
+    private static IExpr linearSolveModulus(IExpr arg1, IAST vector, int[] matrixDims,
+        IInteger modulus, EvalEngine engine) {
+      final int rows = matrixDims[0];
+      final int cols = matrixDims[1];
+      if (vector.argSize() != rows) {
+        return Errors.printMessage(S.LinearSolve, "matsq", F.List(arg1, F.C1), engine);
+      }
+      IInteger[][] m = modularMatrix((IAST) arg1.normal(false), modulus);
+      if (m == null) {
+        return F.NIL;
+      }
+      IInteger[][] augmented = new IInteger[rows][cols + 1];
+      for (int i = 0; i < rows; i++) {
+        System.arraycopy(m[i], 0, augmented[i], 0, cols);
+        IInteger value = modularValue(vector.get(i + 1), modulus);
+        if (value == null) {
+          return F.NIL;
+        }
+        augmented[i][cols] = value;
+      }
+      int[] pivotColumns = modularRowReduce(augmented, modulus);
+      if (pivotColumns == null) {
+        return modularFailed(S.LinearSolve, arg1, modulus, engine);
+      }
+      IInteger[] solution = new IInteger[cols];
+      Arrays.fill(solution, F.C0);
+      for (int i = 0; i < pivotColumns.length; i++) {
+        if (pivotColumns[i] == cols) {
+          // the pivot is in the right hand side column, so the system is inconsistent
+          return Errors.printMessage(S.LinearSolve,
+              "Linear equation encountered that has no solution.");
+        }
+        solution[pivotColumns[i]] = augmented[i][cols];
+      }
+      return F.mapRange(0, cols, i -> solution[i]);
+    }
+
     private static IExpr createLinearSolveFunction(final IAST ast, final int argSize,
         final int[] matrixDims, Predicate<IExpr> zeroChecker, EvalEngine engine) {
       if (matrixDims[0] > matrixDims[1]) {
@@ -3933,6 +4030,14 @@ public final class LinearAlgebra {
         IAST originalAST) {
       final int[] matrixDims = ast.arg1().isMatrix();
       if (matrixDims != null) {
+        IInteger modulus = modulusOption(options[2]);
+        if (modulus != null) {
+          if (argSize < 2 || ast.arg2().isVector() < 0) {
+            return F.NIL;
+          }
+          return linearSolveModulus(ast.arg1(), (IAST) ast.arg2().normal(false), matrixDims,
+              modulus, engine);
+        }
         Predicate<IExpr> zeroChecker = buildZeroChecker(ast, options, engine);
         boolean togetherMode = engine.isTogetherMode();
         engine.setTogetherMode(true);
@@ -4018,8 +4123,8 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance},
-          new IExpr[] {S.Automatic, S.Automatic});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance, S.Modulus},
+          new IExpr[] {S.Automatic, S.Automatic, F.C0});
     }
 
 
@@ -4415,6 +4520,18 @@ public final class LinearAlgebra {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isMatrix() != null) {
           IAST normal = (IAST) arg1.normal(false);
+          IInteger modulus = modulusOption(options[2]);
+          if (modulus != null) {
+            IInteger[][] m = modularMatrix(normal, modulus);
+            if (m == null) {
+              return F.NIL;
+            }
+            int[] pivotColumns = modularRowReduce(m, modulus);
+            if (pivotColumns == null) {
+              return modularFailed(S.MatrixRank, normal, modulus, engine);
+            }
+            return F.ZZ(pivotColumns.length);
+          }
           Predicate<IExpr> zeroChecker = buildZeroChecker(ast, options, engine);
           IInteger rank = matrixRank(normal, zeroChecker);
           if (rank != null) {
@@ -4435,8 +4552,8 @@ public final class LinearAlgebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDALL);
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance},
-          new IExpr[] {S.Automatic, S.Automatic});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance, S.Modulus},
+          new IExpr[] {S.Automatic, S.Automatic, F.C0});
     }
   }
 
@@ -4989,6 +5106,10 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       FieldMatrix<IExpr> matrix;
+      IInteger modulus = ruleModulus(ast, engine);
+      if (modulus != null) {
+        return nullSpaceModulus(ast.arg1(), modulus, engine);
+      }
       boolean togetherMode = engine.isTogetherMode();
       try {
         engine.setTogetherMode(true);
@@ -5022,9 +5143,59 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
+    /**
+     * A basis of the null space of the matrix over the integers modulo <code>modulus</code>. The
+     * free columns of the reduced row echelon form give one basis vector each.
+     */
+    private static IExpr nullSpaceModulus(IExpr arg1, IInteger modulus, EvalEngine engine) {
+      int[] dim = arg1.isMatrix();
+      if (dim == null) {
+        return F.NIL;
+      }
+      IInteger[][] m = modularMatrix((IAST) arg1.normal(false), modulus);
+      if (m == null) {
+        return F.NIL;
+      }
+      int[] pivotColumns = modularRowReduce(m, modulus);
+      if (pivotColumns == null) {
+        return modularFailed(S.NullSpace, arg1, modulus, engine);
+      }
+      final int cols = dim[1];
+      boolean[] isPivot = new boolean[cols];
+      int[] pivotOfColumn = new int[cols];
+      for (int i = 0; i < pivotColumns.length; i++) {
+        isPivot[pivotColumns[i]] = true;
+        pivotOfColumn[pivotColumns[i]] = i;
+      }
+      IASTAppendable result = F.ListAlloc(cols - pivotColumns.length);
+      // the free variables are enumerated from the last column to the first one, which is the
+      // order NullSpace uses for the exact case too
+      for (int free = cols - 1; free >= 0; free--) {
+        if (isPivot[free]) {
+          continue;
+        }
+        IASTAppendable vector = F.ListAlloc(cols);
+        for (int j = 0; j < cols; j++) {
+          if (j == free) {
+            vector.append(F.C1);
+          } else if (isPivot[j]) {
+            vector.append(m[pivotOfColumn[j]][free].negate().mod(modulus));
+          } else {
+            vector.append(F.C0);
+          }
+        }
+        result.append(vector);
+      }
+      if (result.argSize() == 0) {
+        return F.CEmptyList;
+      }
+      result.isMatrix(true);
+      return result;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -7846,6 +8017,185 @@ public final class LinearAlgebra {
         new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
     return nullspace;
+  }
+
+  /**
+   * Read the <code>Modulus</code> option value.
+   *
+   * @param option the value of the <code>Modulus</code> option
+   * @return the modulus, or <code>null</code> if no modulus was given or the value isn't a
+   *         positive integer
+   */
+  /**
+   * Search the arguments of <code>ast</code> for a <code>Modulus -&gt; n</code> option rule.
+   *
+   * <p>
+   * Used by the evaluators which don't extend
+   * {@link org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator} and therefore
+   * don't get an already parsed options array.
+   *
+   * @return the modulus, or <code>null</code> if there is none
+   */
+  private static IInteger ruleModulus(IAST ast, EvalEngine engine) {
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isRuleAST() && arg.first() == S.Modulus) {
+        return modulusOption(engine.evaluate(arg.second()));
+      }
+    }
+    return null;
+  }
+
+  private static IInteger modulusOption(IExpr option) {
+    if (option == null || !option.isInteger()) {
+      return null;
+    }
+    IInteger modulus = (IInteger) option;
+    return modulus.isPositive() && !modulus.isOne() ? modulus : null;
+  }
+
+  /**
+   * Convert a matrix into a matrix of integers in the range <code>0..modulus-1</code>. Rational
+   * entries are converted with the modular inverse of their denominator.
+   *
+   * @param matrix a rectangular matrix
+   * @param modulus a positive integer
+   * @return <code>null</code> if an entry couldn't be converted
+   */
+  private static IInteger[][] modularMatrix(IAST matrix, IInteger modulus) {
+    int rows = matrix.argSize();
+    IInteger[][] result = null;
+    for (int i = 1; i <= rows; i++) {
+      IExpr row = matrix.get(i);
+      if (!row.isList()) {
+        return null;
+      }
+      IAST rowList = (IAST) row;
+      if (result == null) {
+        result = new IInteger[rows][rowList.argSize()];
+      } else if (rowList.argSize() != result[0].length) {
+        return null;
+      }
+      for (int j = 1; j <= rowList.argSize(); j++) {
+        IInteger entry = modularValue(rowList.get(j), modulus);
+        if (entry == null) {
+          return null;
+        }
+        result[i - 1][j - 1] = entry;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Convert a rational number into an integer in the range <code>0..modulus-1</code>.
+   *
+   * @return <code>null</code> if <code>value</code> isn't rational or if its denominator isn't
+   *         invertible modulo <code>modulus</code>
+   */
+  private static IInteger modularValue(IExpr value, IInteger modulus) {
+    if (value.isInteger()) {
+      return ((IInteger) value).mod(modulus);
+    }
+    if (value.isFraction()) {
+      IFraction fraction = (IFraction) value;
+      IInteger denominator = fraction.denominator().mod(modulus);
+      IInteger inverse = modularInverse(denominator, modulus);
+      if (inverse == null) {
+        return null;
+      }
+      return fraction.numerator().mod(modulus).multiply(inverse).mod(modulus);
+    }
+    return null;
+  }
+
+  /**
+   * The multiplicative inverse of <code>value</code> modulo <code>modulus</code>.
+   *
+   * @return <code>null</code> if <code>value</code> isn't invertible
+   */
+  private static IInteger modularInverse(IInteger value, IInteger modulus) {
+    try {
+      if (!value.gcd(modulus).isOne()) {
+        return null;
+      }
+      return F.ZZ(value.toBigNumerator().modInverse(modulus.toBigNumerator()));
+    } catch (ArithmeticException aex) {
+      return null;
+    }
+  }
+
+  /**
+   * Bring the matrix into reduced row echelon form over the integers modulo <code>modulus</code>.
+   * The matrix is modified in place.
+   *
+   * <p>
+   * For a prime modulus the residues form a field and the reduction always succeeds. For a
+   * composite modulus a column can contain non-zero entries none of which is invertible; the
+   * reduction then fails, because a Howell form would be needed instead.
+   *
+   * @param m the matrix, modified in place
+   * @param modulus a positive integer
+   * @return the indices of the pivot columns, or <code>null</code> if the reduction failed
+   */
+  private static int[] modularRowReduce(IInteger[][] m, IInteger modulus) {
+    int rows = m.length;
+    int cols = m[0].length;
+    int[] pivotColumns = new int[Math.min(rows, cols)];
+    int pivotRow = 0;
+    for (int j = 0; j < cols && pivotRow < rows; j++) {
+      int swapRow = -1;
+      IInteger inverse = null;
+      for (int i = pivotRow; i < rows; i++) {
+        if (!m[i][j].isZero()) {
+          IInteger candidate = modularInverse(m[i][j], modulus);
+          if (candidate != null) {
+            swapRow = i;
+            inverse = candidate;
+            break;
+          }
+        }
+      }
+      if (swapRow < 0) {
+        for (int i = pivotRow; i < rows; i++) {
+          if (!m[i][j].isZero()) {
+            // a non-zero, non-invertible column can't be eliminated over Z/nZ
+            return null;
+          }
+        }
+        continue;
+      }
+      if (swapRow != pivotRow) {
+        IInteger[] temp = m[pivotRow];
+        m[pivotRow] = m[swapRow];
+        m[swapRow] = temp;
+      }
+      for (int k = j; k < cols; k++) {
+        m[pivotRow][k] = m[pivotRow][k].multiply(inverse).mod(modulus);
+      }
+      for (int i = 0; i < rows; i++) {
+        if (i != pivotRow && !m[i][j].isZero()) {
+          IInteger factor = m[i][j];
+          for (int k = j; k < cols; k++) {
+            m[i][k] = m[i][k].subtract(factor.multiply(m[pivotRow][k])).mod(modulus);
+          }
+        }
+      }
+      pivotColumns[pivotRow] = j;
+      pivotRow++;
+    }
+    return Arrays.copyOf(pivotColumns, pivotRow);
+  }
+
+  /**
+   * Print the message that a matrix couldn't be reduced modulo a composite number.
+   *
+   * @return {@link F#NIL}
+   */
+  private static IExpr modularFailed(ISymbol head, IExpr matrix, IInteger modulus,
+      EvalEngine engine) {
+    // `1` is not invertible modulo `2`.
+    return Errors.printMessage(head, "ninv", F.list(matrix, modulus), engine);
   }
 
   /**

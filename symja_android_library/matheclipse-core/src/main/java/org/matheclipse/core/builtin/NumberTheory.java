@@ -1182,6 +1182,12 @@ public final class NumberTheory {
 
         IInteger x = (IInteger) quotient;
         integerTerms.append(x);
+        if (maxIterations < Integer.MAX_VALUE && maxIterations > 0
+            && integerTerms.argSize() >= maxIterations) {
+          // enough terms requested; don't search for the end of the period, which can be much
+          // longer than the requested number of terms
+          return negate ? integerTerms.map(t -> t.negate()) : integerTerms;
+        }
         p = x.multiply(q).subtract(p);
         q = d.subtract(p.multiply(p)).quotient(q);
         key = F.list(p, q);

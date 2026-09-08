@@ -42,6 +42,124 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testModulusOption() {
+    // Inverse
+    check("Inverse({{1,2},{3,4}}, Modulus->5)", //
+        "{{3,1},\n" //
+            + " {4,2}}");
+    // Mod() doesn't preserve the matrix output format, so this prints on one line
+    check("Mod(Inverse({{1,2},{3,4}}, Modulus->5).{{1,2},{3,4}}, 5)", //
+        "{{1,0},{0,1}}");
+    // Inverse: {{1,2},{2,4}} is not invertible modulo 5.
+    check("Inverse({{1,2},{2,4}}, Modulus->5)", //
+        "Inverse(\n" //
+            + "{{1,2},\n" //
+            + " {2,4}},Modulus->5)");
+
+    // Det works for a composite modulus too, because the determinant is computed exactly first
+    check("Det({{1,2},{3,4}}, Modulus->5)", //
+        "3");
+    check("Det({{1,2},{3,4}}, Modulus->6)", //
+        "4");
+    check("Det({{1,2,3},{4,5,6},{7,8,10}}, Modulus->7)", //
+        "4");
+
+    // MatrixRank
+    check("MatrixRank({{1,2},{2,4}}, Modulus->5)", //
+        "1");
+    check("MatrixRank({{1,2},{3,4}}, Modulus->5)", //
+        "2");
+    check("MatrixRank({{1,2},{3,4}}, Modulus->2)", //
+        "1");
+
+    // NullSpace
+    check("NullSpace({{1,2},{2,4}}, Modulus->5)", //
+        "{{3,1}}");
+    check("Mod({{1,2},{2,4}}.First(NullSpace({{1,2},{2,4}}, Modulus->5)), 5)", //
+        "{0,0}");
+    check("NullSpace({{1,2},{3,4}}, Modulus->5)", //
+        "{}");
+    check("NullSpace({{1,2,3},{4,5,6},{7,8,9}}, Modulus->5)", //
+        "{{1,3,1}}");
+
+    // LinearSolve
+    check("LinearSolve({{1,2},{3,4}},{1,2}, Modulus->7)", //
+        "{0,4}");
+    check("Mod({{1,2},{3,4}}.LinearSolve({{1,2},{3,4}},{1,2}, Modulus->7), 7)", //
+        "{1,2}");
+    // free variables are set to 0
+    check("LinearSolve({{1,2},{2,4}},{1,2}, Modulus->5)", //
+        "{1,0}");
+    // LinearSolve: Linear equation encountered that has no solution.
+    check("LinearSolve({{1,2},{2,4}},{1,3}, Modulus->5)", //
+        "LinearSolve(\n" //
+            + "{{1,2},\n" //
+            + " {2,4}},{1,3},Modulus->5)");
+
+    // a composite modulus is only supported as long as every pivot is invertible; a Howell form
+    // would be needed otherwise
+    // LinearSolve: {{2,4},{1,3}} is not invertible modulo 6.
+    check("LinearSolve({{2,4},{1,3}},{2,1}, Modulus->6)", //
+        "LinearSolve(\n" //
+            + "{{2,4},\n" //
+            + " {1,3}},{2,1},Modulus->6)");
+
+    // without the option nothing changes
+    check("Inverse({{1,2},{3,4}})", //
+        "{{-2,1},\n" //
+            + " {3/2,-1/2}}");
+    check("Det({{1,2},{3,4}})", //
+        "-2");
+    check("NullSpace({{1,2},{2,4}})", //
+        "{{-2,1}}");
+  }
+
+  @Test
+  public void testLatticeReduce() {
+    check("LatticeReduce({{1,2},{3,4}})", //
+        "{{1,0},\n" //
+            + " {0,2}}");
+    check("LatticeReduce({{1,1,1},{-1,0,2},{3,5,6}})", //
+        "{{0,1,0},\n" //
+            + " {1,0,1},\n" //
+            + " {-1,0,2}}");
+
+    // the reduced basis spans the same lattice, so the determinant is preserved up to the sign
+    check("Det(LatticeReduce({{201,37},{1648,297}}))", //
+        "-1279");
+    check("Det({{201,37},{1648,297}})", //
+        "-1279");
+
+    // linearly dependent rows produce a basis of the lattice they span
+    check("LatticeReduce({{1,2},{2,4}})", //
+        "{{1,2}}");
+    check("LatticeReduce({{1,2},{2,4},{3,5}})", //
+        "{{1,0},\n" //
+            + " {0,1}}");
+    // zero rows are dropped
+    check("LatticeReduce({{0,0},{1,0}})", //
+        "{{1,0}}");
+    check("LatticeReduce({{0,0},{0,0}})", //
+        "{}");
+    check("LatticeReduce({})", //
+        "{}");
+
+    // rational entries are scaled to integers and back
+    check("LatticeReduce({{1/2,1},{1,3/2}})", //
+        "{{0,-1/2},\n" //
+            + " {1/2,0}}");
+
+    // LatticeReduce: Argument {{1,2},{3}} at position 1 is not a non-empty rectangular matrix.
+    check("LatticeReduce({{1,2},{3}})", //
+        "LatticeReduce({{1,2},{3}})");
+    // inexact entries stay unevaluated
+    check("LatticeReduce({{1.5,2},{3,4}})", //
+        "LatticeReduce(\n" //
+            + "{{1.5,2},\n" //
+            + " {3,4}})");
+  }
+
+  @Test
   public void testAlgebraicIntegerQ() {
     // Basic integers
     check("AlgebraicIntegerQ(0)", //

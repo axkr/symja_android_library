@@ -23,6 +23,14 @@ public final class FunctionDefinitions {
       S.ArrayDot.setEvaluator(new org.matheclipse.core.reflection.system.ArrayDot());
       S.AlgebraicIntegerQ
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicIntegerQ());
+      S.AlgebraicNumberQ
+          .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicNumberQ());
+      S.AlgebraicNumberNorm.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberNorm());
+      S.AlgebraicNumberTrace.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberTrace());
+      S.AlgebraicUnitQ.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicUnitQ());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
       S.Asymptotic.setEvaluator(new org.matheclipse.core.reflection.system.Asymptotic());
       S.AsymptoticDSolveValue
@@ -162,6 +170,7 @@ public final class FunctionDefinitions {
 
       S.LaplaceTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
+      S.LatticeReduce.setEvaluator(new org.matheclipse.core.reflection.system.LatticeReduce());
       S.Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
       S.LinearOptimization
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearOptimization());
@@ -208,6 +217,20 @@ public final class FunctionDefinitions {
 
       S.OptimizeExpression
           .setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
+      S.NumberFieldClassNumber.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.NumberFieldClassNumber());
+      S.NumberFieldDiscriminant.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.NumberFieldDiscriminant());
+      S.NumberFieldFundamentalUnits.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.NumberFieldFundamentalUnits());
+      S.NumberFieldIntegralBasis.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.NumberFieldIntegralBasis());
+      S.NumberFieldRegulator.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.NumberFieldRegulator());
+      S.NumberFieldRootsOfUnity.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.NumberFieldRootsOfUnity());
+      S.NumberFieldSignature.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.NumberFieldSignature());
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       S.Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
 
@@ -265,6 +288,8 @@ public final class FunctionDefinitions {
       S.RegionWithin.setEvaluator(new org.matheclipse.core.reflection.system.RegionWithin());
       S.Resolve.setEvaluator(new org.matheclipse.core.reflection.system.Resolve());
       S.Root.setEvaluator(new org.matheclipse.core.reflection.system.Root());
+      S.RootApproximant
+          .setEvaluator(new org.matheclipse.core.reflection.system.RootApproximant());
       S.RootReduce.setEvaluator(new org.matheclipse.core.reflection.system.RootReduce());
       S.RootSum.setEvaluator(new org.matheclipse.core.reflection.system.RootSum());
       S.RSolve.setEvaluator(new org.matheclipse.core.reflection.system.RSolve());

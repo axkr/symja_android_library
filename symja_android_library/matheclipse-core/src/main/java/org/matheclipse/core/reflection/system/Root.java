@@ -351,7 +351,7 @@ public class Root extends AbstractFunctionEvaluator {
    *         {@code Slot1^i}), or <code>null</code> if {@code expr} is not a polynomial in
    *         {@code Slot1} of degree {@code >= 1}
    */
-  private static IExpr[] polynomialCoefficients(IExpr expr) {
+  public static IExpr[] polynomialCoefficients(IExpr expr) {
     try {
       ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, F.list(F.Slot1));
       ExprPolynomial polynomial = ring.create(expr, false, true, false);
