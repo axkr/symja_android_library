@@ -34,6 +34,8 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.steps.StepsJSON;
+import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
@@ -112,6 +114,12 @@ public class Pods {
   public static final int VISJS = 0x0200;
   public static final int GRAPHICS = 0x0400;
   public static final int GRAPHICS3D = 0x0800;
+
+  /**
+   * The steps of a derivation, as their own tree. Asked for with <code>f=steps</code>, and only
+   * ever answered for a <code>TraceForm</code> or <code>TraceDialog</code> result.
+   */
+  public static final int STEPS = 0x1000;
 
   public static final Soundex SOUNDEX = new Soundex();
   public static final TrieBuilder<String, ArrayList<IPod>, ArrayList<ArrayList<IPod>>> builder =
@@ -517,6 +525,12 @@ public class Pods {
       }
     }
 
+    if ((formats & STEPS) != 0x00) {
+      if (StepsTree.isTraceForm(outExpr)) {
+        json.putPOJO(JSBuilder.STEPS_STR, StepsJSON.toJSON(JSON_OBJECT_MAPPER, (IAST) outExpr));
+      }
+    }
+
     if ((formats & GRAPHICS) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         // A finished SVG document, sized from the ImageSize option and already asking to scale
@@ -680,6 +694,13 @@ public class Pods {
           outExpr = firstEval;
         } else {
           errorString = errorWriter.toString().trim();
+        }
+        if (StepsTree.isTraceForm(outExpr)) {
+          // a derivation gets a pod of its own, and the pods below it go on with the result it
+          // leads to rather than with the wrapper around it
+          addSymjaPod(podsArray, inExpr, outExpr, "Steps", "Steps", formats, engine);
+          numpods++;
+          outExpr = StepsTree.traceResult((IAST) outExpr);
         }
         IExpr podOut = outExpr;
 
@@ -1684,6 +1705,8 @@ public class Pods {
       intern |= PLOTLY;
     } else if (str.equals(VISJS_STR) || str.equals("treeform")) {
       intern |= VISJS;
+    } else if (str.equals(JSBuilder.STEPS_STR)) {
+      intern |= STEPS;
     }
     return intern;
   }

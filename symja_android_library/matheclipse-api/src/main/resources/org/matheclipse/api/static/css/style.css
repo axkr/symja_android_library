@@ -963,3 +963,33 @@ body.loading .modal {
 body.loading .modal {
     display: block;
 }
+/* ---------------------------------------------------------------- derivations */
+
+/* One evaluation step is a section the reader opens and closes; a step which was caused by
+   another one sits inside it, so the nesting is the derivation and not just indentation. */
+div.steps {
+	font-family: sans-serif;
+}
+
+div.steps div.steplist {
+	margin-left: 1.2em;
+	border-left: 1px solid #d0d0d0;
+	padding-left: 0.8em;
+}
+
+div.steps details.step {
+	margin: 0.3em 0;
+}
+
+div.steps details.step > summary {
+	cursor: pointer;
+	color: #444;
+}
+
+div.steps div.steprewrite {
+	margin: 0.2em 0 0.2em 1.1em;
+}
+
+div.steps div.stepresult {
+	margin-bottom: 0.5em;
+}

@@ -418,6 +418,9 @@ public class JSBuilder {
   public static final String JSXGRAPH_STR = "jsxgraph";
   public static final String PLOTLY_STR = "plotly";
   public static final String TREEFORM_STR = "treeform";
+
+  /** The steps a <code>TraceForm(...)</code> collected, as their own tree. */
+  public static final String STEPS_STR = "steps";
   public static final String MERMAID_STR = "mermaid";
   public static final String ECHARTS_STR = "echarts";
 

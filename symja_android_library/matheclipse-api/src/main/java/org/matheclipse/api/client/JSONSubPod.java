@@ -1,6 +1,7 @@
 package org.matheclipse.api.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 final public class JSONSubPod {
 
@@ -33,6 +34,10 @@ final public class JSONSubPod {
 
   @JsonProperty("visjs")
   String visjs;
+
+  /** The steps of a derivation, as their own tree. */
+  @JsonProperty("steps")
+  JsonNode steps;
 
   public JSONSubPod() {
 

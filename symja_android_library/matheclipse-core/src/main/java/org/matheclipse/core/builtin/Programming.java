@@ -122,6 +122,24 @@ public final class Programming {
   }
 
   /**
+   * Register {@link S#TraceForm} where the free form parser is in use and the tracing functions are
+   * therefore left out.
+   *
+   * <p>
+   * They are left out because they are unbounded: {@link S#Trace} writes down every turn of the
+   * evaluation loop, {@link S#On} prints for the rest of the session, and {@link S#TraceDialog}
+   * holds an evaluation open waiting for a reader who, on a request which answers once and is
+   * finished, is not there. <code>TraceForm</code> is none of those things - it stops at three
+   * levels of nesting and five thousand steps unless it is asked for more - so a caller which wants
+   * to show a derivation can ask for this one back.
+   *
+   * @see org.matheclipse.core.basic.Config#FUZZY_PARSER
+   */
+  public static void initTraceForm() {
+    S.TraceForm.setEvaluator(new TraceForm());
+  }
+
+  /**
    *
    *
    * <pre>
