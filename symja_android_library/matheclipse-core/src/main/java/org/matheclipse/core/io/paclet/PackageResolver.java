@@ -47,6 +47,22 @@ public final class PackageResolver {
   }
 
   /**
+   * Contexts Symja implements itself rather than reads from a file. Unlike the standard contexts
+   * these have names to bring into being before the context is of any use, so
+   * {@link #loadBuiltinPackage} is called for them.
+   */
+  public static boolean isBuiltinPackage(String context) {
+    return "CodeParser`".equals(context);
+  }
+
+  /** Make the names of a built-in package exist in this session. */
+  public static void loadBuiltinPackage(String context, EvalEngine engine) {
+    if ("CodeParser`".equals(context)) {
+      org.matheclipse.core.builtin.CodeParserFunctions.loadContext(engine);
+    }
+  }
+
+  /**
    * The file <code>context</code> lives in, or <code>null</code> when nothing provides it.
    *
    * @param context a context name, ending in a backtick

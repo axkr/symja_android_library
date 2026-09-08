@@ -108,6 +108,7 @@ public class ConstantDefinitions {
       S.$UserBaseDirectory.setEvaluator(new $UserBaseDirectory());
       S.$Version.setEvaluator(new $Version());
       S.$VersionNumber.setEvaluator(new $VersionNumber());
+      S.$BoxForms.setEvaluator(new $BoxForms());
       S.$CommandLine.setEvaluator(new $CommandLine());
       S.$InstallationDirectory.setEvaluator(new $InstallationDirectory());
       S.$MachineName.setEvaluator(new $MachineName());
@@ -692,6 +693,30 @@ public class ConstantDefinitions {
         return F.stringx("");
       }
       return F.stringx(userName);
+    }
+  }
+
+  /**
+   * The forms an expression can be printed in, which a package that adds one of its own appends to:
+   * <code>$BoxForms = Append[$BoxForms, MyForm]</code>. Without a value that assignment refers to
+   * itself, and reading it afterwards never ends.
+   */
+  private static class $BoxForms extends AbstractSymbolEvaluator implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      IExpr assigned = symbol.assignedValue();
+      return assigned != null && assigned.isPresent() ? assigned
+          : F.list(S.StandardForm, S.TraditionalForm);
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (rightHandSide.isList()) {
+        S.$BoxForms.assignValue(rightHandSide, setDelayed);
+        return rightHandSide;
+      }
+      return F.NIL;
     }
   }
 

@@ -408,6 +408,7 @@ public final class FunctionDefinitions {
     FileSystemFunctions.initialize();
     PacletFunctions.initialize();
     ArchiveFunctions.initialize();
+    CodeParserFunctions.initialize();
     Algebra.initialize();
     SimplifyFunctions.initialize();
     StructureFunctions.initialize();

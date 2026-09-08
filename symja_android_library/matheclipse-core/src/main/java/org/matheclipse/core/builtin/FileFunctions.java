@@ -1092,9 +1092,18 @@ public class FileFunctions {
         return S.$Failed;
       }
 
-      if (PackageResolver.isStandardContext(contextName)) {
-        // the system provides it; there is nothing to read, and nothing that needs a file system
+      if (PackageResolver.isStandardContext(contextName)
+          || PackageResolver.isBuiltinPackage(contextName)) {
+        // the system provides it; there is nothing to read, and nothing that needs a file system.
+        // A built-in package still has to bring its names into being before its context can be
+        // searched for them.
+        PackageResolver.loadBuiltinPackage(contextName, engine);
         ContextPath.PACKAGES.add(contextName);
+        ContextPath contextPathOfBuiltin = engine.getContextPath();
+        Context builtinContext = contextPathOfBuiltin.getContext(contextName);
+        if (!contextPathOfBuiltin.contains(builtinContext)) {
+          contextPathOfBuiltin.add(builtinContext);
+        }
         return S.Null;
       }
 

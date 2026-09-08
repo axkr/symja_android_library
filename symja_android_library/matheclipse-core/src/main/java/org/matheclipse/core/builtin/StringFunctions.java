@@ -790,6 +790,7 @@ public final class StringFunctions {
       S.StringSplit.setEvaluator(new StringSplit());
       S.StringStartsQ.setEvaluator(new StringStartsQ());
       S.StringTake.setEvaluator(new StringTake());
+      S.StringReplacePart.setEvaluator(new StringReplacePart());
       S.StringTemplate.setEvaluator(new StringTemplate());
       S.StringToByteArray.setEvaluator(new StringToByteArray());
       S.StringTrim.setEvaluator(new StringTrim());
@@ -2628,6 +2629,107 @@ public final class StringFunctions {
     }
   }
 
+  /**
+   * <code>StringReplacePart[str, new, {m, n}]</code> and the list form
+   * <code>StringReplacePart[str, {new1, …}, {{m1, n1}, …}]</code>: the characters from
+   * <code>m</code> to <code>n</code> replaced by something else.
+   *
+   * <p>
+   * Positions count in the original string, so several replacements do not have to be adjusted for
+   * one another - which is what makes this the way to put something back where a scan found it.
+   */
+  private static class StringReplacePart extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isListOfStrings()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
+        // String or list of strings expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+      }
+      String str = arg1.toString();
+      IExpr replacements = ast.arg2();
+      IExpr positions = ast.arg3();
+
+      IAST positionList;
+      IAST replacementList;
+      if (positions.isListOfLists()) {
+        positionList = (IAST) positions;
+        if (replacements.isList()) {
+          if (replacements.size() != positionList.size()) {
+            // there is no sensible pairing of `1` with `2`
+            return Errors.printMessage(ast.topHead(), "incpt", F.list(ast), engine);
+          }
+          replacementList = (IAST) replacements;
+        } else {
+          // one replacement used at every position
+          IASTAppendable repeated = F.ListAlloc(positionList.argSize());
+          for (int i = 1; i < positionList.size(); i++) {
+            repeated.append(replacements);
+          }
+          replacementList = repeated;
+        }
+      } else if (positions.isList2()) {
+        positionList = F.list(positions);
+        replacementList = F.list(replacements);
+      } else {
+        return F.NIL;
+      }
+
+      // Sorted and applied from the end, so that every position still refers to the original
+      // string when its turn comes.
+      int count = positionList.argSize();
+      int[][] spans = new int[count][2];
+      for (int i = 0; i < count; i++) {
+        IExpr span = positionList.get(i + 1);
+        if (!span.isList2()) {
+          return F.NIL;
+        }
+        int from = span.first().toIntDefault();
+        int to = span.second().toIntDefault();
+        if (F.isNotPresent(from) || F.isNotPresent(to)) {
+          return F.NIL;
+        }
+        if (from < 0) {
+          from = str.length() + from + 1;
+        }
+        if (to < 0) {
+          to = str.length() + to + 1;
+        }
+        if (from < 1 || to > str.length() || to < from - 1) {
+          // Cannot take positions `1` through `2` in `3`.
+          return Errors.printMessage(ast.topHead(), "take", F.list(F.ZZ(from), F.ZZ(to), arg1),
+              engine);
+        }
+        spans[i][0] = from;
+        spans[i][1] = to;
+      }
+      Integer[] order = new Integer[count];
+      for (int i = 0; i < count; i++) {
+        order[i] = i;
+      }
+      java.util.Arrays.sort(order, (a, b) -> Integer.compare(spans[b][0], spans[a][0]));
+
+      StringBuilder buf = new StringBuilder(str);
+      for (int index : order) {
+        IExpr replacement = replacementList.get(index + 1);
+        if (!replacement.isString()) {
+          return F.NIL;
+        }
+        buf.replace(spans[index][0] - 1, spans[index][1], replacement.toString());
+      }
+      return F.stringx(buf.toString());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+  }
+
   private static class StringTake extends AbstractFunctionEvaluator {
 
     @Override
@@ -2664,6 +2766,21 @@ public final class StringFunctions {
             return F.$str(s.substring(0, upTo));
           } else if (arg2 == S.All) {
             return arg1;
+          } else if (arg2.isListOfLists()) {
+            // StringTake[str, {{m1, n1}, {m2, n2}, …}] takes several pieces at once and answers a
+            // list of them. That is how a caller cuts a file into the pieces between the positions
+            // something else told it about.
+            IAST specifications = (IAST) arg2;
+            IASTAppendable pieces = F.ListAlloc(specifications.argSize());
+            for (int i = 1; i < specifications.size(); i++) {
+              IExpr piece =
+                  engine.evaluate(F.binaryAST2(S.StringTake, arg1, specifications.get(i)));
+              if (!piece.isString()) {
+                return F.NIL;
+              }
+              pieces.append(piece);
+            }
+            return pieces;
           } else if (arg2.isList()) {
             // int[][] sequ =
             // Validate.checkListOfSequenceSpec(ast, arg2, 2,

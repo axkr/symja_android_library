@@ -16234,7 +16234,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\"Hue\",\"Key\",\"LCM\",\"Log\",\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\","//
             + "\"Now\",\"Off\",\"Out\",\"PDF\",\"Put\",\"Red\",\"Row\",\"Run\",\"Sec\",\"Set\","//
             + "\"Sin\","//
-            + "\"Sow\",\"Sum\",\"Tan\",\"Top\",\"Vee\",\"Xor\"}");
+            + "\"Sow\",\"Sum\",\"Tan\",\"Top\",\"URL\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,Interleaving,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,Interpretation,InterpretationBox,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion}");
