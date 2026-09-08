@@ -1,5 +1,9 @@
 package org.matheclipse.core.dsolve;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1470,7 +1474,15 @@ final class DSolveODE {
     }
     IExpr solution = engine.evaluate(homogeneous);
     if (!lf.g.isZero()) {
-      IExpr particular = variationOfParameters(basis, lf, xVar, ctx);
+      // Undetermined coefficients first: where the right hand side is one of the shapes it covers
+      // it answers from a linear system, while variation of parameters has to integrate a product
+      // of the basis with the forcing function. Those integrals are the expensive part -- the
+      // integrand of x''(t) + 3*x'(t) + 3*x(t) == 8*Cos(10*t) + 6*Sin(10*t) takes a minute and a
+      // half of them -- and they come back in a form which needs collecting afterwards.
+      IExpr particular = undeterminedCoefficients(lf, xVar, ctx);
+      if (particular.isNIL()) {
+        particular = variationOfParameters(basis, lf, xVar, ctx);
+      }
       if (particular.isNIL()) {
         return F.NIL;
       }
@@ -1586,6 +1598,317 @@ final class DSolveODE {
       }
     }
     return -1;
+  }
+
+  /** How many undetermined coefficients an ansatz may carry. */
+  private static final int MAX_UNDETERMINED_COEFFICIENTS = 12;
+
+  /**
+   * One shape of forcing term: <code>x^degree * E^(rate*x) * Cos(frequency*x)</code> or the same
+   * with <code>Sin</code>, which is what an ansatz is written for. A frequency of zero means the
+   * term carries no trigonometric factor, a rate of zero none exponential.
+   */
+  private static final class ForcingShape {
+    final IExpr rate;
+    final IExpr frequency;
+    int degree;
+
+    ForcingShape(IExpr rate, IExpr frequency, int degree) {
+      this.rate = rate;
+      this.frequency = frequency;
+      this.degree = degree;
+    }
+
+    boolean sameFamilyAs(IExpr otherRate, IExpr otherFrequency) {
+      return rate.equals(otherRate) && frequency.equals(otherFrequency);
+    }
+  }
+
+  /**
+   * The coefficient <code>c</code> of an argument which is <code>c*x</code>, or {@link F#NIL} if the
+   * argument is not a multiple of the variable.
+   *
+   * <p>
+   * A constant term is refused rather than absorbed: <code>Cos(2*x + 1)</code> would need the
+   * ansatz to carry the phase as well, and variation of parameters answers it as it stands.
+   */
+  private static IExpr multipleOfVariable(IExpr argument, IExpr xVar, EvalEngine engine) {
+    IExpr coefficient = engine.evaluate(F.Coefficient(argument, xVar));
+    if (coefficient.isZero() || !coefficient.isFree(xVar, true)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Subtract(argument, F.Times(coefficient, xVar))).isZero() //
+        ? coefficient
+        : F.NIL;
+  }
+
+  /**
+   * Reads one term of the forcing function as a shape an ansatz can be written for, and records it
+   * among <code>shapes</code>.
+   *
+   * @return <code>false</code> if the term is not a power of the variable times an exponential
+   *         times a sine or cosine, in which case there is no ansatz to write
+   */
+  private static boolean readForcingTerm(IExpr term, IExpr xVar, List<ForcingShape> shapes,
+      EvalEngine engine) {
+    IExpr rate = F.C0;
+    IExpr frequency = F.C0;
+    int degree = 0;
+    IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isFree(xVar, true)) {
+        continue;
+      }
+      if (factor.equals(xVar)) {
+        degree++;
+        continue;
+      }
+      if (factor.isPower()) {
+        IExpr base = factor.base();
+        IExpr exponent = factor.exponent();
+        if (base.equals(xVar)) {
+          int power = exponent.toIntDefault();
+          if (power < 1 || power > MAX_DERIVATIVE_ORDER) {
+            return false;
+          }
+          degree += power;
+          continue;
+        }
+        if (base == S.E) {
+          IExpr newRate = multipleOfVariable(exponent, xVar, engine);
+          if (newRate.isNIL() || (!rate.isZero() && !rate.equals(newRate))) {
+            return false;
+          }
+          rate = newRate;
+          continue;
+        }
+        return false;
+      }
+      if (factor.isAST1() && (factor.isCos() || factor.isSin())) {
+        IExpr newFrequency = multipleOfVariable(factor.first(), xVar, engine);
+        if (newFrequency.isNIL()) {
+          return false;
+        }
+        // Cos and Sin of the same multiple are one family, and the sign of the multiple does not
+        // make a second one: the ansatz for it carries both of them anyway.
+        if (newFrequency.isNegative()) {
+          newFrequency = engine.evaluate(F.Negate(newFrequency));
+        }
+        if (!frequency.isZero() && !frequency.equals(newFrequency)) {
+          return false;
+        }
+        frequency = newFrequency;
+        continue;
+      }
+      return false;
+    }
+    for (ForcingShape shape : shapes) {
+      if (shape.sameFamilyAs(rate, frequency)) {
+        shape.degree = Math.max(shape.degree, degree);
+        return true;
+      }
+    }
+    shapes.add(new ForcingShape(rate, frequency, degree));
+    return true;
+  }
+
+  /**
+   * How often <code>rate + I*frequency</code> is a root of the characteristic polynomial, which is
+   * the power of <code>x</code> the ansatz for that shape has to be multiplied by.
+   */
+  private static int resonance(LinearODEForm lf, IExpr rate, IExpr frequency, EvalEngine engine) {
+    IExpr r = F.Dummy("r");
+    IASTAppendable polynomial = F.PlusAlloc(lf.order + 1);
+    for (int k = 0; k <= lf.order; k++) {
+      if (!lf.a[k].isZero()) {
+        polynomial.append(F.Times(lf.a[k], F.Power(r, F.ZZ(k))));
+      }
+    }
+    IExpr characteristic = engine.evaluate(polynomial);
+    IExpr root = frequency.isZero() //
+        ? rate
+        : engine.evaluate(F.Plus(rate, F.Times(F.CI, frequency)));
+    int multiplicity = 0;
+    IExpr derivative = characteristic;
+    while (multiplicity <= lf.order) {
+      if (!isVanishing(engine.evaluate(F.subst(derivative, r, root)), engine)) {
+        return multiplicity;
+      }
+      multiplicity++;
+      // The derivative is evaluated before the root is substituted into it: substituting into an
+      // unevaluated D() would replace the variable it differentiates for.
+      derivative = engine.evaluate(F.D(derivative, r));
+    }
+    return -1;
+  }
+
+  /**
+   * A particular solution of an inhomogeneous linear equation with constant coefficients by
+   * undetermined coefficients.
+   *
+   * <p>
+   * The forcing function is read as a sum of terms <code>x^k*E^(a*x)*Cos(b*x)</code>, an ansatz of
+   * the same shape is written for each family <code>(a, b)</code> that occurs -- multiplied by
+   * <code>x^s</code> where <code>a + I*b</code> is an <code>s</code>-fold root of the
+   * characteristic polynomial, which is the case the plain ansatz cannot answer -- and the
+   * coefficients come out of the linear system which says that the two sides agree. Replacing the
+   * exponential and the two trigonometric functions by symbols of their own is what turns "the two
+   * sides agree as functions" into "the coefficients of a polynomial vanish".
+   *
+   * @return {@link F#NIL} if the forcing function is not of that shape, or if the system it leads
+   *         to has no solution, and then variation of parameters is asked instead
+   */
+  private static IExpr undeterminedCoefficients(LinearODEForm lf, IExpr xVar, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    IExpr g = engine.evaluate(F.ExpandAll(lf.g));
+    if (g.isZero() || !g.isFree(S.Integrate, true)) {
+      return F.NIL;
+    }
+    IAST terms = g.isPlus() ? (IAST) g : F.Times(g);
+    List<ForcingShape> shapes = new ArrayList<>();
+    for (int i = 1; i <= terms.argSize(); i++) {
+      if (!readForcingTerm(terms.get(i), xVar, shapes, engine)) {
+        return F.NIL;
+      }
+    }
+
+    List<IExpr> unknowns = new ArrayList<>();
+    IASTAppendable ansatzTerms = F.PlusAlloc(8);
+    IASTAppendable atomRules = F.ListAlloc(3 * shapes.size());
+    List<IExpr> atoms = new ArrayList<>();
+    atoms.add(xVar);
+    for (ForcingShape shape : shapes) {
+      int s = resonance(lf, shape.rate, shape.frequency, engine);
+      if (s < 0) {
+        return F.NIL;
+      }
+      IExpr exponential = shape.rate.isZero() //
+          ? F.C1
+          : engine.evaluate(F.Exp(F.Times(shape.rate, xVar)));
+      if (!shape.rate.isZero()) {
+        IExpr symbol = F.Dummy("exp" + atoms.size());
+        atomRules.append(F.Rule(exponential, symbol));
+        atoms.add(symbol);
+      }
+      IExpr cosine = F.NIL;
+      IExpr sine = F.NIL;
+      if (!shape.frequency.isZero()) {
+        cosine = engine.evaluate(F.Cos(F.Times(shape.frequency, xVar)));
+        sine = engine.evaluate(F.Sin(F.Times(shape.frequency, xVar)));
+        IExpr cosineSymbol = F.Dummy("cos" + atoms.size());
+        IExpr sineSymbol = F.Dummy("sin" + atoms.size());
+        atomRules.append(F.Rule(cosine, cosineSymbol));
+        atomRules.append(F.Rule(sine, sineSymbol));
+        atoms.add(cosineSymbol);
+        atoms.add(sineSymbol);
+      }
+      for (int j = 0; j <= shape.degree; j++) {
+        IExpr power = F.Power(xVar, F.ZZ(s + j));
+        if (shape.frequency.isZero()) {
+          appendAnsatzTerm(F.Times(power, exponential), unknowns, ansatzTerms);
+        } else {
+          appendAnsatzTerm(F.Times(power, exponential, cosine), unknowns, ansatzTerms);
+          appendAnsatzTerm(F.Times(power, exponential, sine), unknowns, ansatzTerms);
+        }
+      }
+      if (unknowns.size() > MAX_UNDETERMINED_COEFFICIENTS) {
+        return F.NIL;
+      }
+    }
+    if (unknowns.isEmpty()) {
+      return F.NIL;
+    }
+
+    IExpr ansatz = engine.evaluate(ansatzTerms);
+    IASTAppendable residual = F.PlusAlloc(lf.order + 2);
+    for (int k = 0; k <= lf.order; k++) {
+      if (!lf.a[k].isZero()) {
+        IExpr derivative = k == 0 //
+            ? ansatz
+            : engine.evaluate(F.D(ansatz, F.List(xVar, F.ZZ(k))));
+        residual.append(F.Times(lf.a[k], derivative));
+      }
+    }
+    residual.append(F.Negate(g));
+    IExpr polynomial = engine.evaluate(F.Expand(F.subst(engine.evaluate(residual), atomRules)));
+    if (!polynomial.isFree(x -> x.isCos() || x.isSin() || x.isPower() && x.base() == S.E, true)) {
+      // A function which the substitution did not reach means the ansatz does not span what the
+      // equation produces, and the coefficients read off below would not be the whole condition.
+      return F.NIL;
+    }
+
+    IAST equations = coefficientEquations(polynomial, atoms, engine);
+    if (equations.isEmpty()) {
+      return F.NIL;
+    }
+    IASTAppendable variables = F.ListAlloc(unknowns.size());
+    for (IExpr unknown : unknowns) {
+      variables.append(unknown);
+    }
+    IExpr rules = engine.evaluate(F.Solve(equations, variables));
+    if (!rules.isList() || rules.isEmpty() || !rules.first().isList()) {
+      return F.NIL;
+    }
+    IAST assignment = (IAST) rules.first();
+    // The system may be solvable without the ansatz being right, so what it answers is put back.
+    if (!engine.evaluate(F.Expand(F.subst(polynomial, assignment))).isZero()) {
+      return F.NIL;
+    }
+    IExpr particular = engine.evaluate(F.Expand(F.subst(ansatz, assignment)));
+    for (IExpr unknown : unknowns) {
+      if (!particular.isFree(unknown, true)) {
+        return F.NIL;
+      }
+    }
+    return particular;
+  }
+
+  /** Adds one member of the ansatz, with an undetermined coefficient of its own. */
+  private static void appendAnsatzTerm(IExpr function, List<IExpr> unknowns,
+      IASTAppendable ansatzTerms) {
+    IExpr unknown = F.Dummy("uc" + (unknowns.size() + 1));
+    unknowns.add(unknown);
+    ansatzTerms.append(F.Times(unknown, function));
+  }
+
+  /**
+   * The equations which say that <code>polynomial</code> vanishes identically: its terms are
+   * gathered by the monomial they carry in <code>atoms</code>, and each of those coefficients has to
+   * be zero.
+   */
+  private static IAST coefficientEquations(IExpr polynomial, List<IExpr> atoms,
+      EvalEngine engine) {
+    IAST plus = polynomial.isPlus() ? (IAST) polynomial : F.Times(polynomial);
+    Map<IExpr, IASTAppendable> byMonomial = new LinkedHashMap<>();
+    for (int i = 1; i <= plus.argSize(); i++) {
+      IExpr term = plus.get(i);
+      IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+      IASTAppendable monomial = F.TimesAlloc(factors.argSize());
+      IASTAppendable coefficient = F.TimesAlloc(factors.argSize());
+      for (int k = 1; k <= factors.argSize(); k++) {
+        IExpr factor = factors.get(k);
+        boolean carriesAtom = false;
+        for (IExpr atom : atoms) {
+          if (!factor.isFree(atom, true)) {
+            carriesAtom = true;
+            break;
+          }
+        }
+        if (carriesAtom) {
+          monomial.append(factor);
+        } else {
+          coefficient.append(factor);
+        }
+      }
+      byMonomial.computeIfAbsent(engine.evaluate(monomial), key -> F.PlusAlloc(4))
+          .append(engine.evaluate(coefficient));
+    }
+    IASTAppendable equations = F.ListAlloc(byMonomial.size());
+    for (IASTAppendable coefficient : byMonomial.values()) {
+      equations.append(F.Equal(engine.evaluate(coefficient), F.C0));
+    }
+    return equations;
   }
 
   /**

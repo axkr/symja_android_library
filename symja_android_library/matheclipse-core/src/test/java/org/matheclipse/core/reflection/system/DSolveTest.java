@@ -466,6 +466,47 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveUndeterminedCoefficients() {
+    // A right hand side which is a power of x times an exponential times a sine is answered from a
+    // linear system for the coefficients of an ansatz of the same shape, rather than by integrating
+    // the basis against it.
+    check("DSolve(y''(x)-y(x)==x^2, y(x), x)", //
+        "{{y(x)->-2-x^2+C(1)/E^x+E^x*C(2)}}");
+    check("DSolve(y''(x)+y'(x)-2*y(x)==E^(3*x), y(x), x)", //
+        "{{y(x)->E^(3*x)/10+C(1)/E^(2*x)+E^x*C(2)}}");
+    // the forcing function solves the homogeneous equation, so the ansatz carries a power of x:
+    // once for a simple root of the characteristic polynomial
+    check("DSolve(y''(x)+y(x)==Sin(x), y(x), x)", //
+        "{{y(x)->-1/2*x*Cos(x)+C(1)*Cos(x)+C(2)*Sin(x)}}");
+    check("DSolve({y''(x)+y(x)==Sin(x), y(0)==0, y'(0)==0}, y(x), x)", //
+        "{{y(x)->1/2*(-x*Cos(x)+Sin(x))}}");
+    // twice for a double one
+    check("DSolve(y''(x)-2*y'(x)+y(x)==E^x, y(x), x)", //
+        "{{y(x)->1/2*E^x*x^2+E^x*C(1)+E^x*x*C(2)}}");
+    // and the polynomial factor is raised along with it
+    check("DSolve(y''(x)+4*y(x)==x*Cos(2*x), y(x), x)", //
+        "{{y(x)->1/16*x*Cos(2*x)+C(1)*Cos(2*x)+1/8*x^2*Sin(2*x)+C(2)*Sin(2*x)}}");
+    checkResidual("y''(x)+4*y(x)==x*Cos(2*x)", //
+        "y''(x)+4*y(x)-x*Cos(2*x)", "{x->13/10, C(1)->7/5, C(2)->2/5}");
+    // a right hand side of another shape is left to variation of parameters, as before
+    check("DSolve(y''(x)+y(x)==Sec(x), y(x), x)", //
+        "{{y(x)->C(1)*Cos(x)+Cos(x)*Log(Cos(x))+x*Sin(x)+C(2)*Sin(x)}}");
+  }
+
+  /**
+   * Variation of parameters answers this one too, but it spends a minute and a half on the integrals
+   * of its basis against the forcing function -- the integrands send a zero test inside the
+   * integration into a factorization over the Gaussian rationals -- and the answer it produces
+   * carries eleven terms where four will do.
+   */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveUndeterminedCoefficientsHighFrequency() {
+    checkResidual("y''(x)+3*y'(x)+3*y(x)==8*Cos(10*x)+6*Sin(10*x)", //
+        "y''(x)+3*y'(x)+3*y(x)-8*Cos(10*x)-6*Sin(10*x)", "{x->13/10, C(1)->7/5, C(2)->2/5}");
+  }
+
+  @Test
   public void testDSolveSeparableWithCoefficient() {
     // Separating the variables starts by dividing out the coefficient of y'(x). Without that the
     // method only ever saw equations which were already written as y'(x) == f(x)*g(y), and every
