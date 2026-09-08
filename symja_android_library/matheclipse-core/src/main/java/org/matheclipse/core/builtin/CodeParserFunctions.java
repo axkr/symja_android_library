@@ -278,6 +278,18 @@ public class CodeParserFunctions {
   }
 
   /**
+   * The plain name of an option, without the context it lives in.
+   *
+   * <p>
+   * A caller writes <code>CodeParser`SourceConvention</code>, and how that prints depends on
+   * whether <code>CodeParser`</code> is on <code>$ContextPath</code> where it is read - which is
+   * exactly what a package's Begin and End change. The name is what identifies the option.
+   */
+  private static String optionName(IExpr option) {
+    return option.isSymbol() ? ((ISymbol) option).getSymbolName() : option.toString();
+  }
+
+  /**
    * Was <code>SourceConvention -&gt; "SourceCharacterIndex"</code> asked for?
    *
    * <p>
@@ -290,7 +302,7 @@ public class CodeParserFunctions {
       IAST rules = argument.isList() ? (IAST) argument : F.list(argument);
       for (int j = 1; j < rules.size(); j++) {
         IExpr rule = rules.get(j);
-        if (rule.isRuleAST() && rule.first().toString().equalsIgnoreCase("SourceConvention")) {
+        if (rule.isRuleAST() && optionName(rule.first()).equalsIgnoreCase("SourceConvention")) {
           // in relaxed syntax the name written in the source has been lower-cased by now
           return rule.second().toString().equalsIgnoreCase("SourceCharacterIndex");
         }
