@@ -15,10 +15,13 @@ var traceDialogs = {};
 /**
  * The panel for one evaluation which is being stepped through.
  *
- * @param spec the "dialog" object of the result
+ * @param result the whole result object, whose "dialog" is the first step. It is kept so that a
+ *        derivation which is stepped to the end can replace it: what a notebook saves is then the
+ *        finished derivation and not the step it started at.
  */
-function createTraceDialog(spec) {
-	var dialog = {id: spec.id};
+function createTraceDialog(result) {
+	var spec = result.dialog;
+	var dialog = {id: spec.id, result: result};
 	dialog.dom = document.createElement('div');
 	dialog.dom.className = 'tracedialog';
 
@@ -116,6 +119,16 @@ function showTraceDialogAnswer(dialog, tex) {
 /** The evaluation is over: the panel is replaced by the derivation it produced. */
 function finishTraceDialog(dialog, spec) {
 	delete traceDialogs[dialog.id];
+	// from here on this cell holds an ordinary derivation, which is what gets saved to a notebook
+	var stored = dialog.result;
+	if (stored) {
+		stored.format = 'steps';
+		stored.steps = spec.steps;
+		stored.result = spec.result;
+		stored.latex = spec.latex;
+		stored.plaintext = spec.plaintext;
+		delete stored.dialog;
+	}
 	var steps = spec.steps ? createSteps(spec.steps) : document.createElement('div');
 	dialog.dom.parentNode.replaceChild(steps, dialog.dom);
 }

@@ -111,6 +111,8 @@ function newCellId() {
 function plainTextOf(result, value, format) {
 	if (result && result.plaintext)
 		return result.plaintext;
+	if (result && result.dialog && result.dialog.plaintext)
+		return result.dialog.plaintext;
 	if (format == 'latex' || format == 'text' || format == 'code')
 		return value == null ? '' : value;
 	if (value == null)
@@ -309,6 +311,11 @@ function outputData(result, value, format) {
 		// a derivation is stored as the one array a notebook viewer can typeset; the collapsible
 		// sections only exist while the page is open
 		data['text/latex'] = sourceLines('$$' + (result.latex || '') + '$$');
+	} else if (format == 'tracedialog') {
+		// a derivation which was never stepped to the end: there is no result to store, so the
+		// step it had reached is written as text. A dialog that did finish has been rewritten to
+		// the 'steps' form above by the time a notebook is saved.
+		return {'text/plain': sourceLines(plainTextOf(result, value, format))};
 	} else if (format == 'latex') {
 		data['text/latex'] = sourceLines('$$' + value + '$$');
 	} else if (format != 'text' && format != 'code') {

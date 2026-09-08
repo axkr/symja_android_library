@@ -161,7 +161,7 @@ function setResult(ul, results) {
 			var li = $E('li', {'class': 'result'}, createSteps(result.steps));
 			resultUl.appendChild(li);
 		} else if (result.format == 'tracedialog' && result.dialog) {
-			var li = $E('li', {'class': 'result'}, createTraceDialog(result.dialog));
+			var li = $E('li', {'class': 'result'}, createTraceDialog(result));
 			resultUl.appendChild(li);
 		} else if (result.result != null) {
 			var li = $E('li', {'class': 'result'}, createLine(result.result, result.format));

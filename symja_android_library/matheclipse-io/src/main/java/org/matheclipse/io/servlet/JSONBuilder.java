@@ -362,6 +362,8 @@ public class JSONBuilder {
               StepsJSON.CLOSE_MATH));
       dialog.put("prevExpression", tex(texUtil, step.input()));
       dialog.put("expression", tex(texUtil, step.result()));
+      dialog.put("plaintext", "Step " + step.number() + ". " + step.description() + "\n"
+          + step.input() + " -> " + step.result());
     } else {
       dialog.put("finished", true);
     }
@@ -371,6 +373,9 @@ public class JSONBuilder {
     if (traceForm != null) {
       dialog.put("result", tex(texUtil, StepsTree.traceResult(traceForm)));
       dialog.putPOJO("steps", StepsJSON.toJSON(JSON_OBJECT_MAPPER, traceForm));
+      StringBuilderWriter stw = new StringBuilderWriter();
+      texUtil.toTeX(F.HoldForm(traceForm), stw);
+      dialog.put("latex", stw.toString());
       dialog.put("plaintext", outputForm(engine, traceForm));
     }
     resultsJSON.putPOJO("dialog", dialog);
