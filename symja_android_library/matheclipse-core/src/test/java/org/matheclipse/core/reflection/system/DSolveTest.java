@@ -780,6 +780,33 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->1/(-x^2-C(1))}}");
   }
 
+  /**
+   * Inverting a periodic function writes a whole number into the answer to choose a branch, and
+   * every value of it names the same solution. Left standing it is indistinguishable from a
+   * constant the conditions were supposed to determine.
+   */
+  @Test
+  public void testDSolvePrincipalBranch() {
+    check("DSolve({y'(x) == 1 + y(x)^2, y(0) == 0}, y(x), x)", //
+        "{{y(x)->Tan(x)}}");
+    check("DSolve({y'(x) == 1 + y(x)^2, y(0) == 1}, y(x), x)", //
+        "{{y(x)->Tan(Pi/4+x)}}");
+    check("DSolve({y'(x) == 6*E^(2*x - y(x)), y(0) == 0}, y(x), x)", //
+        "{{y(x)->Log(-2+3*E^(2*x))}}");
+    // the general solution of the same equations keeps its arbitrary constant
+    check("DSolve(y'(x) == 1 + y(x)^2, y(x), x)", //
+        "{{y(x)->Tan(x+C(1))}}");
+    check("DSolve(v'(x) == E^v(x), v(x), x)", //
+        "{{v(x)->-Log(-x-C(1))}}");
+
+    // a condition which cannot be met is refused rather than answered with a non-function: this
+    // used to come back as y(x) -> Undefined
+    check("DSolve({y'(x) == y(x)^(1/3), y(0) == 1}, y(x), x)", //
+        "DSolve({y'(x)==y(x)^(1/3),y(0)==1},y(x),x)");
+    checkResidual("{y'(x) == y(x)^(1/3), y(0) == 0}", //
+        "y'(x) - y(x)^(1/3)", "{x->13/10}");
+  }
+
   @Test
   public void testDSolveChangeOfVariable() {
     // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.

@@ -399,10 +399,38 @@ final class DSolveODE {
       engine.setQuietMode(quietMode);
     }
     if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
-      IAST cSol = (IAST) ((IAST) cSols).arg1();
-      return DSolveUtil.togetherSolution(engine.evaluate(F.subst(root, cSol)), engine);
+      // Stripped like every other result Solve hands back here: inverting a periodic function
+      // writes a whole number into the answer to choose a branch, and every value of it names the
+      // same solution, so the principal one is taken rather than left standing where it reads as
+      // a constant the conditions failed to determine.
+      IAST cSol = (IAST) DSolveUtil.stripConditionalExpression(((IAST) cSols).arg1());
+      IExpr fitted = DSolveUtil.togetherSolution(engine.evaluate(F.subst(root, cSol)), engine);
+      return isFitted(fitted, cVars) ? fitted : F.NIL;
     }
     return F.NIL;
+  }
+
+  /**
+   * Whether the conditions really determined the constants.
+   *
+   * <p>
+   * Solving for them can come back with something which is not a value -- <code>Undefined</code>
+   * where a condition was imposed at a point the general solution does not reach, or a constant
+   * left standing -- and putting that into the answer produces an expression which is not a
+   * solution of anything. The branch is refused instead, which is what the caller already does for
+   * a branch the conditions cannot be solved for at all.
+   */
+  private static boolean isFitted(IExpr fitted, IAST cVars) {
+    if (fitted.isNIL() || fitted.isIndeterminate() || fitted.isDirectedInfinity()) {
+      return false;
+    }
+    for (int i = 1; i <= cVars.argSize(); i++) {
+      if (!fitted.isFree(cVars.get(i), true)) {
+        return false;
+      }
+    }
+    return fitted.isFree(x -> x == S.Undefined || x == S.Indeterminate
+        || x == S.ComplexInfinity || x.isAST(S.ConditionalExpression), true);
   }
 
   /**

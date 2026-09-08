@@ -99,10 +99,19 @@ final class DSolveUtil {
   /**
    * Helper to securely unwrap rigorous ConditionalExpression outputs from Integration / Solvers
    * into generic formulas for Differential Equations.
+   *
+   * <p>
+   * A condition which chooses a branch by an integer takes the principal one: the inverse of a
+   * periodic function is written with a whole number in it, as
+   * <code>ConditionalExpression(Tan(x + Pi*C(2)), C(2) in Integers)</code>, and every value of
+   * that number names the same solution of the equation. Left in, it is indistinguishable from an
+   * arbitrary constant the equation still needs -- which is what it looked like after an initial
+   * condition had been fitted, where <code>y'(x) == 1 + y(x)^2, y(0) == 0</code> answered with
+   * that expression instead of with <code>Tan(x)</code>.
    */
   static IExpr stripConditionalExpression(IExpr expr) {
     if (expr.isASTSizeGE(S.ConditionalExpression, 2)) {
-      return stripConditionalExpression(expr.first());
+      return stripConditionalExpression(principalBranch(expr.first(), expr.second()));
     }
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
@@ -119,6 +128,27 @@ final class DSolveUtil {
       return changed ? result : expr;
     }
     return expr;
+  }
+
+  /**
+   * The value with the numbers a condition asks to be whole set to zero, or the value unchanged.
+   *
+   * <p>
+   * Only the constants the condition itself names, and only when what it asks of them is that they
+   * be integers: a condition of any other kind says something about the equation's own parameters
+   * and is not a branch to choose.
+   */
+  private static IExpr principalBranch(IExpr value, IExpr condition) {
+    IAST clauses = condition.isAnd() ? (IAST) condition : F.list(condition);
+    IASTAppendable rules = F.ListAlloc(clauses.argSize());
+    for (int i = 1; i <= clauses.argSize(); i++) {
+      IExpr clause = clauses.get(i);
+      if (clause.isAST(S.Element, 3) && clause.second() == S.Integers
+          && clause.first().isAST(S.C, 2)) {
+        rules.append(F.Rule(clause.first(), F.C0));
+      }
+    }
+    return rules.argSize() == 0 ? value : F.subst(value, rules);
   }
 
   /**
