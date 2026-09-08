@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -38,6 +39,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.PackageUtil;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -60,6 +62,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.FileSandbox;
+import org.matheclipse.core.io.paclet.PackageResolver;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -840,23 +843,66 @@ public class FileFunctions {
               return getFile(file, ast, arg1Str, engine);
             }
           }
-          // Not found where it was named, so look through $Path, as the Wolfram Language
-          // does. Only a relative name is searched: an absolute path that does not exist is
-          // a mistake, not an invitation to load some other file of the same name.
+          // Not found where it was named, so look through the directories of a Path option and
+          // then through $Path, as the Wolfram Language does. Only a relative name is searched: an
+          // absolute path that does not exist is a mistake, not an invitation to load some other
+          // file of the same name.
+          List<Path> pathOption = pathOption(S.Get, ast, engine);
+          if (!FileSandbox.isAbsolutePath(arg1Str)) {
+            for (Path directory : pathOption) {
+              Path candidate = directory.resolve(arg1Str);
+              if (Files.isRegularFile(candidate)) {
+                return getFile(candidate, ast, arg1Str, engine);
+              }
+            }
+          }
           Path onSearchPath = searchPath(arg1Str, engine);
           if (onSearchPath != null) {
             return getFile(onSearchPath, ast, arg1Str, engine);
           }
-          Validate.checkContextName(ast, 1);
+          if (arg1Str.endsWith("`")) {
+            // a context, not a file name: a paclet says where it lives, and failing that the
+            // usual conventions are tried in the Path option's directories and in $Path
+            Path context = PackageResolver.resolve(arg1Str, pathOption, engine);
+            if (context != null) {
+              return getFile(context, ast, arg1Str, engine);
+            }
+          }
         } catch (ValidateException ve) {
-          return Errors.printMessage(S.Get, ve, engine);
+          Errors.printMessage(S.Get, ve, engine);
+          return S.$Failed;
         } catch (MalformedURLException e) {
-          return Errors.printMessage(S.Get, e, engine);
+          Errors.printMessage(S.Get, e, engine);
+          return S.$Failed;
         }
         // Cannot open `1`.
-        return Errors.printMessage(S.Get, "noopen", F.list(ast.arg1()), engine);
+        Errors.printMessage(S.Get, "noopen", F.list(ast.arg1()), engine);
+        // ...and the caller can see that it failed: `start.wls` tests FailureQ[Get[...]]
+        return S.$Failed;
       }
       return F.NIL;
+    }
+
+    /** The directories of a <code>Path -&gt; {…}</code> option, or an empty list. */
+    static List<Path> pathOption(ISymbol symbol, IAST ast, EvalEngine engine) {
+      List<Path> directories = new ArrayList<Path>();
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr argument = ast.get(i);
+        if (argument.isRuleAST() && argument.first().toString().equalsIgnoreCase("Path")) {
+          IExpr value = argument.second();
+          IAST names = value.isList() ? (IAST) value : F.list(value);
+          for (int j = 1; j < names.size(); j++) {
+            if (names.get(j).isString()) {
+              Path directory =
+                  FileSandbox.resolveReadPath(symbol, names.get(j).toString(), engine);
+              if (directory != null) {
+                directories.add(directory);
+              }
+            }
+          }
+        }
+      }
+      return directories;
     }
 
     @Override
@@ -866,7 +912,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -1026,11 +1072,78 @@ public class FileFunctions {
   private static final class Needs extends Get {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      String contextName = Validate.checkContextName(ast, 1);
-      if (!ContextPath.PACKAGES.contains(contextName)) {
-        return super.evaluate(ast, engine);
+      if (!Config.isFileSystemEnabled(engine)) {
+        return F.NIL;
+      }
+      IExpr arg1 = engine.evaluate(ast.arg1());
+      String alias = null;
+      if (arg1.isRuleAST()) {
+        // Needs["A`" -> "a`"] reads A` and then lets its symbols be written as a`x;
+        // Needs["A`" -> None] reads it and adds no alias
+        IExpr target = arg1.second();
+        alias = target.isString() ? target.toString() : null;
+        arg1 = arg1.first();
+      }
+      if (!arg1.isString()) {
+        // String expected at position `1` in `2`.
+        return Errors.printMessage(S.Needs, "string", F.List(F.C1, ast), engine);
+      }
+      String contextName = arg1.toString();
+      if (!contextName.endsWith("`")) {
+        // `1` is not a valid context name.
+        Errors.printMessage(S.Needs, "cxt", F.list(arg1), engine);
+        return S.$Failed;
+      }
+
+      if (!isLoadedInThisSession(contextName, engine)) {
+        IExpr result;
+        if (ast.size() > 2 && ast.arg2().isString()) {
+          // Needs["A`", "file.wl"] says where the context is
+          result = engine.evaluate(F.Get(ast.arg2()));
+        } else {
+          result = super.evaluate(F.Get(F.stringx(contextName)), engine);
+        }
+        if (result.isPresent() && result.equals(S.$Failed)) {
+          // Context `1` was not created when Needs was evaluated.
+          Errors.printMessage(S.Needs, "nocont", F.list(F.stringx(contextName)), engine);
+          return S.$Failed;
+        }
+        ContextPath.PACKAGES.add(contextName);
+      }
+      // the context is on $ContextPath afterwards however it got loaded, so that
+      // BeginPackage["B`", {"A`"}] can see it
+      ContextPath contextPath = engine.getContextPath();
+      Context context = contextPath.getContext(contextName);
+      if (!contextPath.contains(context)) {
+        contextPath.add(context);
+      }
+      if (alias != null) {
+        ContextPath.setContextAlias(alias, contextName);
       }
       return S.Null;
+    }
+
+    /**
+     * Has this session already read the package?
+     *
+     * <p>
+     * The list of loaded packages is process-global while contexts and their symbols belong to one
+     * evaluation engine, so "already loaded" has to mean "loaded and its symbols are here". A
+     * second engine that only consulted the global list would skip the read and then find nothing
+     * defined.
+     */
+    private static boolean isLoadedInThisSession(String contextName, EvalEngine engine) {
+      if (!ContextPath.PACKAGES.contains(contextName)) {
+        return false;
+      }
+      Context context = engine.getContextPath().getContextMap().get(contextName);
+      return context != null && context.size() > 0;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // Needs["A`"], Needs["A`" -> "a`"] and Needs["A`", "file.wl"]
+      return ARGS_1_2;
     }
 
     @Override
@@ -1039,15 +1152,11 @@ public class FileFunctions {
     }
 
     @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
+
   /** Put[{&lt;file name&gt;}} */
   private static final class Put extends AbstractFunctionEvaluator {
 

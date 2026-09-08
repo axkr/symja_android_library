@@ -658,6 +658,20 @@ public class EvalEngine implements Serializable {
    */
   transient Path fFileSandboxRoot;
 
+  /**
+   * The directory a relative file name is resolved against - what <code>Directory[]</code> answers
+   * and <code>SetDirectory[]</code> changes, with the directories a <code>SetDirectory</code> left
+   * behind so that <code>ResetDirectory[]</code> can go back to them.
+   *
+   * <p>
+   * It lives on the engine rather than in the process, because a Java process cannot change its own
+   * working directory. Every built-in that opens a user-named file resolves through
+   * {@link org.matheclipse.core.io.FileSandbox}, which asks for this.
+   */
+  transient Path fCurrentDirectory;
+
+  transient java.util.ArrayDeque<Path> fDirectoryStack;
+
   transient String fSessionID;
 
   private transient String fMessageShortcut;
@@ -1346,6 +1360,7 @@ public class EvalEngine implements Serializable {
     engine.fDisabledTrigRules = fDisabledTrigRules;
     engine.fFileSystemEnabled = fFileSystemEnabled;
     engine.fFileSandboxRoot = fFileSandboxRoot;
+    engine.fCurrentDirectory = fCurrentDirectory;
     engine.fIterationLimit = fIterationLimit;
     engine.fModifiedVariablesList = fModifiedVariablesList;
     engine.fNumericMode = fNumericMode;
@@ -4962,6 +4977,30 @@ public class EvalEngine implements Serializable {
   /** @return the sandbox directory, or <code>null</code> when there is none */
   public final Path getFileSandboxRoot() {
     return fFileSandboxRoot;
+  }
+
+  /**
+   * The directory relative file names are resolved against, which <code>Directory[]</code> answers.
+   * Defaults to the directory the process was started in.
+   */
+  public final Path getCurrentDirectory() {
+    if (fCurrentDirectory == null) {
+      fCurrentDirectory = Path.of("").toAbsolutePath();
+    }
+    return fCurrentDirectory;
+  }
+
+  /** Change the directory relative file names are resolved against, as <code>SetDirectory</code>. */
+  public final void setCurrentDirectory(Path directory) {
+    this.fCurrentDirectory = directory == null ? null : directory.toAbsolutePath().normalize();
+  }
+
+  /** The directories left behind by <code>SetDirectory</code>, innermost first. */
+  public final java.util.ArrayDeque<Path> getDirectoryStack() {
+    if (fDirectoryStack == null) {
+      fDirectoryStack = new java.util.ArrayDeque<Path>();
+    }
+    return fDirectoryStack;
   }
 
   public void setIterationLimit(final int i) {

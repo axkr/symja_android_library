@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -63,6 +64,25 @@ public class Export extends AbstractEvaluator {
       }
 
       IExpr arg2 = ast.arg2();
+
+      if (format.equals(Extension.STRING) || format.equals(Extension.TXT)
+          || format.equals(Extension.JSON) || format.equals(Extension.RAWJSON)
+          || format.equals(Extension.EXPRESSIONJSON)) {
+        // The text formats go through ExportString, which knows them, and the file is written only
+        // once there is something to write: the writer below opens the file first and would leave
+        // an empty one behind for a format it then finds no handler for.
+        IExpr text = engine.evaluate(
+            F.binaryAST2(S.ExportString, arg2, F.stringx(format.toString())));
+        if (!text.isString()) {
+          return F.NIL;
+        }
+        try {
+          Files.writeString(Path.of(filename), text.toString(), StandardCharsets.UTF_8);
+          return arg1;
+        } catch (IOException ioe) {
+          return Errors.printMessage(S.Export, ioe, engine);
+        }
+      }
 
       ImageFormatIO imageFormatIO = ImageFormatIO.get();
       if (imageFormatIO != null && imageFormatIO.canExport(format)) {

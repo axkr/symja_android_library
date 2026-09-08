@@ -1087,9 +1087,12 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
         rrbTree = rrbTree.replace(location, rule);
         return oldRule;
       }
-      // illegal arguments: \"`1`\" in `2`
-      ArgumentTypeException.throwArg(rule, S.Association);
-      return F.NIL;
+      // Anything else is the value at that position, and the key stays as it was. That is what
+      // get(location) answers with, so a caller that reads an element, changes it and writes it
+      // back - which is what every expression visitor does - gets the association it meant rather
+      // than an exception. Localising the variables of a Module whose body holds an association
+      // used to fail here.
+      return setValue(location, rule);
     }
     // set header
     return super.set(location, rule);

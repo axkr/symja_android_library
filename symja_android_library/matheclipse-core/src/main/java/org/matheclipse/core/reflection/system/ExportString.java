@@ -53,6 +53,18 @@ public class ExportString extends AbstractEvaluator {
         return ExpressionJSONConvert.exportExpressionJSONIStringX(arg1);
       }
 
+      if (format.equals(Extension.JSON) || format.equals(Extension.RAWJSON)) {
+        return F.stringx(
+            org.matheclipse.core.convert.JSONConvert.exportJSON(arg1,
+                format.equals(Extension.RAWJSON)));
+      }
+
+      if (format.equals(Extension.STRING) || format.equals(Extension.TXT)) {
+        // the text of it: a string is its own content, and anything else is written the way it
+        // prints
+        return arg1.isString() ? F.stringx(arg1.toString()) : F.stringx(arg1.toString());
+      }
+
       if (format.equals(Extension.SVG)) {
         String svgString = SVGGraphics.svgDocument(arg1);
         if (svgString != null) {

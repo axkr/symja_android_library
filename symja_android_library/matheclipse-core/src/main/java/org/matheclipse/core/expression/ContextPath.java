@@ -20,6 +20,13 @@ public final class ContextPath implements Iterable<Context> {
 
   public static Set<String> PACKAGES = new TreeSet<>();
 
+  /**
+   * The short names contexts may be written under - what <code>$ContextAliases</code> holds and
+   * <code>Needs["A`" -&gt; "a`"]</code> adds. A name whose first segment is a key here is read as
+   * though the full context had been written: <code>a`x</code> is <code>A`x</code>.
+   */
+  private static final Map<String, String> CONTEXT_ALIASES = new java.util.LinkedHashMap<>();
+
   static {
     PACKAGES.add(Context.RUBI_STR);
     PACKAGES.add(Context.GLOBAL_CONTEXT_NAME);
@@ -127,14 +134,50 @@ public final class ContextPath implements Iterable<Context> {
    * @return the complete context name, always ending in a backtick
    */
   public static String resolveContextName(String contextName, EvalEngine engine) {
-    if (contextName.length() == 0 || contextName.charAt(0) != '`') {
+    if (contextName.length() == 0) {
       return contextName;
+    }
+    if (contextName.charAt(0) != '`') {
+      return expandAlias(contextName);
     }
     String currentContext = engine.getContext().completeContextName();
     if (currentContext.endsWith("`")) {
       currentContext = currentContext.substring(0, currentContext.length() - 1);
     }
     return currentContext + contextName;
+  }
+
+  /** Add a short name for a context, as <code>Needs["A`" -&gt; "a`"]</code> does. */
+  public static synchronized void setContextAlias(String alias, String contextName) {
+    CONTEXT_ALIASES.put(alias.endsWith("`") ? alias : alias + "`", contextName);
+  }
+
+  /** The aliases in force, for <code>$ContextAliases</code>. */
+  public static synchronized Map<String, String> contextAliases() {
+    return new java.util.LinkedHashMap<>(CONTEXT_ALIASES);
+  }
+
+  /** Replace every alias, for a fresh <code>$ContextAliases</code> assignment. */
+  public static synchronized void setContextAliases(Map<String, String> aliases) {
+    CONTEXT_ALIASES.clear();
+    CONTEXT_ALIASES.putAll(aliases);
+  }
+
+  /**
+   * <code>a`Sub`x</code> written under the alias <code>a`</code> for <code>Actual`</code> is
+   * <code>Actual`Sub`x</code>. Only the first segment is an alias.
+   */
+  private static synchronized String expandAlias(String contextName) {
+    if (CONTEXT_ALIASES.isEmpty()) {
+      return contextName;
+    }
+    int firstBacktick = contextName.indexOf('`');
+    if (firstBacktick < 0) {
+      return contextName;
+    }
+    String head = contextName.substring(0, firstBacktick + 1);
+    String expanded = CONTEXT_ALIASES.get(head);
+    return expanded == null ? contextName : expanded + contextName.substring(firstBacktick + 1);
   }
 
   public Context getContext(String contextName) {

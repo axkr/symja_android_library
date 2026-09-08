@@ -218,6 +218,11 @@ public class Errors {
       "filetype", "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
       "fnand", "The function `1` is not analytic or defined at `2`.", //
       "fsandbox", "Cannot open `1`: the path is outside this session's directory.", //
+      "cdir", "Cannot set current directory to `1`.", //
+      "dtop", "Directory stack is empty.", //
+      "filex", "Cannot overwrite existing file `1`.", //
+      "nffil", "File not found during `1`.", //
+      "nodir", "Directory `1` not found.", //
       "fitc", "The number of coordinates (`1`) is not equal to the number of variables (`2`).", //
       "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
       "flrl",
@@ -385,6 +390,7 @@ public class Errors {
       "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
       "nonopt",
       "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
+      "nocont", "Context `1` was not created when Needs was evaluated.", //
       "noopen", "Cannot open `1`.", //
       "noprime", "There are no primes in the specified interval.", //
       "nord", "Invalid comparison with `1` attempted.", //

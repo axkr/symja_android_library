@@ -72,7 +72,9 @@ public enum Extension {
    * Excel workbook. Read only - the vendored Tablesaw fork in <code>matheclipse-dataset</code> has
    * an <code>XlsxReader</code> but no writer.
    */
-  XLSX;
+  XLSX, //
+  /** ZIP archive: several files in one, which is how a paclet is shipped */
+  ZIP;
 
   public static boolean isAllowedExtension(String extensionString) {
     try {

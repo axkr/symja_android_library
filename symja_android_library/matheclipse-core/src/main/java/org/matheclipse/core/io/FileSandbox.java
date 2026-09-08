@@ -137,15 +137,24 @@ public final class FileSandbox {
    */
   public static Path workingDirectory(EvalEngine engine) {
     Path root = engine == null ? null : engine.getFileSandboxRoot();
-    return root != null ? root : Path.of("").toAbsolutePath();
+    if (root != null) {
+      return root;
+    }
+    return engine == null ? Path.of("").toAbsolutePath() : engine.getCurrentDirectory();
   }
 
   private static Path resolve(ISymbol symbol, String fileName, EvalEngine engine,
       boolean forWriting) {
     Path root = engine == null ? null : engine.getFileSandboxRoot();
     if (root == null) {
-      // no sandbox: what the call sites did before this class existed
-      return Path.of(fileName);
+      // No sandbox: the name is used as written, except that a relative one is resolved against
+      // Directory[]. A Java process cannot change its own working directory, so without this
+      // SetDirectory would be a value nothing acted on.
+      Path path = Path.of(fileName);
+      if (path.isAbsolute() || engine == null) {
+        return path;
+      }
+      return engine.getCurrentDirectory().resolve(path);
     }
     try {
       if (fileName.startsWith("~")) {

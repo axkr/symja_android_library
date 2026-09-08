@@ -405,6 +405,9 @@ public final class FunctionDefinitions {
     Programming.initialize();
     PatternMatching.initialize();
     FileFunctions.initialize();
+    FileSystemFunctions.initialize();
+    PacletFunctions.initialize();
+    ArchiveFunctions.initialize();
     Algebra.initialize();
     SimplifyFunctions.initialize();
     StructureFunctions.initialize();

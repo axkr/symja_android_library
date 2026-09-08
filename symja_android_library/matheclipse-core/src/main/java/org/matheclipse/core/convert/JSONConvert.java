@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
@@ -114,6 +115,120 @@ public class JSONConvert {
    * @throws JsonMappingException
    * @throws JsonProcessingException
    */
+  /**
+   * Write an expression as JSON.
+   *
+   * <p>
+   * An association becomes an object, a list an array, and <code>True</code>/<code>False</code>/
+   * <code>Null</code> the JSON literals; anything else that is not a number or a string is written
+   * as its input form, which is the only faithful thing to do with it.
+   *
+   * @param rawJSON <code>true</code> for the "RawJSON" shape, which is the same text - the
+   *        difference between the two formats is how they are read back, not how they are written
+   */
+  public static String exportJSON(IExpr expr, boolean rawJSON) {
+    StringBuilder buffer = new StringBuilder();
+    writeJSON(expr, buffer);
+    return buffer.toString();
+  }
+
+  private static void writeJSON(IExpr expr, StringBuilder buffer) {
+    if (expr.isAssociation()) {
+      IAssociation association = (IAssociation) expr;
+      IAST rules = association.normal(false);
+      buffer.append('{');
+      for (int i = 1; i < rules.size(); i++) {
+        if (i > 1) {
+          buffer.append(',');
+        }
+        IExpr rule = rules.get(i);
+        writeString(rule.first().toString(), buffer);
+        buffer.append(':');
+        writeJSON(rule.second(), buffer);
+      }
+      buffer.append('}');
+      return;
+    }
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      if (list.forAll(x -> x.isRuleAST())) {
+        // a list of rules is an object too, the way Import reads one back
+        buffer.append('{');
+        for (int i = 1; i < list.size(); i++) {
+          if (i > 1) {
+            buffer.append(',');
+          }
+          writeString(list.get(i).first().toString(), buffer);
+          buffer.append(':');
+          writeJSON(list.get(i).second(), buffer);
+        }
+        buffer.append('}');
+        return;
+      }
+      buffer.append('[');
+      for (int i = 1; i < list.size(); i++) {
+        if (i > 1) {
+          buffer.append(',');
+        }
+        writeJSON(list.get(i), buffer);
+      }
+      buffer.append(']');
+      return;
+    }
+    if (expr.isString()) {
+      writeString(expr.toString(), buffer);
+      return;
+    }
+    if (expr.isTrue()) {
+      buffer.append("true");
+      return;
+    }
+    if (expr.isFalse()) {
+      buffer.append("false");
+      return;
+    }
+    if (expr == S.Null || expr.isAST(S.Missing)) {
+      buffer.append("null");
+      return;
+    }
+    if (expr.isNumber() && expr.isReal()) {
+      buffer.append(expr.toString());
+      return;
+    }
+    writeString(expr.toString(), buffer);
+  }
+
+  private static void writeString(String value, StringBuilder buffer) {
+    buffer.append('"');
+    for (int i = 0; i < value.length(); i++) {
+      char ch = value.charAt(i);
+      switch (ch) {
+        case '"':
+          buffer.append("\\\"");
+          break;
+        case '\\':
+          buffer.append("\\\\");
+          break;
+        case '\n':
+          buffer.append("\\n");
+          break;
+        case '\r':
+          buffer.append("\\r");
+          break;
+        case '\t':
+          buffer.append("\\t");
+          break;
+        default:
+          if (ch < 0x20) {
+            buffer.append(String.format("\\u%04x", (int) ch));
+          } else {
+            buffer.append(ch);
+          }
+      }
+    }
+    buffer.append('"');
+  }
+
   public static IExpr importJSON(String jsonStr, boolean rawJSON)
       throws JsonMappingException, JsonProcessingException {
     JsonNode node = JSON_OBJECT_MAPPER.readTree(jsonStr);

@@ -674,6 +674,18 @@ public class Parser extends Scanner {
       // Built from the prefix that actually matched - see the note in ExprParser#getOperator().
       fOperatorString =
           new String(fInputString, startPosition, lastOperatorPosition - startPosition);
+      if (fOperatorString.equals("=")) {
+        int unsetPosition = unsetDotPosition(lastOperatorPosition);
+        if (unsetPosition > 0) {
+          fCurrentPosition = unsetPosition;
+          fOperatorString = "=.";
+          fOperatorWindow.set(startPosition, 1);
+          List<Operator> unset = fFactory.getOperatorList("=.");
+          if (unset != null) {
+            return unset;
+          }
+        }
+      }
       return lastList;
     }
     final int endPosition = fCurrentPosition;
@@ -681,6 +693,36 @@ public class Parser extends Scanner {
     throwSyntaxError("Operator token not found: "
         + new String(fInputString, startPosition, endPosition - 1 - startPosition));
     return null;
+  }
+
+
+  /**
+   * Read <code>= .</code> as the <code>=.</code> that means <code>Unset</code>.
+   *
+   * <p>
+   * An operator token is one run of operator characters, so a space between the two - which the
+   * Wolfram Language allows, and packages write - made the <code>.</code> the start of a number
+   * instead. Only a <code>.</code> that begins nothing else counts: <code>x = .5</code> is a
+   * number, and <code>x = ..</code> is not an unset.
+   *
+   * @param afterOperator the position just after the <code>=</code>
+   * @return the position just after the <code>.</code>, or <code>-1</code> if this is not an unset
+   */
+  private int unsetDotPosition(int afterOperator) {
+    int position = afterOperator;
+    while (position < fInputString.length
+        && (fInputString[position] == ' ' || fInputString[position] == '\t')) {
+      position++;
+    }
+    if (position >= fInputString.length || fInputString[position] != '.') {
+      return -1;
+    }
+    int next = position + 1;
+    if (next < fInputString.length
+        && (Character.isDigit(fInputString[next]) || fInputString[next] == '.')) {
+      return -1;
+    }
+    return next;
   }
 
   /** Get a list {...} */
