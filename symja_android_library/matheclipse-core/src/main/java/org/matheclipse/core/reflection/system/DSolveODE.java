@@ -261,6 +261,15 @@ final class DSolveODE {
       if (factored.isPresent() && !factored.equals(quotient)) {
         parts = separateFactors(engine, factored, x, y);
       }
+      if (parts == null) {
+        // A root of a product of the two is one factor as it stands and separates only where both
+        // are positive, which is what PowerExpand assumes: y'(x) == 3*Sqrt(x*y(x)) is a separable
+        // equation whose right hand side is a single Power.
+        IExpr expanded = engine.evaluate(F.PowerExpand(quotient));
+        if (expanded.isPresent() && !expanded.equals(quotient)) {
+          parts = separateFactors(engine, expanded, x, y);
+        }
+      }
     }
     if (parts != null) {
       IExpr fxExpr = parts[0];

@@ -481,6 +481,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "(x+1)^2*y'(x) - (1+y(x))^2", "{x->13/10, C(1)->7/5}");
     checkResidual("x^2*y'(x) == 1-x^2+y(x)^2-x^2*y(x)^2", //
         "x^2*y'(x) - (1-x^2+y(x)^2-x^2*y(x)^2)", "{x->13/10, C(1)->7/5}");
+    // a root of a product of the two variables is a single factor as it stands, and separates
+    // only once it is written as a product of two roots
+    check("DSolve(y'(x) == 3*Sqrt(y(x)*x), y(x), x)", //
+        "{{y(x)->x^3+x^(3/2)*C(1)+C(1)^2/4}}");
+    checkResidual("y'(x) == 3*Sqrt(y(x)*x)", //
+        "y'(x) - 3*Sqrt(y(x)*x)", "{x->13/10, C(1)->7/5}");
     // the equations the homogeneous reduction answers keep their answers
     check("DSolve(y'(x) == (x+y(x))/x, y(x), x)", //
         "{{y(x)->x*C(1)+x*Log(x)}}");
