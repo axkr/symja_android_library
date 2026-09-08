@@ -46,6 +46,14 @@
 
 	"Rational::FractionCancelGCD": "Divide the numerator and the denominator of `3` by their greatest common divisor `4`.",
 
+	"Integrate::Method": "Integrate by `3` - `2` becomes `1`.",
+	"Integrate::Linearity": "The integral of a sum is the sum of the integrals - `2` becomes `1`.",
+	"Integrate::ConstantFactor": "Move the constant factor `3` out of the integral.",
+	"Integrate::PowerRule": "Apply the power rule $\\int x^n\\,dx = \\frac{x^{n+1}}{n+1}$ for $n \\neq -1$, with n = `4`.",
+	"Integrate::ReciprocalRule": "The integral of $\\frac{1}{x}$ is $\\log(x)$.",
+	"Integrate::ExponentialRule": "The integral of $a^x$ is $\\frac{a^x}{\\log(a)}$, with a = `3`.",
+	"Integrate::ExponentialERule": "The exponential function is its own integral.",
+	"Integrate::PartialFractions": "Split `2` into the partial fractions `3` and integrate each one.",
 	"Integrate::RubiRule": "Apply integration rule `3` of the Rubi rule set - `2` becomes `1`.",
 	"Integrate::RubiRuleDescription": "Rubi integration rule `3`. `8`, rewrite `6` as `7`.",
 	"Integrate::RubiRuleRewrite": "Rubi integration rule `3` rewrites `6` as `7`.",

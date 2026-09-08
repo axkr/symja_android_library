@@ -22,6 +22,7 @@ import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -595,18 +596,18 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // integrand to the Rubi rules (which often have a far simpler closed form) and re-emit
           // the RootSum only as a post-Rubi fallback (see below). Closed-form results, including a
           // mixed Log(..)+RootSum(..), are still produced here.
-          result = quietStage(engine, () -> RationalIntegration.integrate(fx, x, engine,
+          result = quietStage(engine, fx, x, "the rational function algorithm", () -> RationalIntegration.integrate(fx, x, engine,
               RationalIntegration.RootSumMode.DEFER));
           if (result.isPresent()) {
             return result;
           }
           // Stage: substitution t = (a+b*x)^(1/n) for radicals of a linear function
-          result = quietStage(engine, () -> RadicalSubstitution.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "substituting for the radical of a linear function", () -> RadicalSubstitution.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
           // Stage: Chebyshev binomial differentials x^m (a+b*x^n)^p (correct-by-construction).
-          result = quietStage(engine, () -> ChebyshevIntegration.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "the Chebyshev method for binomial differentials", () -> ChebyshevIntegration.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -616,7 +617,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // unresolved pieces), and its own 40s grind on them would otherwise exhaust the test
           // timeout, so this runs before the rules. Restricted to >= 2 power factors to avoid the
           // single-power integrals Rubi already renders canonically. Diff-back self-verified.
-          result = quietStage(engine, () -> ProductPowerIntegration.integrate(fx, x, engine, 2));
+          result = quietStage(engine, fx, x, "expanding a product of polynomial powers", () -> ProductPowerIntegration.integrate(fx, x, engine, 2));
           if (result.isPresent()) {
             return result;
           }
@@ -626,7 +627,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // rules have nothing for this shape and grind until the deadline, while partial
           // fractions in the monomial plus the logarithmic-derivative test settle it. The stage
           // gates on that shape itself and diff-back verifies.
-          result = quietStage(engine, () -> PrimitiveTowerIntegration.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "integrating over the primitive tower", () -> PrimitiveTowerIntegration.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -637,7 +638,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // these by substituting the inner function, runs before them instead of after. Only for
           // this shape, so no integral the rules can render more canonically is intercepted; the
           // stage diff-back verifies its result as always.
-          result = quietStage(engine, () -> DerivativeDivides.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "recognising that the derivative divides the integrand", () -> DerivativeDivides.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -704,7 +705,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // only now that Rubi left the integral unevaluated, so Rubi's simpler closed form (when
           // it
           // has one) always wins. Correct-by-construction (Trager), reuses the full general logic.
-          result = quietStage(engine, () -> RationalIntegration.integrate(fx, x, engine,
+          result = quietStage(engine, fx, x, "the rational function algorithm", () -> RationalIntegration.integrate(fx, x, engine,
               RationalIntegration.RootSumMode.EMIT));
           if (result.isPresent()) {
             return result;
@@ -713,7 +714,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // x^2/(x^2+Sqrt(1-x^2)) -> x^2*(x^2-Sqrt(1-x^2))/(x^4+x^2-1). Post-Rubi because it only
           // rewrites the integrand and re-enters Integrate: whenever Rubi has an answer for the
           // original form, that (more canonical) form wins.
-          result = quietStage(engine, () -> SurdRationalization.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "rationalising the surd", () -> SurdRationalization.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -723,7 +724,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // return result;
           // }
           // Derivative-divides (Geddes) u-substitution heuristic.
-          result = quietStage(engine, () -> DerivativeDivides.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "recognising that the derivative divides the integrand", () -> DerivativeDivides.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -779,6 +780,29 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr quietStage(final EvalEngine engine, final Supplier<IExpr> stage) {
     return engine.withQuietMode(stage);
+  }
+
+  /**
+   * Run one stage of the native algorithm cascade and, if it answered, say in the derivation which
+   * method it was.
+   *
+   * <p>
+   * These stages answer whole integrals in one go - a rational function is integrated by Hermite
+   * reduction, not by a chain of rewrite rules - so there are no smaller steps to show. Naming the
+   * method is what can honestly be said about them, and it is better than a derivation with nothing
+   * in it at all.
+   *
+   * @param method how the algorithm is named in the sentence, for example "the rational
+   *        function algorithm"
+   */
+  private static IExpr quietStage(final EvalEngine engine, final IExpr fx, final IExpr x,
+      final String method, final Supplier<IExpr> stage) {
+    IExpr result = engine.withQuietMode(stage);
+    if (result.isPresent() && engine.isTraceLevel(StepLevel.RULE)) {
+      engine.addTraceStep(F.Integrate(fx, x), result,
+          F.List(S.Integrate, F.$str("Method"), F.$str(method)));
+    }
+    return result;
   }
 
   /**
@@ -976,13 +1000,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr integrateTimesPower(final IAST function, final IExpr x) {
+    final EvalEngine engine = EvalEngine.get();
     if (function.isTimes()) {
       IAST[] temp = function.filter(arg -> arg.isFree(x));
       IExpr free = temp[0].oneIdentity1();
       if (!free.isOne()) {
         IExpr rest = temp[1].oneIdentity1();
         // Integrate(free_ * rest_,x_) -> free*Integrate(rest, x) /; FreeQ(free,x)
-        return Times(free, Integrate(rest, x));
+        return step(engine, function, x, Times(free, Integrate(rest, x)), "ConstantFactor", free);
       }
     }
     if (function.isPower()) {
@@ -992,22 +1017,53 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if (base.equals(x) && exponent.isFree(x)) {
         if (exponent.isMinusOne()) {
           // Integrate[ 1 / x_ , x_] -> Log[x]
-          return Log(x);
+          return step(engine, function, x, Log(x), "ReciprocalRule", x);
         }
         // Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
         IExpr temp = Plus(F.C1, exponent);
-        return Divide(Power(x, temp), temp);
+        return step(engine, function, x, Divide(Power(x, temp), temp), "PowerRule", x, exponent);
       }
       if (exponent.equals(x) && base.isFree(x)) {
         if (base.isE()) {
           // E^x
-          return function;
+          return step(engine, function, x, function, "ExponentialERule", x);
         }
         // a^x / Log(a)
-        return F.Divide(function, F.Log(base));
+        return step(engine, function, x, F.Divide(function, F.Log(base)), "ExponentialRule", base, x);
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Announce one of the integration steps this class takes itself, and rewrite as before.
+   *
+   * <p>
+   * These are the rules which answer the easy integrals before the Rubi rule set is ever asked -
+   * the linearity of the integral, a constant factor moved out of it, the power rule. Without this
+   * a derivation of <code>Integrate(3*x^2+2*x, x)</code> would have nothing at all to show, since
+   * no Rubi rule fires.
+   *
+   * <p>
+   * Nothing is built and nothing changes unless a derivation is being collected: with no listener
+   * the rewritten expression is handed back untouched, exactly as the call sites did before.
+   *
+   * @param integrand what is being integrated
+   * @param x the variable it is integrated over
+   * @param rewritten what the rule rewrites the integral to
+   * @param ruleKey names the sentence which explains the rule, in <code>i18n/en.json</code>
+   * @param hints the further parts of that sentence
+   */
+  private static IExpr step(EvalEngine engine, IExpr integrand, IExpr x, IExpr rewritten,
+      String ruleKey, IExpr... hints) {
+    if (!engine.isTraceLevel(StepLevel.RULE)) {
+      return rewritten;
+    }
+    IExpr[] listOfHints = new IExpr[hints.length + 2];
+    listOfHints[0] = S.Integrate;
+    listOfHints[1] = F.$str(ruleKey);
+    System.arraycopy(hints, 0, listOfHints, 2, hints.length);
+    return engine.addEvaluatedTraceStep(F.Integrate(integrand, x), rewritten, listOfHints);
   }
 
   /**
@@ -1432,7 +1488,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IExpr fxExpanded = F.expand(arg1, false, false, false);
     if (fxExpanded.isAST()) {
       if (fxExpanded.isPlus()) {
-        return mapIntegrate((IAST) fxExpanded, x);
+        // the integral of a sum is the sum of the integrals
+        return step(engine, fxExpanded, x, mapIntegrate((IAST) fxExpanded, x), "Linearity");
       }
 
       final IAST arg1AST = (IAST) fxExpanded;
@@ -1442,10 +1499,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         IASTAppendable restCollector = F.TimesAlloc(arg1AST.size());
         arg1AST.filter(filterCollector, restCollector, input -> input.isFree(x, true));
         if (filterCollector.size() > 1) {
+          IExpr constantFactor = filterCollector.oneIdentity1();
           if (restCollector.size() > 1) {
             filterCollector.append(F.Integrate(restCollector.oneIdentity0(), x));
           }
-          return filterCollector;
+          return step(engine, arg1AST, x, filterCollector, "ConstantFactor", constantFactor);
         }
       }
 
@@ -1455,7 +1513,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (parts.isPresent()) {
             IExpr temp = AlgebraUtil.partsApart(parts.get(), x, engine);
             if (temp.isPresent() && !temp.equals(arg1) && temp.isPlus()) {
-              return mapIntegrate((IAST) temp, x);
+              return step(engine, arg1, x, mapIntegrate((IAST) temp, x), "PartialFractions", temp);
             }
           }
         }
