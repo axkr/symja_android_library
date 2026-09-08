@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -26,6 +28,12 @@ final class DSolveODE {
 
   /** How big the coefficient of the equation that reduction leaves may be. */
   private static final int MAX_RICCATI_LEAF_COUNT = 60;
+
+  /** Above this size the separable candidate is not offered to {@code Factor}. */
+  private static final int MAX_SEPARABLE_FACTOR_LEAF_COUNT = 100;
+
+  /** How long {@code Solve} may work on a separated equation. */
+  private static final int SOLVE_SEPARATED_SECONDS = 3;
 
   static IExpr odeExact(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
     // Substitute y(x) with a dummy variable Y to treat it as an independent variable
@@ -209,67 +217,127 @@ final class DSolveODE {
     return F.NIL;
   }
 
-  static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
-    if (n.isOne()) {
-      IExpr fxExpr = F.NIL;
-      IExpr gyExpr = F.NIL;
-
-      if (m.isFree(y)) {
-        gyExpr = F.C1;
-        fxExpr = m;
-      } else if (m.isTimes()) {
-        IAST timesAST = (IAST) m;
-        IASTAppendable fx = F.TimesAlloc(timesAST.argSize());
-        IASTAppendable gy = F.TimesAlloc(timesAST.argSize());
-
-        timesAST.forEach(expr -> {
-          if (expr.isFree(y)) {
-            fx.append(expr);
-          } else {
-            gy.append(expr);
-          }
-        });
-        fxExpr = engine.evaluate(fx);
-        gyExpr = engine.evaluate(gy);
+  /**
+   * Sorts {@code quotient} into a factor free of {@code y} and one free of {@code x}, which is what
+   * separating the variables needs.
+   *
+   * @return the two factors, or {@code null} if the expression does not split into them
+   */
+  private static IExpr[] separateFactors(EvalEngine engine, IExpr quotient, IExpr x, IExpr y) {
+    if (quotient.isFree(y)) {
+      return new IExpr[] {quotient, F.C1};
+    }
+    IAST timesAST = quotient.isTimes() ? (IAST) quotient : F.Times(quotient);
+    IASTAppendable fx = F.TimesAlloc(timesAST.argSize());
+    IASTAppendable gy = F.TimesAlloc(timesAST.argSize());
+    timesAST.forEach(expr -> {
+      if (expr.isFree(y)) {
+        fx.append(expr);
+      } else {
+        gy.append(expr);
       }
+    });
+    IExpr fxExpr = engine.evaluate(fx);
+    IExpr gyExpr = engine.evaluate(gy);
+    if (fxExpr.isNIL() || gyExpr.isNIL() || !gyExpr.isFree(x)) {
+      // A factor which contains both variables is not separated by sorting it into one side. Its
+      // reciprocal would be integrated over y with x still in it, and the equation that came out
+      // of that would not be the one that was asked about.
+      return null;
+    }
+    return new IExpr[] {fxExpr, gyExpr};
+  }
 
-      if (fxExpr.isPresent() && gyExpr.isPresent()) {
-        gyExpr = DSolveContext.integrate(gyExpr.inverse(), y, engine);
-        // Separating the variables is only half of the method: the result still has to be solved
-        // for y. An elliptic integral cannot be, and asking Eliminate to try is where
-        // y''(x) == y(x)^3 with initial conditions used to run without ever returning.
-        if (!DSolveContext.isUsable(gyExpr)) {
-          return F.NIL;
+  static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
+    // y' == -m/n separates whenever the quotient does, so the coefficient of y' is divided out
+    // first. Only the pair (m, n) as a whole is exact, which is why the division stays local to
+    // this method and the other members of the cascade keep seeing the pair.
+    IExpr quotient = n.isOne() ? m : engine.evaluate(F.Divide(m, n));
+    IExpr[] parts = separateFactors(engine, quotient, x, y);
+    if (parts == null && quotient.leafCount() <= MAX_SEPARABLE_FACTOR_LEAF_COUNT) {
+      // A sum never sorts into an x part and a y part, but the sum of a separable equation
+      // factors into one: x^2*y'(x) == 1 - x^2 + y(x)^2 - x^2*y(x)^2 arrives fully expanded.
+      IExpr factored = engine.evaluate(F.Factor(quotient));
+      if (factored.isPresent() && !factored.equals(quotient)) {
+        parts = separateFactors(engine, factored, x, y);
+      }
+    }
+    if (parts != null) {
+      IExpr fxExpr = parts[0];
+      IExpr gyExpr = parts[1];
+      gyExpr = DSolveContext.integrate(gyExpr.inverse(), y, engine);
+      // Separating the variables is only half of the method: the result still has to be solved
+      // for y. An elliptic integral cannot be, and asking Eliminate to try is where
+      // y''(x) == y(x)^3 with initial conditions used to run without ever returning.
+      if (!DSolveContext.isUsable(gyExpr)) {
+        return F.NIL;
+      }
+      IExpr fxIntegral = DSolveContext.integrate(F.Times(F.CN1, fxExpr), x, engine);
+      if (fxIntegral.isNIL()) {
+        return F.NIL;
+      }
+      fxExpr = S.Plus.of(engine, fxIntegral, C_1);
+      if (!DSolveContext.isUsable(fxExpr)) {
+        return F.NIL;
+      }
+      IExpr yEquation = S.Subtract.of(engine, gyExpr, fxExpr);
+      IExpr result = Eliminate.extractVariable(yEquation, y, false, engine);
+      if (result.isNIL()) {
+        // The antiderivative is not always in a form the equation can be solved for y in. A sum
+        // of logarithms is the usual case: Integrate answers 1/(1-y^2) with
+        // -Log(1-y)/2 + Log(1+y)/2, which nothing here can invert, while the ArcTanh(y) it is
+        // equal to inverts at once. So the integral is collected once and the equation offered
+        // again, which is what makes y'(x) == (y(x)^2 + x*y(x) - x^2)/x^2 solvable.
+        IExpr collected = engine.evaluate(F.FullSimplify(gyExpr));
+        if (collected.isPresent() && !collected.equals(gyExpr)) {
+          result = Eliminate.extractVariable(S.Subtract.of(engine, collected, fxExpr), y, false,
+              engine);
         }
-        IExpr fxIntegral = DSolveContext.integrate(F.Times(F.CN1, fxExpr), x, engine);
-        if (fxIntegral.isNIL()) {
-          return F.NIL;
-        }
-        fxExpr = S.Plus.of(engine, fxIntegral, C_1);
-        if (!DSolveContext.isUsable(fxExpr)) {
-          return F.NIL;
-        }
-        IExpr yEquation = S.Subtract.of(engine, gyExpr, fxExpr);
-        IExpr result = Eliminate.extractVariable(yEquation, y, false, engine);
-        if (result.isNIL()) {
-          // The antiderivative is not always in a form the equation can be solved for y in. A sum
-          // of logarithms is the usual case: Integrate answers 1/(1-y^2) with
-          // -Log(1-y)/2 + Log(1+y)/2, which nothing here can invert, while the ArcTanh(y) it is
-          // equal to inverts at once. So the integral is collected once and the equation offered
-          // again, which is what makes y'(x) == (y(x)^2 + x*y(x) - x^2)/x^2 solvable.
-          IExpr collected = engine.evaluate(F.FullSimplify(gyExpr));
-          if (collected.isPresent() && !collected.equals(gyExpr)) {
-            result = Eliminate.extractVariable(S.Subtract.of(engine, collected, fxExpr), y, false,
-                engine);
-          }
-        }
-        if (result.isPresent()) {
-          result = DSolveUtil.stripConditionalExpression(result);
-          return engine.evaluate(result);
-        }
+      }
+      if (result.isNIL()) {
+        result = solveSeparatedEquation(engine, yEquation, y);
+      }
+      if (result.isPresent()) {
+        result = DSolveUtil.stripConditionalExpression(result);
+        return engine.evaluate(result);
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Solves the separated equation for <code>y</code> where {@link Eliminate#extractVariable} could
+   * not, which is what an antiderivative that mixes a logarithm and a root needs.
+   *
+   * @return the single branch <code>Solve</code> answers with, or {@link F#NIL}
+   */
+  private static IExpr solveSeparatedEquation(EvalEngine engine, IExpr yEquation, IExpr y) {
+    if (yEquation.isPlus() && DSolveUtil.hasRadical(yEquation)
+        && !LinearODEForm.isRationalIn(yEquation, y, engine)) {
+      // A sum with a fractional power of y in it is the one shape whose Solve does not come back;
+      // the time limit below is only the second line of defence.
+      return F.NIL;
+    }
+    IExpr solutions;
+    try {
+      solutions = engine.evaluate(F.TimeConstrained(F.Solve(F.Equal(yEquation, F.C0), y),
+          F.ZZ(MachineProfile.seconds(SOLVE_SEPARATED_SECONDS)), S.$Aborted));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+    if (solutions.isNIL() || solutions.equals(S.$Aborted)) {
+      return F.NIL;
+    }
+    IAST roots = DSolveUtil.extractSolveResults(solutions);
+    if (roots.argSize() < 1) {
+      return F.NIL;
+    }
+    IExpr root = DSolveUtil.stripConditionalExpression(roots.arg1());
+    if (root.isNIL() || !DSolveContext.isUsable(root) || !root.isFree(y, true)) {
+      return F.NIL;
+    }
+    return root;
   }
 
   static IExpr odeSolve(EvalEngine engine, IExpr w, IExpr x, IExpr y, IExpr C_1) {
@@ -277,29 +345,48 @@ final class DSolveODE {
     if (p != null) {
       IExpr m = p[0];
       IExpr n = p[1];
+      // The methods below integrate and differentiate with respect to the unknown, and neither
+      // Integrate nor D takes a function application for a variable: they answer nothing at all
+      // for y(x), which left every one of them except odeHomogeneous -- which substitutes a symbol
+      // of its own -- unable to solve anything it was given. So the unknown is carried as a symbol
+      // here, and what comes back is an expression in x which must be free of it.
+      IExpr yVar = y;
+      if (!y.isSymbol()) {
+        yVar = F.Dummy("y");
+        m = engine.evaluate(F.subst(m, y, yVar));
+        n = engine.evaluate(F.subst(n, y, yVar));
+        if (!m.isFree(y, true) || !n.isFree(y, true)) {
+          return F.NIL;
+        }
+      }
 
       // Try separable first
-      IExpr f = odeSeparable(engine, m, n, x, y, C_1);
-      if (f.isPresent()) {
+      IExpr f = odeSeparable(engine, m, n, x, yVar, C_1);
+      if (isSolvedFor(f, yVar)) {
         return f;
       }
 
-      f = odeExact(engine, m, n, x, y, C_1);
-      if (f.isPresent()) {
+      f = odeExact(engine, m, n, x, yVar, C_1);
+      if (isSolvedFor(f, yVar)) {
         return f;
       }
 
-      f = odeIntegratingFactor(engine, m, n, x, y, C_1);
-      if (f.isPresent()) {
+      f = odeIntegratingFactor(engine, m, n, x, yVar, C_1);
+      if (isSolvedFor(f, yVar)) {
         return f;
       }
 
-      f = odeHomogeneous(engine, m, n, x, y, C_1);
-      if (f.isPresent()) {
+      f = odeHomogeneous(engine, m, n, x, yVar, C_1);
+      if (isSolvedFor(f, yVar)) {
         return f;
       }
     }
     return F.NIL;
+  }
+
+  /** Whether one of the methods of {@link #odeSolve} has answered with the unknown eliminated. */
+  private static boolean isSolvedFor(IExpr solution, IExpr yVar) {
+    return solution.isPresent() && solution.isFree(yVar, true);
   }
 
   static IExpr[] odeTransform(EvalEngine engine, IExpr w, IExpr x, IExpr y) {

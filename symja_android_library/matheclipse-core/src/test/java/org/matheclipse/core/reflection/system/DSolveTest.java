@@ -463,6 +463,32 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveSeparableWithCoefficient() {
+    // Separating the variables starts by dividing out the coefficient of y'(x). Without that the
+    // method only ever saw equations which were already written as y'(x) == f(x)*g(y), and every
+    // one of these was declined.
+    check("DSolve((x+1)^2*y'(x) == (1+y(x))^2, y(x), x)", //
+        "{{y(x)->-1+1/(1/(1+x)+C(1))}}");
+    check("DSolve(2*Sqrt(x)*y'(x) == Cos(y(x))^2, y(x), x)", //
+        "{{y(x)->ArcTan(Sqrt(x)+C(1))}}");
+    check("DSolve(2*Sqrt(x)*y'(x) == Sqrt(1-y(x)^2), y(x), x)", //
+        "{{y(x)->Sin(Sqrt(x)+C(1))}}");
+    // a right hand side which arrives as a sum has to be factored before it sorts into an x part
+    // and a y part
+    check("DSolve(x^2*y'(x) == 1-x^2+y(x)^2-x^2*y(x)^2, y(x), x)", //
+        "{{y(x)->-Tan(1/x+x-C(1))}}");
+    checkResidual("(x+1)^2*y'(x) == (1+y(x))^2", //
+        "(x+1)^2*y'(x) - (1+y(x))^2", "{x->13/10, C(1)->7/5}");
+    checkResidual("x^2*y'(x) == 1-x^2+y(x)^2-x^2*y(x)^2", //
+        "x^2*y'(x) - (1-x^2+y(x)^2-x^2*y(x)^2)", "{x->13/10, C(1)->7/5}");
+    // the equations the homogeneous reduction answers keep their answers
+    check("DSolve(y'(x) == (x+y(x))/x, y(x), x)", //
+        "{{y(x)->x*C(1)+x*Log(x)}}");
+    check("DSolve(x*y'(x) == y(x) + Sqrt(x^2+y(x)^2), y(x), x)", //
+        "{{y(x)->x*Sinh(C(1)+Log(x))}}");
+  }
+
+  @Test
   public void testDSolveEulerShiftedCentre() {
     // A Cauchy-Euler equation need not be centred at 0; the centre is read off the leading
     // coefficient as x - n*c(n)/c(n)'.
@@ -791,8 +817,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->Tan(x)}}");
     check("DSolve({y'(x) == 1 + y(x)^2, y(0) == 1}, y(x), x)", //
         "{{y(x)->Tan(Pi/4+x)}}");
+    // Log(3*E^(2*x) - 2), in the shape the reduction along 2*x - y(x) writes it
     check("DSolve({y'(x) == 6*E^(2*x - y(x)), y(0) == 0}, y(x), x)", //
-        "{{y(x)->Log(-2+3*E^(2*x))}}");
+        "{{y(x)->2*x+Log(3-2/E^(2*x))}}");
+    // and the general solution of it keeps its arbitrary constant rather than a branch index
+    check("DSolve(y'(x) == 6*E^(2*x - y(x)), y(x), x)", //
+        "{{y(x)->2*x+Log(3-1/E^(2*x-2*C(1)))}}");
     // the general solution of the same equations keeps its arbitrary constant
     check("DSolve(y'(x) == 1 + y(x)^2, y(x), x)", //
         "{{y(x)->Tan(x+C(1))}}");

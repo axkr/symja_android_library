@@ -148,7 +148,12 @@ final class DSolveUtil {
         rules.append(F.Rule(clause.first(), F.C0));
       }
     }
-    return rules.argSize() == 0 ? value : F.subst(value, rules);
+    if (rules.argSize() == 0) {
+      return value;
+    }
+    // The substitution has to be evaluated: it leaves terms like 2*I*Pi*0 standing, and the
+    // callers of this method hand the result on to a comparison which such a term does not survive.
+    return EvalEngine.get().evaluate(F.subst(value, rules));
   }
 
   /**
