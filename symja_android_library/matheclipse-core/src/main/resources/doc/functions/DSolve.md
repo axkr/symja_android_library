@@ -23,10 +23,12 @@ and functions of a general solution are named `C(1)`, `C(2)`, ..., which the opt
 Ordinary differential equations are solved by the characteristic polynomial and variation of
 parameters when they have constant coefficients, and otherwise by the methods for Cauchy-Euler,
 separable, exact, homogeneous, Bernoulli, Riccati and Clairaut equations, by reduction of order,
-by the Laplace transform, by substitutions which make a first order equation linear, and by
-recognizing the equations of the Airy, Bessel, Legendre and hypergeometric functions, in the
-variable they are written in or in another one. A nonlinear equation of the second order which
-none of those answers is reduced through a symmetry of it. Systems are solved when they have
+by the Laplace transform, by substitutions which make a first order equation linear or turn it
+into a quadrature, and by recognizing the equations of the Airy, Bessel, Legendre, Whittaker and
+hypergeometric functions, in the variable they are written in, in another one, about any two of
+the places where their coefficients become infinite, or after the first derivative has been taken
+out of them. A nonlinear equation of the second order which none of those answers is reduced
+through a symmetry of it, or integrated once through an integrating factor. Systems are solved when they have
 constant coefficients, after carrying the higher derivatives as unknowns of their own if need be,
 when their matrix commutes with its own integral, and, for two equations without the variable in
 them, through the curve their solutions trace out.
