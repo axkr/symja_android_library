@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IStringX;
@@ -110,6 +111,30 @@ public final class ContextPath implements Iterable<Context> {
 
   public Context get(int index) {
     return path.get(index);
+  }
+
+  /**
+   * Resolve a context name written in source into the complete name it denotes.
+   *
+   * <p>
+   * A name starting with a backtick is relative to <code>$Context</code>: inside
+   * <code>BeginPackage["Foo`"]; Begin["`Private`"]</code> both <code>`x</code> and
+   * <code>`Private`x</code> mean <code>Foo`Private`x</code>. Every Wolfram Language package writes
+   * its private symbols that way, so a package cannot be read without it.
+   *
+   * @param contextName the context as it was written, with or without a leading backtick
+   * @param engine supplies the current context
+   * @return the complete context name, always ending in a backtick
+   */
+  public static String resolveContextName(String contextName, EvalEngine engine) {
+    if (contextName.length() == 0 || contextName.charAt(0) != '`') {
+      return contextName;
+    }
+    String currentContext = engine.getContext().completeContextName();
+    if (currentContext.endsWith("`")) {
+      currentContext = currentContext.substring(0, currentContext.length() - 1);
+    }
+    return currentContext + contextName;
   }
 
   public Context getContext(String contextName) {

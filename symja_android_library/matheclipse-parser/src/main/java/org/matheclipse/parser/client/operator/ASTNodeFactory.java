@@ -592,7 +592,10 @@ public class ASTNodeFactory implements INodeParserFactory {
     // if (fIgnoreCase) {
     // return new SymbolNode(symbolName.toLowerCase());
     // }
-    return new SymbolNode(name);
+    // The context has to travel with the name. Dropping it here made every context-qualified
+    // symbol in a file loaded through Get - Foo`Bar, Internal`Kernel`x - resolve to a bare Bar in
+    // whatever context happened to be current.
+    return new SymbolNode(name, context);
   }
 
   @Override

@@ -385,7 +385,10 @@ public final class PatternMatching {
         if (x.isNIL()) {
           return F.NIL;
         }
-        return F.stringx(((ISymbol) x).getContext().getContextName());
+        // the complete name, as Context[] answers for the current one: a context begun inside a
+        // package stores only its own segment ("`Private`"), and a caller that builds a symbol name
+        // out of this - as Unique[Context[f] <> "x"] does - would then miss the package
+        return F.stringx(((ISymbol) x).getContext().completeContextName());
       }
       if (ast.isAST0()) {
         return F.stringx(EvalEngine.get().getContext().completeContextName());

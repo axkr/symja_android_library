@@ -542,8 +542,10 @@ public class PatternMatchingTestCase {
     // + " ^");
     check("f/: format[f] = \"TagSet test\"", //
         "TagSet test");
+    // Format is a built-in name now, so even in relaxed syntax the lowercase spelling resolves to
+    // it; the tag set above is still on f, not on Format
     check("format[]", //
-        "format[]");
+        "Format[]");
   }
 
   @Test

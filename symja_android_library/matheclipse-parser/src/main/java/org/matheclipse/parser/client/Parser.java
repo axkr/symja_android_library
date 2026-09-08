@@ -857,11 +857,11 @@ public class Parser extends Scanner {
     // function.add(parseExpression());
     // return function;
     // }
-    if (fToken != TT_PARTOPEN) {
-      return temp;
-    }
-
-    do {
+    // A part may be followed by an application and that by another part - t[[i]]["key"][[2]] -
+    // so each round reads one run of [[...]] and then whatever is applied to it.
+    while (fToken == TT_PARTOPEN) {
+      function = null;
+      do {
       if (function == null) {
         function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
       } else {
@@ -913,9 +913,14 @@ public class Parser extends Scanner {
         fRecursionDepth--;
       }
       getNextToken();
-    } while (fToken == TT_PARTOPEN);
+      } while (fToken == TT_PARTOPEN);
 
-    return parseArguments(function);
+      // whatever is applied to the part, as in t[[i]]["key"]; the loop then reads a part applied
+      // to that in turn
+      temp = parseArguments(function);
+    }
+
+    return temp;
   }
 
   private ASTNode getString() throws SyntaxError {
@@ -1000,6 +1005,20 @@ public class Parser extends Scanner {
       }
     }
     return lhs;
+  }
+
+  /**
+   * Does the expression after a <code>;</code> end before it starts, because the token there cannot
+   * begin one?
+   *
+   * <p>
+   * An operator with no prefix reading - <code>&amp;</code>, <code>/</code>, <code>//</code> - can
+   * only apply to what stands to its left, so the <code>;</code> has <code>Null</code> on its right
+   * and the operator then takes the whole <code>CompoundExpression</code> as its left operand. That
+   * is how <code>n[#] = a[#]; &amp;</code> is a pure function whose body ends in a semicolon.
+   */
+  private boolean compoundExpressionEndsHere() {
+    return fToken == TT_OPERATOR && determinePrefixOperator() == null;
   }
 
   private ASTNode parseCompoundExpressionNull(InfixOperator infixOperator, ASTNode lhs) {
@@ -1213,6 +1232,13 @@ public class Parser extends Scanner {
           continue;
         }
         getNextToken();
+        if (infixOperator.isOperator(";") && compoundExpressionEndsHere()) {
+          // the `;` has Null on its right; the loop goes round again so the operator standing
+          // there applies to the whole CompoundExpression
+          lhs = infixOperator.createFunction(fFactory, lhs,
+              fFactory.createSymbol(IConstantOperators.Null));
+          continue;
+        }
         ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, lhs);
         if (compoundExpressionNull != null) {
           return compoundExpressionNull;

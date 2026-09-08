@@ -199,4 +199,25 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     IExpr parseBack = new ExprEvaluator().parse(text);
     assertEquals(parseBack.fullFormString(), "Transpose(List(List(1, 2), List(3, 4), List(5, 6)))");
   }
+  /**
+   * Wolfram Language source that Symja used to reject, all of it taken from packages that failed to
+   * read. These go through {@code Parser}/{@code AST2Expr}, which is the path a file takes.
+   */
+  @Test
+  public void testFormsFromRealPackages() {
+    // a pure function whose body ends in a semicolon: the `&` applies to the whole
+    // CompoundExpression, so the `;` has Null on its right
+    assertEquals("Function[CompoundExpression[Set[n[Slot[1]], a[Slot[1]]], Null]]",
+        scriptExpressions("n[#] = a[#]; &"));
+    assertEquals("Map[Function[CompoundExpression[a, Null]], List[1]]",
+        scriptExpressions("Map[a; &, {1}]"));
+    // more generally: an operator with no prefix reading applies to what stands to its left
+    assertEquals("Times[Power[b, -1], CompoundExpression[a, Null]]", scriptExpressions("a ;/ b"));
+
+    // a part, an application, and a part again
+    assertEquals("Part[Part[t, i][\"pos\"], 2]", scriptExpressions("t[[i]][\"pos\"][[2]]"));
+
+    // a string may begin with a newline - a usage message or a template body is written that way
+    assertEquals("Set[MessageName[f, usage], \"\na\"]", scriptExpressions("f::usage = \"\na\""));
+  }
 }

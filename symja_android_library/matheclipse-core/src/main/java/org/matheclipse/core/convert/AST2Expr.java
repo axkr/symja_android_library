@@ -825,7 +825,15 @@ public class AST2Expr {
       return ast;
     }
     if (node instanceof SymbolNode) {
-      String nodeStr = node.getString();
+      SymbolNode symbolNode = (SymbolNode) node;
+      String nodeStr = symbolNode.getString();
+      String context = symbolNode.context();
+      if (context.length() > 0) {
+        // Foo`Bar, Internal`Kernel`x, `Private`x: the context was written in the source and decides
+        // which symbol this is, so the search through $ContextPath that convertSymbol does must not
+        // happen
+        return F.symbol(nodeStr, context, null, fEngine);
+      }
       return convertSymbol(nodeStr);
     }
     // because of inheritance: check Pattern3Node before Pattern2Node before

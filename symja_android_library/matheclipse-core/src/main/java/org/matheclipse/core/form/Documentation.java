@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -360,14 +362,34 @@ public class Documentation {
    * @param engine
    * @return
    */
+  /**
+   * The symbols a context holds, as a snapshot that can be walked safely.
+   *
+   * <p>
+   * A context's table is an ordinary {@link java.util.HashMap}, and Symja fills contexts in from a
+   * background thread while the session is already answering: copying it can therefore fail with a
+   * {@link ConcurrentModificationException} halfway through, which used to take the whole
+   * <code>Names[]</code> evaluation down with it - reproducibly about one run in four. The window is
+   * a few microseconds, so trying again is enough.
+   */
+  private static List<Map.Entry<String, ISymbol>> symbolsOf(Context context) {
+    for (int attempt = 0; attempt < 8; attempt++) {
+      try {
+        return new ArrayList<>(context.entrySet());
+      } catch (ConcurrentModificationException cme) {
+        // a symbol was added while the copy ran
+      }
+    }
+    return Collections.emptyList();
+  }
+
   public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
     ContextPath contextPath = engine.getContextPath();
     IASTAppendable list = F.ListAlloc(31);
     Map<String, Context> contextMap = contextPath.getContextMap();
     for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
       Context context = mapEntry.getValue();
-      // avoid java.util.ConcurrentModificationException by creating ArrayList
-      for (Map.Entry<String, ISymbol> entry : new ArrayList<>(context.entrySet())) {
+      for (Map.Entry<String, ISymbol> entry : symbolsOf(context)) {
         String fullName = context.completeContextName() + entry.getKey();
         java.util.regex.Matcher matcher = pattern.matcher(fullName);
         if (matcher.matches()) {
@@ -391,7 +413,7 @@ public class Documentation {
     for (Context context : contextPath) {
       String completeContextName = context.completeContextName();
       if (!contextMap.containsKey(completeContextName)) {
-        for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
+        for (Map.Entry<String, ISymbol> entry : symbolsOf(context)) {
           String fullName = completeContextName + entry.getKey();
           java.util.regex.Matcher matcher = pattern.matcher(fullName);
           if (matcher.matches()) {

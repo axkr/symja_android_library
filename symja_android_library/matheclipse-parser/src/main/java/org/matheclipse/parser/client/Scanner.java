@@ -550,7 +550,8 @@ public abstract class Scanner {
     if (fCurrentChar == '$') {
       getChar();
     }
-    int contextIndex = -1;
+    // `x is a context of its own - the leading backtick stands for $Context
+    int contextIndex = fInputString[startPosition] == '`' ? startPosition : -1;
     while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
       if (fCurrentChar == '`') {
         contextIndex = fCurrentPosition - 1;
@@ -558,12 +559,17 @@ public abstract class Scanner {
       getChar();
     }
     String context = "";
-    if (contextIndex > 0) {
+    if (contextIndex >= 0) {
       context = new String(fInputString, startPosition, contextIndex - startPosition + 1);
       startPosition = contextIndex + 1;
     }
     int endPosition = fCurrentPosition--;
     final int length = (--endPosition) - startPosition;
+    if (length <= 0) {
+      // a context with nothing after it, as in `Foo\`` - it used to become a symbol with an empty
+      // name in that context, which then silently matched nothing
+      throwSyntaxError("Symbol name expected after the context \"" + context + "\"");
+    }
     fIdentifierContext = context;
     if (length == 1) {
       String name = optimizedCurrentTokenSource1(startPosition);
@@ -744,6 +750,15 @@ public abstract class Scanner {
           // the Character.isUnicodeIdentifierStart method doesn't
           // work in Google Web Toolkit:
           // || (Character.isUnicodeIdentifierStart(fCurrentChar))) {
+          fToken = TT_IDENTIFIER;
+          return;
+        }
+        if (fCurrentChar == '`' && isValidPosition()
+            && (Characters.isSymjaIdentifierStart(charAtPosition()) || charAtPosition() == '$')) {
+          // A leading backtick names a context relative to $Context: `x inside a package is that
+          // package's own x, and `Private`x is what every package writes after Begin["`Private`"].
+          // The backtick is deliberately not an identifier *start* character: that would let the
+          // scanner take the tick of a precision mark such as 1`30 for the start of a symbol.
           fToken = TT_IDENTIFIER;
           return;
         }
@@ -1183,8 +1198,15 @@ public abstract class Scanner {
     } else {
       throwSyntaxError("string - end of string not reached.");
     }
-    if ((fCurrentChar == '\n') || (fToken == TT_EOF)) {
+    if (fToken == TT_EOF) {
       throwSyntaxError("string -" + ident.toString() + "- contains no character.");
+    }
+    if (fCurrentChar == '\n') {
+      // A string may begin with a newline. Wolfram Language sources write multi-line text that way
+      // - a usage message, or the HTML a template builds - and the newline is part of the string,
+      // so it is counted here and appended by the loop below like any other character.
+      fRowCounter++;
+      fCurrentColumnStartPosition = fCurrentPosition;
     }
 
     while (fCurrentChar != '"' && isValidPosition()) {

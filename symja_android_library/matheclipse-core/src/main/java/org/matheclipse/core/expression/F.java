@@ -11452,9 +11452,18 @@ public class F extends S {
     if (contextStr.length() == 0) {
       return symbol(symbolName, assumptionAST, engine);
     }
+    // `x and `Private`x name a context relative to $Context
+    String completeContextStr = ContextPath.resolveContextName(contextStr, engine);
+    if (org.matheclipse.core.expression.Context.SYSTEM_CONTEXT_NAME.equals(completeContextStr)) {
+      // an explicit System`Plus is the built-in, not a fresh symbol in a second System` context.
+      // A package that declares System`Offload; before defining it lands here too, and then gets a
+      // new symbol in the real System` context.
+      return ContextPath.getSymbol(symbolName, org.matheclipse.core.expression.Context.SYSTEM,
+          engine.isRelaxedSyntax());
+    }
     ISymbol symbol;
     ContextPath contextPath = engine.getContextPath();
-    Context context = contextPath.getContext(contextStr);
+    Context context = contextPath.getContext(completeContextStr);
     // if (context == null) {
     // contextPath.add(new Context(contextStr));
     // }
