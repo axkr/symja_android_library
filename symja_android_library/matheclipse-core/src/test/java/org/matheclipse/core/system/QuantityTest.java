@@ -131,11 +131,11 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("-2+Quantity(1, \"ft\")", //
         "-2+Quantity(1,\"Feet\")");
     check("Quantity(9.8, \"m\")/Quantity(1, \"s\")", //
-        "Quantity(9.8,\"Meters\"*\"Seconds\"^(-1))");
+        "Quantity(9.8,\"Meters\"/\"Seconds\")");
     check("Quantity(9.8, \"m\")/Quantity(0, \"s\")", //
-        "Quantity(ComplexInfinity,\"Meters\"*\"Seconds\"^(-1))");
+        "Quantity(ComplexInfinity,\"Meters\"/\"Seconds\")");
     check("Quantity(0, \"s\")^(-1)", //
-        "Quantity(ComplexInfinity,\"Seconds\"^(-1))");
+        "Quantity(ComplexInfinity,1/\"Seconds\")");
     check("2*Quantity(1, \"ft\")", //
         "Quantity(2,\"Feet\")");
     check("0+Quantity(1, \"ft\")", //
@@ -149,7 +149,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("Quantity(3.25, \"m *rad\")", //
         "Quantity(3.25,\"Meters\"*\"Radians\")");
     check("Quantity(3, \"Hz^(-2)*N*m^(-1)\")", //
-        "Quantity(3,\"Hertz\"^(-2)*\"Meters\"^(-1)*\"Newtons\")");
+        "Quantity(3,\"Newtons\"/(\"Hertz\"^2*\"Meters\"))");
     check("0+Quantity(3, \"m\")", //
         "Quantity(3,\"Meters\")");
     check("0*Quantity(3, \"m\")", //
@@ -628,7 +628,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
 
     // a compound unit is left alone
     check("UnitConvert(Quantity(3,\"Meters\")/Quantity(1,\"Seconds\"), \"Imperial\")", //
-        "Quantity(3,\"Meters\"*\"Seconds\"^(-1))");
+        "Quantity(3,\"Meters\"/\"Seconds\")");
     // and so is a dimension with no preferred unit in either system
     check("UnitConvert(Quantity(1,\"Hours\"), \"Imperial\")", //
         "Quantity(1,\"Hours\")");
@@ -1097,12 +1097,42 @@ public class QuantityTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnitConvert() {
+    // "SquareMeters" and "CubicMeters" are not in the imported table - pint spells the metric
+    // members of the family `meter ** 2` - so they were rejected as unknown units while
+    // "SquareFeet" was accepted. They canonicalize to a power of the inner unit, which is what
+    // Mathematica answers.
+    check("UnitConvert(Quantity(1,\"Hectares\"),\"SquareMeters\")", //
+        "Quantity(10000,\"Meters\"^2)");
+    check("UnitConvert(Quantity(1,\"Liters\"),\"CubicMeters\")", //
+        "Quantity(1/1000,\"Meters\"^3)");
+    check("UnitConvert(Quantity(1,\"SquareKilometers\"),\"SquareMeters\")", //
+        "Quantity(1000000,\"Meters\"^2)");
+    check("KnownUnitQ(\"SquareMeters\")", //
+        "True");
+    check("KnownUnitQ(\"CubicMillimeters\")", //
+        "True");
+    // squaring a scale with an offset is meaningless
+    check("KnownUnitQ(\"SquareDegreesCelsius\")", //
+        "False");
+    // a table entry keeps its own name
+    check("UnitConvert(Quantity(1,\"Hectares\"),\"SquareFeet\")", //
+        "Quantity(15625000000/145161,\"SquareFeet\")");
+    // negative powers print as a denominator, the way the same expression prints outside a
+    // Quantity and the way InputForm renders it
+    check("UnitConvert(Quantity(1,\"Bars\"))", //
+        "Quantity(100000,\"Kilograms\"/(\"Meters\"*\"Seconds\"^2))");
+    check("UnitConvert(Quantity(1,\"Newtons\"))", //
+        "Quantity(1,(\"Kilograms\"*\"Meters\")/\"Seconds\"^2)");
+    check("UnitConvert(Quantity(1,\"Hertz\"))", //
+        "Quantity(1,1/\"Seconds\")");
+    check("UnitConvert(Quantity(1,\"Meters\"/\"Seconds\"),\"Kilometers\"/\"Hours\")", //
+        "Quantity(18/5,\"Kilometers\"/\"Hours\")");
     check("UnitConvert(Quantity(Pi, \"rad\"), \"deg\")", //
         "Quantity(180,\"AngularDegrees\")");
     check("UnitConvert(Quantity(Pi, \"deg\"), \"rad\")", //
         "Quantity(Pi^2/180,\"Radians\")");
     check("UnitConvert(Quantity(\"StandardAccelerationOfGravity\"),\"m/s^2\")", //
-        "Quantity(196133/20000,\"Meters\"*\"Seconds\"^(-2))");
+        "Quantity(196133/20000,\"Meters\"/\"Seconds\"^2)");
     check("UnitConvert(Quantity(111, \"cm\"),\"m\" )", //
         "Quantity(111/100,\"Meters\")");
 
@@ -1112,17 +1142,17 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("UnitConvert(Quantity(Pi, \"rad\"), \"grad\")", //
         "Quantity(200,\"Gradians\")");
     check("UnitConvert(Quantity(200, \"g\")*Quantity(981, \"cm*s^-2\") )", //
-        "Quantity(981/500,\"Kilograms\"*\"Meters\"*\"Seconds\"^(-2))");
+        "Quantity(981/500,(\"Kilograms\"*\"Meters\")/\"Seconds\"^2)");
     check("UnitConvert(Quantity(10^(-6), \"MOhm\") )", //
-        "Quantity(1,\"Amperes\"^(-2)*\"Kilograms\"*\"Meters\"^2*\"Seconds\"^(-3))");
+        "Quantity(1,(\"Kilograms\"*\"Meters\"^2)/(\"Amperes\"^2*\"Seconds\"^3))");
     check("UnitConvert(Quantity(10^(-6), \"MOhm\"),\"Ohm\" )", //
         "Quantity(1,\"Ohms\")");
     check("UnitConvert(Quantity(1, \"nmi\"),\"km\" )", //
         "Quantity(463/250,\"Kilometers\")");
     check("UnitConvert(Quantity(360, \"mV^-1*mA*s^2\"),\"Ohm^-1*s^2\" )", //
-        "Quantity(360,\"Ohms\"^(-1)*\"Seconds\"^2)");
+        "Quantity(360,\"Seconds\"^2/\"Ohms\")");
     check("UnitConvert(Quantity(360, \"km*h^-1\"),\"m*s^-1\" )", //
-        "Quantity(100,\"Meters\"*\"Seconds\"^(-1))");
+        "Quantity(100,\"Meters\"/\"Seconds\")");
     check("UnitConvert(Quantity(2, \"km^2\") )", //
         "Quantity(2000000,\"Meters\"^2)");
     check("UnitConvert(Quantity(2, \"km^2\"),\"cm^2\" )", //
@@ -1257,7 +1287,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
   public void testUnitySimplifyDimensions() {
     // an angle is a real dimension by default
     check("UnitSimplify(Quantity(3, \"AngularDegrees\"/\"Seconds\"))", //
-        "Quantity(3,\"AngularDegrees\"*\"Seconds\"^(-1))");
+        "Quantity(3,\"AngularDegrees\"/\"Seconds\")");
     // ... unless it is declared unity, then degrees/second becomes a frequency
     check(
         "UnitSimplify(Quantity(3, \"AngularDegrees\"/\"Seconds\"), UnityDimensions -> {\"AngleUnit\"})", //
@@ -1340,7 +1370,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     // a continuous density is per unit
     check(
         "PDF(QuantityDistribution(UniformDistribution({0, 2}), \"Meters\"), Quantity(1, \"Meters\"))", //
-        "Quantity(1/2,\"Meters\"^(-1))");
+        "Quantity(1/2,1/\"Meters\")");
     // a dimensionless unit collapses back to the plain distribution
     check("QuantityDistribution(NormalDistribution(0, 1), \"PureUnities\")", //
         "NormalDistribution(0,1)");
@@ -1415,7 +1445,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     // It is NOT electronvolts per mole, which is smaller by Avogadro's number - a plausible
     // reading that would put every ionization energy out by 6.022*10^23.
     check("UnitConvert(Quantity(1.0, \"MolarElectronvolts\"), \"Kilojoules\"/\"Moles\")", //
-        "Quantity(96.48533,\"Kilojoules\"*\"Moles\"^(-1))");
+        "Quantity(96.48533,\"Kilojoules\"/\"Moles\")");
     // tungsten's first ionization energy, 770 kJ/mol
     check("UnitConvert(Quantity(770.0, \"Kilojoules\"/\"Moles\"), \"MolarElectronvolts\")", //
         "Quantity(7.98049,\"MolarElectronvolts\")");

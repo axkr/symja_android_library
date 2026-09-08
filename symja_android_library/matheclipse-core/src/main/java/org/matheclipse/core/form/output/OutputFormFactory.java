@@ -2186,6 +2186,14 @@ public class OutputFormFactory {
     if (unit.isPower()) {
       IExpr base = unit.base();
       IExpr exponent = unit.exponent();
+      if (exponent.isNegative()) {
+        // a lone reciprocal unit, e.g. Quantity(3, 1/"Seconds"); the Times case is handled by
+        // convertUnitTimes
+        IExpr positive = exponent.negate();
+        buf.append("1/");
+        convertUnitExpr(buf, positive.isOne() ? base : F.Power(base, positive));
+        return;
+      }
       if (base.isString()) {
         convertUnitExpr(buf, base);
       } else {
@@ -2204,24 +2212,73 @@ public class OutputFormFactory {
       return;
     }
     if (unit.isTimes()) {
-      IAST times = (IAST) unit;
-      for (int i = 1; i < times.size(); i++) {
-        if (i > 1) {
-          buf.append('*');
-        }
-        IExpr factor = times.get(i);
-        if (factor.isString() || factor.isPower() || !factor.isAST()
-            || factor.isAST(S.IndependentUnit, 2)) {
-          convertUnitExpr(buf, factor);
-        } else {
-          buf.append('(');
-          convertUnitExpr(buf, factor);
-          buf.append(')');
-        }
-      }
+      convertUnitTimes(buf, (IAST) unit);
       return;
     }
     convert(buf, unit);
+  }
+
+  /**
+   * A product of units, with the negative powers collected into a denominator:
+   * <code>"Kilograms"/("Meters"*"Seconds"^2)</code> rather than
+   * <code>"Kilograms"*"Meters"^(-1)*"Seconds"^(-2)</code>. This is what the same expression prints
+   * as outside a <code>Quantity</code>, and what {@code InputForm} makes of it.
+   */
+  private void convertUnitTimes(final Appendable buf, final IAST times) throws IOException {
+    IASTAppendable numerator = F.ListAlloc(times.argSize());
+    IASTAppendable denominator = F.ListAlloc(times.argSize());
+    for (int i = 1; i < times.size(); i++) {
+      IExpr factor = times.get(i);
+      if (factor.isPower() && factor.exponent().isNegative()) {
+        IExpr exponent = factor.exponent().negate();
+        denominator.append(exponent.isOne() ? factor.base() : F.Power(factor.base(), exponent));
+      } else {
+        numerator.append(factor);
+      }
+    }
+    if (denominator.isEmpty()) {
+      convertUnitFactors(buf, numerator);
+      return;
+    }
+    if (numerator.isEmpty()) {
+      buf.append('1');
+    } else {
+      boolean parenthesize = numerator.argSize() > 1;
+      if (parenthesize) {
+        buf.append('(');
+      }
+      convertUnitFactors(buf, numerator);
+      if (parenthesize) {
+        buf.append(')');
+      }
+    }
+    buf.append('/');
+    boolean parenthesize = denominator.argSize() > 1;
+    if (parenthesize) {
+      buf.append('(');
+    }
+    convertUnitFactors(buf, denominator);
+    if (parenthesize) {
+      buf.append(')');
+    }
+  }
+
+  /** The factors of one side of a unit product, joined by <code>*</code>. */
+  private void convertUnitFactors(final Appendable buf, final IAST factors) throws IOException {
+    for (int i = 1; i < factors.size(); i++) {
+      if (i > 1) {
+        buf.append('*');
+      }
+      IExpr factor = factors.get(i);
+      if (factor.isString() || factor.isPower() || !factor.isAST()
+          || factor.isAST(S.IndependentUnit, 2)) {
+        convertUnitExpr(buf, factor);
+      } else {
+        buf.append('(');
+        convertUnitExpr(buf, factor);
+        buf.append(')');
+      }
+    }
   }
 
   /**

@@ -7272,7 +7272,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // densities are recorded in kilograms per cubic metre and reported in grams per cubic
     // centimetre, as the reference implementation does
     check("ElementData(\"Tungsten\", \"MassDensity\")", //
-        "Quantity(19.25,\"Centimeters\"^(-3)*\"Grams\")");
+        "Quantity(19.25,\"Grams\"/\"Centimeters\"^3)");
     check("ElementData(\"Tungsten\", \"AtomicMass\")", //
         "Quantity(183.84,\"AtomicMassUnit\")");
     // a quantity converts like any other
@@ -7306,9 +7306,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Quantity(32.92728,\"MolarElectronvolts\")}");
 
     check("ElementData(\"Pd\", \"ElectronAffinity\")", //
-        "Quantity(54.24,\"Kilojoules\"*\"Moles\"^(-1))");
+        "Quantity(54.24,\"Kilojoules\"/\"Moles\")");
     check("ElementData(\"Pd\", \"ThermalConductivity\")", //
-        "Quantity(71.8,\"Kelvins\"^(-1)*\"Meters\"^(-1)*\"Watts\")");
+        "Quantity(71.8,\"Watts\"/(\"Kelvins\"*\"Meters\"))");
     check("ElementData(\"Pd\", \"YoungModulus\")", //
         "Quantity(121.0,\"Gigapascals\")");
     check("ElementData(\"Pd\", \"PoissonRatio\")", //
@@ -7340,7 +7340,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ElementData(Entity(\"Element\", \"Tungsten\"), \"AtomicMass\")", //
         "Quantity(183.84,\"AtomicMassUnit\")");
     check("ElementData(74, EntityProperty(\"Element\", \"MassDensity\"))", //
-        "Quantity(19.25,\"Centimeters\"^(-3)*\"Grams\")");
+        "Quantity(19.25,\"Grams\"/\"Centimeters\"^3)");
     check("Take(ElementData(\"Properties\"), 2)", //
         "{EntityProperty(Element,AtomicMass),EntityProperty(Element,AtomicNumber)}");
     check("Length(ElementData(\"Properties\"))", //
@@ -7352,7 +7352,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ElementData(\"Carbon\", \"ElectronCount\")", //
         "6");
     check("ElementData(\"Carbon\", \"MolarMass\")", //
-        "Quantity(12.01,\"Grams\"*\"Moles\"^(-1))");
+        "Quantity(12.01,\"Grams\"/\"Moles\")");
     // the outermost shell, plus an unfilled d one shell in: carbon four, iron eight, tungsten six
     check("ElementData(\"Carbon\", \"ValenceElectronCount\")", //
         "4");

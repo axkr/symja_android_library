@@ -13,7 +13,7 @@ public class ConstantPhysicsTest extends ExprEvaluatorTestCase {
   public void testAvogadroConstant() {
     // Moles^(-1)
     check("AvogadroConstant", //
-        "Quantity(602214076000000000000000,\"Moles\"^(-1))");
+        "Quantity(602214076000000000000000,1/\"Moles\")");
   }
 
   @Test

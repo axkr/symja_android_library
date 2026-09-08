@@ -255,6 +255,47 @@ public final class Units {
   }
 
   /**
+   * A {@code "Square..."} or {@code "Cubic..."} spelling as a power of the unit it names:
+   * {@code "SquareMeters"} is <code>"Meters"^2</code>, {@code "CubicMillimeters"} is
+   * <code>"Millimeters"^3</code>.
+   *
+   * <p>
+   * Mathematica canonicalizes these spellings away rather than keeping them as unit names
+   * (<code>UnitConvert[Quantity[1,"Hectares"],"SquareMeters"]</code> answers
+   * <code>Quantity[10000,"Meters"^2]</code>), which is also why they are not in the imported table:
+   * pint spells the metric ones {@code meter ** 2}. Deriving them covers every prefixed spelling
+   * without enumerating any of them.
+   *
+   * <p>
+   * Only reached when the name is not a registry entry, so the imported customary members
+   * ({@code SquareFeet}, {@code CubicInches}) keep their own names. An affine unit is refused:
+   * squaring a scale with an offset is meaningless.
+   *
+   * @return the power, or {@link F#NIL} if {@code name} is not such a spelling
+   */
+  private static IExpr squareCubicPower(String name) {
+    final int exponent;
+    final String remainder;
+    if (name.startsWith("Square")) {
+      exponent = 2;
+      remainder = name.substring("Square".length());
+    } else if (name.startsWith("Cubic")) {
+      exponent = 3;
+      remainder = name.substring("Cubic".length());
+    } else {
+      return F.NIL;
+    }
+    if (remainder.isEmpty()) {
+      return F.NIL;
+    }
+    UnitEntry base = UnitRegistry.get().resolve(remainder);
+    if (base == null || base.offset != null || base.factors.isEmpty()) {
+      return F.NIL;
+    }
+    return F.Power(F.stringx(base.name), F.ZZ(exponent));
+  }
+
+  /**
    * Validates and canonicalizes a unit expression: every string atom is replaced by its canonical
    * registry name; {@code Times}/{@code Power} (rational exponents) structures and
    * {@code IndependentUnit["name"]} are accepted. Returns {@code F.NIL} for invalid units; returns
@@ -265,6 +306,10 @@ public final class Units {
       String name = unitExpr.toString();
       UnitEntry entry = UnitRegistry.get().resolve(name);
       if (entry == null) {
+        IExpr power = squareCubicPower(name);
+        if (power.isPresent()) {
+          return power;
+        }
         // legacy compound unit strings like "m/s^2", "Hz^(-2)*N*m^(-1)", "kW*h"
         return parseCompoundUnitString(name);
       }
