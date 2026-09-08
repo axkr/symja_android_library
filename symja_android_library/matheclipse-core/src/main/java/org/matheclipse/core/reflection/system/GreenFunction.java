@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.dsolve.DSolveEngine;
+import org.matheclipse.core.dsolve.LinearODEForm;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -115,11 +117,11 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     }
 
     LinearODEForm form = LinearODEForm.extract(operator, applied, xVar, engine);
-    if (form == null || form.order < 1 || form.order > 2 || !form.g.isZero()) {
+    if (form == null || form.order() < 1 || form.order() > 2 || !form.inhomogeneity().isZero()) {
       // The operator has to be the homogeneous one, of first or second order.
       return F.NIL;
     }
-    int order = form.order;
+    int order = form.order();
     if (problem.argSize() != order + 1) {
       return F.NIL;
     }
@@ -137,7 +139,7 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     // derivative that the impulse gives it.
     if (conditionsAtMin == order && conditionsAtMax == 0
         && homogeneous(problem, head, xVar, engine)) {
-      IExpr response = impulseResponse(basis, form.a[order], xVar, source, engine);
+      IExpr response = impulseResponse(basis, form.coefficient(order), xVar, source, engine);
       return response.isNIL() //
           ? F.NIL
           : engine.evaluate(F.Times(response, F.HeavisideTheta(F.Subtract(xVar, source))));
@@ -166,7 +168,7 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     }
     // The jump of the derivative across the source is 1/a(s), which fixes the denominator.
     IExpr denominator = engine.evaluate(
-        F.Times(F.subst(form.a[2], xVar, source), F.subst(wronskian, xVar, source)));
+        F.Times(F.subst(form.coefficient(2), xVar, source), F.subst(wronskian, xVar, source)));
     if (denominator.isZero()) {
       return F.NIL;
     }
@@ -183,7 +185,7 @@ public class GreenFunction extends AbstractFunctionEvaluator {
   private static IExpr[] homogeneousBasis(IExpr operator, IExpr applied, IExpr xVar, int order,
       EvalEngine engine) {
     IExpr solutions = engine.evaluate(F.DSolve(F.Equal(operator, F.C0), applied, xVar));
-    IAST values = DSolveUtil.extractSolveResults(solutions);
+    IAST values = DSolveEngine.solutionsOf(solutions);
     if (values.argSize() != 1) {
       return null;
     }
@@ -203,7 +205,7 @@ public class GreenFunction extends AbstractFunctionEvaluator {
    */
   private static IExpr[] splitConstants(IExpr general, int order, EvalEngine engine) {
     IASTAppendable constants = F.ListAlloc();
-    DSolveUtil.extractCVars(general, constants);
+    DSolveEngine.constantsOf(general, constants);
     if (constants.argSize() != order) {
       return null;
     }
@@ -452,7 +454,7 @@ public class GreenFunction extends AbstractFunctionEvaluator {
       EvalEngine engine) {
     IExpr applied = F.unaryAST1(head, xVar);
     IExpr solutions = engine.evaluate(F.RSolve(F.Equal(operator, F.C0), applied, xVar));
-    IAST values = DSolveUtil.extractSolveResults(solutions);
+    IAST values = DSolveEngine.solutionsOf(solutions);
     if (values.argSize() != 1) {
       return null;
     }

@@ -1,4 +1,4 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.dsolve;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.ODEUtils;
@@ -21,7 +21,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * Both used to produce a wrong answer. {@link #extract(IExpr, IExpr, IExpr, EvalEngine)} therefore
  * subtracts every term it has read and declines unless nothing containing the unknown is left over.
  */
-final class LinearODEForm {
+public final class LinearODEForm {
 
   /** The highest derivative order which occurs, <code>0</code> for an equation without one. */
   final int order;
@@ -42,6 +42,24 @@ final class LinearODEForm {
     this.constantCoefficients = constantCoefficients;
   }
 
+  /** The highest derivative order which occurs. */
+  public int order() {
+    return order;
+  }
+
+  /**
+   * The coefficient of the <code>k</code>-th derivative, <code>k</code> between <code>0</code> and
+   * {@link #order()}.
+   */
+  public IExpr coefficient(int k) {
+    return a[k];
+  }
+
+  /** The right hand side, free of the function which is solved for. */
+  public IExpr inhomogeneity() {
+    return g;
+  }
+
   /**
    * The coefficients of <code>residual</code> read as a linear differential equation
    * <code>residual == 0</code> for <code>yFunction</code>.
@@ -52,7 +70,7 @@ final class LinearODEForm {
    * @return <code>null</code> if the equation is not linear in <code>yFunction</code>, or if
    *         <code>yFunction</code> does not occur in it at all
    */
-  static LinearODEForm extract(IExpr residual, IExpr yFunction, IExpr xVar, EvalEngine engine) {
+  public static LinearODEForm extract(IExpr residual, IExpr yFunction, IExpr xVar, EvalEngine engine) {
     IExpr head = yFunction.head();
     IExpr rest = engine.evaluate(F.ExpandAll(residual));
     int n = highestDerivativeOrder(rest, head, xVar);
@@ -185,7 +203,7 @@ final class LinearODEForm {
    * with {@link org.matheclipse.core.expression.S#Coefficient}, which cost one evaluation per order
    * on every dispatch.
    */
-  static int highestDerivativeOrder(IExpr expr, IExpr head, IExpr xVar) {
+  public static int highestDerivativeOrder(IExpr expr, IExpr head, IExpr xVar) {
     if (!expr.isAST()) {
       return -1;
     }
@@ -220,7 +238,7 @@ final class LinearODEForm {
    *
    * @return <code>null</code> if the system is not linear in the unknowns
    */
-  static IExpr[] extractSystem(IAST residuals, IAST unknowns, IExpr xVar, EvalEngine engine) {
+  public static IExpr[] extractSystem(IAST residuals, IAST unknowns, IExpr xVar, EvalEngine engine) {
     int n = unknowns.argSize();
     if (residuals.argSize() != n) {
       return null;

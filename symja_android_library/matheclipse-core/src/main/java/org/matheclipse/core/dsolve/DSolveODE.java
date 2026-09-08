@@ -1,4 +1,4 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.dsolve;
 
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.reflection.system.Eliminate;
 
 /**
  * The scalar ordinary differential equation cascade of {@link DSolve}.

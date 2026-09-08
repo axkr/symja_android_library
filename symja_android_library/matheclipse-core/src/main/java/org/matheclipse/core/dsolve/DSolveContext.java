@@ -1,4 +1,4 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.dsolve;
 
 import java.util.ArrayList;
 import java.util.List;

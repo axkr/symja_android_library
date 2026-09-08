@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.dsolve.LinearODEForm;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -210,11 +211,11 @@ public class Wronskian extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     LinearODEForm form = LinearODEForm.extract(residual, applied, variable, engine);
-    if (form == null || form.order != n || form.a[n].isZero()) {
+    if (form == null || form.order() != n || form.coefficient(n).isZero()) {
       // Not linear in the dependent variable, so it has no basis of solutions.
       return F.NIL;
     }
-    IExpr ratio = engine.evaluate(F.Divide(form.a[n - 1], form.a[n]));
+    IExpr ratio = engine.evaluate(F.Divide(form.coefficient(n - 1), form.coefficient(n)));
     if (ratio.isZero()) {
       return F.C1;
     }

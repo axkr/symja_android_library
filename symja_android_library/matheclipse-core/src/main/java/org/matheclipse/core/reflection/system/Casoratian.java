@@ -264,9 +264,9 @@ public class Casoratian extends AbstractFunctionEvaluator {
    * linear in the unknown.
    *
    * <p>
-   * As for {@link LinearODEForm}, every term which mentions the unknown has to end up in a
-   * coefficient; what is left over must not contain it, or the equation is not linear and has no
-   * basis of solutions.
+   * As for {@link org.matheclipse.core.dsolve.LinearODEForm}, every term which mentions the
+   * unknown has to end up in a coefficient; what is left over must not contain it, or the equation
+   * is not linear and has no basis of solutions.
    *
    * @return <code>null</code> if the equation is not linear in the unknown
    */

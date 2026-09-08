@@ -1,4 +1,4 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.dsolve;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

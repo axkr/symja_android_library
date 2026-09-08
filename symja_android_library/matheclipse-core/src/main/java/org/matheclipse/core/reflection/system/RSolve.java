@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.eval.AlgebraUtil;
+import org.matheclipse.core.dsolve.DSolveEngine;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -959,7 +960,7 @@ public class RSolve extends AbstractFunctionEvaluator {
       IExpr divisor = engine.evaluate(F.Subtract(xDummy, root));
       while (total < order) {
         IExpr rest = engine.evaluate(F.PolynomialRemainder(remaining, divisor, xDummy));
-        if (!DSolveODE.isVanishing(rest, engine)) {
+        if (!DSolveEngine.isVanishing(rest, engine)) {
           break;
         }
         remaining = engine.evaluate(F.PolynomialQuotient(remaining, divisor, xDummy));

@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.dsolve.DSolveEngine;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -29,8 +30,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <p>
  * Solves ordinary differential equations, systems of them, differential algebraic equations, and
- * partial differential equations in two independent variables. The methods are shared out over
- * {@link DSolveODE}, {@link DSolveSystem} and {@link DSolvePDE}; this class reads the arguments,
+ * partial differential equations in two independent variables. The methods themselves are in
+ * {@link org.matheclipse.core.dsolve}, behind {@link DSolveEngine}; this class reads the arguments,
  * separates the conditions from the equations, dispatches on the shape of the problem and puts the
  * answer together.
  * </p>
@@ -147,7 +148,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
     // report, and those attempts are where the InverseFunction and Solve warnings came from.
     // DSolve's own messages are collected in the context and shown once the cascade has finished,
     // because the quiet mode would otherwise swallow them too.
-    DSolveContext context = new DSolveContext(engine, F.CEmptyList);
+    DSolveEngine solver = new DSolveEngine(engine);
     final boolean quietMode = engine.isQuietMode();
     try {
       engine.setQuietMode(true);
@@ -162,8 +163,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
               equation = arg1.arg1();
             } else if (arg2.isList()) {
               // System of PDEs
-              IExpr pdeResult = DSolvePDE.solveSystemPDE(arg1, (IAST) arg2, (IAST) arg3,
-                  context);
+              IExpr pdeResult = solver.solveSystemPDE(arg1, (IAST) arg2, (IAST) arg3);
               if (pdeResult.isPresent()) {
                 return pdeResult;
               }
@@ -186,7 +186,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
               IExpr found = F.NIL;
               for (int i = 1; i <= arg1.argSize(); i++) {
                 IExpr candidate = ((IAST) arg1).get(i);
-                if (DSolvePDE.differentiates(candidate, head) && !DSolvePDEInitialValue
+                if (DSolveEngine.differentiates(candidate, head) && !DSolveEngine
                     .prescribesValue(candidate, pdeApplied, pdeVars.arg1(), pdeVars.arg2(),
                         engine)) {
                   if (found.isPresent()) {
@@ -204,8 +204,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
               pdeConditions = conditions;
             }
           }
-          IExpr pdeResult = DSolvePDE.solvePDE(equation, arg2, (IAST) arg3,
-              context.withConditions(pdeConditions));
+          IExpr pdeResult = solver.solvePDE(equation, arg2, (IAST) arg3, pdeConditions);
           if (pdeResult.isPresent()) {
             return pdeResult;
           }
@@ -276,9 +275,9 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
               i++;
             }
           }
-          return DSolveODE.unaryODE((IAST) listOfVariables.arg1(),
+          return solver.solveODE((IAST) listOfVariables.arg1(),
               arg2.isList() ? ((IAST) arg2).arg1() : arg2, xVar, listOfEquations,
-              boundaryConditions, context.withConditions(boundaryConditions));
+              boundaryConditions);
         } else {
           // Extract boundary conditions for the system solver globally
           IASTAppendable bcs = F.ListAlloc();
@@ -304,8 +303,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
           }
 
           // Solve Linear System of ODEs / DAEs
-          return DSolveSystem.solveSystemODE(listOfEquations, listOfVariables, xVar, bcs, arg2,
-              context.withConditions(bcs));
+          return solver.solveSystem(listOfEquations, listOfVariables, xVar, bcs, arg2);
         }
       }
     } catch (RuntimeException rex) {
@@ -314,7 +312,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       return Errors.printMessage(S.DSolve, rex);
     } finally {
       engine.setQuietMode(quietMode);
-      context.flushMessages();
+      solver.flushMessages();
     }
     return F.NIL;
   }
@@ -402,12 +400,12 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       // directly and only then to the function itself would reach the function inside the
       // derivative as well, turning Derivative(1)(y)(x) into Derivative(1)(y(x))(x).
       IExpr placeholder = F.Dummy("applied");
-      for (int order = DSolveODE.MAX_DERIVATIVE_ORDER; order >= 1; order--) {
+      for (int order = DSolveEngine.maxDerivativeOrder(); order >= 1; order--) {
         IExpr bare = F.unaryAST1(F.Derivative(F.ZZ(order)), head);
         result = F.subst(result, bare, F.unaryAST1(F.Derivative(F.ZZ(order)), placeholder));
       }
       result = F.subst(result, head, F.unaryAST1(head, variable));
-      for (int order = DSolveODE.MAX_DERIVATIVE_ORDER; order >= 1; order--) {
+      for (int order = DSolveEngine.maxDerivativeOrder(); order >= 1; order--) {
         IExpr parked = F.unaryAST1(F.Derivative(F.ZZ(order)), placeholder);
         result = F.subst(result, parked,
             F.unaryAST1(F.unaryAST1(F.Derivative(F.ZZ(order)), head), variable));
