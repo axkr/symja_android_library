@@ -672,6 +672,13 @@ public class EvalEngine implements Serializable {
 
   transient java.util.ArrayDeque<Path> fDirectoryStack;
 
+  /**
+   * The messages <code>Off</code> switched off, as <code>Symbol::tag</code>. A package quiets the
+   * messages it knows it will cause - <code>Off[General::shdw]</code> before it declares symbols
+   * that shadow others - and expects them not to appear.
+   */
+  transient java.util.Set<String> fDisabledMessages;
+
   transient String fSessionID;
 
   private transient String fMessageShortcut;
@@ -5001,6 +5008,34 @@ public class EvalEngine implements Serializable {
       fDirectoryStack = new java.util.ArrayDeque<Path>();
     }
     return fDirectoryStack;
+  }
+
+  /** Switch a message off, as <code>Off[Symbol::tag]</code> does. */
+  public final void setMessageDisabled(String symbolName, String messageTag, boolean disabled) {
+    if (fDisabledMessages == null) {
+      if (!disabled) {
+        return;
+      }
+      fDisabledMessages = new java.util.HashSet<String>();
+    }
+    String name = symbolName + "::" + messageTag;
+    if (disabled) {
+      fDisabledMessages.add(name);
+    } else {
+      fDisabledMessages.remove(name);
+    }
+  }
+
+  /**
+   * Has this message been switched off? <code>Off[General::tag]</code> switches the message off for
+   * every symbol, which is how a package quiets one it does not own.
+   */
+  public final boolean isMessageDisabled(String symbolName, String messageTag) {
+    if (fDisabledMessages == null || fDisabledMessages.isEmpty()) {
+      return false;
+    }
+    return fDisabledMessages.contains(symbolName + "::" + messageTag)
+        || fDisabledMessages.contains("General::" + messageTag);
   }
 
   public void setIterationLimit(final int i) {

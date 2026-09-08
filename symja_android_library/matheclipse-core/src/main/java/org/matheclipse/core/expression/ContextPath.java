@@ -11,6 +11,7 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -145,6 +146,50 @@ public final class ContextPath implements Iterable<Context> {
       currentContext = currentContext.substring(0, currentContext.length() - 1);
     }
     return currentContext + contextName;
+  }
+
+  /**
+   * Symbols the system provides under a name in another context.
+   *
+   * <p>
+   * <code>Internal`DynamicLibraryExtension[]</code> and
+   * <code>PacletManager`Package`loadWolframLanguageCode[…]</code> are written by packages exactly
+   * like that, and the built-in that answers them lives in <code>System`</code>. Rather than fill
+   * those contexts in every engine, a name that is asked for here is answered with the built-in.
+   */
+  private static final Map<String, IBuiltInSymbol> SYSTEM_ALIASES = buildSystemAliases();
+
+  private static final Map<String, IBuiltInSymbol> SYSTEM_ALIASES_LOWERCASE =
+      buildLowercaseSystemAliases();
+
+  private static Map<String, IBuiltInSymbol> buildLowercaseSystemAliases() {
+    Map<String, IBuiltInSymbol> aliases = new java.util.HashMap<>();
+    for (Map.Entry<String, IBuiltInSymbol> entry : SYSTEM_ALIASES.entrySet()) {
+      aliases.put(entry.getKey().toLowerCase(Locale.ENGLISH), entry.getValue());
+    }
+    return aliases;
+  }
+
+  private static Map<String, IBuiltInSymbol> buildSystemAliases() {
+    Map<String, IBuiltInSymbol> aliases = new java.util.HashMap<>();
+    aliases.put("Internal`DynamicLibraryExtension", S.DynamicLibraryExtension);
+    aliases.put("PacletManager`Package`loadWolframLanguageCode", S.LoadWolframLanguageCode);
+    aliases.put("Language`ExtendedFullDefinition", S.ExtendedFullDefinition);
+    aliases.put("Experimental`ValueFunction", S.ValueFunction);
+    return aliases;
+  }
+
+  /**
+   * The built-in that answers <code>contextName</code> + <code>symbolName</code>, or
+   * <code>null</code> when the system provides no such symbol.
+   */
+  public static IBuiltInSymbol systemAlias(String contextName, String symbolName) {
+    IBuiltInSymbol alias = SYSTEM_ALIASES.get(contextName + symbolName);
+    if (alias != null) {
+      return alias;
+    }
+    // in relaxed syntax the name written in the source has been lower-cased by now
+    return SYSTEM_ALIASES_LOWERCASE.get((contextName + symbolName).toLowerCase(Locale.ENGLISH));
   }
 
   /** Add a short name for a context, as <code>Needs["A`" -&gt; "a`"]</code> does. */

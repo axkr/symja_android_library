@@ -49,6 +49,7 @@ public class FileSystemFunctions {
         S.Directory.setEvaluator(new Directory());
         S.DirectoryName.setEvaluator(new DirectoryName());
         S.DirectoryQ.setEvaluator(new DirectoryQ());
+        S.DynamicLibraryExtension.setEvaluator(new DynamicLibraryExtension());
         S.Environment.setEvaluator(new Environment());
         S.ExpandFileName.setEvaluator(new ExpandFileName());
         S.FileBaseName.setEvaluator(new FileBaseName());
@@ -315,6 +316,30 @@ public class FileSystemFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <code>Internal`DynamicLibraryExtension[]</code>: what a shared library is called on this
+   * platform. A package that loads one builds the file name from it.
+   */
+  private static class DynamicLibraryExtension extends AbstractEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      String operatingSystem =
+          System.getProperty("os.name", "").toLowerCase(java.util.Locale.ENGLISH);
+      if (operatingSystem.contains("mac") || operatingSystem.contains("darwin")) {
+        return F.stringx("dylib");
+      }
+      if (operatingSystem.contains("win")) {
+        return F.stringx("dll");
+      }
+      return F.stringx("so");
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
     }
   }
 

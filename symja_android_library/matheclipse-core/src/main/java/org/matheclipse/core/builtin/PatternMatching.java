@@ -2612,15 +2612,56 @@ public final class PatternMatching {
 
     private static boolean isTagAvailable(ISymbol tagSetSymbol, IAST lhsAST) {
       for (int i = 1; i < lhsAST.size(); i++) {
-        IExpr arg = lhsAST.get(i);
-        if (arg.equals(tagSetSymbol) || arg.topHead().equals(tagSetSymbol)) {
+        if (argumentHasTag(lhsAST.get(i), tagSetSymbol, 0)) {
           return true;
         }
-        if (arg instanceof IPatternObject) {
-          IPatternObject pObject = (IPatternObject) arg;
-          if (tagSetSymbol.equals(pObject.getHeadTest())) {
-            return true;
-          }
+      }
+      return false;
+    }
+
+    /**
+     * Does this argument of the left hand side mention the tag at its head?
+     *
+     * <p>
+     * A pattern may be written around what it matches, and the tag is then inside it:
+     * <code>UObject /: MakeBoxes[object : UObject[…], form : StandardForm | TraditionalForm] :=
+     * …</code> tags <code>UObject</code>, which stands under a <code>Pattern</code>. The wrappers
+     * looked through are the ones that leave what is matched in place - a name, a test, a
+     * condition, <code>HoldPattern</code>, <code>Verbatim</code>, an optional value, and the two
+     * length preferences.
+     *
+     * @param depth guards against a pattern that wraps itself
+     */
+    private static boolean argumentHasTag(IExpr arg, ISymbol tagSetSymbol, int depth) {
+      if (depth > 16) {
+        return false;
+      }
+      if (arg.equals(tagSetSymbol) || arg.topHead().equals(tagSetSymbol)) {
+        return true;
+      }
+      if (arg instanceof IPatternObject) {
+        IPatternObject pObject = (IPatternObject) arg;
+        if (tagSetSymbol.equals(pObject.getHeadTest())) {
+          return true;
+        }
+        if (arg instanceof PatternNested) {
+          // x : expr - the tag may be the head of what x has to match
+          IExpr patternExpr = ((PatternNested) arg).getPatternExpr();
+          return patternExpr != null && argumentHasTag(patternExpr, tagSetSymbol, depth + 1);
+        }
+        return false;
+      }
+      if (arg.isAST()) {
+        IAST ast = (IAST) arg;
+        if (ast.isAST(S.Pattern, 3) || ast.isAST(S.PatternTest, 3) || ast.isAST(S.Condition, 3)
+            || ast.isAST(S.Optional, 3)) {
+          return argumentHasTag(ast.arg2(), tagSetSymbol, depth + 1)
+              || argumentHasTag(ast.arg1(), tagSetSymbol, depth + 1);
+        }
+        if (ast.isAST(S.HoldPattern, 2) || ast.isAST(S.Literal, 2) || ast.isAST(S.Verbatim, 2)
+            || ast.isAST(S.Longest, 2) || ast.isAST(S.Shortest, 2) || ast.isAST(S.Optional, 2)
+            || ast.isAST(S.Repeated, 2) || ast.isAST(S.RepeatedNull, 2)) {
+          return argumentHasTag(ast.arg1(), tagSetSymbol, depth + 1);
         }
       }
       return false;

@@ -11461,6 +11461,12 @@ public class F extends S {
       return ContextPath.getSymbol(symbolName, org.matheclipse.core.expression.Context.SYSTEM,
           engine.isRelaxedSyntax());
     }
+    IBuiltInSymbol alias = ContextPath.systemAlias(completeContextStr, symbolName);
+    if (alias != null) {
+      // a name the system answers although it is written in another context, such as
+      // Internal`DynamicLibraryExtension
+      return alias;
+    }
     ISymbol symbol;
     ContextPath contextPath = engine.getContextPath();
     Context context = contextPath.getContext(completeContextStr);

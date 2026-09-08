@@ -3796,6 +3796,36 @@ public final class ListFunctions {
    */
   private static final class Join extends AbstractFunctionEvaluator {
 
+    /**
+     * The arguments without the empty lists among them, or {@link F#NIL} when there are none to
+     * remove and when removing them would change nothing. An association joined with an empty list
+     * is the association, and two lists joined with one are still two lists.
+     */
+    private static IAST removeEmptyLists(IAST ast) {
+      boolean hasEmptyList = false;
+      boolean hasAssociation = false;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isList() && arg.isAST0() && !arg.isAssociation()) {
+          hasEmptyList = true;
+        } else if (arg.isAssociation()) {
+          hasAssociation = true;
+        }
+      }
+      if (!hasEmptyList || !hasAssociation) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ast(ast.head(), ast.argSize());
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (!(arg.isList() && arg.isAST0() && !arg.isAssociation())) {
+          result.append(arg);
+        }
+      }
+      return result;
+    }
+
+
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       // Join takes several, so every one of them is unwrapped, and a Dataset first argument makes
@@ -3818,6 +3848,20 @@ public final class ListFunctions {
       }
       if (ast.size() == 2) {
         return ast.arg1();
+      }
+
+      // An empty list contributes nothing and joins with anything, associations included:
+      // Join[<|…|>, {}] is the association. A package builds a list of what it found and joins it
+      // in, and there is nothing incompatible about having found nothing.
+      IAST withoutEmptyLists = removeEmptyLists(ast);
+      if (withoutEmptyLists.isPresent()) {
+        if (withoutEmptyLists.argSize() == 0) {
+          return F.CEmptyList;
+        }
+        if (withoutEmptyLists.argSize() == 1) {
+          return withoutEmptyLists.arg1();
+        }
+        return evaluate(withoutEmptyLists, engine);
       }
 
       int astSize = ast.size();

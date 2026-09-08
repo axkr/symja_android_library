@@ -497,6 +497,19 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     if (ast.isAST0()) {
       throw new ReturnException();
     }
+    if (ast.isAST2()) {
+      // Return[expr, form] names the construct to return from - Return[Null, Module] is written by
+      // packages. The value leaves the innermost construct, which is the named one wherever the
+      // two agree; Symja does not track which construct a return is unwinding through.
+      IExpr value = engine.evaluate(ast.arg1());
+      if (value.isFalse()) {
+        throw ReturnException.RETURN_FALSE;
+      }
+      if (value.isTrue()) {
+        throw ReturnException.RETURN_TRUE;
+      }
+      throw new ReturnException(value);
+    }
     return F.NIL;
   }
 

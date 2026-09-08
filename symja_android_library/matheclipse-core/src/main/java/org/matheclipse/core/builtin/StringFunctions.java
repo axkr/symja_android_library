@@ -510,6 +510,11 @@ public final class StringFunctions {
           }
           char separator = File.separatorChar;
           StringBuilder buf = new StringBuilder();
+          if (list.arg1().toString().isEmpty()) {
+            // An empty first segment is the root: FileNameSplit["/a/b"] is {"", "a", "b"}, and
+            // rejoining it has to give "/a/b" back rather than the relative "a/b".
+            buf.append(separator);
+          }
           for (int i = 1; i < list.size(); i++) {
             String arg = list.get(i).toString();
             if (arg.length() > 0) {

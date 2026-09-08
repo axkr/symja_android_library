@@ -816,6 +816,12 @@ public class Errors {
    */
   public static IAST printMessage(@NonNull ISymbol symbol, @NonNull String messageShortcut,
       final IAST listOfParameters, EvalEngine engine) {
+    if (engine != null && engine.isMessageDisabled(symbol.toString(), messageShortcut)) {
+      // Off[Symbol::tag] - the message is not printed, and everything else about the evaluation
+      // stays as it was
+      engine.setMessageShortcut(messageShortcut);
+      return F.NIL;
+    }
     IExpr temp = symbol.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {

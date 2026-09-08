@@ -1072,9 +1072,6 @@ public class FileFunctions {
   private static final class Needs extends Get {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!Config.isFileSystemEnabled(engine)) {
-        return F.NIL;
-      }
       IExpr arg1 = engine.evaluate(ast.arg1());
       String alias = null;
       if (arg1.isRuleAST()) {
@@ -1095,11 +1092,23 @@ public class FileFunctions {
         return S.$Failed;
       }
 
+      if (PackageResolver.isStandardContext(contextName)) {
+        // the system provides it; there is nothing to read, and nothing that needs a file system
+        ContextPath.PACKAGES.add(contextName);
+        return S.Null;
+      }
+
+      if (!Config.isFileSystemEnabled(engine)) {
+        return F.NIL;
+      }
+
       if (!isLoadedInThisSession(contextName, engine)) {
         IExpr result;
-        if (ast.size() > 2 && ast.arg2().isString()) {
-          // Needs["A`", "file.wl"] says where the context is
-          result = engine.evaluate(F.Get(ast.arg2()));
+        IExpr fileName = ast.size() > 2 ? engine.evaluate(ast.arg2()) : F.NIL;
+        if (fileName.isString()) {
+          // Needs["A`", "file.wl"] says where the context is - and the name is usually built with
+          // FileNameJoin, which Needs holds until here
+          result = engine.evaluate(F.Get(fileName));
         } else {
           result = super.evaluate(F.Get(F.stringx(contextName)), engine);
         }

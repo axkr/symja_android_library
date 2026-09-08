@@ -28,6 +28,25 @@ public final class PackageResolver {
   private PackageResolver() {}
 
   /**
+   * Contexts the system provides itself, which <code>Needs</code> therefore has nothing to read.
+   *
+   * <p>
+   * In the Wolfram Language these are part of the kernel, and a package that asks for one expects
+   * silence rather than a file. What Symja actually defines in them is another matter - a symbol
+   * that is missing is missing whether or not the Needs said so.
+   */
+  private static final java.util.Set<String> STANDARD_CONTEXTS =
+      new java.util.HashSet<>(java.util.Arrays.asList(//
+          "System`", "Global`", "Internal`", "Developer`", "Experimental`", "Language`", //
+          "PacletManager`", "PacletManager`Package`", "Parallel`", "Parallel`Developer`", //
+          "GeneralUtilities`", "Documentation`"));
+
+  /** Is this one of the contexts the system provides? */
+  public static boolean isStandardContext(String context) {
+    return STANDARD_CONTEXTS.contains(context);
+  }
+
+  /**
    * The file <code>context</code> lives in, or <code>null</code> when nothing provides it.
    *
    * @param context a context name, ending in a backtick

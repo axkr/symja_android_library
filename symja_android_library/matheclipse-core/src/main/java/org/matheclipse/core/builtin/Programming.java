@@ -2162,6 +2162,39 @@ public final class Programming {
    * <p>
    * <a href="On.md">On</a>
    */
+  /**
+   * <code>Off[Symbol::tag, …]</code> and <code>On[Symbol::tag, …]</code>: stop a message being
+   * printed, or let it be printed again.
+   *
+   * <p>
+   * A package switches off the messages it knows its own definitions will cause -
+   * <code>Off[General::shdw]</code> before declaring symbols that shadow others - and reads oddly
+   * if they appear anyway.
+   *
+   * @param disable <code>true</code> for <code>Off</code>
+   * @return {@link S#Null} when every argument was a message name, {@link F#NIL} otherwise, so that
+   *         the caller can go on to treat the arguments as symbols to trace
+   */
+  private static IExpr switchMessages(final IAST ast, EvalEngine engine, boolean disable) {
+    if (ast.isAST0()) {
+      return F.NIL;
+    }
+    boolean allMessageNames = true;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      IAST names = argument.isList() ? (IAST) argument : F.list(argument);
+      for (int j = 1; j < names.size(); j++) {
+        IExpr name = names.get(j);
+        if (name.isAST(S.MessageName, 3) && name.first().isSymbol()) {
+          engine.setMessageDisabled(name.first().toString(), name.second().toString(), disable);
+        } else {
+          allMessageNames = false;
+        }
+      }
+    }
+    return allMessageNames ? S.Null : F.NIL;
+  }
+
   private static final class Off extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -2171,12 +2204,7 @@ public final class Programming {
         return S.Null;
       }
 
-      if (ast.isAST1()) {
-        // `1` currently not supported in `2`.
-        Errors.printMessage(S.Off, "unsupported", F.List(F.stringx("disabling messages"), S.Off),
-            engine);
-      }
-      return F.NIL;
+      return switchMessages(ast, engine, true);
     }
 
     @Override
@@ -2304,6 +2332,11 @@ public final class Programming {
       if (ast.isAST0()) {
         engine.setOnOffMode(true, null, false);
         return S.Null;
+      }
+
+      IExpr switched = switchMessages(ast, engine, false);
+      if (switched.isPresent()) {
+        return switched;
       }
 
       IExpr arg1 = ast.first();
@@ -2597,7 +2630,8 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      // Return[], Return[expr] and Return[expr, form]
+      return ARGS_0_2;
     }
 
     @Override
