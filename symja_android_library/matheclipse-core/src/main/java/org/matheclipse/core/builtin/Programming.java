@@ -16,6 +16,8 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.steps.StepLevel;
+import org.matheclipse.core.eval.steps.DialogStepsListener;
+import org.matheclipse.core.eval.steps.StepDialog;
 import org.matheclipse.core.eval.steps.StepsListener;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -113,6 +115,7 @@ public final class Programming {
         S.MemoryAvailable.setEvaluator(new MemoryAvailable());
         S.MemoryInUse.setEvaluator(new MemoryInUse());
         S.Trace.setEvaluator(new Trace());
+        S.TraceDialog.setEvaluator(new TraceDialog());
         S.TraceForm.setEvaluator(new TraceForm());
       }
     }
@@ -3131,24 +3134,13 @@ public final class Programming {
         Errors.printMessage(S.TraceForm, "steps", F.CEmptyList, engine);
         return F.TraceForm(F.HoldForm(engine.evaluate(ast.arg1())), F.CEmptyList);
       }
-      int maxDepth = DEFAULT_MAX_DEPTH;
-      if (ast.size() > 2) {
-        maxDepth = maxDepth(engine.evaluate(ast.arg2()));
-        if (maxDepth < 0) {
-          // The argument `1` at position `2` should be a non-negative integer or Infinity.
-          return Errors.printMessage(S.TraceForm, "intnm", F.list(ast, F.C2), engine);
-        }
-      }
-      int stepLevel = StepLevel.RULE;
-      if (ast.size() > 3) {
-        stepLevel = StepLevel.parse(engine.evaluate(ast.arg3()));
-        if (stepLevel < 0) {
-          // The argument `1` at position `2` should be ...
-          return Errors.printMessage(S.TraceForm, "intnm", F.list(ast, F.C3), engine);
-        }
+      IExpr[] arguments = stepArguments(ast, engine);
+      if (arguments == null) {
+        return F.NIL;
       }
       try {
-        StepsListener listener = new StepsListener(maxDepth, stepLevel);
+        StepsListener listener =
+            new StepsListener(arguments[0].toIntDefault(), arguments[1].toIntDefault());
         IExpr result = engine.evalWithStepListener(ast.arg1(), listener);
         return F.TraceForm(F.HoldForm(result), listener.toExpr());
       } catch (RuntimeException rex) {
@@ -3167,6 +3159,32 @@ public final class Programming {
     }
 
     /**
+     * The <code>maxDepth</code> and <code>level</code> a <code>TraceForm</code> or
+     * <code>TraceDialog</code> call asks for, shared by both.
+     *
+     * @return <code>null</code> if an argument is not a depth or a level, after saying so
+     */
+    static IExpr[] stepArguments(final IAST ast, EvalEngine engine) {
+      int maxDepth = DEFAULT_MAX_DEPTH;
+      if (ast.size() > 2) {
+        maxDepth = maxDepth(engine.evaluate(ast.arg2()));
+        if (maxDepth < 0) {
+          Errors.printMessage(ast.topHead(), "intnm", F.list(ast, F.C2), engine);
+          return null;
+        }
+      }
+      int stepLevel = StepLevel.RULE;
+      if (ast.size() > 3) {
+        stepLevel = StepLevel.parse(engine.evaluate(ast.arg3()));
+        if (stepLevel < 0) {
+          Errors.printMessage(ast.topHead(), "intnm", F.list(ast, F.C3), engine);
+          return null;
+        }
+      }
+      return new IExpr[] {F.ZZ(maxDepth), F.ZZ(stepLevel)};
+    }
+
+    /**
      * @return <code>-1</code> if <code>expr</code> is no depth, {@link Integer#MAX_VALUE} for
      *         <code>Infinity</code>
      */
@@ -3179,6 +3197,81 @@ public final class Programming {
         return depth >= 0 ? depth : -1;
       }
       return -1;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>TraceDialog(expr)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * evaluate <code>expr</code> one step at a time, stopping at each step so that it can be looked
+   * at before the evaluation goes on.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * The stepping itself belongs to whatever is showing the evaluation: the notebook stops at each
+   * step and waits for the reader. Evaluated anywhere else - a script, a test, a
+   * <code>TraceDialog</code> inside another expression - there is nobody to stop for, so it runs
+   * straight through and returns the same derivation as
+   * {@link org.matheclipse.core.expression.S#TraceForm}.
+   *
+   * <pre>
+   * <code>TraceDialog(expr, maxDepth, level)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * as for <code>TraceForm</code>: how deep the steps may nest, and how fine grained they are.
+   *
+   * </blockquote>
+   *
+   * @see S#TraceForm
+   */
+  private static class TraceDialog extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head() != S.TraceDialog) {
+        return F.NIL;
+      }
+      if (!ToggleFeature.SHOW_STEPS) {
+        // Evaluation steps are switched off in this build.
+        Errors.printMessage(S.TraceDialog, "steps", F.CEmptyList, engine);
+        return F.TraceForm(F.HoldForm(engine.evaluate(ast.arg1())), F.CEmptyList);
+      }
+      IExpr[] arguments = TraceForm.stepArguments(ast, engine);
+      if (arguments == null) {
+        return F.NIL;
+      }
+      try {
+        return DialogStepsListener.evaluate(engine, ast.arg1(), StepDialog.CONTINUE_THROUGH,
+            arguments[0].toIntDefault(), arguments[1].toIntDefault());
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.TraceDialog, rex, EvalEngine.get());
+      }
+      return F.NIL;
     }
 
     @Override

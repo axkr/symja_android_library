@@ -21375,6 +21375,16 @@ public class S {
    */
   public final static IBuiltInSymbol Trace = S.initFinalSymbol("Trace", ID.Trace);
 
+  /**
+   * TraceDialog(expr) - evaluate `expr` and step through the evaluation, one step at a time.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TraceDialog.md">TraceDialog
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TraceDialog =
+      S.initFinalSymbol("TraceDialog", ID.TraceDialog);
+
   public final static IBuiltInSymbol TraceForm = S.initFinalSymbol("TraceForm", ID.TraceForm);
 
   /**

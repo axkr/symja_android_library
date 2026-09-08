@@ -71,7 +71,7 @@ function prepareText(text) {
 }
 
 function createLine(value, format) {
-	if (format == 'manipulate' || format == 'steps') {
+	if (format == 'manipulate' || format == 'steps' || format == 'tracedialog') {
 		// handled by setResult, which has the whole result object; never reached
 		return $E('div');
 	} else if (format == 'mathml') {
@@ -159,6 +159,9 @@ function setResult(ul, results) {
 			resultUl.appendChild(li);
 		} else if (result.format == 'steps' && result.steps) {
 			var li = $E('li', {'class': 'result'}, createSteps(result.steps));
+			resultUl.appendChild(li);
+		} else if (result.format == 'tracedialog' && result.dialog) {
+			var li = $E('li', {'class': 'result'}, createTraceDialog(result.dialog));
 			resultUl.appendChild(li);
 		} else if (result.result != null) {
 			var li = $E('li', {'class': 'result'}, createLine(result.result, result.format));

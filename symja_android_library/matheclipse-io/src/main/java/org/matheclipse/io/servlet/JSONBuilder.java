@@ -7,6 +7,8 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.eval.steps.DialogStep;
+import org.matheclipse.core.eval.steps.StepDescription;
 import org.matheclipse.core.eval.steps.StepsJSON;
 import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.expression.F;
@@ -34,6 +36,12 @@ public class JSONBuilder {
    * out as a tree of collapsible sections.
    */
   public static final String FORMAT_STEPS = "steps";
+
+  /**
+   * The result is a derivation being stepped through: the browser shows one step and waits for the
+   * reader before asking for the next.
+   */
+  public static final String FORMAT_TRACE_DIALOG = "tracedialog";
 
   /** The string is plain text. */
   public static final String FORMAT_TEXT = "text";
@@ -318,6 +326,68 @@ public class JSONBuilder {
     json.putPOJO("results", temp);
 
     return new String[] {FORMAT_STEPS, json.toString()};
+  }
+
+  /**
+   * One step of an evaluation which is being stepped through.
+   *
+   * <pre>
+   * {"results":[{"line":21,"format":"tracedialog",
+   *   "dialog":{"id":"tracedialog1","number":3,"level":2,"finished":false,
+   *             "stepKey":"D::PowerRule","step":"The derivative of \\(a x^n\\) ...",
+   *             "prevExpression":"&lt;TeX&gt;","expression":"&lt;TeX&gt;",
+   *             "answer":"&lt;TeX of what the reader asked&gt;"}}]}
+   * </pre>
+   *
+   * When the evaluation is over the <code>dialog</code> carries <code>finished</code> and the whole
+   * derivation under <code>steps</code>, in the shape {@link #createJSONSteps} sends.
+   */
+  public static String[] createJSONTraceDialog(EvalEngine engine, String id, DialogStep step,
+      IAST traceForm, IExpr answer) {
+    ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    resultsJSON.put("line", 21);
+    resultsJSON.put("format", FORMAT_TRACE_DIALOG);
+
+    ObjectNode dialog = JSON_OBJECT_MAPPER.createObjectNode();
+    dialog.put("id", id);
+    TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
+    if (step != null) {
+      dialog.put("finished", false);
+      dialog.put("number", step.number());
+      dialog.put("level", step.level());
+      dialog.put("stepKey", step.descriptionKey());
+      dialog.put("step",
+          StepDescription.render(StepDescription.template(step.descriptionKey()), step.input(),
+              step.result(), step.hints(), StepDescription.texRenderer(), StepsJSON.OPEN_MATH,
+              StepsJSON.CLOSE_MATH));
+      dialog.put("prevExpression", tex(texUtil, step.input()));
+      dialog.put("expression", tex(texUtil, step.result()));
+    } else {
+      dialog.put("finished", true);
+    }
+    if (answer != null && answer.isPresent()) {
+      dialog.put("answer", tex(texUtil, answer));
+    }
+    if (traceForm != null) {
+      dialog.put("result", tex(texUtil, StepsTree.traceResult(traceForm)));
+      dialog.putPOJO("steps", StepsJSON.toJSON(JSON_OBJECT_MAPPER, traceForm));
+      dialog.put("plaintext", outputForm(engine, traceForm));
+    }
+    resultsJSON.putPOJO("dialog", dialog);
+    resultsJSON.putPOJO("out", JSON_OBJECT_MAPPER.createArrayNode());
+
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+    temp.add(resultsJSON);
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    json.putPOJO("results", temp);
+    return new String[] {FORMAT_TRACE_DIALOG, json.toString()};
+  }
+
+  /** One expression as TeX, held so that writing it never evaluates it again. */
+  private static String tex(TeXUtilities texUtil, IExpr expr) {
+    StringBuilderWriter stw = new StringBuilderWriter();
+    texUtil.toTeX(F.HoldForm(expr), stw);
+    return stw.toString();
   }
 
   public static String[] createJSONShow(EvalEngine engine, IAST show) {

@@ -103,7 +103,7 @@ As TeX, one row per step, indented by how deep the step is nested:
 * `Config.USER_STEPS_PARSER` makes the parser keep `Divide` and `Subtract` the way they were typed, so the steps read like the input rather than like its normal form.
 
 ### Related terms
-[Trace](Trace.md), [Stack](Stack.md), [StackBegin](StackBegin.md), [TeXForm](TeXForm.md), [MathMLForm](MathMLForm.md)
+[TraceDialog](TraceDialog.md), [Trace](Trace.md), [Stack](Stack.md), [StackBegin](StackBegin.md), [TeXForm](TeXForm.md), [MathMLForm](MathMLForm.md), [StackBegin](StackBegin.md), [TeXForm](TeXForm.md), [MathMLForm](MathMLForm.md)
 
 ### Implementation status
 

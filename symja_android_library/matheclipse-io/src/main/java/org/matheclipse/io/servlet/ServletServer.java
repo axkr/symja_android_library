@@ -83,6 +83,8 @@ public class ServletServer {
               servlet("notebook", AJAXNotebookServlet.class).addMapping("/notebook/"),
               servlet("manipulate", AJAXManipulateServlet.class).addMapping("/manipulate/"),
               servlet("dynamic", AJAXDynamicServlet.class).addMapping("/dynamic/"),
+              servlet("tracedialog", AJAXTraceDialogServlet.class)
+                  .addMapping("/tracedialog/"),
               // a browser session cannot hand the kernel a path into its own file system, so a
               // file is carried across instead: upload writes into the session's sandbox
               // directory, download reads back out of it

@@ -372,6 +372,11 @@ public class AJAXQueryServlet extends HttpServlet {
           if (numericMode.equals("N")) {
             inExpr = F.N(inExpr);
           }
+          if (TraceDialogSession.isTraceDialog(inExpr)) {
+            // stepping through an evaluation outlives a request by far: it is handed to a dialog
+            // of its own rather than evaluated here under the request timeout
+            return TraceDialogSession.begin(engine, isRelaxedSyntax(), (IAST) inExpr);
+          }
           outBuffer = new StringBuilderWriter();
           outExpr = evalTopLevel(engine, outBuffer, inExpr);
           inExpr = parser.nextScriptExpression();

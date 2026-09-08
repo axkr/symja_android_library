@@ -560,7 +560,7 @@ public class AST2Expr {
       "Toggler", "TogglerBar", "ToIntervalData", "ToLowerCase", "Tooltip", "TopHatTransform",
       "ToPolarCoordinates", "TopologicalSort", "ToRadicals", "TortoiseShellBracket", "Torus",
       "TorusGraph", "ToSphericalCoordinates", "ToString", "Total", "TotalVariationFilter",
-      "TouchscreenAutoZoom", "ToUnicode", "ToUpperCase", "Tr", "Trace", "TraceForm",
+      "TouchscreenAutoZoom", "ToUnicode", "ToUpperCase", "Tr", "Trace", "TraceDialog", "TraceForm",
       "TrackedSymbols", "TradingChart", "TraditionalForm", "TransformationClass",
       "TransformationFunction", "TransformedDistribution", "TransformedRegion", "TransitiveClosure",
       "Translate", "TranslationTransform", "Transliterate", "Transpose", "TreeForm", "TreeGraph",

@@ -1073,3 +1073,43 @@ div.steps span.steparrow {
 	margin: 0 0.5em;
 	color: #888;
 }
+
+/* ---- stepping through an evaluation ------------------------------------ */
+
+div.tracedialog {
+	font-family: sans-serif;
+	font-size: 0.95em;
+	border-left: 3px solid #9c9ea0;
+	padding: 0.4em 0 0.4em 0.8em;
+	margin: 0.4em 0;
+}
+
+div.tracedialogwhere {
+	color: #888;
+	font-size: 0.85em;
+}
+
+div.tracedialogsentence {
+	margin: 0.2em 0;
+}
+
+div.tracedialogbuttons {
+	margin: 0.5em 0 0.3em 0;
+}
+
+div.tracedialogbuttons button {
+	margin-right: 0.4em;
+	font-family: sans-serif;
+	font-size: 0.9em;
+}
+
+div.tracedialogask input {
+	width: 20em;
+	font-family: monospace;
+	font-size: 0.9em;
+}
+
+div.tracedialoganswer {
+	color: #444;
+	margin-top: 0.2em;
+}

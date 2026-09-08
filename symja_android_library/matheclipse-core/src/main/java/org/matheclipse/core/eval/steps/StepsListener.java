@@ -38,7 +38,7 @@ import jakarta.annotation.Nullable;
  * <code>Condition</code> whose guard failed) is told to discard itself, and its steps go away
  * with it.
  */
-public final class StepsListener extends AbstractEvalStepListener {
+public class StepsListener extends AbstractEvalStepListener {
 
   /**
    * Check that every <code>tearDown</code> closes the frame its <code>setUp</code> opened. Off
@@ -168,9 +168,17 @@ public final class StepsListener extends AbstractEvalStepListener {
     // call returns, either by appending the evaluated result or by replacing the `Slot1`
     // placeholder with it. Rendering happens when the evaluation is over, so the reference sees
     // the finished list.
-    frame.steps.add(new StepNode(inputExpr, display, resultExpr, listOfHints, frame.level,
-        isCondition));
+    StepNode node =
+        new StepNode(inputExpr, display, resultExpr, listOfHints, frame.level, isCondition);
+    frame.steps.add(node);
+    recorded(node);
   }
+
+  /**
+   * A step has been recorded. Overridden by {@link DialogStepsListener} to show it to a reader
+   * before the evaluation goes on; the steps which were filtered out never reach it.
+   */
+  protected void recorded(StepNode node) {}
 
   @Override
   public void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame,
