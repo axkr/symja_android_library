@@ -43,6 +43,13 @@ See
 
 
 
+A second argument that is neither `All` nor a number of elements is not accepted:
+
+```
+>> Ordering({3,1,2}, x)
+Ordering({3,1,2},x)
+```
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -119,6 +119,27 @@ A parametrization which covers the disk twice gives twice its area:
 [ArcLength](ArcLength.md), [Perimeter](Perimeter.md), [RegionMeasure](RegionMeasure.md),
 [SurfaceArea](SurfaceArea.md), [Volume](Volume.md)
 
+Several disjoint components add up:
+
+```
+>> Area(Polygon({{{0, 0}, {1, 0}, {0, 1}}, {{1, 1}, {2, 1}, {1, 2}}}))
+1
+```
+
+`outer -> holes` cuts the holes out of the outer boundary:
+
+```
+>> Area(Polygon({{0, 0}, {4, 0}, {4, 4}, {0, 4}} -> {{{1, 1}, {3, 1}, {3, 3}, {1, 3}}}))
+12
+```
+
+A single hole may be given bare, and the polygon may be embedded in space:
+
+```
+>> Area(Polygon({{0, 0, 0}, {4, 0, 0}, {4, 4, 0}, {0, 4, 0}} -> {{1, 1, 0}, {3, 1, 0}, {3, 3, 0}, {1, 3, 0}}))
+12
+```
+
 ### Implementation status
 
 * &#x2611; - partially implemented

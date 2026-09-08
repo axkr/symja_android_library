@@ -28,7 +28,16 @@ Inverse({{1, 0}, {0, 0}})
 >> Inverse({{1, 0, 0}, {0, Sqrt(3)/2, 1/2}, {0,-1 / 2, Sqrt(3)/2}})
 {{1,0,0},
  {0,Sqrt(3)/2,-1/2},
- {0,1/2,1/(1/(2*Sqrt(3))+Sqrt(3)/2)}} 
+ {0,1/2,Sqrt(3)/2}} 
+```
+
+The inverse of a matrix with symbolic entries is computed as the adjugate over the determinant, so
+every entry is a single fraction over the common determinant:
+
+```
+>> Inverse({{u, v}, {v, u}})
+{{u/(u^2-v^2),-v/(u^2-v^2)},
+ {-v/(u^2-v^2),u/(u^2-v^2)}}
 ```
 
 
@@ -42,4 +51,4 @@ Inverse({{1, 0}, {0, 0}})
 
 ### Github
 
-* [Implementation of Inverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3230) 
+* [Implementation of Inverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3288) 

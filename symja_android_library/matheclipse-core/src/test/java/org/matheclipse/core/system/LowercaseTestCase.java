@@ -1,6 +1,5 @@
 package org.matheclipse.core.system;
 
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +18,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -8184,7 +8184,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // not, and the two differ by 2*Pi*I, so the pair is left alone rather than condensed.
     check("ExpToTrig(Log(a+x)-Log(x-a))", //
         "-Log(-a+x)+Log(a+x)");
-    check("N(Log(a+x)-Log(x-a) /. {a->(-1)^(1/4), x->-2}) == N(2*ArcTanh(a/x) /. {a->(-1)^(1/4), x->-2})", //
+    check(
+        "N(Log(a+x)-Log(x-a) /. {a->(-1)^(1/4), x->-2}) == N(2*ArcTanh(a/x) /. {a->(-1)^(1/4), x->-2})", //
         "False");
     check("TrigToExp(Sin(x))", //
         "(I*1/2)/E^(I*x)-I*1/2*E^(I*x)");
@@ -9651,8 +9652,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x->0.75,y->0.25}");
     check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {{x, 0.1, 0.2}, {y, 0.1, 0.2}})", //
         "{x->0.75,y->0.25}");
-    check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x, 0.1, 0.2}, {y, 0.1, 0.2},"
-        + "MaxIterations->500)", //
+    check(
+        "FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x, 0.1, 0.2}, {y, 0.1, 0.2},"
+            + "MaxIterations->500)", //
         "{x->0.75,y->0.25}");
     // Message FindRoot: Search specification {x,1,2,3} should be a list with 1 to 3 elements.
     check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x,1,2,3}, {y,1})", //
@@ -9676,18 +9678,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // A function which is only defined for numeric arguments has no derivative to differentiate, so
     // the jacobian matrix is determined numerically and kept up to date with Broyden's method.
-    check("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
-        + "FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
+    check(
+        "f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+            + "FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
         "{x->1.41421,y->1.58579}");
-    checkNumeric("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
-        + "x /. FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
+    checkNumeric(
+        "f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+            + "x /. FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
         "1.4142135623730951");
-    checkNumeric("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
-        + "y /. FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
+    checkNumeric(
+        "f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+            + "y /. FindRoot({f(x)==0, g(x,y)==0}, {x,1,1.2}, {y,1,1.2})", //
         "1.5857864376269049");
     // without a second start value the width of the first difference is determined from the point
-    check("f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
-        + "FindRoot({f(x)==0, g(x,y)==0}, {x,1}, {y,1})", //
+    check(
+        "f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;"
+            + "FindRoot({f(x)==0, g(x,y)==0}, {x,1}, {y,1})", //
         "{x->1.41421,y->1.58579}");
 
     // MaxIterations is used up: report it and settle on the best point which was reached, rather
@@ -10764,6 +10770,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFromRomanNumeral() {
+    check("FromRomanNumeral(Times())", //
+        "FromRomanNumeral(1)");
     check("FromRomanNumeral(\"MDCLXVI\")", //
         "1666");
     // TODO add message for invalid roman number

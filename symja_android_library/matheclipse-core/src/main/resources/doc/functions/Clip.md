@@ -18,6 +18,8 @@ Clip(expr, {min, max}, {vMin, vMax})
 
 > returns `expr` in the range `min` to `max`. Returns `vMin` if `expr` is less than `min`. Returns `vMax` if `expr` is greater than `max`.
 
+A bound may be `Infinity` or `-Infinity`. `Clip` is not defined for complex values.
+
 See
 * [Wikipedia - Clipping (signal processing)](https://en.wikipedia.org/wiki/Clipping_(signal_processing))
 
@@ -53,9 +55,47 @@ a
 
 >> Clip(Tan(-2*E), {-1/2,1/2}, {a,b})
 b
+```
 
+A bound may be infinite, which is how a one sided range is written - `Clip(expr, {0, Infinity})` rejects negative values:
+
+```
+>> Clip(-5, {0, Infinity})
+0
+
+>> Clip({-5, 1, 3.5}, {0, Infinity})
+{0,1,3.5}
+
+>> Clip(5, {-Infinity, 0})
+0
+```
+
+`Clip` maps over a list in its first argument, and over the bounds of an `Interval` or `IntervalData`. A list holding an element that cannot be clipped stays unevaluated as a whole:
+
+```
+>> Clip({-2, 0, 2})
+{-1,0,1}
+
+>> Clip(Interval({-3, 5}))
+Interval({-1,1})
+
+>> Clip(IntervalData({-3, Less, Less, 5}))
+IntervalData({-1,LessEqual,LessEqual,1})
+```
+
+`Clip` saturates, so a bound that is excluded from the domain of an `IntervalData` can still be attained in the image - every value of `(-5,-1)` is clipped onto `-1`:
+
+```
+>> Clip(IntervalData({-5, Less, Less, -1}))
+IntervalData({-1,LessEqual,LessEqual,-1})
+```
+
+```
 >> PiecewiseExpand(Clip(x)) 
 Piecewise({{-1,x<-1},{1,x>1}},x)
+
+>> PiecewiseExpand(Clip(x, {-7, 5}, {a, b})) 
+Piecewise({{a,x<-7},{b,x>5}},x)
 ```
 
 ### Related terms 

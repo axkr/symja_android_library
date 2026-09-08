@@ -53,5 +53,22 @@ Recursive pure functions can be written using `#0`:
 9
 ```
 
+A named slot takes its value from an association or dataset argument, and prints as `#name`:
+
+```
+>> #x & [<|"x" -> 7|>]
+7
+
+>> Slot("x")
+#x
+```
+
+A slot which names an argument that was not supplied is reported and left in place:
+
+```
+>> #2 &[a]
+#2
+```
+
 ### Related terms 
 [Function](Function.md), [SlotSequence](SlotSequence.md) 

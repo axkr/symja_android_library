@@ -13,6 +13,19 @@ Product(expr, {i, imin, imax, di})
 > `i` ranges from `imin` to `imax` in steps of `di`.
 
 ```
+Product(expr, {i, {e1, e2, ...}})
+```
+
+> `i` takes each of the values `e1, e2, ...` in turn.
+
+```
+Product(expr, {{e1, e2, ...}})
+```
+
+> multiplies one copy of `expr` per element of the list, without assigning the elements to a
+> variable; only the number of elements matters.
+
+```
 Product(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
 ```
 
@@ -26,6 +39,9 @@ See
 ```
 >> Product(k, {k, 1, 10})
 3628800
+
+>> Product(x, {{a, b, c}})
+x^3
  
 >> 10!
 3628800

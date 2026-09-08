@@ -8,6 +8,9 @@ Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax})
 	 
 **Note**: This feature is available in the console app and in the web interface.
 
+`AxesLabel -> Automatic` names the horizontal axis after the iterator variable and the vertical
+one after the function. Several curves have no one name, so that axis is left unlabelled.
+
 ### Examples
 
 In the console apps, this command shows an HTML page with a JavaScript plot control.

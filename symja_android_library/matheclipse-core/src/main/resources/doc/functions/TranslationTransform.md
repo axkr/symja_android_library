@@ -13,14 +13,18 @@ See
  
 ```
 >> TranslationTransform({1, 2})
-TransformationFunction(
-{{1,0,1},
- {0,1,2},
- {0,0,1}})
+TransformationFunction({{1,0,1},{0,1,2},{0,0,1}})
+```
+
+```
+>> TranslationTransform({x0, y0})[{x, y}]
+{x+x0,y+y0}
 ```
 
 ### Related terms
-[RotationTransform](RotationTransform.md), [TransformationFunction](TransformationFunction.md)
+[AffineTransform](AffineTransform.md), [ReflectionTransform](ReflectionTransform.md), 
+[RotationTransform](RotationTransform.md), [ScalingTransform](ScalingTransform.md), 
+[ShearingTransform](ShearingTransform.md), [TransformationFunction](TransformationFunction.md)
 
 
 
@@ -33,4 +37,4 @@ TransformationFunction(
 
 ### Github
 
-* [Implementation of TranslationTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L1523) 
+* [Implementation of TranslationTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L2023) 

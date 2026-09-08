@@ -15,6 +15,10 @@ Plot3D(function, {x, xMin, xMax}, {y,yMin,yMax}, ColorFunction->"color-map")
 					
 **Note**: This function is available in the console app and in the web interface.
 
+`AxesLabel -> Automatic` names the axes after what was plotted: the two iterator variables,
+and the function itself on the vertical axis. Several surfaces have no one name, so that axis
+is left unlabelled.
+
 ### Examples
 
 In the console apps, this command shows an HTML page with a JavaScript of a 3D surface plot control:

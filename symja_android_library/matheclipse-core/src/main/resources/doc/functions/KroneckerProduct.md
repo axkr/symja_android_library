@@ -30,6 +30,13 @@ See
 
 
 
+Unlike `TensorProduct`, `KroneckerProduct` is neither `Flat` nor `OneIdentity`:
+
+```
+>> Attributes(KroneckerProduct)
+{NonThreadable,Protected}
+```
+
 ### Implementation status
 
 * &#x2611; - partially implemented

@@ -30,7 +30,7 @@ Here we read a `csv` file of tornado data. The `SemanticImport` function infers 
 If you would like to create smaller datasets you can use the `SemanticImportString` function, which creates a `Dataset` from a String representation:
 
 ```
->> ds = SemanticImportString("Products,Sales,Market_Share\na,5500,3\nb,12200,4\nc,60000,33")
+>> dssmall = SemanticImportString("Products,Sales,Market_Share\na,5500,3\nb,12200,4\nc,60000,33")
 ```
 
 ### Viewing table metadata

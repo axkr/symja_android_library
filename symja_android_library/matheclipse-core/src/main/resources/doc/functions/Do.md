@@ -16,19 +16,32 @@ Do(expr, {i, max})
 Do(expr, {i, min, max})
 ```
 
-> starts with `i = max`.
+> starts with `i = min`.
 
 ```
 Do(expr, {i, min, max, step})
 ```
 
-> uses a step size of `step`.
+> uses a step size of `step`. A step of `0` is rejected, it would iterate forever.
+
+```
+Do(expr, {{e1, e2, ...}})
+```
+
+> evaluates `expr` once per element of the list, without assigning the elements to a variable;
+> only the number of elements matters.
+
+```
+Do(expr, max)
+```
+
+> same as `Do(expr, {max})`, evaluates `expr` `max` times.
 
 ```
 Do(expr, {i, {i1, i2, ...}})
 ```
 
-> uses values `i1, i2, ... for i`.
+> `i` takes each of the values `i1, i2, ...` in turn.
 
 ```
 Do(expr, {i, imin, imax}, {j, jmin, jmax}, ...)

@@ -8,12 +8,12 @@ Array(f, n)
 ```
 Array(f, n, a)
 ```
-> returns the n-element list `{f(a), ..., f(a + n)}`.
+> returns the n-element list `{f(a), ..., f(a + n - 1)}`.
 
 ```
 Array(f, {n, m}, {a, b})
 ```
-> returns an `n`-by-`m` matrix created by applying `f` to indices ranging from `(a, b)` to `(a + n, b + m)`.
+> returns an `n`-by-`m` matrix created by applying `f` to indices ranging from `(a, b)` to `(a + n - 1, b + m - 1)`.
 
 ```
 Array(f, dims, origins, h)

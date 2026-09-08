@@ -1,10 +1,15 @@
 ## ComplexPlot3D
  
 ```
-ComplexPlot3D(expr, {z, min, max )
+ComplexPlot3D(expr, {z, min, max})
 ```
 
 > create a 3D plot of `expr` for the complex variable `z` in the range `{ Re(min),Re(max) }` to `{ Im(min),Im(max) }`
+
+The height of the surface is `Abs(expr)` and its colour is the domain colouring
+[ComplexPlot](ComplexPlot.md) uses, so `ColorFunction` takes the same settings here: the shading
+scheme names, the `{cfunc, sfunc}` pair, and a colour function of your own given the eight
+arguments `Re(z)`, `Im(z)`, `Abs(z)`, `Arg(z)`, `Re(f)`, `Im(f)`, `Abs(f)`, `Arg(f)`.
 
 See  
 * [Wikipedia - Complex number](https://en.wikipedia.org/wiki/Complex_number) 
@@ -15,6 +20,11 @@ See
 
 ```
 >> ComplexPlot3D(Gamma(z), {z, -4.9-4.9*I,4.9+4.9*I}, PlotRange->{0,8.0})
+
+```
+
+```
+>> ComplexPlot3D(z^2, {z, -1-I, 1+I}, ColorFunction -> "CyclicLogAbsArg")
 
 ```
 

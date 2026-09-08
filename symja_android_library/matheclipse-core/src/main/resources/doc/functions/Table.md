@@ -1,6 +1,12 @@
 ## Table
 
 ```
+Table(expr, {i, imin, imax})
+```
+
+> evaluates `expr` with `i` ranging from `imin` to `imax`, returning a list of the results.
+
+```
 Table(expr, {i, n})
 ```
 
@@ -18,11 +24,21 @@ Table(expr, {i, {e1, e2, ..., ei}})
 
 > evaluates `expr` with `i` taking on the values `e1, e2, ..., ei`.
 
+```
+Table(expr, {{e1, e2, ..., ei}})
+```
+
+> returns one copy of `expr` per element of the list, without assigning the elements to a
+> variable; only the number of elements matters.
+
 ### Examples
 
 ```
 >> Table(x!, {x, 8})
 {1,2,6,24,120,720,5040,40320}
+
+>> Table(x, {{a, b, c}})
+{x,x,x}
 
 >> Table(x, {4})
 {x,x,x,x}

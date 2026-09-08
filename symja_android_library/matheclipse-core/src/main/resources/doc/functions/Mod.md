@@ -22,6 +22,17 @@ See
 -3
 ```
 
+For Gaussian integers the remainder is `x - m*Round(x/m)`, rounding the real and imaginary parts
+separately, so the result is the representative of least norm:
+
+```
+>> Mod(7 + 3*I, 2)
+-1-I
+
+>> Mod(7, 2 + I)
+-I
+```
+
 The argument 0 should be nonzero
 
 ```

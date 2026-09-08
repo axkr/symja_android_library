@@ -19,6 +19,13 @@ TensorDimensions(t)
 
 
 
+An `Assumptions` option may be given, as for `TensorRank`:
+
+```
+>> TensorDimensions({{1,2},{3,4}}, Assumptions->True)
+{2,2}
+```
+
 ### Implementation status
 
 * &#x2705; - full supported
