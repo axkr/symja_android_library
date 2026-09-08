@@ -210,13 +210,29 @@ public final class Emitter {
    */
   public static IExpr latticeReduceForm(LatticeSolver.Solution solution, List<Variable> untouched,
       IntegerDomain domain) {
-    IASTAppendable conjuncts = F.ast(S.And, untouched.size() + solution.variables().size() + 1);
+    return latticeReduceForm(solution, untouched, domain, F.NIL);
+  }
+
+  /**
+   * The same form with a further condition on the generated parameters, which is what the
+   * constraints beside the equations become once the parametrization is substituted into them.
+   */
+  public static IExpr latticeReduceForm(LatticeSolver.Solution solution, List<Variable> untouched,
+      IntegerDomain domain, IExpr parameterCondition) {
+    IASTAppendable conjuncts = F.ast(S.And, untouched.size() + solution.variables().size() + 2);
     for (Variable variable : untouched) {
       conjuncts.append(F.Element(variable.symbol(), domain.symbol()));
     }
     IExpr membership = parameterMembership(solution.parameterCount(), domain);
     if (membership.isPresent()) {
       conjuncts.append(membership);
+    }
+    if (parameterCondition.isPresent() && !parameterCondition.isTrue()) {
+      if (parameterCondition.isAnd()) {
+        conjuncts.appendArgs((IAST) parameterCondition);
+      } else {
+        conjuncts.append(parameterCondition);
+      }
     }
     for (int index = 0; index < solution.variables().size(); index++) {
       conjuncts

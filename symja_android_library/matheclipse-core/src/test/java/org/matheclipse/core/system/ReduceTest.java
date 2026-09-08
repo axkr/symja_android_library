@@ -264,6 +264,19 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * An inequality beside the equations becomes a condition on the generated parameter. Without
+   * that substitution the answer could only restate the input, or express one unknown as a
+   * fraction of the others, which is not an integer for most values.
+   */
+  @Test
+  public void testReduceLinearSystemWithInequality() {
+    check("Reduce(2*x == 4*y && x >= 0, {x, y}, Integers)", //
+        "C(1)∈Integers&&C(1)>=0&&x==2*C(1)&&y==C(1)");
+    check("Reduce(3*x + 5*y == 1 && x > 0, {x, y}, Integers)", //
+        "C(1)∈Integers&&C(1)>=0&&x==2+5*C(1)&&y==-1-3*C(1)");
+  }
+
+  /**
    * A quantifier over the integers is eliminated by Cooper's method. Deciding it over a continuum
    * instead answers `Exists(y, x == 2*y + 1)` with True, losing the parity condition on `x`.
    */

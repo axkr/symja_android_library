@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -103,7 +105,105 @@ public final class IntegerReduceEngine {
       default:
         break;
     }
+    IExpr parametrized = reduceMixedSystem(request, domain, engine);
+    if (parametrized.isPresent()) {
+      return parametrized;
+    }
     return symbolic(request, domain, engine);
+  }
+
+  /**
+   * Reduce a conjunction of linear equations and further constraints whose solution set is
+   * unbounded.
+   *
+   * <p>
+   * The equations are solved as a lattice and the parametrization is substituted into the
+   * remaining constraints, which then become conditions on the fresh parameters. Without this the
+   * answer would only restate the input, or express one unknown as a fraction of the others.
+   *
+   * @return the parametrized solution set, or {@link F#NIL} if the condition does not have this
+   *         shape
+   */
+  private static IExpr reduceMixedSystem(Lowering.LinearRequest request, IntegerDomain domain,
+      EvalEngine engine) {
+    if (domain != IntegerDomain.INTEGERS) {
+      return F.NIL;
+    }
+    Formula normalized = IntegerNormalizer.normalize(request.formula(), true);
+    if (normalized == null) {
+      return F.NIL;
+    }
+    List<Atom> atoms = conjunctionAtoms(normalized);
+    if (atoms == null) {
+      return F.NIL;
+    }
+    List<AffineTerm> equations = new ArrayList<AffineTerm>();
+    List<Formula> residualAtoms = new ArrayList<Formula>();
+    for (Atom atom : atoms) {
+      if (atom.isRelation() && atom.relation() == Relation.EQUAL) {
+        equations.add(atom.term());
+      } else {
+        residualAtoms.add(Formula.atom(atom));
+      }
+    }
+    if (equations.isEmpty() || residualAtoms.isEmpty()) {
+      // a pure system and a system without equations are handled by their own routes
+      return F.NIL;
+    }
+    Set<Variable> free = normalized.freeVariables();
+    if (!request.targets().containsAll(free)) {
+      return F.NIL;
+    }
+    TreeSet<Variable> solved = new TreeSet<Variable>();
+    for (AffineTerm equation : equations) {
+      solved.addAll(equation.variables());
+    }
+    List<Variable> latticeVariables = new ArrayList<Variable>(solved.size());
+    List<Variable> untouched = new ArrayList<Variable>();
+    for (Variable target : request.targets()) {
+      if (solved.contains(target)) {
+        latticeVariables.add(target);
+      } else if (!free.contains(target)) {
+        untouched.add(target);
+      }
+    }
+    if (latticeVariables.isEmpty()) {
+      return F.NIL;
+    }
+    LatticeSolver.Solution solution = LatticeSolver.solve(equations, latticeVariables);
+    if (solution == null) {
+      return S.False;
+    }
+    if (solution.parameterCount() == 0) {
+      // the equations determine every unknown they mention; the finite route reports that
+      return F.NIL;
+    }
+
+    // the parameters are internal variables until emission, where they become C(1), C(2), ...
+    List<Variable> parameters = new ArrayList<Variable>(solution.parameterCount());
+    IASTAppendable renames = F.ListAlloc(solution.parameterCount());
+    for (int index = 0; index < solution.parameterCount(); index++) {
+      ISymbol symbol = F.Dummy("C$" + (index + 1));
+      parameters.add(Variable.free(symbol));
+      renames.append(F.Rule(symbol, F.C(index + 1)));
+    }
+    Formula residual = Formula.and(residualAtoms);
+    for (int index = 0; index < latticeVariables.size(); index++) {
+      residual =
+          residual.substitute(latticeVariables.get(index), solution.substitution(index, parameters));
+    }
+    residual = IntegerNormalizer.normalize(residual, true);
+    if (residual == null) {
+      return F.NIL;
+    }
+    if (residual.isFalse()) {
+      return S.False;
+    }
+    IExpr condition = residual.isTrue() ? F.NIL
+        : engine.evaluate(F.subst(Emitter.formula(Presburger.simplify(residual), parameters),
+            renames));
+    return engine.evaluate(
+        Emitter.latticeReduceForm(solution, untouched, domain, condition));
   }
 
   /**
@@ -122,7 +222,8 @@ public final class IntegerReduceEngine {
       // the parameter is itself an integer
       return F.NIL;
     }
-    Formula normalized = IntegerNormalizer.normalize(request.formula(), false);
+    // keep the equalities: `x == 2*y` reads better than the two inequalities it splits into
+    Formula normalized = IntegerNormalizer.normalize(request.formula(), true);
     if (normalized == null) {
       return F.NIL;
     }

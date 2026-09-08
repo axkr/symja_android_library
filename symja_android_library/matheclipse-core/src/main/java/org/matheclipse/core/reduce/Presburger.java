@@ -482,6 +482,57 @@ public final class Presburger {
   private static final int MAX_SUBSUMPTION_CHILDREN = 64;
 
   /**
+   * Keep only the tightest of several bounds on the same term.
+   *
+   * <p>
+   * Cooper's instances and the surface form of an exclusive or both produce conjunctions such as
+   * <code>x &gt;= 0 &amp;&amp; x &gt;= 2</code>, where the weaker bound says nothing.
+   */
+  private static Formula dropDominatedBounds(Formula conjunction) {
+    List<Formula> children = conjunction.children();
+    if (children.size() < 2 || children.size() > MAX_SUBSUMPTION_CHILDREN) {
+      return conjunction;
+    }
+    // group the ordered atoms by their variable part; within a group the largest constant is the
+    // tightest bound, because every atom reads `variablePart + constant <= 0`
+    Map<AffineTerm, BigInteger> tightest = new TreeMap<AffineTerm, BigInteger>();
+    for (Formula child : children) {
+      if (child.kind() != Formula.Kind.ATOM || !child.atom().isRelation()
+          || child.atom().relation() != Relation.LESS_EQUAL
+          || !child.atom().term().isIntegral()) {
+        continue;
+      }
+      AffineTerm term = child.atom().term();
+      AffineTerm variablePart = term.subtract(AffineTerm.constant(term.constant()));
+      if (variablePart.isConstant()) {
+        continue;
+      }
+      BigInteger constant = term.constant().numerator().toBigNumerator();
+      BigInteger current = tightest.get(variablePart);
+      if (current == null || constant.compareTo(current) > 0) {
+        tightest.put(variablePart, constant);
+      }
+    }
+    if (tightest.isEmpty()) {
+      return conjunction;
+    }
+    List<Formula> kept = new ArrayList<Formula>(children.size());
+    for (Formula child : children) {
+      if (child.kind() == Formula.Kind.ATOM && child.atom().isRelation()
+          && child.atom().relation() == Relation.LESS_EQUAL && child.atom().term().isIntegral()) {
+        AffineTerm term = child.atom().term();
+        AffineTerm variablePart = term.subtract(AffineTerm.constant(term.constant()));
+        BigInteger best = tightest.get(variablePart);
+        if (best != null && best.compareTo(term.constant().numerator().toBigNumerator()) > 0) {
+          continue;
+        }
+      }
+      kept.add(child);
+    }
+    return kept.size() == children.size() ? conjunction : Formula.and(kept).normalized();
+  }
+
+  /**
    * Drop a disjunct which constrains strictly more than another one.
    *
    * <p>
@@ -592,7 +643,7 @@ public final class Presburger {
             return Formula.TRUE;
           }
         }
-        return conjunction ? normalized : dropSubsumedDisjuncts(normalized);
+        return conjunction ? dropDominatedBounds(normalized) : dropSubsumedDisjuncts(normalized);
       }
       case EXISTS:
       case FORALL:
