@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IDataExpr;
@@ -117,6 +118,7 @@ final class SubstitutionPlan {
    */
   IExpr substitute(IPatternMap patternMap, IExpr nilOrEmptySequence) {
     IASTMutable result = null;
+    boolean spliceable = false;
     for (int i = 0; i < childIndex.length; i++) {
       final IExpr value;
       if (child[i] != null) {
@@ -129,11 +131,29 @@ final class SubstitutionPlan {
         // this subtree did not change - keep the original child
         continue;
       }
+      if (childIndex[i] > 0 && value.isSequence() && !original.isAssociation()) {
+        // a pattern name standing for several arguments has to be spread into the expression
+        // around it, the same as in VisitorReplaceAll: a substitution into a held expression is
+        // never evaluated, so nothing else would flatten it
+        spliceable = true;
+      }
       if (result == null) {
         result = original.setAtCopy(childIndex[i], value);
       } else {
         result.set(childIndex[i], value);
       }
+    }
+    if (result != null && spliceable) {
+      IASTAppendable spliced = F.ast(result.head(), result.argSize() + 4);
+      for (int i = 1; i < result.size(); i++) {
+        IExpr argument = result.get(i);
+        if (argument.isSequence()) {
+          spliced.appendArgs((IAST) argument);
+        } else {
+          spliced.append(argument);
+        }
+      }
+      return spliced;
     }
     return result == null ? F.NIL : result;
   }

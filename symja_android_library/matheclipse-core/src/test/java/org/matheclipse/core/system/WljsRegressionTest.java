@@ -1,6 +1,12 @@
 package org.matheclipse.core.system;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.matheclipse.core.basic.Config;
 
 /**
  * Wolfram Language behaviour that packages rely on and Symja did not have.
@@ -127,5 +133,48 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // and the pattern itself is evaluated, so a regular expression may be built
     check("innerPart = \"[a-z]+\"; StringCases(\"k={vv}\", RegularExpression(\"(\\\\w*)=\\\\{(\" <> innerPart <> \")\\\\}\") -> (\"$1\" -> \"$2\"))", //
         "{k->vv}");
+  }
+  @Test
+  public void testAPatternNameStandingForSeveralArgumentsIsSpreadIn() {
+    // x__ holds its arguments as a Sequence, and putting one where a single argument was leaves
+    // f[Sequence[a, b]] where f[a, b] was meant. Evaluation would flatten that, but a substitution
+    // into a held expression is never evaluated - and {v} in Module[{v}, …] has to be the list of
+    // names by the time Module sees it.
+    check("f({a, b, c}) /. _({v__}) :> Hold(Module({v}, 1))", //
+        "Hold(Module({a,b,c},1))");
+    check("f({a, b}) /. _({v__}) :> Hold(g(v, 1))", //
+        "Hold(g(a,b,1))");
+    check("{{a, b}} /. {{v__}} :> Hold({v, x})", //
+        "Hold({a,b,x})");
+  }
+
+  @Test
+  public void testAContextMeansTheSameInsideAPackageAsOutside(@TempDir Path directory)
+      throws IOException {
+    // A package used to begin with no knowledge of the contexts that existed before it, so a
+    // context it mentioned was created empty a second time - and when the package ended, that
+    // empty one replaced the one holding the values. Everything assigned to it beforehand was
+    // then unreachable by name.
+    Path file = directory.resolve("Inner.wl");
+    Files.write(file, ("BeginPackage(\"Inner`\")\n" //
+        + "Begin(\"`Private`\")\n" //
+        + "seen := Other`shared\n" //
+        + "End()\n" //
+        + "EndPackage()\n").getBytes(StandardCharsets.UTF_8));
+    boolean fileSystem = Config.FILESYSTEM_ENABLED;
+    Config.FILESYSTEM_ENABLED = true;
+    try {
+      check("Other`shared = {1, 2}", //
+          "{1,2}");
+      check("Get(\"" + file.toString().replace("\\", "\\\\") + "\")", //
+          "");
+      // the value is still there, and the package sees the same symbol
+      check("Other`shared", //
+          "{1,2}");
+      check("Inner`Private`seen", //
+          "{1,2}");
+    } finally {
+      Config.FILESYSTEM_ENABLED = fileSystem;
+    }
   }
 }

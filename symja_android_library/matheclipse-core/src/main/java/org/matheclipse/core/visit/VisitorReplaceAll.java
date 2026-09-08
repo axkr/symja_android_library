@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
@@ -264,16 +265,49 @@ public class VisitorReplaceAll extends VisitorExpr {
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         IASTMutable result = ast.setAtCopy(i, temp);
+        final boolean[] spliceable = new boolean[] {isSpliceable(i, temp, ast)};
         ast.forEach(i + 1, size, (x, j) -> {
           IExpr t = x.accept(this);
           if (t.isPresent()) {
             result.set(j, t);
+            if (isSpliceable(j, t, ast)) {
+              spliceable[0] = true;
+            }
           }
         });
-        return postProcessing(result);
+        return postProcessing(spliceable[0] ? spliceSequences(result) : result);
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Would this substituted argument have to be spread into the expression around it?
+   *
+   * <p>
+   * A pattern name that stands for several arguments - <code>x__</code> - holds them as a
+   * <code>Sequence</code>, and putting one where a single argument was leaves
+   * <code>f[Sequence[a, b]]</code> where <code>f[a, b]</code> was meant. Evaluation would flatten
+   * that, but a substitution into a held expression is never evaluated: <code>{v}</code> in
+   * <code>Module[{v}, …]</code> has to be the list of names by the time Module sees it.
+   */
+  private boolean isSpliceable(int position, IExpr value, IAST ast) {
+    // the head is one expression, and an association holds rules rather than a run of arguments
+    return position > 0 && value.isSequence() && !ast.isAssociation();
+  }
+
+  /** The expression with every substituted <code>Sequence</code> spread into it. */
+  private static IASTMutable spliceSequences(IASTMutable ast) {
+    IASTAppendable result = F.ast(ast.head(), ast.argSize() + 4);
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      if (argument.isSequence()) {
+        result.appendArgs((IAST) argument);
+      } else {
+        result.append(argument);
+      }
+    }
+    return result;
   }
 
   public static VisitorReplaceAll createVisitor(IExpr arg) {

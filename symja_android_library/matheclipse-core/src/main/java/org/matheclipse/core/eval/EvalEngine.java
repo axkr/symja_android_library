@@ -1226,7 +1226,9 @@ public class EvalEngine implements Serializable {
   public Context beginPackage(String contextName) {
     fContextPathStack.push(fContextPath);
     Context packageContext = fContextPath.getContext(contextName);
-    setContextPath(new ContextPath(packageContext));
+    // the package knows the contexts that were known before it, so a name means the same symbol
+    // inside it as outside
+    setContextPath(new ContextPath(packageContext, fContextPath));
     ContextPath.PACKAGES.add(contextName);
     return packageContext;
   }

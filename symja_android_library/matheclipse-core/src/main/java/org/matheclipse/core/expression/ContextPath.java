@@ -64,7 +64,24 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   public ContextPath(Context context) {
-    fContextMap = new HashMap<>(17);
+    this(context, null);
+  }
+
+  /**
+   * A path whose current context is <code>context</code>, knowing the contexts
+   * <code>outer</code> already knows.
+   *
+   * <p>
+   * Inheriting them is what makes a context mean the same thing inside a package as outside it. A
+   * package that begins with an empty map re-creates every context it then mentions, so
+   * <code>Other`x</code> read inside the package is a different symbol from the
+   * <code>Other`x</code> that was assigned outside it - and when the package ends, the empty
+   * re-creation replaces the one holding the values.
+   *
+   * @param outer the path in force where the package begins, or <code>null</code>
+   */
+  public ContextPath(Context context, ContextPath outer) {
+    fContextMap = outer == null ? new HashMap<>(17) : new HashMap<>(outer.fContextMap);
     path.add(context);
     path.add(Context.SYSTEM);
     fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
@@ -434,7 +451,9 @@ public final class ContextPath implements Iterable<Context> {
    */
   public void synchronize(ContextPath path) {
     fContextMap.putIfAbsent(path.fContext.getContextName(), path.fContext);
-    path.fContextMap.forEach(fContextMap::put);
+    // Contexts the package created are carried out; one that already existed keeps the object it
+    // had, which is the one holding the symbols anything outside the package refers to.
+    path.fContextMap.forEach(fContextMap::putIfAbsent);
   }
 
   @Override
