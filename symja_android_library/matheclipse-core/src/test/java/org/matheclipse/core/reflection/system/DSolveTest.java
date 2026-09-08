@@ -457,8 +457,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * exact string says less than seeing the equation solved.
    */
   private void checkResidual(String equation, String residual, String point) {
-    check("With({s=DSolve(" + equation + ", y, x)}, Head(s)===List && Abs(N((" + residual
-        + ") /. s[[1]] /. " + point + ")) < 10^-6)", //
+    check(
+        "With({s=DSolve(" + equation + ", y, x)}, Head(s)===List && Abs(N((" + residual
+            + ") /. s[[1]] /. " + point + ")) < 10^-6)", //
         "True");
   }
 
@@ -591,9 +592,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{x(t)->t*C(1)*Cos(t)+t*C(2)*Sin(t),y(t)->t*C(2)*Cos(t)-t*C(1)*Sin(t)}}");
 
     // A constant matrix with a scalar function in front of it.
-    check("With({s=DSolve({t*x'(t) + y(t) == 0, t*y'(t) + x(t) == 0}, {x, y}, t)}, "
-        + "Head(s)===List && Max(Abs(N({t*x'(t) + y(t), t*y'(t) + x(t)} /. s[[1]] /. "
-        + "{C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
+    check(
+        "With({s=DSolve({t*x'(t) + y(t) == 0, t*y'(t) + x(t) == 0}, {x, y}, t)}, "
+            + "Head(s)===List && Max(Abs(N({t*x'(t) + y(t), t*y'(t) + x(t)} /. s[[1]] /. "
+            + "{C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
         "True");
 
     // The same shape with a forcing term.
@@ -609,10 +611,11 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         + "/. {C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
         "True");
 
-    check("With({s=DSolve({x'(t) == x(t)*Cos(t) - Sin(t)*y(t), y'(t) == x(t)*Sin(t) "
-        + "+ y(t)*Cos(t)}, {x, y}, t)}, Head(s)===List && "
-        + "Max(Abs(N({x'(t) - x(t)*Cos(t) + Sin(t)*y(t), y'(t) - x(t)*Sin(t) - y(t)*Cos(t)} "
-        + "/. s[[1]] /. {C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
+    check(
+        "With({s=DSolve({x'(t) == x(t)*Cos(t) - Sin(t)*y(t), y'(t) == x(t)*Sin(t) "
+            + "+ y(t)*Cos(t)}, {x, y}, t)}, Head(s)===List && "
+            + "Max(Abs(N({x'(t) - x(t)*Cos(t) + Sin(t)*y(t), y'(t) - x(t)*Sin(t) - y(t)*Cos(t)} "
+            + "/. s[[1]] /. {C(1)->7/5, C(2)->3/4, t->13/10}))) < 10^-6)", //
         "True");
   }
 
@@ -620,16 +623,18 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   public void testDSolveSystemHigherOrder() {
     // Carrying the first derivatives as unknowns of their own turns these into first order
     // systems, which is the shape the matrix engine solves.
-    check("With({s=DSolve({x''(t) == 4*y(t), y''(t) == 4*x(t)}, {x, y}, t)}, Head(s)===List && "
-        + "Max(Abs(N({x''(t) - 4*y(t), y''(t) - 4*x(t)} /. s[[1]] /. "
-        + "{C(1)->7/5, C(2)->3/4, C(3)->2/3, C(4)->5/6, t->13/10}))) < 10^-6)", //
+    check(
+        "With({s=DSolve({x''(t) == 4*y(t), y''(t) == 4*x(t)}, {x, y}, t)}, Head(s)===List && "
+            + "Max(Abs(N({x''(t) - 4*y(t), y''(t) - 4*x(t)} /. s[[1]] /. "
+            + "{C(1)->7/5, C(2)->3/4, C(3)->2/3, C(4)->5/6, t->13/10}))) < 10^-6)", //
         "True");
 
     // The two unknowns need not be differentiated equally often.
-    check("With({s=DSolve({x''(t) + x'(t) + y'(t) - 2*y(t) == 0, x'(t) + x(t) - y'(t) == 0}, "
-        + "{x, y}, t)}, Head(s)===List && "
-        + "Max(Abs(N({x''(t) + x'(t) + y'(t) - 2*y(t), x'(t) + x(t) - y'(t)} /. s[[1]] /. "
-        + "{C(1)->7/5, C(2)->3/4, C(3)->2/3, t->13/10}))) < 10^-6)", //
+    check(
+        "With({s=DSolve({x''(t) + x'(t) + y'(t) - 2*y(t) == 0, x'(t) + x(t) - y'(t) == 0}, "
+            + "{x, y}, t)}, Head(s)===List && "
+            + "Max(Abs(N({x''(t) + x'(t) + y'(t) - 2*y(t), x'(t) + x(t) - y'(t)} /. s[[1]] /. "
+            + "{C(1)->7/5, C(2)->3/4, C(3)->2/3, t->13/10}))) < 10^-6)", //
         "True");
 
     // With a forcing term the particular solution comes from variation of parameters.
@@ -639,8 +644,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "True");
 
     // Two equations of the second order carry four arbitrary constants.
-    check("Length(Union(Cases(DSolve({x''(t) == 2*x(t) - 3*y(t), y''(t) == x(t) - 2*y(t)}, "
-        + "{x, y}, t), C(_), Infinity)))", //
+    check(
+        "Length(Union(Cases(DSolve({x''(t) == 2*x(t) - 3*y(t), y''(t) == x(t) - 2*y(t)}, "
+            + "{x, y}, t), C(_), Infinity)))", //
         "4");
   }
 
@@ -697,8 +703,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     checkResidual("x^2*y''(x) + (c*x^2 + b*x + a)*y(x) == 0", //
         "x^2*y''(x) + (c*x^2 + b*x + a)*y(x)",
         "{C(1)->7/5, C(2)->3/4, a->-3/10, b->1/5, c->-1/10, x->13/10}");
-    check("FreeQ(DSolve(y''(x) + (-1/4 + k/x + (1/4-m^2)/x^2)*y(x) == 0, y(x), x),"
-        + " Hypergeometric1F1)", //
+    check(
+        "FreeQ(DSolve(y''(x) + (-1/4 + k/x + (1/4-m^2)/x^2)*y(x) == 0, y(x), x),"
+            + " Hypergeometric1F1)", //
         "False");
 
     // twice the order is a whole number here, so the two solutions are one and the second does
@@ -730,8 +737,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     checkResidual("x*(a0+x)*y''(x) + (b1*x+a1)*y'(x) + a2*y(x) == 0", //
         "x*(a0+x)*y''(x) + (b1*x+a1)*y'(x) + a2*y(x)",
         "{C(1)->7/5, C(2)->3/4, a0->-2, a1->1/5, a2->7/10, b1->3/10, x->13/10}");
-    check("FreeQ(DSolve((1-x^2)*y''(x) - (2*a+1)*x*y'(x) + n*(n+2*a)*y(x) == 0, y(x), x),"
-        + " Integrate)", //
+    check(
+        "FreeQ(DSolve((1-x^2)*y''(x) - (2*a+1)*x*y'(x) + n*(n+2*a)*y(x) == 0, y(x), x),"
+            + " Integrate)", //
         "True");
 
     // one finite singular point is a confluent equation, which the rows above answer, and this
@@ -741,8 +749,8 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * An equation which is Airy's or Bessel's only once its first derivative has been taken out of
-   * it by <code>y == Exp(-Integrate(p/2))*z</code>.
+   * An equation which is Airy's or Bessel's only once its first derivative has been taken out of it
+   * by <code>y == Exp(-Integrate(p/2))*z</code>.
    */
   @Test
   public void testDSolveNormalFormPrePass() {
@@ -756,8 +764,8 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
   /**
    * Nonlinear equations of the second order which can be integrated once, leaving a first order
-   * equation the cascade then solves. The method above is the first order one, which multiplies
-   * an equation into an exact one rather than integrating it.
+   * equation the cascade then solves. The method above is the first order one, which multiplies an
+   * equation into an exact one rather than integrating it.
    */
   @Test
   public void testDSolveSecondOrderIntegratingFactor() {
@@ -930,11 +938,11 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->(E^(x^(3/2)/3)*C(1))/x^(1/4)+C(2)/(E^(x^(3/2)/3)*x^(1/4))}}");
 
     checkResidual("y''(x) == ((x-1)/4 + 5/(16*(x-1)^2))*y(x)",
-        "D(y(x),{x,2}) - ((x-1)/4 + 5/(16*(x-1)^2))*y(x)",
-        "{x->17/13, C(1)->3/7, C(2)->5/11}");
+        "D(y(x),{x,2}) - ((x-1)/4 + 5/(16*(x-1)^2))*y(x)", "{x->17/13, C(1)->3/7, C(2)->5/11}");
 
-    check("With({b=(y(x) /. DSolve(y''(x) == (x/4 + 5/(16*x^2))*y(x), y(x), x)[[1,1]])},"
-        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
+    check(
+        "With({b=(y(x) /. DSolve(y''(x) == (x/4 + 5/(16*x^2))*y(x), y(x), x)[[1,1]])},"
+            + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
         "True");
 
     // A solution of this kind is algebraic, and where the equation has none the method declines
@@ -958,15 +966,15 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve((1-x^2)*y''(x) - 3*x*y'(x) + 3*y(x) == 0, y(x), x)", //
         "{{y(x)->x*C(1)-C(2)/(2*Sqrt(1-x^2))+(x^2*C(2))/Sqrt(1-x^2)}}");
 
-    check("With({b=(y(x) /. DSolve((1-x^2)*y''(x) - 3*x*y'(x) + 3*y(x) == 0, y(x), x)[[1,1]])},"
-        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->1/3)) > 10^-6)", //
+    check(
+        "With({b=(y(x) /. DSolve((1-x^2)*y''(x) - 3*x*y'(x) + 3*y(x) == 0, y(x), x)[[1,1]])},"
+            + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->1/3)) > 10^-6)", //
         "True");
     // Laguerre's equation. Kovacic finds its polynomial x^2-6*x+6, and the integral which carries
     // that first solution to a second is E^x/(x^2*(x^2-6*x+6)^2) - which used to come back partly
     // evaluated, so the whole equation was declined.
     checkResidual("x*y''(x) + (2-x)*y'(x) + 2*y(x) == 0",
-        "x*D(y(x),{x,2}) + (2-x)*D(y(x),x) + 2*y(x)",
-        "{x->11/3, C(1)->3/7, C(2)->5/11}");
+        "x*D(y(x),{x,2}) + (2-x)*D(y(x),x) + 2*y(x)", "{x->11/3, C(1)->3/7, C(2)->5/11}");
 
   }
 
@@ -983,11 +991,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->C(1)/E^(x^2/2)+(C(2)*Erfi(x))/E^(x^2/2)}}");
 
     // Hermite's equation of the first degree, whose first solution is x.
-    checkResidual("y''(x) - 2*x*y'(x) + 2*y(x) == 0",
-        "D(y(x),{x,2}) - 2*x*D(y(x),x) + 2*y(x)", "{x->17/13, C(1)->3/7, C(2)->5/11}");
+    checkResidual("y''(x) - 2*x*y'(x) + 2*y(x) == 0", "D(y(x),{x,2}) - 2*x*D(y(x),x) + 2*y(x)",
+        "{x->17/13, C(1)->3/7, C(2)->5/11}");
 
-    check("With({b=(y(x) /. DSolve(y''(x) == (x^2 + 3)*y(x), y(x), x)[[1,1]])},"
-        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
+    check(
+        "With({b=(y(x) /. DSolve(y''(x) == (x^2 + 3)*y(x), y(x), x)[[1,1]])},"
+            + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
         "True");
 
     // The degree the factor would have to have is not always a whole number, and where it is not
@@ -1042,8 +1051,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("FreeQ(DSolve(y''(x) == (2*Csc(x)^2 - 1)*y(x), y(x), x), Hypergeometric2F1)", //
         "True");
 
-    // A symbolic degree already worked, through the change of variable t == Cos(x); pinned here
-    // because it is the case whose verification mathilda had to fix and Symja's already handles.
+    // A symbolic degree already worked, through the change of variable t == Cos(x);
     checkResidual("y''(x) + Cot(x)*y'(x) + k*(k+1)*y(x) == 0",
         "D(y(x),{x,2}) + Cot(x)*D(y(x),x) + k*(k+1)*y(x)",
         "{x->13/10, C(1)->7/5, C(2)->3/4, k->7/10}");
@@ -1069,8 +1077,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->x*C(1)*Cos(x)-x*C(2)*Sin(x)}}");
 
     // Two solutions, and they are different ones.
-    check("With({b=(y(x) /. DSolve(y''(x) == 2*y(x)/(x*(x-1)), y(x), x)[[1,1]])},"
-        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
+    check(
+        "With({b=(y(x) /. DSolve(y''(x) == 2*y(x)/(x*(x-1)), y(x), x)[[1,1]])},"
+            + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2))}, x) /. x->17/13)) > 10^-6)", //
         "True");
   }
 
@@ -1078,24 +1087,23 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   public void testDSolveOperatorFactor() {
     // The operator of this equation is (D^2 - 1)(D + 2/x), so 1/x^2 solves it and dividing that
     // factor out leaves an equation of the second order which the cascade already answers.
-    checkResidual(
-        "y'''(x) + 2*y''(x)/x - 4*y'(x)/x^2 + 4*y(x)/x^3 - y'(x) - 2*y(x)/x == 0",
+    checkResidual("y'''(x) + 2*y''(x)/x - 4*y'(x)/x^2 + 4*y(x)/x^3 - y'(x) - 2*y(x)/x == 0",
         "D(y(x),{x,3}) + 2*D(y(x),{x,2})/x - 4*D(y(x),x)/x^2 + 4*y(x)/x^3 - D(y(x),x)"
             + " - 2*y(x)/x",
         "{x->17/13, C(1)->3/7, C(2)->5/11, C(3)->2/9}");
 
     // The same equation cleared of its denominators.
-    checkResidual(
-        "x^3*y'''(x) + 2*x^2*y''(x) - 4*x*y'(x) + 4*y(x) - x^3*y'(x) - 2*x^2*y(x) == 0",
+    checkResidual("x^3*y'''(x) + 2*x^2*y''(x) - 4*x*y'(x) + 4*y(x) - x^3*y'(x) - 2*x^2*y(x) == 0",
         "x^3*D(y(x),{x,3}) + 2*x^2*D(y(x),{x,2}) - 4*x*D(y(x),x) + 4*y(x)"
             + " - x^3*D(y(x),x) - 2*x^2*y(x)",
         "{x->17/13, C(1)->3/7, C(2)->5/11, C(3)->2/9}");
 
     // An equation of the third order has a solution space of three dimensions, and the answer
     // spans it: the three solutions it is built from are independent.
-    check("With({b=(y(x) /. DSolve(y'''(x) + 2*y''(x)/x - 4*y'(x)/x^2 + 4*y(x)/x^3 - y'(x)"
-        + " - 2*y(x)/x == 0, y(x), x)[[1,1]])},"
-        + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2)), D(b,C(3))}, x) /. x->17/13)) > 10^-6)", //
+    check(
+        "With({b=(y(x) /. DSolve(y'''(x) + 2*y''(x)/x - 4*y'(x)/x^2 + 4*y(x)/x^3 - y'(x)"
+            + " - 2*y(x)/x == 0, y(x), x)[[1,1]])},"
+            + " Abs(N(Wronskian({D(b,C(1)), D(b,C(2)), D(b,C(3))}, x) /. x->17/13)) > 10^-6)", //
         "True");
   }
 
@@ -1104,18 +1112,21 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // d'Alembert: what starts at a point of the string reaches it again from both sides at the
     // speed the equation names, so the shape contributes its value at the two ends of the interval
     // the signal has crossed and the speed contributes its mean over that interval.
-    check("DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x),"
-        + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
+    check(
+        "DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x),"
+            + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
         "{{u(x,t)->1/2*(f(-t+x)+f(t+x))+Integrate(g(K),{K,-t+x,t+x})/2}}");
 
     // The speed of the signal is read off the equation, and shows up in both places.
-    check("DSolve({D(u(x,t),{t,2}) == 4*D(u(x,t),{x,2}), u(x,0) == f(x),"
-        + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
+    check(
+        "DSolve({D(u(x,t),{t,2}) == 4*D(u(x,t),{x,2}), u(x,0) == f(x),"
+            + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
         "{{u(x,t)->1/2*(f(-2*t+x)+f(2*t+x))+Integrate(g(K),{K,-2*t+x,2*t+x})/4}}");
 
     // The conditions need not be given at t == 0, nor in any particular order.
-    check("DSolve({f(x) == u(x,1), D(u(x,t),{t,2}) == D(u(x,t),{x,2}),"
-        + " Derivative(0,1)[u][x,1] == g(x)}, u(x,t), {x,t})", //
+    check(
+        "DSolve({f(x) == u(x,1), D(u(x,t),{t,2}) == D(u(x,t),{x,2}),"
+            + " Derivative(0,1)[u][x,1] == g(x)}, u(x,t), {x,t})", //
         "{{u(x,t)->1/2*(f(1-t+x)+f(-1+t+x))+Integrate(g(K),{K,1-t+x,-1+t+x})/2}}");
 
     // The heat kernel: every point of the starting temperature contributes everywhere, weighted by
@@ -1129,8 +1140,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
     // Only these two shapes: a term of lower order, a drift along the rod, a diffusivity of the
     // wrong sign, or two displacements instead of a displacement and a speed are all declined.
-    check("DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}) - u(x,t), u(x,0) == f(x),"
-        + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
+    check(
+        "DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}) - u(x,t), u(x,0) == f(x),"
+            + " Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})", //
         "DSolve({Derivative(0,2)[u][x,t]==-u(x,t)+Derivative(2,0)[u][x,t],u(x,0)==f(x),Derivative(\n"
             + "0,1)[u][x,0]==g(x)},u(x,t),{x,t})");
 
@@ -1141,8 +1153,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "DSolve({Derivative(0,1)[u][x,t]==Derivative(1,0)[u][x,t]+Derivative(2,0)[u][x,t],u(x,\n"
             + "0)==f(x)},u(x,t),{x,t})");
 
-    check("DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x), u(x,1) == g(x)},"
-        + " u(x,t), {x,t})", //
+    check(
+        "DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x), u(x,1) == g(x)},"
+            + " u(x,t), {x,t})", //
         "DSolve({Derivative(0,2)[u][x,t]==Derivative(2,0)[u][x,t],u(x,0)==f(x),u(x,1)==g(x)},u(x,t),{x,t})");
   }
 
@@ -1164,9 +1177,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "True");
 
     // The conditions are fitted the same way as for any other system.
-    check("With({s=DSolve({x'(t) == x(t), y'(t) == x(t) + t*y(t), x(0) == 1, y(0) == 0},"
-        + " {x(t), y(t)}, t)[[1]]}, Block({X=x(t)/.s, Y=y(t)/.s},"
-        + " Max(Abs(N({D(X,t)-X, D(Y,t)-X-t*Y, X-1, Y} /. t->0)))) < 10^-6)", //
+    check(
+        "With({s=DSolve({x'(t) == x(t), y'(t) == x(t) + t*y(t), x(0) == 1, y(0) == 0},"
+            + " {x(t), y(t)}, t)[[1]]}, Block({X=x(t)/.s, Y=y(t)/.s},"
+            + " Max(Abs(N({D(X,t)-X, D(Y,t)-X-t*Y, X-1, Y} /. t->0)))) < 10^-6)", //
         "True");
 
     // Unknowns which depend on one another in a circle put no equation in that position.
@@ -1206,8 +1220,8 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
     // The two lines in the ratio meet at (1, 2); moving the origin there cancels both constant
     // terms and leaves an equation which is homogeneous of degree zero.
-    checkResidual("y'(x) == (y(x) - 2)/(x + y(x) - 3)",
-        "D(y(x),x)*(x + y(x) - 3) - (y(x) - 2)", "{x->17/13, C(1)->3/7}");
+    checkResidual("y'(x) == (y(x) - 2)/(x + y(x) - 3)", "D(y(x),x)*(x + y(x) - 3) - (y(x) - 2)",
+        "{x->17/13, C(1)->3/7}");
 
     // Not every such reduction ends in something which can be solved for y: this one leaves
     // 2*Sqrt(v) - 2*Log(1+Sqrt(v)) == x + C, which is not invertible, so the equation is declined
@@ -1236,8 +1250,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->ArcSin(1/(C(1)/E^x-Cos(x)/2-Sin(x)/2))}}");
 
     // u == Cos(y); the Cos(2*y) has to be written in Cos(y) before the substitution is made.
-    check("DSolve(y'(x) == (-2*Cos(y(x)) + x^3*Cos(2*y(x))*Log(x) + x^3*Log(x))"
-        + "/(2*Sin(y(x))*Log(x)*x), y(x), x)", //
+    check(
+        "DSolve(y'(x) == (-2*Cos(y(x)) + x^3*Cos(2*y(x))*Log(x) + x^3*Log(x))"
+            + "/(2*Sin(y(x))*Log(x)*x), y(x), x)", //
         "{{y(x)->ArcCos(1/(x^3/3-x^3/(9*Log(x))+C(1)/Log(x)))}}");
 
     // A separable equation is left to the solver for those, which answers it in a simpler form.
@@ -1304,8 +1319,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // An integer c makes the second solution a copy of the first, so this row has no basis for
     // it. The row which maps the singular points about instead answers it: the exponents there
     // are not the ones this row divides out, and the pair it builds from them is independent.
-    check("FreeQ(DSolve((x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x) == 0, y(x), x),"
-        + " Hypergeometric2F1)", //
+    check(
+        "FreeQ(DSolve((x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x) == 0, y(x), x),"
+            + " Hypergeometric2F1)", //
         "False");
     checkResidual("(x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x) == 0", //
         "(x^2 - x)*y''(x) + ((a + b + 1)*x - 2)*y'(x) + a*b*y(x)",
@@ -1421,8 +1437,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testDSolveSystemComplexEigenvalues() {
-    check(
-        "DSolve({y'(x) == y(x) - 2*z(x), z'(x) == y(x) - z(x), y(0) == 1, z(0) == 4}, {y, z}, x)", //
+    check("DSolve({y'(x) == y(x) - 2*z(x), z'(x) == y(x) - z(x), y(0) == 1, z(0) == 4}, {y, z}, x)", //
         "{{y->Function({x},Cos(x)-7*Sin(x)),z->Function({x},4*Cos(x)-3*Sin(x))}}");
   }
 
@@ -1487,7 +1502,8 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
     // Clairaut's equation u == x*u_x + y*u_y + f(u_x,u_y): replacing the derivatives by the two
     // parameters is already the complete integral.
-    check("DSolve(u(x,y) == x*D(u(x,y),x) + y*D(u(x,y),y) + Sin(D(u(x,y),x) + D(u(x,y),y)), u, {x, y})", //
+    check(
+        "DSolve(u(x,y) == x*D(u(x,y),x) + y*D(u(x,y),y) + Sin(D(u(x,y),x) + D(u(x,y),y)), u, {x, y})", //
         "{{u->Function({x,y},x*C(1)+y*C(2)+Sin(C(1)+C(2)))}}");
 
     // Separable in the two groups of variables, so each side is a constant and one quadrature per

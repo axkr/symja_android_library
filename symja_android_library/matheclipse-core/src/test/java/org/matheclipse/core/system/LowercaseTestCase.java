@@ -2301,8 +2301,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBrayCurtisDistance() {
-    // a scalar is a one-element vector; before this was implemented the call stayed
-    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    // a scalar is a one-element vector;
     check("BrayCurtisDistance(-7, 5)", //
         "6");
     check("-1*{10.5, 10} ", //
@@ -2774,8 +2773,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testChessboardDistance() {
-    // a scalar is a one-element vector; before this was implemented the call stayed
-    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    // a scalar is a one-element vector;
     check("ChessboardDistance(-7, 5)", //
         "12");
     check("ChessboardDistance(-1.5, 1)", //
@@ -4625,8 +4623,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCanberraDistance() {
-    // a scalar is a one-element vector; before this was implemented the call stayed
-    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    // a scalar is a one-element vector;
     check("CanberraDistance(-7, 5)", //
         "1");
     // the zero-denominator guard applies to scalars too
@@ -14474,8 +14471,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testManhattanDistance() {
-    // a scalar is a one-element vector; before this was implemented the call stayed
-    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    // a scalar is a one-element vector;
     check("ManhattanDistance(-7, 5)", //
         "12");
     check("ManhattanDistance({-1, -1}, {1.0, 1})", //
@@ -25184,8 +25180,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquaredEuclideanDistance() {
-    // a scalar is a one-element vector; before this was implemented the call stayed
-    // unevaluated (agreed by both the Woxi and Mathics3 corpora)
+    // a scalar is a one-element vector;
     check("SquaredEuclideanDistance(-7, 5)", //
         "144");
     check("SquaredEuclideanDistance({-7, 5.0}, {1, 1})", //
@@ -27004,8 +26999,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("Abs(N((-2)^(1/4)*(-3)^(1/4),30) - N((-2)^(1/4),30)*N((-3)^(1/4),30)) < 10^-25", //
         "True");
-    check("Abs(N((-2)^(1/3)*(-3)^(1/3)*(-5)^(1/3),30)"
-        + " - N((-2)^(1/3),30)*N((-3)^(1/3),30)*N((-5)^(1/3),30)) < 10^-25", //
+    check(
+        "Abs(N((-2)^(1/3)*(-3)^(1/3)*(-5)^(1/3),30)"
+            + " - N((-2)^(1/3),30)*N((-3)^(1/3),30)*N((-5)^(1/3),30)) < 10^-25", //
         "True");
 
     // one non negative base is enough for the arguments to add up, so these keep their answers
