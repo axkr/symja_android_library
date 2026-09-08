@@ -116,7 +116,19 @@ final class DSolveODE {
     // Integrate into a surd rationalization it did not return from.
     IExpr scaled = engine.evaluate(F.Simplify(F.Times(x, normalizedM)));
     if (!scaled.isFree(x)) {
-      return F.NIL;
+      // An equation homogeneous of degree zero has x*normalizedM a function of v alone, but a
+      // radical does not collapse to one while x is still a symbol: Sqrt(x^2*(1+v^2))/x is
+      // Sqrt(1+v^2) only where x is positive, which is what PowerExpand assumes and what the
+      // substitution y == v*x is entitled to. Without this the equations whose reduction leaves a
+      // radical -- x*y' == y + Sqrt(x^2+y^2) and its relatives -- looked inhomogeneous and were
+      // left to methods which do not answer them.
+      IExpr expanded = engine.evaluate(F.PowerExpand(scaled));
+      if (!expanded.isFree(x)) {
+        return F.NIL;
+      }
+      scaled = expanded;
+      // and the equation which is integrated below is written with them collapsed too
+      normalizedM = engine.evaluate(F.Divide(scaled, x));
     }
 
     // Try to solve the transformed equation using the existing separable solver

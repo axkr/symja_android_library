@@ -807,6 +807,31 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "y'(x) - y(x)^(1/3)", "{x->13/10}");
   }
 
+  /**
+   * A homogeneous equation whose reduction leaves a radical. Substituting <code>y == v*x</code>
+   * makes the right side a function of <code>v</code> alone, but only where <code>x</code> is
+   * positive does the radical say so.
+   */
+  @Test
+  public void testDSolveHomogeneousRadical() {
+    checkResidual("y'(x)*x == y(x) + Sqrt(x^2+y(x)^2)", //
+        "y'(x)*x - y(x) - Sqrt(x^2+y(x)^2)", "{C(1)->7/5, x->13/10}");
+    checkResidual("y'(x)*x == y(x) + 2*Sqrt(y(x)*x)", //
+        "y'(x)*x - y(x) - 2*Sqrt(y(x)*x)", "{C(1)->7/5, x->13/10}");
+    checkResidual("y(x)*y'(x)*x == y(x)^2 + x*Sqrt(4*x^2+y(x)^2)", //
+        "y(x)*y'(x)*x - y(x)^2 - x*Sqrt(4*x^2+y(x)^2)", "{C(1)->7/5, x->13/10}");
+    // this one has no radical in it, and answers now because the inversion of its reduced
+    // equation no longer carries the branch of a logarithm
+    checkResidual("x^2*y'(x) == y(x)*x + x^2*E^(y(x)/x)", //
+        "x^2*y'(x) - y(x)*x - x^2*E^(y(x)/x)", "{C(1)->7/5, x->13/10}");
+
+    // the ones which never needed it keep their answers
+    check("DSolve(y'(x) == (x+y(x))/x, y(x), x)", //
+        "{{y(x)->x*C(1)+x*Log(x)}}");
+    check("DSolve(y'(x) == (x^2+y(x)^2)/(x*y(x)), y(x), x)", //
+        "{{y(x)->-Sqrt(x^2*C(1)+2*x^2*Log(x))},{y(x)->Sqrt(x^2*C(1)+2*x^2*Log(x))}}");
+  }
+
   @Test
   public void testDSolveChangeOfVariable() {
     // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.
