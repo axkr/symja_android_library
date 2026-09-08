@@ -69,6 +69,17 @@ The rule which was applied, and the number it has in the Rubi rule set:
 RubiRule
 ```
 
+An integration step says what the rule it applied does in general, taken from the rule set's own description of it:
+
+```
+>> TraceForm(Integrate(Sin(x)^3,x), 2)
+-Cos(x)+Cos(x)^3/3
+Apply integration rule 3054 of the Rubi rule set - Integrate(Sin(x)^3,x) becomes Integrate(Rubi`deactivatetrig(Sin(x)^3,x),x).
+Integrate(Sin(x)^3,x) -> Integrate(Rubi`deactivatetrig(Sin(x)^3,x),x)
+Rubi integration rule 3125. If IGtQ[(n-1)/(2),0], rewrite Integrate(Sin(c+d*x)^n,x) as -1/d*subst(Integrate(Expand((1-x^2)^(1/2*(-1+n)),x),x),x,Cos(c+d*x)).
+Integrate(§sin(x)^3,x) -> ...
+```
+
 Every arithmetic operation of the quadratic formula:
 
 ```
@@ -86,6 +97,8 @@ As TeX, one row per step, indented by how deep the step is nested:
 
 * Steps are collected only in a build with `ToggleFeature.SHOW_STEPS` switched on. With it off `TraceForm(expr)` evaluates `expr`, reports that steps are switched off and returns `TraceForm(HoldForm(result), {})`. The switch is `final`, so nothing of the machinery costs anything at run time in a build which does not want it.
 * The helper functions the Rubi integration rules are built from are implementation detail and are not shown as steps; the integration rules themselves are.
+* What each integration rule does comes from Rubi's own `ShowSteps` spelling of its rule set, read out by `ConvertRubiShowSteps` in the `tools` module into `rubi/rubi_steps.tsv.gz`. About 7050 of the 7300 rules carry one; the remaining rules are plumbing which Rubi itself does not show as a step, and they are named by their rule number alone. The table is read the first time an integration step is described, so an evaluation which shows none never touches it.
+* The general shape a rule matches and rewrites to is written with the rule's own pattern names, not with the expression at hand - the step itself carries that.
 * Repeated sub-expressions of one integral are answered from the Rubi result cache and produce no steps of their own the second time.
 * `Config.USER_STEPS_PARSER` makes the parser keep `Divide` and `Subtract` the way they were typed, so the steps read like the input rather than like its normal form.
 

@@ -47,6 +47,8 @@
 	"Rational::FractionCancelGCD": "Divide the numerator and the denominator of `3` by their greatest common divisor `4`.",
 
 	"Integrate::RubiRule": "Apply integration rule `3` of the Rubi rule set - `2` becomes `1`.",
+	"Integrate::RubiRuleDescription": "Rubi integration rule `3`. `8`, rewrite `6` as `7`.",
+	"Integrate::RubiRuleRewrite": "Rubi integration rule `3` rewrites `6` as `7`.",
 
 	"TraceForm::Truncated": "Further sub-steps are not shown. Ask for more with a larger depth, as in `TraceForm(expr, 5)`.",
 

@@ -4,7 +4,9 @@ import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.form.tex.TeXFormFactory;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -30,6 +32,15 @@ import org.matheclipse.core.interfaces.IExpr;
  * <code>""</code>/<code>""</code> for plain text.
  */
 public final class StepDescription {
+
+  /** The rule key an integration step of the Rubi rule set carries. */
+  private static final String RUBI_RULE_KEY = "Integrate::RubiRule";
+
+  /** The sentence for a Rubi rule whose condition the rule set names. */
+  private static final String RUBI_RULE_DESCRIPTION_KEY = "Integrate::RubiRuleDescription";
+
+  /** The sentence for a Rubi rule which the rule set shows without a condition. */
+  private static final String RUBI_RULE_REWRITE_KEY = "Integrate::RubiRuleRewrite";
 
   /** Renders an expression as plain <code>OutputForm</code> text. */
   public static final Function<IExpr, String> PLAIN_TEXT = IExpr::toString;
@@ -73,7 +84,20 @@ public final class StepDescription {
       return template(StepsTree.TRUNCATED_KEY);
     }
     final IAST hints = StepsTree.hints(step);
-    String descriptionTemplate = template(StepsTree.descriptionKey(step));
+    final String key = StepsTree.descriptionKey(step);
+    IAST rubiHints = rubiRuleHints(key, hints);
+    if (rubiHints.isPresent()) {
+      // the rule set says what this rule does: use the sentence which has room for it
+      String detailKey = rubiHints.last().toString().isEmpty() //
+          ? RUBI_RULE_REWRITE_KEY
+          : RUBI_RULE_DESCRIPTION_KEY;
+      String detailTemplate = template(detailKey);
+      if (!detailTemplate.isEmpty()) {
+        return render(detailTemplate, StepsTree.input(step), StepsTree.result(step), rubiHints,
+            mathRenderer, open, close);
+      }
+    }
+    String descriptionTemplate = template(key);
     if (descriptionTemplate.isEmpty()) {
       // no sentence for this rule: fall back to the generic one for a rewrite
       descriptionTemplate = template(StepsTree.REWRITE_RULE_KEY);
@@ -83,6 +107,38 @@ public final class StepDescription {
     }
     return render(descriptionTemplate, StepsTree.input(step), StepsTree.result(step), hints,
         mathRenderer, open, close);
+  }
+
+  /**
+   * The hints of a Rubi integration step, with what the rule set says the rule does appended: the
+   * general shape of the integral it matches at <code>`6`</code>, what it rewrites it to at
+   * <code>`7`</code>, and the condition it applies under at <code>`8`</code>.
+   *
+   * @return {@link F#NIL} unless this is an integration rule the rule set describes
+   */
+  private static IAST rubiRuleHints(String descriptionKey, IAST hints) {
+    if (!RUBI_RULE_KEY.equals(descriptionKey) || hints.argSize() < 3) {
+      return F.NIL;
+    }
+    int ruleNumber = hints.arg3().toIntDefault(-1);
+    if (ruleNumber < 0) {
+      return F.NIL;
+    }
+    RubiStepDescriptions.Description description = RubiStepDescriptions.get(ruleNumber);
+    if (description == null) {
+      return F.NIL;
+    }
+    IExpr before = description.before();
+    IExpr after = description.after();
+    IASTAppendable extended = hints.copyAppendable(3);
+    while (extended.argSize() < 5) {
+      // the appended result of the rewrite is missing when the step was only recorded, not run
+      extended.append(F.CEmptyString);
+    }
+    extended.append(before.isPresent() ? before : F.$str(description.beforeText()));
+    extended.append(after.isPresent() ? after : F.$str(description.afterText()));
+    extended.append(F.$str(description.condition()));
+    return extended;
   }
 
   /** The raw template for a description key, or <code>""</code> if there is none. */
