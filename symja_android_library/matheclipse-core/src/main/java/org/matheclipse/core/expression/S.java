@@ -474,6 +474,16 @@ public class S {
   public final static IBuiltInSymbol AlgebraicNumber =
       S.initFinalSymbol("AlgebraicNumber", ID.AlgebraicNumber);
 
+  /**
+   * AlgebraicNumberQ(x) - TODO describe `AlgebraicNumberQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlgebraicNumberQ.md">AlgebraicNumberQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicNumberQ =
+      S.initFinalSymbol("AlgebraicNumberQ", ID.AlgebraicNumberQ);
+
   public final static IBuiltInSymbol Algebraics = S.initFinalSymbol("Algebraics", ID.Algebraics);
 
   /**
@@ -11433,6 +11443,16 @@ public class S {
   public final static IBuiltInSymbol Last = S.initFinalSymbol("Last", ID.Last);
 
   /**
+   * LatticeReduce(x) - TODO describe `LatticeReduce`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LatticeReduce.md">LatticeReduce
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LatticeReduce =
+      S.initFinalSymbol("LatticeReduce", ID.LatticeReduce);
+
+  /**
    * LCHColor(x) - TODO describe `LCHColor`.
    * 
    * @see <a href=
@@ -18235,6 +18255,16 @@ public class S {
       S.initFinalSymbol("RomanNumeral", ID.RomanNumeral);
 
   public final static IBuiltInSymbol Root = S.initFinalSymbol("Root", ID.Root);
+
+  /**
+   * RootApproximant(x) - TODO describe `RootApproximant`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RootApproximant.md">RootApproximant
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RootApproximant =
+      S.initFinalSymbol("RootApproximant", ID.RootApproximant);
 
   public final static IBuiltInSymbol RootIntervals =
       S.initFinalSymbol("RootIntervals", ID.RootIntervals);
