@@ -1852,8 +1852,14 @@ final class DSolveODE {
     }
     IAST assignment = (IAST) rules.first();
     // The system may be solvable without the ansatz being right, so what it answers is put back.
-    if (!engine.evaluate(F.Expand(F.subst(polynomial, assignment))).isZero()) {
-      return F.NIL;
+    // A coefficient which came out as a ratio -- which is what a forcing function with a symbol in
+    // it leads to, as 100*Cos(om*t) does -- cancels only once the terms are over one denominator.
+    IExpr check = engine.evaluate(F.Expand(F.subst(polynomial, assignment)));
+    if (!check.isZero()) {
+      check = engine.evaluate(F.Together(check));
+      if (!check.isZero()) {
+        return F.NIL;
+      }
     }
     IExpr particular = engine.evaluate(F.Expand(F.subst(ansatz, assignment)));
     for (IExpr unknown : unknowns) {
