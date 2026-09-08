@@ -22,6 +22,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -240,7 +241,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       IExpr quadraticFormula =
           F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
       if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        engine.addTraceInfoStep(//
+        engine.addTraceInfoStep(StepLevel.ARITHMETIC, //
             quadraticFormula, //
             F.List(S.QuarticSolve, F.$str("QuadraticFormulaSquareB"), b));
       }
@@ -253,7 +254,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
       if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         bSquared = b.times(b);
-        engine.addTraceInfoStep(//
+        engine.addTraceInfoStep(StepLevel.ARITHMETIC, //
             quadraticFormula, //
             F.List(S.QuarticSolve, F.$str("QuadraticFormulaTimes"), F.CN4, a));
       }
@@ -262,7 +263,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       discriminant = Plus(bSquared, F.Times(factor, c));
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
       if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        engine.addTraceInfoStep(//
+        engine.addTraceInfoStep(StepLevel.ARITHMETIC, //
             quadraticFormula, //
             F.List(S.QuarticSolve, F.$str("QuadraticFormulaTimes"), factor, c));
       }
@@ -273,7 +274,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       discriminant = Plus(bSquared, factor);
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
       if (!c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        engine.addTraceInfoStep(//
+        engine.addTraceInfoStep(StepLevel.ARITHMETIC, //
             quadraticFormula, //
             F.List(S.QuarticSolve, F.$str("QuadraticFormulaPlus"), bSquared, factor));
       }
@@ -281,14 +282,14 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       // Take the square root of `3`.
       discriminant = bSquared.plus(factor);
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, F.Sqrt(discriminant)), F.Times(F.C2, a));
-      engine.addTraceInfoStep(//
+      engine.addTraceInfoStep(StepLevel.ARITHMETIC, //
           quadraticFormula, //
           F.List(S.QuarticSolve, F.$str("QuadraticFormulaSqrt"), discriminant));
 
       // Multiply `3` times `4`.
       discriminant = engine.evaluate(F.Sqrt(discriminant));
       quadraticFormula = F.Divide(F.PlusMinus(bNegated, discriminant), F.Times(F.C2, a));
-      engine.addTraceInfoStep(//
+      engine.addTraceInfoStep(StepLevel.ARITHMETIC, //
           quadraticFormula, //
           F.List(S.QuarticSolve, F.$str("QuadraticFormulaTimes"), F.C2, a));
       IExpr aDouble = F.C2.times(a);
@@ -345,11 +346,11 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
     IExpr bNegative = b.negative();
     if (b.isNegative()) {
       // Add `3` from both sides. Anything plus zero gives itself.
-      engine.addTraceStep(S.None, current,
+      engine.addTraceStep(StepLevel.ARITHMETIC, S.None, current,
           F.List(S.QuarticSolve, F.$str("LinearEquationPlus"), bNegative));
     } else {
       // Subtract `3` from both sides. Anything subtracted from zero gives its negation
-      engine.addTraceStep(S.None, current,
+      engine.addTraceStep(StepLevel.ARITHMETIC, S.None, current,
           F.List(S.QuarticSolve, F.$str("LinearEquationSubtract"), b));
     }
 
@@ -358,7 +359,8 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       // Divide both sides by `3`.
       IExpr list = F.List(current);
       current = F.Equal(F.Times(a, variable), bNegated);
-      engine.addTraceStep(list, current, F.List(S.QuarticSolve, F.$str("LinearEquationDivide"), a));
+      engine.addTraceStep(StepLevel.ARITHMETIC, list, current,
+          F.List(S.QuarticSolve, F.$str("LinearEquationDivide"), a));
 
       current = F.Divide(bNegated, a);
       divideRational(current, bNegated, a);
@@ -388,7 +390,7 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       IRational rat = (IRational) exprResult;
       if (!rat.numerator().equals(numerator) || !rat.denominator().equals(denominator)) {
         // Divide `3` by `4` to get `5`.
-        EvalEngine.get().addTraceStep(list, current,
+        EvalEngine.get().addTraceStep(StepLevel.ARITHMETIC, list, current,
             F.List(S.QuarticSolve, F.$str("Divide"), numerator, denominator, rat));
       }
     }

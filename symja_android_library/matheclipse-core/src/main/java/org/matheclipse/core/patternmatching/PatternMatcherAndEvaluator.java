@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
@@ -234,8 +235,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats.rhsConditionEvaluation();
     boolean matched = false;
     IEvalStepListener stepListener = engine.getStepListener();
-    final boolean isTraceMode =
-        Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
+    final boolean isTraceMode = engine.isTraceRewriteRules();
 
     // Note: substituting only the `test` of a `body /; test` right-hand-side first, and the body
     // only once the test holds, was implemented and measured here. 95% of the conditions of the
@@ -253,8 +253,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         if (lhs.isPresent()) {
           stepListener.setUp(lhs, 0, lhs);
           try {
-            fReturnResult =
-                engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
+            fReturnResult = engine.addEvaluatedTraceStep(lhs, rhs, traceHints());
           } finally {
             stepListener.tearDown(F.NIL, 0, true, lhs);
           }
@@ -371,9 +370,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       }
       IExpr result = fSubstitutedMatch;
       if (evaluate) {
-        if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
-              F.$str("RewriteRule"));
+        if (engine.isTraceRewriteRules()) {
+          return engine.addEvaluatedTraceStep(leftHandSide, result, traceHints());
         }
         return result.eval(engine);
       } else {
@@ -384,9 +382,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     } catch (final ReturnException e) {
       IExpr result = e.getValue();
       if (evaluate) {
-        if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
-              F.$str("RewriteRule"));
+        if (engine.isTraceRewriteRules()) {
+          return engine.addEvaluatedTraceStep(leftHandSide, result, traceHints());
         }
         return result.eval(engine);
       }
@@ -395,6 +392,30 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       engine.popOptionsStack();
       engine.setEvalRHSMode(oldEvalRHSMode);
     }
+  }
+
+  /**
+   * The hints which identify the rule that is being applied, for the evaluation step listener.
+   *
+   * <p>
+   * A rule of the Rubi integration rule set carries its rule number as its left-hand-side
+   * priority, which makes the step nameable: <code>Rubi rule 1234</code>. Every other rule is a
+   * plain rewrite, shown as its own left-hand-side pattern.
+   *
+   * @return <code>{headSymbol, "RuleKey", hintArg...}</code> as the varargs of
+   *         {@link EvalEngine#addEvaluatedTraceStep(IExpr, IExpr, IExpr...)}
+   */
+  private IExpr[] traceHints() {
+    final IExpr lhsPattern = fLhsPatternExpr != null ? fLhsPatternExpr : F.NIL;
+    final int priority = getLHSPriority();
+    if (priority != IPatternMap.DEFAULT_RULE_PRIORITY && lhsPattern.isAST(S.Integrate)) {
+      // a rule of the Rubi rule set: the priority is the number the rule has there
+      return new IExpr[] {S.Integrate, F.$str("RubiRule"), F.ZZ(priority),
+          F.HoldForm(lhsPattern)};
+    }
+    final IExpr head = lhsPattern.isPresent() ? lhsPattern.topHead() : S.Null;
+    return new IExpr[] {head, F.$str("RewriteRule"), F.HoldForm(lhsPattern),
+        F.HoldForm(fRightHandSide)};
   }
 
   /**
@@ -411,9 +432,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     IExpr result = fRightHandSide;
     try {
       if (evaluate) {
-        if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
-              F.$str("RewriteRule"));
+        if (engine.isTraceRewriteRules()) {
+          return engine.addEvaluatedTraceStep(leftHandSide, result, traceHints());
         }
         return result.eval(engine);
       }
@@ -423,9 +443,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     } catch (final ReturnException e) {
       result = e.getValue();
       if (evaluate) {
-        if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
-              F.$str("RewriteRule"));
+        if (engine.isTraceRewriteRules()) {
+          return engine.addEvaluatedTraceStep(leftHandSide, result, traceHints());
         }
         return result.eval(engine);
       }

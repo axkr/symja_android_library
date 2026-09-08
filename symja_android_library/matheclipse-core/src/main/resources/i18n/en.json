@@ -41,5 +41,14 @@
 	"QuarticSolve::QuadraticResult1": "Because the discriminant $\\Delta$ unequals $0$ in the quadratic formula there are two solutions in the quadratic formula. The first solution $\\frac{-b + \\sqrt{\\Delta}}{\\left 2*a\\right}$, is `1`.",
 	"QuarticSolve::QuadraticResult2": "Because the discriminant $\\Delta$ unequals $0$ in the quadratic formula there are two solutions in the quadratic formula. The second solution $\\frac{-b + \\sqrt{\\Delta}}{\\left 2*a\\right}$, is `1`.",
 	"QuarticSolve::CubicEquation": "Determine the coefficients $a, b, c, d$ from the cubic polynomial $a \\cdot {x}^{3} + b \\cdot {x}^{2} + c \\cdot x + d$ as a = `3`, b = `4`, c = `5` and d = `6`.",
-	"RewriteRule": "General rewrite rule: expression `2` is rewritten as `1`."
+	"Cancel::Factor": "Factor `3` as `4`.",
+	"Cancel::CancelCommonFactors": "Cancel the common factor `3` in the numerator and the denominator - `2` becomes `1`.",
+
+	"Rational::FractionCancelGCD": "Divide the numerator and the denominator of `3` by their greatest common divisor `4`.",
+
+	"Integrate::RubiRule": "Apply integration rule `3` of the Rubi rule set - `2` becomes `1`.",
+
+	"TraceForm::Truncated": "Further sub-steps are not shown. Ask for more with a larger depth, as in `TraceForm(expr, 5)`.",
+
+	"RewriteRule": "Apply the rewrite rule `3` - expression `2` is rewritten as `1`."
 }

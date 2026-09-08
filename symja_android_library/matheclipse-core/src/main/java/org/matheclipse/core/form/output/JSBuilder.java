@@ -418,7 +418,6 @@ public class JSBuilder {
   public static final String JSXGRAPH_STR = "jsxgraph";
   public static final String PLOTLY_STR = "plotly";
   public static final String TREEFORM_STR = "treeform";
-  public static final String TRACEFORM_STR = "traceform";
   public static final String MERMAID_STR = "mermaid";
   public static final String ECHARTS_STR = "echarts";
 

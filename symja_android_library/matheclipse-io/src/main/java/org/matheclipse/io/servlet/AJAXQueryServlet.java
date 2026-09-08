@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -581,6 +582,9 @@ public class AJAXQueryServlet extends HttpServlet {
               LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
             }
           }
+        } else if (StepsTree.isTraceForm(outExpr)) {
+          // a derivation: the steps travel as their own tree so the page can lay them out
+          return JSONBuilder.createJSONSteps(engine, (IAST) outExpr, outWriter, errorWriter);
         } else if (outExpr.isString()) {
           IStringX str = (IStringX) outExpr;
           if (str.getMimeType() == IStringX.TEXT_HTML) {

@@ -120,10 +120,6 @@ public abstract class BasePlotExample {
                 + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
                 + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
                 + "          physics:false\n" + "      }; ");
-      } else if (result.second().toString().equals("traceform")) {
-        String jsStr = ((IAST) result).arg1().toString();
-        js = Config.TRACEFORM_PAGE;
-        js = StringUtils.replace(js, "`1`", jsStr);
       } else if (result.second().toString().equals("mermaid")) {
         String manipulateStr = ((IAST) result).arg1().toString();
         js = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);

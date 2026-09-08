@@ -17,6 +17,7 @@ import org.matheclipse.core.combinatoric.BinomialCache;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
@@ -1175,12 +1176,10 @@ public abstract class AbstractFractionSym implements IFraction {
       if (numerator != 1 && denominator != 1) {
         long gcd = Math.abs(ArithmeticUtils.gcd(numerator, denominator));
         if (gcd != 1L) {
-          if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
-            if (EvalEngine.get().isTraceMode()) {
-              IAST divide = F.Rational(F.ZZ(numerator), F.ZZ(denominator));
-              EvalEngine.get().addTraceStep(divide, divide,
-                  F.List(S.Rational, F.$str("FractionCancelGCD"), divide, F.ZZ(gcd)));
-            }
+          if (EvalEngine.get().isTraceLevel(StepLevel.ARITHMETIC)) {
+            IAST divide = F.Rational(F.ZZ(numerator), F.ZZ(denominator));
+            EvalEngine.get().addTraceStep(StepLevel.ARITHMETIC, divide, divide,
+                F.List(S.Rational, F.$str("FractionCancelGCD"), divide, F.ZZ(gcd)));
           }
           numerator /= gcd;
           denominator /= gcd;

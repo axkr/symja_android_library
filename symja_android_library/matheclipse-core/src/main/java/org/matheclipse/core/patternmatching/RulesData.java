@@ -496,8 +496,7 @@ public final class RulesData implements Serializable {
       if (fPatternDownRules != null) {
         final int patternHash = ((IAST) expr).patternHashCode();
         IEvalStepListener stepListener = engine.getStepListener();
-        final boolean isTraceMode =
-            Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
+        final boolean isTraceMode = engine.isTraceRewriteRules();
 
         final List<IPatternMatcher> rules = fPatternDownRules;
         final RuleFeatureIndex index = ruleIndex();

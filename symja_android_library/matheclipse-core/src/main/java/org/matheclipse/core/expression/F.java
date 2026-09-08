@@ -9614,16 +9614,6 @@ public class F extends S {
         Errors.rethrowsInterruptException(ex);
         // LOGGER.debug("F.printJSFormData() failed", ex);
       }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.TRACEFORM_STR)) {
-      try {
-        String jsStr = jsFormData.arg1().toString();
-        String html = Config.TRACEFORM_PAGE;
-        html = StringUtils.replace(html, "`1`", jsStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
     }
     return null;
   }
@@ -12179,6 +12169,20 @@ public class F extends S {
    */
   public static IAST Tr(final IExpr a0) {
     return new AST1(Tr, a0);
+  }
+
+  /**
+   * The display wrapper which <code>TraceForm(expr)</code> evaluates to:
+   * <code>TraceForm(HoldForm(result), {step, ...})</code>.
+   *
+   * @see org.matheclipse.core.eval.steps.StepsTree
+   */
+  public static IAST TraceForm(final IExpr result, final IExpr steps) {
+    return new AST2(TraceForm, result, steps);
+  }
+
+  public static IAST TraceForm(final IExpr a0) {
+    return new AST1(TraceForm, a0);
   }
 
   public static IAST Trace(final IExpr a0) {

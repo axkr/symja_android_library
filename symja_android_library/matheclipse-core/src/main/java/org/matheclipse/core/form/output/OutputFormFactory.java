@@ -25,6 +25,8 @@ import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.eval.steps.StepDescription;
+import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
@@ -324,6 +326,49 @@ public class OutputFormFactory {
    * <code>Head(TableForm({{a,b}}))</code> is <code>TableForm</code> and the TeX and MathML
    * factories can render it as an array. This is where the text representation is built.
    */
+  /**
+   * The evaluation steps which <code>TraceForm(expr)</code> collected: the result, then one block
+   * per step - the sentence which explains it, and the rewrite it performed - indented by how deep
+   * the step is nested.
+   *
+   * @see org.matheclipse.core.eval.steps.StepsTree
+   */
+  private void convertTraceForm(final Appendable buf, final IAST traceForm) throws IOException {
+    convert(buf, StepsTree.traceResult(traceForm), Integer.MIN_VALUE, false);
+    convertTraceSteps(buf, StepsTree.steps(traceForm), 0);
+  }
+
+  private void convertTraceSteps(final Appendable buf, final IAST steps, final int indent)
+      throws IOException {
+    for (int i = 1; i < steps.size(); i++) {
+      IExpr step = steps.get(i);
+      if (!StepsTree.isStep(step)) {
+        continue;
+      }
+      IAST stepAST = (IAST) step;
+      String description = StepDescription.of(stepAST, StepDescription.PLAIN_TEXT, "", "");
+      if (!description.isEmpty()) {
+        newLine(buf);
+        appendIndent(buf, indent);
+        append(buf, description);
+      }
+      if (!StepsTree.isTruncated(stepAST) && !StepsTree.isInfoStep(stepAST)) {
+        newLine(buf);
+        appendIndent(buf, indent);
+        convert(buf, StepsTree.input(stepAST), Integer.MIN_VALUE, false);
+        append(buf, " -> ");
+        convert(buf, StepsTree.result(stepAST), Integer.MIN_VALUE, false);
+      }
+      convertTraceSteps(buf, StepsTree.subSteps(stepAST), indent + 1);
+    }
+  }
+
+  private void appendIndent(final Appendable buf, final int indent) throws IOException {
+    for (int i = 0; i < indent; i++) {
+      append(buf, "  ");
+    }
+  }
+
   private void convertTableForm(final Appendable buf, final IAST list) throws IOException {
     IExpr arg1 = list.arg1().normal(false);
     final String[][] tableData;
@@ -1585,6 +1630,12 @@ public class OutputFormFactory {
             case ID.TableForm:
               if (list.size() > 1) {
                 convertTableForm(buf, list);
+                return;
+              }
+              break;
+            case ID.TraceForm:
+              if (StepsTree.isTraceForm(list)) {
+                convertTraceForm(buf, list);
                 return;
               }
               break;

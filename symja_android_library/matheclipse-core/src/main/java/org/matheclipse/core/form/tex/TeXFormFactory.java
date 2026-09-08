@@ -23,6 +23,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.eval.steps.StepDescription;
+import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -646,6 +648,105 @@ public class TeXFormFactory {
         return 'l';
       }
       return alignment >= 0.75 ? 'r' : 'c';
+    }
+  }
+
+  /**
+   * The evaluation steps which <code>TraceForm(expr)</code> collected, as a left aligned array: one
+   * row for the sentence which explains a step, one for the rewrite it performed, indented by how
+   * deep the step is nested.
+   *
+   * <p>
+   * The sentences carry their formulas in <code>$...$</code>, which both KaTeX and MathJax read
+   * inside a <code>\text{}</code>.
+   *
+   * @see org.matheclipse.core.eval.steps.StepsTree
+   */
+  private static final class TraceForm extends AbstractTeXConverter {
+
+    /** How far one nesting level of steps is indented. */
+    private static final String INDENT = "\\hspace{1.5em}";
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (!StepsTree.isTraceForm(f)) {
+        return false;
+      }
+      buffer.append("\\begin{array}{l}\n");
+      StringBuilder rows = new StringBuilder();
+      convertSteps(rows, StepsTree.steps(f), 0);
+      fFactory.convertInternal(rows, StepsTree.traceResult(f), Precedence.NO_PRECEDENCE,
+          NO_PLUS_CALL);
+      rows.append('\n');
+      buffer.append(rows);
+      buffer.append("\\end{array}");
+      return true;
+    }
+
+    private void convertSteps(final StringBuilder buffer, final IAST steps, final int indent) {
+      for (int i = 1; i < steps.size(); i++) {
+        IExpr step = steps.get(i);
+        if (!StepsTree.isStep(step)) {
+          continue;
+        }
+        IAST stepAST = (IAST) step;
+        String description = StepDescription.of(stepAST, this::toTeX, "$", "$");
+        if (!description.isEmpty()) {
+          appendIndent(buffer, indent);
+          buffer.append("\\text{");
+          buffer.append(escapeText(description));
+          buffer.append("}\\\\\n");
+        }
+        if (!StepsTree.isTruncated(stepAST) && !StepsTree.isInfoStep(stepAST)) {
+          appendIndent(buffer, indent);
+          fFactory.convertInternal(buffer, StepsTree.input(stepAST), Precedence.NO_PRECEDENCE,
+              NO_PLUS_CALL);
+          buffer.append(" \\rightarrow ");
+          fFactory.convertInternal(buffer, StepsTree.result(stepAST), Precedence.NO_PRECEDENCE,
+              NO_PLUS_CALL);
+          buffer.append("\\\\\n");
+        }
+        convertSteps(buffer, StepsTree.subSteps(stepAST), indent + 1);
+      }
+    }
+
+    private void appendIndent(final StringBuilder buffer, final int indent) {
+      for (int i = 0; i < indent; i++) {
+        buffer.append(INDENT);
+      }
+    }
+
+    private String toTeX(IExpr expr) {
+      StringBuilder buffer = new StringBuilder();
+      fFactory.convertInternal(buffer, expr, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      return buffer.toString();
+    }
+
+    /**
+     * Protect the characters which start a TeX command inside the prose of a description. The
+     * <code>$...$</code> around the formulas of the description must stay as they are.
+     */
+    private static String escapeText(String text) {
+      StringBuilder buffer = new StringBuilder(text.length() + 8);
+      boolean inMath = false;
+      for (int i = 0; i < text.length(); i++) {
+        char ch = text.charAt(i);
+        if (ch == '$') {
+          inMath = !inMath;
+          buffer.append(ch);
+          continue;
+        }
+        if (!inMath && (ch == '%' || ch == '&' || ch == '#' || ch == '_')) {
+          buffer.append('\\');
+        }
+        buffer.append(ch);
+      }
+      if (inMath) {
+        // an unbalanced `$` would swallow the rest of the array
+        buffer.append('$');
+      }
+      return buffer.toString();
     }
   }
 
@@ -2496,6 +2597,7 @@ public class TeXFormFactory {
     initTeXConverter(S.PaddedForm, numberForm);
     initTeXConverter(S.ScientificForm, numberForm);
     initTeXConverter(S.TableForm, new TableForm());
+    initTeXConverter(S.TraceForm, new TraceForm());
     initTeXConverter(S.Grid, new Grid());
     initTeXConverter(S.Parenthesis, new Parenthesis());
     initTeXConverter(S.Part, new Part());

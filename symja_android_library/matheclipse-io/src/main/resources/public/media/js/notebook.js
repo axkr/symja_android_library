@@ -305,7 +305,11 @@ function insertTextCell() {
  */
 function outputData(result, value, format) {
 	var data = {};
-	if (format == 'latex') {
+	if (format == 'steps') {
+		// a derivation is stored as the one array a notebook viewer can typeset; the collapsible
+		// sections only exist while the page is open
+		data['text/latex'] = sourceLines('$$' + (result.latex || '') + '$$');
+	} else if (format == 'latex') {
 		data['text/latex'] = sourceLines('$$' + value + '$$');
 	} else if (format != 'text' && format != 'code') {
 		// MathML and the graphics snippets are both HTML as far as a notebook is concerned

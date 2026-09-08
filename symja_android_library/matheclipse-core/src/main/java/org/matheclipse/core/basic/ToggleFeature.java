@@ -68,5 +68,19 @@ public class ToggleFeature {
    */
   public static boolean JS_ECHARTS = false;
 
-  public static boolean SHOW_STEPS = false;
+  /**
+   * Master switch for the step-by-step evaluation of {@link S#TraceForm}: the listener in
+   * <code>org.matheclipse.core.eval.steps</code>, the hints the built-in functions and the pattern
+   * matcher announce, and the levels in
+   * {@link org.matheclipse.core.eval.steps.StepLevel} which select how fine grained they are.
+   *
+   * <p>
+   * <code>final</code> on purpose: with <code>false</code> every
+   * <code>EvalEngine#addTraceStep...</code> body and every site which builds a hint expression is
+   * a dead branch which the compiler removes, so nothing of this costs anything at run time - not
+   * even in the arithmetic paths, where a step is announced for cancelling the gcd of a fraction.
+   * <code>TraceForm(expr)</code> then evaluates its argument and reports that steps are switched
+   * off in this build.
+   */
+  public static final boolean SHOW_STEPS = true;
 }

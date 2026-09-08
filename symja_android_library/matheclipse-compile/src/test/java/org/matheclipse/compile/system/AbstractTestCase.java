@@ -16,10 +16,6 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
-import org.matheclipse.core.eval.steps.LocaleMap;
-import org.matheclipse.core.eval.steps.RuleDescription;
-import org.matheclipse.core.eval.steps.TraceStackSteps;
-import org.matheclipse.core.eval.steps.output.JSONStepsTemplate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -128,54 +124,6 @@ public abstract class AbstractTestCase {
     }
   }
 
-  /**
-   * Checks the steps of evaluating a mathematical expression in JSON format.
-   *
-   * @param input the input mathematical expression as a string
-   * @param filter a predicate used to filter the symbols that should be included in the JSON output
-   * @param expected the expected JSON string representing the steps of evaluation
-   */
-  protected void checkJSON(String input, Predicate<ISymbol> filter, String expected) {
-    try {
-      // disable Out[] history
-      ExprEvaluator util = new ExprEvaluator(true, (short) -1);
-      EvalEngine engine = util.getEvalEngine();
-      TraceStackSteps stepListener = new TraceStackSteps();
-      EvalEngine.get().setStepListener(stepListener);
-      System.out.println("\n" + input);
-      IExpr expr = engine.parse(input);
-      if (expr != null) {
-
-        // this eval call doesn't reset the EvalEngine
-        IExpr result = util.eval(expr);
-        // disable math-steps tracing during JSON output generation
-        engine.setStepListener(null);
-        RuleDescription desc = LocaleMap.get("en");
-
-        OutputFormFactory outputFormFactory = OutputFormFactory.get(true);
-        outputFormFactory.setIgnoreNewLine(true);
-        String actual = outputFormFactory.toString(result);
-
-        System.out.println("\nResult: " + actual);
-        assertEquals(expected, actual);
-
-        JSONStepsTemplate templateSteps = stepListener.createJSONSteps(filter, desc);
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        try {
-          String output = ow.writeValueAsString(templateSteps);
-          System.out.println(output);
-          // F.openJSONOnDesktop(output);
-        } catch (JsonProcessingException e) {
-          e.printStackTrace();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-
-      }
-    } finally {
-      EvalEngine.get().setStepListener(null);
-    }
-  }
 
   public String evalString(String evalString) {
     try {

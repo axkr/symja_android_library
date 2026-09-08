@@ -1024,3 +1024,52 @@ div.dynamicprint {
   font-family: sans-serif;
   font-size: 0.9em;
 }
+
+/* ---------------------------------------------------------------- TraceForm derivations */
+
+/* One evaluation step is a section the reader opens and closes; a step which was caused by
+   another one sits inside it, so the nesting is the derivation and not just indentation. */
+div.steps {
+	margin: 0.4em 0;
+}
+
+div.steps div.steplist {
+	margin-left: 1.2em;
+	border-left: 1px solid #d0d0d0;
+	padding-left: 0.8em;
+}
+
+div.steps details.step {
+	margin: 0.3em 0;
+}
+
+div.steps {
+	/* the sentences are prose, not input: the cell's monospace font is for what the user typed */
+	font-family: sans-serif;
+	font-size: 0.95em;
+}
+
+div.steps summary.stepsummary {
+	cursor: pointer;
+	color: #444;
+}
+
+div.steps summary.stepsummary:hover {
+	color: #000;
+}
+
+div.steps summary.steptruncated {
+	cursor: default;
+	color: #888;
+	font-style: italic;
+	list-style: none;
+}
+
+div.steps div.steprewrite {
+	margin: 0.2em 0 0.2em 1.1em;
+}
+
+div.steps span.steparrow {
+	margin: 0 0.5em;
+	color: #888;
+}

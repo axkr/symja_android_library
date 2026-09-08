@@ -11,9 +11,12 @@ import java.util.function.Function;
 import org.apache.commons.text.StringEscapeUtils;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.steps.StepLevel;
+import org.matheclipse.core.eval.steps.StepsListener;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -3050,81 +3053,137 @@ public final class Programming {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>TraceForm(expr)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * evaluate <code>expr</code> and return the steps which lead to the result, as a hierarchy: a
+   * step which was caused by another step is shown below it.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>TraceForm(expr, maxDepth)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * show the steps nested at most <code>maxDepth</code> deep. The default is <code>3</code>;
+   * <code>Infinity</code> shows every level.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * <code>TraceForm(expr, maxDepth, level)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * show steps down to the given level of detail: <code>"Rule"</code> (the default) for the rules
+   * which were applied, <code>"Algebra"</code> to add the algebraic reshaping below them, and
+   * <code>"Arithmetic"</code> to add the single arithmetic operations.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; TraceForm(D(Sin(x^2), x))
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * The result is the expression <code>TraceForm(HoldForm(result), {step, ...})</code>, which stays
+   * as it is in the expression tree, so it can be printed by <code>TeXForm</code>,
+   * <code>MathMLForm</code> or <code>OutputForm</code> and taken apart with <code>Part</code> or
+   * <code>Cases</code>.
+   *
+   * @see S#Trace
+   */
   private static class TraceForm extends AbstractCoreFunctionEvaluator
       implements IFastFunctionEvaluator {
 
+    /** How deep the steps are nested by default. */
+    private static final int DEFAULT_MAX_DEPTH = 3;
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head() == S.TraceForm) {
-        final int argSize = ast.argSize();
-        if (argSize >= 1 && argSize <= 2) {
-          try {
-            IASTMutable trace = ast.copy();
-            trace.set(0, S.Trace);
-            final IExpr temp = engine.evaluate(trace);
-            StringBuilder jsControl = new StringBuilder();
-
-            createTree(jsControl, temp);
-            return F.JSFormData(jsControl.toString(), "traceform");
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            Errors.printMessage(S.TraceForm, rex, EvalEngine.get());
-          }
+      if (ast.head() != S.TraceForm) {
+        return F.NIL;
+      }
+      if (isBuiltForm(ast)) {
+        // already the result of a TraceForm evaluation: a display wrapper, like TableForm
+        return F.NIL;
+      }
+      if (!ToggleFeature.SHOW_STEPS) {
+        // Evaluation steps are disabled in this build of Symja.
+        Errors.printMessage(S.TraceForm, "steps", F.CEmptyList, engine);
+        return F.TraceForm(F.HoldForm(engine.evaluate(ast.arg1())), F.CEmptyList);
+      }
+      int maxDepth = DEFAULT_MAX_DEPTH;
+      if (ast.size() > 2) {
+        maxDepth = maxDepth(engine.evaluate(ast.arg2()));
+        if (maxDepth < 0) {
+          // The argument `1` at position `2` should be a non-negative integer or Infinity.
+          return Errors.printMessage(S.TraceForm, "intnm", F.list(ast, F.C2), engine);
         }
-        return engine.checkBuiltinArgsSize(ast, this);
+      }
+      int stepLevel = StepLevel.RULE;
+      if (ast.size() > 3) {
+        stepLevel = StepLevel.parse(engine.evaluate(ast.arg3()));
+        if (stepLevel < 0) {
+          // The argument `1` at position `2` should be ...
+          return Errors.printMessage(S.TraceForm, "intnm", F.list(ast, F.C3), engine);
+        }
+      }
+      try {
+        StepsListener listener = new StepsListener(maxDepth, stepLevel);
+        IExpr result = engine.evalWithStepListener(ast.arg1(), listener);
+        return F.TraceForm(F.HoldForm(result), listener.toExpr());
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.TraceForm, rex, EvalEngine.get());
       }
       return F.NIL;
     }
 
-    private static IExpr createTree(StringBuilder jsControl, IExpr traceExpr) {
-      if (traceExpr.isList()) {
-        IExpr l = F.NIL;
-        IAST list = (IAST) traceExpr;
-        jsControl.append("<ul>");
-        for (int i = 1; i < list.size(); i++) {
-          IExpr arg = list.get(i);
-          if (arg.isAST(S.HoldForm, 2)) {
-            jsControl.append("<li>\n");
-            String html = StringEscapeUtils.escapeHtml4(arg.first().toString());
-            jsControl.append(html);
-            jsControl.append("</li>\n");
-          } else if (arg.isList()) {
-            IExpr last = arg.last();
-            if (last.isAST(S.HoldForm, 2)) {
-              jsControl.append("<li>\n");
-              l = last.first();
-              String html = StringEscapeUtils.escapeHtml4(l.toString());
-              jsControl.append(html);
-              createTree(jsControl, arg);
-              jsControl.append("</li>\n");
-            } else {
-              // StringBuilder subControl = new StringBuilder();
-              // IExpr sub = createTree(subControl, arg);
-              // jsControl.append("<li>{\n");
-              // if (sub.isPresent()) {
-              // String html = StringEscapeUtils.escapeHtml4(sub.toString());
-              // jsControl.append(html);
-              // }
-              jsControl.append("<li>{\n");
-              createTree(jsControl, arg);
-              jsControl.append("}</li>\n");
-            }
-          } else {
-            jsControl.append("<li>\n");
-            String html = StringEscapeUtils.escapeHtml4(arg.toString());
-            jsControl.append(html);
-            jsControl.append("</li>\n");
-          }
-        }
-        jsControl.append("</ul>");
-        return l;
+    /**
+     * Is this the expression a <code>TraceForm</code> evaluation produced, rather than a call the
+     * user wrote?
+     */
+    private static boolean isBuiltForm(IAST ast) {
+      return ast.isAST2() && ast.arg2().isList();
+    }
+
+    /**
+     * @return <code>-1</code> if <code>expr</code> is no depth, {@link Integer#MAX_VALUE} for
+     *         <code>Infinity</code>
+     */
+    private static int maxDepth(IExpr expr) {
+      if (expr.isInfinity() || expr.isDirectedInfinity(F.C1)) {
+        return Integer.MAX_VALUE;
       }
-      return F.NIL;
+      if (expr.isInteger()) {
+        int depth = expr.toIntDefault(-1);
+        return depth >= 0 ? depth : -1;
+      }
+      return -1;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override

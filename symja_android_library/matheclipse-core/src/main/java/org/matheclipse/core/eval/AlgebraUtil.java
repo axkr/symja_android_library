@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.AbstractFractionSym;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -831,7 +832,7 @@ public class AlgebraUtil {
             continue;
 
           if (t0Args[i].equals(t1Args[j])) {
-            if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+            if (EvalEngine.get().isTraceLevel(StepLevel.ALGEBRA)) {
               if (commonFactors.isNIL()) {
                 commonFactors = F.TimesAlloc(p0ArgSize + 1);
               }
@@ -862,7 +863,7 @@ public class AlgebraUtil {
                 }
                 t1Args[j] = null;
 
-                if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+                if (EvalEngine.get().isTraceLevel(StepLevel.ALGEBRA)) {
                   if (commonFactors.isNIL()) {
                     commonFactors = F.TimesAlloc(p0ArgSize + 1);
                   }
@@ -873,7 +874,7 @@ public class AlgebraUtil {
                 t0Args[i] = null;
                 t1Args[j] = F.Power(t1Base, subtracted);
 
-                if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+                if (EvalEngine.get().isTraceLevel(StepLevel.ALGEBRA)) {
                   if (commonFactors.isNIL()) {
                     commonFactors = F.TimesAlloc(p0ArgSize + 1);
                   }
@@ -906,16 +907,17 @@ public class AlgebraUtil {
         IExpr p0Result = t0Final.oneIdentity1();
         IExpr p1Result = t1Final.oneIdentity1();
 
-        if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+        if (EvalEngine.get().isTraceLevel(StepLevel.ALGEBRA)) {
           if (!numer.equals(numerator)) {
-            EvalEngine.get().addTraceStep(F.Divide(numerator, denominator),
+            EvalEngine.get().addTraceStep(StepLevel.ALGEBRA, F.Divide(numerator, denominator),
                 F.Divide(numer, denominator), F.List(S.Cancel, F.$str("Factor"), numerator, numer));
           }
           if (!denom.equals(denominator)) {
-            EvalEngine.get().addTraceStep(F.Divide(numer, denominator), F.Divide(numer, denom),
-                F.List(S.Cancel, F.$str("Factor"), denominator, denom));
+            EvalEngine.get().addTraceStep(StepLevel.ALGEBRA, F.Divide(numer, denominator),
+                F.Divide(numer, denom), F.List(S.Cancel, F.$str("Factor"), denominator, denom));
           }
-          EvalEngine.get().addTraceStep(F.Divide(numer, denom), F.Divide(p0Result, p1Result),
+          EvalEngine.get().addTraceStep(StepLevel.ALGEBRA, F.Divide(numer, denom),
+              F.Divide(p0Result, p1Result),
               F.List(S.Cancel, F.$str("CancelCommonFactors"), commonFactors));
         }
         return F.pair(p0Result, p1Result);

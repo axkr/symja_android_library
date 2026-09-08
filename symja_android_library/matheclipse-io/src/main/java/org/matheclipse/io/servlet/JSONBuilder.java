@@ -6,6 +6,10 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
+import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.eval.steps.StepsJSON;
+import org.matheclipse.core.eval.steps.StepsTree;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -24,6 +28,12 @@ public class JSONBuilder {
 
   /** The string is LaTeX and is rendered in the browser by KaTeX. */
   public static final String FORMAT_LATEX = "latex";
+
+  /**
+   * The result is a derivation: the steps <code>TraceForm</code> collected, which the browser lays
+   * out as a tree of collapsible sections.
+   */
+  public static final String FORMAT_STEPS = "steps";
 
   /** The string is plain text. */
   public static final String FORMAT_TEXT = "text";
@@ -267,6 +277,47 @@ public class JSONBuilder {
     json.putPOJO("results", temp);
 
     return new String[] {"html", json.toString()};
+  }
+
+  /**
+   * The evaluation steps of a <code>TraceForm(...)</code> result.
+   *
+   * <p>
+   * The steps travel as their own tree so the page can make every step a section the reader opens
+   * and closes; <code>latex</code> carries the same derivation as one array, for a notebook which
+   * is saved as <code>*.ipynb</code> and for anything that can only show one formula.
+   *
+   * @param traceForm the result of a <code>TraceForm(...)</code> evaluation
+   */
+  public static String[] createJSONSteps(EvalEngine engine, IAST traceForm,
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
+    ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    resultsJSON.put("line", 21);
+    resultsJSON.put("format", FORMAT_STEPS);
+
+    StringBuilderWriter stw = new StringBuilderWriter();
+    TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
+    // the result on its own, shown above the steps
+    texUtil.toTeX(F.HoldForm(StepsTree.traceResult(traceForm)), stw);
+    resultsJSON.put("result", stw.toString());
+
+    resultsJSON.putPOJO("steps", StepsJSON.toJSON(JSON_OBJECT_MAPPER, traceForm));
+
+    stw = new StringBuilderWriter();
+    texUtil.toTeX(F.HoldForm(traceForm), stw);
+    resultsJSON.put("latex", stw.toString());
+    resultsJSON.put("plaintext", outputForm(engine, traceForm));
+
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+    addMessages(temp, errorWriter, outWriter);
+    resultsJSON.putPOJO("out", temp);
+
+    temp = JSON_OBJECT_MAPPER.createArrayNode();
+    temp.add(resultsJSON);
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    json.putPOJO("results", temp);
+
+    return new String[] {FORMAT_STEPS, json.toString()};
   }
 
   public static String[] createJSONShow(EvalEngine engine, IAST show) {

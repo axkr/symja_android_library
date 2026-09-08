@@ -32,6 +32,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.eval.steps.StepDescription;
+import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -356,6 +358,75 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         fFactory.fNumberFormatter = previous;
       }
       return true;
+    }
+  }
+
+  /**
+   * The evaluation steps which <code>TraceForm(expr)</code> collected, as a left aligned table: one
+   * row for the sentence which explains a step, one for the rewrite it performed, indented by how
+   * deep the step is nested.
+   *
+   * @see org.matheclipse.core.eval.steps.StepsTree
+   */
+  private static final class TraceForm extends AbstractConverter {
+
+    /** How far one nesting level of steps is indented. */
+    private static final String INDENT_WIDTH = "width=\"1.5em\"";
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (!StepsTree.isTraceForm(f)) {
+        return false;
+      }
+      fFactory.tagStart(buf, "mtable", "columnalign=\"left\"");
+      convertSteps(buf, StepsTree.steps(f), 0);
+      fFactory.tagStart(buf, "mtr");
+      fFactory.tagStart(buf, "mtd", "columnalign=\"left\"");
+      fFactory.convertInternal(buf, StepsTree.traceResult(f), Integer.MIN_VALUE, false);
+      fFactory.tagEnd(buf, "mtd");
+      fFactory.tagEnd(buf, "mtr");
+      fFactory.tagEnd(buf, "mtable");
+      return true;
+    }
+
+    private void convertSteps(final StringBuilder buf, final IAST steps, final int indent) {
+      for (int i = 1; i < steps.size(); i++) {
+        IExpr step = steps.get(i);
+        if (!StepsTree.isStep(step)) {
+          continue;
+        }
+        IAST stepAST = (IAST) step;
+        // the description is prose, so its formulas are rendered as plain text rather than as a
+        // nested <math> element
+        String description =
+            StepDescription.of(stepAST, StepDescription.PLAIN_TEXT, "", "");
+        if (!description.isEmpty()) {
+          startRow(buf, indent);
+          fFactory.tag(buf, "mtext", description);
+          endRow(buf);
+        }
+        if (!StepsTree.isTruncated(stepAST) && !StepsTree.isInfoStep(stepAST)) {
+          startRow(buf, indent);
+          fFactory.convertInternal(buf, StepsTree.input(stepAST), Integer.MIN_VALUE, false);
+          fFactory.tag(buf, "mo", "&#x2192;");
+          fFactory.convertInternal(buf, StepsTree.result(stepAST), Integer.MIN_VALUE, false);
+          endRow(buf);
+        }
+        convertSteps(buf, StepsTree.subSteps(stepAST), indent + 1);
+      }
+    }
+
+    private void startRow(final StringBuilder buf, final int indent) {
+      fFactory.tagStart(buf, "mtr");
+      fFactory.tagStart(buf, "mtd", "columnalign=\"left\"");
+      for (int i = 0; i < indent; i++) {
+        buf.append("<mspace " + INDENT_WIDTH + " />");
+      }
+    }
+
+    private void endRow(final StringBuilder buf) {
+      fFactory.tagEnd(buf, "mtd");
+      fFactory.tagEnd(buf, "mtr");
     }
   }
 
@@ -3312,6 +3383,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.LessEqual, new MMLOperator(Precedence.LESSEQUAL, "&#x2264;"));
     CONVERTERS.put(S.MatrixForm, new MatrixForm(false));
     CONVERTERS.put(S.TableForm, new MatrixForm(true));
+    CONVERTERS.put(S.TraceForm, new TraceForm());
 
     NumberForm numberForm = new NumberForm();
     CONVERTERS.put(S.AccountingForm, numberForm);

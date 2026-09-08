@@ -73,6 +73,31 @@ public interface IEvalStepListener {
       long iterationCounter, IAST listOfHints);
 
   /**
+   * The finest level of steps this listener wants to be told about, see
+   * {@link org.matheclipse.core.eval.steps.StepLevel}. A site which records a step below this level
+   * must not even build the expressions the step is made of.
+   *
+   * @return {@link org.matheclipse.core.eval.steps.StepLevel#RULE} by default
+   */
+  default int stepLevel() {
+    return org.matheclipse.core.eval.steps.StepLevel.RULE;
+  }
+
+  /**
+   * Should the pattern matcher announce every rewrite rule it applies as a step?
+   *
+   * <p>
+   * This is expensive - the Rubi rule set alone attempts thousands of rules for one integral - and
+   * it changes the output of the <code>Trace()</code> function, so it is off unless a listener asks
+   * for it.
+   *
+   * @return <code>false</code> by default
+   */
+  default boolean traceRewriteRules() {
+    return false;
+  }
+
+  /**
    * Solve a polynomial with degree &lt;= 2.
    *
    * @param polynomial the polynomial

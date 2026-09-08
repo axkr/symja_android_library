@@ -28,6 +28,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.ApcomplexField;
 import org.matheclipse.core.convert.ApfloatField;
 import org.matheclipse.core.convert.VariablesSet;
@@ -45,6 +46,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -884,8 +886,20 @@ public class EvalEngine implements Serializable {
    *         and <code>rewrittenExpr</code> is present, otherwise the <code>rewrittenExpr</code>
    */
   public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IExpr... list) {
-    if (fTraceMode && rewrittenExpr.isPresent()) {
-      if (fTraceStack != null) {
+    return addEvaluatedTraceStep(StepLevel.RULE, inputExpr, rewrittenExpr, list);
+  }
+
+  /**
+   * Add a single step of the given {@link StepLevel} to the currently defined trace stack and
+   * evaluate the <code>rewrittenExpr</code> expression.
+   *
+   * @param level see {@link StepLevel}
+   * @see #isTraceLevel(int)
+   */
+  public IExpr addEvaluatedTraceStep(int level, IExpr inputExpr, IExpr rewrittenExpr,
+      IExpr... list) {
+    if (ToggleFeature.SHOW_STEPS && fTraceMode && rewrittenExpr.isPresent()) {
+      if (fTraceStack != null && level <= fTraceStack.stepLevel()) {
         IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
         listOfHints.appendAll(list, 0, list.length);
         fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
@@ -899,8 +913,19 @@ public class EvalEngine implements Serializable {
   }
 
   public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
-    if (fTraceMode && rewrittenExpr.isPresent()) {
-      if (fTraceStack != null) {
+    return addEvaluatedTraceStep(StepLevel.RULE, inputExpr, rewrittenExpr, ruleName);
+  }
+
+  /**
+   * Add a single step of the given {@link StepLevel} to the currently defined trace stack and
+   * evaluate the <code>rewrittenExpr</code> expression.
+   *
+   * @param level see {@link StepLevel}
+   */
+  public IExpr addEvaluatedTraceStep(int level, IExpr inputExpr, IExpr rewrittenExpr,
+      String ruleName) {
+    if (ToggleFeature.SHOW_STEPS && fTraceMode && rewrittenExpr.isPresent()) {
+      if (fTraceStack != null && level <= fTraceStack.stepLevel()) {
         IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
 
         fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
@@ -965,7 +990,17 @@ public class EvalEngine implements Serializable {
    * @see #setStepListener(IEvalStepListener)
    */
   public void addTraceInfoStep(IExpr inputExpr, IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null && inputExpr.isPresent()) {
+    addTraceInfoStep(StepLevel.RULE, inputExpr, listOfHints);
+  }
+
+  /**
+   * Add a single information step of the given {@link StepLevel} to the currently defined trace
+   * stack. The <code>inputExpr</code> hasn't changed but an additional information was inserted.
+   *
+   * @param level see {@link StepLevel}
+   */
+  public void addTraceInfoStep(int level, IExpr inputExpr, IAST listOfHints) {
+    if (isTraceLevel(level) && inputExpr.isPresent()) {
       fTraceStack.add(inputExpr, inputExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
@@ -979,7 +1014,17 @@ public class EvalEngine implements Serializable {
    * @see #setStepListener(IEvalStepListener)
    */
   public void addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null && rewrittenExpr.isPresent()) {
+    addTraceStep(StepLevel.RULE, inputExpr, rewrittenExpr, listOfHints);
+  }
+
+  /**
+   * Add a single step of the given {@link StepLevel} to the currently defined trace stack.
+   *
+   * @param level see {@link StepLevel}
+   * @see #isTraceLevel(int)
+   */
+  public void addTraceStep(int level, IExpr inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
+    if (isTraceLevel(level) && rewrittenExpr.isPresent()) {
       fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
@@ -993,8 +1038,18 @@ public class EvalEngine implements Serializable {
    * @param list
    */
   public IExpr addTraceStep(IExpr inputExpr, IExpr evaluatedExpr, IExpr... list) {
-    if (fTraceMode && evaluatedExpr.isPresent()) {
-      if (fTraceStack != null) {
+    return addTraceStep(StepLevel.RULE, inputExpr, evaluatedExpr, list);
+  }
+
+  /**
+   * Add a single step of the given {@link StepLevel} to the currently defined trace stack and
+   * evaluate the <code>evaluatedExpr</code> expression.
+   *
+   * @param level see {@link StepLevel}
+   */
+  public IExpr addTraceStep(int level, IExpr inputExpr, IExpr evaluatedExpr, IExpr... list) {
+    if (ToggleFeature.SHOW_STEPS && fTraceMode && evaluatedExpr.isPresent()) {
+      if (fTraceStack != null && level <= fTraceStack.stepLevel()) {
         IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
         listOfHints.appendAll(list, 0, list.length);
         fTraceStack.add(inputExpr, evaluatedExpr, getRecursionCounter(), -1, listOfHints);
@@ -1008,8 +1063,17 @@ public class EvalEngine implements Serializable {
   }
 
   public IExpr addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
-    if (fTraceMode && rewrittenExpr.isPresent()) {
-      if (fTraceStack != null) {
+    return addTraceStep(StepLevel.RULE, inputExpr, rewrittenExpr, ruleName);
+  }
+
+  /**
+   * Add a single step of the given {@link StepLevel} to the currently defined trace stack.
+   *
+   * @param level see {@link StepLevel}
+   */
+  public IExpr addTraceStep(int level, IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
+    if (ToggleFeature.SHOW_STEPS && fTraceMode && rewrittenExpr.isPresent()) {
+      if (fTraceStack != null && level <= fTraceStack.stepLevel()) {
         IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
 
         fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
@@ -1020,7 +1084,18 @@ public class EvalEngine implements Serializable {
   }
 
   public void addTraceStep(Supplier<IExpr> inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null) {
+    addTraceStep(StepLevel.RULE, inputExpr, rewrittenExpr, listOfHints);
+  }
+
+  /**
+   * Add a single step of the given {@link StepLevel} to the currently defined trace stack. The
+   * input expression is only built if a listener asks for steps of this level.
+   *
+   * @param level see {@link StepLevel}
+   */
+  public void addTraceStep(int level, Supplier<IExpr> inputExpr, IExpr rewrittenExpr,
+      IAST listOfHints) {
+    if (isTraceLevel(level)) {
       fTraceStack.add(inputExpr.get(), rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
@@ -1034,7 +1109,18 @@ public class EvalEngine implements Serializable {
    */
   public void addTraceStep(Supplier<IExpr> inputExpr, Supplier<IExpr> rewrittenExpr,
       IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null) {
+    addTraceStep(StepLevel.RULE, inputExpr, rewrittenExpr, listOfHints);
+  }
+
+  /**
+   * Add a single step of the given {@link StepLevel} to the currently defined trace stack. Neither
+   * expression is built unless a listener asks for steps of this level.
+   *
+   * @param level see {@link StepLevel}
+   */
+  public void addTraceStep(int level, Supplier<IExpr> inputExpr, Supplier<IExpr> rewrittenExpr,
+      IAST listOfHints) {
+    if (isTraceLevel(level)) {
       fTraceStack.add(inputExpr.get(), rewrittenExpr.get(), getRecursionCounter(), -1, listOfHints);
     }
   }
@@ -2806,7 +2892,6 @@ public class EvalEngine implements Serializable {
         throw AbortException.ABORTED;
       } finally {
         stackPop();
-        // fTraceStack.tearDown(iterationCounter == 0 ? F.NIL : result, fRecursionCounter, true);
         fRecursionCounter--;
         if (Thread.currentThread().isInterrupted()) {
           throw TimeoutException.TIMED_OUT;
@@ -3569,6 +3654,36 @@ public class EvalEngine implements Serializable {
       traceList = endTrace();
     }
     return traceList;
+  }
+
+  /**
+   * Evaluate an expression while <code>listener</code> collects the evaluation steps, then put the
+   * engine back the way it was.
+   *
+   * <p>
+   * The listener, the trace mode <b>and</b> the Rubi result cache are saved and restored: a cache
+   * hit answers an integral without matching a single rule, so a second
+   * <code>TraceForm(Integrate(...))</code> in the same session would show no steps at all. A nested
+   * call restores the listener of the call around it.
+   *
+   * @param expr the expression to evaluate
+   * @param listener collects the steps
+   * @return the evaluated expression
+   * @see org.matheclipse.core.eval.steps.StepsListener
+   */
+  public final IExpr evalWithStepListener(final IExpr expr, final IEvalStepListener listener) {
+    final boolean traceMode = fTraceMode;
+    final IEvalStepListener traceStack = fTraceStack;
+    final Cache<IAST, IExpr> rubiCache = rubiASTCache;
+    try {
+      rubiASTCache = null;
+      setStepListener(listener);
+      return evaluate(expr);
+    } finally {
+      fTraceMode = traceMode;
+      fTraceStack = traceStack;
+      rubiASTCache = rubiCache;
+    }
   }
 
   /**
@@ -4503,6 +4618,36 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Is a step of this level worth recording? A site which announces a step below the level the
+   * installed listener asks for must not even build the expressions the step is made of.
+   *
+   * @param level see {@link StepLevel}
+   * @return <code>true</code> if a listener is installed which wants steps of this level
+   * @see #addTraceStep(int, IExpr, IExpr, IAST)
+   */
+  public final boolean isTraceLevel(int level) {
+    return ToggleFeature.SHOW_STEPS //
+        && fTraceMode //
+        && fTraceStack != null //
+        && level <= fTraceStack.stepLevel();
+  }
+
+  /**
+   * Should the pattern matcher announce every rewrite rule it applies as a step? Asked by
+   * {@link org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator} and
+   * {@link org.matheclipse.core.patternmatching.RulesData} before they wrap a rule application in
+   * trace calls.
+   *
+   * @see IEvalStepListener#traceRewriteRules()
+   */
+  public final boolean isTraceRewriteRules() {
+    return ToggleFeature.SHOW_STEPS //
+        && fTraceMode //
+        && fTraceStack != null //
+        && fTraceStack.traceRewriteRules();
+  }
+
+  /**
    * All arguments in <code>ast</code> must be finite inexact numbers.
    * 
    * @param symbol
@@ -5043,7 +5188,7 @@ public class EvalEngine implements Serializable {
    * @param stepListener the listener which should listen to the evaluation steps.
    */
   public void setStepListener(IEvalStepListener stepListener) {
-    setTraceMode(true);
+    setTraceMode(stepListener != null);
     fTraceStack = stepListener;
   }
 

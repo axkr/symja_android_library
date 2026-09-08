@@ -542,6 +542,8 @@ public class Errors {
       "ssle", "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
       "step", "The step size `1` is expected to be positive", //
       "stream", "`1` is not string, InputStream[], or OutputStream[].", //
+      "steps",
+          "Evaluation steps are switched off in this build (ToggleFeature#SHOW_STEPS).", //
       "string", "String expected at position `1` in `2`.", //
       "strse", "String or list of strings expected at position `1` in `2`.", //
       "sym", "Argument `1` at position `2` is expected to be a symbol.", //
