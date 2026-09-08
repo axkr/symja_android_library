@@ -1,6 +1,7 @@
 package org.matheclipse.core.system.steps;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -83,9 +84,22 @@ public class RubiStepDescriptionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testAnUndescribedRuleStillNamesItself() {
-    String steps = evalString("TraceForm(Integrate(Sin(x)^3,x), 1)");
-    assertTrue(steps.contains("Apply integration rule 3054 of the Rubi rule set"), steps);
+  public void testThePlumbingRulesAreNotShown() {
+    // Rule 3054 only rewrites the integrand into the rule set's own inert spelling. Written the
+    // ordinary way it changes nothing, so it is not a step and the reader never sees it.
+    String steps = evalString("TraceForm(Integrate(Sin(x)^3,x), Infinity)");
+    assertFalse(steps.contains("rule 3054"), steps);
+    assertFalse(steps.contains("deactivatetrig"), steps);
+  }
+
+  @Test
+  public void testEverySurvivingRuleSaysWhatItDoes() {
+    // once the plumbing is gone, the rules which are left are the ones the rule set describes
+    for (String integrand : new String[] {"Sin(x)^3", "Sin(x)/x^3", "Tan(x)^2", "Cos(x)^4"}) {
+      String steps = evalString("TraceForm(Integrate(" + integrand + ",x), Infinity)");
+      assertFalse(steps.contains("Apply integration rule"),
+          "a rule fell back to its bare number for " + integrand + ":\n" + steps);
+    }
   }
 
   @Test

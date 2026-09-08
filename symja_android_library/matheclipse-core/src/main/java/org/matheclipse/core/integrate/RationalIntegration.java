@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -119,6 +122,41 @@ public class RationalIntegration {
   }
 
   /**
+   * Say what this stage of the integration did.
+   *
+   * <p>
+   * The algorithm answers a whole integral in one go, so without this a derivation of a rational
+   * function is a single line saying only which method was used. These are the stages a textbook
+   * would name: write the integrand as one fraction, divide out the polynomial part, split the
+   * denominator into its repeated and its square-free half, take the rational part of the answer
+   * off by Horowitz-Ostrogradsky, factor what is left, and read a logarithm off each factor.
+   *
+   * <p>
+   * Everything a step is made of is built inside a {@link Supplier}, because turning the internal
+   * polynomials back into expressions is real work and no derivation is usually being collected.
+   *
+   * @param ruleKey names the sentence which explains the stage, in <code>i18n/en.json</code>
+   * @param from what the stage started from
+   * @param to what it produced
+   * @param hints the further parts of the sentence
+   */
+  private static void step(EvalEngine engine, String ruleKey, Supplier<IExpr> from,
+      Supplier<IExpr> to, Supplier<IExpr[]> hints) {
+    if (!engine.isTraceLevel(StepLevel.RULE)) {
+      return;
+    }
+    IExpr[] extra = hints.get();
+    IASTAppendable listOfHints = F.ast(S.List, extra.length + 2);
+    listOfHints.append(S.Integrate);
+    listOfHints.append(F.$str(ruleKey));
+    listOfHints.appendAll(extra, 0, extra.length);
+    engine.addTraceStep(StepLevel.RULE, from.get(), to.get(), listOfHints);
+  }
+
+  /** No further parts to the sentence. */
+  private static final Supplier<IExpr[]> NO_HINTS = () -> new IExpr[0];
+
+  /**
    * Compute the antiderivative of a rational function. Irreducible denominator factors of degree
    * &gt;= 5 always yield a {@link F#RootSum}; factors of degree 3 or 4 do so only in
    * {@link RootSumMode#EMIT} (in {@link RootSumMode#DEFER} the whole integral is left to the Rubi
@@ -136,6 +174,11 @@ public class RationalIntegration {
       IExpr together = engine.evaluate(F.Together(integrand));
       IExpr numerExpr = engine.evaluate(F.Numerator(together));
       IExpr denomExpr = engine.evaluate(F.Denominator(together));
+      if (!together.equals(integrand)) {
+        final IExpr in = integrand;
+        step(engine, "SingleFraction", () -> F.Integrate(in, x),
+            () -> F.Integrate(together, x), NO_HINTS);
+      }
 
       JASConvert<BigRational> jas = new JASConvert<BigRational>(F.list(x), BigRational.ZERO);
       GenPolynomial<BigRational> numer = jas.expr2JAS(numerExpr, false);
@@ -146,7 +189,12 @@ public class RationalIntegration {
       if (denom.isConstant()) {
         // pure polynomial - integrate directly
         GenPolynomial<BigRational> p = numer.multiply(denom.leadingBaseCoefficient().inverse());
-        return engine.evaluate(integratePolynomial(p, x));
+        // the answer, not the shape it is first written in: `x^(2+1)/(2+1)` is not a step
+        IExpr polynomial = engine.evaluate(integratePolynomial(p, x));
+        final GenPolynomial<BigRational> poly = p;
+        step(engine, "PolynomialTermByTerm", () -> F.Integrate(polyToExpr(poly, x), x),
+            () -> polynomial, NO_HINTS);
+        return polynomial;
       }
 
       GenPolynomialRing<BigRational> ring = denom.ring;
@@ -174,6 +222,15 @@ public class RationalIntegration {
       GenPolynomial<BigRational> quotient = qr[0];
       GenPolynomial<BigRational> remainder = qr[1];
       if (!quotient.isZERO()) {
+        final GenPolynomial<BigRational> q = quotient;
+        final GenPolynomial<BigRational> r = remainder;
+        final GenPolynomial<BigRational> d = denom;
+        final GenPolynomial<BigRational> n = numer;
+        step(engine, "PolynomialDivision",
+            () -> F.Integrate(F.Divide(polyToExpr(n, x), polyToExpr(d, x)), x),
+            () -> F.Plus(F.Integrate(polyToExpr(q, x), x),
+                F.Integrate(F.Divide(polyToExpr(r, x), polyToExpr(d, x)), x)),
+            () -> new IExpr[] {polyToExpr(q, x)});
         result.append(integratePolynomial(quotient, x));
       }
       if (remainder.isZERO()) {
@@ -195,8 +252,22 @@ public class RationalIntegration {
         GenPolynomial<BigRational> aMinus = horowitz[0];
         a2 = horowitz[1];
         d2 = dStar;
+        final GenPolynomial<BigRational> dm = dMinus;
+        final GenPolynomial<BigRational> ds = dStar;
+        final GenPolynomial<BigRational> d = denom;
+        step(engine, "DenominatorSplit", () -> polyToExpr(d, x),
+            () -> F.Times(polyToExpr(dm, x), polyToExpr(ds, x)),
+            () -> new IExpr[] {polyToExpr(dm, x), polyToExpr(ds, x)});
         if (!aMinus.isZERO()) {
           // rational part Aminus/Dminus
+          final GenPolynomial<BigRational> am = aMinus;
+          final GenPolynomial<BigRational> a = a2;
+          final GenPolynomial<BigRational> r = remainder;
+          step(engine, "RationalPart",
+              () -> F.Integrate(F.Divide(polyToExpr(r, x), polyToExpr(d, x)), x),
+              () -> F.Plus(F.Divide(polyToExpr(am, x), polyToExpr(dm, x)),
+                  F.Integrate(F.Divide(polyToExpr(a, x), polyToExpr(ds, x)), x)),
+              () -> new IExpr[] {F.Divide(polyToExpr(am, x), polyToExpr(dm, x))});
           result.append(F.Divide(polyToExpr(aMinus, x), polyToExpr(dMinus, x)));
         }
       } else {
@@ -206,7 +277,7 @@ public class RationalIntegration {
 
       // logarithmic part with square-free denominator d2
       if (!a2.isZERO() && d2.degree() > 0) {
-        IExpr logPart = logarithmicPart(a2, d2, x, ring, ufd, mode);
+        IExpr logPart = logarithmicPart(a2, d2, x, ring, ufd, mode, engine);
         if (logPart.isNIL()) {
           return F.NIL;
         }
@@ -392,7 +463,7 @@ public class RationalIntegration {
    */
   private static IExpr logarithmicPart(GenPolynomial<BigRational> a2, GenPolynomial<BigRational> d2,
       IExpr x, GenPolynomialRing<BigRational> ring, GreatestCommonDivisor<BigRational> ufd,
-      RootSumMode mode) {
+      RootSumMode mode, EvalEngine engine) {
     // make monic
     BigRational lc = d2.leadingBaseCoefficient();
     if (!lc.isONE()) {
@@ -415,6 +486,18 @@ public class RationalIntegration {
     }
     if (factors.isEmpty()) {
       return F.NIL;
+    }
+    if (factors.size() > 1) {
+      final GenPolynomial<BigRational> d = d2;
+      final List<GenPolynomial<BigRational>> fs = factors;
+      final IExpr var = x;
+      step(engine, "FactorDenominator", () -> polyToExpr(d, var), () -> {
+        IASTAppendable product = F.TimesAlloc(fs.size());
+        for (GenPolynomial<BigRational> f : fs) {
+          product.append(polyToExpr(f, var));
+        }
+        return product;
+      }, NO_HINTS);
     }
     IASTAppendable plus = F.PlusAlloc(factors.size() * 2);
     // collect `coeff * Log(poly)` terms; terms with equal coefficients are combined into
@@ -463,17 +546,25 @@ public class RationalIntegration {
             // d = q - p^2/4
             BigRational d = q.subtract(p.multiply(p).divide(new BigRational(4)));
             IExpr v = F.Plus(toFraction(p.divide(new BigRational(2))), x);
+            final IExpr term;
             if (d.signum() > 0) {
               // rem * 1/Sqrt(d) * ArcTan(v / Sqrt(d))
               IExpr sqrt = F.Sqrt(toFraction(d));
-              plus.append(F.Times(toFraction(rem), F.Power(sqrt, F.CN1),
-                  F.ArcTan(F.Times(v, F.Power(sqrt, F.CN1)))));
+              term = F.Times(toFraction(rem), F.Power(sqrt, F.CN1),
+                  F.ArcTan(F.Times(v, F.Power(sqrt, F.CN1))));
             } else {
               // d < 0 -> rem * (-1)/Sqrt(-d) * ArcTanh(v / Sqrt(-d))
               IExpr sqrt = F.Sqrt(toFraction(d.negate()));
-              plus.append(F.Times(toFraction(rem), F.CN1, F.Power(sqrt, F.CN1),
-                  F.ArcTanh(F.Times(v, F.Power(sqrt, F.CN1)))));
+              term = F.Times(toFraction(rem), F.CN1, F.Power(sqrt, F.CN1),
+                  F.ArcTanh(F.Times(v, F.Power(sqrt, F.CN1))));
             }
+            plus.append(term);
+            final GenPolynomial<BigRational> f = fi;
+            final GenPolynomial<BigRational> nn = ni;
+            final IExpr var = x;
+            step(engine, d.signum() > 0 ? "ArcTanTerm" : "ArcTanhTerm",
+                () -> F.Integrate(F.Divide(polyToExpr(nn, var), polyToExpr(f, var)), var),
+                () -> term, () -> new IExpr[] {polyToExpr(f, var)});
           }
         }
       } else if (degF >= 5 || mode == RootSumMode.EMIT) {
@@ -507,7 +598,12 @@ public class RationalIntegration {
     }
     for (Map.Entry<BigRational, GenPolynomial<BigRational>> entry : logTerms.entrySet()) {
       GenPolynomial<BigRational> p = normalizeLogArgument(entry.getValue());
-      plus.append(F.Times(toFraction(entry.getKey()), F.Log(polyToExpr(p, x))));
+      final IExpr term = F.Times(toFraction(entry.getKey()), F.Log(polyToExpr(p, x)));
+      plus.append(term);
+      final GenPolynomial<BigRational> arg = p;
+      final IExpr var = x;
+      step(engine, "LogarithmTerm", () -> polyToExpr(arg, var), () -> term,
+          () -> new IExpr[] {polyToExpr(arg, var)});
     }
     return plus.oneIdentity0();
   }

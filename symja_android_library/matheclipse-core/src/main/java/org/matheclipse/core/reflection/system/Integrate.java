@@ -596,8 +596,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // integrand to the Rubi rules (which often have a far simpler closed form) and re-emit
           // the RootSum only as a post-Rubi fallback (see below). Closed-form results, including a
           // mixed Log(..)+RootSum(..), are still produced here.
-          result = quietStage(engine, fx, x, "the rational function algorithm", () -> RationalIntegration.integrate(fx, x, engine,
-              RationalIntegration.RootSumMode.DEFER));
+          // the stage narrates its own pipeline, so a step naming the method would only repeat it
+          result = quietStage(engine, fx, x, null,
+              () -> RationalIntegration.integrate(fx, x, engine,
+                  RationalIntegration.RootSumMode.DEFER));
           if (result.isPresent()) {
             return result;
           }
@@ -705,8 +707,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // only now that Rubi left the integral unevaluated, so Rubi's simpler closed form (when
           // it
           // has one) always wins. Correct-by-construction (Trager), reuses the full general logic.
-          result = quietStage(engine, fx, x, "the rational function algorithm", () -> RationalIntegration.integrate(fx, x, engine,
-              RationalIntegration.RootSumMode.EMIT));
+          // the stage narrates its own pipeline, so a step naming the method would only repeat it
+          result = quietStage(engine, fx, x, null,
+              () -> RationalIntegration.integrate(fx, x, engine,
+                  RationalIntegration.RootSumMode.EMIT));
           if (result.isPresent()) {
             return result;
           }
@@ -793,12 +797,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * in it at all.
    *
    * @param method how the algorithm is named in the sentence, for example "the rational
-   *        function algorithm"
+   *        function algorithm", or <code>null</code> for a stage which narrates itself
    */
   private static IExpr quietStage(final EvalEngine engine, final IExpr fx, final IExpr x,
       final String method, final Supplier<IExpr> stage) {
     IExpr result = engine.withQuietMode(stage);
-    if (result.isPresent() && engine.isTraceLevel(StepLevel.RULE)) {
+    if (result.isPresent() && method != null && engine.isTraceLevel(StepLevel.RULE)) {
       engine.addTraceStep(F.Integrate(fx, x), result,
           F.List(S.Integrate, F.$str("Method"), F.$str(method)));
     }

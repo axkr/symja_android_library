@@ -46,6 +46,15 @@
 
 	"Rational::FractionCancelGCD": "Divide the numerator and the denominator of `3` by their greatest common divisor `4`.",
 
+	"Integrate::PolynomialTermByTerm": "Integrate the polynomial term by term, each $x^n$ giving $\\frac{x^{n+1}}{n+1}$.",
+	"Integrate::SingleFraction": "Write the integrand as a single fraction.",
+	"Integrate::PolynomialDivision": "Divide out the polynomial part `3`, leaving a fraction whose numerator has the lower degree.",
+	"Integrate::DenominatorSplit": "Split the denominator into the part with repeated factors, `3`, and the square-free part `4`.",
+	"Integrate::RationalPart": "By the Horowitz-Ostrogradsky reduction the rational part of the answer is `3`, and what is left to integrate has a square-free denominator.",
+	"Integrate::FactorDenominator": "Factor the square-free denominator over the rationals - `2` becomes `1`.",
+	"Integrate::LogarithmTerm": "The factor `3` of the denominator contributes the logarithm `1`.",
+	"Integrate::ArcTanTerm": "The quadratic factor `3` has no real root, so completing the square gives an arc tangent.",
+	"Integrate::ArcTanhTerm": "The quadratic factor `3` has two real roots, so completing the square gives an inverse hyperbolic tangent.",
 	"Integrate::Method": "Integrate by `3` - `2` becomes `1`.",
 	"Integrate::Linearity": "The integral of a sum is the sum of the integrals - `2` becomes `1`.",
 	"Integrate::ConstantFactor": "Move the constant factor `3` out of the integral.",

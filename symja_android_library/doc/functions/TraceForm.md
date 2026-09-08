@@ -69,15 +69,34 @@ The rule which was applied, and the number it has in the Rubi rule set:
 RubiRule
 ```
 
-An integration step says what the rule it applied does in general, taken from the rule set's own description of it:
+An integration reads as a derivation: each integral is rewritten until nothing is left to integrate, and an integral that a step created is shown under it. The sentence says what the rule does in general, taken from the rule set's own description of it:
 
 ```
->> TraceForm(Integrate(Sin(x)^3,x), 2)
--Cos(x)+Cos(x)^3/3
-Apply integration rule 3054 of the Rubi rule set - Integrate(Sin(x)^3,x) becomes Integrate(Rubi`deactivatetrig(Sin(x)^3,x),x).
-Integrate(Sin(x)^3,x) -> Integrate(Rubi`deactivatetrig(Sin(x)^3,x),x)
-Rubi integration rule 3125. If IGtQ[(n-1)/(2),0], rewrite Integrate(Sin(c+d*x)^n,x) as -1/d*subst(Integrate(Expand((1-x^2)^(1/2*(-1+n)),x),x),x,Cos(c+d*x)).
-Integrate(§sin(x)^3,x) -> ...
+>> TraceForm(Integrate(Sin(x)/x^3,x), Infinity)
+-Cos(x)/(2*x)-Sin(x)/(2*x^2)-SinIntegral(x)/2
+Rubi integration rule 3790. If LtQ[m,-1], rewrite Integrate((c+d*x)^m*Sin(e+f*x),x) as ...
+Integrate(Sin(x)/x^3,x) -> Integrate(Cos(x)/x^2,x)/2-Sin(x)/(2*x^2)
+  Rubi integration rule 3790. If LtQ[m,-1], rewrite ...
+  Integrate(Cos(x)/x^2,x) -> -Cos(x)/x+Integrate(-Sin(x)/x,x)
+    Move the constant factor -1 out of the integral.
+    Integrate(-Sin(x)/x,x) -> -Integrate(Sin(x)/x,x)
+      Rubi integration rule 3792. If EqQ[d e-c f,0], rewrite Integrate(Sin(e+f*x)/(c+d*x),x) as SinIntegral(e+f*x)/d.
+      Integrate(Sin(x)/x,x) -> SinIntegral(x)
+```
+
+An integral that Symja answers with an algorithm of its own is worked through too:
+
+```
+>> TraceForm(Integrate((x^2+x+1)/(x^4+x^3+x+1),x), Infinity)
+-1/(3*(1+x))+4/3*ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)
+Split the denominator into the part with repeated factors, x+1, and the square-free part x^3+1.
+x^4+x^3+x+1 -> (x+1)*(x^3+1)
+By the Horowitz-Ostrogradsky reduction the rational part of the answer is -1/(3*(x+1)), and what is left to integrate has a square-free denominator.
+Integrate((x^2+x+1)/(x^4+x^3+x+1),x) -> -1/(3*(x+1))+Integrate((2/3*x+2/3)/(x^3+1),x)
+Factor the square-free denominator over the rationals - x^3+1 becomes (x+1)*(x^2-x+1).
+x^3+1 -> (x+1)*(x^2-x+1)
+The quadratic factor x^2-x+1 has no real root, so completing the square gives an arc tangent.
+Integrate(2/(3*(x^2-x+1)),x) -> 2/3*ArcTan((-1/2+x)/Sqrt(3/4))/Sqrt(3/4)
 ```
 
 Every arithmetic operation of the quadratic formula:
@@ -97,6 +116,8 @@ As TeX, one row per step, indented by how deep the step is nested:
 
 * Steps are collected only in a build with `ToggleFeature.SHOW_STEPS` switched on. With it off `TraceForm(expr)` evaluates `expr`, reports that steps are switched off and returns `TraceForm(HoldForm(result), {})`. The switch is `final`, so nothing of the machinery costs anything at run time in a build which does not want it.
 * The helper functions the Rubi integration rules are built from are implementation detail and are not shown as steps; the integration rules themselves are.
+* A step records the right-hand side of the rule that fired, before it is evaluated, so it is written in the rule set's own helpers. Those are rewritten into the mathematics they stand for before a step is shown: `Simp[u,x]` is `u`, `Dist[u,v,x]` is the product `u*v`, `Subst[u,x,v]` is the replacement `u /. x -> v`, and `§sin` is the inert `Sin` the rules match on. The arithmetic of the rewrite is worked out at the same time, while every integral is left standing - which is what makes a step an intermediate rather than the answer.
+* A rule which only rewrites an expression into the rule set's own spelling changes nothing once that is undone, so it is not shown.
 * What each integration rule does comes from Rubi's own `ShowSteps` spelling of its rule set, read out by `ConvertRubiShowSteps` in the `tools` module into `rubi/rubi_steps.tsv.gz`. About 7050 of the 7300 rules carry one; the remaining rules are plumbing which Rubi itself does not show as a step, and they are named by their rule number alone. The table is read the first time an integration step is described, so an evaluation which shows none never touches it.
 * The general shape a rule matches and rewrites to is written with the rule's own pattern names, not with the expression at hand - the step itself carries that.
 * Repeated sub-expressions of one integral are answered from the Rubi result cache and produce no steps of their own the second time.

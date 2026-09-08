@@ -159,17 +159,18 @@ public class StepsListener extends AbstractEvalStepListener {
       fGlobalTruncated = true;
       return;
     }
+    // A rule with a `/;` guard records `Condition(body, test)`. Only the body is worth showing,
+    // and the body is also what the evaluation goes on with: `Condition` never reaches the
+    // evaluation loop's frame - it is answered by a fast path - and it is `conditionEval` which
+    // then evaluates the body, handing that very object to the next `setUp`. So the body, not the
+    // wrapper, is what the sub-steps will be found under.
+    IExpr identity = resultExpr.isCondition() ? resultExpr.first() : resultExpr;
     fNodeCount++;
-    // `Condition(body, test)` is recorded before the guard is known to hold; only the body is
-    // shown, and the step is taken back again if the guard turns out to fail.
-    boolean isCondition = resultExpr.isCondition();
-    IExpr display = isCondition ? resultExpr.first() : resultExpr;
     // The hint list is deliberately *not* copied: `addEvaluatedTraceStep` completes it after this
     // call returns, either by appending the evaluated result or by replacing the `Slot1`
     // placeholder with it. Rendering happens when the evaluation is over, so the reference sees
     // the finished list.
-    StepNode node =
-        new StepNode(inputExpr, display, resultExpr, listOfHints, frame.level, isCondition);
+    StepNode node = new StepNode(inputExpr, identity, identity, listOfHints, frame.level);
     frame.steps.add(node);
     recorded(node);
   }
@@ -193,14 +194,9 @@ public class StepsListener extends AbstractEvalStepListener {
           "TraceForm: the frame closed here is not the frame which was opened");
     }
     if (!commitTraceFrame) {
-      if (frame.attachTo != null && frame.attachTo.pendingCondition) {
-        // the `/;` guard of the rewritten right-hand-side failed: the rule was never applied
-        removeStep(frame.attachTo);
-      }
       return;
     }
     if (frame.attachTo != null) {
-      frame.attachTo.pendingCondition = false;
       frame.attachTo.children.addAll(frame.steps);
     } else {
       fStack.peek().steps.addAll(frame.steps);
@@ -235,16 +231,6 @@ public class StepsListener extends AbstractEvalStepListener {
         || symbol.getSymbolName().startsWith("\u00a7");
   }
 
-  /** Take a step back out of the frame it was recorded in. */
-  private void removeStep(StepNode step) {
-    List<StepNode> siblings = fStack.peek().steps;
-    int last = siblings.size() - 1;
-    if (last >= 0 && siblings.get(last) == step) {
-      siblings.remove(last);
-      fNodeCount--;
-    }
-  }
-
   private void markTruncated(@Nullable StepNode step) {
     if (step != null) {
       step.truncated = true;
@@ -272,7 +258,7 @@ public class StepsListener extends AbstractEvalStepListener {
     List<StepNode> steps = fRoot.steps;
     IASTAppendable result = F.ListAlloc(steps.size() + (fGlobalTruncated ? 1 : 0));
     for (StepNode step : steps) {
-      result.append(step.toExpr());
+      step.appendReadableTo(result);
     }
     if (fGlobalTruncated) {
       result.append(StepNode.truncatedStep());

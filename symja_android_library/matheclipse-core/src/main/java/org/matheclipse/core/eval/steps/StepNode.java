@@ -40,38 +40,56 @@ public final class StepNode {
   /** 1 for a top level step, one more for every step this one is nested in. */
   final int level;
 
-  /**
-   * <code>true</code> while this step was recorded from a <code>Condition(body, test)</code>
-   * right-hand-side whose guard has not been seen to hold yet.
-   */
-  boolean pendingCondition;
-
   /** <code>true</code> if sub-steps of this step were dropped by the depth or the node cap. */
   boolean truncated;
 
-  StepNode(IExpr input, IExpr display, IExpr identity, IAST hints, int level,
-      boolean pendingCondition) {
+  StepNode(IExpr input, IExpr display, IExpr identity, IAST hints, int level) {
     this.input = input;
     this.display = display;
     this.identity = identity;
     this.hints = hints;
     this.level = level;
-    this.pendingCondition = pendingCondition;
   }
 
   /**
    * <code>{HoldForm(input), HoldForm(result), {headSymbol, "RuleKey", hintArg...}, {subStep...}}
-   * </code>.
+   * </code>, with the rule set's own working rewritten into the mathematics it stands for.
+   *
+   * <p>
+   * This runs once the evaluation is over, never while it is going on: tidying up asks the engine
+   * to work out the arithmetic of a step, and doing that in the middle of a rule match disturbs
+   * the match.
+   *
+   * @param target the steps of the level this one belongs to. A step which turns out to say
+   *        nothing appends its own sub-steps here instead of itself.
    */
-  IAST toExpr() {
+  void appendReadableTo(IASTAppendable target) {
+    // both sides together, or only one of them gets its arithmetic worked out and a step which
+    // changed nothing stops looking like one
+    boolean tidy = StepDisplay.carriesInternals(input) || StepDisplay.carriesInternals(display);
+    IExpr shownInput = tidy ? StepDisplay.normalize(input) : input;
+    IExpr shownResult = tidy ? StepDisplay.normalize(display) : display;
     IASTAppendable subSteps = F.ListAlloc(children.size() + (truncated ? 1 : 0));
     for (StepNode child : children) {
-      subSteps.append(child.toExpr());
+      child.appendReadableTo(subSteps);
     }
     if (truncated) {
       subSteps.append(truncatedStep());
     }
-    return F.List(F.HoldForm(input), F.HoldForm(display), hints, subSteps);
+    if (tidy && shownInput.equals(shownResult)) {
+      // machinery rather than mathematics: the rule set moved to a spelling of its own and, once
+      // that is written the ordinary way, the expression came back unchanged. Whatever it went on
+      // to do belongs to the step above.
+      //
+      // Only a step which needed tidying up can be dropped this way. A step whose input and result
+      // are equal to begin with is an annotation - `addTraceInfoStep` records the expression
+      // against itself on purpose, which is how the quadratic formula narrates its arithmetic.
+      for (int i = 1; i < subSteps.size(); i++) {
+        target.append(subSteps.get(i));
+      }
+      return;
+    }
+    target.append(F.List(F.HoldForm(shownInput), F.HoldForm(shownResult), hints, subSteps));
   }
 
   /** The marker step which says that further sub-steps were dropped. */

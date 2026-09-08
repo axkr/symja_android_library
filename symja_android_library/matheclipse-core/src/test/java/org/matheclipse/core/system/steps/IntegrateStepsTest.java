@@ -80,12 +80,26 @@ public class IntegrateStepsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testAnAlgorithmStageNamesItself() {
-    // a rational function is answered in one go, so the method is what can be said about it
-    assertStep("TraceForm(Integrate(3*x^2+2*x,x))",
-        "Integrate by the rational function algorithm");
-    check("TraceForm(Integrate(1/(1+x^2),x))[[2,1,3,2]]", //
-        "Method");
+  public void testAPolynomialIsIntegratedTermByTerm() {
+    assertStep("TraceForm(Integrate(3*x^2+2*x,x))", "Integrate the polynomial term by term");
+    check("TraceForm(Integrate(3*x^2+2*x,x))[[2,1,3,2]]", //
+        "PolynomialTermByTerm");
+  }
+
+  @Test
+  public void testTheRationalIntegratorNarratesItsPipeline() {
+    // it answers a whole integral in one go, but the stages it goes through are nameable
+    String steps = evalString("TraceForm(Integrate((x^2+x+1)/(x^4+x^3+x+1),x), Infinity)");
+    assertTrue(steps.contains("Split the denominator"), steps);
+    assertTrue(steps.contains("Horowitz-Ostrogradsky"), steps);
+    assertTrue(steps.contains("Factor the square-free denominator"), steps);
+    assertTrue(steps.contains("has no real root, so completing the square"), steps);
+  }
+
+  @Test
+  public void testEachFactorContributesItsLogarithm() {
+    String steps = evalString("TraceForm(Integrate(1/(x^2-1),x), Infinity)");
+    assertTrue(steps.contains("contributes the logarithm"), steps);
   }
 
   @Test
