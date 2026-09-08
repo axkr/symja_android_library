@@ -755,6 +755,31 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->Sqrt(-2*x-C(1))+C(2)},{y(x)->-Sqrt(-2*x-C(1))+C(2)}}");
   }
 
+  /**
+   * First order equations which a shift of the unknown turns into a quadrature:
+   * <code>y' == -phi'/c + g(x)*(phi(x) + c*y)^p</code> under <code>u == phi + c*y</code>.
+   */
+  @Test
+  public void testDSolvePolynomialShift() {
+    check("DSolve(y'(x) == -1 + x*Sqrt(x + y(x)), y(x), x)", //
+        "{{y(x)->-x+x^4/16+1/4*x^2*C(1)+C(1)^2/4}}");
+    checkResidual("y'(x) == -1 + x*Sqrt(x + y(x))", //
+        "y'(x) + 1 - x*Sqrt(x + y(x))", "{C(1)->7/5, x->13/10}");
+    checkResidual("y'(x) == -2*x + (x^2 + y(x))^(1/3)", //
+        "y'(x) + 2*x - (x^2 + y(x))^(1/3)", "{C(1)->7/5, x->13/10}");
+
+    // the coefficient of the unknown under the root has to be a constant, or the substitution
+    // puts the unknown back into the equation instead of taking it out
+    check("Head(DSolve(y'(x) == (x + 1 + 2*Sqrt(4*x^2*y(x) + 1)*x^3)/(2*x^3*(x + 1)), y(x), x))", //
+        "DSolve");
+    // and what is under it has to be of the first degree in the unknown
+    check("Head(DSolve(y'(x) == Sqrt(x + y(x)^2), y(x), x))", //
+        "DSolve");
+    // an equation with no such power is left to the methods below, which answer this one
+    check("DSolve(y'(x) == 2*x*y(x)^2, y(x), x)", //
+        "{{y(x)->1/(-x^2-C(1))}}");
+  }
+
   @Test
   public void testDSolveChangeOfVariable() {
     // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.

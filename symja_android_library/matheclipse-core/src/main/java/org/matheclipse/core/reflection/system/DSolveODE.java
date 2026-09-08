@@ -1163,6 +1163,14 @@ final class DSolveODE {
     }
 
     if (n == 1) {
+      // A power of something linear in the unknown whose exponent is a fraction is a shape none
+      // of the methods above produces, so asking about it here costs them nothing and saves the
+      // searches below the budget they would spend on a radical of the unknown.
+      IExpr shiftedSol = DSolvePolynomialShift.solve(lhs, yFunction, xVar, C_1, ctx);
+      if (shiftedSol.isPresent()) {
+        return shiftedSol;
+      }
+
       // A change of the variables can make the equation one of the kinds already solved: seen
       // through one linear combination of x and y it may lose its x, and a ratio of two linear
       // expressions loses its constant terms when the origin moves to where the two lines meet.
