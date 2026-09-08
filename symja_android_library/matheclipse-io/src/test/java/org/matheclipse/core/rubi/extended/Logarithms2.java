@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.extended;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
@@ -16,10 +18,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class Logarithms2 extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public Logarithms2(String name) {
-    super(name, false);
+  public Logarithms2() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -36,6 +39,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
 
 
   // 3.3 u (a+b log(c (d+e x)^n))^p.input:605
+  @Test
   public void test0001() {
     check( //
         "Integrate[(g+h*x)^3*(a+b*Log[c*(d*(e+f*x)^p)^q]), x]", //
@@ -43,6 +47,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.3 u (a+b log(c (d+e x)^n))^p.input:621
+  @Test
   public void test0002() {
     check( //
         "Integrate[(g+h*x)*(a+b*Log[c*(d*(e+f*x)^p)^q])^3, x]", //
@@ -50,6 +55,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.3 u (a+b log(c (d+e x)^n))^p.input:629
+  @Test
   public void test0003() {
     check( //
         "Integrate[Log[c*(d*(e+f*x)^p)^q], x]", //
@@ -57,6 +63,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.3 u (a+b log(c (d+e x)^n))^p.input:673
+  @Test
   public void test0004() {
     check( //
         "Integrate[1/(a+b*Log[c*(d*(e+f*x)^p)^q])^(5/2), x]", //
@@ -64,6 +71,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.3 u (a+b log(c (d+e x)^n))^p.input:754
+  @Test
   public void test0005() {
     check( //
         "Integrate[(a+b*Log[c*(d*(e+f*x)^p)^q])^2/(g+h*x), x]", //
@@ -71,6 +79,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:12
+  @Test
   public void test0006() {
     check( //
         "Integrate[x^4*Log[c*(a+b*x^2)^p], x]", //
@@ -78,6 +87,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:21
+  @Test
   public void test0007() {
     check( //
         "Integrate[Log[c*(a+b*x^2)^p]/x^5, x]", //
@@ -85,6 +95,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:55
+  @Test
   public void test0008() {
     check( //
         "Integrate[Log[c*(a+b/x^2)^p]/x^2, x]", //
@@ -92,6 +103,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:67
+  @Test
   public void test0009() {
     check( //
         "Integrate[Log[c*(a+b*Sqrt[x])^p]/x, x]", //
@@ -99,6 +111,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:116
+  @Test
   public void test0010() {
     check( //
         "Integrate[Log[c*(a+b*x^2)^p]^2/x^3, x]", //
@@ -106,6 +119,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:132
+  @Test
   public void test0011() {
     check( //
         "Integrate[Log[c*(a+b*x^2)^p]^3/x^7, x]", //
@@ -113,6 +127,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:161
+  @Test
   public void test0012() {
     check( //
         "Integrate[x/Log[c*(a+b*x^2)], x]", //
@@ -120,6 +135,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:173
+  @Test
   public void test0013() {
     check( //
         "Integrate[Log[c*(d+e*x^3)^p]^2/x^4, x]", //
@@ -127,6 +143,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:183
+  @Test
   public void test0014() {
     check( //
         "Integrate[x^2/Log[c*(d+e*x^3)^p], x]", //
@@ -134,6 +151,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:212
+  @Test
   public void test0015() {
     check( //
         "Integrate[(f*x)^(-1-n)*Log[c*(d+e*x^n)^p]^2, x]", //
@@ -141,6 +159,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:222
+  @Test
   public void test0016() {
     check( //
         "Integrate[Log[c*(d+e*x^n)^p]^3/x, x]", //
@@ -148,6 +167,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:244
+  @Test
   public void test0017() {
     check( //
         "Integrate[(d+e*x)^3*Log[c*(a+b*x^3)^p], x]", //
@@ -155,6 +175,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:301
+  @Test
   public void test0018() {
     check( //
         "Integrate[Log[c*(a+b*x^3)^p]/(d+e*x), x]", //
@@ -162,6 +183,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:353
+  @Test
   public void test0019() {
     check( //
         "Integrate[(f+g*x^2)^3*Log[c*(d+e*x^2)^p], x]", //
@@ -169,6 +191,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:418
+  @Test
   public void test0020() {
     check( //
         "Integrate[(f+g*x^2)*Log[c*(d+e*x^2)^p], x]", //
@@ -176,6 +199,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:427
+  @Test
   public void test0021() {
     check( //
         "Integrate[(f+g*x^2)^2*Log[c*(d+e*x^2)^p]/x^5, x]", //
@@ -183,6 +207,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:435
+  @Test
   public void test0022() {
     check( //
         "Integrate[(f+g*x^2)^2*Log[c*(d+e*x^2)^p]/x^6, x]", //
@@ -190,6 +215,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:473
+  @Test
   public void test0023() {
     check( //
         "Integrate[(f+g/x^n)^2*Log[c*(d+e*x^n)^p]/x, x]", //
@@ -197,6 +223,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:483
+  @Test
   public void test0024() {
     check( //
         "Integrate[Log[c*(d+e*x^n)^p]/(x*(f+g/x^n)^2), x]", //
@@ -204,6 +231,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:510
+  @Test
   public void test0025() {
     check( //
         "Integrate[Log[(a+b*x)/x]/x, x]", //
@@ -211,6 +239,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:540
+  @Test
   public void test0026() {
     check( //
         "Integrate[(a+b*Log[c*(d+e*Sqrt[x])^n])^2/x, x]", //
@@ -218,6 +247,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:548
+  @Test
   public void test0027() {
     check( //
         "Integrate[(a+b*Log[c*(d+e*Sqrt[x])^n])^3/x^2, x]", //
@@ -225,6 +255,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:594
+  @Test
   public void test0028() {
     check( //
         "Integrate[(a+b*Log[c*(d+e*x^(1/3))^n])^3, x]", //
@@ -232,6 +263,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:604
+  @Test
   public void test0029() {
     check( //
         "Integrate[(a+b*Log[c*(d+e*x^(2/3))^n])/x, x]", //
@@ -239,6 +271,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:620
+  @Test
   public void test0030() {
     check( //
         "Integrate[(a+b*Log[c*(d+e*x^(2/3))^n])^3/x, x]", //
@@ -246,6 +279,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:670
+  @Test
   public void test0031() {
     check( //
         "Integrate[(a+b*Log[c*(d+e/x^(2/3))^n])^3/x^3, x]", //
@@ -253,6 +287,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:792
+  @Test
   public void test0032() {
     check( //
         "Integrate[Log[f*x^p]^3*(a+b*Log[c*(d+e*x^m)^n])/x, x]", //
@@ -260,6 +295,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.4 u (a+b log(c (d+e x^m)^n))^p.input:810
+  @Test
   public void test0033() {
     check( //
         "Integrate[Log[c*(d+e/(f+g*x)^2)^q], x]", //
@@ -267,6 +303,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:13
+  @Test
   public void test0034() {
     check( //
         "Integrate[Log[c*x^n]^(-1+q)*(a*x^m+b*Log[c*x^n]^q)/x, x]", //
@@ -274,6 +311,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:29
+  @Test
   public void test0035() {
     check( //
         "Integrate[(a*m*x^m+b*n*q*Log[c*x^n]^(-1+q))*(a*x^m+b*Log[c*x^n]^q)/x, x]", //
@@ -281,6 +319,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:53
+  @Test
   public void test0036() {
     check( //
         "Integrate[(a*d*n*x^m-a*d*m*x^m*Log[c*x^n]-b*d*n*(-1+q)*Log[c*x^n]^q)/(x*(a*x^m+b*Log[c*x^n]^q)^2), x]", //
@@ -288,6 +327,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:68
+  @Test
   public void test0037() {
     check( //
         "Integrate[(e*x)^m*(a+b*Log[c*Log[d*x^n]^p]), x]", //
@@ -295,6 +335,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:89
+  @Test
   public void test0038() {
     check( //
         "Integrate[Log[d*(b*x+c*x^2)^n], x]", //
@@ -302,6 +343,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:98
+  @Test
   public void test0039() {
     check( //
         "Integrate[x^2*Log[d*(a+b*x+c*x^2)^n], x]", //
@@ -309,6 +351,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:106
+  @Test
   public void test0040() {
     check( //
         "Integrate[Log[1+x+x^2], x]", //
@@ -316,6 +359,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:130
+  @Test
   public void test0041() {
     check( //
         "Integrate[Log[d*(a+b*x+c*x^2)^n]^2, x]", //
@@ -323,6 +367,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:151
+  @Test
   public void test0042() {
     check( //
         "Integrate[x^2*Log[a+E^x*b], x]", //
@@ -330,6 +375,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:161
+  @Test
   public void test0043() {
     check( //
         "Integrate[x^2*Log[d+e*(f^(c*(a+b*x)))^n], x]", //
@@ -337,6 +383,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:189
+  @Test
   public void test0044() {
     check( //
         "Integrate[(Log[a*x^n]^m)^p/x, x]", //
@@ -344,6 +391,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:306
+  @Test
   public void test0045() {
     check( //
         "Integrate[Log[x+x^3], x]", //
@@ -351,6 +399,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:324
+  @Test
   public void test0046() {
     check( //
         "Integrate[1/(a*x+b*x/Log[c*x^n]^2), x]", //
@@ -358,6 +407,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:364
+  @Test
   public void test0047() {
     check( //
         "Integrate[(1+x)/(Log[x]*(x+Log[x])), x]", //
@@ -365,6 +415,7 @@ public class Logarithms2 extends AbstractRubiTestCase {
   }
 
   // 3.5 Logarithm functions.input:376
+  @Test
   public void test0048() {
     check( //
         "Integrate[Log[x]/Sqrt[a+b*Log[x]], x]", //

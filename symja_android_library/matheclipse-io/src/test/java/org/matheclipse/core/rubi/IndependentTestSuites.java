@@ -1,12 +1,16 @@
 package org.matheclipse.core.rubi;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 public class IndependentTestSuites extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public IndependentTestSuites(String name) {
-    super(name, false);
+  public IndependentTestSuites() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -21,6 +25,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0001() {
     check( //
         "Integrate[Sqrt[1 + 2*x], x]", //
@@ -29,6 +34,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {629}
+  @Test
   public void test0002() {
     check( //
         "Integrate[(1 + x)/(2 + 2*x + x^2)^3, x]", //
@@ -37,6 +43,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0003() {
     check( //
         "Integrate[x^5/Sqrt[1 - x^6], x]", //
@@ -45,6 +52,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {191}
+  @Test
   public void test0004() {
     check( //
         "Integrate[(1 + x^2)^(-3/2), x]", //
@@ -53,6 +61,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0005() {
     check( //
         "Integrate[x^2*(27 + 8*x^3)^(2/3), x]", //
@@ -61,6 +70,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3145}
+  @Test
   public void test0006() {
     check( //
         "Integrate[(Cos[x] + Sin[x])/(-Cos[x] + Sin[x])^(1/3), x]", //
@@ -69,6 +79,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {6686}
+  @Test
   public void test0007() {
     check( //
         "Integrate[x/(Sqrt[1 + x^2]*Sqrt[1 + Sqrt[1 + x^2]]), x]", //
@@ -77,6 +88,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0008() {
     check( //
         "Integrate[x*Sqrt[1 + x^2], x]", //
@@ -85,6 +97,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0009() {
     check( //
         "Integrate[x*(-1 + x^2)^9, x]", //
@@ -93,6 +106,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {37}
+  @Test
   public void test0010() {
     check( //
         "Integrate[(3 + 2*x)/(7 + 6*x)^3, x]", //
@@ -101,6 +115,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0011() {
     check( //
         "Integrate[x^4*(1 + x^5)^5, x]", //
@@ -109,6 +124,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3441}
+  @Test
   public void test0012() {
     check( //
         "Integrate[x*Cos[x^2]*Sin[x^2], x]", //
@@ -117,6 +133,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {31}
+  @Test
   public void test0013() {
     check( //
         "Integrate[(2 + 3*x)^(-1), x]", //
@@ -125,6 +142,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0014() {
     check( //
         "Integrate[x*Log[x], x]", //
@@ -133,6 +151,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {31}
+  @Test
   public void test0015() {
     check( //
         "Integrate[(1 + t)^(-1), t]", //
@@ -141,6 +160,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0016() {
     check( //
         "Integrate[Cot[x], x]", //
@@ -149,6 +169,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0017() {
     check( //
         "Integrate[x^n*Log[a*x], x]", //
@@ -157,6 +178,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2209}
+  @Test
   public void test0018() {
     check( //
         "Integrate[E^x^3*x^2, x]", //
@@ -165,6 +187,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2209}
+  @Test
   public void test0019() {
     check( //
         "Integrate[2^Sqrt[x]/Sqrt[x], x]", //
@@ -173,6 +196,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0020() {
     check( //
         "Integrate[E^x*Sin[x], x]", //
@@ -181,6 +205,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0021() {
     check( //
         "Integrate[E^x*Cos[x], x]", //
@@ -189,6 +214,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0022() {
     check( //
         "Integrate[E^(a*x)*Cos[b*x], x]", //
@@ -197,6 +223,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0023() {
     check( //
         "Integrate[E^(a*x)*Sin[b*x], x]", //
@@ -205,6 +232,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {203}
+  @Test
   public void test0024() {
     check( //
         "Integrate[(a^2 + x^2)^(-1), x]", //
@@ -213,6 +241,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {205}
+  @Test
   public void test0025() {
     check( //
         "Integrate[(a + b*x^2)^(-1), x]", //
@@ -221,6 +250,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {6686}
+  @Test
   public void test0026() {
     fSeconds = 20;
     check( //
@@ -230,6 +260,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {5077}
+  @Test
   public void test0027() {
     check( //
         "Integrate[(E^ArcTan[x]*x)/(1 + x^2)^(3/2), x]", //
@@ -238,6 +269,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {5069}
+  @Test
   public void test0028() {
     check( //
         "Integrate[E^ArcTan[x]/(1 + x^2)^(3/2), x]", //
@@ -246,6 +278,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {1588}
+  @Test
   public void test0029() {
     check( //
         "Integrate[(-1 + 4*x^5)/(1 + x + x^5)^2, x]", //
@@ -254,6 +287,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2657}
+  @Test
   public void test0030() {
     check( //
         "Integrate[(1 + Cos[x]/2)^(-1), x]", //
@@ -262,6 +296,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3075}
+  @Test
   public void test0031() {
     check( //
         "Integrate[(b*Cos[x] + a*Sin[x])^(-2), x]", //
@@ -270,6 +305,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0032() {
     check( //
         "Integrate[x/Sqrt[3 - x^2], x]", //
@@ -278,6 +314,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2178}
+  @Test
   public void test0033() {
     check( //
         "Integrate[E^t/t, t]", //
@@ -286,6 +323,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2178}
+  @Test
   public void test0034() {
     check( //
         "Integrate[E^(a*t)/t, t]", //
@@ -294,6 +332,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2178}
+  @Test
   public void test0035() {
     check( //
         "Integrate[1/(E^t*(-1 - a + t)), t]", //
@@ -302,6 +341,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3133}
+  @Test
   public void test0036() {
     check( //
         "Integrate[(b1*Cos[x] + a1*Sin[x])/(b*Cos[x] + a*Sin[x]), x]", //
@@ -310,6 +350,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2298}
+  @Test
   public void test0037() {
     check( //
         "Integrate[Log[t]^(-1), t]", //
@@ -318,6 +359,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2178}
+  @Test
   public void test0038() {
     check( //
         "Integrate[E^(2*t)/(-1 + t), t]", //
@@ -326,6 +368,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {218}
+  @Test
   public void test0039() {
     check( //
         "Integrate[1/Sqrt[1 + t^3], t]", //
@@ -334,6 +377,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3114}
+  @Test
   public void test0040() {
     check( //
         "Integrate[(Sqrt[2] + Cos[z] + Sin[z])^(-1), z]", //
@@ -342,6 +386,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {203}
+  @Test
   public void test0041() {
     check( //
         "Integrate[(1 + x^2)^(-1), x]", //
@@ -350,6 +395,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3299}
+  @Test
   public void test0042() {
     check( //
         "Integrate[Sin[x]/x, x]", //
@@ -358,6 +404,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2095}
+  @Test
   public void test0043() {
     check( //
         "Integrate[(6 - 3*x^2 + x^4)/(4 + 5*x^2 - 5*x^4 + x^6), x]", //
@@ -366,6 +413,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {29}
+  @Test
   public void test0045() {
     check( //
         "Integrate[x^(-1), x]", //
@@ -374,6 +422,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0046() {
     check( //
         "Integrate[(a + b*x)^p, x]", //
@@ -382,6 +431,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {31}
+  @Test
   public void test0047() {
     check( //
         "Integrate[(a + b*x)^(-1), x]", //
@@ -390,6 +440,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0048() {
     check( //
         "Integrate[(a + b*x)^(-2), x]", //
@@ -398,6 +449,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {203}
+  @Test
   public void test0049() {
     check( //
         "Integrate[(c^2 + x^2)^(-1), x]", //
@@ -406,6 +458,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {206}
+  @Test
   public void test0050() {
     check( //
         "Integrate[(c^2 - x^2)^(-1), x]", //
@@ -414,6 +467,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2295}
+  @Test
   public void test0051() {
     check( //
         "Integrate[Log[x], x]", //
@@ -422,6 +476,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0052() {
     check( //
         "Integrate[x*Log[x], x]", //
@@ -430,6 +485,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0053() {
     check( //
         "Integrate[x^2*Log[x], x]", //
@@ -438,6 +494,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0054() {
     check( //
         "Integrate[x^p*Log[x], x]", //
@@ -446,6 +503,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2298}
+  @Test
   public void test0055() {
     check( //
         "Integrate[Log[x]^(-1), x]", //
@@ -454,6 +512,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2638}
+  @Test
   public void test0056() {
     check( //
         "Integrate[Sin[x], x]", //
@@ -462,6 +521,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2637}
+  @Test
   public void test0057() {
     check( //
         "Integrate[Cos[x], x]", //
@@ -470,6 +530,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0058() {
     check( //
         "Integrate[Tan[x], x]", //
@@ -478,6 +539,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0059() {
     check( //
         "Integrate[Cot[x], x]", //
@@ -486,6 +548,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0060() {
     check( //
         "Integrate[Sec[x], x]", //
@@ -494,6 +557,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0061() {
     check( //
         "Integrate[Csc[x], x]", //
@@ -502,6 +566,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2643}
+  @Test
   public void test0062() {
     check( //
         "Integrate[Sin[x]^p, x]", //
@@ -510,6 +575,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4282}
+  @Test
   public void test0063() {
     check( //
         "Integrate[Sin[x]*Sin[2*x], x]", //
@@ -518,6 +584,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3299}
+  @Test
   public void test0064() {
     check( //
         "Integrate[Sin[x]/x, x]", //
@@ -526,6 +593,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3302}
+  @Test
   public void test0065() {
     check( //
         "Integrate[Cos[x]/x, x]", //
@@ -534,6 +602,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2638}
+  @Test
   public void test0066() {
     check( //
         "Integrate[Sin[a + b*x], x]", //
@@ -542,6 +611,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2637}
+  @Test
   public void test0067() {
     check( //
         "Integrate[Cos[a + b*x], x]", //
@@ -550,6 +620,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0068() {
     check( //
         "Integrate[Tan[a + b*x], x]", //
@@ -558,6 +629,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0069() {
     check( //
         "Integrate[Cot[a + b*x], x]", //
@@ -566,6 +638,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0070() {
     check( //
         "Integrate[Csc[a + b*x], x]", //
@@ -574,6 +647,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0071() {
     check( //
         "Integrate[Sec[a + b*x], x]", //
@@ -582,6 +656,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0072() {
     check( //
         "Integrate[(1 + Cos[x])^(-1), x]", //
@@ -590,6 +665,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0073() {
     check( //
         "Integrate[(1 - Cos[x])^(-1), x]", //
@@ -598,6 +674,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0074() {
     check( //
         "Integrate[(1 + Sin[x])^(-1), x]", //
@@ -606,6 +683,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0075() {
     check( //
         "Integrate[(1 - Sin[x])^(-1), x]", //
@@ -614,6 +692,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4283}
+  @Test
   public void test0076() {
     check( //
         "Integrate[Cos[x]*Cos[2*x], x]", //
@@ -622,6 +701,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4284}
+  @Test
   public void test0077() {
     check( //
         "Integrate[Cos[3*x]*Sin[2*x], x]", //
@@ -630,6 +710,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0078() {
     check( //
         "Integrate[d^x*Sin[x], x]", //
@@ -638,6 +719,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0079() {
     check( //
         "Integrate[d^x*Cos[x], x]", //
@@ -646,6 +728,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4475}
+  @Test
   public void test0080() {
     check( //
         "Integrate[Sin[Log[x]], x]", //
@@ -654,6 +737,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4476}
+  @Test
   public void test0081() {
     check( //
         "Integrate[Cos[Log[x]], x]", //
@@ -662,6 +746,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0082() {
     check( //
         "Integrate[E^x, x]", //
@@ -670,6 +755,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0083() {
     check( //
         "Integrate[a^x, x]", //
@@ -678,6 +764,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0084() {
     check( //
         "Integrate[E^(a*x), x]", //
@@ -686,6 +773,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2178}
+  @Test
   public void test0085() {
     check( //
         "Integrate[E^(a*x)/x, x]", //
@@ -694,6 +782,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2197}
+  @Test
   public void test0086() {
     check( //
         "Integrate[(E^(a*x)*x)/(1 + a*x)^2, x]", //
@@ -702,6 +791,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2209}
+  @Test
   public void test0087() {
     check( //
         "Integrate[k^x^2*x, x]", //
@@ -710,6 +800,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2204}
+  @Test
   public void test0088() {
     check( //
         "Integrate[E^x^2, x]", //
@@ -718,6 +809,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2209}
+  @Test
   public void test0089() {
     check( //
         "Integrate[E^x^2*x, x]", //
@@ -726,6 +818,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0092() {
     check( //
         "Integrate[Sqrt[a + b*x], x]", //
@@ -734,6 +827,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0093() {
     check( //
         "Integrate[1/Sqrt[a + b*x], x]", //
@@ -742,6 +836,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0094() {
     check( //
         "Integrate[(a + b*x)^(p/2), x]", //
@@ -750,6 +845,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0095() {
     check( //
         "Integrate[x/(1 - x^2)^(9/8), x]", //
@@ -758,6 +854,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {803}
+  @Test
   public void test0096() {
     check( //
         "Integrate[(1 + x)/((1 - x)^2*Sqrt[1 + x^2]), x]", //
@@ -766,6 +863,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {215}
+  @Test
   public void test0097() {
     check( //
         "Integrate[1/Sqrt[1 + x^2], x]", //
@@ -774,6 +872,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0098() {
     check( //
         "Integrate[r/Sqrt[-alpha^2 + 2*e*r^2], r]", //
@@ -782,6 +881,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0099() {
     check( //
         "Integrate[r/Sqrt[-alpha^2 - epsilon^2 + 2*e*r^2], r]", //
@@ -790,6 +890,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0100() {
     check( //
         "Integrate[Log[x^2]/x^3, x]", //
@@ -798,6 +899,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2201}
+  @Test
   public void test0101() {
     check( //
         "Integrate[(-1 + (1 - x)*Log[x])/(E^x*Log[x]^2), x]", //
@@ -806,6 +908,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0102() {
     check( //
         "Integrate[Tanh[2*x], x]", //
@@ -814,6 +917,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {6684}
+  @Test
   public void test0103() {
     check( //
         "Integrate[(-1 + I*eps*Sinh[x])/(I*a - x + I*eps*Cosh[x]), x]", //
@@ -822,6 +926,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2646}
+  @Test
   public void test0104() {
     check( //
         "Integrate[Sqrt[1 + Sin[x]], x]", //
@@ -830,6 +935,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2646}
+  @Test
   public void test0105() {
     check( //
         "Integrate[Sqrt[1 - Sin[x]], x]", //
@@ -838,6 +944,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2646}
+  @Test
   public void test0106() {
     check( //
         "Integrate[Sqrt[1 + Cos[x]], x]", //
@@ -846,6 +953,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2646}
+  @Test
   public void test0107() {
     check( //
         "Integrate[Sqrt[1 - Cos[x]], x]", //
@@ -854,6 +962,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0108() {
     check( //
         "Integrate[Cot[x], x]", //
@@ -862,6 +971,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0109() {
     check( //
         "Integrate[Tanh[x], x]", //
@@ -870,6 +980,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0110() {
     check( //
         "Integrate[Coth[x], x]", //
@@ -878,6 +989,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0111() {
     check( //
         "Integrate[b^x, x]", //
@@ -886,6 +998,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0112() {
     check( //
         "Integrate[(-3 + x)^(-4), x]", //
@@ -894,6 +1007,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {215}
+  @Test
   public void test0113() {
     check( //
         "Integrate[1/Sqrt[1 + x^2], x]", //
@@ -902,6 +1016,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {215}
+  @Test
   public void test0114() {
     check( //
         "Integrate[1/Sqrt[9 + 4*x^2], x]", //
@@ -910,6 +1025,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {215}
+  @Test
   public void test0115() {
     check( //
         "Integrate[1/Sqrt[4 + x^2], x]", //
@@ -918,6 +1034,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {6349}
+  @Test
   public void test0116() {
     check( //
         "Integrate[Erf[x], x]", //
@@ -926,6 +1043,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {6349}
+  @Test
   public void test0117() {
     check( //
         "Integrate[Erf[a + x], x]", //
@@ -934,6 +1052,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {6684}
+  @Test
   public void test0118() {
     check( //
         "Integrate[(x*(-Sqrt[-4 + x^2] + x^2*Sqrt[-4 + x^2] - 4*Sqrt[-1 + x^2] + x^2*Sqrt[-1 + x^2]))/((4 - 5*x^2 + x^4)*(1 + Sqrt[-4 + x^2] + Sqrt[-1 + x^2])), x]", //
@@ -942,6 +1061,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2288}
+  @Test
   public void test0120() {
     check( //
         "Integrate[(E^(1 + Log[x]^(-1))*(-1 + Log[x]^2))/Log[x]^2, x]", //
@@ -950,6 +1070,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2637}
+  @Test
   public void test0121() {
     check( //
         "Integrate[Cos[x], x]", //
@@ -958,6 +1079,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2209}
+  @Test
   public void test0122() {
     check( //
         "Integrate[E^x^2*x, x]", //
@@ -966,6 +1088,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0123() {
     check( //
         "Integrate[x*Sqrt[1 + x^2], x]", //
@@ -974,6 +1097,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0124() {
     check( //
         "Integrate[E^x*Sin[x], x]", //
@@ -982,6 +1106,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3299}
+  @Test
   public void test0125() {
     check( //
         "Integrate[Sin[y]/y, y]", //
@@ -990,6 +1115,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2209}
+  @Test
   public void test0126() {
     check( //
         "Integrate[E^x^2*x, x]", //
@@ -998,6 +1124,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0127() {
     check( //
         "Integrate[x*Sqrt[1 + x^2], x]", //
@@ -1006,6 +1133,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {30}
+  @Test
   public void test0128() {
     check( //
         "Integrate[x^(3/2), x]", //
@@ -1014,6 +1142,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2637}
+  @Test
   public void test0129() {
     check( //
         "Integrate[Cos[3 + 2*x], x]", //
@@ -1022,6 +1151,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0130() {
     check( //
         "Integrate[(10*E)^x, x]", //
@@ -1030,6 +1160,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0131() {
     check( //
         "Integrate[(1 + Cos[x])^(-1), x]", //
@@ -1038,6 +1169,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2197}
+  @Test
   public void test0132() {
     check( //
         "Integrate[(E^x*x)/(1 + x)^2, x]", //
@@ -1046,6 +1178,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2204}
+  @Test
   public void test0133() {
     check( //
         "Integrate[E^x^2, x]", //
@@ -1054,6 +1187,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2178}
+  @Test
   public void test0134() {
     check( //
         "Integrate[E^x/x, x]", //
@@ -1062,6 +1196,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {208}
+  @Test
   public void test0135() {
     check( //
         "Integrate[(A^4 - A^2*B^2 + (-A^2 + B^2)*x^2)^(-1), x]", //
@@ -1070,6 +1205,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0136() {
     check( //
         "Integrate[x*Log[x], x]", //
@@ -1078,6 +1214,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2298}
+  @Test
   public void test0137() {
     check( //
         "Integrate[Log[x]^(-1), x]", //
@@ -1086,6 +1223,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0138() {
     check( //
         "Integrate[E^(-1 - x), x]", //
@@ -1094,6 +1232,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0139() {
     check( //
         "Integrate[E^x*Sin[x], x]", //
@@ -1102,6 +1241,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {29}
+  @Test
   public void test0140() {
     check( //
         "Integrate[x^(-1), x]", //
@@ -1110,6 +1250,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0141() {
     check( //
         "Integrate[(1 - Cos[x])^(-1), x]", //
@@ -1118,6 +1259,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0142() {
     check( //
         "Integrate[x*Log[x], x]", //
@@ -1126,6 +1268,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0143() {
     check( //
         "Integrate[1/(r*Sqrt[-a^2 + 2*H*r^2]), x]", //
@@ -1134,6 +1277,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0144() {
     check( //
         "Integrate[1/(r*Sqrt[-a^2 - e^2 + 2*H*r^2]), x]", //
@@ -1142,6 +1286,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0145() {
     check( //
         "Integrate[1/(r*Sqrt[-a^2 + 2*H*r^2 - 2*K*r^4]), x]", //
@@ -1150,6 +1295,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0146() {
     check( //
         "Integrate[1/(r*Sqrt[-a^2 - e^2 + 2*H*r^2 - 2*K*r^4]), x]", //
@@ -1158,6 +1304,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0147() {
     check( //
         "Integrate[1/(r*Sqrt[-a^2 - 2*K*r + 2*H*r^2]), x]", //
@@ -1166,6 +1313,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0148() {
     check( //
         "Integrate[1/(r*Sqrt[-a^2 - e^2 - 2*K*r + 2*H*r^2]), x]", //
@@ -1174,6 +1322,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0149() {
     check( //
         "Integrate[r/Sqrt[-a^2 + 2*E*r^2], x]", //
@@ -1182,6 +1331,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0150() {
     check( //
         "Integrate[r/Sqrt[-a^2 - e^2 + 2*E*r^2], x]", //
@@ -1190,6 +1340,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0151() {
     check( //
         "Integrate[r/Sqrt[-a^2 + 2*E*r^2 - 2*K*r^4], x]", //
@@ -1198,6 +1349,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0152() {
     check( //
         "Integrate[r/Sqrt[-a^2 - e^2 + 2*E*r^2 - 2*K*r^4], x]", //
@@ -1206,6 +1358,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test0153() {
     check( //
         "Integrate[r/Sqrt[-a^2 - e^2 - 2*K*r + 2*H*r^2], x]", //
@@ -1214,6 +1367,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {30}
+  @Test
   public void test0154() {
     check( //
         "Integrate[x^n, x]", //
@@ -1222,6 +1376,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0155() {
     check( //
         "Integrate[E^x, x]", //
@@ -1230,6 +1385,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {29}
+  @Test
   public void test0156() {
     check( //
         "Integrate[x^(-1), x]", //
@@ -1238,6 +1394,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2194}
+  @Test
   public void test0157() {
     check( //
         "Integrate[a^x, x]", //
@@ -1246,6 +1403,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2638}
+  @Test
   public void test0158() {
     check( //
         "Integrate[Sin[x], x]", //
@@ -1254,6 +1412,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2637}
+  @Test
   public void test0159() {
     check( //
         "Integrate[Cos[x], x]", //
@@ -1262,6 +1421,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2638}
+  @Test
   public void test0160() {
     check( //
         "Integrate[Sinh[x], x]", //
@@ -1270,6 +1430,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2637}
+  @Test
   public void test0161() {
     check( //
         "Integrate[Cosh[x], x]", //
@@ -1278,6 +1439,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0162() {
     check( //
         "Integrate[Tan[x], x]", //
@@ -1286,6 +1448,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0163() {
     check( //
         "Integrate[Cot[x], x]", //
@@ -1294,6 +1457,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2295}
+  @Test
   public void test0164() {
     check( //
         "Integrate[Log[x], x]", //
@@ -1302,6 +1466,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0165() {
     check( //
         "Integrate[E^x*Sin[x], x]", //
@@ -1310,6 +1475,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0166() {
     check( //
         "Integrate[x*Log[x], x]", //
@@ -1318,6 +1484,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0167() {
     check( //
         "Integrate[t^2*Log[t], t]", //
@@ -1326,6 +1493,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0168() {
     check( //
         "Integrate[E^(2*t)*Sin[3*t], t]", //
@@ -1334,6 +1502,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0169() {
     check( //
         "Integrate[Cos[3*t]/E^t, t]", //
@@ -1342,6 +1511,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0170() {
     check( //
         "Integrate[Sqrt[t]*Log[t], t]", //
@@ -1350,6 +1520,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4284}
+  @Test
   public void test0171() {
     check( //
         "Integrate[Cos[5*x]*Sin[3*x], x]", //
@@ -1358,6 +1529,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4282}
+  @Test
   public void test0172() {
     check( //
         "Integrate[Sin[2*x]*Sin[4*x], x]", //
@@ -1366,6 +1538,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4476}
+  @Test
   public void test0173() {
     check( //
         "Integrate[Cos[Log[x]], x]", //
@@ -1374,6 +1547,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2295}
+  @Test
   public void test0174() {
     check( //
         "Integrate[Log[Sqrt[x]], x]", //
@@ -1382,6 +1556,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4475}
+  @Test
   public void test0175() {
     check( //
         "Integrate[Sin[Log[x]], x]", //
@@ -1390,6 +1565,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0176() {
     check( //
         "Integrate[Sqrt[x]*Log[x], x]", //
@@ -1398,6 +1574,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2644}
+  @Test
   public void test0177() {
     check( //
         "Integrate[(1 - Sin[2*x])^2, x]", //
@@ -1406,6 +1583,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0178() {
     check( //
         "Integrate[(1 - Sin[x])^(-1), x]", //
@@ -1414,6 +1592,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0179() {
     check( //
         "Integrate[Csc[x], x]", //
@@ -1422,6 +1601,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4282}
+  @Test
   public void test0180() {
     check( //
         "Integrate[Sin[2*x]*Sin[5*x], x]", //
@@ -1430,6 +1610,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4284}
+  @Test
   public void test0181() {
     check( //
         "Integrate[Cos[x]*Sin[3*x], x]", //
@@ -1438,6 +1619,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4283}
+  @Test
   public void test0182() {
     check( //
         "Integrate[Cos[3*x]*Cos[4*x], x]", //
@@ -1446,6 +1628,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4282}
+  @Test
   public void test0183() {
     check( //
         "Integrate[Sin[3*x]*Sin[6*x], x]", //
@@ -1454,6 +1637,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {264}
+  @Test
   public void test0184() {
     check( //
         "Integrate[1/(x^2*Sqrt[4 + x^2]), x]", //
@@ -1462,6 +1646,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0185() {
     check( //
         "Integrate[x/Sqrt[4 + x^2], x]", //
@@ -1470,6 +1655,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {264}
+  @Test
   public void test0186() {
     check( //
         "Integrate[1/(x^2*Sqrt[1 - x^2]), x]", //
@@ -1478,6 +1664,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0187() {
     check( //
         "Integrate[x/Sqrt[1 - x^2], x]", //
@@ -1486,6 +1673,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0188() {
     check( //
         "Integrate[x*Sqrt[4 - x^2], x]", //
@@ -1494,6 +1682,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {215}
+  @Test
   public void test0189() {
     check( //
         "Integrate[1/Sqrt[9 + x^2], x]", //
@@ -1502,6 +1691,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {264}
+  @Test
   public void test0190() {
     check( //
         "Integrate[Sqrt[-a^2 + x^2]/x^4, x]", //
@@ -1510,6 +1700,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {264}
+  @Test
   public void test0191() {
     check( //
         "Integrate[1/(x^2*Sqrt[-9 + 16*x^2]), x]", //
@@ -1518,6 +1709,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0192() {
     check( //
         "Integrate[x/(4 + x^2)^(5/2), x]", //
@@ -1526,6 +1718,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {191}
+  @Test
   public void test0193() {
     check( //
         "Integrate[(-25 + 4*x^2)^(-3/2), x]", //
@@ -1534,6 +1727,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {1587}
+  @Test
   public void test0194() {
     check( //
         "Integrate[(2*x + x^2)/(4 + 3*x^2 + x^3), x]", //
@@ -1542,6 +1736,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {1587}
+  @Test
   public void test0195() {
     check( //
         "Integrate[(-x + 2*x^3)/(1 - x^2 + x^4), x]", //
@@ -1550,6 +1745,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {260}
+  @Test
   public void test0196() {
     check( //
         "Integrate[x/(-1 + x^2), x]", //
@@ -1558,6 +1754,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0197() {
     check( //
         "Integrate[(1 - Cos[x])^(-1), x]", //
@@ -1566,6 +1763,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3133}
+  @Test
   public void test0198() {
     check( //
         "Integrate[(-Cos[x] + Sin[x])/(Cos[x] + Sin[x]), x]", //
@@ -1574,6 +1772,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0199() {
     check( //
         "Integrate[x/Sqrt[1 - x^2], x]", //
@@ -1582,6 +1781,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0200() {
     check( //
         "Integrate[x^3*Log[x], x]", //
@@ -1590,6 +1790,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {1587}
+  @Test
   public void test0201() {
     check( //
         "Integrate[(1 + x + x^3)/(4*x + 2*x^2 + x^4), x]", //
@@ -1598,6 +1799,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2638}
+  @Test
   public void test0202() {
     check( //
         "Integrate[Sin[Pi*x], x]", //
@@ -1606,6 +1808,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0203() {
     check( //
         "Integrate[E^(3*x)*Cos[5*x], x]", //
@@ -1614,6 +1817,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4283}
+  @Test
   public void test0204() {
     check( //
         "Integrate[Cos[3*x]*Cos[5*x], x]", //
@@ -1622,6 +1826,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {6686}
+  @Test
   public void test0205() {
     // Int[(u_)*(y_)^(m_.), x_Symbol] :=
     // With[{q = DerivativeDivides[y, u, x]}, Simp[(q*y^(m + 1))/(m + 1), x]
@@ -1636,6 +1841,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {216}
+  @Test
   public void test0207() {
     check( //
         "Integrate[1/Sqrt[16 - x^2], x]", //
@@ -1644,6 +1850,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {5071}
+  @Test
   public void test0208() {
     check( //
         "Integrate[E^ArcTan[x]/(1 + x^2), x]", //
@@ -1652,6 +1859,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2295}
+  @Test
   public void test0209() {
     check( //
         "Integrate[Log[x/2], x]", //
@@ -1660,6 +1868,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0210() {
     check( //
         "Integrate[x*(5 + x^2)^8, x]", //
@@ -1668,6 +1877,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0211() {
     check( //
         "Integrate[Cos[4*x]/E^(3*x), x]", //
@@ -1676,6 +1886,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0212() {
     check( //
         "Integrate[E^x*Cos[4 + 3*x], x]", //
@@ -1684,6 +1895,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0213() {
     check( //
         "Integrate[x^2*(1 + x^3)^4, x]", //
@@ -1692,6 +1904,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {208}
+  @Test
   public void test0214() {
     check( //
         "Integrate[(a^2 - b^2*x^2)^(-1), x]", //
@@ -1700,6 +1913,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {205}
+  @Test
   public void test0215() {
     check( //
         "Integrate[(a^2 + b^2*x^2)^(-1), x]", //
@@ -1708,6 +1922,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0216() {
     check( //
         "Integrate[Sec[2*a*x], x]", //
@@ -1716,6 +1931,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0217() {
     check( //
         "Integrate[-Sec[Pi/4 + 2*x], x]", //
@@ -1724,6 +1940,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0218() {
     check( //
         "Integrate[(1 + Cos[x])^(-1), x]", //
@@ -1732,6 +1949,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2648}
+  @Test
   public void test0219() {
     check( //
         "Integrate[(1 - Cos[x])^(-1), x]", //
@@ -1740,6 +1958,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4282}
+  @Test
   public void test0220() {
     check( //
         "Integrate[Sin[x/4]*Sin[x], x]", //
@@ -1748,6 +1967,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4283}
+  @Test
   public void test0221() {
     check( //
         "Integrate[Cos[3*x]*Cos[4*x], x]", //
@@ -1756,6 +1976,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4884}
+  @Test
   public void test0222() {
     check( //
         "Integrate[ArcTan[x]^n/(1 + x^2), x]", //
@@ -1764,6 +1985,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4642}
+  @Test
   public void test0223() {
     check( //
         "Integrate[1/(Sqrt[1 - x^2]*ArcCos[x]^3), x]", //
@@ -1772,6 +1994,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0224() {
     check( //
         "Integrate[Log[x]/x^5, x]", //
@@ -1780,6 +2003,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0225() {
     check( //
         "Integrate[Sin[x]/E^x, x]", //
@@ -1788,6 +2012,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4432}
+  @Test
   public void test0226() {
     check( //
         "Integrate[E^(2*x)*Sin[3*x], x]", //
@@ -1796,6 +2021,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0227() {
     check( //
         "Integrate[a^x*Cos[x], x]", //
@@ -1804,6 +2030,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4476}
+  @Test
   public void test0228() {
     check( //
         "Integrate[Cos[Log[x]], x]", //
@@ -1812,6 +2039,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0229() {
     check( //
         "Integrate[x^(-1 + k)*(a + b*x^k)^n, x]", //
@@ -1820,6 +2048,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {260}
+  @Test
   public void test0230() {
     check( //
         "Integrate[x^2/(a^3 + x^3), x]", //
@@ -1828,6 +2057,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {364}
+  @Test
   public void test0231() {
     check( //
         "Integrate[1/(x^m*(a^3 + x^3)), x]", //
@@ -1836,6 +2066,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {364}
+  @Test
   public void test0232() {
     check( //
         "Integrate[1/(x^m*(a^4 - x^4)), x]", //
@@ -1844,6 +2075,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {260}
+  @Test
   public void test0233() {
     check( //
         "Integrate[x^4/(a^5 + x^5), x]", //
@@ -1852,6 +2084,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {364}
+  @Test
   public void test0234() {
     check( //
         "Integrate[1/(x^m*(a^5 + x^5)), x]", //
@@ -1860,6 +2093,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0235() {
     check( //
         "Integrate[x^3/(a^4 + x^4)^3, x]", //
@@ -1868,6 +2102,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {613}
+  @Test
   public void test0236() {
     check( //
         "Integrate[(1 + x + x^2)^(-3/2), x]", //
@@ -1876,6 +2111,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {636}
+  @Test
   public void test0237() {
     check( //
         "Integrate[x/(1 + x + x^2)^(3/2), x]", //
@@ -1884,6 +2120,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0238() {
     check( //
         "Integrate[1/((1 - 3/x)^(4/3)*x^2), x]", //
@@ -1892,6 +2129,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0239() {
     check( //
         "Integrate[x^6*(1 + x^7)^(1/3), x]", //
@@ -1900,6 +2138,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {261}
+  @Test
   public void test0240() {
     check( //
         "Integrate[x^6/(1 + x^7)^(5/3), x]", //
@@ -1908,6 +2147,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {1588}
+  @Test
   public void test0241() {
     check( //
         "Integrate[(-3*x + 2*x^3)*(-3*x^2 + x^4)^(3/5), x]", //
@@ -1916,6 +2156,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {1590}
+  @Test
   public void test0242() {
     check( //
         "Integrate[(-1 + x^4)/(x^2*Sqrt[1 + x^2 + x^4]), x]", //
@@ -1924,6 +2165,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2084}
+  @Test
   public void test0243() {
     check( //
         "Integrate[(1 - x^2)/((1 + 2*a*x + x^2)*Sqrt[1 + 2*a*x + 2*b*x^2 + 2*a*x^3 + x^4]), x]", //
@@ -1933,6 +2175,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2577}
+  @Test
   public void test0244() {
     check( //
         "Integrate[Cos[x]^(2*m)*Sin[x]^(2*m), x]", //
@@ -1941,6 +2184,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4283}
+  @Test
   public void test0245() {
     check( //
         "Integrate[Cos[x]*Cos[4*x], x]", //
@@ -1949,6 +2193,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2646}
+  @Test
   public void test0246() {
     check( //
         "Integrate[Sqrt[1 + Sin[2*x]], x]", //
@@ -1957,6 +2202,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2646}
+  @Test
   public void test0247() {
     check( //
         "Integrate[Sqrt[1 - Sin[2*x]], x]", //
@@ -1965,6 +2211,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4306}
+  @Test
   public void test0248() {
     check( //
         "Integrate[Sin[x]/Sqrt[Sin[2*x]], x]", //
@@ -1973,6 +2220,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4305}
+  @Test
   public void test0249() {
     check( //
         "Integrate[Cos[x]/Sqrt[Sin[2*x]], x]", //
@@ -1981,6 +2229,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4292}
+  @Test
   public void test0250() {
     check( //
         "Integrate[Csc[x]^5*Sin[2*x]^(3/2), x]", //
@@ -1989,6 +2238,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4331}
+  @Test
   public void test0251() {
     check( //
         "Integrate[Sin[x]/Cos[2*x]^(5/2), x]", //
@@ -1997,6 +2247,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {30}
+  @Test
   public void test0252() {
     check( //
         "Integrate[x^(1 + 2*n), x]", //
@@ -2005,6 +2256,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2288}
+  @Test
   public void test0253() {
     check( //
         "Integrate[(E^x*(1 - x - x^2))/Sqrt[1 - x^2], x]", //
@@ -2013,6 +2265,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4433}
+  @Test
   public void test0254() {
     check( //
         "Integrate[Cos[2*x]/E^(3*x), x]", //
@@ -2021,6 +2274,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {4453}
+  @Test
   public void test0255() {
     check( //
         "Integrate[E^(m*x)*Csc[x]^2, x]", //
@@ -2029,6 +2283,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2288}
+  @Test
   public void test0256() {
     check( //
         "Integrate[(E^x*(1 - Sin[x]))/(1 - Cos[x]), x]", //
@@ -2037,6 +2292,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2288}
+  @Test
   public void test0257() {
     check( //
         "Integrate[(E^x*(1 + Sin[x]))/(1 + Cos[x]), x]", //
@@ -2045,6 +2301,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2288}
+  @Test
   public void test0258() {
     check( //
         "Integrate[(E^x*(1 + Cos[x]))/(1 - Sin[x]), x]", //
@@ -2053,6 +2310,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2288}
+  @Test
   public void test0259() {
     check( //
         "Integrate[(E^x*(1 - Cos[x]))/(1 + Sin[x]), x]", //
@@ -2061,6 +2319,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2637}
+  @Test
   public void test0260() {
     check( //
         "Integrate[Cosh[x], x]", //
@@ -2069,6 +2328,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2638}
+  @Test
   public void test0261() {
     check( //
         "Integrate[Sinh[x], x]", //
@@ -2077,6 +2337,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0262() {
     check( //
         "Integrate[Tanh[x], x]", //
@@ -2085,6 +2346,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3475}
+  @Test
   public void test0263() {
     check( //
         "Integrate[Coth[x], x]", //
@@ -2093,6 +2355,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0264() {
     check( //
         "Integrate[Sech[x], x]", //
@@ -2101,6 +2364,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {3770}
+  @Test
   public void test0265() {
     check( //
         "Integrate[Csch[x], x]", //
@@ -2109,6 +2373,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2304}
+  @Test
   public void test0266() {
     check( //
         "Integrate[x^m*Log[x], x]", //
@@ -2117,6 +2382,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2521}
+  @Test
   public void test0267() {
     check( //
         "Integrate[Log[Log[x]]/x, x]", //
@@ -2125,6 +2391,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0268() {
     check( //
         "Integrate[1/Sqrt[1 - a*x], x]", //
@@ -2133,6 +2400,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {239}
+  @Test
   public void test0269() {
     check( //
         "Integrate[(1 - x^3)^(-1/3), x]", //
@@ -2141,6 +2409,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {1587}
+  @Test
   public void test0270() {
     check( //
         "Integrate[(3 - 3*x + 30*x^2 + 160*x^3)/(9 + 24*x - 12*x^2 + 80*x^3 + 320*x^4), x]", //
@@ -2149,6 +2418,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2090}
+  @Test
   public void test0271() {
     check( //
         "Integrate[(3 + 12*x + 20*x^2)/(9 + 24*x - 12*x^2 + 80*x^3 + 320*x^4), x]", //
@@ -2157,6 +2427,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {405}
+  @Test
   public void test0272() {
     check( //
         "Integrate[Sqrt[1 - x^4]/(1 + x^4), x]", //
@@ -2165,6 +2436,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2072}
+  @Test
   public void test0273() {
     check( //
         "Integrate[Sqrt[1 + p*x^2 - x^4]/(1 + x^4), x]", //
@@ -2173,6 +2445,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {484}
+  @Test
   public void test0274() {
     check( //
         "Integrate[x/(Sqrt[1 - x^3]*(4 - x^3)), x]", //
@@ -2181,6 +2454,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {485}
+  @Test
   public void test0275() {
     check( //
         "Integrate[x/((4 - d*x^3)*Sqrt[-1 + d*x^3]), x]", //
@@ -2189,6 +2463,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {395}
+  @Test
   public void test0276() {
     check( //
         "Integrate[1/((1 - 3*x^2)^(1/3)*(3 - x^2)), x]", //
@@ -2197,6 +2472,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {394}
+  @Test
   public void test0277() {
     check( //
         "Integrate[1/((3 + x^2)*(1 + 3*x^2)^(1/3)), x]", //
@@ -2205,6 +2481,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {393}
+  @Test
   public void test0278() {
     check( //
         "Integrate[1/((1 - x^2)^(1/3)*(3 + x^2)), x]", //
@@ -2213,6 +2490,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {392}
+  @Test
   public void test0279() {
     check( //
         "Integrate[1/((3 - x^2)*(1 + x^2)^(1/3)), x]", //
@@ -2221,6 +2499,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {487}
+  @Test
   public void test0280() {
     check( //
         "Integrate[x/(Sqrt[1 + x^3]*(10 + 6*Sqrt[3] + x^3)), x]", //
@@ -2229,6 +2508,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {487}
+  @Test
   public void test0281() {
     check( //
         "Integrate[x/(Sqrt[1 + x^3]*(10 - 6*Sqrt[3] + x^3)), x]", //
@@ -2237,6 +2517,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {488}
+  @Test
   public void test0282() {
     check( //
         "Integrate[x/(Sqrt[-1 + x^3]*(-10 - 6*Sqrt[3] + x^3)), x]", //
@@ -2245,6 +2526,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {488}
+  @Test
   public void test0283() {
     check( //
         "Integrate[x/(Sqrt[-1 + x^3]*(-10 + 6*Sqrt[3] + x^3)), x]", //
@@ -2253,6 +2535,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // {2151}
+  @Test
   public void test0284() {
     check( //
         "Integrate[(-1 + x)/((1 + x)*(2 + x^3)^(1/3)), x]", //

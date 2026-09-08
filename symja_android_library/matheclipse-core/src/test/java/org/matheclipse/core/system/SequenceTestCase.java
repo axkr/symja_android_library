@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 public class SequenceTestCase extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSequenceCases() {
     check("SequenceCases({a, b, x, x, a, c}, Overlaps->True)", //
         "SequenceCases({a,b,x,x,a,c},Overlaps->True)");
@@ -56,6 +58,7 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSequenceCount() {
     check("SequenceCount({a, b, a, b, a, b}, {a, b})", //
         "3");

@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -127,6 +128,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * conjugate; the rules leave these unevaluated.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateRationalizeSurdDenominator() {
     check("Integrate(x^2/(x^2+Sqrt(1-x^2)), x)", //
         "x+ArcSin(x)-1/5*Sqrt(5*(2+Sqrt(5)))*ArcTan((Sqrt(2)*x)/Sqrt(1+Sqrt(5)))-1/5*Sqrt(\n"
@@ -546,6 +548,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNIntegrate() {
     checkNumeric(
         "NIntegrate(ln(x^2), {x, -5, 99}, Method->Romberg, MaxPoints->400, MaxIterations->10000000)", //
@@ -916,6 +919,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testXReciprocalIssue1064() {
     // message - NIntegrate: maximal count (10,000) exceeded.
     check("NIntegrate(1/x, {x,0,1},Method->\"GaussKronrod\")", //
@@ -1054,6 +1058,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDilogarithmIntegrationByParts() {
     // Symja extension, proposed upstream in RuleBasedIntegration/Rubi#63 by benruijl: an
     // integration-by-parts rule for Int(PolyLog(2,u),x) where u is a rational function whose
@@ -1156,6 +1161,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * integrand to itself and was applied again until the endless-iteration guard stopped it.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testExponentialOverPerfectSquare() {
     check("Integrate(E^x/(x^2-2*x+1), x)", //
         "E^x/(1-x)+E*ExpIntegralEi(-1+x)");

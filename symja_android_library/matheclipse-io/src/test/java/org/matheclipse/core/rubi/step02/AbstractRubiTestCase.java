@@ -1,7 +1,12 @@
 package org.matheclipse.core.rubi.step02;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.TestInfo;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
@@ -16,10 +21,18 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
-import junit.framework.TestCase;
 
-/** Tests system.reflection classes */
-public abstract class AbstractRubiTestCase extends TestCase {
+/**
+ * The Rubi scoring corpus. Tagged {@code "corpus"} so it stays out of a normal build:
+ * these are expected values from Rubi's reference implementation, and a failure here is a
+ * known gap rather than a regression. The tag is spelled out because {@code TestTags} lives
+ * in matheclipse-core's test sources, which this module cannot see.
+ *
+ * <p>
+ * Run it with {@code mvn -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400}.
+ */
+@Tag("corpus")
+public abstract class AbstractRubiTestCase {
 
   protected ExprEvaluator fEvaluator;
   /** Timeout limit in seconds as the default value for Symja expression evaluation. */
@@ -27,9 +40,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 
   private boolean isRelaxedSyntax;
 
-  public AbstractRubiTestCase(String name, boolean isRelaxedSyntax) {
-    super(name);
-    // System.out.println(">>>" + name);
+  private String testName = "";
+
+  protected AbstractRubiTestCase(boolean isRelaxedSyntax) {
     this.isRelaxedSyntax = isRelaxedSyntax;
     Config.SERVER_MODE = false;
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
@@ -189,10 +202,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
   }
 
   /** The JUnit setup method */
-  @Override
+  @BeforeEach
   protected void setUp() {
     try {
-      super.setUp();
       F.await();
       // start test with fresh instance
       EvalEngine engine = new EvalEngine(isRelaxedSyntax);
@@ -205,9 +217,21 @@ public abstract class AbstractRubiTestCase extends TestCase {
     }
   }
 
-  @Override
+  @AfterEach
   protected void tearDown() throws Exception {
     EvalEngine.remove();
-    super.tearDown();
+  }
+  /**
+   * Stands in for JUnit 3's {@code TestCase.getName()}. A separate {@code @BeforeEach} on
+   * purpose: subclasses override {@link #setUp()}, and an overridden lifecycle method does
+   * not inherit its annotation, so this one must not share a name with it.
+   */
+  @BeforeEach
+  final void captureTestName(TestInfo testInfo) {
+    this.testName = testInfo.getDisplayName();
+  }
+
+  protected String getName() {
+    return testName;
   }
 }

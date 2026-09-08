@@ -1,10 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
+import org.matheclipse.core.system.TestTags;
 
 /** Tests for DSolve */
 public class DSolveTest extends ExprEvaluatorTestCase {
@@ -523,6 +525,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSecondOrderSymmetry() {
     // A projective symmetry: the coordinates in which it is a translation reduce the equation to
     // one of the first order.
@@ -695,6 +698,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * one did not want.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveWhittaker() {
     checkResidual("y''(x) + (-1/4 + k/x + (1/4-m^2)/x^2)*y(x) == 0", //
         "y''(x) + (-1/4 + k/x + (1/4-m^2)/x^2)*y(x)",
@@ -723,6 +727,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * symbolic.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveFuchsian() {
     checkResidual("(1-x^2)*y''(x) - (2*a+1)*x*y'(x) + n*(n+2*a)*y(x) == 0", //
         "(1-x^2)*y''(x) - (2*a+1)*x*y'(x) + n*(n+2*a)*y(x)",
@@ -768,6 +773,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * equation into an exact one rather than integrating it.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSecondOrderIntegratingFactor() {
     checkResidual("y(x)*y'(x) + y''(x) == 1", //
         "y(x)*y'(x) + y''(x) - 1", "{C(1)->7/5, C(2)->3/4, x->13/10}");
@@ -877,6 +883,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveChangeOfVariable() {
     // Under t == Cos(x) this is Legendre's equation, which the rows above then recognize.
     for (int k : new int[] {1, 2, 3, 4}) {
@@ -918,6 +925,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSymmetricSquare() {
     // The solutions are the products of the solutions of u''(x) == (x+2)*u(x), which is Airy's
     // equation about the centre -2.
@@ -952,6 +960,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveKovacicApparentSingularities() {
     // Chebyshev's equation. Its solutions have zeros where r has no pole, which the guess of the
     // plain case cannot put anywhere; those zeros go into a polynomial factor of their own.
@@ -1024,6 +1033,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolvePoschlTeller() {
     // A potential built from Csc(x)^2 and Sec(x)^2. Multiplying the coefficient by
     // Sin(x)^2*Cos(x)^2 clears both and leaves an even quadratic in Cos(x), which is where the two
@@ -1108,6 +1118,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolvePDEInitialValue() {
     // d'Alembert: what starts at a point of the string reaches it again from both sides at the
     // speed the equation names, so the shape contributes its value at the two ends of the interval
@@ -1231,6 +1242,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveLinearizable() {
     // u == Log(y) makes this linear in u.
     check("DSolve(y'(x) == y(x)*(E^x + Log(y(x))), y(x), x)", //
@@ -1281,6 +1293,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveLegendre() {
     // (1-x^2)*y'' - 2*x*y' + nu*(nu+1)*y == 0 with nu*(nu+1) == 15/4, so nu == 3/2.
     check("DSolve((1-x^2)*y''(x) - 2*x*y'(x) + 15/4*y(x) == 0, y(x), x)", //
@@ -1308,6 +1321,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveHypergeometric() {
     check("DSolve(x*y''(x) + (b - x)*y'(x) - a*y(x) == 0, y(x), x)", //
         "{{y(x)->C(1)*Hypergeometric1F1(a,b,x)+x^(1-b)*C(2)*Hypergeometric1F1(1+a-b,2-b,x)}}");

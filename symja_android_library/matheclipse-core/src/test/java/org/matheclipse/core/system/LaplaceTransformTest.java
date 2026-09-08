@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class LaplaceTransformTest extends ExprEvaluatorTestCase {
@@ -93,6 +94,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLaplaceTransform() {
     check("LaplaceTransform(Exp(2+3*t)/t, t, s)", //
         "E^2*LaplaceTransform(1/t,t,-3+s)");
@@ -267,6 +269,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   // ----- Times: Integration fallback for unresolvable products -----
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLaplaceTransformTimesIntegrateFallback() {
     // BesselJ(0, t) — no direct pattern rule, should fall back to Integrate
     // L{BesselJ(0, t)} = 1/Sqrt(1+s^2)
@@ -306,6 +309,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   // ----- Edge cases: ensure no regressions -----
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLaplaceTransformEdgeCases() {
     // t^(-1) should remain unevaluated (divergent integral)
     check("LaplaceTransform(1/t, t, s)", //
@@ -368,6 +372,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLaplaceTransformUnevaluated() {
     // Unknown functions should return unevaluated
     check("LaplaceTransform(BesselJ(0, t), t, s)", //

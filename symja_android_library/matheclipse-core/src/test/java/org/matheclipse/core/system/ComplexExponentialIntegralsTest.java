@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.hipparchus.complex.Complex;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -387,21 +388,25 @@ public class ComplexExponentialIntegralsTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSinIntegral() {
     check("SinIntegral", SIN_INTEGRAL, IComplexNum::sinIntegral);
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testCosIntegral() {
     check("CosIntegral", COS_INTEGRAL, IComplexNum::cosIntegral);
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSinhIntegral() {
     check("SinhIntegral", SINH_INTEGRAL, IComplexNum::sinhIntegral);
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testCoshIntegral() {
     check("CoshIntegral", COSH_INTEGRAL, IComplexNum::coshIntegral);
   }

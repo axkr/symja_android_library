@@ -1,13 +1,17 @@
 package org.matheclipse.core.rubi.step02;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 public class SpecialFunctions extends AbstractRubiTestCase {
 
   static boolean init = true;
 
-  public SpecialFunctions(String name) {
-    super(name, false);
+  public SpecialFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -22,6 +26,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 30}
+  @Test
   public void test0001() {
     check( //
         "Integrate[Derivative[1][u][x]*Derivative[2][u][x], x]", //
@@ -30,6 +35,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 29}
+  @Test
   public void test0002() {
     check( //
         "Integrate[Derivative[1][f][x]/f[x], x]", //
@@ -38,6 +44,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 31}
+  @Test
   public void test0003() {
     check( //
         "Integrate[Derivative[1][f][x]/(a + b*f[x]), x]", //
@@ -46,6 +53,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 30}
+  @Test
   public void test0004() {
     check( //
         "Integrate[f[x]*Derivative[1][f][x], x]", //
@@ -54,6 +62,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798}
+  @Test
   public void test0005() {
     check( //
         "Integrate[(a + b*f[x])*Derivative[1][f][x], x]", //
@@ -62,6 +71,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 30}
+  @Test
   public void test0006() {
     check( //
         "Integrate[Derivative[1][f][x]/Sqrt[f[x]], x]", //
@@ -70,6 +80,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 32}
+  @Test
   public void test0007() {
     check( //
         "Integrate[Derivative[1][f][x]/Sqrt[a + b*f[x]], x]", //
@@ -78,6 +89,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 30}
+  @Test
   public void test0008() {
     check( //
         "Integrate[f[x]^n*Derivative[1][f][x], x]", //
@@ -86,6 +98,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 32}
+  @Test
   public void test0009() {
     check( //
         "Integrate[(a + b*f[x])^n*Derivative[1][f][x], x]", //
@@ -94,6 +107,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 29}
+  @Test
   public void test0010() {
     check( //
         "Integrate[Derivative[2][f][x]/Derivative[1][f][x], x]", //
@@ -102,6 +116,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 31}
+  @Test
   public void test0011() {
     check( //
         "Integrate[Derivative[2][f][x]/(a + b*Derivative[1][f][x]), x]", //
@@ -110,6 +125,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 30}
+  @Test
   public void test0012() {
     check( //
         "Integrate[Derivative[1][f][x]*Derivative[2][f][x], x]", //
@@ -118,6 +134,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798}
+  @Test
   public void test0013() {
     check( //
         "Integrate[(a + b*Derivative[1][f][x])*Derivative[2][f][x], x]", //
@@ -126,6 +143,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 30}
+  @Test
   public void test0014() {
     check( //
         "Integrate[Derivative[2][f][x]/Sqrt[Derivative[1][f][x]], x]", //
@@ -134,6 +152,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 32}
+  @Test
   public void test0015() {
     check( //
         "Integrate[Derivative[2][f][x]/Sqrt[a + b*Derivative[1][f][x]], x]", //
@@ -142,6 +161,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 30}
+  @Test
   public void test0016() {
     check( //
         "Integrate[Derivative[1][f][x]^n*Derivative[2][f][x], x]", //
@@ -150,6 +170,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6798, 32}
+  @Test
   public void test0017() {
     check( //
         "Integrate[(a + b*Derivative[1][f][x])^n*Derivative[2][f][x], x]", //
@@ -158,6 +179,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 209}
+  @Test
   public void test0018() {
     check( //
         "Integrate[(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x])/(1 + f[x]^2*g[x]^2), x]", //
@@ -166,6 +188,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6843, 209}
+  @Test
   public void test0019() {
     check( //
         "Integrate[(g[x]*Derivative[1][f][x] - f[x]*Derivative[1][g][x])/(f[x]^2 + g[x]^2), x]", //
@@ -174,6 +197,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 209}
+  @Test
   public void test0020() {
     check( //
         "Integrate[-((g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x])/(1 + f[x]^2*g[x]^2)), x]", //
@@ -182,6 +206,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 212}
+  @Test
   public void test0021() {
     check( //
         "Integrate[(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x])/(1 - f[x]^2*g[x]^2), x]", //
@@ -190,6 +215,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6843, 213}
+  @Test
   public void test0022() {
     check( //
         "Integrate[(-(g[x]*Derivative[1][f][x]) + f[x]*Derivative[1][g][x])/(f[x]^2 - g[x]^2), x]", //
@@ -198,6 +224,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6806, 212}
+  @Test
   public void test0023() {
     check( //
         "Integrate[(f[x]^(-1 + m)*g[x]^(-1 + n)*(m*g[x]*Derivative[1][f][x] + n*f[x]*Derivative[1][g][x]))/(1 - f[x]^(2*m)*g[x]^(2*n)), x]", //
@@ -206,6 +233,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 31}
+  @Test
   public void test0024() {
     check( //
         "Integrate[(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x])/(a + b*f[x]*g[x]), x]", //
@@ -214,6 +242,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 211}
+  @Test
   public void test0025() {
     check( //
         "Integrate[(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x])/(a + b*f[x]^2*g[x]^2), x]", //
@@ -222,6 +251,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 251}
+  @Test
   public void test0026() {
     check( //
         "Integrate[(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x])/(a + b*(f[x]*g[x])^n), x]", //
@@ -230,6 +260,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 2717}
+  @Test
   public void test0034() {
     check( //
         "Integrate[Cos[f[x]*g[x]]*(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x]), x]", //
@@ -238,6 +269,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6800, 2717}
+  @Test
   public void test0035() {
     check( //
         "Integrate[Cos[g[x]*Derivative[m][f][x]]*(Derivative[1][g][x]*Derivative[m][f][x] + g[x]*Derivative[1 + m][f][x]), x]", //
@@ -246,6 +278,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6801, 2717}
+  @Test
   public void test0036() {
     check( //
         "Integrate[Cos[Derivative[-1 + m][f][x]*Derivative[-1 + n][g][x]]*(Derivative[m][f][x]*Derivative[-1 + n][g][x] + Derivative[-1 + m][f][x]*Derivative[n][g][x]), x]", //
@@ -254,6 +287,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 211}
+  @Test
   public void test0037() {
     check( //
         "Integrate[(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x])/(a + b*f[x]^2*g[x]^2), x]", //
@@ -262,6 +296,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6800, 211}
+  @Test
   public void test0038() {
     check( //
         "Integrate[(Derivative[1][g][x]*Derivative[m][f][x] + g[x]*Derivative[1 + m][f][x])/(a + b*g[x]^2*Derivative[m][f][x]^2), x]", //
@@ -270,6 +305,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6801, 211}
+  @Test
   public void test0039() {
     check( //
         "Integrate[(Derivative[1 + m][f][x]*Derivative[n][g][x] + Derivative[m][f][x]*Derivative[1 + n][g][x])/(a + b*Derivative[m][f][x]^2*Derivative[n][g][x]^2), x]", //
@@ -278,6 +314,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6799, 6791}
+  @Test
   public void test0040() {
     check( //
         "Integrate[Derivative[1][F][f[x]*g[x]]*(g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x]), x]", //
@@ -286,6 +323,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6800, 6791}
+  @Test
   public void test0041() {
     check( //
         "Integrate[Derivative[1][F][g[x]*Derivative[m][f][x]]*(Derivative[1][g][x]*Derivative[m][f][x] + g[x]*Derivative[1 + m][f][x]), x]", //
@@ -294,6 +332,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6801, 6791}
+  @Test
   public void test0042() {
     check( //
         "Integrate[Derivative[1][F][Derivative[-1 + m][f][x]*Derivative[-1 + n][g][x]]*(Derivative[m][f][x]*Derivative[-1 + n][g][x] + Derivative[-1 + m][f][x]*Derivative[n][g][x]), x]", //
@@ -302,6 +341,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6802, 2717}
+  @Test
   public void test0043() {
     check( //
         "Integrate[Cos[f[x]^2*g[x]]*f[x]*(2*g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x]), x]", //
@@ -310,6 +350,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6804, 2717}
+  @Test
   public void test0044() {
     check( //
         "Integrate[Cos[g[x]^2*Derivative[m][f][x]]*g[x]*(2*Derivative[1][g][x]*Derivative[m][f][x] + g[x]*Derivative[1 + m][f][x]), x]", //
@@ -318,6 +359,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6803, 2717}
+  @Test
   public void test0045() {
     check( //
         "Integrate[Cos[g[x]*Derivative[m][f][x]^2]*Derivative[m][f][x]*(Derivative[1][g][x]*Derivative[m][f][x] + 2*g[x]*Derivative[1 + m][f][x]), x]", //
@@ -326,6 +368,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6805, 2717}
+  @Test
   public void test0046() {
     check( //
         "Integrate[Cos[Derivative[-1 + m][f][x]^2*Derivative[-1 + n][g][x]]*Derivative[-1 + m][f][x]*(2*Derivative[m][f][x]*Derivative[-1 + n][g][x] + Derivative[-1 + m][f][x]*Derivative[n][g][x]), x]", //
@@ -334,6 +377,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6802, 211}
+  @Test
   public void test0047() {
     check( //
         "Integrate[(f[x]*(2*g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x]))/(a + b*f[x]^4*g[x]^2), x]", //
@@ -342,6 +386,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6804, 211}
+  @Test
   public void test0048() {
     check( //
         "Integrate[(g[x]*(2*Derivative[1][g][x]*Derivative[m][f][x] + g[x]*Derivative[1 + m][f][x]))/(a + b*g[x]^4*Derivative[m][f][x]^2), x]", //
@@ -350,6 +395,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6803, 211}
+  @Test
   public void test0049() {
     check( //
         "Integrate[(Derivative[m][f][x]*(Derivative[1][g][x]*Derivative[m][f][x] + 2*g[x]*Derivative[1 + m][f][x]))/(a + b*g[x]^2*Derivative[m][f][x]^4), x]", //
@@ -358,6 +404,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6805, 211}
+  @Test
   public void test0050() {
     check( //
         "Integrate[(Derivative[m][f][x]*(2*Derivative[1 + m][f][x]*Derivative[n][g][x] + Derivative[m][f][x]*Derivative[1 + n][g][x]))/(a + b*Derivative[m][f][x]^4*Derivative[n][g][x]^2), x]", //
@@ -366,6 +413,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6802, 6791}
+  @Test
   public void test0051() {
     check( //
         "Integrate[f[x]*Derivative[1][F][f[x]^2*g[x]]*(2*g[x]*Derivative[1][f][x] + f[x]*Derivative[1][g][x]), x]", //
@@ -374,6 +422,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6804, 6791}
+  @Test
   public void test0052() {
     check( //
         "Integrate[g[x]*Derivative[1][F][g[x]^2*Derivative[m][f][x]]*(2*Derivative[1][g][x]*Derivative[m][f][x] + g[x]*Derivative[1 + m][f][x]), x]", //
@@ -382,6 +431,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6803, 6791}
+  @Test
   public void test0053() {
     check( //
         "Integrate[Derivative[1][F][g[x]*Derivative[m][f][x]^2]*Derivative[m][f][x]*(Derivative[1][g][x]*Derivative[m][f][x] + 2*g[x]*Derivative[1 + m][f][x]), x]", //
@@ -390,6 +440,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6805, 6791}
+  @Test
   public void test0054() {
     check( //
         "Integrate[Derivative[1][F][Derivative[-1 + m][f][x]^2*Derivative[-1 + n][g][x]]*Derivative[-1 + m][f][x]*(2*Derivative[m][f][x]*Derivative[-1 + n][g][x] + Derivative[-1 + m][f][x]*Derivative[n][g][x]), x]", //
@@ -398,6 +449,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6806, 2717}
+  @Test
   public void test0055() {
     check( //
         "Integrate[Cos[f[x]^2*g[x]^3]*f[x]*g[x]^2*(2*g[x]*Derivative[1][f][x] + 3*f[x]*Derivative[1][g][x]), x]", //
@@ -406,6 +458,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6807, 2717}
+  @Test
   public void test0056() {
     check( //
         "Integrate[Cos[g[x]^3*Derivative[m][f][x]^2]*g[x]^2*Derivative[m][f][x]*(3*Derivative[1][g][x]*Derivative[m][f][x] + 2*g[x]*Derivative[1 + m][f][x]), x]", //
@@ -414,6 +467,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6808, 2717}
+  @Test
   public void test0057() {
     check( //
         "Integrate[Cos[Derivative[m][f][x]^2*Derivative[n][g][x]^3]*Derivative[m][f][x]*Derivative[n][g][x]^2*(2*Derivative[1 + m][f][x]*Derivative[n][g][x] + 3*Derivative[m][f][x]*Derivative[1 + n][g][x]), x]", //
@@ -422,6 +476,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6806, 211}
+  @Test
   public void test0058() {
     check( //
         "Integrate[(f[x]*g[x]^2*(2*g[x]*Derivative[1][f][x] + 3*f[x]*Derivative[1][g][x]))/(a + b*f[x]^4*g[x]^6), x]", //
@@ -430,6 +485,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6807, 211}
+  @Test
   public void test0059() {
     check( //
         "Integrate[(g[x]^2*Derivative[m][f][x]*(3*Derivative[1][g][x]*Derivative[m][f][x] + 2*g[x]*Derivative[1 + m][f][x]))/(a + b*g[x]^6*Derivative[m][f][x]^4), x]", //
@@ -438,6 +494,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6808, 211}
+  @Test
   public void test0060() {
     check( //
         "Integrate[(Derivative[m][f][x]*Derivative[n][g][x]^2*(2*Derivative[1 + m][f][x]*Derivative[n][g][x] + 3*Derivative[m][f][x]*Derivative[1 + n][g][x]))/(a + b*Derivative[m][f][x]^4*Derivative[n][g][x]^6), x]", //
@@ -446,6 +503,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6806, 6791}
+  @Test
   public void test0061() {
     check( //
         "Integrate[f[x]*g[x]^2*Derivative[1][F][f[x]^2*g[x]^3]*(2*g[x]*Derivative[1][f][x] + 3*f[x]*Derivative[1][g][x]), x]", //
@@ -454,6 +512,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6807, 6791}
+  @Test
   public void test0062() {
     check( //
         "Integrate[g[x]^2*Derivative[1][F][g[x]^3*Derivative[m][f][x]^2]*Derivative[m][f][x]*(3*Derivative[1][g][x]*Derivative[m][f][x] + 2*g[x]*Derivative[1 + m][f][x]), x]", //
@@ -462,6 +521,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6808, 6791}
+  @Test
   public void test0063() {
     check( //
         "Integrate[Derivative[1][F][Derivative[m][f][x]^2*Derivative[n][g][x]^3]*Derivative[m][f][x]*Derivative[n][g][x]^2*(2*Derivative[1 + m][f][x]*Derivative[n][g][x] + 3*Derivative[m][f][x]*Derivative[1 + n][g][x]), x]", //
@@ -470,6 +530,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6496, 2241}
+  @Test
   public void test0064() {
     check( //
         "Integrate[Erf[b*x]/x^2, x]", //
@@ -478,6 +539,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6508, 30}
+  @Test
   public void test0065() {
     check( //
         "Integrate[E^(c - b^2*x^2)*Erf[b*x]^2, x]", //
@@ -486,6 +548,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6508, 30}
+  @Test
   public void test0066() {
     check( //
         "Integrate[E^(c - b^2*x^2)*Erf[b*x], x]", //
@@ -494,6 +557,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6508, 29}
+  @Test
   public void test0067() {
     check( //
         "Integrate[E^(c - b^2*x^2)/Erf[b*x], x]", //
@@ -502,6 +566,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6508, 30}
+  @Test
   public void test0068() {
     check( //
         "Integrate[E^(c - b^2*x^2)/Erf[b*x]^2, x]", //
@@ -510,6 +575,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6508, 30}
+  @Test
   public void test0069() {
     check( //
         "Integrate[E^(c - b^2*x^2)/Erf[b*x]^3, x]", //
@@ -518,6 +584,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6508, 30}
+  @Test
   public void test0070() {
     check( //
         "Integrate[E^(c - b^2*x^2)*Erf[b*x]^n, x]", //
@@ -526,6 +593,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6517, 2236}
+  @Test
   public void test0071() {
     check( //
         "Integrate[E^(c + d*x^2)*x*Erf[b*x], x]", //
@@ -534,6 +602,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6517, 8}
+  @Test
   public void test0074() {
     check( //
         "Integrate[E^(c + b^2*x^2)*x*Erf[b*x], x]", //
@@ -542,6 +611,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6517, 2236}
+  @Test
   public void test0075() {
     check( //
         "Integrate[(x*Erf[b*x])/E^(b^2*x^2), x]", //
@@ -550,6 +620,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6508, 30}
+  @Test
   public void test0076() {
     check( //
         "Integrate[Erf[b*x]/E^(b^2*x^2), x]", //
@@ -558,6 +629,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6494, 6493}
+  @Test
   public void test0077() {
     check( //
         "Integrate[Erfc[b*x]/x, x]", //
@@ -566,6 +638,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6497, 2241}
+  @Test
   public void test0078() {
     check( //
         "Integrate[Erfc[b*x]/x^2, x]", //
@@ -574,6 +647,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6509, 30}
+  @Test
   public void test0079() {
     check( //
         "Integrate[E^(c - b^2*x^2)*Erfc[b*x]^2, x]", //
@@ -582,6 +656,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6509, 30}
+  @Test
   public void test0080() {
     check( //
         "Integrate[E^(c - b^2*x^2)*Erfc[b*x], x]", //
@@ -590,6 +665,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6509, 29}
+  @Test
   public void test0081() {
     check( //
         "Integrate[E^(c - b^2*x^2)/Erfc[b*x], x]", //
@@ -598,6 +674,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6509, 30}
+  @Test
   public void test0082() {
     check( //
         "Integrate[E^(c - b^2*x^2)/Erfc[b*x]^2, x]", //
@@ -606,6 +683,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6509, 30}
+  @Test
   public void test0083() {
     check( //
         "Integrate[E^(c - b^2*x^2)/Erfc[b*x]^3, x]", //
@@ -614,6 +692,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6509, 30}
+  @Test
   public void test0084() {
     check( //
         "Integrate[E^(c - b^2*x^2)*Erfc[b*x]^n, x]", //
@@ -622,6 +701,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6518, 2236}
+  @Test
   public void test0085() {
     check( //
         "Integrate[E^(c + d*x^2)*x*Erfc[b*x], x]", //
@@ -630,6 +710,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6518, 8}
+  @Test
   public void test0088() {
     check( //
         "Integrate[E^(c + b^2*x^2)*x*Erfc[b*x], x]", //
@@ -638,6 +719,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6518, 2236}
+  @Test
   public void test0089() {
     check( //
         "Integrate[(x*Erfc[b*x])/E^(b^2*x^2), x]", //
@@ -646,6 +728,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6509, 30}
+  @Test
   public void test0090() {
     check( //
         "Integrate[Erfc[b*x]/E^(b^2*x^2), x]", //
@@ -654,6 +737,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6498, 2241}
+  @Test
   public void test0091() {
     check( //
         "Integrate[Erfi[b*x]/x^2, x]", //
@@ -662,6 +746,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6510, 30}
+  @Test
   public void test0092() {
     check( //
         "Integrate[E^(c + b^2*x^2)*Erfi[b*x]^2, x]", //
@@ -670,6 +755,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6510, 30}
+  @Test
   public void test0093() {
     check( //
         "Integrate[E^(c + b^2*x^2)*Erfi[b*x], x]", //
@@ -678,6 +764,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6510, 29}
+  @Test
   public void test0094() {
     check( //
         "Integrate[E^(c + b^2*x^2)/Erfi[b*x], x]", //
@@ -686,6 +773,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6510, 30}
+  @Test
   public void test0095() {
     check( //
         "Integrate[E^(c + b^2*x^2)/Erfi[b*x]^2, x]", //
@@ -694,6 +782,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6510, 30}
+  @Test
   public void test0096() {
     check( //
         "Integrate[E^(c + b^2*x^2)/Erfi[b*x]^3, x]", //
@@ -702,6 +791,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6510, 30}
+  @Test
   public void test0097() {
     check( //
         "Integrate[E^(c + b^2*x^2)*Erfi[b*x]^n, x]", //
@@ -710,6 +800,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6519, 2235}
+  @Test
   public void test0098() {
     check( //
         "Integrate[E^(c + d*x^2)*x*Erfi[b*x], x]", //
@@ -718,6 +809,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6519, 8}
+  @Test
   public void test0101() {
     check( //
         "Integrate[(x*Erfi[b*x])/E^(b^2*x^2), x]", //
@@ -726,6 +818,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6519, 2235}
+  @Test
   public void test0102() {
     check( //
         "Integrate[E^(c + b^2*x^2)*x*Erfi[b*x], x]", //
@@ -734,6 +827,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6510, 30}
+  @Test
   public void test0103() {
     check( //
         "Integrate[E^(c + b^2*x^2)*Erfi[b*x], x]", //
@@ -742,6 +836,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6561, 3456}
+  @Test
   public void test0104() {
     check( //
         "Integrate[FresnelS[b*x]/x^2, x]", //
@@ -750,6 +845,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6575, 30}
+  @Test
   public void test0105() {
     check( //
         "Integrate[FresnelS[b*x]^2*Sin[(b^2*Pi*x^2)/2], x]", //
@@ -758,6 +854,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6575, 30}
+  @Test
   public void test0106() {
     check( //
         "Integrate[FresnelS[b*x]*Sin[(b^2*Pi*x^2)/2], x]", //
@@ -766,6 +863,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6575, 29}
+  @Test
   public void test0107() {
     check( //
         "Integrate[Sin[(b^2*Pi*x^2)/2]/FresnelS[b*x], x]", //
@@ -774,6 +872,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6575, 30}
+  @Test
   public void test0108() {
     check( //
         "Integrate[Sin[(b^2*Pi*x^2)/2]/FresnelS[b*x]^2, x]", //
@@ -782,6 +881,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6575, 30}
+  @Test
   public void test0109() {
     check( //
         "Integrate[Sin[(b^2*Pi*x^2)/2]/FresnelS[b*x]^3, x]", //
@@ -790,6 +890,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6575, 30}
+  @Test
   public void test0110() {
     check( //
         "Integrate[FresnelS[b*x]^n*Sin[(b^2*Pi*x^2)/2], x]", //
@@ -798,6 +899,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6587, 3432}
+  @Test
   public void test0111() {
     check( //
         "Integrate[x*FresnelS[b*x]*Sin[(b^2*Pi*x^2)/2], x]", //
@@ -806,6 +908,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6575, 30}
+  @Test
   public void test0112() {
     check( //
         "Integrate[FresnelS[b*x]*Sin[(b^2*Pi*x^2)/2], x]", //
@@ -814,6 +917,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6562, 3457}
+  @Test
   public void test0113() {
     check( //
         "Integrate[FresnelC[b*x]/x^2, x]", //
@@ -822,6 +926,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6576, 30}
+  @Test
   public void test0114() {
     check( //
         "Integrate[Cos[(b^2*Pi*x^2)/2]*FresnelC[b*x]^2, x]", //
@@ -830,6 +935,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6576, 30}
+  @Test
   public void test0115() {
     check( //
         "Integrate[Cos[(b^2*Pi*x^2)/2]*FresnelC[b*x], x]", //
@@ -838,6 +944,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6576, 29}
+  @Test
   public void test0116() {
     check( //
         "Integrate[Cos[(b^2*Pi*x^2)/2]/FresnelC[b*x], x]", //
@@ -846,6 +953,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6576, 30}
+  @Test
   public void test0117() {
     check( //
         "Integrate[Cos[(b^2*Pi*x^2)/2]/FresnelC[b*x]^2, x]", //
@@ -854,6 +962,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6576, 30}
+  @Test
   public void test0118() {
     check( //
         "Integrate[Cos[(b^2*Pi*x^2)/2]/FresnelC[b*x]^3, x]", //
@@ -862,6 +971,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6576, 30}
+  @Test
   public void test0119() {
     check( //
         "Integrate[Cos[(b^2*Pi*x^2)/2]*FresnelC[b*x]^n, x]", //
@@ -870,6 +980,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6588, 3432}
+  @Test
   public void test0120() {
     check( //
         "Integrate[x*Cos[(b^2*Pi*x^2)/2]*FresnelC[b*x], x]", //
@@ -878,6 +989,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6576, 30}
+  @Test
   public void test0121() {
     check( //
         "Integrate[Cos[(b^2*Pi*x^2)/2]*FresnelC[b*x], x]", //
@@ -886,6 +998,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6611, 6610}
+  @Test
   public void test0122() {
     check( //
         "Integrate[ExpIntegralE[2, b*x]/x^2, x]", //
@@ -894,6 +1007,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 2209}
+  @Test
   public void test0123() {
     check( //
         "Integrate[1/(b*E^(b*x)*x), x]", //
@@ -902,6 +1016,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6611, 6610}
+  @Test
   public void test0124() {
     check( //
         "Integrate[ExpIntegralE[2, b*x]/x^2, x]", //
@@ -910,6 +1025,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6614, 6608}
+  @Test
   public void test0125() {
     check( //
         "Integrate[(c + d*x)*ExpIntegralE[1, a + b*x], x]", //
@@ -918,6 +1034,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6614, 6608}
+  @Test
   public void test0126() {
     check( //
         "Integrate[(c + d*x)*ExpIntegralE[2, a + b*x], x]", //
@@ -926,6 +1043,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6614, 6608}
+  @Test
   public void test0127() {
     check( //
         "Integrate[(c + d*x)*ExpIntegralE[3, a + b*x], x]", //
@@ -934,6 +1052,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6614, 2209}
+  @Test
   public void test0129() {
     check( //
         "Integrate[(c + d*x)*ExpIntegralE[-1, a + b*x], x]", //
@@ -942,6 +1061,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6614, 6608}
+  @Test
   public void test0130() {
     check( //
         "Integrate[(c + d*x)*ExpIntegralE[-2, a + b*x], x]", //
@@ -950,6 +1070,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6614, 6608}
+  @Test
   public void test0131() {
     check( //
         "Integrate[(c + d*x)*ExpIntegralE[-3, a + b*x], x]", //
@@ -958,6 +1079,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6614, 6608}
+  @Test
   public void test0134() {
     check( //
         "Integrate[(c + d*x)*ExpIntegralE[n, a + b*x], x]", //
@@ -966,6 +1088,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6618, 6610}
+  @Test
   public void test0135() {
     check( //
         "Integrate[ExpIntegralEi[b*x]/x, x]", //
@@ -974,6 +1097,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6624, 2209}
+  @Test
   public void test0136() {
     check( //
         "Integrate[E^(a + b*x)*ExpIntegralEi[c + d*x], x]", //
@@ -982,6 +1106,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {2207, 2225}
+  @Test
   public void test0137() {
     check( //
         "Integrate[x/E^(a*x), x]", //
@@ -990,6 +1115,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {2208, 2209}
+  @Test
   public void test0138() {
     check( //
         "Integrate[1/(E^(a*x)*x^2), x]", //
@@ -998,6 +1124,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6694, 2209}
+  @Test
   public void test0139() {
     check( //
         "Integrate[Gamma[2, a*x]/x, x]", //
@@ -1006,6 +1133,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6695, 6693}
+  @Test
   public void test0140() {
     check( //
         "Integrate[Gamma[-1, a*x]/x, x]", //
@@ -1014,6 +1142,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {2207, 2225}
+  @Test
   public void test0141() {
     check( //
         "Integrate[E^(-a - b*x)*(c + d*x), x]", //
@@ -1022,6 +1151,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {2208, 2209}
+  @Test
   public void test0142() {
     check( //
         "Integrate[E^(-a - b*x)/(c + d*x)^2, x]", //
@@ -1030,6 +1160,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6703, 6705}
+  @Test
   public void test0143() {
     check( //
         "Integrate[(c + d*x)*LogGamma[a + b*x], x]", //
@@ -1038,6 +1169,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6706, 6705}
+  @Test
   public void test0146() {
     check( //
         "Integrate[(c + d*x)*PolyGamma[n, a + b*x], x]", //
@@ -1046,6 +1178,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6707}
+  @Test
   public void test0149() {
     check( //
         "Integrate[PolyGamma[1, a + b*x]/x^2 - (b*PolyGamma[2, a + b*x])/x, x]", //
@@ -1054,6 +1187,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6707}
+  @Test
   public void test0150() {
     check( //
         "Integrate[PolyGamma[n, a + b*x]/x^2 - (b*PolyGamma[1 + n, a + b*x])/x, x]", //
@@ -1062,6 +1196,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6716, 6705}
+  @Test
   public void test0151() {
     check( //
         "Integrate[Zeta[2, a + b*x], x]", //
@@ -1070,6 +1205,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6719, 6717}
+  @Test
   public void test0153() {
     check( //
         "Integrate[x*Zeta[s, a + b*x], x]", //
@@ -1078,6 +1214,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6720}
+  @Test
   public void test0155() {
     check( //
         "Integrate[Zeta[s, a + b*x]/x^2 + (b*s*Zeta[1 + s, a + b*x])/x, x]", //
@@ -1086,6 +1223,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6722}
+  @Test
   public void test0158() {
     check( //
         "Integrate[PolyLog[-3/2, a*x] + PolyLog[-1/2, a*x], x]", //
@@ -1094,6 +1232,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 6816}
+  @Test
   public void test0159() {
     check( //
         "Integrate[(e*((a + b*x)/(c + d*x))^n)/((a + b*x)*(c + d*x)*(1 - e*((a + b*x)/(c + d*x))^n)), x]", //
@@ -1102,6 +1241,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 6818}
+  @Test
   public void test0160() {
     check( //
         "Integrate[(e*((a + b*x)/(c + d*x))^n)/((a + b*x)*(c + d*x)*(1 - e*((a + b*x)/(c + d*x))^n)^2), x]", //
@@ -1110,6 +1250,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 6724}
+  @Test
   public void test0161() {
     check( //
         "Integrate[PolyLog[n, d*(F^(c*(a + b*x)))^p], x]", //
@@ -1118,6 +1259,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6760}
+  @Test
   public void test0162() {
     check( //
         "Integrate[ProductLog[a + b*x]^(-1), x]", //
@@ -1126,6 +1268,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6747, 6760}
+  @Test
   public void test0163() {
     check( //
         "Integrate[ProductLog[a + b*x]^(-2), x]", //
@@ -1134,6 +1277,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6761}
+  @Test
   public void test0164() {
     check( //
         "Integrate[1/Sqrt[c*ProductLog[a + b*x]], x]", //
@@ -1142,6 +1286,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6747, 6761}
+  @Test
   public void test0165() {
     check( //
         "Integrate[(c*ProductLog[a + b*x])^(-3/2), x]", //
@@ -1150,6 +1295,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6762}
+  @Test
   public void test0166() {
     check( //
         "Integrate[1/Sqrt[-(c*ProductLog[a + b*x])], x]", //
@@ -1158,6 +1304,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6747, 6762}
+  @Test
   public void test0167() {
     check( //
         "Integrate[(-(c*ProductLog[a + b*x]))^(-3/2), x]", //
@@ -1166,6 +1313,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6764}
+  @Test
   public void test0168() {
     check( //
         "Integrate[(c*ProductLog[a + b*x])^n, x]", //
@@ -1174,6 +1322,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6761}
+  @Test
   public void test0169() {
     check( //
         "Integrate[1/Sqrt[c*ProductLog[a + b*x]], x]", //
@@ -1182,6 +1331,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6762}
+  @Test
   public void test0170() {
     check( //
         "Integrate[1/Sqrt[-(c*ProductLog[a + b*x])], x]", //
@@ -1190,6 +1340,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0173() {
     check( //
         "Integrate[ProductLog[a*x]/x, x]", //
@@ -1198,6 +1349,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0174() {
     check( //
         "Integrate[ProductLog[a*x]/x^2, x]", //
@@ -1206,6 +1358,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0175() {
     check( //
         "Integrate[ProductLog[a*x]/x^3, x]", //
@@ -1214,6 +1367,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0176() {
     check( //
         "Integrate[ProductLog[a*x]^2/x, x]", //
@@ -1222,6 +1376,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0177() {
     check( //
         "Integrate[ProductLog[a*x]^2/x^2, x]", //
@@ -1230,6 +1385,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0178() {
     check( //
         "Integrate[ProductLog[a*x]^2/x^3, x]", //
@@ -1238,6 +1394,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0179() {
     check( //
         "Integrate[ProductLog[a*x]^2/x^4, x]", //
@@ -1246,6 +1403,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0180() {
     check( //
         "Integrate[ProductLog[a*x]^3/x, x]", //
@@ -1254,6 +1412,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0181() {
     check( //
         "Integrate[ProductLog[a*x]^3/x^3, x]", //
@@ -1262,6 +1421,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0182() {
     check( //
         "Integrate[ProductLog[a*x]^3/x^4, x]", //
@@ -1270,6 +1430,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0183() {
     check( //
         "Integrate[ProductLog[a*x]^3/x^5, x]", //
@@ -1278,6 +1439,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0184() {
     check( //
         "Integrate[x/ProductLog[a*x], x]", //
@@ -1286,6 +1448,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6760}
+  @Test
   public void test0185() {
     check( //
         "Integrate[ProductLog[a*x]^(-1), x]", //
@@ -1294,6 +1457,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6776}
+  @Test
   public void test0186() {
     check( //
         "Integrate[1/(x*ProductLog[a*x]), x]", //
@@ -1302,6 +1466,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0187() {
     check( //
         "Integrate[x^2/ProductLog[a*x]^2, x]", //
@@ -1310,6 +1475,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0188() {
     check( //
         "Integrate[x/ProductLog[a*x]^2, x]", //
@@ -1318,6 +1484,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6747, 6760}
+  @Test
   public void test0189() {
     check( //
         "Integrate[ProductLog[a*x]^(-2), x]", //
@@ -1326,6 +1493,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0190() {
     check( //
         "Integrate[1/(x*ProductLog[a*x]^2), x]", //
@@ -1334,6 +1502,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0191() {
     check( //
         "Integrate[x^3/ProductLog[a*x]^3, x]", //
@@ -1342,6 +1511,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0192() {
     check( //
         "Integrate[x^2/ProductLog[a*x]^3, x]", //
@@ -1350,6 +1520,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0193() {
     check( //
         "Integrate[x/ProductLog[a*x]^3, x]", //
@@ -1358,6 +1529,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0194() {
     check( //
         "Integrate[1/(x*ProductLog[a*x]^3), x]", //
@@ -1366,6 +1538,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0195() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x]]/x, x]", //
@@ -1374,6 +1547,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6784}
+  @Test
   public void test0196() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x]]/x^2, x]", //
@@ -1382,6 +1556,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6748, 6761}
+  @Test
   public void test0197() {
     check( //
         "Integrate[1/Sqrt[c*ProductLog[a*x]], x]", //
@@ -1390,6 +1565,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0198() {
     check( //
         "Integrate[1/(x*Sqrt[c*ProductLog[a*x]]), x]", //
@@ -1398,6 +1574,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0199() {
     check( //
         "Integrate[(c*ProductLog[a*x])^p/x, x]", //
@@ -1406,6 +1583,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0200() {
     check( //
         "Integrate[ProductLog[a*x^2]/x, x]", //
@@ -1414,6 +1592,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0201() {
     check( //
         "Integrate[ProductLog[a*x^2]/x^3, x]", //
@@ -1422,6 +1601,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0202() {
     check( //
         "Integrate[ProductLog[a*x^2]/x^5, x]", //
@@ -1430,6 +1610,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0203() {
     check( //
         "Integrate[ProductLog[a*x^2]^2/x, x]", //
@@ -1438,6 +1619,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0204() {
     check( //
         "Integrate[ProductLog[a*x^2]^2/x^3, x]", //
@@ -1446,6 +1628,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0205() {
     check( //
         "Integrate[ProductLog[a*x^2]^2/x^5, x]", //
@@ -1454,6 +1637,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0206() {
     check( //
         "Integrate[ProductLog[a*x^2]^2/x^7, x]", //
@@ -1462,6 +1646,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0207() {
     check( //
         "Integrate[ProductLog[a*x^2]^3/x, x]", //
@@ -1470,6 +1655,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0208() {
     check( //
         "Integrate[ProductLog[a*x^2]^3/x^5, x]", //
@@ -1478,6 +1664,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0209() {
     check( //
         "Integrate[ProductLog[a*x^2]^3/x^7, x]", //
@@ -1486,6 +1673,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0210() {
     check( //
         "Integrate[ProductLog[a*x^2]^3/x^9, x]", //
@@ -1494,6 +1682,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0211() {
     check( //
         "Integrate[x^3/ProductLog[a*x^2], x]", //
@@ -1502,6 +1691,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0212() {
     check( //
         "Integrate[x/ProductLog[a*x^2], x]", //
@@ -1510,6 +1700,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6779}
+  @Test
   public void test0213() {
     check( //
         "Integrate[1/(x*ProductLog[a*x^2]), x]", //
@@ -1518,6 +1709,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0214() {
     check( //
         "Integrate[x^5/ProductLog[a*x^2]^2, x]", //
@@ -1526,6 +1718,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0215() {
     check( //
         "Integrate[x^3/ProductLog[a*x^2]^2, x]", //
@@ -1534,6 +1727,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0216() {
     check( //
         "Integrate[x/ProductLog[a*x^2]^2, x]", //
@@ -1542,6 +1736,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0217() {
     check( //
         "Integrate[1/(x*ProductLog[a*x^2]^2), x]", //
@@ -1550,6 +1745,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0218() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -1558,6 +1754,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0219() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x^2]]/x, x]", //
@@ -1566,6 +1763,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6784}
+  @Test
   public void test0220() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x^2]]/x^3, x]", //
@@ -1574,6 +1772,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0221() {
     check( //
         "Integrate[x^2/Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -1582,6 +1781,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6785}
+  @Test
   public void test0222() {
     check( //
         "Integrate[x/Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -1590,6 +1790,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0223() {
     check( //
         "Integrate[1/(x*Sqrt[c*ProductLog[a*x^2]]), x]", //
@@ -1598,6 +1799,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0224() {
     check( //
         "Integrate[(c*ProductLog[a*x^2])^p/x, x]", //
@@ -1606,6 +1808,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0225() {
     check( //
         "Integrate[x*ProductLog[a/x], x]", //
@@ -1614,6 +1817,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0226() {
     check( //
         "Integrate[ProductLog[a/x]/x, x]", //
@@ -1622,6 +1826,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6783}
+  @Test
   public void test0227() {
     check( //
         "Integrate[x^2*ProductLog[a/x]^2, x]", //
@@ -1630,6 +1835,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6783}
+  @Test
   public void test0228() {
     check( //
         "Integrate[x*ProductLog[a/x]^2, x]", //
@@ -1638,6 +1844,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0229() {
     check( //
         "Integrate[ProductLog[a/x]^2, x]", //
@@ -1646,6 +1853,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0230() {
     check( //
         "Integrate[ProductLog[a/x]^2/x, x]", //
@@ -1654,6 +1862,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6771}
+  @Test
   public void test0231() {
     check( //
         "Integrate[Sqrt[ProductLog[a/x]], x]", //
@@ -1662,6 +1871,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0232() {
     check( //
         "Integrate[Sqrt[ProductLog[a/x]]/x, x]", //
@@ -1670,6 +1880,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0233() {
     check( //
         "Integrate[1/(x*Sqrt[ProductLog[a/x]]), x]", //
@@ -1678,6 +1889,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6785}
+  @Test
   public void test0234() {
     check( //
         "Integrate[1/(x^2*Sqrt[ProductLog[a/x]]), x]", //
@@ -1686,6 +1898,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6781}
+  @Test
   public void test0235() {
     check( //
         "Integrate[(c*ProductLog[a/x])^p/x, x]", //
@@ -1694,6 +1907,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0236() {
     check( //
         "Integrate[ProductLog[a/x^(1/4)]^5, x]", //
@@ -1702,6 +1916,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0237() {
     check( //
         "Integrate[ProductLog[a/x^(1/3)]^4, x]", //
@@ -1710,6 +1925,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0238() {
     check( //
         "Integrate[ProductLog[a/Sqrt[x]]^3, x]", //
@@ -1718,6 +1934,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0239() {
     check( //
         "Integrate[ProductLog[a/x]^2, x]", //
@@ -1726,6 +1943,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0240() {
     check( //
         "Integrate[ProductLog[a*Sqrt[x]]^(-1), x]", //
@@ -1734,6 +1952,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0241() {
     check( //
         "Integrate[ProductLog[a*x^(1/3)]^(-2), x]", //
@@ -1742,6 +1961,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0242() {
     check( //
         "Integrate[ProductLog[a*x^(1/4)]^(-3), x]", //
@@ -1750,6 +1970,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6769}
+  @Test
   public void test0243() {
     check( //
         "Integrate[ProductLog[a/x^(1/5)]^4, x]", //
@@ -1758,6 +1979,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6769}
+  @Test
   public void test0244() {
     check( //
         "Integrate[ProductLog[a/x^(1/4)]^3, x]", //
@@ -1766,6 +1988,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6769}
+  @Test
   public void test0245() {
     check( //
         "Integrate[ProductLog[a/x^(1/3)]^2, x]", //
@@ -1774,6 +1997,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6769}
+  @Test
   public void test0246() {
     check( //
         "Integrate[ProductLog[a/Sqrt[x]], x]", //
@@ -1782,6 +2006,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6747, 6760}
+  @Test
   public void test0247() {
     check( //
         "Integrate[ProductLog[a*x]^(-2), x]", //
@@ -1790,6 +2015,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6769}
+  @Test
   public void test0248() {
     check( //
         "Integrate[ProductLog[a*Sqrt[x]]^(-3), x]", //
@@ -1798,6 +2024,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6769}
+  @Test
   public void test0249() {
     check( //
         "Integrate[ProductLog[a*x^(1/3)]^(-4), x]", //
@@ -1806,6 +2033,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6751, 6769}
+  @Test
   public void test0250() {
     check( //
         "Integrate[ProductLog[a*x^(1/4)]^(-5), x]", //
@@ -1814,6 +2042,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0251() {
     check( //
         "Integrate[ProductLog[a*x^n]^((-1 + n)/n), x]", //
@@ -1822,6 +2051,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6750, 6768}
+  @Test
   public void test0252() {
     check( //
         "Integrate[ProductLog[a*x^(1 - p)^(-1)]^p, x]", //
@@ -1830,6 +2060,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6784}
+  @Test
   public void test0253() {
     check( //
         "Integrate[x^(-1 - n)*(c*ProductLog[a*x^n])^(3/2), x]", //
@@ -1838,6 +2069,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6784}
+  @Test
   public void test0254() {
     check( //
         "Integrate[x^(-1 - n)*Sqrt[c*ProductLog[a*x^n]], x]", //
@@ -1846,6 +2078,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6784}
+  @Test
   public void test0255() {
     check( //
         "Integrate[x^(-1 - 2*n)*(c*ProductLog[a*x^n])^(5/2), x]", //
@@ -1854,6 +2087,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6784}
+  @Test
   public void test0256() {
     check( //
         "Integrate[x^(-1 - 2*n)*(c*ProductLog[a*x^n])^(3/2), x]", //
@@ -1862,6 +2096,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6785}
+  @Test
   public void test0257() {
     check( //
         "Integrate[x^(-1 + n)/Sqrt[c*ProductLog[a*x^n]], x]", //
@@ -1870,6 +2105,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6785}
+  @Test
   public void test0258() {
     check( //
         "Integrate[x^(-1 + n)/(c*ProductLog[a*x^n])^(3/2), x]", //
@@ -1878,6 +2114,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6785}
+  @Test
   public void test0259() {
     check( //
         "Integrate[x^(-1 + 2*n)/(c*ProductLog[a*x^n])^(3/2), x]", //
@@ -1886,6 +2123,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6754, 6785}
+  @Test
   public void test0260() {
     check( //
         "Integrate[x^(-1 + 2*n)/(c*ProductLog[a*x^n])^(5/2), x]", //
@@ -1894,6 +2132,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0261() {
     check( //
         "Integrate[x^(-1 - 3*n)*ProductLog[a*x^n]^4, x]", //
@@ -1902,6 +2141,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0262() {
     check( //
         "Integrate[x^(-1 - 2*n)*ProductLog[a*x^n]^3, x]", //
@@ -1910,6 +2150,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0263() {
     check( //
         "Integrate[x^(-1 - n)*ProductLog[a*x^n]^2, x]", //
@@ -1918,6 +2159,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0264() {
     check( //
         "Integrate[x^(-1 + 2*n)/ProductLog[a*x^n], x]", //
@@ -1926,6 +2168,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0265() {
     check( //
         "Integrate[x^(-1 + 3*n)/ProductLog[a*x^n]^2, x]", //
@@ -1934,6 +2177,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0266() {
     check( //
         "Integrate[x^(-1 + 4*n)/ProductLog[a*x^n]^3, x]", //
@@ -1942,6 +2186,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6753, 6782}
+  @Test
   public void test0269() {
     check( //
         "Integrate[x^(-1 + n*(1 - p))*(c*ProductLog[a*x^n])^p, x]", //
@@ -1950,6 +2195,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6775, 6782}
+  @Test
   public void test0270() {
     check( //
         "Integrate[x/(1 + ProductLog[a*x]), x]", //
@@ -1958,6 +2204,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6777, 6783}
+  @Test
   public void test0271() {
     check( //
         "Integrate[1/(x^2*(1 + ProductLog[a*x])), x]", //
@@ -1966,6 +2213,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6847, 6757}
+  @Test
   public void test0272() {
     check( //
         "Integrate[x/(1 + ProductLog[a*x^2]), x]", //
@@ -1974,6 +2222,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // {6780, 6757}
+  @Test
   public void test0273() {
     check( //
         "Integrate[1/(x^2*(1 + ProductLog[a/x])), x]", //

@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.extended;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
@@ -16,10 +18,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public InverseHyperbolicFunctions(String name) {
-    super(name, false);
+  public InverseHyperbolicFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -36,6 +39,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 
 
   // 7.5.1 u (a+b arcsech(c x))^n.input:129
+  @Test
   public void test0001() {
     check( //
         "Integrate[(d+e*x^2)*(a+b*ArcSech[c*x]), x]", //
@@ -43,6 +47,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:222
+  @Test
   public void test0002() {
     check( //
         "Integrate[ArcTanh[Tanh[a+b*x]]^3/Sqrt[x], x]", //
@@ -50,6 +55,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.5 Inverse hyperbolic cosine functions.input:398
+  @Test
   public void test0003() {
     check( //
         "Integrate[E^ArcCosh[a+b*x]/x^5, x]", //
@@ -57,6 +63,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:604
+  @Test
   public void test0004() {
     check( //
         "Integrate[Sqrt[c-c/(a*x)]/(E^ArcCoth[a*x]*x^2), x]", //
@@ -64,6 +71,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:517
+  @Test
   public void test0005() {
     check( //
         "Integrate[E^ArcCoth[a*x]*Sqrt[c-c/(a*x)], x]", //
@@ -71,6 +79,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1235
+  @Test
   public void test0006() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])*(c-a^2*c*x^2)^3/x^3, x]", //
@@ -78,6 +87,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:61
+  @Test
   public void test0007() {
     check( //
         "Integrate[1/(E^(2*ArcCoth[a*x])*x^3), x]", //
@@ -85,6 +95,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.2 (d x)^m (a+b arcsinh(c x))^n.input:32
+  @Test
   public void test0008() {
     check( //
         "Integrate[ArcSinh[a*x]^2/x^5, x]", //
@@ -92,6 +103,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:98
+  @Test
   public void test0009() {
     check( //
         "Integrate[ArcTanh[Tanh[a+b*x]]^4/x^3, x]", //
@@ -99,6 +111,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:425
+  @Test
   public void test0010() {
     check( //
         "Integrate[ArcTanh[a+b*f^(c+d*x)], x]", //
@@ -106,6 +119,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1145
+  @Test
   public void test0011() {
     check( //
         "Integrate[E^ArcTanh[a*x]*x^5/(c-a^2*c*x^2)^(3/2), x]", //
@@ -113,6 +127,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:16
+  @Test
   public void test0012() {
     check( //
         "Integrate[(d+c*d*x)*(a+b*ArcTanh[c*x])/x, x]", //
@@ -120,6 +135,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.3 (d+e x)^m (a+b arctanh(c x^n))^p.input:26
+  @Test
   public void test0013() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])^3/(d+e*x)^2, x]", //
@@ -127,6 +143,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.2 (d x)^m (a+b arccosh(c x))^n.input:74
+  @Test
   public void test0014() {
     check( //
         "Integrate[x/ArcCosh[a*x]^3, x]", //
@@ -134,6 +151,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:209
+  @Test
   public void test0015() {
     check( //
         "Integrate[(a+b*ArcCosh[c*x])^2*Sqrt[d-c^2*d*x^2]/x, x]", //
@@ -141,6 +159,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:226
+  @Test
   public void test0016() {
     check( //
         "Integrate[x/ArcCoth[Tanh[a+b*x]], x]", //
@@ -148,6 +167,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1310
+  @Test
   public void test0017() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])/(x^2*(c-a^2*c*x^2)^(1/2)), x]", //
@@ -155,6 +175,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:170
+  @Test
   public void test0018() {
     check( //
         "Integrate[1/(a+b*ArcSinh[c+d*x])^(1/2), x]", //
@@ -162,6 +183,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:298
+  @Test
   public void test0019() {
     check( //
         "Integrate[1/(x^(5/2)*ArcTanh[Tanh[a+b*x]]^(3/2)), x]", //
@@ -169,6 +191,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:208
+  @Test
   public void test0020() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])*(c-a*c*x)^p, x]", //
@@ -176,6 +199,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.2 (d x)^m (a+b arccosh(c x))^n.input:170
+  @Test
   public void test0021() {
     check( //
         "Integrate[(a+b*ArcCosh[c*x])/x^5, x]", //
@@ -183,6 +207,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:63
+  @Test
   public void test0022() {
     check( //
         "Integrate[1/(E^(2*ArcTanh[a*x])*x^4), x]", //
@@ -190,6 +215,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:59
+  @Test
   public void test0023() {
     check( //
         "Integrate[1/(E^(2*ArcCoth[a*x])*x), x]", //
@@ -197,6 +223,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:388
+  @Test
   public void test0024() {
     check( //
         "Integrate[x^2*ArcTanh[1-I*d+d*Tan[a+b*x]], x]", //
@@ -204,6 +231,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:364
+  @Test
   public void test0025() {
     check( //
         "Integrate[x^2/((1-a^2*x^2)^2*ArcTanh[a*x]^3), x]", //
@@ -211,6 +239,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:299
+  @Test
   public void test0026() {
     check( //
         "Integrate[1/(x^(7/2)*ArcTanh[Tanh[a+b*x]]^(3/2)), x]", //
@@ -218,6 +247,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:362
+  @Test
   public void test0027() {
     check( //
         "Integrate[1/(ArcSinh[a+b*x]*Sqrt[1+a^2+2*a*b*x+b^2*x^2]), x]", //
@@ -225,6 +255,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.6.2 Inverse hyperbolic cosecant functions.input:56
+  @Test
   public void test0028() {
     check( //
         "Integrate[E^ArcCsch[a*x^2]*x, x]", //
@@ -232,6 +263,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:458
+  @Test
   public void test0029() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])*(c-c/(a*x))^3, x]", //
@@ -239,6 +271,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:38
+  @Test
   public void test0030() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])^3, x]", //
@@ -246,6 +279,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:209
+  @Test
   public void test0031() {
     check( //
         "Integrate[(a+b*ArcTanh[c/x])^3/x, x]", //
@@ -253,6 +287,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:998
+  @Test
   public void test0032() {
     check( //
         "Integrate[(c-c/(a^2*x^2))^(9/2)/E^(3*ArcCoth[a*x]), x]", //
@@ -260,6 +295,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:182
+  @Test
   public void test0033() {
     check( //
         "Integrate[x^2/ArcTanh[Tanh[a+b*x]]^(3/2), x]", //
@@ -267,6 +303,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.3 (d+e x)^m (a+b arctanh(c x^n))^p.input:22
+  @Test
   public void test0034() {
     check( //
         "Integrate[(d+e*x)^3*(a+b*ArcTanh[c*x])^3, x]", //
@@ -274,6 +311,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:405
+  @Test
   public void test0035() {
     check( //
         "Integrate[ArcTanh[c+d*Cot[a+b*x]], x]", //
@@ -281,6 +319,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:612
+  @Test
   public void test0036() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])*Sqrt[c-c/(a*x)], x]", //
@@ -288,6 +327,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:303
+  @Test
   public void test0037() {
     check( //
         "Integrate[x^2*ArcTanh[a*x]^3/(1-a^2*x^2), x]", //
@@ -295,6 +335,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:306
+  @Test
   public void test0038() {
     check( //
         "Integrate[1/(E^ArcCoth[a*x]*(c-a*c*x)^(1/2)), x]", //
@@ -302,6 +343,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:499
+  @Test
   public void test0039() {
     check( //
         "Integrate[x*ArcTanh[a*x]^3/(1-a^2*x^2)^(3/2), x]", //
@@ -309,6 +351,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:832
+  @Test
   public void test0040() {
     check( //
         "Integrate[Sqrt[c-a^2*c*x^2]/(E^(3*ArcCoth[a*x])*x), x]", //
@@ -316,6 +359,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.5 Inverse hyperbolic cosine functions.input:408
+  @Test
   public void test0041() {
     check( //
         "Integrate[x/(ArcCosh[x]*Sqrt[-1+x]*Sqrt[1+x]), x]", //
@@ -323,6 +367,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:141
+  @Test
   public void test0042() {
     check( //
         "Integrate[a+b*ArcTanh[c*x^3], x]", //
@@ -330,6 +375,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:73
+  @Test
   public void test0043() {
     check( //
         "Integrate[ArcTanh[Tanh[a+b*x]]^2/x^2, x]", //
@@ -337,6 +383,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:799
+  @Test
   public void test0044() {
     check( //
         "Integrate[E^ArcTanh[a*x]*Sqrt[c-c/(a^2*x^2)], x]", //
@@ -344,6 +391,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:336
+  @Test
   public void test0045() {
     check( //
         "Integrate[x^2*ArcTanh[a*x]^2/(1-a^2*x^2)^2, x]", //
@@ -351,6 +399,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:232
+  @Test
   public void test0046() {
     check( //
         "Integrate[(a+b*ArcTanh[c/x^2])^2/x, x]", //
@@ -358,6 +407,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:281
+  @Test
   public void test0047() {
     check( //
         "Integrate[(1-a^2*x^2)^3*ArcTanh[a*x]^3, x]", //
@@ -365,6 +415,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:783
+  @Test
   public void test0048() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])*Sqrt[c-a^2*c*x^2]/x^2, x]", //
@@ -372,6 +423,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:43
+  @Test
   public void test0049() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])^3/x^5, x]", //
@@ -379,6 +431,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:905
+  @Test
   public void test0050() {
     check( //
         "Integrate[Sqrt[c-c/(a^2*x^2)]/(E^(3*ArcTanh[a*x])*x^5), x]", //
@@ -386,6 +439,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:559
+  @Test
   public void test0051() {
     check( //
         "Integrate[(1-a^2*x^2)^(3/2)*ArcTanh[a*x]/x^3, x]", //
@@ -393,6 +447,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:15
+  @Test
   public void test0052() {
     check( //
         "Integrate[(d+c*d*x)*(a+b*ArcTanh[c*x]), x]", //
@@ -400,6 +455,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:19
+  @Test
   public void test0053() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])/x^4, x]", //
@@ -407,6 +463,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:390
+  @Test
   public void test0054() {
     check( //
         "Integrate[ArcTanh[1-I*d+d*Tan[a+b*x]], x]", //
@@ -414,6 +471,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.5 Inverse hyperbolic cosine functions.input:92
+  @Test
   public void test0055() {
     check( //
         "Integrate[(f+g*x)^2*(d-c^2*d*x^2)^(3/2)*(a+b*ArcCosh[c*x]), x]", //
@@ -421,6 +479,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.3 (d+e x)^m (a+b arctanh(c x^n))^p.input:16
+  @Test
   public void test0056() {
     check( //
         "Integrate[(d+e*x)^3*(a+b*ArcTanh[c*x])^2, x]", //
@@ -428,6 +487,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:389
+  @Test
   public void test0057() {
     check( //
         "Integrate[ArcSinh[Sqrt[x]]/x^2, x]", //
@@ -435,6 +495,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.5 Inverse hyperbolic cosine functions.input:17
+  @Test
   public void test0058() {
     check( //
         "Integrate[ArcCosh[c*x]/(d+e*x)^3, x]", //
@@ -442,6 +503,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.6.1 u (a+b arccsch(c x))^n.input:22
+  @Test
   public void test0059() {
     check( //
         "Integrate[(a+b*ArcCsch[c*x])/x^4, x]", //
@@ -449,6 +511,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:830
+  @Test
   public void test0060() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*Sqrt[c-c/(a^2*x^2)]), x]", //
@@ -456,6 +519,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:514
+  @Test
   public void test0061() {
     check( //
         "Integrate[x^3/((a+b*ArcSinh[c*x])^2*Sqrt[1+c^2*x^2]), x]", //
@@ -463,6 +527,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:349
+  @Test
   public void test0062() {
     check( //
         "Integrate[E^ArcTanh[a*x]*(c-a*c*x)/x^4, x]", //
@@ -470,6 +535,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:410
+  @Test
   public void test0063() {
     check( //
         "Integrate[(c+a^2*c*x^2)^2/ArcSinh[a*x], x]", //
@@ -477,6 +543,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:745
+  @Test
   public void test0064() {
     check( //
         "Integrate[(c-a^2*c*x^2)^(5/2)/E^ArcCoth[a*x], x]", //
@@ -484,6 +551,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.5 Inverse hyperbolic cosine functions.input:133
+  @Test
   public void test0065() {
     check( //
         "Integrate[(a+b*ArcCosh[c*x])*Log[h*(f+g*x)^m]/Sqrt[1-c^2*x^2], x]", //
@@ -491,6 +559,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:620
+  @Test
   public void test0066() {
     check( //
         "Integrate[(c+d*x^2)^3*ArcTanh[a*x], x]", //
@@ -498,6 +567,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:179
+  @Test
   public void test0067() {
     check( //
         "Integrate[(a+b*ArcSinh[c*x])/(x^4*Sqrt[d+c^2*d*x^2]), x]", //
@@ -505,6 +575,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.5.1 u (a+b arcsech(c x))^n.input:177
+  @Test
   public void test0068() {
     check( //
         "Integrate[x*(a+b*ArcSech[c*x])*Sqrt[d+e*x^2], x]", //
@@ -512,6 +583,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:219
+  @Test
   public void test0069() {
     check( //
         "Integrate[(1-a^2*x^2)*ArcTanh[a*x]^2, x]", //
@@ -519,6 +591,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:147
+  @Test
   public void test0070() {
     check( //
         "Integrate[Sqrt[ArcTanh[Tanh[a+b*x]]]/x^3, x]", //
@@ -526,6 +599,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:66
+  @Test
   public void test0071() {
     check( //
         "Integrate[ArcCoth[x]/(a-a*x^2)^(1/2), x]", //
@@ -533,6 +607,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.6.2 Inverse hyperbolic cosecant functions.input:31
+  @Test
   public void test0072() {
     check( //
         "Integrate[ArcCsch[1/x], x]", //
@@ -540,6 +615,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:62
+  @Test
   public void test0073() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])/(x^3*(d+c*d*x)), x]", //
@@ -547,6 +623,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:788
+  @Test
   public void test0074() {
     check( //
         "Integrate[1/(E^(3*ArcTanh[a*x])*(c-c/(a^2*x^2))^2), x]", //
@@ -554,6 +631,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:223
+  @Test
   public void test0075() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])/(c-a*c*x), x]", //
@@ -561,6 +639,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:119
+  @Test
   public void test0076() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])^2/(x^2*(d+c*d*x)), x]", //
@@ -568,6 +647,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1309
+  @Test
   public void test0077() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])/(x*(c-a^2*c*x^2)^(1/2)), x]", //
@@ -575,6 +655,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.5 Inverse hyperbolic cosine functions.input:22
+  @Test
   public void test0078() {
     check( //
         "Integrate[ArcCosh[c*x]^2/(d+e*x), x]", //
@@ -582,6 +663,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1385
+  @Test
   public void test0079() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])/(c-a^2*c*x^2)^(3/2), x]", //
@@ -589,6 +671,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:352
+  @Test
   public void test0080() {
     check( //
         "Integrate[ArcTanh[1+d+d*Tanh[a+b*x]], x]", //
@@ -596,6 +679,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:327
+  @Test
   public void test0081() {
     check( //
         "Integrate[ArcCoth[c+d*Tan[a+b*x]], x]", //
@@ -603,6 +687,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:427
+  @Test
   public void test0082() {
     check( //
         "Integrate[ArcTanh[a*x]^2/(1-a^2*x^2)^4, x]", //
@@ -610,6 +695,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:309
+  @Test
   public void test0083() {
     check( //
         "Integrate[1/(E^ArcCoth[a*x]*(c-a*c*x)^(7/2)), x]", //
@@ -617,6 +703,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:205
+  @Test
   public void test0084() {
     check( //
         "Integrate[ArcTanh[Tanh[a+b*x]]*Sqrt[x], x]", //
@@ -624,6 +711,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:80
+  @Test
   public void test0085() {
     check( //
         "Integrate[ArcTanh[a*x]/(c*x+a*c*x^2), x]", //
@@ -631,6 +719,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:723
+  @Test
   public void test0086() {
     check( //
         "Integrate[1/(a+b*ArcCosh[c*x])^(3/2), x]", //
@@ -638,6 +727,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:279
+  @Test
   public void test0087() {
     check( //
         "Integrate[(1-a^2*x^2)^3*ArcTanh[a*x], x]", //
@@ -645,6 +735,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:653
+  @Test
   public void test0088() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])*(d+e*Log[1-c^2*x^2]), x]", //
@@ -652,6 +743,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:658
+  @Test
   public void test0089() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])*(c-a^2*c*x^2)^4, x]", //
@@ -659,6 +751,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:413
+  @Test
   public void test0090() {
     check( //
         "Integrate[E^ArcTanh[a*x]*x^3/(c-a*c*x)^4, x]", //
@@ -666,6 +759,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:370
+  @Test
   public void test0091() {
     check( //
         "Integrate[1/((1-a^2*x^2)^2*ArcTanh[a*x]^6), x]", //
@@ -673,6 +767,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:745
+  @Test
   public void test0092() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])/(c-c/(a^2*x^2))^2, x]", //
@@ -680,6 +775,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:293
+  @Test
   public void test0093() {
     check( //
         "Integrate[x^(5/2)/ArcTanh[Tanh[a+b*x]]^(3/2), x]", //
@@ -687,6 +783,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:665
+  @Test
   public void test0094() {
     check( //
         "Integrate[E^ArcTanh[a*x]*Sqrt[c-c/(a*x)]/x^5, x]", //
@@ -694,6 +791,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:628
+  @Test
   public void test0095() {
     check( //
         "Integrate[ArcTanh[a+b*x]/(1-x^2), x]", //
@@ -701,6 +799,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:435
+  @Test
   public void test0096() {
     check( //
         "Integrate[1/(a+b*ArcSinh[I+d*x^2])^(3/2), x]", //
@@ -708,6 +807,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1164
+  @Test
   public void test0097() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(x^3*(c-a^2*c*x^2)^(5/2)), x]", //
@@ -715,6 +815,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:133
+  @Test
   public void test0098() {
     check( //
         "Integrate[x^8*(a+b*ArcTanh[c*x^3]), x]", //
@@ -722,6 +823,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:460
+  @Test
   public void test0099() {
     check( //
         "Integrate[x^3*ArcTanh[a*x]^2/(1-a^2*x^2)^(1/2), x]", //
@@ -729,6 +831,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1513
+  @Test
   public void test0100() {
     check( //
         "Integrate[1/(E^(2*ArcTanh[a*x])*(c-a^2*c*x^2)^(1/2)), x]", //
@@ -736,6 +839,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.5.1 u (a+b arcsech(c x))^n.input:140
+  @Test
   public void test0101() {
     check( //
         "Integrate[(d+e*x^2)^2*(a+b*ArcSech[c*x]), x]", //
@@ -743,6 +847,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:485
+  @Test
   public void test0102() {
     check( //
         "Integrate[Sqrt[c-a*c*x]/(E^ArcTanh[a*x]*x^4), x]", //
@@ -750,6 +855,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.2 (d x)^m (a+b arccosh(c x))^n.input:81
+  @Test
   public void test0103() {
     check( //
         "Integrate[x/ArcCosh[a*x]^4, x]", //
@@ -757,6 +863,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:357
+  @Test
   public void test0104() {
     check( //
         "Integrate[ArcTanh[1-d-d*Tanh[a+b*x]], x]", //
@@ -764,6 +871,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1152
+  @Test
   public void test0105() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(x^2*(c-a^2*c*x^2)^(3/2)), x]", //
@@ -771,6 +879,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:27
+  @Test
   public void test0106() {
     check( //
         "Integrate[(d+c*d*x)^2*(a+b*ArcTanh[c*x])/x^3, x]", //
@@ -778,6 +887,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1537
+  @Test
   public void test0107() {
     check( //
         "Integrate[1/(E^(3*ArcTanh[a*x])*(c-a^2*c*x^2)^3), x]", //
@@ -785,6 +895,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:292
+  @Test
   public void test0108() {
     check( //
         "Integrate[E^(3*ArcCoth[a*x])*(c-a*c*x)^(5/2), x]", //
@@ -792,6 +903,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:589
+  @Test
   public void test0109() {
     check( //
         "Integrate[(d+e*x^2)*(a+b*ArcCosh[c*x])/x^4, x]", //
@@ -799,6 +911,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:133
+  @Test
   public void test0110() {
     check( //
         "Integrate[1/(x*ArcTanh[Tanh[a+b*x]]^3), x]", //
@@ -806,6 +919,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:624
+  @Test
   public void test0111() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*(c-c/(a*x))^(3/2)), x]", //
@@ -813,6 +927,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1682
+  @Test
   public void test0112() {
     check( //
         "Integrate[E^(2*p*ArcTanh[a*x])*(c-a^2*c*x^2)^p, x]", //
@@ -820,6 +935,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.2 (d x)^m (a+b arccosh(c x))^n.input:25
+  @Test
   public void test0113() {
     check( //
         "Integrate[x^2*ArcCosh[a*x]^2, x]", //
@@ -827,6 +943,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:347
+  @Test
   public void test0114() {
     check( //
         "Integrate[E^ArcTanh[a*x]*(c-a*c*x)/x^2, x]", //
@@ -834,6 +951,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:300
+  @Test
   public void test0115() {
     check( //
         "Integrate[ArcTanh[a*x]^2/(x^2*(1-a^2*x^2)), x]", //
@@ -841,6 +959,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:443
+  @Test
   public void test0116() {
     check( //
         "Integrate[E^ArcTanh[x]/(1-x)^(1/2), x]", //
@@ -848,6 +967,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:184
+  @Test
   public void test0117() {
     check( //
         "Integrate[1/ArcTanh[Tanh[a+b*x]]^(3/2), x]", //
@@ -855,6 +975,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.2 (d x)^m (a+b arcsinh(c x))^n.input:115
+  @Test
   public void test0118() {
     check( //
         "Integrate[1/Sqrt[ArcSinh[a*x]], x]", //
@@ -862,6 +983,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:163
+  @Test
   public void test0119() {
     check( //
         "Integrate[ArcTanh[Tanh[a+b*x]]^(5/2)/x, x]", //
@@ -869,6 +991,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:295
+  @Test
   public void test0120() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])/Sqrt[c-a*c*x], x]", //
@@ -876,6 +999,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.6.1 u (a+b arccsch(c x))^n.input:172
+  @Test
   public void test0121() {
     check( //
         "Integrate[x*(d+e*x^2)^(3/2)*(a+b*ArcCsch[c*x]), x]", //
@@ -883,6 +1007,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:250
+  @Test
   public void test0122() {
     check( //
         "Integrate[1/(x^(5/2)*ArcTanh[Tanh[a+b*x]]^3), x]", //
@@ -890,6 +1015,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:198
+  @Test
   public void test0123() {
     check( //
         "Integrate[x^3*(a+b*ArcTanh[c/x])^2, x]", //
@@ -897,6 +1023,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:708
+  @Test
   public void test0124() {
     check( //
         "Integrate[1/(E^(3*ArcCoth[a*x])*(c-a^2*c*x^2)^4), x]", //
@@ -904,6 +1031,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:856
+  @Test
   public void test0125() {
     check( //
         "Integrate[E^ArcTanh[a*x]*x^m*Sqrt[c-c/(a^2*x^2)], x]", //
@@ -911,6 +1039,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1448
+  @Test
   public void test0126() {
     check( //
         "Integrate[x^m*(c-a^2*c*x^2)^(1/2)/E^ArcTanh[a*x], x]", //
@@ -918,6 +1047,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.5.2 Inverse hyperbolic secant functions.input:67
+  @Test
   public void test0127() {
     check( //
         "Integrate[E^ArcSech[a*x^2]*x^4, x]", //
@@ -925,6 +1055,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:279
+  @Test
   public void test0128() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(c-a*c*x)^(3/2), x]", //
@@ -932,6 +1063,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:172
+  @Test
   public void test0129() {
     check( //
         "Integrate[x^3*(a+b*ArcSinh[c*x])/Sqrt[d+c^2*d*x^2], x]", //
@@ -939,6 +1071,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:16
+  @Test
   public void test0130() {
     check( //
         "Integrate[E^ArcTanh[a*x], x]", //
@@ -946,6 +1079,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:210
+  @Test
   public void test0131() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])*(c-a*c*x)^4, x]", //
@@ -953,6 +1087,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:25
+  @Test
   public void test0132() {
     check( //
         "Integrate[(a+b*ArcSinh[c*x])/(d+e*x), x]", //
@@ -960,6 +1095,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:242
+  @Test
   public void test0133() {
     check( //
         "Integrate[x^3/ArcCoth[Tanh[a+b*x]]^3, x]", //
@@ -967,6 +1103,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:734
+  @Test
   public void test0134() {
     check( //
         "Integrate[E^(3*ArcCoth[a*x])*(c-a^2*c*x^2)^(5/2), x]", //
@@ -974,6 +1111,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.2 (d x)^m (a+b arccosh(c x))^n.input:164
+  @Test
   public void test0135() {
     check( //
         "Integrate[x*(a+b*ArcCosh[c*x]), x]", //
@@ -981,6 +1119,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:822
+  @Test
   public void test0136() {
     check( //
         "Integrate[Sqrt[c-a^2*c*x^2]/E^(2*ArcCoth[a*x]), x]", //
@@ -988,6 +1127,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:265
+  @Test
   public void test0137() {
     check( //
         "Integrate[(a+b*ArcTanh[c*Sqrt[x]])^2, x]", //
@@ -995,6 +1135,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:736
+  @Test
   public void test0138() {
     check( //
         "Integrate[E^(3*ArcCoth[a*x])*Sqrt[c-a^2*c*x^2], x]", //
@@ -1002,6 +1143,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1453
+  @Test
   public void test0139() {
     check( //
         "Integrate[(c-a^2*c*x^2)^(1/2)/(E^ArcTanh[a*x]*x^2), x]", //
@@ -1009,6 +1151,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:41
+  @Test
   public void test0140() {
     check( //
         "Integrate[1/(a+b*ArcSinh[c*x]), x]", //
@@ -1016,6 +1159,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:455
+  @Test
   public void test0141() {
     check( //
         "Integrate[x*ArcTanh[a*x]/(1-a^2*x^2)^(1/2), x]", //
@@ -1023,6 +1167,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:224
+  @Test
   public void test0142() {
     check( //
         "Integrate[E^(3*ArcCoth[a*x])/(c-a*c*x)^2, x]", //
@@ -1030,6 +1175,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:211
+  @Test
   public void test0143() {
     check( //
         "Integrate[(a+b*ArcCosh[c*x])^2*Sqrt[d-c^2*d*x^2]/x^3, x]", //
@@ -1037,6 +1183,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:397
+  @Test
   public void test0144() {
     check( //
         "Integrate[x^4*ArcSinh[a*x]^3/Sqrt[1+a^2*x^2], x]", //
@@ -1044,6 +1191,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:731
+  @Test
   public void test0145() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])/(c-a^2*c*x^2)^(9/2), x]", //
@@ -1051,6 +1199,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:202
+  @Test
   public void test0146() {
     check( //
         "Integrate[E^ArcTanh[a*x]*(c-a*c*x), x]", //
@@ -1058,6 +1207,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:281
+  @Test
   public void test0147() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(c-a*c*x)^(7/2), x]", //
@@ -1065,6 +1215,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:202
+  @Test
   public void test0148() {
     check( //
         "Integrate[(a+b*ArcTanh[c/x])^2/x, x]", //
@@ -1072,6 +1223,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:916
+  @Test
   public void test0149() {
     check( //
         "Integrate[E^(4*ArcCoth[a*x])*(c-c/(a^2*x^2))^5, x]", //
@@ -1079,6 +1231,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1111
+  @Test
   public void test0150() {
     check( //
         "Integrate[E^ArcTanh[a*x]*x^6/(1-a^2*x^2)^(5/2), x]", //
@@ -1086,6 +1239,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:350
+  @Test
   public void test0151() {
     check( //
         "Integrate[ArcCoth[1+I*d+d*Cot[a+b*x]], x]", //
@@ -1093,6 +1247,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:35
+  @Test
   public void test0152() {
     check( //
         "Integrate[(d+c*d*x)^3*(a+b*ArcTanh[c*x])/x, x]", //
@@ -1100,6 +1255,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:334
+  @Test
   public void test0153() {
     check( //
         "Integrate[x*ArcCoth[1+I*d-d*Tan[a+b*x]], x]", //
@@ -1107,6 +1263,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:752
+  @Test
   public void test0154() {
     check( //
         "Integrate[(c-a^2*c*x^2)^(5/2)/E^(2*ArcCoth[a*x]), x]", //
@@ -1114,6 +1271,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1536
+  @Test
   public void test0155() {
     check( //
         "Integrate[1/(E^(3*ArcTanh[a*x])*(c-a^2*c*x^2)^2), x]", //
@@ -1121,6 +1279,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:574
+  @Test
   public void test0156() {
     check( //
         "Integrate[(c-c/(a*x))/E^(2*ArcTanh[a*x]), x]", //
@@ -1128,6 +1287,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:456
+  @Test
   public void test0157() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])*(c-c/(a*x))^5, x]", //
@@ -1135,6 +1295,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:193
+  @Test
   public void test0158() {
     check( //
         "Integrate[a+b*ArcTanh[c/x], x]", //
@@ -1142,6 +1303,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1579
+  @Test
   public void test0159() {
     check( //
         "Integrate[E^(1/2*ArcTanh[a*x])/(1-a^2*x^2)^(5/2), x]", //
@@ -1149,6 +1311,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:28
+  @Test
   public void test0160() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])/x^4, x]", //
@@ -1156,6 +1319,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:12
+  @Test
   public void test0161() {
     check( //
         "Integrate[ArcSinh[c*x]/(d+e*x), x]", //
@@ -1163,6 +1327,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.2 (d x)^m (a+b arccosh(c x))^n.input:75
+  @Test
   public void test0162() {
     check( //
         "Integrate[1/ArcCosh[a*x]^3, x]", //
@@ -1170,6 +1335,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:923
+  @Test
   public void test0163() {
     check( //
         "Integrate[E^(4*ArcCoth[a*x])/(c-c/(a^2*x^2))^3, x]", //
@@ -1177,6 +1343,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:409
+  @Test
   public void test0164() {
     check( //
         "Integrate[(c+a^2*c*x^2)^3/ArcSinh[a*x], x]", //
@@ -1184,6 +1351,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.5 Inverse hyperbolic cosine functions.input:88
+  @Test
   public void test0165() {
     check( //
         "Integrate[(f+g*x)*(a+b*ArcCosh[c*x])*Sqrt[d-c^2*d*x^2], x]", //
@@ -1191,6 +1359,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:947
+  @Test
   public void test0166() {
     check( //
         "Integrate[1/(E^(3*ArcCoth[a*x])*(c-c/(a^2*x^2))), x]", //
@@ -1198,6 +1367,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:82
+  @Test
   public void test0167() {
     check( //
         "Integrate[(f+g*x)^3*(a+b*ArcSinh[c*x])/Sqrt[d+c^2*d*x^2], x]", //
@@ -1205,6 +1375,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:349
+  @Test
   public void test0168() {
     check( //
         "Integrate[x*ArcCoth[1+I*d+d*Cot[a+b*x]], x]", //
@@ -1212,6 +1383,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1372
+  @Test
   public void test0169() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])*(c-a^2*c*x^2)^(1/2), x]", //
@@ -1219,6 +1391,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:37
+  @Test
   public void test0170() {
     check( //
         "Integrate[x*(a+b*ArcTanh[c*x])^3, x]", //
@@ -1226,6 +1399,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:255
+  @Test
   public void test0171() {
     check( //
         "Integrate[x*(1-a^2*x^2)^2*ArcTanh[a*x]^2, x]", //
@@ -1233,6 +1407,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:724
+  @Test
   public void test0172() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])*(c-a^2*c*x^2)^(5/2), x]", //
@@ -1240,6 +1415,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:315
+  @Test
   public void test0173() {
     check( //
         "Integrate[1/(E^(2*ArcCoth[a*x])*(c-a*c*x)^(3/2)), x]", //
@@ -1247,6 +1423,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:186
+  @Test
   public void test0174() {
     check( //
         "Integrate[a+b*ArcSinh[c+d*x], x]", //
@@ -1254,6 +1431,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:626
+  @Test
   public void test0175() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*(c-c/(a*x))^(7/2)), x]", //
@@ -1261,6 +1439,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:290
+  @Test
   public void test0176() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])*(c-a*c*x)^(9/2), x]", //
@@ -1268,6 +1447,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1514
+  @Test
   public void test0177() {
     check( //
         "Integrate[1/(E^(2*ArcTanh[a*x])*(c-a^2*c*x^2)^(3/2)), x]", //
@@ -1275,6 +1455,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1133
+  @Test
   public void test0178() {
     check( //
         "Integrate[E^ArcTanh[a*x]*(c-a^2*c*x^2)^(7/2), x]", //
@@ -1282,6 +1463,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1113
+  @Test
   public void test0179() {
     check( //
         "Integrate[E^ArcTanh[a*x]*x^4/(1-a^2*x^2)^(5/2), x]", //
@@ -1289,6 +1471,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:937
+  @Test
   public void test0180() {
     check( //
         "Integrate[(c-c/(a^2*x^2))^2/E^(2*ArcCoth[a*x]), x]", //
@@ -1296,6 +1479,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:295
+  @Test
   public void test0181() {
     check( //
         "Integrate[x^(1/2)/ArcTanh[Tanh[a+b*x]]^(3/2), x]", //
@@ -1303,6 +1487,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:754
+  @Test
   public void test0182() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])/(c-c/(a^2*x^2))^3, x]", //
@@ -1310,6 +1495,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:97
+  @Test
   public void test0183() {
     check( //
         "Integrate[x*(a+b*ArcTanh[c*x^2])^3, x]", //
@@ -1317,6 +1503,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1109
+  @Test
   public void test0184() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(x^3*(1-a^2*x^2)^(3/2)), x]", //
@@ -1324,6 +1511,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:602
+  @Test
   public void test0185() {
     check( //
         "Integrate[1/((1-a^2*x^2)^(7/2)*ArcTanh[a*x]^2), x]", //
@@ -1331,6 +1519,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:826
+  @Test
   public void test0186() {
     check( //
         "Integrate[(c-c/(a^2*x^2))^(7/2)/E^ArcTanh[a*x], x]", //
@@ -1338,6 +1527,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:38
+  @Test
   public void test0187() {
     check( //
         "Integrate[x*ArcCoth[a*x]^3, x]", //
@@ -1345,6 +1535,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:543
+  @Test
   public void test0188() {
     check( //
         "Integrate[Sqrt[c-c/(a*x)]/E^ArcCoth[a*x], x]", //
@@ -1352,6 +1543,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:88
+  @Test
   public void test0189() {
     check( //
         "Integrate[(d+c*d*x)*(a+b*ArcTanh[c*x])^2, x]", //
@@ -1359,6 +1551,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:465
+  @Test
   public void test0190() {
     check( //
         "Integrate[ArcTanh[a*x]^2/(x^2*(1-a^2*x^2)^(1/2)), x]", //
@@ -1366,6 +1559,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:1056
+  @Test
   public void test0191() {
     check( //
         "Integrate[Sqrt[c-c/(a^2*x^2)]/(E^(3*ArcCoth[a*x])*x), x]", //
@@ -1373,6 +1567,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:132
+  @Test
   public void test0192() {
     check( //
         "Integrate[x^(3/2)*ArcCoth[Sqrt[x]], x]", //
@@ -1380,6 +1575,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:428
+  @Test
   public void test0193() {
     check( //
         "Integrate[1/(a+b*ArcSinh[-I+d*x^2])^3, x]", //
@@ -1387,6 +1583,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:440
+  @Test
   public void test0194() {
     check( //
         "Integrate[1/((1-a^2*x^2)^4*ArcTanh[a*x]), x]", //
@@ -1394,6 +1591,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1443
+  @Test
   public void test0195() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*(c-a^2*c*x^2)^5), x]", //
@@ -1401,6 +1599,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:550
+  @Test
   public void test0196() {
     check( //
         "Integrate[E^(4*ArcTanh[a*x])*(c-c/(a*x))^5, x]", //
@@ -1408,6 +1607,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1254
+  @Test
   public void test0197() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])/(x*(c-a^2*c*x^2)^2), x]", //
@@ -1415,6 +1615,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.6.2 Inverse hyperbolic cosecant functions.input:8
+  @Test
   public void test0198() {
     check( //
         "Integrate[x^3*ArcCsch[a+b*x], x]", //
@@ -1422,6 +1623,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:660
+  @Test
   public void test0199() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])*(c-a^2*c*x^2)^2, x]", //
@@ -1429,6 +1631,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:205
+  @Test
   public void test0200() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(c-a*c*x)^3, x]", //
@@ -1436,6 +1639,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:469
+  @Test
   public void test0201() {
     check( //
         "Integrate[x*ArcTanh[a*x]^3/(1-a^2*x^2)^(1/2), x]", //
@@ -1443,6 +1647,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:207
+  @Test
   public void test0202() {
     check( //
         "Integrate[E^ArcCoth[a*x]/(c-a*c*x)^5, x]", //
@@ -1450,6 +1655,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:253
+  @Test
   public void test0203() {
     check( //
         "Integrate[(d+c^2*d*x^2)^3*(a+b*ArcSinh[c*x])^2, x]", //
@@ -1457,6 +1663,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1021
+  @Test
   public void test0204() {
     check( //
         "Integrate[E^ArcTanh[1+b*x]/(2+b*x), x]", //
@@ -1464,6 +1671,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:505
+  @Test
   public void test0205() {
     check( //
         "Integrate[1/((c-a^2*c*x^2)^(1/2)*Sqrt[ArcCosh[a*x]]), x]", //
@@ -1471,6 +1679,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.5.1 u (a+b arcsech(c x))^n.input:23
+  @Test
   public void test0206() {
     check( //
         "Integrate[ArcSech[a*x]^3, x]", //
@@ -1478,6 +1687,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:309
+  @Test
   public void test0207() {
     check( //
         "Integrate[ArcTanh[a*x]^(1/2)/(1-a^2*x^2), x]", //
@@ -1485,6 +1695,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1681
+  @Test
   public void test0208() {
     check( //
         "Integrate[E^(2*(1+p)*ArcTanh[a*x])/(c-a^2*c*x^2)^p, x]", //
@@ -1492,6 +1703,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.5.1 u (a+b arcsech(c x))^n.input:48
+  @Test
   public void test0209() {
     check( //
         "Integrate[x*(a+b*ArcSech[c*x])^2, x]", //
@@ -1499,6 +1711,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:294
+  @Test
   public void test0210() {
     check( //
         "Integrate[x^(3/2)/ArcTanh[Tanh[a+b*x]]^(3/2), x]", //
@@ -1506,6 +1719,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:722
+  @Test
   public void test0211() {
     check( //
         "Integrate[(d+e*x^2)/(a+b*ArcCosh[c*x])^(3/2), x]", //
@@ -1513,6 +1727,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:50
+  @Test
   public void test0212() {
     check( //
         "Integrate[(d+c*d*x)^4*(a+b*ArcTanh[c*x])/x^5, x]", //
@@ -1520,6 +1735,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:673
+  @Test
   public void test0213() {
     check( //
         "Integrate[E^(3*ArcCoth[a*x])/(c-a^2*c*x^2)^4, x]", //
@@ -1527,6 +1743,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:160
+  @Test
   public void test0214() {
     check( //
         "Integrate[x^2*ArcTanh[Tanh[a+b*x]]^(5/2), x]", //
@@ -1534,6 +1751,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:141
+  @Test
   public void test0215() {
     check( //
         "Integrate[x^3*Sqrt[ArcTanh[Tanh[a+b*x]]], x]", //
@@ -1541,6 +1759,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.6.1 u (a+b arccsch(c x))^n.input:16
+  @Test
   public void test0216() {
     check( //
         "Integrate[x^2*(a+b*ArcCsch[c*x]), x]", //
@@ -1548,6 +1767,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:556
+  @Test
   public void test0217() {
     check( //
         "Integrate[E^(4*ArcTanh[a*x])/(c-c/(a*x))^2, x]", //
@@ -1555,6 +1775,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:529
+  @Test
   public void test0218() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(c-c/(a*x))^3, x]", //
@@ -1562,6 +1783,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:400
+  @Test
   public void test0219() {
     check( //
         "Integrate[x^4/((1-a^2*x^2)^3*ArcTanh[a*x]), x]", //
@@ -1569,6 +1791,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:317
+  @Test
   public void test0220() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x^n])^2/x, x]", //
@@ -1576,6 +1799,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:350
+  @Test
   public void test0221() {
     check( //
         "Integrate[Sqrt[1+a^2+2*a*b*x+b^2*x^2]/ArcSinh[a+b*x]^3, x]", //
@@ -1583,6 +1807,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:273
+  @Test
   public void test0222() {
     check( //
         "Integrate[E^ArcTanh[a*x]*(c-a*c*x)^(9/2), x]", //
@@ -1590,6 +1815,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:332
+  @Test
   public void test0223() {
     check( //
         "Integrate[ArcTanh[a*x]/(x*(1-a^2*x^2)^2), x]", //
@@ -1597,6 +1823,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:214
+  @Test
   public void test0224() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])/(c-a*c*x), x]", //
@@ -1604,6 +1831,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:473
+  @Test
   public void test0225() {
     check( //
         "Integrate[E^(4*ArcCoth[a*x])*(c-c/(a*x))^5, x]", //
@@ -1611,6 +1839,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:250
+  @Test
   public void test0226() {
     check( //
         "Integrate[x^3*(d+c^2*d*x^2)^3*(a+b*ArcSinh[c*x])^2, x]", //
@@ -1618,6 +1847,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:655
+  @Test
   public void test0227() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x])*(d+e*Log[1-c^2*x^2])/x^2, x]", //
@@ -1625,6 +1855,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:904
+  @Test
   public void test0228() {
     check( //
         "Integrate[E^(2*ArcCoth[a*x])/(c-c/(a^2*x^2)), x]", //
@@ -1632,6 +1863,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1364
+  @Test
   public void test0229() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])/(c-a^2*c*x^2)^4, x]", //
@@ -1639,6 +1871,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:1037
+  @Test
   public void test0230() {
     check( //
         "Integrate[x^m*Sqrt[c-c/(a^2*x^2)]/E^ArcCoth[a*x], x]", //
@@ -1646,6 +1879,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:64
+  @Test
   public void test0231() {
     check( //
         "Integrate[(f+g*x)^2*(a+b*ArcSinh[c*x])*Sqrt[d+c^2*d*x^2], x]", //
@@ -1653,6 +1887,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:791
+  @Test
   public void test0232() {
     check( //
         "Integrate[E^(3*ArcCoth[a*x])*Sqrt[c-a^2*c*x^2]/x, x]", //
@@ -1660,6 +1895,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:304
+  @Test
   public void test0233() {
     check( //
         "Integrate[(c-a*c*x)^(3/2)/E^ArcTanh[a*x], x]", //
@@ -1667,6 +1903,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:287
+  @Test
   public void test0234() {
     check( //
         "Integrate[x*ArcCoth[c+d*Tanh[a+b*x]], x]", //
@@ -1674,6 +1911,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1112
+  @Test
   public void test0235() {
     check( //
         "Integrate[E^ArcTanh[a*x]*x^5/(1-a^2*x^2)^(5/2), x]", //
@@ -1681,6 +1919,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1301
+  @Test
   public void test0236() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])*(c-a^2*c*x^2)^(5/2)/x^5, x]", //
@@ -1688,6 +1927,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:77
+  @Test
   public void test0237() {
     check( //
         "Integrate[(a+b*ArcCosh[c*x])*Sqrt[d-c^2*d*x^2], x]", //
@@ -1695,6 +1935,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:540
+  @Test
   public void test0238() {
     check( //
         "Integrate[x*ArcTanh[a*x]^2*Sqrt[1-a^2*x^2], x]", //
@@ -1702,6 +1943,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:363
+  @Test
   public void test0239() {
     check( //
         "Integrate[ArcTanh[c+d*Coth[a+b*x]], x]", //
@@ -1709,6 +1951,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:354
+  @Test
   public void test0240() {
     check( //
         "Integrate[ArcCoth[1-I*d-d*Cot[a+b*x]], x]", //
@@ -1716,6 +1959,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:148
+  @Test
   public void test0241() {
     check( //
         "Integrate[x^2*ArcTanh[a*x]^3/(c+a*c*x), x]", //
@@ -1723,6 +1967,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:261
+  @Test
   public void test0242() {
     check( //
         "Integrate[ArcTanh[Tanh[a+b*x]]^(1/2)/x^(7/2), x]", //
@@ -1730,6 +1975,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:642
+  @Test
   public void test0243() {
     check( //
         "Integrate[(a+b*ArcCosh[c*x])/(d+e*x^2)^(3/2), x]", //
@@ -1737,6 +1983,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:307
+  @Test
   public void test0244() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*(c-a*c*x)^(3/2)), x]", //
@@ -1744,6 +1991,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.4 (f x)^m (d+e x^2)^p (a+b arcsinh(c x))^n.input:273
+  @Test
   public void test0245() {
     check( //
         "Integrate[(a+b*ArcSinh[c*x])^2/(d+c^2*d*x^2)^2, x]", //
@@ -1751,6 +1999,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:125
+  @Test
   public void test0246() {
     check( //
         "Integrate[1/(x^2*ArcTanh[Tanh[a+b*x]]^2), x]", //
@@ -1758,6 +2007,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:97
+  @Test
   public void test0247() {
     check( //
         "Integrate[ArcTanh[Tanh[a+b*x]]^4/x^2, x]", //
@@ -1765,6 +2015,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:444
+  @Test
   public void test0248() {
     check( //
         "Integrate[1/((1-a^2*x^2)^4*ArcTanh[a*x]^2), x]", //
@@ -1772,6 +2023,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:329
+  @Test
   public void test0249() {
     check( //
         "Integrate[x^2*ArcCoth[1-I*d+d*Tan[a+b*x]], x]", //
@@ -1779,6 +2031,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:189
+  @Test
   public void test0250() {
     check( //
         "Integrate[x^4/ArcTanh[Tanh[a+b*x]]^(5/2), x]", //
@@ -1786,6 +2039,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:1209
+  @Test
   public void test0251() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])*x^3*(c-a^2*c*x^2), x]", //
@@ -1793,6 +2047,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:256
+  @Test
   public void test0252() {
     check( //
         "Integrate[x^(3/2)*ArcTanh[Tanh[a+b*x]]^(1/2), x]", //
@@ -1800,6 +2055,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.4 u (a+b arctanh(c x))^p.input:49
+  @Test
   public void test0253() {
     check( //
         "Integrate[(d+c*d*x)^4*(a+b*ArcTanh[c*x])/x^4, x]", //
@@ -1807,6 +2063,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:281
+  @Test
   public void test0254() {
     check( //
         "Integrate[E^ArcCoth[a*x]/(c-a*c*x)^(7/2), x]", //
@@ -1814,6 +2071,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:113
+  @Test
   public void test0255() {
     check( //
         "Integrate[x/ArcTanh[Tanh[a+b*x]], x]", //
@@ -1821,6 +2079,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:632
+  @Test
   public void test0256() {
     check( //
         "Integrate[1/(E^(2*ArcTanh[a*x])*Sqrt[c-c/(a*x)]), x]", //
@@ -1828,6 +2087,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.1.5 Inverse hyperbolic sine functions.input:364
+  @Test
   public void test0257() {
     check( //
         "Integrate[1/(ArcSinh[a+b*x]^3*Sqrt[1+a^2+2*a*b*x+b^2*x^2]), x]", //
@@ -1835,6 +2095,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.7 Inverse hyperbolic tangent functions.input:132
+  @Test
   public void test0258() {
     check( //
         "Integrate[1/ArcTanh[Tanh[a+b*x]]^3, x]", //
@@ -1842,6 +2103,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.2 Exponentials of inverse hyperbolic cotangent functions.input:714
+  @Test
   public void test0259() {
     check( //
         "Integrate[E^ArcCoth[a*x]*(c-a^2*c*x^2)^(7/2), x]", //
@@ -1849,6 +2111,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.2 (d x)^m (a+b arctanh(c x^n))^p.input:76
+  @Test
   public void test0260() {
     check( //
         "Integrate[(a+b*ArcTanh[c*x^2])/x^7, x]", //
@@ -1856,6 +2119,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:19
+  @Test
   public void test0261() {
     check( //
         "Integrate[ArcCoth[a*x]/x^2, x]", //
@@ -1863,6 +2127,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.2.4 (f x)^m (d+e x^2)^p (a+b arccosh(c x))^n.input:658
+  @Test
   public void test0262() {
     check( //
         "Integrate[(d+e*x^2)^2*(a+b*ArcCosh[c*x])^2, x]", //
@@ -1870,6 +2135,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.3.6 Exponentials of inverse hyperbolic tangent functions.input:567
+  @Test
   public void test0263() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*(c-c/(a*x))^2), x]", //
@@ -1877,6 +2143,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // 7.4.1 Inverse hyperbolic cotangent functions.input:237
+  @Test
   public void test0264() {
     check( //
         "Integrate[1/(x*ArcCoth[Tanh[a+b*x]]^2), x]", //

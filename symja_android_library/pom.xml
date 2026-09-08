@@ -123,6 +123,13 @@
 		set this true to not be published -->
 		<guava.minimal.version>32.0</guava.minimal.version>
 		<cdk.version>2.13</cdk.version>
+
+		<!-- Test tiers. The default run is the "fast" tier: everything not tagged.
+		     @Tag("slow")   heavy symbolic tests, see TestTags.SLOW
+		     @Tag("corpus") scoreboard corpora whose failures are expected, see TestTags.CORPUS
+		     Run the other tiers with -Pslow-tests, -Pall-tests or -Prubi-corpus. -->
+		<symja.test.excludedGroups>slow,corpus</symja.test.excludedGroups>
+		<symja.test.groups></symja.test.groups>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -666,7 +673,14 @@
 							<!-- TODO: fix those tests and enable them too
 							<include>**/*Tests.java</include>	-->
 							<include>**/*TestCase.java</include>
+							<!-- The Rubi corpus classes are named after the integral family they
+							cover, not after any test convention. They are kept out of a normal
+							build by @Tag("corpus"), not by their file name. -->
+							<include>**/org/matheclipse/core/rubi/**/*.java</include>
 						</includes>
+						<!-- Test tiers, see the symja.test.* properties. -->
+						<groups>${symja.test.groups}</groups>
+						<excludedGroups>${symja.test.excludedGroups}</excludedGroups>
 						<!-- Spawns 1 separate JVM process per available CPU
 						core 
 						<forkCount>1C</forkCount>
@@ -812,6 +826,51 @@
 		</plugins>
 	</build>
 	<profiles>
+		<!-- Test tiers. The default build runs the "fast" tier only: every test that is
+		neither @Tag("slow") nor @Tag("corpus"). See TestTags and CONTRIBUTING.md. -->
+		<profile>
+			<!-- ONLY the slow tier. -->
+			<id>slow-tests</id>
+			<properties>
+				<symja.test.excludedGroups></symja.test.excludedGroups>
+				<symja.test.groups>slow</symja.test.groups>
+			</properties>
+		</profile>
+		<profile>
+			<!-- Fast + slow. Run this before pushing. -->
+			<id>all-tests</id>
+			<properties>
+				<symja.test.excludedGroups>corpus</symja.test.excludedGroups>
+			</properties>
+		</profile>
+		<profile>
+			<!-- The Rubi scoring corpus in matheclipse-io. This is a scoreboard, not a
+			gate: failures are expected, so testFailureIgnore keeps the build green and
+			the per-class pass counts are the result. Takes roughly half an hour; pass
+			-Dsurefire.timeout=5400 as well.
+
+			reuseForks=false is required, not an optimisation: AbstractRubiTestCase sets
+			the global ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS, so sharing one JVM
+			across the strict-syntax and relaxed-syntax (step02) classes makes every
+			single test fail with an unevaluated Integrate[...]. -->
+			<id>rubi-corpus</id>
+			<properties>
+				<symja.test.excludedGroups></symja.test.excludedGroups>
+				<symja.test.groups>corpus</symja.test.groups>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<reuseForks>false</reuseForks>
+							<testFailureIgnore>true</testFailureIgnore>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>publish-to-maven-central</id>
 			<build>

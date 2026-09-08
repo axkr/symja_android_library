@@ -1,15 +1,18 @@
 package org.matheclipse.core.rubi.step02;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 
 public class HyperbolicFunctions extends AbstractRubiTestCase {
 
   static boolean init = true;
 
-  public HyperbolicFunctions(String name) {
-    super(name, false);
+  public HyperbolicFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -24,6 +27,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3377, 2717}
+  @Test
   public void test0001() {
     check( //
         "Integrate[(c + d*x)*Sinh[a + b*x], x]", //
@@ -32,6 +36,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3391}
+  @Test
   public void test0002() {
     check( //
         "Integrate[(c + d*x)*Sinh[a + b*x]^2, x]", //
@@ -40,6 +45,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test0003() {
     check( //
         "Integrate[(c + d*x)*Csch[a + b*x]^2, x]", //
@@ -48,6 +54,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0004() {
     check( //
         "Integrate[x/Sinh[x]^(3/2) - x*Sqrt[Sinh[x]], x]", //
@@ -56,6 +63,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0005() {
     check( //
         "Integrate[x/Sinh[x]^(5/2) + x/(3*Sqrt[Sinh[x]]), x]", //
@@ -64,6 +72,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0006() {
     check( //
         "Integrate[Sinh[c + d*x]/(a + I*a*Sinh[c + d*x]), x]", //
@@ -72,6 +81,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2846, 2813}
+  @Test
   public void test0007() {
     check( //
         "Integrate[Sinh[c + d*x]^3/(a + I*a*Sinh[c + d*x]), x]", //
@@ -80,6 +90,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test0008() {
     check( //
         "Integrate[Cosh[c + d*x]/(a + I*a*Sinh[c + d*x]), x]", //
@@ -89,6 +100,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2761, 8}
+  @Test
   public void test0009() {
     check( //
         "Integrate[Cosh[c + d*x]^2/(a + I*a*Sinh[c + d*x]), x]", //
@@ -97,6 +109,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746}
+  @Test
   public void test0010() {
     check( //
         "Integrate[Cosh[c + d*x]^3/(a + I*a*Sinh[c + d*x]), x]", //
@@ -105,6 +118,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test0011() {
     check( //
         "Integrate[Cosh[c + d*x]/(a + b*Sinh[c + d*x]), x]", //
@@ -113,6 +127,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5428, 2718}
+  @Test
   public void test0012() {
     check( //
         "Integrate[x*Sinh[a + b*x^2], x]", //
@@ -121,6 +136,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5428, 2718}
+  @Test
   public void test0013() {
     check( //
         "Integrate[x^3*Sinh[a + b*x^4], x]", //
@@ -129,6 +145,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5428, 2718}
+  @Test
   public void test0014() {
     check( //
         "Integrate[Sinh[a + b/x]/x^2, x]", //
@@ -137,6 +154,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5428, 2718}
+  @Test
   public void test0015() {
     check( //
         "Integrate[Sinh[a + b/x^2]/x^3, x]", //
@@ -145,6 +163,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5428, 2718}
+  @Test
   public void test0016() {
     check( //
         "Integrate[Sinh[Sqrt[x]]/Sqrt[x], x]", //
@@ -153,6 +172,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 8}
+  @Test
   public void test0021() {
     check( //
         "Integrate[Sinh[a + b*x]^2, x]", //
@@ -161,6 +181,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0022() {
     check( //
         "Integrate[Sinh[a + b*x]^3, x]", //
@@ -169,6 +190,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0023() {
     check( //
         "Integrate[Sinh[a + b*x]^5, x]", //
@@ -177,6 +199,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2719}
+  @Test
   public void test0024() {
     check( //
         "Integrate[Sqrt[Sinh[a + b*x]], x]", //
@@ -185,6 +208,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2720}
+  @Test
   public void test0025() {
     check( //
         "Integrate[1/Sqrt[Sinh[a + b*x]], x]", //
@@ -193,6 +217,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2719}
+  @Test
   public void test0026() {
     check( //
         "Integrate[Sqrt[b*Sinh[c + d*x]], x]", //
@@ -201,6 +226,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2720}
+  @Test
   public void test0027() {
     check( //
         "Integrate[1/Sqrt[b*Sinh[c + d*x]], x]", //
@@ -209,6 +235,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2719}
+  @Test
   public void test0028() {
     check( //
         "Integrate[(I*Sinh[c + d*x])^(5/2), x]", //
@@ -217,6 +244,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2720}
+  @Test
   public void test0029() {
     check( //
         "Integrate[(I*Sinh[c + d*x])^(3/2), x]", //
@@ -225,6 +253,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2719}
+  @Test
   public void test0030() {
     check( //
         "Integrate[(I*Sinh[c + d*x])^(-3/2), x]", //
@@ -233,6 +262,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2720}
+  @Test
   public void test0031() {
     check( //
         "Integrate[(I*Sinh[c + d*x])^(-5/2), x]", //
@@ -241,6 +271,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2846, 2813}
+  @Test
   public void test0032() {
     check( //
         "Integrate[Sinh[x]^3/(I + Sinh[x]), x]", //
@@ -249,6 +280,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0033() {
     check( //
         "Integrate[Sinh[x]/(I + Sinh[x]), x]", //
@@ -257,6 +289,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0034() {
     check( //
         "Integrate[Sinh[x]/(I + Sinh[x])^2, x]", //
@@ -265,6 +298,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2729, 2727}
+  @Test
   public void test0035() {
     check( //
         "Integrate[(1 + I*Sinh[c + d*x])^(-2), x]", //
@@ -273,6 +307,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2729, 2727}
+  @Test
   public void test0036() {
     check( //
         "Integrate[(1 - I*Sinh[c + d*x])^(-2), x]", //
@@ -281,6 +316,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0037() {
     check( //
         "Integrate[(a + I*a*Sinh[c + d*x])^(3/2), x]", //
@@ -289,6 +325,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0038() {
     check( //
         "Integrate[1/Sqrt[a + I*a*Sinh[c + d*x]], x]", //
@@ -297,6 +334,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2735, 2813}
+  @Test
   public void test0039() {
     check( //
         "Integrate[(a + b*Sinh[c + d*x])^3, x]", //
@@ -305,6 +343,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2718}
+  @Test
   public void test0040() {
     check( //
         "Integrate[a + b*Sinh[c + d*x], x]", //
@@ -313,6 +352,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2734, 2732}
+  @Test
   public void test0041() {
     fSeconds = 20;
     check( //
@@ -322,6 +362,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2742, 2740}
+  @Test
   public void test0042() {
     check( //
         "Integrate[1/Sqrt[a + b*Sinh[x]], x]", //
@@ -330,6 +371,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0043() {
     check( //
         "Integrate[Sqrt[a + I*a*Sinh[x]]*(A + B*Sinh[x]), x]", //
@@ -338,6 +380,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0044() {
     check( //
         "Integrate[(A + B*Sinh[x])/(I + Sinh[x]), x]", //
@@ -346,6 +389,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0045() {
     check( //
         "Integrate[(A + B*Sinh[x])/(I + Sinh[x])^2, x]", //
@@ -354,6 +398,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0046() {
     check( //
         "Integrate[(A + B*Sinh[x])/(I - Sinh[x]), x]", //
@@ -362,6 +407,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0047() {
     check( //
         "Integrate[(A + B*Sinh[x])/(I - Sinh[x])^2, x]", //
@@ -370,6 +416,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 8}
+  @Test
   public void test0048() {
     check( //
         "Integrate[((a*B)/b + B*Sinh[x])/(a + b*Sinh[x]), x]", //
@@ -378,6 +425,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2833, 8}
+  @Test
   public void test0049() {
     check( //
         "Integrate[(a - b*Sinh[x])/(b + a*Sinh[x])^2, x]", //
@@ -386,6 +434,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2736}
+  @Test
   public void test0050() {
     check( //
         "Integrate[(2 - Sinh[x])/(2 + Sinh[x]), x]", //
@@ -394,6 +443,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2718}
+  @Test
   public void test0051() {
     check( //
         "Integrate[Sqrt[a*Sinh[x]^2], x]", //
@@ -402,6 +452,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 3855}
+  @Test
   public void test0052() {
     check( //
         "Integrate[1/Sqrt[a*Sinh[x]^2], x]", //
@@ -410,6 +461,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746}
+  @Test
   public void test0053() {
     check( //
         "Integrate[Cosh[x]^3/(I + Sinh[x]), x]", //
@@ -418,6 +470,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2761, 8}
+  @Test
   public void test0054() {
     check( //
         "Integrate[Cosh[x]^2/(I + Sinh[x]), x]", //
@@ -426,6 +479,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test0055() {
     check( //
         "Integrate[Cosh[x]/(I + Sinh[x]), x]", //
@@ -434,6 +488,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0056() {
     check( //
         "Integrate[Cosh[x]^5/(I + Sinh[x])^2, x]", //
@@ -442,6 +497,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2759, 8}
+  @Test
   public void test0057() {
     check( //
         "Integrate[Cosh[x]^2/(I + Sinh[x])^2, x]", //
@@ -450,6 +506,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0058() {
     check( //
         "Integrate[Cosh[x]/(I + Sinh[x])^2, x]", //
@@ -458,6 +515,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0059() {
     check( //
         "Integrate[Cosh[x]/(1 + I*Sinh[x])^3, x]", //
@@ -466,6 +524,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0060() {
     check( //
         "Integrate[Cosh[x]/(1 - I*Sinh[x])^3, x]", //
@@ -474,6 +533,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test0061() {
     check( //
         "Integrate[Cosh[x]/(a + b*Sinh[x]), x]", //
@@ -482,6 +542,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0062() {
     check( //
         "Integrate[Cosh[x]/(a + b*Sinh[x])^2, x]", //
@@ -490,6 +551,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6813, 3379}
+  @Test
   public void test0063() {
     check( //
         "Integrate[Sinh[Sqrt[1 - a*x]/Sqrt[1 + a*x]]/(1 - a^2*x^2), x]", //
@@ -498,6 +560,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5630, 8}
+  @Test
   public void test0064() {
     check( //
         "Integrate[Sinh[a + b*Log[c*x^n]]^2, x]", //
@@ -506,6 +569,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5630, 5628}
+  @Test
   public void test0065() {
     check( //
         "Integrate[Sinh[a + b*Log[c*x^n]]^3, x]", //
@@ -514,6 +578,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5640, 30}
+  @Test
   public void test0066() {
     check( //
         "Integrate[x^m*Sinh[a + b*Log[c*x^n]]^2, x]", //
@@ -522,6 +587,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5640, 5638}
+  @Test
   public void test0067() {
     check( //
         "Integrate[x^m*Sinh[a + b*Log[c*x^n]]^3, x]", //
@@ -530,6 +596,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2718}
+  @Test
   public void test0068() {
     check( //
         "Integrate[Sinh[a + b*Log[c*x^n]]/x, x]", //
@@ -538,6 +605,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5584, 5582}
+  @Test
   public void test0069() {
     fSeconds = 60;
     check( //
@@ -547,6 +615,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5584, 2225}
+  @Test
   public void test0070() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sinh[d + e*x]^2, x]", //
@@ -555,6 +624,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5599, 5601}
+  @Test
   public void test0071() {
     check( //
         "Integrate[F^(c*(a + b*x))*Csch[d + e*x]^3, x]", //
@@ -563,6 +633,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5599, 5601}
+  @Test
   public void test0072() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check( //
@@ -573,6 +644,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3092}
+  @Test
   public void test0073() {
     check( //
         "Integrate[Sinh[c + d*x]*(a + b*Sinh[c + d*x]^2), x]", //
@@ -581,6 +653,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 3855}
+  @Test
   public void test0074() {
     check( //
         "Integrate[Csch[c + d*x]*(a + b*Sinh[c + d*x]^2), x]", //
@@ -589,6 +662,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 8}
+  @Test
   public void test0075() {
     check( //
         "Integrate[Csch[c + d*x]^2*(a + b*Sinh[c + d*x]^2), x]", //
@@ -597,6 +671,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 3855}
+  @Test
   public void test0076() {
     check( //
         "Integrate[Csch[c + d*x]^3*(a + b*Sinh[c + d*x]^2), x]", //
@@ -605,6 +680,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3259, 3248}
+  @Test
   public void test0077() {
     check( //
         "Integrate[(a + b*Sinh[c + d*x]^2)^3, x]", //
@@ -613,6 +689,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 211}
+  @Test
   public void test0078() {
     check( //
         "Integrate[Sinh[c + d*x]/(a + b*Sinh[c + d*x]^2), x]", //
@@ -621,6 +698,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 214}
+  @Test
   public void test0079() {
     check( //
         "Integrate[(a + b*Sinh[c + d*x]^2)^(-1), x]", //
@@ -629,6 +707,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 212}
+  @Test
   public void test0080() {
     check( //
         "Integrate[(1 - Sinh[x]^2)^(-1), x]", //
@@ -637,6 +716,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0081() {
     check( //
         "Integrate[Sqrt[a + b*Sinh[e + f*x]^2], x]", //
@@ -645,6 +725,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0082() {
     check( //
         "Integrate[Sqrt[-1 + Sinh[x]^2], x]", //
@@ -653,6 +734,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0083() {
     check( //
         "Integrate[Sqrt[a + b*Sinh[x]^2], x]", //
@@ -661,6 +743,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0084() {
     check( //
         "Integrate[1/Sqrt[a + b*Sinh[e + f*x]^2], x]", //
@@ -669,6 +752,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 197}
+  @Test
   public void test0085() {
     check( //
         "Integrate[Sinh[e + f*x]/(a + b*Sinh[e + f*x]^2)^(3/2), x]", //
@@ -677,6 +761,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0086() {
     check( //
         "Integrate[1/Sqrt[-1 + Sinh[x]^2], x]", //
@@ -685,6 +770,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0087() {
     check( //
         "Integrate[1/Sqrt[a + b*Sinh[x]^2], x]", //
@@ -693,6 +779,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3294}
+  @Test
   public void test0088() {
     check( //
         "Integrate[Sinh[c + d*x]*(a + b*Sinh[c + d*x]^4), x]", //
@@ -701,6 +788,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 2717}
+  @Test
   public void test0089() {
     check( //
         "Integrate[Cosh[x]^3/(a + a*Sinh[x]^2), x]", //
@@ -709,6 +797,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 8}
+  @Test
   public void test0090() {
     check( //
         "Integrate[Cosh[x]^2/(a + a*Sinh[x]^2), x]", //
@@ -717,6 +806,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 3855}
+  @Test
   public void test0091() {
     check( //
         "Integrate[Cosh[x]/(a + a*Sinh[x]^2), x]", //
@@ -725,6 +815,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3269}
+  @Test
   public void test0092() {
     check( //
         "Integrate[Cosh[c + d*x]*(a + b*Sinh[c + d*x]^2), x]", //
@@ -733,6 +824,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3270}
+  @Test
   public void test0093() {
     check( //
         "Integrate[Sech[c + d*x]^4*(a + b*Sinh[c + d*x]^2), x]", //
@@ -741,6 +833,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 211}
+  @Test
   public void test0094() {
     check( //
         "Integrate[Cosh[c + d*x]/(a + b*Sinh[c + d*x]^2), x]", //
@@ -749,6 +842,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0095() {
     check( //
         "Integrate[Sqrt[a + b*Sinh[e + f*x]^2], x]", //
@@ -757,6 +851,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3271, 422}
+  @Test
   public void test0096() {
     check( //
         "Integrate[Sech[e + f*x]^2*Sqrt[a + b*Sinh[e + f*x]^2], x]", //
@@ -765,6 +860,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0097() {
     check( //
         "Integrate[1/Sqrt[a + b*Sinh[e + f*x]^2], x]", //
@@ -773,6 +869,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 197}
+  @Test
   public void test0098() {
     check( //
         "Integrate[Cosh[e + f*x]/(a + b*Sinh[e + f*x]^2)^(3/2), x]", //
@@ -781,6 +878,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3271, 422}
+  @Test
   public void test0099() {
     check( //
         "Integrate[Cosh[e + f*x]^2/(a + b*Sinh[e + f*x]^2)^(3/2), x]", //
@@ -789,6 +887,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3302, 251}
+  @Test
   public void test0100() {
     check( //
         "Integrate[Cosh[c + d*x]/(a + b*Sinh[c + d*x]^n), x]", //
@@ -797,6 +896,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3302, 251}
+  @Test
   public void test0101() {
     check( //
         "Integrate[Cosh[c + d*x]/(a + b*Sinh[c + d*x]^n)^2, x]", //
@@ -805,6 +905,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0102() {
     check( //
         "Integrate[Sqrt[a + b*Sinh[e + f*x]^2], x]", //
@@ -813,6 +914,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0103() {
     check( //
         "Integrate[1/Sqrt[a + b*Sinh[e + f*x]^2], x]", //
@@ -821,6 +923,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3273, 70}
+  @Test
   public void test0104() {
     check( //
         "Integrate[(a + b*Sinh[c + d*x]^2)^p*Tanh[c + d*x], x]", //
@@ -829,6 +932,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3273, 67}
+  @Test
   public void test0105() {
     check( //
         "Integrate[Coth[c + d*x]*(a + b*Sinh[c + d*x]^2)^p, x]", //
@@ -837,6 +941,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3377, 2718}
+  @Test
   public void test0106() {
     check( //
         "Integrate[(c + d*x)*Cosh[a + b*x], x]", //
@@ -845,6 +950,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3391}
+  @Test
   public void test0107() {
     check( //
         "Integrate[(c + d*x)*Cosh[a + b*x]^2, x]", //
@@ -853,6 +959,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test0108() {
     check( //
         "Integrate[(c + d*x)*Sech[a + b*x]^2, x]", //
@@ -861,6 +968,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0109() {
     check( //
         "Integrate[x/Cosh[x]^(3/2) + x*Sqrt[Cosh[x]], x]", //
@@ -869,6 +977,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0110() {
     check( //
         "Integrate[x/Cosh[x]^(5/2) - x/(3*Sqrt[Cosh[x]]), x]", //
@@ -877,6 +986,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3400, 3382}
+  @Test
   public void test0111() {
     check( //
         "Integrate[Sqrt[a + a*Cosh[x]]/x, x]", //
@@ -885,6 +995,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3377, 2718}
+  @Test
   public void test0112() {
     check( //
         "Integrate[(a + b*x)*Cosh[c + d*x], x]", //
@@ -893,6 +1004,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5429, 2717}
+  @Test
   public void test0113() {
     check( //
         "Integrate[x*Cosh[a + b*x^2], x]", //
@@ -901,6 +1013,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5429, 2717}
+  @Test
   public void test0114() {
     check( //
         "Integrate[x^2*Cosh[x^3], x]", //
@@ -909,6 +1022,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5429, 2717}
+  @Test
   public void test0115() {
     check( //
         "Integrate[Cosh[x^(-5)]/x^6, x]", //
@@ -917,6 +1031,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5429, 2717}
+  @Test
   public void test0116() {
     check( //
         "Integrate[Cosh[a + b/x]/x^2, x]", //
@@ -925,6 +1040,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5429, 2717}
+  @Test
   public void test0117() {
     check( //
         "Integrate[Cosh[a + b/x^2]/x^3, x]", //
@@ -933,6 +1049,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 8}
+  @Test
   public void test0122() {
     check( //
         "Integrate[Cosh[a + b*x]^2, x]", //
@@ -941,6 +1058,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0123() {
     check( //
         "Integrate[Cosh[a + b*x]^3, x]", //
@@ -949,6 +1067,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0124() {
     check( //
         "Integrate[Cosh[a + b*x]^5, x]", //
@@ -957,6 +1076,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2719}
+  @Test
   public void test0125() {
     check( //
         "Integrate[Cosh[a + b*x]^(5/2), x]", //
@@ -965,6 +1085,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2720}
+  @Test
   public void test0126() {
     check( //
         "Integrate[Cosh[a + b*x]^(3/2), x]", //
@@ -973,6 +1094,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2719}
+  @Test
   public void test0127() {
     check( //
         "Integrate[Cosh[a + b*x]^(-3/2), x]", //
@@ -981,6 +1103,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2720}
+  @Test
   public void test0128() {
     check( //
         "Integrate[Cosh[a + b*x]^(-5/2), x]", //
@@ -989,6 +1112,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2719}
+  @Test
   public void test0129() {
     check( //
         "Integrate[Sqrt[a*Cosh[x]], x]", //
@@ -997,6 +1121,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2720}
+  @Test
   public void test0130() {
     check( //
         "Integrate[1/Sqrt[a*Cosh[x]], x]", //
@@ -1005,6 +1130,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2846, 2813}
+  @Test
   public void test0131() {
     check( //
         "Integrate[Cosh[x]^3/(a + a*Cosh[x]), x]", //
@@ -1013,6 +1139,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0132() {
     check( //
         "Integrate[Cosh[x]/(a + a*Cosh[x]), x]", //
@@ -1021,6 +1148,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2729, 2727}
+  @Test
   public void test0133() {
     check( //
         "Integrate[(1 + Cosh[c + d*x])^(-2), x]", //
@@ -1029,6 +1157,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2729, 2727}
+  @Test
   public void test0134() {
     check( //
         "Integrate[(1 - Cosh[c + d*x])^(-2), x]", //
@@ -1037,6 +1166,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0135() {
     check( //
         "Integrate[(a + a*Cosh[c + d*x])^(3/2), x]", //
@@ -1045,6 +1175,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0136() {
     check( //
         "Integrate[1/Sqrt[a + a*Cosh[c + d*x]], x]", //
@@ -1053,6 +1184,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0137() {
     check( //
         "Integrate[(a - a*Cosh[c + d*x])^(3/2), x]", //
@@ -1061,6 +1193,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0138() {
     check( //
         "Integrate[1/Sqrt[a - a*Cosh[c + d*x]], x]", //
@@ -1069,6 +1202,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2735, 2813}
+  @Test
   public void test0139() {
     check( //
         "Integrate[(a + b*Cosh[c + d*x])^3, x]", //
@@ -1077,6 +1211,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2717}
+  @Test
   public void test0140() {
     check( //
         "Integrate[a + b*Cosh[c + d*x], x]", //
@@ -1085,6 +1220,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 211}
+  @Test
   public void test0141() {
     check( //
         "Integrate[(a + b*Cosh[c + d*x])^(-1), x]", //
@@ -1093,6 +1229,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 212}
+  @Test
   public void test0142() {
     check( //
         "Integrate[(3 + 5*Cosh[c + d*x])^(-1), x]", //
@@ -1101,6 +1238,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2734, 2732}
+  @Test
   public void test0143() {
     check( //
         "Integrate[Sqrt[a + b*Cosh[c + d*x]], x]", //
@@ -1109,6 +1247,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2742, 2740}
+  @Test
   public void test0144() {
     check( //
         "Integrate[1/Sqrt[a + b*Cosh[x]], x]", //
@@ -1117,6 +1256,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0145() {
     check( //
         "Integrate[Sqrt[a + a*Cosh[x]]*(A + B*Cosh[x]), x]", //
@@ -1125,6 +1265,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0146() {
     check( //
         "Integrate[Sqrt[a - a*Cosh[x]]*(A + B*Cosh[x]), x]", //
@@ -1133,6 +1274,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0147() {
     check( //
         "Integrate[(A + B*Cosh[x])/(1 + Cosh[x]), x]", //
@@ -1141,6 +1283,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0148() {
     check( //
         "Integrate[(A + B*Cosh[x])/(1 + Cosh[x])^2, x]", //
@@ -1149,6 +1292,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0149() {
     check( //
         "Integrate[(A + B*Cosh[x])/(1 - Cosh[x]), x]", //
@@ -1157,6 +1301,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0150() {
     check( //
         "Integrate[(A + B*Cosh[x])/(1 - Cosh[x])^2, x]", //
@@ -1165,6 +1310,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 8}
+  @Test
   public void test0151() {
     check( //
         "Integrate[((a*B)/b + B*Cosh[x])/(a + b*Cosh[x]), x]", //
@@ -1173,6 +1319,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2833, 8}
+  @Test
   public void test0152() {
     check( //
         "Integrate[(a + b*Cosh[x])/(b + a*Cosh[x])^2, x]", //
@@ -1181,6 +1328,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2736}
+  @Test
   public void test0153() {
     check( //
         "Integrate[(3 + Cosh[x])/(2 - Cosh[x]), x]", //
@@ -1189,6 +1337,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2717}
+  @Test
   public void test0154() {
     check( //
         "Integrate[Sqrt[a*Cosh[x]^2], x]", //
@@ -1197,6 +1346,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 3855}
+  @Test
   public void test0155() {
     check( //
         "Integrate[1/Sqrt[a*Cosh[x]^2], x]", //
@@ -1205,6 +1355,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0156() {
     check( //
         "Integrate[Sinh[x]/(1 + Cosh[x])^2, x]", //
@@ -1213,6 +1364,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0157() {
     check( //
         "Integrate[Sinh[x]/(1 - Cosh[x])^2, x]", //
@@ -1221,6 +1373,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2759, 8}
+  @Test
   public void test0158() {
     check( //
         "Integrate[Sinh[x]^2/(1 + Cosh[x])^2, x]", //
@@ -1229,6 +1382,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2759, 8}
+  @Test
   public void test0159() {
     check( //
         "Integrate[Sinh[x]^2/(1 - Cosh[x])^2, x]", //
@@ -1237,6 +1391,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0160() {
     check( //
         "Integrate[Sinh[x]/(1 + Cosh[x])^3, x]", //
@@ -1245,6 +1400,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0161() {
     check( //
         "Integrate[Sinh[x]/(1 - Cosh[x])^3, x]", //
@@ -1253,6 +1409,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746}
+  @Test
   public void test0162() {
     check( //
         "Integrate[Sinh[x]^3/(a + a*Cosh[x]), x]", //
@@ -1261,6 +1418,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2761, 8}
+  @Test
   public void test0163() {
     check( //
         "Integrate[Sinh[x]^2/(a + a*Cosh[x]), x]", //
@@ -1269,6 +1427,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test0164() {
     check( //
         "Integrate[Sinh[x]/(a + a*Cosh[x]), x]", //
@@ -1277,6 +1436,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test0165() {
     check( //
         "Integrate[Sinh[x]/(a + b*Cosh[x]), x]", //
@@ -1285,6 +1445,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6813, 3382}
+  @Test
   public void test0166() {
     check( //
         "Integrate[Cosh[Sqrt[1 - a*x]/Sqrt[1 + a*x]]/(1 - a^2*x^2), x]", //
@@ -1293,6 +1454,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test0167() {
     check( //
         "Integrate[Sinh[c + d*x]/(a + b*Cosh[c + d*x]), x]", //
@@ -1301,6 +1463,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5631, 8}
+  @Test
   public void test0168() {
     check( //
         "Integrate[Cosh[a + b*Log[c*x^n]]^2, x]", //
@@ -1309,6 +1472,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5631, 5629}
+  @Test
   public void test0169() {
     check( //
         "Integrate[Cosh[a + b*Log[c*x^n]]^3, x]", //
@@ -1317,6 +1481,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5641, 30}
+  @Test
   public void test0170() {
     check( //
         "Integrate[x^m*Cosh[a + b*Log[c*x^n]]^2, x]", //
@@ -1325,6 +1490,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5641, 5639}
+  @Test
   public void test0171() {
     check( //
         "Integrate[x^m*Cosh[a + b*Log[c*x^n]]^3, x]", //
@@ -1333,6 +1499,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2717}
+  @Test
   public void test0172() {
     check( //
         "Integrate[Cosh[a + b*Log[c*x^n]]/x, x]", //
@@ -1341,6 +1508,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2719}
+  @Test
   public void test0173() {
     check( //
         "Integrate[Sqrt[Cosh[a + b*Log[c*x^n]]]/x, x]", //
@@ -1349,6 +1517,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2720}
+  @Test
   public void test0174() {
     check( //
         "Integrate[1/(x*Sqrt[Cosh[a + b*Log[c*x^n]]]), x]", //
@@ -1357,6 +1526,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5585, 5583}
+  @Test
   public void test0175() {
     check( //
         "Integrate[F^(c*(a + b*x))*Cosh[d + e*x]^3, x]", //
@@ -1365,6 +1535,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5585, 2225}
+  @Test
   public void test0176() {
     check( //
         "Integrate[F^(c*(a + b*x))*Cosh[d + e*x]^2, x]", //
@@ -1373,6 +1544,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5598, 5600}
+  @Test
   public void test0177() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sech[d + e*x]^3, x]", //
@@ -1381,6 +1553,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5598, 5600}
+  @Test
   public void test0178() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sech[d + e*x]^4, x]", //
@@ -1389,6 +1562,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0179() {
     check( //
         "Integrate[x/Cosh[x]^(3/2) + x*Sqrt[Cosh[x]], x]", //
@@ -1397,6 +1571,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0180() {
     check( //
         "Integrate[x/Cosh[x]^(5/2) - x/(3*Sqrt[Cosh[x]]), x]", //
@@ -1405,6 +1580,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 2718}
+  @Test
   public void test0181() {
     check( //
         "Integrate[Sinh[x]^3/(a - a*Cosh[x]^2), x]", //
@@ -1413,6 +1589,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 8}
+  @Test
   public void test0182() {
     check( //
         "Integrate[Sinh[x]^2/(a - a*Cosh[x]^2), x]", //
@@ -1421,6 +1598,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 211}
+  @Test
   public void test0183() {
     check( //
         "Integrate[Sinh[x]/(a + b*Cosh[x]^2), x]", //
@@ -1429,6 +1607,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 214}
+  @Test
   public void test0184() {
     check( //
         "Integrate[(a + b*Cosh[x]^2)^(-1), x]", //
@@ -1437,6 +1616,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 211}
+  @Test
   public void test0185() {
     check( //
         "Integrate[Cosh[x]/(a + b*Cosh[x]^2), x]", //
@@ -1445,6 +1625,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 214}
+  @Test
   public void test0186() {
     check( //
         "Integrate[(a + b*Cosh[x]^2)^(-1), x]", //
@@ -1453,6 +1634,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 212}
+  @Test
   public void test0187() {
     check( //
         "Integrate[(1 + Cosh[x]^2)^(-1), x]", //
@@ -1461,6 +1643,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0188() {
     check( //
         "Integrate[Sqrt[a + b*Cosh[x]^2], x]", //
@@ -1469,6 +1652,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0189() {
     check( //
         "Integrate[Sqrt[-1 - Cosh[x]^2], x]", //
@@ -1477,6 +1661,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0190() {
     check( //
         "Integrate[1/Sqrt[a + b*Cosh[x]^2], x]", //
@@ -1485,6 +1670,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0191() {
     check( //
         "Integrate[1/Sqrt[-1 - Cosh[x]^2], x]", //
@@ -1493,6 +1679,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3808, 2212}
+  @Test
   public void test0192() {
     check( //
         "Integrate[(c + d*x)^m/(a + a*Tanh[e + f*x]), x]", //
@@ -1501,6 +1688,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0193() {
     check( //
         "Integrate[Tanh[a + b*x]^3, x]", //
@@ -1509,6 +1697,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0194() {
     check( //
         "Integrate[Tanh[a + b*x]^2, x]", //
@@ -1517,6 +1706,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0195() {
     check( //
         "Integrate[Coth[a + b*x]^2, x]", //
@@ -1525,6 +1715,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0196() {
     check( //
         "Integrate[Coth[a + b*x]^3, x]", //
@@ -1533,6 +1724,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0197() {
     check( //
         "Integrate[Tanh[a + b*x]^n, x]", //
@@ -1541,6 +1733,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0198() {
     check( //
         "Integrate[(b*Tanh[c + d*x])^n, x]", //
@@ -1549,6 +1742,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0199() {
     check( //
         "Integrate[Sqrt[a*Tanh[x]^2], x]", //
@@ -1557,6 +1751,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0200() {
     check( //
         "Integrate[1/Sqrt[a*Tanh[x]^2], x]", //
@@ -1565,6 +1760,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0201() {
     check( //
         "Integrate[Sqrt[-Tanh[c + d*x]^2], x]", //
@@ -1573,6 +1769,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0202() {
     check( //
         "Integrate[1/Sqrt[-Tanh[c + d*x]^2], x]", //
@@ -1581,6 +1778,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3558, 3556}
+  @Test
   public void test0203() {
     check( //
         "Integrate[(a + a*Tanh[c + d*x])^2, x]", //
@@ -1589,6 +1787,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3560, 8}
+  @Test
   public void test0204() {
     check( //
         "Integrate[(a + a*Tanh[c + d*x])^(-1), x]", //
@@ -1597,6 +1796,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3561, 212}
+  @Test
   public void test0205() {
     check( //
         "Integrate[Sqrt[1 + Tanh[x]], x]", //
@@ -1605,6 +1805,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3558, 3556}
+  @Test
   public void test0206() {
     check( //
         "Integrate[(a + b*Tanh[c + d*x])^2, x]", //
@@ -1613,6 +1814,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0207() {
     check( //
         "Integrate[(a + b*Tanh[c + d*x])^(-1), x]", //
@@ -1621,6 +1823,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0208() {
     check( //
         "Integrate[(4 + 6*Tanh[c + d*x])^(-1), x]", //
@@ -1629,6 +1832,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0209() {
     check( //
         "Integrate[(4 - 6*Tanh[c + d*x])^(-1), x]", //
@@ -1637,6 +1841,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 2717}
+  @Test
   public void test0210() {
     check( //
         "Integrate[Cosh[x]/(1 + Tanh[x]), x]", //
@@ -1645,6 +1850,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 31}
+  @Test
   public void test0211() {
     check( //
         "Integrate[Sech[x]^2/(1 + Tanh[x]), x]", //
@@ -1653,6 +1859,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3582, 3855}
+  @Test
   public void test0212() {
     check( //
         "Integrate[Sech[x]^3/(1 + Tanh[x]), x]", //
@@ -1661,6 +1868,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3568}
+  @Test
   public void test0213() {
     check( //
         "Integrate[Sech[x]^4/(1 + Tanh[x]), x]", //
@@ -1669,6 +1877,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test0214() {
     check( //
         "Integrate[Sech[x]^2/(a + b*Tanh[x]), x]", //
@@ -1677,6 +1886,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0215() {
     check( //
         "Integrate[(a + b*Tanh[x])^(-1), x]", //
@@ -1685,6 +1895,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3590, 212}
+  @Test
   public void test0216() {
     check( //
         "Integrate[Sech[x]/(a + b*Tanh[x]), x]", //
@@ -1693,6 +1904,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3607, 8}
+  @Test
   public void test0217() {
     check( //
         "Integrate[Tanh[x]/(1 + Tanh[x]), x]", //
@@ -1701,6 +1913,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3560, 8}
+  @Test
   public void test0218() {
     check( //
         "Integrate[(1 + Tanh[x])^(-1), x]", //
@@ -1709,6 +1922,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0219() {
     check( //
         "Integrate[Tanh[x]/(a + b*Tanh[x]), x]", //
@@ -1717,6 +1931,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0220() {
     check( //
         "Integrate[(a + b*Tanh[x])^(-1), x]", //
@@ -1725,6 +1940,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3556}
+  @Test
   public void test0221() {
     check( //
         "Integrate[Tanh[a + b*Log[c*x^n]]/x, x]", //
@@ -1733,6 +1949,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3757}
+  @Test
   public void test0222() {
     check( //
         "Integrate[Cosh[c + d*x]^3*(a + b*Tanh[c + d*x]^2), x]", //
@@ -1741,6 +1958,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756}
+  @Test
   public void test0223() {
     check( //
         "Integrate[Sech[c + d*x]^2*(a + b*Tanh[c + d*x]^2), x]", //
@@ -1749,6 +1967,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3757, 211}
+  @Test
   public void test0224() {
     check( //
         "Integrate[Sech[c + d*x]/(a + b*Tanh[c + d*x]^2), x]", //
@@ -1757,6 +1976,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 211}
+  @Test
   public void test0225() {
     check( //
         "Integrate[Sech[c + d*x]^2/(a + b*Tanh[c + d*x]^2), x]", //
@@ -1765,6 +1985,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3712, 3556}
+  @Test
   public void test0226() {
     check( //
         "Integrate[Tanh[c + d*x]*(a + b*Tanh[c + d*x]^2), x]", //
@@ -1773,6 +1994,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3710, 8}
+  @Test
   public void test0227() {
     check( //
         "Integrate[Coth[c + d*x]^2*(a + b*Tanh[c + d*x]^2), x]", //
@@ -1781,6 +2003,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3808, 2212}
+  @Test
   public void test0228() {
     check( //
         "Integrate[(c + d*x)^m/(a + a*Coth[e + f*x]), x]", //
@@ -1789,6 +2012,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0229() {
     check( //
         "Integrate[Coth[a + b*x]^n, x]", //
@@ -1797,6 +2021,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0230() {
     check( //
         "Integrate[(b*Coth[c + d*x])^n, x]", //
@@ -1805,6 +2030,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0231() {
     check( //
         "Integrate[Sqrt[b*Coth[c + d*x]^2], x]", //
@@ -1813,6 +2039,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0232() {
     check( //
         "Integrate[1/Sqrt[b*Coth[c + d*x]^2], x]", //
@@ -1821,6 +2048,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0233() {
     check( //
         "Integrate[(b*Coth[c + d*x]^3)^(1/3), x]", //
@@ -1829,6 +2057,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0234() {
     check( //
         "Integrate[(b*Coth[c + d*x]^3)^(-1/3), x]", //
@@ -1837,6 +2066,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3558, 3556}
+  @Test
   public void test0235() {
     check( //
         "Integrate[(1 + Coth[x])^2, x]", //
@@ -1845,6 +2075,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3560, 8}
+  @Test
   public void test0236() {
     check( //
         "Integrate[(1 + Coth[x])^(-1), x]", //
@@ -1853,6 +2084,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3561, 212}
+  @Test
   public void test0237() {
     check( //
         "Integrate[Sqrt[1 + Coth[x]], x]", //
@@ -1861,6 +2093,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3558, 3556}
+  @Test
   public void test0238() {
     check( //
         "Integrate[(a + b*Coth[c + d*x])^2, x]", //
@@ -1869,6 +2102,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0239() {
     check( //
         "Integrate[(a + b*Coth[c + d*x])^(-1), x]", //
@@ -1877,6 +2111,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0240() {
     check( //
         "Integrate[(4 + 6*Coth[c + d*x])^(-1), x]", //
@@ -1885,6 +2120,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0241() {
     check( //
         "Integrate[(4 - 6*Coth[c + d*x])^(-1), x]", //
@@ -1893,6 +2129,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 2718}
+  @Test
   public void test0242() {
     check( //
         "Integrate[Sinh[x]/(1 + Coth[x]), x]", //
@@ -1901,6 +2138,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 31}
+  @Test
   public void test0243() {
     check( //
         "Integrate[Csch[x]^2/(1 + Coth[x]), x]", //
@@ -1909,6 +2147,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3582, 3855}
+  @Test
   public void test0244() {
     check( //
         "Integrate[Csch[x]^3/(1 + Coth[x]), x]", //
@@ -1917,6 +2156,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3568}
+  @Test
   public void test0245() {
     check( //
         "Integrate[Csch[x]^4/(1 + Coth[x]), x]", //
@@ -1925,6 +2165,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3590, 212}
+  @Test
   public void test0246() {
     check( //
         "Integrate[Csch[x]/(a + b*Coth[x]), x]", //
@@ -1933,6 +2174,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test0247() {
     check( //
         "Integrate[Csch[x]^2/(a + b*Coth[x]), x]", //
@@ -1941,6 +2183,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3560, 8}
+  @Test
   public void test0248() {
     check( //
         "Integrate[(1 + Coth[x])^(-1), x]", //
@@ -1949,6 +2192,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3607, 8}
+  @Test
   public void test0249() {
     check( //
         "Integrate[Coth[x]/(1 + Coth[x]), x]", //
@@ -1957,6 +2201,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0250() {
     check( //
         "Integrate[(a + b*Coth[x])^(-1), x]", //
@@ -1965,6 +2210,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0251() {
     check( //
         "Integrate[Coth[x]/(a + b*Coth[x]), x]", //
@@ -1973,6 +2219,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3556}
+  @Test
   public void test0252() {
     check( //
         "Integrate[Coth[a + b*Log[c*x^n]]/x, x]", //
@@ -1981,6 +2228,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test0253() {
     check( //
         "Integrate[(c + d*x)*Sech[a + b*x]^2, x]", //
@@ -1989,6 +2237,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852, 8}
+  @Test
   public void test0264() {
     check( //
         "Integrate[Sech[a + b*x]^2, x]", //
@@ -1997,6 +2246,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3853, 3855}
+  @Test
   public void test0265() {
     check( //
         "Integrate[Sech[a + b*x]^3, x]", //
@@ -2005,6 +2255,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0266() {
     check( //
         "Integrate[Sech[a + b*x]^4, x]", //
@@ -2013,6 +2264,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0267() {
     check( //
         "Integrate[Sech[a + b*x]^6, x]", //
@@ -2021,6 +2273,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0268() {
     check( //
         "Integrate[Sech[7*x]^4, x]", //
@@ -2029,6 +2282,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0269() {
     check( //
         "Integrate[Sech[Pi*x]^6, x]", //
@@ -2037,6 +2291,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0270() {
     check( //
         "Integrate[Sqrt[Sech[a + b*x]], x]", //
@@ -2045,6 +2300,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0271() {
     check( //
         "Integrate[1/Sqrt[Sech[a + b*x]], x]", //
@@ -2053,6 +2309,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0272() {
     check( //
         "Integrate[Sqrt[b*Sech[c + d*x]], x]", //
@@ -2061,6 +2318,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0273() {
     check( //
         "Integrate[1/Sqrt[b*Sech[c + d*x]], x]", //
@@ -2069,6 +2327,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0274() {
     check( //
         "Integrate[(b*Sech[c + d*x])^n, x]", //
@@ -2077,6 +2336,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 222}
+  @Test
   public void test0275() {
     check( //
         "Integrate[Sqrt[Sech[a + b*x]^2], x]", //
@@ -2085,6 +2345,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test0276() {
     check( //
         "Integrate[1/Sqrt[Sech[a + b*x]^2], x]", //
@@ -2093,6 +2354,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test0277() {
     check( //
         "Integrate[1/Sqrt[a*Sech[x]^2], x]", //
@@ -2101,6 +2363,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3862, 8}
+  @Test
   public void test0278() {
     check( //
         "Integrate[(a + a*Sech[c + d*x])^(-1), x]", //
@@ -2109,6 +2372,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3862, 8}
+  @Test
   public void test0279() {
     check( //
         "Integrate[(a - a*Sech[c + d*x])^(-1), x]", //
@@ -2117,6 +2381,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0280() {
     check( //
         "Integrate[Sqrt[a + a*Sech[c + d*x]], x]", //
@@ -2125,6 +2390,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0281() {
     check( //
         "Integrate[Sqrt[a - a*Sech[c + d*x]], x]", //
@@ -2133,6 +2399,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0282() {
     check( //
         "Integrate[Sqrt[3 + 3*Sech[x]], x]", //
@@ -2141,6 +2408,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0283() {
     check( //
         "Integrate[Sqrt[3 - 3*Sech[x]], x]", //
@@ -2149,6 +2417,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test0284() {
     check( //
         "Integrate[a + b*Sech[c + d*x], x]", //
@@ -2157,6 +2426,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3964, 31}
+  @Test
   public void test0285() {
     check( //
         "Integrate[Tanh[x]/(a + a*Sech[x]), x]", //
@@ -2165,6 +2435,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test0286() {
     check( //
         "Integrate[Sech[a + b*Log[c*x^n]]/x, x]", //
@@ -2173,6 +2444,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4130, 8}
+  @Test
   public void test0287() {
     check( //
         "Integrate[Cosh[c + d*x]^2*(a + b*Sech[c + d*x]^2), x]", //
@@ -2181,6 +2453,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4130, 3855}
+  @Test
   public void test0288() {
     check( //
         "Integrate[Cosh[c + d*x]*(a + b*Sech[c + d*x]^2), x]", //
@@ -2189,6 +2462,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4131, 3855}
+  @Test
   public void test0289() {
     check( //
         "Integrate[Sech[c + d*x]*(a + b*Sech[c + d*x]^2), x]", //
@@ -2197,6 +2471,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4232, 211}
+  @Test
   public void test0290() {
     check( //
         "Integrate[Sech[c + d*x]/(a + b*Sech[c + d*x]^2), x]", //
@@ -2205,6 +2480,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4231, 214}
+  @Test
   public void test0291() {
     check( //
         "Integrate[Sech[c + d*x]^2/(a + b*Sech[c + d*x]^2), x]", //
@@ -2213,6 +2489,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4223, 266}
+  @Test
   public void test0292() {
     check( //
         "Integrate[Tanh[c + d*x]/(a + b*Sech[c + d*x]^2), x]", //
@@ -2221,6 +2498,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test0293() {
     check( //
         "Integrate[(c + d*x)*Csch[a + b*x]^2, x]", //
@@ -2229,6 +2507,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852, 8}
+  @Test
   public void test0304() {
     check( //
         "Integrate[Csch[a + b*x]^2, x]", //
@@ -2237,6 +2516,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3853, 3855}
+  @Test
   public void test0305() {
     check( //
         "Integrate[Csch[a + b*x]^3, x]", //
@@ -2245,6 +2525,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0306() {
     check( //
         "Integrate[Csch[a + b*x]^4, x]", //
@@ -2253,6 +2534,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0307() {
     check( //
         "Integrate[Csch[a + b*x]^6, x]", //
@@ -2261,6 +2543,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0308() {
     check( //
         "Integrate[Sqrt[Csch[a + b*x]], x]", //
@@ -2269,6 +2552,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0309() {
     check( //
         "Integrate[1/Sqrt[Csch[a + b*x]], x]", //
@@ -2277,6 +2561,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0310() {
     check( //
         "Integrate[Sqrt[b*Csch[c + d*x]], x]", //
@@ -2285,6 +2570,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0311() {
     check( //
         "Integrate[1/Sqrt[b*Csch[c + d*x]], x]", //
@@ -2293,6 +2579,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0312() {
     check( //
         "Integrate[(b*Csch[c + d*x])^n, x]", //
@@ -2301,6 +2588,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 222}
+  @Test
   public void test0313() {
     check( //
         "Integrate[Sqrt[-Csch[x]^2], x]", //
@@ -2309,6 +2597,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test0314() {
     check( //
         "Integrate[1/Sqrt[-Csch[x]^2], x]", //
@@ -2317,6 +2606,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test0315() {
     check( //
         "Integrate[1/Sqrt[a*Csch[x]^2], x]", //
@@ -2325,6 +2615,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3862, 8}
+  @Test
   public void test0316() {
     check( //
         "Integrate[(a + I*a*Csch[a + b*x])^(-1), x]", //
@@ -2333,6 +2624,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3862, 8}
+  @Test
   public void test0317() {
     check( //
         "Integrate[(a - I*a*Csch[a + b*x])^(-1), x]", //
@@ -2341,6 +2633,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0318() {
     check( //
         "Integrate[Sqrt[a + I*a*Csch[c + d*x]], x]", //
@@ -2349,6 +2642,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0319() {
     check( //
         "Integrate[Sqrt[a - I*a*Csch[c + d*x]], x]", //
@@ -2357,6 +2651,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0320() {
     check( //
         "Integrate[Sqrt[3 + (3*I)*Csch[x]], x]", //
@@ -2365,6 +2660,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test0321() {
     check( //
         "Integrate[Sqrt[3 - (3*I)*Csch[x]], x]", //
@@ -2373,6 +2669,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 213}
+  @Test
   public void test0322() {
     check( //
         "Integrate[Sqrt[-3 + (3*I)*Csch[x]], x]", //
@@ -2381,6 +2678,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 213}
+  @Test
   public void test0323() {
     check( //
         "Integrate[Sqrt[-3 - (3*I)*Csch[x]], x]", //
@@ -2389,6 +2687,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test0324() {
     check( //
         "Integrate[a + b*Csch[c + d*x], x]", //
@@ -2397,6 +2696,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3964, 31}
+  @Test
   public void test0325() {
     check( //
         "Integrate[Coth[x]/(I + Csch[x]), x]", //
@@ -2405,6 +2705,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test0326() {
     check( //
         "Integrate[Csch[a + b*Log[c*x^n]]/x, x]", //
@@ -2413,6 +2714,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test0327() {
     check( //
         "Integrate[(Cosh[2 + 3*x]^2 + 2*Sinh[2 + 3*x]^2)^(-1), x]", //
@@ -2421,6 +2723,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test0328() {
     check( //
         "Integrate[Sech[2 + 3*x]^2/(1 + 2*Tanh[2 + 3*x]^2), x]", //
@@ -2429,6 +2732,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test0329() {
     check( //
         "Integrate[Csch[2 + 3*x]^2/(2 + Coth[2 + 3*x]^2), x]", //
@@ -2437,6 +2741,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 212}
+  @Test
   public void test0330() {
     check( //
         "Integrate[Csch[2 + 3*x]^2/(2 - Coth[2 + 3*x]^2), x]", //
@@ -2445,6 +2750,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test0331() {
     check( //
         "Integrate[Csch[2 + 3*x]^2/(1 + 2*Coth[2 + 3*x]^2), x]", //
@@ -2453,6 +2759,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 212}
+  @Test
   public void test0332() {
     check( //
         "Integrate[Csch[2 + 3*x]^2/(1 - 2*Coth[2 + 3*x]^2), x]", //
@@ -2461,6 +2768,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0333() {
     check( //
         "Integrate[Cosh[a + b*x]*Sinh[a + b*x], x]", //
@@ -2469,6 +2777,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0334() {
     check( //
         "Integrate[Cosh[a + b*x]*Sinh[a + b*x]^n, x]", //
@@ -2477,6 +2786,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0335() {
     check( //
         "Integrate[Cosh[a + b*x]^m*Sinh[a + b*x], x]", //
@@ -2485,6 +2795,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2700, 29}
+  @Test
   public void test0336() {
     check( //
         "Integrate[Csch[a + b*x]*Sech[a + b*x], x]", //
@@ -2493,6 +2804,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 30}
+  @Test
   public void test0337() {
     check( //
         "Integrate[Cosh[x]*Csch[x]^(7/3), x]", //
@@ -2501,6 +2813,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 8}
+  @Test
   public void test0338() {
     check( //
         "Integrate[Sech[a + b*x]*Tanh[a + b*x], x]", //
@@ -2509,6 +2822,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0339() {
     check( //
         "Integrate[Sech[a + b*x]^2*Tanh[a + b*x], x]", //
@@ -2517,6 +2831,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0340() {
     check( //
         "Integrate[Sech[a + b*x]^(1 + n)*Sinh[a + b*x], x]", //
@@ -2525,6 +2840,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0341() {
     check( //
         "Integrate[Sech[a + b*x]^2*Tanh[a + b*x]^2, x]", //
@@ -2533,6 +2849,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0342() {
     check( //
         "Integrate[Sech[a + b*x]^2*Tanh[a + b*x]^3, x]", //
@@ -2541,6 +2858,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0343() {
     check( //
         "Integrate[Sech[a + b*x]^2*Tanh[a + b*x]^n, x]", //
@@ -2549,6 +2867,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686}
+  @Test
   public void test0344() {
     check( //
         "Integrate[Sech[a + b*x]*Tanh[a + b*x]^3, x]", //
@@ -2557,6 +2876,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2691, 3855}
+  @Test
   public void test0345() {
     check( //
         "Integrate[Sech[a + b*x]*Tanh[a + b*x]^2, x]", //
@@ -2565,6 +2885,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 8}
+  @Test
   public void test0346() {
     check( //
         "Integrate[Coth[a + b*x]*Csch[a + b*x], x]", //
@@ -2573,6 +2894,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0347() {
     check( //
         "Integrate[Coth[a + b*x]*Csch[a + b*x]^2, x]", //
@@ -2581,6 +2903,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 30}
+  @Test
   public void test0348() {
     check( //
         "Integrate[Cosh[a + b*x]*Csch[a + b*x]^(1 + n), x]", //
@@ -2589,6 +2912,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0349() {
     check( //
         "Integrate[Coth[a + b*x]^2*Csch[a + b*x]^2, x]", //
@@ -2597,6 +2921,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0350() {
     check( //
         "Integrate[Coth[a + b*x]^3*Csch[a + b*x]^2, x]", //
@@ -2605,6 +2930,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0351() {
     check( //
         "Integrate[Coth[a + b*x]^n*Csch[a + b*x]^2, x]", //
@@ -2613,6 +2939,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686}
+  @Test
   public void test0352() {
     check( //
         "Integrate[Coth[a + b*x]^3*Csch[a + b*x], x]", //
@@ -2621,6 +2948,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2691, 3855}
+  @Test
   public void test0353() {
     check( //
         "Integrate[Coth[a + b*x]^2*Csch[a + b*x], x]", //
@@ -2629,6 +2957,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4442, 213}
+  @Test
   public void test0354() {
     check( //
         "Integrate[Sech[2*x]*Sinh[x], x]", //
@@ -2637,6 +2966,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4373, 3855}
+  @Test
   public void test0355() {
     check( //
         "Integrate[Csch[2*x]*Sinh[x], x]", //
@@ -2645,6 +2975,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test0356() {
     check( //
         "Integrate[Csch[3*x]*Sinh[x], x]", //
@@ -2653,6 +2984,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4441, 209}
+  @Test
   public void test0357() {
     check( //
         "Integrate[Cosh[x]*Sech[2*x], x]", //
@@ -2661,6 +2993,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test0358() {
     check( //
         "Integrate[Cosh[x]*Sech[3*x], x]", //
@@ -2669,6 +3002,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4372, 3855}
+  @Test
   public void test0359() {
     check( //
         "Integrate[Cosh[x]*Csch[2*x], x]", //
@@ -2677,6 +3011,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0360() {
     check( //
         "Integrate[Cosh[a + b*x]*Sinh[a + b*x], x]", //
@@ -2685,6 +3020,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0361() {
     check( //
         "Integrate[Cosh[a + b*x]^2*Sinh[a + b*x], x]", //
@@ -2693,6 +3029,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0362() {
     check( //
         "Integrate[Cosh[a + b*x]^3*Sinh[a + b*x], x]", //
@@ -2701,6 +3038,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0363() {
     check( //
         "Integrate[Cosh[a + b*x]*Sinh[a + b*x]^2, x]", //
@@ -2709,6 +3047,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0364() {
     check( //
         "Integrate[Cosh[a + b*x]*Sinh[a + b*x]^3, x]", //
@@ -2717,6 +3056,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5526, 3855}
+  @Test
   public void test0365() {
     check( //
         "Integrate[x*Sech[a + b*x]*Tanh[a + b*x], x]", //
@@ -2725,6 +3065,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 8}
+  @Test
   public void test0366() {
     check( //
         "Integrate[Sech[a + b*x]*Tanh[a + b*x], x]", //
@@ -2733,6 +3074,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0367() {
     check( //
         "Integrate[Sech[a + b*x]^2*Tanh[a + b*x], x]", //
@@ -2741,6 +3083,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0368() {
     check( //
         "Integrate[Tanh[a + b*x]^2, x]", //
@@ -2749,6 +3092,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2691, 3855}
+  @Test
   public void test0369() {
     check( //
         "Integrate[Sech[a + b*x]*Tanh[a + b*x]^2, x]", //
@@ -2757,6 +3101,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0370() {
     check( //
         "Integrate[Tanh[a + b*x]^3, x]", //
@@ -2765,6 +3110,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5527, 3855}
+  @Test
   public void test0371() {
     check( //
         "Integrate[x*Coth[a + b*x]*Csch[a + b*x], x]", //
@@ -2773,6 +3119,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 8}
+  @Test
   public void test0372() {
     check( //
         "Integrate[Coth[a + b*x]*Csch[a + b*x], x]", //
@@ -2781,6 +3128,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0373() {
     check( //
         "Integrate[Coth[a + b*x]^2, x]", //
@@ -2789,6 +3137,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0374() {
     check( //
         "Integrate[Coth[a + b*x]*Csch[a + b*x]^2, x]", //
@@ -2797,6 +3146,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2691, 3855}
+  @Test
   public void test0375() {
     check( //
         "Integrate[Coth[a + b*x]^2*Csch[a + b*x], x]", //
@@ -2805,6 +3155,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0376() {
     check( //
         "Integrate[Coth[a + b*x]^3, x]", //
@@ -2813,6 +3164,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2700, 29}
+  @Test
   public void test0377() {
     check( //
         "Integrate[Csch[a + b*x]*Sech[a + b*x], x]", //
@@ -2821,6 +3173,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5481, 2719}
+  @Test
   public void test0378() {
     check( //
         "Integrate[(x*Sinh[a + b*x])/Sqrt[Cosh[a + b*x]], x]", //
@@ -2829,6 +3182,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5481, 2720}
+  @Test
   public void test0379() {
     check( //
         "Integrate[(x*Sinh[a + b*x])/Cosh[a + b*x]^(3/2), x]", //
@@ -2837,6 +3191,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3152, 8}
+  @Test
   public void test0380() {
     check( //
         "Integrate[(a*Cosh[x] + b*Sinh[x])^2, x]", //
@@ -2845,6 +3200,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3151}
+  @Test
   public void test0381() {
     check( //
         "Integrate[(a*Cosh[x] + b*Sinh[x])^3, x]", //
@@ -2853,6 +3209,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3153, 212}
+  @Test
   public void test0382() {
     check( //
         "Integrate[(a*Cosh[x] + b*Sinh[x])^(-1), x]", //
@@ -2861,6 +3218,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3155, 3154}
+  @Test
   public void test0383() {
     check( //
         "Integrate[(a*Cosh[x] + b*Sinh[x])^(-4), x]", //
@@ -2869,6 +3227,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3157, 2719}
+  @Test
   public void test0384() {
     check( //
         "Integrate[Sqrt[a*Cosh[x] + b*Sinh[x]], x]", //
@@ -2877,6 +3236,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3157, 2720}
+  @Test
   public void test0385() {
     check( //
         "Integrate[1/Sqrt[a*Cosh[x] + b*Sinh[x]], x]", //
@@ -2885,6 +3245,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3176, 3212}
+  @Test
   public void test0386() {
     check( //
         "Integrate[Sinh[x]/(a*Cosh[x] + b*Sinh[x]), x]", //
@@ -2893,6 +3254,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3177, 3212}
+  @Test
   public void test0387() {
     check( //
         "Integrate[Cosh[x]/(a*Cosh[x] + b*Sinh[x]), x]", //
@@ -2901,6 +3263,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3166, 37}
+  @Test
   public void test0388() {
     check( //
         "Integrate[Sinh[x]/(a*Cosh[x] + b*Sinh[x])^3, x]", //
@@ -2909,6 +3272,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3167, 37}
+  @Test
   public void test0389() {
     check( //
         "Integrate[Cosh[x]/(a*Cosh[x] + b*Sinh[x])^3, x]", //
@@ -2917,6 +3281,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3203, 31}
+  @Test
   public void test0390() {
     check( //
         "Integrate[(a + a*Cosh[x] + c*Sinh[x])^(-1), x]", //
@@ -2925,6 +3290,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3195, 3193}
+  @Test
   public void test0391() {
     check( //
         "Integrate[(Sqrt[b^2 - c^2] + b*Cosh[x] + c*Sinh[x])^(-2), x]", //
@@ -2933,6 +3299,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3198, 2732}
+  @Test
   public void test0392() {
     check( //
         "Integrate[Sqrt[a + b*Cosh[x] + c*Sinh[x]], x]", //
@@ -2941,6 +3308,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3206, 2740}
+  @Test
   public void test0393() {
     check( //
         "Integrate[1/Sqrt[a + b*Cosh[x] + c*Sinh[x]], x]", //
@@ -2949,6 +3317,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3192, 3191}
+  @Test
   public void test0394() {
     check( //
         "Integrate[(Sqrt[b^2 - c^2] + b*Cosh[x] + c*Sinh[x])^(3/2), x]", //
@@ -2957,6 +3326,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3192, 3191}
+  @Test
   public void test0395() {
     check( //
         "Integrate[(-Sqrt[b^2 - c^2] + b*Cosh[x] + c*Sinh[x])^(3/2), x]", //
@@ -2965,6 +3335,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test0396() {
     check( //
         "Integrate[(Cosh[x]^2 + Sinh[x]^2)^(-1), x]", //
@@ -2973,6 +3344,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {391}
+  @Test
   public void test0397() {
     check( //
         "Integrate[(Cosh[x]^2 + Sinh[x]^2)^(-2), x]", //
@@ -2981,6 +3353,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4465, 8}
+  @Test
   public void test0398() {
     check( //
         "Integrate[(Cosh[x]^2 - Sinh[x]^2)^(-1), x]", //
@@ -2989,6 +3362,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4465, 8}
+  @Test
   public void test0399() {
     check( //
         "Integrate[(Cosh[x]^2 - Sinh[x]^2)^(-2), x]", //
@@ -2997,6 +3371,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4465, 8}
+  @Test
   public void test0400() {
     check( //
         "Integrate[(Cosh[x]^2 - Sinh[x]^2)^(-3), x]", //
@@ -3005,6 +3380,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4466, 8}
+  @Test
   public void test0401() {
     check( //
         "Integrate[(Sech[x]^2 + Tanh[x]^2)^(-1), x]", //
@@ -3013,6 +3389,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4466, 8}
+  @Test
   public void test0402() {
     check( //
         "Integrate[(Sech[x]^2 + Tanh[x]^2)^(-2), x]", //
@@ -3021,6 +3398,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4466, 8}
+  @Test
   public void test0403() {
     check( //
         "Integrate[(Sech[x]^2 + Tanh[x]^2)^(-3), x]", //
@@ -3029,6 +3407,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4467, 8}
+  @Test
   public void test0404() {
     check( //
         "Integrate[(Coth[x]^2 - Csch[x]^2)^(-1), x]", //
@@ -3037,6 +3416,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4467, 8}
+  @Test
   public void test0405() {
     check( //
         "Integrate[(Coth[x]^2 - Csch[x]^2)^(-2), x]", //
@@ -3045,6 +3425,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4467, 8}
+  @Test
   public void test0406() {
     check( //
         "Integrate[(Coth[x]^2 - Csch[x]^2)^(-3), x]", //
@@ -3053,6 +3434,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2745, 2723}
+  @Test
   public void test0407() {
     check( //
         "Integrate[(a + b*Cosh[c + d*x]*Sinh[c + d*x])^2, x]", //
@@ -3061,6 +3443,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5590, 2291}
+  @Test
   public void test0408() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sinh[d + e*x]^n, x]", //
@@ -3069,6 +3452,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5584, 5582}
+  @Test
   public void test0409() {
     check( //
         "Integrate[E^(a + b*x)*Sinh[c + d*x]^3, x]", //
@@ -3077,6 +3461,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5584, 2225}
+  @Test
   public void test0410() {
     check( //
         "Integrate[E^(a + b*x)*Sinh[c + d*x]^2, x]", //
@@ -3085,6 +3470,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5599, 5601}
+  @Test
   public void test0411() {
     check( //
         "Integrate[E^(c + d*x)*Csch[a + b*x]^3, x]", //
@@ -3093,6 +3479,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5591, 2291}
+  @Test
   public void test0412() {
     check( //
         "Integrate[F^(c*(a + b*x))*Cosh[d + e*x]^n, x]", //
@@ -3101,6 +3488,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5585, 5583}
+  @Test
   public void test0413() {
     check( //
         "Integrate[E^(a + b*x)*Cosh[c + d*x]^3, x]", //
@@ -3109,6 +3497,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5585, 2225}
+  @Test
   public void test0414() {
     check( //
         "Integrate[E^(a + b*x)*Cosh[c + d*x]^2, x]", //
@@ -3117,6 +3506,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5598, 5600}
+  @Test
   public void test0415() {
     check( //
         "Integrate[E^(a + b*x)*Sech[c + d*x]^3, x]", //
@@ -3125,6 +3515,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5602, 2291}
+  @Test
   public void test0416() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sech[d + e*x]^n, x]", //
@@ -3133,6 +3524,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5603, 2291}
+  @Test
   public void test0417() {
     check( //
         "Integrate[F^(c*(a + b*x))*Csch[d + e*x]^n, x]", //
@@ -3141,6 +3533,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5604, 5600}
+  @Test
   public void test0418() {
     check( //
         "Integrate[F^(c*(a + b*x))/(f + I*f*Sinh[d + e*x]), x]", //
@@ -3149,6 +3542,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5605, 5600}
+  @Test
   public void test0419() {
     check( //
         "Integrate[F^(c*(a + b*x))/(f + f*Cosh[d + e*x]), x]", //
@@ -3157,6 +3551,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5585, 2225}
+  @Test
   public void test0420() {
     check( //
         "Integrate[E^(c + d*x)*Cosh[a + b*x]^2, x]", //
@@ -3165,6 +3560,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5585, 5583}
+  @Test
   public void test0421() {
     check( //
         "Integrate[E^(c + d*x)*Cosh[a + b*x]^3, x]", //
@@ -3173,6 +3569,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4422, 2225}
+  @Test
   public void test0422() {
     check( //
         "Integrate[E^(n*Cosh[a + b*x])*Sinh[a + b*x], x]", //
@@ -3181,6 +3578,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4422, 2225}
+  @Test
   public void test0423() {
     check( //
         "Integrate[E^(n*Cosh[a*c + b*c*x])*Sinh[c*(a + b*x)], x]", //
@@ -3189,6 +3587,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4422, 2225}
+  @Test
   public void test0424() {
     check( //
         "Integrate[E^(n*Cosh[c*(a + b*x)])*Sinh[a*c + b*c*x], x]", //
@@ -3197,6 +3596,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4426, 2209}
+  @Test
   public void test0425() {
     check( //
         "Integrate[E^(n*Cosh[a + b*x])*Tanh[a + b*x], x]", //
@@ -3205,6 +3605,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4426, 2209}
+  @Test
   public void test0426() {
     check( //
         "Integrate[E^(n*Cosh[a*c + b*c*x])*Tanh[c*(a + b*x)], x]", //
@@ -3213,6 +3614,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4426, 2209}
+  @Test
   public void test0427() {
     check( //
         "Integrate[E^(n*Cosh[c*(a + b*x)])*Tanh[a*c + b*c*x], x]", //
@@ -3221,6 +3623,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4421, 2225}
+  @Test
   public void test0428() {
     check( //
         "Integrate[E^(n*Sinh[a + b*x])*Cosh[a + b*x], x]", //
@@ -3229,6 +3632,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4421, 2225}
+  @Test
   public void test0429() {
     check( //
         "Integrate[E^(n*Sinh[a*c + b*c*x])*Cosh[c*(a + b*x)], x]", //
@@ -3237,6 +3641,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4421, 2225}
+  @Test
   public void test0430() {
     check( //
         "Integrate[E^(n*Sinh[c*(a + b*x)])*Cosh[a*c + b*c*x], x]", //
@@ -3245,6 +3650,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4425, 2209}
+  @Test
   public void test0431() {
     check( //
         "Integrate[E^(n*Sinh[a + b*x])*Coth[a + b*x], x]", //
@@ -3253,6 +3659,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4425, 2209}
+  @Test
   public void test0432() {
     check( //
         "Integrate[E^(n*Sinh[a*c + b*c*x])*Coth[c*(a + b*x)], x]", //
@@ -3261,6 +3668,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4425, 2209}
+  @Test
   public void test0433() {
     check( //
         "Integrate[E^(n*Sinh[c*(a + b*x)])*Coth[a*c + b*c*x], x]", //
@@ -3269,6 +3677,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test0434() {
     check( //
         "Integrate[Sech[x]^2/(a + b*Tanh[x]), x]", //
@@ -3277,6 +3686,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test0435() {
     check( //
         "Integrate[Sech[x]^2/(1 + Tanh[x]^2), x]", //
@@ -3285,6 +3695,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test0436() {
     check( //
         "Integrate[Sech[x]^2/(9 + Tanh[x]^2), x]", //
@@ -3293,6 +3704,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0437() {
     check( //
         "Integrate[Sech[x]^2*(a + b*Tanh[x])^n, x]", //
@@ -3301,6 +3713,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4427, 267}
+  @Test
   public void test0438() {
     check( //
         "Integrate[(Sech[x]^2*Tanh[x]^2)/(2 + Tanh[x]^3)^2, x]", //
@@ -3309,6 +3722,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 8}
+  @Test
   public void test0439() {
     check( //
         "Integrate[(1 + Cosh[x]^2)*Sech[x]^2, x]", //
@@ -3317,6 +3731,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4231, 221}
+  @Test
   public void test0440() {
     check( //
         "Integrate[Sech[x]^2/Sqrt[4 - Sech[x]^2], x]", //
@@ -3325,6 +3740,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 222}
+  @Test
   public void test0441() {
     check( //
         "Integrate[Sech[x]^2/Sqrt[1 - 4*Tanh[x]^2], x]", //
@@ -3333,6 +3749,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test0442() {
     check( //
         "Integrate[Csch[x]^2/(a + b*Coth[x]), x]", //
@@ -3341,6 +3758,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0443() {
     check( //
         "Integrate[(a + b*Coth[x])^n*Csch[x]^2, x]", //
@@ -3349,6 +3767,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 8}
+  @Test
   public void test0444() {
     check( //
         "Integrate[Csch[x]^2*(-1 + Sinh[x]^2), x]", //
@@ -3357,6 +3776,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {3277, 267}
+  @Test
   public void test0445() {
     check( //
         "Integrate[Cosh[x]*Sinh[x]*Sqrt[a + b*Sinh[x]^2], x]", //
@@ -3365,6 +3785,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {32}
+  @Test
   public void test0446() {
     check( //
         "Integrate[(-Csch[a + b*x] + Sech[a + b*x])/(Csch[a + b*x] + Sech[a + b*x]), x]", //
@@ -3373,6 +3794,7 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {210}
+  @Test
   public void test0447() {
     check( //
         "Integrate[(-Csch[a + b*x]^2 + Sech[a + b*x]^2)/(Csch[a + b*x]^2 + Sech[a + b*x]^2), x]", //

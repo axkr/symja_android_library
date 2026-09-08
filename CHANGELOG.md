@@ -4,6 +4,27 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- The JUnit suite is split into three tiers, so an ordinary edit/test cycle no longer waits for
+  the slow symbolic tests. A test picks its tier with a JUnit 5 `@Tag`.
+
+  ```
+  mvn verify                                    fast tier only, what CI runs
+  mvn verify -Pall-tests                        fast + slow, run this before pushing
+  mvn test -Pslow-tests -pl matheclipse-core    only the slow tier
+  mvn -pl matheclipse-io test -Prubi-corpus     the Rubi scoring corpus
+  ```
+
+  66 test methods -- 1.3% of them -- took 82% of `matheclipse-core`'s runtime, so tagging those
+  `@Tag(TestTags.SLOW)` cuts the default run from about 340s to about 50s while still running
+  every test class. `.github/scripts/check-test-budget.py` fails a pull-request build over an
+  untagged test that outgrows the fast tier, so this stays true.
+
+  The Rubi corpus in `matheclipse-io` used to be excluded by nothing more than its file names not
+  matching the surefire `<includes>`. It is now `@Tag("corpus")` and can be run on purpose, with
+  `testFailureIgnore` because it is a scoreboard whose expected values are Rubi's reference output
+  rather than a gate. That required migrating it off JUnit 3, so `matheclipse-io` and
+  `matheclipse-discord` are now JUnit 5 throughout and `junit-vintage-engine` is gone.
+
 - The wall-clock budgets which bound `Integrate`, `DSolve` and a few other functions can be
   adapted to the machine they run on.
 

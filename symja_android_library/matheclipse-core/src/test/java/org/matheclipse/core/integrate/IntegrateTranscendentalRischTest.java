@@ -1,7 +1,9 @@
 package org.matheclipse.core.integrate;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * M4 corpus test for the transcendental-Risch recogniser ({@link TranscendentalRisch}; currently
@@ -16,11 +18,13 @@ public class IntegrateTranscendentalRischTest extends AbstractIntegrateCorpusTes
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void transcendentalRischAutomatic() {
     runCorpusResource("/integrate/transcendental_risch_seed.txt", null);
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void transcendentalRischAddedCoverageOverRubi() {
     boolean old = Config.INTEGRATE_ALGORITHM_RISCH_TRANSCENDENTAL;
     Config.INTEGRATE_ALGORITHM_RISCH_TRANSCENDENTAL = false;

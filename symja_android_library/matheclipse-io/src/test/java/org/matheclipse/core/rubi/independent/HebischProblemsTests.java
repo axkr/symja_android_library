@@ -1,25 +1,26 @@
 package org.matheclipse.core.rubi.independent;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
  * Rubi's "0 Independent test suites" corpus section. 7 integrals.
  *
  * <p>
- * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
- * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
- * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
- * unnoticed, so run it after any change to the integrator:
+ * <b>Not part of a normal build.</b> {@code AbstractRubiTestCase} is {@code @Tag("corpus")},
+ * which the default surefire run excludes. That is deliberate - the section is slow - but it
+ * means drift goes unnoticed, so run it after any change to the integrator:
  *
  * <pre>
- * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
- *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * mvn -o -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400
  * </pre>
  *
  * <p>
- * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
- * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
- * JVM across classes makes every test fail.
+ * The profile sets {@code reuseForks=false}, which is required rather than an optimisation:
+ * {@code AbstractRubiTestCase} sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS},
+ * so sharing one JVM across classes makes every test fail. It also sets
+ * {@code testFailureIgnore}, because this corpus is a scoreboard rather than a gate.
  *
  * <p>
  * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
@@ -28,10 +29,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class HebischProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public HebischProblemsTests(String name) {
-    super(name, false);
+  public HebischProblemsTests() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -46,6 +48,7 @@ public class HebischProblemsTests extends AbstractRubiTestCase {
     }
   }
 
+  @Test
   public void test1() {
     check( //
         "Integrate[(x^6-x^5+x^4-x^3+1)*E^x, x]", //
@@ -53,6 +56,7 @@ public class HebischProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test2() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja solves only part of it and leaves two unevaluated Integrate terms.
@@ -62,6 +66,7 @@ public class HebischProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test3() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja solves only part of it and leaves several unevaluated Integrate
@@ -72,6 +77,7 @@ public class HebischProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test4() {
     check( //
         "Integrate[(E^x+1)*E^(E^x+x)/(E^x+x), x]", //
@@ -79,6 +85,7 @@ public class HebischProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test5() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja solves only part of it and leaves several unevaluated Integrate
@@ -89,6 +96,7 @@ public class HebischProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test6() {
     check( //
         "Integrate[(Log[x]^2+(-1)*1)*E^(1+1/Log[x])/Log[x]^2, x]", //
@@ -96,6 +104,7 @@ public class HebischProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test7() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja leaves this as a sum of unevaluated Integrate terms.

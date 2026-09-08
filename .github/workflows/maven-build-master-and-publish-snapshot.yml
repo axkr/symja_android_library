@@ -10,7 +10,10 @@ on:
     branches: [ master ]
 
 env:
-  MAVEN_ARGS: --batch-mode --no-transfer-progress
+  # Tests: run the fast tier only, so this job stays inside its budget. The slow and
+  # corpus tiers are developer-triggered, see CONTRIBUTING.md. This repeats the default set in
+  # symja_android_library/pom.xml on purpose: CI must not silently start running them.
+  MAVEN_ARGS: --batch-mode --no-transfer-progress -Dsymja.test.excludedGroups=slow,corpus
 
 jobs:
   maven-build-master-and-publish-to-maven-central:

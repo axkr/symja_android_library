@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.extended;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
@@ -16,10 +18,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class IndependentTestSuites extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public IndependentTestSuites(String name) {
-    super(name, false);
+  public IndependentTestSuites() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -36,6 +39,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
 
 
   // Apostol Problems.input:27
+  @Test
   public void test0001() {
     check( //
         "Integrate[1/(1+x^2)^(3/2), x]", //
@@ -43,6 +47,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:157
+  @Test
   public void test0002() {
     check( //
         "Integrate[ArcTan[Sqrt[x]]/((1+x)*Sqrt[x]), x]", //
@@ -50,6 +55,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:205
+  @Test
   public void test0003() {
     check( //
         "Integrate[(1+x+4*x^2)/(-1+x^3), x]", //
@@ -57,6 +63,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Charlwood Problems.input:65
+  @Test
   public void test0004() {
     check( //
         "Integrate[x*Log[x+Sqrt[-1+x^2]]/Sqrt[-1+x^2], x]", //
@@ -64,6 +71,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Charlwood Problems.input:143
+  @Test
   public void test0005() {
     check( //
         "Integrate[x*ArcTan[x]^2*Log[1+x^2], x]", //
@@ -71,6 +79,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:23
+  @Test
   public void test0006() {
     check( //
         "Integrate[x^2/((a^2+x^2)*(b^2+x^2)), x]", //
@@ -78,6 +87,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:87
+  @Test
   public void test0007() {
     check( //
         "Integrate[Log[a^2+x^2], x]", //
@@ -85,6 +95,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:155
+  @Test
   public void test0008() {
     check( //
         "Integrate[d^x*x*Sin[x], x]", //
@@ -92,6 +103,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:163
+  @Test
   public void test0009() {
     check( //
         "Integrate[x^2*Sin[k*x]^3, x]", //
@@ -99,6 +111,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:283
+  @Test
   public void test0010() {
     check( //
         "Integrate[Cos[a+x]*Sin[x], x]", //
@@ -106,6 +119,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:291
+  @Test
   public void test0011() {
     check( //
         "Integrate[1/(x^(1/3)+x^(1/2)), x]", //
@@ -113,6 +127,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:309
+  @Test
   public void test0012() {
     check( //
         "Integrate[Log[x]+Log[1+x]+Log[2+x], x]", //
@@ -120,6 +135,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:139
+  @Test
   public void test0013() {
     check( //
         "Integrate[x/Sqrt[5+2*x+x^2], x]", //
@@ -127,6 +143,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:147
+  @Test
   public void test0014() {
     check( //
         "Integrate[(1+x)/Sqrt[2*x-x^2], x]", //
@@ -134,6 +151,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:24
+  @Test
   public void test0015() {
     check( //
         "Integrate[E^x*x^2, x]", //
@@ -141,6 +159,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:64
+  @Test
   public void test0016() {
     check( //
         "Integrate[Log[x]*Sqrt[x], x]", //
@@ -148,6 +167,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:82
+  @Test
   public void test0017() {
     check( //
         "Integrate[Cos[x]^4*Sin[x]^4, x]", //
@@ -155,6 +175,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:140
+  @Test
   public void test0018() {
     check( //
         "Integrate[x^3/Sqrt[4+x^2], x]", //
@@ -162,6 +183,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:174
+  @Test
   public void test0019() {
     check( //
         "Integrate[1/(1+x^2)^2, x]", //
@@ -169,6 +191,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:338
+  @Test
   public void test0020() {
     check( //
         "Integrate[Log[1/2*x], x]", //
@@ -176,6 +199,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:55
+  @Test
   public void test0021() {
     check( //
         "Integrate[1/(Cos[x]^2*Sin[x]^2), x]", //
@@ -183,6 +207,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:173
+  @Test
   public void test0022() {
     check( //
         "Integrate[(3+2*x^3)/(-9*x+x^5), x]", //
@@ -190,6 +215,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:214
+  @Test
   public void test0023() {
     check( //
         "Integrate[(B+A*x)/(c+2*b*x+a*x^2)^2, x]", //
@@ -197,6 +223,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:313
+  @Test
   public void test0024() {
     check( //
         "Integrate[Sqrt[-5+x]*Sqrt[3+x]/((-1+x)*(-25+x^2)), x]", //
@@ -204,6 +231,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:330
+  @Test
   public void test0025() {
     check( //
         "Integrate[1/(9+3*x-5*x^2+x^3)^(2/3), x]", //
@@ -211,6 +239,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:363
+  @Test
   public void test0026() {
     check( //
         "Integrate[(5+x^2)/((1+x^2)^2*Sqrt[1-x^2]), x]", //
@@ -218,6 +247,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:391
+  @Test
   public void test0027() {
     check( //
         "Integrate[(3*x^2+2*x^3)/((-3+x+2*x^2)*Sqrt[-3+2*x+x^2]), x]", //
@@ -225,6 +255,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:425
+  @Test
   public void test0028() {
     check( //
         "Integrate[x^3/((-1+x^4)*Sqrt[1+2*x^8]), x]", //
@@ -232,6 +263,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:461
+  @Test
   public void test0029() {
     check( //
         "Integrate[Sin[-1/12*Pi+3*x]^3, x]", //
@@ -239,6 +271,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:475
+  @Test
   public void test0030() {
     check( //
         "Integrate[Cos[x]^6*Sin[x]^4, x]", //
@@ -246,6 +279,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:484
+  @Test
   public void test0031() {
     check( //
         "Integrate[1/(Cos[1/4*Pi+2*x]*Sin[1/4*Pi+2*x]^3), x]", //
@@ -253,6 +287,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:509
+  @Test
   public void test0032() {
     check( //
         "Integrate[Cos[x]^4*Cos[4*x], x]", //
@@ -260,6 +295,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:574
+  @Test
   public void test0033() {
     check( //
         "Integrate[Cos[x]*(-Cos[x]^2-5*Sin[x]^2)^(3/2), x]", //
@@ -267,6 +303,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:629
+  @Test
   public void test0034() {
     check( //
         "Integrate[(-10+x^2)^(5/2)/x, x]", //
@@ -274,6 +311,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:639
+  @Test
   public void test0035() {
     check( //
         "Integrate[1/(x^4*(-8+x^2)^(3/2)), x]", //
@@ -281,6 +319,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:679
+  @Test
   public void test0036() {
     check( //
         "Integrate[(-1)/E^x+E^x, x]", //
@@ -288,6 +327,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:713
+  @Test
   public void test0037() {
     check( //
         "Integrate[(E^x+E^(5*x))/(-1+E^x-E^(2*x)+E^(3*x)), x]", //
@@ -295,6 +335,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:727
+  @Test
   public void test0038() {
     check( //
         "Integrate[1/(E^(1/2*x)*x^3), x]", //
@@ -302,6 +343,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:831
+  @Test
   public void test0039() {
     check( //
         "Integrate[(1+x^4)*(1-2*Log[x]+Log[x]^3), x]", //
@@ -309,6 +351,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:861
+  @Test
   public void test0040() {
     check( //
         "Integrate[Log[-1+x]/x^3, x]", //
@@ -316,6 +359,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:885
+  @Test
   public void test0041() {
     check( //
         "Integrate[(1-x^2)^(3/2)*ArcSin[x], x]", //
@@ -323,6 +367,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:905
+  @Test
   public void test0042() {
     check( //
         "Integrate[x*ArcTan[x]/(1+x^2)^3, x]", //
@@ -330,6 +375,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:24
+  @Test
   public void test0043() {
     check( //
         "Integrate[1/(2*x+Sqrt[1+x^2])^2, x]", //
@@ -337,6 +383,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:166
+  @Test
   public void test0044() {
     check( //
         "Integrate[1/Sqrt[(b-x)*(-a+x)], x]", //
@@ -344,6 +391,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:206
+  @Test
   public void test0045() {
     check( //
         "Integrate[x^4/(4+5*x^2+x^4), x]", //
@@ -351,6 +399,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:244
+  @Test
   public void test0046() {
     check( //
         "Integrate[x/Sqrt[1+x+x^2], x]", //
@@ -358,6 +407,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bondarenko Problems.input:36
+  @Test
   public void test0047() {
     check( //
         "Integrate[Log[1+Exp[x]]/(1+Exp[2*x]), x]", //
@@ -365,6 +415,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:24
+  @Test
   public void test0048() {
     check( //
         "Integrate[x/((-1+x)*(1+x^2)), x]", //
@@ -372,6 +423,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:62
+  @Test
   public void test0049() {
     check( //
         "Integrate[1/(-2+x^6), x]", //
@@ -379,6 +431,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:80
+  @Test
   public void test0050() {
     check( //
         "Integrate[1/(x^2*Log[x]^2), x]", //
@@ -386,6 +439,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:88
+  @Test
   public void test0051() {
     check( //
         "Integrate[x*Log[a^2+x^2], x]", //
@@ -393,6 +447,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:156
+  @Test
   public void test0052() {
     check( //
         "Integrate[d^x*x*Cos[x], x]", //
@@ -400,6 +455,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:167
+  @Test
   public void test0053() {
     check( //
         "Integrate[Cos[x]/(Sin[x]*Tan[1/2*x]), x]", //
@@ -407,6 +463,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:179
+  @Test
   public void test0054() {
     check( //
         "Integrate[1/(a+E^(m*x)*b), x]", //
@@ -414,6 +471,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:236
+  @Test
   public void test0055() {
     check( //
         "Integrate[Sqrt[x+Sqrt[a^2+x^2]]/x, x]", //
@@ -421,6 +479,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:252
+  @Test
   public void test0056() {
     check( //
         "Integrate[r/Sqrt[-alpha^2+2*e*r^2-2*k*r^4], r]", //
@@ -428,6 +487,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:268
+  @Test
   public void test0057() {
     check( //
         "Integrate[x^3/(b+a*x^2), x]", //
@@ -435,6 +495,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:284
+  @Test
   public void test0058() {
     check( //
         "Integrate[(1+Sin[x])^(1/2), x]", //
@@ -442,6 +503,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:310
+  @Test
   public void test0059() {
     check( //
         "Integrate[1/(5+x^3), x]", //
@@ -449,6 +511,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hebisch Problems.input:8
+  @Test
   public void test0060() {
     check( //
         "Integrate[(1-x^3+x^4-x^5+x^6)*Exp[x], x]", //
@@ -456,6 +519,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:18
+  @Test
   public void test0061() {
     check( //
         "Integrate[Cos[x]*Csc[x]^2/Sin[x]^2, x]", //
@@ -463,6 +527,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:28
+  @Test
   public void test0062() {
     check( //
         "Integrate[E^(x^2)*x, x]", //
@@ -470,6 +535,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:80
+  @Test
   public void test0063() {
     check( //
         "Integrate[1/(A^4-A^2*B^2+(-A^2+B^2)*x^2), x]", //
@@ -477,6 +543,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:94
+  @Test
   public void test0064() {
     check( //
         "Integrate[(E^x+x)/E^x, x]", //
@@ -484,6 +551,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:108
+  @Test
   public void test0065() {
     check( //
         "Integrate[1/((1+ArcSin[x]^2)*Sqrt[1-x^2]), x]", //
@@ -491,6 +559,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:175
+  @Test
   public void test0066() {
     check( //
         "Integrate[1/((-1+x)*(2+x)), x]", //
@@ -498,6 +567,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:373
+  @Test
   public void test0067() {
     check( //
         "Integrate[x^5/(x^2+Sqrt[2]), x]", //
@@ -505,6 +575,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:48
+  @Test
   public void test0068() {
     check( //
         "Integrate[Sin[1/4*x]*Sin[x], x]", //
@@ -512,6 +583,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:58
+  @Test
   public void test0069() {
     check( //
         "Integrate[Cot[3/4*x]^2, x]", //
@@ -519,6 +591,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:80
+  @Test
   public void test0070() {
     check( //
         "Integrate[1/(x*Sqrt[a^2+x^2]), x]", //
@@ -526,6 +599,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:120
+  @Test
   public void test0071() {
     check( //
         "Integrate[Log[Cos[x]]*Sec[x]^2, x]", //
@@ -533,6 +607,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:148
+  @Test
   public void test0072() {
     check( //
         "Integrate[(-5+2*x^2)/(6-5*x^2+x^4), x]", //
@@ -540,6 +615,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:162
+  @Test
   public void test0073() {
     check( //
         "Integrate[(1+x^4)/(-1+x-x^2+x^3), x]", //
@@ -547,6 +623,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:215
+  @Test
   public void test0074() {
     check( //
         "Integrate[(-41+55*x-27*x^2+5*x^3)/(5-4*x+x^2)^2, x]", //
@@ -554,6 +631,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:341
+  @Test
   public void test0075() {
     check( //
         "Integrate[1/((-1+x^4)*Sqrt[2+x^2]), x]", //
@@ -561,6 +639,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:354
+  @Test
   public void test0076() {
     check( //
         "Integrate[1/(x^6*Sqrt[2+x^2]), x]", //
@@ -568,6 +647,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:434
+  @Test
   public void test0077() {
     check( //
         "Integrate[(1+x^4)^(3/4)/(2+x^4)^2, x]", //
@@ -575,6 +655,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:476
+  @Test
   public void test0078() {
     check( //
         "Integrate[Cos[x]^6*Sin[x]^7, x]", //
@@ -582,6 +663,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:495
+  @Test
   public void test0079() {
     check( //
         "Integrate[Sec[1/4*Pi+1/2*x]^3*Tan[1/4*Pi+1/2*x]^2, x]", //
@@ -589,6 +671,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:547
+  @Test
   public void test0080() {
     check( //
         "Integrate[(-Sqrt[4-3*Tan[x]]+3*Tan[x])/(Cos[x]^2*(4-3*Tan[x])^(3/2)), x]", //
@@ -596,6 +679,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:680
+  @Test
   public void test0081() {
     check( //
         "Integrate[((-1)/E^x+E^x)^2, x]", //
@@ -603,6 +687,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:690
+  @Test
   public void test0082() {
     check( //
         "Integrate[a^(k*x)-a^(l*x), x]", //
@@ -610,6 +695,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:728
+  @Test
   public void test0083() {
     check( //
         "Integrate[a^(3*x)*x^2, x]", //
@@ -617,6 +703,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:763
+  @Test
   public void test0084() {
     check( //
         "Integrate[E^x*x*Cos[x], x]", //
@@ -624,6 +711,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:864
+  @Test
   public void test0085() {
     check( //
         "Integrate[((-1)/E^x+E^x)*Log[1+E^(2*x)], x]", //
@@ -631,6 +719,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:886
+  @Test
   public void test0086() {
     check( //
         "Integrate[x*(1-x^2)^(3/2)*ArcSin[x], x]", //
@@ -638,6 +727,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:906
+  @Test
   public void test0087() {
     check( //
         "Integrate[x^2*ArcTan[x]/(1+x^2), x]", //
@@ -645,6 +735,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:943
+  @Test
   public void test0088() {
     check( //
         "Integrate[ArcTan[-a+x]/(a+x), x]", //
@@ -652,6 +743,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:130
+  @Test
   public void test0089() {
     check( //
         "Integrate[(-84-576*x-400*x^2+2560*x^3)/(9+24*x-12*x^2+80*x^3+320*x^4), x]", //
@@ -659,6 +751,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:147
+  @Test
   public void test0090() {
     check( //
         "Integrate[(a+b*x)/((1+x^2)^(1/4)*(2+x^2)), x]", //
@@ -666,6 +759,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:175
+  @Test
   public void test0091() {
     check( //
         "Integrate[x/((-10+x^3-6*Sqrt[3])*Sqrt[-1+x^3]), x]", //
@@ -673,6 +767,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:159
+  @Test
   public void test0092() {
     check( //
         "Integrate[E^ArcTan[x]*x/(1+x^2)^(3/2), x]", //
@@ -680,6 +775,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:171
+  @Test
   public void test0093() {
     check( //
         "Integrate[(3+5*x)/(-3+2*x+x^2), x]", //
@@ -687,6 +783,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:217
+  @Test
   public void test0094() {
     check( //
         "Integrate[(-3+x)/(2*x+3*x^2+x^3), x]", //
@@ -694,6 +791,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:237
+  @Test
   public void test0095() {
     check( //
         "Integrate[1/(b*Cos[x]+a*Sin[x])^2, x]", //
@@ -701,6 +799,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bondarenko Problems.input:28
+  @Test
   public void test0096() {
     check( //
         "Integrate[Sqrt[1+Exp[-x]]/(-Exp[-x]+Exp[x]), x]", //
@@ -708,6 +807,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:15
+  @Test
   public void test0097() {
     check( //
         "Integrate[1/(c+b*x+a*x^2), x]", //
@@ -715,6 +815,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:175
+  @Test
   public void test0098() {
     check( //
         "Integrate[1/((1+x^2)*(2+x^2)*(3+x^2)*(4+x^2)), x]", //
@@ -722,6 +823,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:42
+  @Test
   public void test0099() {
     check( //
         "Integrate[x*Cos[x]*Sin[x], x]", //
@@ -729,6 +831,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:174
+  @Test
   public void test0100() {
     check( //
         "Integrate[(5+2*x)/(-3+2*x+x^2), x]", //
@@ -736,6 +839,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:208
+  @Test
   public void test0101() {
     check( //
         "Integrate[1/(x*(1+x^2)^2), x]", //
@@ -743,6 +847,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:238
+  @Test
   public void test0102() {
     check( //
         "Integrate[Sin[x]/(1+Cos[x]+Sin[x]), x]", //
@@ -750,6 +855,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:264
+  @Test
   public void test0103() {
     check( //
         "Integrate[E^(t^2)*t/(1+t^2), t]", //
@@ -757,6 +863,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bondarenko Problems.input:29
+  @Test
   public void test0104() {
     check( //
         "Integrate[Sqrt[1+Exp[-x]]/Sinh[x], x]", //
@@ -764,6 +871,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bronstein Problems.input:19
+  @Test
   public void test0105() {
     check( //
         "Integrate[(5*x^2+3*(E^x+x)^(1/3)+E^x*(3*x+2*x^2))/(x*(E^x+x)^(1/3)), x]", //
@@ -771,6 +879,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:16
+  @Test
   public void test0106() {
     check( //
         "Integrate[(b+a*x)/(1+x^2), x]", //
@@ -778,6 +887,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:48
+  @Test
   public void test0107() {
     check( //
         "Integrate[1/(-1+2*x^3), x]", //
@@ -785,6 +895,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:90
+  @Test
   public void test0108() {
     check( //
         "Integrate[x^4*Log[a^2+x^2], x]", //
@@ -792,6 +903,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:158
+  @Test
   public void test0109() {
     check( //
         "Integrate[d^x*x^2*Cos[x], x]", //
@@ -799,6 +911,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:189
+  @Test
   public void test0110() {
     check( //
         "Integrate[E^(a*x)*x/(1+a*x)^2, x]", //
@@ -806,6 +919,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:270
+  @Test
   public void test0111() {
     check( //
         "Integrate[1/(x*(1+x)), x]", //
@@ -813,6 +927,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:278
+  @Test
   public void test0112() {
     check( //
         "Integrate[Cos[x]^2*Sin[3+2*x], x]", //
@@ -820,6 +935,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:286
+  @Test
   public void test0113() {
     check( //
         "Integrate[(1+Cos[x])^(1/2), x]", //
@@ -827,6 +943,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:322
+  @Test
   public void test0114() {
     check( //
         "Integrate[1/(4+x^2)^(1/2), x]", //
@@ -834,6 +951,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:42
+  @Test
   public void test0115() {
     check( //
         "Integrate[E^(2*x)/(A+E^(4*x)*B), x]", //
@@ -841,6 +959,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:124
+  @Test
   public void test0116() {
     check( //
         "Integrate[E^(x^2)*(1+4*x^2+x^3+5*x^4+2*x^6)/(1+x^2)^2, x]", //
@@ -848,6 +967,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:150
+  @Test
   public void test0117() {
     check( //
         "Integrate[E^(6*x)/(1+E^(4*x)), x]", //
@@ -855,6 +975,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:101
+  @Test
   public void test0118() {
     check( //
         "Integrate[Sec[x]*Tan[x]^5, x]", //
@@ -862,6 +983,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:143
+  @Test
   public void test0119() {
     check( //
         "Integrate[1/(x^3*Sqrt[-16+x^2]), x]", //
@@ -869,6 +991,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:225
+  @Test
   public void test0120() {
     check( //
         "Integrate[Cos[x]^2*Sin[x]/(5+Cos[x]^2), x]", //
@@ -876,6 +999,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:367
+  @Test
   public void test0121() {
     check( //
         "Integrate[Cos[x]*Sin[x]/Sqrt[1+Sin[x]], x]", //
@@ -883,6 +1007,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:14
+  @Test
   public void test0122() {
     check( //
         "Integrate[1/Cos[3/4*Pi-2*x], x]", //
@@ -890,6 +1015,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:50
+  @Test
   public void test0123() {
     check( //
         "Integrate[Tan[x]*Tan[-a+x], x]", //
@@ -897,6 +1023,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:60
+  @Test
   public void test0124() {
     check( //
         "Integrate[(-Cot[x]+Tan[x])^2, x]", //
@@ -904,6 +1031,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:99
+  @Test
   public void test0125() {
     check( //
         "Integrate[1/Sqrt[-1+a^(2*x)], x]", //
@@ -911,6 +1039,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:176
+  @Test
   public void test0126() {
     check( //
         "Integrate[x/((1+x^2)*(2+x^2)*(3+x^2)*(4+x^2)), x]", //
@@ -918,6 +1047,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:394
+  @Test
   public void test0127() {
     check( //
         "Integrate[1/(1+8*x+3*x^2)^(5/2), x]", //
@@ -925,6 +1055,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:406
+  @Test
   public void test0128() {
     check( //
         "Integrate[1/((1+(-3)/x)^(4/3)*x^2), x]", //
@@ -932,6 +1063,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:500
+  @Test
   public void test0129() {
     check( //
         "Integrate[(1/2-3*Cot[x])*(3-2*Cot[x])^3, x]", //
@@ -939,6 +1071,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:634
+  @Test
   public void test0130() {
     check( //
         "Integrate[(-4*x^3+3*x^5)/(-1+x^2)^5, x]", //
@@ -946,6 +1079,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:730
+  @Test
   public void test0131() {
     check( //
         "Integrate[x/(1/E^x+E^x)^2, x]", //
@@ -953,6 +1087,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:740
+  @Test
   public void test0132() {
     check( //
         "Integrate[E^(2*x)*Cos[x]^2*Sin[x]^2, x]", //
@@ -960,6 +1095,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:800
+  @Test
   public void test0133() {
     check( //
         "Integrate[Cosh[3/2*x]*Sinh[x]*Sinh[5/2*x], x]", //
@@ -967,6 +1103,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:878
+  @Test
   public void test0134() {
     check( //
         "Integrate[x^3*ArcCsc[x]^2, x]", //
@@ -974,6 +1111,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:888
+  @Test
   public void test0135() {
     check( //
         "Integrate[(1-x^2)^(3/2)*ArcCos[x]/x, x]", //
@@ -981,6 +1119,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:910
+  @Test
   public void test0136() {
     check( //
         "Integrate[x^2*ArcTan[x]/(1+x^2)^2, x]", //
@@ -988,6 +1127,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:945
+  @Test
   public void test0137() {
     check( //
         "Integrate[x*ArcTan[Sqrt[1+x^2]]/Sqrt[1+x^2], x]", //
@@ -995,6 +1135,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:61
+  @Test
   public void test0138() {
     check( //
         "Integrate[1/(E^(p*x)*a+b/E^(p*x))^2, x]", //
@@ -1002,6 +1143,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:114
+  @Test
   public void test0139() {
     check( //
         "Integrate[1/(x*(4-6*x+3*x^2)^(1/3)), x]", //
@@ -1009,6 +1151,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:23
+  @Test
   public void test0140() {
     check( //
         "Integrate[Sin[Sqrt[1+x]]/Sqrt[1+x], x]", //
@@ -1016,6 +1159,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:107
+  @Test
   public void test0141() {
     check( //
         "Integrate[E^(x^3)*x^2, x]", //
@@ -1023,6 +1167,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:175
+  @Test
   public void test0142() {
     check( //
         "Integrate[(3*x+x^3)/(-3-2*x+x^2), x]", //
@@ -1030,6 +1175,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:219
+  @Test
   public void test0143() {
     check( //
         "Integrate[(1+x)/(-1+x^3), x]", //
@@ -1037,6 +1183,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:229
+  @Test
   public void test0144() {
     check( //
         "Integrate[1/(5-Cos[x]+2*Sin[x]), x]", //
@@ -1044,6 +1191,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Charlwood Problems.input:104
+  @Test
   public void test0145() {
     check( //
         "Integrate[x*Log[x]/Sqrt[-1+x^2], x]", //
@@ -1051,6 +1199,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:9
+  @Test
   public void test0146() {
     check( //
         "Integrate[x^2*(x+2*x^2)^2, x]", //
@@ -1058,6 +1207,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:49
+  @Test
   public void test0147() {
     check( //
         "Integrate[1/(-2+x^3), x]", //
@@ -1065,6 +1215,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:57
+  @Test
   public void test0148() {
     check( //
         "Integrate[1/(1-4*x^2+x^4), x]", //
@@ -1072,6 +1223,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:91
+  @Test
   public void test0149() {
     check( //
         "Integrate[Log[-a^2+x^2], x]", //
@@ -1079,6 +1231,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:159
+  @Test
   public void test0150() {
     check( //
         "Integrate[d^x*x^3*Sin[x], x]", //
@@ -1086,6 +1239,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:182
+  @Test
   public void test0151() {
     check( //
         "Integrate[1/(E^(m*x)*a+b/E^(m*x)), x]", //
@@ -1093,6 +1247,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:190
+  @Test
   public void test0152() {
     check( //
         "Integrate[k^(x^2)*x, x]", //
@@ -1100,6 +1255,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:203
+  @Test
   public void test0153() {
     check( //
         "Integrate[2*x+x^2*Sqrt[2], x]", //
@@ -1107,6 +1263,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:247
+  @Test
   public void test0154() {
     check( //
         "Integrate[1/(r*Sqrt[-alpha^2-epsilon^2+2*h*r^2]), r]", //
@@ -1114,6 +1271,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:255
+  @Test
   public void test0155() {
     check( //
         "Integrate[1/(r*Sqrt[-alpha^2-epsilon^2+2*h*r^2-2*k*r^4]), r]", //
@@ -1121,6 +1279,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:271
+  @Test
   public void test0156() {
     check( //
         "Integrate[1/(x^(1/2)*(-1+2*x)), x]", //
@@ -1128,6 +1287,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:287
+  @Test
   public void test0157() {
     check( //
         "Integrate[(1-Cos[x])^(1/2), x]", //
@@ -1135,6 +1295,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:305
+  @Test
   public void test0158() {
     check( //
         "Integrate[1/(-3+x)^4, x]", //
@@ -1142,6 +1303,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hebisch Problems.input:15
+  @Test
   public void test0159() {
     check( //
         "Integrate[(1+Exp[x])*Exp[x+Exp[x]]/(x+Exp[x]), x]", //
@@ -1149,6 +1311,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:72
+  @Test
   public void test0160() {
     check( //
         "Integrate[E^x*x/(1+x)^2, x]", //
@@ -1156,6 +1319,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:85
+  @Test
   public void test0161() {
     check( //
         "Integrate[1/(1+2*x+x^2), x]", //
@@ -1163,6 +1327,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:44
+  @Test
   public void test0162() {
     check( //
         "Integrate[Log[t]*Sqrt[t], t]", //
@@ -1170,6 +1335,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:52
+  @Test
   public void test0163() {
     check( //
         "Integrate[E^(x^2)*x^3, x]", //
@@ -1177,6 +1343,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:102
+  @Test
   public void test0164() {
     check( //
         "Integrate[Sec[x]^3*Tan[x]^5, x]", //
@@ -1184,6 +1351,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:226
+  @Test
   public void test0165() {
     check( //
         "Integrate[1/(-3+2*x+x^2), x]", //
@@ -1191,6 +1359,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:270
+  @Test
   public void test0166() {
     check( //
         "Integrate[Sqrt[x]*(1+Sqrt[x]), x]", //
@@ -1198,6 +1367,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:61
+  @Test
   public void test0167() {
     check( //
         "Integrate[(-Sec[x]+Tan[x])^2, x]", //
@@ -1205,6 +1375,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:75
+  @Test
   public void test0168() {
     check( //
         "Integrate[1/((b+a*x)*Sqrt[x]), x]", //
@@ -1212,6 +1383,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:165
+  @Test
   public void test0169() {
     check( //
         "Integrate[(6*x+4*x^2+x^3)/(2+4*x+3*x^2+2*x^3+x^4), x]", //
@@ -1219,6 +1391,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:326
+  @Test
   public void test0170() {
     check( //
         "Integrate[1/(-3-2*x+x^2)^(5/2), x]", //
@@ -1226,6 +1399,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:346
+  @Test
   public void test0171() {
     check( //
         "Integrate[x/((4+x+x^2)*Sqrt[5+4*x+4*x^2]), x]", //
@@ -1233,6 +1407,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:357
+  @Test
   public void test0172() {
     check( //
         "Integrate[(1-x+x^2)/((1+x^2)*Sqrt[1+x^2]), x]", //
@@ -1240,6 +1415,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:467
+  @Test
   public void test0173() {
     check( //
         "Integrate[1/Cos[1/4*Pi+3*x]^3, x]", //
@@ -1247,6 +1423,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:731
+  @Test
   public void test0174() {
     check( //
         "Integrate[E^x*(1-x-x^2)/Sqrt[1-x^2], x]", //
@@ -1254,6 +1431,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:741
+  @Test
   public void test0175() {
     check( //
         "Integrate[E^(3*x)*Cos[3/2*x]^2*Sin[3/2*x]^2, x]", //
@@ -1261,6 +1439,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:857
+  @Test
   public void test0176() {
     check( //
         "Integrate[(1/E^Log[Cos[x]]+E^Log[Cos[x]])*Tan[x], x]", //
@@ -1268,6 +1447,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:911
+  @Test
   public void test0177() {
     check( //
         "Integrate[x^3*ArcTan[x]/(1+x^2)^2, x]", //
@@ -1275,6 +1455,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:36
+  @Test
   public void test0178() {
     check( //
         "Integrate[1/((1+x^2)^2*Sqrt[-1+x^2]), x]", //
@@ -1282,6 +1463,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:82
+  @Test
   public void test0179() {
     check( //
         "Integrate[(x+Sqrt[b+x^2])^a, x]", //
@@ -1289,6 +1471,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:152
+  @Test
   public void test0180() {
     check( //
         "Integrate[x/((8+x^3)*Sqrt[-1+x^3]), x]", //
@@ -1296,6 +1479,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:82
+  @Test
   public void test0181() {
     check( //
         "Integrate[Sin[(-1+x)^(1/4)], x]", //
@@ -1303,6 +1487,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:178
+  @Test
   public void test0182() {
     check( //
         "Integrate[(-1+5*x+2*x^2)/(-2*x+x^2+x^3), x]", //
@@ -1310,6 +1495,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bondarenko Problems.input:31
+  @Test
   public void test0183() {
     check( //
         "Integrate[1/(1+Cos[x]+Sin[x])^2, x]", //
@@ -1317,6 +1503,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bronstein Problems.input:21
+  @Test
   public void test0184() {
     check( //
         "Integrate[(x^2+2*x*Log[x]+Log[x]^2+(1+x)*Sqrt[x+Log[x]])/(x^3+2*x^2*Log[x]+x*Log[x]^2), x]", //
@@ -1324,6 +1511,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Charlwood Problems.input:56
+  @Test
   public void test0185() {
     check( //
         "Integrate[Log[x+Sqrt[-1+x^2]]/(1+x^2)^(3/2), x]", //
@@ -1331,6 +1519,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:50
+  @Test
   public void test0186() {
     check( //
         "Integrate[1/(-b+a*x^3), x]", //
@@ -1338,6 +1527,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:58
+  @Test
   public void test0187() {
     check( //
         "Integrate[1/(1+4*x^2+x^4), x]", //
@@ -1345,6 +1535,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:160
+  @Test
   public void test0188() {
     check( //
         "Integrate[d^x*x^3*Cos[x], x]", //
@@ -1352,6 +1543,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:191
+  @Test
   public void test0189() {
     check( //
         "Integrate[E^(x^2), x]", //
@@ -1359,6 +1551,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:264
+  @Test
   public void test0190() {
     check( //
         "Integrate[a*Cos[5+3*x]*Sin[5+3*x]^2, x]", //
@@ -1366,6 +1559,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:272
+  @Test
   public void test0191() {
     check( //
         "Integrate[x^(1/2)*(1+x^2), x]", //
@@ -1373,6 +1567,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:288
+  @Test
   public void test0192() {
     check( //
         "Integrate[1/(-(-1+x)^(1/2)+x^(1/2)), x]", //
@@ -1380,6 +1575,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:349
+  @Test
   public void test0193() {
     check( //
         "Integrate[x*(-Sqrt[-4+x^2]+x^2*Sqrt[-4+x^2]-4*Sqrt[-1+x^2]+x^2*Sqrt[-1+x^2])/((4-5*x^2+x^4)*(1+Sqrt[-4+x^2]+Sqrt[-1+x^2])), x]", //
@@ -1387,6 +1583,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:24
+  @Test
   public void test0194() {
     check( //
         "Integrate[E^(x^2)+2*E^(x^2)*x^2, x]", //
@@ -1394,6 +1591,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:73
+  @Test
   public void test0195() {
     check( //
         "Integrate[E^(x^2)*(1+2*x^2), x]", //
@@ -1401,6 +1599,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:88
+  @Test
   public void test0196() {
     check( //
         "Integrate[Log[x]/(1+Log[x])^2, x]", //
@@ -1408,6 +1607,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:126
+  @Test
   public void test0197() {
     check( //
         "Integrate[(1/x+x)*Log[x], x]", //
@@ -1415,6 +1615,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:61
+  @Test
   public void test0198() {
     check( //
         "Integrate[E^(x^2)*x^5, x]", //
@@ -1422,6 +1623,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:71
+  @Test
   public void test0199() {
     check( //
         "Integrate[Cos[x]^4*Sin[x]^3, x]", //
@@ -1429,6 +1631,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:145
+  @Test
   public void test0200() {
     check( //
         "Integrate[Sqrt[-4+9*x^2]/x, x]", //
@@ -1436,6 +1639,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:227
+  @Test
   public void test0201() {
     check( //
         "Integrate[1/(-2*x+x^2), x]", //
@@ -1443,6 +1647,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:303
+  @Test
   public void test0202() {
     check( //
         "Integrate[x^5/E^(x^3), x]", //
@@ -1450,6 +1655,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:211
+  @Test
   public void test0203() {
     check( //
         "Integrate[(1+x^4)/(1+x^6), x]", //
@@ -1457,6 +1663,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:232
+  @Test
   public void test0204() {
     check( //
         "Integrate[1/(-3-2*x+x^2)^3, x]", //
@@ -1464,6 +1671,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:297
+  @Test
   public void test0205() {
     check( //
         "Integrate[x^(3/2)*(1+x^2)*(-x+2*Sqrt[x])^2, x]", //
@@ -1471,6 +1679,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:337
+  @Test
   public void test0206() {
     check( //
         "Integrate[1/((4+x^2)*Sqrt[1-x^2]), x]", //
@@ -1478,6 +1687,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:398
+  @Test
   public void test0207() {
     check( //
         "Integrate[1/(1+Sqrt[2+2*x+x^2]), x]", //
@@ -1485,6 +1695,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:520
+  @Test
   public void test0208() {
     check( //
         "Integrate[1/(4+4*Cot[x]+Tan[x]), x]", //
@@ -1492,6 +1703,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:540
+  @Test
   public void test0209() {
     check( //
         "Integrate[(1-Sin[2/3*x])^(5/2), x]", //
@@ -1499,6 +1711,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:595
+  @Test
   public void test0210() {
     check( //
         "Integrate[(3+Sin[x]^2)*Tan[x]^3/((-2+Cos[x]^2)*(5-4*Sec[x]^2)^(3/2)), x]", //
@@ -1506,6 +1719,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:685
+  @Test
   public void test0211() {
     check( //
         "Integrate[a^(k*x)+a^(l*x), x]", //
@@ -1513,6 +1727,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:707
+  @Test
   public void test0212() {
     check( //
         "Integrate[1/(E^(n*x)*a+b), x]", //
@@ -1520,6 +1735,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:848
+  @Test
   public void test0213() {
     check( //
         "Integrate[1/(x*Log[x]*Sqrt[-a^2+Log[x]^2]), x]", //
@@ -1527,6 +1743,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:890
+  @Test
   public void test0214() {
     check( //
         "Integrate[x^2*ArcSin[x]/Sqrt[1-x^2], x]", //
@@ -1534,6 +1751,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:900
+  @Test
   public void test0215() {
     check( //
         "Integrate[x*ArcCos[x]^2*Sqrt[1-x^2], x]", //
@@ -1541,6 +1759,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:39
+  @Test
   public void test0216() {
     check( //
         "Integrate[1/(Sqrt[-1+x]*(Sqrt[-1+x]+Sqrt[x])^2), x]", //
@@ -1548,6 +1767,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:83
+  @Test
   public void test0217() {
     check( //
         "Integrate[(6+3*x^a+2*x^(2*a))^(1/a)*(x^a+x^(2*a)+x^(3*a)), x]", //
@@ -1555,6 +1775,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Wester Problems.input:12
+  @Test
   public void test0218() {
     check( //
         "Integrate[1/((-5)/E^(m*x)+2*E^(m*x)), x]", //
@@ -1562,6 +1783,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:203
+  @Test
   public void test0219() {
     check( //
         "Integrate[(-6+2*x+x^4)/(-2*x+x^2+x^3), x]", //
@@ -1569,6 +1791,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:213
+  @Test
   public void test0220() {
     check( //
         "Integrate[1/(-x+x^3), x]", //
@@ -1576,6 +1799,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bondarenko Problems.input:24
+  @Test
   public void test0221() {
     check( //
         "Integrate[Sqrt[1+Sqrt[x]+Sqrt[1+2*x+2*Sqrt[x]]], x]", //
@@ -1583,6 +1807,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Charlwood Problems.input:110
+  @Test
   public void test0222() {
     check( //
         "Integrate[x*ArcSec[x]/Sqrt[-1+x^2], x]", //
@@ -1590,6 +1815,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:51
+  @Test
   public void test0223() {
     check( //
         "Integrate[1/(-2+x^4), x]", //
@@ -1597,6 +1823,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:281
+  @Test
   public void test0224() {
     check( //
         "Integrate[x*Log[a+x^2], x]", //
@@ -1604,6 +1831,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:289
+  @Test
   public void test0225() {
     check( //
         "Integrate[1/(1-(1+x)^(1/2)), x]", //
@@ -1611,6 +1839,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hebisch Problems.input:21
+  @Test
   public void test0226() {
     check( //
         "Integrate[Exp[1+1/Log[x]]*(-1+Log[x]^2)/Log[x]^2, x]", //
@@ -1618,6 +1847,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:38
+  @Test
   public void test0227() {
     check( //
         "Integrate[E^t*t^3, t]", //
@@ -1625,6 +1855,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:72
+  @Test
   public void test0228() {
     check( //
         "Integrate[Cos[x]^3*Sin[x]^4, x]", //
@@ -1632,6 +1863,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:80
+  @Test
   public void test0229() {
     check( //
         "Integrate[Cos[2*x]^4*Sin[2*x]^2, x]", //
@@ -1639,6 +1871,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:104
+  @Test
   public void test0230() {
     check( //
         "Integrate[Sec[x]^6*Tan[x]^3, x]", //
@@ -1646,6 +1879,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:154
+  @Test
   public void test0231() {
     check( //
         "Integrate[1/(-25+4*x^2)^(3/2), x]", //
@@ -1653,6 +1887,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:162
+  @Test
   public void test0232() {
     check( //
         "Integrate[Sqrt[-9+E^(2*t)], t]", //
@@ -1660,6 +1895,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:169
+  @Test
   public void test0233() {
     check( //
         "Integrate[(-2+x+3*x^2)/((-1+x)^3*(1+x^2)), x]", //
@@ -1667,6 +1903,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:212
+  @Test
   public void test0234() {
     check( //
         "Integrate[1/(5+3*x+x^2)^3, x]", //
@@ -1674,6 +1911,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:233
+  @Test
   public void test0235() {
     check( //
         "Integrate[1/(13-4*x+x^2)^3, x]", //
@@ -1681,6 +1919,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:348
+  @Test
   public void test0236() {
     check( //
         "Integrate[(1+2*x)/((4+4*x+3*x^2)*Sqrt[-1+6*x+x^2]), x]", //
@@ -1688,6 +1927,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:369
+  @Test
   public void test0237() {
     check( //
         "Integrate[1/((-1+x^2)*Sqrt[2*x+x^2]), x]", //
@@ -1695,6 +1935,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:431
+  @Test
   public void test0238() {
     check( //
         "Integrate[1/((-1+x^3)*(2+x^3)^(1/3)), x]", //
@@ -1702,6 +1943,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:481
+  @Test
   public void test0239() {
     check( //
         "Integrate[Cos[x]^6*Sin[x]^6, x]", //
@@ -1709,6 +1951,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:492
+  @Test
   public void test0240() {
     check( //
         "Integrate[Sec[x]^(3/2)*Tan[x]^5, x]", //
@@ -1716,6 +1959,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:521
+  @Test
   public void test0241() {
     check( //
         "Integrate[1/(2*Sec[x]+Sin[x])^2, x]", //
@@ -1723,6 +1967,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:584
+  @Test
   public void test0242() {
     check( //
         "Integrate[Cos[x]*Sqrt[Cos[2*x]], x]", //
@@ -1730,6 +1975,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:596
+  @Test
   public void test0243() {
     check( //
         "Integrate[(Sec[x]^2-3*Sqrt[4*Sec[x]^2+5*Tan[x]^2]*Tan[x])/(Sin[x]^2*(4*Sec[x]^2+5*Tan[x]^2)^(3/2)), x]", //
@@ -1737,6 +1983,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:672
+  @Test
   public void test0244() {
     check( //
         "Integrate[x^2/(x*Cos[x]-Sin[x])^2, x]", //
@@ -1744,6 +1991,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:709
+  @Test
   public void test0245() {
     check( //
         "Integrate[(-1+E^x)/(1+E^x), x]", //
@@ -1751,6 +1999,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:723
+  @Test
   public void test0246() {
     check( //
         "Integrate[E^(2*x)/(3-E^(1/2*x))^(3/4), x]", //
@@ -1758,6 +2007,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:735
+  @Test
   public void test0247() {
     check( //
         "Integrate[(Cos[1/2*x]+Sin[1/2*x])/(E^x)^(1/3), x]", //
@@ -1765,6 +2015,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:770
+  @Test
   public void test0248() {
     check( //
         "Integrate[E^(1/2*x)*x^2*Cos[x]*Sin[x]^2, x]", //
@@ -1772,6 +2023,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:891
+  @Test
   public void test0249() {
     check( //
         "Integrate[x^4*ArcSin[x]/Sqrt[1-x^2], x]", //
@@ -1779,6 +2031,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:901
+  @Test
   public void test0250() {
     check( //
         "Integrate[x^2*ArcSin[x]^3/Sqrt[1-x^2], x]", //
@@ -1786,6 +2039,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:913
+  @Test
   public void test0251() {
     check( //
         "Integrate[(1+x^2)*ArcTan[x]/x^2, x]", //
@@ -1793,6 +2047,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:56
+  @Test
   public void test0252() {
     check( //
         "Integrate[(x+Sqrt[a+x^2])^b, x]", //
@@ -1800,6 +2055,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:184
+  @Test
   public void test0253() {
     check( //
         "Integrate[1/((1+x)*(2+x^3)^(1/3)), x]", //
@@ -1807,6 +2063,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:84
+  @Test
   public void test0254() {
     check( //
         "Integrate[Sin[2*x]*Sqrt[1+3*Cos[x]^2], x]", //
@@ -1814,6 +2071,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:130
+  @Test
   public void test0255() {
     check( //
         "Integrate[x^3/E^(x^2), x]", //
@@ -1821,6 +2079,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:164
+  @Test
   public void test0256() {
     check( //
         "Integrate[((a+x)/(a-x))^(1/2), x]", //
@@ -1828,6 +2087,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:214
+  @Test
   public void test0257() {
     check( //
         "Integrate[x^2/(-6+x+x^2), x]", //
@@ -1835,6 +2095,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:224
+  @Test
   public void test0258() {
     check( //
         "Integrate[(1-x^3)/(x*(1+x^2)), x]", //
@@ -1842,6 +2103,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Apostol Problems.input:232
+  @Test
   public void test0259() {
     check( //
         "Integrate[1/(1+1/2*Cos[x]), x]", //
@@ -1849,6 +2111,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Bronstein Problems.input:13
+  @Test
   public void test0260() {
     check( //
         "Integrate[x/Sqrt[-71-96*x+10*x^2+x^4], x]", //
@@ -1856,6 +2119,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Charlwood Problems.input:32
+  @Test
   public void test0261() {
     check( //
         "Integrate[ArcTan[Sqrt[-1+Sec[x]]]*Sin[x], x]", //
@@ -1863,6 +2127,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:22
+  @Test
   public void test0262() {
     check( //
         "Integrate[x/((a^2+x^2)*(b^2+x^2)), x]", //
@@ -1870,6 +2135,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:52
+  @Test
   public void test0263() {
     check( //
         "Integrate[1/(-1+5*x^4), x]", //
@@ -1877,6 +2143,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:78
+  @Test
   public void test0264() {
     check( //
         "Integrate[1/Log[1+x], x]", //
@@ -1884,6 +2151,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:106
+  @Test
   public void test0265() {
     check( //
         "Integrate[Cos[x]*(1+Sin[x]^2)^2, x]", //
@@ -1891,6 +2159,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:193
+  @Test
   public void test0266() {
     check( //
         "Integrate[E^(1/x)*(1+x)/x^4, x]", //
@@ -1898,6 +2167,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:222
+  @Test
   public void test0267() {
     check( //
         "Integrate[x/Sqrt[1-x^2]^(9/4), x]", //
@@ -1905,6 +2175,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:282
+  @Test
   public void test0268() {
     check( //
         "Integrate[Cos[x]*Sin[a+x], x]", //
@@ -1912,6 +2183,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:290
+  @Test
   public void test0269() {
     check( //
         "Integrate[x/(36+x^4)^(1/2), x]", //
@@ -1919,6 +2191,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:298
+  @Test
   public void test0270() {
     check( //
         "Integrate[(2+1/x^4+x^4)^(1/2), x]", //
@@ -1926,6 +2199,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Hearn Problems.input:331
+  @Test
   public void test0271() {
     check( //
         "Integrate[E^(x^2)/x+2*E^(x^2)*x*Log[x]+(-2+Log[x])/(x+Log[x]^2)^2+(1+1/x+2*Log[x]/x)/(x+Log[x]^2), x]", //
@@ -1933,6 +2207,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:26
+  @Test
   public void test0272() {
     check( //
         "Integrate[2*E^x+E^(2*x)+x^2, x]", //
@@ -1940,6 +2215,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Moses Problems.input:34
+  @Test
   public void test0273() {
     check( //
         "Integrate[E^x*Cos[E^x]^2*Sin[E^x], x]", //
@@ -1947,6 +2223,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:73
+  @Test
   public void test0274() {
     check( //
         "Integrate[Cos[x]^2*Sin[x]^4, x]", //
@@ -1954,6 +2231,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:181
+  @Test
   public void test0275() {
     check( //
         "Integrate[(-2+x^2)/(x*(2+x^2)), x]", //
@@ -1961,6 +2239,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Stewart Problems.input:363
+  @Test
   public void test0276() {
     check( //
         "Integrate[Csc[1/2*x]^3, x]", //
@@ -1968,6 +2247,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:66
+  @Test
   public void test0277() {
     check( //
         "Integrate[(-1+E^(1/2*x))^3/E^(1/2*x), x]", //
@@ -1975,6 +2255,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:78
+  @Test
   public void test0278() {
     check( //
         "Integrate[1/(x*Sqrt[-a^2+x^2]), x]", //
@@ -1982,6 +2263,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:145
+  @Test
   public void test0279() {
     check( //
         "Integrate[(-1+x+x^2)/(-6*x+x^2+x^3), x]", //
@@ -1989,6 +2271,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:283
+  @Test
   public void test0280() {
     check( //
         "Integrate[1/(2+3*x+x^2)^5, x]", //
@@ -1996,6 +2279,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:432
+  @Test
   public void test0281() {
     check( //
         "Integrate[1/((1+x^4)*(2+x^4)^(1/4)), x]", //
@@ -2003,6 +2287,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:472
+  @Test
   public void test0282() {
     check( //
         "Integrate[Cot[-3/4*Pi+1/3*x]^4, x]", //
@@ -2010,6 +2295,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:482
+  @Test
   public void test0283() {
     check( //
         "Integrate[Cos[x]^8*Sin[x]^8, x]", //
@@ -2017,6 +2303,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:493
+  @Test
   public void test0284() {
     check( //
         "Integrate[Sec[x]^4*Tan[x]^(3/2), x]", //
@@ -2024,6 +2311,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:573
+  @Test
   public void test0285() {
     check( //
         "Integrate[Cos[x]*(5*Cos[x]^2+Sin[x]^2)^(5/2), x]", //
@@ -2031,6 +2319,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:599
+  @Test
   public void test0286() {
     check( //
         "Integrate[Tan[x]*(1+5*Tan[x]^2)^(5/2), x]", //
@@ -2038,6 +2327,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:638
+  @Test
   public void test0287() {
     check( //
         "Integrate[1/(-1-2*x+x^2)^(5/2), x]", //
@@ -2045,6 +2335,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:647
+  @Test
   public void test0288() {
     check( //
         "Integrate[1/(-7+6*x-x^2)^(5/2), x]", //
@@ -2052,6 +2343,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:661
+  @Test
   public void test0289() {
     check( //
         "Integrate[x^2*Cos[x]*Sin[x]^2, x]", //
@@ -2059,6 +2351,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:726
+  @Test
   public void test0290() {
     check( //
         "Integrate[x^3/E^(1/2*x), x]", //
@@ -2066,6 +2359,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:736
+  @Test
   public void test0291() {
     check( //
         "Integrate[Cos[3/2*x]/(3^(3*x))^(1/4), x]", //
@@ -2073,6 +2367,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:830
+  @Test
   public void test0292() {
     check( //
         "Integrate[-1-8*Log[x]^2+3*Log[x]^3, x]", //
@@ -2080,6 +2375,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:884
+  @Test
   public void test0293() {
     check( //
         "Integrate[x*ArcCos[x]*Sqrt[1-x^2], x]", //
@@ -2087,6 +2383,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:904
+  @Test
   public void test0294() {
     check( //
         "Integrate[x*ArcTan[x]/(1+x^2)^2, x]", //
@@ -2094,6 +2391,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Timofeev Problems.input:941
+  @Test
   public void test0295() {
     check( //
         "Integrate[ArcTan[Sqrt[(-a+x)/(a+x)]], x]", //
@@ -2101,6 +2399,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:57
+  @Test
   public void test0296() {
     check( //
         "Integrate[(x-Sqrt[a+x^2])^b, x]", //
@@ -2108,6 +2407,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
   }
 
   // Welz Problems.input:173
+  @Test
   public void test0297() {
     check( //
         "Integrate[x/((10+x^3+6*Sqrt[3])*Sqrt[1+x^3]), x]", //

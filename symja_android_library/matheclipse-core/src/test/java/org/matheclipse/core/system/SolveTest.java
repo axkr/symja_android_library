@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -755,6 +756,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolve() {
     check("Solve(3*(x+a)*(x-b)==0,x)", //
         "{{x->-a},{x->b}}");
@@ -1165,6 +1167,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNSolve() {
     check("NSolve(2*x^(x-3)==3^(x-2),x)", //
         "{{x->2.0}}");
@@ -1954,6 +1957,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIssue685() {
     // "choco solver" with lcg enabled takes forever
     // https://github.com/chocoteam/choco-solver/issues/1176

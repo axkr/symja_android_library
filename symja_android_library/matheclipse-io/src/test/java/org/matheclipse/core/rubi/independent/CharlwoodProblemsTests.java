@@ -1,25 +1,26 @@
 package org.matheclipse.core.rubi.independent;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
  * Rubi's "0 Independent test suites" corpus section. 50 integrals.
  *
  * <p>
- * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
- * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
- * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
- * unnoticed, so run it after any change to the integrator:
+ * <b>Not part of a normal build.</b> {@code AbstractRubiTestCase} is {@code @Tag("corpus")},
+ * which the default surefire run excludes. That is deliberate - the section is slow - but it
+ * means drift goes unnoticed, so run it after any change to the integrator:
  *
  * <pre>
- * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
- *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * mvn -o -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400
  * </pre>
  *
  * <p>
- * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
- * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
- * JVM across classes makes every test fail.
+ * The profile sets {@code reuseForks=false}, which is required rather than an optimisation:
+ * {@code AbstractRubiTestCase} sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS},
+ * so sharing one JVM across classes makes every test fail. It also sets
+ * {@code testFailureIgnore}, because this corpus is a scoreboard rather than a gate.
  *
  * <p>
  * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
@@ -28,10 +29,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class CharlwoodProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public CharlwoodProblemsTests(String name) {
-    super(name, false);
+  public CharlwoodProblemsTests() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -46,6 +48,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     }
   }
 
+  @Test
   public void test1() {
     check( //
         "Integrate[ArcSin[x]*Log[x], x]", //
@@ -53,6 +56,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test2() {
     check( //
         "Integrate[x*ArcSin[x]/Sqrt[1-x^2], x]", //
@@ -60,6 +64,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test3() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja returns only a partial result. It used to leak Rubi`subst into the
@@ -70,6 +75,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test4() {
     check( //
         "Integrate[Log[1+x*Sqrt[1+x^2]], x]", //
@@ -77,6 +83,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test5() {
     // KNOWN GAP - this test does not pass. Symja's answer is correct (verified by differentiating
     // it back) but is a bulky EllipticF/EllipticPi form rather than the compact ArcTan reference,
@@ -89,6 +96,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test6() {
     check( //
         "Integrate[Tan[x]*Sqrt[1+Tan[x]^4], x]", //
@@ -96,6 +104,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test7() {
     check( //
         "Integrate[Tan[x]/Sqrt[1+Sec[x]^3], x]", //
@@ -103,6 +112,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test8() {
     check( //
         "Integrate[Sqrt[Tan[x]^2+2*Tan[x]+2], x]", //
@@ -110,6 +120,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test9() {
     check( //
         "Integrate[Sin[x]*ArcTan[Sqrt[Sec[x]+(-1)*1]], x]", //
@@ -117,6 +128,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test10() {
     check( //
         "Integrate[x^3*E^ArcSin[x]/Sqrt[1-x^2], x]", //
@@ -124,6 +136,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test11() {
     check( //
         "Integrate[(x*Log[1+x^2]*Log[x+Sqrt[1+x^2]])/Sqrt[1+x^2], x]", //
@@ -131,6 +144,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test12() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja returns a partial result containing an unevaluated Integrate.
@@ -140,6 +154,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test13() {
     check( //
         "Integrate[x*ArcTan[x+Sqrt[1-x^2]]/Sqrt[1-x^2], x]", //
@@ -147,6 +162,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test14() {
     check( //
         "Integrate[ArcSin[x]/(1+Sqrt[1-x^2]), x]", //
@@ -154,6 +170,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test15() {
     check( //
         "Integrate[Log[x+Sqrt[1+x^2]]/(1-x^2)^(3/2), x]", //
@@ -161,6 +178,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test16() {
     check( //
         "Integrate[ArcSin[x]/(1+x^2)^(3/2), x]", //
@@ -168,6 +186,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test17() {
     check( //
         "Integrate[Log[x+Sqrt[x^2+(-1)*1]]/(1+x^2)^(3/2), x]", //
@@ -175,6 +194,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test18() {
     check( //
         "Integrate[Log[x]/(x^2*Sqrt[x^2+(-1)*1]), x]", //
@@ -182,6 +202,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test19() {
     check( //
         "Integrate[Sqrt[1+x^3]/x, x]", //
@@ -189,6 +210,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test20() {
     check( //
         "Integrate[x*Log[x+Sqrt[x^2+(-1)*1]]/Sqrt[x^2+(-1)*1], x]", //
@@ -196,6 +218,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test21() {
     check( //
         "Integrate[x^3*ArcSin[x]/Sqrt[1-x^4], x]", //
@@ -203,6 +226,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test22() {
     check( //
         "Integrate[x^3*ArcSec[x]/Sqrt[x^4+(-1)*1], x]", //
@@ -210,6 +234,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test23() {
     check( //
         "Integrate[x*ArcTan[x]*Log[x+Sqrt[1+x^2]]/Sqrt[1+x^2], x]", //
@@ -217,6 +242,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test24() {
     check( //
         "Integrate[x*Log[1+Sqrt[1-x^2]]/Sqrt[1-x^2], x]", //
@@ -224,6 +250,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test25() {
     check( //
         "Integrate[x*Log[x+Sqrt[1+x^2]]/Sqrt[1+x^2], x]", //
@@ -231,6 +258,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test26() {
     check( //
         "Integrate[x*Log[x+Sqrt[1-x^2]]/Sqrt[1-x^2], x]", //
@@ -238,6 +266,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test27() {
     check( //
         "Integrate[Log[x]/(x^2*Sqrt[1-x^2]), x]", //
@@ -245,6 +274,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test28() {
     check( //
         "Integrate[x*ArcTan[x]/Sqrt[1+x^2], x]", //
@@ -252,6 +282,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test29() {
     check( //
         "Integrate[ArcTan[x]/(x^2*Sqrt[1-x^2]), x]", //
@@ -259,6 +290,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test30() {
     check( //
         "Integrate[x*ArcTan[x]/Sqrt[1-x^2], x]", //
@@ -266,6 +298,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test31() {
     check( //
         "Integrate[ArcTan[x]/(x^2*Sqrt[1+x^2]), x]", //
@@ -273,6 +306,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test32() {
     check( //
         "Integrate[ArcSin[x]/(x^2*Sqrt[1-x^2]), x]", //
@@ -280,6 +314,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test33() {
     check( //
         "Integrate[x*Log[x]/Sqrt[x^2+(-1)*1], x]", //
@@ -287,6 +322,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test34() {
     check( //
         "Integrate[Log[x]/(x^2*Sqrt[1+x^2]), x]", //
@@ -294,6 +330,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test35() {
     check( //
         "Integrate[x*ArcSec[x]/Sqrt[x^2+(-1)*1], x]", //
@@ -301,6 +338,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test36() {
     check( //
         "Integrate[x*Log[x]/Sqrt[1+x^2], x]", //
@@ -308,6 +346,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test37() {
     check( //
         "Integrate[Sin[x]/(1+Sin[x]^2), x]", //
@@ -315,6 +354,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test38() {
     check( //
         "Integrate[(1+x^2)/((1-x^2)*Sqrt[1+x^4]), x]", //
@@ -322,6 +362,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test39() {
     check( //
         "Integrate[(1-x^2)/((1+x^2)*Sqrt[1+x^4]), x]", //
@@ -329,6 +370,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test40() {
     check( //
         "Integrate[Log[Sin[x]]/(1+Sin[x]), x]", //
@@ -336,6 +378,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test41() {
     check( //
         "Integrate[Log[Sin[x]]*Sqrt[1+Sin[x]], x]", //
@@ -343,6 +386,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test42() {
     check( //
         "Integrate[Sec[x]/Sqrt[Sec[x]^4+(-1)*1], x]", //
@@ -350,6 +394,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test43() {
     check( //
         "Integrate[Tan[x]/Sqrt[1+Tan[x]^4], x]", //
@@ -357,6 +402,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test44() {
     check( //
         "Integrate[Sin[x]/Sqrt[1-Sin[x]^6], x]", //
@@ -364,6 +410,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test45() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja leaves this unevaluated: rule 3054 reports 'Endless iteration
@@ -374,6 +421,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test46() {
     check( //
         "Integrate[x*Log[x^2+1]*ArcTan[x]^2, x]", //
@@ -381,6 +429,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test47() {
     check( //
         "Integrate[ArcTan[x*Sqrt[1+x^2]], x]", //
@@ -388,6 +437,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test48() {
     check( //
         "Integrate[ArcTan[Sqrt[x+1]-Sqrt[x]], x]", //
@@ -395,6 +445,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test49() {
     check( //
         "Integrate[ArcSin[x/Sqrt[1-x^2]], x]", //
@@ -402,6 +453,7 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test50() {
     check( //
         "Integrate[ArcTan[x*Sqrt[1-x^2]], x]", //

@@ -1,70 +1,83 @@
 package org.matheclipse.core.rubi.issues;
 
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 // Integrate[Csch[x]*Log[Tanh[x]]*Sech[x], x]
 public class DerivativeDevides extends AbstractRubiTestCase {
-  public DerivativeDevides(String name) {
-    super(name, false);
+  public DerivativeDevides() {
+    super(false);
   }
 
+  @Test
   public void test0000() {
     check("PolynomialQ[Csch[x]*Sech[x],x]", //
         "False");
   }
 
+  @Test
   public void test0000b() {
     check("PolynomialQ[Log[Tanh[x]],x]", //
         "False");
   }
 
+  @Test
   public void test0000c() {
     check("MatchQ[Log[Tanh[x]],a_.*x /; FreeQ[a,x]]", //
         "False");
   }
 
+  @Test
   public void test0000d() {
     check(
         "Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Log[Tanh[x]],x],Sinc[z_]->Sin[z]/z]]}, v]", //
         "Csch(x)*Sech(x)");
   }
 
+  @Test
   public void test0000e() {
     check("1/(Coth[x]*Sech[x])", //
         "Sinh[x]");
   }
 
+  @Test
   public void test0000fa() {
     check("Coth[x]*Sech[x]^2", // Csch(x)^2*Sech(x)
         "Csch(x)*Sech(x)");
   }
 
+  @Test
   public void test0000fb() {
     check("1/(Coth[x]*Sech[x]^2)", //
         "Cosh(x)*Sinh(x)");
   }
 
+  @Test
   public void test0000g() {
     check("Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Sech[x],x],Sinc[z_]->Sin[z]/z]]}, v]", //
         "-Sech(x)*Tanh(x)");
   }
 
+  @Test
   public void test0000h() {
     check("Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Csch[x],x],Sinc[z_]->Sin[z]/z]]}, v]", //
         "-Coth(x)*Csch(x)");
   }
 
+  @Test
   public void test0000i() {
     check(
         "Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Csch[x]*Sech[x],x],Sinc[z_]->Sin[z]/z]]}, v]", //
         "-Csch(x)^2-Sech(x)^2");
   }
 
+  @Test
   public void test0000j() {
     check("Rubi`Simp[(-4*Coth[2*x]*Csch[2*x]*(Log[Tanh[x]])^(2))/(2), x]", //
         "-2*Coth(2*x)*Csch(2*x)*Log(Tanh(x))^2");
   }
 
+  @Test
   public void test0000k() {
     check("Rubi`Simp[(-Coth[x]*Csch[x]*Sech[x]-Csch[x]*Sech[x]*Tanh[x]*(Log[Tanh[x]])^(2))/(2), x]", //
         "-(Csch(x)^2+Log(Tanh(x))^2*Sech(x)^2)/2");
@@ -80,41 +93,49 @@ public class DerivativeDevides extends AbstractRubiTestCase {
    *   /; FreeQ[m, x] && NeQ[m, -1]
    * </pre>
    */
+  @Test
   public void test0001() {
     check("Rubi`DerivativeDivides[Log[Tanh[x]]*Sech[x], Csch[x], x]", //
         "False");
   }
 
+  @Test
   public void test0002() {
     check("Rubi`DerivativeDivides[Log[Tanh[x]], Csch[x]*Sech[x], x]", //
         "1");
   }
 
+  @Test
   public void test0003() {
     check("Rubi`DerivativeDivides[Log[Tanh[x]]*Csch[x], Sech[x], x]", //
         "False");
   }
 
+  @Test
   public void test0004() {
     check("Rubi`EasyDQ[Log[Tanh[x]]*Sech[x], x]", //
         "False");
   }
 
+  @Test
   public void test0005() {
     check("Rubi`EasyDQ[Log[Tanh[x]],  x]", //
         "True");
   }
 
+  @Test
   public void test0006() {
     check("Rubi`EasyDQ[Csch[x],  x]", //
         "True");
   }
 
+  @Test
   public void test0007() {
     check("Rubi`EasyDQ[Sech[x],  x]", //
         "True");
   }
 
+  @Test
   public void test0008() {
     check("Rubi`EasyDQ[Log[Tanh[x]]*Csch[x], x]", //
         "False");

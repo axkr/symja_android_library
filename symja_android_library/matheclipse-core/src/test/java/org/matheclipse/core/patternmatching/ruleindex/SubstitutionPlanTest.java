@@ -2,11 +2,13 @@ package org.matheclipse.core.patternmatching.ruleindex;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * Validates the precompiled right-hand-side substitution
@@ -100,6 +102,7 @@ public class SubstitutionPlanTest {
 
   /** The results with the plan and without it have to be identical. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSameResultsWithAndWithoutPlan() {
     boolean plan = Config.SUBSTITUTION_PLAN;
     try {

@@ -1,25 +1,26 @@
 package org.matheclipse.core.rubi.independent;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
  * Rubi's "0 Independent test suites" corpus section. 116 integrals.
  *
  * <p>
- * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
- * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
- * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
- * unnoticed, so run it after any change to the integrator:
+ * <b>Not part of a normal build.</b> {@code AbstractRubiTestCase} is {@code @Tag("corpus")},
+ * which the default surefire run excludes. That is deliberate - the section is slow - but it
+ * means drift goes unnoticed, so run it after any change to the integrator:
  *
  * <pre>
- * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
- *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * mvn -o -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400
  * </pre>
  *
  * <p>
- * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
- * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
- * JVM across classes makes every test fail.
+ * The profile sets {@code reuseForks=false}, which is required rather than an optimisation:
+ * {@code AbstractRubiTestCase} sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS},
+ * so sharing one JVM across classes makes every test fail. It also sets
+ * {@code testFailureIgnore}, because this corpus is a scoreboard rather than a gate.
  *
  * <p>
  * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
@@ -28,10 +29,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class WelzProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public WelzProblemsTests(String name) {
-    super(name, false);
+  public WelzProblemsTests() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -46,6 +48,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     }
   }
 
+  @Test
   public void test1() {
     check( //
         "Integrate[1/Sqrt[1-a*x], x]", //
@@ -53,6 +56,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test2() {
     check( //
         "Integrate[(Log[a*x+(-1)*1]-2*Log[-Sqrt[a*x+(-1)*1]])/(2*Pi*Sqrt[a*x+(-1)*1]), x]", //
@@ -60,6 +64,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test3() {
     check( //
         "Integrate[1/(Sqrt[x^2+1]+2*x)^2, x]", //
@@ -67,6 +72,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test4() {
     check( //
         "Integrate[1/(Sqrt[x^2+(-1)*1]*(3*x^2+(-1)*4)^2), x]", //
@@ -74,6 +80,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test5() {
     check( //
         "Integrate[1/(2*Sqrt[x]+Sqrt[x+1])^2, x]", //
@@ -81,6 +88,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test6() {
     check( //
         "Integrate[Sqrt[x^2+(-1)*1]/(x+(-1)*I)^2, x]", //
@@ -88,6 +96,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test7() {
     check( //
         "Integrate[1/(Sqrt[x^2+(-1)*1]*(x^2+1)^2), x]", //
@@ -95,6 +104,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test8() {
     check( //
         "Integrate[1/(Sqrt[x+(-1)*1]*(Sqrt[x+(-1)*1]+Sqrt[x])^2), x]", //
@@ -102,6 +112,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test9() {
     check( //
         "Integrate[1/(Sqrt[x^2+(-1)*1]*(Sqrt[x^2+(-1)*1]+Sqrt[x])^2), x]", //
@@ -109,6 +120,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test10() {
     check( //
         "Integrate[(Sqrt[x]-Sqrt[-1+x^2])^2/((1+x-x^2)^2*Sqrt[-1+x^2]), x]", //
@@ -116,6 +128,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test11() {
     check( //
         "Integrate[1/(Sqrt[2]*(1+x)^2*Sqrt[(-1)*I+x^2])+1/(Sqrt[2]*(1+x)^2*Sqrt[I+x^2]), x]", //
@@ -123,6 +136,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test12() {
     check( //
         "Integrate[Sqrt[Sqrt[x^4+1]+x^2]/((x+1)^2*Sqrt[x^4+1]), x]", //
@@ -130,6 +144,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test13() {
     check( //
         "Integrate[Sqrt[Sqrt[x^4+1]+x^2]/((x+1)*Sqrt[x^4+1]), x]", //
@@ -137,6 +152,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test14() {
     check( //
         "Integrate[Sqrt[Sqrt[x^4+1]+x^2]/Sqrt[x^4+1], x]", //
@@ -144,6 +160,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test15() {
     check( //
         "Integrate[Sqrt[Sqrt[x^4+1]-x^2]/Sqrt[x^4+1], x]", //
@@ -151,6 +168,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test16() {
     check( //
         "Integrate[((x+(-1)*1)^(3/2)+(x+1)^(3/2))/((x+1)^(3/2)*(x+(-1)*1)^(3/2)), x]", //
@@ -158,6 +176,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test17() {
     check( //
         "Integrate[(x+Sqrt[x^2+a])^b, x]", //
@@ -165,6 +184,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test18() {
     check( //
         "Integrate[(x-Sqrt[x^2+a])^b, x]", //
@@ -172,6 +192,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test19() {
     check( //
         "Integrate[(x+Sqrt[x^2+a])^b/Sqrt[x^2+a], x]", //
@@ -179,6 +200,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test20() {
     check( //
         "Integrate[(x-Sqrt[x^2+a])^b/Sqrt[x^2+a], x]", //
@@ -186,6 +208,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test21() {
     check( //
         "Integrate[1/(a+b*E^(p*x))^2, x]", //
@@ -193,6 +216,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test22() {
     check( //
         "Integrate[1/(a*E^(p*x)+b*E^(-p*x))^2, x]", //
@@ -200,6 +224,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test23() {
     check( //
         "Integrate[x/(a*E^(p*x)+b*E^(-p*x))^2, x]", //
@@ -207,6 +232,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test24() {
     check( //
         "Integrate[(1-x+3*x^2)/((1+x+x^2)^2*Sqrt[1-x+x^2]), x]", //
@@ -214,6 +240,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test25() {
     check( //
         "Integrate[Sqrt[x+Sqrt[a^2+x^2]]/Sqrt[a^2+x^2], x]", //
@@ -221,6 +248,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test26() {
     check( //
         "Integrate[Sqrt[b*x+Sqrt[a+b^2*x^2]]/Sqrt[a+b^2*x^2], x]", //
@@ -228,6 +256,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test27() {
     check( //
         "Integrate[1/(x*Sqrt[a^2+x^2]*Sqrt[x+Sqrt[a^2+x^2]]), x]", //
@@ -235,6 +264,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test28() {
     check( //
         "Integrate[Sqrt[Sqrt[a^2+x^2]+x]/x, x]", //
@@ -242,6 +272,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test29() {
     check( //
         "Integrate[x^3*Log[2+x]^3*Log[3+x], x]", //
@@ -249,6 +280,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test30() {
     check( //
         "Integrate[(Sqrt[x^2+b]+x)^a/Sqrt[x^2+b], x]", //
@@ -256,6 +288,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test31() {
     check( //
         "Integrate[(Sqrt[x^2+b]+x)^a, x]", //
@@ -263,6 +296,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test32() {
     check( //
         "Integrate[(x^(3*a)+x^(2*a)+x^a)*(2*x^(2*a)+3*x^a+6)^(1/a), x]", //
@@ -270,6 +304,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test33() {
     check( //
         "Integrate[1/(x*(1-x^2)^(1/3)), x]", //
@@ -277,6 +312,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test34() {
     check( //
         "Integrate[1/(x*(1-x^2)^(2/3)), x]", //
@@ -284,6 +320,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test35() {
     check( //
         "Integrate[1/(1-x^3)^(1/3), x]", //
@@ -291,6 +328,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test36() {
     check( //
         "Integrate[1/(x*(1-x^3)^(1/3)), x]", //
@@ -298,6 +336,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test37() {
     check( //
         "Integrate[1/((1+x)*(1-x^3)^(1/3)), x]", //
@@ -305,6 +344,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test38() {
     check( //
         "Integrate[x/((1+x)*(1-x^3)^(1/3)), x]", //
@@ -312,6 +352,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test39() {
     check( //
         "Integrate[1/(x*(x^2-3*x+2)^(1/3)), x]", //
@@ -319,6 +360,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test40() {
     check( //
         "Integrate[1/(x^3-3*x^2+7*x+(-1)*5)^(1/3), x]", //
@@ -326,6 +368,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test41() {
     check( //
         "Integrate[1/(x*(x^2-q))^(1/3), x]", //
@@ -333,6 +376,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test42() {
     check( //
         "Integrate[1/((x+(-1)*1)*(x^2-2*x+q))^(1/3), x]", //
@@ -340,6 +384,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test43() {
     check( //
         "Integrate[1/(x*((x+(-1)*1)*(x^2-2*q*x+q))^(1/3)), x]", //
@@ -347,6 +392,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test44() {
     check( //
         "Integrate[(2-(k+1)*x)/((1-(k+1)*x)*(x*(1-x)*(1-k*x))^(1/3)), x]", //
@@ -354,6 +400,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test45() {
     check( //
         "Integrate[(1-k*x)/((1+(k+(-1)*2)*x)*(x*(1-x)*(1-k*x))^(2/3)), x]", //
@@ -361,6 +408,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test46() {
     check( //
         "Integrate[(a+b*x+c*x^2)/((1-x+x^2)*(1-x^3)^(1/3)), x]", //
@@ -368,6 +416,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test47() {
     check( //
         "Integrate[1/((1+x+2*x^2)^5*(3-2*x)^(11/2)), x]", //
@@ -375,6 +424,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test48() {
     check( //
         "Integrate[1/((1+x+2*x^2)^10*(3-2*x)^(21/2)), x]", //
@@ -382,6 +432,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test49() {
     check( //
         "Integrate[1/((1+x+2*x^2)^20*(3-2*x)^(41/2)), x]", //
@@ -389,6 +440,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test50() {
     check( //
         "Integrate[1/((1+x+2*x^2)^5*(3-2*x+x^2)^(11/2)), x]", //
@@ -396,6 +448,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test51() {
     check( //
         "Integrate[1/((1+x+2*x^2)^10*(3-2*x+x^2)^(21/2)), x]", //
@@ -403,6 +456,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test52() {
     check( //
         "Integrate[(x-a-Sqrt[a^2+1])/((x-a+Sqrt[a^2+1])*Sqrt[(x-a)*(x^2+1)]), x]", //
@@ -410,6 +464,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test53() {
     check( //
         "Integrate[(a+b*x)/((3+x^2)*(1-x^2)^(1/3)), x]", //
@@ -417,6 +472,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test54() {
     check( //
         "Integrate[(a+b*x)/((3-x^2)*(1+x^2)^(1/3)), x]", //
@@ -424,6 +480,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test55() {
     check( //
         "Integrate[1/(x*(3*x^2-6*x+4)^(1/3)), x]", //
@@ -431,6 +488,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test56() {
     check( //
         "Integrate[x*(1-x^3)^(1/3), x]", //
@@ -438,6 +496,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test57() {
     check( //
         "Integrate[(1-x^3)^(1/3)/x, x]", //
@@ -445,6 +504,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test58() {
     check( //
         "Integrate[(1-x^3)^(1/3)/(1+x), x]", //
@@ -452,6 +512,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test59() {
     check( //
         "Integrate[(1-x^3)^(1/3)/(1-x+x^2), x]", //
@@ -459,6 +520,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test60() {
     check( //
         "Integrate[(1-x^3)^(1/3)/(2+x), x]", //
@@ -466,6 +528,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test61() {
     check( //
         "Integrate[(2+x)/((1+x+x^2)*(2+x^3)^(1/3)), x]", //
@@ -473,6 +536,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test62() {
     check( //
         "Integrate[(3-3*x+30*x^2+160*x^3)/(9+24*x-12*x^2+80*x^3+320*x^4), x]", //
@@ -480,6 +544,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test63() {
     check( //
         "Integrate[(3+12*x+20*x^2)/(9+24*x-12*x^2+80*x^3+320*x^4), x]", //
@@ -487,6 +552,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test64() {
     check( //
         "Integrate[-(84+576*x+400*x^2-2560*x^3)/(9+24*x-12*x^2+80*x^3+320*x^4), x]", //
@@ -494,6 +560,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test65() {
     check( //
         "Integrate[Sqrt[1-x^4]/(1+x^4), x]", //
@@ -501,6 +568,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test66() {
     check( //
         "Integrate[Sqrt[1+x^4]/(1-x^4), x]", //
@@ -508,6 +576,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test67() {
     check( //
         "Integrate[Sqrt[1+p*x^2+x^4]/(1-x^4), x]", //
@@ -515,6 +584,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test68() {
     check( //
         "Integrate[Sqrt[1+p*x^2-x^4]/(1+x^4), x]", //
@@ -522,6 +592,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test69() {
     check( //
         "Integrate[(a+b*x)/((2-x^2)*(-1+x^2)^(1/4)), x]", //
@@ -529,6 +600,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test70() {
     check( //
         "Integrate[(a+b*x)/((2+x^2)*(-1-x^2)^(1/4)), x]", //
@@ -536,6 +608,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test71() {
     check( //
         "Integrate[(a+b*x)/((2-x^2)*(1-x^2)^(1/4)), x]", //
@@ -543,6 +616,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test72() {
     check( //
         "Integrate[(a+b*x)/((2+x^2)*(1+x^2)^(1/4)), x]", //
@@ -550,6 +624,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test73() {
     check( //
         "Integrate[x/((4-x^3)*Sqrt[1-x^3]), x]", //
@@ -557,6 +632,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test74() {
     check( //
         "Integrate[x/((4-d*x^3)*Sqrt[-1+d*x^3]), x]", //
@@ -564,6 +640,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test75() {
     check( //
         "Integrate[x/((x^3+8)*Sqrt[x^3+(-1)*1]), x]", //
@@ -571,6 +648,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test76() {
     check( //
         "Integrate[x/((8-d*x^3)*Sqrt[1+d*x^3]), x]", //
@@ -578,6 +656,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test77() {
     check( //
         "Integrate[1/((3-x^2)*(1-3*x^2)^(1/3)), x]", //
@@ -585,6 +664,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test78() {
     check( //
         "Integrate[1/((3+x^2)*(1+3*x^2)^(1/3)), x]", //
@@ -592,6 +672,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test79() {
     check( //
         "Integrate[1/((3+x^2)*(1-x^2)^(1/3)), x]", //
@@ -599,6 +680,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test80() {
     check( //
         "Integrate[1/((3-x^2)*(1+x^2)^(1/3)), x]", //
@@ -606,6 +688,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test81() {
     check( //
         "Integrate[(x+a)/((x-a)*Sqrt[x^3-x^2*(a^2+1)+a^2*x]), x]", //
@@ -613,6 +696,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test82() {
     check( //
         "Integrate[(x+a+(-1)*2)/((x-a)*Sqrt[x^3+x^2*(a^2-2*a+(-1)*1)+a*x*(2-a)]), x]", //
@@ -620,6 +704,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test83() {
     check( //
         "Integrate[(x*(2*a+(-1)*1)-a)/((x-a)*Sqrt[x^3*(2*a+(-1)*1)-x^2*(a^2+2*a+(-1)*1)+a^2*x]), x]", //
@@ -627,6 +712,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test84() {
     check( //
         "Integrate[(1-2^(1/3)*x)/((2^(2/3)+x)*Sqrt[1+x^3]), x]", //
@@ -634,6 +720,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test85() {
     check( //
         "Integrate[(1+x)/((-2+x)*Sqrt[1+x^3]), x]", //
@@ -641,6 +728,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test86() {
     check( //
         "Integrate[x/((10+6*Sqrt[3]+x^3)*Sqrt[1+x^3]), x]", //
@@ -648,6 +736,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test87() {
     check( //
         "Integrate[x/((10-6*Sqrt[3]+x^3)*Sqrt[1+x^3]), x]", //
@@ -655,6 +744,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test88() {
     check( //
         "Integrate[x/((-10-6*Sqrt[3]+x^3)*Sqrt[-1+x^3]), x]", //
@@ -662,6 +752,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test89() {
     check( //
         "Integrate[x/((-10+6*Sqrt[3]+x^3)*Sqrt[-1+x^3]), x]", //
@@ -669,6 +760,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test90() {
     check( //
         "Integrate[(1-Sqrt[3]+x)/((1+Sqrt[3]+x)*Sqrt[-4+4*Sqrt[3]*x^2+x^4]), x]", //
@@ -676,6 +768,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test91() {
     check( //
         "Integrate[(1+Sqrt[3]+x)/((1-Sqrt[3]+x)*Sqrt[-4-4*Sqrt[3]*x^2+x^4]), x]", //
@@ -683,6 +776,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test92() {
     check( //
         "Integrate[(x+(-1)*1)/((x+1)*(x^3+2)^(1/3)), x]", //
@@ -690,6 +784,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test93() {
     check( //
         "Integrate[1/((x+1)*(x^3+2)^(1/3)), x]", //
@@ -697,6 +792,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test94() {
     check( //
         "Integrate[1/((1-x^3)*(a+b*x^3)^(1/3)), x]", //
@@ -704,6 +800,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test95() {
     check( //
         "Integrate[(1+x)/((1+x+x^2)*(a+b*x^3)^(1/3)), x]", //
@@ -711,6 +808,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test96() {
     check( //
         "Integrate[x^2/((1-x^3)*(a+b*x^3)^(1/3)), x]", //
@@ -718,6 +816,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test97() {
     check( //
         "Integrate[1/((1+x^3)*(1-x^3)^(1/3)), x]", //
@@ -725,6 +824,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test98() {
     check( //
         "Integrate[x/((1+x^3)*(1-x^3)^(1/3)), x]", //
@@ -732,6 +832,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test99() {
     check( //
         "Integrate[x^2/((1+x^3)*(1-x^3)^(1/3)), x]", //
@@ -739,6 +840,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test100() {
     check( //
         "Integrate[(1+x)/((1-x+x^2)*(1-x^3)^(1/3)), x]", //
@@ -746,6 +848,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test101() {
     check( //
         "Integrate[(1+x)^2/((1+x^3)*(1-x^3)^(1/3)), x]", //
@@ -753,6 +856,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test102() {
     check( //
         "Integrate[(1-x)/((1+x+x^2)*(1+x^3)^(1/3)), x]", //
@@ -760,6 +864,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test103() {
     check( //
         "Integrate[(1-x^3)^(2/3)/(1+x+x^2)^2, x]", //
@@ -767,6 +872,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test104() {
     check( //
         "Integrate[(1-x)/((1+x+x^2)*(1-x^3)^(1/3)), x]", //
@@ -774,6 +880,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test105() {
     check( //
         "Integrate[(1-x)^2/(1-x^3)^(4/3), x]", //
@@ -781,6 +888,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test106() {
     check( //
         "Integrate[(1-x^3)^(2/3), x]", //
@@ -788,6 +896,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test107() {
     check( //
         "Integrate[(1-x^3)^(2/3)/x, x]", //
@@ -795,6 +904,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test108() {
     check( //
         "Integrate[(1-x^3)^(2/3)/(a+b*x), x]", //
@@ -802,6 +912,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test109() {
     check( //
         "Integrate[(1-x^3)^(2/3)/(1-x+x^2)^2, x]", //
@@ -809,6 +920,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test110() {
     check( //
         "Integrate[(1-2*x)*(1-x^3)^(2/3)/(1-x+x^2)^2, x]", //
@@ -816,6 +928,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test111() {
     check( //
         "Integrate[(1-x^3)^(2/3)/(1+x), x]", //
@@ -823,6 +936,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test112() {
     check( //
         "Integrate[(1-x+x^2)*(1-x^3)^(2/3)/(1+x^3), x]", //
@@ -830,6 +944,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test113() {
     check( //
         "Integrate[(1-x^3)^(2/3)/(1+x^3), x]", //
@@ -837,6 +952,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test114() {
     check( //
         "Integrate[x*(1-x^3)^(2/3)/(1+x^3), x]", //
@@ -844,6 +960,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test115() {
     check( //
         "Integrate[(1-x)*(1-x^3)^(2/3)/(1+x^3), x]", //
@@ -851,6 +968,7 @@ public class WelzProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test116() {
     check( //
         "Integrate[(1-x^3)^(1/3)/(1+x^3), x]", //

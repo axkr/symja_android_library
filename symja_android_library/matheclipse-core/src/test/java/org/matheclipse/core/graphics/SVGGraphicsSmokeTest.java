@@ -16,6 +16,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -23,6 +24,7 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.system.TestTags;
 import org.xml.sax.InputSource;
 
 /**
@@ -189,6 +191,7 @@ public class SVGGraphicsSmokeTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPlots() {
     checkGroup("plots", SVGTestCorpus.PLOTS);
   }
@@ -424,6 +427,7 @@ public class SVGGraphicsSmokeTest {
 
   /** A single {@code <svg>} root, never one nested directly inside another. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testNoDoubleNestedSvgRoot() {
     for (String[] entry : SVGTestCorpus.all()) {
       Rendered r = render(entry[0], entry[1]);

@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -8364,6 +8365,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactor() {
     // TODO
     // check("Factor(3*Tan(3*x)-Tan(x)+2,Trig->True)", //
@@ -8837,6 +8839,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorList() {
 
     // Basic polynomial factorization
@@ -9745,6 +9748,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFindSequenceFunction() {
     check("FindSequenceFunction({1 + a, 1 + a^2, 1 + a^3, 1 + a^4, 1 + a^5}, n)", //
         "1+a^n");
@@ -18845,6 +18849,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPolyLog() {
     // check("PolyLog(10007,-1.5707963267948966)", //
     // "");
@@ -18979,6 +18984,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPolynomialExtendedGCD() {
     check("PolynomialExtendedGCD(a*(x+b)^2, (x + a)*(x + b), x)", //
         "{b+x,{1/(-a^2+a*b),1/(a-b)}}");
@@ -20949,6 +20955,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPrimeZetaP() {
     check("Table(PrimeZetaP(s),{s,{2,3,4,5,6}})//N", //
         "{0.452247,0.174763,0.0769931,0.035755,0.0170701}");
@@ -25330,6 +25337,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPowersRepresentations() {
     // Message
     check("PowersRepresentations(2147483647,1,{0})", //
@@ -25416,6 +25424,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testStirlingS1() {
     // message Maximum AST dimension 20834 exceeded
     check("StirlingS1(10007,11)", //
@@ -25644,6 +25653,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSubfactorial() {
     check("Subfactorial(0)", //
         "1");
@@ -26620,6 +26630,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTimeConstrained() {
     if (!Config.TIMECONSTRAINED_NO_THREAD) {
       // Config.FUZZ_TESTING = true;
@@ -26641,6 +26652,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTimeRemaining() {
     if (!Config.TIMECONSTRAINED_NO_THREAD) {
       //

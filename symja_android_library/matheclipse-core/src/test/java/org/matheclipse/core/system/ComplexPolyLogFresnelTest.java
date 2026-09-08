@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -237,6 +238,7 @@ public class ComplexPolyLogFresnelTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFresnel() {
     for (double[] row : FRESNEL) {
       IComplexNum z = F.complexNum(row[0], row[1]);
@@ -250,6 +252,7 @@ public class ComplexPolyLogFresnelTest {
    * <code>z</code> and <code>-z</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFresnelOddSymmetry() {
     for (double[] row : FRESNEL) {
       IExpr positive = F.complexNum(row[0], row[1]).fresnelC();

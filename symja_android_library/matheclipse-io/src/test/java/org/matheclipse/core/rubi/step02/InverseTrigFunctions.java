@@ -1,13 +1,17 @@
 package org.matheclipse.core.rubi.step02;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 public class InverseTrigFunctions extends AbstractRubiTestCase {
 
   static boolean init = true;
 
-  public InverseTrigFunctions(String name) {
-    super(name, false);
+  public InverseTrigFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -22,6 +26,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4715, 267}
+  @Test
   public void test0001() {
     check( //
         "Integrate[ArcSin[a*x], x]", //
@@ -30,6 +35,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 270}
+  @Test
   public void test0002() {
     check( //
         "Integrate[ArcSin[a*x]/x^3, x]", //
@@ -38,6 +44,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4719, 3383}
+  @Test
   public void test0003() {
     check( //
         "Integrate[ArcSin[a*x]^(-1), x]", //
@@ -46,6 +53,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4727, 3383}
+  @Test
   public void test0004() {
     check( //
         "Integrate[x/ArcSin[a*x]^2, x]", //
@@ -54,6 +62,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 4805}
+  @Test
   public void test0005() {
     check( //
         "Integrate[(b*x)^m*ArcSin[a*x]^2, x]", //
@@ -62,6 +71,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 371}
+  @Test
   public void test0006() {
     check( //
         "Integrate[(b*x)^m*ArcSin[a*x], x]", //
@@ -70,6 +80,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 270}
+  @Test
   public void test0007() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])/x^3, x]", //
@@ -78,6 +89,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 4805}
+  @Test
   public void test0008() {
     check( //
         "Integrate[(d*x)^(5/2)*(a + b*ArcSin[c*x])^2, x]", //
@@ -86,6 +98,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 4805}
+  @Test
   public void test0009() {
     check( //
         "Integrate[(d*x)^(3/2)*(a + b*ArcSin[c*x])^2, x]", //
@@ -94,6 +107,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 4805}
+  @Test
   public void test0010() {
     check( //
         "Integrate[Sqrt[d*x]*(a + b*ArcSin[c*x])^2, x]", //
@@ -102,6 +116,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 4805}
+  @Test
   public void test0011() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])^2/Sqrt[d*x], x]", //
@@ -110,6 +125,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 4805}
+  @Test
   public void test0012() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])^2/(d*x)^(3/2), x]", //
@@ -118,6 +134,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4723, 4805}
+  @Test
   public void test0013() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])^2/(d*x)^(5/2), x]", //
@@ -126,6 +143,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4767, 197}
+  @Test
   public void test0014() {
     check( //
         "Integrate[(x*(a + b*ArcSin[c*x]))/(d - c^2*d*x^2)^2, x]", //
@@ -134,6 +152,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4767}
+  @Test
   public void test0015() {
     check( //
         "Integrate[x*Sqrt[d - c^2*d*x^2]*(a + b*ArcSin[c*x]), x]", //
@@ -142,6 +161,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4767, 8}
+  @Test
   public void test0016() {
     check( //
         "Integrate[(x*ArcSin[a*x])/Sqrt[1 - a^2*x^2], x]", //
@@ -150,6 +170,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4771, 29}
+  @Test
   public void test0017() {
     check( //
         "Integrate[ArcSin[a*x]/(x^2*Sqrt[1 - a^2*x^2]), x]", //
@@ -158,6 +179,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4767, 8}
+  @Test
   public void test0018() {
     check( //
         "Integrate[(x*(a + b*ArcSin[c*x]))/Sqrt[d - c^2*d*x^2], x]", //
@@ -166,6 +188,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0019() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])/Sqrt[d - c^2*d*x^2], x]", //
@@ -174,6 +197,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4771, 29}
+  @Test
   public void test0020() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])/(x^2*Sqrt[d - c^2*d*x^2]), x]", //
@@ -182,6 +206,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4767, 212}
+  @Test
   public void test0021() {
     check( //
         "Integrate[(x*(a + b*ArcSin[c*x]))/(d - c^2*d*x^2)^(3/2), x]", //
@@ -190,6 +215,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4745, 266}
+  @Test
   public void test0022() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])/(d - c^2*d*x^2)^(3/2), x]", //
@@ -198,6 +224,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4805}
+  @Test
   public void test0023() {
     check( //
         "Integrate[((f*x)^(3/2)*(a + b*ArcSin[c*x]))/Sqrt[d - c^2*d*x^2], x]", //
@@ -206,6 +233,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4805}
+  @Test
   public void test0025() {
     check( //
         "Integrate[(x^m*(a + b*ArcSin[c*x]))/Sqrt[d - c^2*d*x^2], x]", //
@@ -214,6 +242,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0026() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])^2/Sqrt[d - c^2*d*x^2], x]", //
@@ -222,6 +251,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0027() {
     check( //
         "Integrate[ArcSin[a*x]^2/Sqrt[c - a^2*c*x^2], x]", //
@@ -230,6 +260,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0028() {
     check( //
         "Integrate[ArcSin[a*x]^3/Sqrt[c - a^2*c*x^2], x]", //
@@ -238,6 +269,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4809, 3380}
+  @Test
   public void test0029() {
     check( //
         "Integrate[x/(Sqrt[1 - a^2*x^2]*ArcSin[a*x]), x]", //
@@ -246,6 +278,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4751}
+  @Test
   public void test0030() {
     check( //
         "Integrate[1/((1 - x^2)*ArcSin[x]^2) - x/((1 - x^2)^(3/2)*ArcSin[x]), x]", //
@@ -254,6 +287,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0031() {
     check( //
         "Integrate[Sqrt[ArcSin[a*x]]/Sqrt[c - a^2*c*x^2], x]", //
@@ -262,6 +296,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0033() {
     check( //
         "Integrate[ArcSin[a*x]^(3/2)/Sqrt[c - a^2*c*x^2], x]", //
@@ -270,6 +305,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0034() {
     check( //
         "Integrate[ArcSin[a*x]^(5/2)/Sqrt[c - a^2*c*x^2], x]", //
@@ -278,6 +314,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0035() {
     check( //
         "Integrate[Sqrt[ArcSin[x/a]]/Sqrt[a^2 - x^2], x]", //
@@ -286,6 +323,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0037() {
     check( //
         "Integrate[ArcSin[x/a]^(3/2)/Sqrt[a^2 - x^2], x]", //
@@ -294,6 +332,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0038() {
     check( //
         "Integrate[1/(Sqrt[c - a^2*c*x^2]*Sqrt[ArcSin[a*x]]), x]", //
@@ -302,6 +341,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0039() {
     check( //
         "Integrate[1/(Sqrt[c - a^2*c*x^2]*ArcSin[a*x]^(3/2)), x]", //
@@ -310,6 +350,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4737}
+  @Test
   public void test0040() {
     check( //
         "Integrate[1/(Sqrt[c - a^2*c*x^2]*ArcSin[a*x]^(5/2)), x]", //
@@ -318,6 +359,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4763, 4737}
+  @Test
   public void test0041() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])/(Sqrt[d + c*d*x]*Sqrt[f - c*f*x]), x]", //
@@ -326,6 +368,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4763, 4737}
+  @Test
   public void test0042() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])^2/(Sqrt[d + c*d*x]*Sqrt[e - c*e*x]), x]", //
@@ -334,6 +377,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4763, 4737}
+  @Test
   public void test0043() {
     check( //
         "Integrate[(a + b*ArcSin[c*x])^2/(Sqrt[d + c*d*x]*Sqrt[e - c*e*x]), x]", //
@@ -342,6 +386,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4891, 4737}
+  @Test
   public void test0066() {
     check( //
         "Integrate[ArcSin[a + b*x]^n/Sqrt[1 - a^2 - 2*a*b*x - b^2*x^2], x]", //
@@ -350,6 +395,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4891, 4737}
+  @Test
   public void test0067() {
     check( //
         "Integrate[ArcSin[a + b*x]^2/Sqrt[1 - a^2 - 2*a*b*x - b^2*x^2], x]", //
@@ -358,6 +404,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4891, 4737}
+  @Test
   public void test0068() {
     check( //
         "Integrate[ArcSin[a + b*x]/Sqrt[1 - a^2 - 2*a*b*x - b^2*x^2], x]", //
@@ -366,6 +413,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4891, 4735}
+  @Test
   public void test0069() {
     check( //
         "Integrate[1/(Sqrt[1 - a^2 - 2*a*b*x - b^2*x^2]*ArcSin[a + b*x]), x]", //
@@ -374,6 +422,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4891, 4737}
+  @Test
   public void test0070() {
     check( //
         "Integrate[1/(Sqrt[1 - a^2 - 2*a*b*x - b^2*x^2]*ArcSin[a + b*x]^2), x]", //
@@ -382,6 +431,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4891, 4737}
+  @Test
   public void test0071() {
     check( //
         "Integrate[1/(Sqrt[1 - a^2 - 2*a*b*x - b^2*x^2]*ArcSin[a + b*x]^3), x]", //
@@ -390,6 +440,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 8}
+  @Test
   public void test0073() {
     check( //
         "Integrate[(a + b*ArcSin[1 + d*x^2])^2, x]", //
@@ -398,6 +449,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4900}
+  @Test
   public void test0074() {
     check( //
         "Integrate[(a + b*ArcSin[1 + d*x^2])^(-3), x]", //
@@ -406,6 +458,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 8}
+  @Test
   public void test0075() {
     check( //
         "Integrate[(a - b*ArcSin[1 - d*x^2])^2, x]", //
@@ -414,6 +467,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4900}
+  @Test
   public void test0076() {
     check( //
         "Integrate[(a - b*ArcSin[1 - d*x^2])^(-3), x]", //
@@ -422,6 +476,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 8}
+  @Test
   public void test0077() {
     check( //
         "Integrate[ArcSin[1 + x^2]^2, x]", //
@@ -430,6 +485,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 8}
+  @Test
   public void test0078() {
     check( //
         "Integrate[ArcSin[1 - x^2]^2, x]", //
@@ -438,6 +494,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4895}
+  @Test
   public void test0079() {
     check( //
         "Integrate[(a + b*ArcSin[1 + d*x^2])^(5/2), x]", //
@@ -446,6 +503,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4903}
+  @Test
   public void test0080() {
     check( //
         "Integrate[(a + b*ArcSin[1 + d*x^2])^(3/2), x]", //
@@ -454,6 +512,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4903}
+  @Test
   public void test0081() {
     check( //
         "Integrate[(a + b*ArcSin[1 + d*x^2])^(-5/2), x]", //
@@ -462,6 +521,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4906}
+  @Test
   public void test0082() {
     check( //
         "Integrate[(a + b*ArcSin[1 + d*x^2])^(-7/2), x]", //
@@ -470,6 +530,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4895}
+  @Test
   public void test0083() {
     check( //
         "Integrate[(a - b*ArcSin[1 - d*x^2])^(5/2), x]", //
@@ -478,6 +539,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4903}
+  @Test
   public void test0084() {
     check( //
         "Integrate[(a - b*ArcSin[1 - d*x^2])^(3/2), x]", //
@@ -486,6 +548,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4903}
+  @Test
   public void test0085() {
     check( //
         "Integrate[(a - b*ArcSin[1 - d*x^2])^(-5/2), x]", //
@@ -494,6 +557,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4906}
+  @Test
   public void test0086() {
     check( //
         "Integrate[(a - b*ArcSin[1 - d*x^2])^(-7/2), x]", //
@@ -502,6 +566,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4920, 4518}
+  @Test
   public void test0087() {
     check( //
         "Integrate[E^ArcSin[a*x], x]", //
@@ -510,6 +575,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4920, 4518}
+  @Test
   public void test0090() {
     check( //
         "Integrate[E^ArcSin[a + b*x], x]", //
@@ -518,6 +584,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4918, 4737}
+  @Test
   public void test0091() {
     check( //
         "Integrate[ArcSin[Sqrt[1 + b*x^2]]^n/Sqrt[1 + b*x^2], x]", //
@@ -526,6 +593,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4918, 4735}
+  @Test
   public void test0092() {
     check( //
         "Integrate[1/(Sqrt[1 + b*x^2]*ArcSin[Sqrt[1 + b*x^2]]), x]", //
@@ -534,6 +602,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4716, 267}
+  @Test
   public void test0093() {
     check( //
         "Integrate[ArcCos[a*x], x]", //
@@ -542,6 +611,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 270}
+  @Test
   public void test0094() {
     check( //
         "Integrate[ArcCos[a*x]/x^3, x]", //
@@ -550,6 +620,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4720, 3380}
+  @Test
   public void test0095() {
     check( //
         "Integrate[ArcCos[a*x]^(-1), x]", //
@@ -558,6 +629,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4728, 3383}
+  @Test
   public void test0096() {
     check( //
         "Integrate[x/ArcCos[a*x]^2, x]", //
@@ -566,6 +638,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 4806}
+  @Test
   public void test0097() {
     check( //
         "Integrate[(b*x)^m*ArcCos[a*x]^2, x]", //
@@ -574,6 +647,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 371}
+  @Test
   public void test0098() {
     check( //
         "Integrate[(b*x)^m*ArcCos[a*x], x]", //
@@ -582,6 +656,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 270}
+  @Test
   public void test0099() {
     check( //
         "Integrate[(a + b*ArcCos[c*x])/x^3, x]", //
@@ -590,6 +665,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 4806}
+  @Test
   public void test0100() {
     check( //
         "Integrate[(d*x)^(5/2)*(a + b*ArcCos[c*x])^2, x]", //
@@ -598,6 +674,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 4806}
+  @Test
   public void test0101() {
     check( //
         "Integrate[(d*x)^(3/2)*(a + b*ArcCos[c*x])^2, x]", //
@@ -606,6 +683,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 4806}
+  @Test
   public void test0102() {
     check( //
         "Integrate[Sqrt[d*x]*(a + b*ArcCos[c*x])^2, x]", //
@@ -614,6 +692,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 4806}
+  @Test
   public void test0103() {
     check( //
         "Integrate[(a + b*ArcCos[c*x])^2/Sqrt[d*x], x]", //
@@ -622,6 +701,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 4806}
+  @Test
   public void test0104() {
     check( //
         "Integrate[(a + b*ArcCos[c*x])^2/(d*x)^(3/2), x]", //
@@ -630,6 +710,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4724, 4806}
+  @Test
   public void test0105() {
     check( //
         "Integrate[(a + b*ArcCos[c*x])^2/(d*x)^(5/2), x]", //
@@ -638,6 +719,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4768, 197}
+  @Test
   public void test0106() {
     check( //
         "Integrate[(x*(a + b*ArcCos[c*x]))/(d - c^2*d*x^2)^2, x]", //
@@ -646,6 +728,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4899, 8}
+  @Test
   public void test0107() {
     check( //
         "Integrate[(a + b*ArcCos[1 + d*x^2])^2, x]", //
@@ -654,6 +737,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4913, 4901}
+  @Test
   public void test0108() {
     check( //
         "Integrate[(a + b*ArcCos[1 + d*x^2])^(-3), x]", //
@@ -662,6 +746,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4899, 8}
+  @Test
   public void test0109() {
     check( //
         "Integrate[(a + b*ArcCos[-1 + d*x^2])^2, x]", //
@@ -670,6 +755,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4913, 4902}
+  @Test
   public void test0110() {
     check( //
         "Integrate[(a + b*ArcCos[-1 + d*x^2])^(-3), x]", //
@@ -678,6 +764,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4899, 4896}
+  @Test
   public void test0111() {
     check( //
         "Integrate[(a + b*ArcCos[1 + d*x^2])^(5/2), x]", //
@@ -686,6 +773,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4899, 4904}
+  @Test
   public void test0112() {
     check( //
         "Integrate[(a + b*ArcCos[1 + d*x^2])^(3/2), x]", //
@@ -694,6 +782,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4913, 4904}
+  @Test
   public void test0113() {
     check( //
         "Integrate[(a + b*ArcCos[1 + d*x^2])^(-5/2), x]", //
@@ -702,6 +791,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4913, 4907}
+  @Test
   public void test0114() {
     check( //
         "Integrate[(a + b*ArcCos[1 + d*x^2])^(-7/2), x]", //
@@ -710,6 +800,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4899, 4897}
+  @Test
   public void test0115() {
     check( //
         "Integrate[(a + b*ArcCos[-1 + d*x^2])^(5/2), x]", //
@@ -718,6 +809,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4899, 4905}
+  @Test
   public void test0116() {
     check( //
         "Integrate[(a + b*ArcCos[-1 + d*x^2])^(3/2), x]", //
@@ -726,6 +818,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4913, 4905}
+  @Test
   public void test0117() {
     check( //
         "Integrate[(a + b*ArcCos[-1 + d*x^2])^(-5/2), x]", //
@@ -734,6 +827,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4913, 4908}
+  @Test
   public void test0118() {
     check( //
         "Integrate[(a + b*ArcCos[-1 + d*x^2])^(-7/2), x]", //
@@ -742,6 +836,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4921, 4517}
+  @Test
   public void test0119() {
     check( //
         "Integrate[E^ArcCos[a*x], x]", //
@@ -750,6 +845,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4810, 3383}
+  @Test
   public void test0120() {
     check( //
         "Integrate[x/(Sqrt[1 - x^2]*ArcCos[x]), x]", //
@@ -758,6 +854,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4919, 4738}
+  @Test
   public void test0121() {
     check( //
         "Integrate[ArcCos[Sqrt[1 + b*x^2]]^n/Sqrt[1 + b*x^2], x]", //
@@ -766,6 +863,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4919, 4736}
+  @Test
   public void test0122() {
     check( //
         "Integrate[1/(Sqrt[1 + b*x^2]*ArcCos[Sqrt[1 + b*x^2]]), x]", //
@@ -774,6 +872,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4958, 371}
+  @Test
   public void test0123() {
     check( //
         "Integrate[(d*x)^m*(a + b*ArcTan[c*x]), x]", //
@@ -782,6 +881,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4946, 266}
+  @Test
   public void test0124() {
     check( //
         "Integrate[x*(a + b*ArcTan[c*x^2]), x]", //
@@ -790,6 +890,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4958, 371}
+  @Test
   public void test0125() {
     check( //
         "Integrate[(d*x)^m*(a + b*ArcTan[c*x^2]), x]", //
@@ -798,6 +899,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4946, 266}
+  @Test
   public void test0126() {
     check( //
         "Integrate[x^2*(a + b*ArcTan[c*x^3]), x]", //
@@ -806,6 +908,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4958, 371}
+  @Test
   public void test0127() {
     check( //
         "Integrate[(d*x)^m*(a + b*ArcTan[c*x^3]), x]", //
@@ -814,6 +917,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4946, 266}
+  @Test
   public void test0128() {
     check( //
         "Integrate[(a + b*ArcTan[c/x])/x^2, x]", //
@@ -822,6 +926,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4946, 31}
+  @Test
   public void test0129() {
     check( //
         "Integrate[ArcTan[Sqrt[x]]/Sqrt[x], x]", //
@@ -830,6 +935,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4988, 2497}
+  @Test
   public void test0130() {
     check( //
         "Integrate[(a + b*ArcTan[c*x])/(x*(d + I*c*d*x)), x]", //
@@ -838,6 +944,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5050}
+  @Test
   public void test0131() {
     check( //
         "Integrate[x*(c + a^2*c*x^2)*ArcTan[a*x], x]", //
@@ -846,6 +953,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5054, 5004}
+  @Test
   public void test0132() {
     check( //
         "Integrate[(x^2*ArcTan[a*x])/(c + a^2*c*x^2)^2, x]", //
@@ -854,6 +962,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5012, 267}
+  @Test
   public void test0133() {
     check( //
         "Integrate[ArcTan[a*x]/(c + a^2*c*x^2)^2, x]", //
@@ -862,6 +971,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5010, 5006}
+  @Test
   public void test0134() {
     check( //
         "Integrate[ArcTan[a*x]/Sqrt[c + a^2*c*x^2], x]", //
@@ -870,6 +980,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5078, 5074}
+  @Test
   public void test0135() {
     check( //
         "Integrate[ArcTan[a*x]/(x*Sqrt[c + a^2*c*x^2]), x]", //
@@ -878,6 +989,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5050, 197}
+  @Test
   public void test0136() {
     check( //
         "Integrate[(x*ArcTan[a*x])/(c + a^2*c*x^2)^(3/2), x]", //
@@ -886,6 +998,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5016, 5014}
+  @Test
   public void test0137() {
     check( //
         "Integrate[ArcTan[a*x]/(c + a^2*c*x^2)^(5/2), x]", //
@@ -894,6 +1007,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5050, 5014}
+  @Test
   public void test0138() {
     check( //
         "Integrate[(x*ArcTan[a*x]^2)/(c + a^2*c*x^2)^(3/2), x]", //
@@ -902,6 +1016,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5018, 197}
+  @Test
   public void test0139() {
     check( //
         "Integrate[ArcTan[a*x]^2/(c + a^2*c*x^2)^(3/2), x]", //
@@ -910,6 +1025,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5018, 5014}
+  @Test
   public void test0140() {
     check( //
         "Integrate[ArcTan[a*x]^3/(c + a^2*c*x^2)^(3/2), x]", //
@@ -918,6 +1034,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5046}
+  @Test
   public void test0141() {
     check( //
         "Integrate[x^3/((1 + a^2*x^2)*ArcTan[a*x]^3) - (3*x^2)/(2*a*ArcTan[a*x]^2), x]", //
@@ -926,6 +1043,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5155, 4968}
+  @Test
   public void test0168() {
     check( //
         "Integrate[(a + b*ArcTan[c + d*x])^2/(e + f*x), x]", //
@@ -934,6 +1052,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5155, 4970}
+  @Test
   public void test0169() {
     check( //
         "Integrate[(a + b*ArcTan[c + d*x])^3/(e + f*x), x]", //
@@ -942,6 +1061,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5163, 5006}
+  @Test
   public void test0170() {
     check( //
         "Integrate[ArcTan[a + b*x]/Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2], x]", //
@@ -950,6 +1070,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0171() {
     check( //
         "Integrate[E^(((5*I)/2)*ArcTan[a*x])*x^m, x]", //
@@ -958,6 +1079,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0172() {
     check( //
         "Integrate[E^(((3*I)/2)*ArcTan[a*x])*x^m, x]", //
@@ -966,6 +1088,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0173() {
     check( //
         "Integrate[E^((I/2)*ArcTan[a*x])*x^m, x]", //
@@ -974,6 +1097,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0174() {
     check( //
         "Integrate[x^m/E^((I/2)*ArcTan[a*x]), x]", //
@@ -982,6 +1106,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0175() {
     check( //
         "Integrate[x^m/E^(((3*I)/2)*ArcTan[a*x]), x]", //
@@ -990,6 +1115,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0176() {
     check( //
         "Integrate[x^m/E^(((5*I)/2)*ArcTan[a*x]), x]", //
@@ -998,6 +1124,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0177() {
     check( //
         "Integrate[E^((2*ArcTan[x])/3)*x^m, x]", //
@@ -1006,6 +1133,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0178() {
     check( //
         "Integrate[E^(ArcTan[x]/3)*x^m, x]", //
@@ -1014,6 +1142,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0179() {
     check( //
         "Integrate[E^((I/4)*ArcTan[a*x])*x^m, x]", //
@@ -1022,6 +1151,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 138}
+  @Test
   public void test0180() {
     check( //
         "Integrate[E^(I*n*ArcTan[a*x])*x^m, x]", //
@@ -1030,6 +1160,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5169, 71}
+  @Test
   public void test0181() {
     check( //
         "Integrate[E^(I*n*ArcTan[a*x]), x]", //
@@ -1038,6 +1169,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5170, 133}
+  @Test
   public void test0182() {
     check( //
         "Integrate[E^(I*n*ArcTan[a*x])/x^2, x]", //
@@ -1046,6 +1178,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5201, 71}
+  @Test
   public void test0183() {
     check( //
         "Integrate[E^(n*ArcTan[a + b*x]), x]", //
@@ -1054,6 +1187,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5203, 133}
+  @Test
   public void test0184() {
     check( //
         "Integrate[E^(n*ArcTan[a + b*x])/x^2, x]", //
@@ -1062,6 +1196,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0185() {
     check( //
         "Integrate[E^ArcTan[a*x]*(c + a^2*c*x^2)^2, x]", //
@@ -1070,6 +1205,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0186() {
     check( //
         "Integrate[E^ArcTan[a*x]*(c + a^2*c*x^2), x]", //
@@ -1078,6 +1214,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5169, 71}
+  @Test
   public void test0187() {
     check( //
         "Integrate[E^ArcTan[a*x], x]", //
@@ -1086,6 +1223,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5179}
+  @Test
   public void test0188() {
     check( //
         "Integrate[E^ArcTan[a*x]/(c + a^2*c*x^2)^2, x]", //
@@ -1094,6 +1232,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5177}
+  @Test
   public void test0189() {
     check( //
         "Integrate[E^ArcTan[a*x]/(c + a^2*c*x^2)^(5/2), x]", //
@@ -1102,6 +1241,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0190() {
     check( //
         "Integrate[E^(2*ArcTan[a*x])*(c + a^2*c*x^2)^2, x]", //
@@ -1110,6 +1250,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0191() {
     check( //
         "Integrate[E^(2*ArcTan[a*x])*(c + a^2*c*x^2), x]", //
@@ -1118,6 +1259,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5169, 71}
+  @Test
   public void test0192() {
     check( //
         "Integrate[E^(2*ArcTan[a*x]), x]", //
@@ -1126,6 +1268,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5179}
+  @Test
   public void test0193() {
     check( //
         "Integrate[E^(2*ArcTan[a*x])/(c + a^2*c*x^2)^2, x]", //
@@ -1134,6 +1277,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5177}
+  @Test
   public void test0194() {
     check( //
         "Integrate[E^(2*ArcTan[a*x])/(c + a^2*c*x^2)^(5/2), x]", //
@@ -1142,6 +1286,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0195() {
     check( //
         "Integrate[(c + a^2*c*x^2)^2/E^ArcTan[a*x], x]", //
@@ -1150,6 +1295,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0196() {
     check( //
         "Integrate[(c + a^2*c*x^2)/E^ArcTan[a*x], x]", //
@@ -1158,6 +1304,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5169, 71}
+  @Test
   public void test0197() {
     check( //
         "Integrate[E^(-ArcTan[a*x]), x]", //
@@ -1166,6 +1313,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5179}
+  @Test
   public void test0198() {
     check( //
         "Integrate[1/(E^ArcTan[a*x]*(c + a^2*c*x^2)^2), x]", //
@@ -1174,6 +1322,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5177}
+  @Test
   public void test0199() {
     check( //
         "Integrate[1/(E^ArcTan[a*x]*(c + a^2*c*x^2)^(5/2)), x]", //
@@ -1182,6 +1331,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0200() {
     check( //
         "Integrate[(c + a^2*c*x^2)^2/E^(2*ArcTan[a*x]), x]", //
@@ -1190,6 +1340,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0201() {
     check( //
         "Integrate[(c + a^2*c*x^2)/E^(2*ArcTan[a*x]), x]", //
@@ -1198,6 +1349,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5169, 71}
+  @Test
   public void test0202() {
     check( //
         "Integrate[E^(-2*ArcTan[a*x]), x]", //
@@ -1206,6 +1358,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5179}
+  @Test
   public void test0203() {
     check( //
         "Integrate[1/(E^(2*ArcTan[a*x])*(c + a^2*c*x^2)^2), x]", //
@@ -1214,6 +1367,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5178, 5177}
+  @Test
   public void test0204() {
     check( //
         "Integrate[1/(E^(2*ArcTan[a*x])*(c + a^2*c*x^2)^(5/2)), x]", //
@@ -1222,6 +1376,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 31}
+  @Test
   public void test0205() {
     check( //
         "Integrate[E^(I*ArcTan[a*x])/Sqrt[1 + a^2*x^2], x]", //
@@ -1230,6 +1385,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 31}
+  @Test
   public void test0206() {
     check( //
         "Integrate[1/(E^(I*ArcTan[a*x])*Sqrt[1 + a^2*x^2]), x]", //
@@ -1238,6 +1394,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 32}
+  @Test
   public void test0207() {
     check( //
         "Integrate[E^((3*I)*ArcTan[a*x])/(1 + a^2*x^2)^(3/2), x]", //
@@ -1246,6 +1403,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 32}
+  @Test
   public void test0208() {
     check( //
         "Integrate[1/(E^((3*I)*ArcTan[a*x])*(1 + a^2*x^2)^(3/2)), x]", //
@@ -1254,6 +1412,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0209() {
     check( //
         "Integrate[E^(n*ArcTan[a*x])*(c + a^2*c*x^2)^2, x]", //
@@ -1262,6 +1421,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5181, 71}
+  @Test
   public void test0210() {
     check( //
         "Integrate[E^(n*ArcTan[a*x])*(c + a^2*c*x^2), x]", //
@@ -1270,6 +1430,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5169, 71}
+  @Test
   public void test0211() {
     check( //
         "Integrate[E^(n*ArcTan[a*x]), x]", //
@@ -1278,6 +1439,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 138}
+  @Test
   public void test0212() {
     check( //
         "Integrate[E^(n*ArcTan[a*x])*x^m*(c + a^2*c*x^2), x]", //
@@ -1286,6 +1448,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 138}
+  @Test
   public void test0213() {
     check( //
         "Integrate[(E^(n*ArcTan[a*x])*x^m)/(c + a^2*c*x^2), x]", //
@@ -1294,6 +1457,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 138}
+  @Test
   public void test0214() {
     check( //
         "Integrate[(E^(n*ArcTan[a*x])*x^m)/(c + a^2*c*x^2)^2, x]", //
@@ -1302,6 +1466,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 138}
+  @Test
   public void test0215() {
     check( //
         "Integrate[(E^(n*ArcTan[a*x])*x^m)/(c + a^2*c*x^2)^3, x]", //
@@ -1310,6 +1475,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 82}
+  @Test
   public void test0216() {
     check( //
         "Integrate[(E^((6*I)*ArcTan[a*x])*x^2)/(c + a^2*c*x^2)^19, x]", //
@@ -1318,6 +1484,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 82}
+  @Test
   public void test0217() {
     check( //
         "Integrate[(E^((4*I)*ArcTan[a*x])*x^2)/(c + a^2*c*x^2)^9, x]", //
@@ -1326,6 +1493,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 82}
+  @Test
   public void test0218() {
     check( //
         "Integrate[(E^((2*I)*ArcTan[a*x])*x^2)/(c + a^2*c*x^2)^3, x]", //
@@ -1334,6 +1502,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 82}
+  @Test
   public void test0219() {
     check( //
         "Integrate[x^2/(E^((2*I)*ArcTan[a*x])*(c + a^2*c*x^2)^3), x]", //
@@ -1342,6 +1511,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5190, 82}
+  @Test
   public void test0220() {
     check( //
         "Integrate[x^2/(E^((4*I)*ArcTan[a*x])*(c + a^2*c*x^2)^9), x]", //
@@ -1350,6 +1520,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5259, 270}
+  @Test
   public void test0221() {
     check( //
         "Integrate[ArcTan[(Sqrt[-e]*x)/Sqrt[d + e*x^2]]/x^3, x]", //
@@ -1358,6 +1529,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5255, 267}
+  @Test
   public void test0222() {
     check( //
         "Integrate[ArcTan[(Sqrt[-e]*x)/Sqrt[d + e*x^2]], x]", //
@@ -1366,6 +1538,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0223() {
     check( //
         "Integrate[x^m*ArcTan[Tan[a + b*x]], x]", //
@@ -1374,6 +1547,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0224() {
     check( //
         "Integrate[x^2*ArcTan[Tan[a + b*x]], x]", //
@@ -1382,6 +1556,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5279, 30}
+  @Test
   public void test0225() {
     check( //
         "Integrate[x*ArcTan[Tan[a + b*x]], x]", //
@@ -1390,6 +1565,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0226() {
     check( //
         "Integrate[ArcTan[Tan[a + b*x]], x]", //
@@ -1398,6 +1574,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2189, 29}
+  @Test
   public void test0227() {
     check( //
         "Integrate[ArcTan[Tan[a + b*x]]/x, x]", //
@@ -1406,6 +1583,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0228() {
     check( //
         "Integrate[x^m*ArcTan[Cot[a + b*x]], x]", //
@@ -1414,6 +1592,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0229() {
     check( //
         "Integrate[x^2*ArcTan[Cot[a + b*x]], x]", //
@@ -1422,6 +1601,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5281, 30}
+  @Test
   public void test0230() {
     check( //
         "Integrate[x*ArcTan[Cot[a + b*x]], x]", //
@@ -1430,6 +1610,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0231() {
     check( //
         "Integrate[ArcTan[Cot[a + b*x]], x]", //
@@ -1438,6 +1619,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2189, 29}
+  @Test
   public void test0232() {
     check( //
         "Integrate[ArcTan[Cot[a + b*x]]/x, x]", //
@@ -1446,6 +1628,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0233() {
     check( //
         "Integrate[ArcTan[Tan[a + b*x]], x]", //
@@ -1454,6 +1637,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0234() {
     check( //
         "Integrate[ArcTan[Cot[a + b*x]], x]", //
@@ -1462,6 +1646,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0235() {
     check( //
         "Integrate[ArcTan[(c*x)/Sqrt[a - c^2*x^2]]^m/Sqrt[d - (c^2*d*x^2)/a], x]", //
@@ -1470,6 +1655,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0236() {
     check( //
         "Integrate[ArcTan[(c*x)/Sqrt[a - c^2*x^2]]^2/Sqrt[d - (c^2*d*x^2)/a], x]", //
@@ -1478,6 +1664,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0237() {
     check( //
         "Integrate[ArcTan[(c*x)/Sqrt[a - c^2*x^2]]/Sqrt[d - (c^2*d*x^2)/a], x]", //
@@ -1486,6 +1673,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5261}
+  @Test
   public void test0238() {
     check( //
         "Integrate[1/(Sqrt[d - (c^2*d*x^2)/a]*ArcTan[(c*x)/Sqrt[a - c^2*x^2]]), x]", //
@@ -1494,6 +1682,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0239() {
     check( //
         "Integrate[1/(Sqrt[d - (c^2*d*x^2)/a]*ArcTan[(c*x)/Sqrt[a - c^2*x^2]]^2), x]", //
@@ -1502,6 +1691,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0240() {
     check( //
         "Integrate[1/(Sqrt[d - (c^2*d*x^2)/a]*ArcTan[(c*x)/Sqrt[a - c^2*x^2]]^3), x]", //
@@ -1510,6 +1700,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0241() {
     check( //
         "Integrate[ArcTan[(e*x)/Sqrt[-((a*e^2)/b) - e^2*x^2]]^m/Sqrt[a + b*x^2], x]", //
@@ -1518,6 +1709,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0242() {
     check( //
         "Integrate[ArcTan[(e*x)/Sqrt[-((a*e^2)/b) - e^2*x^2]]^2/Sqrt[a + b*x^2], x]", //
@@ -1526,6 +1718,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0243() {
     check( //
         "Integrate[ArcTan[(e*x)/Sqrt[-((a*e^2)/b) - e^2*x^2]]/Sqrt[a + b*x^2], x]", //
@@ -1534,6 +1727,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5261}
+  @Test
   public void test0244() {
     check( //
         "Integrate[1/(Sqrt[a + b*x^2]*ArcTan[(e*x)/Sqrt[-((a*e^2)/b) - e^2*x^2]]), x]", //
@@ -1542,6 +1736,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0245() {
     check( //
         "Integrate[1/(Sqrt[a + b*x^2]*ArcTan[(e*x)/Sqrt[-((a*e^2)/b) - e^2*x^2]]^2), x]", //
@@ -1550,6 +1745,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5265, 5263}
+  @Test
   public void test0246() {
     check( //
         "Integrate[1/(Sqrt[a + b*x^2]*ArcTan[(e*x)/Sqrt[-((a*e^2)/b) - e^2*x^2]]^3), x]", //
@@ -1558,6 +1754,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4931, 266}
+  @Test
   public void test0247() {
     check( //
         "Integrate[ArcCot[a*x], x]", //
@@ -1566,6 +1763,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4947, 371}
+  @Test
   public void test0248() {
     check( //
         "Integrate[x^m*ArcCot[a*x], x]", //
@@ -1574,6 +1772,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5011, 5007}
+  @Test
   public void test0249() {
     check( //
         "Integrate[ArcCot[x]/Sqrt[a + a*x^2], x]", //
@@ -1582,6 +1781,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5017, 5015}
+  @Test
   public void test0250() {
     check( //
         "Integrate[ArcCot[x]/(a + a*x^2)^(5/2), x]", //
@@ -1590,6 +1790,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5013, 267}
+  @Test
   public void test0251() {
     check( //
         "Integrate[ArcCot[x]/(1 + x^2)^2, x]", //
@@ -1598,6 +1799,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4947, 266}
+  @Test
   public void test0252() {
     check( //
         "Integrate[x*ArcCot[a*x^2], x]", //
@@ -1606,6 +1808,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4947, 31}
+  @Test
   public void test0253() {
     check( //
         "Integrate[ArcCot[Sqrt[x]]/Sqrt[x], x]", //
@@ -1614,6 +1817,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5164, 5007}
+  @Test
   public void test0254() {
     check( //
         "Integrate[ArcCot[a + b*x]/Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2], x]", //
@@ -1622,6 +1826,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5156, 4969}
+  @Test
   public void test0255() {
     check( //
         "Integrate[(a + b*ArcCot[c + d*x])^2/(e + f*x), x]", //
@@ -1630,6 +1835,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5156, 4971}
+  @Test
   public void test0256() {
     check( //
         "Integrate[(a + b*ArcCot[c + d*x])^3/(e + f*x), x]", //
@@ -1638,6 +1844,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0257() {
     check( //
         "Integrate[ArcCot[Tan[a + b*x]], x]", //
@@ -1646,6 +1853,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0258() {
     check( //
         "Integrate[ArcCot[Cot[a + b*x]], x]", //
@@ -1654,6 +1862,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5210, 133}
+  @Test
   public void test0259() {
     check( //
         "Integrate[E^ArcCot[x], x]", //
@@ -1662,6 +1871,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5223, 5221}
+  @Test
   public void test0260() {
     check( //
         "Integrate[E^ArcCot[x]/(a + a*x^2)^2, x]", //
@@ -1670,6 +1880,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5223, 5222}
+  @Test
   public void test0261() {
     check( //
         "Integrate[E^ArcCot[x]/(a + a*x^2)^(5/2), x]", //
@@ -1678,6 +1889,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5328, 197}
+  @Test
   public void test0262() {
     check( //
         "Integrate[x*(a + b*ArcSec[c*x]), x]", //
@@ -1686,6 +1898,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5328, 267}
+  @Test
   public void test0263() {
     check( //
         "Integrate[(a + b*ArcSec[c*x])/x^2, x]", //
@@ -1694,6 +1907,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5329, 197}
+  @Test
   public void test0264() {
     check( //
         "Integrate[x*(a + b*ArcCsc[c*x]), x]", //
@@ -1702,6 +1916,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // {5329, 267}
+  @Test
   public void test0265() {
     check( //
         "Integrate[(a + b*ArcCsc[c*x])/x^2, x]", //

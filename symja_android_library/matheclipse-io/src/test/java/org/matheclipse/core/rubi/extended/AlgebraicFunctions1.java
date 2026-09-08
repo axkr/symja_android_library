@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.extended;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
@@ -16,10 +18,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public AlgebraicFunctions1(String name) {
-    super(name, false);
+  public AlgebraicFunctions1() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -36,6 +39,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
 
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:65
+  @Test
   public void test0001() {
     check( //
         "Integrate[1/(c+d*(a+b*x))^(5/2), x]", //
@@ -43,6 +47,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:643
+  @Test
   public void test0002() {
     check( //
         "Integrate[1/(x^(7/2)*Sqrt[a+b*x]), x]", //
@@ -50,6 +55,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:657
+  @Test
   public void test0003() {
     check( //
         "Integrate[1/(x^(5/2)*(a+b*x)^(5/2)), x]", //
@@ -57,6 +63,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:713
+  @Test
   public void test0004() {
     check( //
         "Integrate[1/(x^(3/2)*(2-b*x)^(5/2)), x]", //
@@ -64,6 +71,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:845
+  @Test
   public void test0005() {
     check( //
         "Integrate[x^2*(a+b*x)*Sqrt[c*x^2], x]", //
@@ -71,6 +79,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:859
+  @Test
   public void test0006() {
     check( //
         "Integrate[(c*x^2)^(3/2)*(a+b*x)/x^4, x]", //
@@ -78,6 +87,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:889
+  @Test
   public void test0007() {
     check( //
         "Integrate[(a+b*x)/(c*x^2)^(5/2), x]", //
@@ -85,6 +95,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:907
+  @Test
   public void test0008() {
     check( //
         "Integrate[x^2*(c*x^2)^(3/2)*(a+b*x)^2, x]", //
@@ -92,6 +103,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:921
+  @Test
   public void test0009() {
     check( //
         "Integrate[(c*x^2)^(5/2)*(a+b*x)^2/x^6, x]", //
@@ -99,6 +111,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:937
+  @Test
   public void test0010() {
     check( //
         "Integrate[(a+b*x)^2/(x^2*(c*x^2)^(3/2)), x]", //
@@ -106,6 +119,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:955
+  @Test
   public void test0011() {
     check( //
         "Integrate[Sqrt[c*x^2]/(a+b*x), x]", //
@@ -113,6 +127,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:985
+  @Test
   public void test0012() {
     check( //
         "Integrate[1/(x^2*(a+b*x)*Sqrt[c*x^2]), x]", //
@@ -120,6 +135,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1019
+  @Test
   public void test0013() {
     check( //
         "Integrate[x^3/((a+b*x)^2*Sqrt[c*x^2]), x]", //
@@ -127,6 +143,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1037
+  @Test
   public void test0014() {
     check( //
         "Integrate[(a+b*x)^n*Sqrt[c*x^2], x]", //
@@ -134,6 +151,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1061
+  @Test
   public void test0015() {
     check( //
         "Integrate[x^3*(a+b*x)^n/Sqrt[c*x^2], x]", //
@@ -141,6 +159,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1090
+  @Test
   public void test0016() {
     check( //
         "Integrate[(d*x)^m*(a+b*x)/(c*x^2)^(1/2), x]", //
@@ -148,6 +167,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1274
+  @Test
   public void test0017() {
     check( //
         "Integrate[1/((1-x)^(1/2)*(1+x)^(3/2)), x]", //
@@ -155,6 +175,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1320
+  @Test
   public void test0018() {
     check( //
         "Integrate[1/((3-x)^(1/2)*(-2+x)^(1/2)), x]", //
@@ -162,6 +183,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1465
+  @Test
   public void test0019() {
     check( //
         "Integrate[(c+d*x)^7/(a+b*x)^11, x]", //
@@ -169,6 +191,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1650
+  @Test
   public void test0020() {
     check( //
         "Integrate[1/((a+b*x)*(c+d*x)^(1/2)), x]", //
@@ -176,6 +199,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:661
+  @Test
   public void test0021() {
     check( //
         "Integrate[(A+B*x)/(Sqrt[x]*Sqrt[a+b*x]), x]", //
@@ -183,6 +207,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:675
+  @Test
   public void test0022() {
     check( //
         "Integrate[(A+B*x)/(x^(5/2)*(a+b*x)^(3/2)), x]", //
@@ -190,6 +215,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:689
+  @Test
   public void test0023() {
     check( //
         "Integrate[(A+B*x)/(x^(11/2)*(a+b*x)^(5/2)), x]", //
@@ -197,6 +223,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:709
+  @Test
   public void test0024() {
     check( //
         "Integrate[(c+d*x)^(3/2)*Sqrt[a+b*x]/x, x]", //
@@ -204,6 +231,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:723
+  @Test
   public void test0025() {
     check( //
         "Integrate[(c+d*x)^(5/2)*Sqrt[a+b*x]/x^6, x]", //
@@ -211,6 +239,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:739
+  @Test
   public void test0026() {
     check( //
         "Integrate[Sqrt[a+b*x]/(x*(c+d*x)^(3/2)), x]", //
@@ -218,6 +247,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:787
+  @Test
   public void test0027() {
     check( //
         "Integrate[(a+b*x)^(3/2)/(x^2*Sqrt[c+d*x]), x]", //
@@ -225,6 +255,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:801
+  @Test
   public void test0028() {
     check( //
         "Integrate[(a+b*x)^(3/2)/(x*(c+d*x)^(5/2)), x]", //
@@ -232,6 +263,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:833
+  @Test
   public void test0029() {
     check( //
         "Integrate[(a+b*x)^(5/2)*(c+d*x)^(5/2)/x^6, x]", //
@@ -239,6 +271,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:849
+  @Test
   public void test0030() {
     check( //
         "Integrate[(a+b*x)^(5/2)/(x^2*(c+d*x)^(3/2)), x]", //
@@ -246,6 +279,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:959
+  @Test
   public void test0031() {
     check( //
         "Integrate[x^5/((a+b*x)^(3/2)*(c+d*x)^(5/2)), x]", //
@@ -253,6 +287,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:993
+  @Test
   public void test0032() {
     check( //
         "Integrate[1/(x^2*(a+b*x)^(5/2)*(c+d*x)^(5/2)), x]", //
@@ -260,6 +295,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1026
+  @Test
   public void test0033() {
     check( //
         "Integrate[x^2*Sqrt[-1+x]*Sqrt[1+x], x]", //
@@ -267,6 +303,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1115
+  @Test
   public void test0034() {
     check( //
         "Integrate[1/((1-x)^(1/4)*(e*x)^(13/2)*(1+x)^(1/4)), x]", //
@@ -274,6 +311,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1248
+  @Test
   public void test0035() {
     check( //
         "Integrate[(a+b*x)*(A+B*x)/(d+e*x)^4, x]", //
@@ -281,6 +319,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1276
+  @Test
   public void test0036() {
     check( //
         "Integrate[(a+b*x)^3*(A+B*x)/(d+e*x)^7, x]", //
@@ -288,6 +327,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1290
+  @Test
   public void test0037() {
     check( //
         "Integrate[(a+b*x)^6*(A+B*x)/(d+e*x)^2, x]", //
@@ -295,6 +335,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1332
+  @Test
   public void test0038() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/(d+e*x)^15, x]", //
@@ -302,6 +343,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1900
+  @Test
   public void test0039() {
     check( //
         "Integrate[(2+3*x)^3*(3+5*x)/(1-2*x)^3, x]", //
@@ -309,6 +351,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1914
+  @Test
   public void test0040() {
     check( //
         "Integrate[(2+3*x)^3*(3+5*x)^2/(1-2*x)^3, x]", //
@@ -316,6 +359,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1928
+  @Test
   public void test0041() {
     check( //
         "Integrate[(2+3*x)^2*(3+5*x)^3/(1-2*x)^3, x]", //
@@ -323,6 +367,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2073
+  @Test
   public void test0042() {
     check( //
         "Integrate[(2+3*x)^6*(3+5*x)*Sqrt[1-2*x], x]", //
@@ -330,6 +375,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2087
+  @Test
   public void test0043() {
     check( //
         "Integrate[(2+3*x)^3*(3+5*x)^2*Sqrt[1-2*x], x]", //
@@ -337,6 +383,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2101
+  @Test
   public void test0044() {
     check( //
         "Integrate[(2+3*x)*(3+5*x)^3*Sqrt[1-2*x], x]", //
@@ -344,6 +391,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2117
+  @Test
   public void test0045() {
     check( //
         "Integrate[Sqrt[1-2*x]/(3+5*x), x]", //
@@ -351,6 +399,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2193
+  @Test
   public void test0046() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)*(3+5*x)), x]", //
@@ -358,6 +407,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2269
+  @Test
   public void test0047() {
     check( //
         "Integrate[(1-2*x)^(5/2)/(3+5*x), x]", //
@@ -365,6 +415,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2345
+  @Test
   public void test0048() {
     check( //
         "Integrate[1/((2+3*x)*(3+5*x)*Sqrt[1-2*x]), x]", //
@@ -372,6 +423,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2607
+  @Test
   public void test0049() {
     check( //
         "Integrate[(3+5*x)^(3/2)*Sqrt[1-2*x]/(2+3*x)^2, x]", //
@@ -379,6 +431,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2621
+  @Test
   public void test0050() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[1-2*x]/(2+3*x)^4, x]", //
@@ -386,6 +439,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2637
+  @Test
   public void test0051() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)^4*Sqrt[3+5*x]), x]", //
@@ -393,6 +447,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2669
+  @Test
   public void test0052() {
     check( //
         "Integrate[(1-2*x)^(3/2)*Sqrt[3+5*x]/(2+3*x)^6, x]", //
@@ -400,6 +455,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2713
+  @Test
   public void test0053() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)^4*(3+5*x)^(3/2)), x]", //
@@ -407,6 +463,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2731
+  @Test
   public void test0054() {
     check( //
         "Integrate[(1-2*x)^(5/2)*Sqrt[3+5*x]/(2+3*x), x]", //
@@ -414,6 +471,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2745
+  @Test
   public void test0055() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/(2+3*x)^4, x]", //
@@ -421,6 +479,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2759
+  @Test
   public void test0056() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^6, x]", //
@@ -428,6 +487,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2775
+  @Test
   public void test0057() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^6*Sqrt[3+5*x]), x]", //
@@ -435,6 +495,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2821
+  @Test
   public void test0058() {
     check( //
         "Integrate[(3+5*x)^(3/2)/((2+3*x)^5*Sqrt[1-2*x]), x]", //
@@ -442,6 +503,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2837
+  @Test
   public void test0059() {
     check( //
         "Integrate[(2+3*x)^3/(Sqrt[1-2*x]*Sqrt[3+5*x]), x]", //
@@ -449,6 +511,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2851
+  @Test
   public void test0060() {
     check( //
         "Integrate[1/((2+3*x)^2*(3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -456,6 +519,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2869
+  @Test
   public void test0061() {
     check( //
         "Integrate[(2+3*x)^5*Sqrt[3+5*x]/(1-2*x)^(3/2), x]", //
@@ -463,6 +527,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2897
+  @Test
   public void test0062() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(3/2)*(2+3*x)^3), x]", //
@@ -470,6 +535,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2913
+  @Test
   public void test0063() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(2+3*x)^5*Sqrt[3+5*x]), x]", //
@@ -477,6 +543,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2927
+  @Test
   public void test0064() {
     check( //
         "Integrate[(2+3*x)^2/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -484,6 +551,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2945
+  @Test
   public void test0065() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(5/2)*(2+3*x)^4), x]", //
@@ -491,6 +559,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2975
+  @Test
   public void test0066() {
     check( //
         "Integrate[1/((1-2*x)^(5/2)*(2+3*x)^3*Sqrt[3+5*x]), x]", //
@@ -498,6 +567,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2989
+  @Test
   public void test0067() {
     check( //
         "Integrate[(2+3*x)^3/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -505,6 +575,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3007
+  @Test
   public void test0068() {
     check( //
         "Integrate[1/(Sqrt[-c+d*x]*Sqrt[c+d*x]*Sqrt[e+f*x]), x]", //
@@ -512,6 +583,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3025
+  @Test
   public void test0069() {
     check( //
         "Integrate[(3+5*x)^(3/2)*Sqrt[1-2*x]/(2+3*x)^(5/2), x]", //
@@ -519,6 +591,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3055
+  @Test
   public void test0070() {
     check( //
         "Integrate[Sqrt[1-2*x]/((3+5*x)^(3/2)*Sqrt[2+3*x]), x]", //
@@ -526,6 +599,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3073
+  @Test
   public void test0071() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(2+3*x)^(3/2)*Sqrt[3+5*x], x]", //
@@ -533,6 +607,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3087
+  @Test
   public void test0072() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)/(2+3*x)^(7/2), x]", //
@@ -540,6 +615,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3101
+  @Test
   public void test0073() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(5/2)/(2+3*x)^(15/2), x]", //
@@ -547,6 +623,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3117
+  @Test
   public void test0074() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)^(3/2)*(3+5*x)^(3/2)), x]", //
@@ -554,6 +631,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3135
+  @Test
   public void test0075() {
     check( //
         "Integrate[(1-2*x)^(5/2)*Sqrt[2+3*x]*Sqrt[3+5*x], x]", //
@@ -561,6 +639,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3149
+  @Test
   public void test0076() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/(2+3*x)^(7/2), x]", //
@@ -568,6 +647,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3163
+  @Test
   public void test0077() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^(15/2), x]", //
@@ -575,6 +655,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3179
+  @Test
   public void test0078() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(2+3*x)^(3/2)/(3+5*x)^(3/2), x]", //
@@ -582,6 +663,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3193
+  @Test
   public void test0079() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -589,6 +671,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3211
+  @Test
   public void test0080() {
     check( //
         "Integrate[(3+5*x)^(3/2)/((2+3*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -596,6 +679,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3225
+  @Test
   public void test0081() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((2+3*x)^(13/2)*Sqrt[1-2*x]), x]", //
@@ -603,6 +687,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3257
+  @Test
   public void test0082() {
     check( //
         "Integrate[Sqrt[2+3*x]/((3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -610,6 +695,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3295
+  @Test
   public void test0083() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(3/2)*(2+3*x)^(7/2)), x]", //
@@ -617,6 +703,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3309
+  @Test
   public void test0084() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(3/2)*Sqrt[2+3*x]), x]", //
@@ -624,6 +711,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3325
+  @Test
   public void test0085() {
     check( //
         "Integrate[(2+3*x)^(9/2)/((1-2*x)^(3/2)*(3+5*x)^(3/2)), x]", //
@@ -631,6 +719,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3339
+  @Test
   public void test0086() {
     check( //
         "Integrate[Sqrt[2+3*x]/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -638,6 +727,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3357
+  @Test
   public void test0087() {
     check( //
         "Integrate[(2+3*x)^(7/2)*(3+5*x)^(3/2)/(1-2*x)^(5/2), x]", //
@@ -645,6 +735,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3371
+  @Test
   public void test0088() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(5/2)*(2+3*x)^(5/2)), x]", //
@@ -652,6 +743,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3387
+  @Test
   public void test0089() {
     check( //
         "Integrate[(2+3*x)^(7/2)/((1-2*x)^(5/2)*(3+5*x)^(3/2)), x]", //
@@ -659,6 +751,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3401
+  @Test
   public void test0090() {
     check( //
         "Integrate[Sqrt[2+3*x]/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -666,6 +759,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3472
+  @Test
   public void test0091() {
     check( //
         "Integrate[(a+b*x)^(4/3)/((c+d*x)^(4/3)*(e+f*x)^2), x]", //
@@ -673,6 +767,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3543
+  @Test
   public void test0092() {
     check( //
         "Integrate[(a+b*x)^m*(c+d*x)^(-4-m), x]", //
@@ -680,6 +775,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:43
+  @Test
   public void test0093() {
     check( //
         "Integrate[(1+a*x)/(x^3*Sqrt[a*x]*Sqrt[1-a*x]), x]", //
@@ -687,6 +783,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:72
+  @Test
   public void test0094() {
     check( //
         "Integrate[Sqrt[2-3*x]*Sqrt[1+4*x]/Sqrt[-5+2*x], x]", //
@@ -694,6 +791,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:131
+  @Test
   public void test0095() {
     check( //
         "Integrate[Sqrt[2-3*x]*Sqrt[1+4*x]/((7+5*x)^(5/2)*Sqrt[-5+2*x]), x]", //
@@ -701,6 +799,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:215
+  @Test
   public void test0096() {
     check( //
         "Integrate[(a+b*x+c*x^2)/(Sqrt[1-d*x]*Sqrt[1+d*x]), x]", //
@@ -708,6 +807,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.6 P(x) (a+b x)^m (c+d x)^n (e+f x)^p.input:24
+  @Test
   public void test0097() {
     check( //
         "Integrate[(A+B*x+C*x^2)/(Sqrt[1-d*x]*Sqrt[1+d*x]), x]", //
@@ -715,6 +815,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:586
+  @Test
   public void test0098() {
     check( //
         "Integrate[Sqrt[2-b*x]/x^(9/2), x]", //
@@ -722,6 +823,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:644
+  @Test
   public void test0099() {
     check( //
         "Integrate[1/(x^(9/2)*Sqrt[a+b*x]), x]", //
@@ -729,6 +831,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:714
+  @Test
   public void test0100() {
     check( //
         "Integrate[1/(x^(5/2)*(2-b*x)^(5/2)), x]", //
@@ -736,6 +839,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:846
+  @Test
   public void test0101() {
     check( //
         "Integrate[x*(a+b*x)*Sqrt[c*x^2], x]", //
@@ -743,6 +847,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:860
+  @Test
   public void test0102() {
     check( //
         "Integrate[x^3*(c*x^2)^(5/2)*(a+b*x), x]", //
@@ -750,6 +855,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:876
+  @Test
   public void test0103() {
     check( //
         "Integrate[(a+b*x)/(x^3*Sqrt[c*x^2]), x]", //
@@ -757,6 +863,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:890
+  @Test
   public void test0104() {
     check( //
         "Integrate[(a+b*x)/(x*(c*x^2)^(5/2)), x]", //
@@ -764,6 +871,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:908
+  @Test
   public void test0105() {
     check( //
         "Integrate[x*(c*x^2)^(3/2)*(a+b*x)^2, x]", //
@@ -771,6 +879,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:924
+  @Test
   public void test0106() {
     check( //
         "Integrate[x^3*(a+b*x)^2/Sqrt[c*x^2], x]", //
@@ -778,6 +887,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:938
+  @Test
   public void test0107() {
     check( //
         "Integrate[(a+b*x)^2/(x^3*(c*x^2)^(3/2)), x]", //
@@ -785,6 +895,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:986
+  @Test
   public void test0108() {
     check( //
         "Integrate[1/(x^3*(a+b*x)*Sqrt[c*x^2]), x]", //
@@ -792,6 +903,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1004
+  @Test
   public void test0109() {
     check( //
         "Integrate[Sqrt[c*x^2]/(x^2*(a+b*x)^2), x]", //
@@ -799,6 +911,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1020
+  @Test
   public void test0110() {
     check( //
         "Integrate[x^2/((a+b*x)^2*Sqrt[c*x^2]), x]", //
@@ -806,6 +919,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1038
+  @Test
   public void test0111() {
     check( //
         "Integrate[(a+b*x)^n*Sqrt[c*x^2]/x, x]", //
@@ -813,6 +927,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1062
+  @Test
   public void test0112() {
     check( //
         "Integrate[x^2*(a+b*x)^n/Sqrt[c*x^2], x]", //
@@ -820,6 +935,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1091
+  @Test
   public void test0113() {
     check( //
         "Integrate[(d*x)^m*(a+b*x)/(c*x^2)^(3/2), x]", //
@@ -827,6 +943,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1119
+  @Test
   public void test0114() {
     check( //
         "Integrate[(c*x^2)^p*(a+b*x)^(1-2*p)/x^3, x]", //
@@ -834,6 +951,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1145
+  @Test
   public void test0115() {
     check( //
         "Integrate[(b*c/d+b*x)^3/(c+d*x)^3, x]", //
@@ -841,6 +959,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1355
+  @Test
   public void test0116() {
     check( //
         "Integrate[1/((a-I*a*x)^(3/4)*(a+I*a*x)^(3/4)), x]", //
@@ -848,6 +967,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1383
+  @Test
   public void test0117() {
     check( //
         "Integrate[1/((a-I*a*x)^(1/4)*(a+I*a*x)^(9/4)), x]", //
@@ -855,6 +975,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1466
+  @Test
   public void test0118() {
     check( //
         "Integrate[(c+d*x)^7/(a+b*x)^12, x]", //
@@ -862,6 +983,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1727
+  @Test
   public void test0119() {
     check( //
         "Integrate[(c+d*x)^(5/2)/(a+b*x)^(13/2), x]", //
@@ -869,6 +991,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1757
+  @Test
   public void test0120() {
     check( //
         "Integrate[1/((a+b*x)^(3/2)*(c+d*x)^(5/2)), x]", //
@@ -876,6 +999,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1785
+  @Test
   public void test0121() {
     check( //
         "Integrate[1/(Sqrt[-b*x]*Sqrt[2-b*x]), x]", //
@@ -883,6 +1007,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2176
+  @Test
   public void test0122() {
     check( //
         "Integrate[a+b*x+c*x^2+d*x^3, x]", //
@@ -890,6 +1015,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2192
+  @Test
   public void test0123() {
     check( //
         "Integrate[(-2)/x^2+3/x, x]", //
@@ -897,6 +1023,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:57
+  @Test
   public void test0124() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^6/x^8, x]", //
@@ -904,6 +1031,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:115
+  @Test
   public void test0125() {
     check( //
         "Integrate[(a+b*x)*(A+B*x)/x^2, x]", //
@@ -911,6 +1039,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:129
+  @Test
   public void test0126() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/x^5, x]", //
@@ -918,6 +1047,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:143
+  @Test
   public void test0127() {
     check( //
         "Integrate[(a+b*x)^3*(A+B*x)/x^6, x]", //
@@ -925,6 +1055,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:157
+  @Test
   public void test0128() {
     check( //
         "Integrate[(a+b*x)^5*(A+B*x)/x^4, x]", //
@@ -932,6 +1063,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:185
+  @Test
   public void test0129() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/x^9, x]", //
@@ -939,6 +1071,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:429
+  @Test
   public void test0130() {
     check( //
         "Integrate[(a+b*x)*(A+B*x)/x^(3/2), x]", //
@@ -946,6 +1079,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:460
+  @Test
   public void test0131() {
     check( //
         "Integrate[(A+B*x)/(x^(11/2)*(a+b*x)), x]", //
@@ -953,6 +1087,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:662
+  @Test
   public void test0132() {
     check( //
         "Integrate[(A+B*x)/(x^(3/2)*Sqrt[a+b*x]), x]", //
@@ -960,6 +1095,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:676
+  @Test
   public void test0133() {
     check( //
         "Integrate[(A+B*x)/(x^(7/2)*(a+b*x)^(3/2)), x]", //
@@ -967,6 +1103,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:724
+  @Test
   public void test0134() {
     check( //
         "Integrate[(c+d*x)^(5/2)*Sqrt[a+b*x]/x^7, x]", //
@@ -974,6 +1111,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:740
+  @Test
   public void test0135() {
     check( //
         "Integrate[Sqrt[a+b*x]/(x^2*(c+d*x)^(3/2)), x]", //
@@ -981,6 +1119,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:758
+  @Test
   public void test0136() {
     check( //
         "Integrate[(a+b*x)^(3/2)*Sqrt[c+d*x]/x^3, x]", //
@@ -988,6 +1127,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:788
+  @Test
   public void test0137() {
     check( //
         "Integrate[(a+b*x)^(3/2)/(x^3*Sqrt[c+d*x]), x]", //
@@ -995,6 +1135,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:802
+  @Test
   public void test0138() {
     check( //
         "Integrate[(a+b*x)^(3/2)/(x^2*(c+d*x)^(5/2)), x]", //
@@ -1002,6 +1143,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:834
+  @Test
   public void test0139() {
     check( //
         "Integrate[(a+b*x)^(5/2)*(c+d*x)^(5/2)/x^7, x]", //
@@ -1009,6 +1151,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:850
+  @Test
   public void test0140() {
     check( //
         "Integrate[(a+b*x)^(5/2)/(x^3*(c+d*x)^(3/2)), x]", //
@@ -1016,6 +1159,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:912
+  @Test
   public void test0141() {
     check( //
         "Integrate[x/((c+d*x)^(3/2)*Sqrt[a+b*x]), x]", //
@@ -1023,6 +1167,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:978
+  @Test
   public void test0142() {
     check( //
         "Integrate[(c+d*x)^(5/2)/(x^2*(a+b*x)^(5/2)), x]", //
@@ -1030,6 +1175,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1027
+  @Test
   public void test0143() {
     check( //
         "Integrate[x*Sqrt[-1+x]*Sqrt[1+x], x]", //
@@ -1037,6 +1183,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1291
+  @Test
   public void test0144() {
     check( //
         "Integrate[(a+b*x)^6*(A+B*x)/(d+e*x)^3, x]", //
@@ -1044,6 +1191,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1319
+  @Test
   public void test0145() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/(d+e*x)^2, x]", //
@@ -1051,6 +1199,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1333
+  @Test
   public void test0146() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/(d+e*x)^16, x]", //
@@ -1058,6 +1207,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1901
+  @Test
   public void test0147() {
     check( //
         "Integrate[(2+3*x)^2*(3+5*x)/(1-2*x)^3, x]", //
@@ -1065,6 +1215,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1915
+  @Test
   public void test0148() {
     check( //
         "Integrate[(2+3*x)^2*(3+5*x)^2/(1-2*x)^3, x]", //
@@ -1072,6 +1223,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1929
+  @Test
   public void test0149() {
     check( //
         "Integrate[(2+3*x)*(3+5*x)^3/(1-2*x)^3, x]", //
@@ -1079,6 +1231,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2074
+  @Test
   public void test0150() {
     check( //
         "Integrate[(2+3*x)^5*(3+5*x)*Sqrt[1-2*x], x]", //
@@ -1086,6 +1239,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2088
+  @Test
   public void test0151() {
     check( //
         "Integrate[(2+3*x)^2*(3+5*x)^2*Sqrt[1-2*x], x]", //
@@ -1093,6 +1247,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2102
+  @Test
   public void test0152() {
     check( //
         "Integrate[(3+5*x)^3*Sqrt[1-2*x], x]", //
@@ -1100,6 +1255,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2118
+  @Test
   public void test0153() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)*(3+5*x)), x]", //
@@ -1107,6 +1263,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2164
+  @Test
   public void test0154() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^2/(2+3*x), x]", //
@@ -1114,6 +1271,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2270
+  @Test
   public void test0155() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)*(3+5*x)), x]", //
@@ -1121,6 +1279,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2562
+  @Test
   public void test0156() {
     check( //
         "Integrate[(A+B*x)/(Sqrt[a+b*x]*Sqrt[d+e*x]), x]", //
@@ -1128,6 +1287,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2594
+  @Test
   public void test0157() {
     check( //
         "Integrate[Sqrt[1-2*x]*Sqrt[3+5*x]/(2+3*x), x]", //
@@ -1135,6 +1295,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2608
+  @Test
   public void test0158() {
     check( //
         "Integrate[(3+5*x)^(3/2)*Sqrt[1-2*x]/(2+3*x)^3, x]", //
@@ -1142,6 +1303,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2622
+  @Test
   public void test0159() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[1-2*x]/(2+3*x)^5, x]", //
@@ -1149,6 +1311,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2638
+  @Test
   public void test0160() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)^5*Sqrt[3+5*x]), x]", //
@@ -1156,6 +1319,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2652
+  @Test
   public void test0161() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)*(3+5*x)^(5/2)), x]", //
@@ -1163,6 +1327,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2700
+  @Test
   public void test0162() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)*Sqrt[3+5*x]), x]", //
@@ -1170,6 +1335,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2714
+  @Test
   public void test0163() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)^5*(3+5*x)^(3/2)), x]", //
@@ -1177,6 +1343,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2732
+  @Test
   public void test0164() {
     check( //
         "Integrate[(1-2*x)^(5/2)*Sqrt[3+5*x]/(2+3*x)^2, x]", //
@@ -1184,6 +1351,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2746
+  @Test
   public void test0165() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/(2+3*x)^5, x]", //
@@ -1191,6 +1359,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2760
+  @Test
   public void test0166() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^7, x]", //
@@ -1198,6 +1367,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2776
+  @Test
   public void test0167() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^7*Sqrt[3+5*x]), x]", //
@@ -1205,6 +1375,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2808
+  @Test
   public void test0168() {
     check( //
         "Integrate[Sqrt[3+5*x]/((2+3*x)*Sqrt[1-2*x]), x]", //
@@ -1212,6 +1383,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2822
+  @Test
   public void test0169() {
     check( //
         "Integrate[(3+5*x)^(3/2)/((2+3*x)^6*Sqrt[1-2*x]), x]", //
@@ -1219,6 +1391,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2838
+  @Test
   public void test0170() {
     check( //
         "Integrate[(2+3*x)^2/(Sqrt[1-2*x]*Sqrt[3+5*x]), x]", //
@@ -1226,6 +1399,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2852
+  @Test
   public void test0171() {
     check( //
         "Integrate[1/((2+3*x)^3*(3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -1233,6 +1407,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2870
+  @Test
   public void test0172() {
     check( //
         "Integrate[(2+3*x)^4*Sqrt[3+5*x]/(1-2*x)^(3/2), x]", //
@@ -1240,6 +1415,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2898
+  @Test
   public void test0173() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(3/2)*(2+3*x)^4), x]", //
@@ -1247,6 +1423,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2914
+  @Test
   public void test0174() {
     check( //
         "Integrate[(2+3*x)^5/((1-2*x)^(3/2)*(3+5*x)^(3/2)), x]", //
@@ -1254,6 +1431,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2928
+  @Test
   public void test0175() {
     check( //
         "Integrate[(2+3*x)/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -1261,6 +1439,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2960
+  @Test
   public void test0176() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(5/2)*(2+3*x)), x]", //
@@ -1268,6 +1447,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2976
+  @Test
   public void test0177() {
     check( //
         "Integrate[1/((1-2*x)^(5/2)*(2+3*x)^4*Sqrt[3+5*x]), x]", //
@@ -1275,6 +1455,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2990
+  @Test
   public void test0178() {
     check( //
         "Integrate[(2+3*x)^2/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -1282,6 +1463,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3012
+  @Test
   public void test0179() {
     check( //
         "Integrate[(2+3*x)^(5/2)*Sqrt[1-2*x]*Sqrt[3+5*x], x]", //
@@ -1289,6 +1471,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3026
+  @Test
   public void test0180() {
     check( //
         "Integrate[(3+5*x)^(3/2)*Sqrt[1-2*x]/(2+3*x)^(7/2), x]", //
@@ -1296,6 +1479,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3042
+  @Test
   public void test0181() {
     check( //
         "Integrate[Sqrt[e+f*x]/((a+b*x)^(3/2)*Sqrt[c+d*x]), x]", //
@@ -1303,6 +1487,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3056
+  @Test
   public void test0182() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)^(3/2)*(3+5*x)^(3/2)), x]", //
@@ -1310,6 +1495,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3074
+  @Test
   public void test0183() {
     check( //
         "Integrate[(1-2*x)^(3/2)*Sqrt[2+3*x]*Sqrt[3+5*x], x]", //
@@ -1317,6 +1503,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3088
+  @Test
   public void test0184() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)/(2+3*x)^(9/2), x]", //
@@ -1324,6 +1511,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3104
+  @Test
   public void test0185() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(2+3*x)^(5/2)/Sqrt[3+5*x], x]", //
@@ -1331,6 +1519,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3118
+  @Test
   public void test0186() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)^(5/2)*(3+5*x)^(3/2)), x]", //
@@ -1338,6 +1527,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3136
+  @Test
   public void test0187() {
     check( //
         "Integrate[(1-2*x)^(5/2)*Sqrt[3+5*x]/Sqrt[2+3*x], x]", //
@@ -1345,6 +1535,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3150
+  @Test
   public void test0188() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/(2+3*x)^(9/2), x]", //
@@ -1352,6 +1543,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3164
+  @Test
   public void test0189() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^(17/2), x]", //
@@ -1359,6 +1551,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3180
+  @Test
   public void test0190() {
     check( //
         "Integrate[(1-2*x)^(5/2)*Sqrt[2+3*x]/(3+5*x)^(3/2), x]", //
@@ -1366,6 +1559,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3194
+  @Test
   public void test0191() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^(7/2)*(3+5*x)^(5/2)), x]", //
@@ -1373,6 +1567,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3212
+  @Test
   public void test0192() {
     check( //
         "Integrate[(3+5*x)^(3/2)/((2+3*x)^(5/2)*Sqrt[1-2*x]), x]", //
@@ -1380,6 +1575,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3244
+  @Test
   public void test0193() {
     check( //
         "Integrate[1/((a+b*x)^(3/2)*Sqrt[c+d*x]*Sqrt[e+f*x]), x]", //
@@ -1387,6 +1583,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3258
+  @Test
   public void test0194() {
     check( //
         "Integrate[1/((3+5*x)^(3/2)*Sqrt[1-2*x]*Sqrt[2+3*x]), x]", //
@@ -1394,6 +1591,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3296
+  @Test
   public void test0195() {
     check( //
         "Integrate[(2+3*x)^(7/2)*(3+5*x)^(3/2)/(1-2*x)^(3/2), x]", //
@@ -1401,6 +1599,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3310
+  @Test
   public void test0196() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(3/2)*(2+3*x)^(3/2)), x]", //
@@ -1408,6 +1607,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3326
+  @Test
   public void test0197() {
     check( //
         "Integrate[(2+3*x)^(7/2)/((1-2*x)^(3/2)*(3+5*x)^(3/2)), x]", //
@@ -1415,6 +1615,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3340
+  @Test
   public void test0198() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(3+5*x)^(5/2)*Sqrt[2+3*x]), x]", //
@@ -1422,6 +1623,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3358
+  @Test
   public void test0199() {
     check( //
         "Integrate[(2+3*x)^(5/2)*(3+5*x)^(3/2)/(1-2*x)^(5/2), x]", //
@@ -1429,6 +1631,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3372
+  @Test
   public void test0200() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(5/2)*(2+3*x)^(7/2)), x]", //
@@ -1436,6 +1639,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3388
+  @Test
   public void test0201() {
     check( //
         "Integrate[(2+3*x)^(5/2)/((1-2*x)^(5/2)*(3+5*x)^(3/2)), x]", //
@@ -1443,6 +1647,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3402
+  @Test
   public void test0202() {
     check( //
         "Integrate[1/((1-2*x)^(5/2)*(3+5*x)^(5/2)*Sqrt[2+3*x]), x]", //
@@ -1450,6 +1655,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3473
+  @Test
   public void test0203() {
     check( //
         "Integrate[(a+b*x)^(4/3)/((c+d*x)^(4/3)*(e+f*x)^3), x]", //
@@ -1457,6 +1663,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:44
+  @Test
   public void test0204() {
     check( //
         "Integrate[(1+a*x)/(x^4*Sqrt[a*x]*Sqrt[1-a*x]), x]", //
@@ -1464,6 +1671,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:80
+  @Test
   public void test0205() {
     check( //
         "Integrate[(7+5*x)^3*Sqrt[2-3*x]/(Sqrt[-5+2*x]*Sqrt[1+4*x]), x]", //
@@ -1471,6 +1679,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:132
+  @Test
   public void test0206() {
     check( //
         "Integrate[Sqrt[2-3*x]*Sqrt[1+4*x]/((7+5*x)^(7/2)*Sqrt[-5+2*x]), x]", //
@@ -1478,6 +1687,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.6 P(x) (a+b x)^m (c+d x)^n (e+f x)^p.input:25
+  @Test
   public void test0207() {
     check( //
         "Integrate[(A+B*x+C*x^2)/((e+f*x)*Sqrt[1-d*x]*Sqrt[1+d*x]), x]", //
@@ -1485,6 +1695,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:34
+  @Test
   public void test0208() {
     check( //
         "Integrate[(a+b*x^2)^2/x^5, x]", //
@@ -1492,6 +1703,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:48
+  @Test
   public void test0209() {
     check( //
         "Integrate[(a+b*x^2)^3/x^7, x]", //
@@ -1499,6 +1711,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:104
+  @Test
   public void test0210() {
     check( //
         "Integrate[(a+b*x^2)^8/x^3, x]", //
@@ -1506,6 +1719,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:118
+  @Test
   public void test0211() {
     check( //
         "Integrate[(a+b*x^2)^8/x^31, x]", //
@@ -1513,6 +1727,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:176
+  @Test
   public void test0212() {
     check( //
         "Integrate[1/(x^5*(a+b*x^2)^2), x]", //
@@ -1520,6 +1735,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:190
+  @Test
   public void test0213() {
     check( //
         "Integrate[1/(x^3*(a+b*x^2)^3), x]", //
@@ -1527,6 +1743,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:278
+  @Test
   public void test0214() {
     check( //
         "Integrate[1/(a+(b-a*c)*x^2), x]", //
@@ -1534,6 +1751,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:474
+  @Test
   public void test0215() {
     check( //
         "Integrate[(a+b*x^2)^(9/2)/x^22, x]", //
@@ -1541,6 +1759,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:516
+  @Test
   public void test0216() {
     check( //
         "Integrate[Sqrt[-9-4*x^2]/x^2, x]", //
@@ -1548,6 +1767,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:727
+  @Test
   public void test0217() {
     check( //
         "Integrate[(a+b*x^2)^(1/3), x]", //
@@ -1555,6 +1775,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:803
+  @Test
   public void test0218() {
     check( //
         "Integrate[(a+b*x^2)^(1/3)/(c*x)^(23/3), x]", //
@@ -1562,6 +1783,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:820
+  @Test
   public void test0219() {
     check( //
         "Integrate[(a+b*x^2)^(4/3)/(c*x)^(29/3), x]", //
@@ -1569,6 +1791,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:839
+  @Test
   public void test0220() {
     check( //
         "Integrate[1/((c*x)^(23/3)*(a+b*x^2)^(2/3)), x]", //
@@ -1576,6 +1799,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:862
+  @Test
   public void test0221() {
     check( //
         "Integrate[(a-b*x^2)^(1/4), x]", //
@@ -1583,6 +1807,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1066
+  @Test
   public void test0222() {
     check( //
         "Integrate[(c*x)^(13/2)/(a+b*x^2)^(5/4), x]", //
@@ -1590,6 +1815,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:39
+  @Test
   public void test0223() {
     check( //
         "Integrate[(c+d*x^2)^4/(a+b*x^2)^2, x]", //
@@ -1597,6 +1823,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:71
+  @Test
   public void test0224() {
     check( //
         "Integrate[(a+b*x^2)^(3/2), x]", //
@@ -1604,6 +1831,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:85
+  @Test
   public void test0225() {
     check( //
         "Integrate[(a+b*x^2)^(5/2)/(c+d*x^2)^5, x]", //
@@ -1611,6 +1839,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:102
+  @Test
   public void test0226() {
     check( //
         "Integrate[1/(a+b*x^2)^(3/2), x]", //
@@ -1618,6 +1847,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:182
+  @Test
   public void test0227() {
     check( //
         "Integrate[1/((-2+b*x^2)^(1/3)*(-18*d/b+d*x^2)), x]", //
@@ -1625,6 +1855,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:308
+  @Test
   public void test0228() {
     check( //
         "Integrate[Sqrt[-a+b*x^2]/Sqrt[c+d*x^2], x]", //
@@ -1632,6 +1863,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:322
+  @Test
   public void test0229() {
     check( //
         "Integrate[Sqrt[-c-d*x^2]/Sqrt[-a-b*x^2], x]", //
@@ -1639,6 +1871,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:336
+  @Test
   public void test0230() {
     check( //
         "Integrate[Sqrt[1+2*c*x^2/(b-Sqrt[b^2-4*a*c])]/Sqrt[1+2*c*x^2/(b+Sqrt[b^2-4*a*c])], x]", //
@@ -1646,6 +1879,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:32
+  @Test
   public void test0231() {
     check( //
         "Integrate[(a+b*x^2)^2*(A+B*x^2)/x^8, x]", //
@@ -1653,6 +1887,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:46
+  @Test
   public void test0232() {
     check( //
         "Integrate[(a+b*x^2)^5*(A+B*x^2)/x^3, x]", //
@@ -1660,6 +1895,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:60
+  @Test
   public void test0233() {
     check( //
         "Integrate[(a+b*x^2)^5*(A+B*x^2)/x^17, x]", //
@@ -1667,6 +1903,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:146
+  @Test
   public void test0234() {
     check( //
         "Integrate[(a*c+b*c*x^2)/(x^3*(a+b*x^2)^2), x]", //
@@ -1674,6 +1911,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:164
+  @Test
   public void test0235() {
     check( //
         "Integrate[(a+b*x^2)^2*(c+d*x^2)/x^2, x]", //
@@ -1681,6 +1919,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:208
+  @Test
   public void test0236() {
     check( //
         "Integrate[x^4*(a+b*x^2)^2/(c+d*x^2)^3, x]", //
@@ -1688,6 +1927,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:258
+  @Test
   public void test0237() {
     check( //
         "Integrate[x^2/((a+b*x^2)*(c+d*x^2)), x]", //
@@ -1695,6 +1935,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:272
+  @Test
   public void test0238() {
     check( //
         "Integrate[x/((a+b*x^2)*(c+d*x^2)^2), x]", //
@@ -1702,6 +1943,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:304
+  @Test
   public void test0239() {
     check( //
         "Integrate[x^2*(c+d*x^2)^2/(a+b*x^2)^2, x]", //
@@ -1709,6 +1951,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:348
+  @Test
   public void test0240() {
     check( //
         "Integrate[1/(x*(a+b*x^2)^2*(c+d*x^2)^3), x]", //
@@ -1716,6 +1959,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:394
+  @Test
   public void test0241() {
     check( //
         "Integrate[(a+b*x^2)*(A+B*x^2)/Sqrt[x], x]", //
@@ -1723,6 +1967,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:456
+  @Test
   public void test0242() {
     check( //
         "Integrate[(a+b*x^2)^2*(c+d*x^2)^2/Sqrt[x], x]", //
@@ -1730,6 +1975,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:472
+  @Test
   public void test0243() {
     check( //
         "Integrate[x^(3/2)*(a+b*x^2)^2/(c+d*x^2), x]", //
@@ -1737,6 +1983,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.8 P(x) (c x)^m (a+b x^2)^p.input:155
+  @Test
   public void test0244() {
     check( //
         "Integrate[(-x+4*x^3)/(5+x^2)^2, x]", //
@@ -1744,6 +1991,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.3.2 (c x)^m (a+b x^n)^p.input:155
+  @Test
   public void test0245() {
     check( //
         "Integrate[1/(b*x)^(1/3), x]", //
@@ -1751,6 +1999,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.3.2 (c x)^m (a+b x^n)^p.input:2269
+  @Test
   public void test0246() {
     check( //
         "Integrate[(1+1/x^2)^(5/3)/x^3, x]", //
@@ -1758,6 +2007,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.3.2 (c x)^m (a+b x^n)^p.input:2349
+  @Test
   public void test0247() {
     check( //
         "Integrate[1/(x^4*Sqrt[a+b/x^3]), x]", //
@@ -1765,6 +2015,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:37
+  @Test
   public void test0248() {
     check( //
         "Integrate[1/x^(3/2), x]", //
@@ -1772,6 +2023,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:179
+  @Test
   public void test0249() {
     check( //
         "Integrate[(a+b*x)^10/x^16, x]", //
@@ -1779,6 +2031,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:317
+  @Test
   public void test0250() {
     check( //
         "Integrate[1/(1/a+x*Sqrt[-a]), x]", //
@@ -1786,6 +2039,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:397
+  @Test
   public void test0251() {
     check( //
         "Integrate[1/(a+b*x)^(3/2), x]", //
@@ -1793,6 +2047,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:667
+  @Test
   public void test0252() {
     check( //
         "Integrate[1/((a-b*x)^(3/2)*Sqrt[x]), x]", //
@@ -1800,6 +2055,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:695
+  @Test
   public void test0253() {
     check( //
         "Integrate[1/(x^(3/2)*(2+b*x)^(5/2)), x]", //
@@ -1807,6 +2063,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:855
+  @Test
   public void test0254() {
     check( //
         "Integrate[(c*x^2)^(3/2)*(a+b*x), x]", //
@@ -1814,6 +2071,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:871
+  @Test
   public void test0255() {
     check( //
         "Integrate[x^2*(a+b*x)/Sqrt[c*x^2], x]", //
@@ -1821,6 +2079,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:885
+  @Test
   public void test0256() {
     check( //
         "Integrate[(a+b*x)/(x^4*(c*x^2)^(3/2)), x]", //
@@ -1828,6 +2087,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:903
+  @Test
   public void test0257() {
     check( //
         "Integrate[(a+b*x)^2*Sqrt[c*x^2]/x^2, x]", //
@@ -1835,6 +2095,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:917
+  @Test
   public void test0258() {
     check( //
         "Integrate[(c*x^2)^(5/2)*(a+b*x)^2/x^2, x]", //
@@ -1842,6 +2103,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:933
+  @Test
   public void test0259() {
     check( //
         "Integrate[x^2*(a+b*x)^2/(c*x^2)^(3/2), x]", //
@@ -1849,6 +2111,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:947
+  @Test
   public void test0260() {
     check( //
         "Integrate[(a+b*x)^2/(x^4*(c*x^2)^(5/2)), x]", //
@@ -1856,6 +2119,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:965
+  @Test
   public void test0261() {
     check( //
         "Integrate[(c*x^2)^(3/2)/(x^4*(a+b*x)), x]", //
@@ -1863,6 +2127,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:981
+  @Test
   public void test0262() {
     check( //
         "Integrate[x^2/((a+b*x)*Sqrt[c*x^2]), x]", //
@@ -1870,6 +2135,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1013
+  @Test
   public void test0263() {
     check( //
         "Integrate[(c*x^2)^(3/2)/(x^5*(a+b*x)^2), x]", //
@@ -1877,6 +2143,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1029
+  @Test
   public void test0264() {
     check( //
         "Integrate[x/((c*x^2)^(3/2)*(a+b*x)^2), x]", //
@@ -1884,6 +2151,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1053
+  @Test
   public void test0265() {
     check( //
         "Integrate[(c*x^2)^(5/2)*(a+b*x)^n/x^3, x]", //
@@ -1891,6 +2159,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1140
+  @Test
   public void test0266() {
     check( //
         "Integrate[1/((a+b*x)*(a*d/b+d*x)^3), x]", //
@@ -1898,6 +2167,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1224
+  @Test
   public void test0267() {
     check( //
         "Integrate[(1+x)^(1/2)/(1-x)^(13/2), x]", //
@@ -1905,6 +2175,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1252
+  @Test
   public void test0268() {
     check( //
         "Integrate[(1+x)^(5/2)/(1-x)^(17/2), x]", //
@@ -1912,6 +2183,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1284
+  @Test
   public void test0269() {
     check( //
         "Integrate[(1-x)^(1/2)/(1+x)^(5/2), x]", //
@@ -1919,6 +2191,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1300
+  @Test
   public void test0270() {
     check( //
         "Integrate[1/((a+a*x)^(9/2)*(c-c*x)^(9/2)), x]", //
@@ -1926,6 +2199,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1392
+  @Test
   public void test0271() {
     check( //
         "Integrate[1/((a-I*a*x)^(11/4)*(a+I*a*x)^(9/4)), x]", //
@@ -1933,6 +2207,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1660
+  @Test
   public void test0272() {
     check( //
         "Integrate[1/(c+d*x)^(3/2), x]", //
@@ -1940,6 +2215,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1738
+  @Test
   public void test0273() {
     check( //
         "Integrate[1/((a+b*x)^(7/2)*(c+d*x)^(1/2)), x]", //
@@ -1947,6 +2223,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1794
+  @Test
   public void test0274() {
     check( //
         "Integrate[1/(Sqrt[4-x]*Sqrt[x]), x]", //
@@ -1954,6 +2231,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2156
+  @Test
   public void test0275() {
     check( //
         "Integrate[(a+b*x)^n*(c+d*x)^(-5-n), x]", //
@@ -1961,6 +2239,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2185
+  @Test
   public void test0276() {
     check( //
         "Integrate[1-x^2-3*x^5, x]", //
@@ -1968,6 +2247,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2201
+  @Test
   public void test0277() {
     check( //
         "Integrate[1/x^(3/2)+x^(3/2), x]", //
@@ -1975,6 +2255,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:24
+  @Test
   public void test0278() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^3/x^7, x]", //
@@ -1982,6 +2263,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:38
+  @Test
   public void test0279() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^4/x^8, x]", //
@@ -1989,6 +2271,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:52
+  @Test
   public void test0280() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^5/x^8, x]", //
@@ -1996,6 +2279,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:138
+  @Test
   public void test0281() {
     check( //
         "Integrate[(a+b*x)^3*(A+B*x)/x, x]", //
@@ -2003,6 +2287,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:180
+  @Test
   public void test0282() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/x^4, x]", //
@@ -2010,6 +2295,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:194
+  @Test
   public void test0283() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/x^18, x]", //
@@ -2017,6 +2303,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:438
+  @Test
   public void test0284() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/x^(5/2), x]", //
@@ -2024,6 +2311,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:455
+  @Test
   public void test0285() {
     check( //
         "Integrate[(A+B*x)/((a+b*x)*Sqrt[x]), x]", //
@@ -2031,6 +2319,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:552
+  @Test
   public void test0286() {
     check( //
         "Integrate[(A+B*x)/(x^2*Sqrt[a+b*x]), x]", //
@@ -2038,6 +2327,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:586
+  @Test
   public void test0287() {
     check( //
         "Integrate[x*(c+d*x)^(5/2)/(a+b*x), x]", //
@@ -2045,6 +2335,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:627
+  @Test
   public void test0288() {
     check( //
         "Integrate[(A+B*x)*Sqrt[a+b*x]/x^(9/2), x]", //
@@ -2052,6 +2343,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:641
+  @Test
   public void test0289() {
     check( //
         "Integrate[(a+b*x)^(3/2)*(A+B*x)/x^(15/2), x]", //
@@ -2059,6 +2351,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:685
+  @Test
   public void test0290() {
     check( //
         "Integrate[(A+B*x)/(x^(3/2)*(a+b*x)^(5/2)), x]", //
@@ -2066,6 +2359,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:719
+  @Test
   public void test0291() {
     check( //
         "Integrate[(c+d*x)^(5/2)*Sqrt[a+b*x]/x^2, x]", //
@@ -2073,6 +2367,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:767
+  @Test
   public void test0292() {
     check( //
         "Integrate[(a+b*x)^(3/2)*(c+d*x)^(3/2)/x^3, x]", //
@@ -2080,6 +2375,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:797
+  @Test
   public void test0293() {
     check( //
         "Integrate[(a+b*x)^(3/2)/(x^4*(c+d*x)^(3/2)), x]", //
@@ -2087,6 +2383,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:815
+  @Test
   public void test0294() {
     check( //
         "Integrate[(a+b*x)^(5/2)*Sqrt[c+d*x]/x^5, x]", //
@@ -2094,6 +2391,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:829
+  @Test
   public void test0295() {
     check( //
         "Integrate[(a+b*x)^(5/2)*(c+d*x)^(5/2)/x^2, x]", //
@@ -2101,6 +2399,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:859
+  @Test
   public void test0296() {
     check( //
         "Integrate[(a+b*x)^(5/2)/(x^3*(c+d*x)^(5/2)), x]", //
@@ -2108,6 +2407,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:877
+  @Test
   public void test0297() {
     check( //
         "Integrate[(c+d*x)^(3/2)/(x^2*Sqrt[a+b*x]), x]", //
@@ -2115,6 +2415,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:907
+  @Test
   public void test0298() {
     check( //
         "Integrate[1/(x^2*Sqrt[a+b*x]*Sqrt[c+d*x]), x]", //
@@ -2122,6 +2423,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:921
+  @Test
   public void test0299() {
     check( //
         "Integrate[1/((c+d*x)^(5/2)*Sqrt[a+b*x]), x]", //
@@ -2129,6 +2431,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:939
+  @Test
   public void test0300() {
     check( //
         "Integrate[(c+d*x)^(3/2)/(x^4*(a+b*x)^(3/2)), x]", //
@@ -2136,6 +2439,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:989
+  @Test
   public void test0301() {
     check( //
         "Integrate[x^2/((a+b*x)^(5/2)*(c+d*x)^(5/2)), x]", //
@@ -2143,6 +2447,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1007
+  @Test
   public void test0302() {
     check( //
         "Integrate[x*(a+b*x)^n/(-a-b*x)^n, x]", //
@@ -2150,6 +2455,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1258
+  @Test
   public void test0303() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/(d+e*x)^3, x]", //
@@ -2157,6 +2463,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1300
+  @Test
   public void test0304() {
     check( //
         "Integrate[(a+b*x)^6*(A+B*x)/(d+e*x)^12, x]", //
@@ -2164,6 +2471,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1328
+  @Test
   public void test0305() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/(d+e*x)^11, x]", //
@@ -2171,6 +2479,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1344
+  @Test
   public void test0306() {
     check( //
         "Integrate[(A+B*x)*(d+e*x)^3/(a+b*x), x]", //
@@ -2178,6 +2487,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1896
+  @Test
   public void test0307() {
     check( //
         "Integrate[(2+3*x)^7*(3+5*x)/(1-2*x)^3, x]", //
@@ -2185,6 +2495,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1910
+  @Test
   public void test0308() {
     check( //
         "Integrate[(2+3*x)^7*(3+5*x)^2/(1-2*x)^3, x]", //
@@ -2192,6 +2503,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1924
+  @Test
   public void test0309() {
     check( //
         "Integrate[(2+3*x)^6*(3+5*x)^3/(1-2*x)^3, x]", //
@@ -2199,6 +2511,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2113
+  @Test
   public void test0310() {
     check( //
         "Integrate[(2+3*x)^4*Sqrt[1-2*x]/(3+5*x), x]", //
@@ -2206,6 +2519,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2189
+  @Test
   public void test0311() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(2+3*x)^3/(3+5*x), x]", //
@@ -2213,6 +2527,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2265
+  @Test
   public void test0312() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(2+3*x)^4/(3+5*x), x]", //
@@ -2220,6 +2535,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2527
+  @Test
   public void test0313() {
     check( //
         "Integrate[(A+B*x)*Sqrt[a+b*x]/(d+e*x)^(7/2), x]", //
@@ -2227,6 +2543,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2541
+  @Test
   public void test0314() {
     check( //
         "Integrate[(a+b*x)^(3/2)*(A+B*x)/(d+e*x)^(13/2), x]", //
@@ -2234,6 +2551,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2571
+  @Test
   public void test0315() {
     check( //
         "Integrate[(A+B*x)/((a+b*x)^(3/2)*Sqrt[d+e*x]), x]", //
@@ -2241,6 +2559,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2647
+  @Test
   public void test0316() {
     check( //
         "Integrate[(2+3*x)^4*Sqrt[1-2*x]/(3+5*x)^(5/2), x]", //
@@ -2248,6 +2567,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2665
+  @Test
   public void test0317() {
     check( //
         "Integrate[(1-2*x)^(3/2)*Sqrt[3+5*x]/(2+3*x)^2, x]", //
@@ -2255,6 +2575,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2679
+  @Test
   public void test0318() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)/(2+3*x)^6, x]", //
@@ -2262,6 +2583,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2693
+  @Test
   public void test0319() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(5/2)/(2+3*x)^8, x]", //
@@ -2269,6 +2591,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2755
+  @Test
   public void test0320() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^2, x]", //
@@ -2276,6 +2599,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2771
+  @Test
   public void test0321() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^2*Sqrt[3+5*x]), x]", //
@@ -2283,6 +2607,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2785
+  @Test
   public void test0322() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^4*(3+5*x)^(3/2)), x]", //
@@ -2290,6 +2615,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2817
+  @Test
   public void test0323() {
     check( //
         "Integrate[(3+5*x)^(3/2)/((2+3*x)*Sqrt[1-2*x]), x]", //
@@ -2297,6 +2623,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2831
+  @Test
   public void test0324() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((2+3*x)^5*Sqrt[1-2*x]), x]", //
@@ -2304,6 +2631,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2847
+  @Test
   public void test0325() {
     check( //
         "Integrate[(2+3*x)^2/((3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -2311,6 +2639,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2861
+  @Test
   public void test0326() {
     check( //
         "Integrate[1/((2+3*x)^2*(3+5*x)^(5/2)*Sqrt[1-2*x]), x]", //
@@ -2318,6 +2647,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2879
+  @Test
   public void test0327() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(3/2)*(2+3*x)^5), x]", //
@@ -2325,6 +2655,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2909
+  @Test
   public void test0328() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(2+3*x)*Sqrt[3+5*x]), x]", //
@@ -2332,6 +2663,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2923
+  @Test
   public void test0329() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(2+3*x)^4*(3+5*x)^(3/2)), x]", //
@@ -2339,6 +2671,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2985
+  @Test
   public void test0330() {
     check( //
         "Integrate[1/((1-2*x)^(5/2)*(2+3*x)^3*(3+5*x)^(3/2)), x]", //
@@ -2346,6 +2679,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3001
+  @Test
   public void test0331() {
     check( //
         "Integrate[Sqrt[e+b*(-1+e)*x/a]/(Sqrt[a+b*x]*Sqrt[c+b*(-1+c)*x/a]), x]", //
@@ -2353,6 +2687,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3021
+  @Test
   public void test0332() {
     check( //
         "Integrate[(2+3*x)^(3/2)*(3+5*x)^(3/2)*Sqrt[1-2*x], x]", //
@@ -2360,6 +2695,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3035
+  @Test
   public void test0333() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[1-2*x]/(2+3*x)^(7/2), x]", //
@@ -2367,6 +2703,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3051
+  @Test
   public void test0334() {
     check( //
         "Integrate[(2+3*x)^(7/2)*Sqrt[1-2*x]/(3+5*x)^(3/2), x]", //
@@ -2374,6 +2711,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3065
+  @Test
   public void test0335() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -2381,6 +2719,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3083
+  @Test
   public void test0336() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)*Sqrt[2+3*x], x]", //
@@ -2388,6 +2727,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3097
+  @Test
   public void test0337() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(5/2)/(2+3*x)^(7/2), x]", //
@@ -2395,6 +2735,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3113
+  @Test
   public void test0338() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(2+3*x)^(5/2)/(3+5*x)^(3/2), x]", //
@@ -2402,6 +2743,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3127
+  @Test
   public void test0339() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -2409,6 +2751,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3145
+  @Test
   public void test0340() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)*Sqrt[2+3*x], x]", //
@@ -2416,6 +2759,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3159
+  @Test
   public void test0341() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^(7/2), x]", //
@@ -2423,6 +2767,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3175
+  @Test
   public void test0342() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^(11/2)*Sqrt[3+5*x]), x]", //
@@ -2430,6 +2775,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3189
+  @Test
   public void test0343() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(2+3*x)^(3/2)/(3+5*x)^(5/2), x]", //
@@ -2437,6 +2783,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3207
+  @Test
   public void test0344() {
     check( //
         "Integrate[(2+3*x)^(5/2)*(3+5*x)^(3/2)/Sqrt[1-2*x], x]", //
@@ -2444,6 +2791,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3221
+  @Test
   public void test0345() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((2+3*x)^(5/2)*Sqrt[1-2*x]), x]", //
@@ -2451,6 +2799,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3253
+  @Test
   public void test0346() {
     check( //
         "Integrate[1/((2+3*x)^(7/2)*Sqrt[1-2*x]*Sqrt[3+5*x]), x]", //
@@ -2458,6 +2807,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3267
+  @Test
   public void test0347() {
     check( //
         "Integrate[1/((3+5*x)^(5/2)*Sqrt[1-2*x]*Sqrt[2+3*x]), x]", //
@@ -2465,6 +2815,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3291
+  @Test
   public void test0348() {
     check( //
         "Integrate[Sqrt[2+3*x]*Sqrt[3+5*x]/(1-2*x)^(3/2), x]", //
@@ -2472,6 +2823,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3305
+  @Test
   public void test0349() {
     check( //
         "Integrate[(2+3*x)^(7/2)*(3+5*x)^(5/2)/(1-2*x)^(3/2), x]", //
@@ -2479,6 +2831,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3321
+  @Test
   public void test0350() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*Sqrt[2+3*x]*Sqrt[3+5*x]), x]", //
@@ -2486,6 +2839,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3335
+  @Test
   public void test0351() {
     check( //
         "Integrate[(2+3*x)^(9/2)/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -2493,6 +2847,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3353
+  @Test
   public void test0352() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(5/2)*Sqrt[2+3*x]), x]", //
@@ -2500,6 +2855,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3367
+  @Test
   public void test0353() {
     check( //
         "Integrate[(2+3*x)^(3/2)*(3+5*x)^(5/2)/(1-2*x)^(5/2), x]", //
@@ -2507,6 +2863,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3383
+  @Test
   public void test0354() {
     check( //
         "Integrate[1/((1-2*x)^(5/2)*(2+3*x)^(5/2)*Sqrt[3+5*x]), x]", //
@@ -2514,6 +2871,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3397
+  @Test
   public void test0355() {
     check( //
         "Integrate[(2+3*x)^(9/2)/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -2521,6 +2879,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3417
+  @Test
   public void test0356() {
     check( //
         "Integrate[(a+b*x)^(1/3)*(c+d*x)^(2/3)/(e+f*x)^3, x]", //
@@ -2528,6 +2887,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:61
+  @Test
   public void test0357() {
     check( //
         "Integrate[Sqrt[2-3*x]*Sqrt[-5+2*x]*Sqrt[1+4*x], x]", //
@@ -2535,6 +2895,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:43
+  @Test
   public void test0358() {
     check( //
         "Integrate[x^3*(a+b*x^2)^3, x]", //
@@ -2542,6 +2903,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:71
+  @Test
   public void test0359() {
     check( //
         "Integrate[(a+b*x^2)^5/x^3, x]", //
@@ -2549,6 +2911,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:99
+  @Test
   public void test0360() {
     check( //
         "Integrate[x^7*(a+b*x^2)^8, x]", //
@@ -2556,6 +2919,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:113
+  @Test
   public void test0361() {
     check( //
         "Integrate[(a+b*x^2)^8/x^21, x]", //
@@ -2563,6 +2927,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:157
+  @Test
   public void test0362() {
     check( //
         "Integrate[1/(x^9*(a+b*x^2)), x]", //
@@ -2570,6 +2935,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:171
+  @Test
   public void test0363() {
     check( //
         "Integrate[1/(a+b*x^2)^2, x]", //
@@ -2577,6 +2943,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:185
+  @Test
   public void test0364() {
     check( //
         "Integrate[x^7/(a+b*x^2)^3, x]", //
@@ -2584,6 +2951,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:213
+  @Test
   public void test0365() {
     check( //
         "Integrate[x^9/(a+b*x^2)^10, x]", //
@@ -2591,6 +2959,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:241
+  @Test
   public void test0366() {
     check( //
         "Integrate[1/(a-b*x^2), x]", //
@@ -2598,6 +2967,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:255
+  @Test
   public void test0367() {
     check( //
         "Integrate[1/(a-b*x^2)^3, x]", //
@@ -2605,6 +2975,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:269
+  @Test
   public void test0368() {
     check( //
         "Integrate[1/(x^3*(-1+b*x^2)), x]", //
@@ -2612,6 +2983,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:399
+  @Test
   public void test0369() {
     check( //
         "Integrate[Sqrt[a+b*x^2]/x^2, x]", //
@@ -2619,6 +2991,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:441
+  @Test
   public void test0370() {
     check( //
         "Integrate[(a+b*x^2)^(5/2)/x^14, x]", //
@@ -2626,6 +2999,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:597
+  @Test
   public void test0371() {
     check( //
         "Integrate[1/(x*Sqrt[-9+4*x^2]), x]", //
@@ -2633,6 +3007,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:887
+  @Test
   public void test0372() {
     check( //
         "Integrate[1/(a+b*x^2)^(1/4), x]", //
@@ -2640,6 +3015,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:901
+  @Test
   public void test0373() {
     check( //
         "Integrate[1/(a+b*x^2)^(3/4), x]", //
@@ -2647,6 +3023,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:915
+  @Test
   public void test0374() {
     check( //
         "Integrate[1/(a+b*x^2)^(5/4), x]", //
@@ -2654,6 +3031,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:929
+  @Test
   public void test0375() {
     check( //
         "Integrate[1/(a-b*x^2)^(7/4), x]", //
@@ -2661,6 +3039,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1003
+  @Test
   public void test0376() {
     check( //
         "Integrate[(a+b*x^2)^(1/4)/(c*x)^(15/2), x]", //
@@ -2668,6 +3047,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1133
+  @Test
   public void test0377() {
     check( //
         "Integrate[x^5*(a+b*x^2)^p, x]", //
@@ -2675,6 +3055,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:48
+  @Test
   public void test0378() {
     check( //
         "Integrate[(c+d*x^2)^3/(a+b*x^2)^3, x]", //
@@ -2682,6 +3063,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:66
+  @Test
   public void test0379() {
     check( //
         "Integrate[(a+b*x^2)^(1/2)/(c+d*x^2)^3, x]", //
@@ -2689,6 +3071,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:80
+  @Test
   public void test0380() {
     check( //
         "Integrate[(a+b*x^2)^(5/2), x]", //
@@ -2696,6 +3079,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:96
+  @Test
   public void test0381() {
     check( //
         "Integrate[1/((a+b*x^2)^(1/2)*(c+d*x^2)^2), x]", //
@@ -2703,6 +3087,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:177
+  @Test
   public void test0382() {
     check( //
         "Integrate[1/((a+b*x^2)^(1/3)*(9*a*d/b+d*x^2)), x]", //
@@ -2710,6 +3095,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:216
+  @Test
   public void test0383() {
     check( //
         "Integrate[Sqrt[2+b*x^2]/Sqrt[3+d*x^2], x]", //
@@ -2717,6 +3103,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:230
+  @Test
   public void test0384() {
     check( //
         "Integrate[Sqrt[1+x^2]/Sqrt[2+3*x^2], x]", //
@@ -2724,6 +3111,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:303
+  @Test
   public void test0385() {
     check( //
         "Integrate[Sqrt[a+b*x^2]/Sqrt[c+d*x^2], x]", //
@@ -2731,6 +3119,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:317
+  @Test
   public void test0386() {
     check( //
         "Integrate[Sqrt[c-d*x^2]/Sqrt[-a+b*x^2], x]", //
@@ -2738,6 +3127,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:331
+  @Test
   public void test0387() {
     check( //
         "Integrate[Sqrt[1-c^2*x^2]/Sqrt[1+c^2*x^2], x]", //
@@ -2745,6 +3135,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:13
+  @Test
   public void test0388() {
     check( //
         "Integrate[x*(a+b*x^2)*(A+B*x^2), x]", //
@@ -2752,6 +3143,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:27
+  @Test
   public void test0389() {
     check( //
         "Integrate[(a+b*x^2)^2*(A+B*x^2)/x^3, x]", //
@@ -2759,6 +3151,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:55
+  @Test
   public void test0390() {
     check( //
         "Integrate[(a+b*x^2)^5*(A+B*x^2)/x^12, x]", //
@@ -2766,6 +3159,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:71
+  @Test
   public void test0391() {
     check( //
         "Integrate[x^4*(A+B*x^2)/(a+b*x^2), x]", //
@@ -2773,6 +3167,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:85
+  @Test
   public void test0392() {
     check( //
         "Integrate[x^8*(A+B*x^2)/(a+b*x^2)^2, x]", //
@@ -2780,6 +3175,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:113
+  @Test
   public void test0393() {
     check( //
         "Integrate[x^6*(A+B*x^2)/(a+b*x^2)^3, x]", //
@@ -2787,6 +3183,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:141
+  @Test
   public void test0394() {
     check( //
         "Integrate[x^2*(a*c+b*c*x^2)/(a+b*x^2)^2, x]", //
@@ -2794,6 +3191,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:159
+  @Test
   public void test0395() {
     check( //
         "Integrate[x^3*(a+b*x^2)^2*(c+d*x^2), x]", //
@@ -2801,6 +3199,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:173
+  @Test
   public void test0396() {
     check( //
         "Integrate[(a+b*x^2)^2*(c+d*x^2)^2/x^2, x]", //
@@ -2808,6 +3207,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:189
+  @Test
   public void test0397() {
     check( //
         "Integrate[x^2*(a+b*x^2)^2/(c+d*x^2), x]", //
@@ -2815,6 +3215,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:203
+  @Test
   public void test0398() {
     check( //
         "Integrate[(a+b*x^2)^2/(c+d*x^2)^2, x]", //
@@ -2822,6 +3223,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:237
+  @Test
   public void test0399() {
     check( //
         "Integrate[x*(c+d*x^2)^2/(a+b*x^2), x]", //
@@ -2829,6 +3231,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:267
+  @Test
   public void test0400() {
     check( //
         "Integrate[1/(x^7*(a+b*x^2)*(c+d*x^2)), x]", //
@@ -2836,6 +3239,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:299
+  @Test
   public void test0401() {
     check( //
         "Integrate[(c+d*x^2)/(x^2*(a+b*x^2)^2), x]", //
@@ -2843,6 +3247,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:329
+  @Test
   public void test0402() {
     check( //
         "Integrate[1/(x^3*(a+b*x^2)^2*(c+d*x^2)), x]", //
@@ -2850,6 +3255,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:403
+  @Test
   public void test0403() {
     check( //
         "Integrate[(a+b*x^2)^2*(A+B*x^2)/x^(3/2), x]", //
@@ -2857,6 +3263,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:419
+  @Test
   public void test0404() {
     check( //
         "Integrate[(A+B*x^2)*Sqrt[x]/(a+b*x^2), x]", //
@@ -2864,6 +3271,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:451
+  @Test
   public void test0405() {
     check( //
         "Integrate[(a+b*x^2)^2*(c+d*x^2)/x^(7/2), x]", //
@@ -2871,6 +3279,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:465
+  @Test
   public void test0406() {
     check( //
         "Integrate[(a+b*x^2)^2*(c+d*x^2)^3/x^(3/2), x]", //
@@ -2878,6 +3287,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:481
+  @Test
   public void test0407() {
     check( //
         "Integrate[x^(5/2)*(a+b*x^2)^2/(c+d*x^2)^2, x]", //
@@ -2885,6 +3295,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.3.2 (c x)^m (a+b x^n)^p.input:565
+  @Test
   public void test0408() {
     check( //
         "Integrate[1/(x*Sqrt[-1-x^3]), x]", //
@@ -2892,6 +3303,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.3.2 (c x)^m (a+b x^n)^p.input:2204
+  @Test
   public void test0409() {
     check( //
         "Integrate[(a+b/x^2)^(1/2)/x^3, x]", //
@@ -2899,6 +3311,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:38
+  @Test
   public void test0410() {
     check( //
         "Integrate[1/x^(5/2), x]", //
@@ -2906,6 +3319,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:62
+  @Test
   public void test0411() {
     check( //
         "Integrate[(c+d*(a+b*x))^(1/2), x]", //
@@ -2913,6 +3327,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:180
+  @Test
   public void test0412() {
     check( //
         "Integrate[(a+b*x)^10/x^17, x]", //
@@ -2920,6 +3335,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:318
+  @Test
   public void test0413() {
     check( //
         "Integrate[1/(1/a^2+x*Sqrt[-a]), x]", //
@@ -2927,6 +3343,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:640
+  @Test
   public void test0414() {
     check( //
         "Integrate[1/(Sqrt[x]*Sqrt[a+b*x]), x]", //
@@ -2934,6 +3351,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:682
+  @Test
   public void test0415() {
     check( //
         "Integrate[1/(x^(7/2)*Sqrt[2+b*x]), x]", //
@@ -2941,6 +3359,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:696
+  @Test
   public void test0416() {
     check( //
         "Integrate[1/(x^(5/2)*(2+b*x)^(5/2)), x]", //
@@ -2948,6 +3367,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:856
+  @Test
   public void test0417() {
     check( //
         "Integrate[(c*x^2)^(3/2)*(a+b*x)/x, x]", //
@@ -2955,6 +3375,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:886
+  @Test
   public void test0418() {
     check( //
         "Integrate[x^3*(a+b*x)/(c*x^2)^(5/2), x]", //
@@ -2962,6 +3383,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:904
+  @Test
   public void test0419() {
     check( //
         "Integrate[(a+b*x)^2*Sqrt[c*x^2]/x^3, x]", //
@@ -2969,6 +3391,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:918
+  @Test
   public void test0420() {
     check( //
         "Integrate[(c*x^2)^(5/2)*(a+b*x)^2/x^3, x]", //
@@ -2976,6 +3399,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:934
+  @Test
   public void test0421() {
     check( //
         "Integrate[x*(a+b*x)^2/(c*x^2)^(3/2), x]", //
@@ -2983,6 +3407,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:966
+  @Test
   public void test0422() {
     check( //
         "Integrate[(c*x^2)^(3/2)/(x^5*(a+b*x)), x]", //
@@ -2990,6 +3415,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:982
+  @Test
   public void test0423() {
     check( //
         "Integrate[x/((a+b*x)*Sqrt[c*x^2]), x]", //
@@ -2997,6 +3423,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1014
+  @Test
   public void test0424() {
     check( //
         "Integrate[(c*x^2)^(3/2)/(x^6*(a+b*x)^2), x]", //
@@ -3004,6 +3431,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1030
+  @Test
   public void test0425() {
     check( //
         "Integrate[1/((c*x^2)^(3/2)*(a+b*x)^2), x]", //
@@ -3011,6 +3439,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1054
+  @Test
   public void test0426() {
     check( //
         "Integrate[(c*x^2)^(5/2)*(a+b*x)^n/x^4, x]", //
@@ -3018,6 +3447,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1087
+  @Test
   public void test0427() {
     check( //
         "Integrate[(d*x)^m*(c*x^2)^(5/2)*(a+b*x), x]", //
@@ -3025,6 +3455,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1141
+  @Test
   public void test0428() {
     check( //
         "Integrate[1/((a+b*x)^2*(a*d/b+d*x)^3), x]", //
@@ -3032,6 +3463,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1205
+  @Test
   public void test0429() {
     check( //
         "Integrate[1/((a+b*x)^2*(a*c-b*c*x)^2), x]", //
@@ -3039,6 +3471,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1253
+  @Test
   public void test0430() {
     check( //
         "Integrate[(1+x)^(5/2)/(1-x)^(19/2), x]", //
@@ -3046,6 +3479,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1285
+  @Test
   public void test0431() {
     check( //
         "Integrate[1/((1-x)^(1/2)*(1+x)^(5/2)), x]", //
@@ -3053,6 +3487,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1337
+  @Test
   public void test0432() {
     check( //
         "Integrate[1/((a-I*a*x)^(1/4)*(a+I*a*x)^(1/4)), x]", //
@@ -3060,6 +3495,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1739
+  @Test
   public void test0433() {
     check( //
         "Integrate[1/((a+b*x)^(9/2)*(c+d*x)^(1/2)), x]", //
@@ -3067,6 +3503,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1973
+  @Test
   public void test0434() {
     check( //
         "Integrate[1/((a+b*x)^(13/4)*(c+d*x)^(3/4)), x]", //
@@ -3074,6 +3511,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2052
+  @Test
   public void test0435() {
     check( //
         "Integrate[(a+b*x)^(1/6)/(c+d*x)^(25/6), x]", //
@@ -3081,6 +3519,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2078
+  @Test
   public void test0436() {
     check( //
         "Integrate[(a+b*x)^(7/6)/(c+d*x)^(31/6), x]", //
@@ -3088,6 +3527,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2106
+  @Test
   public void test0437() {
     check( //
         "Integrate[1/((a+b*x)^(5/6)*(c+d*x)^(19/6)), x]", //
@@ -3095,6 +3535,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2162
+  @Test
   public void test0438() {
     check( //
         "Integrate[(c+d*x)^(1+2*n-2*(1+n))/(a+b*x)^2, x]", //
@@ -3102,6 +3543,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2186
+  @Test
   public void test0439() {
     check( //
         "Integrate[5+2*x+3*x^2+4*x^3, x]", //
@@ -3109,6 +3551,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2202
+  @Test
   public void test0440() {
     check( //
         "Integrate[-5*x^(3/2)+7*x^(5/2), x]", //
@@ -3116,6 +3559,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:25
+  @Test
   public void test0441() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^3/x^8, x]", //
@@ -3123,6 +3567,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:39
+  @Test
   public void test0442() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^4/x^9, x]", //
@@ -3130,6 +3575,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:53
+  @Test
   public void test0443() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^5/x^9, x]", //
@@ -3137,6 +3583,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:125
+  @Test
   public void test0444() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/x, x]", //
@@ -3144,6 +3591,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:139
+  @Test
   public void test0445() {
     check( //
         "Integrate[(a+b*x)^3*(A+B*x)/x^2, x]", //
@@ -3151,6 +3599,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:181
+  @Test
   public void test0446() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/x^5, x]", //
@@ -3158,6 +3607,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:195
+  @Test
   public void test0447() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/x^19, x]", //
@@ -3165,6 +3615,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:439
+  @Test
   public void test0448() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/x^(7/2), x]", //
@@ -3172,6 +3623,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:456
+  @Test
   public void test0449() {
     check( //
         "Integrate[(A+B*x)/(x^(3/2)*(a+b*x)), x]", //
@@ -3179,6 +3631,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:628
+  @Test
   public void test0450() {
     check( //
         "Integrate[(A+B*x)*Sqrt[a+b*x]/x^(11/2), x]", //
@@ -3186,6 +3639,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:642
+  @Test
   public void test0451() {
     check( //
         "Integrate[(a+b*x)^(3/2)*(A+B*x)/x^(17/2), x]", //
@@ -3193,6 +3647,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:686
+  @Test
   public void test0452() {
     check( //
         "Integrate[(A+B*x)/(x^(5/2)*(a+b*x)^(5/2)), x]", //
@@ -3200,6 +3655,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:720
+  @Test
   public void test0453() {
     check( //
         "Integrate[(c+d*x)^(5/2)*Sqrt[a+b*x]/x^3, x]", //
@@ -3207,6 +3663,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:768
+  @Test
   public void test0454() {
     check( //
         "Integrate[(a+b*x)^(3/2)*(c+d*x)^(3/2)/x^4, x]", //
@@ -3214,6 +3671,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:816
+  @Test
   public void test0455() {
     check( //
         "Integrate[(a+b*x)^(5/2)*Sqrt[c+d*x]/x^6, x]", //
@@ -3221,6 +3679,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:830
+  @Test
   public void test0456() {
     check( //
         "Integrate[(a+b*x)^(5/2)*(c+d*x)^(5/2)/x^3, x]", //
@@ -3228,6 +3687,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:860
+  @Test
   public void test0457() {
     check( //
         "Integrate[(a+b*x)^(5/2)/(x^4*(c+d*x)^(5/2)), x]", //
@@ -3235,6 +3695,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:878
+  @Test
   public void test0458() {
     check( //
         "Integrate[(c+d*x)^(3/2)/(x^3*Sqrt[a+b*x]), x]", //
@@ -3242,6 +3703,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:922
+  @Test
   public void test0459() {
     check( //
         "Integrate[1/(x*(c+d*x)^(5/2)*Sqrt[a+b*x]), x]", //
@@ -3249,6 +3711,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:956
+  @Test
   public void test0460() {
     check( //
         "Integrate[1/(x*(a+b*x)^(3/2)*(c+d*x)^(3/2)), x]", //
@@ -3256,6 +3719,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:990
+  @Test
   public void test0461() {
     check( //
         "Integrate[x/((a+b*x)^(5/2)*(c+d*x)^(5/2)), x]", //
@@ -3263,6 +3727,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1259
+  @Test
   public void test0462() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/(d+e*x)^4, x]", //
@@ -3270,6 +3735,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1273
+  @Test
   public void test0463() {
     check( //
         "Integrate[(a+b*x)^3*(A+B*x)/(d+e*x)^4, x]", //
@@ -3277,6 +3743,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1301
+  @Test
   public void test0464() {
     check( //
         "Integrate[(a+b*x)^6*(A+B*x)/(d+e*x)^13, x]", //
@@ -3284,6 +3751,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1329
+  @Test
   public void test0465() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/(d+e*x)^12, x]", //
@@ -3291,6 +3759,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1345
+  @Test
   public void test0466() {
     check( //
         "Integrate[(A+B*x)*(d+e*x)^2/(a+b*x), x]", //
@@ -3298,6 +3767,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1897
+  @Test
   public void test0467() {
     check( //
         "Integrate[(2+3*x)^6*(3+5*x)/(1-2*x)^3, x]", //
@@ -3305,6 +3775,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1911
+  @Test
   public void test0468() {
     check( //
         "Integrate[(2+3*x)^6*(3+5*x)^2/(1-2*x)^3, x]", //
@@ -3312,6 +3783,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1925
+  @Test
   public void test0469() {
     check( //
         "Integrate[(2+3*x)^5*(3+5*x)^3/(1-2*x)^3, x]", //
@@ -3319,6 +3791,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2098
+  @Test
   public void test0470() {
     check( //
         "Integrate[(2+3*x)^4*(3+5*x)^3*Sqrt[1-2*x], x]", //
@@ -3326,6 +3799,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2114
+  @Test
   public void test0471() {
     check( //
         "Integrate[(2+3*x)^3*Sqrt[1-2*x]/(3+5*x), x]", //
@@ -3333,6 +3807,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2190
+  @Test
   public void test0472() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(2+3*x)^2/(3+5*x), x]", //
@@ -3340,6 +3815,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2266
+  @Test
   public void test0473() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(2+3*x)^3/(3+5*x), x]", //
@@ -3347,6 +3823,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2418
+  @Test
   public void test0474() {
     check( //
         "Integrate[(2+3*x)/((1-2*x)^(3/2)*(3+5*x)), x]", //
@@ -3354,6 +3831,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2528
+  @Test
   public void test0475() {
     check( //
         "Integrate[(A+B*x)*Sqrt[a+b*x]/(d+e*x)^(9/2), x]", //
@@ -3361,6 +3839,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2618
+  @Test
   public void test0476() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[1-2*x]/(2+3*x), x]", //
@@ -3368,6 +3847,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2634
+  @Test
   public void test0477() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)*Sqrt[3+5*x]), x]", //
@@ -3375,6 +3855,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2648
+  @Test
   public void test0478() {
     check( //
         "Integrate[(2+3*x)^3*Sqrt[1-2*x]/(3+5*x)^(5/2), x]", //
@@ -3382,6 +3863,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2666
+  @Test
   public void test0479() {
     check( //
         "Integrate[(1-2*x)^(3/2)*Sqrt[3+5*x]/(2+3*x)^3, x]", //
@@ -3389,6 +3871,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2680
+  @Test
   public void test0480() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)/(2+3*x)^7, x]", //
@@ -3396,6 +3879,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2710
+  @Test
   public void test0481() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)*(3+5*x)^(3/2)), x]", //
@@ -3403,6 +3887,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2742
+  @Test
   public void test0482() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/(2+3*x), x]", //
@@ -3410,6 +3895,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2756
+  @Test
   public void test0483() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^3, x]", //
@@ -3417,6 +3903,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2772
+  @Test
   public void test0484() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^3*Sqrt[3+5*x]), x]", //
@@ -3424,6 +3911,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2786
+  @Test
   public void test0485() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^5*(3+5*x)^(3/2)), x]", //
@@ -3431,6 +3919,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2818
+  @Test
   public void test0486() {
     check( //
         "Integrate[(3+5*x)^(3/2)/((2+3*x)^2*Sqrt[1-2*x]), x]", //
@@ -3438,6 +3927,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2832
+  @Test
   public void test0487() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((2+3*x)^6*Sqrt[1-2*x]), x]", //
@@ -3445,6 +3935,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2848
+  @Test
   public void test0488() {
     check( //
         "Integrate[(2+3*x)/((3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -3452,6 +3943,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2862
+  @Test
   public void test0489() {
     check( //
         "Integrate[1/((2+3*x)^3*(3+5*x)^(5/2)*Sqrt[1-2*x]), x]", //
@@ -3459,6 +3951,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2910
+  @Test
   public void test0490() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(2+3*x)^2*Sqrt[3+5*x]), x]", //
@@ -3466,6 +3959,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2924
+  @Test
   public void test0491() {
     check( //
         "Integrate[(2+3*x)^5/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -3473,6 +3967,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2942
+  @Test
   public void test0492() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(5/2)*(2+3*x)), x]", //
@@ -3480,6 +3975,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2986
+  @Test
   public void test0493() {
     check( //
         "Integrate[(2+3*x)^6/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -3487,6 +3983,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3022
+  @Test
   public void test0494() {
     check( //
         "Integrate[(3+5*x)^(3/2)*Sqrt[1-2*x]*Sqrt[2+3*x], x]", //
@@ -3494,6 +3991,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3036
+  @Test
   public void test0495() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[1-2*x]/(2+3*x)^(9/2), x]", //
@@ -3501,6 +3999,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3052
+  @Test
   public void test0496() {
     check( //
         "Integrate[(2+3*x)^(5/2)*Sqrt[1-2*x]/(3+5*x)^(3/2), x]", //
@@ -3508,6 +4007,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3066
+  @Test
   public void test0497() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -3515,6 +4015,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3084
+  @Test
   public void test0498() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)/Sqrt[2+3*x], x]", //
@@ -3522,6 +4023,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3098
+  @Test
   public void test0499() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(5/2)/(2+3*x)^(9/2), x]", //
@@ -3529,6 +4031,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3114
+  @Test
   public void test0500() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(2+3*x)^(3/2)/(3+5*x)^(3/2), x]", //
@@ -3536,6 +4039,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3128
+  @Test
   public void test0501() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)^(7/2)*(3+5*x)^(5/2)), x]", //
@@ -3543,6 +4047,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3146
+  @Test
   public void test0502() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/Sqrt[2+3*x], x]", //
@@ -3550,6 +4055,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3160
+  @Test
   public void test0503() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^(9/2), x]", //
@@ -3557,6 +4063,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3176
+  @Test
   public void test0504() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^(13/2)*Sqrt[3+5*x]), x]", //
@@ -3564,6 +4071,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3190
+  @Test
   public void test0505() {
     check( //
         "Integrate[(1-2*x)^(5/2)*Sqrt[2+3*x]/(3+5*x)^(5/2), x]", //
@@ -3571,6 +4079,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3208
+  @Test
   public void test0506() {
     check( //
         "Integrate[(2+3*x)^(3/2)*(3+5*x)^(3/2)/Sqrt[1-2*x], x]", //
@@ -3578,6 +4087,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3222
+  @Test
   public void test0507() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((2+3*x)^(7/2)*Sqrt[1-2*x]), x]", //
@@ -3585,6 +4095,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3254
+  @Test
   public void test0508() {
     check( //
         "Integrate[(2+3*x)^(7/2)/((3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -3592,6 +4103,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3268
+  @Test
   public void test0509() {
     check( //
         "Integrate[1/((2+3*x)^(3/2)*(3+5*x)^(5/2)*Sqrt[1-2*x]), x]", //
@@ -3599,6 +4111,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3292
+  @Test
   public void test0510() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(3/2)*Sqrt[2+3*x]), x]", //
@@ -3606,6 +4119,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3306
+  @Test
   public void test0511() {
     check( //
         "Integrate[(2+3*x)^(5/2)*(3+5*x)^(5/2)/(1-2*x)^(3/2), x]", //
@@ -3613,6 +4127,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3322
+  @Test
   public void test0512() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(2+3*x)^(3/2)*Sqrt[3+5*x]), x]", //
@@ -3620,6 +4135,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3336
+  @Test
   public void test0513() {
     check( //
         "Integrate[(2+3*x)^(7/2)/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -3627,6 +4143,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3354
+  @Test
   public void test0514() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(5/2)*(2+3*x)^(3/2)), x]", //
@@ -3634,6 +4151,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3368
+  @Test
   public void test0515() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[2+3*x]/(1-2*x)^(5/2), x]", //
@@ -3641,6 +4159,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3384
+  @Test
   public void test0516() {
     check( //
         "Integrate[1/((1-2*x)^(5/2)*(2+3*x)^(7/2)*Sqrt[3+5*x]), x]", //
@@ -3648,6 +4167,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3398
+  @Test
   public void test0517() {
     check( //
         "Integrate[(2+3*x)^(7/2)/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -3655,6 +4175,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:40
+  @Test
   public void test0518() {
     check( //
         "Integrate[(1+a*x)/(Sqrt[a*x]*Sqrt[1-a*x]), x]", //
@@ -3662,6 +4183,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:69
+  @Test
   public void test0519() {
     check( //
         "Integrate[(7+5*x)^3*Sqrt[2-3*x]*Sqrt[1+4*x]/Sqrt[-5+2*x], x]", //
@@ -3669,6 +4191,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:100
+  @Test
   public void test0520() {
     check( //
         "Integrate[(a+b*x)/(Sqrt[c+d*x]*Sqrt[e+f*x]*Sqrt[g+h*x]), x]", //
@@ -3676,6 +4199,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:16
+  @Test
   public void test0521() {
     check( //
         "Integrate[a+b*x^2, x]", //
@@ -3683,6 +4207,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:30
+  @Test
   public void test0522() {
     check( //
         "Integrate[(a+b*x^2)^2/x, x]", //
@@ -3690,6 +4215,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:72
+  @Test
   public void test0523() {
     check( //
         "Integrate[(a+b*x^2)^5/x^5, x]", //
@@ -3697,6 +4223,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:100
+  @Test
   public void test0524() {
     check( //
         "Integrate[x^5*(a+b*x^2)^8, x]", //
@@ -3704,6 +4231,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:114
+  @Test
   public void test0525() {
     check( //
         "Integrate[(a+b*x^2)^8/x^23, x]", //
@@ -3711,6 +4239,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:144
+  @Test
   public void test0526() {
     check( //
         "Integrate[x^4/(a+b*x^2), x]", //
@@ -3718,6 +4247,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:172
+  @Test
   public void test0527() {
     check( //
         "Integrate[1/(x*(a+b*x^2)^2), x]", //
@@ -3725,6 +4255,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:186
+  @Test
   public void test0528() {
     check( //
         "Integrate[x^5/(a+b*x^2)^3, x]", //
@@ -3732,6 +4263,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:200
+  @Test
   public void test0529() {
     check( //
         "Integrate[1/(a+b*x^2)^3, x]", //
@@ -3739,6 +4271,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:214
+  @Test
   public void test0530() {
     check( //
         "Integrate[x^7/(a+b*x^2)^10, x]", //
@@ -3746,6 +4279,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:242
+  @Test
   public void test0531() {
     check( //
         "Integrate[1/(x*(a-b*x^2)), x]", //
@@ -3753,6 +4287,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:256
+  @Test
   public void test0532() {
     check( //
         "Integrate[1/(x*(a-b*x^2)^3), x]", //
@@ -3760,6 +4295,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:442
+  @Test
   public void test0533() {
     check( //
         "Integrate[(a+b*x^2)^(5/2)/x^16, x]", //
@@ -3767,6 +4303,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:512
+  @Test
   public void test0534() {
     check( //
         "Integrate[x^2*Sqrt[-9-4*x^2], x]", //
@@ -3774,6 +4311,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:528
+  @Test
   public void test0535() {
     check( //
         "Integrate[1/(x*Sqrt[a+b*x^2]), x]", //
@@ -3781,6 +4319,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:542
+  @Test
   public void test0536() {
     check( //
         "Integrate[1/(x^4*(a+b*x^2)^(3/2)), x]", //
@@ -3788,6 +4327,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:751
+  @Test
   public void test0537() {
     check( //
         "Integrate[(a+b*x^2)^(4/3), x]", //
@@ -3795,6 +4335,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:916
+  @Test
   public void test0538() {
     check( //
         "Integrate[1/(x^2*(a+b*x^2)^(5/4)), x]", //
@@ -3802,6 +4343,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:930
+  @Test
   public void test0539() {
     check( //
         "Integrate[1/(a-b*x^2)^(9/4), x]", //
@@ -3809,6 +4351,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1004
+  @Test
   public void test0540() {
     check( //
         "Integrate[(a+b*x^2)^(1/4)/(c*x)^(19/2), x]", //
@@ -3816,6 +4359,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1034
+  @Test
   public void test0541() {
     check( //
         "Integrate[1/((c*x)^(13/2)*(a-b*x^2)^(1/4)), x]", //
@@ -3823,6 +4367,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1062
+  @Test
   public void test0542() {
     check( //
         "Integrate[1/((c*x)^(1/2)*(a+b*x^2)^(5/4)), x]", //
@@ -3830,6 +4375,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1100
+  @Test
   public void test0543() {
     check( //
         "Integrate[(a+b*x^2)^(1/6), x]", //
@@ -3837,6 +4383,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1134
+  @Test
   public void test0544() {
     check( //
         "Integrate[x^3*(a+b*x^2)^p, x]", //
@@ -3844,6 +4391,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:35
+  @Test
   public void test0545() {
     check( //
         "Integrate[1/((a+b*x^2)*(c+d*x^2)), x]", //
@@ -3851,6 +4399,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:178
+  @Test
   public void test0546() {
     check( //
         "Integrate[1/((a-b*x^2)^(1/3)*(-9*a*d/b+d*x^2)), x]", //
@@ -3858,6 +4407,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:203
+  @Test
   public void test0547() {
     check( //
         "Integrate[Sqrt[c+d*x^2]/(a+b*x^2)^(1/2), x]", //
@@ -3865,6 +4415,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:217
+  @Test
   public void test0548() {
     check( //
         "Integrate[Sqrt[4-x^2]/Sqrt[c+d*x^2], x]", //
@@ -3872,6 +4423,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:231
+  @Test
   public void test0549() {
     check( //
         "Integrate[Sqrt[4+x^2]/Sqrt[2+3*x^2], x]", //
@@ -3879,6 +4431,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:247
+  @Test
   public void test0550() {
     check( //
         "Integrate[(a+b*x^2)^(1/2)/(c+d*x^2)^(3/2), x]", //
@@ -3886,6 +4439,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:304
+  @Test
   public void test0551() {
     check( //
         "Integrate[Sqrt[-a-b*x^2]/Sqrt[c+d*x^2], x]", //
@@ -3893,6 +4447,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:318
+  @Test
   public void test0552() {
     check( //
         "Integrate[Sqrt[-c+d*x^2]/Sqrt[-a+b*x^2], x]", //
@@ -3900,6 +4455,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:28
+  @Test
   public void test0553() {
     check( //
         "Integrate[(a+b*x^2)^2*(A+B*x^2)/x^4, x]", //
@@ -3907,6 +4463,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:42
+  @Test
   public void test0554() {
     check( //
         "Integrate[x*(a+b*x^2)^5*(A+B*x^2), x]", //
@@ -3914,6 +4471,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:56
+  @Test
   public void test0555() {
     check( //
         "Integrate[(a+b*x^2)^5*(A+B*x^2)/x^13, x]", //
@@ -3921,6 +4479,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:114
+  @Test
   public void test0556() {
     check( //
         "Integrate[x^4*(A+B*x^2)/(a+b*x^2)^3, x]", //
@@ -3928,6 +4487,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:142
+  @Test
   public void test0557() {
     check( //
         "Integrate[x*(a*c+b*c*x^2)/(a+b*x^2)^2, x]", //
@@ -3935,6 +4495,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:174
+  @Test
   public void test0558() {
     check( //
         "Integrate[(a+b*x^2)^2*(c+d*x^2)^2/x^3, x]", //
@@ -3942,6 +4503,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:190
+  @Test
   public void test0559() {
     check( //
         "Integrate[x*(a+b*x^2)^2/(c+d*x^2), x]", //
@@ -3949,6 +4511,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:224
+  @Test
   public void test0560() {
     check( //
         "Integrate[x^4*(c+d*x^2)/(a+b*x^2), x]", //
@@ -3956,6 +4519,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:238
+  @Test
   public void test0561() {
     check( //
         "Integrate[(c+d*x^2)^2/(a+b*x^2), x]", //
@@ -3963,6 +4527,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:268
+  @Test
   public void test0562() {
     check( //
         "Integrate[x^5/((a+b*x^2)^2*(c+d*x^2)), x]", //
@@ -3970,6 +4535,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:344
+  @Test
   public void test0563() {
     check( //
         "Integrate[x^3/((a+b*x^2)^2*(c+d*x^2)^3), x]", //
@@ -3977,6 +4543,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:404
+  @Test
   public void test0564() {
     check( //
         "Integrate[(a+b*x^2)^2*(A+B*x^2)/x^(5/2), x]", //
@@ -3984,6 +4551,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:420
+  @Test
   public void test0565() {
     check( //
         "Integrate[(A+B*x^2)/((a+b*x^2)*Sqrt[x]), x]", //
@@ -3991,6 +4559,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:466
+  @Test
   public void test0566() {
     check( //
         "Integrate[(a+b*x^2)^2*(c+d*x^2)^3/x^(5/2), x]", //
@@ -3998,6 +4567,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.4 (e x)^m (a+b x^2)^p (c+d x^2)^q.input:482
+  @Test
   public void test0567() {
     check( //
         "Integrate[x^(3/2)*(a+b*x^2)^2/(c+d*x^2)^2, x]", //
@@ -4005,6 +4575,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.3.2 (c x)^m (a+b x^n)^p.input:1520
+  @Test
   public void test0568() {
     check( //
         "Integrate[1/(x^7*(1-x^6)), x]", //
@@ -4012,6 +4583,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.3.2 (c x)^m (a+b x^n)^p.input:1560
+  @Test
   public void test0569() {
     check( //
         "Integrate[1/(x*Sqrt[2+x^6]), x]", //
@@ -4019,6 +4591,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:63
+  @Test
   public void test0570() {
     check( //
         "Integrate[1/(c+d*(a+b*x))^(1/2), x]", //
@@ -4026,6 +4599,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:181
+  @Test
   public void test0571() {
     check( //
         "Integrate[(a+b*x)^10/x^18, x]", //
@@ -4033,6 +4607,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:289
+  @Test
   public void test0572() {
     check( //
         "Integrate[1/x^10, x]", //
@@ -4040,6 +4615,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:321
+  @Test
   public void test0573() {
     check( //
         "Integrate[1/(x*(1+b*x)), x]", //
@@ -4047,6 +4623,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:655
+  @Test
   public void test0574() {
     check( //
         "Integrate[1/((a+b*x)^(5/2)*Sqrt[x]), x]", //
@@ -4054,6 +4631,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:669
+  @Test
   public void test0575() {
     check( //
         "Integrate[1/(x^(5/2)*(a-b*x)^(3/2)), x]", //
@@ -4061,6 +4639,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:683
+  @Test
   public void test0576() {
     check( //
         "Integrate[1/(x^(9/2)*Sqrt[2+b*x]), x]", //
@@ -4068,6 +4647,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:857
+  @Test
   public void test0577() {
     check( //
         "Integrate[(c*x^2)^(3/2)*(a+b*x)/x^2, x]", //
@@ -4075,6 +4655,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:873
+  @Test
   public void test0578() {
     check( //
         "Integrate[(a+b*x)/Sqrt[c*x^2], x]", //
@@ -4082,6 +4663,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:887
+  @Test
   public void test0579() {
     check( //
         "Integrate[x^2*(a+b*x)/(c*x^2)^(5/2), x]", //
@@ -4089,6 +4671,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:905
+  @Test
   public void test0580() {
     check( //
         "Integrate[(a+b*x)^2*Sqrt[c*x^2]/x^4, x]", //
@@ -4096,6 +4679,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:919
+  @Test
   public void test0581() {
     check( //
         "Integrate[(c*x^2)^(5/2)*(a+b*x)^2/x^4, x]", //
@@ -4103,6 +4687,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:935
+  @Test
   public void test0582() {
     check( //
         "Integrate[(a+b*x)^2/(c*x^2)^(3/2), x]", //
@@ -4110,6 +4695,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:967
+  @Test
   public void test0583() {
     check( //
         "Integrate[(c*x^2)^(3/2)/(x^6*(a+b*x)), x]", //
@@ -4117,6 +4703,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:983
+  @Test
   public void test0584() {
     check( //
         "Integrate[1/((a+b*x)*Sqrt[c*x^2]), x]", //
@@ -4124,6 +4711,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1001
+  @Test
   public void test0585() {
     check( //
         "Integrate[x*Sqrt[c*x^2]/(a+b*x)^2, x]", //
@@ -4131,6 +4719,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1035
+  @Test
   public void test0586() {
     check( //
         "Integrate[x^2*(a+b*x)^n*Sqrt[c*x^2], x]", //
@@ -4138,6 +4727,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1055
+  @Test
   public void test0587() {
     check( //
         "Integrate[(c*x^2)^(5/2)*(a+b*x)^n/x^5, x]", //
@@ -4145,6 +4735,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1088
+  @Test
   public void test0588() {
     check( //
         "Integrate[(d*x)^m*(c*x^2)^(3/2)*(a+b*x), x]", //
@@ -4152,6 +4743,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1142
+  @Test
   public void test0589() {
     check( //
         "Integrate[1/((a+b*x)^3*(a*d/b+d*x)^3), x]", //
@@ -4159,6 +4751,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1286
+  @Test
   public void test0590() {
     check( //
         "Integrate[1/((1-x)^(3/2)*(1+x)^(5/2)), x]", //
@@ -4166,6 +4759,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1338
+  @Test
   public void test0591() {
     check( //
         "Integrate[1/((a-I*a*x)^(5/4)*(a+I*a*x)^(1/4)), x]", //
@@ -4173,6 +4767,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1352
+  @Test
   public void test0592() {
     check( //
         "Integrate[1/((a-I*a*x)^(13/4)*(a+I*a*x)^(3/4)), x]", //
@@ -4180,6 +4775,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1380
+  @Test
   public void test0593() {
     check( //
         "Integrate[1/((a-I*a*x)^(11/4)*(a+I*a*x)^(5/4)), x]", //
@@ -4187,6 +4783,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1676
+  @Test
   public void test0594() {
     check( //
         "Integrate[(a+b*x)^5*(a*c+b*c*x)^(1/2), x]", //
@@ -4194,6 +4791,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1740
+  @Test
   public void test0595() {
     check( //
         "Integrate[1/((a+b*x)^(11/2)*(c+d*x)^(1/2)), x]", //
@@ -4201,6 +4799,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:1974
+  @Test
   public void test0596() {
     check( //
         "Integrate[1/((a+b*x)^(17/4)*(c+d*x)^(3/4)), x]", //
@@ -4208,6 +4807,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2053
+  @Test
   public void test0597() {
     check( //
         "Integrate[(a+b*x)^(1/6)/(c+d*x)^(31/6), x]", //
@@ -4215,6 +4815,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2079
+  @Test
   public void test0598() {
     check( //
         "Integrate[(a+b*x)^(7/6)/(c+d*x)^(37/6), x]", //
@@ -4222,6 +4823,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2107
+  @Test
   public void test0599() {
     check( //
         "Integrate[1/((a+b*x)^(5/6)*(c+d*x)^(25/6)), x]", //
@@ -4229,6 +4831,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2189
+  @Test
   public void test0600() {
     check( //
         "Integrate[a+d/x^3+c/x^2+b/x, x]", //
@@ -4236,6 +4839,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.2 (a+b x)^m (c+d x)^n.input:2203
+  @Test
   public void test0601() {
     check( //
         "Integrate[-1/2*x+2/Sqrt[x]+Sqrt[x], x]", //
@@ -4243,6 +4847,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:54
+  @Test
   public void test0602() {
     check( //
         "Integrate[(a+b*x)*(a*c-b*c*x)^5/x^10, x]", //
@@ -4250,6 +4855,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:126
+  @Test
   public void test0603() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/x^2, x]", //
@@ -4257,6 +4863,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:140
+  @Test
   public void test0604() {
     check( //
         "Integrate[(a+b*x)^3*(A+B*x)/x^3, x]", //
@@ -4264,6 +4871,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:154
+  @Test
   public void test0605() {
     check( //
         "Integrate[(a+b*x)^5*(A+B*x)/x, x]", //
@@ -4271,6 +4879,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:182
+  @Test
   public void test0606() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/x^6, x]", //
@@ -4278,6 +4887,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:196
+  @Test
   public void test0607() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/x^20, x]", //
@@ -4285,6 +4895,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:326
+  @Test
   public void test0608() {
     check( //
         "Integrate[1/((a+b*x)*(c+d*x)), x]", //
@@ -4292,6 +4903,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:457
+  @Test
   public void test0609() {
     check( //
         "Integrate[(A+B*x)/(x^(5/2)*(a+b*x)), x]", //
@@ -4299,6 +4911,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:629
+  @Test
   public void test0610() {
     check( //
         "Integrate[(A+B*x)*Sqrt[a+b*x]/x^(13/2), x]", //
@@ -4306,6 +4919,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:687
+  @Test
   public void test0611() {
     check( //
         "Integrate[(A+B*x)/(x^(7/2)*(a+b*x)^(5/2)), x]", //
@@ -4313,6 +4927,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:769
+  @Test
   public void test0612() {
     check( //
         "Integrate[(a+b*x)^(3/2)*(c+d*x)^(3/2)/x^5, x]", //
@@ -4320,6 +4935,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:831
+  @Test
   public void test0613() {
     check( //
         "Integrate[(a+b*x)^(5/2)*(c+d*x)^(5/2)/x^4, x]", //
@@ -4327,6 +4943,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:861
+  @Test
   public void test0614() {
     check( //
         "Integrate[(a+b*x)^(5/2)/(x^5*(c+d*x)^(5/2)), x]", //
@@ -4334,6 +4951,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:879
+  @Test
   public void test0615() {
     check( //
         "Integrate[(c+d*x)^(3/2)/(x^4*Sqrt[a+b*x]), x]", //
@@ -4341,6 +4959,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:923
+  @Test
   public void test0616() {
     check( //
         "Integrate[1/(x^2*(c+d*x)^(5/2)*Sqrt[a+b*x]), x]", //
@@ -4348,6 +4967,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:957
+  @Test
   public void test0617() {
     check( //
         "Integrate[1/(x^2*(a+b*x)^(3/2)*(c+d*x)^(3/2)), x]", //
@@ -4355,6 +4975,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:991
+  @Test
   public void test0618() {
     check( //
         "Integrate[1/((a+b*x)^(5/2)*(c+d*x)^(5/2)), x]", //
@@ -4362,6 +4983,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1024
+  @Test
   public void test0619() {
     check( //
         "Integrate[1/(x*Sqrt[-1+x]*Sqrt[1+x]), x]", //
@@ -4369,6 +4991,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1246
+  @Test
   public void test0620() {
     check( //
         "Integrate[(a+b*x)*(A+B*x)/(d+e*x)^2, x]", //
@@ -4376,6 +4999,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1260
+  @Test
   public void test0621() {
     check( //
         "Integrate[(a+b*x)^2*(A+B*x)/(d+e*x)^5, x]", //
@@ -4383,6 +5007,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1274
+  @Test
   public void test0622() {
     check( //
         "Integrate[(a+b*x)^3*(A+B*x)/(d+e*x)^5, x]", //
@@ -4390,6 +5015,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1302
+  @Test
   public void test0623() {
     check( //
         "Integrate[(a+b*x)^6*(A+B*x)/(d+e*x)^14, x]", //
@@ -4397,6 +5023,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1330
+  @Test
   public void test0624() {
     check( //
         "Integrate[(a+b*x)^10*(A+B*x)/(d+e*x)^13, x]", //
@@ -4404,6 +5031,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1898
+  @Test
   public void test0625() {
     check( //
         "Integrate[(2+3*x)^5*(3+5*x)/(1-2*x)^3, x]", //
@@ -4411,6 +5039,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1912
+  @Test
   public void test0626() {
     check( //
         "Integrate[(2+3*x)^5*(3+5*x)^2/(1-2*x)^3, x]", //
@@ -4418,6 +5047,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:1926
+  @Test
   public void test0627() {
     check( //
         "Integrate[(2+3*x)^4*(3+5*x)^3/(1-2*x)^3, x]", //
@@ -4425,6 +5055,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2099
+  @Test
   public void test0628() {
     check( //
         "Integrate[(2+3*x)^3*(3+5*x)^3*Sqrt[1-2*x], x]", //
@@ -4432,6 +5063,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2115
+  @Test
   public void test0629() {
     check( //
         "Integrate[(2+3*x)^2*Sqrt[1-2*x]/(3+5*x), x]", //
@@ -4439,6 +5071,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2191
+  @Test
   public void test0630() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(2+3*x)/(3+5*x), x]", //
@@ -4446,6 +5079,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2267
+  @Test
   public void test0631() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(2+3*x)^2/(3+5*x), x]", //
@@ -4453,6 +5087,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2343
+  @Test
   public void test0632() {
     check( //
         "Integrate[(2+3*x)/((3+5*x)*Sqrt[1-2*x]), x]", //
@@ -4460,6 +5095,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2419
+  @Test
   public void test0633() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(3+5*x)), x]", //
@@ -4467,6 +5103,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2529
+  @Test
   public void test0634() {
     check( //
         "Integrate[(A+B*x)*Sqrt[a+b*x]/(d+e*x)^(11/2), x]", //
@@ -4474,6 +5111,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2619
+  @Test
   public void test0635() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[1-2*x]/(2+3*x)^2, x]", //
@@ -4481,6 +5119,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2635
+  @Test
   public void test0636() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)^2*Sqrt[3+5*x]), x]", //
@@ -4488,6 +5127,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2667
+  @Test
   public void test0637() {
     check( //
         "Integrate[(1-2*x)^(3/2)*Sqrt[3+5*x]/(2+3*x)^4, x]", //
@@ -4495,6 +5135,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2681
+  @Test
   public void test0638() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)/(2+3*x)^8, x]", //
@@ -4502,6 +5143,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2711
+  @Test
   public void test0639() {
     check( //
         "Integrate[(1-2*x)^(3/2)/((2+3*x)^2*(3+5*x)^(3/2)), x]", //
@@ -4509,6 +5151,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2743
+  @Test
   public void test0640() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/(2+3*x)^2, x]", //
@@ -4516,6 +5159,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2757
+  @Test
   public void test0641() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^4, x]", //
@@ -4523,6 +5167,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2773
+  @Test
   public void test0642() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^4*Sqrt[3+5*x]), x]", //
@@ -4530,6 +5175,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2787
+  @Test
   public void test0643() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((2+3*x)^6*(3+5*x)^(3/2)), x]", //
@@ -4537,6 +5183,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2819
+  @Test
   public void test0644() {
     check( //
         "Integrate[(3+5*x)^(3/2)/((2+3*x)^3*Sqrt[1-2*x]), x]", //
@@ -4544,6 +5191,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2833
+  @Test
   public void test0645() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((2+3*x)^7*Sqrt[1-2*x]), x]", //
@@ -4551,6 +5199,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2849
+  @Test
   public void test0646() {
     check( //
         "Integrate[1/((3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -4558,6 +5207,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2863
+  @Test
   public void test0647() {
     check( //
         "Integrate[1/((2+3*x)^4*(3+5*x)^(5/2)*Sqrt[1-2*x]), x]", //
@@ -4565,6 +5215,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2895
+  @Test
   public void test0648() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(3/2)*(2+3*x)), x]", //
@@ -4572,6 +5223,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2911
+  @Test
   public void test0649() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(2+3*x)^3*Sqrt[3+5*x]), x]", //
@@ -4579,6 +5231,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2925
+  @Test
   public void test0650() {
     check( //
         "Integrate[(2+3*x)^4/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -4586,6 +5239,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2943
+  @Test
   public void test0651() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(5/2)*(2+3*x)^2), x]", //
@@ -4593,6 +5247,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2973
+  @Test
   public void test0652() {
     check( //
         "Integrate[1/((1-2*x)^(5/2)*(2+3*x)*Sqrt[3+5*x]), x]", //
@@ -4600,6 +5255,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:2987
+  @Test
   public void test0653() {
     check( //
         "Integrate[(2+3*x)^5/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -4607,6 +5263,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3003
+  @Test
   public void test0654() {
     check( //
         "Integrate[Sqrt[a+b*x]/(Sqrt[c+b*(-1+c)*x/a]*Sqrt[e+b*(-1+e)*x/a]), x]", //
@@ -4614,6 +5271,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3023
+  @Test
   public void test0655() {
     check( //
         "Integrate[(3+5*x)^(3/2)*Sqrt[1-2*x]/Sqrt[2+3*x], x]", //
@@ -4621,6 +5279,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3037
+  @Test
   public void test0656() {
     check( //
         "Integrate[(3+5*x)^(5/2)*Sqrt[1-2*x]/(2+3*x)^(11/2), x]", //
@@ -4628,6 +5287,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3053
+  @Test
   public void test0657() {
     check( //
         "Integrate[(2+3*x)^(3/2)*Sqrt[1-2*x]/(3+5*x)^(3/2), x]", //
@@ -4635,6 +5295,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3067
+  @Test
   public void test0658() {
     check( //
         "Integrate[Sqrt[1-2*x]/((2+3*x)^(7/2)*(3+5*x)^(5/2)), x]", //
@@ -4642,6 +5303,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3085
+  @Test
   public void test0659() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(3/2)/(2+3*x)^(3/2), x]", //
@@ -4649,6 +5311,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3099
+  @Test
   public void test0660() {
     check( //
         "Integrate[(1-2*x)^(3/2)*(3+5*x)^(5/2)/(2+3*x)^(11/2), x]", //
@@ -4656,6 +5319,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3115
+  @Test
   public void test0661() {
     check( //
         "Integrate[(1-2*x)^(3/2)*Sqrt[2+3*x]/(3+5*x)^(3/2), x]", //
@@ -4663,6 +5327,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3133
+  @Test
   public void test0662() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(2+3*x)^(5/2)*Sqrt[3+5*x], x]", //
@@ -4670,6 +5335,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3147
+  @Test
   public void test0663() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(3/2)/(2+3*x)^(3/2), x]", //
@@ -4677,6 +5343,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3161
+  @Test
   public void test0664() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(3+5*x)^(5/2)/(2+3*x)^(11/2), x]", //
@@ -4684,6 +5351,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3177
+  @Test
   public void test0665() {
     check( //
         "Integrate[(1-2*x)^(5/2)*(2+3*x)^(7/2)/(3+5*x)^(3/2), x]", //
@@ -4691,6 +5359,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3191
+  @Test
   public void test0666() {
     check( //
         "Integrate[(1-2*x)^(5/2)/((3+5*x)^(5/2)*Sqrt[2+3*x]), x]", //
@@ -4698,6 +5367,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3209
+  @Test
   public void test0667() {
     check( //
         "Integrate[(3+5*x)^(3/2)*Sqrt[2+3*x]/Sqrt[1-2*x], x]", //
@@ -4705,6 +5375,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3223
+  @Test
   public void test0668() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((2+3*x)^(9/2)*Sqrt[1-2*x]), x]", //
@@ -4712,6 +5383,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3241
+  @Test
   public void test0669() {
     check( //
         "Integrate[1/(Sqrt[-3-x]*Sqrt[-1-x]*Sqrt[-2+x]), x]", //
@@ -4719,6 +5391,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3255
+  @Test
   public void test0670() {
     check( //
         "Integrate[(2+3*x)^(5/2)/((3+5*x)^(3/2)*Sqrt[1-2*x]), x]", //
@@ -4726,6 +5399,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3269
+  @Test
   public void test0671() {
     check( //
         "Integrate[1/((2+3*x)^(5/2)*(3+5*x)^(5/2)*Sqrt[1-2*x]), x]", //
@@ -4733,6 +5407,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3293
+  @Test
   public void test0672() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(3/2)*(2+3*x)^(3/2)), x]", //
@@ -4740,6 +5415,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3307
+  @Test
   public void test0673() {
     check( //
         "Integrate[(2+3*x)^(3/2)*(3+5*x)^(5/2)/(1-2*x)^(3/2), x]", //
@@ -4747,6 +5423,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3323
+  @Test
   public void test0674() {
     check( //
         "Integrate[1/((1-2*x)^(3/2)*(2+3*x)^(5/2)*Sqrt[3+5*x]), x]", //
@@ -4754,6 +5431,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3337
+  @Test
   public void test0675() {
     check( //
         "Integrate[(2+3*x)^(5/2)/((1-2*x)^(3/2)*(3+5*x)^(5/2)), x]", //
@@ -4761,6 +5439,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3355
+  @Test
   public void test0676() {
     check( //
         "Integrate[Sqrt[3+5*x]/((1-2*x)^(5/2)*(2+3*x)^(5/2)), x]", //
@@ -4768,6 +5447,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3369
+  @Test
   public void test0677() {
     check( //
         "Integrate[(3+5*x)^(5/2)/((1-2*x)^(5/2)*Sqrt[2+3*x]), x]", //
@@ -4775,6 +5455,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3385
+  @Test
   public void test0678() {
     check( //
         "Integrate[(2+3*x)^(11/2)/((1-2*x)^(5/2)*(3+5*x)^(3/2)), x]", //
@@ -4782,6 +5463,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.3 (a+b x)^m (c+d x)^n (e+f x)^p.input:3399
+  @Test
   public void test0679() {
     check( //
         "Integrate[(2+3*x)^(5/2)/((1-2*x)^(5/2)*(3+5*x)^(5/2)), x]", //
@@ -4789,6 +5471,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:23
+  @Test
   public void test0680() {
     check( //
         "Integrate[(e+f*x)*Sqrt[c+d*x]/(x*(a+b*x)), x]", //
@@ -4796,6 +5479,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:41
+  @Test
   public void test0681() {
     check( //
         "Integrate[(1+a*x)/(x*Sqrt[a*x]*Sqrt[1-a*x]), x]", //
@@ -4803,6 +5487,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:70
+  @Test
   public void test0682() {
     check( //
         "Integrate[(7+5*x)^2*Sqrt[2-3*x]*Sqrt[1+4*x]/Sqrt[-5+2*x], x]", //
@@ -4810,6 +5495,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.1.4 (a+b x)^m (c+d x)^n (e+f x)^p (g+h x)^q.input:122
+  @Test
   public void test0683() {
     check( //
         "Integrate[Sqrt[2-3*x]*Sqrt[-5+2*x]*Sqrt[1+4*x]/(7+5*x)^(7/2), x]", //
@@ -4817,6 +5503,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:45
+  @Test
   public void test0684() {
     check( //
         "Integrate[(a+b*x^2)^3/x, x]", //
@@ -4824,6 +5511,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:73
+  @Test
   public void test0685() {
     check( //
         "Integrate[(a+b*x^2)^5/x^7, x]", //
@@ -4831,6 +5519,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:101
+  @Test
   public void test0686() {
     check( //
         "Integrate[x^3*(a+b*x^2)^8, x]", //
@@ -4838,6 +5527,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:115
+  @Test
   public void test0687() {
     check( //
         "Integrate[(a+b*x^2)^8/x^25, x]", //
@@ -4845,6 +5535,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:145
+  @Test
   public void test0688() {
     check( //
         "Integrate[x^3/(a+b*x^2), x]", //
@@ -4852,6 +5543,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:215
+  @Test
   public void test0689() {
     check( //
         "Integrate[x^5/(a+b*x^2)^10, x]", //
@@ -4859,6 +5551,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:273
+  @Test
   public void test0690() {
     check( //
         "Integrate[1/(-c-d+(c-d)*x^2), x]", //
@@ -4866,6 +5559,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:443
+  @Test
   public void test0691() {
     check( //
         "Integrate[(a+b*x^2)^(5/2)/x^18, x]", //
@@ -4873,6 +5567,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:471
+  @Test
   public void test0692() {
     check( //
         "Integrate[(a+b*x^2)^(9/2)/x^16, x]", //
@@ -4880,6 +5575,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:917
+  @Test
   public void test0693() {
     check( //
         "Integrate[1/(x^4*(a+b*x^2)^(5/4)), x]", //
@@ -4887,6 +5583,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:931
+  @Test
   public void test0694() {
     check( //
         "Integrate[1/(a-b*x^2)^(11/4), x]", //
@@ -4894,6 +5591,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1049
+  @Test
   public void test0695() {
     check( //
         "Integrate[1/((c*x)^(11/2)*(a+b*x^2)^(3/4)), x]", //
@@ -4901,6 +5599,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.2 (c x)^m (a+b x^2)^p.input:1117
+  @Test
   public void test0696() {
     check( //
         "Integrate[1/(a+b*x^2)^(5/6), x]", //
@@ -4908,6 +5607,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:20
+  @Test
   public void test0697() {
     check( //
         "Integrate[(a+b*x^2)^2/(c+d*x^2), x]", //
@@ -4915,6 +5615,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:179
+  @Test
   public void test0698() {
     check( //
         "Integrate[1/((-a+b*x^2)^(1/3)*(-9*a*d/b+d*x^2)), x]", //
@@ -4922,6 +5623,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:218
+  @Test
   public void test0699() {
     check( //
         "Integrate[Sqrt[4+x^2]/Sqrt[c+d*x^2], x]", //
@@ -4929,6 +5631,7 @@ public class AlgebraicFunctions1 extends AbstractRubiTestCase {
   }
 
   // 1.1.2.3 (a+b x^2)^p (c+d x^2)^q.input:232
+  @Test
   public void test0700() {
     check( //
         "Integrate[Sqrt[1+4*x^2]/Sqrt[2+3*x^2], x]", //

@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.extended;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
@@ -16,10 +18,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class Exponentials extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public Exponentials(String name) {
-    super(name, false);
+  public Exponentials() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -36,6 +39,7 @@ public class Exponentials extends AbstractRubiTestCase {
 
 
   // 2.1 u (F^(c (a+b x)))^n.input:25
+  @Test
   public void test0001() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d^2+2*d*e*x+e^2*x^2), x]", //
@@ -43,6 +47,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:43
+  @Test
   public void test0002() {
     check( //
         "Integrate[F^(a+b*x)*x^(7/2), x]", //
@@ -50,6 +55,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:51
+  @Test
   public void test0003() {
     check( //
         "Integrate[F^(a+b*x)/x^(9/2), x]", //
@@ -57,6 +63,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:59
+  @Test
   public void test0004() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^(7/2), x]", //
@@ -64,6 +71,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:71
+  @Test
   public void test0005() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x+f*x^2+g*x^3+h*x^4), x]", //
@@ -71,6 +79,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:81
+  @Test
   public void test0006() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^3/x^3, x]", //
@@ -78,6 +87,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:99
+  @Test
   public void test0007() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^4/(c+d*x), x]", //
@@ -85,6 +95,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:15
+  @Test
   public void test0008() {
     check( //
         "Integrate[1/(a+E^(c+d*x)*b), x]", //
@@ -92,6 +103,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:41
+  @Test
   public void test0009() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)*(c+d*x)^2, x]", //
@@ -99,6 +111,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:49
+  @Test
   public void test0010() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x), x]", //
@@ -106,6 +119,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:57
+  @Test
   public void test0011() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^3, x]", //
@@ -113,6 +127,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:69
+  @Test
   public void test0012() {
     check( //
         "Integrate[(c+d*x)^3/(a+b*(F^(g*(e+f*x)))^n)^2, x]", //
@@ -120,6 +135,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:85
+  @Test
   public void test0013() {
     check( //
         "Integrate[(a+E^x*b)*Sqrt[c+d*x], x]", //
@@ -127,6 +143,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:109
+  @Test
   public void test0014() {
     check( //
         "Integrate[F^(c+d*x)*x/(a+b*F^(c+d*x)), x]", //
@@ -134,6 +151,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:36
+  @Test
   public void test0015() {
     check( //
         "Integrate[E^(4*x)/(a+E^(2*x)*b)^2, x]", //
@@ -141,6 +159,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:44
+  @Test
   public void test0016() {
     check( //
         "Integrate[1/(E^(n*x)*(a+E^(n*x)*b)^2), x]", //
@@ -148,6 +167,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:60
+  @Test
   public void test0017() {
     check( //
         "Integrate[f^x/(a+b*f^(2*x))^2, x]", //
@@ -155,6 +175,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:111
+  @Test
   public void test0018() {
     check( //
         "Integrate[f^(a+b*x^2)/x^4, x]", //
@@ -162,6 +183,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:119
+  @Test
   public void test0019() {
     check( //
         "Integrate[f^(a+b*x^3)*x^11, x]", //
@@ -169,6 +191,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:161
+  @Test
   public void test0020() {
     check( //
         "Integrate[f^(a+b/x^2)/x^9, x]", //
@@ -176,6 +199,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:169
+  @Test
   public void test0021() {
     check( //
         "Integrate[f^(a+b/x^2), x]", //
@@ -183,6 +207,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:251
+  @Test
   public void test0022() {
     check( //
         "Integrate[f^(c/(a+b*x))*x^2, x]", //
@@ -190,6 +215,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:259
+  @Test
   public void test0023() {
     check( //
         "Integrate[f^(c/(a+b*x)^2)*x^2, x]", //
@@ -197,6 +223,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:298
+  @Test
   public void test0024() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(c+d*x)^7, x]", //
@@ -204,6 +231,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:330
+  @Test
   public void test0025() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^3)/(c+d*x)^7, x]", //
@@ -211,6 +239,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:348
+  @Test
   public void test0026() {
     check( //
         "Integrate[F^(a+b/(c+d*x))*(c+d*x), x]", //
@@ -218,6 +247,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:372
+  @Test
   public void test0027() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)*(c+d*x)^6, x]", //
@@ -225,6 +255,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:380
+  @Test
   public void test0028() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)/(c+d*x)^10, x]", //
@@ -232,6 +263,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:422
+  @Test
   public void test0029() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^n)*(c+d*x)^(-1-3*n), x]", //
@@ -239,6 +271,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:434
+  @Test
   public void test0030() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(e+f*x)^2, x]", //
@@ -246,6 +279,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:457
+  @Test
   public void test0031() {
     check( //
         "Integrate[E^(e/(c+d*x))/(a+b*x), x]", //
@@ -253,6 +287,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:468
+  @Test
   public void test0032() {
     check( //
         "Integrate[E^(e/(c+d*x)^3)*(a+b*x)^2, x]", //
@@ -260,6 +295,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:482
+  @Test
   public void test0033() {
     check( //
         "Integrate[f^(a+b*x+c*x^2)*x^2, x]", //
@@ -267,6 +303,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:517
+  @Test
   public void test0034() {
     check( //
         "Integrate[f^(b*x+c*x^2)/(b+2*c*x)^2, x]", //
@@ -274,6 +311,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:537
+  @Test
   public void test0035() {
     check( //
         "Integrate[2^(2*x)/(a-2^x*b), x]", //
@@ -281,6 +319,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:575
+  @Test
   public void test0036() {
     check( //
         "Integrate[1/(3+3*E^x+E^(2*x)), x]", //
@@ -288,6 +327,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:583
+  @Test
   public void test0037() {
     check( //
         "Integrate[x^2/(2+3*E^x+E^(2*x)), x]", //
@@ -295,6 +335,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:599
+  @Test
   public void test0038() {
     check( //
         "Integrate[1/(2+f^(-c-d*x)+f^(c+d*x)), x]", //
@@ -302,6 +343,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:607
+  @Test
   public void test0039() {
     check( //
         "Integrate[1/(a+b*f^(-c-d*x)+c*f^(c+d*x)), x]", //
@@ -309,6 +351,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:621
+  @Test
   public void test0040() {
     check( //
         "Integrate[(a+b*F^(c*Sqrt[d+e*x]/Sqrt[d*f-e*f*x]))^2/(d^2-e^2*x^2), x]", //
@@ -316,6 +359,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:631
+  @Test
   public void test0041() {
     check( //
         "Integrate[1/(F^(2*Sqrt[1-a*x]/Sqrt[1+a*x])*(1-a^2*x^2)), x]", //
@@ -323,6 +367,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:746
+  @Test
   public void test0042() {
     check( //
         "Integrate[E^x*(-2+E^x)/(1+E^x), x]", //
@@ -330,6 +375,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:758
+  @Test
   public void test0043() {
     check( //
         "Integrate[E^x*Sqrt[1+E^(2*x)], x]", //
@@ -337,6 +383,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:792
+  @Test
   public void test0044() {
     check( //
         "Integrate[(1/E^x+E^x)*x, x]", //
@@ -344,6 +391,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:806
+  @Test
   public void test0045() {
     check( //
         "Integrate[(E^(5*x)+E^(7*x))/(1/E^x+E^x), x]", //
@@ -351,6 +399,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:826
+  @Test
   public void test0046() {
     check( //
         "Integrate[E^x*Sqrt[9-E^(2*x)], x]", //
@@ -358,6 +407,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:834
+  @Test
   public void test0047() {
     check( //
         "Integrate[(1/E^x+E^x)^2, x]", //
@@ -365,6 +415,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:842
+  @Test
   public void test0048() {
     check( //
         "Integrate[(1+4^x)/(1+1/2^x), x]", //
@@ -372,6 +423,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:860
+  @Test
   public void test0049() {
     check( //
         "Integrate[(2-3*x+x^2)/E^(4*x), x]", //
@@ -379,6 +431,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:874
+  @Test
   public void test0050() {
     check( //
         "Integrate[(-1)/(E^x+x)^(1/3)+x/(E^x+x)^(1/3)-(E^x+x)^(2/3), x]", //
@@ -386,6 +439,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:893
+  @Test
   public void test0051() {
     check( //
         "Integrate[f^(x^n)*x^m, x]", //
@@ -393,6 +447,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:26
+  @Test
   public void test0052() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d^2+2*d*e*x+e^2*x^2), x]", //
@@ -400,6 +455,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:44
+  @Test
   public void test0053() {
     check( //
         "Integrate[F^(a+b*x)*x^(5/2), x]", //
@@ -407,6 +463,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:52
+  @Test
   public void test0054() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x)^(7/2), x]", //
@@ -414,6 +471,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:60
+  @Test
   public void test0055() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^(9/2), x]", //
@@ -421,6 +479,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:74
+  @Test
   public void test0056() {
     check( //
         "Integrate[E^(-a-b*x)*x^m*(a+b*x)^3, x]", //
@@ -428,6 +487,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:82
+  @Test
   public void test0057() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^3/x^4, x]", //
@@ -435,6 +495,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:90
+  @Test
   public void test0058() {
     check( //
         "Integrate[F^(a+b*(c+d*x))*(e+f*x)^2/x^3, x]", //
@@ -442,6 +503,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:100
+  @Test
   public void test0059() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^4/(c+d*x)^2, x]", //
@@ -449,6 +511,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:110
+  @Test
   public void test0060() {
     check( //
         "Integrate[F^(c*(a+b*x))*Log[d*x]^n*(e+e*n+b*c*e*x*Log[F]*Log[d*x])/x, x]", //
@@ -456,6 +519,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:18
+  @Test
   public void test0061() {
     check( //
         "Integrate[1/(a+E^(c-d*x)*b), x]", //
@@ -463,6 +527,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:28
+  @Test
   public void test0062() {
     check( //
         "Integrate[x^3/(a+E^(c+d*x)*b)^3, x]", //
@@ -470,6 +535,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:42
+  @Test
   public void test0063() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)*(c+d*x), x]", //
@@ -477,6 +543,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:50
+  @Test
   public void test0064() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^2, x]", //
@@ -484,6 +551,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:58
+  @Test
   public void test0065() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^3/(c+d*x), x]", //
@@ -491,6 +559,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:70
+  @Test
   public void test0066() {
     check( //
         "Integrate[(c+d*x)^2/(a+b*(F^(g*(e+f*x)))^n)^2, x]", //
@@ -498,6 +567,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:37
+  @Test
   public void test0067() {
     check( //
         "Integrate[E^(4*x)/(a+E^(2*x)*b)^3, x]", //
@@ -505,6 +575,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:45
+  @Test
   public void test0068() {
     check( //
         "Integrate[1/(E^(n*x)*(a+E^(n*x)*b)^3), x]", //
@@ -512,6 +583,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:61
+  @Test
   public void test0069() {
     check( //
         "Integrate[f^x*x/(a+b*f^(2*x))^2, x]", //
@@ -519,6 +591,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:112
+  @Test
   public void test0070() {
     check( //
         "Integrate[f^(a+b*x^2)/x^6, x]", //
@@ -526,6 +599,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:120
+  @Test
   public void test0071() {
     check( //
         "Integrate[f^(a+b*x^3)*x^8, x]", //
@@ -533,6 +607,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:154
+  @Test
   public void test0072() {
     check( //
         "Integrate[f^(a+b/x^2)*x^5, x]", //
@@ -540,6 +615,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:186
+  @Test
   public void test0073() {
     check( //
         "Integrate[f^(a+b/x^3)/x^10, x]", //
@@ -547,6 +623,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:226
+  @Test
   public void test0074() {
     check( //
         "Integrate[f^(c*(a+b*x)^2)*x^3, x]", //
@@ -554,6 +631,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:252
+  @Test
   public void test0075() {
     check( //
         "Integrate[f^(c/(a+b*x))*x, x]", //
@@ -561,6 +639,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:260
+  @Test
   public void test0076() {
     check( //
         "Integrate[f^(c/(a+b*x)^2)*x, x]", //
@@ -568,6 +647,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:284
+  @Test
   public void test0077() {
     check( //
         "Integrate[f^(c*(a+b*x)^n)*x^3, x]", //
@@ -575,6 +655,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:299
+  @Test
   public void test0078() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(c+d*x)^5, x]", //
@@ -582,6 +663,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:331
+  @Test
   public void test0079() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^3)/(c+d*x)^10, x]", //
@@ -589,6 +671,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:373
+  @Test
   public void test0080() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)*(c+d*x)^4, x]", //
@@ -596,6 +679,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:415
+  @Test
   public void test0081() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^n)*(c+d*x)^(-1+4*n), x]", //
@@ -603,6 +687,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:435
+  @Test
   public void test0082() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(e+f*x), x]", //
@@ -610,6 +695,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:469
+  @Test
   public void test0083() {
     check( //
         "Integrate[E^(e/(c+d*x)^3)*(a+b*x), x]", //
@@ -617,6 +703,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:483
+  @Test
   public void test0084() {
     check( //
         "Integrate[f^(a+b*x+c*x^2)*x, x]", //
@@ -624,6 +711,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:538
+  @Test
   public void test0085() {
     check( //
         "Integrate[4^x/(a+b/2^x), x]", //
@@ -631,6 +719,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:546
+  @Test
   public void test0086() {
     check( //
         "Integrate[2^x/(a+b/4^x), x]", //
@@ -638,6 +727,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:608
+  @Test
   public void test0087() {
     check( //
         "Integrate[x/(a+b*f^(-c-d*x)+c*f^(c+d*x)), x]", //
@@ -645,6 +735,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:622
+  @Test
   public void test0088() {
     check( //
         "Integrate[(a+b*F^(c*Sqrt[d+e*x]/Sqrt[d*f-e*f*x]))/(d^2-e^2*x^2), x]", //
@@ -652,6 +743,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:634
+  @Test
   public void test0089() {
     check( //
         "Integrate[a^x*b^x*x^2, x]", //
@@ -659,6 +751,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:642
+  @Test
   public void test0090() {
     check( //
         "Integrate[a^x*x^2/b^x, x]", //
@@ -666,6 +759,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:667
+  @Test
   public void test0091() {
     check( //
         "Integrate[F^(f*(a+b*Log[c*(d+e*x)^n]^2))*(d*g+e*g*x)^2, x]", //
@@ -673,6 +767,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:709
+  @Test
   public void test0092() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)*(a+b*x+c*x^2)^3, x]", //
@@ -680,6 +775,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:717
+  @Test
   public void test0093() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)*(a+b*x+c*x^2)^(5/2), x]", //
@@ -687,6 +783,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:729
+  @Test
   public void test0094() {
     check( //
         "Integrate[1/(E^x*Sqrt[1+(-1)/E^(2*x)]), x]", //
@@ -694,6 +791,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:759
+  @Test
   public void test0095() {
     check( //
         "Integrate[E^(x^2)*x/(1+E^(2*x^2)), x]", //
@@ -701,6 +799,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:793
+  @Test
   public void test0096() {
     check( //
         "Integrate[E^x/(2+3*E^x+E^(2*x)), x]", //
@@ -708,6 +807,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:827
+  @Test
   public void test0097() {
     check( //
         "Integrate[E^(6*x)*Sqrt[9-E^(2*x)], x]", //
@@ -715,6 +815,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:835
+  @Test
   public void test0098() {
     check( //
         "Integrate[1/(1/E^x+E^x), x]", //
@@ -722,6 +823,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:843
+  @Test
   public void test0099() {
     check( //
         "Integrate[E^((a+x)^2)/x^2-2*E^((a+x)^2)*a/x, x]", //
@@ -729,6 +831,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:853
+  @Test
   public void test0100() {
     check( //
         "Integrate[E^(x^2)/x^2, x]", //
@@ -736,6 +839,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:861
+  @Test
   public void test0101() {
     check( //
         "Integrate[k^(1/2*x)+x^Sqrt[k], x]", //
@@ -743,6 +847,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:876
+  @Test
   public void test0102() {
     check( //
         "Integrate[(5*x+E^x*(3+2*x))/(E^x+x)^(1/3), x]", //
@@ -750,6 +855,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:894
+  @Test
   public void test0103() {
     check( //
         "Integrate[E^((a+b*x)^n)*(a+b*x)^m, x]", //
@@ -757,6 +863,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:20
+  @Test
   public void test0104() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^3, x]", //
@@ -764,6 +871,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:28
+  @Test
   public void test0105() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d^4+4*d^3*e*x+6*d^2*e^2*x^2+4*d*e^3*x^3+e^4*x^4), x]", //
@@ -771,6 +879,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:46
+  @Test
   public void test0106() {
     check( //
         "Integrate[F^(a+b*x)*x^(1/2), x]", //
@@ -778,6 +887,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:54
+  @Test
   public void test0107() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x)^(3/2), x]", //
@@ -785,6 +895,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:76
+  @Test
   public void test0108() {
     check( //
         "Integrate[E^(-a-b*x)*x^2*(a+b*x)^3, x]", //
@@ -792,6 +903,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:84
+  @Test
   public void test0109() {
     check( //
         "Integrate[F^(a+b*(c+d*x))*x^3*(e+f*x)^2, x]", //
@@ -799,6 +911,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:92
+  @Test
   public void test0110() {
     check( //
         "Integrate[F^(a+b*(c+d*x))*(e+f*x)^2/x^5, x]", //
@@ -806,6 +919,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:102
+  @Test
   public void test0111() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^4/(c+d*x)^4, x]", //
@@ -813,6 +927,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:112
+  @Test
   public void test0112() {
     check( //
         "Integrate[F^(c*(a+b*x))*Log[d*x]^n*(e+e*n+e*(-2+b*c*x*Log[F])*Log[d*x])/x^3, x]", //
@@ -820,6 +935,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:122
+  @Test
   public void test0113() {
     check( //
         "Integrate[Sqrt[E^(a+b*x)]/x^3, x]", //
@@ -827,6 +943,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:20
+  @Test
   public void test0114() {
     check( //
         "Integrate[x^3/(a+E^(c+d*x)*b)^2, x]", //
@@ -834,6 +951,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:44
+  @Test
   public void test0115() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)/(c+d*x), x]", //
@@ -841,6 +959,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:52
+  @Test
   public void test0116() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^2/(c+d*x)^2, x]", //
@@ -848,6 +967,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:60
+  @Test
   public void test0117() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^3/(c+d*x)^3, x]", //
@@ -855,6 +975,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:95
+  @Test
   public void test0118() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)^m, x]", //
@@ -862,6 +983,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:114
+  @Test
   public void test0119() {
     check( //
         "Integrate[F^(c+d*x)*x^2/(a+b*F^(c+d*x))^2, x]", //
@@ -869,6 +991,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:11
+  @Test
   public void test0120() {
     check( //
         "Integrate[E^x/(a+E^x*b), x]", //
@@ -876,6 +999,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:31
+  @Test
   public void test0121() {
     check( //
         "Integrate[E^(2*x)/(a+E^x*b), x]", //
@@ -883,6 +1007,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:47
+  @Test
   public void test0122() {
     check( //
         "Integrate[f^(a+2*b*x)/(c+d*f^(e+2*b*x)), x]", //
@@ -890,6 +1015,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:73
+  @Test
   public void test0123() {
     check( //
         "Integrate[1/(b/f^x+a*f^x)^2, x]", //
@@ -897,6 +1023,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:106
+  @Test
   public void test0124() {
     check( //
         "Integrate[f^(a+b*x^2)*x^6, x]", //
@@ -904,6 +1031,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:148
+  @Test
   public void test0125() {
     check( //
         "Integrate[f^(a+b/x)/x^5, x]", //
@@ -911,6 +1039,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:172
+  @Test
   public void test0126() {
     check( //
         "Integrate[f^(a+b/x^2)/x^6, x]", //
@@ -918,6 +1047,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:180
+  @Test
   public void test0127() {
     check( //
         "Integrate[f^(a+b/x^3)*x^8, x]", //
@@ -925,6 +1055,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:214
+  @Test
   public void test0128() {
     check( //
         "Integrate[f^(a+b*x^n)*x^(-1+5/2*n), x]", //
@@ -932,6 +1063,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:228
+  @Test
   public void test0129() {
     check( //
         "Integrate[f^(c*(a+b*x)^2)*x, x]", //
@@ -939,6 +1071,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:254
+  @Test
   public void test0130() {
     check( //
         "Integrate[f^(c/(a+b*x))/x, x]", //
@@ -946,6 +1079,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:265
+  @Test
   public void test0131() {
     check( //
         "Integrate[f^(c/(a+b*x)^3)*x^4, x]", //
@@ -953,6 +1087,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:286
+  @Test
   public void test0132() {
     check( //
         "Integrate[f^(c*(a+b*x)^n)*x, x]", //
@@ -960,6 +1095,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:317
+  @Test
   public void test0133() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)/(c+d*x)^6, x]", //
@@ -967,6 +1103,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:325
+  @Test
   public void test0134() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^3)*(c+d*x)^8, x]", //
@@ -974,6 +1111,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:341
+  @Test
   public void test0135() {
     check( //
         "Integrate[f^(a+b*(c+d*x)^(1/3)), x]", //
@@ -981,6 +1119,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:367
+  @Test
   public void test0136() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)/(c+d*x)^9, x]", //
@@ -988,6 +1127,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:375
+  @Test
   public void test0137() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2), x]", //
@@ -995,6 +1135,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:425
+  @Test
   public void test0138() {
     check( //
         "Integrate[F^(c*(a+b*x)^n)*(a+b*x)^(-1+1/2*n), x]", //
@@ -1002,6 +1143,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:440
+  @Test
   public void test0139() {
     check( //
         "Integrate[E^(e*(c+d*x)^3)*(a+b*x)^3, x]", //
@@ -1009,6 +1151,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:452
+  @Test
   public void test0140() {
     check( //
         "Integrate[E^(e/(c+d*x))*(a+b*x)^4, x]", //
@@ -1016,6 +1159,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:460
+  @Test
   public void test0141() {
     check( //
         "Integrate[E^(e/(c+d*x)^2)*(a+b*x)^3, x]", //
@@ -1023,6 +1167,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:475
+  @Test
   public void test0142() {
     check( //
         "Integrate[F^(e+f*(a+b*x)/(c+d*x))/(g+h*x), x]", //
@@ -1030,6 +1175,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:487
+  @Test
   public void test0143() {
     check( //
         "Integrate[E^(a+b*x-c*x^2)*x^3, x]", //
@@ -1037,6 +1183,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:501
+  @Test
   public void test0144() {
     check( //
         "Integrate[f^(a+b*x+c*x^2)*(d+e*x)^3, x]", //
@@ -1044,6 +1191,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:530
+  @Test
   public void test0145() {
     check( //
         "Integrate[E^(d+e*x)*x^2/(a+b*x+c*x^2), x]", //
@@ -1051,6 +1199,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:540
+  @Test
   public void test0146() {
     check( //
         "Integrate[4^x/(a-b/2^x), x]", //
@@ -1058,6 +1207,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:548
+  @Test
   public void test0147() {
     check( //
         "Integrate[2^x/(a-b/4^x), x]", //
@@ -1065,6 +1215,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:578
+  @Test
   public void test0148() {
     check( //
         "Integrate[x/(2+3*E^x+E^(2*x)), x]", //
@@ -1072,6 +1223,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:602
+  @Test
   public void test0149() {
     check( //
         "Integrate[1/(2+1/3^x+3^x), x]", //
@@ -1079,6 +1231,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:613
+  @Test
   public void test0150() {
     check( //
         "Integrate[(a+b*F^(c*Sqrt[d+e*x]/Sqrt[f+g*x]))^3/(d*f+(e*f+d*g)*x+e*g*x^2), x]", //
@@ -1086,6 +1239,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:626
+  @Test
   public void test0151() {
     check( //
         "Integrate[(F^(Sqrt[1-a*x]/Sqrt[1+a*x]))^n/(1-a^2*x^2), x]", //
@@ -1093,6 +1247,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:669
+  @Test
   public void test0152() {
     check( //
         "Integrate[F^(f*(a+b*Log[c*(d+e*x)^n]^2)), x]", //
@@ -1100,6 +1255,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:719
+  @Test
   public void test0153() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)*(a+b*x+c*x^2)^(1/2), x]", //
@@ -1107,6 +1263,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:753
+  @Test
   public void test0154() {
     check( //
         "Integrate[(1/E^(2*x)+E^(2*x))/((-1)/E^(2*x)+E^(2*x)), x]", //
@@ -1114,6 +1271,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:773
+  @Test
   public void test0155() {
     check( //
         "Integrate[E^(x^(1/3))/x^(2/3), x]", //
@@ -1121,6 +1279,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:795
+  @Test
   public void test0156() {
     check( //
         "Integrate[E^(2*x)/(1+E^x)^(1/4), x]", //
@@ -1128,6 +1287,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:813
+  @Test
   public void test0157() {
     check( //
         "Integrate[(a+E^x*b)^3, x]", //
@@ -1135,6 +1295,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:829
+  @Test
   public void test0158() {
     check( //
         "Integrate[(2-7*E^(x^4))^5*x^3, x]", //
@@ -1142,6 +1303,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:855
+  @Test
   public void test0159() {
     check( //
         "Integrate[(a+b*x)^2*Sqrt[f^x], x]", //
@@ -1149,6 +1311,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:865
+  @Test
   public void test0160() {
     check( //
         "Integrate[E^x/(E^x+x)^(1/2)+1/Sqrt[E^x+x], x]", //
@@ -1156,6 +1319,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:878
+  @Test
   public void test0161() {
     check( //
         "Integrate[E^x*((-1)/E^x+E^x)*(1/E^x+E^x)^2, x]", //
@@ -1163,6 +1327,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:898
+  @Test
   public void test0162() {
     check( //
         "Integrate[E^((a+b*x)^3)*x, x]", //
@@ -1170,6 +1335,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:13
+  @Test
   public void test0163() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x)^4, x]", //
@@ -1177,6 +1343,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:21
+  @Test
   public void test0164() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^4, x]", //
@@ -1184,6 +1351,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:29
+  @Test
   public void test0165() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d^5+5*d^4*e*x+10*d^3*e^2*x^2+10*d^2*e^3*x^3+5*d*e^4*x^4+e^5*x^5), x]", //
@@ -1191,6 +1359,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:47
+  @Test
   public void test0166() {
     check( //
         "Integrate[F^(a+b*x)/x^(1/2), x]", //
@@ -1198,6 +1367,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:55
+  @Test
   public void test0167() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x)^(1/2), x]", //
@@ -1205,6 +1375,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:77
+  @Test
   public void test0168() {
     check( //
         "Integrate[E^(-a-b*x)*x*(a+b*x)^3, x]", //
@@ -1212,6 +1383,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:85
+  @Test
   public void test0169() {
     check( //
         "Integrate[F^(a+b*(c+d*x))*x^2*(e+f*x)^2, x]", //
@@ -1219,6 +1391,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:95
+  @Test
   public void test0170() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^4*(c+d*x)^3, x]", //
@@ -1226,6 +1399,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:115
+  @Test
   public void test0171() {
     check( //
         "Integrate[x^4*Sqrt[E^(a+b*x)], x]", //
@@ -1233,6 +1407,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:21
+  @Test
   public void test0172() {
     check( //
         "Integrate[x^2/(a+E^(c+d*x)*b)^2, x]", //
@@ -1240,6 +1415,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:45
+  @Test
   public void test0173() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)/(c+d*x)^2, x]", //
@@ -1247,6 +1423,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:53
+  @Test
   public void test0174() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^2/(c+d*x)^3, x]", //
@@ -1254,6 +1431,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:63
+  @Test
   public void test0175() {
     check( //
         "Integrate[(c+d*x)^3/(a+b*(F^(g*(e+f*x)))^n), x]", //
@@ -1261,6 +1439,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:96
+  @Test
   public void test0176() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)^m, x]", //
@@ -1268,6 +1447,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:115
+  @Test
   public void test0177() {
     check( //
         "Integrate[F^(c+d*x)*x/(a+b*F^(c+d*x))^2, x]", //
@@ -1275,6 +1455,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:12
+  @Test
   public void test0178() {
     check( //
         "Integrate[E^(d*x)/(a+E^(c+d*x)*b), x]", //
@@ -1282,6 +1463,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:32
+  @Test
   public void test0179() {
     check( //
         "Integrate[E^(2*x)/(a+E^x*b)^2, x]", //
@@ -1289,6 +1471,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:40
+  @Test
   public void test0180() {
     check( //
         "Integrate[(a+E^(n*x)*b)/E^(n*x), x]", //
@@ -1296,6 +1479,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:48
+  @Test
   public void test0181() {
     check( //
         "Integrate[f^(a+3*b*x)/(c+d*f^(e+2*b*x)), x]", //
@@ -1303,6 +1487,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:64
+  @Test
   public void test0182() {
     check( //
         "Integrate[f^x/(a+b*f^(2*x))^3, x]", //
@@ -1310,6 +1495,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:74
+  @Test
   public void test0183() {
     check( //
         "Integrate[x/(b/f^x+a*f^x)^2, x]", //
@@ -1317,6 +1503,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:99
+  @Test
   public void test0184() {
     check( //
         "Integrate[f^(a+b*x^2)/x^5, x]", //
@@ -1324,6 +1511,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:107
+  @Test
   public void test0185() {
     check( //
         "Integrate[f^(a+b*x^2)*x^4, x]", //
@@ -1331,6 +1519,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:141
+  @Test
   public void test0186() {
     check( //
         "Integrate[f^(a+b/x)*x^2, x]", //
@@ -1338,6 +1527,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:173
+  @Test
   public void test0187() {
     check( //
         "Integrate[f^(a+b/x^2)/x^8, x]", //
@@ -1345,6 +1535,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:181
+  @Test
   public void test0188() {
     check( //
         "Integrate[f^(a+b/x^3)*x^5, x]", //
@@ -1352,6 +1543,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:215
+  @Test
   public void test0189() {
     check( //
         "Integrate[f^(a+b*x^n)*x^(-1+3/2*n), x]", //
@@ -1359,6 +1551,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:255
+  @Test
   public void test0190() {
     check( //
         "Integrate[f^(c/(a+b*x))/x^2, x]", //
@@ -1366,6 +1559,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:266
+  @Test
   public void test0191() {
     check( //
         "Integrate[f^(c/(a+b*x)^3)*x^3, x]", //
@@ -1373,6 +1567,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:310
+  @Test
   public void test0192() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(c+d*x)^8, x]", //
@@ -1380,6 +1575,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:318
+  @Test
   public void test0193() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)/(c+d*x)^8, x]", //
@@ -1387,6 +1583,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:360
+  @Test
   public void test0194() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)*(c+d*x)^5, x]", //
@@ -1394,6 +1591,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:392
+  @Test
   public void test0195() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^3)/(c+d*x)^10, x]", //
@@ -1401,6 +1599,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:426
+  @Test
   public void test0196() {
     check( //
         "Integrate[(a+b*x)^(-1+1/2*n)/F^(c*(a+b*x)^n), x]", //
@@ -1408,6 +1607,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:441
+  @Test
   public void test0197() {
     check( //
         "Integrate[E^(e*(c+d*x)^3)*(a+b*x)^2, x]", //
@@ -1415,6 +1615,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:453
+  @Test
   public void test0198() {
     check( //
         "Integrate[E^(e/(c+d*x))*(a+b*x)^3, x]", //
@@ -1422,6 +1623,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:461
+  @Test
   public void test0199() {
     check( //
         "Integrate[E^(e/(c+d*x)^2)*(a+b*x)^2, x]", //
@@ -1429,6 +1631,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:488
+  @Test
   public void test0200() {
     check( //
         "Integrate[E^(a+b*x-c*x^2)*x^2, x]", //
@@ -1436,6 +1639,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:502
+  @Test
   public void test0201() {
     check( //
         "Integrate[f^(a+b*x+c*x^2)*(d+e*x)^2, x]", //
@@ -1443,6 +1647,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:541
+  @Test
   public void test0202() {
     check( //
         "Integrate[2^(2*x)/(a-b/2^x), x]", //
@@ -1450,6 +1655,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:549
+  @Test
   public void test0203() {
     check( //
         "Integrate[2^x/(a-b/2^(2*x)), x]", //
@@ -1457,6 +1663,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:587
+  @Test
   public void test0204() {
     check( //
         "Integrate[1/(1+2*f^(c+d*x)+f^(2*c+2*d*x)), x]", //
@@ -1464,6 +1671,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:603
+  @Test
   public void test0205() {
     check( //
         "Integrate[1/(1+(-1)/E^x+2*E^x), x]", //
@@ -1471,6 +1679,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:614
+  @Test
   public void test0206() {
     check( //
         "Integrate[(a+b*F^(c*Sqrt[d+e*x]/Sqrt[f+g*x]))^2/(d*f+(e*f+d*g)*x+e*g*x^2), x]", //
@@ -1478,6 +1687,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:627
+  @Test
   public void test0207() {
     check( //
         "Integrate[F^(3*Sqrt[1-a*x]/Sqrt[1+a*x])/(1-a^2*x^2), x]", //
@@ -1485,6 +1695,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:637
+  @Test
   public void test0208() {
     check( //
         "Integrate[a^x*b^x/x, x]", //
@@ -1492,6 +1703,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:688
+  @Test
   public void test0209() {
     check( //
         "Integrate[F^(f*(a+b*Log[c*(d+e*x)^n])^2)*(d*g+e*g*x)^2, x]", //
@@ -1499,6 +1711,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:720
+  @Test
   public void test0210() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)/(a+b*x+c*x^2)^(1/2), x]", //
@@ -1506,6 +1719,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:742
+  @Test
   public void test0211() {
     check( //
         "Integrate[(-1+E^(2*x))/(3+E^(2*x)), x]", //
@@ -1513,6 +1727,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:774
+  @Test
   public void test0212() {
     check( //
         "Integrate[E^(3*x)*(-8+2*x^3+x^5), x]", //
@@ -1520,6 +1735,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:814
+  @Test
   public void test0213() {
     check( //
         "Integrate[(a+E^x*b)^4, x]", //
@@ -1527,6 +1743,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:830
+  @Test
   public void test0214() {
     check( //
         "Integrate[E^(x^2)*x*Sqrt[1-E^(2*x^2)], x]", //
@@ -1534,6 +1751,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:838
+  @Test
   public void test0215() {
     check( //
         "Integrate[1/((-1)/E^x+E^x)^2, x]", //
@@ -1541,6 +1759,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:846
+  @Test
   public void test0216() {
     check( //
         "Integrate[E^x*(-5+x+x^2)/(-1+x)^2, x]", //
@@ -1548,6 +1767,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:866
+  @Test
   public void test0217() {
     check( //
         "Integrate[(1+E^x)*x/Sqrt[E^x+x]+2*Sqrt[E^x+x], x]", //
@@ -1555,6 +1775,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:889
+  @Test
   public void test0218() {
     check( //
         "Integrate[(a*F^(c+d*x))^m*(b*F^(e+f*x))^n, x]", //
@@ -1562,6 +1783,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:14
+  @Test
   public void test0219() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x)^3, x]", //
@@ -1569,6 +1791,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:22
+  @Test
   public void test0220() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^5, x]", //
@@ -1576,6 +1799,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:48
+  @Test
   public void test0221() {
     check( //
         "Integrate[F^(a+b*x)/x^(3/2), x]", //
@@ -1583,6 +1807,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:56
+  @Test
   public void test0222() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^(1/2), x]", //
@@ -1590,6 +1815,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:78
+  @Test
   public void test0223() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^3, x]", //
@@ -1597,6 +1823,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:86
+  @Test
   public void test0224() {
     check( //
         "Integrate[F^(a+b*(c+d*x))*x*(e+f*x)^2, x]", //
@@ -1604,6 +1831,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:96
+  @Test
   public void test0225() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^4*(c+d*x)^2, x]", //
@@ -1611,6 +1839,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:116
+  @Test
   public void test0226() {
     check( //
         "Integrate[x^3*Sqrt[E^(a+b*x)], x]", //
@@ -1618,6 +1847,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:12
+  @Test
   public void test0227() {
     check( //
         "Integrate[x^3/(a+E^(c+d*x)*b), x]", //
@@ -1625,6 +1855,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:22
+  @Test
   public void test0228() {
     check( //
         "Integrate[x/(a+E^(c+d*x)*b)^2, x]", //
@@ -1632,6 +1863,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:46
+  @Test
   public void test0229() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)/(c+d*x)^3, x]", //
@@ -1639,6 +1871,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:54
+  @Test
   public void test0230() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)^3, x]", //
@@ -1646,6 +1879,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:64
+  @Test
   public void test0231() {
     check( //
         "Integrate[(c+d*x)^2/(a+b*(F^(g*(e+f*x)))^n), x]", //
@@ -1653,6 +1887,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:97
+  @Test
   public void test0232() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)*(c+d*x)^m, x]", //
@@ -1660,6 +1895,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:13
+  @Test
   public void test0233() {
     check( //
         "Integrate[E^(c+d*x)/(a+E^(c+d*x)*b), x]", //
@@ -1667,6 +1903,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:21
+  @Test
   public void test0234() {
     check( //
         "Integrate[F^(d*x)*(a+b*F^(c+d*x))^n, x]", //
@@ -1674,6 +1911,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:33
+  @Test
   public void test0235() {
     check( //
         "Integrate[E^(2*x)/(a+E^x*b)^3, x]", //
@@ -1681,6 +1919,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:41
+  @Test
   public void test0236() {
     check( //
         "Integrate[(a+E^(n*x)*b)^2/E^(n*x), x]", //
@@ -1688,6 +1927,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:49
+  @Test
   public void test0237() {
     check( //
         "Integrate[f^(a+4*b*x)/(c+d*f^(e+2*b*x)), x]", //
@@ -1695,6 +1935,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:65
+  @Test
   public void test0238() {
     check( //
         "Integrate[f^x*x/(a+b*f^(2*x))^3, x]", //
@@ -1702,6 +1943,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:75
+  @Test
   public void test0239() {
     check( //
         "Integrate[x^2/(b/f^x+a*f^x)^2, x]", //
@@ -1709,6 +1951,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:100
+  @Test
   public void test0240() {
     check( //
         "Integrate[f^(a+b*x^2)/x^7, x]", //
@@ -1716,6 +1959,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:142
+  @Test
   public void test0241() {
     check( //
         "Integrate[f^(a+b/x)*x, x]", //
@@ -1723,6 +1967,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:166
+  @Test
   public void test0242() {
     check( //
         "Integrate[f^(a+b/x^2)*x^6, x]", //
@@ -1730,6 +1975,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:174
+  @Test
   public void test0243() {
     check( //
         "Integrate[f^(a+b/x^2)/x^10, x]", //
@@ -1737,6 +1983,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:208
+  @Test
   public void test0244() {
     check( //
         "Integrate[f^(a+b*x^n)*x^(-1+3*n), x]", //
@@ -1744,6 +1991,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:216
+  @Test
   public void test0245() {
     check( //
         "Integrate[f^(a+b*x^n)*x^(-1+1/2*n), x]", //
@@ -1751,6 +1999,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:233
+  @Test
   public void test0246() {
     check( //
         "Integrate[f^(c*(a+b*x)^3)*x^2, x]", //
@@ -1758,6 +2007,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:246
+  @Test
   public void test0247() {
     check( //
         "Integrate[E^Sqrt[5+3*x], x]", //
@@ -1765,6 +2015,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:267
+  @Test
   public void test0248() {
     check( //
         "Integrate[f^(c/(a+b*x)^3)*x^2, x]", //
@@ -1772,6 +2023,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:311
+  @Test
   public void test0249() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(c+d*x)^6, x]", //
@@ -1779,6 +2031,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:353
+  @Test
   public void test0250() {
     check( //
         "Integrate[F^(a+b/(c+d*x))/(c+d*x)^4, x]", //
@@ -1786,6 +2039,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:361
+  @Test
   public void test0251() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)*(c+d*x)^3, x]", //
@@ -1793,6 +2047,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:377
+  @Test
   public void test0252() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)/(c+d*x)^4, x]", //
@@ -1800,6 +2055,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:393
+  @Test
   public void test0253() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^3)/(c+d*x)^13, x]", //
@@ -1807,6 +2063,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:431
+  @Test
   public void test0254() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(e+f*x)^5, x]", //
@@ -1814,6 +2071,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:442
+  @Test
   public void test0255() {
     check( //
         "Integrate[E^(e*(c+d*x)^3)*(a+b*x), x]", //
@@ -1821,6 +2079,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:454
+  @Test
   public void test0256() {
     check( //
         "Integrate[E^(e/(c+d*x))*(a+b*x)^2, x]", //
@@ -1828,6 +2087,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:462
+  @Test
   public void test0257() {
     check( //
         "Integrate[E^(e/(c+d*x)^2)*(a+b*x), x]", //
@@ -1835,6 +2095,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:489
+  @Test
   public void test0258() {
     check( //
         "Integrate[E^(a+b*x-c*x^2)*x, x]", //
@@ -1842,6 +2103,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:503
+  @Test
   public void test0259() {
     check( //
         "Integrate[f^(a+b*x+c*x^2)*(d+e*x), x]", //
@@ -1849,6 +2111,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:514
+  @Test
   public void test0260() {
     check( //
         "Integrate[f^(b*x+c*x^2)*(b+2*c*x)^2, x]", //
@@ -1856,6 +2119,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:534
+  @Test
   public void test0261() {
     check( //
         "Integrate[4^x/(a+2^x*b), x]", //
@@ -1863,6 +2127,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:572
+  @Test
   public void test0262() {
     check( //
         "Integrate[1/(1+2*E^x+E^(2*x)), x]", //
@@ -1870,6 +2135,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:596
+  @Test
   public void test0263() {
     check( //
         "Integrate[1/(2+1/E^x+E^x), x]", //
@@ -1877,6 +2143,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:615
+  @Test
   public void test0264() {
     check( //
         "Integrate[(a+b*F^(c*Sqrt[d+e*x]/Sqrt[f+g*x]))/(d*f+(e*f+d*g)*x+e*g*x^2), x]", //
@@ -1884,6 +2151,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:628
+  @Test
   public void test0265() {
     check( //
         "Integrate[F^(2*Sqrt[1-a*x]/Sqrt[1+a*x])/(1-a^2*x^2), x]", //
@@ -1891,6 +2159,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:689
+  @Test
   public void test0266() {
     check( //
         "Integrate[F^(f*(a+b*Log[c*(d+e*x)^n])^2)*(d*g+e*g*x), x]", //
@@ -1898,6 +2167,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:700
+  @Test
   public void test0267() {
     check( //
         "Integrate[F^(f*(a+b*Log[c*(d+e*x)^n])^2), x]", //
@@ -1905,6 +2175,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:713
+  @Test
   public void test0268() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)/(a+b*x+c*x^2), x]", //
@@ -1912,6 +2183,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:721
+  @Test
   public void test0269() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)/(a+b*x+c*x^2)^(3/2), x]", //
@@ -1919,6 +2191,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:733
+  @Test
   public void test0270() {
     check( //
         "Integrate[E^x*Sqrt[3-4*E^(2*x)], x]", //
@@ -1926,6 +2199,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:775
+  @Test
   public void test0271() {
     check( //
         "Integrate[(E^x+x)^2, x]", //
@@ -1933,6 +2207,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:801
+  @Test
   public void test0272() {
     check( //
         "Integrate[E^x*(-5*x+x^2), x]", //
@@ -1940,6 +2215,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:815
+  @Test
   public void test0273() {
     check( //
         "Integrate[1/Sqrt[a+E^(c+d*x)*b], x]", //
@@ -1947,6 +2223,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:831
+  @Test
   public void test0274() {
     check( //
         "Integrate[E^(x^3)*(1-E^(4*x^3))^2*x^2, x]", //
@@ -1954,6 +2231,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:839
+  @Test
   public void test0275() {
     check( //
         "Integrate[E^x*((-1)/E^x+E^x)^2, x]", //
@@ -1961,6 +2239,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:847
+  @Test
   public void test0276() {
     check( //
         "Integrate[E^(x^2)*x^3/(1+x^2)^2, x]", //
@@ -1968,6 +2247,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:867
+  @Test
   public void test0277() {
     check( //
         "Integrate[x/Sqrt[E^x+x]+E^x*x/Sqrt[E^x+x]+2*Sqrt[E^x+x], x]", //
@@ -1975,6 +2255,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:15
+  @Test
   public void test0278() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x)^2, x]", //
@@ -1982,6 +2263,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:23
+  @Test
   public void test0279() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d^4+4*d^3*e*x+6*d^2*e^2*x^2+4*d*e^3*x^3+e^4*x^4), x]", //
@@ -1989,6 +2271,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:49
+  @Test
   public void test0280() {
     check( //
         "Integrate[F^(a+b*x)/x^(5/2), x]", //
@@ -1996,6 +2279,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:57
+  @Test
   public void test0281() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^(3/2), x]", //
@@ -2003,6 +2287,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:69
+  @Test
   public void test0282() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x+f*x^2), x]", //
@@ -2010,6 +2295,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:79
+  @Test
   public void test0283() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^3/x, x]", //
@@ -2017,6 +2303,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:87
+  @Test
   public void test0284() {
     check( //
         "Integrate[F^(a+b*(c+d*x))*(e+f*x)^2, x]", //
@@ -2024,6 +2311,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:97
+  @Test
   public void test0285() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^4*(c+d*x), x]", //
@@ -2031,6 +2319,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:117
+  @Test
   public void test0286() {
     check( //
         "Integrate[x^2*Sqrt[E^(a+b*x)], x]", //
@@ -2038,6 +2327,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:13
+  @Test
   public void test0287() {
     check( //
         "Integrate[x^2/(a+E^(c+d*x)*b), x]", //
@@ -2045,6 +2335,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:47
+  @Test
   public void test0288() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)^3, x]", //
@@ -2052,6 +2343,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:55
+  @Test
   public void test0289() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x)^2, x]", //
@@ -2059,6 +2351,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:65
+  @Test
   public void test0290() {
     check( //
         "Integrate[(c+d*x)/(a+b*(F^(g*(e+f*x)))^n), x]", //
@@ -2066,6 +2359,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:107
+  @Test
   public void test0291() {
     check( //
         "Integrate[F^(c+d*x)*x^3/(a+b*F^(c+d*x)), x]", //
@@ -2073,6 +2367,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:119
+  @Test
   public void test0292() {
     check( //
         "Integrate[F^(c+d*x)*x^3/(a+b*F^(c+d*x))^3, x]", //
@@ -2080,6 +2375,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:34
+  @Test
   public void test0293() {
     check( //
         "Integrate[E^(2*x)/(a+E^x*b)^4, x]", //
@@ -2087,6 +2383,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:42
+  @Test
   public void test0294() {
     check( //
         "Integrate[(a+E^(n*x)*b)^3/E^(n*x), x]", //
@@ -2094,6 +2391,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:50
+  @Test
   public void test0295() {
     check( //
         "Integrate[f^(a+5*b*x)/(c+d*f^(e+2*b*x)), x]", //
@@ -2101,6 +2399,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:76
+  @Test
   public void test0296() {
     check( //
         "Integrate[x^3/(b/f^x+a*f^x)^2, x]", //
@@ -2108,6 +2407,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:93
+  @Test
   public void test0297() {
     check( //
         "Integrate[f^(a+b*x^2)*x^7, x]", //
@@ -2115,6 +2415,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:125
+  @Test
   public void test0298() {
     check( //
         "Integrate[f^(a+b*x^3)/x^7, x]", //
@@ -2122,6 +2423,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:167
+  @Test
   public void test0299() {
     check( //
         "Integrate[f^(a+b/x^2)*x^4, x]", //
@@ -2129,6 +2431,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:217
+  @Test
   public void test0300() {
     check( //
         "Integrate[f^(a+b*x^n)*x^(-1-1/2*n), x]", //
@@ -2136,6 +2439,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:234
+  @Test
   public void test0301() {
     check( //
         "Integrate[f^(c*(a+b*x)^3)*x, x]", //
@@ -2143,6 +2447,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:249
+  @Test
   public void test0302() {
     check( //
         "Integrate[f^(c/(a+b*x))*x^4, x]", //
@@ -2150,6 +2455,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:257
+  @Test
   public void test0303() {
     check( //
         "Integrate[f^(c/(a+b*x)^2)*x^4, x]", //
@@ -2157,6 +2463,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:268
+  @Test
   public void test0304() {
     check( //
         "Integrate[f^(c/(a+b*x)^3)*x, x]", //
@@ -2164,6 +2471,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:304
+  @Test
   public void test0305() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)/(c+d*x)^5, x]", //
@@ -2171,6 +2479,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:312
+  @Test
   public void test0306() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(c+d*x)^4, x]", //
@@ -2178,6 +2487,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:354
+  @Test
   public void test0307() {
     check( //
         "Integrate[F^(a+b/(c+d*x))/(c+d*x)^5, x]", //
@@ -2185,6 +2495,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:378
+  @Test
   public void test0308() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)/(c+d*x)^6, x]", //
@@ -2192,6 +2503,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:386
+  @Test
   public void test0309() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^3)*(c+d*x)^8, x]", //
@@ -2199,6 +2511,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:432
+  @Test
   public void test0310() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(e+f*x)^4, x]", //
@@ -2206,6 +2519,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:455
+  @Test
   public void test0311() {
     check( //
         "Integrate[E^(e/(c+d*x))*(a+b*x), x]", //
@@ -2213,6 +2527,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:463
+  @Test
   public void test0312() {
     check( //
         "Integrate[E^(e/(c+d*x)^2), x]", //
@@ -2220,6 +2535,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:535
+  @Test
   public void test0313() {
     check( //
         "Integrate[2^(2*x)/(a+2^x*b), x]", //
@@ -2227,6 +2543,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:605
+  @Test
   public void test0314() {
     check( //
         "Integrate[x/(a+b/E^x+E^x*c), x]", //
@@ -2234,6 +2551,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:651
+  @Test
   public void test0315() {
     check( //
         "Integrate[(-E^(c+d*x)*a*e+b*e)*x/(-2*E^(c+d*x)*a*e+b*e-E^(2*(c+d*x))*b*e), x]", //
@@ -2241,6 +2559,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:714
+  @Test
   public void test0316() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)/(a+b*x+c*x^2)^2, x]", //
@@ -2248,6 +2567,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:722
+  @Test
   public void test0317() {
     check( //
         "Integrate[E^(a+b*x+c*x^2)*(b+2*c*x)/(a+b*x+c*x^2)^(5/2), x]", //
@@ -2255,6 +2575,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:756
+  @Test
   public void test0318() {
     check( //
         "Integrate[x/Sqrt[-1+E^(2*x^2)], x]", //
@@ -2262,6 +2583,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:802
+  @Test
   public void test0319() {
     check( //
         "Integrate[E^(3*x)*(-x+x^2), x]", //
@@ -2269,6 +2591,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:816
+  @Test
   public void test0320() {
     check( //
         "Integrate[1/Sqrt[-a+E^(c+d*x)*b], x]", //
@@ -2276,6 +2599,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:824
+  @Test
   public void test0321() {
     check( //
         "Integrate[E^(7*x)*x^3, x]", //
@@ -2283,6 +2607,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:840
+  @Test
   public void test0322() {
     check( //
         "Integrate[E^x*((-1)/E^x+E^x)^3, x]", //
@@ -2290,6 +2615,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:858
+  @Test
   public void test0323() {
     check( //
         "Integrate[2^(1/x)/x^2, x]", //
@@ -2297,6 +2623,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:24
+  @Test
   public void test0324() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d^3+3*d^2*e*x+3*d*e^2*x^2+e^3*x^3), x]", //
@@ -2304,6 +2631,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:50
+  @Test
   public void test0325() {
     check( //
         "Integrate[F^(a+b*x)/x^(7/2), x]", //
@@ -2311,6 +2639,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:58
+  @Test
   public void test0326() {
     check( //
         "Integrate[F^(c*(a+b*x))/(d+e*x)^(5/2), x]", //
@@ -2318,6 +2647,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:70
+  @Test
   public void test0327() {
     check( //
         "Integrate[F^(c*(a+b*x))*(d+e*x+f*x^2+g*x^3), x]", //
@@ -2325,6 +2655,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:80
+  @Test
   public void test0328() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^3/x^2, x]", //
@@ -2332,6 +2663,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:98
+  @Test
   public void test0329() {
     check( //
         "Integrate[E^(-a-b*x)*(a+b*x)^4, x]", //
@@ -2339,6 +2671,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.1 u (F^(c (a+b x)))^n.input:118
+  @Test
   public void test0330() {
     check( //
         "Integrate[x*Sqrt[E^(a+b*x)], x]", //
@@ -2346,6 +2679,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:14
+  @Test
   public void test0331() {
     check( //
         "Integrate[x/(a+E^(c+d*x)*b), x]", //
@@ -2353,6 +2687,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:40
+  @Test
   public void test0332() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)*(c+d*x)^3, x]", //
@@ -2360,6 +2695,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:48
+  @Test
   public void test0333() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^2*(c+d*x)^2, x]", //
@@ -2367,6 +2703,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:56
+  @Test
   public void test0334() {
     check( //
         "Integrate[(a+b*(F^(g*(e+f*x)))^n)^3*(c+d*x), x]", //
@@ -2374,6 +2711,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:66
+  @Test
   public void test0335() {
     check( //
         "Integrate[1/(a+b*(F^(g*(e+f*x)))^n), x]", //
@@ -2381,6 +2719,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:108
+  @Test
   public void test0336() {
     check( //
         "Integrate[F^(c+d*x)*x^2/(a+b*F^(c+d*x)), x]", //
@@ -2388,6 +2727,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.2 (c+d x)^m (F^(g (e+f x)))^n (a+b (F^(g (e+f x)))^n)^p.input:120
+  @Test
   public void test0337() {
     check( //
         "Integrate[F^(c+d*x)*x^2/(a+b*F^(c+d*x))^3, x]", //
@@ -2395,6 +2735,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:35
+  @Test
   public void test0338() {
     check( //
         "Integrate[E^(4*x)/(a+E^(2*x)*b), x]", //
@@ -2402,6 +2743,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:43
+  @Test
   public void test0339() {
     check( //
         "Integrate[1/(E^(n*x)*(a+E^(n*x)*b)), x]", //
@@ -2409,6 +2751,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:69
+  @Test
   public void test0340() {
     check( //
         "Integrate[1/(b/f^x+a*f^x), x]", //
@@ -2416,6 +2759,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:94
+  @Test
   public void test0341() {
     check( //
         "Integrate[f^(a+b*x^2)*x^5, x]", //
@@ -2423,6 +2767,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:126
+  @Test
   public void test0342() {
     check( //
         "Integrate[f^(a+b*x^3)/x^10, x]", //
@@ -2430,6 +2775,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:160
+  @Test
   public void test0343() {
     check( //
         "Integrate[f^(a+b/x^2)/x^7, x]", //
@@ -2437,6 +2783,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:168
+  @Test
   public void test0344() {
     check( //
         "Integrate[f^(a+b/x^2)*x^2, x]", //
@@ -2444,6 +2791,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:218
+  @Test
   public void test0345() {
     check( //
         "Integrate[f^(a+b*x^n)*x^(-1-3/2*n), x]", //
@@ -2451,6 +2799,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:250
+  @Test
   public void test0346() {
     check( //
         "Integrate[f^(c/(a+b*x))*x^3, x]", //
@@ -2458,6 +2807,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:258
+  @Test
   public void test0347() {
     check( //
         "Integrate[f^(c/(a+b*x)^2)*x^3, x]", //
@@ -2465,6 +2815,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:305
+  @Test
   public void test0348() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)/(c+d*x)^7, x]", //
@@ -2472,6 +2823,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:347
+  @Test
   public void test0349() {
     check( //
         "Integrate[F^(a+b/(c+d*x))*(c+d*x)^2, x]", //
@@ -2479,6 +2831,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:379
+  @Test
   public void test0350() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^2)/(c+d*x)^8, x]", //
@@ -2486,6 +2839,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:387
+  @Test
   public void test0351() {
     check( //
         "Integrate[F^(a+b/(c+d*x)^3)*(c+d*x)^5, x]", //
@@ -2493,6 +2847,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:421
+  @Test
   public void test0352() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^n)*(c+d*x)^(-1-2*n), x]", //
@@ -2500,6 +2855,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:433
+  @Test
   public void test0353() {
     check( //
         "Integrate[F^(a+b*(c+d*x)^2)*(e+f*x)^3, x]", //
@@ -2507,6 +2863,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:448
+  @Test
   public void test0354() {
     check( //
         "Integrate[F^(a+b/(c+d*x))/(e+f*x), x]", //
@@ -2514,6 +2871,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:467
+  @Test
   public void test0355() {
     check( //
         "Integrate[E^(e/(c+d*x)^3)*(a+b*x)^3, x]", //
@@ -2521,6 +2879,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:481
+  @Test
   public void test0356() {
     check( //
         "Integrate[f^(a+b*x+c*x^2)*x^3, x]", //
@@ -2528,6 +2887,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:508
+  @Test
   public void test0357() {
     check( //
         "Integrate[f^(a+b*x+c*x^2)*(b+2*c*x)^2, x]", //
@@ -2535,6 +2895,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:526
+  @Test
   public void test0358() {
     check( //
         "Integrate[E^(d+e*x)/(x^2*(a+b*x+c*x^2)), x]", //
@@ -2542,6 +2903,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:536
+  @Test
   public void test0359() {
     check( //
         "Integrate[4^x/(a-2^x*b), x]", //
@@ -2549,6 +2911,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:606
+  @Test
   public void test0360() {
     check( //
         "Integrate[x^2/(a+b/E^x+E^x*c), x]", //
@@ -2556,6 +2919,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:620
+  @Test
   public void test0361() {
     check( //
         "Integrate[(a+b*F^(c*Sqrt[d+e*x]/Sqrt[d*f-e*f*x]))^3/(d^2-e^2*x^2), x]", //
@@ -2563,6 +2927,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:640
+  @Test
   public void test0362() {
     check( //
         "Integrate[a^x*b^x*c^x, x]", //
@@ -2570,6 +2935,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:665
+  @Test
   public void test0363() {
     check( //
         "Integrate[E^(Log[(d+e*x)^n]^2)*(d+e*x)^m, x]", //
@@ -2577,6 +2943,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:791
+  @Test
   public void test0364() {
     check( //
         "Integrate[E^x*Sec[1-E^x]^3, x]", //
@@ -2584,6 +2951,7 @@ public class Exponentials extends AbstractRubiTestCase {
   }
 
   // 2.3 Exponential functions.input:833
+  @Test
   public void test0365() {
     check( //
         "Integrate[E^(E^(E^x)+E^x+x), x]", //

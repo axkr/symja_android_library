@@ -1,25 +1,26 @@
 package org.matheclipse.core.rubi.independent;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
  * Rubi's "0 Independent test suites" corpus section. 376 integrals.
  *
  * <p>
- * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
- * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
- * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
- * unnoticed, so run it after any change to the integrator:
+ * <b>Not part of a normal build.</b> {@code AbstractRubiTestCase} is {@code @Tag("corpus")},
+ * which the default surefire run excludes. That is deliberate - the section is slow - but it
+ * means drift goes unnoticed, so run it after any change to the integrator:
  *
  * <pre>
- * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
- *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * mvn -o -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400
  * </pre>
  *
  * <p>
- * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
- * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
- * JVM across classes makes every test fail.
+ * The profile sets {@code reuseForks=false}, which is required rather than an optimisation:
+ * {@code AbstractRubiTestCase} sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS},
+ * so sharing one JVM across classes makes every test fail. It also sets
+ * {@code testFailureIgnore}, because this corpus is a scoreboard rather than a gate.
  *
  * <p>
  * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
@@ -28,10 +29,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class StewartProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public StewartProblemsTests(String name) {
-    super(name, false);
+  public StewartProblemsTests() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -46,6 +48,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     }
   }
 
+  @Test
   public void test1() {
     check( //
         "Integrate[x^n, x]", //
@@ -53,6 +56,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test2() {
     check( //
         "Integrate[E^x, x]", //
@@ -60,6 +64,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test3() {
     check( //
         "Integrate[1/x, x]", //
@@ -67,6 +72,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test4() {
     check( //
         "Integrate[a^x, x]", //
@@ -74,6 +80,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test5() {
     check( //
         "Integrate[Sin[x], x]", //
@@ -81,6 +88,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test6() {
     check( //
         "Integrate[Cos[x], x]", //
@@ -88,6 +96,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test7() {
     check( //
         "Integrate[Sec[x]^2, x]", //
@@ -95,6 +104,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test8() {
     check( //
         "Integrate[Csc[x]^2, x]", //
@@ -102,6 +112,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test9() {
     check( //
         "Integrate[Sec[x]*Tan[x], x]", //
@@ -109,6 +120,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test10() {
     check( //
         "Integrate[Csc[x]*Cot[x], x]", //
@@ -116,6 +128,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test11() {
     check( //
         "Integrate[Sinh[x], x]", //
@@ -123,6 +136,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test12() {
     check( //
         "Integrate[Cosh[x], x]", //
@@ -130,6 +144,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test13() {
     check( //
         "Integrate[Tan[x], x]", //
@@ -137,6 +152,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test14() {
     check( //
         "Integrate[Cot[x], x]", //
@@ -144,6 +160,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test15() {
     check( //
         "Integrate[x*Sin[x], x]", //
@@ -151,6 +168,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test16() {
     check( //
         "Integrate[Log[x], x]", //
@@ -158,6 +176,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test17() {
     check( //
         "Integrate[x^2*E^x, x]", //
@@ -165,6 +184,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test18() {
     check( //
         "Integrate[E^x*Sin[x], x]", //
@@ -172,6 +192,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test19() {
     check( //
         "Integrate[ArcTan[x], x]", //
@@ -179,6 +200,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test20() {
     check( //
         "Integrate[x*E^(2*x), x]", //
@@ -186,6 +208,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test21() {
     check( //
         "Integrate[x*Cos[x], x]", //
@@ -193,6 +216,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test22() {
     check( //
         "Integrate[x*Sin[4*x], x]", //
@@ -200,6 +224,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test23() {
     check( //
         "Integrate[x*Log[x], x]", //
@@ -207,6 +232,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test24() {
     check( //
         "Integrate[x^2*Cos[3*x], x]", //
@@ -214,6 +240,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test25() {
     check( //
         "Integrate[x^2*Sin[2*x], x]", //
@@ -221,6 +248,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test26() {
     check( //
         "Integrate[Log[x]^2, x]", //
@@ -228,6 +256,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test27() {
     check( //
         "Integrate[ArcSin[x], x]", //
@@ -235,6 +264,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test28() {
     check( //
         "Integrate[t*Cos[t]*Sin[t], t]", //
@@ -242,6 +272,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test29() {
     check( //
         "Integrate[t*Sec[t]^2, t]", //
@@ -249,6 +280,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test30() {
     check( //
         "Integrate[t^2*Log[t], t]", //
@@ -256,6 +288,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test31() {
     check( //
         "Integrate[t^3*E^t, t]", //
@@ -263,6 +296,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test32() {
     check( //
         "Integrate[E^(2*t)*Sin[3*t], t]", //
@@ -270,6 +304,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test33() {
     check( //
         "Integrate[Cos[3*t]/E^t, t]", //
@@ -277,6 +312,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test34() {
     check( //
         "Integrate[y*Sinh[y], y]", //
@@ -284,6 +320,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test35() {
     check( //
         "Integrate[y*Cosh[a*y], y]", //
@@ -291,6 +328,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test36() {
     check( //
         "Integrate[t/E^t, t]", //
@@ -298,6 +336,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test37() {
     check( //
         "Integrate[Sqrt[t]*Log[t], t]", //
@@ -305,6 +344,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test38() {
     check( //
         "Integrate[x*Cos[2*x], x]", //
@@ -312,6 +352,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test39() {
     check( //
         "Integrate[x^2/E^x, x]", //
@@ -319,6 +360,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test40() {
     check( //
         "Integrate[ArcCos[x], x]", //
@@ -326,6 +368,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test41() {
     check( //
         "Integrate[x*Csc[x]^2, x]", //
@@ -333,6 +376,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test42() {
     check( //
         "Integrate[Sin[3*x]*Cos[5*x], x]", //
@@ -340,6 +384,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test43() {
     check( //
         "Integrate[Sin[2*x]*Sin[4*x], x]", //
@@ -347,6 +392,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test44() {
     check( //
         "Integrate[Cos[x]*Log[Sin[x]], x]", //
@@ -354,6 +400,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test45() {
     check( //
         "Integrate[x^3*E^x^2, x]", //
@@ -361,6 +408,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test46() {
     check( //
         "Integrate[(3+2*x)*E^x, x]", //
@@ -368,6 +416,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test47() {
     check( //
         "Integrate[x*5^x, x]", //
@@ -375,6 +424,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test48() {
     check( //
         "Integrate[Cos[Log[x]], x]", //
@@ -382,6 +432,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test49() {
     check( //
         "Integrate[E^Sqrt[x], x]", //
@@ -389,6 +440,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test50() {
     check( //
         "Integrate[Log[Sqrt[x]], x]", //
@@ -396,6 +448,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test51() {
     check( //
         "Integrate[Sin[Log[x]], x]", //
@@ -403,6 +456,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test52() {
     check( //
         "Integrate[Sin[Sqrt[x]], x]", //
@@ -410,6 +464,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test53() {
     check( //
         "Integrate[x^5*Cos[x^3], x]", //
@@ -417,6 +472,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test54() {
     check( //
         "Integrate[x^5*E^x^2, x]", //
@@ -424,6 +480,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test55() {
     check( //
         "Integrate[x*ArcTan[x], x]", //
@@ -431,6 +488,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test56() {
     check( //
         "Integrate[x*Cos[Pi*x], x]", //
@@ -438,6 +496,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test57() {
     check( //
         "Integrate[Sqrt[x]*Log[x], x]", //
@@ -445,6 +504,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test58() {
     check( //
         "Integrate[Sin[3*x]^2, x]", //
@@ -452,6 +512,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test59() {
     check( //
         "Integrate[Cos[x]^2, x]", //
@@ -459,6 +520,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test60() {
     check( //
         "Integrate[Cos[x]^4, x]", //
@@ -466,6 +528,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test61() {
     check( //
         "Integrate[Sin[x]^3, x]", //
@@ -473,6 +536,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test62() {
     check( //
         "Integrate[Sin[x]^3*Cos[x]^4, x]", //
@@ -480,6 +544,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test63() {
     check( //
         "Integrate[Sin[x]^4*Cos[x]^3, x]", //
@@ -487,6 +552,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test64() {
     check( //
         "Integrate[Sin[x]^4*Cos[x]^2, x]", //
@@ -494,6 +560,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test65() {
     check( //
         "Integrate[Sin[x]^2*Cos[x]^2, x]", //
@@ -501,6 +568,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test66() {
     check( //
         "Integrate[(1-Sin[2*x])^2, x]", //
@@ -508,6 +576,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test67() {
     check( //
         "Integrate[Sin[x+Pi/6]*Cos[x], x]", //
@@ -515,6 +584,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test68() {
     check( //
         "Integrate[Cos[x]^5*Sin[x]^5, x]", //
@@ -522,6 +592,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test69() {
     check( //
         "Integrate[Sin[x]^6, x]", //
@@ -529,6 +600,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test70() {
     check( //
         "Integrate[Cos[x]^6, x]", //
@@ -536,6 +608,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test71() {
     check( //
         "Integrate[Sin[2*x]^2*Cos[2*x]^4, x]", //
@@ -543,6 +616,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test72() {
     check( //
         "Integrate[Sin[x]^5, x]", //
@@ -550,6 +624,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test73() {
     check( //
         "Integrate[Sin[x]^4*Cos[x]^4, x]", //
@@ -557,6 +632,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test74() {
     check( //
         "Integrate[Sin[x]^3*Sqrt[Cos[x]], x]", //
@@ -564,6 +640,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test75() {
     check( //
         "Integrate[Cos[x]^3*Sqrt[Sin[x]], x]", //
@@ -571,6 +648,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test76() {
     check( //
         "Integrate[Cos[Sqrt[x]]^2/Sqrt[x], x]", //
@@ -578,6 +656,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test77() {
     check( //
         "Integrate[x*Sin[x^2]^3, x]", //
@@ -585,6 +664,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test78() {
     check( //
         "Integrate[Cos[x]^2*Tan[x]^3, x]", //
@@ -592,6 +672,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test79() {
     check( //
         "Integrate[Cot[x]^5*Sin[x]^2, x]", //
@@ -599,6 +680,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test80() {
     check( //
         "Integrate[(1-Sin[x])/Cos[x], x]", //
@@ -606,6 +688,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test81() {
     check( //
         "Integrate[1/(1-Sin[x]), x]", //
@@ -613,6 +696,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test82() {
     check( //
         "Integrate[Tan[x]^2, x]", //
@@ -620,6 +704,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test83() {
     check( //
         "Integrate[Tan[x]^4, x]", //
@@ -627,6 +712,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test84() {
     check( //
         "Integrate[Sec[x]^4, x]", //
@@ -634,6 +720,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test85() {
     check( //
         "Integrate[Sec[x]^6, x]", //
@@ -641,6 +728,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test86() {
     check( //
         "Integrate[Tan[x]^4*Sec[x]^2, x]", //
@@ -648,6 +736,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test87() {
     check( //
         "Integrate[Tan[x]^2*Sec[x]^4, x]", //
@@ -655,6 +744,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test88() {
     check( //
         "Integrate[Tan[x]*Sec[x]^3, x]", //
@@ -662,6 +752,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test89() {
     check( //
         "Integrate[Tan[x]^3*Sec[x]^3, x]", //
@@ -669,6 +760,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test90() {
     check( //
         "Integrate[Tan[x]^5, x]", //
@@ -676,6 +768,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test91() {
     check( //
         "Integrate[Tan[x]^6, x]", //
@@ -683,6 +776,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test92() {
     check( //
         "Integrate[Tan[x]^5*Sec[x], x]", //
@@ -690,6 +784,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test93() {
     check( //
         "Integrate[Tan[x]^5*Sec[x]^3, x]", //
@@ -697,6 +792,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test94() {
     check( //
         "Integrate[Tan[x]*Sec[x]^6, x]", //
@@ -704,6 +800,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test95() {
     check( //
         "Integrate[Tan[x]^3*Sec[x]^6, x]", //
@@ -711,6 +808,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test96() {
     check( //
         "Integrate[Sec[x]^2/Cot[x], x]", //
@@ -718,6 +816,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test97() {
     check( //
         "Integrate[Sec[x]*Tan[x]^2, x]", //
@@ -725,6 +824,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test98() {
     check( //
         "Integrate[Cot[x]^2, x]", //
@@ -732,6 +832,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test99() {
     check( //
         "Integrate[Cot[x]^3, x]", //
@@ -739,6 +840,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test100() {
     check( //
         "Integrate[Cot[x]^4*Csc[x]^4, x]", //
@@ -746,6 +848,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test101() {
     check( //
         "Integrate[Cot[x]^3*Csc[x]^4, x]", //
@@ -753,6 +856,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test102() {
     check( //
         "Integrate[Csc[x], x]", //
@@ -760,6 +864,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test103() {
     check( //
         "Integrate[Csc[x]^3, x]", //
@@ -767,6 +872,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test104() {
     check( //
         "Integrate[Cos[x]^2/Sin[x], x]", //
@@ -774,6 +880,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test105() {
     check( //
         "Integrate[1/Sin[x]^4, x]", //
@@ -781,6 +888,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test106() {
     check( //
         "Integrate[Sin[5*x]*Sin[2*x], x]", //
@@ -788,6 +896,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test107() {
     check( //
         "Integrate[Sin[3*x]*Cos[x], x]", //
@@ -795,6 +904,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test108() {
     check( //
         "Integrate[Cos[3*x]*Cos[4*x], x]", //
@@ -802,6 +912,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test109() {
     check( //
         "Integrate[Sin[3*x]*Sin[6*x], x]", //
@@ -809,6 +920,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test110() {
     check( //
         "Integrate[Sin[x]*Cos[x]^5, x]", //
@@ -816,6 +928,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test111() {
     check( //
         "Integrate[Cos[x]*Cos[2*x]*Cos[3*x], x]", //
@@ -823,6 +936,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test112() {
     check( //
         "Integrate[(1-Tan[x]^2)/Sec[x]^2, x]", //
@@ -830,6 +944,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test113() {
     check( //
         "Integrate[(Cos[x]+Sin[x])/Sin[2*x], x]", //
@@ -837,6 +952,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test114() {
     check( //
         "Integrate[Sin[x]^2*Tan[x], x]", //
@@ -844,6 +960,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test115() {
     check( //
         "Integrate[Cos[x]^2*Cot[x]^3, x]", //
@@ -851,6 +968,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test116() {
     check( //
         "Integrate[Sec[x]^3*Tan[x], x]", //
@@ -858,6 +976,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test117() {
     check( //
         "Integrate[Sec[x]^3*Tan[x]^3, x]", //
@@ -865,6 +984,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test118() {
     check( //
         "Integrate[Sqrt[9-x^2]/x^2, x]", //
@@ -872,6 +992,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test119() {
     check( //
         "Integrate[1/(x^2*Sqrt[4+x^2]), x]", //
@@ -879,6 +1000,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test120() {
     check( //
         "Integrate[x/Sqrt[4+x^2], x]", //
@@ -886,6 +1008,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test121() {
     check( //
         "Integrate[1/Sqrt[-a^2+x^2], x]", //
@@ -893,6 +1016,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test122() {
     check( //
         "Integrate[x^3/(9+4*x^2)^(3/2), x]", //
@@ -900,6 +1024,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test123() {
     check( //
         "Integrate[x/Sqrt[3-2*x-x^2], x]", //
@@ -907,6 +1032,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test124() {
     check( //
         "Integrate[1/(x^2*Sqrt[1-x^2]), x]", //
@@ -914,6 +1040,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test125() {
     check( //
         "Integrate[x^3*Sqrt[4-x^2], x]", //
@@ -921,6 +1048,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test126() {
     check( //
         "Integrate[x/Sqrt[1-x^2], x]", //
@@ -928,6 +1056,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test127() {
     check( //
         "Integrate[x*Sqrt[4-x^2], x]", //
@@ -935,6 +1064,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test128() {
     check( //
         "Integrate[Sqrt[1-4*x^2], x]", //
@@ -942,6 +1072,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test129() {
     check( //
         "Integrate[x^3/Sqrt[x^2+4], x]", //
@@ -949,6 +1080,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test130() {
     check( //
         "Integrate[1/Sqrt[9+x^2], x]", //
@@ -956,6 +1088,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test131() {
     check( //
         "Integrate[Sqrt[x^2+1], x]", //
@@ -963,6 +1096,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test132() {
     check( //
         "Integrate[1/(x^3*Sqrt[x^2+(-1)*16]), x]", //
@@ -970,6 +1104,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test133() {
     check( //
         "Integrate[Sqrt[x^2-a^2]/x^4, x]", //
@@ -977,6 +1112,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test134() {
     check( //
         "Integrate[Sqrt[9*x^2+(-1)*4]/x, x]", //
@@ -984,6 +1120,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test135() {
     check( //
         "Integrate[1/(x^2*Sqrt[16*x^2+(-1)*9]), x]", //
@@ -991,6 +1128,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test136() {
     check( //
         "Integrate[x^2/(a^2-x^2)^(3/2), x]", //
@@ -998,6 +1136,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test137() {
     check( //
         "Integrate[x^2/Sqrt[5-x^2], x]", //
@@ -1005,6 +1144,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test138() {
     check( //
         "Integrate[1/(x*Sqrt[3+x^2]), x]", //
@@ -1012,6 +1152,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test139() {
     check( //
         "Integrate[x/(x^2+4)^(5/2), x]", //
@@ -1019,6 +1160,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test140() {
     check( //
         "Integrate[x^3*Sqrt[4-9*x^2], x]", //
@@ -1026,6 +1168,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test141() {
     check( //
         "Integrate[x^2*Sqrt[9-x^2], x]", //
@@ -1033,6 +1176,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test142() {
     check( //
         "Integrate[5*x*Sqrt[1+x^2], x]", //
@@ -1040,6 +1184,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test143() {
     check( //
         "Integrate[1/(4*x^2+(-1)*25)^(3/2), x]", //
@@ -1047,6 +1192,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test144() {
     check( //
         "Integrate[Sqrt[2*x-x^2], x]", //
@@ -1054,6 +1200,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test145() {
     check( //
         "Integrate[1/Sqrt[x^2+4*x+8], x]", //
@@ -1061,6 +1208,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test146() {
     check( //
         "Integrate[1/Sqrt[9*x^2+6*x+(-1)*8], x]", //
@@ -1068,6 +1216,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test147() {
     check( //
         "Integrate[x^2/Sqrt[4*x-x^2], x]", //
@@ -1075,6 +1224,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test148() {
     check( //
         "Integrate[1/(2+2*x+x^2)^2, x]", //
@@ -1082,6 +1232,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test149() {
     check( //
         "Integrate[1/(5-4*x-x^2)^(5/2), x]", //
@@ -1089,6 +1240,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test150() {
     check( //
         "Integrate[E^t*Sqrt[9-E^(2*t)], t]", //
@@ -1096,6 +1248,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test151() {
     check( //
         "Integrate[Sqrt[E^(2*t)+(-1)*9], t]", //
@@ -1103,6 +1256,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test152() {
     check( //
         "Integrate[1/Sqrt[a^2+x^2], x]", //
@@ -1110,6 +1264,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test153() {
     check( //
         "Integrate[(5+x)/(-2+x+x^2), x]", //
@@ -1117,6 +1272,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test154() {
     check( //
         "Integrate[(x+x^3)/(-1+x), x]", //
@@ -1124,6 +1280,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test155() {
     check( //
         "Integrate[(-1+2*x+x^2)/(-2*x+3*x^2+2*x^3), x]", //
@@ -1131,6 +1288,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test156() {
     check( //
         "Integrate[(1+4*x-2*x^2+x^4)/(1-x-x^2+x^3), x]", //
@@ -1138,6 +1296,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test157() {
     check( //
         "Integrate[(4-x+2*x^2)/(4*x+x^3), x]", //
@@ -1145,6 +1304,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test158() {
     check( //
         "Integrate[(2-3*x+4*x^2)/(3-4*x+4*x^2), x]", //
@@ -1152,6 +1312,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test159() {
     check( //
         "Integrate[(1+x^2+x^3)/((-1+x)*x*(1+x^2)^3*(1+x+x^2)), x]", //
@@ -1159,6 +1320,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test160() {
     check( //
         "Integrate[(1-3*x+2*x^2-x^3)/(x*(x^2+1)^2), x]", //
@@ -1166,6 +1328,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test161() {
     check( //
         "Integrate[1/(x^2+1)^2, x]", //
@@ -1173,6 +1336,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test162() {
     check( //
         "Integrate[1/((x+(-1)*1)*(2+x)), x]", //
@@ -1180,6 +1344,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test163() {
     check( //
         "Integrate[7/(-12+5*x+2*x^2), x]", //
@@ -1187,6 +1352,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test164() {
     check( //
         "Integrate[(-4+3*x+x^2)/((-1+2*x)^2*(3+2*x)), x]", //
@@ -1194,6 +1360,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test165() {
     check( //
         "Integrate[(-x^2+x^3)/((-6+x)*(3+5*x)^3), x]", //
@@ -1201,6 +1368,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test166() {
     check( //
         "Integrate[1/(-x^3+x^4), x]", //
@@ -1208,6 +1376,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test167() {
     check( //
         "Integrate[(1-x-x^2+x^3+x^4)/(-x+x^3), x]", //
@@ -1215,6 +1384,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test168() {
     check( //
         "Integrate[(x^2+(-1)*2)/(x*(x^2+2)), x]", //
@@ -1222,6 +1392,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test169() {
     check( //
         "Integrate[(2-4*x^2+x^3)/((1+x^2)*(2+x^2)), x]", //
@@ -1229,6 +1400,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test170() {
     check( //
         "Integrate[(1+x^2+x^4)/((1+x^2)*(4+x^2)^2), x]", //
@@ -1236,6 +1408,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test171() {
     check( //
         "Integrate[(1+16*x)/((5+x)^2*(-3+2*x)*(1+x+x^2)), x]", //
@@ -1243,6 +1416,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test172() {
     check( //
         "Integrate[x^4/(9+x^2)^3, x]", //
@@ -1250,6 +1424,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test173() {
     check( //
         "Integrate[(19*x)/((-1+x)^3*(3+5*x+4*x^2)^2), x]", //
@@ -1257,6 +1432,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test174() {
     check( //
         "Integrate[(1+x^2+x^3)/(2*x^2+x^3+x^4), x]", //
@@ -1264,6 +1440,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test175() {
     check( //
         "Integrate[1/(-x^3+x^6), x]", //
@@ -1271,6 +1448,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test176() {
     check( //
         "Integrate[x^2/(1+x), x]", //
@@ -1278,6 +1456,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test177() {
     check( //
         "Integrate[x/(-5+x), x]", //
@@ -1285,6 +1464,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test178() {
     check( //
         "Integrate[(-1+4*x)/((-1+x)*(2+x)), x]", //
@@ -1292,6 +1472,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test179() {
     check( //
         "Integrate[1/((1+x)*(2+x)), x]", //
@@ -1299,6 +1480,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test180() {
     check( //
         "Integrate[(-5+6*x)/(3+2*x), x]", //
@@ -1306,6 +1488,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test181() {
     check( //
         "Integrate[1/((a+x)*(b+x)), x]", //
@@ -1313,6 +1496,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test182() {
     check( //
         "Integrate[(1+x^2)/(-x+x^2), x]", //
@@ -1320,6 +1504,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test183() {
     check( //
         "Integrate[(1-12*x+x^2+x^3)/(-12+x+x^2), x]", //
@@ -1327,6 +1512,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test184() {
     check( //
         "Integrate[(3+2*x)/(1+x)^2, x]", //
@@ -1334,6 +1520,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test185() {
     check( //
         "Integrate[1/(x*(1+x)*(3+2*x)), x]", //
@@ -1341,6 +1528,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test186() {
     check( //
         "Integrate[(-3+5*x+6*x^2)/(-3*x+2*x^2+x^3), x]", //
@@ -1348,6 +1536,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test187() {
     check( //
         "Integrate[x/(4+4*x+x^2), x]", //
@@ -1355,6 +1544,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test188() {
     check( //
         "Integrate[1/((-1+x)^2*(4+x)), x]", //
@@ -1362,6 +1552,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test189() {
     check( //
         "Integrate[x^2/((-3+x)*(2+x)^2), x]", //
@@ -1369,6 +1560,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test190() {
     check( //
         "Integrate[(-2+3*x+5*x^2)/(2*x^2+x^3), x]", //
@@ -1376,6 +1568,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test191() {
     check( //
         "Integrate[(18-2*x-4*x^2)/(-6+x+4*x^2+x^3), x]", //
@@ -1383,6 +1576,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test192() {
     check( //
         "Integrate[(2*x+x^2)/(4+3*x^2+x^3), x]", //
@@ -1390,6 +1584,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test193() {
     check( //
         "Integrate[1/((-1+x)^2*x^2), x]", //
@@ -1397,6 +1592,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test194() {
     check( //
         "Integrate[x^2/(1+x)^3, x]", //
@@ -1404,6 +1600,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test195() {
     check( //
         "Integrate[1/(-x^2+x^4), x]", //
@@ -1411,6 +1608,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test196() {
     check( //
         "Integrate[(-x+2*x^3)/(1-x^2+x^4), x]", //
@@ -1418,6 +1616,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test197() {
     check( //
         "Integrate[x^3/(1+x^2), x]", //
@@ -1425,6 +1624,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test198() {
     check( //
         "Integrate[(-1+x)/(2+2*x+x^2), x]", //
@@ -1432,6 +1632,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test199() {
     check( //
         "Integrate[x/(1+x+x^2), x]", //
@@ -1439,6 +1640,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test200() {
     check( //
         "Integrate[(7+5*x+4*x^2)/(5+4*x+4*x^2), x]", //
@@ -1446,6 +1648,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test201() {
     check( //
         "Integrate[(5-4*x+3*x^2)/((-1+x)*(1+x^2)), x]", //
@@ -1453,6 +1656,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test202() {
     check( //
         "Integrate[(3+2*x)/(3*x+x^3), x]", //
@@ -1460,6 +1664,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test203() {
     check( //
         "Integrate[1/(-1+x^3), x]", //
@@ -1467,6 +1672,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test204() {
     check( //
         "Integrate[x^3/(1+x^3), x]", //
@@ -1474,6 +1680,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test205() {
     check( //
         "Integrate[(-1-2*x+x^2)/((-1+x)^2*(1+x^2)), x]", //
@@ -1481,6 +1688,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test206() {
     check( //
         "Integrate[x^4/(-1+x^4), x]", //
@@ -1488,6 +1696,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test207() {
     check( //
         "Integrate[(-4+6*x-x^2+3*x^3)/((1+x^2)*(2+x^2)), x]", //
@@ -1495,6 +1704,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test208() {
     check( //
         "Integrate[(1+x-2*x^2+x^3)/(4+5*x^2+x^4), x]", //
@@ -1502,6 +1712,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test209() {
     check( //
         "Integrate[(-3+x)/(4+2*x+x^2)^2, x]", //
@@ -1509,6 +1720,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test210() {
     check( //
         "Integrate[(1+x^4)/(x*(1+x^2)^2), x]", //
@@ -1516,6 +1728,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test211() {
     check( //
         "Integrate[(Cos[x]*(-3+2*Sin[x]))/(2-3*Sin[x]+Sin[x]^2), x]", //
@@ -1523,6 +1736,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test212() {
     check( //
         "Integrate[(Cos[x]^2*Sin[x])/(5+Cos[x]^2), x]", //
@@ -1530,6 +1744,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test213() {
     check( //
         "Integrate[1/(x^2+2*x+(-1)*3), x]", //
@@ -1537,6 +1752,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test214() {
     check( //
         "Integrate[1/(x^2-2*x), x]", //
@@ -1544,6 +1760,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test215() {
     check( //
         "Integrate[(2*x+1)/(4*x^2+12*x+(-1)*7), x]", //
@@ -1551,6 +1768,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test216() {
     check( //
         "Integrate[x/(x^2+x+(-1)*1), x]", //
@@ -1558,6 +1776,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test217() {
     check( //
         "Integrate[(-32+5*x-27*x^2+4*x^3)/(-70-299*x-286*x^2+50*x^3-13*x^4+30*x^5), x]", //
@@ -1565,6 +1784,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test218() {
     check( //
         "Integrate[(8-13*x^2-7*x^3+12*x^5)/(4-20*x+41*x^2-80*x^3+116*x^4-80*x^5+100*x^6), x]", //
@@ -1572,6 +1792,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test219() {
     check( //
         "Integrate[Sqrt[4+x]/x, x]", //
@@ -1579,6 +1800,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test220() {
     check( //
         "Integrate[1/(-1/x^(1/3)+Sqrt[x]), x]", //
@@ -1586,6 +1808,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test221() {
     check( //
         "Integrate[1/(-4*Cos[x]+3*Sin[x]), x]", //
@@ -1593,6 +1816,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test222() {
     check( //
         "Integrate[1/(1+Sqrt[x]), x]", //
@@ -1600,6 +1824,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test223() {
     check( //
         "Integrate[1/(1+1/x^(1/3)), x]", //
@@ -1607,6 +1832,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test224() {
     check( //
         "Integrate[Sqrt[x]/(1+x), x]", //
@@ -1614,6 +1840,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test225() {
     check( //
         "Integrate[1/(x*Sqrt[1+x]), x]", //
@@ -1621,6 +1848,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test226() {
     check( //
         "Integrate[1/(-x^(1/3)+x), x]", //
@@ -1628,6 +1856,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test227() {
     check( //
         "Integrate[1/(x-Sqrt[2+x]), x]", //
@@ -1635,6 +1864,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test228() {
     check( //
         "Integrate[x^2/Sqrt[-1+x], x]", //
@@ -1642,6 +1872,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test229() {
     check( //
         "Integrate[Sqrt[-1+x]/(1+x), x]", //
@@ -1649,6 +1880,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test230() {
     check( //
         "Integrate[1/Sqrt[1+Sqrt[x]], x]", //
@@ -1656,6 +1888,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test231() {
     check( //
         "Integrate[Sqrt[x]/(x+x^2), x]", //
@@ -1663,6 +1896,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test232() {
     check( //
         "Integrate[(1+Sqrt[x])/(-1+Sqrt[x]), x]", //
@@ -1670,6 +1904,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test233() {
     check( //
         "Integrate[(1+1/x^(1/3))/(-1+1/x^(1/3)), x]", //
@@ -1677,6 +1912,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test234() {
     check( //
         "Integrate[x^3/(1+x^2)^(1/3), x]", //
@@ -1684,6 +1920,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test235() {
     check( //
         "Integrate[Sqrt[x]/(-1/x^(1/3)+Sqrt[x]), x]", //
@@ -1691,6 +1928,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test236() {
     check( //
         "Integrate[1/(1/x^(1/4)+Sqrt[x]), x]", //
@@ -1698,6 +1936,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test237() {
     check( //
         "Integrate[1/(1/x^(1/3)+1/x^(1/4)), x]", //
@@ -1705,6 +1944,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test238() {
     check( //
         "Integrate[Sqrt[(1-x)/x], x]", //
@@ -1712,6 +1952,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test239() {
     check( //
         "Integrate[Cos[x]/(Sin[x]+Sin[x]^2), x]", //
@@ -1719,6 +1960,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test240() {
     check( //
         "Integrate[E^(2*x)/(2+3*E^x+E^(2*x)), x]", //
@@ -1726,6 +1968,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test241() {
     check( //
         "Integrate[1/Sqrt[1+E^x], x]", //
@@ -1733,6 +1976,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test242() {
     check( //
         "Integrate[Sqrt[1-E^x], x]", //
@@ -1740,6 +1984,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test243() {
     check( //
         "Integrate[1/(3-5*Sin[x]), x]", //
@@ -1747,6 +1992,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test244() {
     check( //
         "Integrate[1/(Cos[x]+Sin[x]), x]", //
@@ -1754,6 +2000,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test245() {
     check( //
         "Integrate[1/(1-Cos[x]+Sin[x]), x]", //
@@ -1761,6 +2008,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test246() {
     check( //
         "Integrate[1/(4*Cos[x]+3*Sin[x]), x]", //
@@ -1768,6 +2016,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test247() {
     check( //
         "Integrate[1/(Sin[x]+Tan[x]), x]", //
@@ -1775,6 +2024,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test248() {
     check( //
         "Integrate[1/(2*Sin[x]+Sin[2*x]), x]", //
@@ -1782,6 +2032,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test249() {
     check( //
         "Integrate[Sec[x]/(1+Sin[x]), x]", //
@@ -1789,6 +2040,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test250() {
     check( //
         "Integrate[1/(b*Cos[x]+a*Sin[x]), x]", //
@@ -1796,6 +2048,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test251() {
     check( //
         "Integrate[1/(b^2*Cos[x]^2+a^2*Sin[x]^2), x]", //
@@ -1803,6 +2056,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test252() {
     check( //
         "Integrate[x/(-1+x^2), x]", //
@@ -1810,6 +2064,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test253() {
     check( //
         "Integrate[(1+Sqrt[x])*Sqrt[x], x]", //
@@ -1817,6 +2072,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test254() {
     check( //
         "Integrate[1/(1-Cos[x]), x]", //
@@ -1824,6 +2080,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test255() {
     check( //
         "Integrate[Sec[x]*Tan[x]^2, x]", //
@@ -1831,6 +2088,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test256() {
     check( //
         "Integrate[Sec[x]^3*Tan[x]^3, x]", //
@@ -1838,6 +2096,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test257() {
     check( //
         "Integrate[E^Sqrt[x], x]", //
@@ -1845,6 +2104,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test258() {
     check( //
         "Integrate[(1+x^5)/(-10*x-3*x^2+x^3), x]", //
@@ -1852,6 +2112,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test259() {
     check( //
         "Integrate[1/(x*Sqrt[Log[x]]), x]", //
@@ -1859,6 +2120,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test260() {
     check( //
         "Integrate[(5+2*x)/(-3+x), x]", //
@@ -1866,6 +2128,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test261() {
     check( //
         "Integrate[E^(E^x+x), x]", //
@@ -1873,6 +2136,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test262() {
     check( //
         "Integrate[Cos[x]^2*Sin[x]^2, x]", //
@@ -1880,6 +2144,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test263() {
     check( //
         "Integrate[(-Cos[x]+Sin[x])/(Cos[x]+Sin[x]), x]", //
@@ -1887,6 +2152,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test264() {
     check( //
         "Integrate[x/Sqrt[1-x^2], x]", //
@@ -1894,6 +2160,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test265() {
     check( //
         "Integrate[x^3*Log[x], x]", //
@@ -1901,6 +2168,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test266() {
     check( //
         "Integrate[Sqrt[-2+x]/(2+x), x]", //
@@ -1908,6 +2176,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test267() {
     check( //
         "Integrate[x/(2+x)^2, x]", //
@@ -1915,6 +2184,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test268() {
     check( //
         "Integrate[Log[1+x^2], x]", //
@@ -1922,6 +2192,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test269() {
     check( //
         "Integrate[Sqrt[1+Log[x]]/(x*Log[x]), x]", //
@@ -1929,6 +2200,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test270() {
     check( //
         "Integrate[(1+Sqrt[x])^8, x]", //
@@ -1936,6 +2208,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test271() {
     check( //
         "Integrate[Sec[x]^4*Tan[x]^3, x]", //
@@ -1943,6 +2216,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test272() {
     check( //
         "Integrate[x/(2-2*x+x^2), x]", //
@@ -1950,6 +2224,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test273() {
     check( //
         "Integrate[x*ArcSin[x], x]", //
@@ -1957,6 +2232,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test274() {
     check( //
         "Integrate[Sqrt[9-x^2]/x, x]", //
@@ -1964,6 +2240,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test275() {
     check( //
         "Integrate[x/(2+3*x+x^2), x]", //
@@ -1971,6 +2248,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test276() {
     check( //
         "Integrate[x^2*Cosh[x], x]", //
@@ -1978,6 +2256,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test277() {
     check( //
         "Integrate[(1+x+x^3)/(4*x+2*x^2+x^4), x]", //
@@ -1985,6 +2264,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test278() {
     check( //
         "Integrate[Cos[x]/(1+Sin[x]^2), x]", //
@@ -1992,6 +2272,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test279() {
     check( //
         "Integrate[Cos[Sqrt[x]], x]", //
@@ -1999,6 +2280,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test280() {
     check( //
         "Integrate[Sin[Pi*x], x]", //
@@ -2006,6 +2288,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test281() {
     check( //
         "Integrate[E^(2*x)/(1+E^x), x]", //
@@ -2013,6 +2296,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test282() {
     check( //
         "Integrate[E^(3*x)*Cos[5*x], x]", //
@@ -2020,6 +2304,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test283() {
     check( //
         "Integrate[Cos[3*x]*Cos[5*x], x]", //
@@ -2027,6 +2312,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test284() {
     check( //
         "Integrate[1/(1+x+x^2+x^3), x]", //
@@ -2034,6 +2320,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test285() {
     check( //
         "Integrate[x^2*Log[1+x], x]", //
@@ -2041,6 +2328,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test286() {
     check( //
         "Integrate[x^5/E^x^3, x]", //
@@ -2048,6 +2336,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test287() {
     check( //
         "Integrate[Tan[4*x]^2, x]", //
@@ -2055,6 +2344,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test288() {
     check( //
         "Integrate[1/Sqrt[-5+12*x+9*x^2], x]", //
@@ -2062,6 +2352,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test289() {
     check( //
         "Integrate[x^2*ArcTan[x], x]", //
@@ -2069,6 +2360,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test290() {
     check( //
         "Integrate[(1-Sqrt[x])/x^(1/3), x]", //
@@ -2076,6 +2368,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test291() {
     check( //
         "Integrate[1/(-1/E^x+E^x), x]", //
@@ -2083,6 +2376,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test292() {
     check( //
         "Integrate[x/(10+2*x^2+x^4), x]", //
@@ -2090,6 +2384,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test293() {
     check( //
         "Integrate[1/(1/x^(1/3)+x), x]", //
@@ -2097,6 +2392,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test294() {
     check( //
         "Integrate[Cos[x]^4*Sin[x]^2, x]", //
@@ -2104,6 +2400,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test295() {
     check( //
         "Integrate[1/Sqrt[5-4*x-x^2], x]", //
@@ -2111,6 +2408,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test296() {
     check( //
         "Integrate[x/(1-x^2+Sqrt[1-x^2]), x]", //
@@ -2118,6 +2416,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test297() {
     check( //
         "Integrate[(1+Cos[x])*Csc[x], x]", //
@@ -2125,6 +2424,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test298() {
     check( //
         "Integrate[E^x/(-1+E^(2*x)), x]", //
@@ -2132,6 +2432,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test299() {
     check( //
         "Integrate[1/(-8+x^3), x]", //
@@ -2139,6 +2440,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test300() {
     check( //
         "Integrate[x^5*Cosh[x], x]", //
@@ -2146,6 +2448,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test301() {
     check( //
         "Integrate[Log[Tan[x]]/(Sin[x]*Cos[x]), x]", //
@@ -2153,6 +2456,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test302() {
     check( //
         "Integrate[-2*x+x^2+x^3, x]", //
@@ -2160,6 +2464,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test303() {
     check( //
         "Integrate[(1+E^x)/(1-E^x), x]", //
@@ -2167,6 +2472,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test304() {
     check( //
         "Integrate[x/((1+x^2)*(4+x^2)), x]", //
@@ -2174,6 +2480,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test305() {
     check( //
         "Integrate[1/(4-5*Sin[x]), x]", //
@@ -2181,6 +2488,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test306() {
     check( //
         "Integrate[x*(c+x)^(1/3), x]", //
@@ -2188,6 +2496,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test307() {
     check( //
         "Integrate[E^x^(1/3), x]", //
@@ -2195,6 +2504,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test308() {
     check( //
         "Integrate[1/(4+x+Sqrt[1+x]), x]", //
@@ -2202,6 +2512,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test309() {
     check( //
         "Integrate[(1+x^3)/(-x^2+x^3), x]", //
@@ -2209,6 +2520,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test310() {
     check( //
         "Integrate[(-3+4*x+x^2)*Sin[2*x], x]", //
@@ -2216,6 +2528,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test311() {
     check( //
         "Integrate[Cos[Cos[x]]*Sin[x], x]", //
@@ -2223,6 +2536,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test312() {
     check( //
         "Integrate[1/Sqrt[16-x^2], x]", //
@@ -2230,6 +2544,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test313() {
     check( //
         "Integrate[x^3/(1+x)^10, x]", //
@@ -2237,6 +2552,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test314() {
     check( //
         "Integrate[Cot[2*x]^3*Csc[2*x]^3, x]", //
@@ -2244,6 +2560,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test315() {
     check( //
         "Integrate[(x+Sin[x])^2, x]", //
@@ -2251,6 +2568,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test316() {
     check( //
         "Integrate[E^ArcTan[x]/(1+x^2), x]", //
@@ -2258,6 +2576,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test317() {
     check( //
         "Integrate[1/(x*(1+x^4)), x]", //
@@ -2265,6 +2584,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test318() {
     check( //
         "Integrate[t^3/E^(2*t), t]", //
@@ -2272,6 +2592,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test319() {
     check( //
         "Integrate[Sqrt[t]/(1+t^(1/3)), t]", //
@@ -2279,6 +2600,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test320() {
     check( //
         "Integrate[Sin[x]*Sin[2*x]*Sin[3*x], x]", //
@@ -2286,6 +2608,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test321() {
     check( //
         "Integrate[Log[x/2], x]", //
@@ -2293,6 +2616,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test322() {
     check( //
         "Integrate[Sqrt[(1+x)/(1-x)], x]", //
@@ -2300,6 +2624,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test323() {
     check( //
         "Integrate[(x*Log[x])/Sqrt[-1+x^2], x]", //
@@ -2307,6 +2632,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test324() {
     check( //
         "Integrate[(a+x)/(a^2+x^2), x]", //
@@ -2314,6 +2640,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test325() {
     check( //
         "Integrate[Sqrt[1+x-x^2], x]", //
@@ -2321,6 +2648,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test326() {
     check( //
         "Integrate[x^4/(16+x^10), x]", //
@@ -2328,6 +2656,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test327() {
     check( //
         "Integrate[(2+x)/(2+x+x^2), x]", //
@@ -2335,6 +2664,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test328() {
     check( //
         "Integrate[x*Sec[x]*Tan[x], x]", //
@@ -2342,6 +2672,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test329() {
     check( //
         "Integrate[x/(-a^4+x^4), x]", //
@@ -2349,6 +2680,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test330() {
     check( //
         "Integrate[1/(Sqrt[x]+Sqrt[1+x]), x]", //
@@ -2356,6 +2688,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test331() {
     check( //
         "Integrate[1/(1-1/E^x+2*E^x), x]", //
@@ -2363,6 +2696,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test332() {
     check( //
         "Integrate[ArcTan[Sqrt[x]]/Sqrt[x], x]", //
@@ -2370,6 +2704,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test333() {
     check( //
         "Integrate[Log[1+x]/x^2, x]", //
@@ -2377,6 +2712,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test334() {
     check( //
         "Integrate[1/(-E^x+E^(3*x)), x]", //
@@ -2384,6 +2720,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test335() {
     check( //
         "Integrate[(1+Cos[x]^2)/(1-Cos[x]^2), x]", //
@@ -2391,6 +2728,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test336() {
     check( //
         "Integrate[1/(x*Sqrt[-25+2*x]), x]", //
@@ -2398,6 +2736,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test337() {
     check( //
         "Integrate[Sin[2*x]/Sqrt[9-Cos[x]^4], x]", //
@@ -2405,6 +2744,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test338() {
     check( //
         "Integrate[x^2/Sqrt[5-4*x^2], x]", //
@@ -2412,6 +2752,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test339() {
     check( //
         "Integrate[x^3*Sin[x], x]", //
@@ -2419,6 +2760,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test340() {
     check( //
         "Integrate[x*Sqrt[4+2*x+x^2], x]", //
@@ -2426,6 +2768,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test341() {
     check( //
         "Integrate[x*(5+x^2)^8, x]", //
@@ -2433,6 +2776,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test342() {
     check( //
         "Integrate[Cos[x]^2*Sin[x]^5, x]", //
@@ -2440,6 +2784,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test343() {
     check( //
         "Integrate[Cos[4*x]/E^(3*x), x]", //
@@ -2447,6 +2792,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test344() {
     check( //
         "Integrate[Csc[x/2]^3, x]", //
@@ -2454,6 +2800,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test345() {
     check( //
         "Integrate[Sqrt[-1+9*x^2]/x^2, x]", //
@@ -2461,6 +2808,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test346() {
     check( //
         "Integrate[Sqrt[4-3*x^2]/x, x]", //
@@ -2468,6 +2816,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test347() {
     check( //
         "Integrate[E^(3*x)*x^2, x]", //
@@ -2475,6 +2824,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test348() {
     check( //
         "Integrate[(Cos[x]*Sin[x])/Sqrt[1+Sin[x]], x]", //
@@ -2482,6 +2832,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test349() {
     check( //
         "Integrate[x*ArcSin[x^2], x]", //
@@ -2489,6 +2840,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test350() {
     check( //
         "Integrate[x^3*ArcSin[x^2], x]", //
@@ -2496,6 +2848,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test351() {
     check( //
         "Integrate[E^x*Sech[E^x], x]", //
@@ -2503,6 +2856,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test352() {
     check( //
         "Integrate[x^2*Cos[3*x], x]", //
@@ -2510,6 +2864,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test353() {
     check( //
         "Integrate[Sqrt[5-4*x-x^2], x]", //
@@ -2517,6 +2872,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test354() {
     check( //
         "Integrate[x^5/(Sqrt[2]+x^2), x]", //
@@ -2524,6 +2880,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test355() {
     check( //
         "Integrate[Sec[x]^5, x]", //
@@ -2531,6 +2888,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test356() {
     check( //
         "Integrate[Sin[2*x]^6, x]", //
@@ -2538,6 +2896,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test357() {
     check( //
         "Integrate[Cos[x]*Log[Sin[x]]*Sin[x]^2, x]", //
@@ -2545,6 +2904,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test358() {
     check( //
         "Integrate[1/(E^x*(1+2*E^x)), x]", //
@@ -2552,6 +2912,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test359() {
     check( //
         "Integrate[Sqrt[2+3*Cos[x]]*Tan[x], x]", //
@@ -2559,6 +2920,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test360() {
     check( //
         "Integrate[x/Sqrt[-4*x+x^2], x]", //
@@ -2566,6 +2928,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test361() {
     check( //
         "Integrate[Cos[x]^5, x]", //
@@ -2573,6 +2936,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test362() {
     check( //
         "Integrate[x^4/E^x, x]", //
@@ -2580,6 +2944,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test363() {
     check( //
         "Integrate[x^4/Sqrt[-2+x^10], x]", //
@@ -2587,6 +2952,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test364() {
     check( //
         "Integrate[E^x*Cos[4+3*x], x]", //
@@ -2594,6 +2960,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test365() {
     check( //
         "Integrate[E^x*Log[1+E^x], x]", //
@@ -2601,6 +2968,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test366() {
     check( //
         "Integrate[x^2*ArcTan[x], x]", //
@@ -2608,6 +2976,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test367() {
     check( //
         "Integrate[Sqrt[-1+E^(2*x)], x]", //
@@ -2615,6 +2984,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test368() {
     check( //
         "Integrate[E^Sin[x]*Sin[2*x], x]", //
@@ -2622,6 +2992,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test369() {
     check( //
         "Integrate[x^2*Sqrt[5-x^2], x]", //
@@ -2629,6 +3000,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test370() {
     check( //
         "Integrate[x^2*(1+x^3)^4, x]", //
@@ -2636,6 +3008,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test371() {
     check( //
         "Integrate[Cos[x]^3*Sin[x]^3, x]", //
@@ -2643,6 +3016,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test372() {
     check( //
         "Integrate[Sec[x]^4*Tan[x]^2, x]", //
@@ -2650,6 +3024,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test373() {
     check( //
         "Integrate[x*Sqrt[1+2*x], x]", //
@@ -2657,6 +3032,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test374() {
     check( //
         "Integrate[Sin[x]^4, x]", //
@@ -2664,6 +3040,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test375() {
     check( //
         "Integrate[Tan[x]^3, x]", //
@@ -2671,6 +3048,7 @@ public class StewartProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test376() {
     check( //
         "Integrate[x^5*Sqrt[1+x^2], x]", //

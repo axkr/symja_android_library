@@ -1,25 +1,26 @@
 package org.matheclipse.core.rubi.independent;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
  * Rubi's "0 Independent test suites" corpus section. 35 integrals.
  *
  * <p>
- * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
- * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
- * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
- * unnoticed, so run it after any change to the integrator:
+ * <b>Not part of a normal build.</b> {@code AbstractRubiTestCase} is {@code @Tag("corpus")},
+ * which the default surefire run excludes. That is deliberate - the section is slow - but it
+ * means drift goes unnoticed, so run it after any change to the integrator:
  *
  * <pre>
- * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
- *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * mvn -o -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400
  * </pre>
  *
  * <p>
- * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
- * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
- * JVM across classes makes every test fail.
+ * The profile sets {@code reuseForks=false}, which is required rather than an optimisation:
+ * {@code AbstractRubiTestCase} sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS},
+ * so sharing one JVM across classes makes every test fail. It also sets
+ * {@code testFailureIgnore}, because this corpus is a scoreboard rather than a gate.
  *
  * <p>
  * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
@@ -28,10 +29,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class BondarenkoProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public BondarenkoProblemsTests(String name) {
-    super(name, false);
+  public BondarenkoProblemsTests() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -46,6 +48,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     }
   }
 
+  @Test
   public void test1() {
     check( //
         "Integrate[1/(Sqrt[2]+Sin[z]+Cos[z]), z]", //
@@ -53,6 +56,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test2() {
     check( //
         "Integrate[1/(Sqrt[1+x]+Sqrt[1-x])^2, x]", //
@@ -60,6 +64,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test3() {
     check( //
         "Integrate[1/(1+Cos[x])^2, x]", //
@@ -67,6 +72,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test4() {
     check( //
         "Integrate[Sin[x]/Sqrt[1+x], x]", //
@@ -74,6 +80,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test5() {
     check( //
         "Integrate[1/(Cos[x]+Sin[x])^6, x]", //
@@ -81,6 +88,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test6() {
     check( //
         "Integrate[Log[x^4+1/x^4], x]", //
@@ -88,6 +96,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test7() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja leaves this unevaluated (nested radical over a log).
@@ -97,6 +106,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test8() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja leaves this unevaluated (nested radical over a log).
@@ -106,6 +116,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test9() {
     check( //
         "Integrate[1/(1+Sqrt[x+Sqrt[1+x^2]]), x]", //
@@ -113,6 +124,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test10() {
     check( //
         "Integrate[Sqrt[1+x]/(x+Sqrt[1+Sqrt[1+x]]), x]", //
@@ -120,6 +132,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test11() {
     check( //
         "Integrate[1/(x-Sqrt[1+Sqrt[1+x]]), x]", //
@@ -127,6 +140,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test12() {
     check( //
         "Integrate[x/(x+Sqrt[1-Sqrt[1+x]]), x]", //
@@ -134,6 +148,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test13() {
     check( //
         "Integrate[Sqrt[Sqrt[1+x]+x]/((1+x^2)*Sqrt[1+x]), x]", //
@@ -141,6 +156,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test14() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja leaves this unevaluated; it also spends the full budget trying.
@@ -150,6 +166,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test15() {
     check( //
         "Integrate[Sqrt[1+Sqrt[x]+Sqrt[1+2*Sqrt[x]+2*x]], x]", //
@@ -157,6 +174,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test16() {
     check( //
         "Integrate[Sqrt[Sqrt[2]+Sqrt[x]+Sqrt[2+Sqrt[8]*Sqrt[x]+2*x]], x]", //
@@ -164,6 +182,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test17() {
     check( //
         "Integrate[Sqrt[x+Sqrt[1+x]]/x^2, x]", //
@@ -171,6 +190,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test18() {
     check( //
         "Integrate[Sqrt[1/x+Sqrt[1+1/x]], x]", //
@@ -178,6 +198,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test19() {
     check( //
         "Integrate[Sqrt[1+E^(-x)]/(E^x-1/E^x), x]", //
@@ -185,6 +206,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test20() {
     check( //
         "Integrate[Sqrt[1+E^(-x)]/Sinh[x], x]", //
@@ -192,6 +214,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test21() {
     check( //
         "Integrate[1/(Cos[x]+Cos[3*x])^5, x]", //
@@ -199,6 +222,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test22() {
     check( //
         "Integrate[1/(Cos[x]+Sin[x]+1)^2, x]", //
@@ -206,6 +230,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test23() {
     check( //
         "Integrate[Sqrt[1+Tanh[4*x]], x]", //
@@ -213,6 +238,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test24() {
     check( //
         "Integrate[Tanh[x]/Sqrt[E^(2*x)+E^x], x]", //
@@ -220,6 +246,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test25() {
     check( //
         "Integrate[Sqrt[Sinh[2*x]/Cosh[x]], x]", //
@@ -227,6 +254,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test26() {
     check( //
         "Integrate[Log[x^2+Sqrt[1-x^2]], x]", //
@@ -234,6 +262,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test27() {
     check( //
         "Integrate[Log[1+E^x]/(1+E^(2*x)), x]", //
@@ -241,6 +270,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test28() {
     check( //
         "Integrate[Log[1+Cosh[x]^2]^2*Cosh[x], x]", //
@@ -248,6 +278,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test29() {
     check( //
         "Integrate[Log[Sinh[x]+Cosh[x]^2]^2*Cosh[x], x]", //
@@ -255,6 +286,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test30() {
     check( //
         "Integrate[Log[x+Sqrt[1+x]]/(1+x^2), x]", //
@@ -262,6 +294,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test31() {
     check( //
         "Integrate[Log[x+Sqrt[1+x]]^2/(1+x)^2, x]", //
@@ -269,6 +302,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test32() {
     check( //
         "Integrate[Log[x+Sqrt[1+x]]/x, x]", //
@@ -276,6 +310,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test33() {
     check( //
         "Integrate[ArcTan[2*Tan[x]], x]", //
@@ -283,6 +318,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test34() {
     check( //
         "Integrate[ArcTan[x]*Log[x]/x, x]", //
@@ -290,6 +326,7 @@ public class BondarenkoProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test35() {
     check( //
         "Integrate[ArcTan[x]^2*Sqrt[1+x^2], x]", //

@@ -6,7 +6,9 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.matheclipse.core.system.TestTags;
 
 /** Tests for {@link Primality#pollardRhoFactors(BigInteger, java.util.Map)} and its callers. */
 public class PrimalityTest {
@@ -52,11 +54,13 @@ public class PrimalityTest {
    * number of runs is needed to detect it reliably.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorIntegerLargePrimePowerRepeatedly() {
     assertFactorization(P1.pow(10), factors(P1, 10), 1000);
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorIntegerPrimePowers() {
     for (int exponent = 1; exponent <= 12; exponent++) {
       assertFactorization(P1.pow(exponent), factors(P1, exponent), 20);
@@ -66,6 +70,7 @@ public class PrimalityTest {
 
   /** A perfect power with a composite exponent has to be decomposed completely. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorIntegerCompositeExponents() {
     assertFactorization(P1.pow(4), factors(P1, 4), 20);
     assertFactorization(P1.pow(6), factors(P1, 6), 20);

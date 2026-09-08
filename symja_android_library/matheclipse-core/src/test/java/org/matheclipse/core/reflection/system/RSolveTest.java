@@ -2,9 +2,11 @@ package org.matheclipse.core.reflection.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.system.TestTags;
 
 public class RSolveTest {
 
@@ -373,6 +375,7 @@ public class RSolveTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFibonacciRecurrence() {
     // Validates that GoldenRatio terms from RSolve are safely passed through Series
     check("AsymptoticRSolveValue(a(n) == a(n - 1) + a(n - 2), a(n), {n, Infinity, 3})", //
@@ -388,6 +391,7 @@ public class RSolveTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testUnevaluatedFallback() {
     // A highly non-linear equation that RSolve cannot solve exactly.
     // AsymptoticRSolveValue should return F.NIL, which Symja renders as the unevaluated input.

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -13,6 +14,7 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * Checks that every option a plot documents is at least <em>accepted</em>.
@@ -277,6 +279,7 @@ public class PlotOptionMatrixTest {
 
   /** No documented option may be rejected: the call must still produce a graphic. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testNoOptionIsRejected() {
     List<String> rejected = new ArrayList<>();
     for (String[] row : MATRIX) {
@@ -299,6 +302,7 @@ public class PlotOptionMatrixTest {
    * implementing one forces the list to be updated and a regression cannot hide in it.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testInertOptionInventoryIsExact() {
     List<String> inert = new ArrayList<>();
     for (String[] row : MATRIX) {

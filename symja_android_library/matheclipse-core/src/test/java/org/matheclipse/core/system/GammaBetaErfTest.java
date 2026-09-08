@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 
@@ -761,6 +762,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGamma() {
     // reflection formula for literal rational arguments x+y == 1
     check("Gamma(1/4)*Gamma(3/4)", //

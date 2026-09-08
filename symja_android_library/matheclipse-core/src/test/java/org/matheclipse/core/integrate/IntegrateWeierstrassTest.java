@@ -1,7 +1,9 @@
 package org.matheclipse.core.integrate;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * M2 corpus test for the Weierstrass half-angle stage ({@link WeierstrassIntegration}), wired into
@@ -16,6 +18,7 @@ public class IntegrateWeierstrassTest extends AbstractIntegrateCorpusTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void weierstrassAutomatic() {
     runCorpusResource("/integrate/weierstrass_seed.txt", null);
   }

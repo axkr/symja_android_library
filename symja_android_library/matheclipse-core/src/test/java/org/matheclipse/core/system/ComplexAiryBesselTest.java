@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -370,6 +371,7 @@ public class ComplexAiryBesselTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAiryAi() {
     for (double[] row : AIRY_AI) {
       IComplexNum z = F.complexNum(row[0], row[1]);
@@ -380,6 +382,7 @@ public class ComplexAiryBesselTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAiryBi() {
     for (double[] row : AIRY_BI) {
       IComplexNum z = F.complexNum(row[0], row[1]);
@@ -408,6 +411,7 @@ public class ComplexAiryBesselTest {
    * <code>z</code> and needs no reference values at all.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testAiryWronskian() {
     for (double[] row : AIRY_AI) {
       IComplexNum z = F.complexNum(row[0], row[1]);

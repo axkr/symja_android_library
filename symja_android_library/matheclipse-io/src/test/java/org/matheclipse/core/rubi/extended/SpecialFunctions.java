@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.extended;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
@@ -16,10 +18,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class SpecialFunctions extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public SpecialFunctions(String name) {
-    super(name, false);
+  public SpecialFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -36,6 +39,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
 
 
   // 8.1 Error functions.input:10
+  @Test
   public void test0001() {
     check( //
         "Integrate[x^5*Erf[b*x], x]", //
@@ -43,6 +47,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:19
+  @Test
   public void test0002() {
     check( //
         "Integrate[x^2*Erf[b*x], x]", //
@@ -50,6 +55,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:62
+  @Test
   public void test0003() {
     check( //
         "Integrate[Erf[d*(a+b*Log[c*x^n])]/x, x]", //
@@ -57,6 +63,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:145
+  @Test
   public void test0004() {
     check( //
         "Integrate[Erfc[b*x]/x^7, x]", //
@@ -64,6 +71,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:155
+  @Test
   public void test0005() {
     check( //
         "Integrate[(c+d*x)^3*Erfc[a+b*x], x]", //
@@ -71,6 +79,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:171
+  @Test
   public void test0006() {
     check( //
         "Integrate[Erfc[b*x]^2/x^5, x]", //
@@ -78,6 +87,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:218
+  @Test
   public void test0007() {
     check( //
         "Integrate[E^(c+b^2*x^2)*x^5*Erfc[b*x], x]", //
@@ -85,6 +95,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:270
+  @Test
   public void test0008() {
     check( //
         "Integrate[x*Erfi[b*x], x]", //
@@ -92,6 +103,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:296
+  @Test
   public void test0009() {
     check( //
         "Integrate[x^3*Erfi[b*x]^2, x]", //
@@ -99,6 +111,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:322
+  @Test
   public void test0010() {
     check( //
         "Integrate[Erfi[d*(a+b*Log[c*x^n])]/x^3, x]", //
@@ -106,6 +119,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:336
+  @Test
   public void test0011() {
     check( //
         "Integrate[E^(c+d*x^2)*x^5*Erfi[b*x], x]", //
@@ -113,6 +127,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:382
+  @Test
   public void test0012() {
     check( //
         "Integrate[Erfi[b*x]/(E^(b^2*x^2)*x^3)+b^2*Erfi[b*x]/(E^(b^2*x^2)*x), x]", //
@@ -120,6 +135,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:26
+  @Test
   public void test0013() {
     check( //
         "Integrate[FresnelS[b*x]/x^9, x]", //
@@ -127,6 +143,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:38
+  @Test
   public void test0014() {
     check( //
         "Integrate[x*FresnelS[a+b*x], x]", //
@@ -134,6 +151,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:58
+  @Test
   public void test0015() {
     check( //
         "Integrate[FresnelS[b*x]^2/x^5, x]", //
@@ -141,6 +159,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:100
+  @Test
   public void test0016() {
     check( //
         "Integrate[x^8*FresnelS[b*x]*Sin[1/2*Pi*b^2*x^2], x]", //
@@ -148,6 +167,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:116
+  @Test
   public void test0017() {
     check( //
         "Integrate[FresnelS[b*x]*Sin[1/2*Pi*b^2*x^2]/x^8, x]", //
@@ -155,6 +175,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:142
+  @Test
   public void test0018() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]*FresnelS[b*x]/x^6, x]", //
@@ -162,6 +183,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:161
+  @Test
   public void test0019() {
     check( //
         "Integrate[x*FresnelC[b*x], x]", //
@@ -169,6 +191,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:170
+  @Test
   public void test0020() {
     check( //
         "Integrate[FresnelC[b*x]/x^8, x]", //
@@ -176,6 +199,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:182
+  @Test
   public void test0021() {
     check( //
         "Integrate[x^2*FresnelC[a+b*x], x]", //
@@ -183,6 +207,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:242
+  @Test
   public void test0022() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]*FresnelC[b*x]^n, x]", //
@@ -190,6 +215,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:257
+  @Test
   public void test0023() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]*FresnelC[b*x]/x^4, x]", //
@@ -197,6 +223,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:283
+  @Test
   public void test0024() {
     check( //
         "Integrate[FresnelC[b*x]*Sin[1/2*Pi*b^2*x^2]/x^2, x]", //
@@ -204,6 +231,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:175
+  @Test
   public void test0025() {
     check( //
         "Integrate[ExpIntegralEi[b*x]/x^2, x]", //
@@ -211,6 +239,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:228
+  @Test
   public void test0026() {
     check( //
         "Integrate[x^2*ExpIntegralEi[d*(a+b*Log[c*x^n])], x]", //
@@ -218,6 +247,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:242
+  @Test
   public void test0027() {
     check( //
         "Integrate[E^(b*x)*ExpIntegralEi[b*x]/x^2, x]", //
@@ -225,6 +255,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:252
+  @Test
   public void test0028() {
     check( //
         "Integrate[E^(a+b*x)*x*ExpIntegralEi[c+d*x], x]", //
@@ -232,6 +263,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:269
+  @Test
   public void test0029() {
     check( //
         "Integrate[(d*x)^m*LogIntegral[b*x], x]", //
@@ -239,6 +271,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:56
+  @Test
   public void test0030() {
     check( //
         "Integrate[SinIntegral[b*x]*Sin[b*x]/x, x]", //
@@ -246,6 +279,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:114
+  @Test
   public void test0031() {
     check( //
         "Integrate[CosIntegral[b*x]^2, x]", //
@@ -253,6 +287,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:156
+  @Test
   public void test0032() {
     check( //
         "Integrate[CosIntegral[b*x]*Cos[b*x], x]", //
@@ -260,6 +295,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:170
+  @Test
   public void test0033() {
     check( //
         "Integrate[CosIntegral[a+b*x]*Sin[a+b*x], x]", //
@@ -267,6 +303,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:25
+  @Test
   public void test0034() {
     check( //
         "Integrate[Gamma[1,a*x]/x^2, x]", //
@@ -274,6 +311,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:137
+  @Test
   public void test0035() {
     check( //
         "Integrate[(c+d*x)^4*Gamma[1,a+b*x], x]", //
@@ -281,6 +319,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:145
+  @Test
   public void test0036() {
     check( //
         "Integrate[Gamma[1,a+b*x]/(c+d*x)^4, x]", //
@@ -288,6 +327,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:224
+  @Test
   public void test0037() {
     check( //
         "Integrate[(c+d*x)^m*Gamma[1,a+b*x], x]", //
@@ -295,6 +335,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:245
+  @Test
   public void test0038() {
     check( //
         "Integrate[Gamma[p,d*(a+b*Log[c*x^n])], x]", //
@@ -302,6 +343,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:280
+  @Test
   public void test0039() {
     check( //
         "Integrate[x^2*PolyGamma[1,a+b*x], x]", //
@@ -309,6 +351,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.7 Zeta function.input:14
+  @Test
   public void test0040() {
     check( //
         "Integrate[-b*PolyGamma[2,a+b*x]/x+Zeta[2,a+b*x]/x^2, x]", //
@@ -316,6 +359,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:41
+  @Test
   public void test0041() {
     check( //
         "Integrate[PolyLog[2,a*x^2], x]", //
@@ -323,6 +367,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:49
+  @Test
   public void test0042() {
     check( //
         "Integrate[PolyLog[3,a*x^2]/x^3, x]", //
@@ -330,6 +375,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:57
+  @Test
   public void test0043() {
     check( //
         "Integrate[PolyLog[3,a*x^2]/x^6, x]", //
@@ -337,6 +383,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:174
+  @Test
   public void test0044() {
     check( //
         "Integrate[(d+e*x)*PolyLog[2,c*(a+b*x)], x]", //
@@ -344,6 +391,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:184
+  @Test
   public void test0045() {
     check( //
         "Integrate[PolyLog[2,x]/((-1+x)*x), x]", //
@@ -351,6 +399,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:16
+  @Test
   public void test0046() {
     check( //
         "Integrate[1/ProductLog[a+b*x]^3, x]", //
@@ -358,6 +407,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:24
+  @Test
   public void test0047() {
     check( //
         "Integrate[1/(c*ProductLog[a+b*x])^(5/2), x]", //
@@ -365,6 +415,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:32
+  @Test
   public void test0048() {
     check( //
         "Integrate[1/(-c*ProductLog[a+b*x])^(7/2), x]", //
@@ -372,6 +423,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:44
+  @Test
   public void test0049() {
     check( //
         "Integrate[x*ProductLog[a+b*x]^2, x]", //
@@ -379,6 +431,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:70
+  @Test
   public void test0050() {
     check( //
         "Integrate[x/(d+d*ProductLog[a+b*x]), x]", //
@@ -386,6 +439,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:100
+  @Test
   public void test0051() {
     check( //
         "Integrate[ProductLog[a*x]^3, x]", //
@@ -393,6 +447,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:140
+  @Test
   public void test0052() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x]], x]", //
@@ -400,6 +455,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:148
+  @Test
   public void test0053() {
     check( //
         "Integrate[x^3/Sqrt[c*ProductLog[a*x]], x]", //
@@ -407,6 +463,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:156
+  @Test
   public void test0054() {
     check( //
         "Integrate[1/(x^5*Sqrt[c*ProductLog[a*x]]), x]", //
@@ -414,6 +471,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:208
+  @Test
   public void test0055() {
     check( //
         "Integrate[x^5/ProductLog[a*x^2], x]", //
@@ -421,6 +479,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:245
+  @Test
   public void test0056() {
     check( //
         "Integrate[x^7/Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -428,6 +487,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:255
+  @Test
   public void test0057() {
     check( //
         "Integrate[1/(x^3*Sqrt[c*ProductLog[a*x^2]]), x]", //
@@ -435,6 +495,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:269
+  @Test
   public void test0058() {
     check( //
         "Integrate[x^2*ProductLog[a/x], x]", //
@@ -442,6 +503,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:277
+  @Test
   public void test0059() {
     check( //
         "Integrate[x^4*ProductLog[a/x]^2, x]", //
@@ -449,6 +511,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:329
+  @Test
   public void test0060() {
     check( //
         "Integrate[x^(-1-n)*(c*ProductLog[a*x^n])^(9/2), x]", //
@@ -456,6 +519,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:345
+  @Test
   public void test0061() {
     check( //
         "Integrate[x^(-1+n)*(c*ProductLog[a*x^n])^(5/2), x]", //
@@ -463,6 +527,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:371
+  @Test
   public void test0062() {
     check( //
         "Integrate[x^(-1+n*(3-p))*(c*ProductLog[a*x^n])^p, x]", //
@@ -470,6 +535,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:11
+  @Test
   public void test0063() {
     check( //
         "Integrate[x^3*Erf[b*x], x]", //
@@ -477,6 +543,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:37
+  @Test
   public void test0064() {
     check( //
         "Integrate[x^5*Erf[b*x]^2, x]", //
@@ -484,6 +551,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:146
+  @Test
   public void test0065() {
     check( //
         "Integrate[x^6*Erfc[b*x], x]", //
@@ -491,6 +559,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:156
+  @Test
   public void test0066() {
     check( //
         "Integrate[(c+d*x)^2*Erfc[a+b*x], x]", //
@@ -498,6 +567,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:172
+  @Test
   public void test0067() {
     check( //
         "Integrate[Erfc[b*x]^2/x^7, x]", //
@@ -505,6 +575,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:189
+  @Test
   public void test0068() {
     check( //
         "Integrate[x*Erfc[d*(a+b*Log[c*x^n])], x]", //
@@ -512,6 +583,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:219
+  @Test
   public void test0069() {
     check( //
         "Integrate[E^(c+b^2*x^2)*x^3*Erfc[b*x], x]", //
@@ -519,6 +591,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:238
+  @Test
   public void test0070() {
     check( //
         "Integrate[Erfc[b*x]/(E^(b^2*x^2)*x^2), x]", //
@@ -526,6 +599,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:272
+  @Test
   public void test0071() {
     check( //
         "Integrate[Erfi[b*x]/x^3, x]", //
@@ -533,6 +607,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:280
+  @Test
   public void test0072() {
     check( //
         "Integrate[Erfi[b*x]/x^4, x]", //
@@ -540,6 +615,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:297
+  @Test
   public void test0073() {
     check( //
         "Integrate[x*Erfi[b*x]^2, x]", //
@@ -547,6 +623,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:337
+  @Test
   public void test0074() {
     check( //
         "Integrate[E^(c+d*x^2)*x^3*Erfi[b*x], x]", //
@@ -554,6 +631,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:366
+  @Test
   public void test0075() {
     check( //
         "Integrate[E^(c+b^2*x^2)*x^4*Erfi[b*x], x]", //
@@ -561,6 +639,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:10
+  @Test
   public void test0076() {
     check( //
         "Integrate[x^7*FresnelS[b*x], x]", //
@@ -568,6 +647,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:27
+  @Test
   public void test0077() {
     check( //
         "Integrate[FresnelS[b*x]/x^10, x]", //
@@ -575,6 +655,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:62
+  @Test
   public void test0078() {
     check( //
         "Integrate[FresnelS[b*x]^2/x^9, x]", //
@@ -582,6 +663,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:146
+  @Test
   public void test0079() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]*FresnelS[b*x]/x^10, x]", //
@@ -589,6 +671,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:171
+  @Test
   public void test0080() {
     check( //
         "Integrate[FresnelC[b*x]/x^9, x]", //
@@ -596,6 +679,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:183
+  @Test
   public void test0081() {
     check( //
         "Integrate[x*FresnelC[a+b*x], x]", //
@@ -603,6 +687,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:203
+  @Test
   public void test0082() {
     check( //
         "Integrate[FresnelC[b*x]^2/x^5, x]", //
@@ -610,6 +695,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:245
+  @Test
   public void test0083() {
     check( //
         "Integrate[x^8*Cos[1/2*Pi*b^2*x^2]*FresnelC[b*x], x]", //
@@ -617,6 +703,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:261
+  @Test
   public void test0084() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]*FresnelC[b*x]/x^8, x]", //
@@ -624,6 +711,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:287
+  @Test
   public void test0085() {
     check( //
         "Integrate[FresnelC[b*x]*Sin[1/2*Pi*b^2*x^2]/x^6, x]", //
@@ -631,6 +719,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:229
+  @Test
   public void test0086() {
     check( //
         "Integrate[x*ExpIntegralEi[d*(a+b*Log[c*x^n])], x]", //
@@ -638,6 +727,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:243
+  @Test
   public void test0087() {
     check( //
         "Integrate[E^(b*x)*ExpIntegralEi[b*x]/x, x]", //
@@ -645,6 +735,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:274
+  @Test
   public void test0088() {
     check( //
         "Integrate[x^2*LogIntegral[a+b*x], x]", //
@@ -652,6 +743,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:16
+  @Test
   public void test0089() {
     check( //
         "Integrate[SinIntegral[b*x]/x^2, x]", //
@@ -659,6 +751,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:57
+  @Test
   public void test0090() {
     check( //
         "Integrate[SinIntegral[b*x]*Sin[b*x], x]", //
@@ -666,6 +759,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:84
+  @Test
   public void test0091() {
     check( //
         "Integrate[Cos[a+b*x]*SinIntegral[a+b*x], x]", //
@@ -673,6 +767,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:131
+  @Test
   public void test0092() {
     check( //
         "Integrate[CosIntegral[a+b*x]^2, x]", //
@@ -680,6 +775,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:126
+  @Test
   public void test0093() {
     check( //
         "Integrate[CoshIntegral[a+b*x]/x^2, x]", //
@@ -687,6 +783,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:140
+  @Test
   public void test0094() {
     check( //
         "Integrate[CoshIntegral[d*(a+b*Log[c*x^n])]/x, x]", //
@@ -694,6 +791,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:26
+  @Test
   public void test0095() {
     check( //
         "Integrate[Gamma[1,a*x]/x^3, x]", //
@@ -701,6 +799,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:138
+  @Test
   public void test0096() {
     check( //
         "Integrate[(c+d*x)^3*Gamma[1,a+b*x], x]", //
@@ -708,6 +807,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:246
+  @Test
   public void test0097() {
     check( //
         "Integrate[Gamma[p,d*(a+b*Log[c*x^n])]/x, x]", //
@@ -715,6 +815,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:281
+  @Test
   public void test0098() {
     check( //
         "Integrate[PolyGamma[1,a+b*x]/x^2-b*PolyGamma[2,a+b*x]/x, x]", //
@@ -722,6 +823,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:16
+  @Test
   public void test0099() {
     check( //
         "Integrate[PolyLog[2,a*x], x]", //
@@ -729,6 +831,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:34
+  @Test
   public void test0100() {
     check( //
         "Integrate[x*PolyLog[2,a*x^2], x]", //
@@ -736,6 +839,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:42
+  @Test
   public void test0101() {
     check( //
         "Integrate[PolyLog[2,a*x^2]/x^2, x]", //
@@ -743,6 +847,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:50
+  @Test
   public void test0102() {
     check( //
         "Integrate[PolyLog[3,a*x^2]/x^5, x]", //
@@ -750,6 +855,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:175
+  @Test
   public void test0103() {
     check( //
         "Integrate[PolyLog[2,c*(a+b*x)], x]", //
@@ -757,6 +863,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:185
+  @Test
   public void test0104() {
     check( //
         "Integrate[-PolyLog[2,x]/((1-x)*x), x]", //
@@ -764,6 +871,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:197
+  @Test
   public void test0105() {
     check( //
         "Integrate[x^3*PolyLog[n,d*(F^(c*(a+b*x)))^p], x]", //
@@ -771,6 +879,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:210
+  @Test
   public void test0106() {
     check( //
         "Integrate[Log[1-c*x]*PolyLog[2,c*x]/x, x]", //
@@ -778,6 +887,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:220
+  @Test
   public void test0107() {
     check( //
         "Integrate[(g+h*Log[1-c*x])*PolyLog[2,c*x]/x, x]", //
@@ -785,6 +895,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:17
+  @Test
   public void test0108() {
     check( //
         "Integrate[1/ProductLog[a+b*x]^4, x]", //
@@ -792,6 +903,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:25
+  @Test
   public void test0109() {
     check( //
         "Integrate[1/(c*ProductLog[a+b*x])^(7/2), x]", //
@@ -799,6 +911,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:45
+  @Test
   public void test0110() {
     check( //
         "Integrate[ProductLog[a+b*x]^2, x]", //
@@ -806,6 +919,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:57
+  @Test
   public void test0111() {
     check( //
         "Integrate[1/Sqrt[-c*ProductLog[a+b*x]], x]", //
@@ -813,6 +927,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:71
+  @Test
   public void test0112() {
     check( //
         "Integrate[1/(d+d*ProductLog[a+b*x]), x]", //
@@ -820,6 +935,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:133
+  @Test
   public void test0113() {
     check( //
         "Integrate[1/ProductLog[a*x]^3, x]", //
@@ -827,6 +943,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:157
+  @Test
   public void test0114() {
     check( //
         "Integrate[x^2*(c*ProductLog[a*x])^p, x]", //
@@ -834,6 +951,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:195
+  @Test
   public void test0115() {
     check( //
         "Integrate[ProductLog[a*x^2]^2/x^9, x]", //
@@ -841,6 +959,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:235
+  @Test
   public void test0116() {
     check( //
         "Integrate[x^2*Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -848,6 +967,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:246
+  @Test
   public void test0117() {
     check( //
         "Integrate[x^6/Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -855,6 +975,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:257
+  @Test
   public void test0118() {
     check( //
         "Integrate[1/(x^5*Sqrt[c*ProductLog[a*x^2]]), x]", //
@@ -862,6 +983,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:278
+  @Test
   public void test0119() {
     check( //
         "Integrate[x^3*ProductLog[a/x]^2, x]", //
@@ -869,6 +991,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:330
+  @Test
   public void test0120() {
     check( //
         "Integrate[x^(-1-n)*(c*ProductLog[a*x^n])^(7/2), x]", //
@@ -876,6 +999,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:346
+  @Test
   public void test0121() {
     check( //
         "Integrate[x^(-1+n)*(c*ProductLog[a*x^n])^(3/2), x]", //
@@ -883,6 +1007,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:402
+  @Test
   public void test0122() {
     check( //
         "Integrate[1/(x^3*(1+ProductLog[a/x^2])), x]", //
@@ -890,6 +1015,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:15
+  @Test
   public void test0123() {
     check( //
         "Integrate[Erf[b*x]/x^5, x]", //
@@ -897,6 +1023,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:23
+  @Test
   public void test0124() {
     check( //
         "Integrate[Erf[b*x]/x^6, x]", //
@@ -904,6 +1031,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:41
+  @Test
   public void test0125() {
     check( //
         "Integrate[Erf[b*x]^2/x^3, x]", //
@@ -911,6 +1039,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:107
+  @Test
   public void test0126() {
     check( //
         "Integrate[x^2*Erf[b*x]/E^(b^2*x^2), x]", //
@@ -918,6 +1047,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:140
+  @Test
   public void test0127() {
     check( //
         "Integrate[x^3*Erfc[b*x], x]", //
@@ -925,6 +1055,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:166
+  @Test
   public void test0128() {
     check( //
         "Integrate[x^5*Erfc[b*x]^2, x]", //
@@ -932,6 +1063,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:275
+  @Test
   public void test0129() {
     check( //
         "Integrate[x^6*Erfi[b*x], x]", //
@@ -939,6 +1071,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:285
+  @Test
   public void test0130() {
     check( //
         "Integrate[(c+d*x)^2*Erfi[a+b*x], x]", //
@@ -946,6 +1079,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:301
+  @Test
   public void test0131() {
     check( //
         "Integrate[Erfi[b*x]^2/x^7, x]", //
@@ -953,6 +1087,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:318
+  @Test
   public void test0132() {
     check( //
         "Integrate[x*Erfi[d*(a+b*Log[c*x^n])], x]", //
@@ -960,6 +1095,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:348
+  @Test
   public void test0133() {
     check( //
         "Integrate[x^3*Erfi[b*x]/E^(b^2*x^2), x]", //
@@ -967,6 +1103,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:369
+  @Test
   public void test0134() {
     check( //
         "Integrate[E^(c+b^2*x^2)*Erfi[b*x]/x^2, x]", //
@@ -974,6 +1111,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:13
+  @Test
   public void test0135() {
     check( //
         "Integrate[x^4*FresnelS[b*x], x]", //
@@ -981,6 +1119,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:22
+  @Test
   public void test0136() {
     check( //
         "Integrate[FresnelS[b*x]/x^5, x]", //
@@ -988,6 +1127,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:32
+  @Test
   public void test0137() {
     check( //
         "Integrate[(c+d*x)*FresnelS[a+b*x], x]", //
@@ -995,6 +1135,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:94
+  @Test
   public void test0138() {
     check( //
         "Integrate[Sin[1/2*Pi*b^2*x^2]/FresnelS[b*x], x]", //
@@ -1002,6 +1143,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:157
+  @Test
   public void test0139() {
     check( //
         "Integrate[x^5*FresnelC[b*x], x]", //
@@ -1009,6 +1151,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:166
+  @Test
   public void test0140() {
     check( //
         "Integrate[FresnelC[b*x]/x^4, x]", //
@@ -1016,6 +1159,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:176
+  @Test
   public void test0141() {
     check( //
         "Integrate[(c+d*x)^2*FresnelC[a+b*x], x]", //
@@ -1023,6 +1167,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:238
+  @Test
   public void test0142() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]*FresnelC[b*x], x]", //
@@ -1030,6 +1175,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:249
+  @Test
   public void test0143() {
     check( //
         "Integrate[x^4*Cos[1/2*Pi*b^2*x^2]*FresnelC[b*x], x]", //
@@ -1037,6 +1183,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:179
+  @Test
   public void test0144() {
     check( //
         "Integrate[x*ExpIntegralEi[b*x]^2, x]", //
@@ -1044,6 +1191,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:204
+  @Test
   public void test0145() {
     check( //
         "Integrate[ExpIntegralEi[a+b*x]/x^3, x]", //
@@ -1051,6 +1199,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:232
+  @Test
   public void test0146() {
     check( //
         "Integrate[ExpIntegralEi[d*(a+b*Log[c*x^n])]/x^2, x]", //
@@ -1058,6 +1207,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:35
+  @Test
   public void test0147() {
     check( //
         "Integrate[SinIntegral[a+b*x]/x^3, x]", //
@@ -1065,6 +1215,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:56
+  @Test
   public void test0148() {
     check( //
         "Integrate[SinhIntegral[b*x]*Sinh[b*x]/x, x]", //
@@ -1072,6 +1223,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:114
+  @Test
   public void test0149() {
     check( //
         "Integrate[CoshIntegral[b*x]^2, x]", //
@@ -1079,6 +1231,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:170
+  @Test
   public void test0150() {
     check( //
         "Integrate[CoshIntegral[a+b*x]*Sinh[a+b*x], x]", //
@@ -1086,6 +1239,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:21
+  @Test
   public void test0151() {
     check( //
         "Integrate[x^2*Gamma[1,a*x], x]", //
@@ -1093,6 +1247,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:141
+  @Test
   public void test0152() {
     check( //
         "Integrate[Gamma[1,a+b*x], x]", //
@@ -1100,6 +1255,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:269
+  @Test
   public void test0153() {
     check( //
         "Integrate[(c+d*x)^3*PolyGamma[n,a+b*x], x]", //
@@ -1107,6 +1263,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:19
+  @Test
   public void test0154() {
     check( //
         "Integrate[PolyLog[2,a*x]/x^3, x]", //
@@ -1114,6 +1271,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:27
+  @Test
   public void test0155() {
     check( //
         "Integrate[PolyLog[3,a*x]/x^2, x]", //
@@ -1121,6 +1279,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:37
+  @Test
   public void test0156() {
     check( //
         "Integrate[PolyLog[2,a*x^2]/x^5, x]", //
@@ -1128,6 +1287,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:53
+  @Test
   public void test0157() {
     check( //
         "Integrate[x^2*PolyLog[3,a*x^2], x]", //
@@ -1135,6 +1295,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:160
+  @Test
   public void test0158() {
     check( //
         "Integrate[PolyLog[2,c*(a+b*x)]/x, x]", //
@@ -1142,6 +1303,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:213
+  @Test
   public void test0159() {
     check( //
         "Integrate[Log[1-c*x]*PolyLog[2,c*x]/x^4, x]", //
@@ -1149,6 +1311,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:223
+  @Test
   public void test0160() {
     check( //
         "Integrate[(g+h*Log[1-c*x])*PolyLog[2,c*x]/x^4, x]", //
@@ -1156,6 +1319,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:20
+  @Test
   public void test0161() {
     check( //
         "Integrate[(c*ProductLog[a+b*x])^(3/2), x]", //
@@ -1163,6 +1327,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:28
+  @Test
   public void test0162() {
     check( //
         "Integrate[Sqrt[-c*ProductLog[a+b*x]], x]", //
@@ -1170,6 +1335,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:38
+  @Test
   public void test0163() {
     check( //
         "Integrate[x*ProductLog[a+b*x], x]", //
@@ -1177,6 +1343,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:144
+  @Test
   public void test0164() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x]]/x^4, x]", //
@@ -1184,6 +1351,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:160
+  @Test
   public void test0165() {
     check( //
         "Integrate[(c*ProductLog[a*x])^p/x^2, x]", //
@@ -1191,6 +1359,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:185
+  @Test
   public void test0166() {
     check( //
         "Integrate[x*ProductLog[a*x^2]^2, x]", //
@@ -1198,6 +1367,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:201
+  @Test
   public void test0167() {
     check( //
         "Integrate[ProductLog[a*x^2]^3/x^3, x]", //
@@ -1205,6 +1375,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:230
+  @Test
   public void test0168() {
     check( //
         "Integrate[x^7*Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -1212,6 +1383,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:273
+  @Test
   public void test0169() {
     check( //
         "Integrate[ProductLog[a/x]/x^2, x]", //
@@ -1219,6 +1391,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:289
+  @Test
   public void test0170() {
     check( //
         "Integrate[x*Sqrt[ProductLog[a/x]], x]", //
@@ -1226,6 +1399,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:297
+  @Test
   public void test0171() {
     check( //
         "Integrate[x/Sqrt[ProductLog[a/x]], x]", //
@@ -1233,6 +1407,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:315
+  @Test
   public void test0172() {
     check( //
         "Integrate[1/ProductLog[a*x^(1/3)]^2, x]", //
@@ -1240,6 +1415,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:323
+  @Test
   public void test0173() {
     check( //
         "Integrate[1/ProductLog[a*x^(1/3)]^4, x]", //
@@ -1247,6 +1423,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:333
+  @Test
   public void test0174() {
     check( //
         "Integrate[x^(-1-n)*(c*ProductLog[a*x^n])^(1/2), x]", //
@@ -1254,6 +1431,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:377
+  @Test
   public void test0175() {
     check( //
         "Integrate[1/(1+ProductLog[a*x]), x]", //
@@ -1261,6 +1439,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:16
+  @Test
   public void test0176() {
     check( //
         "Integrate[Erf[b*x]/x^7, x]", //
@@ -1268,6 +1447,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:26
+  @Test
   public void test0177() {
     check( //
         "Integrate[(c+d*x)^3*Erf[a+b*x], x]", //
@@ -1275,6 +1455,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:42
+  @Test
   public void test0178() {
     check( //
         "Integrate[Erf[b*x]^2/x^5, x]", //
@@ -1282,6 +1463,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:89
+  @Test
   public void test0179() {
     check( //
         "Integrate[E^(c+b^2*x^2)*x^5*Erf[b*x], x]", //
@@ -1289,6 +1471,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:141
+  @Test
   public void test0180() {
     check( //
         "Integrate[x*Erfc[b*x], x]", //
@@ -1296,6 +1479,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:167
+  @Test
   public void test0181() {
     check( //
         "Integrate[x^3*Erfc[b*x]^2, x]", //
@@ -1303,6 +1487,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:207
+  @Test
   public void test0182() {
     check( //
         "Integrate[E^(c+d*x^2)*x^5*Erfc[b*x], x]", //
@@ -1310,6 +1495,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:276
+  @Test
   public void test0183() {
     check( //
         "Integrate[x^4*Erfi[b*x], x]", //
@@ -1317,6 +1503,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:286
+  @Test
   public void test0184() {
     check( //
         "Integrate[(c+d*x)*Erfi[a+b*x], x]", //
@@ -1324,6 +1511,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:319
+  @Test
   public void test0185() {
     check( //
         "Integrate[Erfi[d*(a+b*Log[c*x^n])], x]", //
@@ -1331,6 +1519,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:349
+  @Test
   public void test0186() {
     check( //
         "Integrate[x*Erfi[b*x]/E^(b^2*x^2), x]", //
@@ -1338,6 +1527,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:370
+  @Test
   public void test0187() {
     check( //
         "Integrate[E^(c+b^2*x^2)*Erfi[b*x]/x^4, x]", //
@@ -1345,6 +1535,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:14
+  @Test
   public void test0188() {
     check( //
         "Integrate[x^3*FresnelS[b*x], x]", //
@@ -1352,6 +1543,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:23
+  @Test
   public void test0189() {
     check( //
         "Integrate[FresnelS[b*x]/x^6, x]", //
@@ -1359,6 +1551,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:50
+  @Test
   public void test0190() {
     check( //
         "Integrate[x^3*FresnelS[b*x]^2, x]", //
@@ -1366,6 +1559,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:95
+  @Test
   public void test0191() {
     check( //
         "Integrate[Sin[1/2*Pi*b^2*x^2]/FresnelS[b*x]^2, x]", //
@@ -1373,6 +1567,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:134
+  @Test
   public void test0192() {
     check( //
         "Integrate[x^2*Cos[1/2*Pi*b^2*x^2]*FresnelS[b*x], x]", //
@@ -1380,6 +1575,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:158
+  @Test
   public void test0193() {
     check( //
         "Integrate[x^4*FresnelC[b*x], x]", //
@@ -1387,6 +1583,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:167
+  @Test
   public void test0194() {
     check( //
         "Integrate[FresnelC[b*x]/x^5, x]", //
@@ -1394,6 +1591,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:177
+  @Test
   public void test0195() {
     check( //
         "Integrate[(c+d*x)*FresnelC[a+b*x], x]", //
@@ -1401,6 +1599,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:239
+  @Test
   public void test0196() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]/FresnelC[b*x], x]", //
@@ -1408,6 +1607,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:180
+  @Test
   public void test0197() {
     check( //
         "Integrate[ExpIntegralEi[b*x]^2, x]", //
@@ -1415,6 +1615,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:233
+  @Test
   public void test0198() {
     check( //
         "Integrate[ExpIntegralEi[d*(a+b*Log[c*x^n])]/x^3, x]", //
@@ -1422,6 +1623,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:126
+  @Test
   public void test0199() {
     check( //
         "Integrate[CosIntegral[a+b*x]/x^2, x]", //
@@ -1429,6 +1631,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:140
+  @Test
   public void test0200() {
     check( //
         "Integrate[CosIntegral[d*(a+b*Log[c*x^n])]/x, x]", //
@@ -1436,6 +1639,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:16
+  @Test
   public void test0201() {
     check( //
         "Integrate[SinhIntegral[b*x]/x^2, x]", //
@@ -1443,6 +1647,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:57
+  @Test
   public void test0202() {
     check( //
         "Integrate[SinhIntegral[b*x]*Sinh[b*x], x]", //
@@ -1450,6 +1655,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:84
+  @Test
   public void test0203() {
     check( //
         "Integrate[Cosh[a+b*x]*SinhIntegral[a+b*x], x]", //
@@ -1457,6 +1663,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:131
+  @Test
   public void test0204() {
     check( //
         "Integrate[CoshIntegral[a+b*x]^2, x]", //
@@ -1464,6 +1671,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:22
+  @Test
   public void test0205() {
     check( //
         "Integrate[x*Gamma[1,a*x], x]", //
@@ -1471,6 +1679,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:142
+  @Test
   public void test0206() {
     check( //
         "Integrate[Gamma[1,a+b*x]/(c+d*x), x]", //
@@ -1478,6 +1687,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:252
+  @Test
   public void test0207() {
     check( //
         "Integrate[(c+d*x)^3*LogGamma[a+b*x], x]", //
@@ -1485,6 +1695,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:270
+  @Test
   public void test0208() {
     check( //
         "Integrate[(c+d*x)^2*PolyGamma[n,a+b*x], x]", //
@@ -1492,6 +1703,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.7 Zeta function.input:8
+  @Test
   public void test0209() {
     check( //
         "Integrate[x^2*Zeta[2,a+b*x], x]", //
@@ -1499,6 +1711,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:20
+  @Test
   public void test0210() {
     check( //
         "Integrate[PolyLog[2,a*x]/x^4, x]", //
@@ -1506,6 +1719,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:28
+  @Test
   public void test0211() {
     check( //
         "Integrate[PolyLog[3,a*x]/x^3, x]", //
@@ -1513,6 +1727,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:38
+  @Test
   public void test0212() {
     check( //
         "Integrate[PolyLog[2,a*x^2]/x^7, x]", //
@@ -1520,6 +1735,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:54
+  @Test
   public void test0213() {
     check( //
         "Integrate[PolyLog[3,a*x^2], x]", //
@@ -1527,6 +1743,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:88
+  @Test
   public void test0214() {
     check( //
         "Integrate[PolyLog[3,a*x]/(d*x)^(3/2), x]", //
@@ -1534,6 +1751,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:161
+  @Test
   public void test0215() {
     check( //
         "Integrate[PolyLog[2,c*(a+b*x)]/x^2, x]", //
@@ -1541,6 +1759,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:191
+  @Test
   public void test0216() {
     check( //
         "Integrate[PolyLog[1,e*((a+b*x)/(c+d*x))^n]/((a+b*x)*(c+d*x)), x]", //
@@ -1548,6 +1767,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:214
+  @Test
   public void test0217() {
     check( //
         "Integrate[Log[1-c*x]*PolyLog[2,c*x]/x^5, x]", //
@@ -1555,6 +1775,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:21
+  @Test
   public void test0218() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a+b*x]], x]", //
@@ -1562,6 +1783,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:39
+  @Test
   public void test0219() {
     check( //
         "Integrate[ProductLog[a+b*x], x]", //
@@ -1569,6 +1791,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:81
+  @Test
   public void test0220() {
     check( //
         "Integrate[ProductLog[a*x], x]", //
@@ -1576,6 +1799,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:113
+  @Test
   public void test0221() {
     check( //
         "Integrate[1/ProductLog[a*x], x]", //
@@ -1583,6 +1807,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:137
+  @Test
   public void test0222() {
     check( //
         "Integrate[x^3*Sqrt[c*ProductLog[a*x]], x]", //
@@ -1590,6 +1815,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:145
+  @Test
   public void test0223() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x]]/x^5, x]", //
@@ -1597,6 +1823,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:153
+  @Test
   public void test0224() {
     check( //
         "Integrate[1/(x^2*Sqrt[c*ProductLog[a*x]]), x]", //
@@ -1604,6 +1831,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:161
+  @Test
   public void test0225() {
     check( //
         "Integrate[(c*ProductLog[a*x])^p/x^3, x]", //
@@ -1611,6 +1839,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:231
+  @Test
   public void test0226() {
     check( //
         "Integrate[x^6*Sqrt[c*ProductLog[a*x^2]], x]", //
@@ -1618,6 +1847,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:264
+  @Test
   public void test0227() {
     check( //
         "Integrate[(c*ProductLog[a*x^2])^p/x^3, x]", //
@@ -1625,6 +1855,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:306
+  @Test
   public void test0228() {
     check( //
         "Integrate[(c*ProductLog[a/x])^p/x^2, x]", //
@@ -1632,6 +1863,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:316
+  @Test
   public void test0229() {
     check( //
         "Integrate[1/ProductLog[a*x^(1/4)]^3, x]", //
@@ -1639,6 +1871,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:324
+  @Test
   public void test0230() {
     check( //
         "Integrate[1/ProductLog[a*x^(1/4)]^5, x]", //
@@ -1646,6 +1879,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:334
+  @Test
   public void test0231() {
     check( //
         "Integrate[x^(-1-n)/(c*ProductLog[a*x^n])^(1/2), x]", //
@@ -1653,6 +1887,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:342
+  @Test
   public void test0232() {
     check( //
         "Integrate[x^(-1-2*n)*(c*ProductLog[a*x^n])^(1/2), x]", //
@@ -1660,6 +1895,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:350
+  @Test
   public void test0233() {
     check( //
         "Integrate[x^(-1+n)/(c*ProductLog[a*x^n])^(5/2), x]", //
@@ -1667,6 +1903,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:358
+  @Test
   public void test0234() {
     check( //
         "Integrate[x^(-1+2*n)/(c*ProductLog[a*x^n])^(7/2), x]", //
@@ -1674,6 +1911,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:17
+  @Test
   public void test0235() {
     check( //
         "Integrate[x^6*Erf[b*x], x]", //
@@ -1681,6 +1919,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:27
+  @Test
   public void test0236() {
     check( //
         "Integrate[(c+d*x)^2*Erf[a+b*x], x]", //
@@ -1688,6 +1927,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:43
+  @Test
   public void test0237() {
     check( //
         "Integrate[Erf[b*x]^2/x^7, x]", //
@@ -1695,6 +1935,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:60
+  @Test
   public void test0238() {
     check( //
         "Integrate[x*Erf[d*(a+b*Log[c*x^n])], x]", //
@@ -1702,6 +1943,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:90
+  @Test
   public void test0239() {
     check( //
         "Integrate[E^(c+b^2*x^2)*x^3*Erf[b*x], x]", //
@@ -1709,6 +1951,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:109
+  @Test
   public void test0240() {
     check( //
         "Integrate[Erf[b*x]/(E^(b^2*x^2)*x^2), x]", //
@@ -1716,6 +1959,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:143
+  @Test
   public void test0241() {
     check( //
         "Integrate[Erfc[b*x]/x^3, x]", //
@@ -1723,6 +1967,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:151
+  @Test
   public void test0242() {
     check( //
         "Integrate[Erfc[b*x]/x^4, x]", //
@@ -1730,6 +1975,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:168
+  @Test
   public void test0243() {
     check( //
         "Integrate[x*Erfc[b*x]^2, x]", //
@@ -1737,6 +1983,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:208
+  @Test
   public void test0244() {
     check( //
         "Integrate[E^(c+d*x^2)*x^3*Erfc[b*x], x]", //
@@ -1744,6 +1991,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:235
+  @Test
   public void test0245() {
     check( //
         "Integrate[x^4*Erfc[b*x]/E^(b^2*x^2), x]", //
@@ -1751,6 +1999,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:268
+  @Test
   public void test0246() {
     check( //
         "Integrate[x^5*Erfi[b*x], x]", //
@@ -1758,6 +2007,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:277
+  @Test
   public void test0247() {
     check( //
         "Integrate[x^2*Erfi[b*x], x]", //
@@ -1765,6 +2015,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.1 Error functions.input:320
+  @Test
   public void test0248() {
     check( //
         "Integrate[Erfi[d*(a+b*Log[c*x^n])]/x, x]", //
@@ -1772,6 +2023,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:15
+  @Test
   public void test0249() {
     check( //
         "Integrate[x^2*FresnelS[b*x], x]", //
@@ -1779,6 +2031,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:24
+  @Test
   public void test0250() {
     check( //
         "Integrate[FresnelS[b*x]/x^7, x]", //
@@ -1786,6 +2039,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:36
+  @Test
   public void test0251() {
     check( //
         "Integrate[x^3*FresnelS[a+b*x], x]", //
@@ -1793,6 +2047,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:76
+  @Test
   public void test0252() {
     check( //
         "Integrate[FresnelS[d*(a+b*Log[c*x^n])]/x, x]", //
@@ -1800,6 +2055,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:96
+  @Test
   public void test0253() {
     check( //
         "Integrate[Sin[1/2*Pi*b^2*x^2]/FresnelS[b*x]^3, x]", //
@@ -1807,6 +2063,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:108
+  @Test
   public void test0254() {
     check( //
         "Integrate[FresnelS[b*x]*Sin[1/2*Pi*b^2*x^2], x]", //
@@ -1814,6 +2071,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:159
+  @Test
   public void test0255() {
     check( //
         "Integrate[x^3*FresnelC[b*x], x]", //
@@ -1821,6 +2079,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:168
+  @Test
   public void test0256() {
     check( //
         "Integrate[FresnelC[b*x]/x^6, x]", //
@@ -1828,6 +2087,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:195
+  @Test
   public void test0257() {
     check( //
         "Integrate[x^3*FresnelC[b*x]^2, x]", //
@@ -1835,6 +2095,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:240
+  @Test
   public void test0258() {
     check( //
         "Integrate[Cos[1/2*Pi*b^2*x^2]/FresnelC[b*x]^2, x]", //
@@ -1842,6 +2103,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.2 Fresnel integral functions.input:279
+  @Test
   public void test0259() {
     check( //
         "Integrate[x^2*FresnelC[b*x]*Sin[1/2*Pi*b^2*x^2], x]", //
@@ -1849,6 +2111,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:189
+  @Test
   public void test0260() {
     check( //
         "Integrate[(d*x)^m*ExpIntegralEi[b*x], x]", //
@@ -1856,6 +2119,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:208
+  @Test
   public void test0261() {
     check( //
         "Integrate[x*ExpIntegralEi[a+b*x]^2, x]", //
@@ -1863,6 +2127,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:234
+  @Test
   public void test0262() {
     check( //
         "Integrate[(e*x)^m*ExpIntegralEi[d*(a+b*Log[c*x^n])], x]", //
@@ -1870,6 +2135,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.3 Exponential integral functions.input:265
+  @Test
   public void test0263() {
     check( //
         "Integrate[LogIntegral[b*x]/x^2, x]", //
@@ -1877,6 +2143,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:22
+  @Test
   public void test0264() {
     check( //
         "Integrate[SinIntegral[b*x]^2, x]", //
@@ -1884,6 +2151,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:78
+  @Test
   public void test0265() {
     check( //
         "Integrate[SinIntegral[a+b*x]*Sin[a+b*x], x]", //
@@ -1891,6 +2159,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.4 Trig integral functions.input:127
+  @Test
   public void test0266() {
     check( //
         "Integrate[CosIntegral[a+b*x]/x^3, x]", //
@@ -1898,6 +2167,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.5 Hyperbolic integral functions.input:148
+  @Test
   public void test0267() {
     check( //
         "Integrate[CoshIntegral[b*x]*Cosh[b*x]/x, x]", //
@@ -1905,6 +2175,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:23
+  @Test
   public void test0268() {
     check( //
         "Integrate[Gamma[1,a*x], x]", //
@@ -1912,6 +2183,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:143
+  @Test
   public void test0269() {
     check( //
         "Integrate[Gamma[1,a+b*x]/(c+d*x)^2, x]", //
@@ -1919,6 +2191,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:243
+  @Test
   public void test0270() {
     check( //
         "Integrate[x^2*Gamma[p,d*(a+b*Log[c*x^n])], x]", //
@@ -1926,6 +2199,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.6 Gamma functions.input:253
+  @Test
   public void test0271() {
     check( //
         "Integrate[(c+d*x)^2*LogGamma[a+b*x], x]", //
@@ -1933,6 +2207,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.7 Zeta function.input:9
+  @Test
   public void test0272() {
     check( //
         "Integrate[x*Zeta[2,a+b*x], x]", //
@@ -1940,6 +2215,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:21
+  @Test
   public void test0273() {
     check( //
         "Integrate[PolyLog[2,a*x]/x^5, x]", //
@@ -1947,6 +2223,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:29
+  @Test
   public void test0274() {
     check( //
         "Integrate[PolyLog[3,a*x]/x^4, x]", //
@@ -1954,6 +2231,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:39
+  @Test
   public void test0275() {
     check( //
         "Integrate[x^4*PolyLog[2,a*x^2], x]", //
@@ -1961,6 +2239,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:47
+  @Test
   public void test0276() {
     check( //
         "Integrate[x*PolyLog[3,a*x^2], x]", //
@@ -1968,6 +2247,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:55
+  @Test
   public void test0277() {
     check( //
         "Integrate[PolyLog[3,a*x^2]/x^2, x]", //
@@ -1975,6 +2255,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:81
+  @Test
   public void test0278() {
     check( //
         "Integrate[PolyLog[2,a*x]/(d*x)^(3/2), x]", //
@@ -1982,6 +2263,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:162
+  @Test
   public void test0279() {
     check( //
         "Integrate[PolyLog[2,c*(a+b*x)]/x^3, x]", //
@@ -1989,6 +2271,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:182
+  @Test
   public void test0280() {
     check( //
         "Integrate[PolyLog[2,x]/(-1+x), x]", //
@@ -1996,6 +2279,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.8 Polylogarithm function.input:192
+  @Test
   public void test0281() {
     check( //
         "Integrate[PolyLog[0,e*((a+b*x)/(c+d*x))^n]/((a+b*x)*(c+d*x)), x]", //
@@ -2003,6 +2287,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:14
+  @Test
   public void test0282() {
     check( //
         "Integrate[1/ProductLog[a+b*x], x]", //
@@ -2010,6 +2295,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:30
+  @Test
   public void test0283() {
     check( //
         "Integrate[1/(-c*ProductLog[a+b*x])^(3/2), x]", //
@@ -2017,6 +2303,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:42
+  @Test
   public void test0284() {
     check( //
         "Integrate[x^3*ProductLog[a+b*x]^2, x]", //
@@ -2024,6 +2311,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:68
+  @Test
   public void test0285() {
     check( //
         "Integrate[x^3/(d+d*ProductLog[a+b*x]), x]", //
@@ -2031,6 +2319,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:90
+  @Test
   public void test0286() {
     check( //
         "Integrate[ProductLog[a*x]^2, x]", //
@@ -2038,6 +2327,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:146
+  @Test
   public void test0287() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x]]/x^6, x]", //
@@ -2045,6 +2335,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:154
+  @Test
   public void test0288() {
     check( //
         "Integrate[1/(x^3*Sqrt[c*ProductLog[a*x]]), x]", //
@@ -2052,6 +2343,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:174
+  @Test
   public void test0289() {
     check( //
         "Integrate[x*ProductLog[a*x^2], x]", //
@@ -2059,6 +2351,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:219
+  @Test
   public void test0290() {
     check( //
         "Integrate[x^7/ProductLog[a*x^2]^2, x]", //
@@ -2066,6 +2359,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:242
+  @Test
   public void test0291() {
     check( //
         "Integrate[Sqrt[c*ProductLog[a*x^2]]/x^5, x]", //
@@ -2073,6 +2367,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:267
+  @Test
   public void test0292() {
     check( //
         "Integrate[x^4*ProductLog[a/x], x]", //
@@ -2080,6 +2375,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:283
+  @Test
   public void test0293() {
     check( //
         "Integrate[ProductLog[a/x]^2/x^2, x]", //
@@ -2087,6 +2383,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:307
+  @Test
   public void test0294() {
     check( //
         "Integrate[(c*ProductLog[a/x])^p/x^3, x]", //
@@ -2094,6 +2391,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:335
+  @Test
   public void test0295() {
     check( //
         "Integrate[x^(-1-n)/(c*ProductLog[a*x^n])^(3/2), x]", //
@@ -2101,6 +2399,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:343
+  @Test
   public void test0296() {
     check( //
         "Integrate[x^(-1-2*n)/(c*ProductLog[a*x^n])^(1/2), x]", //
@@ -2108,6 +2407,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:351
+  @Test
   public void test0297() {
     check( //
         "Integrate[x^(-1+n)/(c*ProductLog[a*x^n])^(7/2), x]", //
@@ -2115,6 +2415,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
   }
 
   // 8.9 Product logarithm function.input:359
+  @Test
   public void test0298() {
     check( //
         "Integrate[x^(-1+2*n)/(c*ProductLog[a*x^n])^(9/2), x]", //

@@ -1,7 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * Tests for {@link RootSum}.
@@ -144,6 +146,7 @@ public class RootSumTest extends ExprEvaluatorTestCase {
    * <code>c</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testParametrizedPolynomialAndSummand() {
     // numerator and denominator are the negatives of the reference result
     // (-16*a+8*a^2-a^3-10*b^2+a*b^2+8*a*b*c+8*a*c^2-4*a^2*c^2-5*b*c^3+5*c^4) /

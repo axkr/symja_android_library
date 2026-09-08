@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -781,6 +782,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNExpectationEffectiveSupport() {
     // the density decays doubly exponentially, so quadrature over the full support samples the
     // far tail where the density evaluates to Overflow() instead of 0 - fall back to the interval
@@ -1446,6 +1448,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testProbability() {
     check("Probability(x<=3, Distributed(x, GeometricDistribution(1/5)))", //
         "369/625");

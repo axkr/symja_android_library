@@ -6,7 +6,10 @@ on:
   workflow_dispatch
 
 env:
-  MAVEN_ARGS: --batch-mode --no-transfer-progress
+  # Tests: run the fast tier only, so this job stays inside its budget. The slow and
+  # corpus tiers are developer-triggered, see CONTRIBUTING.md. This repeats the default set in
+  # symja_android_library/pom.xml on purpose: CI must not silently start running them.
+  MAVEN_ARGS: --batch-mode --no-transfer-progress -Dsymja.test.excludedGroups=slow,corpus
 
 jobs:
   maven-perform-release:
@@ -33,7 +36,10 @@ jobs:
     # commits on the master in case release publication fails in the last step.
     # All file-system/git-operations are performed on the runnner's clone of this repo
 
+    # -Darguments is passed on to the build that maven-release-plugin forks, so the
+    # forked run also sticks to the fast test tier.
     - run: mvn release:clean release:prepare -DpushChanges=false
+           -Darguments=-Dsymja.test.excludedGroups=slow,corpus
       working-directory: symja_android_library
 
     - name: Read release version
@@ -66,6 +72,7 @@ jobs:
       run: git push origin HEAD:refs/heads/draft_${{ env.release_version }}
 
     - run: mvn release:perform -DlocalCheckout=true
+           -Darguments=-Dsymja.test.excludedGroups=slow,corpus
       working-directory: symja_android_library
       # Deployment of all modules is deferred to the last module by central-publishing-maven-plugin
       env:

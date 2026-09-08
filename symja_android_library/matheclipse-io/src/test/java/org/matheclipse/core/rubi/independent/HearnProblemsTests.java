@@ -1,25 +1,26 @@
 package org.matheclipse.core.rubi.independent;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
  * Rubi's "0 Independent test suites" corpus section. 284 integrals.
  *
  * <p>
- * <b>Not part of a normal build.</b> The surefire {@code <includes>} in the parent pom match
- * {@code Test*.java}, {@code *Test.java} and {@code *TestCase.java}, so nothing here runs
- * unless it is asked for. That is deliberate - the section is slow - but it means drift goes
- * unnoticed, so run it after any change to the integrator:
+ * <b>Not part of a normal build.</b> {@code AbstractRubiTestCase} is {@code @Tag("corpus")},
+ * which the default surefire run excludes. That is deliberate - the section is slow - but it
+ * means drift goes unnoticed, so run it after any change to the integrator:
  *
  * <pre>
- * mvn -o -pl matheclipse-io test -DreuseForks=false -DforkCount=5 -DfailIfNoTests=false \
- *     -Dtest='org.matheclipse.core.rubi.independent.**'
+ * mvn -o -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400
  * </pre>
  *
  * <p>
- * {@code -DreuseForks=false} is required, not an optimisation: {@code AbstractRubiTestCase}'s
- * constructor sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS}, so sharing one
- * JVM across classes makes every test fail.
+ * The profile sets {@code reuseForks=false}, which is required rather than an optimisation:
+ * {@code AbstractRubiTestCase} sets the global {@code ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS},
+ * so sharing one JVM across classes makes every test fail. It also sets
+ * {@code testFailureIgnore}, because this corpus is a scoreboard rather than a gate.
  *
  * <p>
  * Tests marked {@code KNOWN GAP} are expected to fail: their expected value is Rubi's reference
@@ -28,10 +29,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class HearnProblemsTests extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public HearnProblemsTests(String name) {
-    super(name, false);
+  public HearnProblemsTests() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -46,6 +48,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     }
   }
 
+  @Test
   public void test1() {
     check( //
         "Integrate[1+x+x^2, x]", //
@@ -53,6 +56,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test2() {
     check( //
         "Integrate[x^2*(2*x^2+x)^2, x]", //
@@ -60,6 +64,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test3() {
     check( //
         "Integrate[x*(x^2+2*x+1), x]", //
@@ -67,6 +72,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test4() {
     check( //
         "Integrate[1/x, x]", //
@@ -74,6 +80,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test5() {
     check( //
         "Integrate[(x+1)^3/(x+(-1)*1)^4, x]", //
@@ -81,6 +88,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test6() {
     check( //
         "Integrate[1/(x*(x+(-1)*1)*(x+1)^2), x]", //
@@ -88,6 +96,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test7() {
     check( //
         "Integrate[(a*x+b)/((x-p)*(x-q)), x]", //
@@ -95,6 +104,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test8() {
     check( //
         "Integrate[1/(a*x^2+b*x+c), x]", //
@@ -102,6 +112,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test9() {
     check( //
         "Integrate[(a*x+b)/(1+x^2), x]", //
@@ -109,6 +120,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test10() {
     check( //
         "Integrate[1/(x^2-2*x+3), x]", //
@@ -116,6 +128,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test11() {
     check( //
         "Integrate[1/((x+(-1)*1)*(x^2+1))^2, x]", //
@@ -123,6 +136,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test12() {
     check( //
         "Integrate[x/((x-a)*(x-b)*(x-c)), x]", //
@@ -130,6 +144,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test13() {
     check( //
         "Integrate[x/((x^2+a^2)*(x^2+b^2)), x]", //
@@ -137,6 +152,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test14() {
     check( //
         "Integrate[x^2/((x^2+a^2)*(x^2+b^2)), x]", //
@@ -144,6 +160,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test15() {
     check( //
         "Integrate[x/((x+(-1)*1)*(x^2+1)), x]", //
@@ -151,6 +168,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test16() {
     check( //
         "Integrate[x/(1+x^3), x]", //
@@ -158,6 +176,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test17() {
     check( //
         "Integrate[x^3/((x+(-1)*1)^2*(x^3+1)), x]", //
@@ -165,6 +184,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test18() {
     check( //
         "Integrate[1/(1+x^4), x]", //
@@ -172,6 +192,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test19() {
     check( //
         "Integrate[x^2/(1+x^4), x]", //
@@ -179,6 +200,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test20() {
     check( //
         "Integrate[1/(1+x^2+x^4), x]", //
@@ -186,6 +208,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test21() {
     check( //
         "Integrate[(a+b*x)^p, x]", //
@@ -193,6 +216,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test22() {
     check( //
         "Integrate[x*(a+b*x)^p, x]", //
@@ -200,6 +224,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test23() {
     check( //
         "Integrate[x^2*(a+b*x)^p, x]", //
@@ -207,6 +232,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test24() {
     check( //
         "Integrate[1/(a+b*x), x]", //
@@ -214,6 +240,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test25() {
     check( //
         "Integrate[1/(a+b*x)^2, x]", //
@@ -221,6 +248,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test26() {
     check( //
         "Integrate[x/(a+b*x), x]", //
@@ -228,6 +256,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test27() {
     check( //
         "Integrate[x^2/(a+b*x), x]", //
@@ -235,6 +264,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test28() {
     check( //
         "Integrate[1/(x*(a+b*x)), x]", //
@@ -242,6 +272,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test29() {
     check( //
         "Integrate[1/(x^2*(a+b*x)), x]", //
@@ -249,6 +280,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test30() {
     check( //
         "Integrate[1/(x*(a+b*x))^2, x]", //
@@ -256,6 +288,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test31() {
     check( //
         "Integrate[1/(c^2+x^2), x]", //
@@ -263,6 +296,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test32() {
     check( //
         "Integrate[1/(c^2-x^2), x]", //
@@ -270,6 +304,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test33() {
     check( //
         "Integrate[1/(2*x^3+(-1)*1), x]", //
@@ -277,6 +312,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test34() {
     check( //
         "Integrate[1/(x^3+(-1)*2), x]", //
@@ -284,6 +320,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test35() {
     check( //
         "Integrate[1/(a*x^3-b), x]", //
@@ -291,6 +328,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test36() {
     check( //
         "Integrate[1/(x^4+(-1)*2), x]", //
@@ -298,6 +336,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test37() {
     check( //
         "Integrate[1/(5*x^4+(-1)*1), x]", //
@@ -305,6 +344,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test38() {
     check( //
         "Integrate[1/(3*x^4+7), x]", //
@@ -312,6 +352,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test39() {
     check( //
         "Integrate[1/(x^4+3*x^2+(-1)*1), x]", //
@@ -319,6 +360,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test40() {
     check( //
         "Integrate[1/(x^4-3*x^2+(-1)*1), x]", //
@@ -326,6 +368,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test41() {
     check( //
         "Integrate[1/(x^4-3*x^2+1), x]", //
@@ -333,6 +376,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test42() {
     check( //
         "Integrate[1/(x^4-4*x^2+1), x]", //
@@ -340,6 +384,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test43() {
     check( //
         "Integrate[1/(x^4+4*x^2+1), x]", //
@@ -347,6 +392,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test44() {
     check( //
         "Integrate[1/(x^4+x^2+2), x]", //
@@ -354,6 +400,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test45() {
     check( //
         "Integrate[1/(x^4-x^2+2), x]", //
@@ -361,6 +408,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test46() {
     check( //
         "Integrate[1/(x^6+(-1)*1), x]", //
@@ -368,6 +416,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test47() {
     check( //
         "Integrate[1/(x^6+(-1)*2), x]", //
@@ -375,6 +424,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test48() {
     check( //
         "Integrate[1/(x^6+2), x]", //
@@ -382,6 +432,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test49() {
     check( //
         "Integrate[1/(x^8+1), x]", //
@@ -389,6 +440,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test50() {
     check( //
         "Integrate[1/(x^8+(-1)*1), x]", //
@@ -396,6 +448,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test51() {
     check( //
         "Integrate[1/(x^8-x^4+1), x]", //
@@ -403,6 +456,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test52() {
     check( //
         "Integrate[x^7/(x^12+1), x]", //
@@ -410,6 +464,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test53() {
     check( //
         "Integrate[Log[x], x]", //
@@ -417,6 +472,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test54() {
     check( //
         "Integrate[x*Log[x], x]", //
@@ -424,6 +480,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test55() {
     check( //
         "Integrate[x^2*Log[x], x]", //
@@ -431,6 +488,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test56() {
     check( //
         "Integrate[x^p*Log[x], x]", //
@@ -438,6 +496,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test57() {
     check( //
         "Integrate[Log[x]^2, x]", //
@@ -445,6 +504,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test58() {
     check( //
         "Integrate[x^9*Log[x]^11, x]", //
@@ -452,6 +512,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test59() {
     check( //
         "Integrate[Log[x]^2/x, x]", //
@@ -459,6 +520,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test60() {
     check( //
         "Integrate[1/Log[x], x]", //
@@ -466,6 +528,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test61() {
     check( //
         "Integrate[1/Log[x+1], x]", //
@@ -473,6 +536,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test62() {
     check( //
         "Integrate[1/(x*Log[x]), x]", //
@@ -480,6 +544,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test63() {
     check( //
         "Integrate[1/(x*Log[x])^2, x]", //
@@ -487,6 +552,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test64() {
     check( //
         "Integrate[Log[x]^p/x, x]", //
@@ -494,6 +560,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test65() {
     check( //
         "Integrate[Log[x]*(a*x+b), x]", //
@@ -501,6 +568,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test66() {
     check( //
         "Integrate[(a*x+b)^2*Log[x], x]", //
@@ -508,6 +576,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test67() {
     check( //
         "Integrate[Log[x]/(a*x+b)^2, x]", //
@@ -515,6 +584,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test68() {
     check( //
         "Integrate[x*Log[a*x+b], x]", //
@@ -522,6 +592,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test69() {
     check( //
         "Integrate[x^2*Log[a*x+b], x]", //
@@ -529,6 +600,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test70() {
     check( //
         "Integrate[Log[x^2+a^2], x]", //
@@ -536,6 +608,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test71() {
     check( //
         "Integrate[x*Log[x^2+a^2], x]", //
@@ -543,6 +616,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test72() {
     check( //
         "Integrate[x^2*Log[x^2+a^2], x]", //
@@ -550,6 +624,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test73() {
     check( //
         "Integrate[x^4*Log[x^2+a^2], x]", //
@@ -557,6 +632,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test74() {
     check( //
         "Integrate[Log[x^2-a^2], x]", //
@@ -564,6 +640,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test75() {
     check( //
         "Integrate[Log[Log[Log[Log[x]]]], x]", //
@@ -571,6 +648,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
         "Integrate(Log(Log(Log(Log(x)))),x)", -1);
   }
 
+  @Test
   public void test76() {
     check( //
         "Integrate[Sin[x], x]", //
@@ -578,6 +656,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test77() {
     check( //
         "Integrate[Cos[x], x]", //
@@ -585,6 +664,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test78() {
     check( //
         "Integrate[Tan[x], x]", //
@@ -592,6 +672,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test79() {
     check( //
         "Integrate[1/Tan[x], x]", //
@@ -599,6 +680,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test80() {
     check( //
         "Integrate[1/(1+Tan[x])^2, x]", //
@@ -606,6 +688,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test81() {
     check( //
         "Integrate[1/Cos[x], x]", //
@@ -613,6 +696,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test82() {
     check( //
         "Integrate[1/Sin[x], x]", //
@@ -620,6 +704,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test83() {
     check( //
         "Integrate[Sin[x]^2, x]", //
@@ -627,6 +712,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test84() {
     check( //
         "Integrate[x^3*Sin[x^2], x]", //
@@ -634,6 +720,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test85() {
     check( //
         "Integrate[Sin[x]^3, x]", //
@@ -641,6 +728,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test86() {
     check( //
         "Integrate[Sin[x]^p, x]", //
@@ -648,6 +736,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test87() {
     check( //
         "Integrate[(Sin[x]^2+1)^2*Cos[x], x]", //
@@ -655,6 +744,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test88() {
     check( //
         "Integrate[Cos[x]^2, x]", //
@@ -662,6 +752,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test89() {
     check( //
         "Integrate[Cos[x]^3, x]", //
@@ -669,6 +760,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test90() {
     check( //
         "Integrate[1/Cos[x]^2, x]", //
@@ -676,6 +768,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test91() {
     check( //
         "Integrate[Sin[x]*Sin[2*x], x]", //
@@ -683,6 +776,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test92() {
     check( //
         "Integrate[x*Sin[x], x]", //
@@ -690,6 +784,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test93() {
     check( //
         "Integrate[x^2*Sin[x], x]", //
@@ -697,6 +792,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test94() {
     check( //
         "Integrate[x*Sin[x]^2, x]", //
@@ -704,6 +800,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test95() {
     check( //
         "Integrate[x^2*Sin[x]^2, x]", //
@@ -711,6 +808,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test96() {
     check( //
         "Integrate[x*Sin[x]^3, x]", //
@@ -718,6 +816,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test97() {
     check( //
         "Integrate[x*Cos[x], x]", //
@@ -725,6 +824,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test98() {
     check( //
         "Integrate[x^2*Cos[x], x]", //
@@ -732,6 +832,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test99() {
     check( //
         "Integrate[x*Cos[x]^2, x]", //
@@ -739,6 +840,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test100() {
     check( //
         "Integrate[x^2*Cos[x]^2, x]", //
@@ -746,6 +848,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test101() {
     check( //
         "Integrate[x*Cos[x]^3, x]", //
@@ -753,6 +856,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test102() {
     check( //
         "Integrate[Sin[x]/x, x]", //
@@ -760,6 +864,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test103() {
     check( //
         "Integrate[Cos[x]/x, x]", //
@@ -767,6 +872,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test104() {
     check( //
         "Integrate[Sin[x]/x^2, x]", //
@@ -774,6 +880,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test105() {
     check( //
         "Integrate[Sin[x]^2/x, x]", //
@@ -781,6 +888,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test106() {
     check( //
         "Integrate[Tan[x]^3, x]", //
@@ -788,6 +896,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test107() {
     check( //
         "Integrate[Sin[a+b*x], x]", //
@@ -795,6 +904,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test108() {
     check( //
         "Integrate[Cos[a+b*x], x]", //
@@ -802,6 +912,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test109() {
     check( //
         "Integrate[Tan[a+b*x], x]", //
@@ -809,6 +920,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test110() {
     check( //
         "Integrate[1/Tan[a+b*x], x]", //
@@ -816,6 +928,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test111() {
     check( //
         "Integrate[1/Sin[a+b*x], x]", //
@@ -823,6 +936,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test112() {
     check( //
         "Integrate[1/Cos[a+b*x], x]", //
@@ -830,6 +944,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test113() {
     check( //
         "Integrate[Sin[a+b*x]^2, x]", //
@@ -837,6 +952,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test114() {
     check( //
         "Integrate[Sin[a+b*x]^3, x]", //
@@ -844,6 +960,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test115() {
     check( //
         "Integrate[Cos[a+b*x]^2, x]", //
@@ -851,6 +968,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test116() {
     check( //
         "Integrate[Cos[a+b*x]^3, x]", //
@@ -858,6 +976,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test117() {
     check( //
         "Integrate[1/Cos[a+b*x]^2, x]", //
@@ -865,6 +984,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test118() {
     check( //
         "Integrate[1/(1+Cos[x]), x]", //
@@ -872,6 +992,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test119() {
     check( //
         "Integrate[1/(1-Cos[x]), x]", //
@@ -879,6 +1000,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test120() {
     check( //
         "Integrate[1/(1+Sin[x]), x]", //
@@ -886,6 +1008,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test121() {
     check( //
         "Integrate[1/(1-Sin[x]), x]", //
@@ -893,6 +1016,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test122() {
     check( //
         "Integrate[1/(a+b*Sin[x]), x]", //
@@ -900,6 +1024,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test123() {
     check( //
         "Integrate[1/(a+b*Sin[x]+Cos[x]), x]", //
@@ -907,6 +1032,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test124() {
     check( //
         "Integrate[x^2*Sin[a+b*x]^2, x]", //
@@ -914,6 +1040,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test125() {
     check( //
         "Integrate[Cos[x]*Cos[2*x], x]", //
@@ -921,6 +1048,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test126() {
     check( //
         "Integrate[x^2*Cos[a+b*x]^2, x]", //
@@ -928,6 +1056,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test127() {
     check( //
         "Integrate[1/Tan[x]^3, x]", //
@@ -935,6 +1064,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test128() {
     check( //
         "Integrate[x^3*Tan[x]^4, x]", //
@@ -942,6 +1072,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test129() {
     check( //
         "Integrate[x^3*Tan[x]^6, x]", //
@@ -949,6 +1080,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test130() {
     check( //
         "Integrate[x*Tan[x]^2, x]", //
@@ -956,6 +1088,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test131() {
     check( //
         "Integrate[Sin[2*x]*Cos[3*x], x]", //
@@ -963,6 +1096,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test132() {
     check( //
         "Integrate[Sin[x]^2*Cos[x]^2, x]", //
@@ -970,6 +1104,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test133() {
     check( //
         "Integrate[1/(Sin[x]^2*Cos[x]^2), x]", //
@@ -977,6 +1112,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test134() {
     check( //
         "Integrate[d^x*Sin[x], x]", //
@@ -984,6 +1120,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test135() {
     check( //
         "Integrate[d^x*Cos[x], x]", //
@@ -991,6 +1128,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test136() {
     check( //
         "Integrate[x*d^x*Sin[x], x]", //
@@ -998,6 +1136,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test137() {
     check( //
         "Integrate[x*d^x*Cos[x], x]", //
@@ -1005,6 +1144,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test138() {
     check( //
         "Integrate[x^2*d^x*Sin[x], x]", //
@@ -1012,6 +1152,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test139() {
     check( //
         "Integrate[x^2*d^x*Cos[x], x]", //
@@ -1019,6 +1160,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test140() {
     check( //
         "Integrate[x^3*d^x*Sin[x], x]", //
@@ -1026,6 +1168,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test141() {
     check( //
         "Integrate[x^3*d^x*Cos[x], x]", //
@@ -1033,6 +1176,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test142() {
     check( //
         "Integrate[Sin[x]*Sin[2*x]*Sin[3*x], x]", //
@@ -1040,6 +1184,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test143() {
     check( //
         "Integrate[Cos[x]*Cos[2*x]*Cos[3*x], x]", //
@@ -1047,6 +1192,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test144() {
     check( //
         "Integrate[Sin[k*x]^3*x^2, x]", //
@@ -1054,6 +1200,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test145() {
     check( //
         "Integrate[x*Cos[k/Sin[x]]*Cos[x]/Sin[x]^2, x]", //
@@ -1061,6 +1208,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
         "Integrate(x*Cos(k*Csc(x))*Cot(x)*Csc(x),x)", -1);
   }
 
+  @Test
   public void test146() {
     check( //
         "Integrate[Cos[x]/(Sin[x]*Tan[x/2]), x]", //
@@ -1068,6 +1216,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test147() {
     check( //
         "Integrate[Sin[a*x]/(b+c*Sin[a*x])^2, x]", //
@@ -1075,6 +1224,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test148() {
     check( //
         "Integrate[Sin[Log[x]], x]", //
@@ -1082,6 +1232,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test149() {
     check( //
         "Integrate[Cos[Log[x]], x]", //
@@ -1089,6 +1240,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test150() {
     check( //
         "Integrate[E^x, x]", //
@@ -1096,6 +1248,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test151() {
     check( //
         "Integrate[a^x, x]", //
@@ -1103,6 +1256,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test152() {
     check( //
         "Integrate[E^(a*x), x]", //
@@ -1110,6 +1264,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test153() {
     check( //
         "Integrate[E^(a*x)/x, x]", //
@@ -1117,6 +1272,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test154() {
     check( //
         "Integrate[1/(a+b*E^(m*x)), x]", //
@@ -1124,6 +1280,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test155() {
     check( //
         "Integrate[E^(2*x)/(1+E^x), x]", //
@@ -1131,6 +1288,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test156() {
     check( //
         "Integrate[E^(2*x)*E^(a*x), x]", //
@@ -1138,6 +1296,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test157() {
     check( //
         "Integrate[1/(a*E^(m*x)+b*E^(-m*x)), x]", //
@@ -1145,6 +1304,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test158() {
     check( //
         "Integrate[x*E^(a*x), x]", //
@@ -1152,6 +1312,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test159() {
     check( //
         "Integrate[x^20*E^x, x]", //
@@ -1159,6 +1320,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test160() {
     check( //
         "Integrate[a^x/b^x, x]", //
@@ -1166,6 +1328,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test161() {
     check( //
         "Integrate[a^x*b^x, x]", //
@@ -1173,6 +1336,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test162() {
     check( //
         "Integrate[a^x/x^2, x]", //
@@ -1180,6 +1344,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test163() {
     check( //
         "Integrate[x*a^x/(1+b*x)^2, x]", //
@@ -1187,6 +1352,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test164() {
     check( //
         "Integrate[x*E^(a*x)/(1+a*x)^2, x]", //
@@ -1194,6 +1360,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test165() {
     check( //
         "Integrate[x*k^x^2, x]", //
@@ -1201,6 +1368,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test166() {
     check( //
         "Integrate[E^x^2, x]", //
@@ -1208,6 +1376,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test167() {
     check( //
         "Integrate[x*E^x^2, x]", //
@@ -1215,6 +1384,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test168() {
     check( //
         "Integrate[(x+1)*E^(1/x)/x^4, x]", //
@@ -1222,6 +1392,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test169() {
     check( //
         "Integrate[(2*x^3+x)*(E^x^2)^2*E^(1-x*E^x^2)/(1-x*E^x^2)^2, x]", //
@@ -1229,6 +1400,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test170() {
     // Rubi says CannotIntegrate[..]; Integrate() maps that back to an unevaluated Integrate()
     // before returning, so the unevaluated form is the answer Symja can actually give. It used to
@@ -1240,6 +1412,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test171() {
     check( //
         "Integrate[E^x*Log[x], x]", //
@@ -1247,6 +1420,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test172() {
     check( //
         "Integrate[x*E^x*Log[x], x]", //
@@ -1254,6 +1428,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test173() {
     check( //
         "Integrate[E^(2*x)*Log[E^x], x]", //
@@ -1261,6 +1436,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test174() {
     check( //
         "Integrate[Sqrt[2]*x^2+2*x, x]", //
@@ -1268,6 +1444,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test175() {
     check( //
         "Integrate[Log[x]/Sqrt[a*x+b], x]", //
@@ -1275,6 +1452,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test176() {
     check( //
         "Integrate[Sqrt[a+b*x]*Sqrt[c+d*x], x]", //
@@ -1282,6 +1460,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test177() {
     check( //
         "Integrate[Sqrt[a+b*x], x]", //
@@ -1289,6 +1468,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test178() {
     check( //
         "Integrate[x*Sqrt[a+b*x], x]", //
@@ -1296,6 +1476,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test179() {
     check( //
         "Integrate[x^2*Sqrt[a+b*x], x]", //
@@ -1303,6 +1484,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test180() {
     check( //
         "Integrate[Sqrt[a+b*x]/x, x]", //
@@ -1310,6 +1492,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test181() {
     check( //
         "Integrate[Sqrt[a+b*x]/x^2, x]", //
@@ -1317,6 +1500,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test182() {
     check( //
         "Integrate[1/Sqrt[a+b*x], x]", //
@@ -1324,6 +1508,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test183() {
     check( //
         "Integrate[x/Sqrt[a+b*x], x]", //
@@ -1331,6 +1516,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test184() {
     check( //
         "Integrate[x^2/Sqrt[a+b*x], x]", //
@@ -1338,6 +1524,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test185() {
     check( //
         "Integrate[1/(x*Sqrt[a+b*x]), x]", //
@@ -1345,6 +1532,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test186() {
     check( //
         "Integrate[1/(x^2*Sqrt[a+b*x]), x]", //
@@ -1352,6 +1540,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test187() {
     check( //
         "Integrate[(Sqrt[a+b*x])^p, x]", //
@@ -1359,6 +1548,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test188() {
     check( //
         "Integrate[x*(Sqrt[a+b*x])^p, x]", //
@@ -1366,6 +1556,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test189() {
     check( //
         "Integrate[ArcTan[(-Sqrt[2]+2*x)/Sqrt[2]], x]", //
@@ -1373,6 +1564,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test190() {
     check( //
         "Integrate[1/Sqrt[x^2+(-1)*1], x]", //
@@ -1380,6 +1572,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test191() {
     check( //
         "Integrate[Sqrt[x+1]*Sqrt[x], x]", //
@@ -1387,6 +1580,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test192() {
     check( //
         "Integrate[Sin[Sqrt[x]], x]", //
@@ -1394,6 +1588,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test193() {
     check( //
         "Integrate[x/(Sqrt[1-x^2])^(9/4), x]", //
@@ -1401,6 +1596,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test194() {
     check( //
         "Integrate[x/Sqrt[1-x^4], x]", //
@@ -1408,6 +1604,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test195() {
     check( //
         "Integrate[1/(x*Sqrt[1+x^4]), x]", //
@@ -1415,6 +1612,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test196() {
     check( //
         "Integrate[x/Sqrt[1+x^2+x^4], x]", //
@@ -1422,6 +1620,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test197() {
     check( //
         "Integrate[1/(x*Sqrt[x^2+(-1)*1-x^4]), x]", //
@@ -1429,6 +1628,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test198() {
     check( //
         "Integrate[(1+x)/((1-x)^2*Sqrt[1+x^2]), x]", //
@@ -1436,6 +1636,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test199() {
     check( //
         "Integrate[1/Sqrt[1+x^2], x]", //
@@ -1443,6 +1644,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test200() {
     check( //
         "Integrate[(Sqrt[x]*Sqrt[1+x]+Sqrt[x]*Sqrt[2+x]+Sqrt[1+x]*Sqrt[2+x])/(2*Sqrt[x]*Sqrt[1+x]*Sqrt[2+x]), x]", //
@@ -1450,6 +1652,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test201() {
     check( //
         "Integrate[(-2*Sqrt[1+x^3]+5*x^4*Sqrt[1+x^3]-3*x^2*Sqrt[1-2*x+x^5])/(2*Sqrt[1+x^3]*Sqrt[1-2*x+x^5]), x]", //
@@ -1457,6 +1660,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test202() {
     check( //
         "Integrate[1/Sqrt[x^2+(-1)*1]+10/Sqrt[x^2+(-1)*4], x]", //
@@ -1464,6 +1668,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test203() {
     check( //
         "Integrate[Sqrt[x+Sqrt[x^2+a^2]]/x, x]", //
@@ -1471,6 +1676,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test204() {
     check( //
         "Integrate[(3*x^2)/(2*(1+x^3+Sqrt[1+x^3])), x]", //
@@ -1478,6 +1684,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test205() {
     check( //
         "Integrate[1/Sqrt[2*h*r^2-alpha^2], r]", //
@@ -1485,6 +1692,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test206() {
     check( //
         "Integrate[1/(r*Sqrt[2*h*r^2-alpha^2-epsilon^2]), r]", //
@@ -1492,6 +1700,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test207() {
     check( //
         "Integrate[1/(r*Sqrt[2*h*r^2-alpha^2-2*k*r]), r]", //
@@ -1499,6 +1708,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test208() {
     check( //
         "Integrate[1/(r*Sqrt[2*h*r^2-alpha^2-epsilon^2-2*k*r]), r]", //
@@ -1506,6 +1716,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test209() {
     check( //
         "Integrate[r/Sqrt[2*e*r^2-alpha^2], r]", //
@@ -1513,6 +1724,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test210() {
     check( //
         "Integrate[r/Sqrt[2*e*r^2-alpha^2-epsilon^2], r]", //
@@ -1520,6 +1732,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test211() {
     check( //
         "Integrate[r/Sqrt[2*e*r^2-alpha^2-2*k*r^4], r]", //
@@ -1527,6 +1740,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test212() {
     check( //
         "Integrate[r/Sqrt[2*e*r^2-alpha^2-2*k*r], r]", //
@@ -1534,6 +1748,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test213() {
     check( //
         "Integrate[1/(r*Sqrt[2*h*r^2-alpha^2-2*k*r^4]), r]", //
@@ -1541,6 +1756,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test214() {
     check( //
         "Integrate[1/(r*Sqrt[2*h*r^2-alpha^2-epsilon^2-2*k*r^4]), r]", //
@@ -1548,6 +1764,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test215() {
     check( //
         "Integrate[a*Sin[3*x+5]^2*Cos[3*x+5], x]", //
@@ -1555,6 +1772,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test216() {
     check( //
         "Integrate[Log[x^2]/x^3, x]", //
@@ -1562,6 +1780,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test217() {
     check( //
         "Integrate[x*Sin[x+a], x]", //
@@ -1569,6 +1788,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test218() {
     check( //
         "Integrate[(Log[x]*(1-x)+(-1)*1)/(E^x*Log[x]^2), x]", //
@@ -1576,6 +1796,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test219() {
     check( //
         "Integrate[x^3/(a*x^2+b), x]", //
@@ -1583,6 +1804,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test220() {
     check( //
         "Integrate[Sqrt[x]/(x+1)^(7/2), x]", //
@@ -1590,6 +1812,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test221() {
     check( //
         "Integrate[1/(x*(x+1)), x]", //
@@ -1597,6 +1820,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test222() {
     check( //
         "Integrate[1/(Sqrt[x]*(2*x+(-1)*1)), x]", //
@@ -1604,6 +1828,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test223() {
     check( //
         "Integrate[(x^2+1)*Sqrt[x], x]", //
@@ -1611,6 +1836,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test224() {
     check( //
         "Integrate[(x-a)^(1/3)/x, x]", //
@@ -1618,6 +1844,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test225() {
     check( //
         "Integrate[x*Sinh[x], x]", //
@@ -1625,6 +1852,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test226() {
     check( //
         "Integrate[x*Cosh[x], x]", //
@@ -1632,6 +1860,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test227() {
     check( //
         "Integrate[Sinh[2*x]/Cosh[2*x], x]", //
@@ -1639,6 +1868,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test228() {
     check( //
         "Integrate[(I*eps*Sinh[x]+(-1)*1)/(eps*I*Cosh[x]+I*a-x), x]", //
@@ -1646,6 +1876,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test229() {
     check( //
         "Integrate[Sin[2*x+3]*Cos[x]^2, x]", //
@@ -1653,6 +1884,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test230() {
     check( //
         "Integrate[x*ArcTan[x], x]", //
@@ -1660,6 +1892,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test231() {
     check( //
         "Integrate[x*ArcCot[x], x]", //
@@ -1667,6 +1900,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test232() {
     check( //
         "Integrate[x*Log[x^2+a], x]", //
@@ -1674,6 +1908,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test233() {
     check( //
         "Integrate[Sin[x+a]*Cos[x], x]", //
@@ -1681,6 +1916,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test234() {
     check( //
         "Integrate[Cos[x+a]*Sin[x], x]", //
@@ -1688,6 +1924,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test235() {
     check( //
         "Integrate[Sqrt[1+Sin[x]], x]", //
@@ -1695,6 +1932,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test236() {
     check( //
         "Integrate[Sqrt[1-Sin[x]], x]", //
@@ -1702,6 +1940,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test237() {
     check( //
         "Integrate[Sqrt[1+Cos[x]], x]", //
@@ -1709,6 +1948,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test238() {
     check( //
         "Integrate[Sqrt[1-Cos[x]], x]", //
@@ -1716,6 +1956,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test239() {
     check( //
         "Integrate[1/(Sqrt[x]-Sqrt[x+(-1)*1]), x]", //
@@ -1723,6 +1964,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test240() {
     check( //
         "Integrate[1/(1-Sqrt[x+1]), x]", //
@@ -1730,6 +1972,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test241() {
     check( //
         "Integrate[x/Sqrt[x^4+36], x]", //
@@ -1737,6 +1980,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test242() {
     check( //
         "Integrate[1/(x^(1/3)+Sqrt[x]), x]", //
@@ -1744,6 +1988,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test243() {
     check( //
         "Integrate[Log[2+3*x^2], x]", //
@@ -1751,6 +1996,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test244() {
     check( //
         "Integrate[Cot[x], x]", //
@@ -1758,6 +2004,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test245() {
     check( //
         "Integrate[Cot[x]^4, x]", //
@@ -1765,6 +2012,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test246() {
     check( //
         "Integrate[Tanh[x], x]", //
@@ -1772,6 +2020,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test247() {
     check( //
         "Integrate[Coth[x], x]", //
@@ -1779,6 +2028,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test248() {
     check( //
         "Integrate[b^x, x]", //
@@ -1786,6 +2036,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test249() {
     check( //
         "Integrate[Sqrt[x^4+1/x^4+2], x]", //
@@ -1793,6 +2044,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test250() {
     check( //
         "Integrate[(2*x+1)/(3*x+2), x]", //
@@ -1800,6 +2052,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test251() {
     check( //
         "Integrate[x*Log[x+Sqrt[x^2+1]], x]", //
@@ -1807,6 +2060,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test252() {
     check( //
         "Integrate[x*(E^x*Sin[x]+1)^2, x]", //
@@ -1814,6 +2068,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test253() {
     check( //
         "Integrate[x*E^x*Cos[x], x]", //
@@ -1821,6 +2076,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test254() {
     check( //
         "Integrate[1/(x+(-1)*3)^4, x]", //
@@ -1828,6 +2084,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test255() {
     check( //
         "Integrate[x/(x^3+(-1)*1), x]", //
@@ -1835,6 +2092,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test256() {
     check( //
         "Integrate[x/(x^4+(-1)*1), x]", //
@@ -1842,6 +2100,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test257() {
     check( //
         "Integrate[Log[x]*(x^3+1)/(x^4+2), x]", //
@@ -1849,6 +2108,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test258() {
     check( //
         "Integrate[Log[x]+Log[x+1]+Log[x+2], x]", //
@@ -1856,6 +2116,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test259() {
     check( //
         "Integrate[1/(x^3+5), x]", //
@@ -1863,6 +2124,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test260() {
     check( //
         "Integrate[1/Sqrt[1+x^2], x]", //
@@ -1870,6 +2132,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test261() {
     check( //
         "Integrate[Sqrt[x^2+3], x]", //
@@ -1877,6 +2140,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test262() {
     check( //
         "Integrate[x/(x+1)^2, x]", //
@@ -1884,6 +2148,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test263() {
     check( //
         "Integrate[ArcSin[x], x]", //
@@ -1891,6 +2156,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test264() {
     check( //
         "Integrate[x^2*ArcSin[x], x]", //
@@ -1898,6 +2164,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test265() {
     check( //
         "Integrate[Sec[x]^2/(1+Sec[x]^2-3*Tan[x]), x]", //
@@ -1905,6 +2172,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test266() {
     check( //
         "Integrate[1/Sec[x]^2, x]", //
@@ -1912,6 +2180,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test267() {
     check( //
         "Integrate[(5*x^2-3*x+(-1)*2)/(x^2*(x+(-1)*2)), x]", //
@@ -1919,6 +2188,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test268() {
     check( //
         "Integrate[1/Sqrt[4*x^2+9], x]", //
@@ -1926,6 +2196,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test269() {
     check( //
         "Integrate[1/Sqrt[x^2+4], x]", //
@@ -1933,6 +2204,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test270() {
     check( //
         "Integrate[1/(9*x^2-12*x+10), x]", //
@@ -1940,6 +2212,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test271() {
     check( //
         "Integrate[1/(x^8-2*x^7+2*x^6-2*x^5+x^4), x]", //
@@ -1947,6 +2220,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test272() {
     check( //
         "Integrate[(a*x^3+b*x^2+c*x+d)/((x+1)*x*(x+(-1)*3)), x]", //
@@ -1954,6 +2228,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test273() {
     check( //
         "Integrate[1/(2-Log[x^2+1])^5, x]", //
@@ -1962,6 +2237,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
         new int[] {-1});
   }
 
+  @Test
   public void test274() {
     check( //
         "Integrate[2*x*E^x^2*Log[x]+E^x^2/x+(Log[x]+(-1)*2)/(Log[x]^2+x)^2+(2/x*Log[x]+1/x+1)/(Log[x]^2+x), x]", //
@@ -1969,6 +2245,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test275() {
     check( //
         "Integrate[E^(x*z+x/2)*Sin[Pi*z]^4*x^4, z]", //
@@ -1976,6 +2253,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test276() {
     check( //
         "Integrate[Erf[x], x]", //
@@ -1983,6 +2261,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test277() {
     check( //
         "Integrate[Erf[x+a], x]", //
@@ -1990,6 +2269,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test278() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja does not finish this within the class budget (still unfinished at
@@ -2000,6 +2280,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test279() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja leaves this unevaluated. It integrates over y, and until the harness
@@ -2011,6 +2292,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test280() {
     check( //
         "Integrate[x*(Sqrt[x^2+(-1)*1]*x^2-4*Sqrt[x^2+(-1)*1]+Sqrt[x^2+(-1)*4]*x^2-Sqrt[x^2+(-1)*4])/((1+Sqrt[x^2+(-1)*4]+Sqrt[x^2+(-1)*1])*(x^4-5*x^2+4)), x]", //
@@ -2018,6 +2300,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test281() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
     // has ever produced. Symja leaves this unevaluated.
@@ -2027,6 +2310,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test282() {
     check( //
         "Integrate[(12*Log[x/mc^2]*x^2*Pi^2*mc^3*(-8*x-12*mc^2+3*mc)+Pi^2*(12*x^4*mc+3*x^4+176*x^3*mc^3-24*x^3*mc^2-144*x^2*mc^5-48*x*mc^7+24*x*mc^6+4*mc^9-3*mc^8))/(384*E^(x/y)*x^2), x]", //
@@ -2034,6 +2318,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test283() {
     check( //
         "Integrate[Sin[2*x]/Cos[x], x]", //
@@ -2041,6 +2326,7 @@ public class HearnProblemsTests extends AbstractRubiTestCase {
     );
   }
 
+  @Test
   public void test284() {
     check( //
         "Integrate[(7*x^13+10*x^8+4*x^7-7*x^6-4*x^3-4*x^2+3*x+3)/(x^14-2*x^8-2*x^7-2*x^4-4*x^3-x^2+2*x+1), x]", //

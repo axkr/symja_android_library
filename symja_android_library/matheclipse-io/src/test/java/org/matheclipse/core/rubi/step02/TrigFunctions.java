@@ -1,12 +1,16 @@
 package org.matheclipse.core.rubi.step02;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 public class TrigFunctions extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public TrigFunctions(String name) {
-    super(name, false);
+  public TrigFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -21,6 +25,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 8}
+  @Test
   public void test0001() {
     check( //
         "Integrate[Sin[a + b*x]^2, x]", //
@@ -29,6 +34,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0002() {
     check( //
         "Integrate[Sin[a + b*x]^3, x]", //
@@ -37,6 +43,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0003() {
     check( //
         "Integrate[Sin[a + b*x]^5, x]", //
@@ -45,6 +52,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0004() {
     check( //
         "Integrate[Sin[a + b*x]^7, x]", //
@@ -53,6 +61,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2719}
+  @Test
   public void test0005() {
     check( //
         "Integrate[Sin[b*x]^(5/2), x]", //
@@ -61,6 +70,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2720}
+  @Test
   public void test0006() {
     check( //
         "Integrate[Sin[b*x]^(3/2), x]", //
@@ -69,6 +79,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2719}
+  @Test
   public void test0007() {
     check( //
         "Integrate[Sin[b*x]^(-3/2), x]", //
@@ -77,6 +88,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2720}
+  @Test
   public void test0008() {
     check( //
         "Integrate[Sin[b*x]^(-5/2), x]", //
@@ -85,6 +97,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2719}
+  @Test
   public void test0009() {
     check( //
         "Integrate[Sin[a + b*x]^(5/2), x]", //
@@ -93,6 +106,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2720}
+  @Test
   public void test0010() {
     check( //
         "Integrate[Sin[a + b*x]^(3/2), x]", //
@@ -101,6 +115,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2719}
+  @Test
   public void test0011() {
     check( //
         "Integrate[Sin[a + b*x]^(-3/2), x]", //
@@ -109,6 +124,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2720}
+  @Test
   public void test0012() {
     check( //
         "Integrate[Sin[a + b*x]^(-5/2), x]", //
@@ -117,6 +133,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2719}
+  @Test
   public void test0013() {
     check( //
         "Integrate[Sqrt[c*Sin[a + b*x]], x]", //
@@ -125,6 +142,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2720}
+  @Test
   public void test0014() {
     check( //
         "Integrate[1/Sqrt[c*Sin[a + b*x]], x]", //
@@ -133,6 +151,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0015() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*(b*Sin[e + f*x])^n, x]", //
@@ -141,6 +160,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0016() {
     check( //
         "Integrate[Cos[a + b*x]^3*Sin[a + b*x], x]", //
@@ -149,6 +169,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0017() {
     check( //
         "Integrate[Cos[a + b*x]^2*Sin[a + b*x], x]", //
@@ -157,6 +178,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0018() {
     check( //
         "Integrate[Cos[a + b*x]*Sin[a + b*x], x]", //
@@ -165,6 +187,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 8}
+  @Test
   public void test0019() {
     check( //
         "Integrate[Sec[a + b*x]*Tan[a + b*x], x]", //
@@ -173,6 +196,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0020() {
     check( //
         "Integrate[Sec[a + b*x]^2*Tan[a + b*x], x]", //
@@ -181,6 +205,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0021() {
     check( //
         "Integrate[Sec[a + b*x]^3*Tan[a + b*x], x]", //
@@ -189,6 +214,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0022() {
     check( //
         "Integrate[Cos[a + b*x]*Sin[a + b*x]^2, x]", //
@@ -197,6 +223,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0023() {
     check( //
         "Integrate[Tan[a + b*x]^2, x]", //
@@ -205,6 +232,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0024() {
     check( //
         "Integrate[Sec[a + b*x]^2*Tan[a + b*x]^2, x]", //
@@ -213,6 +241,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 8}
+  @Test
   public void test0025() {
     check( //
         "Integrate[Sin[a + b*x]^2, x]", //
@@ -221,6 +250,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2691, 3855}
+  @Test
   public void test0026() {
     check( //
         "Integrate[Sec[a + b*x]*Tan[a + b*x]^2, x]", //
@@ -229,6 +259,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0027() {
     check( //
         "Integrate[Cos[a + b*x]*Sin[a + b*x]^3, x]", //
@@ -237,6 +268,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0028() {
     check( //
         "Integrate[Tan[a + b*x]^3, x]", //
@@ -245,6 +277,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686}
+  @Test
   public void test0029() {
     check( //
         "Integrate[Sec[a + b*x]*Tan[a + b*x]^3, x]", //
@@ -253,6 +286,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0030() {
     check( //
         "Integrate[Sec[a + b*x]^2*Tan[a + b*x]^3, x]", //
@@ -261,6 +295,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0031() {
     check( //
         "Integrate[Cos[a + b*x]*Sin[a + b*x]^4, x]", //
@@ -269,6 +304,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0032() {
     check( //
         "Integrate[Sec[a + b*x]^2*Tan[a + b*x]^4, x]", //
@@ -277,6 +313,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0033() {
     check( //
         "Integrate[Cos[a + b*x]*Sin[a + b*x]^5, x]", //
@@ -285,6 +322,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0034() {
     check( //
         "Integrate[Sec[a + b*x]^2*Tan[a + b*x]^5, x]", //
@@ -293,6 +331,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2700, 29}
+  @Test
   public void test0035() {
     check( //
         "Integrate[Csc[a + b*x]*Sec[a + b*x], x]", //
@@ -301,6 +340,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0036() {
     check( //
         "Integrate[Cot[a + b*x]^2, x]", //
@@ -309,6 +349,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 8}
+  @Test
   public void test0037() {
     check( //
         "Integrate[Cot[a + b*x]*Csc[a + b*x], x]", //
@@ -317,6 +358,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0038() {
     check( //
         "Integrate[Cot[a + b*x]^3, x]", //
@@ -325,6 +367,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2691, 3855}
+  @Test
   public void test0039() {
     check( //
         "Integrate[Cot[a + b*x]^2*Csc[a + b*x], x]", //
@@ -333,6 +376,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0040() {
     check( //
         "Integrate[Cot[a + b*x]*Csc[a + b*x]^2, x]", //
@@ -341,6 +385,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686}
+  @Test
   public void test0041() {
     check( //
         "Integrate[Cot[a + b*x]^3*Csc[a + b*x], x]", //
@@ -349,6 +394,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0042() {
     check( //
         "Integrate[Cot[a + b*x]^2*Csc[a + b*x]^2, x]", //
@@ -357,6 +403,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0043() {
     check( //
         "Integrate[Cot[a + b*x]*Csc[a + b*x]^3, x]", //
@@ -365,6 +412,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 30}
+  @Test
   public void test0044() {
     check( //
         "Integrate[Cot[a + b*x]^3*Csc[a + b*x]^2, x]", //
@@ -373,6 +421,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 30}
+  @Test
   public void test0045() {
     check( //
         "Integrate[Cot[a + b*x]*Csc[a + b*x]^4, x]", //
@@ -381,6 +430,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0046() {
     check( //
         "Integrate[(d*Cos[a + b*x])^(3/2)*Sin[a + b*x], x]", //
@@ -389,6 +439,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0047() {
     check( //
         "Integrate[Sqrt[d*Cos[a + b*x]]*Sin[a + b*x], x]", //
@@ -397,6 +448,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0048() {
     check( //
         "Integrate[Sin[a + b*x]/Sqrt[d*Cos[a + b*x]], x]", //
@@ -405,6 +457,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0049() {
     check( //
         "Integrate[Sin[a + b*x]/(d*Cos[a + b*x])^(3/2), x]", //
@@ -413,6 +466,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0050() {
     check( //
         "Integrate[Sin[a + b*x]/(d*Cos[a + b*x])^(5/2), x]", //
@@ -421,6 +475,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0051() {
     check( //
         "Integrate[Sin[a + b*x]/(d*Cos[a + b*x])^(7/2), x]", //
@@ -429,6 +484,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0052() {
     check( //
         "Integrate[Sin[a + b*x]/(d*Cos[a + b*x])^(9/2), x]", //
@@ -437,6 +493,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0053() {
     check( //
         "Integrate[(d*Cos[a + b*x])^(1/5)*Sin[a + b*x], x]", //
@@ -445,6 +502,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2652, 2719}
+  @Test
   public void test0054() {
     check( //
         "Integrate[Sqrt[d*Cos[a + b*x]]*Sqrt[c*Sin[a + b*x]], x]", //
@@ -453,6 +511,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2651, 2643}
+  @Test
   public void test0055() {
     check( //
         "Integrate[Sqrt[c*Sin[a + b*x]]/(d*Cos[a + b*x])^(9/2), x]", //
@@ -461,6 +520,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2653, 2720}
+  @Test
   public void test0056() {
     check( //
         "Integrate[1/(Sqrt[d*Cos[a + b*x]]*Sqrt[c*Sin[a + b*x]]), x]", //
@@ -469,6 +529,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2651, 2643}
+  @Test
   public void test0057() {
     check( //
         "Integrate[1/((d*Cos[a + b*x])^(7/2)*Sqrt[c*Sin[a + b*x]]), x]", //
@@ -477,6 +538,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test0058() {
     check( //
         "Integrate[Cos[a + b*x]*(c*Sin[a + b*x])^m, x]", //
@@ -485,6 +547,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 371}
+  @Test
   public void test0059() {
     check( //
         "Integrate[Sec[a + b*x]*(c*Sin[a + b*x])^m, x]", //
@@ -493,6 +556,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 371}
+  @Test
   public void test0060() {
     check( //
         "Integrate[Sec[a + b*x]^3*(c*Sin[a + b*x])^m, x]", //
@@ -501,6 +565,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test0061() {
     check( //
         "Integrate[(d*Cos[a + b*x])^n*Sin[a + b*x], x]", //
@@ -509,6 +574,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 371}
+  @Test
   public void test0062() {
     check( //
         "Integrate[(d*Cos[a + b*x])^n*Csc[a + b*x], x]", //
@@ -517,6 +583,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 371}
+  @Test
   public void test0063() {
     check( //
         "Integrate[(d*Cos[a + b*x])^n*Csc[a + b*x]^3, x]", //
@@ -525,6 +592,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 371}
+  @Test
   public void test0064() {
     check( //
         "Integrate[(d*Cos[a + b*x])^n*Csc[a + b*x]^5, x]", //
@@ -533,6 +601,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0065() {
     check( //
         "Integrate[Sqrt[b*Sec[e + f*x]]*Sin[e + f*x], x]", //
@@ -541,6 +610,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0066() {
     check( //
         "Integrate[Sqrt[b*Sec[e + f*x]], x]", //
@@ -549,6 +619,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0067() {
     check( //
         "Integrate[(b*Sec[e + f*x])^(3/2)*Sin[e + f*x], x]", //
@@ -557,6 +628,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0068() {
     check( //
         "Integrate[(b*Sec[e + f*x])^(5/2)*Sin[e + f*x], x]", //
@@ -565,6 +637,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0069() {
     check( //
         "Integrate[Sin[e + f*x]/Sqrt[b*Sec[e + f*x]], x]", //
@@ -573,6 +646,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0070() {
     check( //
         "Integrate[1/Sqrt[b*Sec[e + f*x]], x]", //
@@ -581,6 +655,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0071() {
     check( //
         "Integrate[Sin[e + f*x]/(b*Sec[e + f*x])^(3/2), x]", //
@@ -589,6 +664,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0072() {
     check( //
         "Integrate[Sin[e + f*x]/(b*Sec[e + f*x])^(5/2), x]", //
@@ -597,6 +673,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2664, 2658}
+  @Test
   public void test0073() {
     check( //
         "Integrate[Sqrt[b*Sec[e + f*x]]/(a*Sin[e + f*x])^(7/2), x]", //
@@ -605,6 +682,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2664, 2658}
+  @Test
   public void test0074() {
     check( //
         "Integrate[1/(Sqrt[b*Sec[e + f*x]]*Sin[e + f*x]^(9/2)), x]", //
@@ -613,6 +691,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0075() {
     check( //
         "Integrate[(d*Sec[a + b*x])^(5/2)*(c*Sin[a + b*x])^m, x]", //
@@ -621,6 +700,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0076() {
     check( //
         "Integrate[(d*Sec[a + b*x])^(3/2)*(c*Sin[a + b*x])^m, x]", //
@@ -629,6 +709,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2666, 2657}
+  @Test
   public void test0077() {
     check( //
         "Integrate[Sqrt[d*Sec[a + b*x]]*(c*Sin[a + b*x])^m, x]", //
@@ -637,6 +718,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2666, 2657}
+  @Test
   public void test0078() {
     check( //
         "Integrate[(c*Sin[a + b*x])^m/Sqrt[d*Sec[a + b*x]], x]", //
@@ -645,6 +727,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2666, 2657}
+  @Test
   public void test0079() {
     check( //
         "Integrate[(c*Sin[a + b*x])^m/(d*Sec[a + b*x])^(3/2), x]", //
@@ -653,6 +736,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0080() {
     check( //
         "Integrate[Sec[e + f*x]^n*Sin[e + f*x]^m, x]", //
@@ -661,6 +745,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0081() {
     check( //
         "Integrate[Sec[e + f*x]^n*(a*Sin[e + f*x])^m, x]", //
@@ -669,6 +754,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0082() {
     check( //
         "Integrate[(b*Sec[e + f*x])^n*Sin[e + f*x]^m, x]", //
@@ -677,6 +763,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0083() {
     check( //
         "Integrate[(b*Sec[e + f*x])^n*(a*Sin[e + f*x])^m, x]", //
@@ -685,6 +772,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test0084() {
     check( //
         "Integrate[(b*Sec[e + f*x])^n*Sin[e + f*x], x]", //
@@ -693,6 +781,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 371}
+  @Test
   public void test0085() {
     check( //
         "Integrate[Csc[e + f*x]*(b*Sec[e + f*x])^n, x]", //
@@ -701,6 +790,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 371}
+  @Test
   public void test0086() {
     check( //
         "Integrate[Csc[e + f*x]^3*(b*Sec[e + f*x])^n, x]", //
@@ -709,6 +799,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0087() {
     check( //
         "Integrate[(b*Sec[e + f*x])^n*Sin[e + f*x]^6, x]", //
@@ -717,6 +808,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0088() {
     check( //
         "Integrate[(b*Sec[e + f*x])^n*Sin[e + f*x]^4, x]", //
@@ -725,6 +817,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0089() {
     check( //
         "Integrate[(b*Sec[e + f*x])^n*Sin[e + f*x]^2, x]", //
@@ -733,6 +826,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0090() {
     check( //
         "Integrate[(b*Sec[e + f*x])^n, x]", //
@@ -741,6 +835,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0091() {
     check( //
         "Integrate[Csc[e + f*x]^2*(b*Sec[e + f*x])^n, x]", //
@@ -749,6 +844,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0092() {
     check( //
         "Integrate[Csc[e + f*x]^4*(b*Sec[e + f*x])^n, x]", //
@@ -757,6 +853,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0093() {
     check( //
         "Integrate[(b*Sec[a + b*x])^n*(c*Sin[a + b*x])^(3/2), x]", //
@@ -765,6 +862,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0094() {
     check( //
         "Integrate[(b*Sec[a + b*x])^n*Sqrt[c*Sin[a + b*x]], x]", //
@@ -773,6 +871,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0095() {
     check( //
         "Integrate[(b*Sec[a + b*x])^n/Sqrt[c*Sin[a + b*x]], x]", //
@@ -781,6 +880,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0096() {
     check( //
         "Integrate[(b*Sec[a + b*x])^n/(c*Sin[a + b*x])^(3/2), x]", //
@@ -789,6 +889,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0097() {
     check( //
         "Integrate[Sqrt[d*Csc[e + f*x]], x]", //
@@ -797,6 +898,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0098() {
     check( //
         "Integrate[1/Sqrt[d*Csc[e + f*x]], x]", //
@@ -805,6 +907,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2668, 2722}
+  @Test
   public void test0099() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*(a*Sin[e + f*x])^m, x]", //
@@ -813,6 +916,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3377, 2717}
+  @Test
   public void test0100() {
     check( //
         "Integrate[(c + d*x)*Sin[a + b*x], x]", //
@@ -821,6 +925,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3391}
+  @Test
   public void test0101() {
     check( //
         "Integrate[(c + d*x)*Sin[a + b*x]^2, x]", //
@@ -829,6 +934,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test0102() {
     check( //
         "Integrate[(c + d*x)*Csc[a + b*x]^2, x]", //
@@ -837,6 +943,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3386, 3432}
+  @Test
   public void test0103() {
     check( //
         "Integrate[Sin[f*x]/Sqrt[d*x], x]", //
@@ -845,6 +952,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0104() {
     check( //
         "Integrate[x/Sin[e + f*x]^(3/2) + x*Sqrt[Sin[e + f*x]], x]", //
@@ -853,6 +961,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0105() {
     check( //
         "Integrate[x/Sin[e + f*x]^(5/2) - x/(3*Sqrt[Sin[e + f*x]]), x]", //
@@ -861,6 +970,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0106() {
     check( //
         "Integrate[Sin[c + d*x]/(a + a*Sin[c + d*x]), x]", //
@@ -869,6 +979,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2846, 2813}
+  @Test
   public void test0107() {
     check( //
         "Integrate[Sin[c + d*x]^3/(a + a*Sin[c + d*x]), x]", //
@@ -877,6 +988,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test0108() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Sin[c + d*x]), x]", //
@@ -885,6 +997,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2761, 8}
+  @Test
   public void test0109() {
     check( //
         "Integrate[Cos[c + d*x]^2/(a + a*Sin[c + d*x]), x]", //
@@ -893,6 +1006,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746}
+  @Test
   public void test0110() {
     check( //
         "Integrate[Cos[c + d*x]^3/(a + a*Sin[c + d*x]), x]", //
@@ -901,6 +1015,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test0111() {
     check( //
         "Integrate[Cos[c + d*x]/(a + b*Sin[c + d*x]), x]", //
@@ -909,6 +1024,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0112() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(3/2), x]", //
@@ -917,6 +1033,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0113() {
     check( //
         "Integrate[1/Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -925,6 +1042,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0114() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(4/3), x]", //
@@ -933,6 +1051,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0115() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(2/3), x]", //
@@ -941,6 +1060,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0116() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(1/3), x]", //
@@ -949,6 +1069,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0117() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(-1/3), x]", //
@@ -957,6 +1078,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0118() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(-2/3), x]", //
@@ -965,6 +1087,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0119() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(-4/3), x]", //
@@ -973,6 +1096,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0120() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^n, x]", //
@@ -981,6 +1105,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0121() {
     check( //
         "Integrate[(a - a*Sin[c + d*x])^n, x]", //
@@ -989,6 +1114,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2734, 2732}
+  @Test
   public void test0122() {
     check( //
         "Integrate[Sqrt[a + b*Sin[c + d*x]], x]", //
@@ -997,6 +1123,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2742, 2740}
+  @Test
   public void test0123() {
     check( //
         "Integrate[1/Sqrt[a + b*Sin[c + d*x]], x]", //
@@ -1005,6 +1132,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2744, 143}
+  @Test
   public void test0124() {
     check( //
         "Integrate[(3 + 4*Sin[c + d*x])^n, x]", //
@@ -1013,6 +1141,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2744, 143}
+  @Test
   public void test0125() {
     check( //
         "Integrate[(3 - 4*Sin[c + d*x])^n, x]", //
@@ -1021,6 +1150,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2744, 143}
+  @Test
   public void test0126() {
     check( //
         "Integrate[(4 + 3*Sin[c + d*x])^n, x]", //
@@ -1029,6 +1159,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2744, 143}
+  @Test
   public void test0127() {
     check( //
         "Integrate[(4 - 3*Sin[c + d*x])^n, x]", //
@@ -1037,6 +1168,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2744, 143}
+  @Test
   public void test0128() {
     check( //
         "Integrate[(-3 + 4*Sin[c + d*x])^n, x]", //
@@ -1045,6 +1177,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2744, 143}
+  @Test
   public void test0129() {
     check( //
         "Integrate[(-3 - 4*Sin[c + d*x])^n, x]", //
@@ -1053,6 +1186,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3377, 2717}
+  @Test
   public void test0130() {
     check( //
         "Integrate[(a + b*x)*Sin[c + d*x], x]", //
@@ -1061,6 +1195,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2723}
+  @Test
   public void test0131() {
     check( //
         "Integrate[x*(a + b*Sin[c + d*x^2])^2, x]", //
@@ -1069,6 +1204,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2723}
+  @Test
   public void test0132() {
     check( //
         "Integrate[x^2*(a + b*Sin[c + d*x^3])^2, x]", //
@@ -1077,6 +1213,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test0133() {
     check( //
         "Integrate[Sin[a + b/x]/x^2, x]", //
@@ -1085,6 +1222,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test0134() {
     check( //
         "Integrate[Sin[a + b/x^2]/x^3, x]", //
@@ -1093,6 +1231,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test0135() {
     check( //
         "Integrate[Sin[Sqrt[x]]/Sqrt[x], x]", //
@@ -1101,6 +1240,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2718}
+  @Test
   public void test0138() {
     check( //
         "Integrate[(c*Sin[a + b*x]^3)^(1/3), x]", //
@@ -1109,6 +1249,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test0139() {
     check( //
         "Integrate[Sec[c + d*x]*(a + a*Sin[c + d*x]), x]", //
@@ -1117,6 +1258,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0140() {
     check( //
         "Integrate[Cos[c + d*x]*(a + a*Sin[c + d*x])^2, x]", //
@@ -1125,6 +1267,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0141() {
     check( //
         "Integrate[Sec[c + d*x]^3*(a + a*Sin[c + d*x])^2, x]", //
@@ -1133,6 +1276,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0142() {
     check( //
         "Integrate[Cos[c + d*x]*(a + a*Sin[c + d*x])^3, x]", //
@@ -1141,6 +1285,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2749, 2750}
+  @Test
   public void test0143() {
     check( //
         "Integrate[Sec[c + d*x]^4*(a + a*Sin[c + d*x])^3, x]", //
@@ -1149,6 +1294,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0144() {
     check( //
         "Integrate[Sec[c + d*x]^5*(a + a*Sin[c + d*x])^3, x]", //
@@ -1157,6 +1303,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0145() {
     check( //
         "Integrate[Cos[c + d*x]*(a + a*Sin[c + d*x])^8, x]", //
@@ -1165,6 +1312,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746}
+  @Test
   public void test0146() {
     check( //
         "Integrate[Cos[c + d*x]^3/(a + a*Sin[c + d*x]), x]", //
@@ -1173,6 +1321,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2761, 8}
+  @Test
   public void test0147() {
     check( //
         "Integrate[Cos[c + d*x]^2/(a + a*Sin[c + d*x]), x]", //
@@ -1181,6 +1330,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test0148() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Sin[c + d*x]), x]", //
@@ -1189,6 +1339,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0149() {
     check( //
         "Integrate[Cos[c + d*x]^5/(a + a*Sin[c + d*x])^2, x]", //
@@ -1197,6 +1348,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2759, 8}
+  @Test
   public void test0150() {
     check( //
         "Integrate[Cos[c + d*x]^2/(a + a*Sin[c + d*x])^2, x]", //
@@ -1205,6 +1357,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0151() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Sin[c + d*x])^2, x]", //
@@ -1213,6 +1366,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0152() {
     check( //
         "Integrate[Cos[c + d*x]^7/(a + a*Sin[c + d*x])^3, x]", //
@@ -1221,6 +1375,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0153() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Sin[c + d*x])^3, x]", //
@@ -1229,6 +1384,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 37}
+  @Test
   public void test0154() {
     check( //
         "Integrate[Cos[c + d*x]^7/(a + a*Sin[c + d*x])^8, x]", //
@@ -1237,6 +1393,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0155() {
     check( //
         "Integrate[Cos[c + d*x]^6/(a + a*Sin[c + d*x])^8, x]", //
@@ -1245,6 +1402,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0156() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Sin[c + d*x])^8, x]", //
@@ -1253,6 +1411,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2753, 2752}
+  @Test
   public void test0157() {
     check( //
         "Integrate[Cos[c + d*x]^2*Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -1261,6 +1420,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0158() {
     check( //
         "Integrate[Cos[c + d*x]*Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -1269,6 +1429,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0159() {
     check( //
         "Integrate[Cos[c + d*x]*(a + a*Sin[c + d*x])^(3/2), x]", //
@@ -1277,6 +1438,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0160() {
     check( //
         "Integrate[Cos[c + d*x]*(a + a*Sin[c + d*x])^(5/2), x]", //
@@ -1285,6 +1447,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2753, 2752}
+  @Test
   public void test0161() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + a*Sin[c + d*x])^(5/2), x]", //
@@ -1293,6 +1456,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0162() {
     check( //
         "Integrate[Cos[c + d*x]*(a + a*Sin[c + d*x])^(7/2), x]", //
@@ -1301,6 +1465,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2753, 2752}
+  @Test
   public void test0163() {
     check( //
         "Integrate[Sec[c + d*x]^4*(a + a*Sin[c + d*x])^(7/2), x]", //
@@ -1309,6 +1474,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2753, 2752}
+  @Test
   public void test0164() {
     check( //
         "Integrate[Cos[c + d*x]^4/Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -1317,6 +1483,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0165() {
     check( //
         "Integrate[Cos[c + d*x]/Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -1325,6 +1492,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2753, 2752}
+  @Test
   public void test0166() {
     check( //
         "Integrate[Cos[c + d*x]^6/(a + a*Sin[c + d*x])^(3/2), x]", //
@@ -1333,6 +1501,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0167() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Sin[c + d*x])^(3/2), x]", //
@@ -1341,6 +1510,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2753, 2752}
+  @Test
   public void test0168() {
     check( //
         "Integrate[Cos[c + d*x]^8/(a + a*Sin[c + d*x])^(5/2), x]", //
@@ -1349,6 +1519,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0169() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Sin[c + d*x])^(5/2), x]", //
@@ -1357,6 +1528,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0170() {
     check( //
         "Integrate[Sqrt[a + a*Sin[c + d*x]]/(e*Cos[c + d*x])^(5/2), x]", //
@@ -1365,6 +1537,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0171() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(3/2)/(e*Cos[c + d*x])^(7/2), x]", //
@@ -1373,6 +1546,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0172() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(5/2)/(e*Cos[c + d*x])^(9/2), x]", //
@@ -1381,6 +1555,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0173() {
     check( //
         "Integrate[1/((e*Cos[c + d*x])^(3/2)*Sqrt[a + a*Sin[c + d*x]]), x]", //
@@ -1389,6 +1564,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0174() {
     check( //
         "Integrate[1/(Sqrt[e*Cos[c + d*x]]*(a + a*Sin[c + d*x])^(3/2)), x]", //
@@ -1397,6 +1573,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0175() {
     check( //
         "Integrate[Sqrt[e*Cos[c + d*x]]/(a + a*Sin[c + d*x])^(5/2), x]", //
@@ -1405,6 +1582,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0176() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + a*Sin[c + d*x])^8, x]", //
@@ -1413,6 +1591,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0177() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + a*Sin[c + d*x])^3, x]", //
@@ -1421,6 +1600,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0178() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + a*Sin[c + d*x])^2, x]", //
@@ -1429,6 +1609,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0179() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + a*Sin[c + d*x]), x]", //
@@ -1437,6 +1618,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0180() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p/(a + a*Sin[c + d*x]), x]", //
@@ -1445,6 +1627,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0181() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p/(a + a*Sin[c + d*x])^2, x]", //
@@ -1453,6 +1636,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0182() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p/(a + a*Sin[c + d*x])^3, x]", //
@@ -1461,6 +1645,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2767, 71}
+  @Test
   public void test0183() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p/(a + a*Sin[c + d*x])^8, x]", //
@@ -1469,6 +1654,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0184() {
     check( //
         "Integrate[Cos[c + d*x]*(a + a*Sin[c + d*x])^m, x]", //
@@ -1477,6 +1663,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 70}
+  @Test
   public void test0185() {
     check( //
         "Integrate[Sec[c + d*x]*(a + a*Sin[c + d*x])^m, x]", //
@@ -1485,6 +1672,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 70}
+  @Test
   public void test0186() {
     check( //
         "Integrate[Sec[c + d*x]^3*(a + a*Sin[c + d*x])^m, x]", //
@@ -1493,6 +1681,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 70}
+  @Test
   public void test0187() {
     check( //
         "Integrate[Sec[c + d*x]^5*(a + a*Sin[c + d*x])^m, x]", //
@@ -1501,6 +1690,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2751, 2750}
+  @Test
   public void test0188() {
     check( //
         "Integrate[(e*Cos[c + d*x])^(-2 - m)*(a + a*Sin[c + d*x])^m, x]", //
@@ -1509,6 +1699,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2753, 2752}
+  @Test
   public void test0189() {
     check( //
         "Integrate[(e*Cos[c + d*x])^(3 - 2*m)*(a + a*Sin[c + d*x])^m, x]", //
@@ -1517,6 +1708,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0190() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Sin[c + d*x])^2, x]", //
@@ -1525,6 +1717,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0191() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Sin[c + d*x])^3, x]", //
@@ -1533,6 +1726,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2770, 2813}
+  @Test
   public void test0192() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + b*Sin[c + d*x])^3, x]", //
@@ -1541,6 +1735,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0193() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Sin[c + d*x])^8, x]", //
@@ -1549,6 +1744,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test0194() {
     check( //
         "Integrate[Cos[c + d*x]/(a + b*Sin[c + d*x]), x]", //
@@ -1557,6 +1753,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0195() {
     check( //
         "Integrate[Cos[c + d*x]/(a + b*Sin[c + d*x])^2, x]", //
@@ -1565,6 +1762,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0196() {
     check( //
         "Integrate[Cos[c + d*x]/(a + b*Sin[c + d*x])^3, x]", //
@@ -1573,6 +1771,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0197() {
     check( //
         "Integrate[Cos[c + d*x]/(a + b*Sin[c + d*x])^8, x]", //
@@ -1581,6 +1780,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0198() {
     check( //
         "Integrate[Cos[c + d*x]*Sqrt[a + b*Sin[c + d*x]], x]", //
@@ -1589,6 +1789,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0199() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Sin[c + d*x])^(3/2), x]", //
@@ -1597,6 +1798,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0200() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Sin[c + d*x])^(5/2), x]", //
@@ -1605,6 +1807,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0201() {
     check( //
         "Integrate[Cos[c + d*x]/Sqrt[a + b*Sin[c + d*x]], x]", //
@@ -1613,6 +1816,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0202() {
     check( //
         "Integrate[Cos[c + d*x]/(a + b*Sin[c + d*x])^(3/2), x]", //
@@ -1621,6 +1825,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0203() {
     check( //
         "Integrate[Cos[c + d*x]/(a + b*Sin[c + d*x])^(5/2), x]", //
@@ -1629,6 +1834,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2748, 2722}
+  @Test
   public void test0204() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + b*Sin[c + d*x]), x]", //
@@ -1637,6 +1843,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0205() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + b*Sin[c + d*x])^(5/2), x]", //
@@ -1645,6 +1852,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0206() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + b*Sin[c + d*x])^(3/2), x]", //
@@ -1653,6 +1861,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0207() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*Sqrt[a + b*Sin[c + d*x]], x]", //
@@ -1661,6 +1870,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0208() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p/Sqrt[a + b*Sin[c + d*x]], x]", //
@@ -1669,6 +1879,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0209() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p/(a + b*Sin[c + d*x])^(3/2), x]", //
@@ -1677,6 +1888,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0210() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p/(a + b*Sin[c + d*x])^(5/2), x]", //
@@ -1685,6 +1897,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0211() {
     check( //
         "Integrate[(e*Cos[c + d*x])^p*(a + b*Sin[c + d*x])^m, x]", //
@@ -1693,6 +1906,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test0212() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Sin[c + d*x])^m, x]", //
@@ -1701,6 +1915,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0213() {
     check( //
         "Integrate[Cos[c + d*x]^4*(a + b*Sin[c + d*x])^m, x]", //
@@ -1709,6 +1924,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0214() {
     check( //
         "Integrate[Cos[c + d*x]^2*(a + b*Sin[c + d*x])^m, x]", //
@@ -1717,6 +1933,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0215() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + b*Sin[c + d*x])^m, x]", //
@@ -1725,6 +1942,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0216() {
     check( //
         "Integrate[Sec[c + d*x]^4*(a + b*Sin[c + d*x])^m, x]", //
@@ -1733,6 +1951,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0217() {
     check( //
         "Integrate[(e*Cos[c + d*x])^(5/2)*(a + b*Sin[c + d*x])^m, x]", //
@@ -1741,6 +1960,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0218() {
     check( //
         "Integrate[(e*Cos[c + d*x])^(3/2)*(a + b*Sin[c + d*x])^m, x]", //
@@ -1749,6 +1969,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0219() {
     check( //
         "Integrate[Sqrt[e*Cos[c + d*x]]*(a + b*Sin[c + d*x])^m, x]", //
@@ -1757,6 +1978,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0220() {
     check( //
         "Integrate[(a + b*Sin[c + d*x])^m/Sqrt[e*Cos[c + d*x]], x]", //
@@ -1765,6 +1987,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0221() {
     check( //
         "Integrate[(a + b*Sin[c + d*x])^m/(e*Cos[c + d*x])^(3/2), x]", //
@@ -1773,6 +1996,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0222() {
     check( //
         "Integrate[(a + b*Sin[c + d*x])^m/(e*Cos[c + d*x])^(5/2), x]", //
@@ -1781,6 +2005,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0223() {
     check( //
         "Integrate[(a + b*Sin[c + d*x])^m/(e*Cos[c + d*x])^m, x]", //
@@ -1789,6 +2014,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0224() {
     check( //
         "Integrate[(e*Cos[c + d*x])^(1 - m)*(a + b*Sin[c + d*x])^m, x]", //
@@ -1797,6 +2023,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0225() {
     check( //
         "Integrate[(e*Cos[c + d*x])^(2 - m)*(a + b*Sin[c + d*x])^m, x]", //
@@ -1805,6 +2032,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3526, 3432}
+  @Test
   public void test0226() {
     check( //
         "Integrate[Sin[1/4 + x + x^2], x]", //
@@ -1813,6 +2041,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2786, 75}
+  @Test
   public void test0231() {
     check( //
         "Integrate[Cot[c + d*x]^3*(a + a*Sin[c + d*x])^2, x]", //
@@ -1821,6 +2050,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2786, 67}
+  @Test
   public void test0232() {
     check( //
         "Integrate[Cot[e + f*x]*(a + a*Sin[e + f*x])^m, x]", //
@@ -1829,6 +2059,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0233() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^m, x]", //
@@ -1837,6 +2068,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2846, 2813}
+  @Test
   public void test0234() {
     check( //
         "Integrate[Sin[x]^3/(a + a*Sin[x]), x]", //
@@ -1845,6 +2077,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0235() {
     check( //
         "Integrate[Sin[x]/(a + a*Sin[x]), x]", //
@@ -1853,6 +2086,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0236() {
     check( //
         "Integrate[Sin[x]/(a + a*Sin[x])^2, x]", //
@@ -1861,6 +2095,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2729, 2727}
+  @Test
   public void test0237() {
     check( //
         "Integrate[(a + a*Sin[x])^(-2), x]", //
@@ -1869,6 +2104,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0238() {
     check( //
         "Integrate[Sin[c + d*x]*Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -1877,6 +2113,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2852, 212}
+  @Test
   public void test0239() {
     check( //
         "Integrate[Csc[c + d*x]*Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -1885,6 +2122,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2852, 212}
+  @Test
   public void test0240() {
     check( //
         "Integrate[Csc[c + d*x]*Sqrt[a - a*Sin[c + d*x]], x]", //
@@ -1893,6 +2131,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2852, 210}
+  @Test
   public void test0241() {
     check( //
         "Integrate[Csc[c + d*x]*Sqrt[-a + a*Sin[c + d*x]], x]", //
@@ -1901,6 +2140,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2852, 210}
+  @Test
   public void test0242() {
     check( //
         "Integrate[Csc[c + d*x]*Sqrt[-a - a*Sin[c + d*x]], x]", //
@@ -1909,6 +2149,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0243() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(3/2), x]", //
@@ -1917,6 +2158,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0244() {
     check( //
         "Integrate[1/Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -1925,6 +2167,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2853, 222}
+  @Test
   public void test0245() {
     check( //
         "Integrate[Sqrt[a + a*Sin[e + f*x]]/Sqrt[Sin[e + f*x]], x]", //
@@ -1933,6 +2176,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2853, 222}
+  @Test
   public void test0246() {
     check( //
         "Integrate[Sqrt[a - a*Sin[e + f*x]]/Sqrt[-Sin[e + f*x]], x]", //
@@ -1941,6 +2185,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2860, 222}
+  @Test
   public void test0247() {
     check( //
         "Integrate[1/(Sqrt[Sin[x]]*Sqrt[1 + Sin[x]]), x]", //
@@ -1949,6 +2194,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 211}
+  @Test
   public void test0248() {
     check( //
         "Integrate[1/(Sqrt[Sin[x]]*Sqrt[a + a*Sin[x]]), x]", //
@@ -1957,6 +2203,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 212}
+  @Test
   public void test0249() {
     check( //
         "Integrate[1/(Sqrt[1 - Sin[x]]*Sqrt[Sin[x]]), x]", //
@@ -1965,6 +2212,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 214}
+  @Test
   public void test0250() {
     check( //
         "Integrate[1/(Sqrt[Sin[x]]*Sqrt[a - a*Sin[x]]), x]", //
@@ -1973,6 +2221,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0251() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(2/3), x]", //
@@ -1981,6 +2230,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0252() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(4/3), x]", //
@@ -1989,6 +2239,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0253() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(-1/3), x]", //
@@ -1997,6 +2248,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0254() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^(-4/3), x]", //
@@ -2005,6 +2257,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2855, 67}
+  @Test
   public void test0255() {
     check( //
         "Integrate[Sin[e + f*x]^n*Sqrt[1 + Sin[e + f*x]], x]", //
@@ -2013,6 +2266,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2855, 67}
+  @Test
   public void test0256() {
     check( //
         "Integrate[Sin[e + f*x]^n*Sqrt[a + a*Sin[e + f*x]], x]", //
@@ -2021,6 +2275,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2855, 66}
+  @Test
   public void test0257() {
     check( //
         "Integrate[(d*Sin[e + f*x])^n*Sqrt[1 + Sin[e + f*x]], x]", //
@@ -2029,6 +2284,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2864, 138}
+  @Test
   public void test0258() {
     check( //
         "Integrate[Sin[e + f*x]^n*(1 + Sin[e + f*x])^m, x]", //
@@ -2037,6 +2293,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2864, 138}
+  @Test
   public void test0259() {
     check( //
         "Integrate[(1 - Sin[e + f*x])^m*(-Sin[e + f*x])^n, x]", //
@@ -2045,6 +2302,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0260() {
     check( //
         "Integrate[(a + a*Sin[c + d*x])^n, x]", //
@@ -2053,6 +2311,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2718}
+  @Test
   public void test0261() {
     check( //
         "Integrate[a + b*Sin[e + f*x], x]", //
@@ -2061,6 +2320,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 3855}
+  @Test
   public void test0262() {
     check( //
         "Integrate[Csc[e + f*x]*(a + b*Sin[e + f*x]), x]", //
@@ -2069,6 +2329,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2832, 2813}
+  @Test
   public void test0263() {
     check( //
         "Integrate[Sin[e + f*x]*(a + b*Sin[e + f*x])^2, x]", //
@@ -2077,6 +2338,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2735, 2813}
+  @Test
   public void test0264() {
     check( //
         "Integrate[(a + b*Sin[e + f*x])^3, x]", //
@@ -2085,6 +2347,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2734, 2732}
+  @Test
   public void test0265() {
     check( //
         "Integrate[Sqrt[a + b*Sin[e + f*x]], x]", //
@@ -2093,6 +2356,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2742, 2740}
+  @Test
   public void test0266() {
     check( //
         "Integrate[1/Sqrt[a + b*Sin[e + f*x]], x]", //
@@ -2101,6 +2365,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2886, 2884}
+  @Test
   public void test0267() {
     check( //
         "Integrate[Csc[e + f*x]/Sqrt[a + b*Sin[e + f*x]], x]", //
@@ -2109,6 +2374,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0268() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])/(c - c*Sin[e + f*x]), x]", //
@@ -2117,6 +2383,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2750}
+  @Test
   public void test0269() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])/(c - c*Sin[e + f*x])^2, x]", //
@@ -2125,6 +2392,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2750}
+  @Test
   public void test0270() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^2/(c - c*Sin[e + f*x])^3, x]", //
@@ -2133,6 +2401,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2750}
+  @Test
   public void test0271() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^3/(c - c*Sin[e + f*x])^4, x]", //
@@ -2141,6 +2410,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0272() {
     check( //
         "Integrate[(c - c*Sin[e + f*x])/(a + a*Sin[e + f*x]), x]", //
@@ -2149,6 +2419,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2750}
+  @Test
   public void test0273() {
     check( //
         "Integrate[(c - c*Sin[e + f*x])/(a + a*Sin[e + f*x])^2, x]", //
@@ -2157,6 +2428,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2750}
+  @Test
   public void test0274() {
     check( //
         "Integrate[(c - c*Sin[e + f*x])^2/(a + a*Sin[e + f*x])^3, x]", //
@@ -2165,6 +2437,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2752}
+  @Test
   public void test0275() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])*Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2173,6 +2446,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2752}
+  @Test
   public void test0276() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^2*Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2181,6 +2455,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2752}
+  @Test
   public void test0277() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^3*Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2189,6 +2464,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2752}
+  @Test
   public void test0278() {
     check( //
         "Integrate[Sqrt[c - c*Sin[e + f*x]]/(a + a*Sin[e + f*x]), x]", //
@@ -2197,6 +2473,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2752}
+  @Test
   public void test0279() {
     check( //
         "Integrate[Sqrt[c - c*Sin[e + f*x]]/(a + a*Sin[e + f*x])^2, x]", //
@@ -2205,6 +2482,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2815, 2752}
+  @Test
   public void test0280() {
     check( //
         "Integrate[Sqrt[c - c*Sin[e + f*x]]/(a + a*Sin[e + f*x])^3, x]", //
@@ -2213,6 +2491,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2819, 2817}
+  @Test
   public void test0281() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(3/2)*(c - c*Sin[e + f*x])^(7/2), x]", //
@@ -2221,6 +2500,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2819, 2817}
+  @Test
   public void test0282() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(3/2)*(c - c*Sin[e + f*x])^(5/2), x]", //
@@ -2229,6 +2509,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2819, 2817}
+  @Test
   public void test0283() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(3/2)*(c - c*Sin[e + f*x])^(3/2), x]", //
@@ -2237,6 +2518,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2822, 2821}
+  @Test
   public void test0284() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(3/2)/(c - c*Sin[e + f*x])^(7/2), x]", //
@@ -2245,6 +2527,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2818, 2817}
+  @Test
   public void test0285() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(3/2)/(c - c*Sin[e + f*x])^(9/2), x]", //
@@ -2253,6 +2536,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2818, 2817}
+  @Test
   public void test0286() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(3/2)/(c - c*Sin[e + f*x])^(11/2), x]", //
@@ -2261,6 +2545,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2819, 2817}
+  @Test
   public void test0287() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(5/2)*(c - c*Sin[e + f*x])^(3/2), x]", //
@@ -2269,6 +2554,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2822, 2821}
+  @Test
   public void test0288() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(5/2)/(c - c*Sin[e + f*x])^(9/2), x]", //
@@ -2277,6 +2563,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2819, 2817}
+  @Test
   public void test0289() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(7/2)*(c - c*Sin[e + f*x])^(3/2), x]", //
@@ -2285,6 +2572,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2822, 2821}
+  @Test
   public void test0290() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(7/2)/(c - c*Sin[e + f*x])^(11/2), x]", //
@@ -2293,6 +2581,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2820, 3855}
+  @Test
   public void test0291() {
     check( //
         "Integrate[1/(Sqrt[a + a*Sin[e + f*x]]*Sqrt[c - c*Sin[e + f*x]]), x]", //
@@ -2301,6 +2590,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2819, 2817}
+  @Test
   public void test0292() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^(3/2), x]", //
@@ -2309,6 +2599,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2822, 2821}
+  @Test
   public void test0293() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^(-2 - m), x]", //
@@ -2317,6 +2608,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2832, 2813}
+  @Test
   public void test0294() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])*(c + d*Sin[e + f*x])^2, x]", //
@@ -2325,6 +2617,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2718}
+  @Test
   public void test0295() {
     check( //
         "Integrate[a + a*Sin[e + f*x], x]", //
@@ -2333,6 +2626,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2723}
+  @Test
   public void test0296() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^2*(c + d*Sin[e + f*x]), x]", //
@@ -2341,6 +2635,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2846, 2813}
+  @Test
   public void test0297() {
     check( //
         "Integrate[(c + d*Sin[e + f*x])^3/(a + a*Sin[e + f*x]), x]", //
@@ -2349,6 +2644,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0298() {
     check( //
         "Integrate[(c + d*Sin[e + f*x])/(a + a*Sin[e + f*x]), x]", //
@@ -2357,6 +2653,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0299() {
     check( //
         "Integrate[(c + d*Sin[e + f*x])/(a + a*Sin[e + f*x])^2, x]", //
@@ -2365,6 +2662,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2729, 2727}
+  @Test
   public void test0300() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(-2), x]", //
@@ -2373,6 +2671,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0301() {
     check( //
         "Integrate[Sqrt[a + a*Sin[e + f*x]]*(c + d*Sin[e + f*x]), x]", //
@@ -2381,6 +2680,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2852, 214}
+  @Test
   public void test0302() {
     check( //
         "Integrate[Sqrt[a + a*Sin[e + f*x]]/(c + d*Sin[e + f*x]), x]", //
@@ -2389,6 +2689,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0303() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^(3/2), x]", //
@@ -2397,6 +2698,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0304() {
     check( //
         "Integrate[1/Sqrt[a + a*Sin[e + f*x]], x]", //
@@ -2405,6 +2707,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2854, 211}
+  @Test
   public void test0305() {
     check( //
         "Integrate[Sqrt[a + a*Sin[e + f*x]]/Sqrt[c + d*Sin[e + f*x]], x]", //
@@ -2413,6 +2716,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2851, 2850}
+  @Test
   public void test0306() {
     check( //
         "Integrate[Sqrt[a + a*Sin[e + f*x]]/(c + d*Sin[e + f*x])^(5/2), x]", //
@@ -2421,6 +2725,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 214}
+  @Test
   public void test0307() {
     check( //
         "Integrate[1/(Sqrt[a + a*Sin[e + f*x]]*Sqrt[c + d*Sin[e + f*x]]), x]", //
@@ -2429,6 +2734,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0308() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^m, x]", //
@@ -2437,6 +2743,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {22, 2727}
+  @Test
   public void test0309() {
     check( //
         "Integrate[(1 + Sin[e + f*x])^m*(3 + 3*Sin[e + f*x])^(-1 - m), x]", //
@@ -2445,6 +2752,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0310() {
     check( //
         "Integrate[(1 + Sin[e + f*x])^m*(3 + 2*Sin[e + f*x])^(-1 - m), x]", //
@@ -2453,6 +2761,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0311() {
     check( //
         "Integrate[(1 + Sin[e + f*x])^m*(3 + Sin[e + f*x])^(-1 - m), x]", //
@@ -2461,6 +2770,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 2730}
+  @Test
   public void test0312() {
     check( //
         "Integrate[3^(-1 - m)*(1 + Sin[e + f*x])^m, x]", //
@@ -2469,6 +2779,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0313() {
     check( //
         "Integrate[(3 - Sin[e + f*x])^(-1 - m)*(1 + Sin[e + f*x])^m, x]", //
@@ -2477,6 +2788,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0314() {
     check( //
         "Integrate[(3 - 2*Sin[e + f*x])^(-1 - m)*(1 + Sin[e + f*x])^m, x]", //
@@ -2485,6 +2797,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {23, 2727}
+  @Test
   public void test0315() {
     check( //
         "Integrate[(3 + 3*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2493,6 +2806,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0316() {
     check( //
         "Integrate[(3 - 4*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2501,6 +2815,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0317() {
     check( //
         "Integrate[(3 - 5*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2509,6 +2824,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0318() {
     check( //
         "Integrate[(-3 + 2*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2517,6 +2833,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0319() {
     check( //
         "Integrate[(-3 + Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2525,6 +2842,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0320() {
     check( //
         "Integrate[(-3 - Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2533,6 +2851,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0321() {
     check( //
         "Integrate[(-3 - 2*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2541,6 +2860,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {23, 2727}
+  @Test
   public void test0322() {
     check( //
         "Integrate[(-3 - 3*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2549,6 +2869,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0323() {
     check( //
         "Integrate[(-3 - 4*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2557,6 +2878,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0324() {
     check( //
         "Integrate[(-3 - 5*Sin[e + f*x])^(-1 - m)*(a + a*Sin[e + f*x])^m, x]", //
@@ -2565,6 +2887,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2867, 134}
+  @Test
   public void test0325() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^m*(c + d*Sin[e + f*x])^(-1 - m), x]", //
@@ -2573,6 +2896,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2832, 2813}
+  @Test
   public void test0326() {
     check( //
         "Integrate[(a + b*Sin[e + f*x])*(c + d*Sin[e + f*x])^2, x]", //
@@ -2581,6 +2905,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2718}
+  @Test
   public void test0327() {
     check( //
         "Integrate[a + b*Sin[e + f*x], x]", //
@@ -2589,6 +2914,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2832, 2813}
+  @Test
   public void test0328() {
     check( //
         "Integrate[(a + b*Sin[e + f*x])^2*(c + d*Sin[e + f*x]), x]", //
@@ -2597,6 +2923,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2735, 2813}
+  @Test
   public void test0329() {
     check( //
         "Integrate[(a + b*Sin[e + f*x])^3, x]", //
@@ -2605,6 +2932,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 8}
+  @Test
   public void test0330() {
     check( //
         "Integrate[((a*B)/b + B*Sin[x])/(a + b*Sin[x]), x]", //
@@ -2613,6 +2941,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2833, 8}
+  @Test
   public void test0331() {
     check( //
         "Integrate[(a + b*Sin[x])/(b + a*Sin[x])^2, x]", //
@@ -2621,6 +2950,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2736}
+  @Test
   public void test0332() {
     check( //
         "Integrate[(2 - Sin[x])/(2 + Sin[x]), x]", //
@@ -2629,6 +2959,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2886, 2884}
+  @Test
   public void test0333() {
     check( //
         "Integrate[1/((a + b*Sin[e + f*x])*Sqrt[c + d*Sin[e + f*x]]), x]", //
@@ -2637,6 +2968,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0334() {
     check( //
         "Integrate[(Cos[e + f*x]^2*Sqrt[a + a*Sin[e + f*x]])/Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2645,6 +2977,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2821}
+  @Test
   public void test0335() {
     check( //
         "Integrate[(Cos[e + f*x]^2*Sqrt[a + a*Sin[e + f*x]])/(c - c*Sin[e + f*x])^(7/2), x]", //
@@ -2653,6 +2986,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0336() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^(3/2))/Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2661,6 +2995,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2821}
+  @Test
   public void test0337() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^(3/2))/(c - c*Sin[e + f*x])^(9/2), x]", //
@@ -2669,6 +3004,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0338() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^(5/2))/Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2677,6 +3013,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2821}
+  @Test
   public void test0339() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^(5/2))/(c - c*Sin[e + f*x])^(11/2), x]", //
@@ -2685,6 +3022,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0340() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^(7/2))/Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2693,6 +3031,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2821}
+  @Test
   public void test0341() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^(7/2))/(c - c*Sin[e + f*x])^(13/2), x]", //
@@ -2701,6 +3040,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0342() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(c - c*Sin[e + f*x])^(5/2))/Sqrt[a + a*Sin[e + f*x]], x]", //
@@ -2709,6 +3049,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0343() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(c - c*Sin[e + f*x])^(3/2))/Sqrt[a + a*Sin[e + f*x]], x]", //
@@ -2717,6 +3058,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0344() {
     check( //
         "Integrate[(Cos[e + f*x]^2*Sqrt[c - c*Sin[e + f*x]])/Sqrt[a + a*Sin[e + f*x]], x]", //
@@ -2725,6 +3067,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0345() {
     check( //
         "Integrate[Cos[e + f*x]^2/(Sqrt[a + a*Sin[e + f*x]]*Sqrt[c - c*Sin[e + f*x]]), x]", //
@@ -2733,6 +3076,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0346() {
     check( //
         "Integrate[Cos[e + f*x]^2/(Sqrt[a + a*Sin[e + f*x]]*(c - c*Sin[e + f*x])^(5/2)), x]", //
@@ -2741,6 +3085,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0347() {
     check( //
         "Integrate[Cos[e + f*x]^2/((a + a*Sin[e + f*x])^(5/2)*Sqrt[c - c*Sin[e + f*x]]), x]", //
@@ -2749,6 +3094,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0348() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^m)/Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2757,6 +3103,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0349() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(a + a*Sin[e + f*x])^m)/Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2765,6 +3112,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2817}
+  @Test
   public void test0350() {
     check( //
         "Integrate[(Cos[e + f*x]^2*(c + c*Sin[e + f*x])^m)/Sqrt[a - a*Sin[e + f*x]], x]", //
@@ -2773,6 +3121,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2920, 2821}
+  @Test
   public void test0351() {
     check( //
         "Integrate[Cos[e + f*x]^2*(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^(-3 - m), x]", //
@@ -2781,6 +3130,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2925, 2923}
+  @Test
   public void test0352() {
     check( //
         "Integrate[(g*Cos[e + f*x])^(3 - 2*m)*(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^n, x]", //
@@ -2789,6 +3139,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2928, 2927}
+  @Test
   public void test0353() {
     check( //
         "Integrate[(g*Cos[e + f*x])^(-1 - m - n)*(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^(-1 + n), x]", //
@@ -2797,6 +3148,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 66}
+  @Test
   public void test0354() {
     check( //
         "Integrate[(Cos[c + d*x]*Sin[c + d*x]^n)/(a + a*Sin[c + d*x]), x]", //
@@ -2805,6 +3157,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 66}
+  @Test
   public void test0355() {
     check( //
         "Integrate[(Cos[c + d*x]*Sin[c + d*x]^n)/(a + a*Sin[c + d*x])^2, x]", //
@@ -2813,6 +3166,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 66}
+  @Test
   public void test0356() {
     check( //
         "Integrate[(Cos[c + d*x]*Sin[c + d*x]^n)/(a + a*Sin[c + d*x])^3, x]", //
@@ -2821,6 +3175,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 66}
+  @Test
   public void test0357() {
     check( //
         "Integrate[(Cos[c + d*x]*Sin[c + d*x]^n)/(a + a*Sin[c + d*x])^4, x]", //
@@ -2829,6 +3184,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2935, 2752}
+  @Test
   public void test0358() {
     check( //
         "Integrate[(Cos[c + d*x]^2*Sin[c + d*x])/Sqrt[a + a*Sin[c + d*x]], x]", //
@@ -2837,6 +3193,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746}
+  @Test
   public void test0359() {
     check( //
         "Integrate[Cos[c + d*x]^3/(a + a*Sin[c + d*x]), x]", //
@@ -2845,6 +3202,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2938, 2750}
+  @Test
   public void test0360() {
     check( //
         "Integrate[(Cos[e + f*x]^4*Sin[e + f*x])/(a + a*Sin[e + f*x])^6, x]", //
@@ -2853,6 +3211,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2935, 2752}
+  @Test
   public void test0361() {
     check( //
         "Integrate[(Cos[c + d*x]^4*Sin[c + d*x])/(a + a*Sin[c + d*x])^(3/2), x]", //
@@ -2861,6 +3220,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2934, 2723}
+  @Test
   public void test0362() {
     check( //
         "Integrate[Sec[c + d*x]*(a + a*Sin[c + d*x])^3*Tan[c + d*x], x]", //
@@ -2869,6 +3229,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 70}
+  @Test
   public void test0363() {
     check( //
         "Integrate[(Cos[e + f*x]*(c + d*Sin[e + f*x])^n)/(a + a*Sin[e + f*x]), x]", //
@@ -2877,6 +3238,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 70}
+  @Test
   public void test0364() {
     check( //
         "Integrate[(Cos[e + f*x]*(c + d*Sin[e + f*x])^n)/(a + a*Sin[e + f*x])^2, x]", //
@@ -2885,6 +3247,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 70}
+  @Test
   public void test0365() {
     check( //
         "Integrate[(Cos[e + f*x]*(c + d*Sin[e + f*x])^n)/(a + a*Sin[e + f*x])^3, x]", //
@@ -2893,6 +3256,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 70}
+  @Test
   public void test0366() {
     check( //
         "Integrate[(Cos[e + f*x]*(a + a*Sin[e + f*x])^m)/(c + d*Sin[e + f*x]), x]", //
@@ -2901,6 +3265,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 70}
+  @Test
   public void test0367() {
     check( //
         "Integrate[(Cos[e + f*x]*(a + a*Sin[e + f*x])^m)/(c + d*Sin[e + f*x])^2, x]", //
@@ -2909,6 +3274,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2912, 70}
+  @Test
   public void test0368() {
     check( //
         "Integrate[(Cos[e + f*x]*(a + a*Sin[e + f*x])^m)/(c + d*Sin[e + f*x])^3, x]", //
@@ -2917,6 +3283,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2786, 67}
+  @Test
   public void test0369() {
     check( //
         "Integrate[Cot[c + d*x]*(a + a*Sin[c + d*x])^m, x]", //
@@ -2925,6 +3292,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2934, 8}
+  @Test
   public void test0370() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + a*Sin[c + d*x])*(A + B*Sin[c + d*x]), x]", //
@@ -2933,6 +3301,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2915, 37}
+  @Test
   public void test0371() {
     check( //
         "Integrate[Sec[c + d*x]^5*(a + a*Sin[c + d*x])^3*(A + B*Sin[c + d*x]), x]", //
@@ -2941,6 +3310,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2934, 2723}
+  @Test
   public void test0372() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + a*Sin[c + d*x])^3*(A + B*Sin[c + d*x]), x]", //
@@ -2949,6 +3319,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2938, 2750}
+  @Test
   public void test0373() {
     check( //
         "Integrate[(g*Cos[e + f*x])^p*(A + B*Sin[e + f*x])*(c - c*Sin[e + f*x])^(-2 - p), x]", //
@@ -2957,6 +3328,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2967, 2895}
+  @Test
   public void test0374() {
     check( //
         "Integrate[(Sec[e + f*x]^2*Sqrt[a + b*Sin[e + f*x]])/Sqrt[d*Sin[e + f*x]], x]", //
@@ -2965,6 +3337,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0375() {
     check( //
         "Integrate[Cos[e + f*x]^2*(c + d*Sin[e + f*x])^(4/3), x]", //
@@ -2973,6 +3346,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2783, 143}
+  @Test
   public void test0376() {
     check( //
         "Integrate[Cos[e + f*x]^2*(c + d*Sin[e + f*x])^n, x]", //
@@ -2981,6 +3355,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3027, 3556}
+  @Test
   public void test0377() {
     check( //
         "Integrate[Csc[e + f*x]*Sqrt[a + a*Sin[e + f*x]]*Sqrt[c - c*Sin[e + f*x]], x]", //
@@ -2989,6 +3364,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3009, 211}
+  @Test
   public void test0378() {
     check( //
         "Integrate[Sqrt[a + a*Sin[e + f*x]]/(Sqrt[g*Sin[e + f*x]]*(c + d*Sin[e + f*x])), x]", //
@@ -2997,6 +3373,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3022, 212}
+  @Test
   public void test0379() {
     check( //
         "Integrate[(Csc[e + f*x]*Sqrt[a + a*Sin[e + f*x]])/Sqrt[c + d*Sin[e + f*x]], x]", //
@@ -3005,6 +3382,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3051, 2821}
+  @Test
   public void test0380() {
     check( //
         "Integrate[((a + a*Sin[e + f*x])^(3/2)*(A + B*Sin[e + f*x]))/(c - c*Sin[e + f*x])^(7/2), x]", //
@@ -3013,6 +3391,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3051, 2821}
+  @Test
   public void test0381() {
     check( //
         "Integrate[((a + a*Sin[e + f*x])^(5/2)*(A + B*Sin[e + f*x]))/(c - c*Sin[e + f*x])^(9/2), x]", //
@@ -3021,6 +3400,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3051, 2821}
+  @Test
   public void test0382() {
     check( //
         "Integrate[((a + a*Sin[e + f*x])^(7/2)*(A + B*Sin[e + f*x]))/(c - c*Sin[e + f*x])^(11/2), x]", //
@@ -3029,6 +3409,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3051, 2821}
+  @Test
   public void test0383() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^m*(A + B*Sin[e + f*x])*(c - c*Sin[e + f*x])^(-2 - m), x]", //
@@ -3037,6 +3418,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3046, 2933}
+  @Test
   public void test0384() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^3*(c - c*Sin[e + f*x])^n*(B*(3 - n) - B*(4 + n)*Sin[e + f*x]), x]", //
@@ -3045,6 +3427,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3046, 2933}
+  @Test
   public void test0385() {
     check( //
         "Integrate[(a - a*Sin[e + f*x])^3*(c + c*Sin[e + f*x])^n*(B*(3 - n) + B*(4 + n)*Sin[e + f*x]), x]", //
@@ -3053,6 +3436,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3046, 2933}
+  @Test
   public void test0386() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^m*(c - c*Sin[e + f*x])^3*(B*(-3 + m) - B*(4 + m)*Sin[e + f*x]), x]", //
@@ -3061,6 +3445,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3046, 2933}
+  @Test
   public void test0387() {
     check( //
         "Integrate[(a - a*Sin[e + f*x])^m*(c + c*Sin[e + f*x])^3*(B*(-3 + m) + B*(4 + m)*Sin[e + f*x]), x]", //
@@ -3069,6 +3454,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2723}
+  @Test
   public void test0388() {
     check( //
         "Integrate[(a + a*Sin[e + f*x])^2*(A + B*Sin[e + f*x]), x]", //
@@ -3077,6 +3463,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3056, 2813}
+  @Test
   public void test0389() {
     check( //
         "Integrate[((A + B*Sin[e + f*x])*(c + d*Sin[e + f*x])^2)/(a + a*Sin[e + f*x]), x]", //
@@ -3085,6 +3472,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0390() {
     check( //
         "Integrate[(A + B*Sin[e + f*x])/(a + a*Sin[e + f*x]), x]", //
@@ -3093,6 +3481,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0391() {
     check( //
         "Integrate[(A + B*Sin[e + f*x])/(a + a*Sin[e + f*x])^2, x]", //
@@ -3101,6 +3490,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0392() {
     check( //
         "Integrate[Sqrt[a + a*Sin[e + f*x]]*(A + B*Sin[e + f*x]), x]", //
@@ -3109,6 +3499,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852, 8}
+  @Test
   public void test0393() {
     check( //
         "Integrate[-Csc[e + f*x]^2, x]", //
@@ -3117,6 +3508,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2718}
+  @Test
   public void test0394() {
     check( //
         "Integrate[Sqrt[a*Sin[x]^2], x]", //
@@ -3125,6 +3517,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 3855}
+  @Test
   public void test0395() {
     check( //
         "Integrate[1/Sqrt[a*Sin[x]^2], x]", //
@@ -3133,6 +3526,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0396() {
     check( //
         "Integrate[(c*Sin[a + b*x]^m)^(5/2), x]", //
@@ -3141,6 +3535,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0397() {
     check( //
         "Integrate[(c*Sin[a + b*x]^m)^(3/2), x]", //
@@ -3149,6 +3544,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0398() {
     check( //
         "Integrate[Sqrt[c*Sin[a + b*x]^m], x]", //
@@ -3157,6 +3553,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0399() {
     check( //
         "Integrate[1/Sqrt[c*Sin[a + b*x]^m], x]", //
@@ -3165,6 +3562,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0400() {
     check( //
         "Integrate[(c*Sin[a + b*x]^m)^(-3/2), x]", //
@@ -3173,6 +3571,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0401() {
     check( //
         "Integrate[(c*Sin[a + b*x]^m)^(-5/2), x]", //
@@ -3181,6 +3580,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0402() {
     check( //
         "Integrate[(b*Sin[c + d*x]^n)^p, x]", //
@@ -3189,6 +3589,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2722}
+  @Test
   public void test0403() {
     check( //
         "Integrate[(c*Sin[a + b*x]^2)^p, x]", //
@@ -3197,6 +3598,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2722}
+  @Test
   public void test0404() {
     check( //
         "Integrate[(c*Sin[a + b*x]^3)^p, x]", //
@@ -3205,6 +3607,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2722}
+  @Test
   public void test0405() {
     check( //
         "Integrate[(c*Sin[a + b*x]^4)^p, x]", //
@@ -3213,6 +3616,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2718}
+  @Test
   public void test0406() {
     check( //
         "Integrate[(c*Sin[a + b*x]^n)^n^(-1), x]", //
@@ -3221,6 +3625,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0407() {
     check( //
         "Integrate[(a*(b*Sin[c + d*x])^p)^n, x]", //
@@ -3229,6 +3634,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3092}
+  @Test
   public void test0408() {
     check( //
         "Integrate[Sin[c + d*x]*(a + b*Sin[c + d*x]^2), x]", //
@@ -3237,6 +3643,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 3855}
+  @Test
   public void test0409() {
     check( //
         "Integrate[Csc[c + d*x]*(a + b*Sin[c + d*x]^2), x]", //
@@ -3245,6 +3652,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 3855}
+  @Test
   public void test0410() {
     check( //
         "Integrate[Csc[c + d*x]^3*(a + b*Sin[c + d*x]^2), x]", //
@@ -3253,6 +3661,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 8}
+  @Test
   public void test0411() {
     check( //
         "Integrate[Csc[c + d*x]^2*(a + b*Sin[c + d*x]^2), x]", //
@@ -3261,6 +3670,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3259, 3248}
+  @Test
   public void test0412() {
     check( //
         "Integrate[(a + b*Sin[x]^2)^3, x]", //
@@ -3269,6 +3679,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 214}
+  @Test
   public void test0413() {
     check( //
         "Integrate[Sin[c + d*x]/(a + b*Sin[c + d*x]^2), x]", //
@@ -3277,6 +3688,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 211}
+  @Test
   public void test0414() {
     check( //
         "Integrate[(a + b*Sin[c + d*x]^2)^(-1), x]", //
@@ -3285,6 +3697,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 222}
+  @Test
   public void test0415() {
     check( //
         "Integrate[Sin[x]/Sqrt[1 + Sin[x]^2], x]", //
@@ -3293,6 +3706,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 222}
+  @Test
   public void test0416() {
     check( //
         "Integrate[Sin[7 + 3*x]/Sqrt[3 + Sin[7 + 3*x]^2], x]", //
@@ -3301,6 +3715,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0417() {
     check( //
         "Integrate[Sqrt[a + b*Sin[e + f*x]^2], x]", //
@@ -3309,6 +3724,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0418() {
     check( //
         "Integrate[1/Sqrt[a + b*Sin[e + f*x]^2], x]", //
@@ -3317,6 +3733,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 197}
+  @Test
   public void test0419() {
     check( //
         "Integrate[Sin[e + f*x]/(a + b*Sin[e + f*x]^2)^(3/2), x]", //
@@ -3325,6 +3742,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3294, 1117}
+  @Test
   public void test0420() {
     check( //
         "Integrate[Sin[c + d*x]/Sqrt[a + b*Sin[c + d*x]^4], x]", //
@@ -3333,6 +3751,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3289, 1117}
+  @Test
   public void test0421() {
     check( //
         "Integrate[1/Sqrt[a + b*Sin[c + d*x]^4], x]", //
@@ -3341,6 +3760,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 2717}
+  @Test
   public void test0422() {
     check( //
         "Integrate[Cos[x]^3/(a - a*Sin[x]^2), x]", //
@@ -3349,6 +3769,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 3855}
+  @Test
   public void test0423() {
     check( //
         "Integrate[Cos[x]/(a - a*Sin[x]^2), x]", //
@@ -3357,6 +3778,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 8}
+  @Test
   public void test0424() {
     check( //
         "Integrate[Cos[x]^2/(a - a*Sin[x]^2), x]", //
@@ -3365,6 +3787,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 2717}
+  @Test
   public void test0425() {
     check( //
         "Integrate[Cos[x]^5/(a - a*Sin[x]^2)^2, x]", //
@@ -3373,6 +3796,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 3855}
+  @Test
   public void test0426() {
     check( //
         "Integrate[Cos[x]^3/(a - a*Sin[x]^2)^2, x]", //
@@ -3381,6 +3805,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 8}
+  @Test
   public void test0427() {
     check( //
         "Integrate[Cos[x]^4/(a - a*Sin[x]^2)^2, x]", //
@@ -3389,6 +3814,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3270}
+  @Test
   public void test0428() {
     check( //
         "Integrate[Sec[e + f*x]^4*(a + b*Sin[e + f*x]^2), x]", //
@@ -3397,6 +3823,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 211}
+  @Test
   public void test0429() {
     check( //
         "Integrate[Cos[x]/(a + b*Sin[x]^2), x]", //
@@ -3405,6 +3832,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0430() {
     check( //
         "Integrate[Sqrt[a + b*Sin[e + f*x]^2], x]", //
@@ -3413,6 +3841,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0431() {
     check( //
         "Integrate[1/Sqrt[a + b*Sin[e + f*x]^2], x]", //
@@ -3421,6 +3850,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 197}
+  @Test
   public void test0432() {
     check( //
         "Integrate[Cos[e + f*x]/(a + b*Sin[e + f*x]^2)^(3/2), x]", //
@@ -3429,6 +3859,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0433() {
     check( //
         "Integrate[Sqrt[a + b*Sin[e + f*x]^2], x]", //
@@ -3437,6 +3868,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0434() {
     check( //
         "Integrate[1/Sqrt[a + b*Sin[e + f*x]^2], x]", //
@@ -3445,6 +3877,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3273, 70}
+  @Test
   public void test0435() {
     check( //
         "Integrate[(a + b*Sin[c + d*x]^2)^p*Tan[c + d*x], x]", //
@@ -3453,6 +3886,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3273, 67}
+  @Test
   public void test0436() {
     check( //
         "Integrate[Cot[c + d*x]*(a + b*Sin[c + d*x]^2)^p, x]", //
@@ -3461,6 +3895,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3289, 1117}
+  @Test
   public void test0437() {
     check( //
         "Integrate[1/Sqrt[a + b*Sin[c + d*x]^4], x]", //
@@ -3469,6 +3904,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 8}
+  @Test
   public void test0438() {
     check( //
         "Integrate[Cos[a + b*x]^2, x]", //
@@ -3477,6 +3913,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0439() {
     check( //
         "Integrate[Cos[a + b*x]^3, x]", //
@@ -3485,6 +3922,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0440() {
     check( //
         "Integrate[Cos[a + b*x]^5, x]", //
@@ -3493,6 +3931,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2713}
+  @Test
   public void test0441() {
     check( //
         "Integrate[Cos[a + b*x]^7, x]", //
@@ -3501,6 +3940,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2719}
+  @Test
   public void test0442() {
     check( //
         "Integrate[Cos[a + b*x]^(5/2), x]", //
@@ -3509,6 +3949,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2720}
+  @Test
   public void test0443() {
     check( //
         "Integrate[Cos[a + b*x]^(3/2), x]", //
@@ -3517,6 +3958,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2719}
+  @Test
   public void test0444() {
     check( //
         "Integrate[Cos[a + b*x]^(-3/2), x]", //
@@ -3525,6 +3967,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2720}
+  @Test
   public void test0445() {
     check( //
         "Integrate[Cos[a + b*x]^(-5/2), x]", //
@@ -3533,6 +3976,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2719}
+  @Test
   public void test0446() {
     check( //
         "Integrate[Sqrt[c*Cos[a + b*x]], x]", //
@@ -3541,6 +3985,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2720}
+  @Test
   public void test0447() {
     check( //
         "Integrate[1/Sqrt[c*Cos[a + b*x]], x]", //
@@ -3549,6 +3994,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 2717}
+  @Test
   public void test0448() {
     check( //
         "Integrate[Sqrt[a*Cos[x]^2], x]", //
@@ -3557,6 +4003,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3286, 3855}
+  @Test
   public void test0449() {
     check( //
         "Integrate[1/Sqrt[a*Cos[x]^2], x]", //
@@ -3565,6 +4012,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0450() {
     check( //
         "Integrate[(b*Cos[c + d*x]^m)^n, x]", //
@@ -3573,6 +4021,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0451() {
     check( //
         "Integrate[(c*Cos[a + b*x]^m)^(5/2), x]", //
@@ -3581,6 +4030,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0452() {
     check( //
         "Integrate[(c*Cos[a + b*x]^m)^(3/2), x]", //
@@ -3589,6 +4039,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0453() {
     check( //
         "Integrate[Sqrt[c*Cos[a + b*x]^m], x]", //
@@ -3597,6 +4048,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0454() {
     check( //
         "Integrate[1/Sqrt[c*Cos[a + b*x]^m], x]", //
@@ -3605,6 +4057,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0455() {
     check( //
         "Integrate[(c*Cos[a + b*x]^m)^(-3/2), x]", //
@@ -3613,6 +4066,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0456() {
     check( //
         "Integrate[(c*Cos[a + b*x]^m)^(-5/2), x]", //
@@ -3621,6 +4075,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2717}
+  @Test
   public void test0457() {
     check( //
         "Integrate[(c*Cos[a + b*x]^m)^m^(-1), x]", //
@@ -3629,6 +4084,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3287, 2722}
+  @Test
   public void test0458() {
     check( //
         "Integrate[(a*(b*Cos[c + d*x])^p)^n, x]", //
@@ -3637,6 +4093,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2719}
+  @Test
   public void test0459() {
     check( //
         "Integrate[Sqrt[b*Cos[c + d*x]], x]", //
@@ -3645,6 +4102,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2721, 2720}
+  @Test
   public void test0460() {
     check( //
         "Integrate[1/Sqrt[b*Cos[c + d*x]], x]", //
@@ -3653,6 +4111,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test0461() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]*Sqrt[b*Cos[c + d*x]], x]", //
@@ -3661,6 +4120,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test0462() {
     check( //
         "Integrate[Sqrt[b*Cos[c + d*x]]/Sqrt[Cos[c + d*x]], x]", //
@@ -3669,6 +4129,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test0463() {
     check( //
         "Integrate[Sqrt[b*Cos[c + d*x]]/Cos[c + d*x]^(3/2), x]", //
@@ -3677,6 +4138,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test0464() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(3/2)/Sqrt[Cos[c + d*x]], x]", //
@@ -3685,6 +4147,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test0465() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(3/2)/Cos[c + d*x]^(3/2), x]", //
@@ -3693,6 +4156,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test0466() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(3/2)/Cos[c + d*x]^(5/2), x]", //
@@ -3701,6 +4165,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test0467() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(5/2)/Cos[c + d*x]^(3/2), x]", //
@@ -3709,6 +4174,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test0468() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(5/2)/Cos[c + d*x]^(5/2), x]", //
@@ -3717,6 +4183,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test0469() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(5/2)/Cos[c + d*x]^(7/2), x]", //
@@ -3725,6 +4192,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test0470() {
     check( //
         "Integrate[Cos[c + d*x]^(3/2)/Sqrt[b*Cos[c + d*x]], x]", //
@@ -3733,6 +4201,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test0471() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]/Sqrt[b*Cos[c + d*x]], x]", //
@@ -3741,6 +4210,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {18, 3855}
+  @Test
   public void test0472() {
     check( //
         "Integrate[1/(Sqrt[Cos[c + d*x]]*Sqrt[b*Cos[c + d*x]]), x]", //
@@ -3749,6 +4219,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test0473() {
     check( //
         "Integrate[Cos[c + d*x]^(5/2)/(b*Cos[c + d*x])^(3/2), x]", //
@@ -3757,6 +4228,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test0474() {
     check( //
         "Integrate[Cos[c + d*x]^(3/2)/(b*Cos[c + d*x])^(3/2), x]", //
@@ -3765,6 +4237,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test0475() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]/(b*Cos[c + d*x])^(3/2), x]", //
@@ -3773,6 +4246,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test0476() {
     check( //
         "Integrate[Cos[c + d*x]^(7/2)/(b*Cos[c + d*x])^(5/2), x]", //
@@ -3781,6 +4255,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test0477() {
     check( //
         "Integrate[Cos[c + d*x]^(5/2)/(b*Cos[c + d*x])^(5/2), x]", //
@@ -3789,6 +4264,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test0478() {
     check( //
         "Integrate[Cos[c + d*x]^(3/2)/(b*Cos[c + d*x])^(5/2), x]", //
@@ -3797,6 +4273,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0479() {
     check( //
         "Integrate[Cos[c + d*x]^m*(b*Cos[c + d*x])^(1/3), x]", //
@@ -3805,6 +4282,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0480() {
     check( //
         "Integrate[Cos[c + d*x]^2*(b*Cos[c + d*x])^(1/3), x]", //
@@ -3813,6 +4291,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0481() {
     check( //
         "Integrate[Cos[c + d*x]*(b*Cos[c + d*x])^(1/3), x]", //
@@ -3821,6 +4300,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0482() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(1/3)*Sec[c + d*x], x]", //
@@ -3829,6 +4309,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0483() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(1/3)*Sec[c + d*x]^2, x]", //
@@ -3837,6 +4318,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0484() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(1/3)*Sec[c + d*x]^3, x]", //
@@ -3845,6 +4327,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0485() {
     check( //
         "Integrate[Cos[c + d*x]^m*(b*Cos[c + d*x])^(2/3), x]", //
@@ -3853,6 +4336,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0486() {
     check( //
         "Integrate[Cos[c + d*x]^2*(b*Cos[c + d*x])^(2/3), x]", //
@@ -3861,6 +4345,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0487() {
     check( //
         "Integrate[Cos[c + d*x]*(b*Cos[c + d*x])^(2/3), x]", //
@@ -3869,6 +4354,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0488() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(2/3)*Sec[c + d*x], x]", //
@@ -3877,6 +4363,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0489() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(2/3)*Sec[c + d*x]^2, x]", //
@@ -3885,6 +4372,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0490() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(2/3)*Sec[c + d*x]^3, x]", //
@@ -3893,6 +4381,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0491() {
     check( //
         "Integrate[Cos[c + d*x]^m*(b*Cos[c + d*x])^(4/3), x]", //
@@ -3901,6 +4390,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0492() {
     check( //
         "Integrate[Cos[c + d*x]^2*(b*Cos[c + d*x])^(4/3), x]", //
@@ -3909,6 +4399,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0493() {
     check( //
         "Integrate[Cos[c + d*x]*(b*Cos[c + d*x])^(4/3), x]", //
@@ -3917,6 +4408,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0494() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(4/3)*Sec[c + d*x], x]", //
@@ -3925,6 +4417,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0495() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(4/3)*Sec[c + d*x]^2, x]", //
@@ -3933,6 +4426,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0496() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(4/3)*Sec[c + d*x]^3, x]", //
@@ -3941,6 +4435,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0497() {
     check( //
         "Integrate[Cos[c + d*x]^m/(b*Cos[c + d*x])^(1/3), x]", //
@@ -3949,6 +4444,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0498() {
     check( //
         "Integrate[Cos[c + d*x]^2/(b*Cos[c + d*x])^(1/3), x]", //
@@ -3957,6 +4453,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0499() {
     check( //
         "Integrate[Cos[c + d*x]/(b*Cos[c + d*x])^(1/3), x]", //
@@ -3965,6 +4462,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0500() {
     check( //
         "Integrate[Sec[c + d*x]/(b*Cos[c + d*x])^(1/3), x]", //
@@ -3973,6 +4471,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0501() {
     check( //
         "Integrate[Sec[c + d*x]^2/(b*Cos[c + d*x])^(1/3), x]", //
@@ -3981,6 +4480,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0502() {
     check( //
         "Integrate[Sec[c + d*x]^3/(b*Cos[c + d*x])^(1/3), x]", //
@@ -3989,6 +4489,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0503() {
     check( //
         "Integrate[Cos[c + d*x]^m/(b*Cos[c + d*x])^(2/3), x]", //
@@ -3997,6 +4498,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0504() {
     check( //
         "Integrate[Cos[c + d*x]^2/(b*Cos[c + d*x])^(2/3), x]", //
@@ -4005,6 +4507,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0505() {
     check( //
         "Integrate[Cos[c + d*x]/(b*Cos[c + d*x])^(2/3), x]", //
@@ -4013,6 +4516,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0506() {
     check( //
         "Integrate[Sec[c + d*x]/(b*Cos[c + d*x])^(2/3), x]", //
@@ -4021,6 +4525,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0507() {
     check( //
         "Integrate[Sec[c + d*x]^2/(b*Cos[c + d*x])^(2/3), x]", //
@@ -4029,6 +4534,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0508() {
     check( //
         "Integrate[Sec[c + d*x]^3/(b*Cos[c + d*x])^(2/3), x]", //
@@ -4037,6 +4543,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0509() {
     check( //
         "Integrate[Cos[c + d*x]^m/(b*Cos[c + d*x])^(4/3), x]", //
@@ -4045,6 +4552,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0510() {
     check( //
         "Integrate[Cos[c + d*x]^2/(b*Cos[c + d*x])^(4/3), x]", //
@@ -4053,6 +4561,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0511() {
     check( //
         "Integrate[Cos[c + d*x]/(b*Cos[c + d*x])^(4/3), x]", //
@@ -4061,6 +4570,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0512() {
     check( //
         "Integrate[Sec[c + d*x]/(b*Cos[c + d*x])^(4/3), x]", //
@@ -4069,6 +4579,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0513() {
     check( //
         "Integrate[Sec[c + d*x]^2/(b*Cos[c + d*x])^(4/3), x]", //
@@ -4077,6 +4588,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0514() {
     check( //
         "Integrate[Sec[c + d*x]^3/(b*Cos[c + d*x])^(4/3), x]", //
@@ -4085,6 +4597,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0515() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*(b*Cos[e + f*x])^n, x]", //
@@ -4093,6 +4606,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0516() {
     check( //
         "Integrate[Cos[c + d*x]^2*(b*Cos[c + d*x])^n, x]", //
@@ -4101,6 +4615,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0517() {
     check( //
         "Integrate[Cos[c + d*x]*(b*Cos[c + d*x])^n, x]", //
@@ -4109,6 +4624,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0518() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n*Sec[c + d*x], x]", //
@@ -4117,6 +4633,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0519() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n*Sec[c + d*x]^2, x]", //
@@ -4125,6 +4642,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0520() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n*Sec[c + d*x]^3, x]", //
@@ -4133,6 +4651,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {16, 2722}
+  @Test
   public void test0521() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n*Sec[c + d*x]^4, x]", //
@@ -4141,6 +4660,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0522() {
     check( //
         "Integrate[Cos[c + d*x]^(5/2)*(b*Cos[c + d*x])^n, x]", //
@@ -4149,6 +4669,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0523() {
     check( //
         "Integrate[Cos[c + d*x]^(3/2)*(b*Cos[c + d*x])^n, x]", //
@@ -4157,6 +4678,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0524() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]*(b*Cos[c + d*x])^n, x]", //
@@ -4165,6 +4687,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0525() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n/Sqrt[Cos[c + d*x]], x]", //
@@ -4173,6 +4696,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0526() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n/Cos[c + d*x]^(3/2), x]", //
@@ -4181,6 +4705,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0527() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n/Cos[c + d*x]^(5/2), x]", //
@@ -4189,6 +4714,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0528() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n/Cos[c + d*x]^(7/2), x]", //
@@ -4197,6 +4723,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {20, 2722}
+  @Test
   public void test0529() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n/Cos[c + d*x]^(9/2), x]", //
@@ -4205,6 +4732,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2668, 2722}
+  @Test
   public void test0530() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*(b*Sec[e + f*x])^n, x]", //
@@ -4213,6 +4741,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 30}
+  @Test
   public void test0531() {
     check( //
         "Integrate[Cos[a + b*x]*Sqrt[Csc[a + b*x]], x]", //
@@ -4221,6 +4750,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 30}
+  @Test
   public void test0532() {
     check( //
         "Integrate[Cos[a + b*x]/Sqrt[Csc[a + b*x]], x]", //
@@ -4229,6 +4759,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 30}
+  @Test
   public void test0533() {
     check( //
         "Integrate[Cos[x]*Csc[x]^(7/3), x]", //
@@ -4237,6 +4768,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0534() {
     check( //
         "Integrate[(d*Cos[a + b*x])^(3/2)*Csc[a + b*x]^p, x]", //
@@ -4245,6 +4777,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0535() {
     check( //
         "Integrate[Sqrt[d*Cos[a + b*x]]*Csc[a + b*x]^p, x]", //
@@ -4253,6 +4786,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0536() {
     check( //
         "Integrate[Csc[a + b*x]^p/Sqrt[d*Cos[a + b*x]], x]", //
@@ -4261,6 +4795,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0537() {
     check( //
         "Integrate[Csc[a + b*x]^p/(d*Cos[a + b*x])^(3/2), x]", //
@@ -4269,6 +4804,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0538() {
     check( //
         "Integrate[Csc[a + b*x]^p/(d*Cos[a + b*x])^(5/2), x]", //
@@ -4277,6 +4813,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0539() {
     check( //
         "Integrate[Cos[e + f*x]^m*Csc[e + f*x]^n, x]", //
@@ -4285,6 +4822,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0540() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*Csc[e + f*x]^n, x]", //
@@ -4293,6 +4831,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0541() {
     check( //
         "Integrate[Cos[e + f*x]^m*(b*Csc[e + f*x])^n, x]", //
@@ -4301,6 +4840,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2657}
+  @Test
   public void test0542() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*(b*Csc[e + f*x])^n, x]", //
@@ -4309,6 +4849,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0543() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*(b*Csc[e + f*x])^(5/2), x]", //
@@ -4317,6 +4858,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2667, 2656}
+  @Test
   public void test0544() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*(b*Csc[e + f*x])^(3/2), x]", //
@@ -4325,6 +4867,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2666, 2656}
+  @Test
   public void test0545() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*Sqrt[b*Csc[e + f*x]], x]", //
@@ -4333,6 +4876,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2666, 2656}
+  @Test
   public void test0546() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m/Sqrt[b*Csc[e + f*x]], x]", //
@@ -4341,6 +4885,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2666, 2656}
+  @Test
   public void test0547() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m/(b*Csc[e + f*x])^(3/2), x]", //
@@ -4349,6 +4894,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3377, 2718}
+  @Test
   public void test0548() {
     check( //
         "Integrate[(c + d*x)*Cos[a + b*x], x]", //
@@ -4357,6 +4903,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3391}
+  @Test
   public void test0549() {
     check( //
         "Integrate[(c + d*x)*Cos[a + b*x]^2, x]", //
@@ -4365,6 +4912,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test0550() {
     check( //
         "Integrate[(c + d*x)*Sec[a + b*x]^2, x]", //
@@ -4373,6 +4921,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3385, 3433}
+  @Test
   public void test0551() {
     check( //
         "Integrate[Cos[x]/Sqrt[x], x]", //
@@ -4381,6 +4930,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2715, 2720}
+  @Test
   public void test0552() {
     check( //
         "Integrate[Cos[a + b*x]^(3/2), x]", //
@@ -4389,6 +4939,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3391}
+  @Test
   public void test0553() {
     check( //
         "Integrate[-x/(3*Sqrt[Cos[a + b*x]]) + x*Cos[a + b*x]^(3/2), x]", //
@@ -4397,6 +4948,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2716, 2719}
+  @Test
   public void test0554() {
     check( //
         "Integrate[Cos[a + b*x]^(-3/2), x]", //
@@ -4405,6 +4957,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0555() {
     check( //
         "Integrate[x/Cos[a + b*x]^(3/2) + x*Sqrt[Cos[a + b*x]], x]", //
@@ -4413,6 +4966,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0556() {
     check( //
         "Integrate[x/Cos[x]^(3/2) + x*Sqrt[Cos[x]], x]", //
@@ -4421,6 +4975,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3396}
+  @Test
   public void test0557() {
     check( //
         "Integrate[x/Cos[x]^(5/2) - x/(3*Sqrt[Cos[x]]), x]", //
@@ -4429,6 +4984,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3400, 3383}
+  @Test
   public void test0558() {
     check( //
         "Integrate[Sqrt[a + a*Cos[x]]/x, x]", //
@@ -4437,6 +4993,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3400, 3380}
+  @Test
   public void test0559() {
     check( //
         "Integrate[Sqrt[a - a*Cos[x]]/x, x]", //
@@ -4445,6 +5002,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0560() {
     check( //
         "Integrate[1/Sqrt[a + a*Cos[c + d*x]], x]", //
@@ -4453,6 +5011,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0561() {
     check( //
         "Integrate[1/Sqrt[a - a*Cos[x]], x]", //
@@ -4461,6 +5020,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0562() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(3/2), x]", //
@@ -4469,6 +5029,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0563() {
     check( //
         "Integrate[1/Sqrt[a + a*Cos[c + d*x]], x]", //
@@ -4477,6 +5038,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0564() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(4/3), x]", //
@@ -4485,6 +5047,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0565() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(2/3), x]", //
@@ -4493,6 +5056,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0566() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(1/3), x]", //
@@ -4501,6 +5065,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0567() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(-1/3), x]", //
@@ -4509,6 +5074,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0568() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(-2/3), x]", //
@@ -4517,6 +5083,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0569() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(-4/3), x]", //
@@ -4525,6 +5092,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0570() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^n, x]", //
@@ -4533,6 +5101,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2731, 2730}
+  @Test
   public void test0571() {
     check( //
         "Integrate[(a - a*Cos[c + d*x])^n, x]", //
@@ -4541,6 +5110,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 212}
+  @Test
   public void test0572() {
     check( //
         "Integrate[(3 + 5*Cos[c + d*x])^(-1), x]", //
@@ -4549,6 +5119,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 213}
+  @Test
   public void test0573() {
     check( //
         "Integrate[(3 - 5*Cos[c + d*x])^(-1), x]", //
@@ -4557,6 +5128,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 212}
+  @Test
   public void test0574() {
     check( //
         "Integrate[(-3 + 5*Cos[c + d*x])^(-1), x]", //
@@ -4565,6 +5137,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 213}
+  @Test
   public void test0575() {
     check( //
         "Integrate[(-3 - 5*Cos[c + d*x])^(-1), x]", //
@@ -4573,6 +5146,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2734, 2732}
+  @Test
   public void test0576() {
     check( //
         "Integrate[Sqrt[a + b*Cos[c + d*x]], x]", //
@@ -4581,6 +5155,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2742, 2740}
+  @Test
   public void test0577() {
     check( //
         "Integrate[1/Sqrt[a + b*Cos[c + d*x]], x]", //
@@ -4589,6 +5164,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test0578() {
     check( //
         "Integrate[x*Cos[a + b*x^2], x]", //
@@ -4597,6 +5173,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test0579() {
     check( //
         "Integrate[Cos[a + b/x]/x^2, x]", //
@@ -4605,6 +5182,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test0580() {
     check( //
         "Integrate[Cos[a + b/x^2]/x^3, x]", //
@@ -4613,6 +5191,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test0581() {
     check( //
         "Integrate[Cos[Sqrt[x]]/Sqrt[x], x]", //
@@ -4621,6 +5200,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test0582() {
     check( //
         "Integrate[Cos[x^(1/6)]/x^(5/6), x]", //
@@ -4629,6 +5209,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746}
+  @Test
   public void test0583() {
     check( //
         "Integrate[Sin[x]^3/(a + a*Cos[x]), x]", //
@@ -4637,6 +5218,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2761, 8}
+  @Test
   public void test0584() {
     check( //
         "Integrate[Sin[x]^2/(a + a*Cos[x]), x]", //
@@ -4645,6 +5227,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test0585() {
     check( //
         "Integrate[Sin[x]/(a + a*Cos[x]), x]", //
@@ -4653,6 +5236,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0586() {
     check( //
         "Integrate[Sin[x]/(1 + Cos[x])^2, x]", //
@@ -4661,6 +5245,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0587() {
     check( //
         "Integrate[Sin[x]/(1 - Cos[x])^2, x]", //
@@ -4669,6 +5254,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2759, 8}
+  @Test
   public void test0588() {
     check( //
         "Integrate[Sin[x]^2/(1 + Cos[x])^2, x]", //
@@ -4677,6 +5263,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2759, 8}
+  @Test
   public void test0589() {
     check( //
         "Integrate[Sin[x]^2/(1 - Cos[x])^2, x]", //
@@ -4685,6 +5272,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0590() {
     check( //
         "Integrate[Sin[x]/(1 + Cos[x])^3, x]", //
@@ -4693,6 +5281,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 32}
+  @Test
   public void test0591() {
     check( //
         "Integrate[Sin[x]/(1 - Cos[x])^3, x]", //
@@ -4701,6 +5290,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test0592() {
     check( //
         "Integrate[Sin[x]/(a + b*Cos[x]), x]", //
@@ -4709,6 +5299,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 211}
+  @Test
   public void test0593() {
     check( //
         "Integrate[(a + b*Cos[x])^(-1), x]", //
@@ -4717,6 +5308,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3527, 3433}
+  @Test
   public void test0594() {
     check( //
         "Integrate[Cos[1/4 + x + x^2], x]", //
@@ -4725,6 +5317,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2717}
+  @Test
   public void test0599() {
     check( //
         "Integrate[a + a*Cos[c + d*x], x]", //
@@ -4733,6 +5326,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 3855}
+  @Test
   public void test0600() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])*Sec[c + d*x], x]", //
@@ -4741,6 +5335,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2846, 2813}
+  @Test
   public void test0601() {
     check( //
         "Integrate[Cos[c + d*x]^3/(a + a*Cos[c + d*x]), x]", //
@@ -4749,6 +5344,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0602() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Cos[c + d*x]), x]", //
@@ -4757,6 +5353,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0603() {
     check( //
         "Integrate[Cos[c + d*x]/(a + a*Cos[c + d*x])^2, x]", //
@@ -4765,6 +5362,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2729, 2727}
+  @Test
   public void test0604() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(-2), x]", //
@@ -4773,6 +5371,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0605() {
     check( //
         "Integrate[Cos[c + d*x]*Sqrt[a + a*Cos[c + d*x]], x]", //
@@ -4781,6 +5380,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2852, 212}
+  @Test
   public void test0606() {
     check( //
         "Integrate[Sqrt[a + a*Cos[c + d*x]]*Sec[c + d*x], x]", //
@@ -4789,6 +5389,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2726, 2725}
+  @Test
   public void test0607() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(3/2), x]", //
@@ -4797,6 +5398,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2728, 212}
+  @Test
   public void test0608() {
     check( //
         "Integrate[1/Sqrt[a + a*Cos[c + d*x]], x]", //
@@ -4805,6 +5407,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2853, 222}
+  @Test
   public void test0609() {
     check( //
         "Integrate[Sqrt[a + a*Cos[c + d*x]]/Sqrt[Cos[c + d*x]], x]", //
@@ -4813,6 +5416,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2851, 2850}
+  @Test
   public void test0610() {
     check( //
         "Integrate[Sqrt[a + a*Cos[c + d*x]]/Cos[c + d*x]^(5/2), x]", //
@@ -4821,6 +5425,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2841, 8}
+  @Test
   public void test0611() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^(3/2)/Cos[c + d*x]^(5/4), x]", //
@@ -4829,6 +5434,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2853, 222}
+  @Test
   public void test0612() {
     check( //
         "Integrate[Sqrt[a + a*Cos[e + f*x]]/Sqrt[Cos[e + f*x]], x]", //
@@ -4837,6 +5443,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2853, 222}
+  @Test
   public void test0613() {
     check( //
         "Integrate[Sqrt[a - a*Cos[e + f*x]]/Sqrt[-Cos[e + f*x]], x]", //
@@ -4845,6 +5452,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 211}
+  @Test
   public void test0614() {
     check( //
         "Integrate[1/(Sqrt[Cos[c + d*x]]*Sqrt[a + a*Cos[c + d*x]]), x]", //
@@ -4853,6 +5461,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2860, 222}
+  @Test
   public void test0615() {
     check( //
         "Integrate[1/(Sqrt[Cos[c + d*x]]*Sqrt[1 + Cos[c + d*x]]), x]", //
@@ -4861,6 +5470,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2860, 222}
+  @Test
   public void test0616() {
     check( //
         "Integrate[1/(Sqrt[Cos[x]]*Sqrt[1 + Cos[x]]), x]", //
@@ -4869,6 +5479,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 211}
+  @Test
   public void test0617() {
     check( //
         "Integrate[1/(Sqrt[Cos[x]]*Sqrt[a + a*Cos[x]]), x]", //
@@ -4877,6 +5488,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2854, 213}
+  @Test
   public void test0618() {
     check( //
         "Integrate[Sqrt[a - a*Cos[c + d*x]]/Sqrt[Cos[c + d*x]], x]", //
@@ -4885,6 +5497,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2851, 2850}
+  @Test
   public void test0619() {
     check( //
         "Integrate[Sqrt[a - a*Cos[c + d*x]]/Cos[c + d*x]^(5/2), x]", //
@@ -4893,6 +5506,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2854, 213}
+  @Test
   public void test0620() {
     check( //
         "Integrate[Sqrt[1 - Cos[c + d*x]]/Sqrt[Cos[c + d*x]], x]", //
@@ -4901,6 +5515,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2851, 2850}
+  @Test
   public void test0621() {
     check( //
         "Integrate[Sqrt[1 - Cos[c + d*x]]/Cos[c + d*x]^(5/2), x]", //
@@ -4909,6 +5524,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 214}
+  @Test
   public void test0622() {
     check( //
         "Integrate[1/(Sqrt[Cos[c + d*x]]*Sqrt[a - a*Cos[c + d*x]]), x]", //
@@ -4917,6 +5533,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2861, 212}
+  @Test
   public void test0623() {
     check( //
         "Integrate[1/(Sqrt[1 - Cos[c + d*x]]*Sqrt[Cos[c + d*x]]), x]", //
@@ -4925,6 +5542,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4307, 2850}
+  @Test
   public void test0624() {
     check( //
         "Integrate[Sqrt[a + a*Cos[c + d*x]]*Sec[c + d*x]^(3/2), x]", //
@@ -4933,6 +5551,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2717}
+  @Test
   public void test0625() {
     check( //
         "Integrate[a + b*Cos[c + d*x], x]", //
@@ -4941,6 +5560,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 3855}
+  @Test
   public void test0626() {
     check( //
         "Integrate[(a + b*Cos[c + d*x])*Sec[c + d*x], x]", //
@@ -4949,6 +5569,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2832, 2813}
+  @Test
   public void test0627() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Cos[c + d*x])^2, x]", //
@@ -4957,6 +5578,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2738, 211}
+  @Test
   public void test0628() {
     check( //
         "Integrate[(a + b*Cos[c + d*x])^(-1), x]", //
@@ -4965,6 +5587,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2734, 2732}
+  @Test
   public void test0629() {
     check( //
         "Integrate[Sqrt[a + b*Cos[c + d*x]], x]", //
@@ -4973,6 +5596,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2742, 2740}
+  @Test
   public void test0630() {
     check( //
         "Integrate[1/Sqrt[a + b*Cos[c + d*x]], x]", //
@@ -4981,6 +5605,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2886, 2884}
+  @Test
   public void test0631() {
     check( //
         "Integrate[Sec[c + d*x]/Sqrt[a + b*Cos[c + d*x]], x]", //
@@ -4989,6 +5614,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2893, 2892}
+  @Test
   public void test0632() {
     check( //
         "Integrate[1/(Sqrt[2 - 3*Cos[c + d*x]]*Sqrt[Cos[c + d*x]]), x]", //
@@ -4997,6 +5623,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2893, 2892}
+  @Test
   public void test0633() {
     check( //
         "Integrate[1/(Sqrt[-2 - 3*Cos[c + d*x]]*Sqrt[Cos[c + d*x]]), x]", //
@@ -5005,6 +5632,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2896, 2894}
+  @Test
   public void test0634() {
     check( //
         "Integrate[1/(Sqrt[Cos[c + d*x]]*Sqrt[-3 + 2*Cos[c + d*x]]), x]", //
@@ -5013,6 +5641,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2896, 2894}
+  @Test
   public void test0635() {
     check( //
         "Integrate[1/(Sqrt[-3 - 2*Cos[c + d*x]]*Sqrt[Cos[c + d*x]]), x]", //
@@ -5021,6 +5650,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2893, 2892}
+  @Test
   public void test0636() {
     check( //
         "Integrate[1/(Sqrt[-Cos[c + d*x]]*Sqrt[2 + 3*Cos[c + d*x]]), x]", //
@@ -5029,6 +5659,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2893, 2892}
+  @Test
   public void test0637() {
     check( //
         "Integrate[1/(Sqrt[-Cos[c + d*x]]*Sqrt[-2 + 3*Cos[c + d*x]]), x]", //
@@ -5037,6 +5668,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2896, 2894}
+  @Test
   public void test0638() {
     check( //
         "Integrate[1/(Sqrt[-Cos[c + d*x]]*Sqrt[3 + 2*Cos[c + d*x]]), x]", //
@@ -5045,6 +5677,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2896, 2894}
+  @Test
   public void test0639() {
     check( //
         "Integrate[1/(Sqrt[3 - 2*Cos[c + d*x]]*Sqrt[-Cos[c + d*x]]), x]", //
@@ -5053,6 +5686,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2888}
+  @Test
   public void test0640() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]/Sqrt[2 - 3*Cos[c + d*x]], x]", //
@@ -5061,6 +5695,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2888}
+  @Test
   public void test0641() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]/Sqrt[-2 - 3*Cos[c + d*x]], x]", //
@@ -5069,6 +5704,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2887}
+  @Test
   public void test0642() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]/Sqrt[-3 + 2*Cos[c + d*x]], x]", //
@@ -5077,6 +5713,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2887}
+  @Test
   public void test0643() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]/Sqrt[-3 - 2*Cos[c + d*x]], x]", //
@@ -5085,6 +5722,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2888}
+  @Test
   public void test0644() {
     check( //
         "Integrate[Sqrt[-Cos[c + d*x]]/Sqrt[2 + 3*Cos[c + d*x]], x]", //
@@ -5093,6 +5731,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2888}
+  @Test
   public void test0645() {
     check( //
         "Integrate[Sqrt[-Cos[c + d*x]]/Sqrt[-2 + 3*Cos[c + d*x]], x]", //
@@ -5101,6 +5740,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2887}
+  @Test
   public void test0646() {
     check( //
         "Integrate[Sqrt[-Cos[c + d*x]]/Sqrt[3 + 2*Cos[c + d*x]], x]", //
@@ -5109,6 +5749,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2889, 2887}
+  @Test
   public void test0647() {
     check( //
         "Integrate[Sqrt[-Cos[c + d*x]]/Sqrt[3 - 2*Cos[c + d*x]], x]", //
@@ -5117,6 +5758,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4307, 2890}
+  @Test
   public void test0648() {
     check( //
         "Integrate[Sqrt[a + b*Cos[c + d*x]]*Sqrt[Sec[c + d*x]], x]", //
@@ -5125,6 +5767,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4307, 2895}
+  @Test
   public void test0649() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[a + b*Cos[c + d*x]], x]", //
@@ -5133,6 +5776,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4307, 2888}
+  @Test
   public void test0650() {
     check( //
         "Integrate[1/(Sqrt[a + b*Cos[c + d*x]]*Sqrt[Sec[c + d*x]]), x]", //
@@ -5141,6 +5785,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2854, 210}
+  @Test
   public void test0651() {
     check( //
         "Integrate[Sqrt[1 - Cos[x]]/Sqrt[a - Cos[x]], x]", //
@@ -5149,6 +5794,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 2725}
+  @Test
   public void test0652() {
     check( //
         "Integrate[(B + B*Cos[c + d*x])/Sqrt[a + a*Cos[c + d*x]], x]", //
@@ -5157,6 +5803,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2833, 8}
+  @Test
   public void test0653() {
     check( //
         "Integrate[(a + b*Cos[c + d*x])/(b + a*Cos[c + d*x])^2, x]", //
@@ -5165,6 +5812,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2736}
+  @Test
   public void test0654() {
     check( //
         "Integrate[(3 + Cos[c + d*x])/(2 - Cos[c + d*x]), x]", //
@@ -5173,6 +5821,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2813}
+  @Test
   public void test0655() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]*Sqrt[b*Cos[c + d*x]]*(A + B*Cos[c + d*x]), x]", //
@@ -5181,6 +5830,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2813}
+  @Test
   public void test0656() {
     check( //
         "Integrate[((b*Cos[c + d*x])^(3/2)*(A + B*Cos[c + d*x]))/Sqrt[Cos[c + d*x]], x]", //
@@ -5189,6 +5839,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2813}
+  @Test
   public void test0657() {
     check( //
         "Integrate[((b*Cos[c + d*x])^(5/2)*(A + B*Cos[c + d*x]))/Cos[c + d*x]^(3/2), x]", //
@@ -5197,6 +5848,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2813}
+  @Test
   public void test0658() {
     check( //
         "Integrate[(Cos[c + d*x]^(3/2)*(A + B*Cos[c + d*x]))/Sqrt[b*Cos[c + d*x]], x]", //
@@ -5205,6 +5857,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2813}
+  @Test
   public void test0659() {
     check( //
         "Integrate[(Cos[c + d*x]^(5/2)*(A + B*Cos[c + d*x]))/(b*Cos[c + d*x])^(3/2), x]", //
@@ -5213,6 +5866,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2813}
+  @Test
   public void test0660() {
     check( //
         "Integrate[(Cos[c + d*x]^(7/2)*(A + B*Cos[c + d*x]))/(b*Cos[c + d*x])^(5/2), x]", //
@@ -5221,6 +5875,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2723}
+  @Test
   public void test0661() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])^2*(A + B*Cos[c + d*x]), x]", //
@@ -5229,6 +5884,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2814, 2727}
+  @Test
   public void test0662() {
     check( //
         "Integrate[(A + B*Cos[c + d*x])/(a + a*Cos[c + d*x]), x]", //
@@ -5237,6 +5893,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2829, 2727}
+  @Test
   public void test0663() {
     check( //
         "Integrate[(A + B*Cos[c + d*x])/(a + a*Cos[c + d*x])^2, x]", //
@@ -5245,6 +5902,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2830, 2725}
+  @Test
   public void test0664() {
     check( //
         "Integrate[Sqrt[a + a*Cos[c + d*x]]*(A + B*Cos[c + d*x]), x]", //
@@ -5253,6 +5911,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3059, 2850}
+  @Test
   public void test0665() {
     check( //
         "Integrate[(Sqrt[a + a*Cos[c + d*x]]*(A + B*Cos[c + d*x]))/Cos[c + d*x]^(5/2), x]", //
@@ -5261,6 +5920,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2832, 2813}
+  @Test
   public void test0666() {
     check( //
         "Integrate[(a + b*Cos[c + d*x])^2*(A + B*Cos[c + d*x]), x]", //
@@ -5269,6 +5929,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 2717}
+  @Test
   public void test0667() {
     check( //
         "Integrate[(Cos[c + d*x]*(a*B + b*B*Cos[c + d*x]))/(a + b*Cos[c + d*x]), x]", //
@@ -5277,6 +5938,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 8}
+  @Test
   public void test0668() {
     check( //
         "Integrate[(a*B + b*B*Cos[c + d*x])/(a + b*Cos[c + d*x]), x]", //
@@ -5285,6 +5947,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 3855}
+  @Test
   public void test0669() {
     check( //
         "Integrate[((a*B + b*B*Cos[c + d*x])*Sec[c + d*x])/(a + b*Cos[c + d*x]), x]", //
@@ -5293,6 +5956,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 2719}
+  @Test
   public void test0670() {
     check( //
         "Integrate[(Sqrt[Cos[c + d*x]]*(a*B + b*B*Cos[c + d*x]))/(a + b*Cos[c + d*x]), x]", //
@@ -5301,6 +5965,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 2720}
+  @Test
   public void test0671() {
     check( //
         "Integrate[(a*B + b*B*Cos[c + d*x])/(Sqrt[Cos[c + d*x]]*(a + b*Cos[c + d*x])), x]", //
@@ -5309,6 +5974,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 2884}
+  @Test
   public void test0672() {
     check( //
         "Integrate[(a*B + b*B*Cos[c + d*x])/(Sqrt[Cos[c + d*x]]*(a + b*Cos[c + d*x])^2), x]", //
@@ -5317,6 +5983,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 2888}
+  @Test
   public void test0673() {
     check( //
         "Integrate[(Sqrt[Cos[c + d*x]]*(a*B + b*B*Cos[c + d*x]))/(a + b*Cos[c + d*x])^(3/2), x]", //
@@ -5325,6 +5992,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 2895}
+  @Test
   public void test0674() {
     check( //
         "Integrate[(a*B + b*B*Cos[c + d*x])/(Sqrt[Cos[c + d*x]]*(a + b*Cos[c + d*x])^(3/2)), x]", //
@@ -5333,6 +6001,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3074, 3073}
+  @Test
   public void test0675() {
     check( //
         "Integrate[(1 + Cos[c + d*x])/(Sqrt[2 - 3*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]", //
@@ -5341,6 +6010,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3074, 3073}
+  @Test
   public void test0676() {
     check( //
         "Integrate[(1 + Cos[c + d*x])/(Sqrt[-2 - 3*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]", //
@@ -5349,6 +6019,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3074, 3073}
+  @Test
   public void test0677() {
     check( //
         "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-3 + 2*Cos[c + d*x]]), x]", //
@@ -5357,6 +6028,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3074, 3073}
+  @Test
   public void test0678() {
     check( //
         "Integrate[(1 + Cos[c + d*x])/(Sqrt[-3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]", //
@@ -5365,6 +6037,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3092}
+  @Test
   public void test0681() {
     check( //
         "Integrate[Cos[c + d*x]*(A + C*Cos[c + d*x]^2), x]", //
@@ -5373,6 +6046,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 3855}
+  @Test
   public void test0682() {
     check( //
         "Integrate[(A + C*Cos[c + d*x]^2)*Sec[c + d*x], x]", //
@@ -5381,6 +6055,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 3855}
+  @Test
   public void test0683() {
     check( //
         "Integrate[(A + C*Cos[c + d*x]^2)*Sec[c + d*x]^3, x]", //
@@ -5389,6 +6064,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 8}
+  @Test
   public void test0684() {
     check( //
         "Integrate[(A + C*Cos[c + d*x]^2)*Sec[c + d*x]^2, x]", //
@@ -5397,6 +6073,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 2722}
+  @Test
   public void test0685() {
     check( //
         "Integrate[(b*Cos[c + d*x])^m*(A + C*Cos[c + d*x]^2), x]", //
@@ -5405,6 +6082,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 2722}
+  @Test
   public void test0686() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(1/3)*(A + C*Cos[c + d*x]^2), x]", //
@@ -5413,6 +6091,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 2722}
+  @Test
   public void test0687() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(2/3)*(A + C*Cos[c + d*x]^2), x]", //
@@ -5421,6 +6100,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 2722}
+  @Test
   public void test0688() {
     check( //
         "Integrate[(b*Cos[c + d*x])^(4/3)*(A + C*Cos[c + d*x]^2), x]", //
@@ -5429,6 +6109,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 2722}
+  @Test
   public void test0689() {
     check( //
         "Integrate[(A + C*Cos[c + d*x]^2)/(b*Cos[c + d*x])^(1/3), x]", //
@@ -5437,6 +6118,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 2722}
+  @Test
   public void test0690() {
     check( //
         "Integrate[(A + C*Cos[c + d*x]^2)/(b*Cos[c + d*x])^(2/3), x]", //
@@ -5445,6 +6127,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 2722}
+  @Test
   public void test0691() {
     check( //
         "Integrate[(A + C*Cos[c + d*x]^2)/(b*Cos[c + d*x])^(4/3), x]", //
@@ -5453,6 +6136,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3093, 2722}
+  @Test
   public void test0692() {
     check( //
         "Integrate[(b*Cos[c + d*x])^n*(A + C*Cos[c + d*x]^2), x]", //
@@ -5461,6 +6145,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3103, 2813}
+  @Test
   public void test0693() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])*(A + C*Cos[c + d*x]^2), x]", //
@@ -5469,6 +6154,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3121, 2813}
+  @Test
   public void test0694() {
     check( //
         "Integrate[(Cos[c + d*x]*(A + C*Cos[c + d*x]^2))/(a + a*Cos[c + d*x]), x]", //
@@ -5477,6 +6163,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3102, 2813}
+  @Test
   public void test0695() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])*(B*Cos[c + d*x] + C*Cos[c + d*x]^2), x]", //
@@ -5485,6 +6172,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3108, 2813}
+  @Test
   public void test0696() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])*(B*Cos[c + d*x] + C*Cos[c + d*x]^2)*Sec[c + d*x], x]", //
@@ -5493,6 +6181,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3102, 2813}
+  @Test
   public void test0697() {
     check( //
         "Integrate[Cos[c + d*x]*(A + B*Cos[c + d*x] + C*Cos[c + d*x]^2), x]", //
@@ -5501,6 +6190,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3102, 2813}
+  @Test
   public void test0698() {
     check( //
         "Integrate[(a + a*Cos[c + d*x])*(A + B*Cos[c + d*x] + C*Cos[c + d*x]^2), x]", //
@@ -5509,6 +6199,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3120, 2813}
+  @Test
   public void test0699() {
     check( //
         "Integrate[(Cos[c + d*x]*(A + B*Cos[c + d*x] + C*Cos[c + d*x]^2))/(a + a*Cos[c + d*x]), x]", //
@@ -5517,6 +6208,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3103, 2813}
+  @Test
   public void test0700() {
     check( //
         "Integrate[(a + b*Cos[c + d*x])*(A + C*Cos[c + d*x]^2), x]", //
@@ -5525,6 +6217,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3108, 2813}
+  @Test
   public void test0701() {
     check( //
         "Integrate[(a + b*Cos[c + d*x])*(B*Cos[c + d*x] + C*Cos[c + d*x]^2)*Sec[c + d*x], x]", //
@@ -5533,6 +6226,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 2718}
+  @Test
   public void test0702() {
     check( //
         "Integrate[Sin[x]^3/(a - a*Cos[x]^2), x]", //
@@ -5541,6 +6235,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 8}
+  @Test
   public void test0703() {
     check( //
         "Integrate[Sin[x]^2/(a - a*Cos[x]^2), x]", //
@@ -5549,6 +6244,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3254, 3855}
+  @Test
   public void test0704() {
     check( //
         "Integrate[Sin[x]/(a - a*Cos[x]^2), x]", //
@@ -5557,6 +6253,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 211}
+  @Test
   public void test0705() {
     check( //
         "Integrate[Sin[x]/(a + b*Cos[x]^2), x]", //
@@ -5565,6 +6262,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 211}
+  @Test
   public void test0706() {
     check( //
         "Integrate[(a + b*Cos[x]^2)^(-1), x]", //
@@ -5573,6 +6271,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 214}
+  @Test
   public void test0707() {
     check( //
         "Integrate[Cos[x]/(a + b*Cos[x]^2), x]", //
@@ -5581,6 +6280,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 211}
+  @Test
   public void test0708() {
     check( //
         "Integrate[(a + b*Cos[x]^2)^(-1), x]", //
@@ -5589,6 +6289,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 209}
+  @Test
   public void test0709() {
     check( //
         "Integrate[(1 + Cos[x]^2)^(-1), x]", //
@@ -5597,6 +6298,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0710() {
     check( //
         "Integrate[Sqrt[-1 - Cos[x]^2], x]", //
@@ -5605,6 +6307,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3257, 3256}
+  @Test
   public void test0711() {
     check( //
         "Integrate[Sqrt[a + b*Cos[x]^2], x]", //
@@ -5613,6 +6316,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0712() {
     check( //
         "Integrate[1/Sqrt[-1 - Cos[x]^2], x]", //
@@ -5621,6 +6325,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3262, 3261}
+  @Test
   public void test0713() {
     check( //
         "Integrate[1/Sqrt[a + b*Cos[x]^2], x]", //
@@ -5629,6 +6334,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 222}
+  @Test
   public void test0714() {
     check( //
         "Integrate[Cos[x]/Sqrt[1 + Cos[x]^2], x]", //
@@ -5637,6 +6343,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 222}
+  @Test
   public void test0715() {
     check( //
         "Integrate[Cos[5 + 3*x]/Sqrt[3 + Cos[5 + 3*x]^2], x]", //
@@ -5645,6 +6352,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3265, 221}
+  @Test
   public void test0716() {
     check( //
         "Integrate[Cos[x]/Sqrt[4 - Cos[x]^2], x]", //
@@ -5653,6 +6361,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2908, 4058}
+  @Test
   public void test0717() {
     check( //
         "Integrate[1/((a + b*Cos[e + f*x])*Sqrt[c + d*Sec[e + f*x]]), x]", //
@@ -5661,6 +6370,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0718() {
     check( //
         "Integrate[Tan[c + d*x]^2, x]", //
@@ -5669,6 +6379,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0719() {
     check( //
         "Integrate[Tan[c + d*x]^3, x]", //
@@ -5677,6 +6388,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0720() {
     check( //
         "Integrate[(b*Tan[c + d*x])^n, x]", //
@@ -5685,6 +6397,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0721() {
     check( //
         "Integrate[Sqrt[b*Tan[c + d*x]^2], x]", //
@@ -5693,6 +6406,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0722() {
     check( //
         "Integrate[1/Sqrt[b*Tan[c + d*x]^2], x]", //
@@ -5701,6 +6415,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3740, 3556}
+  @Test
   public void test0723() {
     check( //
         "Integrate[(b*Tan[c + d*x]^p)^p^(-1), x]", //
@@ -5709,6 +6424,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 30}
+  @Test
   public void test0724() {
     check( //
         "Integrate[Csc[a + b*x]^2*Sqrt[d*Tan[a + b*x]], x]", //
@@ -5717,6 +6433,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 30}
+  @Test
   public void test0725() {
     check( //
         "Integrate[Csc[a + b*x]^2*(d*Tan[a + b*x])^(3/2), x]", //
@@ -5725,6 +6442,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 30}
+  @Test
   public void test0726() {
     check( //
         "Integrate[Csc[a + b*x]^2*(d*Tan[a + b*x])^(5/2), x]", //
@@ -5733,6 +6451,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 30}
+  @Test
   public void test0727() {
     check( //
         "Integrate[Csc[a + b*x]^2/Sqrt[d*Tan[a + b*x]], x]", //
@@ -5741,6 +6460,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 30}
+  @Test
   public void test0728() {
     check( //
         "Integrate[Csc[a + b*x]^2/(d*Tan[a + b*x])^(3/2), x]", //
@@ -5749,6 +6469,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 30}
+  @Test
   public void test0729() {
     check( //
         "Integrate[Csc[a + b*x]^2/(d*Tan[a + b*x])^(5/2), x]", //
@@ -5757,6 +6478,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2678, 2669}
+  @Test
   public void test0730() {
     check( //
         "Integrate[(a*Sin[e + f*x])^(5/2)*Sqrt[b*Tan[e + f*x]], x]", //
@@ -5765,6 +6487,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2681, 2720}
+  @Test
   public void test0731() {
     check( //
         "Integrate[Sqrt[b*Tan[e + f*x]]/Sqrt[a*Sin[e + f*x]], x]", //
@@ -5773,6 +6496,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2678, 2669}
+  @Test
   public void test0732() {
     check( //
         "Integrate[(a*Sin[e + f*x])^(3/2)*(b*Tan[e + f*x])^(3/2), x]", //
@@ -5781,6 +6505,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2678, 2669}
+  @Test
   public void test0733() {
     check( //
         "Integrate[(a*Sin[e + f*x])^(7/2)/Sqrt[b*Tan[e + f*x]], x]", //
@@ -5789,6 +6514,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2681, 2719}
+  @Test
   public void test0734() {
     check( //
         "Integrate[Sqrt[a*Sin[e + f*x]]/Sqrt[b*Tan[e + f*x]], x]", //
@@ -5797,6 +6523,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0735() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(4/3)*Sqrt[d*Tan[e + f*x]], x]", //
@@ -5805,6 +6532,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0736() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(1/3)*Sqrt[d*Tan[e + f*x]], x]", //
@@ -5813,6 +6541,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0737() {
     check( //
         "Integrate[Sqrt[d*Tan[e + f*x]]/(b*Sin[e + f*x])^(1/3), x]", //
@@ -5821,6 +6550,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0738() {
     check( //
         "Integrate[Sqrt[d*Tan[e + f*x]]/(b*Sin[e + f*x])^(4/3), x]", //
@@ -5829,6 +6559,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0739() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(4/3)*(d*Tan[e + f*x])^(3/2), x]", //
@@ -5837,6 +6568,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0740() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(1/3)*(d*Tan[e + f*x])^(3/2), x]", //
@@ -5845,6 +6577,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0741() {
     check( //
         "Integrate[(d*Tan[e + f*x])^(3/2)/(b*Sin[e + f*x])^(1/3), x]", //
@@ -5853,6 +6586,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0742() {
     check( //
         "Integrate[(d*Tan[e + f*x])^(3/2)/(b*Sin[e + f*x])^(4/3), x]", //
@@ -5861,6 +6595,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0743() {
     check( //
         "Integrate[Sqrt[b*Sin[e + f*x]]*(d*Tan[e + f*x])^(4/3), x]", //
@@ -5869,6 +6604,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0744() {
     check( //
         "Integrate[Sqrt[b*Sin[e + f*x]]*(d*Tan[e + f*x])^(1/3), x]", //
@@ -5877,6 +6613,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0745() {
     check( //
         "Integrate[Sqrt[b*Sin[e + f*x]]/(d*Tan[e + f*x])^(1/3), x]", //
@@ -5885,6 +6622,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0746() {
     check( //
         "Integrate[Sqrt[b*Sin[e + f*x]]/(d*Tan[e + f*x])^(4/3), x]", //
@@ -5893,6 +6631,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0747() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(3/2)*(d*Tan[e + f*x])^(4/3), x]", //
@@ -5901,6 +6640,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0748() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(3/2)*(d*Tan[e + f*x])^(1/3), x]", //
@@ -5909,6 +6649,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0749() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(3/2)/(d*Tan[e + f*x])^(1/3), x]", //
@@ -5917,6 +6658,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0750() {
     check( //
         "Integrate[(b*Sin[e + f*x])^(3/2)/(d*Tan[e + f*x])^(4/3), x]", //
@@ -5925,6 +6667,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2672, 371}
+  @Test
   public void test0751() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*Tan[e + f*x]^3, x]", //
@@ -5933,6 +6676,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2672, 371}
+  @Test
   public void test0752() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*Tan[e + f*x], x]", //
@@ -5941,6 +6685,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2672, 30}
+  @Test
   public void test0753() {
     check( //
         "Integrate[Cot[e + f*x]*(a*Sin[e + f*x])^m, x]", //
@@ -5949,6 +6694,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2680, 2657}
+  @Test
   public void test0754() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*Tan[e + f*x]^4, x]", //
@@ -5957,6 +6703,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2680, 2657}
+  @Test
   public void test0755() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*Tan[e + f*x]^2, x]", //
@@ -5965,6 +6712,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2680, 2657}
+  @Test
   public void test0756() {
     check( //
         "Integrate[Cot[e + f*x]^2*(a*Sin[e + f*x])^m, x]", //
@@ -5973,6 +6721,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2680, 2657}
+  @Test
   public void test0757() {
     check( //
         "Integrate[Cot[e + f*x]^4*(a*Sin[e + f*x])^m, x]", //
@@ -5981,6 +6730,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0758() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*(b*Tan[e + f*x])^(3/2), x]", //
@@ -5989,6 +6739,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0759() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*Sqrt[b*Tan[e + f*x]], x]", //
@@ -5997,6 +6748,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0760() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m/Sqrt[b*Tan[e + f*x]], x]", //
@@ -6005,6 +6757,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0761() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m/(b*Tan[e + f*x])^(3/2), x]", //
@@ -6013,6 +6766,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0762() {
     check( //
         "Integrate[(a*Sin[e + f*x])^m*(b*Tan[e + f*x])^n, x]", //
@@ -6021,6 +6775,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 371}
+  @Test
   public void test0763() {
     check( //
         "Integrate[Sin[e + f*x]^4*(b*Tan[e + f*x])^n, x]", //
@@ -6029,6 +6784,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 371}
+  @Test
   public void test0764() {
     check( //
         "Integrate[Sin[e + f*x]^2*(b*Tan[e + f*x])^n, x]", //
@@ -6037,6 +6793,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2671, 30}
+  @Test
   public void test0765() {
     check( //
         "Integrate[Csc[e + f*x]^2*(b*Tan[e + f*x])^n, x]", //
@@ -6045,6 +6802,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0766() {
     check( //
         "Integrate[Sin[e + f*x]^3*(b*Tan[e + f*x])^n, x]", //
@@ -6053,6 +6811,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0767() {
     check( //
         "Integrate[Sin[e + f*x]*(b*Tan[e + f*x])^n, x]", //
@@ -6061,6 +6820,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2681, 2656}
+  @Test
   public void test0768() {
     check( //
         "Integrate[Csc[e + f*x]*(b*Tan[e + f*x])^n, x]", //
@@ -6069,6 +6829,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2681, 2656}
+  @Test
   public void test0769() {
     check( //
         "Integrate[Csc[e + f*x]^3*(b*Tan[e + f*x])^n, x]", //
@@ -6077,6 +6838,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2681, 2656}
+  @Test
   public void test0770() {
     check( //
         "Integrate[Csc[e + f*x]^5*(b*Tan[e + f*x])^n, x]", //
@@ -6085,6 +6847,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0771() {
     check( //
         "Integrate[(a*Sin[e + f*x])^(3/2)*(b*Tan[e + f*x])^n, x]", //
@@ -6093,6 +6856,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0772() {
     check( //
         "Integrate[Sqrt[a*Sin[e + f*x]]*(b*Tan[e + f*x])^n, x]", //
@@ -6101,6 +6865,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0773() {
     check( //
         "Integrate[(b*Tan[e + f*x])^n/Sqrt[a*Sin[e + f*x]], x]", //
@@ -6109,6 +6874,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2657}
+  @Test
   public void test0774() {
     check( //
         "Integrate[(b*Tan[e + f*x])^n/(a*Sin[e + f*x])^(3/2), x]", //
@@ -6117,6 +6883,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2683, 2697}
+  @Test
   public void test0775() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*(b*Tan[e + f*x])^n, x]", //
@@ -6125,6 +6892,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0776() {
     check( //
         "Integrate[Sec[e + f*x]^2*Sqrt[d*Tan[e + f*x]], x]", //
@@ -6133,6 +6901,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0777() {
     check( //
         "Integrate[Sec[a + b*x]^2*(d*Tan[a + b*x])^(3/2), x]", //
@@ -6141,6 +6910,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0778() {
     check( //
         "Integrate[Sec[e + f*x]^2*(d*Tan[e + f*x])^(5/2), x]", //
@@ -6149,6 +6919,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0779() {
     check( //
         "Integrate[Sec[a + b*x]^2/(d*Tan[a + b*x])^(3/2), x]", //
@@ -6157,6 +6928,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0780() {
     check( //
         "Integrate[Sec[e + f*x]^(10/3)*Sin[e + f*x]^2, x]", //
@@ -6165,6 +6937,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0781() {
     check( //
         "Integrate[Sec[e + f*x]^(8/3)*Sin[e + f*x]^2, x]", //
@@ -6173,6 +6946,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0782() {
     check( //
         "Integrate[Sec[e + f*x]^(7/3)*Sin[e + f*x]^2, x]", //
@@ -6181,6 +6955,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0783() {
     check( //
         "Integrate[Sec[e + f*x]^(5/3)*Sin[e + f*x]^2, x]", //
@@ -6189,6 +6964,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0784() {
     check( //
         "Integrate[Sec[e + f*x]^(4/3)*Sin[e + f*x]^2, x]", //
@@ -6197,6 +6973,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0785() {
     check( //
         "Integrate[Sec[e + f*x]^(16/3)*Sin[e + f*x]^4, x]", //
@@ -6205,6 +6982,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0786() {
     check( //
         "Integrate[Sec[e + f*x]^(14/3)*Sin[e + f*x]^4, x]", //
@@ -6213,6 +6991,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0787() {
     check( //
         "Integrate[Sec[e + f*x]^(13/3)*Sin[e + f*x]^4, x]", //
@@ -6221,6 +7000,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0788() {
     check( //
         "Integrate[Sec[e + f*x]^(11/3)*Sin[e + f*x]^4, x]", //
@@ -6229,6 +7009,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2712, 2656}
+  @Test
   public void test0789() {
     check( //
         "Integrate[Sec[e + f*x]^(10/3)*Sin[e + f*x]^4, x]", //
@@ -6237,6 +7018,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2692, 2685}
+  @Test
   public void test0790() {
     check( //
         "Integrate[Sqrt[b*Tan[e + f*x]]/(d*Sec[e + f*x])^(7/2), x]", //
@@ -6245,6 +7027,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2692, 2685}
+  @Test
   public void test0791() {
     check( //
         "Integrate[1/((d*Sec[e + f*x])^(5/2)*Sqrt[b*Tan[e + f*x]]), x]", //
@@ -6253,6 +7036,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2689, 2685}
+  @Test
   public void test0792() {
     check( //
         "Integrate[1/(Sqrt[d*Sec[e + f*x]]*(b*Tan[e + f*x])^(5/2)), x]", //
@@ -6261,6 +7045,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 32}
+  @Test
   public void test0793() {
     check( //
         "Integrate[(b*Sec[e + f*x])^m*Tan[e + f*x], x]", //
@@ -6269,6 +7054,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 371}
+  @Test
   public void test0794() {
     check( //
         "Integrate[Cot[e + f*x]*(b*Sec[e + f*x])^m, x]", //
@@ -6277,6 +7063,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 371}
+  @Test
   public void test0795() {
     check( //
         "Integrate[Cot[e + f*x]^3*(b*Sec[e + f*x])^m, x]", //
@@ -6285,6 +7072,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 371}
+  @Test
   public void test0796() {
     check( //
         "Integrate[Cot[e + f*x]^5*(b*Sec[e + f*x])^m, x]", //
@@ -6293,6 +7081,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0797() {
     check( //
         "Integrate[Sec[a + b*x]^2*(d*Tan[a + b*x])^n, x]", //
@@ -6301,6 +7090,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0798() {
     check( //
         "Integrate[(d*Tan[a + b*x])^n, x]", //
@@ -6309,6 +7099,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 371}
+  @Test
   public void test0799() {
     check( //
         "Integrate[Cos[a + b*x]^2*(d*Tan[a + b*x])^n, x]", //
@@ -6317,6 +7108,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 371}
+  @Test
   public void test0800() {
     check( //
         "Integrate[Cos[a + b*x]^4*(d*Tan[a + b*x])^n, x]", //
@@ -6325,6 +7117,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 371}
+  @Test
   public void test0801() {
     check( //
         "Integrate[(b*Csc[e + f*x])^m*Tan[e + f*x]^3, x]", //
@@ -6333,6 +7126,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 371}
+  @Test
   public void test0802() {
     check( //
         "Integrate[(b*Csc[e + f*x])^m*Tan[e + f*x], x]", //
@@ -6341,6 +7135,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2686, 32}
+  @Test
   public void test0803() {
     check( //
         "Integrate[Cot[e + f*x]*(b*Csc[e + f*x])^m, x]", //
@@ -6349,6 +7144,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3808, 2212}
+  @Test
   public void test0804() {
     check( //
         "Integrate[(c + d*x)^m/(a + I*a*Tan[e + f*x]), x]", //
@@ -6357,6 +7153,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3556}
+  @Test
   public void test0812() {
     check( //
         "Integrate[a + I*a*Tan[c + d*x], x]", //
@@ -6365,6 +7162,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3567, 3855}
+  @Test
   public void test0813() {
     check( //
         "Integrate[Sec[c + d*x]*(a + I*a*Tan[c + d*x]), x]", //
@@ -6373,6 +7171,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3567, 2717}
+  @Test
   public void test0814() {
     check( //
         "Integrate[Cos[c + d*x]*(a + I*a*Tan[c + d*x]), x]", //
@@ -6381,6 +7180,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0815() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6389,6 +7189,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3558, 3556}
+  @Test
   public void test0816() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6397,6 +7198,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0817() {
     check( //
         "Integrate[Cos[c + d*x]^2*(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6405,6 +7207,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3577, 3855}
+  @Test
   public void test0818() {
     check( //
         "Integrate[Cos[c + d*x]*(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6413,6 +7216,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3577, 2717}
+  @Test
   public void test0819() {
     check( //
         "Integrate[Cos[c + d*x]^3*(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6421,6 +7225,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0820() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^3, x]", //
@@ -6429,6 +7234,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0821() {
     check( //
         "Integrate[Cos[c + d*x]^4*(a + I*a*Tan[c + d*x])^3, x]", //
@@ -6437,6 +7243,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3578, 3569}
+  @Test
   public void test0822() {
     check( //
         "Integrate[Cos[c + d*x]^5*(a + I*a*Tan[c + d*x])^4, x]", //
@@ -6445,6 +7252,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0823() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^5, x]", //
@@ -6453,6 +7261,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0824() {
     check( //
         "Integrate[Cos[c + d*x]^8*(a + I*a*Tan[c + d*x])^5, x]", //
@@ -6461,6 +7270,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0825() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^8, x]", //
@@ -6469,6 +7279,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 37}
+  @Test
   public void test0826() {
     check( //
         "Integrate[Cos[c + d*x]^8*(a + I*a*Tan[c + d*x])^8, x]", //
@@ -6477,6 +7288,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0827() {
     check( //
         "Integrate[Cos[c + d*x]^14*(a + I*a*Tan[c + d*x])^8, x]", //
@@ -6485,6 +7297,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3578, 3569}
+  @Test
   public void test0828() {
     check( //
         "Integrate[Cos[c + d*x]^9*(a + I*a*Tan[c + d*x])^8, x]", //
@@ -6493,6 +7306,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568}
+  @Test
   public void test0829() {
     check( //
         "Integrate[Sec[c + d*x]^4/(a + I*a*Tan[c + d*x]), x]", //
@@ -6501,6 +7315,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 31}
+  @Test
   public void test0830() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x]), x]", //
@@ -6509,6 +7324,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3560, 8}
+  @Test
   public void test0831() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])^(-1), x]", //
@@ -6517,6 +7333,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3582, 3855}
+  @Test
   public void test0832() {
     check( //
         "Integrate[Sec[c + d*x]^3/(a + I*a*Tan[c + d*x]), x]", //
@@ -6525,6 +7342,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 2717}
+  @Test
   public void test0833() {
     check( //
         "Integrate[Cos[c + d*x]/(a + I*a*Tan[c + d*x]), x]", //
@@ -6533,6 +7351,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0834() {
     check( //
         "Integrate[Sec[c + d*x]^6/(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6541,6 +7360,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0835() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6549,6 +7369,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3581, 3855}
+  @Test
   public void test0836() {
     check( //
         "Integrate[Sec[c + d*x]^3/(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6557,6 +7378,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 3569}
+  @Test
   public void test0837() {
     check( //
         "Integrate[Sec[c + d*x]/(a + I*a*Tan[c + d*x])^2, x]", //
@@ -6565,6 +7387,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0838() {
     check( //
         "Integrate[Sec[c + d*x]^8/(a + I*a*Tan[c + d*x])^3, x]", //
@@ -6573,6 +7396,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0839() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x])^3, x]", //
@@ -6581,6 +7405,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0840() {
     check( //
         "Integrate[Sec[c + d*x]^10/(a + I*a*Tan[c + d*x])^4, x]", //
@@ -6589,6 +7414,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 34}
+  @Test
   public void test0841() {
     check( //
         "Integrate[Sec[c + d*x]^4/(a + I*a*Tan[c + d*x])^4, x]", //
@@ -6597,6 +7423,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0842() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x])^4, x]", //
@@ -6605,6 +7432,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 3569}
+  @Test
   public void test0843() {
     check( //
         "Integrate[Sec[c + d*x]^3/(a + I*a*Tan[c + d*x])^4, x]", //
@@ -6613,6 +7441,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 37}
+  @Test
   public void test0844() {
     check( //
         "Integrate[Sec[c + d*x]^8/(a + I*a*Tan[c + d*x])^8, x]", //
@@ -6621,6 +7450,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0845() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x])^8, x]", //
@@ -6629,6 +7459,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 3569}
+  @Test
   public void test0846() {
     check( //
         "Integrate[Sec[c + d*x]^7/(a + I*a*Tan[c + d*x])^8, x]", //
@@ -6637,6 +7468,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0847() {
     check( //
         "Integrate[Sec[c + d*x]^2*Sqrt[a + I*a*Tan[c + d*x]], x]", //
@@ -6645,6 +7477,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0848() {
     check( //
         "Integrate[Sec[c + d*x]^3*Sqrt[a + I*a*Tan[c + d*x]], x]", //
@@ -6653,6 +7486,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0849() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^(3/2), x]", //
@@ -6661,6 +7495,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0850() {
     check( //
         "Integrate[Sec[c + d*x]*(a + I*a*Tan[c + d*x])^(3/2), x]", //
@@ -6669,6 +7504,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0851() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^(5/2), x]", //
@@ -6677,6 +7513,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0852() {
     check( //
         "Integrate[Cos[c + d*x]*(a + I*a*Tan[c + d*x])^(5/2), x]", //
@@ -6685,6 +7522,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0853() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^(7/2), x]", //
@@ -6693,6 +7531,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0854() {
     check( //
         "Integrate[Cos[c + d*x]^3*(a + I*a*Tan[c + d*x])^(7/2), x]", //
@@ -6701,6 +7540,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0855() {
     check( //
         "Integrate[Sec[c + d*x]^2/Sqrt[a + I*a*Tan[c + d*x]], x]", //
@@ -6709,6 +7549,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0856() {
     check( //
         "Integrate[Sec[c + d*x]^5/Sqrt[a + I*a*Tan[c + d*x]], x]", //
@@ -6717,6 +7558,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3570, 212}
+  @Test
   public void test0857() {
     check( //
         "Integrate[Sec[c + d*x]/Sqrt[a + I*a*Tan[c + d*x]], x]", //
@@ -6725,6 +7567,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0858() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x])^(3/2), x]", //
@@ -6733,6 +7576,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0859() {
     check( //
         "Integrate[Sec[c + d*x]^7/(a + I*a*Tan[c + d*x])^(3/2), x]", //
@@ -6741,6 +7585,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0860() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x])^(5/2), x]", //
@@ -6749,6 +7594,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0861() {
     check( //
         "Integrate[Sec[c + d*x]^9/(a + I*a*Tan[c + d*x])^(5/2), x]", //
@@ -6757,6 +7603,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0862() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + I*a*Tan[c + d*x])^(7/2), x]", //
@@ -6765,6 +7612,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0863() {
     check( //
         "Integrate[Sec[c + d*x]^11/(a + I*a*Tan[c + d*x])^(7/2), x]", //
@@ -6773,6 +7621,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3578, 3569}
+  @Test
   public void test0864() {
     check( //
         "Integrate[Sqrt[a + I*a*Tan[c + d*x]]/(e*Sec[c + d*x])^(3/2), x]", //
@@ -6781,6 +7630,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3578, 3569}
+  @Test
   public void test0865() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])^(3/2)/(e*Sec[c + d*x])^(5/2), x]", //
@@ -6789,6 +7639,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3578, 3569}
+  @Test
   public void test0866() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])^(5/2)/(e*Sec[c + d*x])^(7/2), x]", //
@@ -6797,6 +7648,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 3569}
+  @Test
   public void test0867() {
     check( //
         "Integrate[1/(Sqrt[e*Sec[c + d*x]]*Sqrt[a + I*a*Tan[c + d*x]]), x]", //
@@ -6805,6 +7657,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 3569}
+  @Test
   public void test0868() {
     check( //
         "Integrate[Sqrt[e*Sec[c + d*x]]/(a + I*a*Tan[c + d*x])^(3/2), x]", //
@@ -6813,6 +7666,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 3569}
+  @Test
   public void test0869() {
     check( //
         "Integrate[(e*Sec[c + d*x])^(3/2)/(a + I*a*Tan[c + d*x])^(5/2), x]", //
@@ -6821,6 +7675,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0870() {
     check( //
         "Integrate[(d*Sec[e + f*x])^(2/3)*(a + I*a*Tan[e + f*x])^(5/3), x]", //
@@ -6829,6 +7684,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 32}
+  @Test
   public void test0871() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + I*a*Tan[c + d*x])^n, x]", //
@@ -6837,6 +7693,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 70}
+  @Test
   public void test0872() {
     check( //
         "Integrate[Cos[c + d*x]^2*(a + I*a*Tan[c + d*x])^n, x]", //
@@ -6845,6 +7702,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 70}
+  @Test
   public void test0873() {
     check( //
         "Integrate[Cos[c + d*x]^4*(a + I*a*Tan[c + d*x])^n, x]", //
@@ -6853,6 +7711,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 70}
+  @Test
   public void test0874() {
     check( //
         "Integrate[Cos[c + d*x]^6*(a + I*a*Tan[c + d*x])^n, x]", //
@@ -6861,6 +7720,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3585, 3569}
+  @Test
   public void test0875() {
     check( //
         "Integrate[(e*Sec[c + d*x])^(-1 - n)*(a + I*a*Tan[c + d*x])^n, x]", //
@@ -6869,6 +7729,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0876() {
     check( //
         "Integrate[(e*Sec[c + d*x])^(4 - 2*n)*(a + I*a*Tan[c + d*x])^n, x]", //
@@ -6877,6 +7738,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3575, 3574}
+  @Test
   public void test0877() {
     check( //
         "Integrate[(d*Sec[e + f*x])^(2*n)*(a + I*a*Tan[e + f*x])^(2 - n), x]", //
@@ -6885,6 +7747,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3567, 3855}
+  @Test
   public void test0878() {
     check( //
         "Integrate[Sec[c + d*x]*(a + b*Tan[c + d*x]), x]", //
@@ -6893,6 +7756,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3567, 2717}
+  @Test
   public void test0879() {
     check( //
         "Integrate[Cos[c + d*x]*(a + b*Tan[c + d*x]), x]", //
@@ -6901,6 +7765,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0880() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + b*Tan[c + d*x])^2, x]", //
@@ -6909,6 +7774,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0881() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + b*Tan[c + d*x])^3, x]", //
@@ -6917,6 +7783,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test0882() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + b*Tan[c + d*x]), x]", //
@@ -6925,6 +7792,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3590, 212}
+  @Test
   public void test0883() {
     check( //
         "Integrate[Sec[c + d*x]/(a + b*Tan[c + d*x]), x]", //
@@ -6933,6 +7801,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0884() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + b*Tan[c + d*x])^2, x]", //
@@ -6941,6 +7810,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0885() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + b*Tan[c + d*x])^3, x]", //
@@ -6949,6 +7819,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0886() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + b*Tan[c + d*x])^n, x]", //
@@ -6957,6 +7828,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3596, 3569}
+  @Test
   public void test0887() {
     check( //
         "Integrate[Sqrt[e*Cos[c + d*x]]*Sqrt[a + I*a*Tan[c + d*x]], x]", //
@@ -6965,6 +7837,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3596, 3569}
+  @Test
   public void test0888() {
     check( //
         "Integrate[1/(Sqrt[e*Cos[c + d*x]]*Sqrt[a + I*a*Tan[c + d*x]]), x]", //
@@ -6973,6 +7846,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3597, 67}
+  @Test
   public void test0889() {
     check( //
         "Integrate[Csc[c + d*x]^2*(a + b*Tan[c + d*x])^n, x]", //
@@ -6981,6 +7855,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3606, 3556}
+  @Test
   public void test0890() {
     check( //
         "Integrate[Tan[c + d*x]*(a + I*a*Tan[c + d*x]), x]", //
@@ -6989,6 +7864,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3556}
+  @Test
   public void test0891() {
     check( //
         "Integrate[a + I*a*Tan[c + d*x], x]", //
@@ -6997,6 +7873,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3556}
+  @Test
   public void test0892() {
     check( //
         "Integrate[Cot[c + d*x]*(a + I*a*Tan[c + d*x]), x]", //
@@ -7005,6 +7882,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3558, 3556}
+  @Test
   public void test0893() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])^2, x]", //
@@ -7013,6 +7891,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3607, 8}
+  @Test
   public void test0894() {
     check( //
         "Integrate[Tan[c + d*x]/(a + I*a*Tan[c + d*x]), x]", //
@@ -7021,6 +7900,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3560, 8}
+  @Test
   public void test0895() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])^(-1), x]", //
@@ -7029,6 +7909,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3561, 212}
+  @Test
   public void test0896() {
     check( //
         "Integrate[Sqrt[a + I*a*Tan[c + d*x]], x]", //
@@ -7037,6 +7918,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3614, 211}
+  @Test
   public void test0897() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])/Sqrt[d*Tan[e + f*x]], x]", //
@@ -7045,6 +7927,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3614, 214}
+  @Test
   public void test0898() {
     check( //
         "Integrate[(a - I*a*Tan[e + f*x])/Sqrt[d*Tan[e + f*x]], x]", //
@@ -7053,6 +7936,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3625, 211}
+  @Test
   public void test0899() {
     check( //
         "Integrate[Sqrt[a + I*a*Tan[c + d*x]]/Sqrt[Tan[c + d*x]], x]", //
@@ -7061,6 +7945,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3618, 66}
+  @Test
   public void test0900() {
     check( //
         "Integrate[(e*Tan[c + d*x])^m*(a + I*a*Tan[c + d*x]), x]", //
@@ -7069,6 +7954,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3618, 66}
+  @Test
   public void test0901() {
     check( //
         "Integrate[(e*Tan[c + d*x])^m*(a - I*a*Tan[c + d*x]), x]", //
@@ -7077,6 +7963,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3618, 66}
+  @Test
   public void test0902() {
     check( //
         "Integrate[(d*Tan[e + f*x])^n*(a + I*a*Tan[e + f*x]), x]", //
@@ -7085,6 +7972,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3618, 66}
+  @Test
   public void test0903() {
     check( //
         "Integrate[(d*Tan[e + f*x])^n*(a - I*a*Tan[e + f*x]), x]", //
@@ -7093,6 +7981,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3562, 70}
+  @Test
   public void test0904() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])^m, x]", //
@@ -7101,6 +7990,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3613, 211}
+  @Test
   public void test0905() {
     check( //
         "Integrate[(a + a*Tan[e + f*x])/Sqrt[d*Tan[e + f*x]], x]", //
@@ -7109,6 +7999,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3606, 3556}
+  @Test
   public void test0906() {
     check( //
         "Integrate[Tan[c + d*x]*(a + b*Tan[c + d*x]), x]", //
@@ -7117,6 +8008,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3556}
+  @Test
   public void test0907() {
     check( //
         "Integrate[a + b*Tan[c + d*x], x]", //
@@ -7125,6 +8017,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3556}
+  @Test
   public void test0908() {
     check( //
         "Integrate[Cot[c + d*x]*(a + b*Tan[c + d*x]), x]", //
@@ -7133,6 +8026,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3558, 3556}
+  @Test
   public void test0909() {
     check( //
         "Integrate[(a + b*Tan[c + d*x])^2, x]", //
@@ -7141,6 +8035,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0910() {
     check( //
         "Integrate[Tan[c + d*x]/(a + b*Tan[c + d*x]), x]", //
@@ -7149,6 +8044,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0911() {
     check( //
         "Integrate[(a + b*Tan[c + d*x])^(-1), x]", //
@@ -7157,6 +8053,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0912() {
     check( //
         "Integrate[(3 + 5*Tan[c + d*x])^(-1), x]", //
@@ -7165,6 +8062,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3565, 3611}
+  @Test
   public void test0913() {
     check( //
         "Integrate[(5 + 3*Tan[c + d*x])^(-1), x]", //
@@ -7173,6 +8071,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3604, 37}
+  @Test
   public void test0914() {
     check( //
         "Integrate[Sqrt[c - I*c*Tan[e + f*x]]/Sqrt[a + I*a*Tan[e + f*x]], x]", //
@@ -7181,6 +8080,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3604, 37}
+  @Test
   public void test0915() {
     check( //
         "Integrate[(c - I*c*Tan[e + f*x])^(3/2)/(a + I*a*Tan[e + f*x])^(3/2), x]", //
@@ -7189,6 +8089,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3604, 37}
+  @Test
   public void test0916() {
     check( //
         "Integrate[(c - I*c*Tan[e + f*x])^(5/2)/(a + I*a*Tan[e + f*x])^(5/2), x]", //
@@ -7197,6 +8098,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3604, 37}
+  @Test
   public void test0917() {
     check( //
         "Integrate[Sqrt[a + I*a*Tan[e + f*x]]/Sqrt[c - I*c*Tan[e + f*x]], x]", //
@@ -7205,6 +8107,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3604, 39}
+  @Test
   public void test0918() {
     check( //
         "Integrate[1/(Sqrt[a + I*a*Tan[e + f*x]]*Sqrt[c - I*c*Tan[e + f*x]]), x]", //
@@ -7213,6 +8116,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3604, 37}
+  @Test
   public void test0919() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])^(3/2)/(c - I*c*Tan[e + f*x])^(3/2), x]", //
@@ -7221,6 +8125,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3604, 37}
+  @Test
   public void test0920() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])^(5/2)/(c - I*c*Tan[e + f*x])^(5/2), x]", //
@@ -7229,6 +8134,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3606, 3556}
+  @Test
   public void test0921() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])*(c + d*Tan[e + f*x]), x]", //
@@ -7237,6 +8143,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3607, 8}
+  @Test
   public void test0922() {
     check( //
         "Integrate[(c + d*Tan[e + f*x])/(a + I*a*Tan[e + f*x]), x]", //
@@ -7245,6 +8152,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0923() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])/(c + d*Tan[e + f*x]), x]", //
@@ -7253,6 +8161,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3625, 214}
+  @Test
   public void test0924() {
     check( //
         "Integrate[Sqrt[a + I*a*Tan[e + f*x]]/Sqrt[c + d*Tan[e + f*x]], x]", //
@@ -7261,6 +8170,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3618, 70}
+  @Test
   public void test0925() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])*(c + d*Tan[e + f*x])^n, x]", //
@@ -7269,6 +8179,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3606, 3556}
+  @Test
   public void test0926() {
     check( //
         "Integrate[(a + b*Tan[e + f*x])*(c + d*Tan[e + f*x]), x]", //
@@ -7277,6 +8188,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0927() {
     check( //
         "Integrate[(c + d*Tan[e + f*x])/(a + b*Tan[e + f*x]), x]", //
@@ -7285,6 +8197,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0928() {
     check( //
         "Integrate[(a + b*Tan[e + f*x])/(c + d*Tan[e + f*x]), x]", //
@@ -7293,6 +8206,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3606, 3556}
+  @Test
   public void test0929() {
     check( //
         "Integrate[(a + I*a*Tan[c + d*x])*(A + B*Tan[c + d*x]), x]", //
@@ -7301,6 +8215,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3607, 8}
+  @Test
   public void test0930() {
     check( //
         "Integrate[(A + B*Tan[c + d*x])/(a + I*a*Tan[c + d*x]), x]", //
@@ -7309,6 +8224,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3606, 3556}
+  @Test
   public void test0931() {
     check( //
         "Integrate[(a + b*Tan[c + d*x])*(A + B*Tan[c + d*x]), x]", //
@@ -7317,6 +8233,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0932() {
     check( //
         "Integrate[(A + B*Tan[c + d*x])/(a + b*Tan[c + d*x]), x]", //
@@ -7325,6 +8242,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 3556}
+  @Test
   public void test0933() {
     check( //
         "Integrate[(Tan[c + d*x]*(a*B + b*B*Tan[c + d*x]))/(a + b*Tan[c + d*x]), x]", //
@@ -7333,6 +8251,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 8}
+  @Test
   public void test0934() {
     check( //
         "Integrate[(a*B + b*B*Tan[c + d*x])/(a + b*Tan[c + d*x]), x]", //
@@ -7341,6 +8260,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 3556}
+  @Test
   public void test0935() {
     check( //
         "Integrate[(Cot[c + d*x]*(a*B + b*B*Tan[c + d*x]))/(a + b*Tan[c + d*x]), x]", //
@@ -7349,6 +8269,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0936() {
     check( //
         "Integrate[(3 + Tan[c + d*x])/(2 - Tan[c + d*x]), x]", //
@@ -7357,6 +8278,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0937() {
     check( //
         "Integrate[((b*B)/a + B*Tan[c + d*x])/(a + b*Tan[c + d*x]), x]", //
@@ -7365,6 +8287,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3616, 209}
+  @Test
   public void test0938() {
     check( //
         "Integrate[(3 + Tan[x])/Sqrt[4 + 3*Tan[x]], x]", //
@@ -7373,6 +8296,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3616, 213}
+  @Test
   public void test0939() {
     check( //
         "Integrate[(1 - 3*Tan[x])/Sqrt[4 + 3*Tan[x]], x]", //
@@ -7381,6 +8305,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3669}
+  @Test
   public void test0940() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])*(A + B*Tan[e + f*x])*(c - I*c*Tan[e + f*x]), x]", //
@@ -7389,6 +8314,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3606, 3556}
+  @Test
   public void test0941() {
     check( //
         "Integrate[(a + I*a*Tan[e + f*x])*(A + B*Tan[e + f*x]), x]", //
@@ -7397,6 +8323,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3669, 37}
+  @Test
   public void test0942() {
     check( //
         "Integrate[((a + I*a*Tan[e + f*x])*(A + B*Tan[e + f*x]))/(c - I*c*Tan[e + f*x])^2, x]", //
@@ -7405,6 +8332,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3607, 8}
+  @Test
   public void test0943() {
     check( //
         "Integrate[(A + B*Tan[e + f*x])/(a + I*a*Tan[e + f*x]), x]", //
@@ -7413,6 +8341,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3669, 37}
+  @Test
   public void test0944() {
     check( //
         "Integrate[((A + B*Tan[e + f*x])*(c - I*c*Tan[e + f*x]))/(a + I*a*Tan[e + f*x])^2, x]", //
@@ -7421,6 +8350,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3669, 75}
+  @Test
   public void test0945() {
     check( //
         "Integrate[((c - I*c*Tan[e + f*x])^n*((-I)*(2 + n) + (-2 + n)*Tan[e + f*x]))/(-I + Tan[e + f*x])^2, x]", //
@@ -7429,6 +8359,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0946() {
     check( //
         "Integrate[Sqrt[b*Tan[e + f*x]^2], x]", //
@@ -7437,6 +8368,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0947() {
     check( //
         "Integrate[1/Sqrt[b*Tan[e + f*x]^2], x]", //
@@ -7445,6 +8377,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3740, 3556}
+  @Test
   public void test0948() {
     check( //
         "Integrate[(b*Tan[e + f*x]^n)^n^(-1), x]", //
@@ -7453,6 +8386,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3745, 270}
+  @Test
   public void test0949() {
     check( //
         "Integrate[Sin[e + f*x]/Sqrt[a + b*Tan[e + f*x]^2], x]", //
@@ -7461,6 +8395,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3744, 270}
+  @Test
   public void test0950() {
     check( //
         "Integrate[Csc[e + f*x]^2/Sqrt[a + b*Tan[e + f*x]^2], x]", //
@@ -7469,6 +8404,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3712, 3556}
+  @Test
   public void test0951() {
     check( //
         "Integrate[Tan[e + f*x]*(a + b*Tan[e + f*x]^2), x]", //
@@ -7477,6 +8413,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3710, 8}
+  @Test
   public void test0952() {
     check( //
         "Integrate[Cot[e + f*x]^2*(a + b*Tan[e + f*x]^2), x]", //
@@ -7485,6 +8422,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3757}
+  @Test
   public void test0953() {
     check( //
         "Integrate[Cos[c + d*x]^3*(a + b*Tan[c + d*x]^2), x]", //
@@ -7493,6 +8431,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756}
+  @Test
   public void test0954() {
     check( //
         "Integrate[Sec[c + d*x]^2*(a + b*Tan[c + d*x]^2), x]", //
@@ -7501,6 +8440,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3757, 214}
+  @Test
   public void test0955() {
     check( //
         "Integrate[Sec[c + d*x]/(a + b*Tan[c + d*x]^2), x]", //
@@ -7509,6 +8449,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 211}
+  @Test
   public void test0956() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + b*Tan[c + d*x]^2), x]", //
@@ -7517,6 +8458,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 2697}
+  @Test
   public void test0957() {
     check( //
         "Integrate[(d*Sec[e + f*x])^m*(b*Tan[e + f*x]^2)^p, x]", //
@@ -7525,6 +8467,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3740, 2697}
+  @Test
   public void test0958() {
     check( //
         "Integrate[(d*Sec[e + f*x])^m*(b*(c*Tan[e + f*x])^n)^p, x]", //
@@ -7533,6 +8476,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3740, 2697}
+  @Test
   public void test0959() {
     check( //
         "Integrate[Sec[e + f*x]^3*(b*(c*Tan[e + f*x])^n)^p, x]", //
@@ -7541,6 +8485,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3740, 2697}
+  @Test
   public void test0960() {
     check( //
         "Integrate[Sec[e + f*x]*(b*(c*Tan[e + f*x])^n)^p, x]", //
@@ -7549,6 +8494,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3740, 2697}
+  @Test
   public void test0961() {
     check( //
         "Integrate[Cos[e + f*x]*(b*(c*Tan[e + f*x])^n)^p, x]", //
@@ -7557,6 +8503,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3740, 2697}
+  @Test
   public void test0962() {
     check( //
         "Integrate[Cos[e + f*x]^3*(b*(c*Tan[e + f*x])^n)^p, x]", //
@@ -7565,6 +8512,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 8}
+  @Test
   public void test0963() {
     check( //
         "Integrate[Cot[a + b*x]^2, x]", //
@@ -7573,6 +8521,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3554, 3556}
+  @Test
   public void test0964() {
     check( //
         "Integrate[Cot[a + b*x]^3, x]", //
@@ -7581,6 +8530,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0965() {
     check( //
         "Integrate[Cot[a + b*x]^n, x]", //
@@ -7589,6 +8539,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3557, 371}
+  @Test
   public void test0966() {
     check( //
         "Integrate[(b*Cot[c + d*x])^n, x]", //
@@ -7597,6 +8548,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0967() {
     check( //
         "Integrate[Sqrt[a*Cot[x]^2], x]", //
@@ -7605,6 +8557,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3739, 3556}
+  @Test
   public void test0968() {
     check( //
         "Integrate[1/Sqrt[a*Cot[x]^2], x]", //
@@ -7613,6 +8566,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2683, 2697}
+  @Test
   public void test0969() {
     check( //
         "Integrate[(b*Cot[e + f*x])^n*(a*Sin[e + f*x])^m, x]", //
@@ -7621,6 +8575,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2682, 2656}
+  @Test
   public void test0970() {
     check( //
         "Integrate[(a*Cos[e + f*x])^m*(b*Cot[e + f*x])^n, x]", //
@@ -7629,6 +8584,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 32}
+  @Test
   public void test0971() {
     check( //
         "Integrate[(d*Cot[e + f*x])^n*Csc[e + f*x]^2, x]", //
@@ -7637,6 +8593,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 371}
+  @Test
   public void test0972() {
     check( //
         "Integrate[(d*Cot[e + f*x])^n*Sin[e + f*x]^2, x]", //
@@ -7645,6 +8602,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2687, 371}
+  @Test
   public void test0973() {
     check( //
         "Integrate[(d*Cot[e + f*x])^n*Sin[e + f*x]^4, x]", //
@@ -7653,6 +8611,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3808, 2212}
+  @Test
   public void test0974() {
     check( //
         "Integrate[(c + d*x)^m/(a + I*a*Cot[e + f*x]), x]", //
@@ -7661,6 +8620,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3583, 2718}
+  @Test
   public void test0975() {
     check( //
         "Integrate[Sin[x]/(I + Cot[x]), x]", //
@@ -7669,6 +8629,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568, 31}
+  @Test
   public void test0976() {
     check( //
         "Integrate[Csc[x]^2/(I + Cot[x]), x]", //
@@ -7677,6 +8638,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3582, 3855}
+  @Test
   public void test0977() {
     check( //
         "Integrate[Csc[x]^3/(I + Cot[x]), x]", //
@@ -7685,6 +8647,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3568}
+  @Test
   public void test0978() {
     check( //
         "Integrate[Csc[x]^4/(I + Cot[x]), x]", //
@@ -7693,6 +8656,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test0979() {
     check( //
         "Integrate[Csc[x]^2/(a + b*Cot[x]), x]", //
@@ -7701,6 +8665,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3590, 212}
+  @Test
   public void test0980() {
     check( //
         "Integrate[Csc[x]/(a + b*Cot[x]), x]", //
@@ -7709,6 +8674,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0981() {
     check( //
         "Integrate[Csc[x]^2/(a + b*Cot[x])^2, x]", //
@@ -7717,6 +8683,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test0982() {
     check( //
         "Integrate[(a + b*Cot[x])^n*Csc[x]^2, x]", //
@@ -7725,6 +8692,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3562, 70}
+  @Test
   public void test0983() {
     check( //
         "Integrate[(a + I*a*Cot[c + d*x])^n, x]", //
@@ -7733,6 +8701,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3613, 211}
+  @Test
   public void test0984() {
     check( //
         "Integrate[(a + a*Cot[c + d*x])/Sqrt[e*Cot[c + d*x]], x]", //
@@ -7741,6 +8710,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3612, 3611}
+  @Test
   public void test0985() {
     check( //
         "Integrate[(A + B*Cot[c + d*x])/(a + b*Cot[c + d*x]), x]", //
@@ -7749,6 +8719,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852, 8}
+  @Test
   public void test0986() {
     check( //
         "Integrate[Sec[a + b*x]^2, x]", //
@@ -7757,6 +8728,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3853, 3855}
+  @Test
   public void test0987() {
     check( //
         "Integrate[Sec[a + b*x]^3, x]", //
@@ -7765,6 +8737,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0988() {
     check( //
         "Integrate[Sec[a + b*x]^4, x]", //
@@ -7773,6 +8746,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0989() {
     check( //
         "Integrate[Sec[a + b*x]^6, x]", //
@@ -7781,6 +8755,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test0990() {
     check( //
         "Integrate[Sec[a + b*x]^8, x]", //
@@ -7789,6 +8764,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0991() {
     check( //
         "Integrate[Sqrt[Sec[a + b*x]], x]", //
@@ -7797,6 +8773,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0992() {
     check( //
         "Integrate[1/Sqrt[Sec[a + b*x]], x]", //
@@ -7805,6 +8782,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test0993() {
     check( //
         "Integrate[Sqrt[c*Sec[a + b*x]], x]", //
@@ -7813,6 +8791,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test0994() {
     check( //
         "Integrate[1/Sqrt[c*Sec[a + b*x]], x]", //
@@ -7821,6 +8800,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0995() {
     check( //
         "Integrate[Sec[a + b*x]^(4/3), x]", //
@@ -7829,6 +8809,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0996() {
     check( //
         "Integrate[Sec[a + b*x]^(2/3), x]", //
@@ -7837,6 +8818,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0997() {
     check( //
         "Integrate[Sec[a + b*x]^(1/3), x]", //
@@ -7845,6 +8827,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0998() {
     check( //
         "Integrate[Sec[a + b*x]^(-1/3), x]", //
@@ -7853,6 +8836,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test0999() {
     check( //
         "Integrate[Sec[a + b*x]^(-2/3), x]", //
@@ -7861,6 +8845,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1000() {
     check( //
         "Integrate[Sec[a + b*x]^(-4/3), x]", //
@@ -7869,6 +8854,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1001() {
     check( //
         "Integrate[(c*Sec[a + b*x])^(4/3), x]", //
@@ -7877,6 +8863,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1002() {
     check( //
         "Integrate[(c*Sec[a + b*x])^(2/3), x]", //
@@ -7885,6 +8872,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1003() {
     check( //
         "Integrate[(c*Sec[a + b*x])^(1/3), x]", //
@@ -7893,6 +8881,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1004() {
     check( //
         "Integrate[(c*Sec[a + b*x])^(-1/3), x]", //
@@ -7901,6 +8890,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1005() {
     check( //
         "Integrate[(c*Sec[a + b*x])^(-2/3), x]", //
@@ -7909,6 +8899,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1006() {
     check( //
         "Integrate[(c*Sec[a + b*x])^(-4/3), x]", //
@@ -7917,6 +8908,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1007() {
     check( //
         "Integrate[Sec[a + b*x]^n, x]", //
@@ -7925,6 +8917,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1008() {
     check( //
         "Integrate[(c*Sec[a + b*x])^n, x]", //
@@ -7933,6 +8926,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 221}
+  @Test
   public void test1009() {
     check( //
         "Integrate[Sqrt[Sec[x]^2], x]", //
@@ -7941,6 +8935,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test1010() {
     check( //
         "Integrate[1/Sqrt[Sec[x]^2], x]", //
@@ -7949,6 +8944,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test1011() {
     check( //
         "Integrate[1/Sqrt[a*Sec[x]^2], x]", //
@@ -7957,6 +8953,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test1012() {
     check( //
         "Integrate[Sqrt[b*Sec[c + d*x]], x]", //
@@ -7965,6 +8962,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test1013() {
     check( //
         "Integrate[1/Sqrt[b*Sec[c + d*x]], x]", //
@@ -7973,6 +8971,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test1014() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]*Sqrt[b*Sec[c + d*x]], x]", //
@@ -7981,6 +8980,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test1015() {
     check( //
         "Integrate[Sqrt[b*Sec[c + d*x]]/Sqrt[Sec[c + d*x]], x]", //
@@ -7989,6 +8989,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test1016() {
     check( //
         "Integrate[Sqrt[b*Sec[c + d*x]]/Sec[c + d*x]^(3/2), x]", //
@@ -7997,6 +8998,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test1017() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(3/2)/Sqrt[Sec[c + d*x]], x]", //
@@ -8005,6 +9007,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test1018() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(3/2)/Sec[c + d*x]^(3/2), x]", //
@@ -8013,6 +9016,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test1019() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(3/2)/Sec[c + d*x]^(5/2), x]", //
@@ -8021,6 +9025,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test1020() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(5/2)/Sec[c + d*x]^(3/2), x]", //
@@ -8029,6 +9034,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test1021() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(5/2)/Sec[c + d*x]^(5/2), x]", //
@@ -8037,6 +9043,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test1022() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(5/2)/Sec[c + d*x]^(7/2), x]", //
@@ -8045,6 +9052,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test1023() {
     check( //
         "Integrate[Sec[c + d*x]^(3/2)/Sqrt[b*Sec[c + d*x]], x]", //
@@ -8053,6 +9061,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test1024() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[b*Sec[c + d*x]], x]", //
@@ -8061,6 +9070,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {18, 2717}
+  @Test
   public void test1025() {
     check( //
         "Integrate[1/(Sqrt[Sec[c + d*x]]*Sqrt[b*Sec[c + d*x]]), x]", //
@@ -8069,6 +9079,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test1026() {
     check( //
         "Integrate[Sec[c + d*x]^(5/2)/(b*Sec[c + d*x])^(3/2), x]", //
@@ -8077,6 +9088,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test1027() {
     check( //
         "Integrate[Sec[c + d*x]^(3/2)/(b*Sec[c + d*x])^(3/2), x]", //
@@ -8085,6 +9097,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test1028() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/(b*Sec[c + d*x])^(3/2), x]", //
@@ -8093,6 +9106,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 3855}
+  @Test
   public void test1029() {
     check( //
         "Integrate[Sec[c + d*x]^(7/2)/(b*Sec[c + d*x])^(5/2), x]", //
@@ -8101,6 +9115,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 8}
+  @Test
   public void test1030() {
     check( //
         "Integrate[Sec[c + d*x]^(5/2)/(b*Sec[c + d*x])^(5/2), x]", //
@@ -8109,6 +9124,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {17, 2717}
+  @Test
   public void test1031() {
     check( //
         "Integrate[Sec[c + d*x]^(3/2)/(b*Sec[c + d*x])^(5/2), x]", //
@@ -8117,6 +9133,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1032() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(1/3), x]", //
@@ -8125,6 +9142,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1033() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(4/3), x]", //
@@ -8133,6 +9151,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1034() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(-1/3), x]", //
@@ -8141,6 +9160,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1035() {
     check( //
         "Integrate[(b*Sec[c + d*x])^(-4/3), x]", //
@@ -8149,6 +9169,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1036() {
     check( //
         "Integrate[(b*Sec[c + d*x])^n, x]", //
@@ -8157,6 +9178,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test1037() {
     check( //
         "Integrate[(d*Sec[a + b*x])^(7/2)*Sin[a + b*x], x]", //
@@ -8165,6 +9187,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test1038() {
     check( //
         "Integrate[(d*Sec[a + b*x])^(5/2)*Sin[a + b*x], x]", //
@@ -8173,6 +9196,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test1039() {
     check( //
         "Integrate[(d*Sec[a + b*x])^(3/2)*Sin[a + b*x], x]", //
@@ -8181,6 +9205,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test1040() {
     check( //
         "Integrate[Sqrt[d*Sec[a + b*x]]*Sin[a + b*x], x]", //
@@ -8189,6 +9214,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test1041() {
     check( //
         "Integrate[Sin[a + b*x]/Sqrt[d*Sec[a + b*x]], x]", //
@@ -8197,6 +9223,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2705, 2699}
+  @Test
   public void test1042() {
     check( //
         "Integrate[(d*Csc[a + b*x])^(7/2)*Sqrt[c*Sec[a + b*x]], x]", //
@@ -8205,6 +9232,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2705, 2699}
+  @Test
   public void test1043() {
     check( //
         "Integrate[(d*Csc[a + b*x])^(5/2)*(c*Sec[a + b*x])^(3/2), x]", //
@@ -8213,6 +9241,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2706, 2699}
+  @Test
   public void test1044() {
     check( //
         "Integrate[(d*Csc[a + b*x])^(3/2)*(c*Sec[a + b*x])^(5/2), x]", //
@@ -8221,6 +9250,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2705, 2699}
+  @Test
   public void test1045() {
     check( //
         "Integrate[(d*Csc[a + b*x])^(9/2)/Sqrt[c*Sec[a + b*x]], x]", //
@@ -8229,6 +9259,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1046() {
     check( //
         "Integrate[Csc[e + f*x]^n*Sec[e + f*x]^m, x]", //
@@ -8237,6 +9268,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1047() {
     check( //
         "Integrate[Csc[e + f*x]^n*(a*Sec[e + f*x])^m, x]", //
@@ -8245,6 +9277,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1048() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sec[e + f*x]^m, x]", //
@@ -8253,6 +9286,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1049() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*(a*Sec[e + f*x])^m, x]", //
@@ -8261,6 +9295,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 371}
+  @Test
   public void test1050() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sec[e + f*x]^5, x]", //
@@ -8269,6 +9304,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 371}
+  @Test
   public void test1051() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sec[e + f*x]^3, x]", //
@@ -8277,6 +9313,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 371}
+  @Test
   public void test1052() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sec[e + f*x], x]", //
@@ -8285,6 +9322,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2701, 30}
+  @Test
   public void test1053() {
     check( //
         "Integrate[Cos[e + f*x]*(b*Csc[e + f*x])^n, x]", //
@@ -8293,6 +9331,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1054() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sec[e + f*x]^6, x]", //
@@ -8301,6 +9340,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1055() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sec[e + f*x]^4, x]", //
@@ -8309,6 +9349,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1056() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sec[e + f*x]^2, x]", //
@@ -8317,6 +9358,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1057() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n, x]", //
@@ -8325,6 +9367,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1058() {
     check( //
         "Integrate[Cos[e + f*x]^2*(b*Csc[e + f*x])^n, x]", //
@@ -8333,6 +9376,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1059() {
     check( //
         "Integrate[Cos[e + f*x]^4*(b*Csc[e + f*x])^n, x]", //
@@ -8341,6 +9385,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1060() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*(c*Sec[e + f*x])^(3/2), x]", //
@@ -8349,6 +9394,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1061() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n*Sqrt[c*Sec[e + f*x]], x]", //
@@ -8357,6 +9403,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1062() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n/Sqrt[c*Sec[e + f*x]], x]", //
@@ -8365,6 +9412,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2711, 2657}
+  @Test
   public void test1063() {
     check( //
         "Integrate[(b*Csc[e + f*x])^n/(c*Sec[e + f*x])^(3/2), x]", //
@@ -8373,6 +9421,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test1074() {
     check( //
         "Integrate[a + a*Sec[c + d*x], x]", //
@@ -8381,6 +9430,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3862, 8}
+  @Test
   public void test1075() {
     check( //
         "Integrate[(a + a*Sec[c + d*x])^(-1), x]", //
@@ -8389,6 +9439,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3882, 3879}
+  @Test
   public void test1076() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + a*Sec[c + d*x])^2, x]", //
@@ -8397,6 +9448,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3881, 3879}
+  @Test
   public void test1077() {
     check( //
         "Integrate[Sec[c + d*x]/(a + a*Sec[c + d*x])^2, x]", //
@@ -8405,6 +9457,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3883, 3877}
+  @Test
   public void test1078() {
     check( //
         "Integrate[Sec[c + d*x]^2*Sqrt[a + a*Sec[c + d*x]], x]", //
@@ -8413,6 +9466,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test1079() {
     check( //
         "Integrate[Sqrt[a + a*Sec[c + d*x]], x]", //
@@ -8421,6 +9475,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3878, 3877}
+  @Test
   public void test1080() {
     check( //
         "Integrate[Sec[c + d*x]*(a + a*Sec[c + d*x])^(3/2), x]", //
@@ -8429,6 +9484,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test1081() {
     check( //
         "Integrate[Sqrt[a - a*Sec[c + d*x]], x]", //
@@ -8437,6 +9493,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3880, 209}
+  @Test
   public void test1082() {
     check( //
         "Integrate[Sec[c + d*x]/Sqrt[a + a*Sec[c + d*x]], x]", //
@@ -8445,6 +9502,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3880, 209}
+  @Test
   public void test1083() {
     check( //
         "Integrate[Sec[c + d*x]/Sqrt[a - a*Sec[c + d*x]], x]", //
@@ -8453,6 +9511,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3886, 221}
+  @Test
   public void test1084() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]*Sqrt[a + a*Sec[c + d*x]], x]", //
@@ -8461,6 +9520,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3890, 3889}
+  @Test
   public void test1085() {
     check( //
         "Integrate[Sqrt[a + a*Sec[c + d*x]]/Sec[c + d*x]^(3/2), x]", //
@@ -8469,6 +9529,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3894, 3889}
+  @Test
   public void test1086() {
     check( //
         "Integrate[(a + a*Sec[c + d*x])^(3/2)/Sec[c + d*x]^(3/2), x]", //
@@ -8477,6 +9538,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3899, 8}
+  @Test
   public void test1087() {
     check( //
         "Integrate[(a + a*Sec[c + d*x])^(3/2)/Sec[c + d*x]^(1/4), x]", //
@@ -8485,6 +9547,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3886, 221}
+  @Test
   public void test1088() {
     check( //
         "Integrate[Sqrt[Sec[e + f*x]]*Sqrt[a + a*Sec[e + f*x]], x]", //
@@ -8493,6 +9556,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3886, 221}
+  @Test
   public void test1089() {
     check( //
         "Integrate[Sqrt[-Sec[e + f*x]]*Sqrt[a - a*Sec[e + f*x]], x]", //
@@ -8501,6 +9565,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3893, 212}
+  @Test
   public void test1090() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[a + a*Sec[c + d*x]], x]", //
@@ -8509,6 +9574,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3892, 221}
+  @Test
   public void test1091() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[1 + Sec[c + d*x]], x]", //
@@ -8517,6 +9583,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3891, 67}
+  @Test
   public void test1092() {
     check( //
         "Integrate[Sec[e + f*x]^n*Sqrt[1 + Sec[e + f*x]], x]", //
@@ -8525,6 +9592,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3891, 66}
+  @Test
   public void test1093() {
     check( //
         "Integrate[(-Sec[e + f*x])^n*Sqrt[1 + Sec[e + f*x]], x]", //
@@ -8533,6 +9601,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3911, 141}
+  @Test
   public void test1094() {
     check( //
         "Integrate[(-Sec[e + f*x])^n/Sqrt[1 + Sec[e + f*x]], x]", //
@@ -8541,6 +9610,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3911, 141}
+  @Test
   public void test1095() {
     check( //
         "Integrate[(-Sec[e + f*x])^n/(1 + Sec[e + f*x])^(3/2), x]", //
@@ -8549,6 +9619,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3891, 66}
+  @Test
   public void test1096() {
     check( //
         "Integrate[(d*Sec[e + f*x])^n*Sqrt[1 + Sec[e + f*x]], x]", //
@@ -8557,6 +9628,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3912, 138}
+  @Test
   public void test1097() {
     check( //
         "Integrate[(d*Sec[e + f*x])^n/Sqrt[1 + Sec[e + f*x]], x]", //
@@ -8565,6 +9637,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3912, 138}
+  @Test
   public void test1098() {
     check( //
         "Integrate[(d*Sec[e + f*x])^n/(1 + Sec[e + f*x])^(3/2), x]", //
@@ -8573,6 +9646,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3891, 67}
+  @Test
   public void test1099() {
     check( //
         "Integrate[Sec[e + f*x]^n*Sqrt[a + a*Sec[e + f*x]], x]", //
@@ -8581,6 +9655,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3891, 67}
+  @Test
   public void test1100() {
     check( //
         "Integrate[(-Sec[e + f*x])^n*Sqrt[a - a*Sec[e + f*x]], x]", //
@@ -8589,6 +9664,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3910, 138}
+  @Test
   public void test1101() {
     check( //
         "Integrate[Sec[e + f*x]^n*(1 + Sec[e + f*x])^m, x]", //
@@ -8597,6 +9673,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3911, 138}
+  @Test
   public void test1102() {
     check( //
         "Integrate[(1 - Sec[e + f*x])^m*Sec[e + f*x]^n, x]", //
@@ -8605,6 +9682,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3911, 138}
+  @Test
   public void test1103() {
     check( //
         "Integrate[(-Sec[e + f*x])^n*(1 + Sec[e + f*x])^m, x]", //
@@ -8613,6 +9691,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3910, 138}
+  @Test
   public void test1104() {
     check( //
         "Integrate[(1 - Sec[e + f*x])^m*(-Sec[e + f*x])^n, x]", //
@@ -8621,6 +9700,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3912, 138}
+  @Test
   public void test1105() {
     check( //
         "Integrate[(d*Sec[e + f*x])^n*(1 + Sec[e + f*x])^m, x]", //
@@ -8629,6 +9709,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3912, 138}
+  @Test
   public void test1106() {
     check( //
         "Integrate[(1 - Sec[e + f*x])^m*(d*Sec[e + f*x])^n, x]", //
@@ -8637,6 +9718,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4349, 3889}
+  @Test
   public void test1107() {
     check( //
         "Integrate[Sqrt[Cos[c + d*x]]*Sqrt[a + a*Sec[c + d*x]], x]", //
@@ -8645,6 +9727,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test1108() {
     check( //
         "Integrate[a + b*Sec[c + d*x], x]", //
@@ -8653,6 +9736,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3868, 2736}
+  @Test
   public void test1109() {
     check( //
         "Integrate[(3 + 5*Sec[c + d*x])^(-1), x]", //
@@ -8661,6 +9745,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3934, 2884}
+  @Test
   public void test1110() {
     check( //
         "Integrate[Sec[c + d*x]^(3/2)/(a + b*Sec[c + d*x]), x]", //
@@ -8669,6 +9754,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3943, 2740}
+  @Test
   public void test1111() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[2 + 3*Sec[c + d*x]], x]", //
@@ -8677,6 +9763,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3943, 2740}
+  @Test
   public void test1112() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[-2 + 3*Sec[c + d*x]], x]", //
@@ -8685,6 +9772,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3943, 2740}
+  @Test
   public void test1113() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[3 + 2*Sec[c + d*x]], x]", //
@@ -8693,6 +9781,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3943, 2740}
+  @Test
   public void test1114() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[3 - 2*Sec[c + d*x]], x]", //
@@ -8701,6 +9790,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3943, 2741}
+  @Test
   public void test1115() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[-3 + 2*Sec[c + d*x]], x]", //
@@ -8709,6 +9799,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3943, 2741}
+  @Test
   public void test1116() {
     check( //
         "Integrate[Sqrt[Sec[c + d*x]]/Sqrt[-3 - 2*Sec[c + d*x]], x]", //
@@ -8717,6 +9808,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3958, 67}
+  @Test
   public void test1117() {
     check( //
         "Integrate[(a + a*Sec[c + d*x])^n*Sin[c + d*x], x]", //
@@ -8725,6 +9817,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3958, 70}
+  @Test
   public void test1118() {
     check( //
         "Integrate[Csc[c + d*x]*(a + a*Sec[c + d*x])^n, x]", //
@@ -8733,6 +9826,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3960, 3917}
+  @Test
   public void test1119() {
     check( //
         "Integrate[Csc[e + f*x]^2*Sqrt[a + b*Sec[e + f*x]], x]", //
@@ -8741,6 +9835,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3959, 67}
+  @Test
   public void test1120() {
     check( //
         "Integrate[(a + b*Sec[c + d*x])^n*Sin[c + d*x], x]", //
@@ -8749,6 +9844,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3964, 31}
+  @Test
   public void test1121() {
     check( //
         "Integrate[Cot[c + d*x]*(a + a*Sec[c + d*x]), x]", //
@@ -8757,6 +9853,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3967, 8}
+  @Test
   public void test1122() {
     check( //
         "Integrate[Cot[c + d*x]^2*(a + a*Sec[c + d*x]), x]", //
@@ -8765,6 +9862,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3964, 31}
+  @Test
   public void test1123() {
     check( //
         "Integrate[Tan[c + d*x]/(a + a*Sec[c + d*x]), x]", //
@@ -8773,6 +9871,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3965, 67}
+  @Test
   public void test1124() {
     check( //
         "Integrate[(a + a*Sec[c + d*x])^n*Tan[c + d*x], x]", //
@@ -8781,6 +9880,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3967, 8}
+  @Test
   public void test1125() {
     check( //
         "Integrate[Cot[c + d*x]^2*(a + b*Sec[c + d*x]), x]", //
@@ -8789,6 +9889,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3970, 67}
+  @Test
   public void test1126() {
     check( //
         "Integrate[(a + b*Sec[c + d*x])^n*Tan[c + d*x], x]", //
@@ -8797,6 +9898,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3990, 3556}
+  @Test
   public void test1127() {
     check( //
         "Integrate[Sqrt[a + a*Sec[e + f*x]]*Sqrt[c - c*Sec[e + f*x]], x]", //
@@ -8805,6 +9907,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3996, 31}
+  @Test
   public void test1128() {
     check( //
         "Integrate[Sqrt[a + a*Sec[e + f*x]]/Sqrt[c - c*Sec[e + f*x]], x]", //
@@ -8813,6 +9916,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3996, 31}
+  @Test
   public void test1129() {
     check( //
         "Integrate[Sqrt[c - c*Sec[e + f*x]]/Sqrt[a + a*Sec[e + f*x]], x]", //
@@ -8821,6 +9925,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3990, 3556}
+  @Test
   public void test1130() {
     check( //
         "Integrate[1/(Sqrt[a + a*Sec[e + f*x]]*Sqrt[c - c*Sec[e + f*x]]), x]", //
@@ -8829,6 +9934,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3997, 141}
+  @Test
   public void test1131() {
     check( //
         "Integrate[(1 + Sec[e + f*x])^m*(c - c*Sec[e + f*x])^n, x]", //
@@ -8837,6 +9943,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3997, 67}
+  @Test
   public void test1132() {
     check( //
         "Integrate[Sqrt[a + a*Sec[e + f*x]]*(c - c*Sec[e + f*x])^n, x]", //
@@ -8845,6 +9952,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4019, 209}
+  @Test
   public void test1133() {
     check( //
         "Integrate[Sqrt[a + a*Sec[e + f*x]]/Sqrt[c + d*Sec[e + f*x]], x]", //
@@ -8853,6 +9961,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4042, 3855}
+  @Test
   public void test1134() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x]))/(c - c*Sec[e + f*x]), x]", //
@@ -8861,6 +9970,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4036, 4035}
+  @Test
   public void test1135() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x]))/(c - c*Sec[e + f*x])^3, x]", //
@@ -8869,6 +9979,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4036, 4035}
+  @Test
   public void test1136() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^2)/(c - c*Sec[e + f*x])^4, x]", //
@@ -8877,6 +9988,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4036, 4035}
+  @Test
   public void test1137() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^3)/(c - c*Sec[e + f*x])^5, x]", //
@@ -8885,6 +9997,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4042, 3855}
+  @Test
   public void test1138() {
     check( //
         "Integrate[(Sec[e + f*x]*(c - c*Sec[e + f*x]))/(a + a*Sec[e + f*x]), x]", //
@@ -8893,6 +10006,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4036, 4035}
+  @Test
   public void test1139() {
     check( //
         "Integrate[(Sec[e + f*x]*(c - c*Sec[e + f*x]))/(a + a*Sec[e + f*x])^3, x]", //
@@ -8901,6 +10015,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1140() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])*(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -8909,6 +10024,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1141() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^2*(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -8917,6 +10033,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1142() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^3*(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -8925,6 +10042,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4039, 3877}
+  @Test
   public void test1143() {
     check( //
         "Integrate[(Sec[e + f*x]*(c - c*Sec[e + f*x])^(3/2))/(a + a*Sec[e + f*x]), x]", //
@@ -8933,6 +10051,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4039, 4038}
+  @Test
   public void test1144() {
     check( //
         "Integrate[(Sec[e + f*x]*(c - c*Sec[e + f*x])^(3/2))/(a + a*Sec[e + f*x])^2, x]", //
@@ -8941,6 +10060,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4039, 4038}
+  @Test
   public void test1145() {
     check( //
         "Integrate[(Sec[e + f*x]*(c - c*Sec[e + f*x])^(3/2))/(a + a*Sec[e + f*x])^3, x]", //
@@ -8949,6 +10069,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1146() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2)*(c - c*Sec[e + f*x])^(7/2), x]", //
@@ -8957,6 +10078,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1147() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2)*(c - c*Sec[e + f*x])^(5/2), x]", //
@@ -8965,6 +10087,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1148() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2)*(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -8973,6 +10096,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4037}
+  @Test
   public void test1149() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2))/Sqrt[c - c*Sec[e + f*x]], x]", //
@@ -8981,6 +10105,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4039, 4037}
+  @Test
   public void test1150() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2))/(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -8989,6 +10114,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4036, 4035}
+  @Test
   public void test1151() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2))/(c - c*Sec[e + f*x])^(7/2), x]", //
@@ -8997,6 +10123,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4039, 4038}
+  @Test
   public void test1152() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2))/(c - c*Sec[e + f*x])^(9/2), x]", //
@@ -9005,6 +10132,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4039, 4038}
+  @Test
   public void test1153() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^(3/2))/(c - c*Sec[e + f*x])^(11/2), x]", //
@@ -9013,6 +10141,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1154() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^(5/2)*(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -9021,6 +10150,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4036, 4035}
+  @Test
   public void test1155() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^(5/2))/(c - c*Sec[e + f*x])^(9/2), x]", //
@@ -9029,6 +10159,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4037}
+  @Test
   public void test1156() {
     check( //
         "Integrate[(Sec[e + f*x]*(c - c*Sec[e + f*x])^(3/2))/Sqrt[a + a*Sec[e + f*x]], x]", //
@@ -9037,6 +10168,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4044, 3855}
+  @Test
   public void test1157() {
     check( //
         "Integrate[Sec[e + f*x]/(Sqrt[a + a*Sec[e + f*x]]*Sqrt[c - c*Sec[e + f*x]]), x]", //
@@ -9045,6 +10177,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4039, 4037}
+  @Test
   public void test1158() {
     check( //
         "Integrate[(Sec[e + f*x]*(c - c*Sec[e + f*x])^(3/2))/(a + a*Sec[e + f*x])^(3/2), x]", //
@@ -9053,6 +10186,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4040, 4038}
+  @Test
   public void test1159() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^m*(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -9061,6 +10195,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4046, 70}
+  @Test
   public void test1160() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^m)/Sqrt[c - c*Sec[e + f*x]], x]", //
@@ -9069,6 +10204,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4046, 70}
+  @Test
   public void test1161() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^m)/(c - c*Sec[e + f*x])^(3/2), x]", //
@@ -9077,6 +10213,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4046, 70}
+  @Test
   public void test1162() {
     check( //
         "Integrate[(Sec[e + f*x]*(a + a*Sec[e + f*x])^m)/(c - c*Sec[e + f*x])^(5/2), x]", //
@@ -9085,6 +10222,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4036, 4035}
+  @Test
   public void test1163() {
     check( //
         "Integrate[Sec[e + f*x]*(a + a*Sec[e + f*x])^m*(c - c*Sec[e + f*x])^(-2 - m), x]", //
@@ -9093,6 +10231,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4047, 2697}
+  @Test
   public void test1164() {
     check( //
         "Integrate[(g*Sec[e + f*x])^p*(a + a*Sec[e + f*x])*(c - c*Sec[e + f*x]), x]", //
@@ -9101,6 +10240,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4052, 214}
+  @Test
   public void test1165() {
     check( //
         "Integrate[(Sec[e + f*x]*Sqrt[a + a*Sec[e + f*x]])/(c - d*Sec[e + f*x]), x]", //
@@ -9109,6 +10249,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4085, 3879}
+  @Test
   public void test1166() {
     check( //
         "Integrate[(Sec[e + f*x]*(c + d*Sec[e + f*x]))/(a + a*Sec[e + f*x])^2, x]", //
@@ -9117,6 +10258,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4065, 212}
+  @Test
   public void test1167() {
     check( //
         "Integrate[(Sec[e + f*x]*Sqrt[a + a*Sec[e + f*x]])/Sqrt[c + d*Sec[e + f*x]], x]", //
@@ -9125,6 +10267,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4068, 209}
+  @Test
   public void test1168() {
     check( //
         "Integrate[Sec[e + f*x]/(Sqrt[a + a*Sec[e + f*x]]*Sqrt[c + d*Sec[e + f*x]]), x]", //
@@ -9133,6 +10276,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4052, 211}
+  @Test
   public void test1169() {
     check( //
         "Integrate[(Sec[e + f*x]*Sqrt[a + a*Sec[e + f*x]])/(c + d*Sec[e + f*x]), x]", //
@@ -9141,6 +10285,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4004, 3879}
+  @Test
   public void test1170() {
     check( //
         "Integrate[(A + B*Sec[c + d*x])/(a + a*Sec[c + d*x]), x]", //
@@ -9149,6 +10294,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4085, 3879}
+  @Test
   public void test1171() {
     check( //
         "Integrate[(Sec[c + d*x]*(A + B*Sec[c + d*x]))/(a + a*Sec[c + d*x])^2, x]", //
@@ -9157,6 +10303,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4086, 3877}
+  @Test
   public void test1172() {
     check( //
         "Integrate[Sec[c + d*x]*Sqrt[a + a*Sec[c + d*x]]*(A + B*Sec[c + d*x]), x]", //
@@ -9165,6 +10312,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4098, 3889}
+  @Test
   public void test1173() {
     check( //
         "Integrate[(Sqrt[a + a*Sec[c + d*x]]*(A + B*Sec[c + d*x]))/Sec[c + d*x]^(3/2), x]", //
@@ -9173,6 +10321,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {21, 8}
+  @Test
   public void test1174() {
     check( //
         "Integrate[((a*B)/b + B*Sec[c + d*x])/(a + b*Sec[c + d*x]), x]", //
@@ -9181,6 +10330,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4131, 3855}
+  @Test
   public void test1175() {
     check( //
         "Integrate[Sec[c + d*x]*(A + C*Sec[c + d*x]^2), x]", //
@@ -9189,6 +10339,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4130, 3855}
+  @Test
   public void test1176() {
     check( //
         "Integrate[Cos[c + d*x]*(A + C*Sec[c + d*x]^2), x]", //
@@ -9197,6 +10348,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4130, 8}
+  @Test
   public void test1177() {
     check( //
         "Integrate[Cos[c + d*x]^2*(A + C*Sec[c + d*x]^2), x]", //
@@ -9205,6 +10357,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852, 8}
+  @Test
   public void test1178() {
     check( //
         "Integrate[-Sec[e + f*x]^2, x]", //
@@ -9213,6 +10366,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4219, 270}
+  @Test
   public void test1179() {
     check( //
         "Integrate[Sin[e + f*x]/Sqrt[a + b*Sec[e + f*x]^2], x]", //
@@ -9221,6 +10375,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4217, 270}
+  @Test
   public void test1180() {
     check( //
         "Integrate[Csc[e + f*x]^2/Sqrt[a + b*Sec[e + f*x]^2], x]", //
@@ -9229,6 +10384,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4131, 3855}
+  @Test
   public void test1181() {
     check( //
         "Integrate[Sec[e + f*x]*(a + b*Sec[e + f*x]^2), x]", //
@@ -9237,6 +10393,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4130, 3855}
+  @Test
   public void test1182() {
     check( //
         "Integrate[Cos[e + f*x]*(a + b*Sec[e + f*x]^2), x]", //
@@ -9245,6 +10402,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4130, 8}
+  @Test
   public void test1183() {
     check( //
         "Integrate[Cos[e + f*x]^2*(a + b*Sec[e + f*x]^2), x]", //
@@ -9253,6 +10411,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4232, 214}
+  @Test
   public void test1184() {
     check( //
         "Integrate[Sec[e + f*x]/(a + b*Sec[e + f*x]^2), x]", //
@@ -9261,6 +10420,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4231, 211}
+  @Test
   public void test1185() {
     check( //
         "Integrate[Sec[e + f*x]^2/(a + b*Sec[e + f*x]^2), x]", //
@@ -9269,6 +10429,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4231, 197}
+  @Test
   public void test1186() {
     check( //
         "Integrate[Sec[e + f*x]^2/(a + b*Sec[e + f*x]^2)^(3/2), x]", //
@@ -9277,6 +10438,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4223, 266}
+  @Test
   public void test1187() {
     check( //
         "Integrate[Tan[e + f*x]/(a + b*Sec[e + f*x]^2), x]", //
@@ -9285,6 +10447,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4223, 266}
+  @Test
   public void test1188() {
     check( //
         "Integrate[Tan[e + f*x]/(a + b*Sec[e + f*x]^3), x]", //
@@ -9293,6 +10456,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852, 8}
+  @Test
   public void test1189() {
     check( //
         "Integrate[Csc[a + b*x]^2, x]", //
@@ -9301,6 +10465,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3853, 3855}
+  @Test
   public void test1190() {
     check( //
         "Integrate[Csc[a + b*x]^3, x]", //
@@ -9309,6 +10474,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test1191() {
     check( //
         "Integrate[Csc[a + b*x]^4, x]", //
@@ -9317,6 +10483,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test1192() {
     check( //
         "Integrate[Csc[a + b*x]^6, x]", //
@@ -9325,6 +10492,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3852}
+  @Test
   public void test1193() {
     check( //
         "Integrate[Csc[a + b*x]^8, x]", //
@@ -9333,6 +10501,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test1194() {
     check( //
         "Integrate[Sqrt[Csc[a + b*x]], x]", //
@@ -9341,6 +10510,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test1195() {
     check( //
         "Integrate[1/Sqrt[Csc[a + b*x]], x]", //
@@ -9349,6 +10519,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2720}
+  @Test
   public void test1196() {
     check( //
         "Integrate[Sqrt[c*Csc[a + b*x]], x]", //
@@ -9357,6 +10528,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3856, 2719}
+  @Test
   public void test1197() {
     check( //
         "Integrate[1/Sqrt[c*Csc[a + b*x]], x]", //
@@ -9365,6 +10537,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1198() {
     check( //
         "Integrate[Csc[a + b*x]^(4/3), x]", //
@@ -9373,6 +10546,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1199() {
     check( //
         "Integrate[Csc[a + b*x]^(2/3), x]", //
@@ -9381,6 +10555,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1200() {
     check( //
         "Integrate[Csc[a + b*x]^(1/3), x]", //
@@ -9389,6 +10564,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1201() {
     check( //
         "Integrate[Csc[a + b*x]^(-1/3), x]", //
@@ -9397,6 +10573,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1202() {
     check( //
         "Integrate[Csc[a + b*x]^(-2/3), x]", //
@@ -9405,6 +10582,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1203() {
     check( //
         "Integrate[Csc[a + b*x]^(-4/3), x]", //
@@ -9413,6 +10591,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1204() {
     check( //
         "Integrate[(c*Csc[a + b*x])^(4/3), x]", //
@@ -9421,6 +10600,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1205() {
     check( //
         "Integrate[(c*Csc[a + b*x])^(2/3), x]", //
@@ -9429,6 +10609,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1206() {
     check( //
         "Integrate[(c*Csc[a + b*x])^(1/3), x]", //
@@ -9437,6 +10618,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1207() {
     check( //
         "Integrate[(c*Csc[a + b*x])^(-1/3), x]", //
@@ -9445,6 +10627,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1208() {
     check( //
         "Integrate[(c*Csc[a + b*x])^(-2/3), x]", //
@@ -9453,6 +10636,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1209() {
     check( //
         "Integrate[(c*Csc[a + b*x])^(-4/3), x]", //
@@ -9461,6 +10645,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1210() {
     check( //
         "Integrate[Csc[a + b*x]^n, x]", //
@@ -9469,6 +10654,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3857, 2722}
+  @Test
   public void test1211() {
     check( //
         "Integrate[(c*Csc[a + b*x])^n, x]", //
@@ -9477,6 +10663,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 221}
+  @Test
   public void test1212() {
     check( //
         "Integrate[Sqrt[Csc[x]^2], x]", //
@@ -9485,6 +10672,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test1213() {
     check( //
         "Integrate[1/Sqrt[Csc[x]^2], x]", //
@@ -9493,6 +10681,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4207, 197}
+  @Test
   public void test1214() {
     check( //
         "Integrate[1/Sqrt[a*Csc[x]^2], x]", //
@@ -9501,6 +10690,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3862, 8}
+  @Test
   public void test1225() {
     check( //
         "Integrate[(a + a*Csc[c + d*x])^(-1), x]", //
@@ -9509,6 +10699,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3859, 209}
+  @Test
   public void test1226() {
     check( //
         "Integrate[Sqrt[a + a*Csc[x]], x]", //
@@ -9517,6 +10708,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3886, 221}
+  @Test
   public void test1227() {
     check( //
         "Integrate[Sqrt[Csc[e + f*x]]*Sqrt[a + a*Csc[e + f*x]], x]", //
@@ -9525,6 +10717,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3886, 221}
+  @Test
   public void test1228() {
     check( //
         "Integrate[Sqrt[-Csc[e + f*x]]*Sqrt[a - a*Csc[e + f*x]], x]", //
@@ -9533,6 +10726,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3891, 67}
+  @Test
   public void test1229() {
     check( //
         "Integrate[Csc[c + d*x]^n*Sqrt[a + a*Csc[c + d*x]], x]", //
@@ -9541,6 +10735,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3868, 2736}
+  @Test
   public void test1230() {
     check( //
         "Integrate[(3 + 5*Csc[c + d*x])^(-1), x]", //
@@ -9549,6 +10744,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3964, 31}
+  @Test
   public void test1231() {
     check( //
         "Integrate[Cot[x]/(a + a*Csc[x]), x]", //
@@ -9557,6 +10753,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4373, 3855}
+  @Test
   public void test1232() {
     check( //
         "Integrate[Csc[2*a + 2*b*x]*Sin[a + b*x], x]", //
@@ -9565,6 +10762,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4373, 3556}
+  @Test
   public void test1233() {
     check( //
         "Integrate[Csc[2*a + 2*b*x]*Sin[a + b*x]^2, x]", //
@@ -9573,6 +10771,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4373, 2717}
+  @Test
   public void test1234() {
     check( //
         "Integrate[Csc[a + b*x]*Sin[2*a + 2*b*x], x]", //
@@ -9581,6 +10780,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4373, 3556}
+  @Test
   public void test1235() {
     check( //
         "Integrate[Csc[a + b*x]^2*Sin[2*a + 2*b*x], x]", //
@@ -9589,6 +10789,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4387, 4390}
+  @Test
   public void test1236() {
     check( //
         "Integrate[Sin[a + b*x]*Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9597,6 +10798,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4389, 4376}
+  @Test
   public void test1237() {
     check( //
         "Integrate[Sin[a + b*x]/Sin[2*a + 2*b*x]^(5/2), x]", //
@@ -9605,6 +10807,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4383, 2719}
+  @Test
   public void test1238() {
     check( //
         "Integrate[Sin[a + b*x]^2*Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9613,6 +10816,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4383, 2720}
+  @Test
   public void test1239() {
     check( //
         "Integrate[Sin[a + b*x]^2/Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9621,6 +10825,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4381, 2719}
+  @Test
   public void test1240() {
     check( //
         "Integrate[Sin[a + b*x]^2/Sin[2*a + 2*b*x]^(3/2), x]", //
@@ -9629,6 +10834,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4381, 2720}
+  @Test
   public void test1241() {
     check( //
         "Integrate[Sin[a + b*x]^2/Sin[2*a + 2*b*x]^(5/2), x]", //
@@ -9637,6 +10843,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4383, 4391}
+  @Test
   public void test1242() {
     check( //
         "Integrate[Sin[a + b*x]^3/Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9645,6 +10852,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4381, 4377}
+  @Test
   public void test1243() {
     check( //
         "Integrate[Sin[a + b*x]^3/Sin[2*a + 2*b*x]^(7/2), x]", //
@@ -9653,6 +10861,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4393, 4390}
+  @Test
   public void test1244() {
     check( //
         "Integrate[Csc[a + b*x]*Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9661,6 +10870,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4385, 2719}
+  @Test
   public void test1245() {
     check( //
         "Integrate[Csc[a + b*x]^2*Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9669,6 +10879,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4385, 2720}
+  @Test
   public void test1246() {
     check( //
         "Integrate[Csc[a + b*x]^2/Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9677,6 +10888,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4385, 4377}
+  @Test
   public void test1247() {
     check( //
         "Integrate[Csc[a + b*x]^3/Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9685,6 +10897,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4395, 2657}
+  @Test
   public void test1248() {
     check( //
         "Integrate[Sin[a + b*x]^3*Sin[2*a + 2*b*x]^m, x]", //
@@ -9693,6 +10906,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4395, 2657}
+  @Test
   public void test1249() {
     check( //
         "Integrate[Sin[a + b*x]^2*Sin[2*a + 2*b*x]^m, x]", //
@@ -9701,6 +10915,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4395, 2657}
+  @Test
   public void test1250() {
     check( //
         "Integrate[Sin[a + b*x]*Sin[2*a + 2*b*x]^m, x]", //
@@ -9709,6 +10924,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4395, 2657}
+  @Test
   public void test1251() {
     check( //
         "Integrate[Csc[a + b*x]*Sin[2*a + 2*b*x]^m, x]", //
@@ -9717,6 +10933,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4395, 2657}
+  @Test
   public void test1252() {
     check( //
         "Integrate[Csc[a + b*x]^2*Sin[2*a + 2*b*x]^m, x]", //
@@ -9725,6 +10942,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4395, 2657}
+  @Test
   public void test1253() {
     check( //
         "Integrate[Csc[a + b*x]^3*Sin[2*a + 2*b*x]^m, x]", //
@@ -9733,6 +10951,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4372, 3855}
+  @Test
   public void test1254() {
     check( //
         "Integrate[Cos[a + b*x]*Csc[2*a + 2*b*x], x]", //
@@ -9741,6 +10960,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4372, 3556}
+  @Test
   public void test1255() {
     check( //
         "Integrate[Cos[a + b*x]^2*Csc[2*a + 2*b*x], x]", //
@@ -9749,6 +10969,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4386, 4391}
+  @Test
   public void test1256() {
     check( //
         "Integrate[Cos[a + b*x]*Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9757,6 +10978,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4388, 4377}
+  @Test
   public void test1257() {
     check( //
         "Integrate[Cos[a + b*x]/Sin[2*a + 2*b*x]^(5/2), x]", //
@@ -9765,6 +10987,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4382, 2719}
+  @Test
   public void test1258() {
     check( //
         "Integrate[Cos[a + b*x]^2*Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9773,6 +10996,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4382, 2720}
+  @Test
   public void test1259() {
     check( //
         "Integrate[Cos[a + b*x]^2/Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9781,6 +11005,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4380, 2719}
+  @Test
   public void test1260() {
     check( //
         "Integrate[Cos[a + b*x]^2/Sin[2*a + 2*b*x]^(3/2), x]", //
@@ -9789,6 +11014,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4380, 2720}
+  @Test
   public void test1261() {
     check( //
         "Integrate[Cos[a + b*x]^2/Sin[2*a + 2*b*x]^(5/2), x]", //
@@ -9797,6 +11023,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4382, 4390}
+  @Test
   public void test1262() {
     check( //
         "Integrate[Cos[a + b*x]^3/Sqrt[Sin[2*a + 2*b*x]], x]", //
@@ -9805,6 +11032,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4380, 4376}
+  @Test
   public void test1263() {
     check( //
         "Integrate[Cos[a + b*x]^3/Sin[2*a + 2*b*x]^(7/2), x]", //
@@ -9813,6 +11041,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4393, 4390}
+  @Test
   public void test1264() {
     check( //
         "Integrate[Csc[x]*Sqrt[Sin[2*x]], x]", //
@@ -9821,6 +11050,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4394, 2656}
+  @Test
   public void test1265() {
     check( //
         "Integrate[Cos[a + b*x]^3*Sin[2*a + 2*b*x]^m, x]", //
@@ -9829,6 +11059,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4394, 2656}
+  @Test
   public void test1266() {
     check( //
         "Integrate[Cos[a + b*x]^2*Sin[2*a + 2*b*x]^m, x]", //
@@ -9837,6 +11068,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4394, 2656}
+  @Test
   public void test1267() {
     check( //
         "Integrate[Cos[a + b*x]*Sin[2*a + 2*b*x]^m, x]", //
@@ -9845,6 +11077,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3176, 3212}
+  @Test
   public void test1268() {
     check( //
         "Integrate[Sin[x]/(a*Cos[x] + b*Sin[x]), x]", //
@@ -9853,6 +11086,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3153, 212}
+  @Test
   public void test1269() {
     check( //
         "Integrate[(a*Cos[x] + b*Sin[x])^(-1), x]", //
@@ -9861,6 +11095,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3152, 8}
+  @Test
   public void test1270() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^2, x]", //
@@ -9869,6 +11104,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3167, 37}
+  @Test
   public void test1271() {
     check( //
         "Integrate[Sec[c + d*x]^4*(a*Cos[c + d*x] + b*Sin[c + d*x])^2, x]", //
@@ -9877,6 +11113,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3151}
+  @Test
   public void test1272() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^3, x]", //
@@ -9885,6 +11122,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3167, 37}
+  @Test
   public void test1273() {
     check( //
         "Integrate[Sec[c + d*x]^5*(a*Cos[c + d*x] + b*Sin[c + d*x])^3, x]", //
@@ -9893,6 +11131,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3167, 37}
+  @Test
   public void test1274() {
     check( //
         "Integrate[Sec[c + d*x]^6*(a*Cos[c + d*x] + b*Sin[c + d*x])^4, x]", //
@@ -9901,6 +11140,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3167, 37}
+  @Test
   public void test1275() {
     check( //
         "Integrate[Sec[c + d*x]^7*(a*Cos[c + d*x] + b*Sin[c + d*x])^5, x]", //
@@ -9909,6 +11149,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3177, 3212}
+  @Test
   public void test1276() {
     check( //
         "Integrate[Cos[c + d*x]/(a*Cos[c + d*x] + b*Sin[c + d*x]), x]", //
@@ -9917,6 +11158,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3153, 212}
+  @Test
   public void test1277() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^(-1), x]", //
@@ -9925,6 +11167,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3167, 37}
+  @Test
   public void test1278() {
     check( //
         "Integrate[Cos[c + d*x]^2/(a*Cos[c + d*x] + b*Sin[c + d*x])^4, x]", //
@@ -9933,6 +11176,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3155, 3154}
+  @Test
   public void test1279() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^(-4), x]", //
@@ -9941,6 +11185,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3161, 8}
+  @Test
   public void test1280() {
     check( //
         "Integrate[Cos[c + d*x]/(a*Cos[c + d*x] + I*a*Sin[c + d*x]), x]", //
@@ -9949,6 +11194,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3167, 37}
+  @Test
   public void test1281() {
     check( //
         "Integrate[Cos[c + d*x]/(a*Cos[c + d*x] + I*a*Sin[c + d*x])^3, x]", //
@@ -9957,6 +11203,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3244, 2727}
+  @Test
   public void test1282() {
     check( //
         "Integrate[Sec[x]/(Sec[x] + Tan[x]), x]", //
@@ -9965,6 +11212,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3244, 2727}
+  @Test
   public void test1283() {
     check( //
         "Integrate[Sec[x]/(Sec[x] - Tan[x]), x]", //
@@ -9973,6 +11221,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3245, 2727}
+  @Test
   public void test1284() {
     check( //
         "Integrate[Csc[x]/(Cot[x] + Csc[x]), x]", //
@@ -9981,6 +11230,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3245, 2727}
+  @Test
   public void test1285() {
     check( //
         "Integrate[Csc[x]/(-Cot[x] + Csc[x]), x]", //
@@ -9989,6 +11239,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 266}
+  @Test
   public void test1286() {
     check( //
         "Integrate[Cos[c + d*x]/(Csc[c + d*x] + Sin[c + d*x]), x]", //
@@ -9997,6 +11248,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4423, 209}
+  @Test
   public void test1287() {
     check( //
         "Integrate[Cot[c + d*x]/(Csc[c + d*x] + Sin[c + d*x]), x]", //
@@ -10005,6 +11257,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test1288() {
     check( //
         "Integrate[Csc[c + d*x]/(Csc[c + d*x] + Sin[c + d*x]), x]", //
@@ -10013,6 +11266,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 266}
+  @Test
   public void test1289() {
     check( //
         "Integrate[Cos[c + d*x]/(Csc[c + d*x] - Sin[c + d*x]), x]", //
@@ -10021,6 +11275,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4423, 212}
+  @Test
   public void test1290() {
     check( //
         "Integrate[Cot[c + d*x]/(Csc[c + d*x] - Sin[c + d*x]), x]", //
@@ -10029,6 +11284,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {267}
+  @Test
   public void test1291() {
     check( //
         "Integrate[Sec[c + d*x]/(Csc[c + d*x] - Sin[c + d*x]), x]", //
@@ -10037,6 +11293,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {8}
+  @Test
   public void test1292() {
     check( //
         "Integrate[Csc[c + d*x]/(Csc[c + d*x] - Sin[c + d*x]), x]", //
@@ -10045,6 +11302,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4495, 3855}
+  @Test
   public void test1293() {
     check( //
         "Integrate[(c + d*x)*Cot[a + b*x]*Csc[a + b*x], x]", //
@@ -10053,6 +11311,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4494, 3855}
+  @Test
   public void test1294() {
     check( //
         "Integrate[(c + d*x)*Sec[a + b*x]*Tan[a + b*x], x]", //
@@ -10061,6 +11320,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3525, 2719}
+  @Test
   public void test1295() {
     check( //
         "Integrate[(x*Sin[a + b*x])/Sqrt[Cos[a + b*x]], x]", //
@@ -10069,6 +11329,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3525, 2720}
+  @Test
   public void test1296() {
     check( //
         "Integrate[(x*Sin[a + b*x])/Cos[a + b*x]^(3/2), x]", //
@@ -10077,6 +11338,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3524, 2719}
+  @Test
   public void test1297() {
     check( //
         "Integrate[(x*Cos[a + b*x])/Sqrt[Sin[a + b*x]], x]", //
@@ -10085,6 +11347,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3524, 2720}
+  @Test
   public void test1298() {
     check( //
         "Integrate[(x*Cos[a + b*x])/Sin[a + b*x]^(3/2), x]", //
@@ -10093,6 +11356,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2718}
+  @Test
   public void test1299() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]/x, x]", //
@@ -10101,6 +11365,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 30}
+  @Test
   public void test1300() {
     check( //
         "Integrate[x^2*Sin[a + b*Log[c*x^n]]^2, x]", //
@@ -10109,6 +11374,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 30}
+  @Test
   public void test1301() {
     check( //
         "Integrate[x*Sin[a + b*Log[c*x^n]]^2, x]", //
@@ -10117,6 +11383,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4565, 8}
+  @Test
   public void test1302() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]^2, x]", //
@@ -10125,6 +11392,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 30}
+  @Test
   public void test1303() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]^2/x^2, x]", //
@@ -10133,6 +11401,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 30}
+  @Test
   public void test1304() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]^2/x^3, x]", //
@@ -10141,6 +11410,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 4573}
+  @Test
   public void test1305() {
     check( //
         "Integrate[x^2*Sin[a + b*Log[c*x^n]]^3, x]", //
@@ -10149,6 +11419,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 4573}
+  @Test
   public void test1306() {
     check( //
         "Integrate[x*Sin[a + b*Log[c*x^n]]^3, x]", //
@@ -10157,6 +11428,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4565, 4563}
+  @Test
   public void test1307() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]^3, x]", //
@@ -10165,6 +11437,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 4573}
+  @Test
   public void test1308() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]^3/x^2, x]", //
@@ -10173,6 +11446,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 4573}
+  @Test
   public void test1309() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]^3/x^3, x]", //
@@ -10181,6 +11455,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4563}
+  @Test
   public void test1310() {
     check( //
         "Integrate[Sin[Log[a + b*x]], x]", //
@@ -10189,6 +11464,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 29}
+  @Test
   public void test1311() {
     check( //
         "Integrate[Sin[a]/x, x]", //
@@ -10197,6 +11473,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 29}
+  @Test
   public void test1312() {
     check( //
         "Integrate[Sin[a]^2/x, x]", //
@@ -10205,6 +11482,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 4573}
+  @Test
   public void test1313() {
     check( //
         "Integrate[x^m*Sin[a + (Sqrt[-((1 + m)^2/n^2)]*Log[c*x^n])/2]^3, x]", //
@@ -10213,6 +11491,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 29}
+  @Test
   public void test1314() {
     check( //
         "Integrate[Sin[a]^3/x, x]", //
@@ -10221,6 +11500,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2719}
+  @Test
   public void test1315() {
     check( //
         "Integrate[Sqrt[Sin[a + b*Log[c*x^n]]]/x, x]", //
@@ -10229,6 +11509,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2720}
+  @Test
   public void test1316() {
     check( //
         "Integrate[1/(x*Sqrt[Sin[a + b*Log[c*x^n]]]), x]", //
@@ -10237,6 +11518,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 4573}
+  @Test
   public void test1317() {
     check( //
         "Integrate[(e*x)^m*Sin[d*(a + b*Log[c*x^n])]^3, x]", //
@@ -10245,6 +11527,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4575, 32}
+  @Test
   public void test1318() {
     check( //
         "Integrate[(e*x)^m*Sin[d*(a + b*Log[c*x^n])]^2, x]", //
@@ -10253,6 +11536,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2722}
+  @Test
   public void test1319() {
     check( //
         "Integrate[Sin[a + b*Log[c*x^n]]^p/x, x]", //
@@ -10261,6 +11545,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2717}
+  @Test
   public void test1320() {
     check( //
         "Integrate[Cos[a + b*Log[c*x^n]]/x, x]", //
@@ -10269,6 +11554,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 30}
+  @Test
   public void test1321() {
     check( //
         "Integrate[x^2*Cos[a + b*Log[c*x^n]]^2, x]", //
@@ -10277,6 +11563,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 30}
+  @Test
   public void test1322() {
     check( //
         "Integrate[x*Cos[a + b*Log[c*x^n]]^2, x]", //
@@ -10285,6 +11572,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4566, 8}
+  @Test
   public void test1323() {
     check( //
         "Integrate[Cos[a + b*Log[c*x^n]]^2, x]", //
@@ -10293,6 +11581,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 30}
+  @Test
   public void test1324() {
     check( //
         "Integrate[Cos[a + b*Log[c*x^n]]^2/x^2, x]", //
@@ -10301,6 +11590,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 4574}
+  @Test
   public void test1325() {
     check( //
         "Integrate[x^2*Cos[a + b*Log[c*x^n]]^3, x]", //
@@ -10309,6 +11599,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 4574}
+  @Test
   public void test1326() {
     check( //
         "Integrate[x*Cos[a + b*Log[c*x^n]]^3, x]", //
@@ -10317,6 +11608,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4566, 4564}
+  @Test
   public void test1327() {
     check( //
         "Integrate[Cos[a + b*Log[c*x^n]]^3, x]", //
@@ -10325,6 +11617,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 4574}
+  @Test
   public void test1328() {
     check( //
         "Integrate[Cos[a + b*Log[c*x^n]]^3/x^2, x]", //
@@ -10333,6 +11626,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4564}
+  @Test
   public void test1329() {
     check( //
         "Integrate[Cos[Log[6 + 3*x]], x]", //
@@ -10341,6 +11635,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 4574}
+  @Test
   public void test1330() {
     check( //
         "Integrate[x^m*Cos[a + (Sqrt[-((1 + m)^2/n^2)]*Log[c*x^n])/2]^3, x]", //
@@ -10349,6 +11644,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2719}
+  @Test
   public void test1331() {
     check( //
         "Integrate[Sqrt[Cos[a + b*Log[c*x^n]]]/x, x]", //
@@ -10357,6 +11653,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2720}
+  @Test
   public void test1332() {
     check( //
         "Integrate[1/(x*Sqrt[Cos[a + b*Log[c*x^n]]]), x]", //
@@ -10365,6 +11662,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 4574}
+  @Test
   public void test1333() {
     check( //
         "Integrate[x^m*Cos[a + b*Log[c*x^n]]^3, x]", //
@@ -10373,6 +11671,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4576, 30}
+  @Test
   public void test1334() {
     check( //
         "Integrate[x^m*Cos[a + b*Log[c*x^n]]^2, x]", //
@@ -10381,6 +11680,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3556}
+  @Test
   public void test1335() {
     check( //
         "Integrate[Tan[a + b*Log[c*x^n]]/x, x]", //
@@ -10389,6 +11689,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3556}
+  @Test
   public void test1336() {
     check( //
         "Integrate[Cot[a + b*Log[c*x^n]]/x, x]", //
@@ -10397,6 +11698,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test1337() {
     check( //
         "Integrate[Sec[a + b*Log[c*x^n]]/x, x]", //
@@ -10405,6 +11707,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3855}
+  @Test
   public void test1338() {
     check( //
         "Integrate[Csc[a + b*Log[c*x^n]]/x, x]", //
@@ -10413,6 +11716,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4525, 2291}
+  @Test
   public void test1339() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sin[d + e*x]^n, x]", //
@@ -10421,6 +11725,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4519, 4517}
+  @Test
   public void test1340() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sin[d + e*x]^3, x]", //
@@ -10429,6 +11734,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4519, 2225}
+  @Test
   public void test1341() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sin[d + e*x]^2, x]", //
@@ -10437,6 +11743,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4534, 4538}
+  @Test
   public void test1342() {
     check( //
         "Integrate[F^(c*(a + b*x))*Csc[d + e*x]^3, x]", //
@@ -10445,6 +11752,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4534, 4538}
+  @Test
   public void test1343() {
     check( //
         "Integrate[F^(c*(a + b*x))*Csc[d + e*x]^4, x]", //
@@ -10453,6 +11761,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4526, 2291}
+  @Test
   public void test1344() {
     check( //
         "Integrate[F^(c*(a + b*x))*Cos[d + e*x]^n, x]", //
@@ -10461,6 +11770,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4520, 4518}
+  @Test
   public void test1345() {
     check( //
         "Integrate[F^(c*(a + b*x))*Cos[d + e*x]^3, x]", //
@@ -10469,6 +11779,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4520, 2225}
+  @Test
   public void test1346() {
     check( //
         "Integrate[F^(c*(a + b*x))*Cos[d + e*x]^2, x]", //
@@ -10477,6 +11788,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4533, 4536}
+  @Test
   public void test1347() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sec[d + e*x]^3, x]", //
@@ -10485,6 +11797,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4533, 4536}
+  @Test
   public void test1348() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sec[d + e*x]^4, x]", //
@@ -10493,6 +11806,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4539, 2291}
+  @Test
   public void test1349() {
     check( //
         "Integrate[F^(c*(a + b*x))*Sec[d + e*x]^n, x]", //
@@ -10501,6 +11815,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4540, 2291}
+  @Test
   public void test1350() {
     check( //
         "Integrate[F^(c*(a + b*x))*Csc[d + e*x]^n, x]", //
@@ -10509,6 +11824,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {6847, 4518}
+  @Test
   public void test1351() {
     check( //
         "Integrate[E^(2*x^2)*x*Cos[2*x^2], x]", //
@@ -10517,6 +11833,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 2718}
+  @Test
   public void test1352() {
     check( //
         "Integrate[E^x*Sin[E^x], x]", //
@@ -10525,6 +11842,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 2717}
+  @Test
   public void test1353() {
     check( //
         "Integrate[E^x*Cos[E^x], x]", //
@@ -10533,6 +11851,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 2717}
+  @Test
   public void test1354() {
     check( //
         "Integrate[E^(2*x)*Cos[E^(2*x)], x]", //
@@ -10541,6 +11860,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 2717}
+  @Test
   public void test1355() {
     check( //
         "Integrate[Cos[E^(-2*x)]/E^(2*x), x]", //
@@ -10549,6 +11869,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 3556}
+  @Test
   public void test1356() {
     check( //
         "Integrate[E^x*Tan[E^x], x]", //
@@ -10557,6 +11878,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 3855}
+  @Test
   public void test1357() {
     check( //
         "Integrate[E^x*Sec[E^x], x]", //
@@ -10565,6 +11887,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4541, 4535}
+  @Test
   public void test1358() {
     check( //
         "Integrate[F^(c*(a + b*x))/(f + f*Sin[d + e*x]), x]", //
@@ -10573,6 +11896,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4542, 4536}
+  @Test
   public void test1359() {
     check( //
         "Integrate[F^(c*(a + b*x))/(f + f*Cos[d + e*x]), x]", //
@@ -10581,6 +11905,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 2736}
+  @Test
   public void test1360() {
     check( //
         "Integrate[2/(3 - Cos[4 + 6*x]), x]", //
@@ -10589,6 +11914,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 209}
+  @Test
   public void test1361() {
     check( //
         "Integrate[(1 + Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10597,6 +11923,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 209}
+  @Test
   public void test1362() {
     check( //
         "Integrate[(2 - Cos[2 + 3*x]^2)^(-1), x]", //
@@ -10605,6 +11932,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test1363() {
     check( //
         "Integrate[(Cos[2 + 3*x]^2 + 2*Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10613,6 +11941,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test1364() {
     check( //
         "Integrate[Sec[2 + 3*x]^2/(1 + 2*Tan[2 + 3*x]^2), x]", //
@@ -10621,6 +11950,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test1365() {
     check( //
         "Integrate[Csc[2 + 3*x]^2/(2 + Cot[2 + 3*x]^2), x]", //
@@ -10629,6 +11959,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 213}
+  @Test
   public void test1366() {
     check( //
         "Integrate[(-1 + 3*Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10637,6 +11968,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 212}
+  @Test
   public void test1367() {
     check( //
         "Integrate[(2 - 3*Cos[2 + 3*x]^2)^(-1), x]", //
@@ -10645,6 +11977,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {213}
+  @Test
   public void test1368() {
     check( //
         "Integrate[(-Cos[2 + 3*x]^2 + 2*Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10653,6 +11986,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 213}
+  @Test
   public void test1369() {
     check( //
         "Integrate[Sec[2 + 3*x]^2/(-1 + 2*Tan[2 + 3*x]^2), x]", //
@@ -10661,6 +11995,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 212}
+  @Test
   public void test1370() {
     check( //
         "Integrate[Csc[2 + 3*x]^2/(2 - Cot[2 + 3*x]^2), x]", //
@@ -10669,6 +12004,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {12, 2736}
+  @Test
   public void test1371() {
     check( //
         "Integrate[2/(3 + Cos[4 + 6*x]), x]", //
@@ -10677,6 +12013,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 209}
+  @Test
   public void test1372() {
     check( //
         "Integrate[(2 - Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10685,6 +12022,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 209}
+  @Test
   public void test1373() {
     check( //
         "Integrate[(1 + Cos[2 + 3*x]^2)^(-1), x]", //
@@ -10693,6 +12031,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test1374() {
     check( //
         "Integrate[(2*Cos[2 + 3*x]^2 + Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10701,6 +12040,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test1375() {
     check( //
         "Integrate[Sec[2 + 3*x]^2/(2 + Tan[2 + 3*x]^2), x]", //
@@ -10709,6 +12049,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test1376() {
     check( //
         "Integrate[Csc[2 + 3*x]^2/(1 + 2*Cot[2 + 3*x]^2), x]", //
@@ -10717,6 +12058,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 213}
+  @Test
   public void test1377() {
     check( //
         "Integrate[(-2 + 3*Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10725,6 +12067,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3260, 212}
+  @Test
   public void test1378() {
     check( //
         "Integrate[(1 - 3*Cos[2 + 3*x]^2)^(-1), x]", //
@@ -10733,6 +12076,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {213}
+  @Test
   public void test1379() {
     check( //
         "Integrate[(-2*Cos[2 + 3*x]^2 + Sin[2 + 3*x]^2)^(-1), x]", //
@@ -10741,6 +12085,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 213}
+  @Test
   public void test1380() {
     check( //
         "Integrate[Sec[2 + 3*x]^2/(-2 + Tan[2 + 3*x]^2), x]", //
@@ -10749,6 +12094,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 212}
+  @Test
   public void test1381() {
     check( //
         "Integrate[Csc[2 + 3*x]^2/(1 - 2*Cot[2 + 3*x]^2), x]", //
@@ -10757,6 +12103,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2727}
+  @Test
   public void test1382() {
     check( //
         "Integrate[1/(x*(1 + Sin[Log[x]])), x]", //
@@ -10765,6 +12112,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {6813, 3380}
+  @Test
   public void test1383() {
     check( //
         "Integrate[Sin[Sqrt[1 - a*x]/Sqrt[1 + a*x]]/(1 - a^2*x^2), x]", //
@@ -10773,6 +12121,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {6813, 3383}
+  @Test
   public void test1384() {
     check( //
         "Integrate[Cos[Sqrt[1 - a*x]/Sqrt[1 + a*x]]/(1 - a^2*x^2), x]", //
@@ -10781,6 +12130,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3832, 3556}
+  @Test
   public void test1385() {
     check( //
         "Integrate[Tan[Sqrt[x]]/Sqrt[x], x]", //
@@ -10789,6 +12139,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3848}
+  @Test
   public void test1386() {
     check( //
         "Integrate[(b*Tan[a + b*x + c*x^2])/(2*c) + x*Tan[a + b*x + c*x^2], x]", //
@@ -10797,6 +12148,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2908, 4053}
+  @Test
   public void test1387() {
     check( //
         "Integrate[Sqrt[a + b*Sec[c + d*x]]/(1 + Cos[c + d*x]), x]", //
@@ -10805,6 +12157,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4442, 213}
+  @Test
   public void test1388() {
     check( //
         "Integrate[Sec[2*x]*Sin[x], x]", //
@@ -10813,6 +12166,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4373, 3855}
+  @Test
   public void test1389() {
     check( //
         "Integrate[Csc[2*x]*Sin[x], x]", //
@@ -10821,6 +12175,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {212}
+  @Test
   public void test1390() {
     check( //
         "Integrate[Csc[3*x]*Sin[x], x]", //
@@ -10829,6 +12184,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4373, 2717}
+  @Test
   public void test1391() {
     check( //
         "Integrate[Csc[3*x]*Sin[6*x], x]", //
@@ -10837,6 +12193,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4441, 212}
+  @Test
   public void test1392() {
     check( //
         "Integrate[Cos[x]*Sec[2*x], x]", //
@@ -10845,6 +12202,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {212}
+  @Test
   public void test1393() {
     check( //
         "Integrate[Cos[x]*Sec[3*x], x]", //
@@ -10853,6 +12211,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4372, 3855}
+  @Test
   public void test1394() {
     check( //
         "Integrate[Cos[x]*Csc[2*x], x]", //
@@ -10861,6 +12220,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4485, 2669}
+  @Test
   public void test1395() {
     check( //
         "Integrate[Sqrt[Sin[x]*Tan[x]], x]", //
@@ -10869,6 +12229,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4485, 2669}
+  @Test
   public void test1396() {
     check( //
         "Integrate[Sqrt[Cos[x]*Cot[x]], x]", //
@@ -10877,6 +12238,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 211}
+  @Test
   public void test1397() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + b*Tan[c + d*x]^2), x]", //
@@ -10885,6 +12247,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {211}
+  @Test
   public void test1398() {
     check( //
         "Integrate[Sec[c + d*x]^2/(a + c*Sec[c + d*x]^2 + b*Tan[c + d*x]^2), x]", //
@@ -10893,6 +12256,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3157, 2722}
+  @Test
   public void test1399() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^n, x]", //
@@ -10901,6 +12265,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3156, 2722}
+  @Test
   public void test1400() {
     check( //
         "Integrate[(2*Cos[c + d*x] + 3*Sin[c + d*x])^n, x]", //
@@ -10909,6 +12274,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3151}
+  @Test
   public void test1401() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^3, x]", //
@@ -10917,6 +12283,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3152, 8}
+  @Test
   public void test1402() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^2, x]", //
@@ -10925,6 +12292,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3153, 212}
+  @Test
   public void test1403() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^(-1), x]", //
@@ -10933,6 +12301,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3155, 3154}
+  @Test
   public void test1404() {
     check( //
         "Integrate[(a*Cos[c + d*x] + b*Sin[c + d*x])^(-4), x]", //
@@ -10941,6 +12310,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3157, 2719}
+  @Test
   public void test1405() {
     check( //
         "Integrate[Sqrt[a*Cos[c + d*x] + b*Sin[c + d*x]], x]", //
@@ -10949,6 +12319,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3157, 2720}
+  @Test
   public void test1406() {
     check( //
         "Integrate[1/Sqrt[a*Cos[c + d*x] + b*Sin[c + d*x]], x]", //
@@ -10957,6 +12328,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3156, 2719}
+  @Test
   public void test1407() {
     check( //
         "Integrate[Sqrt[2*Cos[c + d*x] + 3*Sin[c + d*x]], x]", //
@@ -10965,6 +12337,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3156, 2720}
+  @Test
   public void test1408() {
     check( //
         "Integrate[1/Sqrt[2*Cos[c + d*x] + 3*Sin[c + d*x]], x]", //
@@ -10973,6 +12346,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {30}
+  @Test
   public void test1409() {
     check( //
         "Integrate[(Csc[x] - Sin[x])^(-2), x]", //
@@ -10981,6 +12355,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {30}
+  @Test
   public void test1411() {
     check( //
         "Integrate[(-Cos[x] + Sec[x])^(-2), x]", //
@@ -10989,6 +12364,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3195, 3193}
+  @Test
   public void test1413() {
     check( //
         "Integrate[(Sqrt[b^2 + c^2] + b*Cos[d + e*x] + c*Sin[d + e*x])^(-2), x]", //
@@ -10997,6 +12373,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3203, 31}
+  @Test
   public void test1414() {
     check( //
         "Integrate[(2*a + 2*a*Cos[d + e*x] + 2*c*Sin[d + e*x])^(-1), x]", //
@@ -11005,6 +12382,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3203, 31}
+  @Test
   public void test1415() {
     check( //
         "Integrate[(2*a + 2*a*Cos[d + e*x] + 2*a*Sin[d + e*x])^(-1), x]", //
@@ -11013,6 +12391,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3200, 31}
+  @Test
   public void test1416() {
     check( //
         "Integrate[(2*a - 2*a*Cos[d + e*x] + 2*c*Sin[d + e*x])^(-1), x]", //
@@ -11021,6 +12400,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3202, 31}
+  @Test
   public void test1417() {
     check( //
         "Integrate[(2*a + 2*b*Cos[d + e*x] + 2*a*Sin[d + e*x])^(-1), x]", //
@@ -11029,6 +12409,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3201, 31}
+  @Test
   public void test1418() {
     check( //
         "Integrate[(2*a + 2*b*Cos[d + e*x] - 2*a*Sin[d + e*x])^(-1), x]", //
@@ -11037,6 +12418,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3197, 2732}
+  @Test
   public void test1419() {
     check( //
         "Integrate[Sqrt[2 + 3*Cos[d + e*x] + 5*Sin[d + e*x]], x]", //
@@ -11045,6 +12427,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3205, 2740}
+  @Test
   public void test1420() {
     check( //
         "Integrate[1/Sqrt[2 + 3*Cos[d + e*x] + 5*Sin[d + e*x]], x]", //
@@ -11053,6 +12436,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3198, 2732}
+  @Test
   public void test1421() {
     check( //
         "Integrate[Sqrt[a + b*Cos[d + e*x] + c*Sin[d + e*x]], x]", //
@@ -11061,6 +12445,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3206, 2740}
+  @Test
   public void test1422() {
     check( //
         "Integrate[1/Sqrt[a + b*Cos[d + e*x] + c*Sin[d + e*x]], x]", //
@@ -11069,6 +12454,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3192, 3191}
+  @Test
   public void test1423() {
     check( //
         "Integrate[(5 + 4*Cos[d + e*x] + 3*Sin[d + e*x])^(3/2), x]", //
@@ -11077,6 +12463,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3192, 3191}
+  @Test
   public void test1424() {
     check( //
         "Integrate[(-5 + 4*Cos[d + e*x] + 3*Sin[d + e*x])^(3/2), x]", //
@@ -11085,6 +12472,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3192, 3191}
+  @Test
   public void test1425() {
     check( //
         "Integrate[(Sqrt[b^2 + c^2] + b*Cos[d + e*x] + c*Sin[d + e*x])^(3/2), x]", //
@@ -11093,6 +12481,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3192, 3191}
+  @Test
   public void test1426() {
     check( //
         "Integrate[(-Sqrt[b^2 + c^2] + b*Cos[d + e*x] + c*Sin[d + e*x])^(3/2), x]", //
@@ -11101,6 +12490,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4465, 8}
+  @Test
   public void test1427() {
     check( //
         "Integrate[(Cos[x]^2 + Sin[x]^2)^(-1), x]", //
@@ -11109,6 +12499,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4465, 8}
+  @Test
   public void test1428() {
     check( //
         "Integrate[(Cos[x]^2 + Sin[x]^2)^(-2), x]", //
@@ -11117,6 +12508,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4465, 8}
+  @Test
   public void test1429() {
     check( //
         "Integrate[(Cos[x]^2 + Sin[x]^2)^(-3), x]", //
@@ -11125,6 +12517,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {212}
+  @Test
   public void test1430() {
     check( //
         "Integrate[(Cos[x]^2 - Sin[x]^2)^(-1), x]", //
@@ -11133,6 +12526,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {391}
+  @Test
   public void test1431() {
     check( //
         "Integrate[(Cos[x]^2 - Sin[x]^2)^(-2), x]", //
@@ -11141,6 +12535,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test1432() {
     check( //
         "Integrate[(Cos[x]^2 + a^2*Sin[x]^2)^(-1), x]", //
@@ -11149,6 +12544,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test1433() {
     check( //
         "Integrate[(b^2*Cos[x]^2 + Sin[x]^2)^(-1), x]", //
@@ -11157,6 +12553,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {211}
+  @Test
   public void test1434() {
     check( //
         "Integrate[(b^2*Cos[x]^2 + a^2*Sin[x]^2)^(-1), x]", //
@@ -11165,6 +12562,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {209}
+  @Test
   public void test1435() {
     check( //
         "Integrate[(4*Cos[1 + 2*x]^2 + 3*Sin[1 + 2*x]^2)^(-1), x]", //
@@ -11173,6 +12571,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4466, 8}
+  @Test
   public void test1436() {
     check( //
         "Integrate[(Sec[x]^2 - Tan[x]^2)^(-1), x]", //
@@ -11181,6 +12580,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4466, 8}
+  @Test
   public void test1437() {
     check( //
         "Integrate[(Sec[x]^2 - Tan[x]^2)^(-2), x]", //
@@ -11189,6 +12589,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4466, 8}
+  @Test
   public void test1438() {
     check( //
         "Integrate[(Sec[x]^2 - Tan[x]^2)^(-3), x]", //
@@ -11197,6 +12598,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4467, 8}
+  @Test
   public void test1439() {
     check( //
         "Integrate[(Cot[x]^2 - Csc[x]^2)^(-1), x]", //
@@ -11205,6 +12607,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4467, 8}
+  @Test
   public void test1440() {
     check( //
         "Integrate[(Cot[x]^2 - Csc[x]^2)^(-2), x]", //
@@ -11213,6 +12616,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4467, 8}
+  @Test
   public void test1441() {
     check( //
         "Integrate[(Cot[x]^2 - Csc[x]^2)^(-3), x]", //
@@ -11221,6 +12625,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {211}
+  @Test
   public void test1442() {
     check( //
         "Integrate[(a + b*Cos[x]^2 + c*Sin[x]^2)^(-1), x]", //
@@ -11229,6 +12634,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3102, 2813}
+  @Test
   public void test1443() {
     check( //
         "Integrate[(a + b*Sin[d + e*x])*(b^2 + 2*a*b*Sin[d + e*x] + a^2*Sin[d + e*x]^2), x]", //
@@ -11237,6 +12643,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3371, 2813}
+  @Test
   public void test1444() {
     check( //
         "Integrate[(a + b*Sin[d + e*x])*Sqrt[b^2 + 2*a*b*Sin[d + e*x] + a^2*Sin[d + e*x]^2], x]", //
@@ -11245,6 +12652,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2745, 2723}
+  @Test
   public void test1445() {
     check( //
         "Integrate[(a + b*Cos[c + d*x]*Sin[c + d*x])^2, x]", //
@@ -11253,6 +12661,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4482, 3877}
+  @Test
   public void test1446() {
     check( //
         "Integrate[Sec[2*(a + b*x)]*Sqrt[c*Tan[a + b*x]*Tan[2*(a + b*x)]], x]", //
@@ -11261,6 +12670,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test1447() {
     check( //
         "Integrate[Sin[x]/(a + b*Cos[x]), x]", //
@@ -11269,6 +12679,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test1448() {
     check( //
         "Integrate[(a + b*Cos[x])^n*Sin[x], x]", //
@@ -11277,6 +12688,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 221}
+  @Test
   public void test1449() {
     check( //
         "Integrate[Sin[x]/Sqrt[1 + Cos[x]^2], x]", //
@@ -11285,6 +12697,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4420, 2717}
+  @Test
   public void test1450() {
     check( //
         "Integrate[Cos[Cos[x]]*Sin[x], x]", //
@@ -11293,6 +12706,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4420, 2718}
+  @Test
   public void test1451() {
     check( //
         "Integrate[Sin[3*x]*Sin[Cos[3*x]], x]", //
@@ -11301,6 +12715,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4420, 2225}
+  @Test
   public void test1452() {
     check( //
         "Integrate[E^(n*Cos[a + b*x])*Sin[a + b*x], x]", //
@@ -11309,6 +12724,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4420, 2225}
+  @Test
   public void test1453() {
     check( //
         "Integrate[E^(n*Cos[a*c + b*c*x])*Sin[c*(a + b*x)], x]", //
@@ -11317,6 +12733,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4420, 2225}
+  @Test
   public void test1454() {
     check( //
         "Integrate[E^(n*Cos[c*(a + b*x)])*Sin[a*c + b*c*x], x]", //
@@ -11325,6 +12742,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 2209}
+  @Test
   public void test1455() {
     check( //
         "Integrate[E^(n*Cos[a + b*x])*Tan[a + b*x], x]", //
@@ -11333,6 +12751,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 2209}
+  @Test
   public void test1456() {
     check( //
         "Integrate[E^(n*Cos[a*c + b*c*x])*Tan[c*(a + b*x)], x]", //
@@ -11341,6 +12760,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 2209}
+  @Test
   public void test1457() {
     check( //
         "Integrate[E^(n*Cos[c*(a + b*x)])*Tan[a*c + b*c*x], x]", //
@@ -11349,6 +12769,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 31}
+  @Test
   public void test1458() {
     check( //
         "Integrate[Cos[x]/(a + b*Sin[x]), x]", //
@@ -11357,6 +12778,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2747, 32}
+  @Test
   public void test1459() {
     check( //
         "Integrate[Cos[x]*(a + b*Sin[x])^n, x]", //
@@ -11365,6 +12787,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 221}
+  @Test
   public void test1460() {
     check( //
         "Integrate[Cos[x]/Sqrt[1 + Sin[x]^2], x]", //
@@ -11373,6 +12796,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 222}
+  @Test
   public void test1461() {
     check( //
         "Integrate[Cos[x]/Sqrt[4 - Sin[x]^2], x]", //
@@ -11381,6 +12805,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 222}
+  @Test
   public void test1462() {
     check( //
         "Integrate[Cos[3*x]/Sqrt[4 - Sin[3*x]^2], x]", //
@@ -11389,6 +12814,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3277, 267}
+  @Test
   public void test1463() {
     check( //
         "Integrate[Cos[x]*Sin[x]*Sqrt[1 + Sin[x]^2], x]", //
@@ -11397,6 +12823,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2717}
+  @Test
   public void test1464() {
     check( //
         "Integrate[Cos[x]*Cos[Sin[x]], x]", //
@@ -11405,6 +12832,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 3855}
+  @Test
   public void test1465() {
     check( //
         "Integrate[Cos[x]*Sec[Sin[x]], x]", //
@@ -11413,6 +12841,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2240}
+  @Test
   public void test1466() {
     check( //
         "Integrate[(E^Sqrt[Sin[x]]*Cos[x])/Sqrt[Sin[x]], x]", //
@@ -11421,6 +12850,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2225}
+  @Test
   public void test1467() {
     check( //
         "Integrate[E^(4 + Sin[x])*Cos[x], x]", //
@@ -11429,6 +12859,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4441, 2225}
+  @Test
   public void test1468() {
     check( //
         "Integrate[E^(Cos[x]*Sin[x])*Cos[2*x], x]", //
@@ -11437,6 +12868,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4441, 2225}
+  @Test
   public void test1469() {
     check( //
         "Integrate[E^(Cos[x/2]*Sin[x/2])*Cos[x], x]", //
@@ -11445,6 +12877,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2225}
+  @Test
   public void test1470() {
     check( //
         "Integrate[E^(n*Sin[a + b*x])*Cos[a + b*x], x]", //
@@ -11453,6 +12886,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2225}
+  @Test
   public void test1471() {
     check( //
         "Integrate[E^(n*Sin[a*c + b*c*x])*Cos[c*(a + b*x)], x]", //
@@ -11461,6 +12895,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2225}
+  @Test
   public void test1472() {
     check( //
         "Integrate[E^(n*Sin[c*(a + b*x)])*Cos[a*c + b*c*x], x]", //
@@ -11469,6 +12904,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4423, 2209}
+  @Test
   public void test1473() {
     check( //
         "Integrate[E^(n*Sin[a + b*x])*Cot[a + b*x], x]", //
@@ -11477,6 +12913,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4423, 2209}
+  @Test
   public void test1474() {
     check( //
         "Integrate[E^(n*Sin[a*c + b*c*x])*Cot[c*(a + b*x)], x]", //
@@ -11485,6 +12922,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4423, 2209}
+  @Test
   public void test1475() {
     check( //
         "Integrate[E^(n*Sin[c*(a + b*x)])*Cot[a*c + b*c*x], x]", //
@@ -11493,6 +12931,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test1476() {
     check( //
         "Integrate[Sec[x]^2/(a + b*Tan[x]), x]", //
@@ -11501,6 +12940,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 212}
+  @Test
   public void test1477() {
     check( //
         "Integrate[Sec[x]^2/(1 - Tan[x]^2), x]", //
@@ -11509,6 +12949,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 209}
+  @Test
   public void test1478() {
     check( //
         "Integrate[Sec[x]^2/(9 + Tan[x]^2), x]", //
@@ -11517,6 +12958,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test1479() {
     check( //
         "Integrate[Sec[x]^2*(a + b*Tan[x])^n, x]", //
@@ -11525,6 +12967,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4427, 267}
+  @Test
   public void test1480() {
     check( //
         "Integrate[(Sec[x]^2*Tan[x]^2)/(2 + Tan[x]^3)^2, x]", //
@@ -11533,6 +12976,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 8}
+  @Test
   public void test1481() {
     check( //
         "Integrate[(1 + Cos[x]^2)*Sec[x]^2, x]", //
@@ -11541,6 +12985,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4231, 222}
+  @Test
   public void test1482() {
     check( //
         "Integrate[Sec[x]^2/Sqrt[4 - Sec[x]^2], x]", //
@@ -11549,6 +12994,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 222}
+  @Test
   public void test1483() {
     check( //
         "Integrate[Sec[x]^2/Sqrt[1 - 4*Tan[x]^2], x]", //
@@ -11557,6 +13003,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4427, 2225}
+  @Test
   public void test1484() {
     check( //
         "Integrate[E^Tan[x]*Sec[x]^2, x]", //
@@ -11565,6 +13012,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 31}
+  @Test
   public void test1485() {
     check( //
         "Integrate[Csc[x]^2/(a + b*Cot[x]), x]", //
@@ -11573,6 +13021,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3587, 32}
+  @Test
   public void test1486() {
     check( //
         "Integrate[(a + b*Cot[x])^n*Csc[x]^2, x]", //
@@ -11581,6 +13030,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3091, 8}
+  @Test
   public void test1487() {
     check( //
         "Integrate[Csc[x]^2*(1 + Sin[x]^2), x]", //
@@ -11589,6 +13039,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4429, 2225}
+  @Test
   public void test1488() {
     check( //
         "Integrate[Csc[x]^2/E^Cot[x], x]", //
@@ -11597,6 +13048,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 209}
+  @Test
   public void test1489() {
     check( //
         "Integrate[(Sec[x]*Tan[x])/(1 + Sec[x]^2), x]", //
@@ -11605,6 +13057,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 209}
+  @Test
   public void test1490() {
     check( //
         "Integrate[(Sec[x]*Tan[x])/(9 + 4*Sec[x]^2), x]", //
@@ -11613,6 +13066,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 31}
+  @Test
   public void test1491() {
     check( //
         "Integrate[(Sec[x]*Tan[x])/(Sec[x] + Sec[x]^2), x]", //
@@ -11621,6 +13075,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {270}
+  @Test
   public void test1492() {
     check( //
         "Integrate[(Sec[x]*Tan[x])/Sqrt[1 + Cos[x]^2], x]", //
@@ -11629,6 +13084,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 2240}
+  @Test
   public void test1493() {
     check( //
         "Integrate[E^Sec[x]*Sec[x]*Tan[x], x]", //
@@ -11637,6 +13093,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 2240}
+  @Test
   public void test1494() {
     check( //
         "Integrate[2^Sec[x]*Sec[x]*Tan[x], x]", //
@@ -11645,6 +13102,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 267}
+  @Test
   public void test1495() {
     check( //
         "Integrate[(Sec[2*x]*Tan[2*x])/(1 + Sec[2*x])^(3/2), x]", //
@@ -11653,6 +13111,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {270}
+  @Test
   public void test1496() {
     check( //
         "Integrate[(Sec[3*x]*Tan[3*x])/Sqrt[1 + 5*Cos[3*x]^2], x]", //
@@ -11661,6 +13120,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4423, 2240}
+  @Test
   public void test1497() {
     check( //
         "Integrate[5^Csc[3*x]*Cot[3*x]*Csc[3*x], x]", //
@@ -11669,6 +13129,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4423, 209}
+  @Test
   public void test1498() {
     check( //
         "Integrate[(Cot[x]*Csc[x])/(1 + Csc[x]^2), x]", //
@@ -11677,6 +13138,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {270}
+  @Test
   public void test1499() {
     check( //
         "Integrate[(Cot[x]*Csc[x])/Sqrt[1 + Sin[x]^2], x]", //
@@ -11685,6 +13147,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test1500() {
     check( //
         "Integrate[x*Sec[x]^2, x]", //
@@ -11693,6 +13156,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2645, 30}
+  @Test
   public void test1501() {
     check( //
         "Integrate[Sqrt[Cos[x]]*Sin[x], x]", //
@@ -11701,6 +13165,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 3556}
+  @Test
   public void test1502() {
     check( //
         "Integrate[Tan[E^(-2*x)]/E^(2*x), x]", //
@@ -11709,6 +13174,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test1503() {
     check( //
         "Integrate[x*Sec[3*x]^2, x]", //
@@ -11717,6 +13183,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3833, 3556}
+  @Test
   public void test1504() {
     check( //
         "Integrate[x*Cot[x^2], x]", //
@@ -11725,6 +13192,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3269, 209}
+  @Test
   public void test1505() {
     check( //
         "Integrate[Cos[2*x]/(8 + Sin[2*x]^2), x]", //
@@ -11733,6 +13201,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test1506() {
     check( //
         "Integrate[x*Cos[x^2], x]", //
@@ -11741,6 +13210,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test1507() {
     check( //
         "Integrate[x^2*Cos[4*x^3], x]", //
@@ -11749,6 +13219,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test1508() {
     check( //
         "Integrate[x^3*Cos[x^4], x]", //
@@ -11757,6 +13228,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test1509() {
     check( //
         "Integrate[x*Sin[x^2/2], x]", //
@@ -11765,6 +13237,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3832, 3556}
+  @Test
   public void test1510() {
     check( //
         "Integrate[x*Tan[1 + x^2], x]", //
@@ -11773,6 +13246,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {6847, 4517}
+  @Test
   public void test1511() {
     check( //
         "Integrate[(x^2*Sin[2*x^3])/E^(3*x^3), x]", //
@@ -11781,6 +13255,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test1512() {
     check( //
         "Integrate[x*Sin[1 + x^2], x]", //
@@ -11789,6 +13264,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3461, 2717}
+  @Test
   public void test1513() {
     check( //
         "Integrate[x*Cos[1 + x^2], x]", //
@@ -11797,6 +13273,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test1514() {
     check( //
         "Integrate[x^2*Sin[1 + x^3], x]", //
@@ -11805,6 +13282,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3377, 2717}
+  @Test
   public void test1515() {
     check( //
         "Integrate[(1 + x)*Sin[1 + x], x]", //
@@ -11813,6 +13291,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2717}
+  @Test
   public void test1516() {
     check( //
         "Integrate[Cos[x]*Cos[2*Sin[x]], x]", //
@@ -11821,6 +13300,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4420, 266}
+  @Test
   public void test1517() {
     check( //
         "Integrate[(Cos[x]*Sin[x])/(1 + Cos[x]^2), x]", //
@@ -11829,6 +13309,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test1518() {
     check( //
         "Integrate[x*Csc[x]^2, x]", //
@@ -11837,6 +13318,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test1519() {
     check( //
         "Integrate[Sec[x]*(1 - Sin[x]), x]", //
@@ -11845,6 +13327,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2746, 31}
+  @Test
   public void test1520() {
     check( //
         "Integrate[(1 + Cos[x])*Csc[x], x]", //
@@ -11853,6 +13336,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3756, 391}
+  @Test
   public void test1521() {
     check( //
         "Integrate[Cos[x]^2*(1 - Tan[x]^2), x]", //
@@ -11861,6 +13345,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 642}
+  @Test
   public void test1522() {
     check( //
         "Integrate[(Cos[x]*(-3 + 2*Sin[x]))/(2 - 3*Sin[x] + Sin[x]^2), x]", //
@@ -11869,6 +13354,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3339, 629}
+  @Test
   public void test1523() {
     check( //
         "Integrate[Cos[x]/(Sin[x] + Sin[x]^2), x]", //
@@ -11877,6 +13363,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test1524() {
     check( //
         "Integrate[x*Sin[2*x^2], x]", //
@@ -11885,6 +13372,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3277, 267}
+  @Test
   public void test1525() {
     check( //
         "Integrate[-(Cos[1 - x]*Sin[1 - x]*Sqrt[1 + Sin[1 - x]^2]), x]", //
@@ -11893,6 +13381,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2644, 30}
+  @Test
   public void test1526() {
     check( //
         "Integrate[Cos[(1 + 3*x)/2]*Sin[(1 + 3*x)/2]^3, x]", //
@@ -11901,6 +13390,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4289, 3855}
+  @Test
   public void test1527() {
     check( //
         "Integrate[x*Sec[5 - x^2], x]", //
@@ -11909,6 +13399,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4290, 3855}
+  @Test
   public void test1528() {
     check( //
         "Integrate[Csc[x^(-1)]/x^2, x]", //
@@ -11917,6 +13408,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4419, 2225}
+  @Test
   public void test1529() {
     check( //
         "Integrate[2^Sin[x]*Cos[x], x]", //
@@ -11925,6 +13417,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4424, 267}
+  @Test
   public void test1530() {
     check( //
         "Integrate[Sec[x]*Sqrt[4 + 3*Sec[x]]*Tan[x], x]", //
@@ -11933,6 +13426,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3460, 2718}
+  @Test
   public void test1531() {
     check( //
         "Integrate[x*Sin[x^2], x]", //
@@ -11941,6 +13435,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {3842, 3855}
+  @Test
   public void test1532() {
     check( //
         "Integrate[x*Sec[1 + x]*Tan[1 + x], x]", //
@@ -11949,6 +13444,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {2702, 30}
+  @Test
   public void test1533() {
     check( //
         "Integrate[Sec[x]^(1 + m)*Sin[x], x]", //
@@ -11957,6 +13453,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {4269, 3556}
+  @Test
   public void test1534() {
     check( //
         "Integrate[(1 + 2*x)*Sec[1 + 2*x]^2, x]", //
@@ -11965,6 +13462,7 @@ public class TrigFunctions extends AbstractRubiTestCase {
   }
 
   // {391}
+  @Test
   public void test1535() {
     check( //
         "Integrate[(-Csc[a + b*x]^2 + Sec[a + b*x]^2)/(Csc[a + b*x]^2 + Sec[a + b*x]^2), x]", //

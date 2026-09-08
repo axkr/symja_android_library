@@ -2,24 +2,20 @@ package org.matheclipse.discord;
 
 import java.util.Locale;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.parser.client.ParserConfig;
-import junit.framework.TestCase;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(JUnit4.class)
 public class SymjaBotTest {
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Locale.setDefault(Locale.US);
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;

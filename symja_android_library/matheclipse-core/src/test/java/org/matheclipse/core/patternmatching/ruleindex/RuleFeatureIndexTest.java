@@ -2,12 +2,14 @@ package org.matheclipse.core.patternmatching.ruleindex;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Integrate;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * Measures and validates the {@link RuleFeatureIndex} on the Rubi rule set.
@@ -16,6 +18,7 @@ import org.matheclipse.core.reflection.system.Integrate;
  * The probes are integrands which actually reach the Rubi rules; the native pre-Rubi stages of
  * {@code Integrate} answer most textbook integrals long before the rule scan.
  */
+@Tag(TestTags.SLOW)
 public class RuleFeatureIndexTest {
 
   /**

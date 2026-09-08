@@ -1,5 +1,7 @@
 package org.matheclipse.core.rubi.extended;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 /**
@@ -16,10 +18,11 @@ import org.matheclipse.core.rubi.AbstractRubiTestCase;
 public class InverseTrigFunctions extends AbstractRubiTestCase {
   static boolean init = true;
 
-  public InverseTrigFunctions(String name) {
-    super(name, false);
+  public InverseTrigFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -36,6 +39,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
 
 
   // 5.3.3 (d+e x)^m (a+b arctan(c x^n))^p.input:8
+  @Test
   public void test0001() {
     check( //
         "Integrate[(d+e*x)^4*(a+b*ArcTan[c*x]), x]", //
@@ -43,6 +47,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:339
+  @Test
   public void test0002() {
     check( //
         "Integrate[ArcSin[a*x]^3/(c-a^2*c*x^2), x]", //
@@ -50,6 +55,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:79
+  @Test
   public void test0003() {
     check( //
         "Integrate[x^2*ArcTan[c+(1+I*c)*Tan[a+b*x]], x]", //
@@ -57,6 +63,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.3 (d+e x)^m (a+b arctan(c x^n))^p.input:33
+  @Test
   public void test0004() {
     check( //
         "Integrate[(d+e*x)*(a+b*ArcTan[c*x^2]), x]", //
@@ -64,6 +71,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:311
+  @Test
   public void test0005() {
     check( //
         "Integrate[x*ArcCot[E^(a+b*x)], x]", //
@@ -71,6 +79,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:100
+  @Test
   public void test0006() {
     check( //
         "Integrate[ArcCos[a*x^2]/x, x]", //
@@ -78,6 +87,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:334
+  @Test
   public void test0007() {
     check( //
         "Integrate[(c+a^2*c*x^2)^3*ArcTan[a*x]^2, x]", //
@@ -85,6 +95,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:519
+  @Test
   public void test0008() {
     check( //
         "Integrate[x*ArcTan[a*x]^3/Sqrt[c+a^2*c*x^2], x]", //
@@ -92,6 +103,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:115
+  @Test
   public void test0009() {
     check( //
         "Integrate[ArcCot[a*x^2]/x^4, x]", //
@@ -99,6 +111,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:62
+  @Test
   public void test0010() {
     check( //
         "Integrate[x*(a+b*ArcSin[c*x])/(d-c^2*d*x^2)^3, x]", //
@@ -106,6 +119,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:37
+  @Test
   public void test0011() {
     check( //
         "Integrate[(d+I*c*d*x)^3*(a+b*ArcTan[c*x])/x^3, x]", //
@@ -113,6 +127,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:762
+  @Test
   public void test0012() {
     check( //
         "Integrate[x/((c+a^2*c*x^2)^3*ArcTan[a*x]^3), x]", //
@@ -120,6 +135,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:72
+  @Test
   public void test0013() {
     check( //
         "Integrate[x^4*(d-c^2*d*x^2)^(1/2)*(a+b*ArcSin[c*x]), x]", //
@@ -127,6 +143,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.5.1 u (a+b arcsec(c x))^n.input:167
+  @Test
   public void test0014() {
     check( //
         "Integrate[x*(d+e*x^2)^(3/2)*(a+b*ArcSec[c*x]), x]", //
@@ -134,6 +151,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.2 (d x)^m (a+b arccos(c x))^n.input:183
+  @Test
   public void test0015() {
     check( //
         "Integrate[(a+b*ArcCos[c*x])^2, x]", //
@@ -141,6 +159,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:397
+  @Test
   public void test0016() {
     check( //
         "Integrate[(1-c^2*x^2)^(5/2)/(a+b*ArcSin[c*x]), x]", //
@@ -148,6 +167,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:285
+  @Test
   public void test0017() {
     check( //
         "Integrate[ArcTan[a*x]/(x*(c+a^2*c*x^2)^(3/2)), x]", //
@@ -155,6 +175,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:185
+  @Test
   public void test0018() {
     check( //
         "Integrate[ArcTan[c*x/Sqrt[a-c^2*x^2]]^m/Sqrt[d-c^2*d*x^2/a], x]", //
@@ -162,6 +183,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:120
+  @Test
   public void test0019() {
     check( //
         "Integrate[(a+b*ArcTan[c*x])^2/(x^3*(d+I*c*d*x)), x]", //
@@ -169,6 +191,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:389
+  @Test
   public void test0020() {
     check( //
         "Integrate[(1-c^2*x^2)^(3/2)/(a+b*ArcSin[c*x]), x]", //
@@ -176,6 +199,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:157
+  @Test
   public void test0021() {
     check( //
         "Integrate[ArcTan[a+b*f^(c+d*x)], x]", //
@@ -183,6 +207,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:325
+  @Test
   public void test0022() {
     check( //
         "Integrate[x*(c+a^2*c*x^2)^2*ArcTan[a*x]^2, x]", //
@@ -190,6 +215,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:212
+  @Test
   public void test0023() {
     check( //
         "Integrate[(d-c^2*d*x^2)^3*(a+b*ArcSin[c*x])^2/x, x]", //
@@ -197,6 +223,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:170
+  @Test
   public void test0024() {
     check( //
         "Integrate[(a+b*ArcCos[Sqrt[1-c*x]/Sqrt[1+c*x]])^2/(1-c^2*x^2), x]", //
@@ -204,6 +231,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:714
+  @Test
   public void test0025() {
     check( //
         "Integrate[(d+c*d*x)^(1/2)*(e-c*e*x)^(1/2)*(a+b*ArcSin[c*x])^2/x, x]", //
@@ -211,6 +239,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:119
+  @Test
   public void test0026() {
     check( //
         "Integrate[ArcCot[Sqrt[x]]/x, x]", //
@@ -218,6 +247,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:98
+  @Test
   public void test0027() {
     check( //
         "Integrate[(d+I*c*d*x)^2*(a+b*ArcTan[c*x])^2/x^2, x]", //
@@ -225,6 +255,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.6 Exponentials of inverse tangent.input:396
+  @Test
   public void test0028() {
     check( //
         "Integrate[E^(2*I*ArcTan[a*x])/(c+a^2*c*x^2)^(3/2), x]", //
@@ -232,6 +263,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:278
+  @Test
   public void test0029() {
     check( //
         "Integrate[ArcTan[a*x]/(x^2*Sqrt[c+a^2*c*x^2]), x]", //
@@ -239,6 +271,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:347
+  @Test
   public void test0030() {
     check( //
         "Integrate[(a+b*ArcSin[c+d*x])^(3/2), x]", //
@@ -246,6 +279,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:96
+  @Test
   public void test0031() {
     check( //
         "Integrate[x^5*(a+b*ArcTan[c*x^2]), x]", //
@@ -253,6 +287,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:1536
+  @Test
   public void test0032() {
     check( //
         "Integrate[ArcTan[x]*Log[1+x^2]/x^2, x]", //
@@ -260,6 +295,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:493
+  @Test
   public void test0033() {
     check( //
         "Integrate[x*ArcTan[a*x]^3*Sqrt[c+a^2*c*x^2], x]", //
@@ -267,6 +303,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:761
+  @Test
   public void test0034() {
     check( //
         "Integrate[x^2/((c+a^2*c*x^2)^3*ArcTan[a*x]^3), x]", //
@@ -274,6 +311,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:63
+  @Test
   public void test0035() {
     check( //
         "Integrate[(a+b*ArcTan[c*x])/(x^4*(d+I*c*d*x)), x]", //
@@ -281,6 +319,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:46
+  @Test
   public void test0036() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])/(x*(d-c^2*d*x^2)), x]", //
@@ -288,6 +327,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:433
+  @Test
   public void test0037() {
     check( //
         "Integrate[(1-a^2-2*a*b*x-b^2*x^2)^(3/2)*ArcSin[a+b*x]^3, x]", //
@@ -295,6 +335,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:768
+  @Test
   public void test0038() {
     check( //
         "Integrate[x^3/((1+a^2*x^2)*ArcTan[a*x]^3)-3/2*x^2/(a*ArcTan[a*x]^2), x]", //
@@ -302,6 +343,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:582
+  @Test
   public void test0039() {
     check( //
         "Integrate[x^2/((c+a^2*c*x^2)^3*ArcTan[a*x]), x]", //
@@ -309,6 +351,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:560
+  @Test
   public void test0040() {
     check( //
         "Integrate[(a^2-x^2)^(1/2)*ArcSin[x/a]^(3/2), x]", //
@@ -316,6 +359,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.6.1 u (a+b arccsc(c x))^n.input:51
+  @Test
   public void test0041() {
     check( //
         "Integrate[1/(x^4*(a+b*ArcCsc[c*x])), x]", //
@@ -323,6 +367,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:136
+  @Test
   public void test0042() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])/(x^3*(d-c^2*d*x^2)^(1/2)), x]", //
@@ -330,6 +375,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:346
+  @Test
   public void test0043() {
     check( //
         "Integrate[ArcTan[a*x]^2/(x*(c+a^2*c*x^2)), x]", //
@@ -337,6 +383,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.2 (d x)^m (a+b arccos(c x))^n.input:122
+  @Test
   public void test0044() {
     check( //
         "Integrate[x^2/ArcCos[a*x]^(3/2), x]", //
@@ -344,6 +391,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:344
+  @Test
   public void test0045() {
     check( //
         "Integrate[x*ArcTan[a*x]^2/(c+a^2*c*x^2), x]", //
@@ -351,6 +399,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:361
+  @Test
   public void test0046() {
     check( //
         "Integrate[ArcTan[a*x]^2/(c+a^2*c*x^2)^3, x]", //
@@ -358,6 +407,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:122
+  @Test
   public void test0047() {
     check( //
         "Integrate[x^2*ArcTan[c+(I+c)*Tanh[a+b*x]], x]", //
@@ -365,6 +415,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.5.1 u (a+b arcsec(c x))^n.input:158
+  @Test
   public void test0048() {
     check( //
         "Integrate[x*(a+b*ArcSec[c*x])*Sqrt[d+e*x^2], x]", //
@@ -372,6 +423,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:29
+  @Test
   public void test0049() {
     check( //
         "Integrate[(a+b*ArcTan[c*x])^2, x]", //
@@ -379,6 +431,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.2 (d x)^m (a+b arccos(c x))^n.input:118
+  @Test
   public void test0050() {
     check( //
         "Integrate[x^6/ArcCos[a*x]^(3/2), x]", //
@@ -386,6 +439,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.5.2 Inverse secant functions.input:16
+  @Test
   public void test0051() {
     check( //
         "Integrate[ArcSec[Sqrt[x]], x]", //
@@ -393,6 +447,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:214
+  @Test
   public void test0052() {
     check( //
         "Integrate[x*ArcSin[a+b*x]^3, x]", //
@@ -400,6 +455,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:702
+  @Test
   public void test0053() {
     check( //
         "Integrate[x^3/((c+a^2*c*x^2)^(5/2)*ArcTan[a*x]^2), x]", //
@@ -407,6 +463,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:223
+  @Test
   public void test0054() {
     check( //
         "Integrate[(a+b*ArcCot[Sqrt[1-c*x]/Sqrt[1+c*x]])/(1-c^2*x^2), x]", //
@@ -414,6 +471,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:611
+  @Test
   public void test0055() {
     check( //
         "Integrate[E^ArcSin[a*x]*(1-a^2*x^2)^(3/2), x]", //
@@ -421,6 +479,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:273
+  @Test
   public void test0056() {
     check( //
         "Integrate[ArcCot[c+d*Tanh[a+b*x]], x]", //
@@ -428,6 +487,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:18
+  @Test
   public void test0057() {
     check( //
         "Integrate[ArcCot[a*x]/x, x]", //
@@ -435,6 +495,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.3 (d+e x)^m (a+b arctan(c x^n))^p.input:26
+  @Test
   public void test0058() {
     check( //
         "Integrate[(a+b*ArcTan[c*x])^3/(d+e*x)^2, x]", //
@@ -442,6 +503,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.2 (d x)^m (a+b arccos(c x))^n.input:198
+  @Test
   public void test0059() {
     check( //
         "Integrate[x^2/(a+b*ArcCos[c*x])^2, x]", //
@@ -449,6 +511,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:20
+  @Test
   public void test0060() {
     check( //
         "Integrate[(d+e*x)^3*(a+b*ArcSin[c*x])^2, x]", //
@@ -456,6 +519,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:571
+  @Test
   public void test0061() {
     check( //
         "Integrate[(a+b*ArcSin[Sqrt[1-c*x]/Sqrt[1+c*x]])/(1-c^2*x^2), x]", //
@@ -463,6 +527,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:319
+  @Test
   public void test0062() {
     check( //
         "Integrate[(c+a^2*c*x^2)*ArcTan[a*x]^2/x, x]", //
@@ -470,6 +535,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:23
+  @Test
   public void test0063() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])^2, x]", //
@@ -477,6 +543,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:580
+  @Test
   public void test0064() {
     check( //
         "Integrate[1/((c-a^2*c*x^2)^(1/2)*ArcSin[a*x]^(5/2)), x]", //
@@ -484,6 +551,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.2 (d x)^m (a+b arcsin(c x))^n.input:68
+  @Test
   public void test0065() {
     check( //
         "Integrate[x^2/ArcSin[a*x]^2, x]", //
@@ -491,6 +559,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:41
+  @Test
   public void test0066() {
     check( //
         "Integrate[(a+b*ArcTan[c*x])^3/x, x]", //
@@ -498,6 +567,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:206
+  @Test
   public void test0067() {
     check( //
         "Integrate[x*ArcSin[a+b*x]^2, x]", //
@@ -505,6 +575,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:131
+  @Test
   public void test0068() {
     check( //
         "Integrate[x^(-1+n)*ArcCos[a+b*x^n], x]", //
@@ -512,6 +583,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:47
+  @Test
   public void test0069() {
     check( //
         "Integrate[ArcTan[1+x+x^2]/x^2, x]", //
@@ -519,6 +591,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:483
+  @Test
   public void test0070() {
     check( //
         "Integrate[ArcSin[a*x^5]/x, x]", //
@@ -526,6 +599,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:108
+  @Test
   public void test0071() {
     check( //
         "Integrate[x^2*ArcTan[Sinh[x]], x]", //
@@ -533,6 +607,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:118
+  @Test
   public void test0072() {
     check( //
         "Integrate[ArcCot[Sqrt[x]], x]", //
@@ -540,6 +615,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:105
+  @Test
   public void test0073() {
     check( //
         "Integrate[(d+I*c*d*x)^3*(a+b*ArcTan[c*x])^2/x, x]", //
@@ -547,6 +623,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.6 Exponentials of inverse tangent.input:510
+  @Test
   public void test0074() {
     check( //
         "Integrate[E^(5*I*ArcTan[a*x])*x^2/(c+a^2*c*x^2)^(27/2), x]", //
@@ -554,6 +631,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:21
+  @Test
   public void test0075() {
     check( //
         "Integrate[ArcTan[x*Sqrt[-e]/Sqrt[d+e*x^2]]/x^9, x]", //
@@ -561,6 +639,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:1497
+  @Test
   public void test0076() {
     check( //
         "Integrate[x^2*(d+e*x^2)*(a+b*ArcTan[c*x])^2, x]", //
@@ -568,6 +647,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.5.2 Inverse secant functions.input:17
+  @Test
   public void test0077() {
     check( //
         "Integrate[ArcSec[Sqrt[x]]/x, x]", //
@@ -575,6 +655,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:114
+  @Test
   public void test0078() {
     check( //
         "Integrate[x^3*(a+b*ArcTan[c*x])^2/(d+I*c*d*x), x]", //
@@ -582,6 +663,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.2 (d x)^m (a+b arccos(c x))^n.input:176
+  @Test
   public void test0079() {
     check( //
         "Integrate[a+b*ArcCos[c*x], x]", //
@@ -589,6 +671,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:388
+  @Test
   public void test0080() {
     check( //
         "Integrate[x*(1-c^2*x^2)^(3/2)/(a+b*ArcSin[c*x]), x]", //
@@ -596,6 +679,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:221
+  @Test
   public void test0081() {
     check( //
         "Integrate[x*(a+b*ArcSin[c*x])^2/(d-c^2*d*x^2), x]", //
@@ -603,6 +687,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:287
+  @Test
   public void test0082() {
     check( //
         "Integrate[(e+f*x)*ArcCot[Coth[a+b*x]], x]", //
@@ -610,6 +695,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.5.1 u (a+b arcsec(c x))^n.input:49
+  @Test
   public void test0083() {
     check( //
         "Integrate[1/(x^2*(a+b*ArcSec[c*x])), x]", //
@@ -617,6 +703,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:219
+  @Test
   public void test0084() {
     check( //
         "Integrate[x^3*(a+b*ArcSin[c*x])^2/(d-c^2*d*x^2), x]", //
@@ -624,6 +711,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:510
+  @Test
   public void test0085() {
     check( //
         "Integrate[(c+a^2*c*x^2)^(5/2)*ArcTan[a*x]^3, x]", //
@@ -631,6 +719,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:688
+  @Test
   public void test0086() {
     check( //
         "Integrate[(d+c*d*x)^(3/2)*(a+b*ArcSin[c*x])^2/Sqrt[e-c*e*x], x]", //
@@ -638,6 +727,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:148
+  @Test
   public void test0087() {
     check( //
         "Integrate[1/(a+b*ArcCos[-1+d*x^2])^2, x]", //
@@ -645,6 +735,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:694
+  @Test
   public void test0088() {
     check( //
         "Integrate[(d+c*d*x)^(3/2)*(a+b*ArcSin[c*x])^2/(e-c*e*x)^(3/2), x]", //
@@ -652,6 +743,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:384
+  @Test
   public void test0089() {
     check( //
         "Integrate[(c+a^2*c*x^2)^(3/2)*ArcTan[a*x]^2/x^3, x]", //
@@ -659,6 +751,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:133
+  @Test
   public void test0090() {
     check( //
         "Integrate[ArcCot[a*x^5]/x, x]", //
@@ -666,6 +759,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:436
+  @Test
   public void test0091() {
     check( //
         "Integrate[(1-a^2-2*a*b*x-b^2*x^2)^(3/2)/ArcSin[a+b*x], x]", //
@@ -673,6 +767,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.5.2 Inverse secant functions.input:43
+  @Test
   public void test0092() {
     check( //
         "Integrate[ArcSec[a+b*x]/x^2, x]", //
@@ -680,6 +775,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:81
+  @Test
   public void test0093() {
     check( //
         "Integrate[ArcTan[c+(1+I*c)*Tan[a+b*x]], x]", //
@@ -687,6 +783,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:628
+  @Test
   public void test0094() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])*Sqrt[f-c*f*x]/(d+c*d*x)^(1/2), x]", //
@@ -694,6 +791,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:16
+  @Test
   public void test0095() {
     check( //
         "Integrate[(f+g*x)*(a+b*ArcCos[c*x])*Sqrt[d-c^2*d*x^2], x]", //
@@ -701,6 +799,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:142
+  @Test
   public void test0096() {
     check( //
         "Integrate[x*ArcCot[a+b*x], x]", //
@@ -708,6 +807,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:97
+  @Test
   public void test0097() {
     check( //
         "Integrate[(d+I*c*d*x)^2*(a+b*ArcTan[c*x])^2/x, x]", //
@@ -715,6 +815,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.2 (d x)^m (a+b arccos(c x))^n.input:43
+  @Test
   public void test0098() {
     check( //
         "Integrate[x^5*ArcCos[a*x]^4, x]", //
@@ -722,6 +823,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:75
+  @Test
   public void test0099() {
     check( //
         "Integrate[ArcCos[a+b*x]^(3/2), x]", //
@@ -729,6 +831,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:529
+  @Test
   public void test0100() {
     check( //
         "Integrate[x^(-1+n)*ArcSin[a+b*x^n], x]", //
@@ -736,6 +839,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:143
+  @Test
   public void test0101() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])^2*Log[h*(f+g*x)^m]/Sqrt[1-c^2*x^2], x]", //
@@ -743,6 +847,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.6.1 u (a+b arccsc(c x))^n.input:31
+  @Test
   public void test0102() {
     check( //
         "Integrate[(a+b*ArcCsc[c*x])^2/x^2, x]", //
@@ -750,6 +855,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:320
+  @Test
   public void test0103() {
     check( //
         "Integrate[(c+a^2*c*x^2)*ArcTan[a*x]^2/x^2, x]", //
@@ -757,6 +863,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.6.1 u (a+b arccsc(c x))^n.input:15
+  @Test
   public void test0104() {
     check( //
         "Integrate[x^3*(a+b*ArcCsc[c*x]), x]", //
@@ -764,6 +871,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:126
+  @Test
   public void test0105() {
     check( //
         "Integrate[x^2*ArcTan[c-(I-c)*Tanh[a+b*x]], x]", //
@@ -771,6 +879,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:1347
+  @Test
   public void test0106() {
     check( //
         "Integrate[x*(d+e*x^2)*(a+b*ArcTan[c*x]), x]", //
@@ -778,6 +887,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.5 u (a+b arctan(c+d x))^p.input:46
+  @Test
   public void test0107() {
     check( //
         "Integrate[(a+b*ArcTan[c+d*x])^2, x]", //
@@ -785,6 +895,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.4 (f x)^m (d+e x^2)^p (a+b arccos(c x))^n.input:24
+  @Test
   public void test0108() {
     check( //
         "Integrate[(a+b*ArcCos[c*x])/(x*(d-c^2*d*x^2)^2), x]", //
@@ -792,6 +903,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:1358
+  @Test
   public void test0109() {
     check( //
         "Integrate[x*(d+e*x^2)^2*(a+b*ArcTan[c*x]), x]", //
@@ -799,6 +911,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:104
+  @Test
   public void test0110() {
     check( //
         "Integrate[x^2*(a+b*ArcTan[c*x^2]), x]", //
@@ -806,6 +919,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:143
+  @Test
   public void test0111() {
     check( //
         "Integrate[ArcCot[a+b*x], x]", //
@@ -813,6 +927,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:161
+  @Test
   public void test0112() {
     check( //
         "Integrate[x^8*(a+b*ArcTan[c*x^3])^2, x]", //
@@ -820,6 +935,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:948
+  @Test
   public void test0113() {
     check( //
         "Integrate[x^2*ArcTan[a*x]^(3/2)/(c+a^2*c*x^2)^3, x]", //
@@ -827,6 +943,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:130
+  @Test
   public void test0114() {
     check( //
         "Integrate[x^3*ArcCos[a+b*x^4], x]", //
@@ -834,6 +951,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:196
+  @Test
   public void test0115() {
     check( //
         "Integrate[(d-c^2*d*x^2)*(a+b*ArcSin[c*x])^2/x^3, x]", //
@@ -841,6 +959,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:76
+  @Test
   public void test0116() {
     check( //
         "Integrate[ArcCos[a+b*x]^(1/2), x]", //
@@ -848,6 +967,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.2 (d x)^m (a+b arcsin(c x))^n.input:45
+  @Test
   public void test0117() {
     check( //
         "Integrate[x^3*ArcSin[a*x]^4, x]", //
@@ -855,6 +975,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:167
+  @Test
   public void test0118() {
     check( //
         "Integrate[ArcTan[x]/(-1+x)^3, x]", //
@@ -862,6 +983,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.7 Inverse tangent functions.input:134
+  @Test
   public void test0119() {
     check( //
         "Integrate[(e+f*x)*ArcTan[Coth[a+b*x]], x]", //
@@ -869,6 +991,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.6 Exponentials of inverse tangent.input:303
+  @Test
   public void test0120() {
     check( //
         "Integrate[E^ArcTan[a*x]/(c+a^2*c*x^2)^3, x]", //
@@ -876,6 +999,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:1445
+  @Test
   public void test0121() {
     check( //
         "Integrate[(a+b*ArcTan[c*x])/(x^2*(d+e*x^2)^(1/2)), x]", //
@@ -883,6 +1007,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.5.2 Inverse secant functions.input:45
+  @Test
   public void test0122() {
     check( //
         "Integrate[ArcSec[a+b*x]/x^4, x]", //
@@ -890,6 +1015,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:476
+  @Test
   public void test0123() {
     check( //
         "Integrate[ArcTan[a*x]^3/(x^2*(c+a^2*c*x^2)^2), x]", //
@@ -897,6 +1023,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:37
+  @Test
   public void test0124() {
     check( //
         "Integrate[x^3*(a+b*ArcTan[c*x])^3, x]", //
@@ -904,6 +1031,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:655
+  @Test
   public void test0125() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])/((d+c*d*x)^(3/2)*(f-c*f*x)^(3/2)), x]", //
@@ -911,6 +1039,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:439
+  @Test
   public void test0126() {
     check( //
         "Integrate[(1-a^2-2*a*b*x-b^2*x^2)^(3/2)/ArcSin[a+b*x]^4, x]", //
@@ -918,6 +1047,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:48
+  @Test
   public void test0127() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])/(x^3*(d-c^2*d*x^2)), x]", //
@@ -925,6 +1055,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:108
+  @Test
   public void test0128() {
     check( //
         "Integrate[ArcCot[a*x^2]/x, x]", //
@@ -932,6 +1063,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:16
+  @Test
   public void test0129() {
     check( //
         "Integrate[(d+I*c*d*x)*(a+b*ArcTan[c*x])/x, x]", //
@@ -939,6 +1071,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:608
+  @Test
   public void test0130() {
     check( //
         "Integrate[1/((c+a^2*c*x^2)^(3/2)*ArcTan[a*x]), x]", //
@@ -946,6 +1079,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:125
+  @Test
   public void test0131() {
     check( //
         "Integrate[ArcSin[a*x]/(x*Sqrt[1-a^2*x^2]), x]", //
@@ -953,6 +1087,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:408
+  @Test
   public void test0132() {
     check( //
         "Integrate[ArcTan[a*x]^2/(x*(c+a^2*c*x^2)^(3/2)), x]", //
@@ -960,6 +1095,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.6.2 Inverse cosecant functions.input:41
+  @Test
   public void test0133() {
     check( //
         "Integrate[x*ArcCsc[a+b*x], x]", //
@@ -967,6 +1103,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.6 Exponentials of inverse tangent.input:511
+  @Test
   public void test0134() {
     check( //
         "Integrate[E^(3*I*ArcTan[a*x])*x^2/(c+a^2*c*x^2)^(11/2), x]", //
@@ -974,6 +1111,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.2.5 Inverse cosine functions.input:136
+  @Test
   public void test0135() {
     check( //
         "Integrate[(a+b*ArcCos[1+d*x^2])^4, x]", //
@@ -981,6 +1119,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:481
+  @Test
   public void test0136() {
     check( //
         "Integrate[x*ArcTan[a*x]^3/(c+a^2*c*x^2)^3, x]", //
@@ -988,6 +1127,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:1502
+  @Test
   public void test0137() {
     check( //
         "Integrate[(d+e*x^2)*(a+b*ArcTan[c*x])^2/x^3, x]", //
@@ -995,6 +1135,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:140
+  @Test
   public void test0138() {
     check( //
         "Integrate[x^3*ArcCot[a+b*x], x]", //
@@ -1002,6 +1143,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.2 (d x)^m (a+b arcsin(c x))^n.input:73
+  @Test
   public void test0139() {
     check( //
         "Integrate[x^4/ArcSin[a*x]^3, x]", //
@@ -1009,6 +1151,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:649
+  @Test
   public void test0140() {
     check( //
         "Integrate[(a+b*ArcSin[c*x])/((d+c*d*x)^(3/2)*Sqrt[f-c*f*x]), x]", //
@@ -1016,6 +1159,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:252
+  @Test
   public void test0141() {
     check( //
         "Integrate[ArcCot[c+(1-I*c)*Cot[a+b*x]], x]", //
@@ -1023,6 +1167,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:98
+  @Test
   public void test0142() {
     check( //
         "Integrate[x*ArcCot[x]/(1+x^2)^3, x]", //
@@ -1030,6 +1175,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:646
+  @Test
   public void test0143() {
     check( //
         "Integrate[(d+c*d*x)^(3/2)*(a+b*ArcSin[c*x])/Sqrt[f-c*f*x], x]", //
@@ -1037,6 +1183,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:348
+  @Test
   public void test0144() {
     check( //
         "Integrate[ArcTan[a*x]^2/(x^3*(c+a^2*c*x^2)), x]", //
@@ -1044,6 +1191,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:414
+  @Test
   public void test0145() {
     check( //
         "Integrate[x^3/((a+b*ArcSin[c*x])*Sqrt[1-c^2*x^2]), x]", //
@@ -1051,6 +1199,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:536
+  @Test
   public void test0146() {
     check( //
         "Integrate[ArcTan[a*x]^3/(c+a^2*c*x^2)^(5/2), x]", //
@@ -1058,6 +1207,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:82
+  @Test
   public void test0147() {
     check( //
         "Integrate[(d-c^2*d*x^2)^(1/2)*(a+b*ArcSin[c*x])/x, x]", //
@@ -1065,6 +1215,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.2 (d x)^m (a+b arcsin(c x))^n.input:65
+  @Test
   public void test0148() {
     check( //
         "Integrate[x^5/ArcSin[a*x]^2, x]", //
@@ -1072,6 +1223,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.5 Inverse sine functions.input:182
+  @Test
   public void test0149() {
     check( //
         "Integrate[(g+h*x)*(d+e*x+f*x^2)*(a+b*ArcSin[c*x])^2, x]", //
@@ -1079,6 +1231,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:396
+  @Test
   public void test0150() {
     check( //
         "Integrate[x^3*ArcTan[a*x]^2/Sqrt[c+a^2*c*x^2], x]", //
@@ -1086,6 +1239,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:281
+  @Test
   public void test0151() {
     check( //
         "Integrate[x^3*ArcTan[a*x]/(c+a^2*c*x^2)^(3/2), x]", //
@@ -1093,6 +1247,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:160
+  @Test
   public void test0152() {
     check( //
         "Integrate[x^11*(a+b*ArcTan[c*x^3])^2, x]", //
@@ -1100,6 +1255,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:34
+  @Test
   public void test0153() {
     check( //
         "Integrate[(d+I*c*d*x)^3*(a+b*ArcTan[c*x]), x]", //
@@ -1107,6 +1263,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.2 (d x)^m (a+b arctan(c x^n))^p.input:177
+  @Test
   public void test0154() {
     check( //
         "Integrate[x^5*(a+b*ArcTan[c*x^3])^3, x]", //
@@ -1114,6 +1271,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.4.1 Inverse cotangent functions.input:19
+  @Test
   public void test0155() {
     check( //
         "Integrate[ArcCot[a*x]/x^2, x]", //
@@ -1121,6 +1279,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:669
+  @Test
   public void test0156() {
     check( //
         "Integrate[1/((c+a^2*c*x^2)^3*ArcTan[a*x]^2), x]", //
@@ -1128,6 +1287,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.3.4 u (a+b arctan(c x))^p.input:36
+  @Test
   public void test0157() {
     check( //
         "Integrate[(d+I*c*d*x)^3*(a+b*ArcTan[c*x])/x^2, x]", //
@@ -1135,6 +1295,7 @@ public class InverseTrigFunctions extends AbstractRubiTestCase {
   }
 
   // 5.1.4 (f x)^m (d+e x^2)^p (a+b arcsin(c x))^n.input:348
+  @Test
   public void test0158() {
     check( //
         "Integrate[(c-a^2*c*x^2)^(1/2)*ArcSin[a*x]^3, x]", //

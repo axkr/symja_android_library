@@ -1,11 +1,13 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for FindFormula function */
+@Tag(TestTags.SLOW)
 public class FindFormulaTest extends ExprEvaluatorTestCase {
 
 

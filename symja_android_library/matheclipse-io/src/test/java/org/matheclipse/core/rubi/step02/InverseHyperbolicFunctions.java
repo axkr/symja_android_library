@@ -1,13 +1,17 @@
 package org.matheclipse.core.rubi.step02;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 
   static boolean init = true;
 
-  public InverseHyperbolicFunctions(String name) {
-    super(name, false);
+  public InverseHyperbolicFunctions() {
+    super(false);
   }
 
+  @BeforeEach
   @Override
   protected void setUp() {
     try {
@@ -22,6 +26,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5772, 267}
+  @Test
   public void test0001() {
     check( //
         "Integrate[ArcSinh[a*x], x]", //
@@ -30,6 +35,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5776, 270}
+  @Test
   public void test0002() {
     check( //
         "Integrate[ArcSinh[a*x]/x^3, x]", //
@@ -38,6 +44,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5774, 3382}
+  @Test
   public void test0003() {
     check( //
         "Integrate[ArcSinh[a*x]^(-1), x]", //
@@ -46,6 +53,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5778, 3382}
+  @Test
   public void test0004() {
 
     // check( //
@@ -60,6 +68,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5776, 5817}
+  @Test
   public void test0005() {
     check( //
         "Integrate[x^m*ArcSinh[a*x]^2, x]", //
@@ -68,6 +77,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5776, 371}
+  @Test
   public void test0006() {
     check( //
         "Integrate[x^m*ArcSinh[a*x], x]", //
@@ -76,6 +86,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5798, 197}
+  @Test
   public void test0007() {
     check( //
         "Integrate[(x*(a + b*ArcSinh[c*x]))/(d + c^2*d*x^2)^2, x]", //
@@ -84,6 +95,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5798}
+  @Test
   public void test0008() {
     check( //
         "Integrate[x*Sqrt[d + c^2*d*x^2]*(a + b*ArcSinh[c*x]), x]", //
@@ -92,6 +104,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5798, 8}
+  @Test
   public void test0009() {
     check( //
         "Integrate[(x*(a + b*ArcSinh[c*x]))/Sqrt[d + c^2*d*x^2], x]", //
@@ -100,6 +113,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0010() {
     check( //
         "Integrate[(a + b*ArcSinh[c*x])/Sqrt[d + c^2*d*x^2], x]", //
@@ -108,6 +122,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5800, 29}
+  @Test
   public void test0011() {
     check( //
         "Integrate[(a + b*ArcSinh[c*x])/(x^2*Sqrt[d + c^2*d*x^2]), x]", //
@@ -116,6 +131,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5798, 209}
+  @Test
   public void test0012() {
     check( //
         "Integrate[(x*(a + b*ArcSinh[c*x]))/(d + c^2*d*x^2)^(3/2), x]", //
@@ -124,6 +140,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5787, 266}
+  @Test
   public void test0013() {
     check( //
         "Integrate[(a + b*ArcSinh[c*x])/(d + c^2*d*x^2)^(3/2), x]", //
@@ -132,6 +149,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5798, 8}
+  @Test
   public void test0014() {
     check( //
         "Integrate[(x*ArcSinh[a*x])/Sqrt[1 + a^2*x^2], x]", //
@@ -140,6 +158,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5800, 29}
+  @Test
   public void test0015() {
     check( //
         "Integrate[ArcSinh[a*x]/(x^2*Sqrt[1 + a^2*x^2]), x]", //
@@ -148,6 +167,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5817}
+  @Test
   public void test0017() {
     check( //
         "Integrate[(x^m*(a + b*ArcSinh[c*x]))/Sqrt[d + c^2*d*x^2], x]", //
@@ -156,6 +176,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0018() {
     check( //
         "Integrate[(a + b*ArcSinh[c*x])^2/Sqrt[d + c^2*d*x^2], x]", //
@@ -164,6 +185,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0019() {
     check( //
         "Integrate[ArcSinh[a*x]^3/Sqrt[c + a^2*c*x^2], x]", //
@@ -172,6 +194,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5819, 3379}
+  @Test
   public void test0020() {
     check( //
         "Integrate[x/(Sqrt[1 + a^2*x^2]*ArcSinh[a*x]), x]", //
@@ -180,6 +203,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0021() {
     check( //
         "Integrate[Sqrt[ArcSinh[a*x]]/Sqrt[c + a^2*c*x^2], x]", //
@@ -188,6 +212,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0023() {
     check( //
         "Integrate[ArcSinh[a*x]^(3/2)/Sqrt[c + a^2*c*x^2], x]", //
@@ -196,6 +221,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0024() {
     check( //
         "Integrate[ArcSinh[a*x]^(5/2)/Sqrt[c + a^2*c*x^2], x]", //
@@ -204,6 +230,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0025() {
     check( //
         "Integrate[Sqrt[ArcSinh[x/a]]/Sqrt[a^2 + x^2], x]", //
@@ -212,6 +239,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0027() {
     check( //
         "Integrate[ArcSinh[x/a]^(3/2)/Sqrt[a^2 + x^2], x]", //
@@ -220,6 +248,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0028() {
     check( //
         "Integrate[1/(Sqrt[c + a^2*c*x^2]*Sqrt[ArcSinh[a*x]]), x]", //
@@ -228,6 +257,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0029() {
     check( //
         "Integrate[1/(Sqrt[c + a^2*c*x^2]*ArcSinh[a*x]^(3/2)), x]", //
@@ -236,6 +266,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0030() {
     check( //
         "Integrate[1/(Sqrt[c + a^2*c*x^2]*ArcSinh[a*x]^(5/2)), x]", //
@@ -244,6 +275,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5796, 5783}
+  @Test
   public void test0031() {
     check( //
         "Integrate[(a + b*ArcSinh[c*x])/(Sqrt[d + I*c*d*x]*Sqrt[f - I*c*f*x]), x]", //
@@ -252,6 +284,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5796, 5783}
+  @Test
   public void test0032() {
     check( //
         "Integrate[(a + b*ArcSinh[c*x])^2/(Sqrt[d + I*c*d*x]*Sqrt[f - I*c*f*x]), x]", //
@@ -260,6 +293,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5783}
+  @Test
   public void test0033() {
     check( //
         "Integrate[(a + b*ArcSinh[c*x])/Sqrt[d + c^2*d*x^2], x]", //
@@ -268,6 +302,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5860, 5783}
+  @Test
   public void test0064() {
     check( //
         "Integrate[ArcSinh[a + b*x]^3/Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2], x]", //
@@ -276,6 +311,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5860, 5783}
+  @Test
   public void test0065() {
     check( //
         "Integrate[ArcSinh[a + b*x]^2/Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2], x]", //
@@ -284,6 +320,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5860, 5783}
+  @Test
   public void test0066() {
     check( //
         "Integrate[ArcSinh[a + b*x]/Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2], x]", //
@@ -292,6 +329,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5860, 5782}
+  @Test
   public void test0067() {
     check( //
         "Integrate[1/(Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2]*ArcSinh[a + b*x]), x]", //
@@ -300,6 +338,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5860, 5783}
+  @Test
   public void test0068() {
     check( //
         "Integrate[1/(Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2]*ArcSinh[a + b*x]^2), x]", //
@@ -308,6 +347,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5860, 5783}
+  @Test
   public void test0069() {
     check( //
         "Integrate[1/(Sqrt[1 + a^2 + 2*a*b*x + b^2*x^2]*ArcSinh[a + b*x]^3), x]", //
@@ -316,6 +356,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 8}
+  @Test
   public void test0071() {
     check( //
         "Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^2, x]", //
@@ -324,6 +365,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4900}
+  @Test
   public void test0072() {
     check( //
         "Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-3), x]", //
@@ -332,6 +374,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 8}
+  @Test
   public void test0073() {
     check( //
         "Integrate[(a - I*b*ArcSin[1 + I*d*x^2])^2, x]", //
@@ -340,6 +383,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4900}
+  @Test
   public void test0074() {
     check( //
         "Integrate[(a - I*b*ArcSin[1 + I*d*x^2])^(-3), x]", //
@@ -348,6 +392,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4895}
+  @Test
   public void test0075() {
     check( //
         "Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(5/2), x]", //
@@ -356,6 +401,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4903}
+  @Test
   public void test0076() {
     check( //
         "Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(3/2), x]", //
@@ -364,6 +410,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4903}
+  @Test
   public void test0077() {
     check( //
         "Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-5/2), x]", //
@@ -372,6 +419,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4906}
+  @Test
   public void test0078() {
     check( //
         "Integrate[(a + I*b*ArcSin[1 - I*d*x^2])^(-7/2), x]", //
@@ -380,6 +428,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4895}
+  @Test
   public void test0079() {
     check( //
         "Integrate[(a - I*b*ArcSin[1 + I*d*x^2])^(5/2), x]", //
@@ -388,6 +437,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4898, 4903}
+  @Test
   public void test0080() {
     check( //
         "Integrate[(a - I*b*ArcSin[1 + I*d*x^2])^(3/2), x]", //
@@ -396,6 +446,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4903}
+  @Test
   public void test0081() {
     check( //
         "Integrate[(a - I*b*ArcSin[1 + I*d*x^2])^(-5/2), x]", //
@@ -404,6 +455,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {4912, 4906}
+  @Test
   public void test0082() {
     check( //
         "Integrate[(a - I*b*ArcSin[1 + I*d*x^2])^(-7/2), x]", //
@@ -412,6 +464,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5819, 3379}
+  @Test
   public void test0083() {
     check( //
         "Integrate[x/(Sqrt[1 + x^2]*ArcSinh[x]), x]", //
@@ -420,6 +473,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5871, 5783}
+  @Test
   public void test0084() {
     check( //
         "Integrate[ArcSinh[Sqrt[-1 + b*x^2]]^n/Sqrt[-1 + b*x^2], x]", //
@@ -428,6 +482,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5871, 5782}
+  @Test
   public void test0085() {
     check( //
         "Integrate[1/(Sqrt[-1 + b*x^2]*ArcSinh[Sqrt[-1 + b*x^2]]), x]", //
@@ -436,6 +491,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5879, 75}
+  @Test
   public void test0086() {
     check( //
         "Integrate[ArcCosh[a*x], x]", //
@@ -444,6 +500,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5883, 97}
+  @Test
   public void test0087() {
     check( //
         "Integrate[ArcCosh[a*x]/x^3, x]", //
@@ -452,6 +509,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5881, 3379}
+  @Test
   public void test0088() {
     check( //
         "Integrate[ArcCosh[a*x]^(-1), x]", //
@@ -460,6 +518,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5885, 3382}
+  @Test
   public void test0089() {
     check( //
         "Integrate[x/ArcCosh[a*x]^2, x]", //
@@ -468,6 +527,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5883, 5949}
+  @Test
   public void test0090() {
     check( //
         "Integrate[x^m*ArcCosh[a*x]^2, x]", //
@@ -476,6 +536,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5883, 97}
+  @Test
   public void test0091() {
     check( //
         "Integrate[(a + b*ArcCosh[c*x])/x^3, x]", //
@@ -484,6 +545,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5883, 5949}
+  @Test
   public void test0092() {
     check( //
         "Integrate[Sqrt[f*x]*(a + b*ArcCosh[c*x])^2, x]", //
@@ -492,6 +554,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5883, 5949}
+  @Test
   public void test0093() {
     check( //
         "Integrate[(d*x)^m*(a + b*ArcCosh[c*x])^2, x]", //
@@ -500,6 +563,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5914, 39}
+  @Test
   public void test0094() {
     check( //
         "Integrate[(x*(a + b*ArcCosh[c*x]))/(d - c^2*d*x^2)^2, x]", //
@@ -508,6 +572,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0095() {
     check( //
         "Integrate[(a + b*ArcCosh[c*x])/Sqrt[d - c^2*d*x^2], x]", //
@@ -516,6 +581,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0096() {
     check( //
         "Integrate[ArcCosh[a*x]/Sqrt[1 - a^2*x^2], x]", //
@@ -524,6 +590,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5948}
+  @Test
   public void test0097() {
     check( //
         "Integrate[((f*x)^(3/2)*(a + b*ArcCosh[c*x]))/Sqrt[1 - c^2*x^2], x]", //
@@ -532,6 +599,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5948}
+  @Test
   public void test0098() {
     check( //
         "Integrate[((f*x)^(3/2)*(a + b*ArcCosh[c*x]))/Sqrt[d - c^2*d*x^2], x]", //
@@ -540,6 +608,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5948}
+  @Test
   public void test0099() {
     check( //
         "Integrate[(x^m*(a + b*ArcCosh[c*x]))/Sqrt[d - c^2*d*x^2], x]", //
@@ -548,6 +617,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5948}
+  @Test
   public void test0100() {
     check( //
         "Integrate[(x^m*ArcCosh[a*x])/Sqrt[1 - a^2*x^2], x]", //
@@ -556,6 +626,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0101() {
     check( //
         "Integrate[(a + b*ArcCosh[c*x])^2/Sqrt[d - c^2*d*x^2], x]", //
@@ -564,6 +635,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0102() {
     check( //
         "Integrate[ArcCosh[a*x]^2/Sqrt[1 - a^2*x^2], x]", //
@@ -572,6 +644,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0103() {
     check( //
         "Integrate[ArcCosh[a*x]^2/Sqrt[c - a^2*c*x^2], x]", //
@@ -580,6 +653,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0104() {
     check( //
         "Integrate[ArcCosh[a*x]^3/Sqrt[c - a^2*c*x^2], x]", //
@@ -588,6 +662,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0105() {
     check( //
         "Integrate[ArcCosh[a*x]^3/Sqrt[1 - a^2*x^2], x]", //
@@ -596,6 +671,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5890}
+  @Test
   public void test0106() {
     check( //
         "Integrate[1/(Sqrt[1 - a^2*x^2]*ArcCosh[a*x]), x]", //
@@ -604,6 +680,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5890}
+  @Test
   public void test0107() {
     check( //
         "Integrate[1/(Sqrt[1 - c^2*x^2]*(a + b*ArcCosh[c*x])), x]", //
@@ -612,6 +689,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0112() {
     check( //
         "Integrate[1/(Sqrt[1 - c^2*x^2]*(a + b*ArcCosh[c*x])^2), x]", //
@@ -620,6 +698,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0119() {
     check( //
         "Integrate[1/(Sqrt[1 - a^2*x^2]*ArcCosh[a*x]^3), x]", //
@@ -628,6 +707,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0120() {
     check( //
         "Integrate[ArcCosh[a*x]^n/Sqrt[1 - a^2*x^2], x]", //
@@ -636,6 +716,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0121() {
     check( //
         "Integrate[Sqrt[ArcCosh[a*x]]/Sqrt[c - a^2*c*x^2], x]", //
@@ -644,6 +725,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0123() {
     check( //
         "Integrate[ArcCosh[a*x]^(3/2)/Sqrt[c - a^2*c*x^2], x]", //
@@ -652,6 +734,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0125() {
     check( //
         "Integrate[ArcCosh[a*x]^(5/2)/Sqrt[c - a^2*c*x^2], x]", //
@@ -660,6 +743,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0127() {
     check( //
         "Integrate[Sqrt[ArcCosh[x/a]]/Sqrt[a^2 - x^2], x]", //
@@ -668,6 +752,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0129() {
     check( //
         "Integrate[ArcCosh[x/a]^(3/2)/Sqrt[a^2 - x^2], x]", //
@@ -676,6 +761,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0131() {
     check( //
         "Integrate[1/(Sqrt[c - a^2*c*x^2]*Sqrt[ArcCosh[a*x]]), x]", //
@@ -684,6 +770,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0132() {
     check( //
         "Integrate[1/(Sqrt[c - a^2*c*x^2]*ArcCosh[a*x]^(3/2)), x]", //
@@ -692,6 +779,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5892}
+  @Test
   public void test0135() {
     check( //
         "Integrate[1/(Sqrt[c - a^2*c*x^2]*ArcCosh[a*x]^(5/2)), x]", //
@@ -700,6 +788,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6001, 8}
+  @Test
   public void test0164() {
     check( //
         "Integrate[(a + b*ArcCosh[1 + d*x^2])^2, x]", //
@@ -708,6 +797,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6010, 6002}
+  @Test
   public void test0165() {
     check( //
         "Integrate[(a + b*ArcCosh[1 + d*x^2])^(-3), x]", //
@@ -716,6 +806,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6001, 8}
+  @Test
   public void test0166() {
     check( //
         "Integrate[(a + b*ArcCosh[-1 + d*x^2])^2, x]", //
@@ -724,6 +815,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6010, 6003}
+  @Test
   public void test0167() {
     check( //
         "Integrate[(a + b*ArcCosh[-1 + d*x^2])^(-3), x]", //
@@ -732,6 +824,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6001, 5999}
+  @Test
   public void test0168() {
     check( //
         "Integrate[(a + b*ArcCosh[1 + d*x^2])^(5/2), x]", //
@@ -740,6 +833,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6001, 6004}
+  @Test
   public void test0169() {
     check( //
         "Integrate[(a + b*ArcCosh[1 + d*x^2])^(3/2), x]", //
@@ -748,6 +842,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6010, 6004}
+  @Test
   public void test0170() {
     check( //
         "Integrate[(a + b*ArcCosh[1 + d*x^2])^(-5/2), x]", //
@@ -756,6 +851,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6010, 6006}
+  @Test
   public void test0171() {
     check( //
         "Integrate[(a + b*ArcCosh[1 + d*x^2])^(-7/2), x]", //
@@ -764,6 +860,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6001, 6000}
+  @Test
   public void test0172() {
     check( //
         "Integrate[(a + b*ArcCosh[-1 + d*x^2])^(5/2), x]", //
@@ -772,6 +869,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6001, 6005}
+  @Test
   public void test0173() {
     check( //
         "Integrate[(a + b*ArcCosh[-1 + d*x^2])^(3/2), x]", //
@@ -780,6 +878,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6010, 6005}
+  @Test
   public void test0174() {
     check( //
         "Integrate[(a + b*ArcCosh[-1 + d*x^2])^(-5/2), x]", //
@@ -788,6 +887,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6010, 6007}
+  @Test
   public void test0175() {
     check( //
         "Integrate[(a + b*ArcCosh[-1 + d*x^2])^(-7/2), x]", //
@@ -796,6 +896,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {5953, 3382}
+  @Test
   public void test0176() {
     check( //
         "Integrate[x/(Sqrt[-1 + x]*Sqrt[1 + x]*ArcCosh[x]), x]", //
@@ -804,6 +905,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6013, 5893}
+  @Test
   public void test0177() {
     check( //
         "Integrate[ArcCosh[Sqrt[1 + b*x^2]]^n/Sqrt[1 + b*x^2], x]", //
@@ -812,6 +914,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6013, 5891}
+  @Test
   public void test0178() {
     check( //
         "Integrate[1/(Sqrt[1 + b*x^2]*ArcCosh[Sqrt[1 + b*x^2]]), x]", //
@@ -820,6 +923,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6049, 371}
+  @Test
   public void test0179() {
     check( //
         "Integrate[(d*x)^m*(a + b*ArcTanh[c*x]), x]", //
@@ -828,6 +932,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 266}
+  @Test
   public void test0180() {
     check( //
         "Integrate[x*(a + b*ArcTanh[c*x^2]), x]", //
@@ -836,6 +941,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0181() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x^2])/x, x]", //
@@ -844,6 +950,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6049, 371}
+  @Test
   public void test0182() {
     check( //
         "Integrate[(d*x)^m*(a + b*ArcTanh[c*x^2]), x]", //
@@ -852,6 +959,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 266}
+  @Test
   public void test0183() {
     check( //
         "Integrate[x^2*(a + b*ArcTanh[c*x^3]), x]", //
@@ -860,6 +968,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0184() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x^3])/x, x]", //
@@ -868,6 +977,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6049, 371}
+  @Test
   public void test0185() {
     check( //
         "Integrate[(d*x)^m*(a + b*ArcTanh[c*x^3]), x]", //
@@ -876,6 +986,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0186() {
     check( //
         "Integrate[(a + b*ArcTanh[c/x])/x, x]", //
@@ -884,6 +995,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 266}
+  @Test
   public void test0187() {
     check( //
         "Integrate[(a + b*ArcTanh[c/x])/x^2, x]", //
@@ -892,6 +1004,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0188() {
     check( //
         "Integrate[(a + b*ArcTanh[c/x^2])/x, x]", //
@@ -900,6 +1013,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 266}
+  @Test
   public void test0189() {
     check( //
         "Integrate[(a + b*ArcTanh[c/x^2])/x^3, x]", //
@@ -908,6 +1022,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0190() {
     check( //
         "Integrate[(a + b*ArcTanh[c*Sqrt[x]])/x, x]", //
@@ -916,6 +1031,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 31}
+  @Test
   public void test0191() {
     check( //
         "Integrate[ArcTanh[Sqrt[x]]/Sqrt[x], x]", //
@@ -924,6 +1040,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0192() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x^(3/2)])/x, x]", //
@@ -932,6 +1049,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 371}
+  @Test
   public void test0193() {
     check( //
         "Integrate[x^2*(a + b*ArcTanh[c*x^n]), x]", //
@@ -940,6 +1058,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 371}
+  @Test
   public void test0194() {
     check( //
         "Integrate[x*(a + b*ArcTanh[c*x^n]), x]", //
@@ -948,6 +1067,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0195() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x^n])/x, x]", //
@@ -956,6 +1076,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 371}
+  @Test
   public void test0196() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x^n])/x^2, x]", //
@@ -964,6 +1085,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 371}
+  @Test
   public void test0197() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x^n])/x^3, x]", //
@@ -972,6 +1094,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6037, 371}
+  @Test
   public void test0198() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x^n])/x^4, x]", //
@@ -980,6 +1103,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0199() {
     check( //
         "Integrate[ArcTanh[a*x^n]/x, x]", //
@@ -988,6 +1112,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6035, 6031}
+  @Test
   public void test0200() {
     check( //
         "Integrate[ArcTanh[a*x^5]/x, x]", //
@@ -996,6 +1121,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6079, 2497}
+  @Test
   public void test0201() {
     check( //
         "Integrate[(a + b*ArcTanh[c*x])/(x*(d + c*d*x)), x]", //
@@ -1004,6 +1130,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6141}
+  @Test
   public void test0202() {
     check( //
         "Integrate[x*(1 - a^2*x^2)*ArcTanh[a*x], x]", //
@@ -1012,6 +1139,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6145, 6095}
+  @Test
   public void test0203() {
     check( //
         "Integrate[(x^2*ArcTanh[a*x])/(1 - a^2*x^2)^2, x]", //
@@ -1020,6 +1148,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6103, 267}
+  @Test
   public void test0204() {
     check( //
         "Integrate[ArcTanh[a*x]/(1 - a^2*x^2)^2, x]", //
@@ -1028,6 +1157,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6141, 222}
+  @Test
   public void test0205() {
     check( //
         "Integrate[(x*ArcTanh[a*x])/Sqrt[1 - a^2*x^2], x]", //
@@ -1036,6 +1166,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6141, 6097}
+  @Test
   public void test0206() {
     check( //
         "Integrate[(x*ArcTanh[a*x]^2)/Sqrt[1 - a^2*x^2], x]", //
@@ -1044,6 +1175,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6155, 6165}
+  @Test
   public void test0207() {
     check( //
         "Integrate[ArcTanh[a*x]^2/(x^2*Sqrt[1 - a^2*x^2]), x]", //
@@ -1052,6 +1184,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6145, 6097}
+  @Test
   public void test0208() {
     check( //
         "Integrate[(x^2*ArcTanh[a*x])/(1 - a^2*x^2)^(3/2), x]", //
@@ -1060,6 +1193,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6141, 197}
+  @Test
   public void test0209() {
     check( //
         "Integrate[(x*ArcTanh[a*x])/(1 - a^2*x^2)^(3/2), x]", //
@@ -1068,6 +1202,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6141, 6105}
+  @Test
   public void test0210() {
     check( //
         "Integrate[(x*ArcTanh[a*x]^2)/(1 - a^2*x^2)^(3/2), x]", //
@@ -1076,6 +1211,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6109, 197}
+  @Test
   public void test0211() {
     check( //
         "Integrate[ArcTanh[a*x]^2/(1 - a^2*x^2)^(3/2), x]", //
@@ -1084,6 +1220,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6109, 6105}
+  @Test
   public void test0212() {
     check( //
         "Integrate[ArcTanh[a*x]^3/(1 - a^2*x^2)^(3/2), x]", //
@@ -1092,6 +1229,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6181, 3379}
+  @Test
   public void test0213() {
     check( //
         "Integrate[x/((1 - a^2*x^2)^(3/2)*ArcTanh[a*x]), x]", //
@@ -1100,6 +1238,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6115, 3382}
+  @Test
   public void test0214() {
     check( //
         "Integrate[1/((1 - a^2*x^2)^(3/2)*ArcTanh[a*x]), x]", //
@@ -1108,6 +1247,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6089, 6097}
+  @Test
   public void test0215() {
     check( //
         "Integrate[Sqrt[1 - a^2*x^2]*ArcTanh[a*x], x]", //
@@ -1116,6 +1256,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6089, 6097}
+  @Test
   public void test0216() {
     check( //
         "Integrate[Sqrt[1 - a^2*x^2]*ArcTanh[a*x], x]", //
@@ -1124,6 +1265,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6107, 6105}
+  @Test
   public void test0217() {
     check( //
         "Integrate[ArcTanh[a*x]/(1 - a^2*x^2)^(5/2), x]", //
@@ -1132,6 +1274,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6101, 6097}
+  @Test
   public void test0218() {
     check( //
         "Integrate[ArcTanh[a*x]/Sqrt[c - a^2*c*x^2], x]", //
@@ -1140,6 +1283,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6107, 6105}
+  @Test
   public void test0219() {
     check( //
         "Integrate[ArcTanh[a*x]/(c - a^2*c*x^2)^(5/2), x]", //
@@ -1148,6 +1292,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6115, 3382}
+  @Test
   public void test0220() {
     check( //
         "Integrate[1/((1 - a^2*x^2)^(3/2)*ArcTanh[a*x]), x]", //
@@ -1156,6 +1301,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6101, 6097}
+  @Test
   public void test0221() {
     check( //
         "Integrate[ArcTanh[x]/Sqrt[a - a*x^2], x]", //
@@ -1164,6 +1310,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6107, 6105}
+  @Test
   public void test0222() {
     check( //
         "Integrate[ArcTanh[x]/(a - a*x^2)^(5/2), x]", //
@@ -1172,6 +1319,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6246, 6059}
+  @Test
   public void test0223() {
     check( //
         "Integrate[ArcTanh[a + b*x]^2/x, x]", //
@@ -1180,6 +1328,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6246, 6059}
+  @Test
   public void test0224() {
     check( //
         "Integrate[(a + b*ArcTanh[c + d*x])^2/(e + f*x), x]", //
@@ -1188,6 +1337,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6246, 6061}
+  @Test
   public void test0225() {
     check( //
         "Integrate[(a + b*ArcTanh[c + d*x])^3/(e + f*x), x]", //
@@ -1196,6 +1346,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0226() {
     check( //
         "Integrate[E^(ArcTanh[a*x]/2)*x^m, x]", //
@@ -1204,6 +1355,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0227() {
     check( //
         "Integrate[E^((3*ArcTanh[a*x])/2)*x^m, x]", //
@@ -1212,6 +1364,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0228() {
     check( //
         "Integrate[E^((5*ArcTanh[a*x])/2)*x^m, x]", //
@@ -1220,6 +1373,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0229() {
     check( //
         "Integrate[x^m/E^(ArcTanh[a*x]/2), x]", //
@@ -1228,6 +1382,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0230() {
     check( //
         "Integrate[x^m/E^((3*ArcTanh[a*x])/2), x]", //
@@ -1236,6 +1391,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0231() {
     check( //
         "Integrate[x^m/E^((5*ArcTanh[a*x])/2), x]", //
@@ -1244,6 +1400,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0232() {
     check( //
         "Integrate[E^(ArcTanh[x]/3)*x^m, x]", //
@@ -1252,6 +1409,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0233() {
     check( //
         "Integrate[E^((2*ArcTanh[x])/3)*x^m, x]", //
@@ -1260,6 +1418,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0234() {
     check( //
         "Integrate[E^(ArcTanh[a*x]/4)*x^m, x]", //
@@ -1268,6 +1427,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 138}
+  @Test
   public void test0235() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*x^m, x]", //
@@ -1276,6 +1436,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6260, 71}
+  @Test
   public void test0236() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x]), x]", //
@@ -1284,6 +1445,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6261, 133}
+  @Test
   public void test0237() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])/x^2, x]", //
@@ -1292,6 +1454,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 665}
+  @Test
   public void test0238() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(c - a*c*x)^2, x]", //
@@ -1300,6 +1463,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 34}
+  @Test
   public void test0239() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])/(c - a*c*x)^2, x]", //
@@ -1308,6 +1472,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 665}
+  @Test
   public void test0240() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])/(c - a*c*x)^2, x]", //
@@ -1316,6 +1481,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 32}
+  @Test
   public void test0241() {
     check( //
         "Integrate[E^(4*ArcTanh[a*x])*(c - a*c*x)^2, x]", //
@@ -1324,6 +1490,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 37}
+  @Test
   public void test0242() {
     check( //
         "Integrate[E^(4*ArcTanh[a*x])/(c - a*c*x)^2, x]", //
@@ -1332,6 +1499,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 222}
+  @Test
   public void test0243() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*(c - a*c*x)), x]", //
@@ -1340,6 +1508,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 665}
+  @Test
   public void test0244() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*(c - a*c*x)^2), x]", //
@@ -1348,6 +1517,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 31}
+  @Test
   public void test0245() {
     check( //
         "Integrate[1/(E^(2*ArcTanh[a*x])*(c - a*c*x)), x]", //
@@ -1356,6 +1526,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 651}
+  @Test
   public void test0246() {
     check( //
         "Integrate[1/(E^(3*ArcTanh[a*x])*(c - a*c*x)^2), x]", //
@@ -1364,6 +1535,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 197}
+  @Test
   public void test0247() {
     check( //
         "Integrate[1/(E^(3*ArcTanh[a*x])*(c - a*c*x)^3), x]", //
@@ -1372,6 +1544,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 663}
+  @Test
   public void test0248() {
     check( //
         "Integrate[E^ArcTanh[a*x]*Sqrt[c - a*c*x], x]", //
@@ -1380,6 +1553,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 663}
+  @Test
   public void test0249() {
     check( //
         "Integrate[E^(3*ArcTanh[a*x])*(c - a*c*x)^(3/2), x]", //
@@ -1388,6 +1562,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 663}
+  @Test
   public void test0250() {
     check( //
         "Integrate[1/(E^ArcTanh[a*x]*Sqrt[c - a*c*x]), x]", //
@@ -1396,6 +1571,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 663}
+  @Test
   public void test0251() {
     check( //
         "Integrate[1/(E^(3*ArcTanh[a*x])*(c - a*c*x)^(3/2)), x]", //
@@ -1404,6 +1580,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6263, 267}
+  @Test
   public void test0252() {
     check( //
         "Integrate[E^ArcTanh[a*x]*x*(c - a*c*x), x]", //
@@ -1412,6 +1589,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6263, 270}
+  @Test
   public void test0253() {
     check( //
         "Integrate[(E^ArcTanh[a*x]*(c - a*c*x))/x^4, x]", //
@@ -1420,6 +1598,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 665}
+  @Test
   public void test0254() {
     check( //
         "Integrate[E^ArcTanh[a*x]/(c - a*c*x)^2, x]", //
@@ -1428,6 +1607,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 75}
+  @Test
   public void test0255() {
     check( //
         "Integrate[(E^ArcTanh[x]*x)/(1 + x), x]", //
@@ -1436,6 +1616,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 37}
+  @Test
   public void test0256() {
     check( //
         "Integrate[E^ArcTanh[x]/(1 + x)^2, x]", //
@@ -1444,6 +1625,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 32}
+  @Test
   public void test0257() {
     check( //
         "Integrate[E^ArcTanh[x]/Sqrt[1 + x], x]", //
@@ -1452,6 +1634,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6262, 663}
+  @Test
   public void test0258() {
     check( //
         "Integrate[E^ArcTanh[a*x]*Sqrt[c - a*c*x], x]", //
@@ -1460,6 +1643,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 71}
+  @Test
   public void test0259() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*(c - a*c*x)^3, x]", //
@@ -1468,6 +1652,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 71}
+  @Test
   public void test0260() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*(c - a*c*x)^2, x]", //
@@ -1476,6 +1661,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 71}
+  @Test
   public void test0261() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*(c - a*c*x), x]", //
@@ -1484,6 +1670,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 71}
+  @Test
   public void test0262() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])/(c - a*c*x), x]", //
@@ -1492,6 +1679,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6264, 37}
+  @Test
   public void test0263() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])/(c - a*c*x)^2, x]", //
@@ -1500,6 +1688,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6299, 37}
+  @Test
   public void test0264() {
     check( //
         "Integrate[E^ArcTanh[a + b*x]/(1 - a^2 - 2*a*b*x - b^2*x^2), x]", //
@@ -1508,6 +1697,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6296, 71}
+  @Test
   public void test0265() {
     check( //
         "Integrate[E^(n*ArcTanh[a + b*x]), x]", //
@@ -1516,6 +1706,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6298, 133}
+  @Test
   public void test0266() {
     check( //
         "Integrate[E^(n*ArcTanh[a + b*x])/x^2, x]", //
@@ -1524,6 +1715,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 31}
+  @Test
   public void test0267() {
     check( //
         "Integrate[E^ArcTanh[a*x]/Sqrt[1 - a^2*x^2], x]", //
@@ -1532,6 +1724,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 66}
+  @Test
   public void test0268() {
     check( //
         "Integrate[(E^ArcTanh[a*x]*x^m)/Sqrt[1 - a^2*x^2], x]", //
@@ -1540,6 +1733,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 71}
+  @Test
   public void test0269() {
     check( //
         "Integrate[E^ArcTanh[a*x]*(1 - a^2*x^2)^p, x]", //
@@ -1548,6 +1742,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 32}
+  @Test
   public void test0270() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])*(c - a^2*c*x^2), x]", //
@@ -1556,6 +1751,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 37}
+  @Test
   public void test0271() {
     check( //
         "Integrate[(E^(2*ArcTanh[a*x])*(c - a^2*c*x^2))/x^4, x]", //
@@ -1564,6 +1760,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 75}
+  @Test
   public void test0272() {
     check( //
         "Integrate[(E^(2*ArcTanh[a*x])*(c - a^2*c*x^2)^2)/x^3, x]", //
@@ -1572,6 +1769,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 32}
+  @Test
   public void test0273() {
     check( //
         "Integrate[E^(2*ArcTanh[a*x])/(c - a^2*c*x^2), x]", //
@@ -1580,6 +1778,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 82}
+  @Test
   public void test0274() {
     check( //
         "Integrate[(E^(2*ArcTanh[a*x])*x^2)/(c - a^2*c*x^2)^3, x]", //
@@ -1588,6 +1787,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 66}
+  @Test
   public void test0275() {
     check( //
         "Integrate[(E^(2*ArcTanh[a*x])*x^m)/(c - a^2*c*x^2), x]", //
@@ -1596,6 +1796,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 32}
+  @Test
   public void test0276() {
     check( //
         "Integrate[E^(4*ArcTanh[a*x])*(c - a^2*c*x^2)^2, x]", //
@@ -1604,6 +1805,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 34}
+  @Test
   public void test0277() {
     check( //
         "Integrate[E^(4*ArcTanh[a*x])/(c - a^2*c*x^2), x]", //
@@ -1612,6 +1814,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 32}
+  @Test
   public void test0278() {
     check( //
         "Integrate[E^(4*ArcTanh[a*x])/(c - a^2*c*x^2)^2, x]", //
@@ -1620,6 +1823,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 71}
+  @Test
   public void test0279() {
     check( //
         "Integrate[(1 - a^2*x^2)^p/E^ArcTanh[a*x], x]", //
@@ -1628,6 +1832,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 32}
+  @Test
   public void test0280() {
     check( //
         "Integrate[(c - a^2*c*x^2)/E^(2*ArcTanh[a*x]), x]", //
@@ -1636,6 +1841,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 32}
+  @Test
   public void test0281() {
     check( //
         "Integrate[1/(E^(2*ArcTanh[a*x])*(c - a^2*c*x^2)), x]", //
@@ -1644,6 +1850,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6271, 6270}
+  @Test
   public void test0282() {
     check( //
         "Integrate[E^(ArcTanh[a*x]/2)/(1 - a^2*x^2)^(5/2), x]", //
@@ -1652,6 +1859,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6271, 6270}
+  @Test
   public void test0283() {
     check( //
         "Integrate[E^(ArcTanh[a*x]/2)/(c - a^2*c*x^2)^(5/2), x]", //
@@ -1660,6 +1868,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 71}
+  @Test
   public void test0284() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*(c - a^2*c*x^2), x]", //
@@ -1668,6 +1877,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 71}
+  @Test
   public void test0285() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*(c - a^2*c*x^2)^2, x]", //
@@ -1676,6 +1886,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6275, 71}
+  @Test
   public void test0286() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*(c - a^2*c*x^2)^3, x]", //
@@ -1684,6 +1895,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6282, 6272}
+  @Test
   public void test0287() {
     check( //
         "Integrate[(E^(n*ArcTanh[a*x])*x^2)/(c - a^2*c*x^2)^2, x]", //
@@ -1692,6 +1904,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6271, 6272}
+  @Test
   public void test0288() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])/(c - a^2*c*x^2)^2, x]", //
@@ -1700,6 +1913,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6282, 6270}
+  @Test
   public void test0289() {
     check( //
         "Integrate[(E^(n*ArcTanh[a*x])*x^2)/(c - a^2*c*x^2)^(5/2), x]", //
@@ -1708,6 +1922,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6271, 6270}
+  @Test
   public void test0290() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])/(c - a^2*c*x^2)^(5/2), x]", //
@@ -1716,6 +1931,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 138}
+  @Test
   public void test0291() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*x^m*(c - a^2*c*x^2)^2, x]", //
@@ -1724,6 +1940,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 138}
+  @Test
   public void test0292() {
     check( //
         "Integrate[E^(n*ArcTanh[a*x])*x^m*(c - a^2*c*x^2), x]", //
@@ -1732,6 +1949,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 138}
+  @Test
   public void test0293() {
     check( //
         "Integrate[(E^(n*ArcTanh[a*x])*x^m)/(c - a^2*c*x^2), x]", //
@@ -1740,6 +1958,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 138}
+  @Test
   public void test0294() {
     check( //
         "Integrate[(E^(n*ArcTanh[a*x])*x^m)/(c - a^2*c*x^2)^2, x]", //
@@ -1748,6 +1967,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 82}
+  @Test
   public void test0295() {
     check( //
         "Integrate[(E^(6*ArcTanh[a*x])*x^2)/(c - a^2*c*x^2)^19, x]", //
@@ -1756,6 +1976,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 82}
+  @Test
   public void test0296() {
     check( //
         "Integrate[(E^(4*ArcTanh[a*x])*x^2)/(c - a^2*c*x^2)^9, x]", //
@@ -1764,6 +1985,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 82}
+  @Test
   public void test0297() {
     check( //
         "Integrate[(E^(2*ArcTanh[a*x])*x^2)/(c - a^2*c*x^2)^3, x]", //
@@ -1772,6 +1994,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 82}
+  @Test
   public void test0298() {
     check( //
         "Integrate[x^2/(E^(2*ArcTanh[a*x])*(c - a^2*c*x^2)^3), x]", //
@@ -1780,6 +2003,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6285, 82}
+  @Test
   public void test0299() {
     check( //
         "Integrate[x^2/(E^(4*ArcTanh[a*x])*(c - a^2*c*x^2)^9), x]", //
@@ -1788,6 +2012,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6356, 270}
+  @Test
   public void test0300() {
     check( //
         "Integrate[ArcTanh[(Sqrt[e]*x)/Sqrt[d + e*x^2]]/x^3, x]", //
@@ -1796,6 +2021,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6352, 267}
+  @Test
   public void test0301() {
     check( //
         "Integrate[ArcTanh[(Sqrt[e]*x)/Sqrt[d + e*x^2]], x]", //
@@ -1804,6 +2030,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6813, 6031}
+  @Test
   public void test0302() {
     check( //
         "Integrate[(a + b*ArcTanh[Sqrt[1 - c*x]/Sqrt[1 + c*x]])/(1 - c^2*x^2), x]", //
@@ -1812,6 +2039,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0303() {
     check( //
         "Integrate[x^m*ArcTanh[Tanh[a + b*x]], x]", //
@@ -1820,6 +2048,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0304() {
     check( //
         "Integrate[x^2*ArcTanh[Tanh[a + b*x]], x]", //
@@ -1828,6 +2057,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6374, 30}
+  @Test
   public void test0305() {
     check( //
         "Integrate[x*ArcTanh[Tanh[a + b*x]], x]", //
@@ -1836,6 +2066,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0306() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]], x]", //
@@ -1844,6 +2075,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2189, 29}
+  @Test
   public void test0307() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/x, x]", //
@@ -1852,6 +2084,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 29}
+  @Test
   public void test0308() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/x^2, x]", //
@@ -1860,6 +2093,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0309() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/x^3, x]", //
@@ -1868,6 +2102,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0310() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/x^4, x]", //
@@ -1876,6 +2111,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0311() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^2, x]", //
@@ -1884,6 +2120,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0312() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^3, x]", //
@@ -1892,6 +2129,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0313() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^3/x^6, x]", //
@@ -1900,6 +2138,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0314() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^4, x]", //
@@ -1908,6 +2147,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0315() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^4/x^7, x]", //
@@ -1916,6 +2156,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 29}
+  @Test
   public void test0316() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(-1), x]", //
@@ -1924,6 +2165,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2195}
+  @Test
   public void test0317() {
     check( //
         "Integrate[x^m/ArcTanh[Tanh[a + b*x]]^2, x]", //
@@ -1932,6 +2174,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0318() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(-2), x]", //
@@ -1940,6 +2183,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0319() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(-3), x]", //
@@ -1948,6 +2192,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0320() {
     check( //
         "Integrate[Sqrt[ArcTanh[Tanh[a + b*x]]], x]", //
@@ -1956,6 +2201,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2190, 2192}
+  @Test
   public void test0321() {
     check( //
         "Integrate[Sqrt[ArcTanh[Tanh[a + b*x]]]/x, x]", //
@@ -1964,6 +2210,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2192}
+  @Test
   public void test0322() {
     check( //
         "Integrate[Sqrt[ArcTanh[Tanh[a + b*x]]]/x^2, x]", //
@@ -1972,6 +2219,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0323() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(3/2), x]", //
@@ -1980,6 +2228,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0324() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(5/2), x]", //
@@ -1988,6 +2237,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0325() {
     check( //
         "Integrate[1/Sqrt[ArcTanh[Tanh[a + b*x]]], x]", //
@@ -1996,6 +2246,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0326() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(-3/2), x]", //
@@ -2004,6 +2255,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2194, 2192}
+  @Test
   public void test0327() {
     check( //
         "Integrate[1/(x*ArcTanh[Tanh[a + b*x]]^(3/2)), x]", //
@@ -2012,6 +2264,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0328() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(-5/2), x]", //
@@ -2020,6 +2273,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0329() {
     check( //
         "Integrate[x^(7/2)*ArcTanh[Tanh[a + b*x]], x]", //
@@ -2028,6 +2282,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0330() {
     check( //
         "Integrate[x^(5/2)*ArcTanh[Tanh[a + b*x]], x]", //
@@ -2036,6 +2291,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0331() {
     check( //
         "Integrate[x^(3/2)*ArcTanh[Tanh[a + b*x]], x]", //
@@ -2044,6 +2300,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0332() {
     check( //
         "Integrate[Sqrt[x]*ArcTanh[Tanh[a + b*x]], x]", //
@@ -2052,6 +2309,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0333() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/Sqrt[x], x]", //
@@ -2060,6 +2318,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0334() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/x^(3/2), x]", //
@@ -2068,6 +2327,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0335() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/x^(5/2), x]", //
@@ -2076,6 +2336,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0336() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]/x^(7/2), x]", //
@@ -2084,6 +2345,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2190, 2193}
+  @Test
   public void test0337() {
     check( //
         "Integrate[Sqrt[x]/ArcTanh[Tanh[a + b*x]], x]", //
@@ -2092,6 +2354,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2194, 2193}
+  @Test
   public void test0338() {
     check( //
         "Integrate[1/(x^(3/2)*ArcTanh[Tanh[a + b*x]]), x]", //
@@ -2100,6 +2363,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2193}
+  @Test
   public void test0339() {
     check( //
         "Integrate[Sqrt[x]/ArcTanh[Tanh[a + b*x]]^2, x]", //
@@ -2108,6 +2372,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2200, 2196}
+  @Test
   public void test0340() {
     check( //
         "Integrate[Sqrt[ArcTanh[Tanh[a + b*x]]]/Sqrt[x], x]", //
@@ -2116,6 +2381,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2196}
+  @Test
   public void test0341() {
     check( //
         "Integrate[Sqrt[ArcTanh[Tanh[a + b*x]]]/x^(3/2), x]", //
@@ -2124,6 +2390,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0342() {
     check( //
         "Integrate[Sqrt[ArcTanh[Tanh[a + b*x]]]/x^(7/2), x]", //
@@ -2132,6 +2399,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0343() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(3/2)/x^(9/2), x]", //
@@ -2140,6 +2408,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0344() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^(5/2)/x^(11/2), x]", //
@@ -2148,6 +2417,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2200, 2196}
+  @Test
   public void test0345() {
     check( //
         "Integrate[Sqrt[x]/Sqrt[ArcTanh[Tanh[a + b*x]]], x]", //
@@ -2156,6 +2426,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0346() {
     check( //
         "Integrate[1/(x^(5/2)*Sqrt[ArcTanh[Tanh[a + b*x]]]), x]", //
@@ -2164,6 +2435,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2196}
+  @Test
   public void test0347() {
     check( //
         "Integrate[Sqrt[x]/ArcTanh[Tanh[a + b*x]]^(3/2), x]", //
@@ -2172,6 +2444,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0348() {
     check( //
         "Integrate[1/(x^(3/2)*ArcTanh[Tanh[a + b*x]]^(3/2)), x]", //
@@ -2180,6 +2453,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0349() {
     check( //
         "Integrate[1/(Sqrt[x]*ArcTanh[Tanh[a + b*x]]^(5/2)), x]", //
@@ -2188,6 +2462,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0350() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^n, x]", //
@@ -2196,6 +2471,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2195}
+  @Test
   public void test0351() {
     check( //
         "Integrate[ArcTanh[Tanh[a + b*x]]^n/x^2, x]", //
@@ -2204,6 +2480,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0352() {
     check( //
         "Integrate[x^m*ArcCoth[Tanh[a + b*x]], x]", //
@@ -2212,6 +2489,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0353() {
     check( //
         "Integrate[x^2*ArcTanh[Coth[a + b*x]], x]", //
@@ -2220,6 +2498,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6376, 30}
+  @Test
   public void test0354() {
     check( //
         "Integrate[x*ArcTanh[Coth[a + b*x]], x]", //
@@ -2228,6 +2507,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0355() {
     check( //
         "Integrate[ArcTanh[Coth[a + b*x]], x]", //
@@ -2236,6 +2516,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2189, 29}
+  @Test
   public void test0356() {
     check( //
         "Integrate[ArcTanh[Coth[a + b*x]]/x, x]", //
@@ -2244,6 +2525,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 29}
+  @Test
   public void test0357() {
     check( //
         "Integrate[ArcTanh[Coth[a + b*x]]/x^2, x]", //
@@ -2252,6 +2534,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0358() {
     check( //
         "Integrate[ArcTanh[Coth[a + b*x]]/x^3, x]", //
@@ -2260,6 +2543,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 6031}
+  @Test
   public void test0359() {
     check( //
         "Integrate[ArcTanh[E^x], x]", //
@@ -2268,6 +2552,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 6031}
+  @Test
   public void test0360() {
     check( //
         "Integrate[ArcTanh[E^(a + b*x)], x]", //
@@ -2276,6 +2561,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6022, 266}
+  @Test
   public void test0361() {
     check( //
         "Integrate[ArcCoth[a*x], x]", //
@@ -2284,6 +2570,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6102, 6098}
+  @Test
   public void test0362() {
     check( //
         "Integrate[ArcCoth[x]/Sqrt[a - a*x^2], x]", //
@@ -2292,6 +2579,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6108, 6106}
+  @Test
   public void test0363() {
     check( //
         "Integrate[ArcCoth[x]/(a - a*x^2)^(5/2), x]", //
@@ -2300,6 +2588,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6104, 267}
+  @Test
   public void test0364() {
     check( //
         "Integrate[ArcCoth[x]/(1 - x^2)^2, x]", //
@@ -2308,6 +2597,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6247, 6060}
+  @Test
   public void test0365() {
     check( //
         "Integrate[ArcCoth[a + b*x]^2/x, x]", //
@@ -2316,6 +2606,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6036, 6032}
+  @Test
   public void test0366() {
     check( //
         "Integrate[ArcCoth[Sqrt[x]]/x, x]", //
@@ -2324,6 +2615,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6038, 31}
+  @Test
   public void test0367() {
     check( //
         "Integrate[ArcCoth[Sqrt[x]]/Sqrt[x], x]", //
@@ -2332,6 +2624,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6036, 6032}
+  @Test
   public void test0368() {
     check( //
         "Integrate[ArcCoth[a*x^5]/x, x]", //
@@ -2340,6 +2633,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6036, 6032}
+  @Test
   public void test0369() {
     check( //
         "Integrate[ArcCoth[a*x^n]/x, x]", //
@@ -2348,6 +2642,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6243, 6032}
+  @Test
   public void test0370() {
     check( //
         "Integrate[ArcCoth[a + b*x]/(a + b*x), x]", //
@@ -2356,6 +2651,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6247, 6060}
+  @Test
   public void test0371() {
     check( //
         "Integrate[(a + b*ArcCoth[c + d*x])^2/(e + f*x), x]", //
@@ -2364,6 +2660,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6247, 6062}
+  @Test
   public void test0372() {
     check( //
         "Integrate[(a + b*ArcCoth[c + d*x])^3/(e + f*x), x]", //
@@ -2372,6 +2669,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6813, 6032}
+  @Test
   public void test0373() {
     check( //
         "Integrate[(a + b*ArcCoth[Sqrt[1 - c*x]/Sqrt[1 + c*x]])/(1 - c^2*x^2), x]", //
@@ -2380,6 +2678,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0374() {
     check( //
         "Integrate[x^m*ArcCoth[Tanh[a + b*x]], x]", //
@@ -2388,6 +2687,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0375() {
     check( //
         "Integrate[x^2*ArcCoth[Tanh[a + b*x]], x]", //
@@ -2396,6 +2696,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6375, 30}
+  @Test
   public void test0376() {
     check( //
         "Integrate[x*ArcCoth[Tanh[a + b*x]], x]", //
@@ -2404,6 +2705,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0377() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]], x]", //
@@ -2412,6 +2714,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2189, 29}
+  @Test
   public void test0378() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]/x, x]", //
@@ -2420,6 +2723,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 29}
+  @Test
   public void test0379() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]/x^2, x]", //
@@ -2428,6 +2732,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0380() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]/x^3, x]", //
@@ -2436,6 +2741,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0381() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]/x^4, x]", //
@@ -2444,6 +2750,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0382() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^2, x]", //
@@ -2452,6 +2759,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0383() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^2/x^5, x]", //
@@ -2460,6 +2768,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0384() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^3, x]", //
@@ -2468,6 +2777,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2202, 2198}
+  @Test
   public void test0385() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^3/x^6, x]", //
@@ -2476,6 +2786,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 29}
+  @Test
   public void test0386() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^(-1), x]", //
@@ -2484,6 +2795,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2195}
+  @Test
   public void test0387() {
     check( //
         "Integrate[x^m/ArcCoth[Tanh[a + b*x]]^2, x]", //
@@ -2492,6 +2804,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0388() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^(-2), x]", //
@@ -2500,6 +2813,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0389() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^(-3), x]", //
@@ -2508,6 +2822,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0390() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^n, x]", //
@@ -2516,6 +2831,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 2195}
+  @Test
   public void test0391() {
     check( //
         "Integrate[ArcCoth[Tanh[a + b*x]]^n/x^2, x]", //
@@ -2524,6 +2840,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0392() {
     check( //
         "Integrate[x^m*ArcCoth[Tanh[a + b*x]], x]", //
@@ -2532,6 +2849,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0393() {
     check( //
         "Integrate[x^2*ArcCoth[Coth[a + b*x]], x]", //
@@ -2540,6 +2858,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6377, 30}
+  @Test
   public void test0394() {
     check( //
         "Integrate[x*ArcCoth[Coth[a + b*x]], x]", //
@@ -2548,6 +2867,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2188, 30}
+  @Test
   public void test0395() {
     check( //
         "Integrate[ArcCoth[Coth[a + b*x]], x]", //
@@ -2556,6 +2876,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2189, 29}
+  @Test
   public void test0396() {
     check( //
         "Integrate[ArcCoth[Coth[a + b*x]]/x, x]", //
@@ -2564,6 +2885,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 29}
+  @Test
   public void test0397() {
     check( //
         "Integrate[ArcCoth[Coth[a + b*x]]/x^2, x]", //
@@ -2572,6 +2894,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2199, 30}
+  @Test
   public void test0398() {
     check( //
         "Integrate[ArcCoth[Coth[a + b*x]]/x^3, x]", //
@@ -2580,6 +2903,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 6032}
+  @Test
   public void test0399() {
     check( //
         "Integrate[ArcCoth[E^x], x]", //
@@ -2588,6 +2912,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {2320, 6032}
+  @Test
   public void test0400() {
     check( //
         "Integrate[ArcCoth[E^(a + b*x)], x]", //
@@ -2596,6 +2921,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0401() {
     check( //
         "Integrate[E^((5*ArcCoth[a*x])/2)*x^m, x]", //
@@ -2604,6 +2930,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0402() {
     check( //
         "Integrate[E^((3*ArcCoth[a*x])/2)*x^m, x]", //
@@ -2612,6 +2939,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0403() {
     check( //
         "Integrate[E^(ArcCoth[a*x]/2)*x^m, x]", //
@@ -2620,6 +2948,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0404() {
     check( //
         "Integrate[x^m/E^(ArcCoth[a*x]/2), x]", //
@@ -2628,6 +2957,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0405() {
     check( //
         "Integrate[x^m/E^((3*ArcCoth[a*x])/2), x]", //
@@ -2636,6 +2966,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0406() {
     check( //
         "Integrate[x^m/E^((5*ArcCoth[a*x])/2), x]", //
@@ -2644,6 +2975,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0407() {
     check( //
         "Integrate[E^((2*ArcCoth[x])/3)*x^m, x]", //
@@ -2652,6 +2984,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0408() {
     check( //
         "Integrate[E^(ArcCoth[x]/3)*x^m, x]", //
@@ -2660,6 +2993,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0409() {
     check( //
         "Integrate[E^(ArcCoth[a*x]/4)*x^m, x]", //
@@ -2668,6 +3002,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6308, 138}
+  @Test
   public void test0410() {
     check( //
         "Integrate[E^(n*ArcCoth[a*x])*x^m, x]", //
@@ -2676,6 +3011,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6305, 133}
+  @Test
   public void test0411() {
     check( //
         "Integrate[E^(n*ArcCoth[a*x]), x]", //
@@ -2684,6 +3020,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6306, 71}
+  @Test
   public void test0412() {
     check( //
         "Integrate[E^(n*ArcCoth[a*x])/x^2, x]", //
@@ -2692,6 +3029,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6312, 270}
+  @Test
   public void test0413() {
     check( //
         "Integrate[1/(E^ArcCoth[a*x]*(c - c/(a*x))), x]", //
@@ -2700,6 +3038,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6313, 663}
+  @Test
   public void test0414() {
     check( //
         "Integrate[(E^ArcCoth[a*x]*Sqrt[c - c/(a*x)])/x^2, x]", //
@@ -2708,6 +3047,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6320, 6318}
+  @Test
   public void test0415() {
     check( //
         "Integrate[E^ArcCoth[a*x]/(c - a^2*c*x^2)^2, x]", //
@@ -2716,6 +3056,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6320, 6318}
+  @Test
   public void test0416() {
     check( //
         "Integrate[E^(3*ArcCoth[a*x])/(c - a^2*c*x^2)^2, x]", //
@@ -2724,6 +3065,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6320, 6318}
+  @Test
   public void test0417() {
     check( //
         "Integrate[1/(E^ArcCoth[a*x]*(c - a^2*c*x^2)^2), x]", //
@@ -2732,6 +3074,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6320, 6318}
+  @Test
   public void test0418() {
     check( //
         "Integrate[1/(E^(3*ArcCoth[a*x])*(c - a^2*c*x^2)^2), x]", //
@@ -2740,6 +3083,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6305, 133}
+  @Test
   public void test0419() {
     check( //
         "Integrate[E^(n*ArcCoth[a*x]), x]", //
@@ -2748,6 +3092,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6320, 6318}
+  @Test
   public void test0420() {
     check( //
         "Integrate[E^(n*ArcCoth[a*x])/(c - a^2*c*x^2)^2, x]", //
@@ -2756,6 +3101,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6320, 6319}
+  @Test
   public void test0421() {
     check( //
         "Integrate[E^(n*ArcCoth[a*x])/(c - a^2*c*x^2)^(5/2), x]", //
@@ -2764,6 +3110,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6324, 6319}
+  @Test
   public void test0422() {
     check( //
         "Integrate[(E^(n*ArcCoth[a*x])*x^2)/(c - a^2*c*x^2)^(5/2), x]", //
@@ -2772,6 +3119,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6322, 6319}
+  @Test
   public void test0423() {
     check( //
         "Integrate[(E^(n*ArcCoth[a*x])*x)/(c - a^2*c*x^2)^(5/2), x]", //
@@ -2780,6 +3128,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6320, 6319}
+  @Test
   public void test0424() {
     check( //
         "Integrate[E^(n*ArcCoth[a*x])/(c - a^2*c*x^2)^(5/2), x]", //
@@ -2788,6 +3137,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6418, 75}
+  @Test
   public void test0425() {
     check( //
         "Integrate[x*(a + b*ArcSech[c*x]), x]", //
@@ -2796,6 +3146,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6418, 97}
+  @Test
   public void test0426() {
     check( //
         "Integrate[(a + b*ArcSech[c*x])/x^2, x]", //
@@ -2804,6 +3155,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6419, 197}
+  @Test
   public void test0427() {
     check( //
         "Integrate[x*(a + b*ArcCsch[c*x]), x]", //
@@ -2812,6 +3164,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   }
 
   // {6419, 267}
+  @Test
   public void test0428() {
     check( //
         "Integrate[(a + b*ArcCsch[c*x])/x^2, x]", //
