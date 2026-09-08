@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
@@ -41,6 +42,10 @@ public class PackageUtil {
           engine.setDeterminePrecision(temp, true);
           result = engine.evaluate(temp);
         } catch (final RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          if (rex instanceof AbortException) {
+            throw rex;
+          }
           result = S.Null;
           Errors.printMessage(S.Get, rex, engine);
         }
@@ -63,6 +68,7 @@ public class PackageUtil {
 
       return evaluatePackage(node, engine);
     } catch (final Exception e) {
+      Errors.rethrowsInterruptException(e);
       Errors.printMessage(S.Get, e, engine);
     }
     return S.Null;
@@ -106,7 +112,7 @@ public class PackageUtil {
     if ((record = reader.readLine()) != null) {
       // ignore the first line of the script if it starts with the #!
       // characters (i.e. Unix Script Executables)
-      if (!record.startsWith("!#")) {
+      if (!record.startsWith("#!")) {
         builder.append(record);
         builder.append('\n');
       }
@@ -138,8 +144,21 @@ public class PackageUtil {
    */
   public static List<ASTNode> parseReader(final String reader, final EvalEngine engine) {
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parseScript(reader);
+    final List<ASTNode> node = parser.parseScript(withoutShebang(reader));
     return node;
+  }
+
+  /**
+   * The source without a leading <code>#!</code> line, which a Unix script executable starts with
+   * and which is not Wolfram Language code.
+   */
+  public static String withoutShebang(final String source) {
+    if (!source.startsWith("#!")) {
+      return source;
+    }
+    int lineEnd = source.indexOf('\n');
+    // keep the newline, so that positions in a syntax error still name the right line
+    return lineEnd < 0 ? "" : source.substring(lineEnd);
   }
 
   private PackageUtil() {

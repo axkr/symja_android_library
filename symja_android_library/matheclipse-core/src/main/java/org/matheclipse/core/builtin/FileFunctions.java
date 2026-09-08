@@ -743,6 +743,7 @@ public class FileFunctions {
         final List<ASTNode> node = PackageUtil.parseReader(is, engine);
         return PackageUtil.evaluatePackage(node, engine);
       } catch (final RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.Get, rex, engine);
       }
       return S.Null;

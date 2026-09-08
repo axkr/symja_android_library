@@ -13,6 +13,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
+import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -349,6 +350,9 @@ public class ExprEvaluator {
     // F.join();
     try {
       return evalTryCatch(expr, engineRef);
+    } catch (final ExitException e) {
+      // Exit[] / Quit[] end the process; unlike an abort there is no value to answer with
+      throw e;
     } catch (final AbortException e) {
       return S.$Aborted;
     } catch (final FailedException e) {

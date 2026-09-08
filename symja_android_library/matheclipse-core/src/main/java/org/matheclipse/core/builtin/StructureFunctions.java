@@ -12,6 +12,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
@@ -1906,6 +1907,19 @@ public class StructureFunctions {
     }
 
     private static IExpr quitEngine(final IAST ast, EvalEngine engine) {
+      if (Config.PROCESS_MODE) {
+        // Symja owns the process, so Exit[] ends it the way wolframscript does. The console turns
+        // this into System.exit().
+        int exitCode = 0;
+        if (ast.isAST1()) {
+          int value = ast.arg1().toMachineInt();
+          if (value < 0) {
+            return Errors.printMessage(ast.topHead(), "intnn", F.CEmptyList, engine);
+          }
+          exitCode = value;
+        }
+        throw new ExitException(exitCode);
+      }
       EvalEngine newEngine = new EvalEngine("", engine.getRecursionLimit(),
           engine.getIterationLimit(), null, null, engine.isRelaxedSyntax());
       engine.setPrintStreamsOf(engine);

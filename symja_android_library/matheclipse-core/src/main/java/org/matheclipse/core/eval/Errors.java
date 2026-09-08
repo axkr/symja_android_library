@@ -12,6 +12,7 @@ import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -1165,6 +1166,10 @@ public class Errors {
     if (e instanceof ApfloatInterruptedException || e instanceof PreemptingException
         || e instanceof TimeoutException) {
       throw (RuntimeException) e;
+    }
+    if (e instanceof ExitException) {
+      // Exit[] / Quit[] end the whole process, so no evaluation may swallow them
+      throw (ExitException) e;
     }
     if (e instanceof RuntimeException && e.getCause() instanceof InterruptedException) {
       throw (RuntimeException) e;

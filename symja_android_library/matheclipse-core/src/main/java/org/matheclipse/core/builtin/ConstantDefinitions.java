@@ -107,6 +107,13 @@ public class ConstantDefinitions {
       S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
       S.$UserBaseDirectory.setEvaluator(new $UserBaseDirectory());
       S.$Version.setEvaluator(new $Version());
+      S.$VersionNumber.setEvaluator(new $VersionNumber());
+      S.$CommandLine.setEvaluator(new $CommandLine());
+      S.$InstallationDirectory.setEvaluator(new $InstallationDirectory());
+      S.$MachineName.setEvaluator(new $MachineName());
+      S.$ProcessID.setEvaluator(new $ProcessID());
+      S.$SystemID.setEvaluator(new $SystemID());
+      S.$UserDocumentsDirectory.setEvaluator(new $UserDocumentsDirectory());
 
       S.RecordSeparators.setEvaluator(new RecordSeparators());
       S.WordSeparators.setEvaluator(new WordSeparators());
@@ -473,7 +480,7 @@ public class ConstantDefinitions {
       if (operatingSystem.contains("mac") //
           || operatingSystem.contains("os2") //
           || operatingSystem.contains("darwin")) {
-        return F.stringx("MaxOSX");
+        return F.stringx("MacOSX");
       }
       if (operatingSystem.contains("win")) {
         return F.stringx("Windows");
@@ -688,11 +695,212 @@ public class ConstantDefinitions {
     }
   }
 
+  private static class $CommandLine extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return Config.COMMAND_LINE == null ? F.CEmptyList : Config.COMMAND_LINE;
+    }
+  }
+
+  private static class $InstallationDirectory extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      String property = System.getProperty("symja.installation.directory");
+      if (property != null && !property.isEmpty()) {
+        return F.stringx(property);
+      }
+      Path directory = installationDirectory();
+      return directory == null ? F.CEmptyString : F.stringx(directory.toString());
+    }
+
+    /**
+     * The directory the running Symja was installed into: the parent of the <code>lib</code>
+     * directory a distribution puts its jar in, the directory of the executable for a native image,
+     * and the working directory when neither can be determined.
+     */
+    private static Path installationDirectory() {
+      try {
+        java.security.CodeSource codeSource =
+            ConstantDefinitions.class.getProtectionDomain().getCodeSource();
+        if (codeSource != null && codeSource.getLocation() != null) {
+          Path location = Paths.get(codeSource.getLocation().toURI());
+          Path parent = location.getParent();
+          if (parent != null) {
+            // <install>/lib/symjascript.jar - the installation is one level above the jar
+            if (parent.getFileName() != null && "lib".equals(parent.getFileName().toString())
+                && parent.getParent() != null) {
+              return parent.getParent();
+            }
+            return parent;
+          }
+        }
+      } catch (RuntimeException | java.net.URISyntaxException ex) {
+        // a native image has no code source, and a security manager may refuse it
+      }
+      if (Config.RELAUNCH_COMMAND != null && !Config.RELAUNCH_COMMAND.isEmpty()) {
+        Path executable = Paths.get(Config.RELAUNCH_COMMAND.get(0)).toAbsolutePath();
+        Path parent = executable.getParent();
+        if (parent != null) {
+          return parent;
+        }
+      }
+      String userDirectory = System.getProperty("user.dir");
+      return userDirectory == null ? null : Paths.get(userDirectory);
+    }
+  }
+
+  private static class $MachineName extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      String name = System.getenv("HOSTNAME");
+      if (name == null || name.isEmpty()) {
+        name = System.getenv("COMPUTERNAME");
+      }
+      if (name == null || name.isEmpty()) {
+        try {
+          // last resort: this may hit the name service, so it is not the first thing tried
+          name = java.net.InetAddress.getLocalHost().getHostName();
+        } catch (java.io.IOException | RuntimeException ex) {
+          name = "";
+        }
+      }
+      // Mathematica reports the host name without its domain
+      int dotPosition = name.indexOf('.');
+      if (dotPosition > 0) {
+        name = name.substring(0, dotPosition);
+      }
+      return F.stringx(name);
+    }
+  }
+
+  private static class $ProcessID extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.ZZ(ProcessHandle.current().pid());
+    }
+  }
+
+  private static class $SystemID extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.stringx(systemID());
+    }
+
+    /**
+     * The platform in the spelling <code>wolframscript</code> uses, for example
+     * <code>MacOSX-ARM64</code> or <code>Linux-x86-64</code>. Scripts use it to pick the directory a
+     * platform-specific resource lives in, so the spelling has to match.
+     */
+    static String systemID() {
+      String operatingSystem =
+          System.getProperty("os.name", "Unknown").toLowerCase(Locale.ENGLISH);
+      String architecture = System.getProperty("os.arch", "").toLowerCase(Locale.ENGLISH);
+      String system;
+      if (operatingSystem.contains("mac") || operatingSystem.contains("darwin")) {
+        system = "MacOSX";
+      } else if (operatingSystem.contains("win")) {
+        system = "Windows";
+      } else if (operatingSystem.contains("nix") || operatingSystem.contains("nux")
+          || operatingSystem.contains("aix")) {
+        system = "Linux";
+      } else {
+        return "Unknown";
+      }
+      String processor;
+      if (architecture.equals("aarch64") || architecture.equals("arm64")) {
+        processor = "ARM64";
+      } else if (architecture.contains("64")) {
+        processor = "x86-64";
+      } else {
+        processor = "x86";
+      }
+      if ("Windows".equals(system)) {
+        // Windows-x86-64 has no ARM spelling in wolframscript
+        return "x86".equals(processor) ? "Windows" : "Windows-x86-64";
+      }
+      return system + "-" + processor;
+    }
+  }
+
+  private static class $UserDocumentsDirectory extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      String home = System.getProperty("user.home");
+      if (home == null || home.isEmpty()) {
+        return F.CEmptyString;
+      }
+      String xdgDocuments = System.getenv("XDG_DOCUMENTS_DIR");
+      if (xdgDocuments != null && !xdgDocuments.isEmpty()) {
+        return F.stringx(xdgDocuments);
+      }
+      return F.stringx(Paths.get(home, "Documents").toString());
+    }
+  }
+
+  private static class $VersionNumber extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (Config.WOLFRAMSCRIPT_COMPAT) {
+        // A script gates its features on this number, so in a wolframscript-compatible run it has
+        // to name the Wolfram Language version Symja follows. $Version still says Symja.
+        return F.num(Config.WOLFRAM_LANGUAGE_VERSION);
+      }
+      return F.num(symjaVersionNumber());
+    }
+
+    /** Symja's own version as <code>major.minor</code>, or <code>0.0</code> if unknown. */
+    private static double symjaVersionNumber() {
+      String version = Config.VERSION;
+      if (version == null) {
+        return 0.0;
+      }
+      java.util.regex.Matcher matcher =
+          java.util.regex.Pattern.compile("(\\d+)(?:\\.(\\d+))?").matcher(version);
+      if (!matcher.lookingAt()) {
+        return 0.0;
+      }
+      String minor = matcher.group(2);
+      try {
+        return Double.parseDouble(matcher.group(1) + "." + (minor == null ? "0" : minor));
+      } catch (NumberFormatException nfe) {
+        return 0.0;
+      }
+    }
+  }
+
   private static class $Version extends AbstractSymbolEvaluator {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.stringx(Config.VERSION);
+      return F.stringx(versionBanner());
+    }
+
+    /**
+     * The banner Mathematica shows as <code>$Version</code>, naming Symja rather than a Wolfram
+     * kernel. A script that has to know what it is really talking to reads this - in
+     * {@link Config#WOLFRAMSCRIPT_COMPAT} mode <code>$VersionNumber</code> deliberately reports the
+     * Wolfram Language version instead, so the name is the only thing left that tells the truth.
+     */
+    public static String versionBanner() {
+      String version = Config.VERSION;
+      if (version == null || version.isEmpty() || "?".equals(version)) {
+        version = Config.getVersion();
+        if (version == null) {
+          version = "?";
+        }
+      }
+      String architecture = System.getProperty("os.arch", "");
+      String bits = architecture.contains("64") || architecture.equals("aarch64") //
+          ? "(64-bit)"
+          : "(32-bit)";
+      return "Symja " + version + " for " + $SystemID.systemID() + " " + bits;
     }
   }
 

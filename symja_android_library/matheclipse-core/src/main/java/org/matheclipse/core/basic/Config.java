@@ -900,6 +900,51 @@ public class Config {
     SCRIPT_COMMAND_LINE = commandLine;
   }
 
+  /**
+   * Contains the executable followed by the arguments the process was started with, the way
+   * <code>$CommandLine</code> is defined in the Wolfram Language. <code>null</code> when Symja was
+   * not started from a console app, in which case <code>$CommandLine</code> is the empty list.
+   *
+   * <p>
+   * Unlike {@link #SCRIPT_COMMAND_LINE} the first element is the interpreter, not the script, so
+   * <code>First[$CommandLine]</code> can be used to start another copy of it.
+   */
+  public static IAST COMMAND_LINE = null;
+
+  /**
+   * The command that starts another copy of this interpreter, as a list of process arguments. For a
+   * native binary this is the binary itself; on a JVM it is the java executable, the class path and
+   * the main class, because the binary name alone would not be runnable.
+   */
+  public static java.util.List<String> RELAUNCH_COMMAND = null;
+
+  /**
+   * <code>true</code> while a script is run the way <code>wolframscript</code> runs one, which is
+   * what <code>-file</code>, <code>-script</code>, a <code>#!</code> line, a program on stdin and
+   * <code>-wstp</code> all do.
+   *
+   * <p>
+   * In that mode <code>$VersionNumber</code> reports the Wolfram Language version Symja is
+   * compatible with rather than Symja's own, because scripts gate features on it - a script that
+   * reads <code>If[$VersionNumber &lt; 14.1, Exit[0]]</code> would otherwise refuse to run at all.
+   * <code>$Version</code> always names Symja, so a script that wants to know what it is really
+   * talking to can still find out.
+   */
+  public static boolean WOLFRAMSCRIPT_COMPAT = false;
+
+  /**
+   * The Wolfram Language version reported by <code>$VersionNumber</code> in
+   * {@link #WOLFRAMSCRIPT_COMPAT} mode.
+   */
+  public static final double WOLFRAM_LANGUAGE_VERSION = 14.1;
+
+  /**
+   * <code>true</code> when Symja owns the process it runs in, so that <code>Exit[]</code> and
+   * <code>Quit[]</code> can end it with an exit code. Embedded in another application they must not
+   * do that, and reset the evaluation engine instead.
+   */
+  public static boolean PROCESS_MODE = false;
+
   // load version string from MAVEN
   public static String VERSION = "?";
 

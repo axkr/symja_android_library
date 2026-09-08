@@ -4118,8 +4118,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void test$Version() {
-    check("$Version", //
-        Config.getVersion());
+    // The banner names Symja: in wolframscript-compatible mode $VersionNumber reports the Wolfram
+    // Language version a script gates on, so $Version is what tells a script which kernel it is
+    // really talking to.
+    check("StringStartsQ($Version, \"Symja \")", //
+        "True");
+    check("StringContainsQ($Version, \"" + Config.getVersion() + "\")", //
+        "True");
   }
 
   @Test
