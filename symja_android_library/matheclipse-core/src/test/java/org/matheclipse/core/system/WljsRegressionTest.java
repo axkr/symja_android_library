@@ -101,4 +101,31 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("f(<|\"n\" -> \"v\"|>)", //
         "{v-><|key->v,n->v|>}");
   }
+  @Test
+  public void testStringCasesCanSayWhatToMakeOfEachMatch() {
+    // A rule answers with what it builds from each match rather than with the matched text, and a
+    // regular expression's groups are written "$1", "$2", ... anywhere inside it. This is how a
+    // template engine reads the attributes out of a tag.
+    check("StringCases(\"<Tag attr=1>\", RegularExpression(\"\\\\<\\\\/?([^\\\\<|\\\\>|\\\\/|\\\\s]*)[^\\\\<|\\\\>]*\\\\>\") -> \"$1\")", //
+        "{Tag}");
+    check("StringCases(\"x={a} y={b}\", RegularExpression(\"(\\\\w*)=\\\\{(\\\\w*)\\\\}\") -> (\"$1\" -> \"$2\"))", //
+        "{x->a,y->b}");
+    check("StringCases(\"class=\\\"p{q}r\\\"\", RegularExpression(\"([\\\\w|\\\\-]*)=\\\"([^\\\"|=|{|}]*)\\\\{([^{}]*)\\\\}([^\\\"|=|{|}]*)\\\"\") -> (\"$1\" -> {\"$2\", \"$3\", \"$4\"}))", //
+        "{class->{p,q,r}}");
+    // $0 is the whole match and $$ a literal dollar
+    check("StringCases(\"ab\", RegularExpression(\"(a)(b)\") -> \"$0|$$|$2\")", //
+        "{ab|$|b}");
+    // the delayed form evaluates the right hand side once per match
+    check("StringCases(\"a1b2\", RegularExpression(\"([a-z])(\\\\d)\") :> StringJoin(\"$2\", \"$1\"))", //
+        "{1a,2b}");
+    // a pattern written in the language names its parts with symbols instead
+    check("StringCases(\"the cat\", \"c\" ~~ x__ -> x)", //
+        "{at}");
+    // no match, no results
+    check("StringCases(\"nothing here\", RegularExpression(\"(z)(q)\") -> \"$1\")", //
+        "{}");
+    // and the pattern itself is evaluated, so a regular expression may be built
+    check("innerPart = \"[a-z]+\"; StringCases(\"k={vv}\", RegularExpression(\"(\\\\w*)=\\\\{(\" <> innerPart <> \")\\\\}\") -> (\"$1\" -> \"$2\"))", //
+        "{k->vv}");
+  }
 }

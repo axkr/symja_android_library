@@ -1102,6 +1102,90 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
+  /**
+   * Put what one match captured into the right hand side of a string rule.
+   *
+   * <p>
+   * Two ways of naming a group have to be served, because the Wolfram Language has two ways of
+   * writing a string pattern. A pattern written in the language names its parts with symbols -
+   * <code>x__ ~~ "=" ~~ y__</code> - and those are substituted directly. A
+   * <code>RegularExpression</code> numbers them instead, and the right hand side refers to them as
+   * the strings <code>"$1"</code>, <code>"$2"</code> and so on, anywhere inside it: the replacement
+   * may be a string, or an expression built from several of them, as in
+   * <code>-&gt; ("$1" -&gt; {"$2", "$3"})</code>.
+   *
+   * @param namedRegexGroups maps a pattern symbol to the name of its group
+   */
+  private static IExpr substituteMatchedGroups(IExpr rhs, Matcher matcher,
+      Map<ISymbol, String> namedRegexGroups) {
+    IExpr result = rhs;
+    for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
+      String groupValue = matcher.group(group.getValue());
+      if (groupValue != null) {
+        result = F.xreplace(result, group.getKey(), F.stringx(groupValue));
+      }
+    }
+    if (matcher.groupCount() > 0) {
+      final Matcher matched = matcher;
+      IExpr substituted = result.replaceAll(x -> {
+        if (x.isString()) {
+          String text = x.toString();
+          String replaced = substituteGroupReferences(text, matched);
+          return replaced.equals(text) ? F.NIL : F.stringx(replaced);
+        }
+        return F.NIL;
+      });
+      if (substituted.isPresent()) {
+        result = substituted;
+      } else if (result.isString()) {
+        // replaceAll does not visit the expression itself when it is an atom
+        String text = result.toString();
+        String replaced = substituteGroupReferences(text, matcher);
+        if (!replaced.equals(text)) {
+          result = F.stringx(replaced);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * <code>$0</code> to <code>$9</code> in <code>text</code> replaced by what the match captured.
+   * <code>$0</code> is the whole match; a group that did not take part contributes nothing, and
+   * <code>$$</code> is a literal dollar.
+   */
+  private static String substituteGroupReferences(String text, Matcher matcher) {
+    int dollar = text.indexOf('$');
+    if (dollar < 0) {
+      return text;
+    }
+    StringBuilder buf = new StringBuilder(text.length() + 16);
+    for (int i = 0; i < text.length(); i++) {
+      char ch = text.charAt(i);
+      if (ch == '$' && i + 1 < text.length()) {
+        char next = text.charAt(i + 1);
+        if (next == '$') {
+          buf.append('$');
+          i++;
+          continue;
+        }
+        if (next >= '0' && next <= '9') {
+          int group = next - '0';
+          if (group <= matcher.groupCount()) {
+            String value = matcher.group(group);
+            if (value != null) {
+              buf.append(value);
+            }
+            i++;
+            continue;
+          }
+        }
+      }
+      buf.append(ch);
+    }
+    return buf.toString();
+  }
+
   private static class StringCases extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
@@ -1117,7 +1201,11 @@ public final class StringFunctions {
           boolean ignoreCase = option[0].isTrue();
 
           String str = arg1.toString();
-          IExpr arg2 = ast.arg2();
+          // The pattern is evaluated: a pattern object evaluates to itself, while a regular
+          // expression is usually built - RegularExpression["(\\w*)=\\{(" <> inner <> ")\\}"] -
+          // and holding it leaves the StringJoin unevaluated. A RuleDelayed still holds its right
+          // hand side, which is what makes the difference between -> and :> here.
+          IExpr arg2 = engine.evaluate(ast.arg2());
           if (!arg2.isList()) {
             arg2 = F.list(arg2);
           }
@@ -1126,16 +1214,28 @@ public final class StringFunctions {
           for (int i = 1; i < list.size(); i++) {
             IExpr arg = list.get(i);
 
+            // A rule says what to make of each match rather than answering the matched text:
+            // StringCases[s, RegularExpression["(\\w+)=(\\w+)"] -> ("$1" -> "$2")]
+            IExpr patternExpr = arg;
+            IExpr ruleRHS = F.NIL;
+            if (arg.isRuleAST()) {
+              patternExpr = arg.first();
+              ruleRHS = arg.second();
+            }
+
             Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
             java.util.regex.Pattern pattern =
-                IStringX.toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
+                IStringX.toRegexPattern(patternExpr, true, ignoreCase, ast, groups, engine);
             if (pattern == null) {
               return F.NIL;
             }
             Matcher m = pattern.matcher(str);
             while (m.find()) {
-              String s = m.group();
-              result.append(F.$str(s));
+              if (ruleRHS.isPresent()) {
+                result.append(engine.evaluate(substituteMatchedGroups(ruleRHS, m, groups)));
+              } else {
+                result.append(F.$str(m.group()));
+              }
             }
           }
           return result;
