@@ -491,6 +491,26 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveConditionAtASingularPoint() {
+    // The general solution of these is written with ExpIntegralEi(t), which does not reach t == 0:
+    // putting the point in gives Indeterminate from 0*(-Infinity). That is not the condition
+    // failing, it is the wrong way to ask, and the limit there says C(2) == 0. One condition and
+    // two constants, so one constant stays free, which is right.
+    check("DSolve({t*x''(t) + (t - 2)*x'(t) + x(t) == 0, x(0) == 0}, x(t), t)", //
+        "{{x(t)->(t^3*C(1))/E^t}}");
+    check("DSolve({t*x''(t) + (3*t - 1)*x'(t) + 3*x(t) == 0, x(0) == 0}, x(t), t)", //
+        "{{x(t)->(t^2*C(1))/E^(3*t)}}");
+
+    // A condition which no solution meets is still refused: every solution of x'(t) == x(t)/t is
+    // zero at the origin, so it cannot be 5 there.
+    check("DSolve({x'(t) == x(t)/t, x(0) == 5}, x(t), t)", //
+        "DSolve({x'(t)==x(t)/t,x(0)==5},x(t),t)");
+    // and the ordinary initial value problems are untouched
+    check("DSolve({y''(x) + 4*y(x) == 0, y(0) == 1, y'(0) == 0}, y(x), x)", //
+        "{{y(x)->Cos(2*x)}}");
+  }
+
+  @Test
   public void testDSolveExactAfterClearingTheDenominator() {
     // Exact as written, and not exact by the time the solvers see it: the coefficient of y' is
     // cleared of its denominator first, which multiplies the pair by x. The integrating factor

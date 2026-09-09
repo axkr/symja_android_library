@@ -30,6 +30,9 @@ final class DSolveODE {
   /** Beyond this the relation raised to that power is larger than Solve can use. */
   private static final int MAX_EXPONENTIATION_POWER = 12;
 
+  /** How long a condition at a point the solution does not reach may take to read as a limit. */
+  private static final int LIMIT_AT_CONDITION_SECONDS = 3;
+
   /** Beyond this, deciding whether the exactness test vanishes costs more than it is worth. */
   private static final int MAX_EXACT_DIFFERENCE_LEAF_COUNT = 100;
 
@@ -870,7 +873,44 @@ final class DSolveODE {
    * @return the particular solution with constants determined, or {@code F.NIL} if the boundary
    *         conditions cannot be satisfied
    */
-  /** Each condition with the candidate solution put in place of the unknown function. */
+  /**
+   * The condition read as a limit, for a solution which does not reach the point it is given at.
+   *
+   * <p>
+   * A basis can be singular where the condition is: <code>t*x''(t) + (t-2)*x'(t) + x(t) == 0</code>
+   * has a solution written with <code>ExpIntegralEi(t)</code>, and putting <code>t == 0</code> into
+   * it gives <code>Indeterminate</code> from <code>0*(-Infinity)</code>, not because the condition
+   * cannot be met but because that is not how to ask. The limit there is <code>-C(2)/3</code>, which
+   * says <code>C(2) == 0</code>, and what is left solves the equation exactly.
+   *
+   * @return the one condition rewritten, or <code>null</code> when the limit does not exist, cannot
+   *         be found, or the conditions are not a single prescribed value
+   */
+  private static IASTAppendable limitedConditions(IExpr root, IAST uFunction1Arg, IExpr xVar,
+      IAST boundaryConditions, EvalEngine engine) {
+    IExpr[] point = valuePoint(boundaryConditions, uFunction1Arg.head(), xVar, engine);
+    if (point == null) {
+      return null;
+    }
+    IExpr limit;
+    try {
+      limit = engine.evaluate(F.TimeConstrained(F.Limit(root, F.Rule(xVar, point[0])),
+          F.ZZ(MachineProfile.seconds(LIMIT_AT_CONDITION_SECONDS)), S.$Aborted));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return null;
+    }
+    if (limit.isNIL() || limit.equals(S.$Aborted) || limit.isIndeterminate()
+        || !limit.isFree(e -> e == S.Indeterminate || e.isDirectedInfinity(), true)
+        || !DSolveContext.isUsable(limit)) {
+      return null;
+    }
+    IASTAppendable conditions = F.ListAlloc(1);
+    conditions.append(engine.evaluate(F.Subtract(limit, point[1])));
+    return conditions;
+  }
+
+  /** Each condition with the candidate solution put in place of the unknown function. */  /** Each condition with the candidate solution put in place of the unknown function. */
   private static IASTAppendable evaluatedConditions(IExpr root, IAST uFunction1Arg, IExpr xVar,
       IAST boundaryConditions, EvalEngine engine) {
     IAST headRules =
@@ -956,6 +996,13 @@ final class DSolveODE {
       EvalEngine engine) {
     IASTAppendable evaluatedBCs =
         evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
+    if (!evaluatedBCs.isFree(e -> e == S.Indeterminate || e.isDirectedInfinity(), true)) {
+      IASTAppendable atLimit =
+          limitedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
+      if (atLimit != null) {
+        evaluatedBCs = atLimit;
+      }
+    }
 
     // Use the guaranteed recursive constant extractor
     IASTAppendable cVars = F.ListAlloc();
