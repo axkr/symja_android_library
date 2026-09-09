@@ -16,3 +16,4 @@ target/
 test.*
 *.ser
 DS_Store
+/.DS_Store

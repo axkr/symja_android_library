@@ -4,3 +4,4 @@ out/
 gen/
 /.claude/
 *_PLAN.md
+/.DS_Store
