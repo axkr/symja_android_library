@@ -605,4 +605,33 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Attributes[Composition]", //
         "{Flat,OneIdentity,Protected}");
   }
+
+  @Test
+  public void testAnAbsoluteContextNameIsNotHungUnderTheCurrentOne() {
+    // Frontend/Views.wl begins Begin["CoffeeLiqueur`Notebook`Views`"], defines its router, and
+    // ends by handing back CoffeeLiqueur`Notebook`Views`View written out in full. Hanging that
+    // context under whichever one the file was read from put the definition in one symbol and
+    // the name at the end on another, so the page carried the text of the call instead of what
+    // the router built.
+    check("Begin[\"Outer`Private`\"]", //
+        "Outer`Private`");
+    check("Begin[\"A`B`\"]", //
+        "A`B`");
+    check("$Context", //
+        "A`B`");
+    check("g[x__] := {x}", //
+        "");
+    // the short name inside the context and the name written out in full are the same symbol
+    check("{Context[g], SymbolName[g], g === A`B`g}", //
+        "{A`B`,A`B`g,True}");
+    check("End[]", //
+        "A`B`");
+    check("{Length[DownValues[A`B`g]], A`B`g[1, 2]}", //
+        "{1,{1,2}}");
+    // ...while a leading backtick still names a context under the one open now
+    check("Begin[\"`Inner`\"]", //
+        "Outer`Private`Inner`");
+    check("End[]; End[]; $Context", //
+        "Global`");
+  }
 }

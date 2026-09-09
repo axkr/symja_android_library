@@ -131,9 +131,14 @@ public class FileFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       String contextName = Validate.checkContextName(ast, 1);
-      org.matheclipse.core.expression.Context pack =
-          EvalEngine.get().getContextPath().currentContext();
-      org.matheclipse.core.expression.Context context = engine.begin(contextName, pack);
+      // Begin["`Private`"] names a context under the one open now; Begin["Foo`Bar`"] names that
+      // context and no other. Hanging the second kind under the current one made a file which
+      // begins Begin["CoffeeLiqueur`Notebook`Views`"] land in a different context depending on
+      // where it was read from - and its own symbols, written out in full, then meant nothing.
+      org.matheclipse.core.expression.Context parent = contextName.startsWith("`") //
+          ? EvalEngine.get().getContextPath().currentContext()
+          : null;
+      org.matheclipse.core.expression.Context context = engine.begin(contextName, parent);
       return F.stringx(context.completeContextName());
     }
 
