@@ -278,6 +278,32 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
    * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
    *      Perl Compatible Regular Expression</a>
    */
+  /**
+   * A name for the capture group a named pattern becomes.
+   *
+   * <p>
+   * A Java regular expression names a group with letters and digits only, while the symbol naming
+   * the pattern may carry a context, a <code>$</code> or an underscore - inside a package it always
+   * carries a context. Taking the symbol's name verbatim made the whole expression unparseable, so
+   * the name is sanitised and numbered to keep two symbols apart.
+   */
+  static String regexGroupName(ISymbol symbol, Map<ISymbol, String> groups) {
+    String existing = groups.get(symbol);
+    if (existing != null) {
+      return existing;
+    }
+    StringBuilder name = new StringBuilder("g");
+    name.append(groups.size());
+    String symbolName = symbol.getSymbolName();
+    for (int i = 0; i < symbolName.length(); i++) {
+      char c = symbolName.charAt(i);
+      if (c < 128 && Character.isLetterOrDigit(c)) {
+        name.append(c);
+      }
+    }
+    return name.toString();
+  }
+
   static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction,
       String[] shortestLongest, Map<ISymbol, String> groups, EvalEngine engine) {
 
@@ -331,7 +357,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         String str = toRegexString(expr.second(), abbreviatedPatterns, stringFunction,
             shortestLongest, groups, engine);
         if (str != null) {
-          final String groupName = symbol.toString();
+          final String groupName = regexGroupName(symbol, groups);
           groups.put(symbol, groupName);
           if (repeated.isNullSequence()) {
             return "(?<" + groupName + ">(" + str + ")" + shortestLongest[IStringX.ASTERISK_Q]
@@ -362,7 +388,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       final ISymbol symbol = pattern.getSymbol();
       if (symbol != null && pattern.getHeadTest() == null) {
         // see github #221 - use Java regex - named capturing groups
-        final String groupName = symbol.toString();
+        final String groupName = regexGroupName(symbol, groups);
         groups.put(symbol, groupName);
         if (pattern instanceof PatternNested) {
           PatternNested pn = (PatternNested) pattern;
@@ -378,7 +404,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       String str = toRegexString(partOfRegex.second(), abbreviatedPatterns, stringFunction,
           shortestLongest, groups, engine);
       if (str != null) {
-        final String groupName = symbol.toString();
+        final String groupName = regexGroupName(symbol, groups);
         groups.put(symbol, groupName);
         return "(?<" + groupName + ">" + str + ")";
       }
@@ -396,7 +422,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       if (symbol == null) {
         return str;
       } else {
-        final String groupName = symbol.toString();
+        final String groupName = regexGroupName(symbol, groups);
         groups.put(symbol, groupName);
         return "(?<" + groupName + ">" + str + ")";
       }
