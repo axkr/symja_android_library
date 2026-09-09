@@ -503,6 +503,12 @@ public final class StringFunctions {
       int to = 1;
       IExpr arg1 = ast.arg1();
       try {
+        if (arg1.isString()) {
+          // One name is already a file name: `path // FileNameJoin` is how a path which may be a
+          // list of segments or a finished string is normalised, and answering nothing for the
+          // string left the path an unevaluated expression.
+          return arg1;
+        }
         if (arg1.isListOfStrings()) {
           IAST list = ((IAST) arg1);
           if (list.isAST1()) {
