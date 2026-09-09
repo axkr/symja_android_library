@@ -74,6 +74,11 @@ final class DSolveSpecialFunctions {
       basis = gauss(p, q, xVar, engine);
     }
     if (basis == null) {
+      // After Kummer and Gauss, whose equations have a coefficient of y' which is a ratio of
+      // polynomials of the same degree, where this one's grows.
+      basis = hermite(p, q, xVar, engine);
+    }
+    if (basis == null) {
       // Last, because every row above reads a rational coefficient and none of them can claim a
       // potential built from Csc and Sec.
       basis = poschlTeller(p, q, yFunction, xVar, engine);
@@ -309,6 +314,45 @@ final class DSolveSpecialFunctions {
     }
     return new IExpr[] {F.Hypergeometric1F1(a, b, xVar), F.Times(F.Power(xVar, F.Subtract(F.C1, b)),
         F.Hypergeometric1F1(F.Plus(a, F.Subtract(F.C1, b)), F.Subtract(F.C2, b), xVar))};
+  }
+
+  /**
+   * Hermite's equation <code>y'' + b*x*y' + q*y == 0</code> with <code>b</code> and <code>q</code>
+   * constant, whose solutions are the two confluent series in <code>x^2</code>.
+   *
+   * <p>
+   * Substituting <code>t = -b/2*x^2</code> turns it into Kummer's equation, and the two exponents
+   * of that equation at the origin are <code>0</code> and <code>1/2</code>, so the basis is one
+   * even function of <code>x</code> and one odd one. With <code>b == -2</code> and
+   * <code>q == 2*n</code> for a whole <code>n</code> the even one is the Hermite polynomial
+   * <code>HermiteH(n,x)</code> up to a factor when <code>n</code> is even, and the odd one is that
+   * polynomial when <code>n</code> is odd; naming the polynomial instead would give a pair which is
+   * a basis for one parity of <code>n</code> and the same function twice for the other, so both
+   * solutions are written as series here whatever <code>q</code> is.
+   *
+   * <p>
+   * The factor <code>Sqrt(-b/2)</code> which the substitution puts in front of the odd solution is
+   * a constant, and it is left out rather than carried: it would be an imaginary constant in front
+   * of a real function whenever <code>b</code> is positive, and the arbitrary constant beside it
+   * absorbs it either way.
+   */
+  private static IExpr[] hermite(IExpr p, IExpr q, IExpr xVar, EvalEngine engine) {
+    if (!q.isFree(xVar)) {
+      return null;
+    }
+    IExpr b = cancel(F.Divide(p, xVar), engine);
+    if (!b.isFree(xVar) || b.isZero()) {
+      return null;
+    }
+    if (!DSolveODE.isVanishing(engine.evaluate(F.Subtract(p, F.Times(b, xVar))), engine)) {
+      return null;
+    }
+    IExpr degree = cancel(F.Divide(F.Negate(q), b), engine);
+    IExpr square = engine.evaluate(F.Times(F.CN1D2, b, F.Sqr(xVar)));
+    return new IExpr[] {
+        F.Hypergeometric1F1(F.Times(F.CN1D2, degree), F.C1D2, square),
+        F.Times(xVar,
+            F.Hypergeometric1F1(F.Times(F.C1D2, F.Subtract(F.C1, degree)), F.QQ(3L, 2L), square))};
   }
 
   /**

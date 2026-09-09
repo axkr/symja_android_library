@@ -1383,6 +1383,32 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveHermite() {
+    // Hermite's equation with a symbolic degree. Both solutions are series in x^2, one even and
+    // one odd, which is a basis whatever the degree is.
+    check("DSolve(y''(x) - 2*x*y'(x) + 2*n*y(x) == 0, y(x), x)", //
+        "{{y(x)->x*C(2)*Hypergeometric1F1(1/2-n/2,3/2,x^2)+C(1)*Hypergeometric1F1(-n/2,1/\n" //
+            + "2,x^2)}}");
+
+    // A whole degree makes one of the pair a polynomial. Naming HermiteH here instead would give
+    // the same function twice: HermiteH(3,x) is the odd solution, and it is proportional to the
+    // even series only for an even degree, so the pair would be a basis for one parity and not
+    // the other.
+    check("DSolve(y''(x) - 2*x*y'(x) + 6*y(x) == 0, y(x), x)", //
+        "{{y(x)->x*C(2)-2/3*x^3*C(2)+C(1)*Hypergeometric1F1(-3/2,1/2,x^2)}}");
+
+    // A coefficient in front of y'' and a positive b, where the substitution's constant factor is
+    // imaginary. It is a constant, so the arbitrary constant beside it absorbs it, and the
+    // argument x^2*(-b/2) stays real.
+    check("DSolve(3*y''(x) + x*y'(x) - 4*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)+2/3*x^2*C(1)+1/27*x^4*C(1)+x*C(2)*Hypergeometric1F1(-3/2,3/2,-x^2/6)}}");
+
+    check("DSolve(5*y''(x) - 2*x*y'(x) + 10*y(x) == 0, y(x), x)", //
+        "{{y(x)->x*C(2)-4/15*x^3*C(2)+4/375*x^5*C(2)+C(1)*Hypergeometric1F1(-5/2,1/2,x^2/\n" //
+            + "5)}}");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testDSolveHypergeometric() {
     check("DSolve(x*y''(x) + (b - x)*y'(x) - a*y(x) == 0, y(x), x)", //
