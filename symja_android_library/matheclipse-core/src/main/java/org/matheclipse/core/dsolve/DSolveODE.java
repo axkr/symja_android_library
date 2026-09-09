@@ -326,7 +326,11 @@ final class DSolveODE {
       // separates into (y + 3/2)^2 == ..., whose minus branch cannot meet y(0) == 0 and whose plus
       // branch can. Keeping one of them turned that equation, and six more of its kind, into an
       // equation with no solution.
-      IExpr result = Eliminate.extractVariable(yEquation, y, true, engine);
+      // Each attempt is filtered before the next is skipped. An inversion which answers with
+      // something still carrying y is no answer, and letting it stand as one is what stopped the
+      // methods below from ever being reached for the equations whose relation has a lone y in it
+      // beside a logarithm.
+      IExpr result = usableBranches(engine, Eliminate.extractVariable(yEquation, y, true, engine), y);
       if (result.isNIL()) {
         // The antiderivative is not always in a form the equation can be solved for y in. A sum
         // of logarithms is the usual case: Integrate answers 1/(1-y^2) with
@@ -335,19 +339,25 @@ final class DSolveODE {
         // again, which is what makes y'(x) == (y(x)^2 + x*y(x) - x^2)/x^2 solvable.
         IExpr collected = engine.evaluate(F.FullSimplify(gyExpr));
         if (collected.isPresent() && !collected.equals(gyExpr)) {
-          result = Eliminate.extractVariable(S.Subtract.of(engine, collected, fxExpr), y, true,
-              engine);
+          result = usableBranches(engine, Eliminate
+              .extractVariable(S.Subtract.of(engine, collected, fxExpr), y, true, engine), y);
         }
       }
       if (result.isNIL()) {
         result = solveSeparatedEquation(engine, yEquation, y);
       }
       if (result.isNIL()) {
+        // Before the exponentiated attempt, because the relations this reads are ones the other
+        // would hand to Solve as an exponential equation, and Solve answers one of those with a
+        // root which does not satisfy it: E^(10*y)/(3/2+y) == E^(4*x) comes back as
+        // -ProductLog(-10/E^(4*x))/10, whose residual at x == 1 is about -54. The formula below is
+        // exact, so it is asked first.
+        result = solveProductLogEquation(engine, gyExpr, fxExpr, y);
+      }
+      if (result.isNIL()) {
         result = solveExponentiatedEquation(engine, gyExpr, fxExpr, y);
       }
-      if (result.isPresent()) {
-        return usableBranches(engine, DSolveUtil.stripConditionalExpression(result), y);
-      }
+      return result;
     }
     return F.NIL;
   }
@@ -407,6 +417,167 @@ final class DSolveODE {
   }
 
   /**
+   * Solves a separated relation which mixes a linear form with its own logarithm.
+   *
+   * <p>
+   * <code>p*u + q*Log(u) == T</code> is what a first order equation separates into whenever the
+   * denominator of the integrand has a repeated factor or a factor the numerator shares, and
+   * nothing algebraic inverts it. <code>ProductLog</code> does: the relation is
+   * <code>(p/q)*u*E^((p/q)*u) == (p/q)*E^(T/q)</code>, whose left side is the function
+   * <code>ProductLog</code> inverts by definition, so <code>u == (q/p)*ProductLog((p/q)*E^(T/q))
+   * </code>. The reciprocal form <code>p/u + q*Log(u) == T</code> is the same relation in
+   * <code>1/u</code>, and it is what a homogeneous equation such as
+   * <code>y'(x) == (x + 3*y(x))/(x - y(x))</code> reduces to.
+   *
+   * <p>
+   * The principal branch is taken, as everywhere else here; a branch which does not answer the
+   * equation is refused by the verification the caller does.
+   */
+  private static IExpr solveProductLogEquation(EvalEngine engine, IExpr gyExpr, IExpr fxExpr,
+      IExpr y) {
+    IExpr[] form = productLogForm(engine, gyExpr, y);
+    if (form == null) {
+      return F.NIL;
+    }
+    IExpr p = form[0];
+    IExpr q = form[1];
+    IExpr linear = form[2];
+    boolean reciprocal = form[3].isTrue();
+    IExpr constant = form[4];
+    // What is left on the other side once the terms free of the unknown have moved across.
+    IExpr t = engine.evaluate(F.Subtract(fxExpr, constant));
+    if (reciprocal) {
+      // p/u + q*Log(u) == T is the same relation as p*s + (-q)*Log(s) == T in s == 1/u, so only
+      // the coefficient of the logarithm changes sign. The right hand side does not: negating it
+      // as well put the argument of ProductLog on the wrong side of -1/E, where it is complex for
+      // every real x, and the verification then refused an answer which was nearly right.
+      q = engine.evaluate(F.Negate(q));
+    }
+    IExpr ratio = engine.evaluate(F.Divide(p, q));
+    IExpr s = engine.evaluate(F.Times(F.Power(ratio, F.CN1),
+        F.ProductLog(F.Times(ratio, F.Exp(F.Divide(t, q))))));
+    IExpr u = reciprocal ? engine.evaluate(F.Power(s, F.CN1)) : s;
+    // linear is gamma*y + delta, so y is (u - delta)/gamma.
+    IExpr gamma = engine.evaluate(F.Coefficient(linear, y, F.C1));
+    IExpr delta = engine.evaluate(F.Coefficient(linear, y, F.C0));
+    IExpr root = engine.evaluate(F.Divide(F.Subtract(u, delta), gamma));
+    return usableBranches(engine, root, y);
+  }
+
+  /**
+   * Reads <code>gyExpr</code> as <code>p*u + q*Log(u) + constant</code>, or as
+   * <code>p/u + q*Log(u) + constant</code>, with <code>u</code> a linear form in <code>y</code>.
+   *
+   * @return <code>{p, q, u, reciprocal, constant}</code>, or <code>null</code> when it is neither
+   */
+  private static IExpr[] productLogForm(EvalEngine engine, IExpr gyExpr, IExpr y) {
+    IExpr logCoefficient = F.NIL;
+    IExpr linear = F.NIL;
+    IExpr algebraicCoefficient = F.NIL;
+    boolean reciprocal = false;
+    IASTAppendable rest = F.PlusAlloc(4);
+    IAST terms = gyExpr.isPlus() ? (IAST) gyExpr : F.Plus(gyExpr);
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      if (term.isFree(y, true)) {
+        rest.append(term);
+        continue;
+      }
+      IExpr carried = term;
+      IExpr coefficient = F.C1;
+      if (term.isTimes()) {
+        IAST factors = (IAST) term;
+        IASTAppendable carrying = F.TimesAlloc(factors.argSize());
+        IASTAppendable coefficients = F.TimesAlloc(factors.argSize());
+        for (int k = 1; k <= factors.argSize(); k++) {
+          if (factors.get(k).isFree(y, true)) {
+            coefficients.append(factors.get(k));
+          } else {
+            carrying.append(factors.get(k));
+          }
+        }
+        carried = carrying.oneIdentity1();
+        coefficient = coefficients.oneIdentity1();
+      }
+      if (carried.isLog()) {
+        if (logCoefficient.isPresent() || !isLinearIn(carried.first(), y, engine)) {
+          return null;
+        }
+        logCoefficient = coefficient;
+        linear = carried.first();
+        continue;
+      }
+      if (algebraicCoefficient.isPresent()) {
+        return null;
+      }
+      if (isLinearIn(carried, y, engine)) {
+        algebraicCoefficient = coefficient;
+        continue;
+      }
+      if (carried.isPower() && carried.exponent().isMinusOne()
+          && isLinearIn(carried.base(), y, engine)) {
+        algebraicCoefficient = coefficient;
+        reciprocal = true;
+        continue;
+      }
+      return null;
+    }
+    if (logCoefficient.isNIL() || algebraicCoefficient.isNIL() || logCoefficient.isZero()
+        || algebraicCoefficient.isZero()) {
+      return null;
+    }
+
+    // Both terms have to speak about the same linear form, so the algebraic one is rewritten in
+    // terms of the logarithm's argument: a*y == (a/gamma)*(u - delta), and what that leaves over
+    // is free of y and moves to the other side.
+    IExpr algebraic = F.NIL;
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      if (!term.isFree(y, true) && term.isFree(S.Log, true)) {
+        algebraic = term;
+      }
+    }
+    IExpr p;
+    if (reciprocal) {
+      IExpr scaled = engine.evaluate(F.Simplify(F.Times(algebraic, linear)));
+      if (!scaled.isFree(y, true)) {
+        return null;
+      }
+      p = scaled;
+    } else {
+      IExpr gamma = engine.evaluate(F.Coefficient(linear, y, F.C1));
+      IExpr delta = engine.evaluate(F.Coefficient(linear, y, F.C0));
+      IExpr slope = engine.evaluate(F.Coefficient(algebraic, y, F.C1));
+      IExpr offset = engine.evaluate(F.Coefficient(algebraic, y, F.C0));
+      if (gamma.isZero() || !slope.isFree(y, true) || !offset.isFree(y, true)) {
+        return null;
+      }
+      p = engine.evaluate(F.Divide(slope, gamma));
+      rest.append(engine.evaluate(F.Subtract(offset, F.Times(p, delta))));
+    }
+    IExpr constant = engine.evaluate(rest.oneIdentity0());
+    if (p.isNIL() || p.isZero() || !p.isFree(y, true) || !constant.isFree(y, true)) {
+      return null;
+    }
+    return new IExpr[] {p, logCoefficient, linear, F.bool(reciprocal), constant};
+  }
+
+  /** Whether <code>expr</code> is <code>gamma*y + delta</code> with a non-zero slope. */
+  private static boolean isLinearIn(IExpr expr, IExpr y, EvalEngine engine) {
+    if (expr.isFree(y, true) || !expr.isPolynomial(y)) {
+      return false;
+    }
+    IExpr slope = engine.evaluate(F.Coefficient(expr, y, F.C1));
+    IExpr offset = engine.evaluate(F.Coefficient(expr, y, F.C0));
+    if (slope.isZero() || !slope.isFree(y, true) || !offset.isFree(y, true)) {
+      return false;
+    }
+    return DSolveODE.isVanishing(
+        engine.evaluate(F.Subtract(expr, F.Plus(F.Times(slope, y), offset))), engine);
+  }
+
+  /**
+   * The power the relation is raised to before it is exponentiated  /**
    * The power the relation is raised to before it is exponentiated, or <code>0</code> when
    * exponentiating it gives nothing algebraic in <code>y</code>.
    *
@@ -513,7 +684,10 @@ final class DSolveODE {
    * @return {@link F#NIL} if no branch is left
    */
   private static IExpr usableBranches(EvalEngine engine, IExpr result, IExpr y) {
-    IAST branches = result.makeList();
+    if (result.isNIL()) {
+      return F.NIL;
+    }
+    IAST branches = DSolveUtil.stripConditionalExpression(result).makeList();
     IASTAppendable kept = F.ListAlloc(branches.argSize());
     for (int i = 1; i <= branches.argSize(); i++) {
       IExpr branch = engine.evaluate(DSolveUtil.stripConditionalExpression(branches.get(i)));

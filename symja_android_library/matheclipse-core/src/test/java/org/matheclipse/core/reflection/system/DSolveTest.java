@@ -491,6 +491,27 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveProductLogRelation() {
+    // A relation which mixes a linear form with its own logarithm is what a first order equation
+    // separates into whenever the denominator shares a factor with the numerator. Nothing
+    // algebraic inverts it and ProductLog does, by its definition.
+    check("DSolve(y'(x) == (2*y(x) + 3)/(5*y(x) + 7), y(x), x)", //
+        "{{y(x)->-3/2-ProductLog(-10/E^(15+4*x-4*C(1)))/10}}");
+    // The reciprocal form is the same relation in 1/u, and it is what a homogeneous equation
+    // reduces to along y == v*x.
+    check("DSolve(y'(x) == (x + 3*y(x))/(x - y(x)), y(x), x)", //
+        "{{y(x)->-x+(-2*x)/ProductLog((-2*x)/E^C(1))}}");
+    // the shape which already inverted is unchanged
+    check("DSolve(y'(t) == Cot(t)*y(t)/(1 + y(t)), y(t), t)", //
+        "{{y(t)->ProductLog(E^C(1)*Sin(t))}}");
+
+    // A relation whose exponential is a quintic in y has no explicit solution and is declined
+    // rather than answered with one branch of it.
+    check("FreeQ(DSolve(y'(x) == (4*y(x) - 3*x)/(2*x - y(x)), y(x), x), Rule)", //
+        "True");
+  }
+
+  @Test
   public void testDSolveAutonomousSumOfLogarithms() {
     // An autonomous equation separates into the antiderivative of a rational function, which is a
     // sum of logarithms, and nothing inverts that as it stands. Raised to the power which clears
