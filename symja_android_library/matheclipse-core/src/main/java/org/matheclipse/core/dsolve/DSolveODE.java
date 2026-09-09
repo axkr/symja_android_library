@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.reflection.system.Eliminate;
 
 /**
@@ -26,6 +27,9 @@ final class DSolveODE {
    * Note: We set a maximum derivative order to prevent infinite recursion in pathological cases.
    * This is a safeguard and can be adjusted as needed.
    */
+  /** Beyond this the relation raised to that power is larger than Solve can use. */
+  private static final int MAX_EXPONENTIATION_POWER = 12;
+
   static final int MAX_DERIVATIVE_ORDER = 10;
 
   /** How deep in the cascade the reduction of a Riccati equation is still attempted. */
@@ -338,6 +342,9 @@ final class DSolveODE {
       if (result.isNIL()) {
         result = solveSeparatedEquation(engine, yEquation, y);
       }
+      if (result.isNIL()) {
+        result = solveExponentiatedEquation(engine, gyExpr, fxExpr, y);
+      }
       if (result.isPresent()) {
         return usableBranches(engine, DSolveUtil.stripConditionalExpression(result), y);
       }
@@ -346,6 +353,132 @@ final class DSolveODE {
   }
 
   /**
+   * Solves the separated equation by raising both sides to the power of <code>E</code>.
+   *
+   * <p>
+   * An autonomous equation separates into a sum of logarithms, which is what the antiderivative of
+   * a rational function is, and nothing inverts a sum of logarithms as it stands. Exponentiating
+   * turns that sum into a product of powers -- <code>E</code> is one to one, so the relation is the
+   * same one -- and the product is algebraic in <code>y</code>:
+   * <code>y' == y*(y-2)*(y-1)</code> separates into
+   * <code>Log(y^2-2*y)/2 - Log(1-y) == x + C</code>, whose exponential is a quadratic in
+   * <code>y</code> over another, and it is solved outright.
+   *
+   * @param gyExpr the antiderivative in <code>y</code>
+   * @param fxExpr the antiderivative in <code>x</code>, with the constant already in it
+   */
+  private static IExpr solveExponentiatedEquation(EvalEngine engine, IExpr gyExpr, IExpr fxExpr,
+      IExpr y) {
+    int power = exponentiationPower(gyExpr, y);
+    if (power == 0) {
+      return F.NIL;
+    }
+    // The relation is raised to the power which clears the denominators of the logarithms'
+    // coefficients before it is exponentiated, so that what comes out is rational in y rather than
+    // a radical. Solve answers (1-y)^2/(y^2-2*y) == E^(-2*x) and does not answer the same relation
+    // written with a Sqrt underneath, which is what taking the exponential on its own leaves.
+    // Both signs of the power, because Solve reads the two the same relation can be written in
+    // differently: it answers (1-E^y)/E^y == E^x and leaves E^y/(1-E^y) == E^(-x) as it stands,
+    // and which of the two the antiderivatives come out as is not settled here.
+    IExpr solved = solveExponentiated(engine, gyExpr, fxExpr, y, power);
+    return solved.isPresent() ? solved : solveExponentiated(engine, gyExpr, fxExpr, y, -power);
+  }
+
+  /** One attempt of {@link #solveExponentiatedEquation}, with the relation raised to `power`. */
+  private static IExpr solveExponentiated(EvalEngine engine, IExpr gyExpr, IExpr fxExpr, IExpr y,
+      int power) {
+    IExpr lhs = engine.evaluate(F.PowerExpand(F.Exp(F.Times(F.ZZ(power), gyExpr))));
+    IExpr rhs = engine.evaluate(F.PowerExpand(F.Exp(F.Times(F.ZZ(power), fxExpr))));
+    if (lhs.isNIL() || rhs.isNIL() || !rhs.isFree(y, true) || !lhs.isFree(S.Log, true)) {
+      return F.NIL;
+    }
+    IExpr solutions;
+    try {
+      solutions = engine.evaluate(F.TimeConstrained(F.Solve(F.Equal(lhs, rhs), y),
+          F.ZZ(MachineProfile.seconds(SOLVE_SEPARATED_SECONDS)), S.$Aborted));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+    if (solutions.isNIL() || solutions.equals(S.$Aborted)) {
+      return F.NIL;
+    }
+    return usableBranches(engine, DSolveUtil.extractSolveResults(solutions), y);
+  }
+
+  /**
+   * The power the relation is raised to before it is exponentiated, or <code>0</code> when
+   * exponentiating it gives nothing algebraic in <code>y</code>.
+   *
+   * <p>
+   * Every term has to be a logarithm, or <code>y</code> itself, or free of <code>y</code>: those
+   * become a power, a power of <code>E^y</code>, and a factor. A term like <code>1/y</code>, which
+   * a repeated root of the denominator leaves behind, becomes <code>E^(1/y)</code> and is no more
+   * invertible than the sum was -- <code>y' == y^2*(y^2-1)</code> is of that kind, and this is
+   * where it is declined rather than after a search which cannot end well.
+   *
+   * @return the least common multiple of the denominators of the logarithms' coefficients, which is
+   *         what turns the fractional powers their exponential leaves into whole ones
+   */
+  private static long gcd(long a, long b) {
+    while (b != 0) {
+      long r = a % b;
+      a = b;
+      b = r;
+    }
+    return a;
+  }
+
+  private static int exponentiationPower(IExpr gyExpr, IExpr y) {
+    boolean anyLogarithm = false;
+    long power = 1;
+    IAST terms = gyExpr.isPlus() ? (IAST) gyExpr : F.Plus(gyExpr);
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      if (term.isFree(y, true)) {
+        continue;
+      }
+      IExpr carried = term;
+      IExpr coefficient = F.C1;
+      if (term.isTimes()) {
+        IAST factors = (IAST) term;
+        IASTAppendable carrying = F.TimesAlloc(factors.argSize());
+        IASTAppendable coefficients = F.TimesAlloc(factors.argSize());
+        for (int k = 1; k <= factors.argSize(); k++) {
+          if (factors.get(k).isFree(y, true)) {
+            coefficients.append(factors.get(k));
+          } else {
+            carrying.append(factors.get(k));
+          }
+        }
+        carried = carrying.oneIdentity1();
+        coefficient = coefficients.oneIdentity1();
+      }
+      if (carried.equals(y)) {
+        continue;
+      }
+      if (!carried.isLog() || !carried.first().isFree(S.Log, true)) {
+        return 0;
+      }
+      anyLogarithm = true;
+      if (coefficient.isRational()) {
+        long denominator = ((IRational) coefficient).denominator().toLongDefault();
+        if (denominator < 1) {
+          return 0;
+        }
+        power = power / gcd(power, denominator) * denominator;
+        if (power > MAX_EXPONENTIATION_POWER) {
+          return 0;
+        }
+      } else if (!coefficient.isInteger()) {
+        return 0;
+      }
+    }
+    return anyLogarithm ? (int) power : 0;
+  }
+
+  /**
+   * The constant of separation which the condition <code>y(x0) == y0</code> names.  /**
    * The constant of separation which the condition <code>y(x0) == y0</code> names.
    *
    * <p>

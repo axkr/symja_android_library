@@ -491,6 +491,32 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveAutonomousSumOfLogarithms() {
+    // An autonomous equation separates into the antiderivative of a rational function, which is a
+    // sum of logarithms, and nothing inverts that as it stands. Raised to the power which clears
+    // the denominators of its coefficients and then exponentiated, the same relation is algebraic
+    // in y and is solved outright.
+    check("DSolve(y'(x) == E^y(x) - 1, y(x), x)", //
+        "{{y(x)->-Log(1+E^(x-C(1)))}}");
+    checkResidual("y'(x) == y(x)*(y(x) - 2)*(y(x) - 1)", //
+        "y'(x) - y(x)*(y(x) - 2)*(y(x) - 1)", "{C(1)->3/4, x->13/10}");
+
+    // A term which is not a logarithm and not y itself is refused rather than searched for: the
+    // repeated root here leaves a 1/y, whose exponential is no more invertible than the sum was,
+    // and these are the equations whose answer has to stay implicit.
+    check("FreeQ(DSolve(y'(x) == y(x)^2*(y(x)^2 - 1), y(x), x), Rule)", //
+        "True");
+    check("FreeQ(DSolve(y'(x) == (1 - y(x))^2*y(x)^2, y(x), x), Rule)", //
+        "True");
+
+    // and the equations which already inverted are unchanged
+    check("DSolve(y'(x) == y(x)*(1 - y(x)), y(x), x)", //
+        "{{y(x)->1/(1+C(1)/E^x)}}");
+    check("DSolve(y'(x) == y(x), y(x), x)", //
+        "{{y(x)->E^x*C(1)}}");
+  }
+
+  @Test
   public void testDSolveSeparableConstantFromTheRelation() {
     // The relation these separate into is a cubic in y, and inverting it puts the constant under a
     // square root and inside a cube root, where solving for it afterwards fails. The condition
