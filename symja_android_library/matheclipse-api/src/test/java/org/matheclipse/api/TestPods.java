@@ -424,7 +424,7 @@ public class TestPods {
             + "      \"title\" : \"Electron Affinity\",\n" + "      \"scanner\" : \"Data\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(45.51,\\\"Kilojoules\\\"*\\\"Moles\\\"^(-1))\",\n"
+            + "        \"plaintext\" : \"Quantity(45.51,\\\"Kilojoules\\\"/\\\"Moles\\\")\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"ElectronAffinity\\\")\",\n"
             + "        \"latex\" : \"45.51\\\\,\\\\text{kJ/mol}\"\n" + "      } ]\n" + "    }, {\n"
             + "      \"title\" : \"Electron Count\",\n" + "      \"scanner\" : \"Data\",\n"
@@ -452,7 +452,7 @@ public class TestPods {
             + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Fusion Heat\",\n"
             + "      \"scanner\" : \"Data\",\n" + "      \"error\" : \"false\",\n"
             + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(2.09,\\\"Kilojoules\\\"*\\\"Moles\\\"^(-1))\",\n"
+            + "        \"plaintext\" : \"Quantity(2.09,\\\"Kilojoules\\\"/\\\"Moles\\\")\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"FusionHeat\\\")\",\n"
             + "        \"latex\" : \"2.09\\\\,\\\\text{kJ/mol}\"\n" + "      } ]\n" + "    }, {\n"
             + "      \"title\" : \"Group\",\n" + "      \"scanner\" : \"Data\",\n"
@@ -469,13 +469,13 @@ public class TestPods {
             + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Liquid Density\",\n"
             + "      \"scanner\" : \"Data\",\n" + "      \"error\" : \"false\",\n"
             + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(1.843,\\\"Centimeters\\\"^(-3)*\\\"Grams\\\")\",\n"
+            + "        \"plaintext\" : \"Quantity(1.843,\\\"Grams\\\"/\\\"Centimeters\\\"^3)\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"LiquidDensity\\\")\",\n"
             + "        \"latex\" : \"1.843\\\\,\\\\text{g/cm}^{3}\"\n" + "      } ]\n"
             + "    }, {\n" + "      \"title\" : \"Mass Density\",\n"
             + "      \"scanner\" : \"Data\",\n" + "      \"error\" : \"false\",\n"
             + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(1.873,\\\"Centimeters\\\"^(-3)*\\\"Grams\\\")\",\n"
+            + "        \"plaintext\" : \"Quantity(1.873,\\\"Grams\\\"/\\\"Centimeters\\\"^3)\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"MassDensity\\\")\",\n"
             + "        \"latex\" : \"1.873\\\\,\\\\text{g/cm}^{3}\"\n" + "      } ]\n"
             + "    }, {\n" + "      \"title\" : \"Melting Point\",\n"
@@ -492,7 +492,7 @@ public class TestPods {
             + "      \"title\" : \"Molar Mass\",\n" + "      \"scanner\" : \"Data\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(132.91,\\\"Grams\\\"*\\\"Moles\\\"^(-1))\",\n"
+            + "        \"plaintext\" : \"Quantity(132.91,\\\"Grams\\\"/\\\"Moles\\\")\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"MolarMass\\\")\",\n"
             + "        \"latex\" : \"132.91\\\\,\\\\text{g/mol}\"\n" + "      } ]\n" + "    }, {\n"
             + "      \"title\" : \"Name\",\n" + "      \"scanner\" : \"Data\",\n"
@@ -529,13 +529,13 @@ public class TestPods {
             + "      \"title\" : \"Specific Heat\",\n" + "      \"scanner\" : \"Data\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(242.0,\\\"Joules\\\"*\\\"Kelvins\\\"^(-1)*\\\"Kilograms\\\"^(-1))\",\n"
+            + "        \"plaintext\" : \"Quantity(242.0,\\\"Joules\\\"/(\\\"Kelvins\\\"*\\\"Kilograms\\\"))\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"SpecificHeat\\\")\",\n"
             + "        \"latex\" : \"242.0\\\\,\\\\text{J/K*kg}\"\n" + "      } ]\n" + "    }, {\n"
             + "      \"title\" : \"Thermal Conductivity\",\n" + "      \"scanner\" : \"Data\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(35.9,\\\"Kelvins\\\"^(-1)*\\\"Meters\\\"^(-1)*\\\"Watts\\\")\",\n"
+            + "        \"plaintext\" : \"Quantity(35.9,\\\"Watts\\\"/(\\\"Kelvins\\\"*\\\"Meters\\\"))\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"ThermalConductivity\\\")\",\n"
             + "        \"latex\" : \"35.9\\\\,\\\\text{W/K*m}\"\n" + "      } ]\n" + "    }, {\n"
             + "      \"title\" : \"Valence Electron Count\",\n" + "      \"scanner\" : \"Data\",\n"
@@ -546,7 +546,7 @@ public class TestPods {
             + "      \"title\" : \"Vaporization Heat\",\n" + "      \"scanner\" : \"Data\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Quantity(63.9,\\\"Kilojoules\\\"*\\\"Moles\\\"^(-1))\",\n"
+            + "        \"plaintext\" : \"Quantity(63.9,\\\"Kilojoules\\\"/\\\"Moles\\\")\",\n"
             + "        \"sinput\" : \"ElementData(\\\"Cesium\\\",\\\"VaporizationHeat\\\")\",\n"
             + "        \"latex\" : \"63.9\\\\,\\\\text{kJ/mol}\"\n" + "      } ]\n" + "    }, {\n"
             + "      \"title\" : \"Young Modulus\",\n" + "      \"scanner\" : \"Data\",\n"
@@ -3309,8 +3309,8 @@ public class TestPods {
   }
 
   /**
-   * The picture carries the size it chose, so nothing downstream has to guess one. Wrapping it in
-   * a frame of a fixed size is what used to override this.
+   * The picture carries the size it chose, so nothing downstream has to guess one. Wrapping it in a
+   * frame of a fixed size is what used to override this.
    */
   @Test
   public void testAGraphicsPodCarriesItsOwnSize() {
