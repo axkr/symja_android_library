@@ -3334,14 +3334,16 @@ public interface IPatternMap {
         optionValue = F.$str(((ISymbol) arg1).getSymbolName());
       }
 
+      boolean insideOptionsPattern = false;
       Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
       while (iter.hasNext()) {
         IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
         if (map != null) {
-          optionsPattern = map.get(S.LHS_HEAD);
-          if (optionsPattern != null) {
+          IASTAppendable lhsHeadEntry = map.get(S.LHS_HEAD);
+          if (lhsHeadEntry != null) {
+            insideOptionsPattern = true;
 
-            ISymbol lhsHead = optionsPattern.topHead();
+            ISymbol lhsHead = lhsHeadEntry.topHead();
             optionsPattern = map.get(lhsHead);
             rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
             if (rhsRuleValue.isPresent()) {
@@ -3349,6 +3351,17 @@ public interface IPatternMap {
             }
           }
         }
+      }
+      if (optionsPattern == null && insideOptionsPattern) {
+        // An option which is neither supplied nor a default answers its own name, as in the
+        // Wolfram Language. Leaving OptionValue[name] unevaluated instead let it be handed on as
+        // the *value* of an option, and the next lookup then found itself: the two of them never
+        // came to a stop.
+        if (!quiet) {
+          // Option name `2` not found in defaults for `1`
+          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
+        }
+        return optionValue;
       }
       // return arg1;
     }
