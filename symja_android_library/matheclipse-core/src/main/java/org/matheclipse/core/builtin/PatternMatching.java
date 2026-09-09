@@ -665,7 +665,16 @@ public final class PatternMatching {
    * </code>
    * </pre>
    */
-  private static final class DownValues extends AbstractCoreFunctionEvaluator {
+  private static final class DownValues extends AbstractCoreFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
+          engine, false);
+    }
+
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1497,7 +1506,16 @@ public final class PatternMatching {
    * </code>
    * </pre>
    */
-  private static final class OwnValues extends AbstractCoreFunctionEvaluator {
+  private static final class OwnValues extends AbstractCoreFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
+          engine, false);
+    }
+
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3229,7 +3247,16 @@ public final class PatternMatching {
    * </code>
    * </pre>
    */
-  private static final class UpValues extends AbstractCoreFunctionEvaluator {
+  private static final class UpValues extends AbstractCoreFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
+          engine, true);
+    }
+
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

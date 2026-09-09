@@ -371,7 +371,11 @@ public class AssociationFunctions {
       final IExpr key = engine.evaluate(keys.get(keyPosition));
       if (keyPosition == keys.argSize()) {
         IAssociation result = assoc.copy();
-        result.appendRule(F.Rule(key, value));
+        // `a[k] := v` keeps v unevaluated until the key is read, the same way `f[x] := v` does.
+        // Storing it eagerly made `a[\"Self\"] := a` an association that contains itself, and
+        // evaluating that never ends.
+        result.appendRule(builtinSymbol == S.SetDelayed ? F.RuleDelayed(key, value)
+            : F.Rule(key, value));
         return result;
       }
       final int index = assoc.getRulePosition(key);

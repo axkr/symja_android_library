@@ -404,6 +404,7 @@ public final class FunctionDefinitions {
     IOFunctions.initialize();
     Programming.initialize();
     PatternMatching.initialize();
+    DefinitionFunctions.initialize();
     FileFunctions.initialize();
     FileSystemFunctions.initialize();
     PacletFunctions.initialize();

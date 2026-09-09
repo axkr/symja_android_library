@@ -411,9 +411,14 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         buf.append("]");
         return buf.toString();
       }
-    } else if (partOfRegex.isAlternatives()) {
+    } else if (partOfRegex.isAlternatives() || partOfRegex.isList()) {
+      // a list standing in a string pattern is a choice, the same as Alternatives:
+      // `StartOfString ~~ {"GET", "PUT", …}` is how a request line is recognised
       IAST alternatives = (IAST) partOfRegex;
       StringBuilder pieces = new StringBuilder();
+      // the group keeps the choice from reaching past what stands beside it, so that
+      // `StartOfString ~~ {"a", "b"}` anchors both branches and not only the first
+      pieces.append("(?:");
       for (int i = 1; i < alternatives.size(); i++) {
         String str = toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction,
             shortestLongest, groups, engine);
@@ -428,6 +433,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
           pieces.append('|');
         }
       }
+      pieces.append(')');
       return pieces.toString();
     } else if (partOfRegex.isExcept()) {
       IAST exceptions = (IAST) partOfRegex;

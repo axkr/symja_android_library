@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.Attribute;
@@ -571,6 +572,72 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * @return {@link F#NIL} if <code>expr</code> can't be indexed
    * @see IPatternObject#toFullFormAST()
    */
+  /**
+   * <code>ByteArray[…][[spec]]</code>.
+   *
+   * <p>
+   * One position answers the byte as an integer; a span or a list of positions answers another byte
+   * array, the way the Wolfram Language keeps a byte array a byte array. Reading the head of an HTTP
+   * request is written as <code>message[[i ;; i + 3]]</code>, so without this no request can be
+   * parsed.
+   *
+   * @return {@link F#NIL} if the specification is not one this understands
+   */
+  private static IExpr byteArrayPart(ByteArrayExpr byteArray, IExpr spec, EvalEngine engine) {
+    final byte[] bytes = byteArray.toData();
+    if (spec.isZero()) {
+      return S.ByteArray;
+    }
+    if (spec == S.All) {
+      return byteArray;
+    }
+    if (spec.isInteger()) {
+      int index = spec.toIntDefault();
+      int position = index < 0 ? bytes.length + index + 1 : index;
+      if (position < 1 || position > bytes.length) {
+        // Part `1` of `2` does not exist.
+        return Errors.printMessage(S.Part, "partw", F.list(spec, byteArray), engine);
+      }
+      return F.ZZ(bytes[position - 1] & 0xFF);
+    }
+    int[] span = spec.isSpan(bytes.length + 1);
+    if (span != null) {
+      int start = span[0];
+      int last = span[1];
+      int step = span[2];
+      if (step == 0 || start < 1 || last > bytes.length) {
+        // Part `1` of `2` does not exist.
+        return Errors.printMessage(S.Part, "partw", F.list(spec, byteArray), engine);
+      }
+      java.io.ByteArrayOutputStream taken = new java.io.ByteArrayOutputStream();
+      if (step > 0) {
+        for (int i = start; i <= last; i += step) {
+          taken.write(bytes[i - 1]);
+        }
+      } else {
+        for (int i = start; i >= last; i += step) {
+          taken.write(bytes[i - 1]);
+        }
+      }
+      return ByteArrayExpr.newInstance(taken.toByteArray());
+    }
+    if (spec.isList()) {
+      IAST positions = (IAST) spec;
+      java.io.ByteArrayOutputStream taken = new java.io.ByteArrayOutputStream();
+      for (int i = 1; i < positions.size(); i++) {
+        int index = positions.get(i).toIntDefault();
+        int position = index < 0 ? bytes.length + index + 1 : index;
+        if (position < 1 || position > bytes.length) {
+          // Part `1` of `2` does not exist.
+          return Errors.printMessage(S.Part, "partw", F.list(positions.get(i), byteArray), engine);
+        }
+        taken.write(bytes[position - 1]);
+      }
+      return ByteArrayExpr.newInstance(taken.toByteArray());
+    }
+    return F.NIL;
+  }
+
   private static IAST partTarget(IExpr expr) {
     if (expr.isASTOrAssociation()) {
       return (IAST) expr;
@@ -978,6 +1045,12 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     // AST which mirrors its FullForm structure
     IAST arg1AST = F.NIL;
     if (arg1.isPresent()) {
+      if (arg1 instanceof ByteArrayExpr && ast.isAST2()) {
+        IExpr bytes = byteArrayPart((ByteArrayExpr) arg1, engine.evaluate(ast.arg2()), engine);
+        if (bytes.isPresent()) {
+          return bytes;
+        }
+      }
       evaledAST = ast.setAtCopy(1, arg1);
       arg1AST = partTarget(arg1);
       if (arg1AST.isNIL()) {
@@ -994,6 +1067,12 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       }
     } else {
       arg1 = ast.arg1();
+      if (arg1 instanceof ByteArrayExpr && ast.isAST2()) {
+        IExpr bytes = byteArrayPart((ByteArrayExpr) arg1, engine.evaluate(ast.arg2()), engine);
+        if (bytes.isPresent()) {
+          return bytes;
+        }
+      }
       arg1AST = partTarget(arg1);
       if (arg1AST.isNIL()) {
         if (arg1.isSparseArray()) {

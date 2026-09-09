@@ -54,6 +54,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -3826,8 +3827,33 @@ public final class ListFunctions {
     }
 
 
+    /**
+     * Byte arrays join into a byte array, the way lists join into a list. Reassembling a request
+     * that arrived in several packets is written as <code>Join @@ pieces</code>.
+     */
+    private static IExpr joinByteArrays(IAST ast) {
+      if (ast.argSize() == 0) {
+        return F.NIL;
+      }
+      for (int i = 1; i < ast.size(); i++) {
+        if (!(ast.get(i) instanceof ByteArrayExpr)) {
+          return F.NIL;
+        }
+      }
+      java.io.ByteArrayOutputStream joined = new java.io.ByteArrayOutputStream();
+      for (int i = 1; i < ast.size(); i++) {
+        byte[] bytes = ((ByteArrayExpr) ast.get(i)).toData();
+        joined.write(bytes, 0, bytes.length);
+      }
+      return ByteArrayExpr.newInstance(joined.toByteArray());
+    }
+
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr bytes = joinByteArrays(ast);
+      if (bytes.isPresent()) {
+        return bytes;
+      }
       // Join takes several, so every one of them is unwrapped, and a Dataset first argument makes
       // the result one - see IASTDataset#onDatasetRows
       boolean anyDataset = false;

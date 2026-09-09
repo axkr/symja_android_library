@@ -36,6 +36,15 @@ public class ExportString extends AbstractEvaluator {
     if (!(ast.arg2() instanceof IStringX)) {
       return F.NIL;
     }
+    for (int i = 3; i < ast.size(); i++) {
+      // options. "Compact" is the only one that would change the answer, and the exporters here
+      // write compact already, so an option is accepted and makes no difference.
+      IExpr option = ast.get(i);
+      if (!option.isRuleAST() && !(option.isList() && ((IAST) option).forAll(x -> x.isRuleAST()))) {
+        // `1` is not a valid option.
+        return F.NIL;
+      }
+    }
     Extension format = Extension.exportExtension(ast.arg2().toString());
     try (StringBuilderWriter writer = new StringBuilderWriter()) {
       if (format.equals(Extension.EXPRESSIONJSON)) {
@@ -145,7 +154,7 @@ public class ExportString extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_2;
+    return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
 
