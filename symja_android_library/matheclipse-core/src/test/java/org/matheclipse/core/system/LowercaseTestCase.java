@@ -2262,8 +2262,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1,3,6,2,7,13,20,12,21,11,22,10,23,9,24,8,25,43,62,42,63,41,18,42,17,43,16,44,\n"
             + "15,45,14,46,79,113,78,114,77,39,78,38,79,37,80,36,81,35,82,34,83,33,84,32,85,31,\n"
             + "86,30,87,29,88,28,89,27,90,26,91,157,224,156,225,155}");
+    // a Return which reaches the top level is the Return itself: it left the Block, and there is
+    // no function here for it to be the value of
     check("blck=Block({i=10}, i=i+1; Return(i))", //
-        "11");
+        "Return(11)");
     check("xm=10;Block({xm=xm}, xm=xm+1;Print(xm));xm", //
         "10");
     check("Block({testVar}, testVar=2222;testVar)", //
@@ -10477,14 +10479,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFor() {
+    // Return leaves the loop and everything it was written in: the statement after the For is
+    // never reached, so the value here is the Return itself - but the loop did run, and n is 11
     check("For(n = 1, n < 1000, n++, If(PrimeQ(n) && (n > 7), Return())); n ", //
+        "Return(Null)");
+    check("n", //
         "11");
     check("n := 1; For(i=1, i<=10, i=i+1, n = n * i);n", //
         "3628800");
     check("n==10!", //
         "True");
     check("n := 1;For(i=1, i<=10, i=i+1, If(i > 5, Return(i)); n = n * i)", //
-        "6");
+        "Return(6)");
     check("n", //
         "120");
 
@@ -29041,8 +29047,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("{a, b} = {27, 6}; While(b != 0, {a, b} = {b, Mod(a, b)});a", //
         "3");
+    // Return leaves the loop rather than becoming its value; at the top level it shows as itself
     check("i = 1; While(True, If(i^2 > 100, Return(i + 1), i++))", //
-        "12");
+        "Return(12)");
+    check("i", //
+        "11");
     check("$n = 1; While($n < 4, Print($n); $n++)", //
         "");
     check("$n = 1; While(++$n < 4); $n", //

@@ -1879,8 +1879,10 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testSystem192() {
     check("Block({ShowSteps=False,StepCounter=Null}, test)", "test");
-    check("$blck=Block({$i=0}, $i=$i+1; Return($i))", "1");
-    check("$blck=Module({$i=0}, $i=$i+1; Return($i))", "1");
+    // a Return which reaches the top level shows as itself: it left the Block, and there is no
+    // function here for it to be the value of
+    check("$blck=Block({$i=0}, $i=$i+1; Return($i))", "Return(1)");
+    check("$blck=Module({$i=0}, $i=$i+1; Return($i))", "Return(1)");
     check("$y=$x^3;Module({$x=42},$x+$y)", "42+$x^3");
   }
 

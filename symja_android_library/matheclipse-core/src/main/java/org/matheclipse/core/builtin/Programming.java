@@ -1224,8 +1224,7 @@ public final class Programming {
           if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
-        } catch (final ReturnException e) {
-          return e.getValue();
+          // as in While: a Return leaves the loop and the function around it
         }
         if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
           IterationLimitExceeded.throwIt(iterationCounter, ast);
@@ -3560,8 +3559,9 @@ public final class Programming {
         } catch (final BreakException e) {
           return S.Null;
         } catch (final ContinueException e) {
-        } catch (final ReturnException e) {
-          return e.getValue();
+          // Return is deliberately not caught here: it leaves the loop *and* the function the
+          // loop is written in, which is what it is for - `f[] := (While[…, Return[x]]; $Failed)`
+          // answers x. Catching it here made the loop answer x and the next statement run anyway.
         }
       }
 

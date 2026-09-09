@@ -634,4 +634,54 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("End[]; End[]; $Context", //
         "Global`");
   }
+
+  @Test
+  public void testReturnLeavesTheLoopAndTheFunctionAroundIt() {
+    // Return exits the control structures of a definition and gives its value for the whole
+    // definition. While and For were catching it and answering it as the loop's own value, so the
+    // statement after the loop ran anyway and its value was the one that came back.
+    check("f1[] := Module[{n = 0}, While[n < 5, n = n + 1; If[n === 2, Return[n]]]; $Failed]", //
+        "");
+    check("f1[]", //
+        "2");
+    check("f2[] := Module[{}, For[i = 0, i < 5, i++, If[i === 2, Return[i]]]; $Failed]", //
+        "");
+    check("f2[]", //
+        "2");
+    // ...with no scoping construct in between either
+    check("f3[] := (While[True, Return[5]]; $Failed)", //
+        "");
+    check("f3[]", //
+        "5");
+    check("f4[] := (For[i = 0, True, i++, Return[6]]; $Failed)", //
+        "");
+    check("f4[]", //
+        "6");
+    // Do keeps its own semantics: the Return ends the iteration and becomes its value
+    check("f5[] := Module[{}, Do[If[i === 2, Return[i]], {i, 5}]; $Failed]", //
+        "");
+    check("f5[]", //
+        "$Failed");
+    // Break and Continue still belong to the loop
+    check("g[] := Module[{n = 0, s = 0}, While[n < 5, n = n + 1; If[n === 3, Continue[]]; "
+        + "s = s + n]; s]", //
+        "");
+    check("{g[], Module[{n = 0}, While[True, n = n + 1; If[n > 3, Break[]]]; n]}", //
+        "{12,4}");
+    // a definition with no arguments is a definition too
+    check("f6[] := (While[True, Return[7]]; $Failed)", //
+        "");
+    check("f6[]", //
+        "7");
+    // ...and so is one made on a symbol
+    check("f7 := (Return[8]; $Failed)", //
+        "");
+    check("f7", //
+        "8");
+    // but a Return which reaches the top level is the Return itself
+    check("i = 1; While[True, If[i^2 > 100, Return[i + 1], i++]]", //
+        "Return[12]");
+    check("i", //
+        "11");
+  }
 }
