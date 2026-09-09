@@ -3138,6 +3138,30 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEliminatedVariableStaysInTheAnswer() {
+    // Eliminating C(1) from the first equation leaves a two by two system, which Cramer's rule
+    // answers. The rule for the variable eliminated on the way there belongs in the answer with
+    // the other two; it used to be left out, so a variable which had been solved was reported as
+    // unsolved -- and a fourth order initial value problem was refused because of it.
+    check("Solve({C(1)==0, 2*C(2)+C(3)==0, -8*C(2)-12*C(3)==1}, {C(1),C(2),C(3)})", //
+        "{{C(1)->0,C(2)->1/16,C(3)->-1/8}}");
+    check("Solve({C(1)==0, 2*C(2)+C(3)==0, -4*C(1)+4*C(4)==0, -8*C(2)-12*C(3)==1}, "
+        + "{C(1),C(2),C(3),C(4)})", //
+        "{{C(1)->0,C(2)->1/16,C(3)->-1/8,C(4)->0}}");
+    // a three by three remainder, the other size Cramer's rule is used for
+    check("Solve({C(1)==0, C(2)+C(3)+C(4)==1, C(2)-C(3)==0, C(3)+2*C(4)==3}, "
+        + "{C(1),C(2),C(3),C(4)})", //
+        "{{C(1)->0,C(2)->-1/3,C(3)->-1/3,C(4)->5/3}}");
+    // the same shape in plain symbols, and systems which were always answered in full
+    check("Solve({a==2, 2*b+c==0, -8*b-12*c==1}, {a,b,c})", //
+        "{{a->2,b->1/16,c->-1/8}}");
+    check("Solve({x+y+z==6, x-y==0, z-2*x==0}, {x,y,z})", //
+        "{{x->3/2,y->3/2,z->3}}");
+    check("Solve({x+y==1, x-y==0}, {x,y})", //
+        "{{x->1/2,y->1/2}}");
+  }
+
+  @Test
   public void testMixedRadicalTrigPhase2() {
     // Sqrt(x)=2 -> x=4 (single); Sin(y)=1/2 -> y=Pi/6 family
     check("Solve({3*Sqrt(x)+2*Sin(y)==7, 2*Sqrt(x)-2*Sin(y)==3},{x,y})", //

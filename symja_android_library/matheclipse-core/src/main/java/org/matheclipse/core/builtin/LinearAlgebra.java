@@ -8295,9 +8295,20 @@ public final class LinearAlgebra {
         // no solution
         return F.ListAlloc();
       }
-      final IAST sList = smallList;
-      resultList.append(F.mapRange(1, smallList.size(),
-          j -> F.Rule(listOfVariables.get(j), engine.evaluate(sList.get(j)))));
+      // The rule for a variable which was eliminated before this system was formed is part of the
+      // answer just as much as the ones Cramer's rule produces here, and the branch below which
+      // row reduces a larger system includes it. Leaving it out reported a solved variable as
+      // unsolved: Solve({C(1)==0, 2*C(2)+C(3)==0, -8*C(2)-12*C(3)==1}, {C(1),C(2),C(3)}) answered
+      // without mentioning C(1) at all, since eliminating C(1) leaves exactly the two by two
+      // system this path is for.
+      IASTAppendable rules = F.ListAlloc(smallList.argSize() + 1);
+      if (additionalRule.isPresent()) {
+        rules.append(additionalRule);
+      }
+      for (int j = 1; j < smallList.size(); j++) {
+        rules.append(F.Rule(listOfVariables.get(j), engine.evaluate(smallList.get(j))));
+      }
+      resultList.append(rules);
       return resultList;
     }
     FieldReducedRowEchelonForm ref =
