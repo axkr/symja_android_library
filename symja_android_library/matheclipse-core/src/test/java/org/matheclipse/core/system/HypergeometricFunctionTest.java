@@ -395,13 +395,25 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "-0.360031");
     check("N(Hypergeometric1F1(1/3, 4/3, 2))", //
         "1.99314");
-    // Gamma(a,0) is the ordinary Gamma only where the real part of a is positive, so the b == a+1
-    // identity said ComplexInfinity for a == -1/2 whatever z was.
+    // Once both parameters are numbers there is nothing those identities can still be used for,
+    // and a symbolic argument makes them write a function which is entire in terms of (-z)^a and
+    // Sqrt(z), so the function is left as it is. Mathematica leaves it as it is too.
     check("Hypergeometric1F1(-1/2, 1/2, z)", //
-        "1/2*Sqrt(-z)*(2*Sqrt(Pi)+Gamma(-1/2,-z))");
+        "Hypergeometric1F1(-1/2,1/2,z)");
+    check("Hypergeometric1F1(-3/2, 1/2, x^2)", //
+        "Hypergeometric1F1(-3/2,1/2,x^2)");
+    check("Hypergeometric1F1(2, 1/2, z)", //
+        "Hypergeometric1F1(2,1/2,z)");
+    // FunctionExpand is the request for the branch to be named, and it still is.
+    check("FunctionExpand(Hypergeometric1F1(2, 1/2, z))", //
+        "1/2*(-1+3/2*E^z*Sqrt(z)*(2*Sqrt(Pi)+Gamma(-1/2,z))+E^z*z^(3/2)*(2*Sqrt(Pi)+Gamma(-\n" //
+            + "1/2,z)))");
     // A symbolic parameter keeps the identity it always had.
     check("Hypergeometric1F1(a, a+1, z)", //
         "(a*(Gamma(a,0)-Gamma(a,-z)))/(-z)^a");
+    check("Hypergeometric1F1(2, b, z)", //
+        "(-1+b)*(1+(2-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(2-b)*(Gamma(-1+b)-Gamma(-\n" //
+            + "1+b,z)))");
     // and an exact value which does not come from those identities is still given
     check("HypergeometricPFQ({6},{1},2)", //
         "719/15*E^2");
