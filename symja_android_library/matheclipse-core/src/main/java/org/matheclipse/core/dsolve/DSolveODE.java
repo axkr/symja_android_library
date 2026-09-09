@@ -517,10 +517,44 @@ final class DSolveODE {
       // same solution, so the principal one is taken rather than left standing where it reads as
       // a constant the conditions failed to determine.
       IAST cSol = (IAST) DSolveUtil.stripConditionalExpression(((IAST) cSols).arg1());
+      cSol = completeSolution(cSol, evaluatedBCsEqualZero, cVars, engine);
       IExpr fitted = DSolveUtil.togetherSolution(engine.evaluate(F.subst(root, cSol)), engine);
       return isFitted(fitted, cVars) ? fitted : F.NIL;
     }
     return F.NIL;
+  }
+
+  /**
+   * The rules of <code>cSol</code>, together with the ones for any constant it left undetermined.
+   *
+   * <p>
+   * A constant which one of the conditions fixes on its own -- <code>y(0) == 0</code> makes
+   * <code>C(1) == 0</code> outright -- can be missing from what <code>Solve</code> answers with,
+   * and a general solution which still carries it is then refused as unfitted although the
+   * conditions do determine it. What the first pass did find is put into the conditions and the
+   * rest are asked about again.
+   *
+   * @return the rules to substitute, unchanged when nothing was missing
+   */
+  private static IAST completeSolution(IAST cSol, IAST conditions, IAST cVars, EvalEngine engine) {
+    IASTAppendable missing = F.ListAlloc(cVars.argSize());
+    for (int i = 1; i <= cVars.argSize(); i++) {
+      IExpr cVar = cVars.get(i);
+      if (cSol.isFree(x -> x.isRule() && x.first().equals(cVar), true)) {
+        missing.append(cVar);
+      }
+    }
+    if (missing.argSize() == 0) {
+      return cSol;
+    }
+    IExpr rest = engine.evaluate(F.subst(conditions, cSol));
+    IExpr more = engine.evaluate(F.Solve(rest, missing));
+    if (!more.isList() || ((IAST) more).argSize() == 0 || !more.first().isList()) {
+      return cSol;
+    }
+    IASTAppendable completed = cSol.copyAppendable();
+    completed.appendArgs((IAST) DSolveUtil.stripConditionalExpression(more.first()));
+    return completed;
   }
 
   /**

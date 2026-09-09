@@ -466,6 +466,27 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveFourthOrderInitialValues() {
+    // Four conditions determine the four constants of a fourth order equation, but Solve can
+    // answer such a system without mentioning a constant which one condition fixes on its own
+    // (y(0) == 0 makes C(1) == 0 outright). What it left out is asked about again, rather than the
+    // whole problem being refused as unfitted.
+    check("DSolve({Derivative(4)[y][x]+8*y''(x)+16*y(x)==0, y(0)==0, y'(0)==0, y''(0)==0, "
+        + "Derivative(3)[y][0]==1}, y(x), x)", //
+        "{{y(x)->1/16*(-2*x*Cos(2*x)+Sin(2*x))}}");
+    check("DSolve({Derivative(4)[y][x]+2*y''(x)+y(x)==E^(2*x), y(0)==0, y'(0)==0, y''(0)==0, "
+        + "Derivative(3)[y][0]==0}, y(x), x)", //
+        "{{y(x)->1/50*(2*E^(2*x)-2*Cos(x)+10*x*Cos(x)-14*Sin(x)-5*x*Sin(x))}}");
+    // the shapes which already worked are unchanged
+    check("DSolve({y''(x)+4*y(x)==0, y(0)==1, y'(0)==0}, y(x), x)", //
+        "{{y(x)->Cos(2*x)}}");
+    check("DSolve({y''(x)+y(x)==Sin(x), y(0)==0, y'(0)==0}, y(x), x)", //
+        "{{y(x)->1/2*(-x*Cos(x)+Sin(x))}}");
+    check("DSolve({y'(x)+y(x)==0, y(0)==3}, y(x), x)", //
+        "{{y(x)->3/E^x}}");
+  }
+
+  @Test
   public void testDSolveUndeterminedCoefficients() {
     // A right hand side which is a power of x times an exponential times a sine is answered from a
     // linear system for the coefficients of an ansatz of the same shape, rather than by integrating
