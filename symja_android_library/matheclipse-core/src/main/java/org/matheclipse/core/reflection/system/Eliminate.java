@@ -665,9 +665,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             }
           }
           if (!ast.isFree(x -> x.isTrigFunction(), true)) {
-            return tryTrigToExp(ast, variable, multipleValues, engine);
+            return tryTrigToExp(ast, exprWithoutVariable, variable, multipleValues, engine);
           } else if (ast.isFree(x -> x.isLog(), true)) {
-            return tryPowerExpand(ast, variable, multipleValues, engine);
+            return tryPowerExpand(ast, exprWithoutVariable, variable, multipleValues, engine);
           }
         } else if (ast.isTimes()) {
           // a * b * c....
@@ -929,18 +929,24 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param engine
    * @return
    */
-  private static IExpr tryPowerExpand(IAST plusAST, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
+  private static IExpr tryPowerExpand(IAST plusAST, IExpr exprWithoutVariable, IExpr variable,
+      boolean multipleValues, EvalEngine engine) {
     if (plusAST.argSize() == 2) {
+      // The equation is a + b == exprWithoutVariable, so what the logarithm of the left side is
+      // equated with is the logarithm of exprWithoutVariable - b. Reading it as -b instead solves
+      // a different equation and answers it: E^(10*y)/(3/2+y) == E^(4*x) reaches here as
+      // 2*E^(10*y) - 2*E^(4*x)*y == 3*E^(4*x), and dropping that right side turned it into
+      // 10*y - Log(y) == 4*x, whose answer does not satisfy the equation which was asked.
+      IExpr rhs = engine.evaluate(F.Subtract(exprWithoutVariable, plusAST.second()));
       // powerExpandLHS == powerExpandRHS
       IExpr powerExpandLHS = Algebra.powerExpand(F.Log(plusAST.first()), false);
-      IExpr powerExpandRHS = Algebra.powerExpand(F.Log(plusAST.second().negate()), false);
+      IExpr powerExpandRHS = Algebra.powerExpand(F.Log(rhs), false);
       if (powerExpandLHS.isPresent() || powerExpandRHS.isPresent()) {
         if (powerExpandLHS.isNIL()) {
           powerExpandLHS = F.Log(plusAST.first());
         }
         if (powerExpandRHS.isNIL()) {
-          powerExpandRHS = F.Log(plusAST.second());
+          powerExpandRHS = F.Log(rhs);
         }
         IExpr termsEqualZero = engine.evaluate(F.Subtract(powerExpandLHS, powerExpandRHS));
         IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
@@ -970,13 +976,17 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param engine
    * @return
    */
-  private static IExpr tryTrigToExp(IAST plusAST, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
+  private static IExpr tryTrigToExp(IAST plusAST, IExpr exprWithoutVariable, IExpr variable,
+      boolean multipleValues, EvalEngine engine) {
     // System.out.println(plusAST.leafCount());
     if (plusAST.leafCount() > Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
       return F.NIL;
     }
-    IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(plusAST));
+    // What is solved is the whole equation and not only its left side: plusAST is equal to
+    // exprWithoutVariable, which is not always zero.
+    IExpr termsEqualZero = exprWithoutVariable.isZero() //
+        ? engine.evaluateNIL(F.TrigToExp(plusAST))
+        : engine.evaluateNIL(F.TrigToExp(F.Subtract(plusAST, exprWithoutVariable)));
     if (termsEqualZero.isPresent()) {
       IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
       Solve.SolveData solveData = new Solve.SolveData();

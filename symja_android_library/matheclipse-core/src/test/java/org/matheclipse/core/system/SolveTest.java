@@ -1841,13 +1841,27 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveKeepsTheRightHandSide() {
+    // Taking the logarithm of each side of a + b == c used to equate Log(a) with Log(-b), which is
+    // the logarithm of each side of a + b == 0. So a different equation was solved, and answered:
+    // this came back as y -> -ProductLog(-10/E^(4*x))/10, whose residual at x == 1 is about -54.
+    check("Solve(E^(10*y)/(3/2 + y) == E^(4*x), y)", //
+        "Solve(E^(10*y)/(3/2+y)==E^(4*x),y)");
+    // and with the right hand side zero, which is the case that always worked, the answer stands
+    check("Solve(E^(10*y)/y == 1, y)", //
+        "{{y->-ProductLog(-10)/10}}");
+  }
+
+  @Test
   public void testSolveHO3() {
     // return unevaluated expr
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // This used to answer {}, which says there is no solution, and there is one: the left side is
+    // -174 at x == -2 and 36.16 at x == 0. It came of taking the logarithm of each side and
+    // leaving the -42 out, so a different equation was solved and found to have no solution.
     check("Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)", //
-        "{}");
-    // "Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)");
+        "Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)");
   }
 
   @Test
@@ -2311,16 +2325,23 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // 6 \cos x+2 \sin x=7
     // \end{array} \Leftrightarrow x=\frac{\pi}{2}+k 2 \pi\right.
     // \end{aligned}
+    // The second and third solutions were -ArcTan(3) and Pi-ArcTan(3), which do not solve this
+    // equation at all: the left side less 8 is -13.64 and -0.36 there. They came of solving the
+    // equation with the 8 left out. The two which replace them are the complex solutions of
+    // 6*Cos(x) + 2*Sin(x) == 7, the factor the derivation below leaves, and they are exact.
     checkSolveLatex("9 \\sin x+6 \\cos x-3 \\sin 2 x+\\cos 2 x=8",
         "Cos(2*x)+6*Cos(x)+9*Sin(x)-3*Sin(2*x)==8",
-        "{{x->ConditionalExpression(Pi*(1/2+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-ArcTan(\n" //
-            + "3)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(3)+2*Pi*C(1),C(\n" //
-            + "1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi*(1/2+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(\n" //
+            + "2*Pi*C(1)-I*Log(3/5+I*1/5),C(1)∈Integers)},{x->ConditionalExpression(2*Pi*C(1)-I*Log(\n" //
+            + "3/2+I*1/2),C(1)∈Integers)}}");
 
+    // Same again: -Pi/4 and 3*Pi/4 were not solutions of this equation -- the residual there is
+    // 2.41 and -0.41 -- and the 0 and Pi/2 which replace them are. Pi/6 and 5*Pi/6 were right all
+    // along and are unchanged.
     checkSolveLatex("\\sin 2 x-\\cos 2 x=3 \\sin x+\\cos x-2",
         "-Cos(2*x)+Sin(2*x)==-2+Cos(x)+3*Sin(x)",
-        "{{x->ConditionalExpression(Pi*(-1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
-            + "1/6+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(3/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
+        "{{x->ConditionalExpression(2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
+            + "1/6+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(1/2+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
             + "5/6+2*C(1)),C(1)∈Integers)}}");
 
     // TODO: wrong parsed input
@@ -2455,8 +2476,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     check("Solve(100 == x^2.5 + x^0.5,x)", //
         "{{x->6.24602}}");
+    // No solution, which is what the positive case above gets a real root for: Sqrt(x) + x^2.5 is
+    // never negative where it is real. This was left unevaluated while the equation which reached
+    // the logarithm step was the one with the -100 left out.
     check("Solve(-100 == x^2.5 + x^0.5,x)", //
-        "Solve(-100==Sqrt(x)+x^2.5,x)");
+        "{}");
 
 
     check("Solve(100==x^2.5,x)", //
