@@ -45,6 +45,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.WMACompress;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.io.net.SocketEntry;
 import org.matheclipse.core.expression.data.FileExpr;
@@ -342,15 +343,20 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
 
-      // Convert expression to string in InputForm
+      // the Wolfram Language wire format, which a notebook front end can read
+      String compressed = WMACompress.compress(expr);
+      if (compressed != null) {
+        return F.stringx(compressed);
+      }
+
+      // an expression the format has no token for is written the way Symja always wrote it:
+      // gzipped InputForm, which only Uncompress reads back
       String inputForm = IStringX.inputForm(expr);
       if (inputForm == null) {
         // inputForm() answers null when the output converter declines the expression, having
         // reported why itself. Compressing that is a NullPointerException out of the built-in.
         return F.NIL;
       }
-
-      // Compress and Encode
       try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
         try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
           gzipOutputStream.write(inputForm.getBytes(StandardCharsets.UTF_8));
@@ -1885,6 +1891,12 @@ public class FileFunctions {
         return F.NIL;
       }
       String compressedString = ast.arg1().toString();
+
+      // the Wolfram Language wire format: "1:" and a zlib-compressed token stream
+      IExpr wolframLanguage = WMACompress.uncompress(compressedString, engine);
+      if (wolframLanguage != null) {
+        return wolframLanguage;
+      }
 
       try {
         // Decode Base64

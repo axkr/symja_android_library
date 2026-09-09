@@ -473,4 +473,48 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Head[Drop[ByteArray[{1, 2, 3, 4, 5}], 2]]", //
         "ByteArray");
   }
+
+  @Test
+  public void testTheWolframLanguageWireFormatIsRead() {
+    // These three strings were written by Mathematica: they are taken from the WLJS Notebook's
+    // own test suite and its demo notebooks, where the browser reads them with mma.js. A cell
+    // carries its content compressed, so a notebook is unreadable until these are.
+    check("Uncompress[\"1:eJxTTMoPSmNkYGAo5gESAZmpyanlmcWpTvkVmUxAAQBzVQdd\"]", //
+        "PiecewiseBox[2]");
+    check(
+        "Uncompress[\"1:eJxTTMoPSmNiYGAo5gUSYZmp5S6pyflFiSX5RcEsQBGXxJLUYCkgQ8k3P0/B0FzBN7FIwcjAyFTB0NLK1NjKyFgJACEfD5c=\"]", //
+        "ViewDecorator[Date,\"Mon 17 Mar 2025 19:53:23\"]");
+    check(
+        "Uncompress[\"1:eJxTTMoPSmNkYGAoZgESHvk5KWnMIB4vkAjLTC13SU3OL0osyS8KZgOKOBbll+alBLMCmSbmBnomYJahqZmeBQA57g9C\"]", //
+        "Hold[ViewDecorator[Around,470.4,156.8]]");
+    // and a string in no format at all is not an expression
+    check("Uncompress[\"garbage\"]", //
+        "Uncompress[garbage]");
+  }
+
+  @Test
+  public void testTheWolframLanguageWireFormatIsWritten() {
+    // Compress writes what Mathematica writes, so the browser can read it
+    check("StringTake[Compress[Hold[1 + 1]], 2]", //
+        "1:");
+    check("Uncompress[Compress[Hold[1 + 1]]]", //
+        "Hold[1+1]");
+    check("Uncompress[Compress[Expand[(a + b)^3]]]", //
+        "a^3+3*a^2*b+3*a*b^2+b^3");
+    // every kind of atom the format has a token for
+    check("Uncompress[Compress[{1.5, 2/3, 3 + 4*I, \"text\", Sin, 12345678901234567890, "
+        + "myContext`name}]]", //
+        "{1.5,2/3,3+I*4,text,Sin,12345678901234567890,myContext`name}");
+    check("Uncompress[Compress[N[Pi, 100]]] == N[Pi, 100]", //
+        "True");
+    // a string stays a string and a symbol stays a symbol, which OutputForm alone does not show
+    check("Map[Head, Uncompress[Compress[{\"text\", Sin, 3 + 4*I, 2/3}]]]", //
+        "{String,Symbol,Complex,Rational}");
+    // a character outside ASCII is written \\:XXXX, and comes back as itself
+    check("Uncompress[Compress[\"\\[Alpha]\\[Beta]\"]]", //
+        "\u03b1\u03b2");
+    // the legacy Symja format is still read
+    check("Uncompress[\"H4sIAAAAAAAA/0uMM1bQVjDWSowz0kqCsLSS4oyArKQ4YwDZmlsNHQAAAA==\"]", //
+        "a^3+3*a^2*b+3*a*b^2+b^3");
+  }
 }
