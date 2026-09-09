@@ -1717,11 +1717,51 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return
    */
+  /**
+   * <code>Composition[f, g][x]</code> is <code>f[g[x]]</code>, and it becomes that <em>before</em>
+   * the arguments are evaluated.
+   *
+   * <p>
+   * Whether <code>g[x]</code> is ever evaluated is then f's business, which is the whole point of
+   * a holding f: WLX interpolates the text of an attribute with
+   * <code>ToExpression[text, InputForm, FakeHold @* ToString]</code>, and <code>FakeHold</code>
+   * being <code>HoldAll</code> is what keeps the expression it was handed unevaluated until the
+   * template is rendered.
+   *
+   * @return the nested application, or {@link F#NIL} when the head is not a composition
+   */
+  private static IExpr expandCompositionHead(IAST ast) {
+    IExpr head = ast.head();
+    boolean rightToLeft = head.isAST(S.Composition);
+    if (!rightToLeft && !head.isAST(S.RightComposition)) {
+      return F.NIL;
+    }
+    IAST functions = (IAST) head;
+    if (functions.size() <= 1) {
+      return F.NIL;
+    }
+    // Composition applies the last function first, RightComposition the first
+    int first = rightToLeft ? 1 : functions.argSize();
+    int step = rightToLeft ? 1 : -1;
+    IASTAppendable inner = F.ast(functions.get(first));
+    IAST result = inner;
+    for (int i = first + step; i >= 1 && i < functions.size(); i += step) {
+      IASTAppendable next = F.ast(functions.get(i));
+      inner.append(next);
+      inner = next;
+    }
+    inner.appendArgs(ast);
+    return result;
+  }
+
   private IExpr evalASTArg1(final IAST ast) {
     // special case ast.isAST1()
     // head == ast[0] --- arg1 == ast[1]
     IExpr result = ast.head().evaluateHead(ast, this);
     if (result.isPresent()) {
+      return result;
+    }
+    if ((result = expandCompositionHead(ast)).isPresent()) {
       return result;
     }
 
@@ -2018,6 +2058,9 @@ public class EvalEngine implements Serializable {
 
     IExpr result = mutableAST.head().evaluateHead(mutableAST, this);
     if (result.isPresent()) {
+      return result;
+    }
+    if ((result = expandCompositionHead(mutableAST)).isPresent()) {
       return result;
     }
 

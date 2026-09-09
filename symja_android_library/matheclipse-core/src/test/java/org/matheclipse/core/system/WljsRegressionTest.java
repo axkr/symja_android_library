@@ -578,4 +578,31 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Once[f[], \"KernelSession\"]", //
         "result");
   }
+
+  @Test
+  public void testAComposedHeadIsBuiltBeforeItsArgumentIsEvaluated() {
+    // WLX interpolates the text of an attribute with
+    //   ToExpression[text, InputForm, FakeHold @* ToString]
+    // and FakeHold being HoldAll is what keeps that text unevaluated until the page is rendered.
+    // Evaluating the argument first ran the interpolation while the component's own variables
+    // were still unassigned - a menu with class="{StringRiffle[ulStyles]}" complained that
+    // StringRiffle wanted a string.
+    check("SetAttributes[FakeHold, HoldAll]", //
+        "");
+    check("ToExpression[\"StringRiffle[styles]\", InputForm, FakeHold @* ToString]", //
+        "FakeHold[ToString[StringRiffle[styles]]]");
+    check("(FakeHold @* ToString)[1 + 1]", //
+        "FakeHold[ToString[1+1]]");
+    // ...and a composition of ordinary functions is what it always was
+    check("{(f @* g)[x], Composition[f, g, h][x], RightComposition[f, g, h][x]}", //
+        "{f[g[x]],f[g[h[x]]],h[g[f[x]]]}");
+    check("{Composition[][x], Composition[f][x], Composition[Identity, f][x]}", //
+        "{x,f[x],f[x]}");
+    check("{(Sqrt @* Abs)[-4], RightComposition[Sqrt, Abs][-4], Composition[f, g][a, b]}", //
+        "{2,2,f[g[a,b]]}");
+    check("{Nest[Composition[f, g], x, 2], Map[Composition[Sin, Cos], {0, 1}]}", //
+        "{f[g[f[g[x]]]],{Sin[1],Sin[Cos[1]]}}");
+    check("Attributes[Composition]", //
+        "{Flat,OneIdentity,Protected}");
+  }
 }
