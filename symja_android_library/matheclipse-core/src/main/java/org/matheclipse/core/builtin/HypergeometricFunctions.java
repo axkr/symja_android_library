@@ -1104,8 +1104,7 @@ public class HypergeometricFunctions {
               F.Gamma(F.Plus(F.C1D2, a)));
 
         }
-
-
+        return hypergeometric1F1Symbolic(a, b, z, engine, true);
       }
       return F.NIL;
     }
@@ -1115,7 +1114,7 @@ public class HypergeometricFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
-      return hypergeometric1F1Symbolic(a, b, z, engine);
+      return hypergeometric1F1Symbolic(a, b, z, engine, false);
     }
 
     /**
@@ -1134,32 +1133,41 @@ public class HypergeometricFunctions {
     }
 
     /**
-     * Whether every argument is a number, in which case the identities written with
+     * Whether both parameters are numbers, in which case the identities written with
      * <code>(-z)^a</code> and <code>Gamma(v,-z)</code> are not used.
      *
      * <p>
-     * Those identities name a branch. While an argument is symbolic that is the ordinary
-     * principal-branch convention and the form is the one Mathematica gives, but with every
-     * argument a number the branch is chosen, and it can be the wrong one:
-     * <code>Hypergeometric1F1(-3/2, 1/2, 2)</code> came back as
-     * <code>25.713 + 3.760*I</code> for a function whose value there is <code>-2.660</code>, and
-     * <code>Hypergeometric1F1(2, 1/2, -2)</code> as <code>-1.640 - 0.170*I</code> for
-     * <code>-0.360</code>. The defining series says otherwise and the numeric evaluation sums it,
-     * so a wholly numeric call is left unevaluated here and answered there.
+     * Those identities name a branch, and they are how a function which is entire gets written in
+     * terms of objects which are not. While a parameter is symbolic they are the ordinary
+     * principal-branch convention and the form is the one Mathematica gives, so they are kept. Once
+     * both parameters are numbers there is nothing left to gain from them and two ways to lose:
+     * with a numeric argument as well the branch is settled and can be the wrong one --
+     * <code>Hypergeometric1F1(-3/2, 1/2, 2)</code> came back as <code>25.713 + 3.760*I</code> for a
+     * function whose value there is <code>-2.660</code> -- and with a symbolic argument the answer
+     * carries <code>(-x^2)^(3/2)</code> and <code>Sqrt(x^2)</code> where the series would have
+     * carried nothing, which is correct but unusable, and which Mathematica does not do either.
+     * What is left instead is the unevaluated function, which the numeric evaluation sums as the
+     * series when a value is wanted.
      */
-    private static boolean allNumeric(IExpr a, IExpr b, IExpr z) {
-      return a.isNumber() && b.isNumber() && z.isNumber();
+    private static boolean mayNameBranch(IExpr a, IExpr b, IExpr z, boolean functionExpand) {
+      if (!a.isNumber() || !b.isNumber()) {
+        return true;
+      }
+      // FunctionExpand is the request to name a branch, so it is answered -- except where the
+      // argument is a number too and the branch would be settled wrongly rather than named.
+      return functionExpand && !z.isNumber();
     }
 
-    private static IExpr hypergeometric1F1Symbolic(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
-      IExpr result = Hypergeometric1F1.basicRewrite(a, b, z);
+    private static IExpr hypergeometric1F1Symbolic(IExpr a, IExpr b, IExpr z, EvalEngine engine,
+        boolean functionExpand) {
+      IExpr result = Hypergeometric1F1.basicRewrite(a, b, z, functionExpand);
       if (result.isPresent()) {
         return result;
       }
 
       int ai = a.toIntDefault();
       if (ai > 0) {
-        if (z.isVariable() && !b.isOne()) {
+        if (z.isVariable() && !b.isOne() && mayNameBranch(a, b, z, functionExpand)) {
           IInteger n = F.ZZ(ai);
           // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/03/01/03/0007/
           // (-1+b)/(-1+n)!*D(E^z/z^(b-n)*(Gamma(-1+b)-Gamma(-1+b,z)),{z,-1+n})
@@ -1192,7 +1200,7 @@ public class HypergeometricFunctions {
           return F.LaguerreL(F.ZZ(ai), z);
         }
 
-      } else if (a.isNumEqualInteger(F.C2) && !allNumeric(a, b, z)) {
+      } else if (a.isNumEqualInteger(F.C2) && mayNameBranch(a, b, z, functionExpand)) {
         // (-1 + b)*(1 + (2 - b)*E^z*z^(1 - b)* (Gamma(-1 + b) - Gamma(-1 + b, z)) + E^z*z^(2 -
         // b)*(Gamma(-1 + b) - Gamma(-1 + b, z)))
         return F.Times(F.Plus(F.CN1, b),
@@ -1206,7 +1214,7 @@ public class HypergeometricFunctions {
       IExpr n = b.subtract(a);
       if (n.isInteger()) {
         final int ni = n.toIntDefault();
-        if (ni > 0 && !allNumeric(a, b, z)) {
+        if (ni > 0 && mayNameBranch(a, b, z, functionExpand)) {
           // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/03/01/02/0006/
           // Sum((Binomial(-1+n,k)*(Gamma(a+k)-Gamma(a+k,-z)))/z^k,{k,0,n})/((-z)^a*Beta(a,n))
           IInteger nMinus1 = F.ZZ(ni - 1);
@@ -1244,7 +1252,7 @@ public class HypergeometricFunctions {
               hypergeometric1F1Recursive(a - 1, b, z)));
     }
 
-    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z) {
+    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z, boolean functionExpand) {
       if (a.isZero()) {
         return F.C1;
       }
@@ -1263,7 +1271,8 @@ public class HypergeometricFunctions {
         return F.CComplexInfinity;
       }
 
-      if (a.equals(b.dec()) && !gammaAtZeroDiverges(a) && !allNumeric(a, b, z)) {
+      if (a.equals(b.dec()) && !gammaAtZeroDiverges(a)
+            && mayNameBranch(a, b, z, functionExpand)) {
         // Hypergeometric1F1(a,a+1,z)
         // (a*Gamma(a,0,-z))/(-z)^a
         IExpr v1 = z.negate();
@@ -1297,7 +1306,7 @@ public class HypergeometricFunctions {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
-        IExpr result = basicRewrite(a, b, z).eval(engine);
+        IExpr result = basicRewrite(a, b, z, false).eval(engine);
         if (result.isPresent()) {
           return result;
         }
