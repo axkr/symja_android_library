@@ -379,6 +379,37 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHypergeometric1F1NumericBranch() {
+    // The closed forms for a == 2, for b == a + 1 and for an integer b - a are written with
+    // (-z)^a and Gamma(v,-z), which name a branch. Instantiated at numbers they chose the wrong
+    // one and gave a complex value for a real function: these five were 25.713+3.760*I,
+    // -1.640-0.170*I, 23.390+1.439*I, 1.993-5.5*10^-16*I and ComplexInfinity. The values below are
+    // the defining series, summed independently.
+    check("N(Hypergeometric1F1(-3/2, 1/2, 2))", //
+        "-2.66015");
+    check("N(Hypergeometric1F1(-1/2, 1/2, 2))", //
+        "-2.06876");
+    check("N(Hypergeometric1F1(2, 1/2, -2))", //
+        "-0.360012");
+    check("N(Hypergeometric1F1(-3/2, 5/2, 3))", //
+        "-0.360031");
+    check("N(Hypergeometric1F1(1/3, 4/3, 2))", //
+        "1.99314");
+    // Gamma(a,0) is the ordinary Gamma only where the real part of a is positive, so the b == a+1
+    // identity said ComplexInfinity for a == -1/2 whatever z was.
+    check("Hypergeometric1F1(-1/2, 1/2, z)", //
+        "1/2*Sqrt(-z)*(2*Sqrt(Pi)+Gamma(-1/2,-z))");
+    // A symbolic parameter keeps the identity it always had.
+    check("Hypergeometric1F1(a, a+1, z)", //
+        "(a*(Gamma(a,0)-Gamma(a,-z)))/(-z)^a");
+    // and an exact value which does not come from those identities is still given
+    check("HypergeometricPFQ({6},{1},2)", //
+        "719/15*E^2");
+    check("Hypergeometric1F1(-1.5, 0.5, 2.0)", //
+        "-2.66015");
+  }
+
+  @Test
   public void testHypergeometricPFQ() {
     // TODO
     // check("HypergeometricPFQ({1, 1}, {3, 3, 3}, 30.0)", //
