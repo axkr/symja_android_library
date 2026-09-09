@@ -88,6 +88,7 @@ public final class Programming {
       S.Module.setEvaluator(new Module());
       S.DynamicModule.setEvaluator(new DynamicModule());
       S.Nest.setEvaluator(new Nest());
+      S.Once.setEvaluator(new Once());
       S.NestList.setEvaluator(new NestList());
       S.NestWhile.setEvaluator(new NestWhile());
       S.NestWhileList.setEvaluator(NestWhileListEvaluator);
@@ -1592,6 +1593,51 @@ public final class Programming {
    *
    * </blockquote>
    */
+  /**
+   * <code>Once[expr]</code> - evaluate <code>expr</code> the first time it is met and answer the
+   * same result ever after, without evaluating it again.
+   *
+   * <p>
+   * The point is usually not the saved work but the second evaluation not happening at all: a
+   * notebook writes <code>Once[ImportComponent["…"]]</code> for a component every page shares, and
+   * <code>Once[attachListeners[#]] &amp;</code> so that a listener is attached to a thing once and
+   * not once per event.
+   *
+   * <p>
+   * What is remembered belongs to this kernel session, which is where the Wolfram Language keeps
+   * it by default. A second argument naming a persistence location is accepted and treated the
+   * same way - nothing here outlives the session.
+   */
+  private static final class Once extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr held = ast.arg1();
+      IExpr remembered = engine.getOnce(held);
+      if (remembered != null) {
+        return remembered;
+      }
+      IExpr result = engine.evaluate(held);
+      engine.putOnce(held, result);
+      return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+    }
+  }
+
   private static final class Module extends AbstractCoreFunctionEvaluator
       implements IFastFunctionEvaluator {
     /** */

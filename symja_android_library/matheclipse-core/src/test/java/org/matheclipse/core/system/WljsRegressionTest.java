@@ -550,4 +550,32 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Head[WriteString[$StandardOutputStream, 42]]", //
         "WriteString");
   }
+
+  @Test
+  public void testOnceEvaluatesItsExpressionOnlyOnce() {
+    // Components/Notifications/Notifications.wlx reads a component with
+    //   MessageList = Once[ImportComponent["Components/MessagesList.wlx"]]
+    // and several modules attach their listeners with Once[attachListeners[#]] &, where a second
+    // evaluation would attach them twice. Without an evaluator the call stayed as it was and the
+    // unevaluated Once[...] was printed into the page.
+    check("ctr = 0", //
+        "0");
+    check("f[] := (ctr = ctr + 1; \"result\")", //
+        "");
+    check("{Once[f[]], Once[f[]], ctr}", //
+        "{result,result,1}");
+    // the same expression anywhere is the same one
+    check("g[x_] := (ctr = ctr + 10; x)", //
+        "");
+    check("{Table[Once[g[7]], {3}], ctr}", //
+        "{{7,7,7},11}");
+    // a different expression is worked out on its own
+    check("{Once[g[8]], ctr}", //
+        "{8,21}");
+    // it holds what it is given, and takes a persistence location without complaining
+    check("Attributes[Once]", //
+        "{HoldFirst,Protected}");
+    check("Once[f[], \"KernelSession\"]", //
+        "result");
+  }
 }

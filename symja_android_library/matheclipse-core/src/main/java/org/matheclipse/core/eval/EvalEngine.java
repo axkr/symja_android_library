@@ -601,6 +601,12 @@ public class EvalEngine implements Serializable {
 
   private transient Map<Object, IExpr> rememberMap = null;
 
+  /**
+   * What <code>Once</code> has already worked out in this session, kept under the expression it
+   * was asked about.
+   */
+  private transient Map<IExpr, IExpr> onceMap = null;
+
   transient int fRecursionCounter;
 
   /**
@@ -1360,6 +1366,7 @@ public class EvalEngine implements Serializable {
     EvalEngine engine = new EvalEngine();
     engine.rubiASTCache = null; // rememberASTCache;
     engine.rememberMap = rememberMap;
+    engine.onceMap = onceMap;
     engine.fAnswer = fAnswer;
     engine.fAssumptions = fAssumptions;
     engine.fContextPath = fContextPath.copy();
@@ -4359,6 +4366,7 @@ public class EvalEngine implements Serializable {
     // doublePrecisionCache.invalidateAll();
     globalObjectCache.invalidateAll();
     rememberMap = new IdentityHashMap<Object, IExpr>();
+    onceMap = null;
   }
 
   private void initInstance() {
@@ -4843,6 +4851,22 @@ public class EvalEngine implements Serializable {
 
   public void putRememberMap(Object key, IExpr value) {
     rememberMap.put(key, value);
+  }
+
+  /**
+   * The result <code>Once</code> already has for this expression, or <code>null</code> if it has
+   * not evaluated it in this session yet.
+   */
+  public IExpr getOnce(IExpr key) {
+    return onceMap == null ? null : onceMap.get(key);
+  }
+
+  /** Remember what <code>Once</code> worked out, so that it is not worked out again. */
+  public void putOnce(IExpr key, IExpr value) {
+    if (onceMap == null) {
+      onceMap = new HashMap<IExpr, IExpr>();
+    }
+    onceMap.put(key, value);
   }
 
   /**
