@@ -3211,6 +3211,9 @@ public final class StringFunctions {
             context.put(F.ZZ(i), expr);
           }
         }
+      } else if (args.isPresent()) {
+        // one parameter which is not a list fills the first slot
+        context.put(F.C1, args);
       }
       return F.subst(templateExpr, x -> replaceTemplateSlotFunction(x, context));
     }

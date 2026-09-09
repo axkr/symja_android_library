@@ -108,6 +108,7 @@ public class FileFunctions {
         S.Read.setEvaluator(new Read());
         S.ReadLine.setEvaluator(new ReadLine());
         S.ReadList.setEvaluator(new ReadList());
+        S.ReadByteArray.setEvaluator(new ReadByteArray());
         S.ReadString.setEvaluator(new ReadString());
         S.Save.setEvaluator(new Save());
         S.StringToStream.setEvaluator(new StringToStream());
@@ -1600,6 +1601,73 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <code>ReadByteArray["file"]</code>: the whole file as a <code>ByteArray</code>.
+   *
+   * <p>
+   * A file with nothing in it answers <code>EndOfFile</code>, as reading anything at the end of a
+   * file does. This is how a web server reads what it is about to send, so the answer has to be a
+   * byte array whether the file is text or not.
+   */
+  private static final class ReadByteArray extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      byte[] bytes = null;
+      if (arg1 instanceof ByteArrayExpr) {
+        bytes = ((ByteArrayExpr) arg1).toData();
+      } else {
+        SocketEntry socket = SocketFunctions.entryOf(arg1);
+        if (socket != null) {
+          bytes = socket.take(-1);
+          if (bytes.length == 0 && (socket.isEndOfStream() || socket.isClosed())) {
+            return S.EndOfFile;
+          }
+        }
+      }
+      if (bytes == null) {
+        if (!Config.isFileSystemEnabled(engine)) {
+          return F.NIL;
+        }
+        String fileName = arg1 instanceof FileExpr ? ((FileExpr) arg1).toData().toString()
+            : arg1.isString() ? arg1.toString() : null;
+        if (fileName == null) {
+          return F.NIL;
+        }
+        Path file = FileSandbox.resolveReadPath(S.ReadByteArray, fileName, engine);
+        if (file == null) {
+          return F.NIL;
+        }
+        if (!Files.isRegularFile(file)) {
+          // Cannot open `1`.
+          Errors.printMessage(S.ReadByteArray, "noopen", F.list(F.stringx(fileName)), engine);
+          return S.$Failed;
+        }
+        try {
+          bytes = Files.readAllBytes(file);
+        } catch (IOException ioe) {
+          Errors.printMessage(S.ReadByteArray, ioe);
+          return S.$Failed;
+        }
+      }
+      if (bytes.length == 0) {
+        return S.EndOfFile;
+      }
+      return ByteArrayExpr.newInstance(bytes);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 

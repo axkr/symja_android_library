@@ -1140,6 +1140,10 @@ public class Errors {
             context.put(lhs.toString(), rhs.toString());
           }
         }
+      } else if (args.isPresent()) {
+        // one parameter which is not a list fills the first slot, so that
+        // `StringTemplate["<script src=\"``\"></script>"][path]` is the script tag for that path
+        context.put("1", args.toString());
       }
       Writer writer = new StringBuilderWriter();
       templateApply(templateStr, writer, context);
