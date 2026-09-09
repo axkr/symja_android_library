@@ -38,6 +38,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
@@ -121,6 +122,7 @@ public class FileFunctions {
         S.URLFetch.setEvaluator(new URLFetch());
         S.Write.setEvaluator(new Write());
         S.WriteString.setEvaluator(new WriteString());
+        S.$StandardOutputStream.setEvaluator(new $StandardOutputStream());
       }
     }
   }
@@ -2330,6 +2332,33 @@ public class FileFunctions {
   }
 
 
+  /** Put one string into an open stream, and answer Null the way <code>WriteString</code> does. */
+  private static IExpr writeToStream(OutputStreamExpr stream, String text, EvalEngine engine) {
+    try {
+      Writer writer = stream.getWriter();
+      writer.write(text);
+      writer.flush();
+    } catch (IOException ex) {
+      return Errors.printMessage(S.WriteString, ex, engine);
+    }
+    return S.Null;
+  }
+
+  /**
+   * <code>$StandardOutputStream</code>: the process's own output, as a stream.
+   *
+   * <p>
+   * A program which has something to say to whatever started it - the WLJS Notebook writes the
+   * port it came up on for the app around it to read - writes it here rather than to a file.
+   */
+  private static final class $StandardOutputStream extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return OutputStreamExpr.standardOutput();
+    }
+  }
+
   private static final class WriteString extends AbstractFunctionEvaluator {
 
     @Override
@@ -2339,6 +2368,15 @@ public class FileFunctions {
         // writing to a socket is not a file operation, so it is not behind the file switch
         return SocketFunctions.write(socket,
             ast.arg2().toString().getBytes(StandardCharsets.UTF_8), S.WriteString, engine);
+      }
+      if (ast.arg1() instanceof OutputStreamExpr) {
+        // a stream which is already open is written to as it stands - opening it was the step
+        // that had to be allowed
+        if (!ast.arg2().isString()) {
+          // String expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "string", F.list(F.C2, ast), engine);
+        }
+        return writeToStream((OutputStreamExpr) ast.arg1(), ast.arg2().toString(), engine);
       }
       if (Config.isFileSystemEnabled(engine)) {
         if (!(ast.arg1().isString())) {

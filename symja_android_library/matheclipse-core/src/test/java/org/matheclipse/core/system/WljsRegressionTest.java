@@ -1,6 +1,8 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -516,5 +518,36 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // the legacy Symja format is still read
     check("Uncompress[\"H4sIAAAAAAAA/0uMM1bQVjDWSowz0kqCsLSS4oyArKQ4YwDZmlsNHQAAAA==\"]", //
         "a^3+3*a^2*b+3*a*b^2+b^3");
+  }
+
+  @Test
+  public void testWritingToTheProcessOutput() {
+    // Kernel/Utils.wl says
+    //   WriteString[$StandardOutputStream, "<<<IPC>>>" <> ExportString[msg, "RawJSON"] <> "\n"]
+    // which is how the notebook tells the application around it which port it came up on. The
+    // stream has to exist, and WriteString has to take one instead of a file name.
+    check("Head[$StandardOutputStream]", //
+        "OutputStream");
+    PrintStream out = System.out;
+    ByteArrayOutputStream written = new ByteArrayOutputStream();
+    try {
+      System.setOut(new PrintStream(written, true, StandardCharsets.UTF_8));
+      check("WriteString[$StandardOutputStream, \"<<<IPC>>>[1]\\n\"]", //
+          "");
+      check("WriteLine[$StandardOutputStream, \"a line\"]", //
+          "");
+    } finally {
+      System.setOut(out);
+    }
+    assertEquals("<<<IPC>>>[1]\na line\n",
+        new String(written.toByteArray(), StandardCharsets.UTF_8));
+  }
+
+  @Test
+  public void testWriteStringStillRefusesWhatIsNotAString() {
+    // it stays as it is, and says why - the stream's own name carries a serial number, so the
+    // head is what this asserts
+    check("Head[WriteString[$StandardOutputStream, 42]]", //
+        "WriteString");
   }
 }
