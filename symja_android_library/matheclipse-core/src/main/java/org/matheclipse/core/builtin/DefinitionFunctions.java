@@ -7,9 +7,11 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -295,7 +297,7 @@ public class DefinitionFunctions {
       if (!rule.isRuleAST()) {
         return false;
       }
-      IExpr lhs = leftHandSideOf(rule);
+      IExpr lhs = freshOptionsPatterns(leftHandSideOf(rule));
       IExpr rhs = rule.second();
       if (lhs.isSymbol()) {
         // an own value
@@ -312,6 +314,38 @@ public class DefinitionFunctions {
       }
     }
     return true;
+  }
+
+  /**
+   * The left-hand side with a new <code>OptionsPattern</code> object wherever it had one.
+   *
+   * <p>
+   * An <code>OptionsPattern</code> remembers the symbol whose options it last matched, so two rules
+   * must not share one object. Copying a symbol's definitions onto another symbol - which is how
+   * one object type is derived from another - would otherwise hand the copy the very same pattern
+   * objects, and the first type to be used would claim them: every later type's constructor would
+   * then be refused.
+   */
+  private static IExpr freshOptionsPatterns(IExpr expr) {
+    if (expr instanceof OptionsPattern) {
+      OptionsPattern options = (OptionsPattern) expr;
+      return OptionsPattern.valueOf(options.getSymbol(), options.getDefaultOptions());
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      IASTMutable result = F.NIL;
+      for (int i = 0; i < ast.size(); i++) {
+        IExpr part = freshOptionsPatterns(ast.get(i));
+        if (part != ast.get(i)) {
+          if (result.isNIL()) {
+            result = ast.copy();
+          }
+          result.set(i, part);
+        }
+      }
+      return result.isPresent() ? result : expr;
+    }
+    return expr;
   }
 
   public static void initialize() {

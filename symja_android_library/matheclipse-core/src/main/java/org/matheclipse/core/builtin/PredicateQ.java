@@ -68,7 +68,9 @@ public class PredicateQ {
       S.MatchQ.setEvaluator(new MatchQ());
       S.MatrixQ.setEvaluator(new MatrixQ());
       S.MemberQ.setEvaluator(new MemberQ());
-      S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing, 2));
+      // any expression whose head is Missing, whatever it carries: Missing[],
+      // Missing["reason"] and Missing["KeyAbsent", key] are all missing
+      S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing));
       S.NegativeDefiniteMatrixQ.setEvaluator(new NegativeDefiniteMatrixQ());
       S.NegativeSemidefiniteMatrixQ.setEvaluator(new NegativeSemidefiniteMatrixQ());
       S.NotListQ.setPredicateQ(x -> !x.isList());

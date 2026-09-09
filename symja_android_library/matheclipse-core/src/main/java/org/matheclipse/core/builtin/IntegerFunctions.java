@@ -802,7 +802,7 @@ public class IntegerFunctions {
           // Base `1` is not an integer greater than `2`.
           return Errors.printMessage(S.IntegerDigits, "ibase", F.List(ast.arg2(), F.C1), engine);
         }
-        if (base > 36) {
+        if (base > 36 && !ast.arg1().isInteger()) {
           // `1` currently not supported in `2`.
           return Errors.printMessage(S.IntegerDigits, "unsupported",
               F.List("Base greater than 36", "IntegerDigits"), engine);
@@ -818,10 +818,20 @@ public class IntegerFunctions {
       if (arg1.isInteger()) {
         IInteger n = ((IInteger) arg1).abs();
 
-        Apfloat apfloat = new Apint(n.toBigNumerator());
-        RealDigitsResult rd = RealDigitsResult.create(apfloat, base);
-        if (rd != null) {
-          IASTAppendable digitsList = rd.getDigitsList();
+        IASTAppendable digitsList = null;
+        if (base > 36) {
+          // apfloat carries a radix only up to 36, and an integer needs no apfloat: dividing it
+          // by the base until nothing is left answers its digits. A base above 36 is how a short
+          // identifier is written out of a long number.
+          digitsList = bigIntegerDigits(n, base);
+        } else {
+          Apfloat apfloat = new Apint(n.toBigNumerator());
+          RealDigitsResult rd = RealDigitsResult.create(apfloat, base);
+          if (rd != null) {
+            digitsList = rd.getDigitsList();
+          }
+        }
+        if (digitsList != null) {
 
           if (padLeftZeros < digitsList.argSize() && padLeftZeros > 0) {
             return digitsList.subList(digitsList.size() - padLeftZeros);
@@ -838,6 +848,26 @@ public class IntegerFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /** The digits of a non-negative integer in any base, most significant first. */
+    private static IASTAppendable bigIntegerDigits(IInteger n, int base) {
+      java.math.BigInteger value = n.toBigNumerator();
+      java.math.BigInteger radix = java.math.BigInteger.valueOf(base);
+      java.util.ArrayList<Integer> digits = new java.util.ArrayList<Integer>();
+      if (value.signum() == 0) {
+        digits.add(0);
+      }
+      while (value.signum() > 0) {
+        java.math.BigInteger[] divideAndRemainder = value.divideAndRemainder(radix);
+        digits.add(divideAndRemainder[1].intValue());
+        value = divideAndRemainder[0];
+      }
+      IASTAppendable result = F.ListAlloc(digits.size());
+      for (int i = digits.size() - 1; i >= 0; i--) {
+        result.append(F.ZZ(digits.get(i)));
+      }
+      return result;
     }
 
     @Override

@@ -57,6 +57,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -113,6 +114,8 @@ public class FileFunctions {
         S.Uncompress.setEvaluator(new Uncompress());
         S.URLDecode.setEvaluator(new URLDecode());
         S.URLEncode.setEvaluator(new URLEncode());
+        S.URLParse.setEvaluator(new URLParse());
+        S.URLBuild.setEvaluator(new URLBuild());
         S.URLFetch.setEvaluator(new URLFetch());
         S.Write.setEvaluator(new Write());
         S.WriteString.setEvaluator(new WriteString());
@@ -1858,6 +1861,249 @@ public class FileFunctions {
     }
   }
 
+
+  /**
+   * <code>URLParse["url"]</code>: a URL taken apart into its pieces.
+   *
+   * <p>
+   * The answer is an association of <code>"Scheme"</code>, <code>"User"</code>,
+   * <code>"Domain"</code>, <code>"Port"</code>, <code>"Path"</code>, <code>"Query"</code> and
+   * <code>"Fragment"</code>. A piece the URL does not carry is <code>None</code>; the path is the
+   * list of its segments, so an absolute path begins with an empty one; the query is a list of
+   * rules, and a key written without a value has the value <code>None</code>. Percent escapes in
+   * the path and the query are decoded, which is what makes the answer usable for routing.
+   *
+   * <p>
+   * With a second argument only that part is answered, and with a list of them a list.
+   */
+  private static final class URLParse extends AbstractFunctionEvaluator {
+
+    /** scheme, user, domain, port, path, query, fragment */
+    private static final java.util.regex.Pattern URL = java.util.regex.Pattern.compile(
+        "\\A(?:([A-Za-z][A-Za-z0-9+.-]*):)?(?://(?:([^@/?#]*)@)?([^:/?#]*)(?::([0-9]+))?)?"
+            + "([^?#]*)(?:\\?([^#]*))?(?:#(.*))?\\z");
+
+    private static final String[] PART_NAMES =
+        {"Scheme", "User", "Domain", "Port", "Path", "Query", "Fragment"};
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isString()) {
+        return F.NIL;
+      }
+      IAssociation parsed = parse(ast.arg1().toString());
+      if (parsed == null) {
+        return F.NIL;
+      }
+      if (ast.isAST1()) {
+        return parsed;
+      }
+      IExpr spec = ast.arg2();
+      if (spec.isList()) {
+        return F.mapList((IAST) spec, part -> partOf(parsed, part));
+      }
+      return partOf(parsed, spec);
+    }
+
+    private static IExpr partOf(IAssociation parsed, IExpr part) {
+      IExpr value = parsed.getValue(part.isString() ? part : F.stringx(part.toString()));
+      return value == null ? S.Missing : value;
+    }
+
+    private static IAssociation parse(String url) {
+      java.util.regex.Matcher matcher = URL.matcher(url);
+      if (!matcher.matches()) {
+        return null;
+      }
+      IASTAppendable rules = F.ListAlloc(PART_NAMES.length);
+      rules.append(F.Rule(F.stringx("Scheme"), stringOrNone(matcher.group(1))));
+      rules.append(F.Rule(F.stringx("User"), stringOrNone(matcher.group(2))));
+      rules.append(F.Rule(F.stringx("Domain"), stringOrNone(matcher.group(3))));
+      String port = matcher.group(4);
+      rules.append(F.Rule(F.stringx("Port"), port == null ? S.None : F.ZZ(Integer.parseInt(port))));
+      rules.append(F.Rule(F.stringx("Path"), pathSegments(matcher.group(5))));
+      rules.append(F.Rule(F.stringx("Query"), queryRules(matcher.group(6))));
+      rules.append(F.Rule(F.stringx("Fragment"), stringOrNone(matcher.group(7))));
+      return F.assoc(rules);
+    }
+
+    private static IExpr stringOrNone(String part) {
+      return part == null || part.isEmpty() ? S.None : F.stringx(part);
+    }
+
+    private static IAST pathSegments(String path) {
+      if (path == null || path.isEmpty()) {
+        return F.CEmptyList;
+      }
+      String[] segments = path.split("/", -1);
+      IASTAppendable result = F.ListAlloc(segments.length);
+      for (String segment : segments) {
+        result.append(F.stringx(decode(segment)));
+      }
+      return result;
+    }
+
+    private static IAST queryRules(String query) {
+      if (query == null || query.isEmpty()) {
+        return F.CEmptyList;
+      }
+      String[] pairs = query.split("&");
+      IASTAppendable result = F.ListAlloc(pairs.length);
+      for (String pair : pairs) {
+        if (pair.isEmpty()) {
+          continue;
+        }
+        int equals = pair.indexOf('=');
+        if (equals < 0) {
+          result.append(F.Rule(F.stringx(decode(pair)), S.None));
+        } else {
+          result.append(F.Rule(F.stringx(decode(pair.substring(0, equals))),
+              F.stringx(decode(pair.substring(equals + 1)))));
+        }
+      }
+      return result;
+    }
+
+    private static String decode(String text) {
+      try {
+        return URLDecoder.decode(text, StandardCharsets.UTF_8);
+      } catch (IllegalArgumentException iae) {
+        // a percent which does not introduce two hex digits is not an escape
+        return text;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   * <code>URLBuild[{segments}]</code>, <code>URLBuild[assoc]</code>,
+   * <code>URLBuild[…, query]</code>: a URL put back together.
+   *
+   * <p>
+   * The inverse of {@link URLParse}: a list of path segments joins with <code>/</code>, an
+   * association is assembled from the parts it carries, and a query given as rules is appended.
+   */
+  private static final class URLBuild extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      StringBuilder url = new StringBuilder();
+      IExpr query = ast.isAST2() ? ast.arg2() : F.NIL;
+      if (arg1 instanceof IAssociation) {
+        IAssociation parts = (IAssociation) arg1;
+        IExpr scheme = parts.getValue(F.stringx("Scheme"));
+        if (scheme != null && scheme.isString()) {
+          url.append(scheme.toString()).append(':');
+        }
+        IExpr domain = parts.getValue(F.stringx("Domain"));
+        if (domain != null && domain.isString()) {
+          url.append("//");
+          IExpr user = parts.getValue(F.stringx("User"));
+          if (user != null && user.isString()) {
+            url.append(user.toString()).append('@');
+          }
+          url.append(domain.toString());
+          IExpr port = parts.getValue(F.stringx("Port"));
+          if (port != null && port.isInteger()) {
+            url.append(':').append(port.toString());
+          }
+        }
+        IExpr path = parts.getValue(F.stringx("Path"));
+        if (path != null) {
+          url.append(pathString(path));
+        }
+        if (query.isNIL()) {
+          IExpr parsedQuery = parts.getValue(F.stringx("Query"));
+          if (parsedQuery != null) {
+            query = parsedQuery;
+          }
+        }
+        String queryString = queryString(query);
+        if (!queryString.isEmpty()) {
+          url.append('?').append(queryString);
+        }
+        IExpr fragment = parts.getValue(F.stringx("Fragment"));
+        if (fragment != null && fragment.isString()) {
+          url.append('#').append(fragment.toString());
+        }
+        return F.stringx(url.toString());
+      }
+      url.append(pathString(arg1));
+      String queryString = queryString(query);
+      if (!queryString.isEmpty()) {
+        url.append('?').append(queryString);
+      }
+      return F.stringx(url.toString());
+    }
+
+    private static String pathString(IExpr path) {
+      if (path.isString()) {
+        return path.toString();
+      }
+      if (!path.isList()) {
+        return "";
+      }
+      IAST segments = (IAST) path;
+      StringBuilder result = new StringBuilder();
+      for (int i = 1; i < segments.size(); i++) {
+        if (i > 1) {
+          result.append('/');
+        }
+        result.append(segments.get(i).isString() ? segments.get(i).toString()
+            : segments.get(i).toString());
+      }
+      return result.toString();
+    }
+
+    private static String queryString(IExpr query) {
+      if (query.isNIL() || query.isEmptyList()) {
+        return "";
+      }
+      if (query.isString()) {
+        return query.toString();
+      }
+      IAST rules = query instanceof IAssociation ? ((IAssociation) query).normal(false)
+          : query.isList() ? (IAST) query : F.NIL;
+      if (rules.isNIL()) {
+        return "";
+      }
+      StringBuilder result = new StringBuilder();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr rule = rules.get(i);
+        if (!rule.isRuleAST()) {
+          continue;
+        }
+        if (result.length() > 0) {
+          result.append('&');
+        }
+        result.append(rule.first().toString());
+        if (rule.second() != S.None) {
+          result.append('=').append(rule.second().toString());
+        }
+      }
+      return result.toString();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
 
   private static final class URLDecode extends AbstractFunctionEvaluator {
 

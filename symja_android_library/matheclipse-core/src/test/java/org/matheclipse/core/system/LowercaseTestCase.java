@@ -12378,9 +12378,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // message: IntegerDigits: Base 1 is not an integer greater than 1.
     check("IntegerDigits(11,1)", //
         "IntegerDigits(11,1)");
-    // message: IntegerDigits: Base greater than 36 currently not supported in IntegerDigits.
+    // an integer's digits need no apfloat, so a base beyond apfloat's radix of 36 is fine
     check("IntegerDigits(11,37)", //
-        "IntegerDigits(11,37)");
+        "{11}");
+    check("IntegerDigits(123456789, 62)", //
+        "{8,22,0,46,33}");
 
     check("IntegerDigits(25, 8)", //
         "{3,1}");
