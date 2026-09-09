@@ -1044,6 +1044,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             if (temp.isPresent()) {
               matched = matchExpr(temp, lhsEvalExpr, engine, stackMatcher);
             }
+            if (!matched) {
+              matched = matchSkippedOptionalArguments(lhsPatternAST, (IAST) lhsEvalExpr,
+                  patternValues, engine, stackMatcher);
+            }
           } else {
             IExpr head = lhsPatternAST.head();
             if (head.isSymbol()) {
@@ -2316,6 +2320,19 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   private IExpr matchOptionalArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST,
       IAST lhsEvalAST, EvalEngine engine) {
+    return matchOptionalArgumentsAST(symbolWithDefaultValue, lhsPatternAST, lhsEvalAST, engine, 0);
+  }
+
+  /**
+   * As above, but naming which optional arguments take their default value.
+   *
+   * @param defaultedPositions a bit per argument position of <code>lhsPatternAST</code>: a set bit
+   *        is an optional argument that takes its default. <code>0</code> means the positional
+   *        reading - the supplied arguments fill the leading positions and the trailing optionals
+   *        take their defaults.
+   */
+  private IExpr matchOptionalArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST,
+      IAST lhsEvalAST, EvalEngine engine, int defaultedPositions) {
     final boolean greaterSize = lhsPatternAST.size() > lhsEvalAST.size();
     final int lhsEvalSize = lhsEvalAST.size();
     IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size());
@@ -2323,9 +2340,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     for (int i = 1; i < lhsPatternAST.size(); i++) {
       IExpr patternArg = lhsPatternAST.get(i);
       if (patternArg.isPatternDefault()) {
+        final boolean supplied = defaultedPositions == 0 //
+            ? i < lhsEvalSize
+            : (defaultedPositions & (1 << i)) == 0;
         if (patternArg.isOptional()) {
           IAST optional = (IAST) patternArg;
-          if (i < lhsEvalSize) {
+          if (supplied) {
             cloned.append(optional.arg1());
             continue;
           }
@@ -2340,7 +2360,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           }
         } else {
           IPattern pattern = (IPattern) patternArg;
-          if (greaterSize && i < lhsEvalSize) {
+          if (greaterSize && supplied) {
             cloned.append(pattern);
             continue;
           }
@@ -2352,7 +2372,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             defaultValueMatched = true;
             continue;
           } else {
-            if (i < lhsEvalSize) {
+            if (supplied) {
               cloned.append(pattern);
               continue;
             }
@@ -2377,6 +2397,75 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       return cloned;
     }
     return F.NIL;
+  }
+
+  /**
+   * Match a pattern with optional arguments where the supplied arguments do not fill the leading
+   * positions.
+   *
+   * <p>
+   * Which optional argument a supplied one belongs to is not settled by counting: an argument skips
+   * over an optional whose pattern it does not fit. <code>f[a_Symbol, b_Symbol : B, c_List : {}]
+   * </code> given <code>f[x, {1}]</code> leaves <code>b</code> its default and hands
+   * <code>{1}</code> to <code>c</code>, which is the shape every argument of the WLJS notebook's
+   * <code>CreateUType</code> is declared in.
+   *
+   * <p>
+   * The later optionals are tried as the ones taking their default first, so that a supplied
+   * argument still lands in the earliest slot that accepts it: <code>f[a_ : 1, b_ : 2]</code> given
+   * one argument binds <code>a</code>, not <code>b</code>.
+   *
+   * @param patternValues the pattern bindings to restore between two attempts
+   * @return <code>true</code> if one of the assignments matched
+   */
+  private boolean matchSkippedOptionalArguments(IAST lhsPatternAST, IAST lhsEvalAST,
+      IExpr[] patternValues, EvalEngine engine, StackMatcher stackMatcher) {
+    final int patternSize = lhsPatternAST.argSize();
+    final int missing = patternSize - lhsEvalAST.argSize();
+    if (missing <= 0 || patternSize >= Integer.SIZE - 1) {
+      return false;
+    }
+    int optionalCount = 0;
+    int[] optionalPositions = new int[patternSize];
+    for (int i = 1; i < lhsPatternAST.size(); i++) {
+      if (lhsPatternAST.get(i).isPatternDefault()) {
+        optionalPositions[optionalCount++] = i;
+      }
+    }
+    if (missing > optionalCount || optionalCount < 2) {
+      // with a single optional there is nothing to choose, and the positional reading already
+      // tried it
+      return false;
+    }
+    List<Integer> masks = new java.util.ArrayList<Integer>();
+    collectDefaultMasks(optionalPositions, optionalCount - 1, missing, 0, masks);
+    for (int mask : masks) {
+      fPatternMap.resetPattern(patternValues);
+      IExpr candidate = matchOptionalArgumentsAST(lhsPatternAST.topHead(), lhsPatternAST,
+          lhsEvalAST, engine, mask);
+      if (candidate.isPresent() && matchExpr(candidate, lhsEvalAST, engine, stackMatcher)) {
+        return true;
+      }
+    }
+    fPatternMap.resetPattern(patternValues);
+    return false;
+  }
+
+  /**
+   * Every way of choosing <code>remaining</code> of the optional arguments to take their default,
+   * as a bit per argument position. The later positions are chosen first, so that the first
+   * assignment tried is the one that gives the supplied arguments to the earliest slots.
+   */
+  private static void collectDefaultMasks(int[] optionalPositions, int from, int remaining,
+      int mask, List<Integer> masks) {
+    if (remaining == 0) {
+      masks.add(mask);
+      return;
+    }
+    for (int i = from; i >= remaining - 1; i--) {
+      collectDefaultMasks(optionalPositions, i - 1, remaining - 1,
+          mask | (1 << optionalPositions[i]), masks);
+    }
   }
 
   private boolean matchPattern(IPatternObject lhsPatternExpr, final IExpr lhsEvalExpr,

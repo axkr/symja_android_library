@@ -97,7 +97,24 @@ public class ExprParser extends Scanner {
    */
   private final boolean fRelaxedSyntax;
 
+  /**
+   * The precedence of <code>?</code>, {@link S#PatternTest}.
+   *
+   * <p>
+   * A <code>:</code> standing after a symbol names a pattern, and that reading is accepted even
+   * where the operator's own precedence would not reach - <code>x*y:z</code> is
+   * <code>x (y:z)</code>. It must not reach into the test of a <code>PatternTest</code> though:
+   * there <code>_Symbol?test:default</code> read the test as <code>test:default</code> and the
+   * default was lost.
+   */
+  private static final int PATTERN_TEST_PRECEDENCE = 680;
+
   private final EvalEngine fEngine;
+
+  /** The engine the parser converts pattern objects with. */
+  EvalEngine getEngine() {
+    return fEngine;
+  }
 
   protected IParserFactory fFactory;
 
@@ -414,7 +431,7 @@ public class ExprParser extends Scanner {
         if (temp.isSymbol()) {
           ISymbol symbol = (ISymbol) temp;
           if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
-            temp = getBlankPatterns(symbol);
+            temp = getBlankPatterns(symbol, min_precedence);
           } else {
             temp = convertSymbolOnInput(symbol);
           }
@@ -461,7 +478,7 @@ public class ExprParser extends Scanner {
       case TT_BLANK_BLANK_BLANK:
       case TT_BLANK_OPTIONAL:
       case TT_BLANK_COLON:
-        return getBlanks(temp);
+        return getBlanks(temp, min_precedence);
 
       case TT_DIGIT:
         return getNumber(false);
@@ -585,7 +602,7 @@ public class ExprParser extends Scanner {
    * @param temp
    * @return
    */
-  private IExpr getBlanks(IExpr temp) {
+  private IExpr getBlanks(IExpr temp, final int min_precedence) {
     switch (fToken) {
       case TT_BLANK:
         if (isWhitespace()) {
@@ -670,7 +687,7 @@ public class ExprParser extends Scanner {
    * @param head
    * @return
    */
-  private IExpr getBlankPatterns(final IExpr head) {
+  private IExpr getBlankPatterns(final IExpr head, final int min_precedence) {
     IExpr temp = head;
     final ISymbol symbol = (ISymbol) head;
     switch (fToken) {
@@ -1647,7 +1664,9 @@ public class ExprParser extends Scanner {
         final boolean accept = foldEqualPrecedence //
             ? precedence >= min_precedence
             : precedence > min_precedence //
-                || (fOperatorString.equals(":") && lhs.isSymbol()) || (precedence == min_precedence
+                || (fOperatorString.equals(":") && lhs.isSymbol()
+                    && min_precedence < PATTERN_TEST_PRECEDENCE)
+                || (precedence == min_precedence
                     && infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE);
         if (!accept) {
           break;
@@ -1737,6 +1756,16 @@ public class ExprParser extends Scanner {
     } else {
       if (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
           && infixOperator == fInfixOperator) {
+        if (infixOperator.headSymbol() == S.Pattern) {
+          // `name : pattern : default`, where `name : pattern` has already collapsed into a
+          // pattern object. An object cannot be appended to, so the default is read here.
+          getNextToken();
+          while (fToken == TT_NEWLINE) {
+            getNextToken();
+          }
+          return F.binaryAST2(S.Optional, lhs,
+              parseLookaheadOperator(infixOperator.getPrecedence()));
+        }
         throwSyntaxError(
             "Operator: \'" + fOperatorString + "\' not created properly (no grouping defined)");
       }

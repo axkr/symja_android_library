@@ -225,4 +225,36 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
       Config.FILESYSTEM_ENABLED = fileSystem;
     }
   }
+
+  @Test
+  public void testAnArgumentSkipsAnOptionalItDoesNotFit() {
+    // CreateUType is declared as
+    //   CreateUType[type_Symbol, parent:_Symbol?UTypeQ:UObject, init:_Symbol|_Function:Automatic,
+    //               fields_List:{}]
+    // and called with two arguments as often as with four. Which optional a supplied argument
+    // belongs to is not settled by counting: an argument skips over an optional whose pattern it
+    // does not fit.
+    check("utq(x_) := x === UObj", //
+        "");
+    check("cut(t_Symbol, p:_Symbol?utq:UObj, i:_Symbol|_Function:Auto, f_List:{}) := {t,p,i,f}", //
+        "");
+    check("cut(T, {1})", //
+        "{T,uobj,auto,{1}}");
+    check("cut(T, UObj, {1})", //
+        "{T,uobj,auto,{1}}");
+    check("cut(T, ini, {1})", //
+        "{T,uobj,ini,{1}}");
+    check("cut(T, UObj, ini, {1})", //
+        "{T,uobj,ini,{1}}");
+  }
+
+  @Test
+  public void testASuppliedArgumentStillFillsTheEarliestSlot() {
+    // the search above must not disturb the ordinary reading: one argument for two optionals
+    // belongs to the first of them
+    check("g(a_:1, b_:2) := {a, b}", //
+        "");
+    check("{g(9), g(), g(8, 7)}", //
+        "{{9,2},{1,2},{8,7}}");
+  }
 }

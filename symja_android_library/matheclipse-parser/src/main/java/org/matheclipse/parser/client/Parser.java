@@ -39,6 +39,19 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  * parser</a> for the idea, how to parse the operators depending on their precedence.
  */
 public class Parser extends Scanner {
+
+  /**
+   * The precedence of <code>?</code>, <code>PatternTest</code>.
+   *
+   * <p>
+   * A <code>:</code> standing after a symbol names a pattern, and that reading is accepted even
+   * where the operator's own precedence would not reach - <code>x*y:z</code> is
+   * <code>x (y:z)</code>. It must not reach into the test of a <code>PatternTest</code> though:
+   * there <code>_Symbol?test:default</code> read the test as <code>test:default</code> and the
+   * default was lost.
+   */
+  private static final int PATTERN_TEST_PRECEDENCE = 680;
+
   /** SymbolNode for <code>Derivative</code> corresponding to <code>F#Derivative</code> */
   public static final SymbolNode DERIVATIVE = new SymbolNode("Derivative");
 
@@ -212,7 +225,7 @@ public class Parser extends Scanner {
       case TT_IDENTIFIER:
         final SymbolNode symbol = getSymbol();
         if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
-          temp = getBlankPatterns(symbol);
+          temp = getBlankPatterns(symbol, min_precedence);
         } else {
           temp = symbol;
         }
@@ -251,7 +264,7 @@ public class Parser extends Scanner {
       case TT_BLANK_BLANK_BLANK:
       case TT_BLANK_OPTIONAL:
       case TT_BLANK_COLON:
-        return getBlanks(temp);
+        return getBlanks(temp, min_precedence);
       case TT_DIGIT:
         return getNumber(false);
       case TT_STRING:
@@ -364,7 +377,7 @@ public class Parser extends Scanner {
     return null;
   }
 
-  private ASTNode getBlanks(ASTNode temp) {
+  private ASTNode getBlanks(ASTNode temp, final int min_precedence) {
     if (fToken == TT_BLANK) {
       if (isWhitespace()) {
         getNextToken();
@@ -446,7 +459,7 @@ public class Parser extends Scanner {
     return parseArguments(temp);
   }
 
-  private ASTNode getBlankPatterns(final SymbolNode symbol) {
+  private ASTNode getBlankPatterns(final SymbolNode symbol, final int min_precedence) {
     ASTNode temp = null;
     if (fToken == TT_BLANK) {
       // read '_'
@@ -1260,7 +1273,8 @@ public class Parser extends Scanner {
         final boolean accept = foldEqualPrecedence //
             ? precedence >= min_precedence
             : precedence > min_precedence //
-                || (fOperatorString.equals(":") && (lhs instanceof SymbolNode))
+                || (fOperatorString.equals(":") && (lhs instanceof SymbolNode)
+                    && min_precedence < PATTERN_TEST_PRECEDENCE)
                 || (precedence == min_precedence
                     && infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE);
         if (!accept) {

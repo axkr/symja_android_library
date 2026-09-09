@@ -180,6 +180,35 @@ public class ExprParserFactory implements IParserFactory {
     }
   }
 
+  /**
+   * <code>|</code>, with the reading of a default written after its last branch.
+   *
+   * <p>
+   * A default is read while the pattern before it is, so <code>_Symbol|_Function:Auto</code>
+   * arrives as an alternative whose last branch carries the default. It belongs to the whole
+   * alternative - <code>Optional[Alternatives[_Symbol, _Function], Auto]</code> - which is how
+   * every <code>init</code> argument of the WLJS notebook's <code>CreateUType</code> is written.
+   */
+  private static class AlternativesExprOperator extends InfixExprOperator {
+    public AlternativesExprOperator(final String oper, final String functionName,
+        final int precedence, final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public IAST endFunction(final IParserFactory factory, final IAST function,
+        final Scanner scanner) {
+      IExpr last = function.last();
+      if (function.size() > 2 && last.isAST(S.Optional, 3)) {
+        IAST optional = (IAST) last;
+        IASTMutable alternatives = ((IAST) function).copy();
+        alternatives.set(function.argSize(), optional.arg1());
+        return F.binaryAST2(S.Optional, alternatives, optional.arg2());
+      }
+      return function;
+    }
+  }
+
   private static class PatternExprOperator extends InfixExprOperator {
     public PatternExprOperator(final String oper, final String functionName, final int precedence,
         final int grouping) {
@@ -201,10 +230,43 @@ public class ExprParserFactory implements IParserFactory {
                 subPattern);
           }
         }
+        if (rhs.isAST(S.Optional, 3)) {
+          // `name : pattern : default`. The default is read while the pattern is, so what arrives
+          // here is already Optional[pattern, default] and the name belongs inside it: the Wolfram
+          // Language reads the whole thing as Optional[Pattern[name, pattern], default].
+          //
+          // The inner Pattern has to be turned into a pattern object here. Only the outermost node
+          // an operator builds is converted afterwards, and a plain Pattern(...) expression prints
+          // exactly like the object but is matched by nothing.
+          IAST optional = (IAST) rhs;
+          IExpr named = F.binaryAST2(S.Pattern, lhs, optional.arg1());
+          IExpr pattern = S.Pattern.getEvaluator().evaluate((IAST) named, parser.getEngine());
+          return F.binaryAST2(S.Optional, pattern.orElse(named), optional.arg2());
+        }
         return F.binaryAST2(S.Pattern, lhs, rhs);
       }
       // don't use F.Optional() here; an IASTMutable has to be returned
       return F.binaryAST2(S.Optional, lhs, rhs);
+    }
+
+    /**
+     * Close a flat chain of <code>:</code>.
+     *
+     * <p>
+     * <code>:</code> collects its arguments flat, so <code>name : pattern : default</code> arrives
+     * here as a three-argument <code>Pattern</code>. It is an optional argument that also carries a
+     * name, which the Wolfram Language reads as
+     * <code>Optional[Pattern[name, pattern], default]</code> - the spelling every argument of
+     * <code>CreateUType</code> is written in.
+     */
+    @Override
+    public IAST endFunction(final IParserFactory factory, final IAST function,
+        final Scanner scanner) {
+      if (function.isAST(S.Pattern, 4)) {
+        return F.binaryAST2(S.Optional,
+            F.binaryAST2(S.Pattern, function.arg1(), function.arg2()), function.arg3());
+      }
+      return function;
     }
   }
 
@@ -371,6 +433,8 @@ public class ExprParserFactory implements IParserFactory {
         return new DivideExprOperator(row.token, row.head, row.precedence, grouping);
       case "Pattern":
         return new PatternExprOperator(row.token, row.head, row.precedence, grouping);
+      case "Alternatives":
+        return new AlternativesExprOperator(row.token, row.head, row.precedence, grouping);
       case "Subtract":
         return new SubtractExprOperator(row.token, row.head, row.precedence, grouping);
       case "PreMinus":

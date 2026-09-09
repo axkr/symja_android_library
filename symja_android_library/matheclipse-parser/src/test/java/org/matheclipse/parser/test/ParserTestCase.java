@@ -745,4 +745,30 @@ class ParserTestCase {
     ASTNode obj = PARSE_UNRELAXED.parse("∀a");
     assertEquals("ForAll(a)", obj.toString());
   }
+
+  @Test
+  void testNamedPatternWithADefault() {
+    // `name : pattern : default` is one optional argument that also carries a name. It is what
+    // every argument of the WLJS notebook's CreateUType is declared with, and it used to parse
+    // into a Pattern with three arguments, which is nothing.
+    ASTNode obj = PARSE_UNRELAXED.parse("b : _Symbol : B0");
+    assertEquals("Optional(Pattern(b, _Symbol), B0)", obj.toString());
+  }
+
+  @Test
+  void testADefaultAfterAPatternTest() {
+    // the test of a PatternTest binds tighter than the `:` of a default, so the default belongs
+    // to the pattern and not to the test
+    ASTNode obj = PARSE_UNRELAXED.parse("b : _Symbol?tq : B0");
+    assertEquals("Optional(Pattern(b, PatternTest(_Symbol, tq)), B0)", obj.toString());
+  }
+
+  @Test
+  void testADefaultAfterAlternatives() {
+    // ...and it belongs to the whole alternative, not to its last branch
+    ASTNode obj = PARSE_UNRELAXED.parse("i : _Symbol | _Function : Auto");
+    assertEquals("Optional(Pattern(i, Alternatives(_Symbol, _Function)), Auto)", obj.toString());
+    ASTNode bare = PARSE_UNRELAXED.parse("_Symbol | _Function : Auto");
+    assertEquals("Optional(Alternatives(_Symbol, _Function), Auto)", bare.toString());
+  }
 }
