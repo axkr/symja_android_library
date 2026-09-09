@@ -466,6 +466,53 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveSeparableBranchMeetsTheCondition() {
+    // A relation of second degree in y is two functions, and which of the two the condition picks
+    // is not decided when the relation is inverted. Only the first was kept, so an initial value
+    // problem whose answer was the other one came back as one with no answer at all.
+    check("DSolve({y'(x) == (2 - E^x)/(3 + 2*y(x)), y(0) == 0}, y(x), x)", //
+        "{{y(x)->1/2*(-3+Sqrt(13-4*E^x+8*x))}}");
+    check("DSolve({y'(x) == 2*x/(y(x) + x^2*y(x)), y(0) == -2}, y(x), x)", //
+        "{{y(x)->-Sqrt(2)*Sqrt(2+Log(1+x^2))}}");
+    check("DSolve({y'(x) == (x^2 + 1)*x/(4*y(x)^3), y(0) == -Sqrt(2)/2}, y(x), x)", //
+        "{{y(x)->-(1+2*x^2+x^4)^(1/4)/Sqrt(2)}}");
+    // and the general solution says both of them
+    check("DSolve(y'(x) == (2 - E^x)/(3 + 2*y(x)), y(x), x)", //
+        "{{y(x)->-3/2-Sqrt(9-4*E^x+8*x-4*C(1))/2},{y(x)->-3/2+Sqrt(9-4*E^x+8*x-4*C(1))/2}}");
+
+    // A branch which the condition rules out is still ruled out, and solving for the constant is
+    // not what decides it: the minus branch here can be fitted to y(a) == b for every b, because
+    // Solve answers formally, and it meets the condition only where b is negative. Both branches
+    // come back for the general solution and one of them for this problem.
+    check("DSolve({y'(x) == y(x)*Sqrt(y(x)^2 - 1), y(a) == b}, y(x), x)", //
+        "{{y(x)->Sqrt(1+Tan(a-x-ArcTan(Sqrt(-1+b^2)))^2)}}");
+    check("DSolve(y'(x) == y(x)*Sqrt(y(x)^2 - 1), y(x), x)", //
+        "{{y(x)->Sqrt(1+Tan(x+C(1))^2)},{y(x)->-Sqrt(1+Tan(x+C(1))^2)}}");
+  }
+
+  @Test
+  public void testDSolveSeparableConstantFromTheRelation() {
+    // The relation these separate into is a cubic in y, and inverting it puts the constant under a
+    // square root and inside a cube root, where solving for it afterwards fails. The condition
+    // names it on the relation instead, where it stands on its own, and the cubic is then solved
+    // in numbers. Both answers are nested radicals, so what is checked is that they answer the
+    // equation and meet the condition.
+    checkResidual("{y'(x) == (3*x^2 + 1)/(-6*y(x) + 3*y(x)^2), y(0) == 1}", //
+        "y'(x) - (3*x^2 + 1)/(-6*y(x) + 3*y(x)^2)", "{x->7/10}");
+    check("With({s = DSolve({y'(x) == (3*x^2 + 1)/(-6*y(x) + 3*y(x)^2), y(0) == 1}, y, x)},"
+        + " Abs(N((y(0) /. s[[1]]) - 1)) < 10^-6)", //
+        "True");
+    checkResidual("{y'(x) == 3*x^2/(-4 + 3*y(x)^2), y(1) == 0}", //
+        "y'(x) - 3*x^2/(-4 + 3*y(x)^2)", "{x->13/10}");
+    check("With({s = DSolve({y'(x) == 3*x^2/(-4 + 3*y(x)^2), y(1) == 0}, y, x)},"
+        + " Abs(N(y(1) /. s[[1]])) < 10^-6)", //
+        "True");
+    // the general solution is unchanged: it keeps its constant, and both branches of it
+    check("Length(DSolve(y'(x) == 3*x^2/(-4 + 3*y(x)^2), y(x), x))", //
+        "3");
+  }
+
+  @Test
   public void testDSolveFourthOrderInitialValues() {
     // Four conditions determine the four constants of a fourth order equation, but Solve can
     // answer such a system without mentioning a constant which one condition fixes on its own
@@ -911,10 +958,13 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(v'(x) == E^v(x), v(x), x)", //
         "{{v(x)->-Log(-x-C(1))}}");
 
-    // a condition which cannot be met is refused rather than answered with a non-function: this
-    // used to come back as y(x) -> Undefined
+    // The condition can be met, and used to be answered with y(x) -> Undefined and then refused:
+    // solving the general solution for its constant is what failed, not the problem. Naming the
+    // constant on the separated relation instead gives (1 + 2*x/3)^(3/2), which is the answer.
     check("DSolve({y'(x) == y(x)^(1/3), y(0) == 1}, y(x), x)", //
-        "DSolve({y'(x)==y(x)^(1/3),y(0)==1},y(x),x)");
+        "{{y(x)->Sqrt(2/3)*Sqrt(3/2+x)+2/3*Sqrt(2/3)*x*Sqrt(3/2+x)}}");
+    checkResidual("{y'(x) == y(x)^(1/3), y(0) == 1}", //
+        "y'(x) - y(x)^(1/3)", "{x->13/10}");
     checkResidual("{y'(x) == y(x)^(1/3), y(0) == 0}", //
         "y'(x) - y(x)^(1/3)", "{x->13/10}");
   }

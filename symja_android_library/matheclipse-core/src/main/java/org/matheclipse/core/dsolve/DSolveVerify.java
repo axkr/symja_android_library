@@ -267,6 +267,52 @@ final class DSolveVerify {
   }
 
   /**
+   * Whether a condition is met by a solution which has no arbitrary constant left in it.
+   *
+   * <p>
+   * The residual of a condition is a number rather than a function, and a solution fitted before it
+   * was written down does not always simplify to an exact zero: the branch of
+   * <code>3*y'' == ...</code> which meets <code>y(1) == 0</code> arrives as a difference of nested
+   * cube roots whose value is <code>0</code> and whose form says nothing. This applies the same
+   * measure the differential equation is checked with, which is relative to the size of the terms
+   * the residual is made of, so a branch which meets the condition to rounding is accepted and one
+   * which misses it by a whole unit is not.
+   *
+   * @return <code>false</code> when the residual does not evaluate to a number at all
+   */
+  static boolean acceptCondition(IExpr residual, EvalEngine engine) {
+    return isNumericallyZero(engine.evaluate(residual), F.NIL, F.NIL, engine);
+  }
+
+  /**
+   * Whether a condition is seen to be missed by a solution which has no arbitrary constant left.
+   *
+   * <p>
+   * This is the other question from {@link #acceptCondition}, and not its negation: it asks whether
+   * the condition is refuted rather than whether it is met, so a residual which does not come out
+   * as a number refutes nothing. That is what a solution written with an antiderivative or a
+   * parameter of its own is entitled to.
+   *
+   * <p>
+   * The one thing this does catch is a solution fitted by solving for the constant, where solving
+   * has answered formally. <code>-Sqrt(1+Tan(x+C(1))^2) == b</code> has a solution for
+   * <code>C(1)</code> whatever <code>b</code> is, and the branch it builds meets the condition only
+   * where <code>b</code> is negative; putting the condition back in is what says so.
+   */
+  static boolean refutesCondition(IExpr residual, EvalEngine engine) {
+    IExpr evaluated = engine.evaluate(residual);
+    if (evaluated.isZero()) {
+      return false;
+    }
+    for (double magnitude : relativeMagnitudes(evaluated, F.NIL, F.NIL, engine)) {
+      if (!Double.isNaN(magnitude) && magnitude > STRICT_TOLERANCE) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Whether the residual is seen to vanish: several sample points come out zero and none of them
    * clearly does not. A point the evaluation cannot reach at all is passed over rather than held
    * against the candidate, because a solution is entitled to a pole.

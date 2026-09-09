@@ -254,6 +254,23 @@ final class DSolveODE {
   }
 
   static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
+    return odeSeparable(engine, m, n, x, y, C_1, null);
+  }
+
+  /**
+   * The separable solver, with the option of naming the constant of separation before the relation
+   * is solved for <code>y</code> rather than after.
+   *
+   * @param point <code>{x0, y0}</code> of a condition <code>y(x0) == y0</code>, or
+   *        <code>null</code> for the general solution. The relation reads
+   *        <code>G(y) == F(x) + C</code>, so the condition names the constant by evaluation, and
+   *        the inversion which follows has numbers where it would have had <code>C</code>. That is
+   *        the difference between a cubic in <code>y</code> which can be solved and one which
+   *        cannot: the constant is buried under a square root and inside a cube root, and asking
+   *        for it back afterwards is what fails.
+   */
+  static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1,
+      IExpr[] point) {
     // y' == -m/n separates whenever the quotient does, so the coefficient of y' is divided out
     // first. Only the pair (m, n) as a whole is exact, which is why the division stays local to
     // this method and the other members of the cascade keep seeing the pair.
@@ -290,12 +307,22 @@ final class DSolveODE {
       if (fxIntegral.isNIL()) {
         return F.NIL;
       }
-      fxExpr = S.Plus.of(engine, fxIntegral, C_1);
+      IExpr constant = point == null ? C_1 : separationConstant(engine, gyExpr, fxIntegral, x, y,
+          point);
+      if (constant.isNIL()) {
+        return F.NIL;
+      }
+      fxExpr = S.Plus.of(engine, fxIntegral, constant);
       if (!DSolveContext.isUsable(fxExpr)) {
         return F.NIL;
       }
       IExpr yEquation = S.Subtract.of(engine, gyExpr, fxExpr);
-      IExpr result = Eliminate.extractVariable(yEquation, y, false, engine);
+      // Every branch, not the first one. A relation of second degree in y is two functions, and
+      // which of the two an initial condition picks is not known here: y'(x) == (2 - E^x)/(3 + 2y)
+      // separates into (y + 3/2)^2 == ..., whose minus branch cannot meet y(0) == 0 and whose plus
+      // branch can. Keeping one of them turned that equation, and six more of its kind, into an
+      // equation with no solution.
+      IExpr result = Eliminate.extractVariable(yEquation, y, true, engine);
       if (result.isNIL()) {
         // The antiderivative is not always in a form the equation can be solved for y in. A sum
         // of logarithms is the usual case: Integrate answers 1/(1-y^2) with
@@ -304,7 +331,7 @@ final class DSolveODE {
         // again, which is what makes y'(x) == (y(x)^2 + x*y(x) - x^2)/x^2 solvable.
         IExpr collected = engine.evaluate(F.FullSimplify(gyExpr));
         if (collected.isPresent() && !collected.equals(gyExpr)) {
-          result = Eliminate.extractVariable(S.Subtract.of(engine, collected, fxExpr), y, false,
+          result = Eliminate.extractVariable(S.Subtract.of(engine, collected, fxExpr), y, true,
               engine);
         }
       }
@@ -312,18 +339,67 @@ final class DSolveODE {
         result = solveSeparatedEquation(engine, yEquation, y);
       }
       if (result.isPresent()) {
-        result = DSolveUtil.stripConditionalExpression(result);
-        return engine.evaluate(result);
+        return usableBranches(engine, DSolveUtil.stripConditionalExpression(result), y);
       }
     }
     return F.NIL;
   }
 
   /**
+   * The constant of separation which the condition <code>y(x0) == y0</code> names.
+   *
+   * <p>
+   * The separated relation is <code>G(y) == F(x) + C</code>, so <code>C</code> is
+   * <code>G(y0) - F(x0)</code>: it enters linearly, and naming it is an evaluation rather than
+   * something to solve for.
+   *
+   * @return {@link F#NIL} when the condition names no usable constant, which is what a base point
+   *         the antiderivative does not reach gives
+   */
+  private static IExpr separationConstant(EvalEngine engine, IExpr gyExpr, IExpr fxIntegral,
+      IExpr x, IExpr y, IExpr[] point) {
+    IExpr atValue = engine.evaluate(F.subst(gyExpr, y, point[1]));
+    IExpr atPoint = engine.evaluate(F.subst(fxIntegral, x, point[0]));
+    IExpr constant = engine.evaluate(F.Subtract(atValue, atPoint));
+    if (constant.isNIL() || !constant.isFree(x) || !constant.isFree(y, true)
+        || !constant.isSpecialsFree() || !DSolveContext.isUsable(constant)) {
+      return F.NIL;
+    }
+    return constant;
+  }
+
+  /**
+   * The branches of <code>result</code> which are solutions: free of the unknown, and of a shape
+   * the rest of the cascade can use.
+   *
+   * <p>
+   * An inversion which answers with several branches is answering with several functions, and one
+   * of them being unusable does not make the others so. What comes back is a single branch as
+   * itself and several as a list, which is what every caller of the separable solver reads.
+   *
+   * @return {@link F#NIL} if no branch is left
+   */
+  private static IExpr usableBranches(EvalEngine engine, IExpr result, IExpr y) {
+    IAST branches = result.makeList();
+    IASTAppendable kept = F.ListAlloc(branches.argSize());
+    for (int i = 1; i <= branches.argSize(); i++) {
+      IExpr branch = engine.evaluate(DSolveUtil.stripConditionalExpression(branches.get(i)));
+      if (branch.isPresent() && branch.isFree(y, true) && DSolveContext.isUsable(branch)) {
+        kept.append(branch);
+      }
+    }
+    if (kept.argSize() == 0) {
+      return F.NIL;
+    }
+    return kept.argSize() == 1 ? kept.arg1() : kept;
+  }
+
+  /**
    * Solves the separated equation for <code>y</code> where {@link Eliminate#extractVariable} could
    * not, which is what an antiderivative that mixes a logarithm and a root needs.
    *
-   * @return the single branch <code>Solve</code> answers with, or {@link F#NIL}
+   * @return the branches <code>Solve</code> answers with, a list where there is more than one, or
+   *         {@link F#NIL}
    */
   private static IExpr solveSeparatedEquation(EvalEngine engine, IExpr yEquation, IExpr y) {
     if (yEquation.isPlus() && DSolveUtil.hasRadical(yEquation)
@@ -347,14 +423,22 @@ final class DSolveODE {
     if (roots.argSize() < 1) {
       return F.NIL;
     }
-    IExpr root = DSolveUtil.stripConditionalExpression(roots.arg1());
-    if (root.isNIL() || !DSolveContext.isUsable(root) || !root.isFree(y, true)) {
-      return F.NIL;
-    }
-    return root;
+    return usableBranches(engine, roots, y);
   }
 
   static IExpr odeSolve(EvalEngine engine, IExpr w, IExpr x, IExpr y, IExpr C_1) {
+    return odeSolve(engine, w, x, y, C_1, null);
+  }
+
+  /**
+   * The cascade of methods for <code>M + N*y' == 0</code>, with the option of naming the constant
+   * of a separable equation from a condition before the relation is inverted.
+   *
+   * @param point <code>{x0, y0}</code> of a condition <code>y(x0) == y0</code>, or
+   *        <code>null</code>. Only the separable method is offered it: the others do not write a
+   *        relation this can be read off.
+   */
+  static IExpr odeSolve(EvalEngine engine, IExpr w, IExpr x, IExpr y, IExpr C_1, IExpr[] point) {
     IExpr[] p = odeTransform(engine, w, x, y);
     if (p != null) {
       IExpr m = p[0];
@@ -375,7 +459,15 @@ final class DSolveODE {
       }
 
       // Try separable first
-      IExpr f = odeSeparable(engine, m, n, x, yVar, C_1);
+      IExpr[] separationPoint = point;
+      if (separationPoint != null && !y.isSymbol()) {
+        // The unknown is carried as the dummy symbol above, and the value the condition prescribes
+        // has to be free of the unknown for the substitution below to mean anything.
+        if (!separationPoint[1].isFree(y, true)) {
+          separationPoint = null;
+        }
+      }
+      IExpr f = odeSeparable(engine, m, n, x, yVar, C_1, separationPoint);
       if (isSolvedFor(f, yVar)) {
         return f;
       }
@@ -455,17 +547,92 @@ final class DSolveODE {
    * @return the particular solution with constants determined, or {@code F.NIL} if the boundary
    *         conditions cannot be satisfied
    */
-  static IExpr applyUnaryBCs(IExpr root, IAST uFunction1Arg, IExpr xVar, IAST boundaryConditions,
-      EvalEngine engine) {
-    IExpr head = uFunction1Arg.head();
-    IAST headRules = F.List(F.Rule(head, F.Function(F.List(xVar), root)));
-
+  /** Each condition with the candidate solution put in place of the unknown function. */
+  private static IASTAppendable evaluatedConditions(IExpr root, IAST uFunction1Arg, IExpr xVar,
+      IAST boundaryConditions, EvalEngine engine) {
+    IAST headRules =
+        F.List(F.Rule(uFunction1Arg.head(), F.Function(F.List(xVar), root)));
     IASTAppendable evaluatedBCs = F.ListAlloc(boundaryConditions.argSize());
     for (int k = 1; k <= boundaryConditions.argSize(); k++) {
       IExpr evaluatedBC = engine.evaluate(F.subst(boundaryConditions.get(k), headRules));
       evaluatedBC = engine.evaluate(DSolveUtil.clearCorruptedIntegrals(evaluatedBC));
       evaluatedBCs.append(evaluatedBC);
     }
+    return evaluatedBCs;
+  }
+
+  /**
+   * Whether a branch which was fitted before it was written down does meet the conditions.
+   *
+   * <p>
+   * There is no constant left to solve for here, so this is a check rather than a fit. It is not
+   * the same check as the one {@link #applyUnaryBCs} makes on a branch with no constant in it,
+   * because a branch which came out of solving a cubic is a difference of nested radicals whose
+   * value is zero and whose form does not say so. What is asked instead is the measure the
+   * differential equation itself is checked with: zero to rounding, against the size of the terms.
+   * A branch which misses the condition by a whole unit -- the other two roots of that cubic are
+   * <code>2</code> and <code>-2</code> where the condition asks for <code>0</code> -- is still
+   * refused.
+   */
+  private static boolean refutedBy(IExpr root, IAST uFunction1Arg, IExpr xVar,
+      IAST boundaryConditions, EvalEngine engine) {
+    IAST evaluatedBCs = evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
+    for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
+      IExpr bc = evaluatedBCs.get(k);
+      IExpr residual = bc.isEqual() ? engine.evaluate(F.Subtract(bc.first(), bc.second())) : bc;
+      if (residual.isZero() || (bc.isEqual() && engine.evaluate(bc).isTrue())) {
+        continue;
+      }
+      if (DSolveVerify.refutesCondition(residual, engine)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean meetsConditions(IExpr root, IAST uFunction1Arg, IExpr xVar,
+      IAST boundaryConditions, EvalEngine engine) {
+    IAST evaluatedBCs =
+        evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
+    for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
+      IExpr bc = evaluatedBCs.get(k);
+      IExpr residual = bc.isEqual() ? engine.evaluate(F.Subtract(bc.first(), bc.second())) : bc;
+      if (residual.isZero() || (bc.isEqual() && engine.evaluate(bc).isTrue())) {
+        continue;
+      }
+      if (!DSolveVerify.acceptCondition(residual, engine)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The point and the value of a single condition <code>y(x0) == y0</code>, or <code>null</code>.
+   *
+   * <p>
+   * A condition on a derivative names no point of the solution itself, and two conditions on a
+   * first order equation are one too many, so neither is answered here.
+   */
+  private static IExpr[] valuePoint(IAST conditions, IExpr head, IExpr xVar, EvalEngine engine) {
+    if (conditions.argSize() != 1 || !head.isSymbol()) {
+      return null;
+    }
+    IExpr point = conditionPoint(conditions, head, xVar, engine);
+    if (point.isNIL() || !point.isFree(xVar)) {
+      return null;
+    }
+    IExpr value = conditionValue(conditions, head, 0, point, engine);
+    if (value.isNIL() || !value.isFree(xVar) || !value.isFree(head, true)) {
+      return null;
+    }
+    return new IExpr[] {point, value};
+  }
+
+  static IExpr applyUnaryBCs(IExpr root, IAST uFunction1Arg, IExpr xVar, IAST boundaryConditions,
+      EvalEngine engine) {
+    IASTAppendable evaluatedBCs =
+        evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
 
     // Use the guaranteed recursive constant extractor
     IASTAppendable cVars = F.ListAlloc();
@@ -519,7 +686,13 @@ final class DSolveODE {
       IAST cSol = (IAST) DSolveUtil.stripConditionalExpression(((IAST) cSols).arg1());
       cSol = completeSolution(cSol, evaluatedBCsEqualZero, cVars, engine);
       IExpr fitted = DSolveUtil.togetherSolution(engine.evaluate(F.subst(root, cSol)), engine);
-      return isFitted(fitted, cVars) ? fitted : F.NIL;
+      if (!isFitted(fitted, cVars)) {
+        return F.NIL;
+      }
+      // Solving a condition for the constant answers formally, and formally is not always. The
+      // minus branch of a solution written with a radical can be fitted to y(a) == b for every b
+      // and meets it only for one sign of b, so the condition goes back in and is asked again.
+      return refutedBy(fitted, uFunction1Arg, xVar, boundaryConditions, engine) ? F.NIL : fitted;
     }
     return F.NIL;
   }
@@ -1393,6 +1566,61 @@ final class DSolveODE {
     return remainder.isZero();
   }
 
+  /**
+   * The branches which answer the equation, written the way <code>DSolve</code> returns them.
+   *
+   * @param fitted whether the branches already have the conditions in them, in which case there is
+   *        no constant to solve for and what is left is to check that they do
+   * @param bcUnsatisfiable set when a branch was ruled out by the conditions, which is only worth
+   *        reporting once no branch is left
+   */
+  private static IASTAppendable acceptBranches(IAST roots, IAST listOfEquations,
+      IAST uFunction1Arg, IExpr arg2, IExpr xVar, IAST boundaryConditions, IExpr c_n,
+      boolean fitted, boolean[] bcUnsatisfiable, EvalEngine engine) {
+    IASTAppendable resultList = F.ListAlloc();
+    for (int r = 1; r <= roots.argSize(); r++) {
+      IExpr root = roots.get(r);
+      root = DSolveUtil.stripConditionalExpression(root);
+      root = DSolveUtil.absorbConstants(root, F.list(c_n), false, engine);
+
+      if (!DSolveVerify.acceptODE(listOfEquations, uFunction1Arg, xVar, root, engine)) {
+        // The equation was recognized by a method it does not actually belong to. Putting
+        // the answer back into it is what catches that.
+        continue;
+      }
+
+      if (boundaryConditions.argSize() > 0) {
+        if (fitted && root.isFree(c_n, true)) {
+          if (!meetsConditions(root, uFunction1Arg, xVar, boundaryConditions, engine)) {
+            bcUnsatisfiable[0] = true;
+            continue;
+          }
+        } else {
+          root = applyUnaryBCs(root, uFunction1Arg, xVar, boundaryConditions, engine);
+          if (!root.isPresent()) {
+            // Skip this root branch if the BCs cannot be satisfied. A general solution with
+            // more than one branch normally has branches which the conditions rule out, so this
+            // is only worth reporting once none of them is left.
+            bcUnsatisfiable[0] = true;
+            continue;
+          }
+        }
+      }
+
+      if (arg2.isSymbol() && xVar.isSymbol()) {
+        resultList.append(F.list(F.Rule(arg2, F.Function(F.list(xVar), root))));
+      } else {
+        resultList.append(F.list(F.Rule(arg2, root)));
+      }
+      if (fitted) {
+        // An initial value problem has one solution, and the branches of the relation it was
+        // inverted from are the same solution written for different parts of the plane.
+        break;
+      }
+    }
+    return resultList;
+  }
+
   static IExpr unaryODE(IAST uFunction1Arg, IExpr arg2, IExpr xVar, IASTAppendable listOfEquations,
       IAST boundaryConditions, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
@@ -1412,45 +1640,32 @@ final class DSolveODE {
         }
 
         if (temp.isPresent()) {
+          boolean[] bcUnsatisfiable = new boolean[1];
           // Wrap in a list if it's a single root to uniformize processing
-          IAST roots = temp.makeList();
-          IASTAppendable resultList = F.ListAlloc();
-          boolean bcUnsatisfiable = false;
-
-          for (int r = 1; r <= roots.argSize(); r++) {
-            IExpr root = roots.get(r);
-            root = DSolveUtil.stripConditionalExpression(root);
-            // root = engine.evaluate(F.Simplify(root));
-            root = DSolveUtil.absorbConstants(root, F.list(c_n), false, engine);
-
-            if (!DSolveVerify.acceptODE(listOfEquations, uFunction1Arg, xVar, root, engine)) {
-              // The equation was recognized by a method it does not actually belong to. Putting
-              // the answer back into it is what catches that.
-              continue;
-            }
-
-            if (boundaryConditions.argSize() > 0) {
-              root = applyUnaryBCs(root, uFunction1Arg, xVar, boundaryConditions, engine);
-              if (!root.isPresent()) {
-                // Skip this root branch if the BCs cannot be satisfied. A general solution with
-                // more than one branch normally has branches which the conditions rule out, so this
-                // is only worth reporting once none of them is left.
-                bcUnsatisfiable = true;
-                continue;
-              }
-            }
-
-            if (arg2.isSymbol() && xVar.isSymbol()) {
-              resultList.append(F.list(F.Rule(arg2, F.Function(F.list(xVar), root))));
-            } else {
-              resultList.append(F.list(F.Rule(arg2, root)));
-            }
-          }
-
+          IASTAppendable resultList = acceptBranches(temp.makeList(), listOfEquations,
+              uFunction1Arg, arg2, xVar, boundaryConditions, c_n, false, bcUnsatisfiable, engine);
           if (resultList.argSize() > 0) {
             return resultList;
           }
-          if (bcUnsatisfiable) {
+          if (bcUnsatisfiable[0]) {
+            // Every branch was ruled out by the conditions, which happens for a real reason and
+            // also happens when the constant is somewhere the general solution cannot be solved
+            // for it -- under a square root and inside a cube root, for the equations whose
+            // relation is a cubic in y. Naming the constant from the condition first and inverting
+            // afterwards asks the same question in the order it can be answered in.
+            IExpr[] point = valuePoint(boundaryConditions, uFunction1Arg.head(), xVar, engine);
+            if (point != null && LinearODEForm.highestDerivativeOrder(listOfEquations.arg1(),
+                uFunction1Arg.head(), xVar) == 1) {
+              IExpr fitted =
+                  odeSolve(engine, listOfEquations.arg1(), xVar, uFunction1Arg, c_n, point);
+              if (fitted.isPresent()) {
+                resultList = acceptBranches(fitted.makeList(), listOfEquations, uFunction1Arg, arg2,
+                    xVar, boundaryConditions, c_n, true, new boolean[1], engine);
+                if (resultList.argSize() > 0) {
+                  return resultList;
+                }
+              }
+            }
             ctx.addMessage("bvfail", F.CEmptyList);
             return F.NIL;
           }
