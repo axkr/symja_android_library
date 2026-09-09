@@ -410,6 +410,7 @@ public final class FunctionDefinitions {
     PacletFunctions.initialize();
     ArchiveFunctions.initialize();
     SocketFunctions.initialize();
+    DataStructureFunctions.initialize();
     TaskFunctions.initialize();
     CodeParserFunctions.initialize();
     Algebra.initialize();

@@ -127,11 +127,28 @@ public final class StringFunctions {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
+      String encoding = baseEncoding(ast);
+      if (encoding == null) {
+        return F.NIL;
+      }
       String str = ast.arg1().toString();
       try {
-        byte[] bArray = Base64.getDecoder().decode(str.toString());
-        return ByteArrayExpr.newInstance(bArray);
-      } catch (IllegalArgumentException iae) {
+        switch (encoding) {
+          case "BASE64":
+            return ByteArrayExpr.newInstance(Base64.getDecoder().decode(str));
+          case "BASE64URL":
+            return ByteArrayExpr.newInstance(Base64.getUrlDecoder().decode(str));
+          case "BASE32":
+            return ByteArrayExpr.newInstance(new org.apache.commons.codec.binary.Base32()
+                .decode(str.getBytes(StandardCharsets.US_ASCII)));
+          case "BASE16":
+            return ByteArrayExpr
+                .newInstance(org.apache.commons.codec.binary.Hex.decodeHex(str.toCharArray()));
+          default:
+            return F.NIL;
+        }
+      } catch (IllegalArgumentException
+          | org.apache.commons.codec.DecoderException iae) {
         //
       }
       return F.NIL;
@@ -139,8 +156,23 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
+  }
+
+  /**
+   * The encoding an optional second argument names, upper-cased, or <code>"BASE64"</code> when
+   * there is none - and <code>null</code> when the argument is not a string at all.
+   */
+  private static String baseEncoding(IAST ast) {
+    if (ast.isAST1()) {
+      return "BASE64";
+    }
+    IExpr arg2 = ast.arg2();
+    if (arg2 instanceof IStringX) {
+      return arg2.toString().toUpperCase();
+    }
+    return null;
   }
 
   private static class BaseEncode extends AbstractFunctionEvaluator {
@@ -149,20 +181,35 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof ByteArrayExpr) {
+        String encoding = baseEncoding(ast);
+        if (encoding == null) {
+          return F.NIL;
+        }
         byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
         if (bArray.length == 0) {
           return F.$str("");
         }
 
-        String str = Base64.getEncoder().encodeToString(bArray);
-        return F.$str(str);
+        switch (encoding) {
+          case "BASE64":
+            return F.$str(Base64.getEncoder().encodeToString(bArray));
+          case "BASE64URL":
+            return F.$str(Base64.getUrlEncoder().encodeToString(bArray));
+          case "BASE32":
+            return F.$str(new String(new org.apache.commons.codec.binary.Base32().encode(bArray),
+                StandardCharsets.US_ASCII));
+          case "BASE16":
+            return F.$str(org.apache.commons.codec.binary.Hex.encodeHexString(bArray));
+          default:
+            return F.NIL;
+        }
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 

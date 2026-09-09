@@ -193,6 +193,7 @@ public class Errors {
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
       "dsdelim", "The delimiter specification is not valid.", //
       "dsdims", "The data has dimensions `1` which `2` does not allow.", //
+      "dstype", "`1` is not a known type of data structure.", //
       "dstlms",
       "The requested number of elements `1` is greater than the number of distinct elements `2`. Only `2` elements will be returned.", //
       "dup", "Duplicate local variable `1` found in local variable specification `2`.", //
@@ -238,6 +239,7 @@ public class Errors {
       "heads", "Heads `1` and `2` are expected to be the same.", //
       "heads2", "Heads `1` and `2` at positions `3` and `4` are expected to be the same.", //
       "herm", "The matrix `1` is not hermitian or real and symmetric.", //
+      "hshtype", "`1` is not a known type of hash.", //
       "ibase", "Base `1` is not an integer greater than `2`.", //
       "idim", "`1` and `2` must have the same length.", //
       "idir", "Direction vector `1` has zero magnitude.", //

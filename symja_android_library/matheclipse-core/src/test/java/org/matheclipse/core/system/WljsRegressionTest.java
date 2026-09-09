@@ -257,4 +257,91 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("{g(9), g(), g(8, 7)}", //
         "{{9,2},{1,2},{8,7}}");
   }
+
+  @Test
+  public void testTheWebSocketAcceptKey() {
+    // Packages/WebSocketHandler/Kernel/WebSocketHandler.wl answers a handshake with
+    //   BaseEncode[Hash[key <> $guid, "SHA1", "ByteArray"], "Base64"]
+    // The key and its answer here are the worked example in RFC 6455 section 1.3.
+    boolean fileSystem = Config.FILESYSTEM_ENABLED;
+    try {
+      Config.FILESYSTEM_ENABLED = true;
+      check(
+          "BaseEncode(Hash(\"dGhlIHNhbXBsZSBub25jZQ==\" <> \"258EAFA5-E914-47DA-95CA-C5AB0DC85B11\", \"SHA1\", \"ByteArray\"), \"Base64\")", //
+          "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
+    } finally {
+      Config.FILESYSTEM_ENABLED = fileSystem;
+    }
+  }
+
+  @Test
+  public void testHashOutputFormats() {
+    boolean fileSystem = Config.FILESYSTEM_ENABLED;
+    try {
+      Config.FILESYSTEM_ENABLED = true;
+      check("Hash(\"abc\", \"SHA256\", \"HexString\")", //
+          "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+      // a digest which begins with a zero byte keeps its width as a string, and its bytes
+      check("Hash(\"abc\", \"SHA1\", \"HexString\")", //
+          "a9993e364706816aba3e25717850c26c9cd0d89d");
+      check("StringLength(Hash(\"abc\", \"MD5\", \"DecimalString\"))", //
+          "39");
+      check("Normal(Hash(\"abc\", \"SHA1\", \"ByteArray\")) // Length", //
+          "20");
+      check("Hash(\"abc\", \"SHA1\") === Hash(\"abc\", \"SHA\")", //
+          "True");
+    } finally {
+      Config.FILESYSTEM_ENABLED = fileSystem;
+    }
+  }
+
+  @Test
+  public void testBaseEncodeNamesItsEncoding() {
+    check("BaseEncode(ByteArray({1, 2, 3}), \"Base16\")", //
+        "010203");
+    check("Normal(BaseDecode(\"AQID\", \"Base64\"))", //
+        "{1,2,3}");
+    check("Normal(BaseDecode(BaseEncode(ByteArray({0, 1, 255}))))", //
+        "{0,1,255}");
+  }
+
+  @Test
+  public void testADataStructureIsChangedInPlace() {
+    // WLJS buffers a half-arrived request in a DynamicArray and remembers its clients in a
+    // HashSet; both are filled by one evaluation and read by the next, so the container the
+    // second one holds has to be the very container the first one changed.
+    check("d = CreateDataStructure(\"DynamicArray\", {1, 2})", //
+        "DataStructure[DynamicArray, <2>]");
+    check("DataStructureQ(d)", //
+        "True");
+    check("d(\"Append\", 3); d(\"Elements\")", //
+        "{1,2,3}");
+    check("d(\"Part\", -1)", //
+        "3");
+    check("e = d; e(\"Append\", 4); d(\"Length\")", //
+        "4");
+    check("d(\"DropAll\"); d(\"Length\")", //
+        "0");
+    // a pattern reaches it by head, the way saveFrameToBuffer[buffer_DataStructure, …] does
+    check("f(b_DataStructure) := b(\"Length\")", //
+        "");
+    check("f(d)", //
+        "0");
+  }
+
+  @Test
+  public void testHashSetAndHashTableMethods() {
+    check("s = CreateDataStructure(\"HashSet\")", //
+        "DataStructure[HashSet, <0>]");
+    check("{s(\"Insert\", x), s(\"MemberQ\", x), s(\"MemberQ\", y)}", //
+        "{True,True,False}");
+    check("{s(\"Remove\", x), s(\"MemberQ\", x), s(\"Elements\")}", //
+        "{True,False,{}}");
+    check("h = CreateDataStructure(\"HashTable\")", //
+        "DataStructure[HashTable, <0>]");
+    check("h(\"Insert\", 1 -> a); {h(\"KeyExistsQ\", 1), h(\"Lookup\", 1), h(\"KeyExistsQ\", 2)}", //
+        "{True,a,False}");
+    check("CreateDataStructure(\"Nope\")", //
+        "CreateDataStructure(Nope)");
+  }
 }
