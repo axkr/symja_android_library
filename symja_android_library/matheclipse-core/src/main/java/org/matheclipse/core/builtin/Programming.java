@@ -3135,8 +3135,8 @@ public final class Programming {
    * <blockquote>
    *
    * <p>
-   * show the steps nested at most <code>maxDepth</code> deep. The default is <code>3</code>;
-   * <code>Infinity</code> shows every level.
+   * show the steps nested at most <code>maxDepth</code> deep, counting the steps a reader is
+   * shown. The default is <code>5</code>; <code>Infinity</code> shows every level.
    *
    * </blockquote>
    *
@@ -3172,8 +3172,11 @@ public final class Programming {
   private static class TraceForm extends AbstractCoreFunctionEvaluator
       implements IFastFunctionEvaluator {
 
-    /** How deep the steps are nested by default. */
-    private static final int DEFAULT_MAX_DEPTH = 3;
+    /**
+     * How deep the steps are nested by default. An integration derivation runs to four levels, so
+     * this leaves a little room over the deepest one measured.
+     */
+    private static final int DEFAULT_MAX_DEPTH = 5;
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

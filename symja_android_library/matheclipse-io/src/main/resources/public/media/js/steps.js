@@ -15,8 +15,13 @@
       subSteps       the steps this one caused
 **/
 
-/** Down to which level a section starts out open. */
-var STEPS_OPEN_TO_LEVEL = 1;
+/**
+ * Down to which level a section starts out open.
+ *
+ * A derivation nests: for an integral the step which does the work sits three or four levels in,
+ * so opening only the outermost one would hide the whole thing behind clicks.
+ */
+var STEPS_OPEN_TO_LEVEL = 2;
 
 /**
  * The whole derivation: the result, then the steps which lead to it.
@@ -52,7 +57,10 @@ function createStep(step, level) {
 		details.setAttribute('open', 'open');
 
 	var summary = document.createElement('summary');
-	summary.className = step.truncated ? 'steptruncated' : 'stepsummary';
+	// a step with neither a rewrite nor sub-steps is a note, not a section: it must not offer a
+	// disclosure triangle which opens onto nothing
+	var isLeaf = !(step.prevExpression && step.expression) && !(step.subSteps && step.subSteps.length);
+	summary.className = step.truncated ? 'steptruncated' : (isLeaf ? 'stepinfo' : 'stepsummary');
 	summary.appendChild(document.createTextNode(step.step || step.stepKey || ''));
 	renderStepMathIn(summary);
 	details.appendChild(summary);

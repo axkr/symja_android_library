@@ -1,6 +1,9 @@
 package org.matheclipse.io.servlet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.junit.jupiter.api.Assumptions;
@@ -96,6 +99,37 @@ public class TraceFormJSONTest {
     JsonNode truncated = steps.get(0).get("subSteps").get(0);
     assertTrue(truncated.get("truncated").asBoolean(), truncated.toString());
     assertEquals("TraceForm::Truncated", truncated.get("stepKey").asText());
+  }
+
+  @Test
+  public void testTheTruncationMarkerCarriesASentence() throws Exception {
+    JsonNode steps = render("TraceForm(D(Sin(Sin(x^2)),x), 1)").get("steps").get("steps");
+    JsonNode truncated = steps.get(0).get("subSteps").get(0);
+    // without a sentence the page falls back to showing the raw key, `TraceForm::Truncated`
+    assertTrue(truncated.get("step").asText().contains("not shown"), truncated.toString());
+  }
+
+  @Test
+  public void testAnIntegrationDerivationNestsInTheJSON() throws Exception {
+    JsonNode steps = render("TraceForm(Integrate(Sin(x)/x^3,x))").get("steps").get("steps");
+    assertEquals(1, steps.size(), steps.toString());
+    JsonNode level4 = steps.get(0).get("subSteps").get(0).get("subSteps").get(0) //
+        .get("subSteps").get(0);
+    assertNotNull(level4, steps.toString());
+    assertTrue(level4.get("expression").asText().contains("Si"), level4.toString());
+    // the default depth reaches the answer, so nothing is marked as dropped
+    assertFalse(steps.toString().contains("TraceForm::Truncated"), steps.toString());
+  }
+
+  @Test
+  public void testASubstitutionNoteHasNoRewrite() throws Exception {
+    JsonNode steps = render("TraceForm(Integrate(Cos(x)*Sin(x)^2,x))").get("steps").get("steps");
+    JsonNode note = steps.get(0).get("subSteps").get(0);
+    assertEquals("Integrate::Substitution", note.get("stepKey").asText(), note.toString());
+    assertTrue(note.get("step").asText().contains("Substituting"), note.toString());
+    // an annotation says everything in its sentence; a rewrite arrow would claim a change
+    assertNull(note.get("prevExpression"), note.toString());
+    assertNull(note.get("expression"), note.toString());
   }
 
   @Test

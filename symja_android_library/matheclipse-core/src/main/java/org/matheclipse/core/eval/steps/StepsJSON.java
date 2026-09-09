@@ -50,8 +50,12 @@ public final class StepsJSON {
     JSONStep node = new JSONStep();
     node.setStepKey(StepsTree.descriptionKey(step));
     node.setStep(StepDescription.of(step, tex, OPEN_MATH, CLOSE_MATH));
-    node.setPrevExpression(tex.apply(StepsTree.input(step)));
-    node.setExpression(tex.apply(StepsTree.result(step)));
+    if (!StepsTree.isTruncated(step) && !StepsTree.isInfoStep(step)) {
+      // a marker and an annotation have no rewrite to show, only a sentence - the same rule
+      // `toJSONArray` follows
+      node.setPrevExpression(tex.apply(StepsTree.input(step)));
+      node.setExpression(tex.apply(StepsTree.result(step)));
+    }
     IAST subSteps = StepsTree.subSteps(step);
     for (int i = 1; i < subSteps.size(); i++) {
       IExpr subStep = subSteps.get(i);

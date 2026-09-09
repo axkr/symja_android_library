@@ -117,10 +117,37 @@ public class TraceFormTest extends ExprEvaluatorTestCase {
   // ---------------------------------------------------------------- the depth cap
 
   @Test
-  public void testDefaultDepthIsThree() {
-    // the fourth level is dropped and marked
-    check("TraceForm(D(Sin(Sin(x^2)),x))[[2,1,4,1,4,1,4,1,3,2]]", //
+  public void testDefaultDepthIsFive() {
+    // the fifth level is the deepest one shown
+    check("TraceForm(D(Sin(Sin(Sin(Sin(x^2)))),x))[[2,1,4,1,4,1,4,1,4,1,3,2]]", //
+        "PowerRule");
+    // and the sixth is dropped and marked
+    check("TraceForm(D(Sin(Sin(Sin(Sin(x^2)))),x))[[2,1,4,1,4,1,4,1,4,1,4,1,3,2]]", //
         "Truncated");
+    // that sixth level is really there, it is the cap which is hiding it
+    check("TraceForm(D(Sin(Sin(Sin(Sin(x^2)))),x), Infinity)[[2,1,4,1,4,1,4,1,4,1,4,1,3,2]]", //
+        "IdentityRule");
+  }
+
+  @Test
+  public void testTheDepthCountsStepsTheReaderSees() {
+    // The cap used to count recorded levels, and an integration rule set reaches its answer
+    // through rewrites which say nothing once they are written the ordinary way. Those are
+    // dropped when the derivation is rendered, so counting them spent the reader's depth on
+    // steps the reader never saw and an ordinary integral stopped short of its answer.
+    check("Length(Cases(TraceForm(Integrate(Sin(x)/x^3,x)), "
+        + "{_,_,{TraceForm,\"Truncated\"},_}, Infinity))", //
+        "0");
+    check("TraceForm(Integrate(Sin(x)/x^3,x))[[2,1,4,1,4,1,4,1,2]]", //
+        "SinIntegral(x)");
+  }
+
+  @Test
+  public void testTheMarkerSaysWhyTheDerivationStops() {
+    // its sentence was looked up under the bare rule key while `i18n/en.json` holds the
+    // qualified one, so a capped derivation used to stop without a word about it
+    String steps = evalString("TraceForm(D(Sin(Sin(x^2)),x), 1)");
+    assertTrue(steps.contains("Further sub-steps are not shown"), steps);
   }
 
   @Test

@@ -59,9 +59,6 @@ public class StepsListener extends AbstractEvalStepListener {
      */
     final StepNode attachTo;
 
-    /** The innermost step this frame is inside of, used to mark a step as truncated. */
-    final StepNode owner;
-
     /** What <code>setUp</code> was given, to check the frames are balanced. */
     final Object marker;
 
@@ -69,9 +66,8 @@ public class StepsListener extends AbstractEvalStepListener {
 
     final int level;
 
-    Frame(StepNode attachTo, StepNode owner, Object marker, int level) {
+    Frame(StepNode attachTo, Object marker, int level) {
       this.attachTo = attachTo;
-      this.owner = owner;
       this.marker = marker;
       this.level = level;
     }
@@ -81,7 +77,10 @@ public class StepsListener extends AbstractEvalStepListener {
 
   private final Frame fRoot;
 
-  /** The deepest nesting of steps which is kept. */
+  /**
+   * The deepest nesting of steps which is shown. Applied when the derivation is rendered, not
+   * while it is collected: see {@link StepNode#appendAll}.
+   */
   private final int fMaxDepth;
 
   /** How many steps may be recorded at all. */
@@ -109,13 +108,22 @@ public class StepsListener extends AbstractEvalStepListener {
     fMaxDepth = maxDepth;
     fStepLevel = stepLevel;
     fMaxNodes = maxNodes;
-    fRoot = new Frame(null, null, null, 1);
+    fRoot = new Frame(null, null, 1);
     fStack.push(fRoot);
   }
 
   @Override
   public int stepLevel() {
     return fStepLevel;
+  }
+
+  /**
+   * How deep the steps may nest. Rendering counts the levels a reader is shown, so this is a
+   * bound on those; {@link DialogStepsListener} has only the recorded level to go on and uses it
+   * as the nearest thing it can know while the evaluation is still running.
+   */
+  protected final int maxDepth() {
+    return fMaxDepth;
   }
 
   @Override
@@ -130,10 +138,10 @@ public class StepsListener extends AbstractEvalStepListener {
     StepNode last = siblings.isEmpty() ? null : siblings.get(siblings.size() - 1);
     if (last != null && last.identity == inputExpr) {
       // the evaluation of the expression the last step rewrote its input to
-      fStack.push(new Frame(last, last, stackMarker, last.level + 1));
+      fStack.push(new Frame(last, stackMarker, last.level + 1));
     } else {
       // a frame of its own: transparent, its steps belong to the frame around it
-      fStack.push(new Frame(null, parent.owner, stackMarker, parent.level));
+      fStack.push(new Frame(null, stackMarker, parent.level));
     }
   }
 
@@ -151,10 +159,6 @@ public class StepsListener extends AbstractEvalStepListener {
       return;
     }
     Frame frame = fStack.peek();
-    if (frame.level > fMaxDepth) {
-      markTruncated(frame.owner);
-      return;
-    }
     if (fNodeCount >= fMaxNodes) {
       fGlobalTruncated = true;
       return;
@@ -231,14 +235,6 @@ public class StepsListener extends AbstractEvalStepListener {
         || symbol.getSymbolName().startsWith("\u00a7");
   }
 
-  private void markTruncated(@Nullable StepNode step) {
-    if (step != null) {
-      step.truncated = true;
-    } else {
-      fGlobalTruncated = true;
-    }
-  }
-
   /** How many steps were recorded. */
   public int size() {
     return fRoot.steps.size();
@@ -257,9 +253,7 @@ public class StepsListener extends AbstractEvalStepListener {
   public IAST toExpr() {
     List<StepNode> steps = fRoot.steps;
     IASTAppendable result = F.ListAlloc(steps.size() + (fGlobalTruncated ? 1 : 0));
-    for (StepNode step : steps) {
-      step.appendReadableTo(result);
-    }
+    StepNode.appendAll(steps, result, 1, fMaxDepth, F.NIL);
     if (fGlobalTruncated) {
       result.append(StepNode.truncatedStep());
     }

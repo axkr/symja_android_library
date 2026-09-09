@@ -46,6 +46,11 @@ public final class DialogStepsListener extends StepsListener {
     if (finished) {
       return;
     }
+    if (node.level > maxDepth()) {
+      // deeper than the reader asked to see: the finished derivation replaces it with a marker,
+      // so stopping for it would offer a step which is then not shown
+      return;
+    }
     final EvalEngine engine = EvalEngine.get();
     shown++;
     DialogStep step = new DialogStep(node.input, node.display, node.hints, node.level, shown,

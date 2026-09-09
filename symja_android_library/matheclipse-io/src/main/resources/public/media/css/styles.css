@@ -1065,6 +1065,13 @@ div.steps summary.steptruncated {
 	list-style: none;
 }
 
+/* a note about the step above it - something happened, but there is nothing to open */
+div.steps summary.stepinfo {
+	cursor: default;
+	color: #444;
+	list-style: none;
+}
+
 div.steps div.steprewrite {
 	margin: 0.2em 0 0.2em 1.1em;
 }

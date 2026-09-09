@@ -62,6 +62,46 @@ public class StepDisplayTest extends ExprEvaluatorTestCase {
     assertTrue(steps.contains("Integrate(Cos(x)/x^2,x)"), steps);
   }
 
+  // ---------------------------------------------------------------- a substitution
+
+  @Test
+  public void testASubstitutionIsSaidInWords() {
+    String steps = derivation("Cos(x)*Sin(x)^2");
+    assertTrue(steps.contains("Substituting u = Sin(x)."), steps);
+    // and the operator it replaces is nowhere to be seen
+    assertFalse(steps.contains("/."), steps);
+  }
+
+  @Test
+  public void testTheSubstitutedVariableIsRenamed() {
+    // The rule set reuses the integration variable as its dummy, so it records
+    // `Integrate(Cos(x)*Sin(x)^2,x) -> Integrate(x^2,x)` with `x` now standing for `Sin(x)`.
+    // That is only true while the `/.` is written beside it; said in words it needs a new name,
+    // or the integral left standing claims something plainly false.
+    String steps = derivation("Cos(x)*Sin(x)^2");
+    assertTrue(steps.contains("Integrate(Cos(x)*Sin(x)^2,x) -> Integrate(u^2,u)"), steps);
+    assertFalse(steps.contains("Integrate(Cos(x)*Sin(x)^2,x) -> Integrate(x^2,x)"), steps);
+  }
+
+  @Test
+  public void testEveryStepBelowIsWrittenInTheNewVariable() {
+    // the step which substitutes and the steps under it must not disagree about what to call it
+    String steps = derivation("Sin(Sqrt(x))");
+    assertTrue(steps.contains("Substituting u = Sqrt(x)."), steps);
+    assertTrue(steps.contains("Integrate(u*Sin(u),u)"), steps);
+    assertTrue(steps.contains("Integrate(Cos(u),u) -> Sin(u)"), steps);
+  }
+
+  @Test
+  public void testTheNoteIsAnAnnotationNotARewrite() {
+    // it carries a sentence and no arrow, so nothing claims the expression changed
+    check("TraceForm(Integrate(Cos(x)*Sin(x)^2,x))[[2,1,4,1,3]]", //
+        "{Integrate,Substitution,u,Sin(x)}");
+    check("TraceForm(Integrate(Cos(x)*Sin(x)^2,x))[[2,1,4,1,1]] === "
+        + "TraceForm(Integrate(Cos(x)*Sin(x)^2,x))[[2,1,4,1,2]]", //
+        "True");
+  }
+
   // ---------------------------------------------------------------- the nesting
 
   @Test

@@ -46,6 +46,7 @@
 
 	"Rational::FractionCancelGCD": "Divide the numerator and the denominator of `3` by their greatest common divisor `4`.",
 
+	"Integrate::Substitution": "Substituting `3` = `4`.",
 	"Integrate::PolynomialTermByTerm": "Integrate the polynomial term by term, each $x^n$ giving $\\frac{x^{n+1}}{n+1}$.",
 	"Integrate::SingleFraction": "Write the integrand as a single fraction.",
 	"Integrate::PolynomialDivision": "Divide out the polynomial part `3`, leaving a fraction whose numerator has the lower degree.",
@@ -67,7 +68,7 @@
 	"Integrate::RubiRuleDescription": "Rubi integration rule `3`. `8`, rewrite `6` as `7`.",
 	"Integrate::RubiRuleRewrite": "Rubi integration rule `3` rewrites `6` as `7`.",
 
-	"TraceForm::Truncated": "Further sub-steps are not shown. Ask for more with a larger depth, as in `TraceForm(expr, 5)`.",
+	"TraceForm::Truncated": "Further sub-steps are not shown. Ask for more with a larger depth, as in `TraceForm(expr, 10)` or `TraceForm(expr, Infinity)`.",
 
 	"RewriteRule": "Apply the rewrite rule `3` - expression `2` is rewritten as `1`."
 }

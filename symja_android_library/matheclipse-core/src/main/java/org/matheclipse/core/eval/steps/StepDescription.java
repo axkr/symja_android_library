@@ -81,7 +81,9 @@ public final class StepDescription {
   public static String of(IAST step, Function<IExpr, String> mathRenderer, String open,
       String close) {
     if (StepsTree.isTruncated(step)) {
-      return template(StepsTree.TRUNCATED_KEY);
+      // the key in `i18n/en.json` is the qualified one, `TraceForm::Truncated`; looking the bare
+      // rule key up returned nothing and the derivation simply stopped without saying so
+      return template(StepsTree.descriptionKey(step));
     }
     final IAST hints = StepsTree.hints(step);
     final String key = StepsTree.descriptionKey(step);

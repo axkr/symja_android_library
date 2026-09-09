@@ -10,7 +10,7 @@ TraceForm(expr)
 TraceForm(expr, maxDepth)
 ```
 
-> show the steps nested at most `maxDepth` deep. The default is `3`; `Infinity` shows every level.
+> show the steps nested at most `maxDepth` deep, counting the steps a reader is shown rather than the ones which were recorded. The default is `5`; `Infinity` shows every level.
 
 ```
 TraceForm(expr, maxDepth, level)
@@ -72,7 +72,7 @@ RubiRule
 An integration reads as a derivation: each integral is rewritten until nothing is left to integrate, and an integral that a step created is shown under it. The sentence says what the rule does in general, taken from the rule set's own description of it:
 
 ```
->> TraceForm(Integrate(Sin(x)/x^3,x), Infinity)
+>> TraceForm(Integrate(Sin(x)/x^3,x))
 -Cos(x)/(2*x)-Sin(x)/(2*x^2)-SinIntegral(x)/2
 Rubi integration rule 3790. If LtQ[m,-1], rewrite Integrate((c+d*x)^m*Sin(e+f*x),x) as ...
 Integrate(Sin(x)/x^3,x) -> Integrate(Cos(x)/x^2,x)/2-Sin(x)/(2*x^2)
@@ -84,10 +84,22 @@ Integrate(Sin(x)/x^3,x) -> Integrate(Cos(x)/x^2,x)/2-Sin(x)/(2*x^2)
       Integrate(Sin(x)/x,x) -> SinIntegral(x)
 ```
 
+Where a rule substitutes, the substituted variable is given a name of its own and the step says what it stands for. The rule set reuses the integration variable as its dummy, which is true only while the replacement is written beside it:
+
+```
+>> TraceForm(Integrate(Cos(x)*Sin(x)^2,x))
+Sin(x)^3/3
+Rubi integration rule 3056. If IntegerQ[(n-1)/(2)]&&..., rewrite Integrate(Cos(e+f*x)^n*(a*Sin(e+f*x))^m,x) as subst(Integrate(x^m*(1-x^2/a^2)^(1/2*(-1+n)),x),x,a*Sin(e+f*x))/(a*f).
+Integrate(Cos(x)*Sin(x)^2,x) -> Integrate(u^2,u)
+  Substituting u = Sin(x).
+  Apply the power rule $\int x^n\,dx = \frac{x^{n+1}}{n+1}$ for $n \neq -1$, with n = 2.
+  Integrate(u^2,u) -> u^(1+2)/(1+2)
+```
+
 An integral that Symja answers with an algorithm of its own is worked through too:
 
 ```
->> TraceForm(Integrate((x^2+x+1)/(x^4+x^3+x+1),x), Infinity)
+>> TraceForm(Integrate((x^2+x+1)/(x^4+x^3+x+1),x))
 -1/(3*(1+x))+4/3*ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)
 Split the denominator into the part with repeated factors, x+1, and the square-free part x^3+1.
 x^4+x^3+x+1 -> (x+1)*(x^3+1)
@@ -117,7 +129,8 @@ As TeX, one row per step, indented by how deep the step is nested:
 * Steps are collected only in a build with `ToggleFeature.SHOW_STEPS` switched on. With it off `TraceForm(expr)` evaluates `expr`, reports that steps are switched off and returns `TraceForm(HoldForm(result), {})`. The switch is `final`, so nothing of the machinery costs anything at run time in a build which does not want it.
 * The helper functions the Rubi integration rules are built from are implementation detail and are not shown as steps; the integration rules themselves are.
 * A step records the right-hand side of the rule that fired, before it is evaluated, so it is written in the rule set's own helpers. Those are rewritten into the mathematics they stand for before a step is shown: `Simp[u,x]` is `u`, `Dist[u,v,x]` is the product `u*v`, `Subst[u,x,v]` is the replacement `u /. x -> v`, and `§sin` is the inert `Sin` the rules match on. The arithmetic of the rewrite is worked out at the same time, while every integral is left standing - which is what makes a step an intermediate rather than the answer.
-* A rule which only rewrites an expression into the rule set's own spelling changes nothing once that is undone, so it is not shown.
+* A rule which only rewrites an expression into the rule set's own spelling changes nothing once that is undone, so it is not shown. `maxDepth` counts the steps which are left, not the ones which were recorded, so asking for three levels gives three levels to read.
+* A rule which substitutes records the new variable under the name of the old one. Since the step says the substitution in words rather than writing the replacement beside the integral, the new variable is renamed - `u`, or the next free letter - and every step below it is written in that name.
 * What each integration rule does comes from Rubi's own `ShowSteps` spelling of its rule set, read out by `ConvertRubiShowSteps` in the `tools` module into `rubi/rubi_steps.tsv.gz`. About 7050 of the 7300 rules carry one; the remaining rules are plumbing which Rubi itself does not show as a step, and they are named by their rule number alone. The table is read the first time an integration step is described, so an evaluation which shows none never touches it.
 * The general shape a rule matches and rewrites to is written with the rule's own pattern names, not with the expression at hand - the step itself carries that.
 * Repeated sub-expressions of one integral are answered from the Rubi result cache and produce no steps of their own the second time.
