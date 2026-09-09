@@ -491,6 +491,30 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveExactAfterClearingTheDenominator() {
+    // Exact as written, and not exact by the time the solvers see it: the coefficient of y' is
+    // cleared of its denominator first, which multiplies the pair by x. The integrating factor
+    // which puts that back is 1/x, and the ratio saying so is a function of x alone only after a
+    // common factor is cancelled out of it. Both of these were declined for that reason.
+    checkResidual("x^3 + y(x)/x + (y(x)^2 + Log(x))*y'(x) == 0", //
+        "x^3 + y(x)/x + (y(x)^2 + Log(x))*y'(x)", "{C(1)->7/5, x->7/10}");
+    check("DSolve(E^y(x) + Cos(x)*y(x) + (x*E^y(x) + Sin(x))*y'(x) == 0, y(x), x)", //
+        "{{y(x)->Log((ProductLog(E^(C(1)*Csc(x))*x*Csc(x))*Sin(x))/x)}}");
+
+    // An exact equation whose first integral is a polynomial in y still answers as it did: the
+    // three branches of the cubic, each of which solves the equation.
+    check("Length(DSolve(2*x*y(x) + (x^2 + 3*y(x)^2)*y'(x) == 0, y(x), x))", //
+        "3");
+    checkResidual("2*x*y(x) + (x^2 + 3*y(x)^2)*y'(x) == 0", //
+        "2*x*y(x) + (x^2 + 3*y(x)^2)*y'(x)", "{C(1)->7/5, x->13/10}");
+
+    // The first integral of this one mixes y with E^y, so there is nothing explicit to find and it
+    // is declined rather than answered implicitly.
+    check("FreeQ(DSolve(Cos(x) + Log(y(x)) + (x/y(x) + E^y(x))*y'(x) == 0, y(x), x), Rule)", //
+        "True");
+  }
+
+  @Test
   public void testDSolveProductLogRelation() {
     // A relation which mixes a linear form with its own logarithm is what a first order equation
     // separates into whenever the denominator shares a factor with the numerator. Nothing

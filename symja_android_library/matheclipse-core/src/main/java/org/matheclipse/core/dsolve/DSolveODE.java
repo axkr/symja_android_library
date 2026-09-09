@@ -30,6 +30,9 @@ final class DSolveODE {
   /** Beyond this the relation raised to that power is larger than Solve can use. */
   private static final int MAX_EXPONENTIATION_POWER = 12;
 
+  /** Beyond this, deciding whether the exactness test vanishes costs more than it is worth. */
+  private static final int MAX_EXACT_DIFFERENCE_LEAF_COUNT = 100;
+
   static final int MAX_DERIVATIVE_ORDER = 10;
 
   /** How deep in the cascade the reduction of a Riccati equation is still attempted. */
@@ -55,10 +58,12 @@ final class DSolveODE {
     IExpr dMdy = engine.evaluate(F.D(mDummy, yDummy));
     IExpr dNdx = engine.evaluate(F.D(nDummy, x));
 
-    // IExpr diff = engine.evaluate(F.Simplify(F.Subtract(dMdy, dNdx)));
     IExpr diff = engine.evaluate(F.Subtract(dMdy, dNdx));
 
-    if (diff.isZero()) {
+    // A pair can be exact without saying so in the form it arrives in, and the integrating factor
+    // method hands this one a pair it has just multiplied by mu. The cheap test comes first.
+    if (diff.isZero()
+        || (diff.leafCount() < MAX_EXACT_DIFFERENCE_LEAF_COUNT && isVanishing(diff, engine))) {
       // f(x,Y) = Integrate(M, x)
       IExpr intM = DSolveContext.integrate(mDummy, x, engine);
       if (intM.isNIL()) {
@@ -188,9 +193,14 @@ final class DSolveODE {
 
     // Case 1: Integrating factor depends only on x
     // Check if (dM/dy - dN/dx) / N == f(x)
-    IExpr diff1 = engine.evaluate(F.Divide(F.Subtract(dMdy, dNdx), nDummy));
+    // Cancelled, because the ratio is a function of x alone only after the common factor goes:
+    // x^3 + y/x + (y^2 + Log(x))*y' == 0 is exact as it stands, but the coefficient of y' is
+    // cleared of its denominator before it arrives here, and the pair which arrives is not. Its
+    // integrating factor is 1/x, and the ratio which says so reads
+    // (-Y^2 - Log(x))/(x*(Y^2 + Log(x))) until it is cancelled.
+    IExpr diff1 = cancel(F.Divide(F.Subtract(dMdy, dNdx), nDummy), engine);
 
-    if (diff1.isFree(yDummy)) {
+    if (diff1.isPresent() && diff1.isFree(yDummy)) {
       IExpr exponent1 = DSolveContext.integrate(diff1, x, engine);
       if (exponent1.isNIL()) {
         return F.NIL;
@@ -205,9 +215,9 @@ final class DSolveODE {
 
     // Case 2: Integrating factor depends only on y
     // Check if (dN/dx - dM/dy) / M == g(y)
-    IExpr diff2 = engine.evaluate(F.Divide(F.Subtract(dNdx, dMdy), mDummy));
+    IExpr diff2 = cancel(F.Divide(F.Subtract(dNdx, dMdy), mDummy), engine);
 
-    if (diff2.isFree(x)) {
+    if (diff2.isPresent() && diff2.isFree(x)) {
       IExpr exponent2 = DSolveContext.integrate(diff2, yDummy, engine);
       if (exponent2.isNIL()) {
         return F.NIL;
@@ -591,6 +601,12 @@ final class DSolveODE {
    * @return the least common multiple of the denominators of the logarithms' coefficients, which is
    *         what turns the fractional powers their exponential leaves into whole ones
    */
+  /** <code>expr</code> with a common factor of its numerator and denominator taken out. */
+  private static IExpr cancel(IExpr expr, EvalEngine engine) {
+    IExpr cancelled = engine.evaluate(F.Cancel(expr));
+    return cancelled.isPresent() ? cancelled : engine.evaluate(expr);
+  }
+
   private static long gcd(long a, long b) {
     while (b != 0) {
       long r = a % b;
