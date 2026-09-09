@@ -609,6 +609,38 @@ public class EvalEngine implements Serializable {
 
   transient int fRecursionCounter;
 
+  /** Told about every message this engine reports, when somebody is listening. */
+  public interface MessageListener {
+    /**
+     * @param symbol the symbol the message belongs to, such as <code>Part</code>
+     * @param tag the name of the message, such as <code>partw</code>
+     */
+    void message(ISymbol symbol, String tag);
+  }
+
+  private transient MessageListener fMessageListener = null;
+
+  /**
+   * Hear about every message this engine reports.
+   *
+   * <p>
+   * A kernel driven over a link sends them on as <code>MessagePacket</code>s, because the front
+   * end shows a message beside the cell that caused it rather than in a console nobody reads.
+   */
+  public void setMessageListener(MessageListener listener) {
+    this.fMessageListener = listener;
+  }
+
+  public MessageListener getMessageListener() {
+    return fMessageListener;
+  }
+
+  /**
+   * Set from another thread to stop the evaluation running here. The next step of the evaluation
+   * loop throws {@link AbortException} and clears it.
+   */
+  private transient volatile boolean fAbortRequested = false;
+
   /**
    * The time in milliseconds the current {@link S#TimeConstrained} operation should stop. <code>
    * -1</code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
@@ -2845,6 +2877,15 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
+    if (fAbortRequested) {
+      // somebody else asked this evaluation to stop: the kernel on the other end of a link
+      // sending an interrupt, which is what an abort does to a notebook's evaluation. The test
+      // stands before every other one, because the paths below it - an atom, the fast evaluator,
+      // the epoch cache - all answer without reaching the rest of the loop, and a loop written in
+      // the Wolfram Language spends its time in exactly those.
+      fAbortRequested = false;
+      throw AbortException.ABORTED;
+    }
     if (expr instanceof IAtomicEvaluate) {
       return expr.evaluate(this);
     } else if (expr instanceof IAST) {
@@ -5274,9 +5315,18 @@ public class EvalEngine implements Serializable {
     fRecursionLimit = i;
   }
 
-  // public void stopRequest() {
-  // setStopRequested(true);
-  // }
+  /**
+   * Ask the evaluation running in this engine to stop, from whatever thread notices that it
+   * should: the next step of its evaluation loop throws {@link AbortException}.
+   */
+  public void stopRequest() {
+    fAbortRequested = true;
+  }
+
+  /** Forget an abort which was asked for but never reached an evaluation. */
+  public void clearStopRequest() {
+    fAbortRequested = false;
+  }
 
   /** @param fRelaxedSyntax the fRelaxedSyntax to set */
   public void setRelaxedSyntax(boolean fRelaxedSyntax) {

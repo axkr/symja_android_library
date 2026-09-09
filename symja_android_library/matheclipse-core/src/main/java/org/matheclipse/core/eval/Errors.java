@@ -384,6 +384,7 @@ public class Errors {
       "naqs", "`1` is not a quantified system of equations and inequalities.", //
       "nofirst", "`1` has zero length and no first element.", //
       "nofwd", "No enclosing For, While or Do found for `1`.", //
+      "nopid", "No process with the process ID `1` was found.", //
       "noneg", "Argument `1` should be a real non-negative number.", //
       "nonegs", "Surd is not defined for even roots of negative values.", //
       "nolast", "`1` has zero length and no last element.", //
@@ -824,6 +825,10 @@ public class Errors {
       // stays as it was
       engine.setMessageShortcut(messageShortcut);
       return F.NIL;
+    }
+    if (engine != null && engine.getMessageListener() != null && !engine.isQuietMode()) {
+      // a kernel driven over a link sends its messages on rather than printing them
+      engine.getMessageListener().message(symbol, messageShortcut);
     }
     IExpr temp = symbol.evalMessage(messageShortcut);
     String message = null;

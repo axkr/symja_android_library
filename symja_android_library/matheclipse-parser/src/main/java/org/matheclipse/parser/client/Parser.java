@@ -1542,6 +1542,15 @@ public class Parser extends Scanner {
   }
 
   private final ASTNode parsePrefixOperator(final PrefixOperator prefixOperator) {
+    if ("Get".equals(prefixOperator.getFunctionName())) {
+      // << reads a name, not an expression: <<Foo`Bar` and <<dir/file.wl are file names
+      String fileName = scanFileName();
+      if (fileName != null) {
+        getNextToken();
+        return fFactory.createFunction(fFactory.createSymbol("Get"),
+            fFactory.createString(new StringBuilder(fileName)));
+      }
+    }
     getNextToken();
     final ASTNode temp = parseLookaheadOperator(prefixOperator.getPrecedence());
     if ("PreMinus".equals(prefixOperator.getFunctionName()) && temp instanceof NumberNode) {

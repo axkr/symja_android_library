@@ -1921,6 +1921,14 @@ public class ExprParser extends Scanner {
   }
 
   private final IExpr parsePrefixOperator(final PrefixExprOperator prefixOperator) {
+    if ("Get".equals(prefixOperator.getFunctionName())) {
+      // << reads a name, not an expression: <<Foo`Bar` and <<dir/file.wl are file names
+      String fileName = scanFileName();
+      if (fileName != null) {
+        getNextToken();
+        return F.Get(F.stringx(fileName));
+      }
+    }
     getNextToken();
     final IExpr temp = parseLookaheadOperator(prefixOperator.getPrecedence());
     if (prefixOperator.getFunctionName().equals("PreMinus")) {

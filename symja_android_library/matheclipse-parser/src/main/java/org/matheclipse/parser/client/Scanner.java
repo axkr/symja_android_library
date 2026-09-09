@@ -470,6 +470,72 @@ public abstract class Scanner {
     fToken = TT_EOF;
   }
 
+  /**
+   * The name after <code>&lt;&lt;</code>, read as a name rather than as an expression.
+   *
+   * <p>
+   * <code>&lt;&lt;CoffeeLiqueur`CUSockets`</code> loads a context and <code>&lt;&lt;dir/file.wl</code>
+   * a file; neither is an expression - the backticks would be read as contexts of nothing and the
+   * slashes as division. The Wolfram Language reads everything up to the first space as the name,
+   * and so does this.
+   *
+   * @return the name, or <code>null</code> when what follows is not one (a quoted string, which is
+   *         read as the expression it is)
+   */
+  protected String scanFileName() {
+    int position = fCurrentPosition;
+    while (position < fInputString.length
+        && (fInputString[position] == ' ' || fInputString[position] == '\t')) {
+      position++;
+    }
+    if (position >= fInputString.length || fInputString[position] == '"') {
+      return null;
+    }
+    int start = position;
+    while (position < fInputString.length && isFileNameCharacter(fInputString[position])) {
+      position++;
+    }
+    if (position == start) {
+      return null;
+    }
+    String name = new String(fInputString, start, position - start);
+    fCurrentPosition = position;
+    fCurrentChar = ' ';
+    return name;
+  }
+
+  /**
+   * Is this character part of a file name written without quotes?
+   *
+   * <p>
+   * The Wolfram Language allows letters and digits and the punctuation a path is made of; anything
+   * else ends the name, so <code>&lt;&lt;a+b</code> is <code>Get["a"] + b</code> while
+   * <code>&lt;&lt;dir/file.wl</code> is one name. A name with other characters in it is written in
+   * quotes.
+   */
+  private static boolean isFileNameCharacter(char ch) {
+    if (Character.isLetterOrDigit(ch)) {
+      return true;
+    }
+    switch (ch) {
+      case '`':
+      case '/':
+      case '.':
+      case '\\':
+      case '!':
+      case '-':
+      case '_':
+      case ':':
+      case '$':
+      case '*':
+      case '~':
+      case '?':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   /** Parse a multiline comment <code>(* ... *)</code> */
   private void getComment() {
     int startPosition = fCurrentPosition;
