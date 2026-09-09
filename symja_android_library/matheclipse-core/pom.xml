@@ -182,5 +182,41 @@
 				</excludes>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- WljsRegressionTest is written in Wolfram Language syntax, and that is
+						decided before any Symja class is loaded: ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
+						chooses whether the built-in symbol table is keyed "Join" or "join", and it is
+						built once per JVM. So this one class gets a JVM of its own; the default
+						execution below leaves it out. -->
+						<id>wolfram-language-syntax</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>**/WljsRegressionTest.java</include>
+							</includes>
+							<excludes combine.self="override" />
+							<groups combine.self="override" />
+							<excludedGroups combine.self="override" />
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-test</id>
+						<configuration>
+							<excludes>
+								<exclude>**/WljsRegressionTest.java</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 </project>

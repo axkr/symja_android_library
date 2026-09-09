@@ -58,6 +58,9 @@ public class PredicateQ {
       S.DigitQ.setEvaluator(new DigitQ());
       S.EvenQ.setEvaluator(new EvenQ());
       S.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
+      // $Failed, $Aborted and a Failure[...] object are failures; a Missing[...] is not
+      S.FailureQ.setPredicateQ(
+          x -> x == S.$Failed || x == S.$Aborted || x.isAST(S.Failure));
       S.FreeQ.setEvaluator(new FreeQ());
       S.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
       S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());

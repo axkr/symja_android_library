@@ -411,6 +411,7 @@ public final class FunctionDefinitions {
     ArchiveFunctions.initialize();
     SocketFunctions.initialize();
     DataStructureFunctions.initialize();
+    CompileFunctions.initialize();
     TaskFunctions.initialize();
     CodeParserFunctions.initialize();
     Algebra.initialize();

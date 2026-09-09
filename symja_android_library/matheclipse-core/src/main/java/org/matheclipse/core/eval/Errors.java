@@ -312,6 +312,7 @@ public class Errors {
       "level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
       "levelpad",
       "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
+      "libload", "The function `1` was not loaded from the file `2`.", //
       "lim", "Limit specification `1` is not of the form x->x0.", //
       "limset",
       "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //

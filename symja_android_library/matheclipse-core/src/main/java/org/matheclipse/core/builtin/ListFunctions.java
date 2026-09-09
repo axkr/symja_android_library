@@ -2594,6 +2594,33 @@ public final class ListFunctions {
    * Drop({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
    * </pre>
    */
+  /**
+   * <code>Take</code> and <code>Drop</code> of a byte array: the same positions as of the list of
+   * its bytes, answered as a byte array again.
+   *
+   * <p>
+   * A WebSocket frame is read this way - the header is dropped and the payload is what remains -
+   * so what comes back has to be a byte array, not the list it was worked out on.
+   */
+  private static IExpr byteArrayPart(IAST ast, ByteArrayExpr bytes, EvalEngine engine) {
+    IASTAppendable onList = ast.copyAppendable();
+    onList.set(1, bytes.normal(false));
+    IExpr result = engine.evaluate(onList);
+    if (!result.isList()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) result;
+    byte[] taken = new byte[list.argSize()];
+    for (int i = 1; i < list.size(); i++) {
+      int value = list.get(i).toIntDefault();
+      if (value < 0 || value > 255) {
+        return F.NIL;
+      }
+      taken[i - 1] = (byte) value;
+    }
+    return ByteArrayExpr.newInstance(taken);
+  }
+
   private static final class Drop extends AbstractFunctionEvaluator {
 
     @Override
@@ -2604,6 +2631,10 @@ public final class ListFunctions {
         return onRows;
       }
       final IExpr arg1 = ast.arg1();
+      if (arg1 instanceof ByteArrayExpr) {
+        // bytes are dropped from a byte array and the rest is one again
+        return byteArrayPart(ast, (ByteArrayExpr) arg1, engine);
+      }
       if (!arg1.isASTOrAssociation() && !arg1.isSparseArray()) {
         // Nonatomic expression expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
@@ -7417,6 +7448,10 @@ public final class ListFunctions {
       // evaledAST = ast;
       // }
 
+      if (ast.arg1() instanceof ByteArrayExpr) {
+        // bytes are taken from a byte array and what is taken is one again
+        return byteArrayPart(ast, (ByteArrayExpr) ast.arg1(), engine);
+      }
       try {
         final ISequence[] sequ =
             Sequence.createSequences(ast, 2, ast.size(), "take", S.Take, engine);

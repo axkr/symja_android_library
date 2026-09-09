@@ -1,12 +1,21 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Wolfram Language behaviour that packages rely on and Symja did not have.
@@ -18,35 +27,108 @@ import org.matheclipse.core.basic.Config;
  */
 public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
+  /**
+   * The engine these tests run in: Wolfram Language syntax, where <code>f[x]</code> is a call and
+   * <code>key</code> is not the built-in <code>Key</code>.
+   *
+   * <p>
+   * The rest of the suite runs in Symja's relaxed syntax, which lowercases identifiers and reads
+   * <code>f(x)</code> as a call. The packages these tests come from are Wolfram Language source,
+   * and reading them the relaxed way silently changes what they say.
+   */
+  static {
+    // Before anything of Symja is loaded: the built-in symbol table is keyed by name, and with
+    // Symja's relaxed syntax those keys are lower-cased ("join" for Join). Parsing Wolfram
+    // Language then finds none of them. The flag therefore has to be set before F.await() builds
+    // the table, which is why this class runs in a JVM of its own - see the "wolfram-language-
+    // syntax" surefire execution in the module's pom.
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+  }
+
+  private final ExprEvaluator wolframLanguage;
+
+  public WljsRegressionTest() {
+    EvalEngine engine = new EvalEngine(false);
+    EvalEngine.set(engine);
+    engine.init();
+    engine.setRecursionLimit(512);
+    engine.setIterationLimit(500);
+    engine.setOutListDisabled(false, (short) 10);
+    wolframLanguage = new ExprEvaluator(engine, false, (short) 100);
+  }
+
+  /** Evaluate one input in Wolfram Language syntax and compare what it writes. */
+  @Override
+  public void check(String evalString, String expectedResult) {
+    checkWolframLanguage(evalString, expectedResult, "");
+  }
+
+  /**
+   * As {@link #check(String, String)}; the third argument is the message of the exception the
+   * evaluation is expected to throw, as in {@link ExprEvaluatorTestCase}.
+   */
+  @Override
+  public void check(String evalString, String expectedResult, String strException) {
+    checkWolframLanguage(evalString, expectedResult, strException);
+  }
+
+  private void checkWolframLanguage(String evalString, String expectedResult,
+      String strException) {
+    EvalEngine previous = EvalEngine.get();
+    try {
+      EvalEngine.set(wolframLanguage.getEvalEngine());
+      IExpr result = wolframLanguage.eval(evalString);
+      assertEquals(expectedResult, printWolframLanguage(result));
+    } catch (SyntaxError e) {
+      assertEquals(expectedResult, e.getMessage());
+    } catch (Exception e) {
+      assertEquals(strException, e.getMessage());
+    } finally {
+      EvalEngine.set(previous);
+    }
+  }
+
+  private static String printWolframLanguage(IExpr result) {
+    if (result == S.Null) {
+      return "";
+    }
+    StringWriter buf = new StringWriter();
+    int significantFigures = EvalEngine.get().getSignificantFigures();
+    OutputFormFactory off =
+        OutputFormFactory.get(false, false, significantFigures - 1, significantFigures + 1);
+    off.setGraphicsPlaceholder(true);
+    return off.convert(buf, result) ? buf.toString() : "ERROR-IN-OUTPUTFORM";
+  }
+
   @Test
   public void testTagIsFoundInsideAPattern() {
     // UObject /: MakeBoxes[object : UObject[…], form : StandardForm | TraditionalForm] := …
     // The tag stands under a Pattern, and the rule used to be refused as "tag not found".
-    check("UObject /: MakeBoxes(object : UObject(symbol_Symbol), form : StandardForm | TraditionalForm) := \"boxed\"", //
+    check("UObject /: MakeBoxes[object : UObject[symbol_Symbol], form : StandardForm | TraditionalForm] := \"boxed\"", //
         "");
-    check("MakeBoxes(UObject(x), StandardForm)", //
+    check("MakeBoxes[UObject[x], StandardForm]", //
         "boxed");
     // through a test and a condition as well
-    check("Sock /: listen(socket : Sock(id_Integer) /; True, handler_) := \"listening\"", //
+    check("Sock /: listen[socket : Sock[id_Integer] /; True, handler_] := \"listening\"", //
         "");
-    check("listen(Sock(3), f)", //
+    check("listen[Sock[3], f]", //
         "listening");
     // ...but a tag that is really not there is still an error
-    check("q /: r(s(x_)) := 1", //
+    check("q /: r[s[x_]] := 1", //
         "$Failed");
   }
 
   @Test
   public void testOffAndOnSwitchOneMessage() {
-    check("Part({1, 2}, 5)", //
+    check("Part[{1, 2}, 5]", //
         "{1,2}[[5]]", //
         "Part: Part 5 of {1,2} does not exist.");
-    check("Off(Part::partw)", //
+    check("Off[Part::partw]", //
         "");
     // the message is gone, the value is the same
-    check("Part({1, 2}, 5)", //
+    check("Part[{1, 2}, 5]", //
         "{1,2}[[5]]");
-    check("On(Part::partw)", //
+    check("On[Part::partw]", //
         "");
   }
 
@@ -54,45 +136,45 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testRejoiningAnAbsolutePathKeepsItsRoot() {
     // FileNameSplit["/a/b"] is {"", "a", "b"}: the empty first segment is the root, and dropping
     // it turned every absolute path into a relative one
-    check("FileNameJoin(FileNameSplit(\"/Users/someone/x.wl\"))", //
+    check("FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]]", //
         "/Users/someone/x.wl");
-    check("FileNameJoin({\"\", \"Users\", \"someone\"})", //
+    check("FileNameJoin[{\"\", \"Users\", \"someone\"}]", //
         "/Users/someone");
   }
 
   @Test
   public void testAnEmptyListJoinsWithAnAssociation() {
     // a package joins in what it found, and finding nothing is not an incompatibility
-    check("Join(<|\"a\" -> 1|>, {})", //
+    check("Join[<|\"a\" -> 1|>, {}]", //
         "<|a->1|>");
-    check("Join({}, <|\"a\" -> 1|>)", //
+    check("Join[{}, <|\"a\" -> 1|>]", //
         "<|a->1|>");
-    check("Join(<||>, {})", //
+    check("Join[<||>, {}]", //
         "<||>");
   }
 
   @Test
   public void testReturnCanNameTheConstructItLeaves() {
     // Return[Null, Module] is written by packages
-    check("f(x_) := Module({}, Return(x + 1, Module); 99)", //
+    check("f[x_] := Module[{}, Return[x + 1, Module]; 99]", //
         "");
-    check("f(1)", //
+    check("f[1]", //
         "2");
   }
 
   @Test
   public void testTheDynamicLibraryExtensionIsKnown() {
     // a package that loads a shared library builds the file name from this
-    check("MemberQ({\"so\", \"dylib\", \"dll\"}, Internal`DynamicLibraryExtension())", //
+    check("MemberQ[{\"so\", \"dylib\", \"dll\"}, Internal`DynamicLibraryExtension[]]", //
         "True");
   }
 
   @Test
   public void testNeedsOfASystemContextIsSilent() {
     // the kernel provides these, so there is nothing to read and nothing to complain about
-    check("Needs(\"Parallel`Developer`\")", //
+    check("Needs[\"Parallel`Developer`\"]", //
         "");
-    check("Needs(\"Developer`\")", //
+    check("Needs[\"Developer`\"]", //
         "");
   }
 
@@ -100,11 +182,11 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testLocalisingVariablesAroundAnAssociation() {
     // the module-variable visitor reads an element and writes it back, and an association answers
     // an element with its value - which it then refused to take
-    check("Module({a = <|\"x\" -> 1|>}, <|\"k\" -> a[\"x\"], \"e\" -> True|>)", //
+    check("Module[{a = <|\"x\" -> 1|>}, <|\"k\" -> a[\"x\"], \"e\" -> True|>]", //
         "<|k->1,e->True|>");
-    check("f(assoc_) := Module({b = assoc}, {b[\"n\"] -> Join(<|\"key\" -> b[\"n\"]|>, b)})", //
+    check("f[assoc_] := Module[{b = assoc}, {b[\"n\"] -> Join[<|\"key\" -> b[\"n\"]|>, b]}]", //
         "");
-    check("f(<|\"n\" -> \"v\"|>)", //
+    check("f[<|\"n\" -> \"v\"|>]", //
         "{v-><|key->v,n->v|>}");
   }
   @Test
@@ -112,26 +194,26 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // A rule answers with what it builds from each match rather than with the matched text, and a
     // regular expression's groups are written "$1", "$2", ... anywhere inside it. This is how a
     // template engine reads the attributes out of a tag.
-    check("StringCases(\"<Tag attr=1>\", RegularExpression(\"\\\\<\\\\/?([^\\\\<|\\\\>|\\\\/|\\\\s]*)[^\\\\<|\\\\>]*\\\\>\") -> \"$1\")", //
+    check("StringCases[\"<Tag attr=1>\", RegularExpression[\"\\\\<\\\\/?([^\\\\<|\\\\>|\\\\/|\\\\s]*)[^\\\\<|\\\\>]*\\\\>\"] -> \"$1\"]", //
         "{Tag}");
-    check("StringCases(\"x={a} y={b}\", RegularExpression(\"(\\\\w*)=\\\\{(\\\\w*)\\\\}\") -> (\"$1\" -> \"$2\"))", //
+    check("StringCases[\"x={a} y={b}\", RegularExpression[\"(\\\\w*)=\\\\{(\\\\w*)\\\\}\"] -> (\"$1\" -> \"$2\")]", //
         "{x->a,y->b}");
-    check("StringCases(\"class=\\\"p{q}r\\\"\", RegularExpression(\"([\\\\w|\\\\-]*)=\\\"([^\\\"|=|{|}]*)\\\\{([^{}]*)\\\\}([^\\\"|=|{|}]*)\\\"\") -> (\"$1\" -> {\"$2\", \"$3\", \"$4\"}))", //
+    check("StringCases[\"class=\\\"p{q}r\\\"\", RegularExpression[\"([\\\\w|\\\\-]*)=\\\"([^\\\"|=|{|}]*)\\\\{([^{}]*)\\\\}([^\\\"|=|{|}]*)\\\"\"] -> (\"$1\" -> {\"$2\", \"$3\", \"$4\"})]", //
         "{class->{p,q,r}}");
     // $0 is the whole match and $$ a literal dollar
-    check("StringCases(\"ab\", RegularExpression(\"(a)(b)\") -> \"$0|$$|$2\")", //
+    check("StringCases[\"ab\", RegularExpression[\"(a)(b)\"] -> \"$0|$$|$2\"]", //
         "{ab|$|b}");
     // the delayed form evaluates the right hand side once per match
-    check("StringCases(\"a1b2\", RegularExpression(\"([a-z])(\\\\d)\") :> StringJoin(\"$2\", \"$1\"))", //
+    check("StringCases[\"a1b2\", RegularExpression[\"([a-z])(\\\\d)\"] :> StringJoin[\"$2\", \"$1\"]]", //
         "{1a,2b}");
     // a pattern written in the language names its parts with symbols instead
-    check("StringCases(\"the cat\", \"c\" ~~ x__ -> x)", //
+    check("StringCases[\"the cat\", \"c\" ~~ x__ -> x]", //
         "{at}");
     // no match, no results
-    check("StringCases(\"nothing here\", RegularExpression(\"(z)(q)\") -> \"$1\")", //
+    check("StringCases[\"nothing here\", RegularExpression[\"(z)(q)\"] -> \"$1\"]", //
         "{}");
     // and the pattern itself is evaluated, so a regular expression may be built
-    check("innerPart = \"[a-z]+\"; StringCases(\"k={vv}\", RegularExpression(\"(\\\\w*)=\\\\{(\" <> innerPart <> \")\\\\}\") -> (\"$1\" -> \"$2\"))", //
+    check("innerPart = \"[a-z]+\"; StringCases[\"k={vv}\", RegularExpression[\"(\\\\w*)=\\\\{(\" <> innerPart <> \")\\\\}\"] -> (\"$1\" -> \"$2\")]", //
         "{k->vv}");
   }
   @Test
@@ -140,12 +222,12 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // f[Sequence[a, b]] where f[a, b] was meant. Evaluation would flatten that, but a substitution
     // into a held expression is never evaluated - and {v} in Module[{v}, …] has to be the list of
     // names by the time Module sees it.
-    check("f({a, b, c}) /. _({v__}) :> Hold(Module({v}, 1))", //
-        "Hold(Module({a,b,c},1))");
-    check("f({a, b}) /. _({v__}) :> Hold(g(v, 1))", //
-        "Hold(g(a,b,1))");
-    check("{{a, b}} /. {{v__}} :> Hold({v, x})", //
-        "Hold({a,b,x})");
+    check("f[{a, b, c}] /. _[{v__}] :> Hold[Module[{v}, 1]]", //
+        "Hold[Module[{a,b,c},1]]");
+    check("f[{a, b}] /. _[{v__}] :> Hold[g[v, 1]]", //
+        "Hold[g[a,b,1]]");
+    check("{{a, b}} /. {{v__}} :> Hold[{v, x}]", //
+        "Hold[{a,b,x}]");
   }
 
   @Test
@@ -156,17 +238,17 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // empty one replaced the one holding the values. Everything assigned to it beforehand was
     // then unreachable by name.
     Path file = directory.resolve("Inner.wl");
-    Files.write(file, ("BeginPackage(\"Inner`\")\n" //
-        + "Begin(\"`Private`\")\n" //
+    Files.write(file, ("BeginPackage[\"Inner`\"]\n" //
+        + "Begin[\"`Private`\"]\n" //
         + "seen := Other`shared\n" //
-        + "End()\n" //
-        + "EndPackage()\n").getBytes(StandardCharsets.UTF_8));
+        + "End[]\n" //
+        + "EndPackage[]\n").getBytes(StandardCharsets.UTF_8));
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
       check("Other`shared = {1, 2}", //
           "{1,2}");
-      check("Get(\"" + file.toString().replace("\\", "\\\\") + "\")", //
+      check("Get[\"" + file.toString().replace("\\", "\\\\") + "\"]", //
           "");
       // the value is still there, and the package sees the same symbol
       check("Other`shared", //
@@ -183,17 +265,17 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // Hold[Alert][[1, 0]] asks whether the name a template collected stands for a symbol or for a
     // call. Part refused it because part 1 is an atom, so every WLX page localised its variables
     // as Extract[…] expressions instead of as symbols and no page rendered.
-    check("Hold(Alert)[[1, 0]]", //
+    check("Hold[Alert][[1, 0]]", //
         "Symbol");
-    check("Extract(Hold(Alert), {1, 0}, Hold)", //
-        "Hold(Symbol)");
-    check("Extract(Hold(f(x)), {1, 0}, Hold)", //
-        "Hold(f)");
-    check("Hold(\"text\")[[1, 0]]", //
+    check("Extract[Hold[Alert], {1, 0}, Hold]", //
+        "Hold[Symbol]");
+    check("Extract[Hold[f[x]], {1, 0}, Hold]", //
+        "Hold[f]");
+    check("Hold[\"text\"][[1, 0]]", //
         "String");
     // and a position that is not the head is still an error
-    check("Hold(Alert)[[1, 2]]", //
-        "Hold(alert)[[1,2]]", //
+    check("Hold[Alert][[1, 2]]", //
+        "Hold[Alert][[1,2]]", //
         "Part: Part specification alert is longer than depth of object.");
   }
 
@@ -204,22 +286,22 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // parser still counted itself as inside the association, so the newline was swallowed and the
     // next definition in the file was multiplied onto the association.
     Path file = directory.resolve("Assoc.wl");
-    Files.write(file, ("packet(x_) :=\n" //
+    Files.write(file, ("packet[x_] :=\n" //
         + "  <|\n" //
         + "    \"a\" -> x\n" //
         + "  |>\n" //
         + "\n" //
-        + "packet(x_, y_) := {x, y}\n").getBytes(StandardCharsets.UTF_8));
+        + "packet[x_, y_] := {x, y}\n").getBytes(StandardCharsets.UTF_8));
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
-      check("Get(\"" + file.toString().replace("\\", "\\\\") + "\")", //
+      check("Get[\"" + file.toString().replace("\\", "\\\\") + "\"]", //
           "");
-      check("Length(DownValues(packet))", //
+      check("Length[DownValues[packet]]", //
           "2");
-      check("packet(1)", //
+      check("packet[1]", //
           "<|a->1|>");
-      check("packet(1, 2)", //
+      check("packet[1, 2]", //
           "{1,2}");
     } finally {
       Config.FILESYSTEM_ENABLED = fileSystem;
@@ -234,27 +316,27 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // and called with two arguments as often as with four. Which optional a supplied argument
     // belongs to is not settled by counting: an argument skips over an optional whose pattern it
     // does not fit.
-    check("utq(x_) := x === UObj", //
+    check("utq[x_] := x === UObj", //
         "");
-    check("cut(t_Symbol, p:_Symbol?utq:UObj, i:_Symbol|_Function:Auto, f_List:{}) := {t,p,i,f}", //
+    check("cut[t_Symbol, p:_Symbol?utq:UObj, i:_Symbol|_Function:Auto, f_List:{}] := {t,p,i,f}", //
         "");
-    check("cut(T, {1})", //
-        "{T,uobj,auto,{1}}");
-    check("cut(T, UObj, {1})", //
-        "{T,uobj,auto,{1}}");
-    check("cut(T, ini, {1})", //
-        "{T,uobj,ini,{1}}");
-    check("cut(T, UObj, ini, {1})", //
-        "{T,uobj,ini,{1}}");
+    check("cut[T, {1}]", //
+        "{T,UObj,Auto,{1}}");
+    check("cut[T, UObj, {1}]", //
+        "{T,UObj,Auto,{1}}");
+    check("cut[T, ini, {1}]", //
+        "{T,UObj,ini,{1}}");
+    check("cut[T, UObj, ini, {1}]", //
+        "{T,UObj,ini,{1}}");
   }
 
   @Test
   public void testASuppliedArgumentStillFillsTheEarliestSlot() {
     // the search above must not disturb the ordinary reading: one argument for two optionals
     // belongs to the first of them
-    check("g(a_:1, b_:2) := {a, b}", //
+    check("g[a_:1, b_:2] := {a, b}", //
         "");
-    check("{g(9), g(), g(8, 7)}", //
+    check("{g[9], g[], g[8, 7]}", //
         "{{9,2},{1,2},{8,7}}");
   }
 
@@ -267,7 +349,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     try {
       Config.FILESYSTEM_ENABLED = true;
       check(
-          "BaseEncode(Hash(\"dGhlIHNhbXBsZSBub25jZQ==\" <> \"258EAFA5-E914-47DA-95CA-C5AB0DC85B11\", \"SHA1\", \"ByteArray\"), \"Base64\")", //
+          "BaseEncode[Hash[\"dGhlIHNhbXBsZSBub25jZQ==\" <> \"258EAFA5-E914-47DA-95CA-C5AB0DC85B11\", \"SHA1\", \"ByteArray\"], \"Base64\"]", //
           "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
     } finally {
       Config.FILESYSTEM_ENABLED = fileSystem;
@@ -279,16 +361,16 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     try {
       Config.FILESYSTEM_ENABLED = true;
-      check("Hash(\"abc\", \"SHA256\", \"HexString\")", //
+      check("Hash[\"abc\", \"SHA256\", \"HexString\"]", //
           "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
       // a digest which begins with a zero byte keeps its width as a string, and its bytes
-      check("Hash(\"abc\", \"SHA1\", \"HexString\")", //
+      check("Hash[\"abc\", \"SHA1\", \"HexString\"]", //
           "a9993e364706816aba3e25717850c26c9cd0d89d");
-      check("StringLength(Hash(\"abc\", \"MD5\", \"DecimalString\"))", //
+      check("StringLength[Hash[\"abc\", \"MD5\", \"DecimalString\"]]", //
           "39");
-      check("Normal(Hash(\"abc\", \"SHA1\", \"ByteArray\")) // Length", //
+      check("Normal[Hash[\"abc\", \"SHA1\", \"ByteArray\"]] // Length", //
           "20");
-      check("Hash(\"abc\", \"SHA1\") === Hash(\"abc\", \"SHA\")", //
+      check("Hash[\"abc\", \"SHA1\"] === Hash[\"abc\", \"SHA\"]", //
           "True");
     } finally {
       Config.FILESYSTEM_ENABLED = fileSystem;
@@ -297,11 +379,11 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBaseEncodeNamesItsEncoding() {
-    check("BaseEncode(ByteArray({1, 2, 3}), \"Base16\")", //
+    check("BaseEncode[ByteArray[{1, 2, 3}], \"Base16\"]", //
         "010203");
-    check("Normal(BaseDecode(\"AQID\", \"Base64\"))", //
+    check("Normal[BaseDecode[\"AQID\", \"Base64\"]]", //
         "{1,2,3}");
-    check("Normal(BaseDecode(BaseEncode(ByteArray({0, 1, 255}))))", //
+    check("Normal[BaseDecode[BaseEncode[ByteArray[{0, 1, 255}]]]]", //
         "{0,1,255}");
   }
 
@@ -310,38 +392,85 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // WLJS buffers a half-arrived request in a DynamicArray and remembers its clients in a
     // HashSet; both are filled by one evaluation and read by the next, so the container the
     // second one holds has to be the very container the first one changed.
-    check("d = CreateDataStructure(\"DynamicArray\", {1, 2})", //
+    check("d = CreateDataStructure[\"DynamicArray\", {1, 2}]", //
         "DataStructure[DynamicArray, <2>]");
-    check("DataStructureQ(d)", //
+    check("DataStructureQ[d]", //
         "True");
-    check("d(\"Append\", 3); d(\"Elements\")", //
+    check("d[\"Append\", 3]; d[\"Elements\"]", //
         "{1,2,3}");
-    check("d(\"Part\", -1)", //
+    check("d[\"Part\", -1]", //
         "3");
-    check("e = d; e(\"Append\", 4); d(\"Length\")", //
+    check("e = d; e[\"Append\", 4]; d[\"Length\"]", //
         "4");
-    check("d(\"DropAll\"); d(\"Length\")", //
+    check("d[\"DropAll\"]; d[\"Length\"]", //
         "0");
     // a pattern reaches it by head, the way saveFrameToBuffer[buffer_DataStructure, …] does
-    check("f(b_DataStructure) := b(\"Length\")", //
+    check("f[b_DataStructure] := b[\"Length\"]", //
         "");
-    check("f(d)", //
+    check("f[d]", //
         "0");
   }
 
   @Test
   public void testHashSetAndHashTableMethods() {
-    check("s = CreateDataStructure(\"HashSet\")", //
+    check("s = CreateDataStructure[\"HashSet\"]", //
         "DataStructure[HashSet, <0>]");
-    check("{s(\"Insert\", x), s(\"MemberQ\", x), s(\"MemberQ\", y)}", //
+    check("{s[\"Insert\", x], s[\"MemberQ\", x], s[\"MemberQ\", y]}", //
         "{True,True,False}");
-    check("{s(\"Remove\", x), s(\"MemberQ\", x), s(\"Elements\")}", //
+    check("{s[\"Remove\", x], s[\"MemberQ\", x], s[\"Elements\"]}", //
         "{True,False,{}}");
-    check("h = CreateDataStructure(\"HashTable\")", //
+    check("h = CreateDataStructure[\"HashTable\"]", //
         "DataStructure[HashTable, <0>]");
-    check("h(\"Insert\", 1 -> a); {h(\"KeyExistsQ\", 1), h(\"Lookup\", 1), h(\"KeyExistsQ\", 2)}", //
+    check("h[\"Insert\", 1 -> a]; {h[\"KeyExistsQ\", 1], h[\"Lookup\", 1], h[\"KeyExistsQ\", 2]}", //
         "{True,a,False}");
-    check("CreateDataStructure(\"Nope\")", //
-        "CreateDataStructure(Nope)");
+    check("CreateDataStructure[\"Nope\"]", //
+        "CreateDataStructure[Nope]");
+  }
+
+  @Test
+  public void testAnUnloadableLibraryFallsBackToWolframLanguage() {
+    // Packages/Internal/Kernel/byteMask.wl is
+    //   If[FailureQ[f = LibraryFunctionLoad[…]], f = Compile[…], f]
+    // and unmasks every WebSocket frame the browser sends. Symja has no LibraryLink, so the
+    // fallback is the only branch there is - which needs LibraryFunctionLoad to fail, FailureQ
+    // to see that it did, and Compile to hold its body until it has arguments.
+    boolean fileSystem = Config.FILESYSTEM_ENABLED;
+    try {
+      Config.FILESYSTEM_ENABLED = true;
+      check("FailureQ[LibraryFunctionLoad[File[\"/no/such/library\"], \"f\", {}, \"ByteArray\"]]", //
+          "True");
+    } finally {
+      Config.FILESYSTEM_ENABLED = fileSystem;
+    }
+    check("{FailureQ[$Failed], FailureQ[$Aborted], FailureQ[Failure[\"x\", <|\"a\" -> 1|>]]}", //
+        "{True,True,True}");
+    // a Missing is not a failure
+    check("{FailureQ[Missing[\"KeyAbsent\", k]], FailureQ[3], FailureQ[f[x]]}", //
+        "{False,False,False}");
+  }
+
+  @Test
+  public void testAnUncompiledCompileHoldsItsBodyAndStillApplies() {
+    // without matheclipse-compile on the class path Compile does not compile - but evaluating
+    // the body before the parameters have values turns it into nonsense which is then kept:
+    // Table[…, {i, 1, Length[payload]}] with a symbolic payload is {}
+    check("c = Compile[{{key, _Integer, 1}, {payload, _Integer, 1}}, "
+        + "Table[BitXor[payload[[i]], key[[Mod[i - 1, 4] + 1]]], {i, 1, Length[payload]}]]; Head[c]", //
+        "Compile");
+    check("c[{1, 2, 3, 4}, {10, 20, 30, 40, 50}]", //
+        "{11,22,29,44,51}");
+    check("d = Compile[{x}, x^2 + 1]; d[3]", //
+        "10");
+  }
+
+  @Test
+  public void testTakeAndDropOfAByteArray() {
+    // a frame is read by dropping its header and taking its payload
+    check("Normal[Drop[ByteArray[{1, 2, 3, 4, 5}], 2]]", //
+        "{3,4,5}");
+    check("Normal[Take[ByteArray[{1, 2, 3, 4, 5}], 2]]", //
+        "{1,2}");
+    check("Head[Drop[ByteArray[{1, 2, 3, 4, 5}], 2]]", //
+        "ByteArray");
   }
 }
