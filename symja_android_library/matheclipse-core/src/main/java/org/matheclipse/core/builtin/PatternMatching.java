@@ -1670,7 +1670,10 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
+      // ReleaseHold holds nothing of its own: what is handed to it is evaluated first, so that
+      // `held = Hold[expr]; ReleaseHold[held]` releases what the variable stands for. Reading the
+      // argument unevaluated made it answer the variable itself.
+      final IExpr arg1 = engine.evaluate(ast.arg1());
       return F.subst(arg1, ReleaseHold::releaseHold);
     }
 

@@ -2251,20 +2251,24 @@ public final class StringFunctions {
         final EvalEngine engine) {
 
       Matcher matcher = pattern.matcher(str);
-      if (!ruleRHS.isString() && namedRegexGroups.size() > 0 && matcher.find()) {
+      if (ruleRHS.isString()) {
+        // a string right-hand side: `$1` … `$9` in it are what the match captured, which is what
+        // the matcher itself does
+        return matcher.replaceAll(engine.evaluate(ruleRHS).toString());
+      }
+      if (matcher.find()) {
         StringBuffer buf = new StringBuffer(str.length() + 16);
         do {
-          IExpr replacedRHS = ruleRHS;
-          replacedRHS = replaceGroups(replacedRHS, matcher, namedRegexGroups);
-          IExpr temp = engine.evaluate(replacedRHS);
-          matcher.appendReplacement(buf, temp.toString());
+          // what the match captured goes into the right-hand side *before* it is evaluated, so
+          // that the expression can look at it - `If[StringLength["$2"] === 0, …]` asks whether a
+          // group took part, and reading `$2` afterwards would only ever see the two characters
+          IExpr temp = engine.evaluate(substituteMatchedGroups(ruleRHS, matcher, namedRegexGroups));
+          matcher.appendReplacement(buf, Matcher.quoteReplacement(temp.toString()));
         } while (matcher.find());
         matcher.appendTail(buf);
         return buf.toString();
       }
-
-      IExpr temp = engine.evaluate(ruleRHS);
-      return pattern.matcher(str).replaceAll(temp.toString());
+      return str;
     }
 
     /**
@@ -2281,24 +2285,21 @@ public final class StringFunctions {
         final EvalEngine engine) {
 
       Matcher matcher = pattern.matcher(str);
-      if (!ruleRHS.isString() && namedRegexGroups.size() > 0 && matcher.find()) {
+      if (matcher.find()) {
         StringBuffer buf = new StringBuffer(str.length() + 16);
         do {
-          IExpr replacedTest = conditionTest;
-          replacedTest = replaceGroups(replacedTest, matcher, namedRegexGroups);
-          if (engine.evalTrue(replacedTest)) {
-            IExpr replacedRHS = ruleRHS;
-            replacedRHS = replaceGroups(replacedRHS, matcher, namedRegexGroups);
-            IExpr temp = engine.evaluate(replacedRHS);
-            matcher.appendReplacement(buf, temp.toString());
+          // the condition sees what the match captured, as the replacement does
+          if (engine.evalTrue(substituteMatchedGroups(conditionTest, matcher, namedRegexGroups))) {
+            IExpr temp =
+                engine.evaluate(substituteMatchedGroups(ruleRHS, matcher, namedRegexGroups));
+            matcher.appendReplacement(buf,
+                ruleRHS.isString() ? temp.toString() : Matcher.quoteReplacement(temp.toString()));
           }
         } while (matcher.find());
         matcher.appendTail(buf);
         return buf.toString();
       }
-
-      IExpr temp = engine.evaluate(ruleRHS);
-      return pattern.matcher(str).replaceAll(temp.toString());
+      return str;
     }
 
     @Override

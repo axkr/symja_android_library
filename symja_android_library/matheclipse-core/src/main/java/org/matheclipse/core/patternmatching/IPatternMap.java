@@ -3351,16 +3351,26 @@ public interface IPatternMap {
             }
           }
         }
+        if (quiet) {
+          // Substituting the right-hand side of a rule: only the options of *that* rule count, and
+          // a fresh frame for it is the innermost one. An OptionValue further out belongs to
+          // whatever happens to be running - reading it here would write a foreign option's name
+          // into an expression which is only being carried along.
+          break;
+        }
       }
-      if (optionsPattern == null && insideOptionsPattern) {
+      if (optionsPattern == null && insideOptionsPattern && !quiet) {
         // An option which is neither supplied nor a default answers its own name, as in the
         // Wolfram Language. Leaving OptionValue[name] unevaluated instead let it be handed on as
         // the *value* of an option, and the next lookup then found itself: the two of them never
         // came to a stop.
-        if (!quiet) {
-          // Option name `2` not found in defaults for `1`
-          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
-        }
+        //
+        // Only when this is a real evaluation. Substituting the right-hand side of a rule resolves
+        // the OptionValue calls in it quietly, and one which belongs to a definition merely being
+        // carried along has to be left exactly as it stands - answering the name there would write
+        // the name into the definition.
+        // Option name `2` not found in defaults for `1`
+        Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
         return optionValue;
       }
       // return arg1;
