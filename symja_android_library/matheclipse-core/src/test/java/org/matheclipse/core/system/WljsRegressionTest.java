@@ -787,6 +787,22 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * <code>EchoLabel(label)[expr]</code> says where a line of output came from, and is
+   * <code>Echo(expr, label)</code>. The notebook's master kernel labels what its evaluation kernel
+   * prints with it, so left unevaluated it took the message with it and the kernel's output was
+   * lost on the way to the console.
+   */
+  @Test
+  public void testEchoLabelSaysWhereOutputCameFrom() {
+    check("EchoLabel[\"KernelPrint\"][\"hello\"]", //
+        "hello", //
+        "KernelPrinthello");
+    // the plain head is left alone, as an operator form waiting for its argument
+    check("Head[EchoLabel[\"KernelPrint\"]]", //
+        "EchoLabel");
+  }
+
+  /**
    * A name which stood for one argument keeps standing for one, even when the argument it was
    * matched with is itself a <code>Sequence</code>. Only <code>x__</code> and <code>x___</code> are
    * spread into the expression they are substituted into.

@@ -33,6 +33,7 @@ public class IOFunctions {
     private static void init() {
       // S.General.setEvaluator(new General());
       S.Echo.setEvaluator(new Echo());
+      S.EchoLabel.setEvaluator(new EchoLabel());
       S.EchoFunction.setEvaluator(new EchoFunction());
       S.Message.setEvaluator(new Message());
       S.Messages.setEvaluator(new Messages());
@@ -206,6 +207,32 @@ public class IOFunctions {
    * </code>
    * </pre>
    */
+  /**
+   * <code>EchoLabel(label)[expr]</code> - print <code>expr</code> with a label in front of it and
+   * return it.
+   *
+   * <p>
+   * The same as <code>Echo(expr, label)</code>, which is what it is answered with. A notebook uses
+   * it to say where a line of output came from - WLJS labels what the evaluation kernel prints
+   * with <code>EchoLabel["KernelPrint"]</code> before showing it - and left unevaluated it takes
+   * the message with it.
+   */
+  private static final class EchoLabel extends Print {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST1() && ast.head().isAST1()) {
+        return F.binaryAST2(S.Echo, ast.arg1(), ast.head().first());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // the third element is what lets the head be EchoLabel[label] rather than the symbol itself
+      return ARGS_0_1_0;
+    }
+  }
+
   private static final class EchoFunction extends Print {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
