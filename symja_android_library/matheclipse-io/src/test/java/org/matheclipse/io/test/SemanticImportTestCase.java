@@ -292,12 +292,13 @@ public class SemanticImportTestCase extends AbstractTestCase {
             " Market_Share  |  4  |");
     // print: "Dataset: Column Invalid is not present in table"
     check("ds(Select(#Invalid < 13000 &) ,All)", //
-        "                                                                   \n" //
-            + " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\n" //
-            + "-------------------------------------------------------------------\n" //
-            + "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\n" //
-            + "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\n" //
-            + "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |[Select(#Invalid<13000&),All]");
+        "                                                                   \r\n"//
+            + " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n"//
+            + "-------------------------------------------------------------------\r\n"//
+            + "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n"//
+            + "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n"//
+            + "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |[Select(#Invalid<13000&),All]"//
+            + "");
     check("ds(All, \"Sales\") // Normal", //
         "{12200,5500,60000}");
 
