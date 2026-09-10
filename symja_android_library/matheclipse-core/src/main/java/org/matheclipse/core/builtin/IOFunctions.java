@@ -1,6 +1,9 @@
 package org.matheclipse.core.builtin;
 
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
+import java.io.IOException;
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -11,6 +14,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.OutputStreamExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
@@ -131,7 +135,7 @@ public class IOFunctions {
       } else {
         printExpression(result, out, buf, convert, engine);
       }
-      stream.println(buf.toString());
+      printLine(stream, buf.toString(), engine);
       return result;
     }
 
@@ -436,11 +440,54 @@ public class IOFunctions {
         printExpression(temp, out, buf, convert, engine);
       });
       if (!convert[0]) {
-        stream.println("ERROR-IN-OUTPUTFORM");
+        printLine(stream, "ERROR-IN-OUTPUTFORM", engine);
         return S.Null;
       }
-      stream.println(buf.toString());
+      printLine(stream, buf.toString(), engine);
       return S.Null;
+    }
+
+    /**
+     * Write one line of output where <code>$Output</code> says it goes.
+     *
+     * <p>
+     * <code>$Output</code> is the list of streams a print goes to. Where it names none - which is
+     * how a session starts - the engine's own print stream is used, so a console, a servlet and a
+     * kernel driven over a link each keep the output they had. Where it names some, a package has
+     * said where its output belongs: the WLJS notebook puts a stream there whose writes send what
+     * the kernel prints to the cell it is printing from.
+     */
+    protected static void printLine(PrintStream stream, String line, EvalEngine engine) {
+      IExpr output = S.$Output.assignedValue();
+      if (output != null) {
+        output = engine.evaluate(output);
+        if (output.isList() && !output.isEmpty()) {
+          IAST streams = (IAST) output;
+          boolean written = false;
+          for (int i = 1; i < streams.size(); i++) {
+            IExpr each = streams.get(i);
+            if (each instanceof OutputStreamExpr) {
+              write((OutputStreamExpr) each, line);
+              written = true;
+            }
+          }
+          if (written) {
+            return;
+          }
+        }
+      }
+      stream.println(line);
+    }
+
+    /** The line and a newline, flushed - a print is a whole line, and the stream is told so. */
+    private static void write(OutputStreamExpr stream, String line) {
+      try {
+        OutputStream out = stream.toData();
+        out.write((line + "\n").getBytes(StandardCharsets.UTF_8));
+        out.flush();
+      } catch (IOException ioe) {
+        Errors.printMessage(S.Print, ioe);
+      }
     }
 
     protected static void printExpression(IExpr x, OutputFormFactory out, final StringBuilder buf,

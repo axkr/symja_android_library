@@ -198,6 +198,15 @@ public class S {
       S.initFinalSymbol("$MessageList", ID.$MessageList);
 
   /**
+   * $Messages(x) - TODO describe `$Messages`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Messages.md">$Messages
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $Messages = S.initFinalSymbol("$Messages", ID.$Messages);
+
+  /**
    * $MinMachineNumber - return the smallest positive normal Java `double` value
    * (`Double.MIN_NORMAL` approx. 2.2250738585072014*^308)
    * 
@@ -220,6 +229,15 @@ public class S {
    */
   public final static IBuiltInSymbol $OperatingSystem =
       S.initFinalSymbol("$OperatingSystem", ID.$OperatingSystem);
+
+  /**
+   * $Output(x) - TODO describe `$Output`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Output.md">$Output
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $Output = S.initFinalSymbol("$Output", ID.$Output);
 
   public final static IBuiltInSymbol $OutputSizeLimit =
       S.initFinalSymbol("$OutputSizeLimit", ID.$OutputSizeLimit);
@@ -5335,6 +5353,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Defer = S.initFinalSymbol("Defer", ID.Defer);
+
+  /**
+   * DefineOutputStreamMethod(x) - TODO describe `DefineOutputStreamMethod`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DefineOutputStreamMethod.md">DefineOutputStreamMethod
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DefineOutputStreamMethod =
+      S.initFinalSymbol("DefineOutputStreamMethod", ID.DefineOutputStreamMethod);
 
   /**
    * Definition(symbol) - prints values and rules associated with `symbol`.

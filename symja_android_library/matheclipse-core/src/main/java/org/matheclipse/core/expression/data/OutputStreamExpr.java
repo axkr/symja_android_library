@@ -67,6 +67,16 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
   }
 
   /**
+   * Wrap a stream this class did not open.
+   *
+   * @param stream where the bytes go
+   * @param streamName what the stream answers to <code>Streams</code> and prints as
+   */
+  public static OutputStreamExpr newInstance(final OutputStream stream, String streamName) {
+    return new OutputStreamExpr(stream, streamName);
+  }
+
+  /**
    * The process's own standard output, as a stream a program can write to by name.
    *
    * <p>

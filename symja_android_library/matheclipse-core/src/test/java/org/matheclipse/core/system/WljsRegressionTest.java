@@ -787,6 +787,54 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * A stream whose behaviour is written in the Wolfram Language: <code>DefineOutputStreamMethod</code>
+   * names the functions, <code>OpenWrite[Method -> name]</code> opens one, and
+   * <code>$Output</code> is the list of streams a print goes to.
+   *
+   * <p>
+   * That is how a front end puts what a kernel prints where it belongs. The WLJS notebook opens
+   * such a stream and sends every printed line to the cell that is printing, so without the three
+   * of them a Print in a cell went to a console nobody was looking at.
+   */
+  @Test
+  public void testAPrintGoesWhereOutputSaysItGoes() {
+    check("collected = {}", //
+        "{}");
+    check("DefineOutputStreamMethod[\"CollectForTest\", {"
+        + "\"ConstructorFunction\" -> Function[{name, isAppend, caller, opts}, {True, <|\"n\" -> 0|>}], "
+        + "\"WriteFunction\" -> Function[{state, bytes}, "
+        + "collected = Append[collected, FromCharacterCode[bytes]]; {Length[bytes], state}], "
+        + "\"CloseFunction\" -> Function[state, closedWith = state]}]", //
+        "CollectForTest");
+    check("stream = OpenWrite[Method -> \"CollectForTest\"]; Head[stream]", //
+        "OutputStream");
+    // with $Output naming it, a print is handed to the method rather than to the console
+    check("$Output = {stream}; Print[\"hi\"]; Print[2^10]; $Output = {}; collected", //
+        "{hi\n,1024\n}");
+    // and the close is given the state the constructor made
+    check("Close[stream]; closedWith", //
+        "<|n->0|>");
+    // an output which names no stream leaves printing as it was
+    check("$Output = {}; Print[\"plain\"]", //
+        "", //
+        "plain");
+  }
+
+  /**
+   * <code>ToCharacterCode[string, encoding]</code> names the encoding the codes are read in. Symja
+   * holds a string as Java does, so the codes are the same whichever name is given - but refusing
+   * the second argument made the call an error, and the notebook's own way of turning a printed
+   * line back into characters got none.
+   */
+  @Test
+  public void testToCharacterCodeAcceptsAnEncoding() {
+    check("ToCharacterCode[\"ab\"]", //
+        "{97,98}");
+    check("ToCharacterCode[\"ab\", \"UTF8\"]", //
+        "{97,98}");
+  }
+
+  /**
    * <code>EchoLabel(label)[expr]</code> says where a line of output came from, and is
    * <code>Echo(expr, label)</code>. The notebook's master kernel labels what its evaluation kernel
    * prints with it, so left unevaluated it took the message with it and the kernel's output was

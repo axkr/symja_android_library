@@ -3424,7 +3424,11 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      // ToCharacterCode[string, encoding] names the encoding the codes are read in. Symja holds a
+      // string as Java does, so the codes are the same whichever name is given and the second
+      // argument changes nothing - but refusing it made the call an error, and a package which
+      // spells the encoding out got no codes at all
+      return ARGS_1_2;
     }
   }
 

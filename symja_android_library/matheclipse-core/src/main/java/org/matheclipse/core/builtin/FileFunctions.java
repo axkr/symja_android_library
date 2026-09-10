@@ -67,6 +67,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.FileSandbox;
+import org.matheclipse.core.io.OutputStreamMethods;
 import org.matheclipse.core.io.paclet.PackageResolver;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -104,7 +105,8 @@ public class FileFunctions {
         S.Needs.setEvaluator(new Needs());
         S.OpenAppend.setEvaluator(new OpenAppend());
         S.OpenRead.setEvaluator(new OpenRead());
-        S.OpenWrite.setEvaluator(new OpenWrite());
+        S.DefineOutputStreamMethod.setEvaluator(new DefineOutputStreamMethod());
+      S.OpenWrite.setEvaluator(new OpenWrite());
         S.OutputStream.setEvaluator(new OutputStream());
         S.Put.setEvaluator(new Put());
         S.Read.setEvaluator(new Read());
@@ -1000,6 +1002,49 @@ public class FileFunctions {
    *
    * @return the name, or {@link F#NIL} when the call names none
    */
+  /**
+   * <code>DefineOutputStreamMethod(name, {"ConstructorFunction" -> …, "WriteFunction" -> …, …})</code>
+   * - name a kind of output stream whose behaviour is written in the Wolfram Language.
+   *
+   * <p>
+   * <code>OpenWrite(Method -> name)</code> then opens one. See
+   * {@link org.matheclipse.core.io.OutputStreamMethods}.
+   */
+  private static final class DefineOutputStreamMethod extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr name = ast.arg1();
+      if (!name.isString()) {
+        // String expected at position `1` in `2`.
+        return Errors.printMessage(S.DefineOutputStreamMethod, "string", F.List(F.C1, ast), engine);
+      }
+      IExpr definitions = ast.arg2();
+      if (!definitions.isList()) {
+        // List expected at position `1` in `2`.
+        return Errors.printMessage(S.DefineOutputStreamMethod, "list", F.List(F.C2, ast), engine);
+      }
+      OutputStreamMethods.define(name.toString(), (IAST) definitions);
+      return name;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /** The <code>Method</code> option of a stream-opening call, or {@link F#NIL}. */
+  private static IExpr streamMethod(final IAST ast) {
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      if (argument.isRuleAST() && argument.first() == S.Method && argument.second().isString()) {
+        return argument.second();
+      }
+    }
+    return F.NIL;
+  }
+
   private static IExpr streamName(final IAST ast) {
     for (int i = 1; i < ast.size(); i++) {
       IExpr argument = ast.get(i);
@@ -1055,6 +1100,21 @@ public class FileFunctions {
      * @return
      */
     protected IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
+      IExpr method = streamMethod(ast);
+      if (method.isPresent()) {
+        // a stream of a kind somebody defined: where its bytes go is that definition's business,
+        // and no file is opened, so this is outside the file system's gate
+        IExpr name = streamName(ast);
+        OutputStreamMethods.MethodOutputStream stream = OutputStreamMethods.MethodOutputStream.open(
+            method.toString(), name.isPresent() ? name : F.CEmptyString, append,
+            append ? S.OpenAppend : S.OpenWrite, F.List(), engine);
+        if (stream == null) {
+          // Cannot open `1`.
+          return Errors.printMessage(append ? S.OpenAppend : S.OpenWrite, "noopen", F.list(method),
+              engine);
+        }
+        return OutputStreamExpr.newInstance(stream, method.toString());
+      }
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IExpr name = streamName(ast);
