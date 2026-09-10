@@ -579,10 +579,16 @@ public class ConstantDefinitions {
     }
   }
 
-  private static class $Path extends AbstractSymbolEvaluator {
+  private static class $Path extends AbstractSymbolEvaluator implements ISetValueEvaluator {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      IExpr assigned = symbol.assignedValue();
+      if (assigned != null && assigned.isList()) {
+        // AppendTo[$Path, dir] is how a program adds a package directory - the WLJS kernel adds
+        // the notebook's shared directory that way at every launch
+        return assigned;
+      }
       // The directories Get and Needs search for a package - as in the Wolfram Language, a
       // list of directories. This used to return the operating system's PATH variable, which
       // is the search path for executables and has nothing to do with packages.
@@ -594,6 +600,15 @@ public class ConstantDefinitions {
         list.append(F.stringx(directory.toString()));
       }
       return list;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (!rightHandSide.isList()) {
+        return F.NIL;
+      }
+      S.$Path.assignValue(rightHandSide, setDelayed);
+      return rightHandSide;
     }
   }
 

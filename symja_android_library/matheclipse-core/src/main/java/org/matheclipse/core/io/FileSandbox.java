@@ -7,6 +7,8 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.SymjaDirectories;
@@ -107,9 +109,43 @@ public final class FileSandbox {
    */
   public static List<Path> searchPath(EvalEngine engine) {
     if (engine == null || engine.getFileSandboxRoot() == null) {
-      return SymjaDirectories.searchPath();
+      List<Path> assigned = assignedSearchPath(engine);
+      return assigned != null ? assigned : SymjaDirectories.searchPath();
     }
+    // a sandboxed session searches its own directory whatever $Path was set to: resolveRead would
+    // refuse everything outside it anyway
     return Collections.singletonList(Path.of("."));
+  }
+
+  /**
+   * The directories a program set <code>$Path</code> to, followed by the working directory, or
+   * <code>null</code> when it was not set.
+   *
+   * <p>
+   * The working directory is appended because the default path ends with it, and a value read
+   * from <code>$Path</code> and assigned back - <code>AppendTo[$Path, dir]</code> - would otherwise
+   * freeze the directory that was current at that moment.
+   */
+  private static List<Path> assignedSearchPath(EvalEngine engine) {
+    IExpr assigned = S.$Path.assignedValue();
+    if (assigned == null || !assigned.isList()) {
+      return null;
+    }
+    List<Path> directories = new java.util.ArrayList<Path>();
+    for (IExpr entry : (IAST) assigned) {
+      if (entry.isString()) {
+        try {
+          directories.add(Path.of(entry.toString()));
+        } catch (InvalidPathException ex) {
+          // not a directory name; Get skips it as WMA does
+        }
+      }
+    }
+    Path workingDirectory = workingDirectory(engine);
+    if (workingDirectory != null && !directories.contains(workingDirectory)) {
+      directories.add(workingDirectory);
+    }
+    return directories;
   }
 
   /**

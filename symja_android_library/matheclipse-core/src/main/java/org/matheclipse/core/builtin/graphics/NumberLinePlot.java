@@ -238,7 +238,7 @@ public class NumberLinePlot extends ListPlot {
           .setAspectRatio(F.Times(F.num(topRow), F.Power(F.Times(F.ZZ(10), S.GoldenRatio), F.CN1)));
 
       IASTAppendable result = F.Graphics(argumentWrapper.wrapTooltip(primitives));
-      result.appendArgs(graphicsOptions.getListOfRules());
+      result.appendArgs(graphicsOptions.getGraphicsRules());
       return result;
     } catch (RuntimeException rex) {
       return Errors.printMessage(S.NumberLinePlot, rex);

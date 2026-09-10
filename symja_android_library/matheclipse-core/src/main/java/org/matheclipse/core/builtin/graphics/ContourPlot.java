@@ -559,7 +559,7 @@ public class ContourPlot extends ListPlot {
       IAST plotAST) {
     graphicsOptions.addPadding();
     IASTAppendable result = F.Graphics(labelledContent(primitives, plotAST));
-    result.appendArgs(graphicsOptions.getListOfRules());
+    result.appendArgs(graphicsOptions.getGraphicsRules());
     return result;
   }
 

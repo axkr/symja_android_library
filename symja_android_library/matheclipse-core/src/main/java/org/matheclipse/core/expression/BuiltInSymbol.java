@@ -1,5 +1,8 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Predicate;
@@ -185,6 +188,74 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       return null;
     }
     return super.assignedValue();
+  }
+
+  /**
+   * The value a <code>$</code> symbol has before <code>AppendTo</code> and its relatives change it:
+   * the one assigned in this engine, or else the evaluator's own answer when the symbol can be
+   * assigned. <code>$Path</code> is a list whether or not a program has set it, and
+   * <code>AppendTo[$Path, dir]</code> has to extend that list.
+   *
+   * @return <code>null</code> when the symbol has no value to change
+   */
+  private IExpr dollarValueToChange(EvalEngine engine) {
+    IExpr value = assignedValue();
+    if (value == null && fEvaluator instanceof ISetValueEvaluator) {
+      value = engine.evaluate(this);
+      if (value == null || !value.isPresent() || value == this) {
+        value = null;
+      }
+    }
+    return value;
+  }
+
+  /** Store the changed value of a <code>$</code> symbol the way an assignment would. */
+  private boolean assignDollarValue(IExpr value, EvalEngine engine) {
+    if (fEvaluator instanceof ISetValueEvaluator) {
+      return ((ISetValueEvaluator) fEvaluator).evaluateSet(value, false, engine).isPresent();
+    }
+    assignValue(value, false);
+    return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr[] reassignSymbolValue(java.util.function.Function<IExpr, IExpr> function,
+      ISymbol functionSymbol, EvalEngine engine) {
+    if (!isDollarSymbol()) {
+      return super.reassignSymbolValue(function, functionSymbol, engine);
+    }
+    // the value of a $ symbol lives in the engine, not in this object, so the inherited version
+    // never found it and answered "not a variable with a value"
+    IExpr oldValue = dollarValueToChange(engine);
+    if (oldValue != null) {
+      IExpr newValue = function.apply(oldValue.isAST() ? ((IAST) oldValue).copy() : oldValue);
+      if (newValue.isPresent() && assignDollarValue(newValue, engine)) {
+        return new IExpr[] {oldValue, newValue};
+      }
+    }
+    // `1` is not a variable with a value, so its value cannot be changed.
+    Errors.printMessage(functionSymbol, "rvalue", F.list(this), engine);
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine) {
+    if (!isDollarSymbol()) {
+      return super.reassignSymbolValue(ast, functionSymbol, engine);
+    }
+    IExpr oldValue = dollarValueToChange(engine);
+    if (oldValue != null) {
+      ast.set(1, oldValue);
+      IExpr newValue = engine.evaluate(ast);
+      if (newValue != null && assignDollarValue(newValue, engine)) {
+        return new IExpr[] {oldValue, newValue};
+      }
+    }
+    // `1` is not a variable with a value, so its value cannot be changed.
+    Errors.printMessage(functionSymbol, "rvalue", F.list(this), engine);
+    return null;
   }
 
   /** {@inheritDoc} */

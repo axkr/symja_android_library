@@ -512,7 +512,7 @@ public class BoxWhiskerChart extends ListPlot {
       IAST plotAST) {
     graphicsOptions.addPadding();
     IASTAppendable result = F.Graphics(primitives);
-    result.appendArgs(graphicsOptions.getListOfRules());
+    result.appendArgs(graphicsOptions.getGraphicsRules());
     return result;
   }
 

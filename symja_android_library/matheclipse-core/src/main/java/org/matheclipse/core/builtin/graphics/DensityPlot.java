@@ -300,7 +300,7 @@ public class DensityPlot extends ListPlot {
       IAST astPlot) {
     graphicsOptions.addPadding();
     IASTAppendable result = F.Graphics(labelledContent(primitives, astPlot));
-    result.appendArgs(graphicsOptions.getListOfRules());
+    result.appendArgs(graphicsOptions.getGraphicsRules());
     return result;
   }
 

@@ -964,4 +964,70 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+
+  /**
+   * A local variable written as the head a pattern must have is an occurrence of the variable, and
+   * <code>With</code> substitutes it there too - in <code>a_s</code>, <code>_s</code> and
+   * <code>b__s</code> alike.
+   *
+   * <p>
+   * WLJS's <code>BoxesWorkarounds.wl</code> defines the boxes of each legend head with
+   * <code>With[{sym = #}, sym /: MakeBoxes[a_sym, StandardForm] := ...] &amp; /@ {LineLegend, ...}</code>.
+   * With the head test left as <code>sym</code>, <code>TagSetDelayed::tagnf</code> was raised, the
+   * <code>Get</code> of the file failed half way, and the notebook showed a
+   * <code>Get::error</code> warning for every new kernel.
+   */
+  @Test
+  public void testWithSubstitutesTheHeadOfAPattern() {
+    check("With[{s = f}, Hold[a_s, _s, b__s, c___s, s]]", //
+        "Hold[a_f,_f,b__f,c___f,f]");
+    check("Scan[With[{sym = #}, sym /: boxes[a_sym] := {\"boxed\", a}] &, {legendA, legendB}]", //
+        "");
+    check("{boxes[legendA[1]], boxes[legendB[2]]}", //
+        "{{boxed,legendA[1]},{boxed,legendB[2]}}");
+  }
+
+
+  /**
+   * The <code>Graphics</code> a plot answers with carries the options of a <code>Graphics</code>,
+   * not the plot function's own options left at a value which says nothing.
+   *
+   * <p>
+   * The WLJS notebook reads the options of the <code>Graphics</code> it is handed and was given
+   * <code>JSForm</code>, <code>PlotLegends</code>, <code>Filling</code> and seven more it does not
+   * know. A value which does say something stays, because Symja's own SVG renderer reads it.
+   */
+  @Test
+  public void testAPlotHandsOnOnlyWhatSaysSomething() {
+    check("Intersection[First /@ Rest[List @@ Plot[Sin[x], {x, 0, 1}]], {JSForm, PlotLegends, "
+        + "Filling, Joined, PlotStyle, PlotLabels, FillingStyle, DataRange, ChartLegends, "
+        + "$Scaling}]", //
+        "{}");
+    // the scaling, which is also what tells the SVG renderer the picture came from a plot, travels
+    // under Method, written with strings only so that a front end needs no definition for it
+    check("Method /. Rest[List @@ LogPlot[Exp[x], {x, 0, 1}]]", //
+        "{Scaling->{None,Log}}");
+    check("MemberQ[First /@ Rest[List @@ Plot[Sin[x], {x, 0, 1}, Filling -> Axis]], Filling]", //
+        "True");
+  }
+
+  /**
+   * <code>$Path</code> can be assigned, and the directories it is set to are searched.
+   *
+   * <p>
+   * The WLJS kernel runs <code>AppendTo[$Path, shared]</code> at every launch
+   * (<code>Kernel/LocalKernel.wl</code>), and each one drew <code>AppendTo::rvalue</code>.
+   */
+  @Test
+  public void testPathCanBeExtended() {
+    try {
+      check("AppendTo[$Path, \"/symja-test/packages\"]; Last[$Path]", //
+          "/symja-test/packages");
+      check("MemberQ[$Path, \"/symja-test/packages\"]", //
+          "True");
+    } finally {
+      EvalEngine.get().removeDollarValue(S.$Path);
+    }
+  }
+
 }

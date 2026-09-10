@@ -1226,9 +1226,10 @@ public class FileFunctions {
       boolean wasOnContextPath =
           pathBeforeReading.contains(pathBeforeReading.getContext(contextName));
 
-      if (!isLoadedInThisSession(contextName, engine)) {
+      IExpr fileName = ast.size() > 2 ? engine.evaluate(ast.arg2()) : F.NIL;
+      if (!isLoadedInThisSession(contextName, engine)
+          && !(fileName.isNIL() && wasReadFromAFile(contextName, engine))) {
         IExpr result;
-        IExpr fileName = ast.size() > 2 ? engine.evaluate(ast.arg2()) : F.NIL;
         if (fileName.isString()) {
           // Needs["A`", "file.wl"] says where the context is - and the name is usually built with
           // FileNameJoin, which Needs holds until here
@@ -1281,6 +1282,26 @@ public class FileFunctions {
       }
       Context context = engine.getContextPath().getContextMap().get(contextName);
       return context != null && context.size() > 0;
+    }
+
+    /**
+     * Was the package read from a file this session, even though its context holds no symbols?
+     *
+     * <p>
+     * A package which only declares <code>System`</code> symbols (WLJS's
+     * <code>CoffeeLiqueur`Extensions`FrontendObject`</code> does) puts nothing into its own
+     * context, so {@link #isLoadedInThisSession(String, EvalEngine)} counts it as unread. Reading
+     * it again by name then fails, because it was read from a file and no package path leads to
+     * it. When the name leads nowhere but the package has already begun in this engine, there is
+     * nothing left to read.
+     */
+    private static boolean wasReadFromAFile(String contextName, EvalEngine engine) {
+      if (!ContextPath.PACKAGES.contains(contextName)
+          || engine.getContextPath().getContextMap().get(contextName) == null) {
+        return false;
+      }
+      return PackageResolver.resolve(contextName, java.util.Collections.emptyList(),
+          engine) == null;
     }
 
     @Override

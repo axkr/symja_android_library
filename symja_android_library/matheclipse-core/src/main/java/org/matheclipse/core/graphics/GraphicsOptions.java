@@ -1819,6 +1819,10 @@ public class GraphicsOptions {
 
     ArrayNode scalingArray = null;
     IExpr scalingFunctions = options.getOption(S.$Scaling);
+    if (!scalingFunctions.isPresent()) {
+      // a Graphics built by a plot carries its scaling under Method
+      scalingFunctions = scalingFromMethod(options.getOption(S.Method));
+    }
     if (scalingFunctions.isPresent()) {
       if (scalingFunctions.isList1()) {
         scalingArray = GraphicsOptions.jsonObjectMapper().createArrayNode();
@@ -1888,6 +1892,132 @@ public class GraphicsOptions {
       }
     }
     return rules;
+  }
+
+  /**
+   * The options a plot hands on to the <code>Graphics</code> it builds: {@link #getListOfRules()}
+   * without the plot's own options left at a value that says nothing.
+   *
+   * <p>
+   * <code>PlotLegends</code>, <code>Filling</code>, <code>JSForm</code> and the others are options
+   * of the plot function, not of <code>Graphics</code>; at their neutral value the picture is the
+   * same with or without them, and a front end which reads the options of the <code>Graphics</code>
+   * (the WLJS notebook does) is handed names it does not know. A value which does say something is
+   * kept, because the SVG renderer reads it. <code>$Scaling</code> is always kept: it is how the
+   * renderer tells a plot's data from coordinates written by hand.
+   */
+  public IAST getGraphicsRules() {
+    IAST rules = getListOfRules();
+    boolean hasLegend = false;
+    for (IExpr rule : rules) {
+      if (rule.isRuleAST() && ((IAST) rule).arg1() == S.PlotLegends
+          && !((IAST) rule).arg2().isNone()) {
+        hasLegend = true;
+      }
+    }
+    IASTAppendable result = F.ListAlloc(rules.size());
+    IExpr scaling = F.NIL;
+    for (IExpr rule : rules) {
+      if (rule.isRuleAST() && ((IAST) rule).arg1() == S.$Scaling) {
+        scaling = ((IAST) rule).arg2();
+        continue;
+      }
+      if (rule.isRuleAST() && isNeutralPlotOption(((IAST) rule).arg1(), ((IAST) rule).arg2(),
+          hasLegend)) {
+        continue;
+      }
+      result.append(rule);
+    }
+    if (scaling.isPresent()) {
+      addScalingToMethod(result, scaling);
+    }
+    return result;
+  }
+
+  /** The key under <code>Method</code> which carries a plot's axis scaling. */
+  private static final String METHOD_SCALING = "Scaling";
+
+  /**
+   * Hand the plot's axis scaling on as <code>Method -> {"Scaling" -> ...}</code>.
+   *
+   * <p>
+   * The scaling is also what tells the SVG renderer that the picture came from a plot (see
+   * {@link org.matheclipse.core.graphics.svg.GraphicsOptions2D#plotGenerated}), so it has to
+   * travel with the <code>Graphics</code>. As the option <code>$Scaling</code> it could not: a front
+   * end which interprets the options of a <code>Graphics</code> knows no symbol of that name, and
+   * the WLJS notebook reported an error under every plot. <code>Method</code> is a
+   * <code>Graphics</code> option everywhere, an unknown key inside it is ignored, and the value is
+   * written with strings only so that nothing in it needs a definition.
+   */
+  private static void addScalingToMethod(IASTAppendable rules, IExpr scaling) {
+    IAST entry = F.Rule(F.stringx(METHOD_SCALING), encodeScaling(scaling));
+    for (int i = 1; i < rules.size(); i++) {
+      IExpr rule = rules.get(i);
+      if (rule.isRuleAST() && rule.first() == S.Method && rule.second().isList()) {
+        rules.set(i, F.Rule(S.Method, ((IAST) rule.second()).appendClone(entry)));
+        return;
+      }
+    }
+    rules.append(F.Rule(S.Method, F.list(entry)));
+  }
+
+  private static IExpr encodeScaling(IExpr scaling) {
+    if (scaling.isList()) {
+      return ((IAST) scaling).map(GraphicsOptions::encodeScaling);
+    }
+    return scaling.isSymbol() ? F.stringx(scaling.toString()) : scaling;
+  }
+
+  private static IExpr decodeScaling(IExpr scaling) {
+    if (scaling.isList()) {
+      return ((IAST) scaling).map(GraphicsOptions::decodeScaling);
+    }
+    if (scaling.isString()) {
+      String name = scaling.toString();
+      if (name.equals("None")) {
+        return S.None;
+      }
+      if (name.equals("Automatic")) {
+        return S.Automatic;
+      }
+    }
+    return scaling;
+  }
+
+  /**
+   * The axis scaling a plot left under <code>Method</code>, in the shape the <code>$Scaling</code>
+   * option has - or {@link F#NIL} when there is none.
+   *
+   * @param method the value of a <code>Method</code> option
+   */
+  public static IExpr scalingFromMethod(IExpr method) {
+    if (method != null && method.isList()) {
+      for (IExpr rule : (IAST) method) {
+        if (rule.isRuleAST() && rule.first().isString(METHOD_SCALING)) {
+          return decodeScaling(rule.second());
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  private static boolean isNeutralPlotOption(IExpr key, IExpr value, boolean hasLegend) {
+    if (key == S.JSForm) {
+      // the plot call's request for JavaScript output; the Graphics it built is the answer
+      return true;
+    }
+    if (key == S.Joined) {
+      // Line primitives are joined already; the renderer only asks when it draws a legend swatch
+      return !hasLegend;
+    }
+    if (key == S.PlotLegends || key == S.Filling || key == S.PlotLabels || key == S.ChartLegends
+        || key == S.PlotStyle) {
+      return value.isNone();
+    }
+    if (key == S.FillingStyle || key == S.DataRange) {
+      return value.isAutomatic();
+    }
+    return false;
   }
 
   private static void hasAxesJSON(ObjectNode g, IExpr a1, IExpr a2) {

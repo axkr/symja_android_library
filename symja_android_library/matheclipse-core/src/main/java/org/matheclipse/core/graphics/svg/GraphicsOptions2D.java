@@ -276,6 +276,15 @@ public final class GraphicsOptions2D {
           plotStyleRaw = value;
         }
         break;
+      case ID.Method: {
+        // a plot's Graphics carries its axis scaling as Method -> {"Scaling" -> ...}; it is read
+        // exactly as the $Scaling option it replaced, which also marks the picture plot generated
+        IExpr scaling = org.matheclipse.core.graphics.GraphicsOptions.scalingFromMethod(value);
+        if (scaling.isPresent()) {
+          apply(ID.$Scaling, scaling, collector);
+        }
+        break;
+      }
       case ID.$Scaling:
         plotGenerated = true;
         if (value.isList()) {

@@ -46,29 +46,63 @@ public class ModuleReplaceAll extends VisitorExpr {
     return apply(element);
   }
 
-  @Override
-  public IExpr visit(IPattern element) {
-    ISymbol symbol = element.getSymbol();
+  /**
+   * A local variable written as the head a pattern must have - <code>a_s</code>, <code>_s</code>,
+   * <code>b__s</code> - is as much an occurrence of the variable as a bare <code>s</code>.
+   * <code>With[{s = f}, g[a_s] := ...]</code> is how a definition is made for each of several heads
+   * at once (WLJS's <code>BoxesWorkarounds.wl</code> does it for the legend heads), and leaving the
+   * head test alone defined a rule for the head <code>s</code>, which no expression has.
+   *
+   * @return the substituted head test, or <code>null</code> when it does not change
+   */
+  private IExpr substitutedHeadTest(IExpr headTest) {
+    if (headTest != null && headTest.isSymbol()) {
+      IExpr value = apply((ISymbol) headTest);
+      if (value.isPresent()) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  /** The pattern name after substitution: the same symbol when it is not a local variable. */
+  private ISymbol substitutedName(ISymbol symbol) {
     if (symbol != null) {
       IExpr expr = apply(symbol);
       if (expr.isPresent() && expr.isSymbol()) {
-        return F.$p((ISymbol) expr, element.getHeadTest(), element.isPatternDefault());
+        return (ISymbol) expr;
       }
     }
-    return F.NIL;
+    return symbol;
+  }
+
+  @Override
+  public IExpr visit(IPattern element) {
+    ISymbol symbol = element.getSymbol();
+    ISymbol newSymbol = substitutedName(symbol);
+    IExpr newHeadTest = substitutedHeadTest(element.getHeadTest());
+    if (newSymbol == symbol && newHeadTest == null) {
+      return F.NIL;
+    }
+    IExpr headTest = newHeadTest != null ? newHeadTest : element.getHeadTest();
+    if (symbol == null) {
+      return F.$b(headTest, element.isPatternDefault());
+    }
+    return F.$p(newSymbol, headTest, element.isPatternDefault());
   }
 
   @Override
   public IExpr visit(IPatternSequence element) {
     ISymbol symbol = element.getSymbol();
-    if (symbol != null) {
-      IExpr expr = apply(symbol);
-      if (expr.isPresent() && expr.isSymbol()) {
-        return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(),
-            element.isNullSequence());
-      }
+    ISymbol newSymbol = substitutedName(symbol);
+    IExpr newHeadTest = substitutedHeadTest(element.getHeadTest());
+    if (newSymbol == symbol && newHeadTest == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    IExpr headTest = newHeadTest != null ? newHeadTest : element.getHeadTest();
+    IPatternSequence result =
+        F.$ps(newSymbol, headTest, element.isDefault(), element.isNullSequence());
+    return element.isLongest() ? result.withLongest(true) : result;
   }
 
   @Override

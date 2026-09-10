@@ -355,7 +355,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
 
     IASTAppendable result = F.Graphics(labelledContent(graphicsPrimitives, plotAST));
-    result.appendArgs(graphicsOptions.getListOfRules());
+    result.appendArgs(graphicsOptions.getGraphicsRules());
     // System.out.println(result);
     return result;
   }
