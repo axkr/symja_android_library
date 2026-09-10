@@ -427,6 +427,35 @@ public class EvalEngine implements Serializable {
    *        block
    * @param engine the evaluation engine
    */
+  /**
+   * Give a Block variable the value it had before the block.
+   *
+   * <p>
+   * A <code>$...</code> symbol keeps its value in the engine rather than in the symbol - see
+   * {@link org.matheclipse.core.expression.BuiltInSymbol#assignValue} - so putting one back has to
+   * put it there. Restoring it into the symbol left the engine's value standing, and
+   * <code>Block[{$Assumptions = …}, …]</code> assigned for good rather than for the block. Every
+   * assignable <code>$</code> variable was affected; the notebook noticed because WLJS wraps its
+   * printing in <code>Block[{$Output = {}}, …]</code>, so the first line printed turned the
+   * redirection off and every later one went to a console nobody was reading.
+   *
+   * @param symbol the block's variable
+   * @param oldValue what it held before, or <code>null</code> if it held nothing
+   */
+  private static void restoreBlockVariable(ISymbol symbol, IExpr oldValue, EvalEngine engine) {
+    if (symbol.isDollarSymbol() && symbol instanceof IBuiltInSymbol) {
+      IBuiltInSymbol dollarSymbol = (IBuiltInSymbol) symbol;
+      incEpoch();
+      if (oldValue == null) {
+        engine.removeDollarValue(dollarSymbol);
+      } else {
+        engine.setDollarValue(dollarSymbol, oldValue);
+      }
+      return;
+    }
+    symbol.clearValue(oldValue);
+  }
+
   private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
       final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
       final EvalEngine engine) {
@@ -463,7 +492,7 @@ public class EvalEngine implements Serializable {
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
         variableSymbol = symbolList[i];
-        variableSymbol.clearValue();
+        restoreBlockVariable(variableSymbol, null, engine);
         variableSymbol.setRulesData(null);
       } else {
         if (variablesList.get(i).isAST(S.Set, 3)) {
@@ -2163,7 +2192,7 @@ public class EvalEngine implements Serializable {
           if (localVariablesList.get(i).isVariable()) {
             variableSymbol = symbolList[i];
             if (variableSymbol != null) {
-              variableSymbol.clearValue(oldAssignedValues[i]);
+              restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
               variableSymbol.setRulesData(oldAssignedRulesData[i]);
             }
           } else if (localVariablesList.get(i).isAST(S.Set, 3)) {
@@ -2171,7 +2200,7 @@ public class EvalEngine implements Serializable {
             if (setFun.arg1().isVariable()) {
               variableSymbol = symbolList[i];
               if (variableSymbol != null) {
-                variableSymbol.clearValue(oldAssignedValues[i]);
+                restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
                 variableSymbol.setRulesData(oldAssignedRulesData[i]);
               }
             }
@@ -5123,6 +5152,18 @@ public class EvalEngine implements Serializable {
    * @param dollarSymbol
    * @param value
    */
+  /**
+   * Forget the assigned value of a '$...' {@link IBuiltInSymbol}, so that it reads as though it had
+   * never been assigned.
+   *
+   * @param dollarSymbol the symbol to forget
+   */
+  public void removeDollarValue(IBuiltInSymbol dollarSymbol) {
+    if (fDollarSymbolMap != null) {
+      fDollarSymbolMap.remove(dollarSymbol);
+    }
+  }
+
   public void setDollarValue(IBuiltInSymbol dollarSymbol, IExpr value) {
     if (fDollarSymbolMap == null) {
       fDollarSymbolMap = new IdentityHashMap<IBuiltInSymbol, IExpr>();

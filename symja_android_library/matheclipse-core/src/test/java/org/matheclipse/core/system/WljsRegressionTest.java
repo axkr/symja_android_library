@@ -821,6 +821,33 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * A <code>$...</code> variable comes back out of a <code>Block</code> with the value it went in
+   * with.
+   *
+   * <p>
+   * Such a symbol keeps its value in the engine rather than in the symbol, and the restore put it
+   * back into the symbol - so the block's value stood afterwards. WLJS wraps its printing in
+   * <code>Block[{$Output = {}}, …]</code> to keep it from printing into itself, so the first line
+   * a cell printed switched the redirection off and every later one went to a console nobody was
+   * reading.
+   */
+  @Test
+  public void testABlockGivesBackADollarVariable() {
+    check("$Assumptions = a; Block[{$Assumptions = b}, $Assumptions]", //
+        "b");
+    check("$Assumptions", //
+        "a");
+    // one which was never assigned goes back to having no value of its own
+    check("Block[{$Output = {1}}, Length[$Output]]", //
+        "1");
+    check("$Output", //
+        "{}");
+    // an ordinary symbol was always restored and still is
+    check("ordinary = 1; Block[{ordinary = 2}, ordinary]; ordinary", //
+        "1");
+  }
+
+  /**
    * <code>ToCharacterCode[string, encoding]</code> names the encoding the codes are read in. Symja
    * holds a string as Java does, so the codes are the same whichever name is given - but refusing
    * the second argument made the call an error, and the notebook's own way of turning a printed

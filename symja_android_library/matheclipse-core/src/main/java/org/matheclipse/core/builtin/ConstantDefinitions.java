@@ -74,6 +74,8 @@ public class ConstantDefinitions {
       // }
 
       S.$Assumptions.setEvaluator(new $Assumptions());
+      S.$Messages.setEvaluator(new $Messages());
+      S.$Output.setEvaluator(new $Output());
       S.$BaseDirectory.setEvaluator(new $BaseDirectory());
       S.$Context.setEvaluator(new $Context());
       S.$ContextPath.setEvaluator(new $ContextPath());
@@ -208,6 +210,51 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       S.$Assumptions.assignValue(rightHandSide, setDelayed);
+      return rightHandSide;
+    }
+  }
+
+  /**
+   * <code>$Output</code> - the list of streams a <code>Print</code> goes to, and
+   * <code>$Messages</code> - the list a message goes to.
+   *
+   * <p>
+   * Both start out naming no stream, which is what keeps a console, a servlet and a kernel driven
+   * over a link printing where each of them printed before. A front end which wants the output
+   * elsewhere puts a stream of its own there - see
+   * {@link org.matheclipse.core.io.OutputStreamMethods}.
+   *
+   * <p>
+   * The evaluator is what makes the variable assignable at all: a built-in symbol without one
+   * stores what is assigned to it as a rule it never reads back, so <code>$Output = {stream}</code>
+   * would be accepted and then do nothing.
+   */
+  private static class $Output extends AbstractSymbolEvaluator implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      IExpr streams = symbol.assignedValue();
+      return streams == null ? F.CEmptyList : streams;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      S.$Output.assignValue(rightHandSide, setDelayed);
+      return rightHandSide;
+    }
+  }
+
+  private static class $Messages extends AbstractSymbolEvaluator implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      IExpr streams = symbol.assignedValue();
+      return streams == null ? F.CEmptyList : streams;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      S.$Messages.assignValue(rightHandSide, setDelayed);
       return rightHandSide;
     }
   }
