@@ -1,0 +1,297 @@
+0	0
+1	1
+-1	-1
+007	007
+2147483647	2147483647
+2147483648	2147483648
+-2147483648	-2147483648
+9223372036854775807	9223372036854775807
+9223372036854775808	9223372036854775808
+-9223372036854775808	-9223372036854775808
+123456789012345678901234567890	123456789012345678901234567890
+2^^101	101
+8^^777	777
+16^^ff	ff
+16^^FF	FF
+36^^zz	zz
+0x1f	Times(0, x1f)
+0X1F	Times(0, X1F)
+0b101	Times(0, b101)
+0o17	Times(0, o17)
+1.	1.
+.5	.5
+0.5	0.5
+1.5	1.5
+1.0e3	Times(1.0, e3)
+1.0E3	Times(1.0, E3)
+1E-2	Plus(Times(1, E), Times(-1, 2))
+2.2250738585072014*^-308	2.2250738585072014*^-308
+1.5*^10	1.5*^10
+1.5*^+10	1.5*^+10
+1.5`	1.5
+1.5`20	1.5`20
+1.5``20	1.5`20
+2`	2
+4.60421677720057651458449514482636628606`20.6008566975056	4.60421677720057651458449514482636628606`20.6008566975056
+1/.2	Power(.2, -1)
+1 /. 2	ReplaceAll(1, 2)
+a/.2	Times(a, Power(.2, -1))
+-2^2	Times(-1, Power(2, 2))
+2^-1	Power(2, -1)
+2^3^2	Power(2, Power(3, 2))
+(2^3)^2	Power(Power(2, 3), 2)
+a-b-c	Plus(Plus(a, Times(-1, b)), Times(-1, c))
+a/b/c	Times(Times(a, Power(b, -1)), Power(c, -1))
+a-(b-c)	Plus(a, Times(-1, Plus(b, Times(-1, c))))
+-a*b	Times(Times(-1, a), b)
+a+-b	Plus(a, Times(-1, b))
+a--b	Times(Decrement(a), b)
+a- -b	Plus(a, Times(-1, Times(-1, b)))
+1-1	Plus(1, Times(-1, 1))
+2-3-4	Plus(Plus(2, Times(-1, 3)), Times(-1, 4))
+a/b*c	Times(Times(a, Power(b, -1)), c)
+a*b/c	Times(a, Times(b, Power(c, -1)))
+2x	Times(2, x)
+2 x	Times(2, x)
+x y	Times(x, y)
+x  y	Times(x, y)
+2(a+b)	Times(2, Plus(a, b))
+(a+b)(c+d)	Times(Plus(a, b), Plus(c, d))
+2Pi	Times(2, Pi)
+1/2Pi	Power(Times(2, Pi), -1)
+2/3x	Times(2, Power(Times(3, x), -1))
+x!y	Times(Factorial(x), y)
+2!	Factorial(2)
+2!!	Factorial2(2)
+a b c d	Times(a, Times(b, Times(c, d)))
+2 3	Times(2, 3)
+a<b<c	Less(a, b, c)
+a<b<=c	Inequality(a, Less, b, LessEqual, c)
+a<b<=c>d	Inequality(a, Less, b, LessEqual, c, Greater, d)
+a==b==c	Equal(a, b, c)
+a==b<c	Inequality(a, Equal, b, Less, c)
+a!=b!=c	Unequal(a, b, c)
+a===b===c	SameQ(a, b, c)
+a<b==c>d!=e	Inequality(a, Less, b, Equal, c, Greater, d, Unequal, e)
+_	_
+__	__
+___	___
+_h	Times(_, h)
+_.	_.
+_:v	Optional(_, v)
+x_	x_
+x__	x__
+x___	x___
+x_h	Times(x_, h)
+x__h	Times(x__, h)
+x___h	Times(x___, h)
+x_.	x_.
+x_:v	Optional(x_, v)
+x_h:v	Optional(x_h, v)
+_Integer	_Integer
+x_Integer	x_Integer
+x_?NumberQ	PatternTest(x_, NumberQ)
+x_Integer?Positive	PatternTest(x_Integer, Positive)
+f(x_,y_):=x+y	SetDelayed(f(x_, y_), Plus(x, y))
+f(x_Integer:3):=x	SetDelayed(f(Optional(x_Integer, 3)), x)
+a:b	Pattern(a, b)
+a:b:c	Pattern(a, Pattern(b, c))
+x:_	Pattern(x, _)
+x:_Integer	Pattern(x, _Integer)
+#	Slot(1)
+#1	Slot(1)
+#2	Slot(2)
+#9	Slot(9)
+##	SlotSequence(1)
+##2	SlotSequence(2)
+#name	Slot(name)
+#"name"	Slot(name)
+#&	Function(Slot(1))
+#1+#2&	Function(Plus(Slot(1), Slot(2)))
+(#1+#2)&	Function(Plus(Slot(1), Slot(2)))
+#[[1]]&	Function(Part(Slot(1), 1))
+x|->x^2	Function(x, Power(x, 2))
+{x,y}|->x+y	Function(List(x, y), Plus(x, y))
+%	Out(-1)
+%%	Out(-2)
+%%%	Out(-3)
+%1	Out(1)
+%12	Out(12)
+%+1	Plus(Out(-1), 1)
+f'	Derivative(1)[f]
+f''	Derivative(2)[f]
+f'''	Derivative(3)[f]
+f'(x)	Derivative(1)[f][x]
+f''(x)	Derivative(2)[f][x]
+f'(x)(y)	!syntax@6: End-of-file not reached.
+Sin'	Derivative(1)[Sin]
+a[[1]]	Part(a, 1)
+a[[1,2]]	Part(a, 1, 2)
+a[[1]][[2]]	Part(Part(a, 1), 2)
+{a,b}[[2]]	Part(List(a, b), 2)
+a[[1]]+b	Plus(Part(a, 1), b)
+a[[-1]]	Part(a, -1)
+a[[;;]]	Part(a, Span(1, All))
+a[[1;;]]	Part(a, Span(1, All))
+a[[;;2]]	Part(a, Span(1, 2))
+a[[1;;2]]	Part(a, Span(1, 2))
+a[[1;;2;;3]]	Part(a, Span(1, 2, 3))
+a[[All,1]]	Part(a, All, 1)
+;;	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
+1;;	Span(1, All)
+;;2	Span(1, 2)
+1;;2	Span(1, 2)
+1;;2;;3	Span(1, 2, 3)
+;;;;	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
+a;;b	Span(a, b)
+a;;b;;c	Span(a, b, c)
+{1,2,3}[[;;-1]]	Part(List(1, 2, 3), Span(1, -1))
+a;	CompoundExpression(a, Null)
+a;b	CompoundExpression(a, b)
+a;b;	CompoundExpression(a, b, Null)
+a;;b;	Span(a, CompoundExpression(b, Null))
+;a	!syntax@1: Operator: ; is no prefix operator.
+a;	CompoundExpression(a, Null)
+<||>	Association(List())
+<|a->1|>	Association(List(Rule(a, 1)))
+<|a->1,b->2|>	Association(List(Rule(a, 1), Rule(b, 2)))
+<|a->1|>[[Key(a)]]	Part(Association(List(Rule(a, 1))), Key(a))
+<|a-><|b->1|>|>	Association(List(Rule(a, Association(List(Rule(b, 1))))))
+""	
+"a"	a
+"a b"	a b
+"a\\"b"	a"b
+"a\\nb"	a\nb
+"a\\\\b"	a\\b
+"\\[Alpha]"	α
+"a"<>"b"	StringJoin(a, b)
+(* c *)1+1	Plus(1, 1)
+1+(* c *)1	Plus(1, 1)
+1+1(* c *)	Plus(1, 1)
+(* (* nested *) *)1	1
+(**)1	1
+a~f~b	f(a, b)
+a~f~b~g~c	g(f(a, b), c)
+a~f~b+c	Plus(f(a, b), c)
+\\[Alpha]	α
+\\[Alpha]+\\[Beta]	Plus(α, β)
+α	α
+α+β	Plus(α, β)
+Pi	Pi
+∀(a)	ForAll(a)
+∃(a)	Exists(a)
+a∈b	Element(a, b)
+a∉b	NotElement(a, b)
+a⊗b	CircleTimes(a, b)
+a⊕b	CirclePlus(a, b)
+√a	Sqrt(a)
+a±b	PlusMinus(a, b)
+±a	PlusMinus(a)
+Global`x	x
+`x	x
+`Private`x	x
+a`b`c	c
+a`b`	!syntax@4: Symbol name expected after the context "a`b`"
+`	!syntax@1: unexpected (named unicode) character: '\\[RawBackquote]'
+`1	!syntax@1: unexpected (named unicode) character: '\\[RawBackquote]'
+1`x	Times(1, x)
+n[#] = a[#]; &	Function(CompoundExpression(Set(n(Slot(1)), a(Slot(1))), Null))
+Map[a; &, {1}]	Map(Function(CompoundExpression(a, Null)), List(1))
+a ;/ b	Times(CompoundExpression(a, Null), Power(b, -1))
+t[[i]]["pos"][[2]]	Part(Part(t, i)[pos], 2)
+f::usage = "\na"	Set(MessageName(f, usage), \na)
+$a	$a
+$Assumptions	$Assumptions
+a$b	a$b
+$	$
+a+\\\nb	Plus(a, b)
+a+\nb	Plus(a, b)
+a+b\n	Plus(a, b)
+\na+b	Plus(a, b)
+a\n+b	Plus(a, b)
+a  +  b	Plus(a, b)
+((((((a))))))	a
+{{{{{{a}}}}}}	List(List(List(List(List(List(a))))))
+f(f(f(f(f(a)))))	f(f(f(f(f(a)))))
+a+(b+(c+(d+e)))	Plus(a, Plus(b, Plus(c, Plus(d, e))))
+(	!syntax@2: Error in factor at character: ' ' (Token:0 \\u0020)
+)	!syntax@1: Too much closing ) in factor.
+{	!syntax@2: Error in factor at character: ' ' (Token:0 \\u0020)
+}	!syntax@1: Too much closing } in factor.
+[	!syntax@1: Error in factor at character: '[' (Token:12 \\u005b)
+]	!syntax@1: Too much closing ] in factor.
+a+	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
++	!syntax@2: Error in factor at character: ' ' (Token:0 \\u0020)
+a[[	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
+a[[1]	!syntax@5: ']]' expected.
+<|	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
+|>	!syntax@2: Too much closing |> in factor.
+1..	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
+&&a	!syntax@2: Operator: && is no prefix operator.
+a&&	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
+=	!syntax@1: Operator: = is no prefix operator.
+a=	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
+,	!syntax@1: Error in factor at character: ',' (Token:134 \\u002c)
+a,b	!syntax@2: End-of-file not reached.
+f(,)	f(Null, Null)
+f(a,)	f(a, Null)
+f(,a)	f(Null, a)
+f()	f()
+f( )	f()
+f(a)	f(a)
+f(a,b)	f(a, b)
+f(a)(b)	Times(f(a), b)
+f(a)[b]	f(a)[b]
+f[a]	f(a)
+f[[a]]	Part(f, a)
+{}	List()
+{ }	List()
+{a}	List(a)
+{a,b}	List(a, b)
+{a,{b,c}}	List(a, List(b, c))
+a=.	Unset(a)
+a=!=b	UnsameQ(a, b)
+a===b	SameQ(a, b)
+Hold(a+b)	Hold(Plus(a, b))
+HoldForm(a+b)	HoldForm(Plus(a, b))
+Sqrt(4)	Sqrt(4)
+Exp(x)	Exp(x)
+Get("x")	Get(x)
+a::b	MessageName(a, b)
+a::b::c	MessageName(a, b, c)
+a//b	b(a)
+a//b//c	c(b(a))
+a@b@c	a(b(c))
+a@@b	Apply(a, b)
+a@@@b	Apply(a, b, List(1))
+a/@b	Map(a, b)
+a//@b	MapAll(a, b)
+a/;b	Condition(a, b)
+a/:b=c	TagSet(a, b, c)
+a^:=b	UpSetDelayed(a, b)
+a/:b:=c	TagSetDelayed(a, b, c)
+b!(c)	Factorial(b)[c]
+a+b!(c)	Plus(a, Factorial(b)[c])
+a*b!(c)	Times(a, Factorial(b)[c])
+b!!(c)	Factorial2(b)[c]
+a+b!!(c)	Plus(a, Factorial2(b)[c])
+a+b!(c)(d)	Plus(a, Times(Factorial(b)[c], d))
+a+b!!	Plus(a, Factorial2(b))
+a ##	Times(a, SlotSequence(1))
+a+b ##	Plus(a, Times(b, SlotSequence(1)))
+a ##2	Times(a, SlotSequence(2))
+a+b ##2	Plus(a, Times(b, SlotSequence(2)))
+2 ##	Times(2, SlotSequence(1))
+{a,b} ##	Times(List(a, b), SlotSequence(1))
+_?NumberQ	PatternTest(_, NumberQ)
+_?NumberQ?Positive	PatternTest(PatternTest(_, NumberQ), Positive)
+_?NumberQ?Positive?Negative	PatternTest(PatternTest(PatternTest(_, NumberQ), Positive), Negative)
+x_?NumberQ?Positive	PatternTest(PatternTest(x_, NumberQ), Positive)
+MatchQ(3, _?NumberQ)	MatchQ(3, PatternTest(_, NumberQ))
+MatchQ(3, _?NumberQ?Positive)	MatchQ(3, PatternTest(PatternTest(_, NumberQ), Positive))
+MatchQ(3, x_?NumberQ?Positive)	MatchQ(3, PatternTest(PatternTest(x_, NumberQ), Positive))
+f(_?NumberQ?Positive)	f(PatternTest(PatternTest(_, NumberQ), Positive))
+{_?NumberQ?Positive}	List(PatternTest(PatternTest(_, NumberQ), Positive))
+(_?NumberQ?Positive)	PatternTest(PatternTest(_, NumberQ), Positive)
+f(a, _?NumberQ?Positive, b)	f(a, PatternTest(PatternTest(_, NumberQ), Positive), b)
+_?NumberQ?Positive&	Function(PatternTest(PatternTest(_, NumberQ), Positive))
