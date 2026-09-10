@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import java.util.ArrayDeque;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -44,6 +46,7 @@ import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -266,10 +269,66 @@ public class StructureFunctions {
     }
   }
 
+  /**
+   * <code>ByteCount(expr)</code> - how much memory the expression takes.
+   *
+   * <p>
+   * What "how much" means is the implementation's own business - the Wolfram Language documents
+   * this as the bytes <i>it</i> uses - so this is Symja's storage that is counted: a reference per
+   * slot of every node, the object header each one carries, and the digits, characters or bits its
+   * atoms hold. Subexpressions are counted wherever they appear rather than once, which is what
+   * the Wolfram Language says of its own answer too.
+   *
+   * <p>
+   * The walk is iterative. A structural walk is not counted by <code>$RecursionLimit</code>, so a
+   * deep expression would end a recursive one in a StackOverflowError rather than in a message.
+   */
   private static class ByteCount extends AbstractCoreFunctionEvaluator {
+
+    /** An object header and the class pointer every node pays before it holds anything. */
+    private static final long OBJECT_HEADER = 16L;
+
+    /** One reference, as a 64 bit JVM stores it. */
+    private static final long REFERENCE = 8L;
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.NIL;
+      return F.ZZ(byteCount(engine.evaluate(ast.arg1())));
+    }
+
+    private static long byteCount(IExpr expr) {
+      long total = 0L;
+      ArrayDeque<IExpr> pending = new ArrayDeque<IExpr>();
+      pending.push(expr);
+      while (!pending.isEmpty()) {
+        IExpr current = pending.pop();
+        if (current.isASTOrAssociation()) {
+          IAST ast = (IAST) current;
+          // the head is slot zero and is counted with the rest
+          total += OBJECT_HEADER + REFERENCE * ast.size();
+          for (int i = 0; i < ast.size(); i++) {
+            pending.push(ast.get(i));
+          }
+        } else {
+          total += atomByteCount(current);
+        }
+      }
+      return total;
+    }
+
+    private static long atomByteCount(IExpr atom) {
+      if (atom instanceof IStringX) {
+        // a Java string is two objects, and its characters are two bytes each
+        return 2L * OBJECT_HEADER + REFERENCE + 2L * atom.toString().length();
+      }
+      if (atom instanceof IInteger) {
+        BigInteger value = ((IInteger) atom).toBigNumerator();
+        return OBJECT_HEADER + REFERENCE + Math.max(REFERENCE, (value.bitLength() + 7) / 8);
+      }
+      if (atom instanceof ISymbol) {
+        return OBJECT_HEADER + 2L * REFERENCE;
+      }
+      return OBJECT_HEADER + REFERENCE;
     }
 
     @Override
