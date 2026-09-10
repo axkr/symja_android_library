@@ -1798,7 +1798,7 @@ public class EvalEngine implements Serializable {
     }
 
     final ISymbol symbol = ast.topHead();
-    final int attributes = symbol.getAttributes();
+    final int attributes = attributesOfHead(ast, symbol);
 
     if (!Attribute.SEQUENCEHOLD.isSetIn(attributes)) {
       if ((result = F.flattenSequence(ast)).isPresent()) {
@@ -2097,11 +2097,34 @@ public class EvalEngine implements Serializable {
     }
 
     if (astSize != 1) {
-      final int attributes = symbol.getAttributes();
+      final int attributes = attributesOfHead(mutableAST, symbol);
       return evalAttributes(mutableAST, astSize, symbol, attributes);
     }
 
     return F.NIL;
+  }
+
+  /**
+   * The attributes that govern how the arguments of <code>ast</code> are evaluated.
+   *
+   * <p>
+   * Attributes belong to a symbol used as a head. In <code>f[a][b]</code> the head is
+   * <code>f[a]</code> and not the symbol <code>f</code>, so <code>f</code>'s attributes say nothing
+   * about <code>b</code> - a HoldFirst on <code>f</code> must not hold <code>b</code>. Rule lookup
+   * still goes through {@link IExpr#topHead()}, which is why the symbol is passed in separately.
+   *
+   * @param ast the expression whose arguments are about to be evaluated
+   * @param symbol its {@link IExpr#topHead()}
+   * @return the symbol's attributes when it really is the head, {@link ISymbol#NOATTRIBUTE}
+   *         otherwise
+   */
+  private static int attributesOfHead(final IAST ast, final ISymbol symbol) {
+    if (ast.head() == symbol || symbol.isBuiltInSymbol()) {
+      // built-in heads keep the established behaviour: Function[vars, body, HoldAll][arg] and the
+      // other curried built-ins reach their evaluator with the arguments still held.
+      return symbol.getAttributes();
+    }
+    return ISymbol.NOATTRIBUTE;
   }
 
   /**

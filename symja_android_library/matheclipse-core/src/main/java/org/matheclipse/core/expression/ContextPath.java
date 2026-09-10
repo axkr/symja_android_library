@@ -450,7 +450,7 @@ public final class ContextPath implements Iterable<Context> {
    * @return
    */
   public void synchronize(ContextPath path) {
-    fContextMap.putIfAbsent(path.fContext.getContextName(), path.fContext);
+    fContextMap.putIfAbsent(path.fContext.completeContextName(), path.fContext);
     // Contexts the package created are carried out; one that already existed keeps the object it
     // had, which is the one holding the symbols anything outside the package refers to.
     path.fContextMap.forEach(fContextMap::putIfAbsent);

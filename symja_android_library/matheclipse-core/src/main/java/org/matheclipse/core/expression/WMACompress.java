@@ -11,6 +11,7 @@ import java.util.zip.Inflater;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -190,6 +191,18 @@ public class WMACompress {
     writeInt(ast.argSize(), out);
     if (!write(ast.head(), out)) {
       return false;
+    }
+    // an association answers get(i) with the value at that position, not with the rule that put it
+    // there, so writing its parts the way an ordinary expression is written would send
+    // <|"k" -> v|> as Association[v] and lose every key
+    if (ast instanceof IAssociation) {
+      IAssociation association = (IAssociation) ast;
+      for (int i = 1; i < ast.size(); i++) {
+        if (!write(association.getRule(i), out)) {
+          return false;
+        }
+      }
+      return true;
     }
     for (int i = 1; i < ast.size(); i++) {
       if (!write(ast.get(i), out)) {

@@ -2992,11 +2992,12 @@ public interface IPatternMap {
       if (x instanceof PatternNested) {
         IExpr patternExpr = ((PatternNested) x).getPatternExpr();
         if (patternExpr.isASTOrAssociation()) {
+          // giving a pattern a name does not narrow what it matches: x:f[a_] is exactly as specific
+          // as f[a_], so the name must not move the rule ahead of one written without it. Only the
+          // named pattern itself counts.
+          priority[0] += result[1];
           listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) patternExpr,
               priority, ruleWithoutPattern, treeLevel + 1);
-
-          // Replaced hardcoded 11 with the constant
-          priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
 
           if (x.isPatternDefault()) {
             listEvalFlags[0] |= EvalFlags.Mask.CONTAINS_DEFAULT_PATTERN;

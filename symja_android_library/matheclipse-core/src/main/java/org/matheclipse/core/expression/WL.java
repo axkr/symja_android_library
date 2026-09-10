@@ -1006,7 +1006,10 @@ public class WL {
       if (context == Context.SYSTEM) {
         str = s.toString().toCharArray();
       } else {
-        str = (context.getContextName() + s.getSymbolName()).toCharArray();
+        // completeContextName(), not getContextName(): a context begun with a relative name knows
+        // itself as `Internal` and only its parent chain says which `Internal` it is. Writing the
+        // short name puts every package's private context under one name on the wire.
+        str = (context.completeContextName() + s.getSymbolName()).toCharArray();
       }
       int size = str.length;
       stream.write(WXF_CONSTANTS.Symbol);

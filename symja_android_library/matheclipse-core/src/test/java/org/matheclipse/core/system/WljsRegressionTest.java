@@ -684,4 +684,97 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("i", //
         "11");
   }
+
+  /**
+   * The attributes of a symbol say how the arguments of <code>f[...]</code> are evaluated, not those
+   * of <code>f[a][b]</code> - in the second the head is <code>f[a]</code>, which is no symbol at
+   * all. WLJS's object system gives every type HoldFirst (so that <code>obj = UObject[sym]</code>
+   * can rewrite the assignment), and every property access is written <code>obj[key]</code>. With
+   * the attribute leaking through, a held argument still standing as a local symbol was matched
+   * against the "look up a key" rule instead of the rule meant for its value.
+   */
+  @Test
+  public void testAttributesBelongToTheHeadNotToTheTopHead() {
+    check("SetAttributes[U, HoldFirst]", //
+        "");
+    check("U[symbol_Symbol][key_String] := symbol[key]", //
+        "");
+    check("U[symbol_Symbol][key_Symbol] := symbol[SymbolName[key]]", //
+        "");
+    check("srv_U[packet_Association] := \"entry\"", //
+        "");
+    check("fields = <|\"x\" -> 1|>", //
+        "<|x->1|>");
+    check("object = U[fields]", //
+        "U[fields]");
+    // a key still reads as a key
+    check("object[\"x\"]", //
+        "1");
+    // an association reaches the rule written for an association, whether it is handed over
+    // literally or through a local symbol which still has to be evaluated
+    check("object[<|\"n\" -> 1|>]", //
+        "entry");
+    check("caller[o_U] := Module[{payload}, payload = <|\"n\" -> 1|>; o[payload]]", //
+        "");
+    check("caller[object]", //
+        "entry");
+    // Function carries its own attributes into the application, which still has to work
+    check("h := Function[{x}, Hold[1 + x], HoldAll]", //
+        "");
+    check("h[1 + 1]", //
+        "Hold[1+1+1]");
+  }
+
+  /**
+   * A trailing <code>OptionsPattern[]</code> says nothing about how specific the rest of a rule is,
+   * so it must not push the rule behind every rule that takes a run of arguments. WLJS's WLX
+   * skeletons are written as a pair - one rule folds several children into one string and hands it
+   * back to the other - and with the order reversed the folding rule matched its own result
+   * forever.
+   */
+  @Test
+  public void testAnOptionsPatternKeepsTheRulePriority() {
+    check("frame[children__, opts : OptionsPattern[]] := frame[StringRiffle[{children}], opts]", //
+        "");
+    check("frame[child_, OptionsPattern[]] := \"<\" <> OptionValue[\"Id\"] <> \">\" <> child", //
+        "");
+    check("Options[frame] = {\"Id\" -> \"none\"}", //
+        "{Id->none}");
+    check("frame[\"a\", \"Id\" -> \"one\"]", //
+        "<one>a");
+    check("frame[\"a\", \"b\", \"Id\" -> \"two\"]", //
+        "<two>a b");
+  }
+
+  /**
+   * A context begun with a relative name knows itself only as <code>`Internal`</code>; which
+   * <code>Internal`</code> it is comes from its parent. Written to WXF under that short name, every
+   * package's private context collapses into whichever one was created first - which is how the
+   * evaluation kernel was handed a symbol from a neighbouring package instead of the evaluator it
+   * had been told to run.
+   */
+  @Test
+  public void testAPrivateContextSurvivesTheWire() {
+    check("BeginPackage[\"Co`One`\"]", //
+        "");
+    check("Begin[\"`Internal`\"]", //
+        "Co`One`Internal`");
+    check("End[]", //
+        "Co`One`Internal`");
+    check("EndPackage[]", //
+        "");
+    check("BeginPackage[\"Co`Two`\"]", //
+        "");
+    check("Begin[\"`Internal`\"]", //
+        "Co`Two`Internal`");
+    check("End[]", //
+        "Co`Two`Internal`");
+    check("EndPackage[]", //
+        "");
+    check("ToString[BinaryDeserialize[BinarySerialize[Co`Two`Internal`marker]]]", //
+        "Co`Two`Internal`marker");
+    check("ToString[BinaryDeserialize[BinarySerialize[Co`One`Internal`marker]]]", //
+        "Co`One`Internal`marker");
+  }
+
 }

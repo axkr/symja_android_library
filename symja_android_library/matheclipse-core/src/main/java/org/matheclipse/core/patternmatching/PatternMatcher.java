@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FixedPatternSequence;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -625,13 +626,46 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
       fPatternMap = determinePatterns(priority);
       this.fLHSPriority = priority[0];
-      if (this.fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
+      if (this.fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)
+          && containsPatternSequence(this.fLhsPatternExpr)) {
         this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
       }
       if (patternExpr.isCondition()) {
         this.fLHSPriority -= 100;
       }
     }
+  }
+
+  /**
+   * Does this left-hand side really match a run of arguments of unknown length?
+   *
+   * <p>
+   * A rule that does gives up its computed priority and is tried after every rule with a fixed
+   * shape, because it can swallow anything. {@link OptionsPattern} carries the same
+   * "pattern sequence" flag - it stands for a trailing run of options - but it says nothing about
+   * how specific the rest of the rule is: <code>f[x_, OptionsPattern[]]</code> has to keep its
+   * priority, or it would be tried after <code>f[x__, opts:OptionsPattern[]]</code> and a
+   * definition written as a pair of those two would never reach its narrower half.
+   *
+   * @param lhsPatternExpr the left-hand side of the rule
+   * @return <code>true</code> if a <code>__</code> or <code>___</code> style pattern occurs in it
+   */
+  private static boolean containsPatternSequence(IExpr lhsPatternExpr) {
+    if (lhsPatternExpr instanceof IPatternSequence) {
+      return !(lhsPatternExpr instanceof OptionsPattern);
+    }
+    if (lhsPatternExpr instanceof PatternNested) {
+      return containsPatternSequence(((PatternNested) lhsPatternExpr).getPatternExpr());
+    }
+    if (lhsPatternExpr.isASTOrAssociation()) {
+      IAST ast = (IAST) lhsPatternExpr;
+      for (int i = 0; i < ast.size(); i++) {
+        if (containsPatternSequence(ast.get(i))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -952,7 +986,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
       final int lastPosition = lhsPatternAST.argSize();
       if (lastPosition == 1 && lhsPatternAST.get(lastPosition).isAST(S.PatternTest, 3)) {
-        if (lhsPatternAST.size() <= lhsEvalAST.size()) {
+        // one fewer argument than the pattern has is still a match: a trailing `___?test` may
+        // stand for no argument at all, and matchPatternSequence() below is what decides whether
+        // the (possibly empty) run is long enough
+        if (lhsPatternAST.size() - 1 <= lhsEvalAST.size()) {
           IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
           if (patternTest.arg1().isPatternSequence(false)) {
             IASTAppendable seq = F.Sequence();

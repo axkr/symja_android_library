@@ -1116,12 +1116,16 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       String alias = null;
+      // Needs["A`" -> "a`"] and Needs["A`" -> None] read A` without putting it on $ContextPath -
+      // the alias (or nothing) is the only way to reach its symbols afterwards.
+      boolean aliasForm = false;
       if (arg1.isRuleAST()) {
         // Needs["A`" -> "a`"] reads A` and then lets its symbols be written as a`x;
         // Needs["A`" -> None] reads it and adds no alias
         IExpr target = arg1.second();
         alias = target.isString() ? target.toString() : null;
         arg1 = arg1.first();
+        aliasForm = true;
       }
       if (!arg1.isString()) {
         // String expected at position `1` in `2`.
@@ -1143,8 +1147,11 @@ public class FileFunctions {
         ContextPath.PACKAGES.add(contextName);
         ContextPath contextPathOfBuiltin = engine.getContextPath();
         Context builtinContext = contextPathOfBuiltin.getContext(contextName);
-        if (!contextPathOfBuiltin.contains(builtinContext)) {
+        if (!aliasForm && !contextPathOfBuiltin.contains(builtinContext)) {
           contextPathOfBuiltin.add(builtinContext);
+        }
+        if (alias != null) {
+          ContextPath.setContextAlias(alias, contextName);
         }
         return S.Null;
       }
@@ -1152,6 +1159,12 @@ public class FileFunctions {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
+
+      // reading the package runs its own EndPackage[], which prepends the context to $ContextPath.
+      // The alias form has to undo that, so remember whether the context was there beforehand.
+      ContextPath pathBeforeReading = engine.getContextPath();
+      boolean wasOnContextPath =
+          pathBeforeReading.contains(pathBeforeReading.getContext(contextName));
 
       if (!isLoadedInThisSession(contextName, engine)) {
         IExpr result;
@@ -1171,10 +1184,20 @@ public class FileFunctions {
         ContextPath.PACKAGES.add(contextName);
       }
       // the context is on $ContextPath afterwards however it got loaded, so that
-      // BeginPackage["B`", {"A`"}] can see it
+      // BeginPackage["B`", {"A`"}] can see it - but only for the plain form. Needs["A`" -> "a`"]
+      // keeps A` off the path on purpose, so that a bare name written afterwards still belongs to
+      // the reading package and not to A`.
       ContextPath contextPath = engine.getContextPath();
       Context context = contextPath.getContext(contextName);
-      if (!contextPath.contains(context)) {
+      if (aliasForm) {
+        if (!wasOnContextPath) {
+          for (int i = contextPath.size() - 1; i >= 0; i--) {
+            if (contextPath.get(i) == context) {
+              contextPath.remove(i);
+            }
+          }
+        }
+      } else if (!contextPath.contains(context)) {
         contextPath.add(context);
       }
       if (alias != null) {
