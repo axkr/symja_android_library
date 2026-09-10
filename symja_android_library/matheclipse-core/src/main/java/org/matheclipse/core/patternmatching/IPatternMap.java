@@ -213,6 +213,17 @@ public interface IPatternMap {
    * Match exactly one pattern symbol.
    */
   static final class PatternMap1 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 1;
 
     IExpr fSymbol1;
@@ -422,6 +433,19 @@ public interface IPatternMap {
    * Match exactly two pattern symbols.
    */
   static final class PatternMap2 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 2;
 
     IExpr fSymbol1;
@@ -697,6 +721,21 @@ public interface IPatternMap {
    * Match exactly three pattern symbols.
    */
   static final class PatternMap3 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 3;
 
     IExpr fSymbol1;
@@ -1030,6 +1069,23 @@ public interface IPatternMap {
   }
 
   static final class PatternMap4 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        case 3:
+          return fPatternObject4 == null || fPatternObject4.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 4;
 
     IExpr fSymbol1;
@@ -1422,6 +1478,25 @@ public interface IPatternMap {
     }
   }
   static final class PatternMap5 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        case 3:
+          return fPatternObject4 == null || fPatternObject4.isPatternSequence(false);
+        case 4:
+          return fPatternObject5 == null || fPatternObject5.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 5;
 
     IExpr fSymbol1;
@@ -1874,6 +1949,27 @@ public interface IPatternMap {
     }
   }
   static final class PatternMap6 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        case 3:
+          return fPatternObject4 == null || fPatternObject4.isPatternSequence(false);
+        case 4:
+          return fPatternObject5 == null || fPatternObject5.isPatternSequence(false);
+        case 5:
+          return fPatternObject6 == null || fPatternObject6.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 6;
 
     IExpr fSymbol1;
@@ -2390,6 +2486,13 @@ public interface IPatternMap {
 
   /** A map from a pattern to a possibly found value during pattern-matching. */
   static final class PatternMap implements IPatternMap, Serializable {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      return index < 0 || fPatternObjects == null || index >= fPatternObjects.length
+          || fPatternObjects[index] == null || fPatternObjects[index].isPatternSequence(false);
+    }
+
 
     private static final IExpr[] EMPTY_ARRAY = {};
 
@@ -3056,6 +3159,23 @@ public interface IPatternMap {
    * @return <code>null</code> if no matched expression exists
    */
   public IExpr getValue(IPatternObject pattern);
+
+  /**
+   * Does the pattern at this slot stand for a run of arguments (<code>x__</code>) rather than for
+   * one (<code>x_</code>)?
+   *
+   * <p>
+   * Only the first kind is spread into the expression it is substituted into. A single-value
+   * pattern which happens to be matched with a <code>Sequence</code> expression - the value of
+   * <code>v</code> in <code>"k" -> Sequence[a, b] /. _[k_String, v_] :> …</code> - is one argument
+   * and stays one, which is what keeps such a rule from turning into a three-argument one.
+   *
+   * @param index the slot index, as {@link #getValue(int)} understands it
+   * @return <code>true</code> unless the slot is known to hold a single-value pattern
+   */
+  default boolean isSequenceSlot(int index) {
+    return true;
+  }
 
   /** Set all pattern values to <code>null</code>; */
   public void initPattern();

@@ -777,4 +777,43 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Co`One`Internal`marker");
   }
 
+  /**
+   * A name which stood for one argument keeps standing for one, even when the argument it was
+   * matched with is itself a <code>Sequence</code>. Only <code>x__</code> and <code>x___</code> are
+   * spread into the expression they are substituted into.
+   *
+   * <p>
+   * WLJS's object constructor turns each option into <code>SetDelayed[symbol[k], v]</code> through
+   * such a rule, and a cell is created with <code>"After" -> Sequence[cell, ___?OutputCellQ]</code>
+   * - which is how the notebook says where an output cell belongs. With the Sequence spread out,
+   * the assignment became a three-argument SetDelayed, the field was never stored, and the output
+   * cell was built but never placed.
+   */
+  @Test
+  public void testASingleValuePatternIsNotSpreadOut() {
+    check("outputQ[x_] := True", //
+        "");
+    check("fields = <||>", //
+        "<||>");
+    check("((\"After\" -> Sequence[cell, ___?outputQ]) /. "
+        + "{_[k_String, v_] :> SetDelayed[fields[k], v]}); Keys[fields]", //
+        "{After}");
+    // the field holds the whole Sequence, which spreads out only when it is evaluated in a
+    // position that allows it
+    check("Head[fields[\"After\"]]", //
+        "Sequence");
+    check("Length[{fields[\"After\"]}]", //
+        "2");
+    // a name which stood for a run of arguments still is spread out
+    check("{a, b} /. {x__} :> g[x]", //
+        "g[a,b]");
+    check("Hold[{a, b}] /. Hold[{w__}] :> Hold[Module[{w}, 1]]", //
+        "Hold[Module[{a,b},1]]");
+    // and an argument a rule left unassigned still disappears
+    check("optional[x_, y_ : 0] := {x, y}", //
+        "");
+    check("{optional[1], optional[1, 2]}", //
+        "{{1,0},{1,2}}");
+  }
+
 }
