@@ -28,6 +28,20 @@ public class PacletTest extends ExprEvaluatorTestCase {
     PacletRegistry.clear();
   }
 
+  /**
+   * A file name as Wolfram Language source.
+   *
+   * <p>
+   * A backslash begins an escape inside a string literal, so a Windows temporary directory written
+   * out as it stands reaches the parser as <code>C:sershartppDataocalempunit-…</code> - the
+   * <code>\U</code>, <code>\k</code>, <code>\A</code>, <code>\L</code>, <code>\T</code> and
+   * <code>\j</code> each eaten as an escape. Doubling them is what makes the test say the name it
+   * means, on the one platform where the name contains any.
+   */
+  private static String wl(Path path) {
+    return path.toString().replace("\\", "\\\\");
+  }
+
   /** A paclet directory holding one package, described in the current spelling. */
   private static Path modernPaclet(Path root) throws IOException {
     Path paclet = root.resolve("Widgets");
@@ -76,7 +90,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
-      check("PacletDirectoryLoad(\"" + root + "\") // Length", //
+      check("PacletDirectoryLoad(\"" + wl(root) + "\") // Length", //
           "1");
       check("Needs(\"Acme`Widgets`\")", //
           "");
@@ -98,7 +112,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
-      check("PacletDirectoryLoad(\"" + root + "\") // Length", //
+      check("PacletDirectoryLoad(\"" + wl(root) + "\") // Length", //
           "1");
       check("Needs(\"Gadgets`\")", //
           "");
@@ -115,7 +129,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
-      check("PacletDirectoryLoad(\"" + root + "\") // Length", //
+      check("PacletDirectoryLoad(\"" + wl(root) + "\") // Length", //
           "1");
       check("Needs(\"Acme`Widgets`\" -> \"w`\")", //
           "");
@@ -133,7 +147,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
-      check("PacletDirectoryLoad(\"" + root + "\") // Length", //
+      check("PacletDirectoryLoad(\"" + wl(root) + "\") // Length", //
           "1");
       check("Needs(\"Acme`Widgets`\" -> \"w`\")", //
           "");
@@ -170,7 +184,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
-      check("Get(\"answer.wl\", Path -> {\"" + directory + "\"})", //
+      check("Get(\"answer.wl\", Path -> {\"" + wl(directory) + "\"})", //
           "");
       check("theAnswer()", //
           "42");
@@ -185,7 +199,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;
     try {
-      check("PacletDirectoryLoad(\"" + root + "\") // Length", //
+      check("PacletDirectoryLoad(\"" + wl(root) + "\") // Length", //
           "1");
       // this is how an application starts from nothing
       check("PacletDirectoryUnload /@ PacletDirectoryLoad() // Last // Length", //
@@ -204,7 +218,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
     try {
       // a Java process cannot change its own working directory, so a relative name has to be
       // resolved against Directory[] for SetDirectory to mean anything
-      check("SetDirectory(\"" + root + "\")", //
+      check("SetDirectory(\"" + wl(root) + "\")", //
           root.toString());
       check("FileExistsQ(\"here.txt\")", //
           "True");
