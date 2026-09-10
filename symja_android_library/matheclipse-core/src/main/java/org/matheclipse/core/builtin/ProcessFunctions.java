@@ -21,7 +21,10 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ProcessObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.io.FileSandbox;
 
 /**
  * Starting other programs, and asking after the ones already started.
@@ -72,11 +75,23 @@ public class ProcessFunctions {
     return null;
   }
 
-  /** Build a process, with the directory and environment the options ask for. */
-  private static ProcessBuilder builder(List<String> command, IExpr directory, IExpr environment) {
+  /**
+   * Build a process, with the directory and environment the options ask for.
+   *
+   * @return <code>null</code> if <code>ProcessDirectory</code> names a directory the sandbox does
+   *         not let this session reach
+   */
+  private static ProcessBuilder builder(List<String> command, IExpr directory, IExpr environment,
+      ISymbol symbol, EvalEngine engine) {
     ProcessBuilder builder = new ProcessBuilder(command);
     if (directory != null && directory.isString()) {
-      builder.directory(new File(directory.toString()));
+      // ProcessDirectory is a name the user supplied, so where it may point is the sandbox's
+      // decision and not this method's
+      File workingDirectory = FileSandbox.resolveRead(symbol, directory.toString(), engine);
+      if (workingDirectory == null) {
+        return null;
+      }
+      builder.directory(workingDirectory);
     }
     if (environment != null && environment.isAssociation()) {
       Map<String, String> env = builder.environment();
@@ -111,7 +126,11 @@ public class ProcessFunctions {
         return F.NIL;
       }
       try {
-        ProcessBuilder builder = builder(command, options[0], options[1]);
+        ProcessBuilder builder =
+            builder(command, options[0], options[1], ast.topHead(), engine);
+        if (builder == null) {
+          return S.$Failed;
+        }
         Process process = builder.start();
         drain(process.getInputStream());
         drain(process.getErrorStream());
@@ -143,9 +162,9 @@ public class ProcessFunctions {
     }
 
     @Override
-    public void setUp(final org.matheclipse.core.interfaces.ISymbol newSymbol) {
+    public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          new org.matheclipse.core.interfaces.IBuiltInSymbol[] {S.ProcessDirectory,
+          new IBuiltInSymbol[] {S.ProcessDirectory,
               S.ProcessEnvironment}, //
           new IExpr[] {S.None, S.None});
     }
