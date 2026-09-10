@@ -1,0 +1,345 @@
+#| Hand-written parser edge cases. Unlike operators.txt and doc.txt this file is NOT generated -
+#| edit it by hand to add a case, then regenerate the golden files with ParserCorpusGenerator.
+#|
+#| Encoding: one input per line. A backslash is written \\, a newline \n, a carriage return \r and
+#| a tab \t. Lines starting with "#|" are comments; blank lines are ignored.
+#|
+#| ============================================================ integer literals
+0
+1
+-1
+007
+2147483647
+2147483648
+-2147483648
+9223372036854775807
+9223372036854775808
+-9223372036854775808
+123456789012345678901234567890
+#| base^^digits notation
+2^^101
+8^^777
+16^^ff
+16^^FF
+36^^zz
+#| explicit-times mode additionally reads these as prefixed literals
+0x1f
+0X1F
+0b101
+0o17
+#| ============================================================== real literals
+1.
+.5
+0.5
+1.5
+1.0e3
+1.0E3
+1E-2
+2.2250738585072014*^-308
+1.5*^10
+1.5*^+10
+#| backtick precision and accuracy marks
+1.5`
+1.5`20
+1.5``20
+2`
+4.60421677720057651458449514482636628606`20.6008566975056
+#| the scanner has a special case so that this is a division by 0.2, not a ReplaceAll
+1/.2
+1 /. 2
+a/.2
+#| ================================================================== operators
+-2^2
+2^-1
+2^3^2
+(2^3)^2
+a-b-c
+a/b/c
+a-(b-c)
+-a*b
+a+-b
+a--b
+a- -b
+1-1
+2-3-4
+a/b*c
+a*b/c
+#| ======================================================== implicit multiplication
+2x
+2 x
+x y
+x  y
+2(a+b)
+(a+b)(c+d)
+2Pi
+1/2Pi
+2/3x
+x!y
+2!
+2!!
+a b c d
+2 3
+#| ================================================================ inequalities
+a<b<c
+a<b<=c
+a<b<=c>d
+a==b==c
+a==b<c
+a!=b!=c
+a===b===c
+a<b==c>d!=e
+#| ================================================================== patterns
+_
+__
+___
+_h
+_.
+_:v
+x_
+x__
+x___
+x_h
+x__h
+x___h
+x_.
+x_:v
+x_h:v
+_Integer
+x_Integer
+x_?NumberQ
+x_Integer?Positive
+f(x_,y_):=x+y
+f(x_Integer:3):=x
+a:b
+a:b:c
+x:_
+x:_Integer
+#| ==================================================================== slots
+#
+#1
+#2
+#9
+##
+##2
+#name
+#"name"
+#&
+#1+#2&
+(#1+#2)&
+#[[1]]&
+x|->x^2
+{x,y}|->x+y
+#| ============================================================== out references
+%
+%%
+%%%
+%1
+%12
+%+1
+#| ================================================================== derivative
+f'
+f''
+f'''
+f'(x)
+f''(x)
+f'(x)(y)
+Sin'
+#| ======================================================================= part
+a[[1]]
+a[[1,2]]
+a[[1]][[2]]
+{a,b}[[2]]
+a[[1]]+b
+a[[-1]]
+a[[;;]]
+a[[1;;]]
+a[[;;2]]
+a[[1;;2]]
+a[[1;;2;;3]]
+a[[All,1]]
+#| ======================================================================= span
+;;
+1;;
+;;2
+1;;2
+1;;2;;3
+;;;;
+a;;b
+a;;b;;c
+{1,2,3}[[;;-1]]
+#| ============================================================== compound expr
+a;
+a;b
+a;b;
+a;;b;
+;a
+a;
+#| ================================================================ association
+<||>
+<|a->1|>
+<|a->1,b->2|>
+<|a->1|>[[Key(a)]]
+<|a-><|b->1|>|>
+#| ==================================================================== strings
+""
+"a"
+"a b"
+"a\\"b"
+"a\\nb"
+"a\\\\b"
+"\\[Alpha]"
+"a"<>"b"
+#| =================================================================== comments
+(* c *)1+1
+1+(* c *)1
+1+1(* c *)
+(* (* nested *) *)1
+(**)1
+#| ============================================================== tilde operator
+a~f~b
+a~f~b~g~c
+a~f~b+c
+#| =============================================================== named unicode
+\\[Alpha]
+\\[Alpha]+\\[Beta]
+α
+α+β
+Pi
+∀(a)
+∃(a)
+a∈b
+a∉b
+a⊗b
+a⊕b
+√a
+a±b
+±a
+#| ================================================================== contexts
+#| Do NOT add a System`-qualified name here. In mma mode the parser resolves the identifier
+#| case-sensitively inside the named context, and because the predefined-symbol map is keyed by
+#| lowercase name a capitalised one misses and *creates* a new System` symbol. That symbol then
+#| shows up in Names("System`*"), which LowercaseTestCase#testNames asserts exactly - so a single
+#| corpus entry like System`Plus makes an unrelated test fail depending on execution order.
+Global`x
+`x
+`Private`x
+a`b`c
+a`b`
+`
+`1
+1`x
+#| ================================================ forms taken from real packages
+n[#] = a[#]; &
+Map[a; &, {1}]
+a ;/ b
+t[[i]]["pos"][[2]]
+f::usage = "\na"
+$a
+$Assumptions
+a$b
+$
+#| ============================================================ line structure
+a+\\\nb
+a+\nb
+a+b\n
+\na+b
+a\n+b
+a  +  b
+#| ============================================================== nesting depth
+((((((a))))))
+{{{{{{a}}}}}}
+f(f(f(f(f(a)))))
+a+(b+(c+(d+e)))
+#| ============================================================== syntax errors
+(
+)
+{
+}
+[
+]
+a+
++
+a[[
+a[[1]
+<|
+|>
+1..
+&&a
+a&&
+=
+a=
+,
+a,b
+f(,)
+f(a,)
+f(,a)
+#| ================================================================ misc syntax
+f()
+f( )
+f(a)
+f(a,b)
+f(a)(b)
+f(a)[b]
+f[a]
+f[[a]]
+{}
+{ }
+{a}
+{a,b}
+{a,{b,c}}
+a=.
+a=!=b
+a===b
+Hold(a+b)
+HoldForm(a+b)
+Sqrt(4)
+Exp(x)
+Get("x")
+a::b
+a::b::c
+a//b
+a//b//c
+a@b@c
+a@@b
+a@@@b
+a/@b
+a//@b
+a/;b
+a/:b=c
+a^:=b
+a/:b:=c
+#| ===================================== postfix followed by an argument list
+#| The postfix branch of parseLookaheadOperator used to inline what parsePostfixOperator does and
+#| so dropped the argument list: "a+b!(c)" read "(c)" as an implicit product where "b!(c)" on its
+#| own read it as arguments.
+b!(c)
+a+b!(c)
+a*b!(c)
+b!!(c)
+a+b!!(c)
+a+b!(c)(d)
+a+b!!
+#| ============================ ## as the left operand of an implicit product
+#| The two climbing loops disagreed about whether ## begins an operand.
+a ##
+a+b ##
+a ##2
+a+b ##2
+2 ##
+{a,b} ##
+#| ============================ chained PatternTest, including inside an argument list
+#| MatchQ(3, _?NumberQ?Positive) was a syntax error - "')' expected" - while the same pattern
+#| parsed fine on its own. PatternTest is left-associative and nests; when it was flat it built a
+#| three-argument call the evaluator rejected outright.
+_?NumberQ
+_?NumberQ?Positive
+_?NumberQ?Positive?Negative
+x_?NumberQ?Positive
+MatchQ(3, _?NumberQ)
+MatchQ(3, _?NumberQ?Positive)
+MatchQ(3, x_?NumberQ?Positive)
+f(_?NumberQ?Positive)
+{_?NumberQ?Positive}
+(_?NumberQ?Positive)
+f(a, _?NumberQ?Positive, b)
+_?NumberQ?Positive&
