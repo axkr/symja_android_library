@@ -138,10 +138,19 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testRejoiningAnAbsolutePathKeepsItsRoot() {
     // FileNameSplit["/a/b"] is {"", "a", "b"}: the empty first segment is the root, and dropping
     // it turned every absolute path into a relative one
-    check("FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]]", //
-        "/Users/someone/x.wl");
-    check("FileNameJoin[{\"\", \"Users\", \"someone\"}]", //
-        "/Users/someone");
+    check("FileNameSplit[\"/Users/someone/x.wl\"]", //
+        "{,Users,someone,x.wl}");
+    // FileNameJoin writes the separator of the host it runs on, so what is asserted is that the
+    // root is still there and still a separator - naming "/" would only hold away from Windows
+    check("StringTake[FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]], 1] "
+        + "=== $PathnameSeparator", //
+        "True");
+    check("FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]] "
+        + "=== StringRiffle[{\"\", \"Users\", \"someone\", \"x.wl\"}, $PathnameSeparator]", //
+        "True");
+    check("FileNameJoin[{\"\", \"Users\", \"someone\"}] "
+        + "=== StringRiffle[{\"\", \"Users\", \"someone\"}, $PathnameSeparator]", //
+        "True");
   }
 
   @Test
