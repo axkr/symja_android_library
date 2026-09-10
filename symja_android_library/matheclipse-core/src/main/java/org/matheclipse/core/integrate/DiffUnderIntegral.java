@@ -389,14 +389,34 @@ public final class DiffUnderIntegral {
    * shape to recognize, so every attempt costs two integrals, and an integral that Newton-Leibniz
    * can do should never pay for them.
    */
+  /**
+   * Whether this thread is already inside an attempt.
+   *
+   * <p>
+   * The inner integral this rule builds goes back through the evaluator, which offers it to this
+   * rule again - its integrand is one derivative further along but still carries a parameter, so
+   * the attempt nests and never comes closer to an answer. The time budget was the only thing
+   * ending it, and a budget bounds the wall clock rather than the stack: with the one megabyte a
+   * Windows fork gives its main thread, where a Unix one has eight, sixty-five nested attempts end
+   * in a StackOverflowError before the budget is spent.
+   *
+   * <p>
+   * Differentiating under the integral sign a second time inside the first is not what the rule is
+   * for in any case. Several parameters are already tried side by side, below.
+   */
+  private static final ThreadLocal<Boolean> IN_PROGRESS =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
   public static IExpr general(IExpr f, IExpr x, IExpr lower, IExpr upper, EvalEngine engine) {
-    if (!Config.INTEGRATE_ALGORITHMS || !Config.INTEGRATE_ALGORITHM_DIFF_UNDER_INT
+    if (IN_PROGRESS.get().booleanValue() || !Config.INTEGRATE_ALGORITHMS
+        || !Config.INTEGRATE_ALGORITHM_DIFF_UNDER_INT
         || !x.isSymbol() || f.leafCount() > MAX_GENERAL_LEAF_COUNT
         || !f.isFreeAST(h -> h == S.Integrate || h == S.Sum || h == S.Product)) {
       return F.NIL;
     }
     IASTAppendable parameters = F.ListAlloc();
     collectParameters(f, x, parameters);
+    IN_PROGRESS.set(Boolean.TRUE);
     try {
       for (int i = 1; i <= parameters.argSize() && i <= MAX_PARAMETERS; i++) {
         IExpr parameter = parameters.get(i);
@@ -411,6 +431,8 @@ public final class DiffUnderIntegral {
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
+    } finally {
+      IN_PROGRESS.remove();
     }
     return F.NIL;
   }
