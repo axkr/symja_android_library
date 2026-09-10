@@ -51,6 +51,7 @@ public class FileSystemFunctions {
         S.DirectoryQ.setEvaluator(new DirectoryQ());
         S.DynamicLibraryExtension.setEvaluator(new DynamicLibraryExtension());
         S.Environment.setEvaluator(new Environment());
+        S.LibraryFunctionLoad.setEvaluator(new LibraryFunctionLoad());
         S.ExpandFileName.setEvaluator(new ExpandFileName());
         S.FileBaseName.setEvaluator(new FileBaseName());
         S.FileByteCount.setEvaluator(new FileByteCount());
@@ -340,6 +341,31 @@ public class FileSystemFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_0;
+    }
+  }
+
+  /**
+   * <code>LibraryFunctionLoad[…]</code>: Symja has no LibraryLink, so no shared library ever
+   * loads.
+   *
+   * <p>
+   * Answering <code>$Failed</code> rather than staying unevaluated is what lets a package fall
+   * back to a Wolfram Language implementation of the same function: the usual shape is
+   * <code>If[FailureQ[f = LibraryFunctionLoad[…]], f = Compile[…]]</code>, and an unevaluated
+   * <code>LibraryFunctionLoad</code> takes neither branch.
+   */
+  private static class LibraryFunctionLoad extends AbstractEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr function = ast.size() > 2 ? ast.arg2() : F.CEmptyString;
+      // The function `1` was not loaded from the file `2`.
+      Errors.printMessage(S.LibraryFunctionLoad, "libload", F.List(function, ast.arg1()), engine);
+      return S.$Failed;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
     }
   }
 

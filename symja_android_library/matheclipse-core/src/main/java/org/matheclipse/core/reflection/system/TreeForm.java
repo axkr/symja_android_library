@@ -45,6 +45,11 @@ public class TreeForm extends AbstractFunctionEvaluator {
     }
 
     IExpr expr = ast.arg1();
+    if (!expr.isFreeOfPatterns()) {
+      // a picture of a pattern is not a picture of anything: leave the call alone rather than
+      // building a Graphics whose labels carry the pattern objects around
+      return F.NIL;
+    }
     int maxLevel = Integer.MAX_VALUE;
 
     // TreeForm[expr, n]

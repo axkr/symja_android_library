@@ -39,6 +39,22 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  * parser</a> for the idea, how to parse the operators depending on their precedence.
  */
 public class Parser extends Scanner {
+
+  /**
+   * The precedence of <code>?</code>, <code>PatternTest</code>.
+   *
+   * <p>
+   * A <code>:</code> standing after a symbol names a pattern, and that reading is accepted even
+   * where the operator's own precedence would not reach - <code>x*y:z</code> is
+   * <code>x (y:z)</code>. It must not reach into the test of a <code>PatternTest</code> though:
+   * there <code>_Symbol?test:default</code> read the test as <code>test:default</code> and the
+   * default was lost.
+   */
+  private static final int PATTERN_TEST_PRECEDENCE = 680;
+
+  /** The precedence of <code>;;</code>, <code>Span</code>. */
+  private static final int SPAN_PRECEDENCE = 305;
+
   /** SymbolNode for <code>Derivative</code> corresponding to <code>F#Derivative</code> */
   public static final SymbolNode DERIVATIVE = new SymbolNode("Derivative");
 
@@ -212,7 +228,7 @@ public class Parser extends Scanner {
       case TT_IDENTIFIER:
         final SymbolNode symbol = getSymbol();
         if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
-          temp = getBlankPatterns(symbol);
+          temp = getBlankPatterns(symbol, min_precedence);
         } else {
           temp = symbol;
         }
@@ -251,7 +267,7 @@ public class Parser extends Scanner {
       case TT_BLANK_BLANK_BLANK:
       case TT_BLANK_OPTIONAL:
       case TT_BLANK_COLON:
-        return getBlanks(temp);
+        return getBlanks(temp, min_precedence);
       case TT_DIGIT:
         return getNumber(false);
       case TT_STRING:
@@ -364,7 +380,7 @@ public class Parser extends Scanner {
     return null;
   }
 
-  private ASTNode getBlanks(ASTNode temp) {
+  private ASTNode getBlanks(ASTNode temp, final int min_precedence) {
     if (fToken == TT_BLANK) {
       if (isWhitespace()) {
         getNextToken();
@@ -446,7 +462,7 @@ public class Parser extends Scanner {
     return parseArguments(temp);
   }
 
-  private ASTNode getBlankPatterns(final SymbolNode symbol) {
+  private ASTNode getBlankPatterns(final SymbolNode symbol, final int min_precedence) {
     ASTNode temp = null;
     if (fToken == TT_BLANK) {
       // read '_'
@@ -1126,15 +1142,20 @@ public class Parser extends Scanner {
     ASTNode temp = parseExpression(parsePrimary(0), 0);
 
     if (fToken == TT_SPAN) {
+      // `;;` binds tighter than an operator such as `->`, so in `"sep" -> 2 ;;` the span is the
+      // right-hand side of the rule and not the whole rule. The token turns up only once the
+      // expression is complete, so the expression is walked back down its right edge to the part
+      // the span really applies to.
+      final FunctionNode spanOwner = spanOwner(temp);
       FunctionNode span = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
-      span.add(temp);
+      span.add(spanOwner == null ? temp : spanOwner.get(spanOwner.size() - 1));
       getNextToken();
       if (fToken == TT_SPAN) {
         span.add(fFactory.createSymbol(IConstantOperators.All));
         getNextToken();
         if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
             || fToken == TT_PRECEDENCE_CLOSE) {
-          return span;
+          return withSpan(spanOwner, temp, span);
         } else if (fToken == TT_OPERATOR) {
           FunctionNode times = fFactory.createAST(new SymbolNode("Times"));
           times.add(span);
@@ -1147,7 +1168,7 @@ public class Parser extends Scanner {
       } else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE) {
         span.add(fFactory.createSymbol(IConstantOperators.All));
-        return span;
+        return withSpan(spanOwner, temp, span);
       } else if (fToken == TT_OPERATOR) {
         InfixOperator infixOperator = determineBinaryOperator();
         if (infixOperator != null && //
@@ -1174,14 +1195,49 @@ public class Parser extends Scanner {
         getNextToken();
         if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
             || fToken == TT_PRECEDENCE_CLOSE) {
-          return span;
+          return withSpan(spanOwner, temp, span);
         }
         span.add(parseExpression(parsePrimary(0), 0));
       }
 
-      return span;
+      return withSpan(spanOwner, temp, span);
     }
     return temp;
+  }
+
+  /**
+   * The node whose last argument a trailing <code>;;</code> belongs to, or <code>null</code> when
+   * it belongs to the whole expression.
+   *
+   * <p>
+   * Only an operator that binds looser than a span can own one: <code>a -> b ;;</code> is
+   * <code>a -> (b ;;)</code>, while <code>a * b ;;</code> is <code>(a b) ;;</code>.
+   */
+  private FunctionNode spanOwner(ASTNode expr) {
+    FunctionNode owner = null;
+    ASTNode current = expr;
+    while (current instanceof FunctionNode) {
+      FunctionNode function = (FunctionNode) current;
+      if (function.size() < 3 || !(function.get(0) instanceof SymbolNode)) {
+        break;
+      }
+      Operator operator = fFactory.get(((SymbolNode) function.get(0)).getString());
+      if (!(operator instanceof InfixOperator) || operator.getPrecedence() >= SPAN_PRECEDENCE) {
+        break;
+      }
+      owner = function;
+      current = function.get(function.size() - 1);
+    }
+    return owner;
+  }
+
+  /** Put the span back where it belongs, and answer the expression it is part of. */
+  private static ASTNode withSpan(FunctionNode spanOwner, ASTNode whole, FunctionNode span) {
+    if (spanOwner == null) {
+      return span;
+    }
+    spanOwner.set(spanOwner.size() - 1, span);
+    return whole;
   }
 
   /**
@@ -1260,7 +1316,8 @@ public class Parser extends Scanner {
         final boolean accept = foldEqualPrecedence //
             ? precedence >= min_precedence
             : precedence > min_precedence //
-                || (fOperatorString.equals(":") && (lhs instanceof SymbolNode))
+                || (fOperatorString.equals(":") && (lhs instanceof SymbolNode)
+                    && min_precedence < PATTERN_TEST_PRECEDENCE)
                 || (precedence == min_precedence
                     && infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE);
         if (!accept) {
@@ -1485,6 +1542,15 @@ public class Parser extends Scanner {
   }
 
   private final ASTNode parsePrefixOperator(final PrefixOperator prefixOperator) {
+    if ("Get".equals(prefixOperator.getFunctionName())) {
+      // << reads a name, not an expression: <<Foo`Bar` and <<dir/file.wl are file names
+      String fileName = scanFileName();
+      if (fileName != null) {
+        getNextToken();
+        return fFactory.createFunction(fFactory.createSymbol("Get"),
+            fFactory.createString(new StringBuilder(fileName)));
+      }
+    }
     getNextToken();
     final ASTNode temp = parseLookaheadOperator(prefixOperator.getPrecedence());
     if ("PreMinus".equals(prefixOperator.getFunctionName()) && temp instanceof NumberNode) {

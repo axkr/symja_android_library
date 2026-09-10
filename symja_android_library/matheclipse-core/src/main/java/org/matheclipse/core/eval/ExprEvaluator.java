@@ -384,8 +384,11 @@ public class ExprEvaluator {
         temp = engine.evaluate(expr);
       }
     } catch (ReturnException rex) {
-      // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", rex);
-      return rex.getValue();
+      // A Return which reaches the top level is shown as the Return it is: it left the loops and
+      // the scoping constructs it was written in - that is what Return does - but there is no
+      // function here for it to be the value of. Inside a definition the rule application takes
+      // the value out of it instead.
+      return F.Return(rex.getValue());
     } catch (BreakException | ContinueException conex) {
       // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", conex);
       boolean isBreak = conex instanceof BreakException;

@@ -213,6 +213,17 @@ public interface IPatternMap {
    * Match exactly one pattern symbol.
    */
   static final class PatternMap1 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 1;
 
     IExpr fSymbol1;
@@ -422,6 +433,19 @@ public interface IPatternMap {
    * Match exactly two pattern symbols.
    */
   static final class PatternMap2 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 2;
 
     IExpr fSymbol1;
@@ -697,6 +721,21 @@ public interface IPatternMap {
    * Match exactly three pattern symbols.
    */
   static final class PatternMap3 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 3;
 
     IExpr fSymbol1;
@@ -1030,6 +1069,23 @@ public interface IPatternMap {
   }
 
   static final class PatternMap4 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        case 3:
+          return fPatternObject4 == null || fPatternObject4.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 4;
 
     IExpr fSymbol1;
@@ -1422,6 +1478,25 @@ public interface IPatternMap {
     }
   }
   static final class PatternMap5 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        case 3:
+          return fPatternObject4 == null || fPatternObject4.isPatternSequence(false);
+        case 4:
+          return fPatternObject5 == null || fPatternObject5.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 5;
 
     IExpr fSymbol1;
@@ -1874,6 +1949,27 @@ public interface IPatternMap {
     }
   }
   static final class PatternMap6 implements IPatternMap {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      switch (index) {
+        case 0:
+          return fPatternObject1 == null || fPatternObject1.isPatternSequence(false);
+        case 1:
+          return fPatternObject2 == null || fPatternObject2.isPatternSequence(false);
+        case 2:
+          return fPatternObject3 == null || fPatternObject3.isPatternSequence(false);
+        case 3:
+          return fPatternObject4 == null || fPatternObject4.isPatternSequence(false);
+        case 4:
+          return fPatternObject5 == null || fPatternObject5.isPatternSequence(false);
+        case 5:
+          return fPatternObject6 == null || fPatternObject6.isPatternSequence(false);
+        default:
+          return true;
+      }
+    }
+
     private static final int SIZE = 6;
 
     IExpr fSymbol1;
@@ -2390,6 +2486,13 @@ public interface IPatternMap {
 
   /** A map from a pattern to a possibly found value during pattern-matching. */
   static final class PatternMap implements IPatternMap, Serializable {
+
+    @Override
+    public boolean isSequenceSlot(int index) {
+      return index < 0 || fPatternObjects == null || index >= fPatternObjects.length
+          || fPatternObjects[index] == null || fPatternObjects[index].isPatternSequence(false);
+    }
+
 
     private static final IExpr[] EMPTY_ARRAY = {};
 
@@ -2992,11 +3095,12 @@ public interface IPatternMap {
       if (x instanceof PatternNested) {
         IExpr patternExpr = ((PatternNested) x).getPatternExpr();
         if (patternExpr.isASTOrAssociation()) {
+          // giving a pattern a name does not narrow what it matches: x:f[a_] is exactly as specific
+          // as f[a_], so the name must not move the rule ahead of one written without it. Only the
+          // named pattern itself counts.
+          priority[0] += result[1];
           listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) patternExpr,
               priority, ruleWithoutPattern, treeLevel + 1);
-
-          // Replaced hardcoded 11 with the constant
-          priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
 
           if (x.isPatternDefault()) {
             listEvalFlags[0] |= EvalFlags.Mask.CONTAINS_DEFAULT_PATTERN;
@@ -3055,6 +3159,23 @@ public interface IPatternMap {
    * @return <code>null</code> if no matched expression exists
    */
   public IExpr getValue(IPatternObject pattern);
+
+  /**
+   * Does the pattern at this slot stand for a run of arguments (<code>x__</code>) rather than for
+   * one (<code>x_</code>)?
+   *
+   * <p>
+   * Only the first kind is spread into the expression it is substituted into. A single-value
+   * pattern which happens to be matched with a <code>Sequence</code> expression - the value of
+   * <code>v</code> in <code>"k" -> Sequence[a, b] /. _[k_String, v_] :> …</code> - is one argument
+   * and stays one, which is what keeps such a rule from turning into a three-argument one.
+   *
+   * @param index the slot index, as {@link #getValue(int)} understands it
+   * @return <code>true</code> unless the slot is known to hold a single-value pattern
+   */
+  default boolean isSequenceSlot(int index) {
+    return true;
+  }
 
   /** Set all pattern values to <code>null</code>; */
   public void initPattern();
@@ -3334,14 +3455,16 @@ public interface IPatternMap {
         optionValue = F.$str(((ISymbol) arg1).getSymbolName());
       }
 
+      boolean insideOptionsPattern = false;
       Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
       while (iter.hasNext()) {
         IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
         if (map != null) {
-          optionsPattern = map.get(S.LHS_HEAD);
-          if (optionsPattern != null) {
+          IASTAppendable lhsHeadEntry = map.get(S.LHS_HEAD);
+          if (lhsHeadEntry != null) {
+            insideOptionsPattern = true;
 
-            ISymbol lhsHead = optionsPattern.topHead();
+            ISymbol lhsHead = lhsHeadEntry.topHead();
             optionsPattern = map.get(lhsHead);
             rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
             if (rhsRuleValue.isPresent()) {
@@ -3349,6 +3472,27 @@ public interface IPatternMap {
             }
           }
         }
+        if (quiet) {
+          // Substituting the right-hand side of a rule: only the options of *that* rule count, and
+          // a fresh frame for it is the innermost one. An OptionValue further out belongs to
+          // whatever happens to be running - reading it here would write a foreign option's name
+          // into an expression which is only being carried along.
+          break;
+        }
+      }
+      if (optionsPattern == null && insideOptionsPattern && !quiet) {
+        // An option which is neither supplied nor a default answers its own name, as in the
+        // Wolfram Language. Leaving OptionValue[name] unevaluated instead let it be handed on as
+        // the *value* of an option, and the next lookup then found itself: the two of them never
+        // came to a stop.
+        //
+        // Only when this is a real evaluation. Substituting the right-hand side of a rule resolves
+        // the OptionValue calls in it quietly, and one which belongs to a definition merely being
+        // carried along has to be left exactly as it stands - answering the name there would write
+        // the name into the definition.
+        // Option name `2` not found in defaults for `1`
+        Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
+        return optionValue;
       }
       // return arg1;
     }

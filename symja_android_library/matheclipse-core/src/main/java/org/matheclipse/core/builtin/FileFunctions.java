@@ -38,6 +38,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
@@ -45,6 +46,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.WMACompress;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.io.net.SocketEntry;
 import org.matheclipse.core.expression.data.FileExpr;
@@ -57,6 +59,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -107,15 +110,19 @@ public class FileFunctions {
         S.Read.setEvaluator(new Read());
         S.ReadLine.setEvaluator(new ReadLine());
         S.ReadList.setEvaluator(new ReadList());
+        S.ReadByteArray.setEvaluator(new ReadByteArray());
         S.ReadString.setEvaluator(new ReadString());
         S.Save.setEvaluator(new Save());
         S.StringToStream.setEvaluator(new StringToStream());
         S.Uncompress.setEvaluator(new Uncompress());
         S.URLDecode.setEvaluator(new URLDecode());
         S.URLEncode.setEvaluator(new URLEncode());
+        S.URLParse.setEvaluator(new URLParse());
+        S.URLBuild.setEvaluator(new URLBuild());
         S.URLFetch.setEvaluator(new URLFetch());
         S.Write.setEvaluator(new Write());
         S.WriteString.setEvaluator(new WriteString());
+        S.$StandardOutputStream.setEvaluator(new $StandardOutputStream());
       }
     }
   }
@@ -124,9 +131,14 @@ public class FileFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       String contextName = Validate.checkContextName(ast, 1);
-      org.matheclipse.core.expression.Context pack =
-          EvalEngine.get().getContextPath().currentContext();
-      org.matheclipse.core.expression.Context context = engine.begin(contextName, pack);
+      // Begin["`Private`"] names a context under the one open now; Begin["Foo`Bar`"] names that
+      // context and no other. Hanging the second kind under the current one made a file which
+      // begins Begin["CoffeeLiqueur`Notebook`Views`"] land in a different context depending on
+      // where it was read from - and its own symbols, written out in full, then meant nothing.
+      org.matheclipse.core.expression.Context parent = contextName.startsWith("`") //
+          ? EvalEngine.get().getContextPath().currentContext()
+          : null;
+      org.matheclipse.core.expression.Context context = engine.begin(contextName, parent);
       return F.stringx(context.completeContextName());
     }
 
@@ -338,15 +350,20 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
 
-      // Convert expression to string in InputForm
+      // the Wolfram Language wire format, which a notebook front end can read
+      String compressed = WMACompress.compress(expr);
+      if (compressed != null) {
+        return F.stringx(compressed);
+      }
+
+      // an expression the format has no token for is written the way Symja always wrote it:
+      // gzipped InputForm, which only Uncompress reads back
       String inputForm = IStringX.inputForm(expr);
       if (inputForm == null) {
         // inputForm() answers null when the output converter declines the expression, having
         // reported why itself. Compressing that is a NullPointerException out of the built-in.
         return F.NIL;
       }
-
-      // Compress and Encode
       try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
         try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
           gzipOutputStream.write(inputForm.getBytes(StandardCharsets.UTF_8));
@@ -969,8 +986,29 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_INFINITY;
     }
+  }
+
+  /**
+   * The file name a stream-opening call names.
+   *
+   * <p>
+   * <code>OpenWrite["f.txt", DOSTextFormat -> False]</code> is what a package writes: the options
+   * after the name say how the stream behaves, and one which is not implemented here says nothing
+   * this can act on - but it must not stop the file from being opened.
+   *
+   * @return the name, or {@link F#NIL} when the call names none
+   */
+  private static IExpr streamName(final IAST ast) {
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      if (argument.isRuleAST()) {
+        continue;
+      }
+      return argument.isString() ? argument : F.NIL;
+    }
+    return F.NIL;
   }
 
   private static final class OpenRead extends AbstractFunctionEvaluator {
@@ -979,12 +1017,10 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(EvalEngine.get())) {
         try {
-          if (ast.isAST1()) {
-            IExpr arg1 = ast.arg1();
-            if (arg1.isString()) {
-              File file = FileSandbox.resolveRead(S.OpenRead, arg1.toString(), engine);
-              return file == null ? F.NIL : InputStreamExpr.newInstance(file, "String");
-            }
+          IExpr name = streamName(ast);
+          if (name.isPresent()) {
+            File file = FileSandbox.resolveRead(S.OpenRead, name.toString(), engine);
+            return file == null ? F.NIL : InputStreamExpr.newInstance(file, "String");
           }
         } catch (FileNotFoundException | RuntimeException ex) {
           Errors.printMessage(S.OpenRead, ex);
@@ -1000,7 +1036,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_INFINITY;
     }
   }
 
@@ -1021,17 +1057,13 @@ public class FileFunctions {
     protected IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
-          if (ast.isAST0()) {
-            return OutputStreamExpr.newInstance();
+          IExpr name = streamName(ast);
+          if (name.isNIL()) {
+            return ast.isAST0() ? OutputStreamExpr.newInstance() : F.NIL;
           }
-          if (ast.isAST1()) {
-            IExpr arg1 = ast.arg1();
-            if (arg1.isString()) {
-              File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite,
-                  arg1.toString(), engine);
-              return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append);
-            }
-          }
+          File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite,
+              name.toString(), engine);
+          return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append);
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OpenWrite, ex);
         }
@@ -1046,7 +1078,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_INFINITY;
     }
   }
 
@@ -1084,12 +1116,16 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       String alias = null;
+      // Needs["A`" -> "a`"] and Needs["A`" -> None] read A` without putting it on $ContextPath -
+      // the alias (or nothing) is the only way to reach its symbols afterwards.
+      boolean aliasForm = false;
       if (arg1.isRuleAST()) {
         // Needs["A`" -> "a`"] reads A` and then lets its symbols be written as a`x;
         // Needs["A`" -> None] reads it and adds no alias
         IExpr target = arg1.second();
         alias = target.isString() ? target.toString() : null;
         arg1 = arg1.first();
+        aliasForm = true;
       }
       if (!arg1.isString()) {
         // String expected at position `1` in `2`.
@@ -1111,8 +1147,11 @@ public class FileFunctions {
         ContextPath.PACKAGES.add(contextName);
         ContextPath contextPathOfBuiltin = engine.getContextPath();
         Context builtinContext = contextPathOfBuiltin.getContext(contextName);
-        if (!contextPathOfBuiltin.contains(builtinContext)) {
+        if (!aliasForm && !contextPathOfBuiltin.contains(builtinContext)) {
           contextPathOfBuiltin.add(builtinContext);
+        }
+        if (alias != null) {
+          ContextPath.setContextAlias(alias, contextName);
         }
         return S.Null;
       }
@@ -1120,6 +1159,12 @@ public class FileFunctions {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
+
+      // reading the package runs its own EndPackage[], which prepends the context to $ContextPath.
+      // The alias form has to undo that, so remember whether the context was there beforehand.
+      ContextPath pathBeforeReading = engine.getContextPath();
+      boolean wasOnContextPath =
+          pathBeforeReading.contains(pathBeforeReading.getContext(contextName));
 
       if (!isLoadedInThisSession(contextName, engine)) {
         IExpr result;
@@ -1139,10 +1184,20 @@ public class FileFunctions {
         ContextPath.PACKAGES.add(contextName);
       }
       // the context is on $ContextPath afterwards however it got loaded, so that
-      // BeginPackage["B`", {"A`"}] can see it
+      // BeginPackage["B`", {"A`"}] can see it - but only for the plain form. Needs["A`" -> "a`"]
+      // keeps A` off the path on purpose, so that a bare name written afterwards still belongs to
+      // the reading package and not to A`.
       ContextPath contextPath = engine.getContextPath();
       Context context = contextPath.getContext(contextName);
-      if (!contextPath.contains(context)) {
+      if (aliasForm) {
+        if (!wasOnContextPath) {
+          for (int i = contextPath.size() - 1; i >= 0; i--) {
+            if (contextPath.get(i) == context) {
+              contextPath.remove(i);
+            }
+          }
+        }
+      } else if (!contextPath.contains(context)) {
         contextPath.add(context);
       }
       if (alias != null) {
@@ -1490,13 +1545,16 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
+          // ReadLine[stream, TimeConstraint -> 10] is how a package reads a file it may have to
+          // give up on. There is no waiting here - a stream over a file answers at once - so the
+          // options say nothing this can act on, but they must not stop the line from being read.
           final DataInput reader = getDataInput(ast.arg1(), engine);
           if (reader != null) {
             try {
               String line = reader.readLine();
-              if (line != null) {
-                return F.stringx(line);
-              }
+              // there is nothing more to read: EndOfFile, which is what a loop reading a file
+              // line by line stops on
+              return line == null ? S.EndOfFile : F.stringx(line);
             } catch (IOException e) {
               //
             }
@@ -1518,7 +1576,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
   }
 
@@ -1600,10 +1658,146 @@ public class FileFunctions {
     }
   }
 
+  /**
+   * <code>ReadByteArray["file"]</code>: the whole file as a <code>ByteArray</code>.
+   *
+   * <p>
+   * A file with nothing in it answers <code>EndOfFile</code>, as reading anything at the end of a
+   * file does. This is how a web server reads what it is about to send, so the answer has to be a
+   * byte array whether the file is text or not.
+   */
+  private static final class ReadByteArray extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      byte[] bytes = null;
+      if (arg1 instanceof ByteArrayExpr) {
+        bytes = ((ByteArrayExpr) arg1).toData();
+      } else {
+        SocketEntry socket = SocketFunctions.entryOf(arg1);
+        if (socket != null) {
+          bytes = socket.take(-1);
+          if (bytes.length == 0 && (socket.isEndOfStream() || socket.isClosed())) {
+            return S.EndOfFile;
+          }
+        }
+      }
+      if (bytes == null) {
+        if (!Config.isFileSystemEnabled(engine)) {
+          return F.NIL;
+        }
+        String fileName = arg1 instanceof FileExpr ? ((FileExpr) arg1).toData().toString()
+            : arg1.isString() ? arg1.toString() : null;
+        if (fileName == null) {
+          return F.NIL;
+        }
+        Path file = FileSandbox.resolveReadPath(S.ReadByteArray, fileName, engine);
+        if (file == null) {
+          return F.NIL;
+        }
+        if (!Files.isRegularFile(file)) {
+          // Cannot open `1`.
+          Errors.printMessage(S.ReadByteArray, "noopen", F.list(F.stringx(fileName)), engine);
+          return S.$Failed;
+        }
+        try {
+          bytes = Files.readAllBytes(file);
+        } catch (IOException ioe) {
+          Errors.printMessage(S.ReadByteArray, ioe);
+          return S.$Failed;
+        }
+      }
+      if (bytes.length == 0) {
+        return S.EndOfFile;
+      }
+      return ByteArrayExpr.newInstance(bytes);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <code>ReadString[stream]</code> and <code>ReadString[stream, terminator]</code>.
+   *
+   * <p>
+   * With a terminator the stream is read up to the first place it matches: the text before it is
+   * the answer, the terminator itself is consumed, and what follows stays in the stream for the
+   * next read. That is how a file written in sections is read back - a notebook is a run of cells
+   * separated by a line of dashes - and the terminator may be a string pattern rather than a
+   * literal, which is why it is turned into a regular expression here.
+   *
+   * @return the text read, or <code>EndOfFile</code> when the stream had nothing left
+   */
+  private static IExpr readFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
+    IExpr terminator = F.NIL;
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      if (argument.isRuleAST()) {
+        // TimeConstraint and the like: there is no waiting on a stream over a file
+        continue;
+      }
+      terminator = argument;
+      break;
+    }
+    String rest;
+    try {
+      Reader reader = stream.getReader();
+      StringBuilder buffer = new StringBuilder();
+      char[] chunk = new char[8192];
+      int read;
+      while ((read = reader.read(chunk)) > 0) {
+        buffer.append(chunk, 0, read);
+      }
+      rest = buffer.toString();
+    } catch (IOException ioe) {
+      return Errors.printMessage(S.ReadString, ioe, engine);
+    }
+    if (rest.isEmpty()) {
+      stream.pushBack("");
+      return S.EndOfFile;
+    }
+    if (terminator.isNIL() || terminator == S.EndOfFile) {
+      stream.pushBack("");
+      return F.stringx(rest);
+    }
+    String regex = IStringX.toRegexString(terminator, false, ast, IStringX.REGEX_LONGEST,
+        new java.util.HashMap<ISymbol, String>(), engine);
+    if (regex == null) {
+      stream.pushBack(rest);
+      return F.NIL;
+    }
+    try {
+      java.util.regex.Matcher matcher = java.util.regex.Pattern
+          .compile(regex, java.util.regex.Pattern.MULTILINE).matcher(rest);
+      if (matcher.find()) {
+        stream.pushBack(rest.substring(matcher.end()));
+        return F.stringx(rest.substring(0, matcher.start()));
+      }
+    } catch (java.util.regex.PatternSyntaxException pse) {
+      stream.pushBack(rest);
+      return F.NIL;
+    }
+    // the terminator never comes: everything which is left is the answer
+    stream.pushBack("");
+    return F.stringx(rest);
+  }
+
   private static final class ReadString extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1() instanceof InputStreamExpr) {
+        return readFromStream((InputStreamExpr) ast.arg1(), ast, engine);
+      }
       SocketEntry socket = SocketFunctions.entryOf(ast.arg1());
       if (socket != null) {
         byte[] bytes = socket.take(-1);
@@ -1649,7 +1843,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
   }
 
@@ -1815,6 +2009,12 @@ public class FileFunctions {
       }
       String compressedString = ast.arg1().toString();
 
+      // the Wolfram Language wire format: "1:" and a zlib-compressed token stream
+      IExpr wolframLanguage = WMACompress.uncompress(compressedString, engine);
+      if (wolframLanguage != null) {
+        return wolframLanguage;
+      }
+
       try {
         // Decode Base64
         byte[] compressedBytes = Base64.getDecoder().decode(compressedString);
@@ -1858,6 +2058,249 @@ public class FileFunctions {
     }
   }
 
+
+  /**
+   * <code>URLParse["url"]</code>: a URL taken apart into its pieces.
+   *
+   * <p>
+   * The answer is an association of <code>"Scheme"</code>, <code>"User"</code>,
+   * <code>"Domain"</code>, <code>"Port"</code>, <code>"Path"</code>, <code>"Query"</code> and
+   * <code>"Fragment"</code>. A piece the URL does not carry is <code>None</code>; the path is the
+   * list of its segments, so an absolute path begins with an empty one; the query is a list of
+   * rules, and a key written without a value has the value <code>None</code>. Percent escapes in
+   * the path and the query are decoded, which is what makes the answer usable for routing.
+   *
+   * <p>
+   * With a second argument only that part is answered, and with a list of them a list.
+   */
+  private static final class URLParse extends AbstractFunctionEvaluator {
+
+    /** scheme, user, domain, port, path, query, fragment */
+    private static final java.util.regex.Pattern URL = java.util.regex.Pattern.compile(
+        "\\A(?:([A-Za-z][A-Za-z0-9+.-]*):)?(?://(?:([^@/?#]*)@)?([^:/?#]*)(?::([0-9]+))?)?"
+            + "([^?#]*)(?:\\?([^#]*))?(?:#(.*))?\\z");
+
+    private static final String[] PART_NAMES =
+        {"Scheme", "User", "Domain", "Port", "Path", "Query", "Fragment"};
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isString()) {
+        return F.NIL;
+      }
+      IAssociation parsed = parse(ast.arg1().toString());
+      if (parsed == null) {
+        return F.NIL;
+      }
+      if (ast.isAST1()) {
+        return parsed;
+      }
+      IExpr spec = ast.arg2();
+      if (spec.isList()) {
+        return F.mapList((IAST) spec, part -> partOf(parsed, part));
+      }
+      return partOf(parsed, spec);
+    }
+
+    private static IExpr partOf(IAssociation parsed, IExpr part) {
+      IExpr value = parsed.getValue(part.isString() ? part : F.stringx(part.toString()));
+      return value == null ? S.Missing : value;
+    }
+
+    private static IAssociation parse(String url) {
+      java.util.regex.Matcher matcher = URL.matcher(url);
+      if (!matcher.matches()) {
+        return null;
+      }
+      IASTAppendable rules = F.ListAlloc(PART_NAMES.length);
+      rules.append(F.Rule(F.stringx("Scheme"), stringOrNone(matcher.group(1))));
+      rules.append(F.Rule(F.stringx("User"), stringOrNone(matcher.group(2))));
+      rules.append(F.Rule(F.stringx("Domain"), stringOrNone(matcher.group(3))));
+      String port = matcher.group(4);
+      rules.append(F.Rule(F.stringx("Port"), port == null ? S.None : F.ZZ(Integer.parseInt(port))));
+      rules.append(F.Rule(F.stringx("Path"), pathSegments(matcher.group(5))));
+      rules.append(F.Rule(F.stringx("Query"), queryRules(matcher.group(6))));
+      rules.append(F.Rule(F.stringx("Fragment"), stringOrNone(matcher.group(7))));
+      return F.assoc(rules);
+    }
+
+    private static IExpr stringOrNone(String part) {
+      return part == null || part.isEmpty() ? S.None : F.stringx(part);
+    }
+
+    private static IAST pathSegments(String path) {
+      if (path == null || path.isEmpty()) {
+        return F.CEmptyList;
+      }
+      String[] segments = path.split("/", -1);
+      IASTAppendable result = F.ListAlloc(segments.length);
+      for (String segment : segments) {
+        result.append(F.stringx(decode(segment)));
+      }
+      return result;
+    }
+
+    private static IAST queryRules(String query) {
+      if (query == null || query.isEmpty()) {
+        return F.CEmptyList;
+      }
+      String[] pairs = query.split("&");
+      IASTAppendable result = F.ListAlloc(pairs.length);
+      for (String pair : pairs) {
+        if (pair.isEmpty()) {
+          continue;
+        }
+        int equals = pair.indexOf('=');
+        if (equals < 0) {
+          result.append(F.Rule(F.stringx(decode(pair)), S.None));
+        } else {
+          result.append(F.Rule(F.stringx(decode(pair.substring(0, equals))),
+              F.stringx(decode(pair.substring(equals + 1)))));
+        }
+      }
+      return result;
+    }
+
+    private static String decode(String text) {
+      try {
+        return URLDecoder.decode(text, StandardCharsets.UTF_8);
+      } catch (IllegalArgumentException iae) {
+        // a percent which does not introduce two hex digits is not an escape
+        return text;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   * <code>URLBuild[{segments}]</code>, <code>URLBuild[assoc]</code>,
+   * <code>URLBuild[…, query]</code>: a URL put back together.
+   *
+   * <p>
+   * The inverse of {@link URLParse}: a list of path segments joins with <code>/</code>, an
+   * association is assembled from the parts it carries, and a query given as rules is appended.
+   */
+  private static final class URLBuild extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      StringBuilder url = new StringBuilder();
+      IExpr query = ast.isAST2() ? ast.arg2() : F.NIL;
+      if (arg1 instanceof IAssociation) {
+        IAssociation parts = (IAssociation) arg1;
+        IExpr scheme = parts.getValue(F.stringx("Scheme"));
+        if (scheme != null && scheme.isString()) {
+          url.append(scheme.toString()).append(':');
+        }
+        IExpr domain = parts.getValue(F.stringx("Domain"));
+        if (domain != null && domain.isString()) {
+          url.append("//");
+          IExpr user = parts.getValue(F.stringx("User"));
+          if (user != null && user.isString()) {
+            url.append(user.toString()).append('@');
+          }
+          url.append(domain.toString());
+          IExpr port = parts.getValue(F.stringx("Port"));
+          if (port != null && port.isInteger()) {
+            url.append(':').append(port.toString());
+          }
+        }
+        IExpr path = parts.getValue(F.stringx("Path"));
+        if (path != null) {
+          url.append(pathString(path));
+        }
+        if (query.isNIL()) {
+          IExpr parsedQuery = parts.getValue(F.stringx("Query"));
+          if (parsedQuery != null) {
+            query = parsedQuery;
+          }
+        }
+        String queryString = queryString(query);
+        if (!queryString.isEmpty()) {
+          url.append('?').append(queryString);
+        }
+        IExpr fragment = parts.getValue(F.stringx("Fragment"));
+        if (fragment != null && fragment.isString()) {
+          url.append('#').append(fragment.toString());
+        }
+        return F.stringx(url.toString());
+      }
+      url.append(pathString(arg1));
+      String queryString = queryString(query);
+      if (!queryString.isEmpty()) {
+        url.append('?').append(queryString);
+      }
+      return F.stringx(url.toString());
+    }
+
+    private static String pathString(IExpr path) {
+      if (path.isString()) {
+        return path.toString();
+      }
+      if (!path.isList()) {
+        return "";
+      }
+      IAST segments = (IAST) path;
+      StringBuilder result = new StringBuilder();
+      for (int i = 1; i < segments.size(); i++) {
+        if (i > 1) {
+          result.append('/');
+        }
+        result.append(segments.get(i).isString() ? segments.get(i).toString()
+            : segments.get(i).toString());
+      }
+      return result.toString();
+    }
+
+    private static String queryString(IExpr query) {
+      if (query.isNIL() || query.isEmptyList()) {
+        return "";
+      }
+      if (query.isString()) {
+        return query.toString();
+      }
+      IAST rules = query instanceof IAssociation ? ((IAssociation) query).normal(false)
+          : query.isList() ? (IAST) query : F.NIL;
+      if (rules.isNIL()) {
+        return "";
+      }
+      StringBuilder result = new StringBuilder();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr rule = rules.get(i);
+        if (!rule.isRuleAST()) {
+          continue;
+        }
+        if (result.length() > 0) {
+          result.append('&');
+        }
+        result.append(rule.first().toString());
+        if (rule.second() != S.None) {
+          result.append('=').append(rule.second().toString());
+        }
+      }
+      return result.toString();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
 
   private static final class URLDecode extends AbstractFunctionEvaluator {
 
@@ -2004,6 +2447,33 @@ public class FileFunctions {
   }
 
 
+  /** Put one string into an open stream, and answer Null the way <code>WriteString</code> does. */
+  private static IExpr writeToStream(OutputStreamExpr stream, String text, EvalEngine engine) {
+    try {
+      Writer writer = stream.getWriter();
+      writer.write(text);
+      writer.flush();
+    } catch (IOException ex) {
+      return Errors.printMessage(S.WriteString, ex, engine);
+    }
+    return S.Null;
+  }
+
+  /**
+   * <code>$StandardOutputStream</code>: the process's own output, as a stream.
+   *
+   * <p>
+   * A program which has something to say to whatever started it - the WLJS Notebook writes the
+   * port it came up on for the app around it to read - writes it here rather than to a file.
+   */
+  private static final class $StandardOutputStream extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return OutputStreamExpr.standardOutput();
+    }
+  }
+
   private static final class WriteString extends AbstractFunctionEvaluator {
 
     @Override
@@ -2013,6 +2483,15 @@ public class FileFunctions {
         // writing to a socket is not a file operation, so it is not behind the file switch
         return SocketFunctions.write(socket,
             ast.arg2().toString().getBytes(StandardCharsets.UTF_8), S.WriteString, engine);
+      }
+      if (ast.arg1() instanceof OutputStreamExpr) {
+        // a stream which is already open is written to as it stands - opening it was the step
+        // that had to be allowed
+        if (!ast.arg2().isString()) {
+          // String expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "string", F.list(F.C2, ast), engine);
+        }
+        return writeToStream((OutputStreamExpr) ast.arg1(), ast.arg2().toString(), engine);
       }
       if (Config.isFileSystemEnabled(engine)) {
         if (!(ast.arg1().isString())) {

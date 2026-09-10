@@ -128,6 +128,28 @@ public class PacletTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAnAliasedContextStaysOffTheContextPath(@TempDir Path root) throws IOException {
+    modernPaclet(root);
+    boolean fileSystem = Config.FILESYSTEM_ENABLED;
+    Config.FILESYSTEM_ENABLED = true;
+    try {
+      check("PacletDirectoryLoad(\"" + root + "\") // Length", //
+          "1");
+      check("Needs(\"Acme`Widgets`\" -> \"w`\")", //
+          "");
+      // the alias reaches the package, and only the alias does: a bare name written after an
+      // aliased Needs still belongs to the reading context, so a package that reads another one
+      // this way keeps writing its own definitions
+      check("MemberQ($ContextPath, \"Acme`Widgets`\")", //
+          "False");
+      check("Context(widgetCount)", //
+          "Global`");
+    } finally {
+      Config.FILESYSTEM_ENABLED = fileSystem;
+    }
+  }
+
+  @Test
   public void testNeedsSaysWhenNothingProvidesTheContext() {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;

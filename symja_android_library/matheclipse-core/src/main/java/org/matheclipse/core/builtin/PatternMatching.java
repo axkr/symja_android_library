@@ -665,7 +665,16 @@ public final class PatternMatching {
    * </code>
    * </pre>
    */
-  private static final class DownValues extends AbstractCoreFunctionEvaluator {
+  private static final class DownValues extends AbstractCoreFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
+          engine, false);
+    }
+
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1497,7 +1506,16 @@ public final class PatternMatching {
    * </code>
    * </pre>
    */
-  private static final class OwnValues extends AbstractCoreFunctionEvaluator {
+  private static final class OwnValues extends AbstractCoreFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
+          engine, false);
+    }
+
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1652,7 +1670,10 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
+      // ReleaseHold holds nothing of its own: what is handed to it is evaluated first, so that
+      // `held = Hold[expr]; ReleaseHold[held]` releases what the variable stands for. Reading the
+      // argument unevaluated made it answer the variable itself.
+      final IExpr arg1 = engine.evaluate(ast.arg1());
       return F.subst(arg1, ReleaseHold::releaseHold);
     }
 
@@ -1696,12 +1717,14 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Repeated) {
-        IExpr arg1 = ast.arg1();
+        // what is repeated is worked out first: `Repeated[newLine[1]]` is a repetition of
+        // whatever newLine[1] came to, not of the call itself
+        IExpr arg1 = engine.evaluate(ast.arg1());
         if (ast.isAST1()) {
           return F.$Repeated(arg1, 1, Integer.MAX_VALUE, engine);
         }
         if (ast.isAST2()) {
-          IExpr arg2 = ast.arg2();
+          IExpr arg2 = engine.evaluate(ast.arg2());
           return repeatedLimit(arg1, arg2, 1, engine);
         }
       }
@@ -1778,15 +1801,13 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.RepeatedNull) {
-        IExpr arg1 = ast.arg1();
+        IExpr arg1 = engine.evaluate(ast.arg1());
         if (ast.isAST1()) {
           return F.$Repeated(arg1, 0, Integer.MAX_VALUE, engine);
         }
         if (ast.isAST2()) {
-          if (ast.isAST2()) {
-            IExpr arg2 = ast.arg2();
-            return repeatedLimit(arg1, arg2, 0, engine);
-          }
+          IExpr arg2 = engine.evaluate(ast.arg2());
+          return repeatedLimit(arg1, arg2, 0, engine);
         }
       }
       return F.NIL;
@@ -3229,7 +3250,16 @@ public final class PatternMatching {
    * </code>
    * </pre>
    */
-  private static final class UpValues extends AbstractCoreFunctionEvaluator {
+  private static final class UpValues extends AbstractCoreFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
+          engine, true);
+    }
+
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

@@ -67,6 +67,43 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
   }
 
   /**
+   * The process's own standard output, as a stream a program can write to by name.
+   *
+   * <p>
+   * The bytes are handed to whatever <code>System.out</code> is at the moment of the write rather
+   * than to the stream it was when this was first asked for: a kernel started with its link on
+   * standard output moves the console elsewhere while it runs, and a stream captured beforehand
+   * would go on writing into the link. Closing it closes nothing - the process needs its output
+   * afterwards.
+   */
+  public static OutputStreamExpr standardOutput() {
+    return STANDARD_OUTPUT;
+  }
+
+  private static final OutputStreamExpr STANDARD_OUTPUT =
+      new OutputStreamExpr(new OutputStream() {
+        @Override
+        public void write(int b) throws IOException {
+          System.out.write(b);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+          System.out.write(b, off, len);
+        }
+
+        @Override
+        public void flush() throws IOException {
+          System.out.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+          System.out.flush();
+        }
+      }, "stdout");
+
+  /**
    * Create a new {@link OutputStreamExpr} backed by the channel of a {@link RandomAccessFile}.
    *
    * @param file the {@link RandomAccessFile} providing the channel

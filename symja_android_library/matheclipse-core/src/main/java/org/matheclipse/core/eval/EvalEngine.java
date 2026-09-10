@@ -601,7 +601,45 @@ public class EvalEngine implements Serializable {
 
   private transient Map<Object, IExpr> rememberMap = null;
 
+  /**
+   * What <code>Once</code> has already worked out in this session, kept under the expression it
+   * was asked about.
+   */
+  private transient Map<IExpr, IExpr> onceMap = null;
+
   transient int fRecursionCounter;
+
+  /** Told about every message this engine reports, when somebody is listening. */
+  public interface MessageListener {
+    /**
+     * @param symbol the symbol the message belongs to, such as <code>Part</code>
+     * @param tag the name of the message, such as <code>partw</code>
+     */
+    void message(ISymbol symbol, String tag);
+  }
+
+  private transient MessageListener fMessageListener = null;
+
+  /**
+   * Hear about every message this engine reports.
+   *
+   * <p>
+   * A kernel driven over a link sends them on as <code>MessagePacket</code>s, because the front
+   * end shows a message beside the cell that caused it rather than in a console nobody reads.
+   */
+  public void setMessageListener(MessageListener listener) {
+    this.fMessageListener = listener;
+  }
+
+  public MessageListener getMessageListener() {
+    return fMessageListener;
+  }
+
+  /**
+   * Set from another thread to stop the evaluation running here. The next step of the evaluation
+   * loop throws {@link AbortException} and clears it.
+   */
+  private transient volatile boolean fAbortRequested = false;
 
   /**
    * The time in milliseconds the current {@link S#TimeConstrained} operation should stop. <code>
@@ -1360,6 +1398,7 @@ public class EvalEngine implements Serializable {
     EvalEngine engine = new EvalEngine();
     engine.rubiASTCache = null; // rememberASTCache;
     engine.rememberMap = rememberMap;
+    engine.onceMap = onceMap;
     engine.fAnswer = fAnswer;
     engine.fAssumptions = fAssumptions;
     engine.fContextPath = fContextPath.copy();
@@ -1710,6 +1749,43 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return
    */
+  /**
+   * <code>Composition[f, g][x]</code> is <code>f[g[x]]</code>, and it becomes that <em>before</em>
+   * the arguments are evaluated.
+   *
+   * <p>
+   * Whether <code>g[x]</code> is ever evaluated is then f's business, which is the whole point of
+   * a holding f: WLX interpolates the text of an attribute with
+   * <code>ToExpression[text, InputForm, FakeHold @* ToString]</code>, and <code>FakeHold</code>
+   * being <code>HoldAll</code> is what keeps the expression it was handed unevaluated until the
+   * template is rendered.
+   *
+   * @return the nested application, or {@link F#NIL} when the head is not a composition
+   */
+  private static IExpr expandCompositionHead(IAST ast) {
+    IExpr head = ast.head();
+    boolean rightToLeft = head.isAST(S.Composition);
+    if (!rightToLeft && !head.isAST(S.RightComposition)) {
+      return F.NIL;
+    }
+    IAST functions = (IAST) head;
+    if (functions.size() <= 1) {
+      return F.NIL;
+    }
+    // Composition applies the last function first, RightComposition the first
+    int first = rightToLeft ? 1 : functions.argSize();
+    int step = rightToLeft ? 1 : -1;
+    IASTAppendable inner = F.ast(functions.get(first));
+    IAST result = inner;
+    for (int i = first + step; i >= 1 && i < functions.size(); i += step) {
+      IASTAppendable next = F.ast(functions.get(i));
+      inner.append(next);
+      inner = next;
+    }
+    inner.appendArgs(ast);
+    return result;
+  }
+
   private IExpr evalASTArg1(final IAST ast) {
     // special case ast.isAST1()
     // head == ast[0] --- arg1 == ast[1]
@@ -1717,9 +1793,12 @@ public class EvalEngine implements Serializable {
     if (result.isPresent()) {
       return result;
     }
+    if ((result = expandCompositionHead(ast)).isPresent()) {
+      return result;
+    }
 
     final ISymbol symbol = ast.topHead();
-    final int attributes = symbol.getAttributes();
+    final int attributes = attributesOfHead(ast, symbol);
 
     if (!Attribute.SEQUENCEHOLD.isSetIn(attributes)) {
       if ((result = F.flattenSequence(ast)).isPresent()) {
@@ -2013,13 +2092,39 @@ public class EvalEngine implements Serializable {
     if (result.isPresent()) {
       return result;
     }
+    if ((result = expandCompositionHead(mutableAST)).isPresent()) {
+      return result;
+    }
 
     if (astSize != 1) {
-      final int attributes = symbol.getAttributes();
+      final int attributes = attributesOfHead(mutableAST, symbol);
       return evalAttributes(mutableAST, astSize, symbol, attributes);
     }
 
     return F.NIL;
+  }
+
+  /**
+   * The attributes that govern how the arguments of <code>ast</code> are evaluated.
+   *
+   * <p>
+   * Attributes belong to a symbol used as a head. In <code>f[a][b]</code> the head is
+   * <code>f[a]</code> and not the symbol <code>f</code>, so <code>f</code>'s attributes say nothing
+   * about <code>b</code> - a HoldFirst on <code>f</code> must not hold <code>b</code>. Rule lookup
+   * still goes through {@link IExpr#topHead()}, which is why the symbol is passed in separately.
+   *
+   * @param ast the expression whose arguments are about to be evaluated
+   * @param symbol its {@link IExpr#topHead()}
+   * @return the symbol's attributes when it really is the head, {@link ISymbol#NOATTRIBUTE}
+   *         otherwise
+   */
+  private static int attributesOfHead(final IAST ast, final ISymbol symbol) {
+    if (ast.head() == symbol || symbol.isBuiltInSymbol()) {
+      // built-in heads keep the established behaviour: Function[vars, body, HoldAll][arg] and the
+      // other curried built-ins reach their evaluator with the arguments still held.
+      return symbol.getAttributes();
+    }
+    return ISymbol.NOATTRIBUTE;
   }
 
   /**
@@ -2795,6 +2900,15 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
+    if (fAbortRequested) {
+      // somebody else asked this evaluation to stop: the kernel on the other end of a link
+      // sending an interrupt, which is what an abort does to a notebook's evaluation. The test
+      // stands before every other one, because the paths below it - an atom, the fast evaluator,
+      // the epoch cache - all answer without reaching the rest of the loop, and a loop written in
+      // the Wolfram Language spends its time in exactly those.
+      fAbortRequested = false;
+      throw AbortException.ABORTED;
+    }
     if (expr instanceof IAtomicEvaluate) {
       return expr.evaluate(this);
     } else if (expr instanceof IAST) {
@@ -3382,6 +3496,42 @@ public class EvalEngine implements Serializable {
     return evalHoldPattern(ast, noEvaluation, false);
   }
 
+  /**
+   * Is this argument one of the constructs a pattern is built out of?
+   *
+   * <p>
+   * The left-hand side of a definition is turned into a matcher before it is stored, and the
+   * pattern constructs in it have to become pattern objects for that. A holding head must not stop
+   * that from happening: <code>f[x_, expr_, OptionsPattern[]] := …</code> is a rule with options
+   * whether or not <code>f</code> holds its arguments - the hold says what happens to the
+   * arguments of a <em>call</em>, not to the shape of the rule.
+   */
+  private static boolean isPatternConstruct(IExpr expr) {
+    if (!expr.isAST()) {
+      return false;
+    }
+    int headID = ((IAST) expr).headID();
+    switch (headID) {
+      case ID.Blank:
+      case ID.BlankSequence:
+      case ID.BlankNullSequence:
+      case ID.Pattern:
+      case ID.Optional:
+      case ID.OptionsPattern:
+      case ID.Repeated:
+      case ID.RepeatedNull:
+      case ID.PatternTest:
+      case ID.Alternatives:
+      case ID.Except:
+      case ID.PatternSequence:
+      case ID.Longest:
+      case ID.Shortest:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   private IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation,
       boolean evalNumericFunction, int level) {
     // final ISymbol symbol = ast.topHead();
@@ -3437,37 +3587,41 @@ public class EvalEngine implements Serializable {
       return F.NIL;
     }
 
-    if (!Attribute.HOLDALL.isSetIn(attributes)) {
+    {
       final int astSize = ast.size();
+      final boolean holdFirst =
+          Attribute.HOLDALL.isSetIn(attributes) || Attribute.HOLDFIRST.isAnySetIn(attributes);
+      final boolean holdRest =
+          Attribute.HOLDALL.isSetIn(attributes) || Attribute.HOLDREST.isAnySetIn(attributes);
 
-      if (!Attribute.HOLDFIRST.isAnySetIn(attributes)) {
-        // the HoldFirst attribute isn't set here
-        if (astSize > 1) {
-          IExpr expr = ast.arg1();
-          if (expr.isAST()) {
-            resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList, noEvaluation, level);
-          } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
-            IExpr temp = expr.evaluate(this);
-            if (temp.isPresent()) {
-              resultList = ast.setAtCopy(1, temp);
-            }
+      if (astSize > 1 && (!holdFirst || isPatternConstruct(ast.arg1()))) {
+        IExpr expr = ast.arg1();
+        if (expr.isAST()) {
+          resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList, noEvaluation, level);
+        } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
+          IExpr temp = expr.evaluate(this);
+          if (temp.isPresent()) {
+            resultList = ast.setAtCopy(1, temp);
           }
         }
       }
       if (astSize > 2) {
-        if (!Attribute.HOLDREST.isAnySetIn(attributes)) {
-          // the HoldRest attribute isn't set here
-          for (int i = 2; i < astSize; i++) {
-            IExpr expr = ast.get(i);
-            if (expr.isAST()) {
-              resultList =
-                  evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
-            } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
-              resultList = resultList.setIfPresent(ast, i, expr.evaluate(this));
-            }
+        for (int i = 2; i < astSize; i++) {
+          IExpr expr = ast.get(i);
+          if (holdRest && !isPatternConstruct(expr)) {
+            continue;
+          }
+          if (expr.isAST()) {
+            resultList =
+                evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
+          } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
+            resultList = resultList.setIfPresent(ast, i, expr.evaluate(this));
           }
         }
       }
+    }
+    if (!Attribute.HOLDALL.isSetIn(attributes)) {
+      final int astSize = ast.size();
       if (evalNumericFunction && (!Attribute.HOLDALL.isAnySetIn(attributes))) {
         IAST f = resultList.orElse(ast);
         if (f.isNumericFunction(true)) {
@@ -4359,6 +4513,7 @@ public class EvalEngine implements Serializable {
     // doublePrecisionCache.invalidateAll();
     globalObjectCache.invalidateAll();
     rememberMap = new IdentityHashMap<Object, IExpr>();
+    onceMap = null;
   }
 
   private void initInstance() {
@@ -4846,6 +5001,22 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * The result <code>Once</code> already has for this expression, or <code>null</code> if it has
+   * not evaluated it in this session yet.
+   */
+  public IExpr getOnce(IExpr key) {
+    return onceMap == null ? null : onceMap.get(key);
+  }
+
+  /** Remember what <code>Once</code> worked out, so that it is not worked out again. */
+  public void putOnce(IExpr key, IExpr value) {
+    if (onceMap == null) {
+      onceMap = new HashMap<IExpr, IExpr>();
+    }
+    onceMap.put(key, value);
+  }
+
+  /**
    * Reset the numeric mode flags and the recursion counter.
    *
    */
@@ -5207,9 +5378,18 @@ public class EvalEngine implements Serializable {
     fRecursionLimit = i;
   }
 
-  // public void stopRequest() {
-  // setStopRequested(true);
-  // }
+  /**
+   * Ask the evaluation running in this engine to stop, from whatever thread notices that it
+   * should: the next step of its evaluation loop throws {@link AbortException}.
+   */
+  public void stopRequest() {
+    fAbortRequested = true;
+  }
+
+  /** Forget an abort which was asked for but never reached an evaluation. */
+  public void clearStopRequest() {
+    fAbortRequested = false;
+  }
 
   /** @param fRelaxedSyntax the fRelaxedSyntax to set */
   public void setRelaxedSyntax(boolean fRelaxedSyntax) {

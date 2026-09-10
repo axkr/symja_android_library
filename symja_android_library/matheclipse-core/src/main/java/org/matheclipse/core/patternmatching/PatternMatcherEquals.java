@@ -80,6 +80,26 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
     return IExpr.ofNullable(fRightHandSide);
   }
 
+  /**
+   * Does the right-hand side mention <code>Return</code>?
+   *
+   * <p>
+   * A rule which does has to be evaluated at its own boundary, because that is where a
+   * <code>Return</code> stops: <code>f[] := (While[…, Return[x]]; y)</code> answers x. The
+   * question is asked once, when the rule is stored, rather than on every use of it - looking for
+   * a symbol in a large right-hand side is not something the rule-matching path can afford.
+   */
+  public boolean rhsHasReturn() {
+    if (fRhsHasReturn == null) {
+      fRhsHasReturn = fRightHandSide != null
+          && !fRightHandSide.isFree(org.matheclipse.core.expression.S.Return, true);
+    }
+    return fRhsHasReturn.booleanValue();
+  }
+
+  /** Whether {@link #fRightHandSide} mentions <code>Return</code>; worked out when first asked. */
+  private transient Boolean fRhsHasReturn = null;
+
   /** {@inheritDoc} */
   @Override
   public boolean isPatternHashAllowed(int patternHash) {

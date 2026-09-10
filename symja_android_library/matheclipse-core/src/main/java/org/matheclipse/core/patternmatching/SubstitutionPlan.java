@@ -121,20 +121,31 @@ final class SubstitutionPlan {
     boolean spliceable = false;
     for (int i = 0; i < childIndex.length; i++) {
       final IExpr value;
+      // whether the value is the one a pattern name was matched with, as opposed to the
+      // placeholder an unassigned slot substitutes to
+      boolean matchedValue = false;
       if (child[i] != null) {
         value = child[i].substitute(patternMap, nilOrEmptySequence);
       } else {
         IExpr slotValue = patternMap.getValue(childSlot[i]);
-        value = slotValue != null ? slotValue : nilOrEmptySequence;
+        if (slotValue != null) {
+          value = slotValue;
+          matchedValue = true;
+        } else {
+          value = nilOrEmptySequence;
+        }
       }
       if (!value.isPresent()) {
         // this subtree did not change - keep the original child
         continue;
       }
-      if (childIndex[i] > 0 && value.isSequence() && !original.isAssociation()) {
+      if (childIndex[i] > 0 && value.isSequence() && !original.isAssociation()
+          && (!matchedValue || patternMap.isSequenceSlot(childSlot[i]))) {
         // a pattern name standing for several arguments has to be spread into the expression
         // around it, the same as in VisitorReplaceAll: a substitution into a held expression is
-        // never evaluated, so nothing else would flatten it
+        // never evaluated, so nothing else would flatten it. A name which stood for one argument
+        // does not, even when that one argument is itself a Sequence expression - and neither does
+        // the empty-Sequence placeholder an unassigned slot leaves, which always has to go
         spliceable = true;
       }
       if (result == null) {

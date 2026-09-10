@@ -58,6 +58,9 @@ public class PredicateQ {
       S.DigitQ.setEvaluator(new DigitQ());
       S.EvenQ.setEvaluator(new EvenQ());
       S.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
+      // $Failed, $Aborted and a Failure[...] object are failures; a Missing[...] is not
+      S.FailureQ.setPredicateQ(
+          x -> x == S.$Failed || x == S.$Aborted || x.isAST(S.Failure));
       S.FreeQ.setEvaluator(new FreeQ());
       S.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
       S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
@@ -68,7 +71,9 @@ public class PredicateQ {
       S.MatchQ.setEvaluator(new MatchQ());
       S.MatrixQ.setEvaluator(new MatrixQ());
       S.MemberQ.setEvaluator(new MemberQ());
-      S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing, 2));
+      // any expression whose head is Missing, whatever it carries: Missing[],
+      // Missing["reason"] and Missing["KeyAbsent", key] are all missing
+      S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing));
       S.NegativeDefiniteMatrixQ.setEvaluator(new NegativeDefiniteMatrixQ());
       S.NegativeSemidefiniteMatrixQ.setEvaluator(new NegativeSemidefiniteMatrixQ());
       S.NotListQ.setPredicateQ(x -> !x.isList());

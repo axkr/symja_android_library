@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -196,17 +197,17 @@ public class VisitorReplaceAll extends VisitorExpr {
     if (temp.isPresent()) {
       return temp;
     }
-    ISymbol symbol = element.getSymbol();
-    if (symbol != null) {
-      IExpr expr = fFunction.apply(symbol);
-      if (expr.isPresent() && expr.isSymbol()) {
-        if (element.isPatternDefault()) {
-          return F.$p((ISymbol) expr, element.getHeadTest(), true);
-        }
-        return F.$p((ISymbol) expr, element.getHeadTest());
-      }
+    ISymbol name = replacedName(element);
+    IExpr headTest = replacedHeadTest(element);
+    if (name == null && headTest.isNIL()) {
+      return F.NIL;
     }
-    return F.NIL;
+    ISymbol symbol = name != null ? name : element.getSymbol();
+    IExpr check = headTest.isPresent() ? headTest : element.getHeadTest();
+    if (symbol == null) {
+      return F.$b(check, element.isPatternDefault());
+    }
+    return F.$p(symbol, check, element.isPatternDefault());
   }
 
   @Override
@@ -215,15 +216,46 @@ public class VisitorReplaceAll extends VisitorExpr {
     if (temp.isPresent()) {
       return temp;
     }
+    ISymbol name = replacedName(element);
+    IExpr headTest = replacedHeadTest(element);
+    if (name == null && headTest.isNIL()) {
+      return F.NIL;
+    }
+    ISymbol symbol = name != null ? name : element.getSymbol();
+    IExpr check = headTest.isPresent() ? headTest : element.getHeadTest();
+    return F.$ps(symbol, check, element.isDefault(), element.isNullSequence());
+  }
+
+  /**
+   * The pattern's name after the replacement, or <code>null</code> where it does not change.
+   */
+  private ISymbol replacedName(IPatternObject element) {
     ISymbol symbol = element.getSymbol();
     if (symbol != null) {
       IExpr expr = fFunction.apply(symbol);
       if (expr.isPresent() && expr.isSymbol()) {
-        return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(),
-            element.isNullSequence());
+        return (ISymbol) expr;
       }
     }
-    return F.NIL;
+    return null;
+  }
+
+  /**
+   * The head a pattern is restricted to, after the replacement, or {@link F#NIL} where it does not
+   * change.
+   *
+   * <p>
+   * <code>x_Foo /. Foo -> Bar</code> is <code>x_Bar</code>: the restriction is part of the pattern
+   * and a replacement reaches it, which is how one type's definitions are derived from another's by
+   * renaming the type throughout them.
+   */
+  private IExpr replacedHeadTest(IPatternObject element) {
+    IExpr headTest = element.getHeadTest();
+    if (headTest == null) {
+      return F.NIL;
+    }
+    IExpr replaced = fFunction.apply(headTest);
+    return replaced.isPresent() && !replaced.equals(headTest) ? replaced : F.NIL;
   }
 
   /** @return <code>F.NIL</code>, if no evaluation is possible */
@@ -292,8 +324,16 @@ public class VisitorReplaceAll extends VisitorExpr {
    * <code>Module[{v}, …]</code> has to be the list of names by the time Module sees it.
    */
   private boolean isSpliceable(int position, IExpr value, IAST ast) {
-    // the head is one expression, and an association holds rules rather than a run of arguments
-    return position > 0 && value.isSequence() && !ast.isAssociation();
+    if (position <= 0 || !value.isSequence() || ast.isAssociation()) {
+      // the head is one expression, and an association holds rules rather than a run of arguments
+      return false;
+    }
+    // Only a *name* which stood for several arguments is spread out. Where the thing replaced was
+    // an expression - `FakeHold[q_] :> q` matching `FakeHold[Sequence[1, 2]]` - the Sequence is
+    // one argument's value and stays one, which is what keeps `With[{x = Sequence[a, b]}, …]` a
+    // binding rather than a three-argument Set.
+    IExpr replaced = ast.get(position);
+    return replaced.isSymbol() || replaced instanceof IPatternObject;
   }
 
   /** The expression with every substituted <code>Sequence</code> spread into it. */

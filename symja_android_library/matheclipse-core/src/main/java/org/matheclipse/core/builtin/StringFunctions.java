@@ -127,11 +127,28 @@ public final class StringFunctions {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
+      String encoding = baseEncoding(ast);
+      if (encoding == null) {
+        return F.NIL;
+      }
       String str = ast.arg1().toString();
       try {
-        byte[] bArray = Base64.getDecoder().decode(str.toString());
-        return ByteArrayExpr.newInstance(bArray);
-      } catch (IllegalArgumentException iae) {
+        switch (encoding) {
+          case "BASE64":
+            return ByteArrayExpr.newInstance(Base64.getDecoder().decode(str));
+          case "BASE64URL":
+            return ByteArrayExpr.newInstance(Base64.getUrlDecoder().decode(str));
+          case "BASE32":
+            return ByteArrayExpr.newInstance(new org.apache.commons.codec.binary.Base32()
+                .decode(str.getBytes(StandardCharsets.US_ASCII)));
+          case "BASE16":
+            return ByteArrayExpr
+                .newInstance(org.apache.commons.codec.binary.Hex.decodeHex(str.toCharArray()));
+          default:
+            return F.NIL;
+        }
+      } catch (IllegalArgumentException
+          | org.apache.commons.codec.DecoderException iae) {
         //
       }
       return F.NIL;
@@ -139,8 +156,23 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
+  }
+
+  /**
+   * The encoding an optional second argument names, upper-cased, or <code>"BASE64"</code> when
+   * there is none - and <code>null</code> when the argument is not a string at all.
+   */
+  private static String baseEncoding(IAST ast) {
+    if (ast.isAST1()) {
+      return "BASE64";
+    }
+    IExpr arg2 = ast.arg2();
+    if (arg2 instanceof IStringX) {
+      return arg2.toString().toUpperCase();
+    }
+    return null;
   }
 
   private static class BaseEncode extends AbstractFunctionEvaluator {
@@ -149,20 +181,35 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof ByteArrayExpr) {
+        String encoding = baseEncoding(ast);
+        if (encoding == null) {
+          return F.NIL;
+        }
         byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
         if (bArray.length == 0) {
           return F.$str("");
         }
 
-        String str = Base64.getEncoder().encodeToString(bArray);
-        return F.$str(str);
+        switch (encoding) {
+          case "BASE64":
+            return F.$str(Base64.getEncoder().encodeToString(bArray));
+          case "BASE64URL":
+            return F.$str(Base64.getUrlEncoder().encodeToString(bArray));
+          case "BASE32":
+            return F.$str(new String(new org.apache.commons.codec.binary.Base32().encode(bArray),
+                StandardCharsets.US_ASCII));
+          case "BASE16":
+            return F.$str(org.apache.commons.codec.binary.Hex.encodeHexString(bArray));
+          default:
+            return F.NIL;
+        }
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -503,6 +550,12 @@ public final class StringFunctions {
       int to = 1;
       IExpr arg1 = ast.arg1();
       try {
+        if (arg1.isString()) {
+          // One name is already a file name: `path // FileNameJoin` is how a path which may be a
+          // list of segments or a finished string is normalised, and answering nothing for the
+          // string left the path an unevaluated expression.
+          return arg1;
+        }
         if (arg1.isListOfStrings()) {
           IAST list = ((IAST) arg1);
           if (list.isAST1()) {
@@ -615,20 +668,24 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      // FromCharacterCode[codes, "UTF8"] names the encoding the numbers are in. Symja's strings
+      // are Unicode already and the numbers are code points, so every encoding names the same
+      // characters; the argument is taken and nothing else has to happen for it.
+      IAST codes = ast.isAST1() ? ast : F.unaryAST1(ast.head(), arg1);
 
       if (arg1.isList()) {
         final IAST list = (IAST) arg1;
 
         // If the list contains sublists, map the function over the list
         if (list.argSize() > 0 && list.arg1().isList()) {
-          return list.mapThread(ast, 1);
+          return list.mapThread(codes, 1);
         }
 
         return fromCharacterCode(list, ast, engine);
       }
 
       if (arg1.isInteger()) {
-        return fromCharacterCode(ast, ast, engine);
+        return fromCharacterCode(codes, ast, engine);
       }
 
       return F.NIL;
@@ -636,7 +693,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
@@ -773,6 +830,7 @@ public final class StringFunctions {
       S.StringCount.setEvaluator(new StringCount());
       S.StringContainsQ.setEvaluator(new StringContainsQ());
       S.StringDrop.setEvaluator(new StringDrop());
+      S.StringExtract.setEvaluator(new StringExtract());
       S.StringExpression.setEvaluator(new StringExpression());
       S.StringFreeQ.setEvaluator(new StringFreeQ());
       S.StringForm.setEvaluator(new StringForm());
@@ -1292,8 +1350,12 @@ public final class StringFunctions {
         if (arg1.isList()) {
           return arg1.mapThread(ast, 1);
         }
-        if (arg1.isString() && !ast.arg2().isRuleAST()) {
-          IExpr arg2 = ast.arg2();
+        // a core evaluator gets its arguments unevaluated, and a string pattern is often
+        // built rather than written out: a RegularExpression joined from pieces, or a
+        // list of alternatives kept in a variable
+        IExpr stringPattern = engine.evaluate(ast.arg2());
+        if (arg1.isString() && !stringPattern.isRuleAST()) {
+          IExpr arg2 = stringPattern;
 
           Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
           java.util.regex.Pattern pattern =
@@ -1365,7 +1427,7 @@ public final class StringFunctions {
           boolean ignoreCase = option[0].isTrue();
 
           String str = arg1.toString();
-          IExpr arg2 = ast.arg2().makeList();
+          IExpr arg2 = engine.evaluate(ast.arg2()).makeList();
           IAST list = (IAST) arg2;
           int counter = 0;
           for (int i = 1; i < list.size(); i++) {
@@ -1941,7 +2003,10 @@ public final class StringFunctions {
           // String or list of strings expected at position `1` in `2`.
           return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
         }
-        IExpr arg2 = ast.arg2();
+        // a core evaluator gets its arguments unevaluated, and a string pattern is often
+        // built rather than written out: a RegularExpression joined from pieces, or a
+        // list of alternatives kept in a variable
+        IExpr arg2 = engine.evaluate(ast.arg2());
 
         Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
         java.util.regex.Pattern pattern =
@@ -2243,20 +2308,24 @@ public final class StringFunctions {
         final EvalEngine engine) {
 
       Matcher matcher = pattern.matcher(str);
-      if (!ruleRHS.isString() && namedRegexGroups.size() > 0 && matcher.find()) {
+      if (ruleRHS.isString()) {
+        // a string right-hand side: `$1` … `$9` in it are what the match captured, which is what
+        // the matcher itself does
+        return matcher.replaceAll(engine.evaluate(ruleRHS).toString());
+      }
+      if (matcher.find()) {
         StringBuffer buf = new StringBuffer(str.length() + 16);
         do {
-          IExpr replacedRHS = ruleRHS;
-          replacedRHS = replaceGroups(replacedRHS, matcher, namedRegexGroups);
-          IExpr temp = engine.evaluate(replacedRHS);
-          matcher.appendReplacement(buf, temp.toString());
+          // what the match captured goes into the right-hand side *before* it is evaluated, so
+          // that the expression can look at it - `If[StringLength["$2"] === 0, …]` asks whether a
+          // group took part, and reading `$2` afterwards would only ever see the two characters
+          IExpr temp = engine.evaluate(substituteMatchedGroups(ruleRHS, matcher, namedRegexGroups));
+          matcher.appendReplacement(buf, Matcher.quoteReplacement(temp.toString()));
         } while (matcher.find());
         matcher.appendTail(buf);
         return buf.toString();
       }
-
-      IExpr temp = engine.evaluate(ruleRHS);
-      return pattern.matcher(str).replaceAll(temp.toString());
+      return str;
     }
 
     /**
@@ -2273,24 +2342,21 @@ public final class StringFunctions {
         final EvalEngine engine) {
 
       Matcher matcher = pattern.matcher(str);
-      if (!ruleRHS.isString() && namedRegexGroups.size() > 0 && matcher.find()) {
+      if (matcher.find()) {
         StringBuffer buf = new StringBuffer(str.length() + 16);
         do {
-          IExpr replacedTest = conditionTest;
-          replacedTest = replaceGroups(replacedTest, matcher, namedRegexGroups);
-          if (engine.evalTrue(replacedTest)) {
-            IExpr replacedRHS = ruleRHS;
-            replacedRHS = replaceGroups(replacedRHS, matcher, namedRegexGroups);
-            IExpr temp = engine.evaluate(replacedRHS);
-            matcher.appendReplacement(buf, temp.toString());
+          // the condition sees what the match captured, as the replacement does
+          if (engine.evalTrue(substituteMatchedGroups(conditionTest, matcher, namedRegexGroups))) {
+            IExpr temp =
+                engine.evaluate(substituteMatchedGroups(ruleRHS, matcher, namedRegexGroups));
+            matcher.appendReplacement(buf,
+                ruleRHS.isString() ? temp.toString() : Matcher.quoteReplacement(temp.toString()));
           }
         } while (matcher.find());
         matcher.appendTail(buf);
         return buf.toString();
       }
-
-      IExpr temp = engine.evaluate(ruleRHS);
-      return pattern.matcher(str).replaceAll(temp.toString());
+      return str;
     }
 
     @Override
@@ -2519,6 +2585,92 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
+  /**
+   * <code>StringExtract[string, "delimiter" -&gt; spec, …]</code>: split and take, in one step.
+   *
+   * <p>
+   * Each specification splits what is left of the string on its delimiter and takes the parts the
+   * position specification names, so several of them read successively deeper. It is how a text
+   * protocol is taken apart - <code>StringExtract[request, "\r\n\r\n" -&gt; 1, "\r\n" -&gt; 2 ;; ]</code>
+   * is the header lines of an HTTP request.
+   */
+  private static class StringExtract extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr current = ast.arg1();
+      for (int i = 2; i < ast.size(); i++) {
+        current = extract(current, ast.get(i), ast, engine);
+        if (current.isNIL()) {
+          return F.NIL;
+        }
+      }
+      return current;
+    }
+
+    /** One specification, applied to a string or to each of a list of them. */
+    private static IExpr extract(IExpr current, IExpr spec, IAST ast, EvalEngine engine) {
+      if (current.isList()) {
+        IAST list = (IAST) current;
+        IASTAppendable result = F.ListAlloc(list.argSize());
+        for (int i = 1; i < list.size(); i++) {
+          IExpr part = extract(list.get(i), spec, ast, engine);
+          if (part.isNIL()) {
+            return F.NIL;
+          }
+          result.append(part);
+        }
+        return result;
+      }
+      if (!current.isString()) {
+        return F.NIL;
+      }
+      IExpr delimiter = F.NIL;
+      IExpr position = spec;
+      if (spec.isRuleAST()) {
+        delimiter = spec.first();
+        position = spec.second();
+      }
+      String regex;
+      if (delimiter.isPresent()) {
+        Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
+        regex = IStringX.toRegexString(delimiter, false, ast, IStringX.REGEX_LONGEST, groups,
+            engine);
+        if (regex == null) {
+          return F.NIL;
+        }
+      } else {
+        // with no delimiter the pieces are the whitespace separated words
+        regex = "\\s+";
+      }
+      String[] pieces;
+      try {
+        pieces = java.util.regex.Pattern.compile(regex).split(current.toString(), -1);
+      } catch (java.util.regex.PatternSyntaxException pse) {
+        // Regex expression `1` error message: `2`.
+        return Errors.printMessage(S.StringExtract, "zzregex",
+            F.list(F.stringx(regex), F.stringx(pse.getMessage())), engine);
+      }
+      IASTAppendable parts = F.ListAlloc(pieces.length);
+      for (String piece : pieces) {
+        // an empty piece counts, unlike in StringSplit: a delimiter at the very front leaves one,
+        // and it is what makes the part after it the second and not the first
+        parts.append(F.stringx(piece));
+      }
+      return engine.evaluate(F.Part(parts, position));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
   private static class StringSplit extends AbstractCoreFunctionOptionEvaluator {
 
     private static IExpr splitList(String str, String[] result) {
@@ -2565,6 +2717,20 @@ public final class StringFunctions {
         if (pattern == null) {
           return F.NIL;
         }
+        if (argSize >= 3) {
+          // StringSplit[s, patt, n] gives at most n pieces: the last one is the rest of the
+          // string, delimiters and all, and a piece which is empty is still a piece.
+          // `StringSplit["key:", ":", 2]` is {"key", ""}, which is how a line of a configuration
+          // file with nothing after its colon is read.
+          int pieces = ast.arg3().toIntDefault();
+          if (pieces == Integer.MIN_VALUE) {
+            return F.NIL;
+          }
+          if (pieces <= 0) {
+            return splitList(str1, pattern.split(str1, -1));
+          }
+          return splitList(str1, pattern.split(str1, pieces));
+        }
         return splitList(str1, pattern.split(str1));
       }
       return F.NIL;
@@ -2594,8 +2760,12 @@ public final class StringFunctions {
           return arg1.mapThread(ast, 1);
         }
 
-        if (arg1.isString() && !ast.arg2().isRuleAST()) {
-          IExpr arg2 = ast.arg2();
+        // a core evaluator gets its arguments unevaluated, and a string pattern is often
+        // built rather than written out: a RegularExpression joined from pieces, or a
+        // list of alternatives kept in a variable
+        IExpr stringPattern = engine.evaluate(ast.arg2());
+        if (arg1.isString() && !stringPattern.isRuleAST()) {
+          IExpr arg2 = stringPattern;
 
           Map<ISymbol, String> groups = new HashMap<>();
           java.util.regex.Pattern pattern =
@@ -2913,11 +3083,13 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      if (ast.isAST1()) {
-        final IExpr head = ast.head();
-        if (head.isAST(S.StringTemplate, 2)) {
+      final IExpr head = ast.head();
+      if (head.isAST(S.StringTemplate, 2)) {
+        if (ast.isAST1()) {
           return S.TemplateApply.funEval(engine, head, ast.arg1());
         }
+        // more than one argument fills the slots in order, as TemplateApply does from a list
+        return S.TemplateApply.funEval(engine, head, ast.setAtCopy(0, S.List));
       }
       return F.NIL;
     }
@@ -3104,6 +3276,9 @@ public final class StringFunctions {
             context.put(F.ZZ(i), expr);
           }
         }
+      } else if (args.isPresent()) {
+        // one parameter which is not a list fills the first slot
+        context.put(F.C1, args);
       }
       return F.subst(templateExpr, x -> replaceTemplateSlotFunction(x, context));
     }

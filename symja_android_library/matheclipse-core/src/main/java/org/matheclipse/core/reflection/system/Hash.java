@@ -40,6 +40,20 @@ public class Hash extends AbstractFunctionEvaluator {
 
   public static BigInteger hash(InputStream inputStream, String algorithmInput)
       throws IOException, NoSuchAlgorithmException {
+    byte[] digest = hashBytes(inputStream, algorithmInput);
+    return digest == null ? null : new BigInteger(1, digest);
+  }
+
+  /**
+   * The digest itself, rather than the number it spells.
+   *
+   * <p>
+   * A digest is a fixed number of bytes and may begin with a zero one, which reading it as a number
+   * throws away. Anything which has to hand the digest on as it stands - a WebSocket handshake
+   * answers with its Base64 - needs the bytes.
+   */
+  public static byte[] hashBytes(InputStream inputStream, String algorithmInput)
+      throws IOException, NoSuchAlgorithmException {
     String algoUpper = algorithmInput.toUpperCase();
     // CRC32 (uses java.util.zip)
     if ("CRC32".equals(algoUpper)) {
@@ -51,7 +65,9 @@ public class Hash extends AbstractFunctionEvaluator {
           crc32.update(buffer, 0, bytesRead);
         }
       }
-      return BigInteger.valueOf(crc32.getValue());
+      long checksum = crc32.getValue();
+      return new byte[] {(byte) (checksum >>> 24), (byte) (checksum >>> 16),
+          (byte) (checksum >>> 8), (byte) checksum};
     }
 
     try (InputStream is = inputStream) {
@@ -64,7 +80,11 @@ public class Hash extends AbstractFunctionEvaluator {
           buffer = DigestUtils.md5(is);
           break;
         case "SHA":
+        case "SHA1":
           buffer = DigestUtils.sha1(is);
+          break;
+        case "SHA384":
+          buffer = DigestUtils.sha384(is);
           break;
         case "SHA256":
           buffer = DigestUtils.sha256(is);
@@ -81,16 +101,13 @@ public class Hash extends AbstractFunctionEvaluator {
         case "SHA3-384":
           buffer = DigestUtils.sha3_384(is);
           break;
-        case "SHA3-5124":
+        case "SHA3-512":
           buffer = DigestUtils.sha3_512(is);
           break;
         default:
           throw new NoSuchAlgorithmException("Unsupported algorithm: " + algorithmInput);
       }
-      if (buffer == null) {
-        return null;
-      }
-      return new BigInteger(1, buffer);
+      return buffer;
     }
   }
 
@@ -102,6 +119,71 @@ public class Hash extends AbstractFunctionEvaluator {
 
   public Hash() {}
 
+  /**
+   * The digest, written the way the second-or-third argument asks for it.
+   *
+   * <p>
+   * Wolfram's formats: an integer by default, a decimal or hexadecimal string zero-padded to the
+   * width of the digest, a base-36 string, or the raw bytes.
+   */
+  private static IExpr formatHash(byte[] digest, String format) {
+    BigInteger value = new BigInteger(1, digest);
+    switch (format) {
+      case "Integer":
+        return F.ZZ(value);
+      case "DecimalString":
+        // the widest decimal a digest of this many bytes can reach
+        int decimalDigits = new BigInteger(1, fullBytes(digest.length)).toString().length();
+        return F.$str(padLeft(value.toString(), decimalDigits));
+      case "HexString":
+        return F.$str(padLeft(value.toString(16), digest.length * 2));
+      case "Base36String":
+        int base36Digits = new BigInteger(1, fullBytes(digest.length)).toString(36).length();
+        return F.$str(padLeft(value.toString(36), base36Digits));
+      case "ByteArray":
+        return ByteArrayExpr.newInstance(digest);
+      default:
+        return F.NIL;
+    }
+  }
+
+  private static byte[] fullBytes(int length) {
+    byte[] max = new byte[length];
+    java.util.Arrays.fill(max, (byte) 0xFF);
+    return max;
+  }
+
+  private static String padLeft(String digits, int width) {
+    if (digits.length() >= width) {
+      return digits;
+    }
+    StringBuilder buf = new StringBuilder(width);
+    for (int i = digits.length(); i < width; i++) {
+      buf.append('0');
+    }
+    return buf.append(digits).toString();
+  }
+
+  /**
+   * An input stream over whatever the first argument holds, or <code>null</code> if it holds
+   * nothing which can be hashed byte by byte.
+   */
+  private static InputStream openStream(IExpr arg1) throws IOException {
+    if (arg1 instanceof IStringX) {
+      return IOUtils.toInputStream(arg1.toString(), StandardCharsets.UTF_8);
+    }
+    if (arg1 instanceof ByteArrayExpr) {
+      return new ByteArrayInputStream(((ByteArrayExpr) arg1).toData());
+    }
+    if (arg1 instanceof FileExpr) {
+      return Files.newInputStream(((FileExpr) arg1).toData().toPath());
+    }
+    if (arg1 instanceof InputStreamExpr) {
+      return ((InputStreamExpr) arg1).toData();
+    }
+    return null;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     if (!Config.FILESYSTEM_ENABLED) {
@@ -110,7 +192,7 @@ public class Hash extends AbstractFunctionEvaluator {
     }
     IExpr arg1 = ast.arg1();
     String algorithm = "Expression";
-    if (ast.isAST2()) {
+    if (ast.size() >= 3) {
       IExpr arg2 = ast.arg2();
       if (arg2 instanceof IStringX) {
         algorithm = arg2.toString();
@@ -118,61 +200,43 @@ public class Hash extends AbstractFunctionEvaluator {
         return F.NIL;
       }
     }
+    String format = "Integer";
+    if (ast.size() >= 4) {
+      IExpr arg3 = ast.arg3();
+      if (arg3 instanceof IStringX) {
+        format = arg3.toString();
+      } else {
+        return F.NIL;
+      }
+    }
     if (algorithm.equals("Expression")) {
       int hashCode = arg1.hashCode();
-      return F.ZZ(hashCode);
+      if (format.equals("Integer")) {
+        return F.ZZ(hashCode);
+      }
+      return formatHash(BigInteger.valueOf(hashCode & 0xFFFFFFFFL).toByteArray(), format);
     }
-    if (arg1 instanceof IStringX) {
-      try {
-        InputStream newInputStream = IOUtils.toInputStream(arg1.toString(), StandardCharsets.UTF_8);
-        BigInteger hashValue = hash(newInputStream, algorithm);
-        if (hashValue != null) {
-          return F.ZZ(hashValue);
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
+    try {
+      InputStream inputStream = openStream(arg1);
+      if (inputStream == null) {
         return F.NIL;
       }
-    }
-    if (arg1 instanceof ByteArrayExpr) {
-      try {
-        BigInteger hashValue = hash((ByteArrayExpr) arg1, algorithm);
-        if (hashValue != null) {
-          return F.ZZ(hashValue);
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
+      byte[] digest = hashBytes(inputStream, algorithm);
+      if (digest == null) {
         return F.NIL;
       }
+      return formatHash(digest, format);
+    } catch (NoSuchAlgorithmException nsae) {
+      // `1` is not a known hash code.
+      return Errors.printMessage(S.Hash, "hshtype", F.List(F.$str(algorithm)), engine);
+    } catch (IOException ioe) {
+      return Errors.printMessage(S.Hash, ioe, engine);
     }
-    if (arg1 instanceof FileExpr) {
-      try {
-        BigInteger hashValue = hash((FileExpr) arg1, algorithm);
-        if (hashValue != null) {
-          return F.ZZ(hashValue);
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-        return F.NIL;
-      }
-    }
-    if (arg1 instanceof InputStreamExpr) {
-      try {
-        BigInteger hashValue = hash((InputStreamExpr) arg1, algorithm);
-        if (hashValue != null) {
-          return F.ZZ(hashValue);
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-        return F.NIL;
-      }
-    }
-    return F.NIL;
   }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
+    return ARGS_1_3;
   }
 
 }

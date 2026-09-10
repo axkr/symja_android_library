@@ -316,7 +316,37 @@ public interface ISymbol extends IExpr {
         engine.setEvalRHSMode(evalRHSMode);
       }
     }
+    if (mayContainReturn(rightHandSide)) {
+      // `x := (…; Return[v]; …)` is a definition, and a definition is where a Return stops: it
+      // gives its value for the whole definition. So a right-hand side which contains one is
+      // evaluated here, at the definition's own boundary.
+      try {
+        return engine.evaluate(rightHandSide);
+      } catch (org.matheclipse.core.eval.exception.ReturnException rex) {
+        return rex.getValue();
+      }
+    }
     return rightHandSide;
+  }
+
+  /**
+   * Could this right-hand side contain a <code>Return</code>?
+   *
+   * <p>
+   * Asked on every read of an assigned value, so it looks at the head first: only the procedural
+   * constructs can hold one, and a value which is a number, a list or a sum - which is nearly
+   * every assigned value there is - is answered without looking inside it.
+   */
+  private static boolean mayContainReturn(IExpr rightHandSide) {
+    if (!rightHandSide.isAST()) {
+      return false;
+    }
+    IExpr head = rightHandSide.head();
+    if (head == S.CompoundExpression || head == S.Module || head == S.Block || head == S.With
+        || head == S.If || head == S.While || head == S.For || head == S.Return) {
+      return !rightHandSide.isFree(S.Return, true);
+    }
+    return false;
   }
 
   static IAST fullDefinitionList(IAST symbolsList) {

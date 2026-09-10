@@ -277,11 +277,11 @@ public class OptionsPattern extends AbstractPatternSequence {
     // if (!isConditionMatchedSequence(sequence, patternMap)) {
     // return false;
     // }
-    if (this.fOptionsPatternHead != null) {
-      if (!this.fOptionsPatternHead.equals(optionsPatternHead)) {
-        return false;
-      }
-    }
+    // The head is remembered, not required. One OptionsPattern object can serve several symbols:
+    // instantiating a Module which defines a rule on a local symbol substitutes the renamed symbol
+    // into the held body but hands every instantiation the same pattern objects. Refusing a head
+    // other than the one remembered meant the first instantiation claimed the object and the
+    // options of every later one were filed under the wrong symbol and never found again.
     if (sequence.size() == 1) {
       this.fOptionsPatternHead = optionsPatternHead;
       return patternMap.setValue(this, sequence);

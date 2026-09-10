@@ -404,11 +404,16 @@ public final class FunctionDefinitions {
     IOFunctions.initialize();
     Programming.initialize();
     PatternMatching.initialize();
+    DefinitionFunctions.initialize();
     FileFunctions.initialize();
     FileSystemFunctions.initialize();
     PacletFunctions.initialize();
     ArchiveFunctions.initialize();
     SocketFunctions.initialize();
+    DataStructureFunctions.initialize();
+    CompileFunctions.initialize();
+    LinkFunctions.initialize();
+    ProcessFunctions.initialize();
     TaskFunctions.initialize();
     CodeParserFunctions.initialize();
     Algebra.initialize();

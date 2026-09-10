@@ -142,6 +142,10 @@ public enum Extension {
       if (ucExtension.equals("DATA")) {
         return DAT;
       }
+      if (ucExtension.equals("TEXT")) {
+        // "Text" is what the Wolfram Language calls this format; TXT is the file name it uses
+        return TXT;
+      }
       if (ucExtension.equals("JPG")) {
         return JPEG;
       }

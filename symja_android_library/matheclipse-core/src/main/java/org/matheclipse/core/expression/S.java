@@ -282,6 +282,16 @@ public class S {
   public final static IBuiltInSymbol $ScriptCommandLine =
       S.initFinalSymbol("$ScriptCommandLine", ID.$ScriptCommandLine);
 
+  /**
+   * $StandardOutputStream(x) - TODO describe `$StandardOutputStream`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$StandardOutputStream.md">$StandardOutputStream
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $StandardOutputStream =
+      S.initFinalSymbol("$StandardOutputStream", ID.$StandardOutputStream);
+
   public final static IBuiltInSymbol $SystemCharacterEncoding =
       S.initFinalSymbol("$SystemCharacterEncoding", ID.$SystemCharacterEncoding);
 
@@ -4926,6 +4936,16 @@ public class S {
    */
   public final static IBuiltInSymbol DatasetTheme =
       S.initFinalSymbol("DatasetTheme", ID.DatasetTheme);
+
+  /**
+   * DataStructure(x) - TODO describe `DataStructure`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DataStructure.md">DataStructure
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DataStructure =
+      S.initFinalSymbol("DataStructure", ID.DataStructure);
 
   /**
    * DataStructureQ(x) - TODO describe `DataStructureQ`.

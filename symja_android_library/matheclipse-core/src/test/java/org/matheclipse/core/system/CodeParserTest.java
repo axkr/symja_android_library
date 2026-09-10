@@ -84,6 +84,35 @@ public class CodeParserTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testALineBreakInsideAnExpressionDoesNotSplitIt() {
+    defineSplitExpression();
+    // Components/FakeMenuBrowser.wlx is written
+    //   Component[OptionsPattern[]] :=
+    //   With[{...}, ...]
+    // and splitting it there left a definition of nothing followed by a loose body, which then
+    // ran with no options around it - the whole menu came back as OptionValue["Plugins"].
+    check("SplitExpression(\"f(x_) := \\nWith({y = 1}, y)\\ng(z_) := z\")", //
+        "{f(x_) := \nWith({y = 1}, y),g(z_) := z}");
+    // an operator waiting for its right-hand side keeps the expression open across blank lines
+    check("SplitExpression(\"h(x_) :=\\n\\n  x + 1\\nk = 2\") // Length", //
+        "2");
+    check("SplitExpression(\"s = \\\"one\\\" <>\\n\\\"two\\\"\\nt = 1\") // Length", //
+        "2");
+    // ...but an expression which is finished still ends at the line break
+    check("SplitExpression(\"a = 1\\nb = 2\") // Length", //
+        "2");
+    check("SplitExpression(\"a = 1;\\nb = 2\") // Length", //
+        "2");
+    check("SplitExpression(\"f(1) &\\ng = 2\") // Length", //
+        "2");
+    // the line break which does not end anything is not a Token`Newline at the top level
+    check("Cases(CodeParser`CodeConcreteParse(\"a :=\\n1\\nb = 2\","
+        + " CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[2]],"
+        + " LeafNode(Token`Newline, _, x_) :> Lookup(x, Source, Nothing))", //
+        "{{7,7}}");
+  }
+
+  @Test
   public void testStringTakeWithSeveralSpans() {
     // what SplitExpression cuts the file up with
     check("StringTake(\"abcdefgh\", {{1, 3}, {5, 6}})", //

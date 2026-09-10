@@ -278,6 +278,55 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
    * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
    *      Perl Compatible Regular Expression</a>
    */
+  /**
+   * A name for the capture group a named pattern becomes.
+   *
+   * <p>
+   * A Java regular expression names a group with letters and digits only, while the symbol naming
+   * the pattern may carry a context, a <code>$</code> or an underscore - inside a package it always
+   * carries a context. Taking the symbol's name verbatim made the whole expression unparseable, so
+   * the name is sanitised and numbered to keep two symbols apart.
+   */
+  static String regexGroupName(ISymbol symbol, Map<ISymbol, String> groups) {
+    String existing = groups.get(symbol);
+    if (existing != null) {
+      return existing;
+    }
+    StringBuilder name = new StringBuilder("g");
+    name.append(groups.size());
+    String symbolName = symbol.getSymbolName();
+    for (int i = 0; i < symbolName.length(); i++) {
+      char c = symbolName.charAt(i);
+      if (c < 128 && Character.isLetterOrDigit(c)) {
+        name.append(c);
+      }
+    }
+    return name.toString();
+  }
+
+  /**
+   * How many times a <code>Repeated</code> may repeat, written the way a regular expression says
+   * it.
+   *
+   * <p>
+   * <code>Repeated["-", {17, 100}]</code> is seventeen to a hundred dashes and nothing else; a
+   * plain <code>+</code> would match three of them, which is how a file's section separator stops
+   * telling one section from another.
+   *
+   * @return the quantifier, or <code>null</code> when the repetition has no bounds worth writing
+   */
+  private static String repeatedBounds(RepeatedPattern repeated, String[] shortestLongest) {
+    int min = repeated.getMin();
+    int max = repeated.getMax();
+    if (min <= 0 && max == Integer.MAX_VALUE) {
+      return null;
+    }
+    String quantifier = max == Integer.MAX_VALUE //
+        ? "{" + min + ",}"
+        : min == max ? "{" + min + "}" : "{" + min + "," + max + "}";
+    return quantifier + shortestLongest[IStringX.ASTERISK_Q].replace("*", "");
+  }
+
   static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction,
       String[] shortestLongest, Map<ISymbol, String> groups, EvalEngine engine) {
 
@@ -331,7 +380,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         String str = toRegexString(expr.second(), abbreviatedPatterns, stringFunction,
             shortestLongest, groups, engine);
         if (str != null) {
-          final String groupName = symbol.toString();
+          final String groupName = regexGroupName(symbol, groups);
           groups.put(symbol, groupName);
           if (repeated.isNullSequence()) {
             return "(?<" + groupName + ">(" + str + ")" + shortestLongest[IStringX.ASTERISK_Q]
@@ -344,6 +393,10 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         String str = toRegexString(expr, abbreviatedPatterns, stringFunction, shortestLongest,
             groups, engine);
         if (str != null) {
+          String bounds = repeatedBounds(repeated, shortestLongest);
+          if (bounds != null) {
+            return "(?:" + str + ")" + bounds;
+          }
           if (repeated.isNullSequence()) {
             return "(" + str + ")" + shortestLongest[IStringX.ASTERISK_Q];
           } else {
@@ -356,13 +409,13 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       return IStringX.toRegexString(stringFunction, stringExpression, abbreviatedPatterns,
           shortestLongest, groups, engine);
     } else if (partOfRegex.isBlank()) {
-      return "(.|\\n)";
+      return "[\\s\\S]";
     } else if (partOfRegex.isPattern()) {
       final IPattern pattern = (IPattern) partOfRegex;
       final ISymbol symbol = pattern.getSymbol();
       if (symbol != null && pattern.getHeadTest() == null) {
         // see github #221 - use Java regex - named capturing groups
-        final String groupName = symbol.toString();
+        final String groupName = regexGroupName(symbol, groups);
         groups.put(symbol, groupName);
         if (pattern instanceof PatternNested) {
           PatternNested pn = (PatternNested) pattern;
@@ -371,14 +424,14 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
               shortestLongest, groups, engine);
           return "(?<" + groupName + ">" + subPatternRegex + ")";
         }
-        return "(?<" + groupName + ">(.|\\n))";
+        return "(?<" + groupName + ">[\\s\\S])";
       }
     } else if (partOfRegex.isAST(S.Pattern, 3) && partOfRegex.first().isSymbol()) {
       final ISymbol symbol = (ISymbol) partOfRegex.first();
       String str = toRegexString(partOfRegex.second(), abbreviatedPatterns, stringFunction,
           shortestLongest, groups, engine);
       if (str != null) {
-        final String groupName = symbol.toString();
+        final String groupName = regexGroupName(symbol, groups);
         groups.put(symbol, groupName);
         return "(?<" + groupName + ">" + str + ")";
       }
@@ -388,15 +441,15 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       final String str;
       if (ps.isNullSequence()) {
         // RepeatedNull
-        str = "(.|\\n)" + shortestLongest[IStringX.ASTERISK_Q];
+        str = "[\\s\\S]" + shortestLongest[IStringX.ASTERISK_Q];
       } else {
         // Repeated
-        str = "(.|\\n)" + shortestLongest[IStringX.PLUS_Q];
+        str = "[\\s\\S]" + shortestLongest[IStringX.PLUS_Q];
       }
       if (symbol == null) {
         return str;
       } else {
-        final String groupName = symbol.toString();
+        final String groupName = regexGroupName(symbol, groups);
         groups.put(symbol, groupName);
         return "(?<" + groupName + ">" + str + ")";
       }
@@ -411,9 +464,14 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         buf.append("]");
         return buf.toString();
       }
-    } else if (partOfRegex.isAlternatives()) {
+    } else if (partOfRegex.isAlternatives() || partOfRegex.isList()) {
+      // a list standing in a string pattern is a choice, the same as Alternatives:
+      // `StartOfString ~~ {"GET", "PUT", …}` is how a request line is recognised
       IAST alternatives = (IAST) partOfRegex;
       StringBuilder pieces = new StringBuilder();
+      // the group keeps the choice from reaching past what stands beside it, so that
+      // `StartOfString ~~ {"a", "b"}` anchors both branches and not only the first
+      pieces.append("(?:");
       for (int i = 1; i < alternatives.size(); i++) {
         String str = toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction,
             shortestLongest, groups, engine);
@@ -428,6 +486,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
           pieces.append('|');
         }
       }
+      pieces.append(')');
       return pieces.toString();
     } else if (partOfRegex.isExcept()) {
       IAST exceptions = (IAST) partOfRegex;

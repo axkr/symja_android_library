@@ -60,6 +60,11 @@ public class WXFFunctions {
       if (ast.isAST1()) {
         // try {
         IExpr arg1 = ast.arg1();
+        if (arg1 instanceof ByteArrayExpr) {
+          // bytes are already bytes: ByteArray of a byte array is that byte array, which is what
+          // lets a caller write ByteArray[x] without knowing which of the two it was handed
+          return arg1;
+        }
         if (arg1.isList()) {
           if (arg1.isEmptyList()) {
             return ByteArrayExpr.newInstance(new byte[] {});

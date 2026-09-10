@@ -54,6 +54,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -2005,11 +2006,6 @@ public final class ListFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
-    }
   }
 
   /**
@@ -2593,6 +2589,33 @@ public final class ListFunctions {
    * Drop({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
    * </pre>
    */
+  /**
+   * <code>Take</code> and <code>Drop</code> of a byte array: the same positions as of the list of
+   * its bytes, answered as a byte array again.
+   *
+   * <p>
+   * A WebSocket frame is read this way - the header is dropped and the payload is what remains -
+   * so what comes back has to be a byte array, not the list it was worked out on.
+   */
+  private static IExpr byteArrayPart(IAST ast, ByteArrayExpr bytes, EvalEngine engine) {
+    IASTAppendable onList = ast.copyAppendable();
+    onList.set(1, bytes.normal(false));
+    IExpr result = engine.evaluate(onList);
+    if (!result.isList()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) result;
+    byte[] taken = new byte[list.argSize()];
+    for (int i = 1; i < list.size(); i++) {
+      int value = list.get(i).toIntDefault();
+      if (value < 0 || value > 255) {
+        return F.NIL;
+      }
+      taken[i - 1] = (byte) value;
+    }
+    return ByteArrayExpr.newInstance(taken);
+  }
+
   private static final class Drop extends AbstractFunctionEvaluator {
 
     @Override
@@ -2603,6 +2626,10 @@ public final class ListFunctions {
         return onRows;
       }
       final IExpr arg1 = ast.arg1();
+      if (arg1 instanceof ByteArrayExpr) {
+        // bytes are dropped from a byte array and the rest is one again
+        return byteArrayPart(ast, (ByteArrayExpr) arg1, engine);
+      }
       if (!arg1.isASTOrAssociation() && !arg1.isSparseArray()) {
         // Nonatomic expression expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
@@ -3826,8 +3853,33 @@ public final class ListFunctions {
     }
 
 
+    /**
+     * Byte arrays join into a byte array, the way lists join into a list. Reassembling a request
+     * that arrived in several packets is written as <code>Join @@ pieces</code>.
+     */
+    private static IExpr joinByteArrays(IAST ast) {
+      if (ast.argSize() == 0) {
+        return F.NIL;
+      }
+      for (int i = 1; i < ast.size(); i++) {
+        if (!(ast.get(i) instanceof ByteArrayExpr)) {
+          return F.NIL;
+        }
+      }
+      java.io.ByteArrayOutputStream joined = new java.io.ByteArrayOutputStream();
+      for (int i = 1; i < ast.size(); i++) {
+        byte[] bytes = ((ByteArrayExpr) ast.get(i)).toData();
+        joined.write(bytes, 0, bytes.length);
+      }
+      return ByteArrayExpr.newInstance(joined.toByteArray());
+    }
+
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr bytes = joinByteArrays(ast);
+      if (bytes.isPresent()) {
+        return bytes;
+      }
       // Join takes several, so every one of them is unwrapped, and a Dataset first argument makes
       // the result one - see IASTDataset#onDatasetRows
       boolean anyDataset = false;
@@ -7391,6 +7443,10 @@ public final class ListFunctions {
       // evaledAST = ast;
       // }
 
+      if (ast.arg1() instanceof ByteArrayExpr) {
+        // bytes are taken from a byte array and what is taken is one again
+        return byteArrayPart(ast, (ByteArrayExpr) ast.arg1(), engine);
+      }
       try {
         final ISequence[] sequ =
             Sequence.createSequences(ast, 2, ast.size(), "take", S.Take, engine);

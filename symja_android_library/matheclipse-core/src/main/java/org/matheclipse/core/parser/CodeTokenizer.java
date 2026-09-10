@@ -83,6 +83,34 @@ public final class CodeTokenizer {
   private static final java.util.Set<String> CLOSE_KINDS =
       java.util.Set.of("CloseSquare", "CloseCurly", "CloseParen", "BarGreater");
 
+  /**
+   * Operators which can stand at the end of a finished expression. Everything else that is an
+   * operator is still waiting for what comes after it.
+   */
+  private static final java.util.Set<String> COMPLETING_OPERATORS =
+      java.util.Set.of(";", "&", "++", "--", "!", "!!", "'", "_", "__", "___", "..", "...");
+
+  /**
+   * Would a line break after this token leave the expression unfinished?
+   *
+   * <p>
+   * An operator waiting for its right-hand side does; a name, a number, a closing bracket or one
+   * of the operators which finish an expression does not.
+   */
+  private static boolean continues(Token lastSignificant) {
+    if (lastSignificant == null) {
+      return false;
+    }
+    String kind = lastSignificant.kind();
+    if (kind.equals("Comma")) {
+      return true;
+    }
+    if (!kind.equals("Operator")) {
+      return false;
+    }
+    return !COMPLETING_OPERATORS.contains(lastSignificant.text());
+  }
+
   private CodeTokenizer() {}
 
   /** The tokens of <code>source</code>, in order, covering every character of it. */
@@ -90,8 +118,19 @@ public final class CodeTokenizer {
     List<Token> tokens = new ArrayList<Token>();
     int position = 0;
     int depth = 0;
+    // the last token which says anything about whether an expression is finished: whitespace,
+    // comments and earlier line breaks say nothing
+    Token lastSignificant = null;
     final int length = source.length();
     while (position < length) {
+      if (!tokens.isEmpty()) {
+        Token previous = tokens.get(tokens.size() - 1);
+        String kind = previous.kind();
+        if (!kind.equals("Whitespace") && !kind.equals("Comment") && !kind.equals("Newline")
+            && !kind.equals("InternalNewline")) {
+          lastSignificant = previous;
+        }
+      }
       char ch = source.charAt(position);
       int begin = position;
 
@@ -100,8 +139,12 @@ public final class CodeTokenizer {
           position++;
         }
         position++;
-        tokens.add(new Token("Newline", source.substring(begin, position), begin + 1, position,
-            depth));
+        // A newline ends an expression only where one can end. Inside brackets, or after an
+        // operator still waiting for its right-hand side, the line break is part of the
+        // expression rather than the end of it - `f[x_] :=` on one line and its body on the next
+        // is one definition, not a definition of nothing followed by a loose body.
+        String kind = depth > 0 || continues(lastSignificant) ? "InternalNewline" : "Newline";
+        tokens.add(new Token(kind, source.substring(begin, position), begin + 1, position, depth));
         continue;
       }
       if (ch == ' ' || ch == '\t' || ch == '\f') {

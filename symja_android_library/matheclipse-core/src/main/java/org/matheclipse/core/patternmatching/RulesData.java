@@ -9,6 +9,7 @@ import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -483,6 +484,16 @@ public final class RulesData implements Serializable {
     if (fEqualDownRules != null) {
       PatternMatcherEquals res = fEqualDownRules.get(expr);
       if (res != null) {
+        if (res.rhsHasReturn()) {
+          // A definition is where a Return stops - it gives its value for the whole definition -
+          // so a right-hand side which contains one is evaluated here, at the definition's own
+          // boundary, rather than handed back for the evaluation loop to continue with.
+          try {
+            return engine.evaluate(res.getRHS());
+          } catch (ReturnException rex) {
+            return rex.getValue();
+          }
+        }
         return res.getRHS();
       }
     }

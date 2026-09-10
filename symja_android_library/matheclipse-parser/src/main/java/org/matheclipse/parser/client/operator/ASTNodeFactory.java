@@ -129,6 +129,41 @@ public class ASTNodeFactory implements INodeParserFactory {
     }
   }
 
+  /**
+   * <code>|</code>, with the reading of a default written after its last branch.
+   *
+   * <p>
+   * A default is read while the pattern before it is, so <code>_Symbol|_Function:Auto</code>
+   * arrives as an alternative whose last branch carries the default. It belongs to the whole
+   * alternative.
+   */
+  private static class AlternativesOperator extends InfixOperator {
+    public AlternativesOperator(final String oper, final String functionName, final int precedence,
+        final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public FunctionNode endFunction(final INodeParserFactory factory, final FunctionNode function,
+        final Scanner scanner) {
+      final int size = function.size();
+      if (size > 2 && function.get(size - 1) instanceof FunctionNode) {
+        FunctionNode optional = (FunctionNode) function.get(size - 1);
+        if (optional.size() == 3
+            && optional.get(0).equals(factory.createSymbol(IConstantOperators.Optional))) {
+          FunctionNode alternatives = factory.createAST(function.get(0));
+          for (int i = 1; i < size - 1; i++) {
+            alternatives.add(function.get(i));
+          }
+          alternatives.add(optional.get(1));
+          return factory.createFunction(factory.createSymbol(IConstantOperators.Optional),
+              alternatives, optional.get(2));
+        }
+      }
+      return function;
+    }
+  }
+
   private static class PatternOperator extends InfixOperator {
     public PatternOperator(final String oper, final String functionName, final int precedence,
         final int grouping) {
@@ -154,9 +189,44 @@ public class ASTNodeFactory implements INodeParserFactory {
             }
           }
         }
+        if (rhs instanceof FunctionNode) {
+          FunctionNode optional = (FunctionNode) rhs;
+          if (optional.size() == 3 && optional.get(0)
+              .equals(factory.createSymbol(IConstantOperators.Optional))) {
+            // `name : pattern : default`. The default is read while the pattern is, so what
+            // arrives here is already Optional[pattern, default] and the name belongs inside it.
+            return factory.createFunction(factory.createSymbol(IConstantOperators.Optional),
+                factory.createFunction(factory.createSymbol(IConstantOperators.Pattern), lhs,
+                    optional.get(1)),
+                optional.get(2));
+          }
+        }
         return factory.createFunction(factory.createSymbol(IConstantOperators.Pattern), lhs, rhs);
       }
       return factory.createFunction(factory.createSymbol(IConstantOperators.Optional), lhs, rhs);
+    }
+
+    /**
+     * Close a flat chain of <code>:</code>.
+     *
+     * <p>
+     * <code>:</code> collects its arguments flat, so <code>name : pattern : default</code> arrives
+     * here as a three-argument <code>Pattern</code>. It is an optional argument that also carries a
+     * name, which the Wolfram Language reads as
+     * <code>Optional[Pattern[name, pattern], default]</code> - the spelling every argument of
+     * <code>CreateUType</code> is written in.
+     */
+    @Override
+    public FunctionNode endFunction(final INodeParserFactory factory, final FunctionNode function,
+        final Scanner scanner) {
+      if (function.size() == 4
+          && function.get(0).equals(factory.createSymbol(IConstantOperators.Pattern))) {
+        return factory.createFunction(factory.createSymbol(IConstantOperators.Optional),
+            factory.createFunction(factory.createSymbol(IConstantOperators.Pattern),
+                function.get(1), function.get(2)),
+            function.get(3));
+      }
+      return function;
     }
   }
 
@@ -436,6 +506,8 @@ public class ASTNodeFactory implements INodeParserFactory {
         return new StarOperator(row.token, row.head, row.precedence, grouping);
       case "Pattern":
         return new PatternOperator(row.token, row.head, row.precedence, grouping);
+      case "Alternatives":
+        return new AlternativesOperator(row.token, row.head, row.precedence, grouping);
       case "Subtract":
         return new SubtractOperator(row.token, row.head, row.precedence, grouping);
       case "PreMinus":
