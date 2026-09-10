@@ -940,4 +940,28 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Missing[UnknownProperty,Nonsense]");
   }
 
+  /**
+   * <code>Function[Null, body]</code> binds no parameter: <code>Null</code> is the parameter
+   * specification which says "none", and the body reads its arguments as slots.
+   *
+   * <p>
+   * WLJS's kernel abort is such a function - <code>Module[{token}, token = Function[Null, ...
+   * token = Null;]; ...]</code> in <code>Kernel/Evaluator.wl</code>. Taking Null for a formal
+   * parameter renamed it to <code>Null$nnn</code> throughout the body and then refused to apply
+   * the function at all, so pressing "Abort evaluation" never reached the kernel.
+   */
+  @Test
+  public void testFunctionWithoutParametersBindsNothing() {
+    check("Function[Null, 42][]", //
+        "42");
+    check("Function[Null, #^2][7]", //
+        "49");
+    check("Module[{tok}, tok = Function[Null, tok = 1]; tok[]; tok]", //
+        "1");
+    // and Null inside a Module body is left alone
+    check("Module[{a}, StringContainsQ[ToString[Hold[Function[Null, a = Null]], InputForm], "
+        + "\"Null$\"]]", //
+        "False");
+  }
+
 }

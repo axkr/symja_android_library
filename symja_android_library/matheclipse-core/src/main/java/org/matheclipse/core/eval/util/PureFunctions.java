@@ -157,7 +157,19 @@ public final class PureFunctions {
    * @param application the whole application, with its arguments evaluated
    */
   public static IExpr applySlotForm(IAST function, IAST application, EvalEngine engine) {
-    IExpr body = function.arg1();
+    return applySlotForm(function.arg1(), function, application, engine);
+  }
+
+  /**
+   * As {@link #applySlotForm(IAST, IAST, EvalEngine)}, for a body which is not the function's first
+   * argument: <code>Function(Null, body)</code> names no parameters and refers to its arguments as
+   * slots, exactly as <code>Function(body)</code> does.
+   *
+   * @param body the body to substitute the slots in
+   * @param function the whole <code>Function(...)</code>, only used in the diagnostic
+   */
+  public static IExpr applySlotForm(IExpr body, IAST function, IAST application,
+      EvalEngine engine) {
     if (body.isPureFunction()) {
       // body binds its own slots
       return body;

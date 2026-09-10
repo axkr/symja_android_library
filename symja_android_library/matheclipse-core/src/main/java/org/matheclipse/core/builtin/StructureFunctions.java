@@ -982,6 +982,12 @@ public class StructureFunctions {
         if (function.isAST1()) {
           return PureFunctions.applySlotForm(function, astEvaled, engine);
         }
+        if (function.arg1() == S.Null) {
+          // Function(Null, body) names no parameters - the body reads its arguments as slots. It
+          // is how a function with attributes is written without binding a symbol, and WLJS writes
+          // its kernel-abort callback that way
+          return PureFunctions.applySlotForm(function.arg2(), function, astEvaled, engine);
+        }
         if (function.isAST2() || function.isAST3()) {
           return PureFunctions.applyNamedForm(function, astEvaled, attributes, engine);
         }

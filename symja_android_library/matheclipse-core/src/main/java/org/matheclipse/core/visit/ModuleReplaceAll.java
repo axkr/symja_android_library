@@ -94,8 +94,11 @@ public class ModuleReplaceAll extends VisitorExpr {
     IAST localVariablesList = F.NIL;
     if (isFunction) {
       if (ast.isAST2()) {
-        // extract formal parameters of Function(x,body)
-        if (ast.arg1().isSymbol()) {
+        // extract formal parameters of Function(x,body). Null is not one of them: it says the
+        // function binds nothing at all
+        if (ast.arg1() == S.Null) {
+          localVariablesList = F.NIL;
+        } else if (ast.arg1().isSymbol()) {
           localVariablesList = F.list(ast.arg1());
         } else if (ast.arg1().isList()) {
           localVariablesList = (IAST) ast.arg1();
