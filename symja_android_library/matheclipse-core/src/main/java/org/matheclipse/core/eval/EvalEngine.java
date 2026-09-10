@@ -3473,6 +3473,42 @@ public class EvalEngine implements Serializable {
     return evalHoldPattern(ast, noEvaluation, false);
   }
 
+  /**
+   * Is this argument one of the constructs a pattern is built out of?
+   *
+   * <p>
+   * The left-hand side of a definition is turned into a matcher before it is stored, and the
+   * pattern constructs in it have to become pattern objects for that. A holding head must not stop
+   * that from happening: <code>f[x_, expr_, OptionsPattern[]] := …</code> is a rule with options
+   * whether or not <code>f</code> holds its arguments - the hold says what happens to the
+   * arguments of a <em>call</em>, not to the shape of the rule.
+   */
+  private static boolean isPatternConstruct(IExpr expr) {
+    if (!expr.isAST()) {
+      return false;
+    }
+    int headID = ((IAST) expr).headID();
+    switch (headID) {
+      case ID.Blank:
+      case ID.BlankSequence:
+      case ID.BlankNullSequence:
+      case ID.Pattern:
+      case ID.Optional:
+      case ID.OptionsPattern:
+      case ID.Repeated:
+      case ID.RepeatedNull:
+      case ID.PatternTest:
+      case ID.Alternatives:
+      case ID.Except:
+      case ID.PatternSequence:
+      case ID.Longest:
+      case ID.Shortest:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   private IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation,
       boolean evalNumericFunction, int level) {
     // final ISymbol symbol = ast.topHead();
@@ -3528,37 +3564,41 @@ public class EvalEngine implements Serializable {
       return F.NIL;
     }
 
-    if (!Attribute.HOLDALL.isSetIn(attributes)) {
+    {
       final int astSize = ast.size();
+      final boolean holdFirst =
+          Attribute.HOLDALL.isSetIn(attributes) || Attribute.HOLDFIRST.isAnySetIn(attributes);
+      final boolean holdRest =
+          Attribute.HOLDALL.isSetIn(attributes) || Attribute.HOLDREST.isAnySetIn(attributes);
 
-      if (!Attribute.HOLDFIRST.isAnySetIn(attributes)) {
-        // the HoldFirst attribute isn't set here
-        if (astSize > 1) {
-          IExpr expr = ast.arg1();
-          if (expr.isAST()) {
-            resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList, noEvaluation, level);
-          } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
-            IExpr temp = expr.evaluate(this);
-            if (temp.isPresent()) {
-              resultList = ast.setAtCopy(1, temp);
-            }
+      if (astSize > 1 && (!holdFirst || isPatternConstruct(ast.arg1()))) {
+        IExpr expr = ast.arg1();
+        if (expr.isAST()) {
+          resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList, noEvaluation, level);
+        } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
+          IExpr temp = expr.evaluate(this);
+          if (temp.isPresent()) {
+            resultList = ast.setAtCopy(1, temp);
           }
         }
       }
       if (astSize > 2) {
-        if (!Attribute.HOLDREST.isAnySetIn(attributes)) {
-          // the HoldRest attribute isn't set here
-          for (int i = 2; i < astSize; i++) {
-            IExpr expr = ast.get(i);
-            if (expr.isAST()) {
-              resultList =
-                  evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
-            } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
-              resultList = resultList.setIfPresent(ast, i, expr.evaluate(this));
-            }
+        for (int i = 2; i < astSize; i++) {
+          IExpr expr = ast.get(i);
+          if (holdRest && !isPatternConstruct(expr)) {
+            continue;
+          }
+          if (expr.isAST()) {
+            resultList =
+                evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
+          } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
+            resultList = resultList.setIfPresent(ast, i, expr.evaluate(this));
           }
         }
       }
+    }
+    if (!Attribute.HOLDALL.isSetIn(attributes)) {
+      final int astSize = ast.size();
       if (evalNumericFunction && (!Attribute.HOLDALL.isAnySetIn(attributes))) {
         IAST f = resultList.orElse(ast);
         if (f.isNumericFunction(true)) {

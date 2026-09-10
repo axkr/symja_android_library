@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -171,6 +172,12 @@ public class WMACompress {
       writeInt(bytes.length, out);
       out.write(bytes, 0, bytes.length);
       return true;
+    }
+    if (expr instanceof IPatternObject) {
+      // a pattern is an atom here and an expression in the format: `_` travels as Blank[] and
+      // `x_` as Pattern[x, Blank[]], which is how Mathematica writes them too
+      IAST fullForm = ((IPatternObject) expr).toFullFormAST();
+      return fullForm != null && writeAST(fullForm, out);
     }
     if (expr instanceof IAST) {
       return writeAST((IAST) expr, out);
@@ -352,7 +359,7 @@ public class WMACompress {
             }
             ast.append(argument);
           }
-          return ast;
+          return isPatternConstruct(ast) ? engine.evaluate(ast) : ast;
         }
         case 'e':
           return readArray(ARRAY_REAL);
@@ -448,6 +455,32 @@ public class WMACompress {
         list.append(nest(dimensions, level + 1, values, next));
       }
       return list;
+    }
+
+    /**
+     * Is this one of the constructs a pattern is built from?
+     *
+     * <p>
+     * A pattern travels as the expression it is written as - <code>Blank[]</code> for
+     * <code>_</code> - and has to become a pattern again when it is read, which is what
+     * evaluating <code>Blank[]</code> does.
+     */
+    private static boolean isPatternConstruct(IAST ast) {
+      switch (ast.headID()) {
+        case org.matheclipse.core.expression.ID.Blank:
+        case org.matheclipse.core.expression.ID.BlankSequence:
+        case org.matheclipse.core.expression.ID.BlankNullSequence:
+        case org.matheclipse.core.expression.ID.Pattern:
+        case org.matheclipse.core.expression.ID.Optional:
+        case org.matheclipse.core.expression.ID.OptionsPattern:
+        case org.matheclipse.core.expression.ID.Repeated:
+        case org.matheclipse.core.expression.ID.RepeatedNull:
+        case org.matheclipse.core.expression.ID.PatternTest:
+        case org.matheclipse.core.expression.ID.PatternSequence:
+          return true;
+        default:
+          return false;
+      }
     }
 
     /** A name written with its context, or without one when it is System` or Global`. */

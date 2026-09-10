@@ -2006,11 +2006,6 @@ public final class ListFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
-    }
   }
 
   /**

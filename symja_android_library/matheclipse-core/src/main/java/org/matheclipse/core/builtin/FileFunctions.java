@@ -986,8 +986,29 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_INFINITY;
     }
+  }
+
+  /**
+   * The file name a stream-opening call names.
+   *
+   * <p>
+   * <code>OpenWrite["f.txt", DOSTextFormat -> False]</code> is what a package writes: the options
+   * after the name say how the stream behaves, and one which is not implemented here says nothing
+   * this can act on - but it must not stop the file from being opened.
+   *
+   * @return the name, or {@link F#NIL} when the call names none
+   */
+  private static IExpr streamName(final IAST ast) {
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      if (argument.isRuleAST()) {
+        continue;
+      }
+      return argument.isString() ? argument : F.NIL;
+    }
+    return F.NIL;
   }
 
   private static final class OpenRead extends AbstractFunctionEvaluator {
@@ -996,12 +1017,10 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(EvalEngine.get())) {
         try {
-          if (ast.isAST1()) {
-            IExpr arg1 = ast.arg1();
-            if (arg1.isString()) {
-              File file = FileSandbox.resolveRead(S.OpenRead, arg1.toString(), engine);
-              return file == null ? F.NIL : InputStreamExpr.newInstance(file, "String");
-            }
+          IExpr name = streamName(ast);
+          if (name.isPresent()) {
+            File file = FileSandbox.resolveRead(S.OpenRead, name.toString(), engine);
+            return file == null ? F.NIL : InputStreamExpr.newInstance(file, "String");
           }
         } catch (FileNotFoundException | RuntimeException ex) {
           Errors.printMessage(S.OpenRead, ex);
@@ -1017,7 +1036,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_INFINITY;
     }
   }
 
@@ -1038,17 +1057,13 @@ public class FileFunctions {
     protected IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
-          if (ast.isAST0()) {
-            return OutputStreamExpr.newInstance();
+          IExpr name = streamName(ast);
+          if (name.isNIL()) {
+            return ast.isAST0() ? OutputStreamExpr.newInstance() : F.NIL;
           }
-          if (ast.isAST1()) {
-            IExpr arg1 = ast.arg1();
-            if (arg1.isString()) {
-              File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite,
-                  arg1.toString(), engine);
-              return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append);
-            }
-          }
+          File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite,
+              name.toString(), engine);
+          return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append);
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OpenWrite, ex);
         }
@@ -1063,7 +1078,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_INFINITY;
     }
   }
 
@@ -1507,13 +1522,16 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
+          // ReadLine[stream, TimeConstraint -> 10] is how a package reads a file it may have to
+          // give up on. There is no waiting here - a stream over a file answers at once - so the
+          // options say nothing this can act on, but they must not stop the line from being read.
           final DataInput reader = getDataInput(ast.arg1(), engine);
           if (reader != null) {
             try {
               String line = reader.readLine();
-              if (line != null) {
-                return F.stringx(line);
-              }
+              // there is nothing more to read: EndOfFile, which is what a loop reading a file
+              // line by line stops on
+              return line == null ? S.EndOfFile : F.stringx(line);
             } catch (IOException e) {
               //
             }
@@ -1535,7 +1553,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
   }
 
@@ -1684,10 +1702,79 @@ public class FileFunctions {
     }
   }
 
+  /**
+   * <code>ReadString[stream]</code> and <code>ReadString[stream, terminator]</code>.
+   *
+   * <p>
+   * With a terminator the stream is read up to the first place it matches: the text before it is
+   * the answer, the terminator itself is consumed, and what follows stays in the stream for the
+   * next read. That is how a file written in sections is read back - a notebook is a run of cells
+   * separated by a line of dashes - and the terminator may be a string pattern rather than a
+   * literal, which is why it is turned into a regular expression here.
+   *
+   * @return the text read, or <code>EndOfFile</code> when the stream had nothing left
+   */
+  private static IExpr readFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
+    IExpr terminator = F.NIL;
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      if (argument.isRuleAST()) {
+        // TimeConstraint and the like: there is no waiting on a stream over a file
+        continue;
+      }
+      terminator = argument;
+      break;
+    }
+    String rest;
+    try {
+      Reader reader = stream.getReader();
+      StringBuilder buffer = new StringBuilder();
+      char[] chunk = new char[8192];
+      int read;
+      while ((read = reader.read(chunk)) > 0) {
+        buffer.append(chunk, 0, read);
+      }
+      rest = buffer.toString();
+    } catch (IOException ioe) {
+      return Errors.printMessage(S.ReadString, ioe, engine);
+    }
+    if (rest.isEmpty()) {
+      stream.pushBack("");
+      return S.EndOfFile;
+    }
+    if (terminator.isNIL() || terminator == S.EndOfFile) {
+      stream.pushBack("");
+      return F.stringx(rest);
+    }
+    String regex = IStringX.toRegexString(terminator, false, ast, IStringX.REGEX_LONGEST,
+        new java.util.HashMap<ISymbol, String>(), engine);
+    if (regex == null) {
+      stream.pushBack(rest);
+      return F.NIL;
+    }
+    try {
+      java.util.regex.Matcher matcher = java.util.regex.Pattern
+          .compile(regex, java.util.regex.Pattern.MULTILINE).matcher(rest);
+      if (matcher.find()) {
+        stream.pushBack(rest.substring(matcher.end()));
+        return F.stringx(rest.substring(0, matcher.start()));
+      }
+    } catch (java.util.regex.PatternSyntaxException pse) {
+      stream.pushBack(rest);
+      return F.NIL;
+    }
+    // the terminator never comes: everything which is left is the answer
+    stream.pushBack("");
+    return F.stringx(rest);
+  }
+
   private static final class ReadString extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1() instanceof InputStreamExpr) {
+        return readFromStream((InputStreamExpr) ast.arg1(), ast, engine);
+      }
       SocketEntry socket = SocketFunctions.entryOf(ast.arg1());
       if (socket != null) {
         byte[] bytes = socket.take(-1);
@@ -1733,7 +1820,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
   }
 

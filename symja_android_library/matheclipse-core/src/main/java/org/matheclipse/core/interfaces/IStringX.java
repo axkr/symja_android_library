@@ -304,6 +304,29 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
     return name.toString();
   }
 
+  /**
+   * How many times a <code>Repeated</code> may repeat, written the way a regular expression says
+   * it.
+   *
+   * <p>
+   * <code>Repeated["-", {17, 100}]</code> is seventeen to a hundred dashes and nothing else; a
+   * plain <code>+</code> would match three of them, which is how a file's section separator stops
+   * telling one section from another.
+   *
+   * @return the quantifier, or <code>null</code> when the repetition has no bounds worth writing
+   */
+  private static String repeatedBounds(RepeatedPattern repeated, String[] shortestLongest) {
+    int min = repeated.getMin();
+    int max = repeated.getMax();
+    if (min <= 0 && max == Integer.MAX_VALUE) {
+      return null;
+    }
+    String quantifier = max == Integer.MAX_VALUE //
+        ? "{" + min + ",}"
+        : min == max ? "{" + min + "}" : "{" + min + "," + max + "}";
+    return quantifier + shortestLongest[IStringX.ASTERISK_Q].replace("*", "");
+  }
+
   static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction,
       String[] shortestLongest, Map<ISymbol, String> groups, EvalEngine engine) {
 
@@ -370,6 +393,10 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         String str = toRegexString(expr, abbreviatedPatterns, stringFunction, shortestLongest,
             groups, engine);
         if (str != null) {
+          String bounds = repeatedBounds(repeated, shortestLongest);
+          if (bounds != null) {
+            return "(?:" + str + ")" + bounds;
+          }
           if (repeated.isNullSequence()) {
             return "(" + str + ")" + shortestLongest[IStringX.ASTERISK_Q];
           } else {
@@ -382,7 +409,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       return IStringX.toRegexString(stringFunction, stringExpression, abbreviatedPatterns,
           shortestLongest, groups, engine);
     } else if (partOfRegex.isBlank()) {
-      return "(.|\\n)";
+      return "[\\s\\S]";
     } else if (partOfRegex.isPattern()) {
       final IPattern pattern = (IPattern) partOfRegex;
       final ISymbol symbol = pattern.getSymbol();
@@ -397,7 +424,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
               shortestLongest, groups, engine);
           return "(?<" + groupName + ">" + subPatternRegex + ")";
         }
-        return "(?<" + groupName + ">(.|\\n))";
+        return "(?<" + groupName + ">[\\s\\S])";
       }
     } else if (partOfRegex.isAST(S.Pattern, 3) && partOfRegex.first().isSymbol()) {
       final ISymbol symbol = (ISymbol) partOfRegex.first();
@@ -414,10 +441,10 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       final String str;
       if (ps.isNullSequence()) {
         // RepeatedNull
-        str = "(.|\\n)" + shortestLongest[IStringX.ASTERISK_Q];
+        str = "[\\s\\S]" + shortestLongest[IStringX.ASTERISK_Q];
       } else {
         // Repeated
-        str = "(.|\\n)" + shortestLongest[IStringX.PLUS_Q];
+        str = "[\\s\\S]" + shortestLongest[IStringX.PLUS_Q];
       }
       if (symbol == null) {
         return str;

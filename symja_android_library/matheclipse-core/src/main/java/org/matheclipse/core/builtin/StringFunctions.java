@@ -668,20 +668,24 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      // FromCharacterCode[codes, "UTF8"] names the encoding the numbers are in. Symja's strings
+      // are Unicode already and the numbers are code points, so every encoding names the same
+      // characters; the argument is taken and nothing else has to happen for it.
+      IAST codes = ast.isAST1() ? ast : F.unaryAST1(ast.head(), arg1);
 
       if (arg1.isList()) {
         final IAST list = (IAST) arg1;
 
         // If the list contains sublists, map the function over the list
         if (list.argSize() > 0 && list.arg1().isList()) {
-          return list.mapThread(ast, 1);
+          return list.mapThread(codes, 1);
         }
 
         return fromCharacterCode(list, ast, engine);
       }
 
       if (arg1.isInteger()) {
-        return fromCharacterCode(ast, ast, engine);
+        return fromCharacterCode(codes, ast, engine);
       }
 
       return F.NIL;
@@ -689,7 +693,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
@@ -2712,6 +2716,20 @@ public final class StringFunctions {
             IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
         if (pattern == null) {
           return F.NIL;
+        }
+        if (argSize >= 3) {
+          // StringSplit[s, patt, n] gives at most n pieces: the last one is the rest of the
+          // string, delimiters and all, and a piece which is empty is still a piece.
+          // `StringSplit["key:", ":", 2]` is {"key", ""}, which is how a line of a configuration
+          // file with nothing after its colon is read.
+          int pieces = ast.arg3().toIntDefault();
+          if (pieces == Integer.MIN_VALUE) {
+            return F.NIL;
+          }
+          if (pieces <= 0) {
+            return splitList(str1, pattern.split(str1, -1));
+          }
+          return splitList(str1, pattern.split(str1, pieces));
         }
         return splitList(str1, pattern.split(str1));
       }

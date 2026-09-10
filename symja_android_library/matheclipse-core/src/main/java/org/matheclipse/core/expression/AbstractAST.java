@@ -87,6 +87,7 @@ import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
 import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.statistics.IDistribution;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
@@ -2298,9 +2299,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         IBuiltInSymbol symbol = (IBuiltInSymbol) head;
         final IEvaluator evaluator = symbol.getEvaluator();
         if (evaluator instanceof ICoreFunctionEvaluator) {
-          // if (hasFlag(Flag.BUILT_IN_EVALED)) {
-          // return F.NIL;
-          // }
+          // An up-value of an argument comes before the built-in: `obj /: Append[obj[l_], x_] := …`
+          // is how a package gives its own meaning to a system function for its own objects, and
+          // the built-in Append would otherwise answer first and the rule never fire. The probe
+          // costs nothing until something in the session defines an up-value at all, and
+          // HoldAllComplete is exactly the attribute which says not to look - that is what
+          // distinguishes it from HoldAll.
+          if (size() > 1 && RulesData.isUpRulesDefined()
+              && !Attribute.HOLDALLCOMPLETE.isSetIn(symbol.getAttributes())) {
+            IExpr upValue = engine.evalUpRules(this);
+            if (upValue.isPresent()) {
+              return upValue;
+            }
+          }
           try {
             ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
             EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);

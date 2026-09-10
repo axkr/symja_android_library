@@ -1717,12 +1717,14 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Repeated) {
-        IExpr arg1 = ast.arg1();
+        // what is repeated is worked out first: `Repeated[newLine[1]]` is a repetition of
+        // whatever newLine[1] came to, not of the call itself
+        IExpr arg1 = engine.evaluate(ast.arg1());
         if (ast.isAST1()) {
           return F.$Repeated(arg1, 1, Integer.MAX_VALUE, engine);
         }
         if (ast.isAST2()) {
-          IExpr arg2 = ast.arg2();
+          IExpr arg2 = engine.evaluate(ast.arg2());
           return repeatedLimit(arg1, arg2, 1, engine);
         }
       }
@@ -1799,15 +1801,13 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.RepeatedNull) {
-        IExpr arg1 = ast.arg1();
+        IExpr arg1 = engine.evaluate(ast.arg1());
         if (ast.isAST1()) {
           return F.$Repeated(arg1, 0, Integer.MAX_VALUE, engine);
         }
         if (ast.isAST2()) {
-          if (ast.isAST2()) {
-            IExpr arg2 = ast.arg2();
-            return repeatedLimit(arg1, arg2, 0, engine);
-          }
+          IExpr arg2 = engine.evaluate(ast.arg2());
+          return repeatedLimit(arg1, arg2, 0, engine);
         }
       }
       return F.NIL;

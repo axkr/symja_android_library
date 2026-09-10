@@ -97,6 +97,15 @@ public class RepeatedPattern extends AbstractPatternSequence {
 
   protected IExpr fRepeatedExpr;
 
+  /** How few times the pattern may repeat, and how many. */
+  public int getMin() {
+    return fMin;
+  }
+
+  public int getMax() {
+    return fMax;
+  }
+
   protected int fMin;
 
   protected int fMax;

@@ -324,8 +324,16 @@ public class VisitorReplaceAll extends VisitorExpr {
    * <code>Module[{v}, …]</code> has to be the list of names by the time Module sees it.
    */
   private boolean isSpliceable(int position, IExpr value, IAST ast) {
-    // the head is one expression, and an association holds rules rather than a run of arguments
-    return position > 0 && value.isSequence() && !ast.isAssociation();
+    if (position <= 0 || !value.isSequence() || ast.isAssociation()) {
+      // the head is one expression, and an association holds rules rather than a run of arguments
+      return false;
+    }
+    // Only a *name* which stood for several arguments is spread out. Where the thing replaced was
+    // an expression - `FakeHold[q_] :> q` matching `FakeHold[Sequence[1, 2]]` - the Sequence is
+    // one argument's value and stays one, which is what keeps `With[{x = Sequence[a, b]}, …]` a
+    // binding rather than a three-argument Set.
+    IExpr replaced = ast.get(position);
+    return replaced.isSymbol() || replaced instanceof IPatternObject;
   }
 
   /** The expression with every substituted <code>Sequence</code> spread into it. */

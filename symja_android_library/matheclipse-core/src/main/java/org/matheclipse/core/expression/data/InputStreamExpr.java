@@ -103,6 +103,18 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
     return reader;
   }
 
+  /**
+   * Put text back in front of this stream, so that the next read sees it first.
+   *
+   * <p>
+   * <code>ReadString[stream, terminator]</code> has to look at what comes after the terminator to
+   * find it, and what it looked at but did not take belongs to the next read.
+   */
+  public void pushBack(String rest) {
+    reader = new StringReader(rest);
+    dataIn = null;
+  }
+
   public InputStreamExpr() {
     super(S.InputStream, null);
     uniqueID = STREAM_COUNTER.getAndIncrement();
