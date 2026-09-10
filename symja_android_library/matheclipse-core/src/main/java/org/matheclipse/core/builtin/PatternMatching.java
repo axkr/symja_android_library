@@ -1195,6 +1195,12 @@ public final class PatternMatching {
             if (arg1.isEmptyList()) {
               return arg1;
             }
+            if (arg1.isString()) {
+              // a name says which symbol is meant, which is how a program asks about one it has
+              // only the name of - Names[…] answers with names, and asking after each of them is
+              // how a front end collects what it shows beside a completion
+              arg1 = F.symbol(arg1.toString(), engine);
+            }
             if (!arg1.isSymbol()) {
               // "sym", "Argument `1` at position `2` is expected to be a symbol.", //
               return Errors.printMessage(S.Information, "sym", F.List(arg1, F.C1), engine);
@@ -1202,6 +1208,10 @@ public final class PatternMatching {
             symbol = (ISymbol) arg1;
           } else {
             symbol = (ISymbol) ast.arg1();
+          }
+          if (ast.size() == 3 && ast.arg2().isString()) {
+            // Information[expr, "Property"] answers with the property rather than printing
+            return property(symbol, ast.arg2().toString(), engine);
           }
           final PrintStream stream = engine.getOutPrintStream();
 
@@ -1239,6 +1249,57 @@ public final class PatternMatching {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * One property of a symbol, as <code>Information[symbol, "Property"]</code> answers it.
+     *
+     * @return the property's value, or <code>Missing["NotAvailable"]</code> where the symbol has
+     *         none and <code>Missing["UnknownProperty", name]</code> where there is no such
+     *         property
+     */
+    private static IExpr property(ISymbol symbol, String name, EvalEngine engine) {
+      switch (name) {
+        case "Usage":
+          IExpr usage = symbol.evalMessage("usage");
+          if (usage.isPresent()) {
+            return usage;
+          }
+          if (symbol.isBuiltInSymbol()) {
+            String summaryText = BuiltinUsage.summaryText((IBuiltInSymbol) symbol);
+            if (summaryText.length() > 0) {
+              return F.stringx(symbol.toString() + " - " + summaryText);
+            }
+          }
+          return F.Missing(F.stringx("NotAvailable"));
+        case "Attributes":
+          return engine.evaluate(F.Attributes(symbol));
+        case "Options":
+          return engine.evaluate(F.unaryAST1(S.Options, symbol));
+        case "OwnValues":
+          return engine.evaluate(F.unaryAST1(S.OwnValues, symbol));
+        case "DownValues":
+          return engine.evaluate(F.unaryAST1(S.DownValues, symbol));
+        case "UpValues":
+          return engine.evaluate(F.unaryAST1(S.UpValues, symbol));
+        case "SubValues":
+          return engine.evaluate(F.unaryAST1(S.SubValues, symbol));
+        case "Definition":
+        case "Definitions":
+          try {
+            return F.stringx(symbol.definitionToString());
+          } catch (IOException ioe) {
+            return Errors.printMessage(S.Information, ioe, engine);
+          }
+        case "Name":
+          return F.stringx(symbol.toString());
+        case "Context":
+          return F.stringx(symbol.getContext().completeContextName());
+        case "Symbol":
+          return symbol;
+        default:
+          return F.Missing(F.stringx("UnknownProperty"), F.stringx(name));
+      }
     }
 
     @Override

@@ -916,4 +916,28 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{{1,0},{1,2}}");
   }
 
+  /**
+   * <code>Information</code> takes a name as well as a symbol, and answers a single property
+   * rather than printing everything.
+   *
+   * <p>
+   * WLJS's autocompletion asks <code>ToString@Information[#, "Usage"] &amp;/@ Names[#&lt;&gt;"*"]</code>,
+   * and <code>Names</code> answers with strings - so every one of the ~4000 names produced an
+   * <code>Information::sym</code> message at startup.
+   */
+  @Test
+  public void testInformationTakesANameAndAnswersOneProperty() {
+    check("Information[\"Sin\", \"Usage\"]", //
+        "Sin - sine function");
+    check("Information[Sin, \"Usage\"] === Information[\"Sin\", \"Usage\"]", //
+        "True");
+    check("Information[Sin, \"Attributes\"]", //
+        "{Listable,NumericFunction,Protected}");
+    // a symbol with no usage message is not an error
+    check("Information[\"Global`noSuchThing\", \"Usage\"]", //
+        "Missing[NotAvailable]");
+    check("Information[Sin, \"Nonsense\"]", //
+        "Missing[UnknownProperty,Nonsense]");
+  }
+
 }
