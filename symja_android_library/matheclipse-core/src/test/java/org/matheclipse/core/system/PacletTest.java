@@ -231,4 +231,35 @@ public class PacletTest extends ExprEvaluatorTestCase {
       Config.FILESYSTEM_ENABLED = fileSystem;
     }
   }
+
+  /**
+   * A directory added to <code>$Path</code> is searched by <code>Needs</code>. The WLJS kernel adds
+   * its shared directory with <code>AppendTo[$Path, dir]</code> at every launch.
+   */
+  @Test
+  public void testAppendingToPathFindsAPackage(@TempDir Path root) throws IOException {
+    Path lib = root.resolve("lib");
+    Files.createDirectories(lib);
+    Files.write(lib.resolve("Probes.wl"), ("BeginPackage[\"Probes`\"]\n" //
+        + "probeCount::usage = \"how many\"\n" //
+        + "Begin[\"`Private`\"]\n" //
+        + "probeCount[] := 5\n" //
+        + "End[]\n" //
+        + "EndPackage[]\n").getBytes(StandardCharsets.UTF_8));
+    boolean fileSystem = Config.FILESYSTEM_ENABLED;
+    Config.FILESYSTEM_ENABLED = true;
+    try {
+      check("AppendTo($Path, \"" + wl(lib) + "\"); Last($Path) === \"" + wl(lib) + "\"", //
+          "True");
+      check("Needs(\"Probes`\")", //
+          "");
+      check("Probes`probeCount()", //
+          "5");
+    } finally {
+      Config.FILESYSTEM_ENABLED = fileSystem;
+      org.matheclipse.core.eval.EvalEngine.get()
+          .removeDollarValue(org.matheclipse.core.expression.S.$Path);
+    }
+  }
+
 }
