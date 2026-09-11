@@ -13363,6 +13363,16 @@ public class S {
   public final static IBuiltInSymbol ListVectorPlot =
       S.initFinalSymbol("ListVectorPlot", ID.ListVectorPlot);
 
+  /**
+   * ListVectorPlot3D(x) - TODO describe `ListVectorPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListVectorPlot3D.md">ListVectorPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ListVectorPlot3D =
+      S.initFinalSymbol("ListVectorPlot3D", ID.ListVectorPlot3D);
+
   public final static IBuiltInSymbol Literal = S.initFinalSymbol("Literal", ID.Literal);
 
   public final static IBuiltInSymbol LLMFunction = S.initFinalSymbol("LLMFunction", ID.LLMFunction);
