@@ -6758,6 +6758,11 @@ public final class LinearAlgebra {
         // The first two levels of `1` cannot be transposed.
         return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
       }
+      if (length == 1 && arg2.isNIL() && arg1.isList() && arg1.argSize() == 0) {
+        // Transpose({}) is {}: the empty list is a vector like any other, and had no permutation
+        // of depth 1 to fall into, so it stayed unevaluated with a message
+        return F.CEmptyList;
+      }
       if (length == 1 && arg2.isNIL() && arg1.isVector() > 0) {
         IAST vector = (IAST) arg1.normal(false);
         IASTAppendable resultList = F.ListAlloc();

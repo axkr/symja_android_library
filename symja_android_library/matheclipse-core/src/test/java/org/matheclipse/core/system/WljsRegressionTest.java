@@ -1398,4 +1398,18 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{{0,0,0},{2,2,2}}");
   }
 
+  /**
+   * <code>Transpose[{}]</code> is <code>{}</code>. It stayed unevaluated, printed like
+   * <code>{}</code> but had length 1, so the notebook's
+   * <code>Select[Transpose[{keys, values}], ...] // Transpose</code> never looked empty and built
+   * <code>Rule[{}]</code> on every notebook it opened.
+   */
+  @Test
+  public void testTransposeOfTheEmptyListIsTheEmptyList() {
+    check("{Transpose[{}], Length[Transpose[{}]], Transpose[Transpose[{{}, {}}]] === {}}", //
+        "{{},0,True}");
+    check("Length[Transpose[Select[{{\"a\", $Failed}}, !FailureQ[#[[2]]] &]]]", //
+        "0");
+  }
+
 }
