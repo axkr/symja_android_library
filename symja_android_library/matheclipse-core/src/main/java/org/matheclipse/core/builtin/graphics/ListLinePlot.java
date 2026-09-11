@@ -34,6 +34,7 @@ public class ListLinePlot extends ListPlot {
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
     String graphicsPrimitivesStr = listLinePlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitivesStr != null) {
       jsControl.append(
@@ -156,6 +157,7 @@ public class ListLinePlot extends ListPlot {
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
     // GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setJoined(true);
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);

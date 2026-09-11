@@ -59,6 +59,7 @@ public class PolarPlot extends Plot {
     // a polar curve's colour function is given its angle and radius as well as its coordinates
     graphicsOptions.setColorFamily(PlotColorFunction.Family.POLAR_2D);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
     IExpr function = ast.arg1();
     IAST rangeList = (IAST) ast.arg2();
 

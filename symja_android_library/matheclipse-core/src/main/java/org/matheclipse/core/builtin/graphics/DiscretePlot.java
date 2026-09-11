@@ -65,6 +65,7 @@ public class DiscretePlot extends ListPlot {
           graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
           graphicsOptions.readColorFunction(originalAST);
           graphicsOptions.applyPlotTheme(originalAST);
+          graphicsOptions.readPassThroughOptions(originalAST);
           IASTMutable listPlot = ast.removeAtCopy(2);
           listPlot.set(1, tableValues);
           IAST graphicsPrimitives = listPlot(listPlot, options, graphicsOptions, engine);

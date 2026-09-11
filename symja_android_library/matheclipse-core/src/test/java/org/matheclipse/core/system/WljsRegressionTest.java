@@ -1676,4 +1676,71 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{True,True,True}");
   }
 
+  /**
+   * A Graphics option a plot does not use itself must not swallow the options written before it.
+   * The 1D plot demo writes <code>FrameTicksStyle</code> last, and the framed plot came out with
+   * neither frame nor labels; the option now reaches the <code>Graphics</code> for the notebook.
+   */
+  @Test
+  public void testFrameTicksStyleDoesNotSwallowTheFrame() {
+    check("g = Plot[x, {x, 0, 1}, Frame -> True, FrameLabel -> {\"x\", \"y\"}, "
+        + "FrameTicksStyle -> Directive[FontSize -> 14]]; "
+        + "{MemberQ[List @@ g, HoldPattern[Frame -> True]], "
+        + "MemberQ[List @@ g, HoldPattern[FrameLabel -> {\"x\", \"y\"}]], "
+        + "MemberQ[List @@ g, HoldPattern[FrameTicksStyle -> Directive[FontSize -> 14]]]}", //
+        "{True,True,True}");
+    check("g = ListLinePlot[{1, 2, 3}, Frame -> True, TicksStyle -> Red]; "
+        + "{MemberQ[List @@ g, HoldPattern[Frame -> True]], MemberQ[List @@ g, HoldPattern[TicksStyle -> _]]}", //
+        "{True,True}");
+    // a plot that was given none of them is the same as before
+    check("FreeQ[List @@ Plot[x, {x, 0, 1}], FrameTicksStyle | TicksStyle | BaseStyle]", //
+        "True");
+  }
+
+  /**
+   * <code>DateListPlot</code> draws values against dates as Mathematica does: a line through
+   * <code>{AbsoluteTime, value}</code> points, framed, without axes, dates under the frame.
+   */
+  @Test
+  public void testDateListPlot() {
+    check("g = DateListPlot[{{DateObject[{2022, 12}], 1}, {DateObject[{2023, 12}], 2}, "
+        + "{DateObject[{2026, 9, 11}], 3}}]; "
+        + "{Head[g], MemberQ[List @@ g, HoldPattern[Frame -> True]], "
+        + "MemberQ[List @@ g, HoldPattern[Axes -> False]]}", //
+        "{Graphics,True,True}");
+    // the first point is at the AbsoluteTime of December 2022, as in Mathematica's output
+    check("Round[First[Cases[g, Line[l_] :> l[[1, 1]], Infinity]]] == 3878841600", //
+        "True");
+    check("Cases[List @@ g, HoldPattern[FrameTicks -> {_, {b_, _}}] :> b[[All, 2]]]", //
+        "{{2023,2024,2025,2026}}");
+    // two series, dates given as date lists
+    check("Length[Cases[DateListPlot[{{{{2020, 1, 1}, 1}, {{2021, 1, 1}, 2}}, "
+        + "{{{2020, 1, 1}, 3}, {{2021, 1, 1}, 1}}}], _Line, Infinity]]", //
+        "2");
+  }
+
+  /**
+   * <code>ListCurvePathPlot</code> rebuilds the curve points lie on: forty points of a circle, in
+   * scrambled order, come back as one line through all of them.
+   */
+  @Test
+  public void testListCurvePathPlot() {
+    check("pts = Table[{Cos[2 Pi k/40], Sin[2 Pi k/40]}, {k, 0, 39}][[Mod[7 Range[40], 40] + 1]]; "
+        + "Cases[ListCurvePathPlot[pts], Line[l_] :> Length[l], Infinity]", //
+        "{40}");
+  }
+
+  /**
+   * Two datasets of two points each have the shape of a list of pairs; they are still two lines,
+   * as in Mathematica - Symja took them for two points with lists for coordinates and drew nothing.
+   */
+  @Test
+  public void testListLinePlotOfTwoShortSeries() {
+    check("Length[Cases[ListLinePlot[{{{0, 1}, {1, 2}}, {{0, 3}, {1, 1}}}], _Line, Infinity]]", //
+        "2");
+    // a list of plain pairs is still one line through them
+    check("Length[Cases[ListLinePlot[{{0, 1}, {1, 2}, {2, 0}}], _Line, Infinity]]", //
+        "1");
+  }
+
 }

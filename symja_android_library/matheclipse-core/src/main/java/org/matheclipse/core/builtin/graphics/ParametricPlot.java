@@ -63,6 +63,7 @@ public class ParametricPlot extends Plot {
     // a parametric curve's colour function is given the parameter alongside the coordinates
     graphicsOptions.setColorFamily(PlotColorFunction.Family.PARAMETRIC_2D);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
     IExpr function = ast.arg1();
     IAST rangeList1 = (IAST) ast.arg2();
 

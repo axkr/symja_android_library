@@ -91,6 +91,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
     String graphicsPrimitivesStr = listPlotECharts(ast, options, graphicsOptions, engine);
     if (graphicsPrimitivesStr != null) {
       StringBuilder jsControl = new StringBuilder();
@@ -229,6 +230,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
 
     // Pre-process Labeled curves
     if (arg1.isList()) {
@@ -336,6 +338,27 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       return graphicsPrimitives;
     }
     return PlotWrapper.of(plotAST.arg1()).wrapTooltip(graphicsPrimitives);
+  }
+
+  /**
+   * A list of 2D points whose coordinates are not lists themselves.
+   *
+   * <p>
+   * {@link IAST#isListOfPoints(int)} only asks for pairs, so two datasets of two points each -
+   * <code>{{{0, 1}, {1, 2}}, {{0, 3}, {1, 1}}}</code> - pass for a list of two "points" with lists
+   * for coordinates, and read that way nothing at all was drawn. Mathematica draws two lines.
+   */
+  private static boolean isListOfPlainPoints(IAST list) {
+    if (!list.isListOfPoints(2)) {
+      return false;
+    }
+    for (int i = 1; i < list.size(); i++) {
+      IExpr point = list.get(i).stripDisplayWrappers();
+      if (point.first().isList() || point.second().isList()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions,
@@ -483,7 +506,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       final IASTAppendable graphicsPrimitives = F.ListAlloc();
       IAST pointList = (IAST) arg1;
       if (pointList.isList()) {
-        if (pointList.isListOfPoints(2)) {
+        if (isListOfPlainPoints(pointList)) {
           IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
               F.NIL, graphicsOptions.curveThickness());
           IExpr style = defaultColor;

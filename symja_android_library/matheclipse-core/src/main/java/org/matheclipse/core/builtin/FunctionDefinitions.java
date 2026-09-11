@@ -354,6 +354,9 @@ public final class FunctionDefinitions {
       S.ListContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListContourPlot());
       S.ListDensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListDensityPlot());
       S.ListLinePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLinePlot());
+      S.DateListPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DateListPlot());
+      S.ListCurvePathPlot
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.ListCurvePathPlot());
       S.ListPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListPlot());
       S.ListLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogPlot());
       S.ListLogLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogLogPlot());

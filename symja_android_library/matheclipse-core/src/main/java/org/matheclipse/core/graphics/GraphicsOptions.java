@@ -312,7 +312,7 @@ public class GraphicsOptions {
             S.LabelStyle, S.ColorFunction, S.ColorFunctionScaling, S.ScalingFunctions,
             S.PerformanceGoal, S.ClippingStyle, S.RegionFunction, S.ExclusionsStyle,
             S.EvaluationMonitor, S.MeshFunctions, S.MeshShading, S.MeshStyle)
-        .add(S.None, S.Mesh, S.Exclusions);
+        .add(S.None, S.Mesh, S.Exclusions).add(S.Automatic, PASS_THROUGH_OPTIONS);
   }
 
   /** Options of the plots that take explicit data. */
@@ -320,7 +320,7 @@ public class GraphicsOptions {
     return set.add(S.Automatic, S.PlotMarkers, S.InterpolationOrder, S.PlotTheme, S.LabelStyle,
         S.ColorFunction, S.ColorFunctionScaling, S.ScalingFunctions, S.ClippingStyle,
         S.LabelingFunction, S.LabelingSize, S.MeshStyle, S.PerformanceGoal, S.TargetUnits)
-        .add(S.None, S.Mesh);
+        .add(S.None, S.Mesh).add(S.Automatic, PASS_THROUGH_OPTIONS);
   }
 
   /** Options of the bar, pie, histogram and box whisker charts. */
@@ -330,12 +330,13 @@ public class GraphicsOptions {
             S.ChartLayout, S.BarOrigin, S.BarSpacing, S.SectorOrigin, S.SectorSpacing,
             S.LabelingFunction, S.LabelingSize, S.PlotTheme, S.LabelStyle, S.PerformanceGoal,
             S.TargetUnits, S.ColorFunction)
-        .add(S.True, S.ColorFunctionScaling).add(S.None, S.ChartLabels);
+        .add(S.True, S.ColorFunctionScaling).add(S.None, S.ChartLabels)
+        .add(S.Automatic, PASS_THROUGH_OPTIONS);
   }
 
   /** Options of the contour plots. */
   public static OptionSet contourExtras(OptionSet set) {
-    return set
+    return set.add(S.Automatic, PASS_THROUGH_OPTIONS)
         .add(S.Automatic, S.Contours, S.ContourStyle, S.ContourLabels, S.ColorFunction,
             S.PlotPoints, S.MaxRecursion, S.RegionFunction, S.BoundaryStyle, S.MeshStyle,
             S.PlotTheme, S.LabelStyle, S.MaxPlotPoints, S.PerformanceGoal)
@@ -1398,6 +1399,43 @@ public class GraphicsOptions {
     applyNamedTheme(originalAST, theme);
   }
 
+  /**
+   * Graphics options a plot does not use itself but must declare, and hand on to the
+   * <code>Graphics</code> it returns.
+   *
+   * <p>
+   * Declaring them matters on its own: options are stripped from the end of a call and the strip
+   * stops at the first name that is not declared, so an undeclared <code>FrameTicksStyle</code>
+   * written last silently threw away the <code>Frame</code> and <code>FrameLabel</code> in front of
+   * it. Handing them on is what makes them do something - the WLJS notebook reads
+   * <code>FrameTicksStyle</code> and <code>TicksStyle</code> off the <code>Graphics</code>.
+   */
+  public static final IBuiltInSymbol[] PASS_THROUGH_OPTIONS = {S.FrameTicksStyle, S.TicksStyle,
+      S.BaseStyle, S.RotateLabel, S.ImageMargins, S.PlotRegion, S.BaselinePosition, S.FormatType,
+      S.FrameMargins, S.ColorOutput};
+
+  /** The {@link #PASS_THROUGH_OPTIONS} the call gave, as rules; {@link F#NIL} if none. */
+  private IASTAppendable passThroughRules = F.NIL;
+
+  /**
+   * Remember the {@link #PASS_THROUGH_OPTIONS} the call gave, for {@link #getGraphicsRules()}. Only
+   * a value that was written is kept, so a plot that was given none returns the same
+   * <code>Graphics</code> as before.
+   *
+   * @param originalAST the unevaluated call
+   */
+  public void readPassThroughOptions(IAST originalAST) {
+    for (IBuiltInSymbol key : PASS_THROUGH_OPTIONS) {
+      IExpr value = optionValue(originalAST, key, F.NIL);
+      if (value.isPresent()) {
+        if (passThroughRules.isNIL()) {
+          passThroughRules = F.ListAlloc(PASS_THROUGH_OPTIONS.length);
+        }
+        passThroughRules.append(F.Rule(key, value));
+      }
+    }
+  }
+
   /** @return whether the name was one of the themes this renderer knows */
   private boolean applyNamedTheme(IAST originalAST, IExpr theme) {
     if (!theme.isString()) {
@@ -1854,6 +1892,9 @@ public class GraphicsOptions {
     graphicsOptions.pointParameters = this.pointParameters;
     graphicsOptions.curveThickness = this.curveThickness;
     graphicsOptions.interpolationOrder = this.interpolationOrder;
+    // read once from the call and never changed afterwards, so the copy may share them; Plot
+    // hands its Graphics a copy, which without this lost them
+    graphicsOptions.passThroughRules = this.passThroughRules;
     return graphicsOptions;
   }
 
@@ -2018,6 +2059,9 @@ public class GraphicsOptions {
         continue;
       }
       result.append(rule);
+    }
+    if (passThroughRules.isPresent()) {
+      result.appendArgs(passThroughRules);
     }
     if (method.argSize() > 0) {
       addToMethod(result, method);

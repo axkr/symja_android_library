@@ -36,6 +36,7 @@ public class ListLogPlot extends ListPlot {
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
 
     // Generate raw points
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);

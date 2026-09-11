@@ -67,6 +67,7 @@ public class ListStepPlot extends ListPlot {
     graphicsOptions.forwardOptions(originalAST);
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
 
     boolean joined = graphicsOptions.isJoined();
     // ExtentSize shortens each step, so the steps become detached bars rather than a staircase;

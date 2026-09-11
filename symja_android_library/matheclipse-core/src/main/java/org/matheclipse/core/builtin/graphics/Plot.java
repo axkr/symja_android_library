@@ -56,6 +56,7 @@ public class Plot extends ListPlot {
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
 
     if (argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);

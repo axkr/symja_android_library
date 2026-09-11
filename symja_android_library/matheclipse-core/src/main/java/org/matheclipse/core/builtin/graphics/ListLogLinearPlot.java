@@ -33,6 +33,7 @@ public class ListLogLinearPlot extends ListPlot {
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
 
     if (graphicsPrimitives.isPresent()) {
