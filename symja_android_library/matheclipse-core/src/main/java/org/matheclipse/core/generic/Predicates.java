@@ -93,7 +93,14 @@ public class Predicates {
     public int compare(final IExpr firstArg, final IExpr secondArg) {
       IAST ast = F.binaryAST2(head, firstArg, secondArg);
       IExpr temp = engine.evaluate(ast);
-      if (temp.isFalse() || temp.isMinusOne()) {
+      if (temp.isFalse()) {
+        // Less(a, b) is False for a == b as well: unless Less(b, a) holds, the two are equal. A
+        // comparator which never answers 0 breaks the sort's contract, and TimSort threw
+        // "Comparison method violates its general contract!" on a list with many duplicates
+        IExpr reverse = engine.evaluate(F.binaryAST2(head, secondArg, firstArg));
+        return reverse.isFalse() ? 0 : 1;
+      }
+      if (temp.isMinusOne()) {
         return 1;
       }
       if (temp.isTrue() || temp.isOne()) {

@@ -1437,4 +1437,17 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{225,{{1.0,31.0},{1.0,31.0}}}");
   }
 
+  /**
+   * <code>Median</code> of a long list with many equal entries. Sorting with <code>Less</code>
+   * answered "greater" for two equal entries in both directions, and TimSort threw "Comparison
+   * method violates its general contract!", which ended the whole kernel.
+   */
+  @Test
+  public void testMedianOfManyDuplicates() {
+    check("Median[{23,23,23,22,22,22,22,22,22,22,22,22,23,25,23,11,29,23,10,30,11,30,19,23,26,28,28,28,28,28,23,24,28,23,18,25,28,23,13,24,22,28,10,10,23,25,28,30,23,26,21,2,23,10,19,10,23,23,28,23,18,10,19,10,23,20,27,23,24,22,28,16,11,23,10,19,10,23,23,24,24,23,22,22,9,23,28,23,24,24,22,28,30,10,22,19,24,10,20,21,21,10,19,25,12,16,10,10,19,10,26}]", //
+        "23");
+    check("Median[Join[Table[23, {60}], Range[80], Table[7, {50}]]]", //
+        "23");
+  }
+
 }
