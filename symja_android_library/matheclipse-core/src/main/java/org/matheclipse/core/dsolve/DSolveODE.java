@@ -30,6 +30,13 @@ final class DSolveODE {
   /** Beyond this the relation raised to that power is larger than Solve can use. */
   private static final int MAX_EXPONENTIATION_POWER = 12;
 
+  /**
+   * How deep in the cascade an inhomogeneous equation is still solved through its homogeneous one.
+   * The homogeneous equation has no forcing term, so the method cannot enter itself; this bounds
+   * the work a nested equation does before it is declined.
+   */
+  private static final int MAX_VARIATION_DEPTH = 2;
+
   /** How long a condition at a point the solution does not reach may take to read as a limit. */
   private static final int LIMIT_AT_CONDITION_SECONDS = 3;
 
@@ -43,6 +50,9 @@ final class DSolveODE {
 
   /** How big the coefficient of the equation that reduction leaves may be. */
   private static final int MAX_RICCATI_LEAF_COUNT = 60;
+
+  /** How close to zero a guessed particular solution's residual must come at a sample point. */
+  private static final double RICCATI_NUMERIC_TOLERANCE = 1.0e-9;
 
   /** Above this size the separable candidate is not offered to {@code Factor}. */
   private static final int MAX_SEPARABLE_FACTOR_LEAF_COUNT = 100;
@@ -1537,6 +1547,142 @@ final class DSolveODE {
   }
 
   /**
+   * A first order Riccati equation, solved through a particular solution, when nothing else in
+   * the cascade has answered it.
+   *
+   * <p>
+   * Once one solution <code>y_p</code> of <code>y' == a*y^2 + b*y + c</code> is known,
+   * <code>y == y_p + 1/v</code> leaves <code>v' + (2*a*y_p + b)*v == -a</code>, which is linear. The
+   * Riccati equations of the textbooks are set so that one can be guessed:
+   * <code>y' == 1 + x - (2*x + 1)*y + x*y^2</code> has <code>y == 1</code> and
+   * <code>x^3*y' == -2*x^4 + 2*x^2*y + 2*y^2</code> has <code>y == x^2</code>.
+   *
+   * <p>
+   * This runs after the separable, exact and homogeneous methods have declined, not with the other
+   * Riccati strategies before them. Those methods answer in their own forms, and a Riccati answer
+   * <code>y_p + 1/v</code> built on a particular solution is often a less readable way of writing
+   * the same function -- for <code>y' == -(1 + y^2)*(1 - 1/x^2)</code> the particular solution is
+   * the constant <code>-I</code>, and the answer through it is a complex exponential where the
+   * separable method gives <code>-Tan(1/x + x - C(1))</code>.
+   *
+   * @return {@link F#NIL} if the equation is not a Riccati equation or no particular solution of
+   *         the kinds tried is found
+   */
+  static IExpr solveRiccatiThroughParticular(IExpr equation, IExpr xVar, IExpr yFunction,
+      IExpr C_1, EvalEngine engine) {
+    IExpr lhs = equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation;
+    lhs = engine.evaluate(F.ExpandAll(lhs));
+    IExpr yPrime = engine.evaluate(F.D(yFunction, xVar));
+    IExpr coeffDyx = engine.evaluate(F.Coefficient(lhs, yPrime, F.C1));
+    IExpr rest = engine.evaluate(F.Coefficient(lhs, yPrime, F.C0));
+    if (coeffDyx.isZero() || !coeffDyx.isFree(yPrime) || !rest.isFree(yPrime)
+        || !coeffDyx.isFree(yFunction) || !engine
+            .evaluate(F.ExpandAll(F.Subtract(lhs, F.Plus(F.Times(coeffDyx, yPrime), rest))))
+            .isZero()) {
+      return F.NIL;
+    }
+    IExpr expandedRest = engine.evaluate(F.ExpandAll(rest));
+    IExpr q0 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C0));
+    IExpr q1 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C1));
+    IExpr q2 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C2));
+    IExpr remainder = engine.evaluate(F.ExpandAll(F.Subtract(expandedRest,
+        F.Plus(q0, F.Times(q1, yFunction), F.Times(q2, F.Sqr(yFunction))))));
+    if (!remainder.isZero() || q2.isZero() || q0.isZero() || !q0.isFree(yFunction)
+        || !q1.isFree(yFunction) || !q2.isFree(yFunction)) {
+      return F.NIL;
+    }
+    IExpr a = engine.evaluate(F.Divide(F.Negate(q2), coeffDyx));
+    IExpr b = engine.evaluate(F.Divide(F.Negate(q1), coeffDyx));
+    IExpr c = engine.evaluate(F.Divide(F.Negate(q0), coeffDyx));
+    IExpr particular = riccatiParticular(a, b, c, xVar, engine);
+    if (particular.isNIL()) {
+      return F.NIL;
+    }
+    IExpr coefficient = engine.evaluate(F.Plus(F.Times(F.C2, a, particular), b));
+    IExpr v = linearODE(coefficient, a, xVar, C_1, engine);
+    if (v.isNIL() || v.isZero() || !DSolveContext.isUsable(v)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Plus(particular, F.Power(v, F.CN1)));
+  }
+
+  /** Whether <code>expr</code> is numerically zero at <code>xVar == point</code>. */
+  private static boolean vanishesAt(IExpr expr, IExpr xVar, IExpr point, EvalEngine engine) {
+    try {
+      IExpr value = engine.evalN(F.subst(expr, xVar, point));
+      return value.isNumber() && ((org.matheclipse.core.interfaces.INumber) value).abs()
+          .evalf() < RICCATI_NUMERIC_TOLERANCE;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+  }
+
+  /**
+   * A particular solution of <code>y' == a*y^2 + b*y + c</code> of the form <code>k*m(x)</code>, for  /**
+   * A particular solution of <code>y' == a*y^2 + b*y + c</code> of the form <code>k*m(x)</code>, for
+   * a constant <code>k</code> and <code>m</code> one of a few simple functions, or {@link F#NIL}.
+   *
+   * <p>
+   * The candidates for <code>m</code> are the low powers of <code>x</code>, the simplest
+   * exponentials, and the square root of <code>c/a</code> or <code>-c/a</code>, which is where a
+   * particular solution has to balance the two outer terms when the middle one is small. For each,
+   * <code>k*m' - a*k^2*m^2 - b*k*m - c</code> is solved for <code>k</code> at one point, and a
+   * <code>k</code> is only used if it makes that expression vanish identically.
+   */
+  private static IExpr riccatiParticular(IExpr a, IExpr b, IExpr c, IExpr xVar,
+      EvalEngine engine) {
+    IASTAppendable candidates = F.ListAlloc();
+    candidates.append(F.C1);
+    candidates.append(xVar);
+    candidates.append(F.Sqr(xVar));
+    candidates.append(F.Power(xVar, F.CN1));
+    candidates.append(F.Power(xVar, F.CN2));
+    candidates.append(F.Exp(xVar));
+    candidates.append(F.Exp(F.Negate(xVar)));
+    for (IExpr ratio : new IExpr[] {F.Divide(c, a), F.Negate(F.Divide(c, a))}) {
+      IExpr root = engine.evaluate(F.PowerExpand(F.Simplify(F.Sqrt(ratio))));
+      if (root.isPresent() && !root.isFree(xVar) && root.isFree(x -> x.isAST(S.C, 2), true)
+          && root.leafCount() <= MAX_RICCATI_LEAF_COUNT) {
+        candidates.append(root);
+      }
+    }
+    IExpr k = F.Dummy("k");
+    IExpr point = F.QQ(7, 10);
+    for (int i = 1; i <= candidates.argSize(); i++) {
+      IExpr m = candidates.get(i);
+      IExpr guess = F.Times(k, m);
+      IExpr residual = engine.evaluate(F.Subtract(F.D(guess, xVar),
+          F.Plus(F.Times(a, F.Sqr(guess)), F.Times(b, guess), c)));
+      IExpr atPoint = engine.evaluate(F.subst(residual, xVar, point));
+      if (!atPoint.isFree(xVar) || atPoint.isFree(k)) {
+        continue;
+      }
+      IAST roots = DSolveUtil.extractSolveResults(
+          engine.evaluate(F.Solve(F.Equal(atPoint, F.C0), F.List(k))));
+      for (int j = 1; j <= roots.argSize(); j++) {
+        IExpr value = roots.get(j);
+        if (value.isZero() || !value.isFree(xVar) || !value.isFree(k)) {
+          continue;
+        }
+        IExpr fitted = engine.evaluate(F.subst(residual, k, value));
+        // A cheap look first. Nearly every candidate is wrong, and deciding symbolically that a
+        // wrong one does not vanish is where the time goes: Simplify on a rational function with
+        // an irrational k in it can run for minutes. A candidate which is not zero at two points
+        // is not zero, and only one which is gets the symbolic check.
+        if (!vanishesAt(fitted, xVar, F.QQ(13, 10), engine)
+            || !vanishesAt(fitted, xVar, F.QQ(23, 10), engine)) {
+          continue;
+        }
+        if (isVanishing(fitted, engine)) {
+          return engine.evaluate(F.Times(value, m));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Solves a Riccati equation of the form: y' = a*y^2 + b*y + c
    */
   static IExpr solveRiccati(IExpr a, IExpr b, IExpr c, IExpr xVar, IExpr yFunction, IExpr C_1,
@@ -1567,8 +1713,13 @@ final class DSolveODE {
     IExpr uPrime = F.D(u, xVar);
     IExpr uDoublePrime = F.D(uPrime, xVar);
 
+    // With y == -u'/(a*u), y' == a*y^2 + b*y + c becomes u'' - (b + a'/a)*u' + a*c*u == 0. The sign
+    // of a'/a used to be the other one, which agrees only when a is constant: y' == y^2/E^x + 4*y +
+    // 2*E^x came out as u'' - 5*u' + 2*u == 0 in place of u'' - 3*u' + 2*u == 0, whose solutions
+    // E^x and E^(2*x) are the ones -E^x and -2*E^x come from. The verification refused the answer
+    // that gave, so it declined rather than answered wrongly.
     IExpr aPrime = engine.evaluate(F.D(a, xVar));
-    IExpr coeffUPrime = engine.evaluate(F.Subtract(b, F.Divide(aPrime, a)));
+    IExpr coeffUPrime = engine.evaluate(F.Plus(b, F.Divide(aPrime, a)));
 
     IExpr uEq =
         F.Equal(F.Plus(uDoublePrime, F.Times(F.CN1, coeffUPrime, uPrime), F.Times(a, c, u)), F.C0);
@@ -1641,6 +1792,10 @@ final class DSolveODE {
     IExpr solution = solveSingleODE(equation, xVar, F.List(yFunction), constant, ctx);
     if (solution.isNIL()) {
       solution = odeSolve(ctx.engine, equation, xVar, yFunction, constant);
+    }
+    if (solution.isNIL()
+        && LinearODEForm.highestDerivativeOrder(equation, yFunction.head(), xVar) == 1) {
+      solution = solveRiccatiThroughParticular(equation, xVar, yFunction, constant, ctx.engine);
     }
     if (solution.isNIL()) {
       return F.CEmptyList;
@@ -1785,6 +1940,13 @@ final class DSolveODE {
         IExpr rewrittenSol = DSolveSpecialFunctions.solveByRewriting(lf, yFunction, xVar, C_1, ctx);
         if (rewrittenSol.isPresent())
           return rewrittenSol;
+
+        // Every method above answers a homogeneous equation, and an inhomogeneous one whose
+        // coefficients are constant has its own path. What is left is the inhomogeneous equation
+        // with variable coefficients, and the homogeneous one beside it may well be one of theirs.
+        IExpr forcedSol = solveByVariationOfParameters(lf, yFunction, xVar, C_1, ctx);
+        if (forcedSol.isPresent())
+          return forcedSol;
       }
 
       if (lf == null && n == 2) {
@@ -2067,6 +2229,9 @@ final class DSolveODE {
           // The M + N*y' == 0 solvers read the equation as a first order one, so offering them an
           // equation of a higher order lets them answer from a part of it.
           temp = odeSolve(engine, equation, xVar, uFunction1Arg, c_n);
+          if (temp.isNIL()) {
+            temp = solveRiccatiThroughParticular(equation, xVar, uFunction1Arg, c_n, engine);
+          }
         }
 
         if (temp.isPresent()) {
@@ -2597,6 +2762,75 @@ final class DSolveODE {
   }
 
   /**
+   * An inhomogeneous linear equation with variable coefficients, solved through the homogeneous
+   * equation beside it.
+   *
+   * <p>
+   * The methods which find the solutions of a linear equation with variable coefficients --
+   * Kovacic, the special functions, the changes of variable -- are written for the homogeneous
+   * equation and decline a forcing term. But a basis of the homogeneous equation is all variation
+   * of parameters needs. <code>t^2*y'' - t*(t+2)*y' + (t+2)*y == 2*t^3</code> has the homogeneous
+   * basis <code>{t, t*E^t}</code>, which the cascade finds, and the particular solution
+   * <code>-2*t^2 - 2*t</code> follows from it by two elementary integrals; the equation used to be
+   * declined because nothing asked for the one and then the other.
+   *
+   * <p>
+   * The basis is read off the general solution as the coefficients of its arbitrary constants, and
+   * only a general solution which is exactly a combination of them is used.
+   *
+   * @return {@link F#NIL} if the homogeneous equation is not solved, or the integrals are not ones
+   *         the cascade can use
+   */
+  private static IExpr solveByVariationOfParameters(LinearODEForm lf, IExpr yFunction, IExpr xVar,
+      IExpr C_1, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    if (lf.g.isZero() || lf.constantCoefficients || ctx.depth() > MAX_VARIATION_DEPTH) {
+      return F.NIL;
+    }
+    int n = lf.order;
+    IASTAppendable homogeneous = F.PlusAlloc(n + 1);
+    for (int k = 0; k <= n; k++) {
+      if (!lf.a[k].isZero()) {
+        IExpr derivative = k == 0 ? yFunction : F.D(yFunction, F.List(xVar, F.ZZ(k)));
+        homogeneous.append(F.Times(lf.a[k], derivative));
+      }
+    }
+    IAST branches = solveSubODE(F.Equal(engine.evaluate(homogeneous), F.C0), xVar, yFunction, C_1,
+        ctx);
+    if (branches.argSize() != 1) {
+      return F.NIL;
+    }
+    IExpr general = engine.evaluate(F.Expand(branches.arg1()));
+    IASTAppendable constants = F.ListAlloc();
+    DSolveUtil.extractCVars(general, constants);
+    if (constants.argSize() != n) {
+      return F.NIL;
+    }
+    IExpr[] basis = new IExpr[n];
+    IASTAppendable recombined = F.PlusAlloc(n);
+    for (int i = 0; i < n; i++) {
+      IExpr constant = constants.get(i + 1);
+      IExpr member = engine.evaluate(F.Coefficient(general, constant, F.C1));
+      if (member.isZero() || !member.isFree(x -> x.isAST(S.C, 2), true)) {
+        return F.NIL;
+      }
+      basis[i] = member;
+      recombined.append(F.Times(constant, member));
+    }
+    if (!isVanishing(engine.evaluate(F.Subtract(general, recombined)), engine)) {
+      // Something in the general solution is not a multiple of a constant, so this is not the
+      // basis it looks like.
+      return F.NIL;
+    }
+    IExpr particular = variationOfParameters(basis, lf, xVar, ctx);
+    if (particular.isNIL() || !DSolveContext.isUsable(particular)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Plus(general, particular));
+  }
+
+  /**
+   * A particular solution of an inhomogeneous linear equation by variation of parameters:  /**
    * A particular solution of an inhomogeneous linear equation by variation of parameters:
    * <code>y_p == Sum(y_i*Integrate(W_i/W, x))</code>, where <code>W</code> is the determinant of
    * the fundamental matrix and <code>W_i</code> that determinant with its i-th column replaced by

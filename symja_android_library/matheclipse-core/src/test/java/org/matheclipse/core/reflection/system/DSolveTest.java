@@ -491,6 +491,48 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveRiccatiParticularSolution() {
+    // Once one solution y_p of a Riccati equation is known, y == y_p + 1/v leaves a linear
+    // equation for v. These are set so that one can be guessed: y == 1, y == x^2 and
+    // y == 2*Log(x) respectively.
+    check("DSolve(y'(x) == 1 + x - (2*x + 1)*y(x) + x*y(x)^2, y(x), x)", //
+        "{{y(x)->1+1/(1+x+E^x*C(1))}}");
+    check("DSolve(x^3*y'(x) == -2*x^4 + 2*x^2*y(x) + 2*y(x)^2, y(x), x)", //
+        "{{y(x)->-x^2+1/(1/(2*x^2)+x^2*C(1))}}");
+    checkResidual("x*Log(x)^2*y'(x) == -4*Log(x)^2 + y(x)*Log(x) + y(x)^2", //
+        "x*Log(x)^2*y'(x) - (-4*Log(x)^2 + y(x)*Log(x) + y(x)^2)", "{C(1)->3/7, x->13/10}");
+
+    // The linearization y == -u'/(a*u) gives u'' - (b + a'/a)*u' + a*c*u == 0; the sign of a'/a
+    // was the other one, which agrees only when a is constant, and this was declined.
+    check("DSolve(y'(x) == y(x)^2/E^x + 4*y(x) + 2*E^x, y(x), x)", //
+        "{{y(x)->(-2*E^(2*x))/(E^x+C(1))+(-E^x*C(1))/(E^x+C(1))}}");
+    // and with a constant the linearization is unchanged
+    check("DSolve(y'(x) == 1 + y(x)^2, y(x), x)", //
+        "{{y(x)->Tan(x+C(1))}}");
+  }
+
+  @Test
+  public void testDSolveVariationOfParametersOnAFoundBasis() {
+    // The methods for variable coefficients answer the homogeneous equation, and the inhomogeneous
+    // one used to be declined though its homogeneous part was solved. Its basis {t, t*E^t} is all
+    // variation of parameters needs.
+    check("DSolve(t^2*y''(t) - t*(t + 2)*y'(t) + (t + 2)*y(t) == 2*t^3, y(t), t)", //
+        "{{y(t)->-2*t^2+t*C(1)+E^t*t*C(2)}}");
+    checkResidualIn("t*y''(t) - (1 + t)*y'(t) + y(t) == t^2*E^(2*t)", //
+        "t*y''(t) - (1 + t)*y'(t) + y(t) - t^2*E^(2*t)", "{C(1)->3/7, C(2)->5/11, t->7/10}");
+    // the equation Kovacic finds the homogeneous basis of, and did not carry a forcing term for
+    checkResidualIn("(t^2 - 1)*y''(t) - 2*t*y'(t) + 2*y(t) == t^2 - 1", //
+        "(t^2 - 1)*y''(t) - 2*t*y'(t) + 2*y(t) - (t^2 - 1)", "{C(1)->3/7, C(2)->5/11, t->3/10}");
+  }
+
+  /** {@link #checkResidual} for an equation in <code>t</code>. */
+  private void checkResidualIn(String equation, String residual, String point) {
+    check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual
+        + ") /. s[[1]] /. " + point + ")) < 10^-6)", //
+        "True");
+  }
+
+  @Test
   public void testDSolveFittedConstantSolvesTheEquation() {
     // A condition can have two solutions for the constant, and only one of them solves the
     // equation. The general solution here is (C(1)*E^x - 1)^2, and y(0) == 1 asks for
@@ -1666,11 +1708,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testDSolveDeclinesInsteadOfAnswering() {
-    // No method covers a linear equation of second order with these variable coefficients. The
-    // first order solvers used to be offered it anyway, and answered from the part of it they
-    // could read, which produced an expression containing y''(x) itself.
+    // The first order solvers used to be offered this, and answered from the part of it they could
+    // read, which produced an expression containing y''(x) itself. It has an answer of its own now:
+    // (x*y)'' is x*y'' + 2*y', so this is w'' - w == Sin(x) in w == x*y, and variation of parameters
+    // on the homogeneous basis E^(+-x)/x gives the particular solution -Sin(x)/(2*x).
     check("DSolve(x*y''(x) + 2*y'(x) - x*y(x) == Sin(x), y(x), x)", //
-        "DSolve(-x*y(x)+2*y'(x)+x*y''(x)==Sin(x),y(x),x)");
+        "{{y(x)->C(1)/(E^x*x)+(E^x*C(2))/x-Sin(x)/(2*x)}}");
 
     // The second integration is elliptic, so this has no solution in elementary terms.
     check("DSolve(y''(x) == y(x)^2 + 1, y(x), x)", //
