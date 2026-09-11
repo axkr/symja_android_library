@@ -1123,4 +1123,33 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     }
   }
 
+  /**
+   * <code>VectorPlot</code> and <code>VectorPlot3D</code> draw the field as arrows on a grid,
+   * centred on the grid points; a zero vector gets no arrow. Both used to come back unevaluated,
+   * so the notebook drew nothing.
+   */
+  @Test
+  public void testVectorPlotDrawsArrows() {
+    check("Head[VectorPlot[{x + y, y - x}, {x, -3, 3}, {y, -3, 3}]]", //
+        "Graphics");
+    check("Count[VectorPlot[{x + y, y - x}, {x, -3, 3}, {y, -3, 3}, VectorPoints -> 5], "
+        + "_Arrow, Infinity]", //
+        "24");
+    check("Head[VectorPlot3D[{x, y, z}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}]]", //
+        "Graphics3D");
+    check("Count[VectorPlot3D[{x, y, z}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, VectorPoints -> 3], "
+        + "_Arrow, Infinity]", //
+        "26");
+    check("Chop[Mean[First[Cases[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 2], "
+        + "Arrow[p_] :> p, Infinity]]]] == {0, 0}", //
+        "True");
+    check("Count[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorColorFunction -> None], "
+        + "_RGBColor, Infinity]", //
+        "1");
+    // a field held in a function is evaluated at each point too
+    check("fld[a_, b_] := {-b, a}; Count[VectorPlot[fld[x, y], {x, -1, 1}, {y, -1, 1}, "
+        + "VectorPoints -> 3], _Arrow, Infinity]", //
+        "8");
+  }
+
 }

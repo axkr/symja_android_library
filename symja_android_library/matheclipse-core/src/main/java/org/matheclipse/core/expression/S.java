@@ -23946,6 +23946,16 @@ public class S {
   public final static IBuiltInSymbol VectorPlot = S.initFinalSymbol("VectorPlot", ID.VectorPlot);
 
   /**
+   * VectorPlot3D(x) - TODO describe `VectorPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorPlot3D.md">VectorPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VectorPlot3D =
+      S.initFinalSymbol("VectorPlot3D", ID.VectorPlot3D);
+
+  /**
    * VectorPoints(x) - TODO describe `VectorPoints`.
    * 
    * @see <a href=

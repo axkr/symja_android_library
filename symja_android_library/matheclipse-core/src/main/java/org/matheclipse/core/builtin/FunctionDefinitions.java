@@ -364,6 +364,8 @@ public final class FunctionDefinitions {
       S.LogLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.LogLogPlot());
       S.MatrixPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.MatrixPlot());
       S.ParametricPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ParametricPlot());
+      S.VectorPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.VectorPlot(2));
+      S.VectorPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics.VectorPlot(3));
       S.PieChart.setEvaluator(new org.matheclipse.core.builtin.graphics.PieChart());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
       S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());
