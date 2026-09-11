@@ -18717,6 +18717,25 @@ public class S {
   public final static IBuiltInSymbol RawBoxes = S.initFinalSymbol("RawBoxes", ID.RawBoxes);
 
   /**
+   * RawCompress(x) - TODO describe `RawCompress`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RawCompress.md">RawCompress
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RawCompress = S.initFinalSymbol("RawCompress", ID.RawCompress);
+
+  /**
+   * RawUncompress(x) - TODO describe `RawUncompress`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RawUncompress.md">RawUncompress
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RawUncompress =
+      S.initFinalSymbol("RawUncompress", ID.RawUncompress);
+
+  /**
    * Re(z) - returns the real component of the complex number `z`.
    * 
    * @see <a href=

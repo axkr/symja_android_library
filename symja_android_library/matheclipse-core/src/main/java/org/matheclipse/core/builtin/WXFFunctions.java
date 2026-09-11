@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -27,6 +28,8 @@ public class WXFFunctions {
       S.BinarySerialize.setEvaluator(new BinarySerialize());
       S.BinaryDeserialize.setEvaluator(new BinaryDeserialize());
       S.ByteArray.setEvaluator(new ByteArray());
+      S.RawCompress.setEvaluator(new RawCompress());
+      S.RawUncompress.setEvaluator(new RawUncompress());
     }
   }
 
@@ -98,6 +101,79 @@ public class WXFFunctions {
         return Errors.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
       }
       return F.NIL;
+    }
+  }
+
+  /**
+   * The bytes of a list of byte values or of a <code>ByteArray</code>, or <code>null</code> when
+   * <code>arg</code> is neither.
+   */
+  private static byte[] bytesOf(IExpr arg) {
+    if (arg instanceof ByteArrayExpr) {
+      return (byte[]) ((ByteArrayExpr) arg).toData();
+    }
+    if (arg.isList()) {
+      return arg.isEmptyList() ? new byte[0] : WL.toByteArray((IAST) arg);
+    }
+    return null;
+  }
+
+  /** The bytes in the form <code>original</code> had: a <code>ByteArray</code> or a list. */
+  private static IExpr sameFormAs(IExpr original, byte[] bytes) {
+    if (original instanceof ByteArrayExpr) {
+      return ByteArrayExpr.newInstance(bytes);
+    }
+    IASTAppendable list = F.ListAlloc(bytes.length);
+    for (byte b : bytes) {
+      list.append(F.ZZ(b & 0xFF));
+    }
+    return list;
+  }
+
+  /**
+   * <code>Developer`RawCompress[bytes]</code> - the bytes compressed with zlib.
+   *
+   * <p>
+   * The WLJS notebook sends every object larger than 2 KB - every plot - to the browser as
+   * <code>BaseEncode[ByteArray[Developer`RawCompress[bytes]]]</code>, and the browser inflates it
+   * as zlib. Without it each plot drew a <code>ByteArray::lend</code> warning.
+   */
+  private static class RawCompress extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      byte[] bytes = bytesOf(ast.arg1());
+      if (bytes == null) {
+        return F.NIL;
+      }
+      return sameFormAs(ast.arg1(), org.matheclipse.core.expression.WMACompress.deflate(bytes));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /** <code>Developer`RawUncompress[bytes]</code> - undoes <code>Developer`RawCompress</code>. */
+  private static class RawUncompress extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      byte[] bytes = bytesOf(ast.arg1());
+      if (bytes == null) {
+        return F.NIL;
+      }
+      try {
+        byte[] inflated = org.matheclipse.core.expression.WMACompress.inflate(bytes);
+        return inflated == null ? F.NIL : sameFormAs(ast.arg1(), inflated);
+      } catch (java.util.zip.DataFormatException dfe) {
+        // not a zlib stream: nothing to undo
+        return F.NIL;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 

@@ -1030,4 +1030,28 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     }
   }
 
+  /**
+   * <code>Developer`RawCompress</code> compresses bytes with zlib and
+   * <code>Developer`RawUncompress</code> undoes it.
+   *
+   * <p>
+   * The WLJS notebook sends every object larger than 2 KB - every plot - to the browser through
+   * exactly the chain checked last, and the browser inflates the result as zlib. Without the two
+   * functions each plot drew a <code>ByteArray::lend</code> warning.
+   */
+  @Test
+  public void testRawCompressIsZlib() {
+    check("Developer`RawUncompress[Developer`RawCompress[{1, 2, 3, 250}]]", //
+        "{1,2,3,250}");
+    // a zlib stream starts with the byte 120 (0x78)
+    check("First[Developer`RawCompress[{1, 2, 3}]]", //
+        "120");
+    check("Head[Developer`RawCompress[ByteArray[{1, 2, 3}]]]", //
+        "ByteArray");
+    check("ImportByteArray[ByteArray[Developer`RawUncompress[Normal[BaseDecode[BaseEncode["
+        + "ByteArray[Developer`RawCompress[Normal[ExportByteArray[{1, 2.5, \"a\"}, "
+        + "\"ExpressionJSON\"]]]]]]]]], \"ExpressionJSON\"]", //
+        "{1,2.5,a}");
+  }
+
 }

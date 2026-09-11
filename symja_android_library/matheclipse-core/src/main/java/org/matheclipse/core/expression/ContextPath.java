@@ -193,6 +193,8 @@ public final class ContextPath implements Iterable<Context> {
     aliases.put("PacletManager`Package`loadWolframLanguageCode", S.LoadWolframLanguageCode);
     aliases.put("Language`ExtendedFullDefinition", S.ExtendedFullDefinition);
     aliases.put("Experimental`ValueFunction", S.ValueFunction);
+    aliases.put("Developer`RawCompress", S.RawCompress);
+    aliases.put("Developer`RawUncompress", S.RawUncompress);
     return aliases;
   }
 

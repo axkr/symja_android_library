@@ -260,7 +260,8 @@ public class WMACompress {
     }
   }
 
-  private static byte[] deflate(byte[] data) {
+  /** zlib-compress <code>data</code>: the format of Developer`RawCompress and of the WMA wire format. */
+  public static byte[] deflate(byte[] data) {
     Deflater deflater = new Deflater();
     try {
       deflater.setInput(data);
@@ -276,7 +277,12 @@ public class WMACompress {
     }
   }
 
-  private static byte[] inflate(byte[] data) throws DataFormatException {
+  /**
+   * Undo {@link #deflate(byte[])}.
+   *
+   * @return <code>null</code> when <code>data</code> ends before the stream does
+   */
+  public static byte[] inflate(byte[] data) throws DataFormatException {
     Inflater inflater = new Inflater();
     try {
       inflater.setInput(data);
