@@ -491,6 +491,21 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveFittedConstantSolvesTheEquation() {
+    // A condition can have two solutions for the constant, and only one of them solves the
+    // equation. The general solution here is (C(1)*E^x - 1)^2, and y(0) == 1 asks for
+    // (C(1) - 1)^2 == 1: C(1) == 0 gives y == 1, whose residual is -4 everywhere, because the
+    // squaring introduced it; C(1) == 2 gives the solution. The first root used to be taken.
+    check("DSolve({y'(x) - 2*y(x) == 2*Sqrt(y(x)), y(0) == 1}, y(x), x)", //
+        "{{y(x)->1-4*E^x+4*E^(2*x)}}");
+    checkResidual("{y'(x) - 2*y(x) == 2*Sqrt(y(x)), y(0) == 1}", //
+        "y'(x) - 2*y(x) - 2*Sqrt(y(x))", "{x->13/10}");
+    // the same with a forcing term: (2 + x)^2 was returned, with a residual of -3.78 at x == 7/10
+    checkResidual("{y'(x) - y(x) == x*Sqrt(y(x)), y(0) == 4}", //
+        "y'(x) - y(x) - x*Sqrt(y(x))", "{x->7/10}");
+  }
+
+  @Test
   public void testDSolveConditionAtASingularPoint() {
     // The general solution of these is written with ExpIntegralEi(t), which does not reach t == 0:
     // putting the point in gives Indeterminate from 0*(-Infinity). That is not the condition

@@ -992,7 +992,32 @@ final class DSolveODE {
     return new IExpr[] {point, value};
   }
 
+  /**
+   * The branch fitted to the conditions, the first of the candidates {@link #fitCandidates} finds.
+   */
   static IExpr applyUnaryBCs(IExpr root, IAST uFunction1Arg, IExpr xVar, IAST boundaryConditions,
+      EvalEngine engine) {
+    IAST candidates = fitCandidates(root, uFunction1Arg, xVar, boundaryConditions, engine);
+    return candidates.argSize() > 0 ? candidates.arg1() : F.NIL;
+  }
+
+  /**
+   * Every way of fitting <code>root</code> to the conditions, one for each solution
+   * <code>Solve</code> gives for the constants.
+   *
+   * <p>
+   * All of them, because a condition can have more than one solution for the constant and only
+   * some of those solve the equation. <code>y'(x) - 2*y(x) == 2*Sqrt(y(x))</code> has the general
+   * solution <code>(C(1)*E^x - 1)^2</code>, and <code>y(0) == 1</code> asks for
+   * <code>(C(1) - 1)^2 == 1</code>, which is <code>C(1) == 0</code> or <code>C(1) == 2</code>. The
+   * first gives <code>y == 1</code>, which meets the condition and is not a solution at all -- the
+   * squaring that wrote the general solution introduced it -- and taking the first root is what
+   * returned it. The caller puts each candidate back into the equation and keeps one which solves
+   * it.
+   *
+   * @return the candidates, empty when the conditions cannot be met
+   */
+  static IAST fitCandidates(IExpr root, IAST uFunction1Arg, IExpr xVar, IAST boundaryConditions,
       EvalEngine engine) {
     IASTAppendable evaluatedBCs =
         evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
@@ -1013,12 +1038,12 @@ final class DSolveODE {
         IExpr bc = evaluatedBCs.get(k);
         if (bc.isEqual()) {
           if (!engine.evaluate(bc).isTrue())
-            return F.NIL;
+            return F.CEmptyList;
         } else if (!bc.isZero()) {
-          return F.NIL;
+          return F.CEmptyList;
         }
       }
-      return root;
+      return F.list(root);
     }
 
     // Shield existing Equal expressions from being double-wrapped
@@ -1048,23 +1073,35 @@ final class DSolveODE {
     } finally {
       engine.setQuietMode(quietMode);
     }
-    if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
-      // Stripped like every other result Solve hands back here: inverting a periodic function
-      // writes a whole number into the answer to choose a branch, and every value of it names the
-      // same solution, so the principal one is taken rather than left standing where it reads as
-      // a constant the conditions failed to determine.
-      IAST cSol = (IAST) DSolveUtil.stripConditionalExpression(((IAST) cSols).arg1());
-      cSol = completeSolution(cSol, evaluatedBCsEqualZero, cVars, engine);
-      IExpr fitted = DSolveUtil.togetherSolution(engine.evaluate(F.subst(root, cSol)), engine);
-      if (!isFitted(fitted, cVars)) {
-        return F.NIL;
+    IASTAppendable candidates = F.ListAlloc();
+    if (cSols.isList()) {
+      IAST solutions = (IAST) cSols;
+      for (int i = 1; i <= solutions.argSize(); i++) {
+        if (!solutions.get(i).isList()) {
+          continue;
+        }
+        // Stripped like every other result Solve hands back here: inverting a periodic function
+        // writes a whole number into the answer to choose a branch, and every value of it names
+        // the same solution, so the principal one is taken rather than left standing where it
+        // reads as a constant the conditions failed to determine.
+        IAST cSol = (IAST) DSolveUtil.stripConditionalExpression(solutions.get(i));
+        cSol = completeSolution(cSol, evaluatedBCsEqualZero, cVars, engine);
+        IExpr fitted = DSolveUtil.togetherSolution(engine.evaluate(F.subst(root, cSol)), engine);
+        if (!isFitted(fitted, cVars)) {
+          continue;
+        }
+        // Solving a condition for the constant answers formally, and formally is not always. The
+        // minus branch of a solution written with a radical can be fitted to y(a) == b for every
+        // b and meets it only for one sign of b, so the condition goes back in and is asked again.
+        if (refutedBy(fitted, uFunction1Arg, xVar, boundaryConditions, engine)) {
+          continue;
+        }
+        if (!candidates.contains(fitted)) {
+          candidates.append(fitted);
+        }
       }
-      // Solving a condition for the constant answers formally, and formally is not always. The
-      // minus branch of a solution written with a radical can be fitted to y(a) == b for every b
-      // and meets it only for one sign of b, so the condition goes back in and is asked again.
-      return refutedBy(fitted, uFunction1Arg, xVar, boundaryConditions, engine) ? F.NIL : fitted;
     }
-    return F.NIL;
+    return candidates;
   }
 
   /**
@@ -1937,6 +1974,27 @@ final class DSolveODE {
   }
 
   /**
+   * The first fitted candidate which solves the equation, or {@link F#NIL}.
+   *
+   * <p>
+   * The general solution was checked against the equation before it was fitted, and fitting it
+   * does not keep that true: a constant which meets the condition can pick the part of a squared
+   * relation which was never a solution. So the fitted candidate is checked again, in the same
+   * way, and one which the equation refutes is passed over for the next.
+   */
+  private static IExpr firstSolvingCandidate(IAST candidates, IAST listOfEquations,
+      IAST uFunction1Arg, IExpr xVar, EvalEngine engine) {
+    for (int i = 1; i <= candidates.argSize(); i++) {
+      IExpr candidate = candidates.get(i);
+      if (DSolveVerify.acceptODE(listOfEquations, uFunction1Arg, xVar, candidate, engine)) {
+        return candidate;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The branches which answer the equation, written the way <code>DSolve</code> returns them.  /**
    * The branches which answer the equation, written the way <code>DSolve</code> returns them.
    *
    * @param fitted whether the branches already have the conditions in them, in which case there is
@@ -1966,7 +2024,9 @@ final class DSolveODE {
             continue;
           }
         } else {
-          root = applyUnaryBCs(root, uFunction1Arg, xVar, boundaryConditions, engine);
+          root = firstSolvingCandidate(
+              fitCandidates(root, uFunction1Arg, xVar, boundaryConditions, engine),
+              listOfEquations, uFunction1Arg, xVar, engine);
           if (!root.isPresent()) {
             // Skip this root branch if the BCs cannot be satisfied. A general solution with
             // more than one branch normally has branches which the conditions rule out, so this
