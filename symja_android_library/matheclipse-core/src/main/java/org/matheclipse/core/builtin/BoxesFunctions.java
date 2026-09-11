@@ -121,7 +121,16 @@ public class BoxesFunctions {
         return F.NIL;
       }
       ISymbol head = expr.topHead();
-      return head.evalUpRules(F.binaryAST2(S.MakeBoxes, expr, form), engine);
+      IExpr boxes = head.evalUpRules(F.binaryAST2(S.MakeBoxes, expr, form), engine);
+      if (boxes.isNIL() && expr instanceof IDataExpr) {
+        // a rule written for the Wolfram Language form of the object - Image[data, type, ...] -
+        // is tried on that form: an image object has no parts for Image[_, type_, ___] to match
+        IAST normal = ((IDataExpr<?>) expr).normal(true);
+        if (normal.isPresent() && normal.head() == head) {
+          boxes = head.evalUpRules(F.binaryAST2(S.MakeBoxes, normal, form), engine);
+        }
+      }
+      return boxes;
     }
 
     private static IExpr standardFormRecursive(final IExpr expr, final int precedence,

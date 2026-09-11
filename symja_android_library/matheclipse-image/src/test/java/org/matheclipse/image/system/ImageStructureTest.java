@@ -90,4 +90,26 @@ public class ImageStructureTest extends AbstractTestCase {
         "{True,False}");
   }
 
+  /**
+   * What the WLJS notebook asks of an image before it shows one: its properties through
+   * <code>Information</code>, the same picture as a <code>"Byte"</code> image, and a
+   * <code>MakeBoxes</code> rule written for <code>Image(data, type, ...)</code> applied to the
+   * image object.
+   */
+  @Test
+  public void testTheNotebookCanShowAnImage() {
+    check("Information(Image({{0,1},{1,0}},\"Bit\"),\"DataType\")", //
+        "Bit");
+    check("Information(Image({{0,1},{1,0}},\"Bit\"))[\"Dimensions\"]", //
+        "{2,2}");
+    check("ImageType(Image(Image({{0,1},{1,0}},\"Bit\"),\"Byte\",Interleaving->True))", //
+        "Byte");
+    check("Unprotect(Image);Image /: MakeBoxes(i:Image(_,t_,___),StandardForm) := t;"
+        + "ToBoxes(Image({{0,1},{1,0}},\"Bit\"),StandardForm)", //
+        "Bit");
+    check("Image /: MakeBoxes(i:Image(_,t_,___),StandardForm) =.;"
+        + "ToBoxes(Image({{0,1},{1,0}},\"Bit\"),StandardForm)===\"Bit\"", //
+        "False");
+  }
+
 }

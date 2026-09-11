@@ -73,6 +73,31 @@ public class ImageFunctions {
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
+      if (ast.arg1() instanceof ImageExpr) {
+        // Image[image, type, options]: the same picture, its pixels read on the scale type names
+        // and built again with the options given - which is how the WLJS notebook asks for the
+        // Byte image it shows
+        ImageExpr image = (ImageExpr) ast.arg1();
+        if (argSize == 1 && ast.argSize() == 1) {
+          return image;
+        }
+        java.awt.image.BufferedImage picture = image.getBufferedImage();
+        if (picture == null) {
+          return F.NIL;
+        }
+        IAST matrix = image.getMatrix();
+        String currentType = matrix == null ? Pixels.BYTE : Pixels.imageTypeOf(matrix);
+        String newType = argSize >= 2 && ast.arg2().isString() ? ast.arg2().toString()
+            : currentType;
+        if (!Pixels.isImageType(newType)) {
+          return Errors.printMessage(S.Image, "imgtype", F.list(ast.arg2()), engine);
+        }
+        IExpr pixels = Pixels.toData(picture, newType, true, false);
+        if (!pixels.isAST()) {
+          return F.NIL;
+        }
+        ast = ast.setAtCopy(1, pixels);
+      }
       if (!ast.arg1().isAST()) {
         return F.NIL;
       }

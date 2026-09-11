@@ -1202,6 +1202,12 @@ public final class PatternMatching {
               // how a front end collects what it shows beside a completion
               arg1 = F.symbol(arg1.toString(), engine);
             }
+            if (arg1.head() == S.Image && arg1 instanceof org.matheclipse.core.interfaces.IDataExpr) {
+              // an image's properties, as Information[image] and Information[image, "Property"]
+              // answer them; the WLJS notebook reads them before it shows an image
+              return imageInformation(arg1,
+                  ast.size() == 3 && ast.arg2().isString() ? ast.arg2().toString() : null, engine);
+            }
             if (!arg1.isSymbol()) {
               // "sym", "Argument `1` at position `2` is expected to be a symbol.", //
               return Errors.printMessage(S.Information, "sym", F.List(arg1, F.C1), engine);
@@ -1259,6 +1265,32 @@ public final class PatternMatching {
      *         none and <code>Missing["UnknownProperty", name]</code> where there is no such
      *         property
      */
+    /**
+     * <code>Information[image]</code>: an association of the image's properties, or with
+     * <code>property</code> given just that one - <code>Missing["UnknownProperty", name]</code>
+     * where there is no such property.
+     */
+    private static IExpr imageInformation(IExpr image, String property, EvalEngine engine) {
+      org.matheclipse.core.interfaces.IASTAppendable rules = F.ListAlloc(5);
+      rules.append(F.Rule(F.stringx("ObjectType"), F.stringx("Image")));
+      rules.append(
+          F.Rule(F.stringx("ColorSpace"), engine.evaluate(F.unaryAST1(S.ImageColorSpace, image))));
+      rules.append(
+          F.Rule(F.stringx("Channels"), engine.evaluate(F.unaryAST1(S.ImageChannels, image))));
+      rules.append(F.Rule(F.stringx("DataType"), engine.evaluate(F.unaryAST1(S.ImageType, image))));
+      rules.append(
+          F.Rule(F.stringx("Dimensions"), engine.evaluate(F.unaryAST1(S.ImageDimensions, image))));
+      if (property != null) {
+        for (IExpr rule : rules) {
+          if (rule.first().toString().equals(property)) {
+            return rule.second();
+          }
+        }
+        return F.Missing(F.stringx("UnknownProperty"), F.stringx(property));
+      }
+      return F.assoc(rules);
+    }
+
     private static IExpr property(ISymbol symbol, String name, EvalEngine engine) {
       switch (name) {
         case "Usage":

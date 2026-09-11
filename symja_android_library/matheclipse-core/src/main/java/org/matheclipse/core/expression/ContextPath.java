@@ -195,6 +195,8 @@ public final class ContextPath implements Iterable<Context> {
     aliases.put("Experimental`ValueFunction", S.ValueFunction);
     aliases.put("Developer`RawCompress", S.RawCompress);
     aliases.put("Developer`RawUncompress", S.RawUncompress);
+    // the WLJS notebook shows an image only when Image`ValidImageQHold holds for it
+    aliases.put("Image`ValidImageQHold", S.ImageQ);
     return aliases;
   }
 

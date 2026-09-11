@@ -1506,4 +1506,15 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "GraphicsComplex");
   }
 
+  /**
+   * <code>Image`ValidImageQHold</code> is <code>ImageQ</code>: the WLJS notebook shows an image
+   * only when it holds.
+   */
+  @Test
+  public void testValidImageQHoldIsImageQ() {
+    // core alone has no image functions, so the alias is checked as the symbol it resolves to
+    check("Image`ValidImageQHold === ImageQ", //
+        "True");
+  }
+
 }
