@@ -7,6 +7,18 @@ import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for graphics functions */
 public class GraphFunctionsTest extends AbstractTestCase {
+
+  /**
+   * <code>GraphPlot</code> keeps the Graphics options it is given: the WLJS notebook draws every
+   * <code>Graph</code> as <code>GraphPlot(g, ImageSize->70, AspectRatio->1, ...)</code>.
+   */
+  @Test
+  public void testGraphPlotKeepsItsOptions() {
+    check("p=GraphPlot(Graph({1->2,2->3,3->1}),ImageSize->70,AspectRatio->1);" //
+        + "{Head(p), Cases(List@@p,(ImageSize->s_):>s), Cases(List@@p,(AspectRatio->a_):>a)}", //
+        "{Graphics,{70},{1}}");
+  }
+
   @Test
   public void testAdjacencyGraph() {
     check("AdjacencyGraph(SparseArray({{i_, j_} /; 0<Abs(i-j) <= 3 -> 1}, {6, 6}))// InputForm", //
