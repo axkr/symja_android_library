@@ -226,7 +226,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     return vector;
   }
 
-  private static double norm(double[] vector) {
+  static double norm(double[] vector) {
     double sum = 0.0;
     for (double c : vector) {
       sum += c * c;
@@ -235,7 +235,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
   }
 
   /** From blue for the shortest arrow to red for the longest, <code>t</code> in 0..1. */
-  private static IAST color(double t) {
+  static IAST color(double t) {
     double r = 0.18 + 0.72 * t;
     double g = 0.36 - 0.16 * t;
     double b = 0.75 - 0.6 * t;

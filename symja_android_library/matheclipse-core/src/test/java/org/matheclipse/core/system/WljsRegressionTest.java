@@ -1364,4 +1364,22 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  /**
+   * <code>ListVectorPlot</code> draws a field given as data: an array of vectors, with
+   * <code>array[[i, j]]</code> at <code>{j, i}</code>, or a list of <code>{point, vector}</code>
+   * pairs. It had no evaluator, and the notebook reported <code>Take::seqs</code> for the
+   * unevaluated call.
+   */
+  @Test
+  public void testListVectorPlotDrawsDataAsArrows() {
+    check("p = ListVectorPlot[Table[{y, -x}, {x, -3, 3}, {y, -3, 3}]]; "
+        + "{Head[p], Count[p, _Arrow, Infinity]}", //
+        "{Graphics,48}");
+    check("Cases[ListVectorPlot[{{{1, 0}, {1, 0}, {1, 0}}}], Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+        "{{1,1},{2,1},{3,1}}");
+    check("Cases[ListVectorPlot[{{{0, 0}, {1, 0}}, {{2, 2}, {0, 1}}, {{4, 0}, {1, 1}}}], "
+        + "Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+        "{{0,0},{2,2},{4,0}}");
+  }
+
 }
