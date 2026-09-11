@@ -363,6 +363,13 @@ public final class GraphicsOptions3D {
           break;
       }
     }
+    if (lighting == null && ast.argSize() >= 1 && !ast.arg1().isFree(
+        x -> x.isRuleAST() && x.first() == org.matheclipse.core.expression.S.Lighting, false)) {
+      // Surfaces which carry lights of their own colour, the way a Mathematica ContourPlot3D writes
+      // them, and no Lighting for the picture: this renderer lights a whole scene alike, so it
+      // lights them neutrally, which keeps each surface its own colour - the point of those lights.
+      lighting = org.matheclipse.core.expression.F.stringx("Neutral");
+    }
   }
 
   private void parseAxes(IExpr value) {

@@ -1610,6 +1610,54 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * <code>StringPadLeft</code> lines the repetitions of the padding up with the right end of the
+   * finished string, <code>StringPadRight</code> with its left end. Mathematica, 2026-09-11.
+   */
+  @Test
+  public void testStringPadLinesUpItsRepetitions() {
+    check("{StringPadLeft[\"abc\", 8, \"xy\"], StringPadLeft[\"abc\", 9, \"xy\"], "
+        + "StringPadRight[\"abc\", 8, \"xy\"], StringPadRight[\"abc\", 9, \"xy\"]}", //
+        "{xyxyxabc,yxyxyxabc,abcyxyxy,abcyxyxyx}");
+    check("{StringPadLeft[\"abcdefgh\", 5, \"xy\"], StringPadRight[\"abcdefgh\", 5, \"xy\"]}", //
+        "{defgh,abcde}");
+    check("StringPadLeft[{\"a\", \"bbb\", \"ccccc\"}, 6, \"123\"]", //
+        "{12312a,123bbb,1ccccc}");
+    check("StringPadLeft[{\"a\", \"bbb\", \"ccccc\"}, Automatic, \"-=\"]", //
+        "{=-=-a,=-bbb,ccccc}");
+  }
+
+  /**
+   * <code>ContourPlot3D</code> lights each contour surface with lights of its own colour and gives
+   * the picture no <code>Lighting</code> of its own, and outlines where a surface leaves the box.
+   * Mathematica, 2026-09-11.
+   */
+  @Test
+  public void testContourPlot3DLightsEachSurface() {
+    check("cp = ContourPlot3D[x^3 + y^2 - z^2, {x, -2, 2}, {y, -2, 2}, {z, -2, 2}, PlotPoints -> 10];"
+        + " Length[Cases[cp, Directive[___, Lighting -> _, ___], Infinity]]", //
+        "3");
+    check("MatchQ[First[Cases[cp, Directive[___, Lighting -> _, ___], Infinity]], "
+        + "Directive[Specularity[GrayLevel[1], 3], RGBColor[0.880722, 0.611041, 0.142051], "
+        + "Lighting -> {{\"Ambient\", _RGBColor}, {\"Directional\", _RGBColor, ImageScaled[{0, 2, 2}]}, "
+        + "{\"Directional\", _RGBColor, ImageScaled[{2, 2, 2}]}, "
+        + "{\"Directional\", _RGBColor, ImageScaled[{2, 0, 2}]}}]]", //
+        "True");
+    check("Cases[Rest[List @@ cp], HoldPattern[Lighting -> _]]", //
+        "{}");
+    // the rim where a sphere is cut by the bottom of the box
+    check("Length[Cases[ContourPlot3D[x^2 + y^2 + z^2, {x, -1, 1}, {y, -1, 1}, {z, 0, 1}, "
+        + "Contours -> {1}, Mesh -> None, PlotPoints -> 10], {GrayLevel[0], _Line}, Infinity]]", //
+        "1");
+    check("Length[Cases[ContourPlot3D[x^2 + y^2 + z^2, {x, -1, 1}, {y, -1, 1}, {z, 0, 1}, "
+        + "Contours -> {1}, Mesh -> None, PlotPoints -> 10, BoundaryStyle -> None], _Line, Infinity]]", //
+        "0");
+    // a style that was asked for keeps the neutral lights
+    check("Cases[Rest[List @@ ContourPlot3D[x^2 + y^2 + z^2, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "Contours -> {1}, ContourStyle -> Red, PlotPoints -> 10]], HoldPattern[Lighting -> _]]", //
+        "{Lighting->Neutral}");
+  }
+
+  /**
    * <code>Short</code> is a display wrapper. Mathematica (2026-09-11): <code>FullForm</code> and
    * <code>InputForm</code> keep the wrapper with the whole list, and
    * <code>ToString[Short[Range[100], 2], OutputForm]</code> is the whole list - only a display with

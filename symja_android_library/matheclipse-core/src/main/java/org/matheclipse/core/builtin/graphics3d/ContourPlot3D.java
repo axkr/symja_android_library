@@ -106,14 +106,34 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
             levels[levels.length - 1])
         .build();
 
+    // With nothing asked for, every surface is lit by lights of its own colour, as Mathematica
+    // lights its contour surfaces, and the picture carries no Lighting option of its own.
+    boolean ownLights =
+        levelColors == null && (styleSource == null || styleSource.isAutomatic());
+    IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
     IASTAppendable surfaces = F.ListAlloc(levels.length);
     for (int level = 0; level < levels.length; level++) {
       GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
-      IExpr style = levelColors == null ? Plot3DTools.surfaceStyle(level, styleSource)
-          : levelColors.color((min[0] + max[0]) / 2.0, (min[1] + max[1]) / 2.0,
-              (min[2] + max[2]) / 2.0, levels[level]);
+      IExpr style;
+      if (levelColors != null) {
+        style = levelColors.color((min[0] + max[0]) / 2.0, (min[1] + max[1]) / 2.0,
+            (min[2] + max[2]) / 2.0, levels[level]);
+      } else if (ownLights) {
+        style = litSurfaceStyle(level);
+      } else {
+        style = Plot3DTools.surfaceStyle(level, styleSource);
+      }
       Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
       marchingCubes(builder, grid, levels[level], min, max, points);
+      // the rim where the surface leaves the box, which Mathematica outlines unless told not to:
+      // the edges only one triangle has
+      if (Plot3DTools.drawsBoundary(boundaryStyle, true)) {
+        IASTAppendable rim = builder.openEdges();
+        if (rim.argSize() > 0) {
+          builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyle),
+              F.binaryAST2(S.Line, rim, F.Rule(S.VertexColors, S.None))));
+        }
+      }
       IExpr complex = builder.build();
       if (complex.isPresent()) {
         surfaces.append(complex);
@@ -123,13 +143,69 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    return Plot3DTools.graphics3D(surfaces, originalAST, argSize,
-        new IExpr[] {
-            F.Rule(S.PlotRange,
-                F.List(F.List(F.num(min[0]), F.num(max[0])), F.List(F.num(min[1]), F.num(max[1])),
-                    F.List(F.num(min[2]), F.num(max[2])))),
-            F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1)), F.Rule(S.Axes, S.True),
-            F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+    IExpr plotRange =
+        F.Rule(S.PlotRange, F.List(F.List(F.num(min[0]), F.num(max[0])),
+            F.List(F.num(min[1]), F.num(max[1])), F.List(F.num(min[2]), F.num(max[2]))));
+    IExpr[] defaults = ownLights
+        ? new IExpr[] {plotRange, F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1)),
+            F.Rule(S.Axes, S.True)}
+        : new IExpr[] {plotRange, F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1)),
+            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)};
+    return Plot3DTools.graphics3D(surfaces, originalAST, argSize, defaults);
+  }
+
+  /**
+   * The lights Mathematica gives each of the first six contour surfaces, probed on 2026-09-11
+   * (<code>Cases[ContourPlot3D[x^3 + y^2 - z^2, ..., Contours -> 6], Directive[___, Lighting -> _,
+   * ___], Infinity]</code>). They follow no formula - the directional light is 0.3, 0.42, 0.25,
+   * 0.25, 0.5 and 0.25 of the surface colour - so they are written out. Surface <code>i</code> is
+   * {@link Plot3DTools#surfaceColor(int, IExpr) surface colour} <code>i</code>.
+   */
+  private static final double[][] AMBIENT = { //
+      {0.30100577, 0.224146685, 0.090484535}, //
+      {0.196998383, 0.252204821, 0.333209402}, //
+      {0.1830429875, 0.2142476375, 0.0962851875}, //
+      {0.30756835, 0.18676585, 0.147065275}, //
+      {0.4113952, 0.3882496, 0.4805404}, //
+      {0.3544158, 0.2863108, 0.2204774}};
+
+  private static final double[][] DIRECTIONAL = { //
+      {0.2642166, 0.1833123, 0.0426153}, //
+      {0.15473514, 0.21284718, 0.29811516}, //
+      {0.14004525, 0.17289225, 0.04872125}, //
+      {0.2306315, 0.0964065, 0.05229475}, //
+      {0.264244, 0.235312, 0.3506755}, //
+      {0.19301975, 0.1078885, 0.02559675}};
+
+  /** The exponent of the white highlight: from the fourth surface on it is tighter. */
+  private static final int[] SPECULAR_EXPONENT = {3, 3, 3, 6, 6, 6};
+
+  /** Contour surface number <code>level</code> in Mathematica's default style. */
+  private static IExpr litSurfaceStyle(int level) {
+    if (level >= AMBIENT.length) {
+      return Plot3DTools.surfaceStyle(level, S.Automatic);
+    }
+    IExpr directional = rgb(DIRECTIONAL[level]);
+    // the light from above the middle of the box: the surface's own colour for the first three,
+    // then a grey, a violet hue and a grey again
+    IExpr middle = level == 4 ? F.ternaryAST3(S.Hue, F.num(0.7), F.C1, F.C1)
+        : level >= 3 ? F.GrayLevel(F.num(0.3)) : directional;
+    IExpr lights = F.List( //
+        F.List(F.stringx("Ambient"), rgb(AMBIENT[level])), //
+        F.List(F.stringx("Directional"), directional, imageScaled(0, 2, 2)), //
+        F.List(F.stringx("Directional"), middle, imageScaled(2, 2, 2)), //
+        F.List(F.stringx("Directional"), directional, imageScaled(2, 0, 2)));
+    return F.Directive(
+        F.binaryAST2(S.Specularity, F.GrayLevel(F.C1), F.ZZ(SPECULAR_EXPONENT[level])),
+        Plot3DTools.surfaceColor(level, S.Automatic), F.Rule(S.Lighting, lights));
+  }
+
+  private static IExpr rgb(double[] c) {
+    return F.RGBColor(c[0], c[1], c[2]);
+  }
+
+  private static IExpr imageScaled(int x, int y, int z) {
+    return F.unaryAST1(S.ImageScaled, F.List(F.ZZ(x), F.ZZ(y), F.ZZ(z)));
   }
 
   private static int plotPoints(IExpr option) {

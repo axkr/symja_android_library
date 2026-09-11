@@ -586,6 +586,19 @@ public class WebGLGraphics3DTest {
         "Lighting -> None installs no lights at all");
   }
 
+  /**
+   * A ContourPlot3D lights each surface with lights of its own colour and gives the picture no
+   * Lighting. This renderer lights a whole scene alike, so it lights such a scene neutrally.
+   */
+  @Test
+  public void surfacesWithTheirOwnLightsAreLitNeutrally() {
+    JsonNode lights = scene(
+        "ContourPlot3D[x^2+y^2+z^2,{x,-1,1},{y,-1,1},{z,-1,1},Contours->{1},PlotPoints->8]")
+            .get("lights");
+    assertEquals(4, lights.size(), "the neutral set, not the coloured automatic one");
+    assertEquals(rgb(0.35, 0.35, 0.35), lights.get(0).get("color").asInt());
+  }
+
   @Test
   public void legendedIsUnwrappedAndItsTextKept() {
     JsonNode scene = scene("Legended[Graphics3D[Sphere[]],\"a sphere\"]");

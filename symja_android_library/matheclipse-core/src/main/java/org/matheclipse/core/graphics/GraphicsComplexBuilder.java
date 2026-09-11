@@ -1,9 +1,11 @@
 package org.matheclipse.core.graphics;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -141,6 +143,33 @@ public class GraphicsComplexBuilder {
    */
   public void addPrimitive(IExpr primitive) {
     otherPrimitives.append(primitive);
+  }
+
+  /**
+   * The edges that belong to one polygon only, as pairs of vertex numbers: the rim of an open
+   * surface. An edge two polygons share lies inside the surface; welding the vertices in
+   * {@link #addVertex} is what makes neighbouring polygons share their edges at all.
+   */
+  public IASTAppendable openEdges() {
+    Map<Long, Integer> uses = new LinkedHashMap<>();
+    for (int p = 1; p <= polygonIndices.argSize(); p++) {
+      IAST polygon = (IAST) polygonIndices.get(p);
+      int corners = polygon.argSize();
+      for (int k = 1; k <= corners; k++) {
+        int a = polygon.get(k).toIntDefault();
+        int b = polygon.get(k % corners + 1).toIntDefault();
+        long key = ((long) Math.min(a, b) << 32) | Math.max(a, b);
+        uses.merge(key, 1, Integer::sum);
+      }
+    }
+    IASTAppendable edges = F.ListAlloc();
+    for (Map.Entry<Long, Integer> entry : uses.entrySet()) {
+      if (entry.getValue() == 1) {
+        long key = entry.getKey();
+        edges.append(F.List(F.ZZ((int) (key >>> 32)), F.ZZ((int) key)));
+      }
+    }
+    return edges;
   }
 
 }
