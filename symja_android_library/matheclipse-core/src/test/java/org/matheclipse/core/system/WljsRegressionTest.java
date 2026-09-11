@@ -1291,9 +1291,13 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testFrontEndOptionNamesAreSystemSymbols() {
-    check("Map[Context, {AutomaticImageSize, ColorOutput, ControllerMethod, CurrentValue, "
+    check("Map[Context, {ColorOutput, ControllerMethod, CurrentValue, "
         + "ImageSizeAction, Selectable, TickLabels, TransitionDuration}]", //
-        "{System`,System`,System`,System`,System`,System`,System`,System`}");
+        "{System`,System`,System`,System`,System`,System`,System`}");
+    // AutomaticImageSize is carried by Graphics3D in Mathematica but is no System symbol there:
+    // Context[AutomaticImageSize] answers Global` in Mathematica too
+    check("Context[AutomaticImageSize]", //
+        "Global`");
     // written inside a package's private context, the name still means the built-in symbol. One
     // statement at a time, as a package file is read: a compound input is parsed before Begin runs
     check("BeginPackage[\"Wljs`Probe`\"]", //

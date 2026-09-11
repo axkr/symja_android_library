@@ -141,7 +141,7 @@ public class AST2Expr {
       "AstroSubpoint", "AstroZoomLevel", "Asymptotic", "AsymptoticSolve", "AsymptoticDSolveValue",
       "AsymptoticIntegrate", "AsymptoticRSolveValue", "Atom", "AtomCount", "AtomDiagramCoordinates",
       "AtomList", "AtomQ", "Attributes", "AudioOverlay", "AudioTrim", "AutoAction",
-      "AutomaticImageSize", "AutoRemove", "AutorunSequencing", "AxisObject", "Backslash",
+      "AutoRemove", "AutorunSequencing", "AxisObject", "Backslash",
       "Backsubstitution", "Ball", "Band", "BarChart", "BarChart3D", "BarLegend", "BarnesG",
       "BartlettWindow", "BaseDecode", "BaseEncode", "BaseForm", "Because", "Beep", "Begin",
       "BeginPackage", "BeginTestSection", "BellB", "BellY", "BenfordDistribution",

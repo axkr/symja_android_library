@@ -1698,16 +1698,6 @@ public class S {
   public final static IBuiltInSymbol Automatic = S.initFinalSymbol("Automatic", ID.Automatic);
 
   /**
-   * AutomaticImageSize(x) - TODO describe `AutomaticImageSize`.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AutomaticImageSize.md">AutomaticImageSize
-   *      documentation</a>
-   */
-  public final static IBuiltInSymbol AutomaticImageSize =
-      S.initFinalSymbol("AutomaticImageSize", ID.AutomaticImageSize);
-
-  /**
    * AutoRemove(x) - TODO describe `AutoRemove`.
    * 
    * @see <a href=
