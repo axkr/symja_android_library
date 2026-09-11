@@ -239,7 +239,7 @@ public class NumberLinePlot extends ListPlot {
 
       IASTAppendable result = F.Graphics(argumentWrapper.wrapTooltip(primitives));
       result.appendArgs(graphicsOptions.getGraphicsRules());
-      return result;
+      return GraphicsOptions.legended(result);
     } catch (RuntimeException rex) {
       return Errors.printMessage(S.NumberLinePlot, rex);
     }

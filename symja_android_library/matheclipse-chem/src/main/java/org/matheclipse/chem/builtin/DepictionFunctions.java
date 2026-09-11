@@ -208,7 +208,7 @@ public class DepictionFunctions {
       appendUserOptions(graphics, ast);
       appendLegend(graphics, ast, highlights);
       appendModelOptions(graphics);
-      return graphics;
+      return org.matheclipse.core.graphics.GraphicsOptions.legended(graphics);
     }
 
     @Override
@@ -255,7 +255,7 @@ public class DepictionFunctions {
     IASTAppendable graphics = F.Graphics(body);
     appendUserOptions(graphics, ast);
     appendLegend(graphics, ast, highlights);
-    return graphics;
+    return org.matheclipse.core.graphics.GraphicsOptions.legended(graphics);
   }
 
   /**

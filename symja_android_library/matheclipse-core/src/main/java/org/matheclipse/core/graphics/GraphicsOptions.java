@@ -1934,7 +1934,14 @@ public class GraphicsOptions {
         // them off the Graphics, and a front end which packs its options knows none of them
         continue;
       }
-      if (key == S.PlotLegends || key == S.PlotStyle || key == S.Joined) {
+      if (key == S.PlotLegends) {
+        // kept as it stands for legended(), which turns it into Legended[..., legend]
+        if (!value.isNone()) {
+          result.append(rule);
+        }
+        continue;
+      }
+      if (key == S.PlotStyle || key == S.Joined) {
         if (value.isNone() || (key == S.Joined && !hasLegend)) {
           continue;
         }
@@ -1950,6 +1957,126 @@ public class GraphicsOptions {
       addToMethod(result, method);
     }
     return result;
+  }
+
+  /**
+   * The picture a plot hands back: <code>graphics</code> itself, or
+   * <code>Legended[graphics, legend]</code> when it has a legend - the way the Wolfram Language
+   * returns a plot given <code>PlotLegends</code>. (The Wolfram Language wraps the legend in
+   * <code>Placed[legend, After]</code>; that placement is the default, and <code>After</code> is not
+   * a symbol every front end knows, so it is left out.)
+   *
+   * <p>
+   * <code>PlotLegends</code>, <code>PlotStyle</code> and <code>Joined</code> are options of the plot
+   * functions, not of <code>Graphics</code>: a front end which packs the options of a
+   * <code>Graphics</code> (the WLJS notebook does) knows none of them, and a legend it can show only
+   * as a <code>Legended</code> wrapper. A list of labels becomes a <code>LineLegend</code> (curves)
+   * or a <code>PointLegend</code> (points) coloured the way the plot coloured its data; a
+   * <code>BarLegend</code> is written in the Wolfram Language's own form
+   * <code>BarLegend[{colorFunction, {min, max}}]</code>. On a two dimensional picture
+   * <code>PlotStyle</code> and <code>Joined</code> still matter to Symja's own renderer, so they
+   * travel under <code>Method</code>, like the ones a plot hands on itself; nothing reads them off a
+   * <code>Graphics3D</code>.
+   */
+  public static IAST legended(IAST graphics) {
+    if (graphics.argSize() < 1) {
+      return graphics;
+    }
+    boolean hasPlotOption = false;
+    for (int i = 2; i < graphics.size(); i++) {
+      IExpr arg = graphics.get(i);
+      if (arg.isRuleAST() && (arg.first() == S.PlotLegends || arg.first() == S.PlotStyle
+          || arg.first() == S.Joined)) {
+        hasPlotOption = true;
+      }
+    }
+    if (!hasPlotOption) {
+      return graphics;
+    }
+    boolean is3D = graphics.isAST(S.Graphics3D);
+    IExpr legendSpec = F.NIL;
+    IExpr plainStyle = F.NIL;
+    IExpr plainJoined = F.NIL;
+    IExpr method = F.NIL;
+    IASTAppendable cleaned = F.ast(graphics.head(), graphics.size());
+    cleaned.append(graphics.arg1());
+    for (int i = 2; i < graphics.size(); i++) {
+      IExpr arg = graphics.get(i);
+      if (arg.isRuleAST()) {
+        IExpr key = arg.first();
+        if (key == S.PlotLegends) {
+          legendSpec = arg.second();
+          continue;
+        }
+        if (key == S.PlotStyle) {
+          plainStyle = arg.second();
+          continue;
+        }
+        if (key == S.Joined) {
+          plainJoined = arg.second();
+          continue;
+        }
+        if (key == S.Method) {
+          method = arg.second();
+        }
+      }
+      cleaned.append(arg);
+    }
+    IExpr plotStyle = plainStyle.isPresent() ? plainStyle : plotOptionFromMethod(method, S.PlotStyle);
+    IExpr joined = plainJoined.isPresent() ? plainJoined : plotOptionFromMethod(method, S.Joined);
+    if (!is3D) {
+      IASTAppendable entries = F.ListAlloc();
+      if (plainStyle.isPresent() && !plainStyle.isNone()) {
+        entries.append(F.Rule(F.stringx(S.PlotStyle.toString()),
+            F.stringx(org.matheclipse.core.expression.WMACompress.compress(plainStyle))));
+      }
+      if (plainJoined.isPresent()) {
+        entries.append(F.Rule(F.stringx(S.Joined.toString()),
+            F.stringx(org.matheclipse.core.expression.WMACompress.compress(plainJoined))));
+      }
+      if (entries.argSize() > 0) {
+        addToMethod(cleaned, entries);
+      }
+    }
+    IExpr legend = toLegend(legendSpec, plotStyle, joined.isTrue());
+    return legend.isPresent() ? F.binaryAST2(S.Legended, cleaned, legend) : cleaned;
+  }
+
+  /**
+   * The legend for a <code>PlotLegends</code> setting, or {@link F#NIL} when it asks for no legend
+   * Symja draws.
+   */
+  private static IExpr toLegend(IExpr spec, IExpr plotStyle, boolean joined) {
+    if (spec.isNIL() || spec.isNone() || spec.isFalse() || spec.isTrue() || spec == S.Automatic) {
+      return F.NIL;
+    }
+    if (spec.isAST(S.Placed) && spec.argSize() >= 1) {
+      // a placement the caller asked for is kept, around the legend it places
+      IExpr inner = toLegend(spec.first(), plotStyle, joined);
+      return inner.isPresent() ? ((IAST) spec).setAtCopy(1, inner) : F.NIL;
+    }
+    IExpr legend;
+    if (spec.isList() && spec.argSize() > 0) {
+      IAST labels = (IAST) spec;
+      IAST style = plotStyle.isPresent() && !plotStyle.isNone()
+          ? (plotStyle.isList() ? (IAST) plotStyle : F.list(plotStyle))
+          : F.CEmptyList;
+      IASTAppendable colors = F.ListAlloc(labels.argSize());
+      for (int i = 0; i < labels.argSize(); i++) {
+        colors.append(plotStyleColorExpr(i, style));
+      }
+      legend = F.binaryAST2(joined ? S.LineLegend : S.PointLegend, colors, labels);
+    } else if (spec.isAST(S.LineLegend) || spec.isAST(S.PointLegend)
+        || spec.isAST(S.SwatchLegend)) {
+      legend = spec;
+    } else if (spec.isAST(S.BarLegend)) {
+      legend = spec.argSize() == 2 && spec.second().isList()
+          ? F.unaryAST1(S.BarLegend, F.list(spec.first(), spec.second()))
+          : spec;
+    } else {
+      return F.NIL;
+    }
+    return legend;
   }
 
   /** The key under <code>Method</code> which carries a plot's axis scaling. */

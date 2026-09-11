@@ -97,11 +97,13 @@ public final class LegendRenderer {
     if (labels.isEmpty()) {
       return;
     }
-    drawListLegend(labels, markerSource, swatch, parent);
+    // a LineLegend names curves and a PointLegend points; a bare list of labels follows Joined
+    boolean line = spec.isAST(S.LineLegend) || (!spec.isAST(S.PointLegend) && options.joined);
+    drawListLegend(labels, markerSource, swatch, line, parent);
   }
 
   private void drawListLegend(List<String> labels, IExpr markerSource, boolean swatch,
-      ContainerTag<?> parent) {
+      boolean line, ContainerTag<?> parent) {
     int count = labels.size();
     double lineHeight = 18;
     double xBase = options.imageSize[0] - LEGEND_WIDTH + 10;
@@ -122,7 +124,7 @@ public final class LegendRenderer {
             .attr("y", SvgRenderer2D.fmt(y - 11)).attr("width", "11").attr("height", "11")
             .attr("fill", ColorUtil.css(color)).attr("stroke", "#666666")
             .attr("stroke-width", "0.5"));
-      } else if (options.joined) {
+      } else if (line) {
         parent.with(
             tag("line").attr("x1", SvgRenderer2D.fmt(xBase)).attr("y1", SvgRenderer2D.fmt(y - 4))
                 .attr("x2", SvgRenderer2D.fmt(xBase + 18)).attr("y2", SvgRenderer2D.fmt(y - 4))
@@ -153,12 +155,27 @@ public final class LegendRenderer {
     return new Color(rgb.getRed(), rgb.getGreen(), rgb.getBlue());
   }
 
+  /**
+   * The colour function and the range of a bar legend, in either spelling:
+   * <code>BarLegend[{colorFunction, {min, max}}]</code>, the Wolfram Language's own, or
+   * <code>BarLegend[colorFunction, {min, max}]</code>.
+   */
+  private static IExpr[] barParts(IAST barLegend) {
+    if (barLegend.argSize() >= 1 && barLegend.arg1().isList()
+        && ((IAST) barLegend.arg1()).argSize() >= 2 && ((IAST) barLegend.arg1()).arg2().isList()) {
+      IAST pair = (IAST) barLegend.arg1();
+      return new IExpr[] {pair.arg1(), pair.arg2()};
+    }
+    return new IExpr[] {barLegend.argSize() >= 1 ? barLegend.arg1() : F.NIL,
+        barLegend.argSize() >= 2 ? barLegend.arg2() : F.NIL};
+  }
+
   private void drawBarLegend(IAST barLegend, String gradientId, ContainerTag<?> parent) {
     double min = 0.0;
     double max = 1.0;
-    if (barLegend.argSize() >= 2 && barLegend.arg2().isList()
-        && ((IAST) barLegend.arg2()).argSize() >= 2) {
-      IAST range = (IAST) barLegend.arg2();
+    IExpr rangeExpr = barParts(barLegend)[1];
+    if (rangeExpr.isList() && ((IAST) rangeExpr).argSize() >= 2) {
+      IAST range = (IAST) rangeExpr;
       min = ColorUtil.dbl(range.arg1(), 0.0);
       max = ColorUtil.dbl(range.arg2(), 1.0);
     }
@@ -212,7 +229,7 @@ public final class LegendRenderer {
   /** The colour function of {@code BarLegend[colorFunction, range]}, or {@link F#NIL}. */
   private static IExpr colorFunctionOf(IExpr spec) {
     if (spec != null && spec.isAST(S.BarLegend) && ((IAST) spec).argSize() >= 1) {
-      return ((IAST) spec).arg1();
+      return barParts((IAST) spec)[0];
     }
     return F.NIL;
   }

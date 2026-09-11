@@ -560,7 +560,7 @@ public class ContourPlot extends ListPlot {
     graphicsOptions.addPadding();
     IASTAppendable result = F.Graphics(labelledContent(primitives, plotAST));
     result.appendArgs(graphicsOptions.getGraphicsRules());
-    return result;
+    return GraphicsOptions.legended(result);
   }
 
   private IExpr getShadingColor(double t) {

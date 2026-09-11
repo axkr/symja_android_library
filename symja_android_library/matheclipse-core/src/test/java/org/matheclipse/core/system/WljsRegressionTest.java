@@ -1239,7 +1239,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testAPlotCarriesOnlyGraphicsOptions() {
-    check("Complement[Union @@ (First /@ Rest[List @@ #] & /@ {"
+    check("Complement[Union @@ (First /@ Rest[List @@ If[Head[#] === Legended, First[#], #]] & /@ {"
         + "Plot[{Sin[x], Cos[x]}, {x, 0, 3}, PlotLegends -> Automatic], "
         + "Plot[Sin[x], {x, 0, 3}, PlotStyle -> Red], "
         + "ContourPlot[x y, {x, 0, 1}, {y, 0, 1}], DiscretePlot[n^2, {n, 1, 5}], "
@@ -1251,9 +1251,14 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // Symja's own renderer still draws the legend: the label can only reach the SVG from the
     // PlotLegends it decoded out of Method, since that is now the only place the legend is kept
     check("lg = Plot[{Sin[x], Cos[x]}, {x, 0, 3}, PlotLegends -> {\"sine\", \"cosine\"}]; "
-        + "{MemberQ[First /@ Rest[List @@ lg], PlotLegends], "
+        + "{Head[lg], Head[lg[[2]]], lg[[2, 2]], "
+        + "FreeQ[lg, PlotLegends | PlotStyle | Joined], "
         + "StringContainsQ[ExportString[lg, \"SVG\"], \"cosine\"]}", //
-        "{False,True}");
+        "{Legended,LineLegend,{sine,cosine},True,True}");
+    // a colour scale is written the way the Wolfram Language writes one
+    check("MatchQ[ComplexPlot[z, {z, -1 - I, 1 + I}, PlotLegends -> Automatic], "
+        + "Legended[_Graphics, BarLegend[{_, {_, _}}]]]", //
+        "True");
   }
 
 }

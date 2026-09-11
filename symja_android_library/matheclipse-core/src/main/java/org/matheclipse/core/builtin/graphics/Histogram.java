@@ -238,7 +238,7 @@ public class Histogram extends ListPlot {
     graphicsOptions.addPadding();
     IASTAppendable result = F.Graphics(primitives);
     result.appendArgs(graphicsOptions.getGraphicsRules());
-    return result;
+    return GraphicsOptions.legended(result);
   }
 
   @Override

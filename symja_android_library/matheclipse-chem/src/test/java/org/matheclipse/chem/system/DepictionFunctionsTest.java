@@ -201,17 +201,17 @@ public class DepictionFunctionsTest extends AbstractTestCase {
     // an association names each highlight, and the names become the legend of the graphics
     check("MoleculePlot3D(\"O=C(C1CCC1)S[C@@H]1CCC1(C)C\", "
         + "<|\"carbonyl\" -> Bond({\"C\",\"O\"},\"Double\"), "
-        + "\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[2]]", //
-        "PlotLegends->{carbonyl,ring carbons}");
+        + "\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[2,2]]", //
+        "{carbonyl,ring carbons}");
     // ... paired with the colours those labels stand for, from the shared chart cycle
-    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> \"CO\"|>)[[3]]", //
-        "PlotStyle->{RGBColor(0.985248,0.676238,0.0398315)}");
+    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> \"CO\"|>)[[2,1]]", //
+        "{RGBColor(0.985248,0.676238,0.0398315)}");
     // highlighted parts are split into their own primitive groups so each keeps one colour
     check("Length(MoleculePlot3D(\"O=C(C1CCC1)S[C@@H]1CCC1(C)C\")[[1,3,2,1]])", //
         "3");
     check("Length(MoleculePlot3D(\"O=C(C1CCC1)S[C@@H]1CCC1(C)C\", "
         + "<|\"carbonyl\" -> Bond({\"C\",\"O\"},\"Double\"), "
-        + "\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[1,3,2,1]])", //
+        + "\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[1,1,3,2,1]])", //
         "4");
   }
 
@@ -220,7 +220,7 @@ public class DepictionFunctionsTest extends AbstractTestCase {
     // the two cyclobutane rings contribute eight ring carbons and nothing else. The highlights
     // are the background the structure is drawn over, so they are the diagram's first block.
     check("Count(MoleculePlot(\"O=C(C1CCC1)S[C@@H]1CCC1(C)C\", "
-        + "<|\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[1,1,1]], _Disk, "
+        + "<|\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[1,1,1,1]], _Disk, "
         + "Infinity)", //
         "8");
     check("Count(MoleculePlot(\"O=C(C1CCC1)S[C@@H]1CCC1(C)C\")[[1,1,1]], _Disk, Infinity)", //
@@ -230,8 +230,8 @@ public class DepictionFunctionsTest extends AbstractTestCase {
   @Test
   public void testHighlightsAcceptSmartsAndPlainLists() {
     // a SMARTS string is matched with the same machinery the substructure queries use
-    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> MoleculePattern(\"CO\")|>)[[2]]", //
-        "PlotLegends->{alcohol}");
+    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> MoleculePattern(\"CO\")|>)[[2,2]]", //
+        "{alcohol}");
     // an unnamed list still highlights, but earns no legend
     check("FreeQ(MoleculePlot3D(\"CCO\", {Atom(\"O\")}), PlotLegends)", //
         "True");
@@ -244,7 +244,7 @@ public class DepictionFunctionsTest extends AbstractTestCase {
     check("Count(MoleculePlot3D(\"CCO\", <|\"alcohol\" -> \"CO\"|>, "
         + "PlotTheme -> \"SpaceFilling\"), _Cylinder, Infinity)", //
         "0");
-    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> \"CO\"|>, PlotLabel -> \"x\")[[2]]", //
+    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> \"CO\"|>, PlotLabel -> \"x\")[[1,2]]", //
         "PlotLabel->x");
   }
 }

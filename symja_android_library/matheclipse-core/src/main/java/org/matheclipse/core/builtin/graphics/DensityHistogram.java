@@ -210,7 +210,7 @@ public class DensityHistogram extends ListPlot {
     graphicsOptions.addPadding();
     IASTAppendable result = F.Graphics(labelledContent(primitives, plotAST));
     result.appendArgs(graphicsOptions.getGraphicsRules());
-    return result;
+    return GraphicsOptions.legended(result);
   }
 
   @Override

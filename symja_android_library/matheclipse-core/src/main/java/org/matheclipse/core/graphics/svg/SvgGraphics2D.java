@@ -1,5 +1,6 @@
 package org.matheclipse.core.graphics.svg;
 
+import org.matheclipse.core.expression.F;
 import static j2html.TagCreator.rawHtml;
 import static j2html.TagCreator.tag;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
@@ -155,7 +157,7 @@ public class SvgGraphics2D {
 
   /** Build the SVG element tree for a single {@code Graphics} expression. */
   public ContainerTag<?> buildSVGTag(IAST graphicsExpr) {
-    List<DomContent> elements = buildElements(graphicsExpr);
+    List<DomContent> elements = buildElements(unwrapPicture(graphicsExpr));
     return elements == null ? null : svgRoot(elements);
   }
 
@@ -758,6 +760,17 @@ public class SvgGraphics2D {
    * {@code Tooltip(1, "s")} is left as it is and keeps printing as itself.
    */
   private IAST unwrapPicture(IAST graphicsExpr) {
+    if (graphicsExpr.isAST(S.Legended, 3) && graphicsExpr.arg1().isAST(S.Graphics)) {
+      // a plot given PlotLegends comes back as Legended[Graphics[...], legend]; the
+      // legend goes back to the renderer the way it reads one, as the PlotLegends of the picture
+      IExpr legend = graphicsExpr.arg2();
+      if (legend.isAST(S.Placed) && legend.argSize() >= 1) {
+        legend = legend.first();
+      }
+      IASTAppendable picture = ((IAST) graphicsExpr.arg1()).copyAppendable();
+      picture.append(F.Rule(S.PlotLegends, legend));
+      return picture;
+    }
     if (!IExpr.isPictureWrapperHead(graphicsExpr.head()) || !graphicsExpr.isGraphicsObject()) {
       return graphicsExpr;
     }

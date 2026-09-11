@@ -607,7 +607,7 @@ public class PeriodicTableFunctions {
       if (legends.isPresent()) {
         result.append(F.Rule(S.PlotLegends, legends));
       }
-      return result;
+      return org.matheclipse.core.graphics.GraphicsOptions.legended(result);
     }
 
     /** One cell of the table: its colour, its box, and the symbol and number written on it. */

@@ -65,23 +65,23 @@ public class PeriodicTableFunctionsTest extends AbstractTestCase {
   public void testCategoricalPropertyKeepsALegend() {
     // Series takes ten values across the table, so ten colours and ten labels. The elements the
     // table has no series for are not an eleventh category: they are drawn grey and left unnamed
-    check("Length(PeriodicTablePlot(\"Series\")[[3,2,2]])", //
+    check("Length(PeriodicTablePlot(\"Series\")[[2,2]])", //
         "10");
-    check("Head(PeriodicTablePlot(\"Series\")[[3,2]])", //
+    check("Head(PeriodicTablePlot(\"Series\")[[2]])", //
         "SwatchLegend");
-    check("FreeQ(PeriodicTablePlot(\"Series\")[[3]], Missing)", //
+    check("FreeQ(PeriodicTablePlot(\"Series\")[[2]], Missing)", //
         "True");
   }
 
   /** The second of the reference's basic examples, which needs the computed `Phase` property. */
   @Test
   public void testPhase() {
-    check("Length(PeriodicTablePlot(\"Phase\")[[3,2,2]])", //
+    check("Length(PeriodicTablePlot(\"Phase\")[[2,2]])", //
         "3");
-    check("PeriodicTablePlot(\"Phase\")[[3,2,2]]", //
+    check("PeriodicTablePlot(\"Phase\")[[2,2]]", //
         "{Gas,Solid,Liquid}");
     // the fifteen heaviest elements have no phase to report, and are drawn grey
-    check("PeriodicTablePlot(\"Phase\")[[1,118,1,1,1]]", //
+    check("PeriodicTablePlot(\"Phase\")[[1,1,118,1,1,1]]", //
         "RGBColor(0.862745,0.862745,0.862745)");
   }
 
@@ -90,8 +90,8 @@ public class PeriodicTableFunctionsTest extends AbstractTestCase {
     // A melting point takes 118 different values. Giving each its own colour from a ten colour
     // cycle said nothing, so a measurement is drawn on a scale instead - and the legend beside it
     // is that scale, labelled with the range the table covers
-    check("PeriodicTablePlot(\"MeltingPoint\")[[3]]", //
-        "PlotLegends->BarLegend(ColorDataFunction(TEMPERATURE,Gradients,{0,1}),{-272.2,3641.85})");
+    check("PeriodicTablePlot(\"MeltingPoint\")[[2]]", //
+        "BarLegend({ColorDataFunction(TEMPERATURE,Gradients,{0,1}),{-272.2,3641.85}})");
     // the value itself stays reachable on every cell
     check("Count(PeriodicTablePlot(\"MeltingPoint\"), _Tooltip, Infinity)", //
         "118");
@@ -99,8 +99,9 @@ public class PeriodicTableFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testPropertyAndElementArguments() {
+    // a mapped property comes with the scale it is drawn on, as Legended[Graphics(...), legend]
     check("Head(PeriodicTablePlot(EntityProperty(\"Element\", \"MassDensity\")))", //
-        "Graphics");
+        "Legended");
     check("Head(PeriodicTablePlot(\"Iron\"))", //
         "Graphics");
     check("Head(PeriodicTablePlot({\"Fe\", \"Cu\"}))", //
@@ -132,14 +133,14 @@ public class PeriodicTableFunctionsTest extends AbstractTestCase {
     // the plain table carries no legend until one is asked for, and then it names the series
     check("FreeQ(PeriodicTablePlot(), PlotLegends)", //
         "True");
-    check("PeriodicTablePlot(PlotLegends->True)[[3,2,2]]", //
+    check("PeriodicTablePlot(PlotLegends->True)[[2,2]]", //
         "{Nonmetal,NobleGas,AlkaliMetal,AlkalineEarthMetal,Metalloid,Chalcogen,Halogen,PoorMetal,"
             + "TransitionMetal,Lanthanide,Actinide}");
-    check("PeriodicTablePlot(PlotLegends->True)[[3,2,2,1]]", //
+    check("PeriodicTablePlot(PlotLegends->True)[[2,2,1]]", //
         "Nonmetal");
-    // and a legend a caller builds is passed on as it stands
-    check("PeriodicTablePlot(PlotLegends->{\"a\",\"b\"})[[3]]", //
-        "PlotLegends->{a,b}");
+    // and the labels a caller gives are the labels of the legend
+    check("PeriodicTablePlot(PlotLegends->{\"a\",\"b\"})[[2,2]]", //
+        "{a,b}");
     check("PeriodicTablePlot(\"Series\", PlotLegends->False)[[2;;]]", //
         "Graphics(PlotRange->All)");
   }
@@ -157,16 +158,16 @@ public class PeriodicTableFunctionsTest extends AbstractTestCase {
     // asking for an indexed scheme says the values are categories, even when they are numbers
     check(
         "Head(PeriodicTablePlot(EntityProperty(\"Element\",\"Group\"),"
-            + " ColorFunction->ColorData(97))[[3,2]])", //
+            + " ColorFunction->ColorData(97))[[2]])", //
         "SwatchLegend");
     // a mapped property puts its value on the cell, so the cell sits inside a Tooltip
     check(
         "PeriodicTablePlot(EntityProperty(\"Element\",\"Group\"),"
-            + " ColorFunction->ColorData(97))[[1,1,1,1,1]]", //
+            + " ColorFunction->ColorData(97))[[1,1,1,1,1,1]]", //
         "RGBColor(0.368627,0.505882,0.709804,1.0)");
     // a scale the caller names is the one the legend beside it shows
-    check("PeriodicTablePlot(\"AtomicRadius\", ColorFunction->\"AvocadoColors\")[[3]]", //
-        "PlotLegends->BarLegend(ColorDataFunction(AVOCADO,Gradients,{0,1}),{31.0,260.0})");
+    check("PeriodicTablePlot(\"AtomicRadius\", ColorFunction->\"AvocadoColors\")[[2]]", //
+        "BarLegend({ColorDataFunction(AVOCADO,Gradients,{0,1}),{31.0,260.0}})");
     // and a setting that is not a colour function is reported rather than quietly ignored
     check("PeriodicTablePlot(ColorFunction->42)[[1,1,1,1]]", //
         "RGBColor(0.493332,0.733333,0.866667)");
