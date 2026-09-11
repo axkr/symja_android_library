@@ -1344,4 +1344,24 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{True,True}");
   }
 
+  /**
+   * <code>ToBoxes</code> consults a <code>MakeBoxes</code> up-value for an object held as an atom
+   * too - a <code>Graph</code> or a <code>ByteArray</code> - not only for a compound expression.
+   * The WLJS notebook draws a graph through <code>Graph /: MakeBoxes[b_Graph, StandardForm]</code>,
+   * and Symja's graph is such an atom, so it was printed as text.
+   */
+  @Test
+  public void testToBoxesUsesAnUpValueForAnAtomicObject() {
+    check("AtomQ[ByteArray[{1, 2}]]", //
+        "True");
+    // as the notebook does for Graph: Unprotect[Graph]; Graph /: MakeBoxes[...] := ...
+    check("Unprotect[ByteArray]; ByteArray /: MakeBoxes[b_ByteArray, StandardForm] := \"bytes\"", //
+        "");
+    check("{ToBoxes[ByteArray[{1, 2}], StandardForm], ToBoxes[{ByteArray[{1, 2}]}, StandardForm]}", //
+        "{bytes,RowBox[{{,RowBox[{bytes}],}}]}");
+    check("ByteArray /: MakeBoxes[b_ByteArray, StandardForm] =.; "
+        + "ToBoxes[ByteArray[{1, 2}], StandardForm] === \"bytes\"", //
+        "False");
+  }
+
 }

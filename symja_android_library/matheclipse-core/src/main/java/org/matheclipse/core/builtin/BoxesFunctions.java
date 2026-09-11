@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -114,7 +115,9 @@ public class BoxesFunctions {
      * this at all.
      */
     private static IExpr upValueBoxes(IExpr expr, IExpr form, EvalEngine engine) {
-      if (engine == null || !expr.isASTOrAssociation() || !RulesData.isUpRulesDefined()) {
+      // an object held as an atom (a Graph, a ByteArray, ...) carries its head like an expression
+      if (engine == null || !(expr.isASTOrAssociation() || expr instanceof IDataExpr)
+          || !RulesData.isUpRulesDefined()) {
         return F.NIL;
       }
       ISymbol head = expr.topHead();
