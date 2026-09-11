@@ -163,6 +163,50 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
 
     check("SequenceReplace({1, a, 2, 3, a, b, c}, {a, x_Integer} :> f(x))", //
         "{1,f(2),3,a,b,c}");
+
+    // a condition on a fixed-length pattern
+    check("SequenceReplace({1, 2, 3, 4}, {a_, b_} /; a > 1 :> a + b)", //
+        "{1,5,4}");
+    // fixed-length rules over a long list stay linear; every tail of the list used to be copied at
+    // every position, and the WLJS notebook loader never finished
+    check("Length(SequenceReplace(Table(Mod(i, 7), {i, 7000}), {{5, 6} -> x, {9, 9, 9} -> y}))", //
+        "6000");
+  }
+
+  // The tests below run over the 7000 values of Table(Mod(i, 7),{i, 7000}), in which {5, 6}
+  // occurs 1000 times. A fixed-length pattern keeps each scan linear; every tail of the list used to
+  // be copied at every position, which takes hours at this length. (The test harness caps a list at
+  // Config.MAX_AST_SIZE = 20000 elements, so a longer one cannot be built here.)
+
+  @Test
+  public void testSequenceCasesOnALongList() {
+    check("Length(SequenceCases(Table(Mod(i, 7), {i, 7000}), {5, 6}))", //
+        "1000");
+    check("Length(SequenceCases(Table(Mod(i, 7), {i, 7000}), {5, x_} :> x))", //
+        "1000");
+    // Overlaps -> All stops growing a sequence at the first length that does not match, so today it
+    // only finds a pattern that already matches at length 1; {5, 6} gives {} (Mathematica: 1000 hits)
+    check("Length(SequenceCases(Table(Mod(i, 7), {i, 7000}), {5}, Overlaps -> All))", //
+        "1000");
+  }
+
+  @Test
+  public void testSequencePositionOnALongList() {
+    check("With({p = SequencePosition(Table(Mod(i, 7), {i, 7000}), {5, 6})}, {Length(p), First(p)})", //
+        "{1000,{5,6}}");
+  }
+
+  @Test
+  public void testSequenceCountOnALongList() {
+    check("SequenceCount(Table(Mod(i, 7), {i, 7000}), {5, 6})", //
+        "1000");
+  }
+
+  @Test
+  public void testSequenceSplitOnALongList() {
+    // 1000 separators, never adjacent and never at the ends, leave 1001 pieces
+    check("Length(SequenceSplit(Table(Mod(i, 7), {i, 7000}), {5, 6}))", //
+        "1001");
   }
 
 }

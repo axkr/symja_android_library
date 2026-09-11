@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -30,6 +31,66 @@ public class SequenceFunctions {
       S.SequenceSplit.setEvaluator(new SequenceSplit());
       S.Subsequences.setEvaluator(new Subsequences());
     }
+  }
+
+  /** Anything that can match more than one element of a sequence. */
+  private static final Predicate<IExpr> SPANS_ELEMENTS = x -> x.isPatternSequence(false)
+      || x.isPatternSequence(true) || x == S.Repeated || x == S.RepeatedNull
+      || x == S.PatternSequence || x == S.OptionsPattern || x == S.Sequence;
+
+  /**
+   * The longest sequence a pattern, or the left-hand side of a rule, can match, or
+   * {@link Integer#MAX_VALUE} when it has no bound.
+   *
+   * <p>
+   * A pattern is bounded when it is a list, possibly under {@code HoldPattern}, {@code Condition},
+   * {@code PatternTest} or a named {@code s:{...}}, none of whose elements can match more than one
+   * element. An element that can match none, such as {@code a_:0}, only makes the match shorter, so
+   * it does not matter for the bound.
+   *
+   * <p>
+   * The scans below try every sequence that starts at a position; a sequence longer than this can
+   * never match, so it is not tried. Without the bound every position copied every tail of the
+   * list, which is cubic: the WLJS notebook loader, one rule of 8 and one of 6 elements over the
+   * character codes of a whole file, never finished.
+   */
+  private static int maxSequenceLength(IExpr pattern) {
+    IExpr lhs = pattern.isRuleAST() ? pattern.first() : pattern;
+    while (true) {
+      if (lhs.isAST(S.HoldPattern, 2) || lhs.isAST(S.Condition, 3)
+          || lhs.isAST(S.PatternTest, 3)) {
+        lhs = lhs.first();
+      } else if (lhs.isAST(S.Pattern, 3)) {
+        lhs = lhs.second();
+      } else {
+        break;
+      }
+    }
+    if (!lhs.isList() || !lhs.isFree(SPANS_ELEMENTS, true)) {
+      return Integer.MAX_VALUE;
+    }
+    return lhs.argSize();
+  }
+
+  /** The longest sequence any of the patterns or rules can match; see {@link #maxSequenceLength}. */
+  private static int maxSequenceLengthOfAll(IAST patterns) {
+    int max = 0;
+    for (int i = 1; i < patterns.size(); i++) {
+      int length = maxSequenceLength(patterns.get(i));
+      if (length == Integer.MAX_VALUE) {
+        return Integer.MAX_VALUE;
+      }
+      max = Math.max(max, length);
+    }
+    return max;
+  }
+
+  /**
+   * The last end index (exclusive) worth trying for a sequence starting at {@code i}: the end of
+   * the list, or sooner when the patterns cannot match anything longer than {@code maxLength}.
+   */
+  private static int scanLimit(int size, int i, int maxLength) {
+    return maxLength == Integer.MAX_VALUE ? size : (int) Math.min(size, (long) i + maxLength);
   }
 
 
@@ -81,11 +142,12 @@ public class SequenceFunctions {
     private static IAST sequenceCasesWithoutReplacement(final IAST ast, final IExpr pattern,
         IExpr overlapsOption, IASTAppendable resultAST, EvalEngine engine) {
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      final int maxLength = maxSequenceLength(pattern);
       int i = 1;
       while (i < ast.size()) {
         if (overlapsOption == S.All) {
           IASTAppendable allResults = F.ListAlloc();
-          for (int k = i + 1; k <= ast.size(); k++) {
+          for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // TODO optimize by classifying pattern matchers
             // use greedy search because of possible pattern sequences
             IASTAppendable subSequence = ast.copyFrom(i, k);
@@ -99,9 +161,9 @@ public class SequenceFunctions {
             allResults.reverse(resultAST);
           }
         } else {
-          for (int j = i + 1; j <= ast.size(); j++) {
+          for (int j = i + 1; j <= scanLimit(ast.size(), i, maxLength); j++) {
             IExpr subResult = F.NIL;
-            for (int k = j; k <= ast.size(); k++) {
+            for (int k = j; k <= scanLimit(ast.size(), i, maxLength); k++) {
               // if (i >= k) {
               // break;
               // }
@@ -134,11 +196,12 @@ public class SequenceFunctions {
     private static IAST sequenceCasesWithReplacement(final IAST ast, final IAST patternRule,
         IExpr overlapsOption, IASTAppendable resultAST, EvalEngine engine) {
       Function<IExpr, IExpr> function = Functors.rules(patternRule, engine);
+      final int maxLength = maxSequenceLength(patternRule);
       int i = 1;
       while (i < ast.size()) {
         if (overlapsOption == S.All) {
           IASTAppendable allResults = F.ListAlloc();
-          for (int k = i + 1; k <= ast.size(); k++) {
+          for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // TODO optimize by classifying pattern matchers
             // use greedy search because of possible pattern sequences
             IASTAppendable subSequence = ast.copyFrom(i, k);
@@ -153,10 +216,10 @@ public class SequenceFunctions {
             allResults.reverse(resultAST);
           }
         } else {
-          for (int j = i + 1; j <= ast.size(); j++) {
+          for (int j = i + 1; j <= scanLimit(ast.size(), i, maxLength); j++) {
             IExpr subResult = F.NIL;
             IExpr result = F.NIL;
-            for (int k = j; k <= ast.size(); k++) {
+            for (int k = j; k <= scanLimit(ast.size(), i, maxLength); k++) {
               // if (i >= k) {
               // break;
               // }
@@ -238,11 +301,12 @@ public class SequenceFunctions {
         EvalEngine engine) {
       int count = 0;
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      final int maxLength = maxSequenceLength(pattern);
       int i = 1;
 
       while (i < ast.size()) {
         // Greedy match: iterate k downwards to match the longest possible sequences first
-        for (int k = ast.size(); k >= i + 1; k--) {
+        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
           IASTAppendable subSequence = ast.subList(i, k);
           if (matcher.test(subSequence)) {
             count++;
@@ -323,9 +387,10 @@ public class SequenceFunctions {
       }
 
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      final int maxLength = maxSequenceLength(pattern);
       int i = 1;
       while (i < ast.size()) {
-        for (int k = ast.size(); k >= i + 1; k--) {
+        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
           IASTAppendable subSequence = ast.copyFrom(i, k);
           if (matcher.test(subSequence)) {
             resultAST.append(F.List(F.ZZ(i), F.ZZ(k - 1)));
@@ -406,15 +471,18 @@ public class SequenceFunctions {
           return Errors.printMessage(S.SequenceSplit, "reps", F.List(listOfRules), engine);
         }
       }
+      final int maxLength = maxSequenceLengthOfAll(listOfRules);
       int i = 1;
       int lastI = i;
       while (i < list.size()) {
-        for (int j = i + 1; j <= list.size(); j++) {
+        // i moves forward inside this loop after a match and the scan goes on from there, so the
+        // bound is read again on every step rather than fixed for the i the loop started with
+        for (int j = i + 1; j <= scanLimit(list.size(), i, maxLength); j++) {
           IExpr subResult = F.NIL;
           int lastK = -1;
 
           boolean matched = false;
-          for (int k = j; k <= list.size(); k++) {
+          for (int k = j; k <= scanLimit(list.size(), i, maxLength); k++) {
             if (i >= k) {
               break;
             }
@@ -514,15 +582,18 @@ public class SequenceFunctions {
           matchers[i - 1] = engine.evalPatternMatcher(pattern);
         }
       }
+      final int maxLength = maxSequenceLengthOfAll(listOfPattern);
       int i = 1;
       int lastI = i;
       while (i < list.size()) {
-        for (int j = i + 1; j <= list.size(); j++) {
+        // i moves forward inside this loop after a match and the scan goes on from there, so the
+        // bound is read again on every step rather than fixed for the i the loop started with
+        for (int j = i + 1; j <= scanLimit(list.size(), i, maxLength); j++) {
           IExpr subResult = F.NIL;
           int lastK = -1;
 
           boolean matched = false;
-          for (int k = j; k <= list.size(); k++) {
+          for (int k = j; k <= scanLimit(list.size(), i, maxLength); k++) {
             if (i >= k) {
               break;
             }
