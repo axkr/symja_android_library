@@ -34,6 +34,7 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -3059,6 +3060,9 @@ public final class PatternMatching {
           }
         }
 
+        if (unsetAssociationKey(leftHandSide, engine)) {
+          return S.Null;
+        }
         removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
         return S.Null;
       } catch (RuleCreationError rce) {
@@ -3071,6 +3075,38 @@ public final class PatternMatching {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    /**
+     * <code>a[key] =.</code> where <code>a</code> holds an association removes <code>key</code>
+     * from it, as the Wolfram Language does.
+     *
+     * <p>
+     * Left to the general path, the head was evaluated first and the rule was looked for on
+     * <code>Association</code> itself, so every such Unset said "Assignment ... not found" and
+     * kept the key. The WLJS notebook drops cells, notifications and event handlers this way after
+     * nearly every evaluation, and the associations only ever grew.
+     *
+     * @return <code>true</code> when a key was removed
+     */
+    private static boolean unsetAssociationKey(IExpr leftHandSide, EvalEngine engine) {
+      if (!leftHandSide.isAST1() || !leftHandSide.head().isSymbol()) {
+        return false;
+      }
+      ISymbol symbol = (ISymbol) leftHandSide.head();
+      IExpr value = symbol.assignedValue();
+      if (value == null || !value.isAssociation()) {
+        return false;
+      }
+      IExpr key = engine.evaluate(((IAST) leftHandSide).arg1());
+      IAssociation association = (IAssociation) value;
+      if (!association.isKey(key)) {
+        return false;
+      }
+      IAssociation smaller = association.copy();
+      smaller.removeRule(key);
+      symbol.assignValue(smaller, false);
+      return true;
     }
 
     private static void removePatternMatcher(IExpr leftHandSide, boolean packageMode,

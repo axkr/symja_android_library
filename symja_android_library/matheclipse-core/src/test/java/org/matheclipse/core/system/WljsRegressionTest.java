@@ -1082,4 +1082,25 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{Integer,Integer}");
   }
 
+  /**
+   * <code>a[key] =.</code> removes the key from the association <code>a</code> holds.
+   *
+   * <p>
+   * The WLJS notebook drops cells, notifications and event handlers that way after nearly every
+   * evaluation. Every such Unset said <code>Unset::norep</code> and kept the key.
+   */
+  @Test
+  public void testUnsetRemovesAnAssociationKey() {
+    check("a = <|\"k1\" -> 1, \"a76bf884-fac0-4ded-916d-439bbfd509af\" -> 2, \"k3\" -> 3|>; "
+        + "a[\"k1\"] =.; a", //
+        "<|a76bf884-fac0-4ded-916d-439bbfd509af->2,k3->3|>");
+    check("k = \"a76bf884-fac0-4ded-916d-439bbfd509af\"; a[k] =.; a", //
+        "<|k3->3|>");
+    check("Module[{e = <|\"q\" -> 1, \"r\" -> 2|>}, e[\"q\"] =.; e]", //
+        "<|r->2|>");
+    // a key the association does not have is still reported, and nothing changes
+    check("a[\"missing\"] =.; a", //
+        "<|k3->3|>");
+  }
+
 }
