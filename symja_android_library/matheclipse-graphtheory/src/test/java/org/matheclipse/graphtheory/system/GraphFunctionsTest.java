@@ -27,7 +27,11 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testGraphPlotKeepsItsOptions() {
     check("p=GraphPlot(Graph({1->2,2->3,3->1}),ImageSize->70,AspectRatio->1);" //
         + "{Head(p), Cases(List@@p,(ImageSize->s_):>s), Cases(List@@p,(AspectRatio->a_):>a)}", //
-        "{Graphics,{70},{1}}");
+        "{Graphics,{200},{1}}");
+    // a directed edge ends at the edge of its target vertex, with Mathematica's Medium arrowheads
+    check("p=GraphPlot(Graph({1->2}));{Cases(p,_Arrowheads,Infinity),"
+        + "Cases(p,Arrow({_,e_}):>e,Infinity)==Cases(p,Disk(c_,_):>c,Infinity)[[{2}]]}", //
+        "{{Arrowheads(Medium)},False}");
   }
 
   @Test

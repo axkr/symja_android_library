@@ -468,13 +468,18 @@ public class GraphFunctions {
             IASTAppendable gApp = (IASTAppendable) gExpr;
             // Inject proportional sizing to fix microscopic nodes and thin edges
             gApp.append(F.Rule(S.BaseStyle, F.List(F.PointSize(0.04), F.Thickness(0.005))));
-            // the caller's Graphics options (ImageSize, AspectRatio, ...) are kept, as trailing
-            // rules: the WLJS notebook draws a Graph as GraphPlot[g, ImageSize -> 70, ...]
+            // the caller's Graphics options (AspectRatio, ...) are kept, as trailing rules, except
+            // ImageSize: the WLJS notebook draws a Graph as GraphPlot[g, ImageSize -> 70, ...],
+            // and Mathematica's picture of it has ImageSize -> 200 all the same, unless the graph
+            // was given a size of its own
             for (int i = 2; i < ast.size(); i++) {
               IExpr option = ast.get(i);
-              if (option.isRuleAST()) {
+              if (option.isRuleAST() && option.first() != S.ImageSize) {
                 gApp.append(option);
               }
+            }
+            if (!graph.options().exists(x -> x.isRuleAST() && x.first() == S.ImageSize)) {
+              gApp.append(F.Rule(S.ImageSize, F.ZZ(200)));
             }
             return gApp;
           }

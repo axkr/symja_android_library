@@ -281,7 +281,7 @@ public class GraphGraphics {
     primitives.append(F.Arrow(points));
   }
 
-  private <E> void drawEdges(Graph<IExpr, E> g, IASTAppendable primitives) {
+  private <E> void drawEdges(Graph<IExpr, E> g, IASTAppendable primitives, double distance) {
     for (E e : g.edgeSet()) {
       IExpr source = g.getEdgeSource(e);
       IExpr target = g.getEdgeTarget(e);
@@ -302,8 +302,21 @@ public class GraphGraphics {
         } else if (directed && g.containsEdge(target, source)) {
           drawCurvedEdge(p1, p2, sink);
         } else {
+          double[] end = p2;
+          if (directed) {
+            // the arrow stops at the edge of the target vertex, or the vertex drawn over it hides
+            // the head; the WLJS notebook ignores the setback of Arrow(points, setback), so the
+            // points themselves are moved
+            double r = vertexRadius(target, distance);
+            double dx = p2[0] - p1[0];
+            double dy = p2[1] - p1[1];
+            double length = Math.hypot(dx, dy);
+            if (length > 2.0 * r) {
+              end = new double[] {p2[0] - dx / length * r, p2[1] - dy / length * r};
+            }
+          }
           IAST coordList =
-              F.List(F.List(F.num(p1[0]), F.num(p1[1])), F.List(F.num(p2[0]), F.num(p2[1])));
+              F.List(F.List(F.num(p1[0]), F.num(p1[1])), F.List(F.num(end[0]), F.num(end[1])));
           if (directed) {
             sink.append(F.Arrow(coordList));
           } else {
@@ -1029,14 +1042,20 @@ public class GraphGraphics {
     parseOptions();
     calculateLayout(this.graph);
 
-    // Dynamic adjustment for big graphs
     int vertexCount = graph.vertexSet().size();
-    if (vertexCount > 500) {
-      this.arrowHeadSize = 0.003;
-    } else if (vertexCount > 100) {
-      this.arrowHeadSize = 0.007;
-    } else if (vertexCount > 60) {
-      this.arrowHeadSize = 0.01;
+    // Mathematica's arrowheads: Medium, and a fixed smaller size for big graphs (about 0.015 for
+    // 100 vertices)
+    IExpr arrowHeads = getOption(S.Arrowheads);
+    if (arrowHeads.isNIL()) {
+      if (vertexCount > 500) {
+        arrowHeads = F.num(0.005);
+      } else if (vertexCount > 200) {
+        arrowHeads = F.num(0.01);
+      } else if (vertexCount > 60) {
+        arrowHeads = F.num(0.015);
+      } else {
+        arrowHeads = S.Medium;
+      }
     }
     // very large graphs get smaller vertices, unless a size was asked for
     if (!getOption(S.VertexSize).isPresent() && vertexCount > 200) {
@@ -1048,12 +1067,12 @@ public class GraphGraphics {
     // opacity of the edges does not reach the vertices
     IASTAppendable edgePrimitives = F.ListAlloc(graph.edgeSet().size() + 2);
     if (directed) {
-      edgePrimitives.append(F.Arrowheads(arrowHeadSize));
+      edgePrimitives.append(ast(S.Arrowheads, arrowHeads));
     }
     if (!edgeStyle.isNone()) {
       edgePrimitives.append(edgeStyle);
     }
-    drawEdges(this.graph, edgePrimitives);
+    drawEdges(this.graph, edgePrimitives, distance);
 
     IASTAppendable vertexPrimitives = F.ListAlloc(2 * vertexCount + 1);
     if (!vertexStyle.isNone()) {
