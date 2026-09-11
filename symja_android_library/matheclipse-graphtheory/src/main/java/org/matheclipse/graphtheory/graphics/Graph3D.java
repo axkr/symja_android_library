@@ -194,10 +194,13 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
       Vector3D p2 = coordinates.get(target);
 
       if (p1 != null && p2 != null) {
-        IExpr line = F.Line(F.List(F.List(F.num(p1.x), F.num(p1.y), F.num(p1.z)),
-            F.List(F.num(p2.x), F.num(p2.y), F.num(p2.z))));
-        // the arrowhead has to stop short of the target sphere, or it disappears inside it
-        primitives.append(directed ? F.binaryAST2(S.Arrow, line, F.num(vertexRadius)) : line);
+        IAST points = F.List(F.List(F.num(p1.x), F.num(p1.y), F.num(p1.z)),
+            F.List(F.num(p2.x), F.num(p2.y), F.num(p2.z)));
+        // Arrow[{p1, p2}, setback], as the Wolfram Language writes it: the WLJS notebook reads the
+        // points straight from the first argument and dropped the whole scene for Arrow[Line[...]].
+        // The setback stops the arrowhead short of the target sphere, or it disappears inside it.
+        primitives.append(
+            directed ? F.binaryAST2(S.Arrow, points, F.num(vertexRadius)) : F.Line(points));
       }
     }
 

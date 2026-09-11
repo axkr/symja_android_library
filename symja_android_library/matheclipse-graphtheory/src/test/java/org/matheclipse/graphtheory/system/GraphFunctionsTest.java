@@ -12,6 +12,17 @@ public class GraphFunctionsTest extends AbstractTestCase {
    * <code>GraphPlot</code> keeps the Graphics options it is given: the WLJS notebook draws every
    * <code>Graph</code> as <code>GraphPlot(g, ImageSize->70, AspectRatio->1, ...)</code>.
    */
+  /**
+   * A directed <code>Graph3D</code> edge is <code>Arrow[{p1, p2}, setback]</code>: the WLJS notebook
+   * reads the points straight from the arrow and drew nothing for <code>Arrow[Line[...]]</code>.
+   */
+  @Test
+  public void testGraph3DArrowsHoldTheirPoints() {
+    check("a=Cases(Graph3D({1->2,2->3,3->1}),_Arrow,Infinity);" //
+        + "{Length(a), FreeQ(a,_Line), MatchQ(a,{Arrow({{_,_,_},{_,_,_}},_)..})}", //
+        "{3,True,True}");
+  }
+
   @Test
   public void testGraphPlotKeepsItsOptions() {
     check("p=GraphPlot(Graph({1->2,2->3,3->1}),ImageSize->70,AspectRatio->1);" //
