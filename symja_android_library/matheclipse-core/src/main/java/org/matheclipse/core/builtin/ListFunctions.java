@@ -7452,6 +7452,13 @@ public final class ListFunctions {
         // bytes are taken from a byte array and what is taken is one again
         return byteArrayPart(ast, (ByteArrayExpr) ast.arg1(), engine);
       }
+      if (ast.isAST2() && ast.arg2().isAST(S.UpTo, 2) && ast.arg1().isASTOrAssociation()) {
+        // Take(list, UpTo(n)) takes as many as there are, at most n
+        int n = ast.arg2().first().toIntDefault();
+        if (n >= 0) {
+          ast = ast.setAtCopy(2, F.ZZ(Math.min(n, ((IAST) ast.arg1()).argSize())));
+        }
+      }
       try {
         final ISequence[] sequ =
             Sequence.createSequences(ast, 2, ast.size(), "take", S.Take, engine);

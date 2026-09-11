@@ -1450,4 +1450,48 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "23");
   }
 
+  /**
+   * <code>Take[list, UpTo[n]]</code> takes as many as there are, at most <code>n</code>. The WLJS
+   * notebook shortens a long output with it, and every one of those drew a
+   * <code>Take::seqs</code> warning.
+   */
+  @Test
+  public void testTakeUpTo() {
+    check("{Take[{1, 2, 3, 4}, UpTo[2]], Take[{1, 2}, UpTo[5]], Take[HoldComplete[1 + 1, 2 + 2, 3 + 3], UpTo[2]]}", //
+        "{{1,2},{1,2},HoldComplete[1+1,2+2]}");
+  }
+
+  /**
+   * The rasters of a plot are numbers, as the notebook draws them: <code>MatrixPlot</code> of a
+   * complex matrix paints the real parts (it left them transparent), <code>ArrayPlot</code> turns
+   * its grey levels and named colours into <code>{r, g, b}</code>, and a <code>Texture</code> is
+   * shown as its image.
+   */
+  @Test
+  public void testPlotRastersAreNumbers() {
+    check("r = FirstCase[MatrixPlot[{{1, -1}, {I, 1 - I}}], Raster[d_, ___] :> d, None, Infinity]; "
+        + "Count[r, {_, _, _, a_ /; a == 0}, {2}]", //
+        "0");
+    check("r = FirstCase[ArrayPlot[{{1, 0, 0, Pink}, {1, 1, 0, Pink}, {1, 0, 1, Red}}], Raster[d_, ___] :> d, None, Infinity]; "
+        + "MatchQ[r, {{{__Real} ..} ..}]", //
+        "True");
+    check("ToBoxes[Texture[x], StandardForm] === ToBoxes[x, StandardForm]", //
+        "True");
+  }
+
+  /**
+   * A parametric region with <code>PlotStyle -> Texture[...]</code> is a
+   * <code>GraphicsComplex</code> whose points carry <code>VertexTextureCoordinates</code>, as the
+   * Wolfram Language writes it: a front end can lay a texture on nothing else, and the notebook
+   * drew no region at all.
+   */
+  @Test
+  public void testATexturedRegionCarriesTextureCoordinates() {
+    check("p = ParametricPlot[{r Cos[t], r Sin[t]}, {r, 1, 2}, {t, 0, 2 Pi/3}, "
+        + "PlotStyle -> Texture[Image[{{0, 1}, {1, 0}}]]]; "
+        + "{Count[p, _GraphicsComplex, Infinity], "
+        + "FirstCase[p, GraphicsComplex[v_, _, VertexTextureCoordinates -> c_] :> Length[v] == Length[c], False, Infinity]}", //
+        "{1,True}");
+  }
+
 }

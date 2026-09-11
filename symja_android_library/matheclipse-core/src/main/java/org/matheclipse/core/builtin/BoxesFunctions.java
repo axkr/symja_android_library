@@ -130,6 +130,10 @@ public class BoxesFunctions {
       if (boxes.isPresent()) {
         return boxes;
       }
+      if (expr.isAST(S.Texture, 2)) {
+        // a texture is shown as its image, as the Wolfram Language shows it
+        return standardFormRecursive(expr.first(), precedence, form, engine);
+      }
       if (expr.isASTOrAssociation()) {
         IAST function = (IAST) expr;
         if (function.size() > 0) {

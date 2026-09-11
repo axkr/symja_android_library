@@ -1,6 +1,7 @@
 package org.matheclipse.core.graphics;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Locale;
 import java.util.TreeSet;
 import org.junit.jupiter.api.BeforeAll;
@@ -137,8 +138,10 @@ public class ArrayPlotColorScaleTest {
     TreeSet<Double> levels = new TreeSet<>();
     for (IExpr row : (IAST) raster.arg1()) {
       for (IExpr cell : (IAST) row) {
-        assertEquals(S.GrayLevel, cell.head(), "expected a grey, got " + cell);
-        levels.add(round(((IAST) cell).arg1().evalDouble()));
+        // a grey cell is {g, g, g}: raster data is numbers, which is what a front end draws
+        assertTrue(cell.isList() && cell.argSize() == 3 && cell.first().equals(cell.second())
+            && cell.second().equals(((IAST) cell).arg3()), "expected a grey, got " + cell);
+        levels.add(round(cell.first().evalDouble()));
       }
     }
     return levels;

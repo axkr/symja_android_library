@@ -448,12 +448,21 @@ public class GraphicsOptions {
    * <code>ArrayPlot</code> whose cells were ten thousand of them. A cell which is not a colour -
    * a grey level - is left as it is.
    */
-  private static IExpr rasterPixel(IExpr cell) {
+  public static IExpr rasterPixel(IExpr cell) {
     if (cell == null) {
       return TRANSPARENT_CELL;
     }
     if (cell.isList()) {
       return cell;
+    }
+    if ((cell.isAST(S.GrayLevel, 2) || cell.isAST(S.GrayLevel, 3)) && cell.first().isReal()) {
+      // a grey level is a colour too: ArrayPlot's cells were GrayLevel objects, which a front end
+      // cannot draw as raster data
+      IExpr g = F.num(cell.first().evalf());
+      if (cell.argSize() == 2 && cell.second().isReal()) {
+        return F.List(g, g, g, F.num(cell.second().evalf()));
+      }
+      return F.List(g, g, g);
     }
     RGBColor color = Convert.toAWTColor(cell);
     if (color == null) {

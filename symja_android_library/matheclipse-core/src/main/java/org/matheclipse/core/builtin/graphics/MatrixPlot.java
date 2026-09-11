@@ -118,7 +118,12 @@ public class MatrixPlot extends ListPlot {
         IAST rowAst = (IAST) rowExpr;
         for (int c = 0; c < Math.min(cols, rowAst.size()); c++) {
           try {
-            double val = rowAst.get(c + 1).evalfNaN();
+            IExpr entry = rowAst.get(c + 1);
+            if (entry.isNumber() && !entry.isReal()) {
+              // a complex entry is drawn by its real part, as the Wolfram Language draws it
+              entry = ((org.matheclipse.core.interfaces.INumber) entry).re();
+            }
+            double val = entry.evalfNaN();
             data[r][c] = val;
             if (Double.isFinite(val)) {
               if (val < min)

@@ -78,10 +78,12 @@ public class ParametricPlot extends Plot {
         // the parametrisation, are what shows how the region is parametrised
         IExpr meshOption = GraphicsOptions.optionValue(originalAST, S.Mesh, S.Automatic);
         IASTAppendable meshLines = F.ListAlloc();
+        // a texture is laid onto the parameter grid, which needs the region's texture coordinates
+        boolean textured = options[GraphicsOptions.X_PLOTSTYLE].isAST(S.Texture, 2);
         IExpr graphicsComplex = parametricRegionToGraphicsComplex(function, rangeList1, rangeList2,
             graphicsOptions, engine,
             GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), meshOption,
-            meshLines);
+            meshLines, textured);
 
         if (graphicsComplex.isNIL()) {
           return F.NIL;
@@ -101,8 +103,13 @@ public class ParametricPlot extends Plot {
         // top - stays visible; EdgeForm(None) keeps the sampling grid itself from being outlined.
         // Then the mesh, in a group of its own so the region's opacity does not reach it.
         IASTAppendable graphicsPrimitives = F.ListAlloc();
-        graphicsPrimitives.append(F.List(color, F.unaryAST1(S.Opacity, F.num(0.3)),
-            F.EdgeForm(S.None), graphicsComplex));
+        if (textured) {
+          // the texture is painted as it is, opaque, onto the grid its coordinates give
+          graphicsPrimitives.append(F.List(plotStyle, F.EdgeForm(S.None), graphicsComplex));
+        } else {
+          graphicsPrimitives.append(F.List(color, F.unaryAST1(S.Opacity, F.num(0.3)),
+              F.EdgeForm(S.None), graphicsComplex));
+        }
         if (meshLines.argSize() > 0) {
           IExpr meshStyle = GraphicsOptions.optionValue(originalAST, S.MeshStyle, S.Automatic);
           IASTAppendable mesh = F.ListAlloc(meshLines.argSize() + 1);
@@ -159,7 +166,7 @@ public class ParametricPlot extends Plot {
    */
   private static IExpr parametricRegionToGraphicsComplex(IExpr functionOrListOfFunctions,
       final IAST rangeU, final IAST rangeV, GraphicsOptions graphicsOptions, EvalEngine engine,
-      IExpr regionFunction, IExpr meshOption, IASTAppendable meshLines) {
+      IExpr regionFunction, IExpr meshOption, IASTAppendable meshLines, boolean textured) {
 
     // 1. Validate Ranges
     if (!rangeU.arg1().isSymbol() || !rangeV.arg1().isSymbol()) {
@@ -232,6 +239,46 @@ public class ParametricPlot extends Plot {
       for (int j = stride; j < steps; j += stride) {
         addIsoline(rawGrid, gridWidth, j, false, meshLines);
       }
+    }
+
+    if (textured) {
+      // a texture needs coordinates: a GraphicsComplex whose points carry their parameters,
+      // scaled to 0..1, as VertexTextureCoordinates - the only form a front end can texture
+      int[] index = new int[rawGrid.length];
+      IASTAppendable points = F.ListAlloc(rawGrid.length);
+      IASTAppendable textureCoordinates = F.ListAlloc(rawGrid.length);
+      for (int i = 0; i <= steps; i++) {
+        for (int j = 0; j <= steps; j++) {
+          int k = i * gridWidth + j;
+          if (rawGrid[k] != null && rawGrid[k].isPresent()) {
+            points.append(rawGrid[k]);
+            textureCoordinates
+                .append(F.List(F.num((double) i / steps), F.num((double) j / steps)));
+            index[k] = points.argSize();
+          }
+        }
+      }
+      IASTAppendable cells = F.ListAlloc(steps * steps);
+      for (int i = 0; i < steps; i++) {
+        for (int j = 0; j < steps; j++) {
+          int k1 = i * gridWidth + j;
+          int k2 = (i + 1) * gridWidth + j;
+          int k3 = (i + 1) * gridWidth + (j + 1);
+          int k4 = i * gridWidth + (j + 1);
+          if (index[k1] > 0 && index[k2] > 0 && index[k3] > 0 && index[k4] > 0) {
+            cells.append(
+                F.List(F.ZZ(index[k1]), F.ZZ(index[k2]), F.ZZ(index[k3]), F.ZZ(index[k4])));
+          }
+        }
+      }
+      if (cells.isEmpty()) {
+        return F.NIL;
+      }
+      IASTAppendable textured3 = F.ast(S.GraphicsComplex);
+      textured3.append(points);
+      textured3.append(F.Polygon(cells));
+      textured3.append(F.Rule(S.VertexTextureCoordinates, textureCoordinates));
+      return textured3;
     }
 
     // 4. The region: one quad per grid cell whose four corners all have a point, written with the
