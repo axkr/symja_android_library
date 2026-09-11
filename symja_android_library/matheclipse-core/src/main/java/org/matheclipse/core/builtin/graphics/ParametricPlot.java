@@ -153,8 +153,9 @@ public class ParametricPlot extends Plot {
   }
 
   /**
-   * Generates a GraphicsComplex primitive for a parametric region. Structure: GraphicsComplex[{pt1,
-   * pt2, ...}, Polygon[{{id1, id2, id3, id4}, ...}]]
+   * The region of a two-parameter <code>ParametricPlot</code>, as <code>Polygon[{quad1, quad2,
+   * ...}]</code> with one quad per sampled grid cell, and its mesh lines appended to
+   * <code>meshLines</code>.
    */
   private static IExpr parametricRegionToGraphicsComplex(IExpr functionOrListOfFunctions,
       final IAST rangeU, final IAST rangeV, GraphicsOptions graphicsOptions, EvalEngine engine,
@@ -233,52 +234,27 @@ public class ParametricPlot extends Plot {
       }
     }
 
-    // 4. Compact Vertices and Build Index Mapping
-    // GraphicsComplex indices refer to the position in the vertex list (1-based).
-    // map[gridIndex] -> validVertexIndex (or 0 if invalid)
-    int[] indexMap = new int[rawGrid.length];
-    IASTAppendable vertexList = F.ListAlloc(rawGrid.length);
-    int validCount = 0;
-
-    for (int k = 0; k < rawGrid.length; k++) {
-      if (rawGrid[k].isPresent()) {
-        vertexList.append(rawGrid[k]);
-        validCount++;
-        indexMap[k] = validCount;
-      } else {
-        indexMap[k] = 0;
-      }
-    }
-
-    if (validCount < 3)
-      return F.NIL;
-
-    // 5. Build Polygons using Mapped Indices
-    IASTAppendable polyIndices = F.ListAlloc(steps * steps);
-
+    // 4. The region: one quad per grid cell whose four corners all have a point, written with the
+    // coordinates themselves. A GraphicsComplex of indexed vertices is drawn by some front ends
+    // through a separate canvas layer (the WLJS notebook's is), placed and clipped independently of
+    // the lines drawn over it, so the region did not line up with its own mesh.
+    IASTAppendable quads = F.ListAlloc(steps * steps);
     for (int i = 0; i < steps; i++) {
       for (int j = 0; j < steps; j++) {
-        // Grid indices for quad (counter-clockwise)
-        // (i, j) -> (i+1, j) -> (i+1, j+1) -> (i, j+1)
-        int k1 = i * gridWidth + j;
-        int k2 = (i + 1) * gridWidth + j;
-        int k3 = (i + 1) * gridWidth + (j + 1);
-        int k4 = i * gridWidth + (j + 1);
-
-        // Check if all 4 corners are valid
-        if (indexMap[k1] > 0 && indexMap[k2] > 0 && indexMap[k3] > 0 && indexMap[k4] > 0) {
-          polyIndices.append(F.List(F.ZZ(indexMap[k1]), F.ZZ(indexMap[k2]), F.ZZ(indexMap[k3]),
-              F.ZZ(indexMap[k4])));
+        // corners counter-clockwise: (i, j) -> (i+1, j) -> (i+1, j+1) -> (i, j+1)
+        IExpr p1 = rawGrid[i * gridWidth + j];
+        IExpr p2 = rawGrid[(i + 1) * gridWidth + j];
+        IExpr p3 = rawGrid[(i + 1) * gridWidth + (j + 1)];
+        IExpr p4 = rawGrid[i * gridWidth + (j + 1)];
+        if (p1.isPresent() && p2.isPresent() && p3.isPresent() && p4.isPresent()) {
+          quads.append(F.List(p1, p2, p3, p4));
         }
       }
     }
-
-    if (polyIndices.isEmpty()) {
+    if (quads.isEmpty()) {
       return F.NIL;
     }
-
-    // Structure: GraphicsComplex[ {pt1, pt2...}, Polygon[ { {id1...}, {id2...} } ] ]
-    return F.GraphicsComplex(vertexList, F.Polygon(polyIndices));
+    return F.Polygon(quads);
   }
 
   /**

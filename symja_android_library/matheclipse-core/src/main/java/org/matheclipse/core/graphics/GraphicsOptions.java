@@ -1960,6 +1960,12 @@ public class GraphicsOptions {
         method.append(F.Rule(F.stringx(METHOD_SCALING), encodeScaling(value)));
         continue;
       }
+      if (key == S.Ticks && value.isAutomatic()) {
+        // one setting for each axis, as the Wolfram Language writes it: a front end that reads a
+        // pair and nothing else (the WLJS notebook does) left the vertical axis unlabelled
+        result.append(F.Rule(S.Ticks, F.list(S.Automatic, S.Automatic)));
+        continue;
+      }
       if (key == S.JSForm || key == S.Filling || key == S.FillingStyle || key == S.PlotLabels
           || key == S.ChartLegends || key == S.DataRange) {
         // options of the plot function, already applied to the primitives it drew; nothing reads

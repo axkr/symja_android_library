@@ -1329,4 +1329,19 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{True,True,0,6,True}");
   }
 
+  /**
+   * A plot writes <code>Ticks -> {Automatic, Automatic}</code>, one setting for each axis, as the
+   * Wolfram Language does; the WLJS notebook reads only that shape and left the vertical axis of
+   * every Symja plot unlabelled. A parametric region is written as plain polygons, which a front
+   * end draws in the same layer as the mesh over it.
+   */
+  @Test
+  public void testAPlotLabelsBothAxesAndDrawsItsRegionWithItsMesh() {
+    check("Ticks /. Rest[List @@ Plot[Sin[x], {x, 0, 1}]]", //
+        "{Automatic,Automatic}");
+    check("pr = ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}]; "
+        + "{FreeQ[pr, _GraphicsComplex], Count[pr, _Polygon, Infinity] > 0}", //
+        "{True,True}");
+  }
+
 }

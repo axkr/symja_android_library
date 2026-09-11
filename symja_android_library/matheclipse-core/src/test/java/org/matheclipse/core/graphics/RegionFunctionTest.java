@@ -142,10 +142,10 @@ public class RegionFunctionTest {
   @Test
   public void aParametricRegionIsCutToShape() {
     String base = "ParametricPlot({u,v},{u,0,1},{v,0,1}";
-    int square = vertices(base + ")");
-    int triangle = vertices(base + ",RegionFunction->Function({x,y,u,v},x+y<1))");
+    int square = polygonPoints(base + ")");
+    int triangle = polygonPoints(base + ",RegionFunction->Function({x,y,u,v},x+y<1))");
     assertTrue(triangle > 0 && triangle < square,
-        "half a square is fewer vertices than all of it, got " + triangle + " of " + square);
+        "half a square is fewer cells than all of it, got " + triangle + " of " + square);
   }
 
   // -----------------------------------------------------------------------------------------
