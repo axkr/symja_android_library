@@ -1166,4 +1166,30 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  /**
+   * <code>Table</code>, <code>Sum</code>, <code>Product</code> and <code>Do</code> take a subscript
+   * as the iterator variable, with one index or several. They answered "Raw object ... cannot be
+   * used as an iterator".
+   */
+  @Test
+  public void testASubscriptCanBeAnIteratorVariable() {
+    check("Table[Subscript[a, 1]^2, {Subscript[a, 1], 3}]", //
+        "{1,4,9}");
+    check("Table[Subscript[a, 1, 2]^2, {Subscript[a, 1, 2], 3}]", //
+        "{1,4,9}");
+    check("Sum[Subscript[k, 1], {Subscript[k, 1], 1, 10}]", //
+        "55");
+    check("Product[Subscript[k, 1], {Subscript[k, 1], 1, 5}]", //
+        "120");
+    check("s = 0; Do[s += Subscript[i, 1], {Subscript[i, 1], 4}]; s", //
+        "10");
+    // a later iterator's bound may use an earlier subscript
+    check("Table[Subscript[a, 1] + Subscript[a, 2], {Subscript[a, 1], 2}, "
+        + "{Subscript[a, 2], Subscript[a, 1]}]", //
+        "{{2},{3,4}}");
+    // what stays symbolic still reads in terms of the subscript
+    check("Sum[f[Subscript[k, 1]], {Subscript[k, 1], 1, n}]", //
+        "Sum[f[Subscript[k,1]],{Subscript[k,1],1,n}]");
+  }
+
 }

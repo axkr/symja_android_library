@@ -270,6 +270,13 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    {
+      // Sum[..., {Subscript[k, 1], 1, n}]: a subscript as the iterator variable
+      IExpr subscripted = org.matheclipse.core.eval.util.Iterator.evaluateWithSubscriptVariables(ast, engine);
+      if (subscripted.isPresent()) {
+        return subscripted;
+      }
+    }
     // Optional Method -> "Polynomial" | "Geometric" | "Gosper" as last argument forces one
     // summation algorithm strictly.
     String forcedMethod = null;

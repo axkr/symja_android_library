@@ -797,6 +797,11 @@ public final class Programming {
         // declared `expectedArgSize` has to be enforced here before the arguments are read
         return engine.checkBuiltinArgsSize(ast, this);
       }
+      // Do[..., {Subscript[i, 1], 4}]: a subscript as the iterator variable
+      IExpr subscripted = org.matheclipse.core.eval.util.Iterator.evaluateWithSubscriptVariables(ast, engine);
+      if (subscripted.isPresent()) {
+        return subscripted;
+      }
       try {
         final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
         for (int i = 2; i < ast.size(); i++) {

@@ -1614,4 +1614,46 @@ public class Iterator {
       throw new ArgumentTypeException(Errors.getMessage("iterb", F.list(list), EvalEngine.get()));
     }
   }
+
+  /**
+   * Evaluate a <code>Table</code>, <code>Sum</code>, <code>Product</code> or <code>Do</code> whose
+   * iterator variables include a subscript such as <code>Subscript[a, 1]</code>.
+   *
+   * <p>
+   * An iterator gives its variable a value, which only a symbol can hold. Each subscript used as
+   * an iterator variable is therefore replaced by a fresh symbol throughout the call - in the body
+   * and in the bounds of the other iterators - the call is evaluated, and the subscript is put back
+   * into whatever of the result still mentions it.
+   *
+   * @param ast the call, <code>head[body, iterator1, iterator2, ...]</code>, unevaluated
+   * @return {@link F#NIL} when no iterator variable is a subscript, or when the call does not
+   *         evaluate
+   */
+  public static IExpr evaluateWithSubscriptVariables(final IAST ast, EvalEngine engine) {
+    java.util.Map<IExpr, IExpr> forward = null;
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr iterator = ast.get(i);
+      if (iterator.isList() && iterator.argSize() >= 2 && iterator.first().isSubscript()) {
+        if (forward == null) {
+          forward = new java.util.HashMap<IExpr, IExpr>();
+        }
+        IExpr subscript = iterator.first();
+        if (!forward.containsKey(subscript)) {
+          forward.put(subscript, F.Dummy("Subscript" + EvalEngine.uniqueName("$")));
+        }
+      }
+    }
+    if (forward == null) {
+      return F.NIL;
+    }
+    java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+    for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
+      back.put(entry.getValue(), entry.getKey());
+    }
+    IExpr renamed = F.subst(ast, forward);
+    IExpr result = F.subst(engine.evaluate(renamed), back);
+    // an unevaluated call comes back as it went in; answering it would evaluate it again forever
+    return result.equals(ast) ? F.NIL : result;
+  }
+
 }

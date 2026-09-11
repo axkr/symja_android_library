@@ -40,6 +40,13 @@ public class Product extends ListFunctions.Table implements ProductRules {
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    {
+      // Product[..., {Subscript[k, 1], 1, n}]: a subscript as the iterator variable
+      IExpr subscripted = org.matheclipse.core.eval.util.Iterator.evaluateWithSubscriptVariables(ast, engine);
+      if (subscripted.isPresent()) {
+        return subscripted;
+      }
+    }
     for (int i = 2; i < ast.size(); i++) {
       IExpr iterator = ast.get(i);
       if (!iterator.isList() && !iterator.isSymbol()) {

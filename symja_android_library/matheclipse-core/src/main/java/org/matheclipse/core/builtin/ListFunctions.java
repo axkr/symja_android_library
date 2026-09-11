@@ -7056,6 +7056,11 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // Table[..., {Subscript[a, 1], 3}]: a subscript as the iterator variable
+      IExpr subscripted = org.matheclipse.core.eval.util.Iterator.evaluateWithSubscriptVariables(ast, engine);
+      if (subscripted.isPresent()) {
+        return subscripted;
+      }
       return evaluateTable(ast, F.CEmptyList, F.CEmptyList, engine);
     }
 
