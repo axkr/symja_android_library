@@ -111,7 +111,9 @@ public enum ColorDataGradients implements ColorDataGradient {
   /** dark-gray, dark-yellow, magenta */
   AURORA,
   /** red, blue, cyan, green, yellow, orange, each followed by a paler band of the same hue */
-  BRIGHT_BANDS;
+  BRIGHT_BANDS,
+  /** blue, pale yellow, red - an approximation of Mathematica's TemperatureMap */
+  TEMPERATURE_MAP;
 
   private final ColorDataGradient colorDataGradient;
 

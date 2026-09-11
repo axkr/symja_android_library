@@ -79,11 +79,39 @@ public class GraphGraphics {
   private final Graph<IExpr, ?> graph;
   private final IAST options;
   // Configuration
+  /** The options that describe the graph and mean nothing to <code>Graphics</code>. */
+  private static final Set<IExpr> GRAPH_OPTIONS = new HashSet<>(java.util.Arrays.asList(
+      S.VertexStyle, S.EdgeStyle, S.VertexSize, S.VertexLabels, S.VertexShapeFunction,
+      S.VertexShape, S.GraphLayout, S.GraphStyle, S.DirectedEdges, S.VertexCoordinates,
+      S.EdgeWeight, S.VertexWeight, S.VertexLabelStyle, S.EdgeLabels, S.EdgeLabelStyle,
+      S.EdgeShapeFunction, S.GraphHighlight, S.GraphHighlightStyle, S.Arrowheads));
+
   private Map<IExpr, double[]> vertexCoords = new HashMap<>();
-  private IExpr vertexStyle = S.Blue;
-  private IExpr edgeStyle = F.Gray;
+  private IExpr vertexStyle = defaultVertexStyle();
+  private IExpr edgeStyle = defaultEdgeStyle();
+  /** <code>VertexStyle -> {v -> style, ...}</code>, or {@link F#NIL} */
+  private IExpr vertexStyles = F.NIL;
+  /** <code>VertexSize -> {v -> size, ...}</code>, or {@link F#NIL} */
+  private IExpr vertexSizes = F.NIL;
+  /** <code>EdgeStyle -> {edge -> style, ...}</code>, or {@link F#NIL} */
+  private IExpr edgeStyles = F.NIL;
   private boolean showVertexLabels = false;
+  /** a label sits on its vertex instead of below it, as the named graph styles draw it */
+  private boolean centeredLabels = false;
+  /** the radius of a vertex when no <code>VertexSize</code> is given */
   private double vertexSize = 0.05;
+  /**
+   * <code>VertexSize -> s</code>: the diameter of a vertex as a fraction of the smallest distance
+   * between two vertices, as in Mathematica; <code>NaN</code> when no size is given
+   */
+  private double vertexSizeFraction = Double.NaN;
+  /** <code>"Disk"</code>, <code>"Diamond"</code>, <code>"Square"</code>, ... */
+  private String vertexShape = "Disk";
+  /** the width and height of a vertex of a named graph style, as fractions of the vertex distance */
+  private double themeWidth = 0.2;
+  private double themeHeight = 0.2;
+  /** the columns of <code>"GridEmbedding"</code>, or 0 for a square grid */
+  private int gridColumns = 0;
 
   private double arrowHeadSize = 0.02;
 
@@ -182,6 +210,8 @@ public class GraphGraphics {
           layoutComponentDiscreteSpiral(g, component, cellCenterX, cellCenterY, componentScale);
         } else if (graphLayout.contains("StarEmbedding")) {
           layoutComponentStar(g, component, cellCenterX, cellCenterY, componentScale);
+        } else if (graphLayout.contains("GridEmbedding")) {
+          layoutComponentGrid(g, component, cellCenterX, cellCenterY);
         } else if (graphLayout.contains("CircularEmbedding")) {
           layoutComponentCircular(g, component, cellCenterX, cellCenterY, componentScale);
         } else {
@@ -260,18 +290,28 @@ public class GraphGraphics {
       double[] p2 = vertexCoords.get(target);
 
       if (p1 != null && p2 != null) {
+        // an edge with a style of its own is drawn in a list with it, so the style stays there
+        IASTAppendable sink = primitives;
+        IExpr style = GraphExpr.edgeProperty(edgeStyles, source, target, directed);
+        if (style.isPresent()) {
+          sink = F.ListAlloc(2);
+          sink.append(style);
+        }
         if (source.equals(target)) {
-          drawSelfLoop(p1, primitives);
+          drawSelfLoop(p1, sink);
         } else if (directed && g.containsEdge(target, source)) {
-          drawCurvedEdge(p1, p2, primitives);
+          drawCurvedEdge(p1, p2, sink);
         } else {
           IAST coordList =
               F.List(F.List(F.num(p1[0]), F.num(p1[1])), F.List(F.num(p2[0]), F.num(p2[1])));
           if (directed) {
-            primitives.append(F.Arrow(coordList));
+            sink.append(F.Arrow(coordList));
           } else {
-            primitives.append(F.Line(coordList));
+            sink.append(F.Line(coordList));
           }
+        }
+        if (sink != primitives) {
+          primitives.append(sink);
         }
       }
     }
@@ -712,13 +752,34 @@ public class GraphGraphics {
   }
 
   private void parseOptions() {
+    // a named style first, so the graph's own options can still change a part of it
+    applyGraphStyle(getOption(S.GraphStyle));
+
     IExpr vs = getOption(S.VertexStyle);
-    if (vs.isPresent())
-      this.vertexStyle = vs;
+    if (vs.isPresent()) {
+      if (GraphExpr.isPropertyRuleList(vs)) {
+        this.vertexStyles = vs;
+        IExpr common = GraphExpr.propertyDefault(vs);
+        if (common.isPresent()) {
+          this.vertexStyle = common;
+        }
+      } else {
+        this.vertexStyle = vs;
+      }
+    }
 
     IExpr es = getOption(S.EdgeStyle);
-    if (es.isPresent())
-      this.edgeStyle = es;
+    if (es.isPresent()) {
+      if (GraphExpr.isPropertyRuleList(es)) {
+        this.edgeStyles = es;
+        IExpr common = GraphExpr.propertyDefault(es);
+        if (common.isPresent()) {
+          this.edgeStyle = common;
+        }
+      } else {
+        this.edgeStyle = es;
+      }
+    }
 
     IExpr vl = getOption(S.VertexLabels);
     if (vl.isPresent() && (vl.toString().equals("Name") || vl.toString().equals("\"Name\""))) {
@@ -726,8 +787,26 @@ public class GraphGraphics {
     }
 
     IExpr vz = getOption(S.VertexSize);
-    if (vz.isPresent() && vz.isNumber()) {
-      this.vertexSize = ((INumber) vz).reDoubleValue();
+    if (vz.isPresent()) {
+      if (GraphExpr.isPropertyRuleList(vz)) {
+        this.vertexSizes = vz;
+        vz = GraphExpr.propertyDefault(vz);
+      }
+      double fraction = sizeFraction(vz);
+      if (!Double.isNaN(fraction)) {
+        this.vertexSizeFraction = fraction;
+      }
+    }
+
+    IExpr shape = getOption(S.VertexShapeFunction);
+    if (shape.isString()) {
+      String name = shape.toString().replace("\"", "");
+      if (name.equals("Diamond") || name.equals("Square") || name.equals("Triangle")
+          || name.equals("Rectangle")) {
+        this.vertexShape = name;
+      } else if (name.equals("Circle") || name.equals("Disk")) {
+        this.vertexShape = "Disk";
+      }
     }
 
     IExpr ah = getOption(S.Arrowheads);
@@ -738,6 +817,208 @@ public class GraphGraphics {
     IExpr gl = getOption(S.GraphLayout);
     if (gl.isPresent()) {
       this.graphLayout = gl.toString();
+      this.gridColumns = gridColumns(gl);
+    }
+  }
+
+  /**
+   * The look of a named <code>GraphStyle</code> - the colours, a rectangle with the vertex name on
+   * it, and its size - read off Mathematica's drawings of it. Unknown names change nothing.
+   */
+  private void applyGraphStyle(IExpr style) {
+    if (!style.isString()) {
+      return;
+    }
+    switch (style.toString().replace("\"", "")) {
+      case "SmallNetwork":
+        setTheme(ast(S.Directive, hue(0.625, 0.5, 0.7), ast(S.Thickness, S.Large)),
+            hue(0.125, 0.7, 0.9), ast(S.EdgeForm), 0.13, 0.13);
+        break;
+      case "DiagramGreen":
+        setTheme(ast(S.Directive, hue(0.25, 0.4, 0.5)), hue(0.25, 0.4, 0.8), ast(S.EdgeForm), 0.77,
+            0.51);
+        break;
+      case "VintageDiagram":
+        setTheme(ast(S.Directive, hue(0.0, 1.0, 0.5)), hue(0.15, 0.2, 1.0),
+            ast(S.EdgeForm, ast(S.Directive, ast(S.Thickness, F.num(0.003)), hue(0.15, 1.0, 0.4))),
+            0.19, 0.19);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private void setTheme(IExpr edges, IExpr vertexColor, IExpr vertexOutline, double width,
+      double height) {
+    this.edgeStyle = edges;
+    this.vertexStyle = ast(S.Directive, vertexColor, vertexOutline);
+    this.vertexShape = "Theme";
+    this.themeWidth = width;
+    this.themeHeight = height;
+    this.showVertexLabels = true;
+    this.centeredLabels = true;
+  }
+
+  /**
+   * <code>VertexSize -> s</code> as a fraction of the smallest vertex distance: a number, or
+   * <code>Tiny</code>, <code>Small</code>, <code>Medium</code>, <code>Large</code>.
+   *
+   * @return the fraction or <code>NaN</code> if <code>size</code> gives none
+   */
+  private static double sizeFraction(IExpr size) {
+    if (size.isNIL()) {
+      return Double.NaN;
+    }
+    if (size == S.Tiny) {
+      return 0.05;
+    }
+    if (size == S.Small) {
+      return 0.1;
+    }
+    if (size == S.Medium) {
+      return 0.2;
+    }
+    if (size == S.Large) {
+      return 0.4;
+    }
+    double value = size.evalfNaN();
+    return value > 0.0 ? value : Double.NaN;
+  }
+
+  /**
+   * The number of columns of <code>"GridEmbedding"</code>, from
+   * <code>"Dimension" -> {columns, rows}</code> anywhere in the layout specification.
+   *
+   * @return the columns or 0 if the layout gives none
+   */
+  private static int gridColumns(IExpr layout) {
+    if (layout.isRuleAST() && layout.first().isString()
+        && layout.first().toString().replace("\"", "").equals("Dimension")
+        && layout.second().isList() && layout.second().argSize() == 2) {
+      return layout.second().first().toIntDefault(0);
+    }
+    if (layout.isList() || layout.isRuleAST()) {
+      for (IExpr arg : (IAST) layout) {
+        int columns = gridColumns(arg);
+        if (columns > 0) {
+          return columns;
+        }
+      }
+    }
+    return 0;
+  }
+
+  /** Whether an option describes the graph, and so is not passed on to <code>Graphics</code>. */
+  public static boolean isGraphOption(IExpr name) {
+    return GRAPH_OPTIONS.contains(name);
+  }
+
+  /** <code>Hue(h, s, b)</code> */
+  public static IAST hue(double h, double s, double b) {
+    return ast(S.Hue, F.num(h), F.num(s), F.num(b));
+  }
+
+  private static IAST ast(IExpr head, IExpr... args) {
+    IASTAppendable result = F.ast(head, args.length);
+    for (IExpr arg : args) {
+      result.append(arg);
+    }
+    return result;
+  }
+
+  /** Mathematica's vertices: light blue, with a thin dark outline. */
+  private static IExpr defaultVertexStyle() {
+    return ast(S.Directive, hue(0.6, 0.5, 1.0), ast(S.EdgeForm,
+        ast(S.Directive, ast(S.GrayLevel, F.C0), ast(S.Opacity, F.num(0.7)))));
+  }
+
+  /** Mathematica's edges: a translucent darker blue with round ends. */
+  private static IExpr defaultEdgeStyle() {
+    return ast(S.Directive, ast(S.Opacity, F.num(0.7)), hue(0.6, 0.7, 0.7),
+        ast(S.CapForm, F.stringx("Round")));
+  }
+
+  /** The smallest distance between two vertices, which Mathematica measures vertex sizes in. */
+  private double smallestVertexDistance() {
+    List<double[]> points = new ArrayList<>(vertexCoords.values());
+    int n = points.size();
+    if (n < 2 || n > 5000) {
+      return 1.0;
+    }
+    double smallest = Double.MAX_VALUE;
+    for (int i = 0; i < n; i++) {
+      double[] p = points.get(i);
+      for (int j = i + 1; j < n; j++) {
+        double[] q = points.get(j);
+        double d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+        if (d > 1.0e-12 && d < smallest) {
+          smallest = d;
+        }
+      }
+    }
+    return smallest == Double.MAX_VALUE ? 1.0 : smallest;
+  }
+
+  private double vertexRadius(IExpr vertex, double distance) {
+    double fraction = vertexSizeFraction;
+    if (vertexSizes.isPresent()) {
+      double own = sizeFraction(GraphExpr.vertexProperty(vertexSizes, vertex));
+      if (!Double.isNaN(own)) {
+        fraction = own;
+      }
+    }
+    return Double.isNaN(fraction) ? vertexSize : fraction * distance / 2.0;
+  }
+
+  private static IAST point(double x, double y) {
+    return F.List(F.num(x), F.num(y));
+  }
+
+  /** The primitive a vertex at <code>p</code> is drawn as, in the shape the options ask for. */
+  private IExpr vertexPrimitive(double[] p, double r, double distance) {
+    double x = p[0];
+    double y = p[1];
+    switch (vertexShape) {
+      case "Diamond": {
+        // Mathematica's diamond reaches a little further than the disk of the same size
+        double h = 1.118 * r;
+        return ast(S.Polygon,
+            F.List(point(x, y - h), point(x + h, y), point(x, y + h), point(x - h, y)));
+      }
+      case "Square":
+        return ast(S.Rectangle, point(x - r, y - r), point(x + r, y + r));
+      case "Rectangle":
+        return ast(S.Rectangle, point(x - 1.25 * r, y - 0.8 * r), point(x + 1.25 * r, y + 0.8 * r));
+      case "Triangle": {
+        double c = Math.sqrt(3.0) / 2.0 * r;
+        return ast(S.Polygon, F.List(point(x, y + r), point(x - c, y - r / 2.0),
+            point(x + c, y - r / 2.0)));
+      }
+      case "Theme": {
+        double w = themeWidth * distance / 2.0;
+        double h = themeHeight * distance / 2.0;
+        return ast(S.Rectangle, point(x - w, y - h), point(x + w, y + h));
+      }
+      default:
+        return F.Disk(point(x, y), F.num(r));
+    }
+  }
+
+  /** The vertices row by row on a grid of unit spacing, in the order of the vertex list. */
+  private <E> void layoutComponentGrid(Graph<IExpr, E> g, Set<IExpr> component, double centerX,
+      double centerY) {
+    int n = component.size();
+    int columns = gridColumns > 0 ? gridColumns : (int) Math.ceil(Math.sqrt(n));
+    int rows = (n + columns - 1) / columns;
+    int i = 0;
+    for (IExpr v : g.vertexSet()) {
+      if (component.contains(v)) {
+        int row = i / columns;
+        int column = i % columns;
+        vertexCoords.put(v, new double[] {centerX + column - (columns - 1) / 2.0,
+            centerY + (rows - 1) / 2.0 - row});
+        i++;
+      }
     }
   }
 
@@ -757,47 +1038,48 @@ public class GraphGraphics {
     } else if (vertexCount > 60) {
       this.arrowHeadSize = 0.01;
     }
-    // If not set by options, ensure vertices are small for very large graphs
-    if (getOption(S.VertexSize).isPresent() && vertexCount > 200) {
+    // very large graphs get smaller vertices, unless a size was asked for
+    if (!getOption(S.VertexSize).isPresent() && vertexCount > 200) {
       this.vertexSize = 0.025;
     }
+    double distance = smallestVertexDistance();
 
-    IASTAppendable primitives = F.ListAlloc(graph.vertexSet().size() + graph.edgeSet().size() + 5);
-
-    // 0. Global Directives
+    // the edges and the vertices each in a list of their own, as Mathematica draws them, so the
+    // opacity of the edges does not reach the vertices
+    IASTAppendable edgePrimitives = F.ListAlloc(graph.edgeSet().size() + 2);
     if (directed) {
-      primitives.append(F.Arrowheads(arrowHeadSize));
+      edgePrimitives.append(F.Arrowheads(arrowHeadSize));
     }
-
-    // 1. Draw Edges
     if (!edgeStyle.isNone()) {
-      primitives.append(edgeStyle);
+      edgePrimitives.append(edgeStyle);
     }
-    drawEdges(this.graph, primitives);
+    drawEdges(this.graph, edgePrimitives);
 
-    // 2. Draw Vertices
+    IASTAppendable vertexPrimitives = F.ListAlloc(2 * vertexCount + 1);
     if (!vertexStyle.isNone()) {
-      primitives.append(vertexStyle);
+      vertexPrimitives.append(vertexStyle);
     }
-
     for (IExpr v : graph.vertexSet()) {
       double[] p = vertexCoords.get(v);
       if (p != null) {
-        final IAST pos = F.List(F.num(p[0]), F.num(p[1]));
-        primitives.append(F.Disk(pos, F.num(vertexSize)));
-
+        IExpr shape = vertexPrimitive(p, vertexRadius(v, distance), distance);
+        IExpr style = GraphExpr.vertexProperty(vertexStyles, v);
+        vertexPrimitives.append(style.isPresent() ? F.List(style, shape) : shape);
         if (showVertexLabels) {
-          primitives.append(F.Black);
-          primitives.append(F.Text(v, pos, F.List(F.C0, F.CN1)));
-          if (!vertexStyle.isNone())
-            primitives.append(vertexStyle);
+          IAST pos = point(p[0], p[1]);
+          IExpr text = centeredLabels ? ast(S.Text, v, pos) : F.Text(v, pos, F.List(F.C0, F.CN1));
+          vertexPrimitives.append(F.List(F.Black, text));
         }
       }
     }
 
-    IASTAppendable graphics = F.Graphics(primitives, options);
-    // System.out.println(graphics);
-    return graphics;
+    IASTAppendable graphicsOptions = F.ListAlloc(options.size());
+    for (IExpr option : options) {
+      if (!option.isRuleAST() || !isGraphOption(option.first())) {
+        graphicsOptions.append(option);
+      }
+    }
+    return F.Graphics(F.List(edgePrimitives, vertexPrimitives), graphicsOptions);
   }
 
   /**

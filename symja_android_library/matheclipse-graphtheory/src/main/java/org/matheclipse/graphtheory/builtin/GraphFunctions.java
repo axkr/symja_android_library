@@ -135,6 +135,7 @@ public class GraphFunctions {
       S.WeightedAdjacencyMatrix.setEvaluator(new WeightedAdjacencyMatrix());
       S.WeightedGraphQ.setEvaluator(new WeightedGraphQ());
       S.GraphPlot.setEvaluator(new GraphPlot());
+      S.HighlightGraph.setEvaluator(new HighlightGraph());
       S.ConnectedComponents.setEvaluator(new ConnectedComponents());
       S.ExpressionGraph.setEvaluator(new ExpressionGraph());
       S.FindMaximumFlow.setEvaluator(new FindMaximumFlow());
@@ -483,6 +484,54 @@ public class GraphFunctions {
         }
       }
       return F.NIL;
+    }
+  }
+
+  /**
+   * <code>HighlightGraph(g, {v1, Style(v2, c), e1, ...})</code> - the graph <code>g</code> with the
+   * given vertices and edges drawn in their own style, red when none is given.
+   */
+  private static class HighlightGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 2) {
+        return F.NIL;
+      }
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+      Graph<IExpr, ?> graph = gex.toData();
+      IAST highlights = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
+      IASTAppendable options = gex.options().copyAppendable();
+      for (IExpr highlight : highlights) {
+        IExpr item = highlight;
+        IExpr style = F.RGBColor(1.0, 0.0, 0.0);
+        if (highlight.isAST(S.Style) && highlight.argSize() >= 2) {
+          item = highlight.first();
+          style = GraphExpr.styleDirective((IAST) highlight);
+        }
+        IExpr edge = GraphExpr.unwrapEdge(item);
+        if (graph.containsVertex(item)) {
+          GraphExpr.addProperty(options, S.VertexStyle, item, style);
+        } else if (edge.isAST() && edge.argSize() == 2
+            && (edge.isRuleAST() || edge.isAST(S.DirectedEdge) || edge.isAST(S.UndirectedEdge)
+                || edge.isAST(S.TwoWayRule))) {
+          GraphExpr.addProperty(options, S.EdgeStyle, edge, style);
+        }
+      }
+      return GraphExpr.newInstance(graph, options);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -841,34 +890,38 @@ public class GraphFunctions {
             edgeWeight = option;
           }
           EdgeListType t = ast.arg1().isListOfEdges();
+          // the options stay with the graph, for drawing it; a list of rules is options too, as in
+          // Graph({1, 2}, {1 <-> 2}, {GraphLayout -> ..., GraphStyle -> ...})
+          IASTAppendable graphOptions = F.ListAlloc();
+          for (int i = t != null ? 2 : 3; i < ast.size(); i++) {
+            IExpr arg = ast.get(i);
+            if (arg.isRuleAST()) {
+              graphOptions.append(arg);
+            } else if (arg.isList() && arg.argSize() > 0 && ((IAST) arg).forAll(x -> x.isRuleAST())) {
+              graphOptions.appendArgs((IAST) arg);
+            }
+          }
+          GraphExpr<?> result = null;
           if (t != null) {
             if (edgeWeight.isList()) {
-              GraphExpr<ExprWeightedEdge> gex =
-                  GraphExpr.createWeightedGraph(F.NIL, (IAST) ast.arg1(), (IAST) edgeWeight);
-              if (gex != null) {
-                return gex;
-              }
+              result = GraphExpr.createWeightedGraph(F.NIL, (IAST) ast.arg1(), (IAST) edgeWeight);
             } else {
-              GraphExpr<ExprEdge> g = GraphExpr.newInstance(F.NIL, (IAST) ast.arg1());
-              if (g != null) {
-                return g;
-              }
+              result = GraphExpr.newInstance(F.NIL, (IAST) ast.arg1());
             }
           } else {
+            IAST vertices = GraphExpr.stripVertexAnnotations((IAST) ast.arg1(), graphOptions);
             if (edgeWeight.isList()) {
-              GraphExpr<ExprWeightedEdge> gex = GraphExpr.createWeightedGraph((IAST) ast.arg1(),
-                  (IAST) ast.arg2(), (IAST) edgeWeight);
-              if (gex != null) {
-                return gex;
-              }
-            } else {
-              if (ast.arg2().isList()) {
-                GraphExpr<ExprEdge> g = GraphExpr.newInstance((IAST) ast.arg1(), (IAST) ast.arg2());
-                if (g != null) {
-                  return g;
-                }
-              }
+              result =
+                  GraphExpr.createWeightedGraph(vertices, (IAST) ast.arg2(), (IAST) edgeWeight);
+            } else if (ast.arg2().isList()) {
+              result = GraphExpr.newInstance(vertices, (IAST) ast.arg2());
             }
+          }
+          if (result != null) {
+            if (graphOptions.argSize() > 0) {
+              result.setOptions(graphOptions);
+            }
+            return result;
           }
         }
       } catch (RuntimeException rex) {

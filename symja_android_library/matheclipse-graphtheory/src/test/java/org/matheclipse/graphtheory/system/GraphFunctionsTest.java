@@ -99,6 +99,47 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{12.0,2.0,0.0,8.0,3.0,4.0}");
   }
 
+  /**
+   * The graphs of the WLJS demo notebook: Mathematica's default look, and the options a
+   * <code>Graph</code> keeps for drawing it.
+   */
+  @Test
+  public void testGraphDrawingOptions() {
+    // Mathematica's colours; the edges and the vertices each in a list of their own
+    check("Cases(GraphPlot(Graph({1->2,2->3,3->1})),_Hue,Infinity)", //
+        "{Hue(0.6,0.7,0.7),Hue(0.6,0.5,1.0)}");
+    // VertexShapeFunction and VertexSize are kept by Graph
+    check("Length(Cases(GraphPlot(Graph({1->2,2->3,3->1},VertexShapeFunction->\"Diamond\","
+        + "VertexSize->Medium)),_Polygon,Infinity))", //
+        "3");
+    // an annotated vertex is the vertex itself, with a size and a style of its own
+    check("g=Graph(Table(Annotation(v,{VertexSize->0.2+0.2*Mod(v,5),VertexStyle->Hue(v/15,1,1)}),"
+        + "{v,0,14}),Table(v<->Mod(v+1,15),{v,0,14}));"
+        + "{VertexCount(g),Length(Cases(GraphPlot(g),Hue(_,1,1),Infinity))}", //
+        "{15,15}");
+    // a list of rules is options too; a named GraphStyle draws labelled rectangles, and the graph
+    // options do not reach Graphics
+    check("p=GraphPlot(Graph({1,2,3},{1<->2,2<->3},{GraphStyle->\"DiagramGreen\"}));"
+        + "{Length(Cases(p,_Rectangle,Infinity)),Length(Cases(p,_Text,Infinity)),"
+        + "FreeQ(p,GraphStyle)}", //
+        "{3,3,True}");
+    // "GridEmbedding" with "Dimension" -> {columns, rows}
+    check("p=GraphPlot(Graph({1,2,3,4,5,6},{1<->2,2<->3,4<->5,5<->6,1<->4},"
+        + "GraphLayout->{\"VertexLayout\"->{\"GridEmbedding\",\"Dimension\"->{3,2}}}));"
+        + "Length(Union(Cases(p,Disk({x_,y_},_):>y,Infinity)))", //
+        "2");
+    check("Cases(GraphPlot(HighlightGraph(PathGraph(Range(3)),{Style(2,Green)})),_RGBColor,"
+        + "Infinity)", //
+        "{RGBColor(0,1,0)}");
+    check("{VertexCount(ButterflyGraph(3)),EdgeCount(ButterflyGraph(3))}", //
+        "{32,48}");
+    // Graph3D(vertices, edges) with annotated vertices
+    check("p=Graph3D(Table(Annotation(v,{VertexStyle->Hue(v/15,1,1)}),{v,0,14}),"
+        + "Table(v<->Mod(v+1,15),{v,0,14}));"
+        + "{Head(p),Length(Cases(p,_Sphere,Infinity)),Length(Cases(p,Hue(_,1,1),Infinity))}", //
+        "{Graphics3D,15,15}");
+  }
+
   @Test
   public void testCompleteGraph() {
     check("CompleteGraph({7,3}) // AdjacencyMatrix // Normal", //

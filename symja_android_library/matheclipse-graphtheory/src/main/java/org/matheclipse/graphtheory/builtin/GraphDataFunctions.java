@@ -59,6 +59,7 @@ public class GraphDataFunctions {
       S.GraphData.setEvaluator(new GraphData());
 
       S.CompleteGraph.setEvaluator(new CompleteGraph());
+      S.ButterflyGraph.setEvaluator(new ButterflyGraph());
       S.CycleGraph.setEvaluator(new CycleGraph());
       S.GridGraph.setEvaluator(new GridGraph());
       S.HypercubeGraph.setEvaluator(new HypercubeGraph());
@@ -326,6 +327,60 @@ public class GraphDataFunctions {
     @Override
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
+          GraphGraphics.defaultGraphOptionValues());
+    }
+  }
+
+  /**
+   * <code>ButterflyGraph(n)</code> - the butterfly network of <code>n</code> levels: vertex
+   * <code>(i, w)</code>, level <code>i = 0..n</code> and word <code>w</code> of <code>n</code>
+   * bits, is joined to <code>(i+1, w)</code> and to <code>(i+1, w</code> with bit <code>i</code>
+   * flipped<code>)</code>. The vertices are numbered level by level from 1.
+   */
+  private static class ButterflyGraph extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      int n = ast.arg1().toIntDefault();
+      if (n <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`
+        return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+      }
+      if (n > 20 || (long) (n + 1) << n > Config.MAX_GRAPH_VERTICES_SIZE) {
+        ASTElementLimitExceeded.throwIt((long) (n + 1) << Math.min(n, 40));
+      }
+      int words = 1 << n;
+      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
+          .buildGraph();
+      for (int v = 1; v <= (n + 1) * words; v++) {
+        target.addVertex(F.ZZ(v));
+      }
+      for (int level = 0; level < n; level++) {
+        for (int w = 0; w < words; w++) {
+          IExpr from = F.ZZ(level * words + w + 1);
+          target.addEdge(from, F.ZZ((level + 1) * words + w + 1));
+          target.addEdge(from, F.ZZ((level + 1) * words + (w ^ (1 << level)) + 1));
+        }
+      }
+      return GraphExpr.newInstance(target, GraphGraphics.createOptionsList(options));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override

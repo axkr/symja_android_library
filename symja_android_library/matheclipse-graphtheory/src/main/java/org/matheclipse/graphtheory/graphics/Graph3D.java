@@ -66,6 +66,10 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
 
     IExpr arg1 = ast.arg1();
     GraphExpr<?> graphExpr = GraphExpr.newInstance(arg1);
+    if (graphExpr == null && ast.argSize() >= 2 && arg1.isList() && ast.arg2().isList()) {
+      // Graph3D({v1, v2, ...}, {e1, e2, ...}) is Graph({v1, ...}, {e1, ...}) drawn in 3D
+      graphExpr = GraphExpr.newInstance(engine.evaluate(F.binaryAST2(S.Graph, arg1, ast.arg2())));
+    }
     if (graphExpr == null) {
       return F.NIL;
     }
@@ -99,6 +103,8 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
         optionsList.append(arg);
       }
     }
+    // the graph's own options (VertexStyle -> {v -> style}, ...) after the call's, which win
+    optionsList.appendArgs(graphExpr.options());
 
     // 3. Generate the Graphics3D AST
     return createGraphics3D(graphExpr, optionsList);
@@ -128,10 +134,26 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
     boolean directed = directedEdgesOption.isTrue()
         || (!directedEdgesOption.isFalse() && graph.getType().isDirected());
 
+    // VertexStyle -> {v -> style, ...} and VertexSize -> {v -> size, ...} give each vertex its own
+    IExpr vertexStyles = F.NIL;
+    if (GraphExpr.isPropertyRuleList(vertexStyle)) {
+      vertexStyles = vertexStyle;
+      IExpr common = GraphExpr.propertyDefault(vertexStyle);
+      vertexStyle = common.isPresent() ? common : S.Automatic;
+    }
+    IExpr vertexSizes = F.NIL;
+    if (GraphExpr.isPropertyRuleList(vertexSizeOpt)) {
+      vertexSizes = vertexSizeOpt;
+      IExpr common = GraphExpr.propertyDefault(vertexSizeOpt);
+      vertexSizeOpt = common.isPresent() ? common : S.Medium;
+    }
+
     // Default Vertex Size logic
     double vertexRadius = 0.03; // Default 'Medium'ish
+    // a number is the diameter as a fraction of the smallest vertex distance, as in Mathematica
+    double vertexSizeFraction = Double.NaN;
     if (vertexSizeOpt.isNumber()) {
-      vertexRadius = ((INumber) vertexSizeOpt).reDoubleValue();
+      vertexSizeFraction = ((INumber) vertexSizeOpt).reDoubleValue();
     } else if (vertexSizeOpt == S.Small) {
       vertexRadius = 0.01;
     } else if (vertexSizeOpt == S.Large) {
@@ -172,6 +194,10 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
         computeSpringLayout3D(graph, coordinates);
       }
     }
+    double distance = smallestDistance(coordinates);
+    if (vertexSizeFraction > 0.0) {
+      vertexRadius = vertexSizeFraction * distance / 2.0;
+    }
 
     // --- Primitive Generation ---
     IASTAppendable primitives = F.ListAlloc(vertices.size() + graph.edgeSet().size());
@@ -181,7 +207,7 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
     if (edgeStyle != S.Automatic && edgeStyle != S.None) {
       primitives.append(edgeStyle);
     } else {
-      primitives.append(F.GrayLevel(0.4)); // Default gray edges
+      primitives.append(GraphGraphics.hue(0.6, 0.2, 0.8)); // Mathematica's pale blue edges
     }
 
     // Use Lines for edges (Tube/Cylinder can be expensive for large graphs, Line is standard)
@@ -211,15 +237,22 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
     if (vertexStyle != S.Automatic && vertexStyle != S.None) {
       primitives.append(vertexStyle);
     } else {
-      primitives.append(F.RGBColor(1.0, 0.5, 0.0)); // Default orange vertices
+      primitives.append(GraphGraphics.hue(0.6, 0.6, 1.0)); // Mathematica's blue vertices
     }
 
     for (IExpr v : vertices) {
       Vector3D p = coordinates.get(v);
       if (p != null) {
+        double radius = vertexRadius;
+        IExpr size = GraphExpr.vertexProperty(vertexSizes, v);
+        double fraction = size.isPresent() ? size.evalfNaN() : Double.NaN;
+        if (fraction > 0.0) {
+          radius = fraction * distance / 2.0;
+        }
         // Sphere is the standard 3D representation for graph vertices
-        primitives
-            .append(F.Sphere(F.List(F.num(p.x), F.num(p.y), F.num(p.z)), F.num(vertexRadius)));
+        IAST sphere = F.Sphere(F.List(F.num(p.x), F.num(p.y), F.num(p.z)), F.num(radius));
+        IExpr style = GraphExpr.vertexProperty(vertexStyles, v);
+        primitives.append(style.isPresent() ? F.List(style, sphere) : sphere);
       }
     }
 
@@ -231,8 +264,10 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
     result.append(primitives);
     // the user's own options come first, so one of theirs beats the default below it
     for (int i = 1; i < options.size(); i++) {
-      if (options.get(i).isRuleAST()) {
-        result.append(options.get(i));
+      IExpr option = options.get(i);
+      // the graph's own options describe the graph, not the picture
+      if (option.isRuleAST() && !GraphGraphics.isGraphOption(option.first())) {
+        result.append(option);
       }
     }
     result.append(F.Rule(S.Boxed, boxed ? S.True : S.False));
@@ -474,6 +509,27 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
       // Cool down
       temperature *= 0.95;
     }
+  }
+
+  /** The smallest distance between two vertices, which Mathematica measures vertex sizes in. */
+  private static double smallestDistance(Map<IExpr, Vector3D> coordinates) {
+    Vector3D[] points = coordinates.values().toArray(new Vector3D[0]);
+    if (points.length < 2 || points.length > 5000) {
+      return 1.0;
+    }
+    double smallest = Double.MAX_VALUE;
+    for (int i = 0; i < points.length; i++) {
+      for (int j = i + 1; j < points.length; j++) {
+        double dx = points[i].x - points[j].x;
+        double dy = points[i].y - points[j].y;
+        double dz = points[i].z - points[j].z;
+        double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (d > 1.0e-12 && d < smallest) {
+          smallest = d;
+        }
+      }
+    }
+    return smallest == Double.MAX_VALUE ? 1.0 : smallest;
   }
 
   private IExpr getOption(IAST options, ISymbol key, IExpr defaultValue) {

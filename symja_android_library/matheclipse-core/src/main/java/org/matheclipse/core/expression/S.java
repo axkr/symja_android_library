@@ -2698,6 +2698,16 @@ public class S {
    */
   public final static IBuiltInSymbol BubbleChart = S.initFinalSymbol("BubbleChart", ID.BubbleChart);
 
+  /**
+   * ButterflyGraph(x) - TODO describe `ButterflyGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ButterflyGraph.md">ButterflyGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ButterflyGraph =
+      S.initFinalSymbol("ButterflyGraph", ID.ButterflyGraph);
+
   public final static IBuiltInSymbol Button = S.initFinalSymbol("Button", ID.Button);
 
   /**
@@ -9494,6 +9504,15 @@ public class S {
   public final static IBuiltInSymbol GraphRadius = S.initFinalSymbol("GraphRadius", ID.GraphRadius);
 
   /**
+   * GraphStyle(x) - TODO describe `GraphStyle`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphStyle.md">GraphStyle
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphStyle = S.initFinalSymbol("GraphStyle", ID.GraphStyle);
+
+  /**
    * GraphUnion(graph1, graph2, graph3,...) - returns the graph union of `graph1`, `graph2`,
    * `graph3`,...
    * 
@@ -10039,6 +10058,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Highlighted = S.initFinalSymbol("Highlighted", ID.Highlighted);
+
+  /**
+   * HighlightGraph(x) - TODO describe `HighlightGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HighlightGraph.md">HighlightGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HighlightGraph =
+      S.initFinalSymbol("HighlightGraph", ID.HighlightGraph);
 
   /**
    * HilbertMatrix(n) - gives the hilbert matrix with `n` rows and columns.

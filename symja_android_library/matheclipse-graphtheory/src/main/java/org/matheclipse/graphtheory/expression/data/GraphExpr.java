@@ -575,6 +575,158 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
   }
 
   /**
+   * The plain vertices of <code>Graph({v1, v2, ...}, edges)</code>. A vertex written as
+   * <code>Annotation(v, {VertexSize -> s, VertexStyle -> c})</code> or <code>Style(v, c)</code> is
+   * the vertex <code>v</code>, and what it carries becomes a per-vertex rule in
+   * <code>options</code>, as in <code>VertexSize -> {v -> s}</code>. Without this the annotated
+   * vertex and the plain <code>v</code> of the edges were two different vertices.
+   *
+   * @param vertices the vertex list as written
+   * @param options the graph options, which receive the per-vertex rules
+   * @return the vertex list without the wrappers
+   */
+  public static IAST stripVertexAnnotations(IAST vertices, IASTAppendable options) {
+    IASTAppendable result = F.ListAlloc(vertices.argSize());
+    for (int i = 1; i < vertices.size(); i++) {
+      IExpr v = vertices.get(i);
+      if (v.isAST(S.Annotation, 3)) {
+        IExpr vertex = v.first();
+        IExpr properties = v.second();
+        IAST list = properties.isList() ? (IAST) properties : F.list(properties);
+        for (IExpr property : list) {
+          if (property.isRuleAST()) {
+            addProperty(options, property.first(), vertex, property.second());
+          }
+        }
+        result.append(vertex);
+      } else if (v.isAST(S.Style) && v.argSize() >= 2) {
+        addProperty(options, S.VertexStyle, v.first(), styleDirective((IAST) v));
+        result.append(v.first());
+      } else {
+        result.append(v);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The styles of <code>Style(x, s1, s2, ...)</code> as one directive.
+   *
+   * @param style a <code>Style(x, ...)</code> expression with at least one style
+   */
+  public static IExpr styleDirective(IAST style) {
+    if (style.argSize() == 2) {
+      return style.second();
+    }
+    IASTAppendable directive = F.ast(S.Directive, style.argSize() - 1);
+    for (int i = 2; i < style.size(); i++) {
+      directive.append(style.get(i));
+    }
+    return directive;
+  }
+
+  /**
+   * Add <code>item -> value</code> to the per-item rules of the option <code>key</code>, as in
+   * <code>VertexStyle -> {v1 -> Red, v2 -> Blue}</code>. A value the option had for every item
+   * stays in the list, as its one element that is not a rule.
+   *
+   * @param options the graph options
+   * @param key the option name, for example <code>VertexStyle</code>
+   * @param item a vertex or an edge
+   * @param value the value for <code>item</code>
+   */
+  public static void addProperty(IASTAppendable options, IExpr key, IExpr item, IExpr value) {
+    IExpr rule = F.Rule(item, value);
+    for (int i = 1; i < options.size(); i++) {
+      IExpr option = options.get(i);
+      if (option.isRuleAST() && option.first().equals(key)) {
+        IExpr old = option.second();
+        IASTAppendable list;
+        if (isPropertyRuleList(old)) {
+          list = ((IAST) old).copyAppendable();
+        } else {
+          list = F.ListAlloc(2);
+          list.append(old);
+        }
+        list.append(rule);
+        options.set(i, F.Rule(key, list));
+        return;
+      }
+    }
+    options.append(F.Rule(key, F.list(rule)));
+  }
+
+  /**
+   * Whether an option value gives one value per vertex or edge, as in
+   * <code>{v1 -> Red, v2 -> Blue}</code>.
+   */
+  public static boolean isPropertyRuleList(IExpr value) {
+    return value.isList() && ((IAST) value).exists(x -> x.isRuleAST());
+  }
+
+  /**
+   * The value a per-vertex option list gives <code>vertex</code>; the last rule for it wins.
+   *
+   * @return the value or {@link F#NIL} if the list has no rule for <code>vertex</code>
+   */
+  public static IExpr vertexProperty(IExpr value, IExpr vertex) {
+    if (isPropertyRuleList(value)) {
+      IAST list = (IAST) value;
+      for (int i = list.argSize(); i >= 1; i--) {
+        IExpr item = list.get(i);
+        if (item.isRuleAST() && item.first().equals(vertex)) {
+          return item.second();
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The value a per-edge option list gives the edge from <code>source</code> to
+   * <code>target</code>; an undirected edge matches either way round.
+   *
+   * @return the value or {@link F#NIL} if the list has no rule for the edge
+   */
+  public static IExpr edgeProperty(IExpr value, IExpr source, IExpr target, boolean directed) {
+    if (isPropertyRuleList(value)) {
+      IAST list = (IAST) value;
+      for (int i = list.argSize(); i >= 1; i--) {
+        IExpr item = list.get(i);
+        if (item.isRuleAST()) {
+          IExpr edge = unwrapEdge(item.first());
+          if (edge.isAST() && edge.argSize() == 2) {
+            IExpr a = edge.first();
+            IExpr b = edge.second();
+            if ((a.equals(source) && b.equals(target))
+                || (!directed && a.equals(target) && b.equals(source))) {
+              return item.second();
+            }
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The value of a per-item option list that is not a rule: the value for every item without one.
+   *
+   * @return the value or {@link F#NIL} if the list has none
+   */
+  public static IExpr propertyDefault(IExpr value) {
+    if (value.isList()) {
+      IAST list = (IAST) value;
+      for (int i = list.argSize(); i >= 1; i--) {
+        if (!list.get(i).isRuleAST()) {
+          return list.get(i);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Test if the graph mixes <code>DirectedEdge</code> and <code>UndirectedEdge</code> entries. Such
    * a graph is stored as a directed pseudograph whose undirected edges carry the
    * {@link ExprEdge#isUndirected()} flag, so the JGraphT {@link GraphType} reports it as directed.
