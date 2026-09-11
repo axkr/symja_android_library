@@ -176,7 +176,7 @@
 			<dependency>
 				<groupId>io.github.classgraph</groupId>
 				<artifactId>classgraph</artifactId>
-				<version>4.8.192</version>
+				<version>4.8.195</version>
 			</dependency>
 			<dependency>
 				<groupId>io.pebbletemplates</groupId>
