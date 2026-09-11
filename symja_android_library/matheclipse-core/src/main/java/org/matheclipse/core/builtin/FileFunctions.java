@@ -1867,7 +1867,15 @@ public class FileFunctions {
       stream.pushBack(rest);
       return F.NIL;
     }
-    // the terminator never comes: everything which is left is the answer
+    if (!terminator.isString()) {
+      // a pattern which never matches is an error, and the stream stays where it was; the WLJS
+      // notebook tells its older file format from the current one by this message
+      stream.pushBack(rest);
+      // Specified terminator not found.
+      Errors.printMessage(S.ReadString, "notfound", F.List(), engine);
+      return S.$Failed;
+    }
+    // a string terminator which never comes: everything which is left is the answer
     stream.pushBack("");
     return F.stringx(rest);
   }

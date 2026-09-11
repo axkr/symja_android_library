@@ -39,6 +39,25 @@ public class StreamTest extends ExprEvaluatorTestCase {
   }
 
 
+  /**
+   * <code>ReadString(stream, term)</code>: a string terminator that never comes reads the rest of the
+   * stream, silently; a pattern that never matches is <code>ReadString::notfound</code> and leaves
+   * the stream where it was, as the Wolfram Language answers. The WLJS notebook tells its two file
+   * formats apart by that message - without it every notebook in the older format opened empty.
+   */
+  @Test
+  public void testReadStringTerminatorNotFound() {
+    check("s=StringToStream(\"abc\\ndef\"); {StringLength(Check(ReadString(s, \"xyz\"), \"msg\")), ReadString(s, \"xyz\")}", //
+        "{7,EndOfFile}");
+    check("s=StringToStream(\"<|a->1|>\\nmore\"); "
+        + "Check(ReadString(s, ___ ~~ \"%Notebook%\" ~~ EndOfLine, TimeConstraint -> 10), \"msg\")", //
+        "msg");
+    check("StringLength(ReadString(s))", //
+        "13");
+    check("s=StringToStream(\"head\\n%%\\ntail\"); {ReadString(s, \"\\n\" ~~ \"%%\"), StringLength(ReadString(s))}", //
+        "{head,5}");
+  }
+
   @Test
   public void testFindList() {
     check("sstream=StringToStream(\"12345\\n45\\nx\\ny\");", //

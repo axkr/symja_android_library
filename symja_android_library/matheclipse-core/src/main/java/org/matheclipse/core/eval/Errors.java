@@ -408,6 +408,7 @@ public class Errors {
       "The first argument is not a vector or matrix or a list containing a design matrix and response vector.", //
       "notent",
       "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
+      "notfound", "Specified terminator not found.", //
       "notunicode",
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
       "noval", "Symbol `1` in part assignment does not have an immediate value.", //
