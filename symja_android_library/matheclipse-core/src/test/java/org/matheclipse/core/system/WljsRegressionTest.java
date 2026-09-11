@@ -1280,4 +1280,32 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  /**
+   * The option names a Wolfram Language front end knows are built-in System symbols, so a package
+   * that writes one refers to that symbol and not to a new one in its own context.
+   *
+   * <p>
+   * The WLJS notebook draws a colour-scale legend with <code>TickLabels -> {...}</code>, written in
+   * a package. Without a built-in <code>TickLabels</code> the package made its own, and the browser
+   * reported <code>CoffeeLiqueur`Extensions`Boxes`Workarounds`TickLabels</code> as undefined.
+   */
+  @Test
+  public void testFrontEndOptionNamesAreSystemSymbols() {
+    check("Map[Context, {AutomaticImageSize, ColorOutput, ControllerMethod, CurrentValue, "
+        + "ImageSizeAction, Selectable, TickLabels, TransitionDuration}]", //
+        "{System`,System`,System`,System`,System`,System`,System`,System`}");
+    // written inside a package's private context, the name still means the built-in symbol. One
+    // statement at a time, as a package file is read: a compound input is parsed before Begin runs
+    check("BeginPackage[\"Wljs`Probe`\"]", //
+        "");
+    check("Begin[\"`Private`\"]", //
+        "Wljs`Probe`Private`");
+    check("Context[TickLabels]", //
+        "System`");
+    check("End[]", //
+        "Wljs`Probe`Private`");
+    check("EndPackage[]", //
+        "");
+  }
+
 }

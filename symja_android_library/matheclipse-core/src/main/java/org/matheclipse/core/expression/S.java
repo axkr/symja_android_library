@@ -1698,6 +1698,16 @@ public class S {
   public final static IBuiltInSymbol Automatic = S.initFinalSymbol("Automatic", ID.Automatic);
 
   /**
+   * AutomaticImageSize(x) - TODO describe `AutomaticImageSize`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AutomaticImageSize.md">AutomaticImageSize
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AutomaticImageSize =
+      S.initFinalSymbol("AutomaticImageSize", ID.AutomaticImageSize);
+
+  /**
    * AutoRemove(x) - TODO describe `AutoRemove`.
    * 
    * @see <a href=
@@ -3649,6 +3659,15 @@ public class S {
   public final static IBuiltInSymbol ColorNegate = S.initFinalSymbol("ColorNegate", ID.ColorNegate);
 
   /**
+   * ColorOutput(x) - TODO describe `ColorOutput`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ColorOutput.md">ColorOutput
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ColorOutput = S.initFinalSymbol("ColorOutput", ID.ColorOutput);
+
+  /**
    * ColorQ(x) - TODO describe `ColorQ`.
    * 
    * @see <a href=
@@ -4367,6 +4386,16 @@ public class S {
       S.initFinalSymbol("ControllerLinking", ID.ControllerLinking);
 
   /**
+   * ControllerMethod(x) - TODO describe `ControllerMethod`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ControllerMethod.md">ControllerMethod
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ControllerMethod =
+      S.initFinalSymbol("ControllerMethod", ID.ControllerMethod);
+
+  /**
    * ControllerPath(x) - TODO describe `ControllerPath`.
    * 
    * @see <a href=
@@ -4832,6 +4861,16 @@ public class S {
    */
   public final static IBuiltInSymbol CurrencyConvert =
       S.initFinalSymbol("CurrencyConvert", ID.CurrencyConvert);
+
+  /**
+   * CurrentValue(x) - TODO describe `CurrentValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CurrentValue.md">CurrentValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CurrentValue =
+      S.initFinalSymbol("CurrentValue", ID.CurrentValue);
 
   /**
    * CurveClosed(x) - TODO describe `CurveClosed`.
@@ -10677,6 +10716,16 @@ public class S {
       S.initFinalSymbol("ImageSegmentationComponents", ID.ImageSegmentationComponents);
 
   public final static IBuiltInSymbol ImageSize = S.initFinalSymbol("ImageSize", ID.ImageSize);
+
+  /**
+   * ImageSizeAction(x) - TODO describe `ImageSizeAction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ImageSizeAction.md">ImageSizeAction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ImageSizeAction =
+      S.initFinalSymbol("ImageSizeAction", ID.ImageSizeAction);
 
   /**
    * ImageSizeRaw(x) - TODO describe `ImageSizeRaw`.
@@ -20049,6 +20098,15 @@ public class S {
   public final static IBuiltInSymbol Select = S.initFinalSymbol("Select", ID.Select);
 
   /**
+   * Selectable(x) - TODO describe `Selectable`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Selectable.md">Selectable
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Selectable = S.initFinalSymbol("Selectable", ID.Selectable);
+
+  /**
    * SelectComponents(x) - TODO describe `SelectComponents`.
    * 
    * @see <a href=
@@ -22630,6 +22688,15 @@ public class S {
    */
   public final static IBuiltInSymbol Thursday = S.initFinalSymbol("Thursday", ID.Thursday);
 
+  /**
+   * TickLabels(x) - TODO describe `TickLabels`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TickLabels.md">TickLabels
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TickLabels = S.initFinalSymbol("TickLabels", ID.TickLabels);
+
   public final static IBuiltInSymbol Ticks = S.initFinalSymbol("Ticks", ID.Ticks);
 
   public final static IBuiltInSymbol TicksStyle = S.initFinalSymbol("TicksStyle", ID.TicksStyle);
@@ -23093,6 +23160,16 @@ public class S {
    */
   public final static IBuiltInSymbol TransformedRegion =
       S.initFinalSymbol("TransformedRegion", ID.TransformedRegion);
+
+  /**
+   * TransitionDuration(x) - TODO describe `TransitionDuration`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TransitionDuration.md">TransitionDuration
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TransitionDuration =
+      S.initFinalSymbol("TransitionDuration", ID.TransitionDuration);
 
   public final static IBuiltInSymbol TransitiveClosure =
       S.initFinalSymbol("TransitiveClosure", ID.TransitiveClosure);
