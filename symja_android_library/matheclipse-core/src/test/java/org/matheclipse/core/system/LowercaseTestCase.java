@@ -24781,17 +24781,58 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  /**
+   * <code>Short</code> is a display wrapper, as in the Wolfram Language: it stays in the expression,
+   * and <code>FullForm</code> and <code>InputForm</code> write it with the whole expression inside
+   * (Mathematica: <code>FullForm[Short[Range[100], 2]]</code> is
+   * <code>Short[List[1, 2, ..., 100], 2]</code>).
+   */
   @Test
   public void testShort() {
-    check("Short(Expand((1 + x + y)^12))", //
-        "1+12*x+66*x^2+220*x^3+495*<<SHORT>>10+12*y^\n" + "11+12*x*y^11+y^12");
-    // Short(expr, n) shows about n lines, a line being what Short(expr) shows
-    check("StringLength(Short(Expand((1 + x + y)^12), 2)) > StringLength(Short(Expand((1 + x + y)^12)))", //
-        "True");
+    check("Head(Short(Range(100), 2))", //
+        "Short");
+    check("FullForm(Short(Range(3), 2))", //
+        "Short(List(1, 2, 3), 2)");
+    // no page width: the whole expression, as ToString[Short[expr], OutputForm] is in Mathematica
+    check("ToString(Short(Range(20)))", //
+        "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}");
+    // two different expressions, as they are in Mathematica
     check("Short(Expand((1 + x + y)^12), 1) === Short(Expand((1 + x + y)^12))", //
-        "True");
+        "False");
     check("Short(x, 0)", //
         "Short(x,0)");
+  }
+
+  /** A printed result has a page width, so Short leaves out what does not fit, written <<k>>. */
+  @Test
+  public void testShortElidesAPrintedList() {
+    // 13 from each end fit into one line of 80 characters; the 74 in between are left out
+    check("Short(Range(100))", //
+        "{1,2,3,4,5,6,7,8,9,10,11,12,13,<<74>>,88,89,90,91,92,93,94,95,96,97,98,99,100}");
+  }
+
+  /** 91 terms: five from the front, four from the back, and the 82 in between left out. */
+  @Test
+  public void testShortElidesAPrintedSum() {
+    check("Short(Expand((1 + x + y)^12))", //
+        "1+12*x+66*x^2+220*x^3+495*x^4+<<82>>+66*x^2*y^10+12*y^11+12*x*y^11+y^12");
+  }
+
+  /** <code>Short(expr, n)</code> shows about n lines. */
+  @Test
+  public void testShortTakesALineCount() {
+    check("Short(Range(100), 2)", //
+        "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,<<47>>,\n"
+            + "75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100}");
+  }
+
+  /** <code>Skeleton(k)</code> is written as the count of what was left out, but kept as it is. */
+  @Test
+  public void testSkeleton() {
+    check("{1, Skeleton(94), 3}", //
+        "{1,<<94>>,3}");
+    check("FullForm({1, Skeleton(94), 3})", //
+        "List(1, Skeleton(94), 3)");
   }
 
   @Test

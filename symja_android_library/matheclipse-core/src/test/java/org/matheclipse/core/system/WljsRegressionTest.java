@@ -1609,4 +1609,23 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  /**
+   * <code>Short</code> is a display wrapper. Mathematica (2026-09-11): <code>FullForm</code> and
+   * <code>InputForm</code> keep the wrapper with the whole list, and
+   * <code>ToString[Short[Range[100], 2], OutputForm]</code> is the whole list - only a display with
+   * a page width leaves anything out.
+   */
+  @Test
+  public void testShortIsADisplayWrapper() {
+    check("Head[Short[Range[100], 2]]", //
+        "Short");
+    check("ToString[FullForm[Short[Range[3], 2]]]", //
+        "Short[List[1, 2, 3], 2]");
+    check("StringFreeQ[ToString[Short[Range[100], 2], OutputForm], \"<<\"]", //
+        "True");
+    check("With[{s = ToString[Short[Range[100], 2], InputForm]}, "
+        + "{StringStartsQ[s, \"Short[\"], StringFreeQ[s, \"<<\"], StringContainsQ[s, \"100\"]}]", //
+        "{True,True,True}");
+  }
+
 }

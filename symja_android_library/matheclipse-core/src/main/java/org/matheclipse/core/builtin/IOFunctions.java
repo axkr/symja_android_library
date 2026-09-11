@@ -378,23 +378,19 @@ public class IOFunctions {
     }
   }
 
+  /**
+   * <code>Short[expr]</code> and <code>Short[expr, n]</code> are display wrappers, as in the
+   * Wolfram Language: they stay as they are - <code>InputForm</code> and <code>FullForm</code>
+   * write the wrapper and the whole expression - and the printer decides what to show. Where the
+   * output has no page width (<code>ToString</code>) that is the whole expression; where it has one
+   * (a console, a printed result) the elements that do not fit into about <code>n</code> lines are
+   * replaced by <code>Skeleton[k]</code>, written <code>&lt;&lt;k&gt;&gt;</code>.
+   */
   private static class Short extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int limit = engine.getOutputSizeLimit();
-      if (ast.isAST2()) {
-        // Short(expr, n): about n lines, a line being what Short(expr) shows
-        if (!ast.arg2().isReal()) {
-          return F.NIL;
-        }
-        double lines = ast.arg2().evalf();
-        if (!(lines > 0.0)) {
-          return F.NIL;
-        }
-        limit = (int) Math.max(1L, Math.min(Integer.MAX_VALUE, Math.round(lines * limit)));
-      }
-      return F.stringx(Errors.shorten(ast.arg1(), limit));
+      return F.NIL;
     }
 
     @Override

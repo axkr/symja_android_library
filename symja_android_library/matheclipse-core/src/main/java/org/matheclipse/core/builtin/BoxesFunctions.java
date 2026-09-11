@@ -143,6 +143,17 @@ public class BoxesFunctions {
         // a texture is shown as its image, as the Wolfram Language shows it
         return standardFormRecursive(expr.first(), precedence, form, engine);
       }
+      if (expr.isAST(S.Short, 2) || expr.isAST(S.Short, 3)) {
+        // a notebook shows Short the way a front end does: what fits, and <<k>> for the rest
+        IExpr shown = org.matheclipse.core.form.output.OutputFormFactory.shortForm((IAST) expr,
+            engine != null && engine.isRelaxedSyntax());
+        if (shown.isPresent()) {
+          return standardFormRecursive(shown, precedence, form, engine);
+        }
+      }
+      if (expr.isAST(S.Skeleton, 2)) {
+        return F.$str("<<" + expr.first().toString() + ">>");
+      }
       if (expr.isASTOrAssociation()) {
         IAST function = (IAST) expr;
         if (function.size() > 0) {

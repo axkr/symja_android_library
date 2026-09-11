@@ -117,6 +117,12 @@ public class ASCIIPrettyPrinter3 {
   }
 
   private void convert(final IExpr expr, final int precedence, boolean caller) {
+    if (expr.isAST(S.Short, 2) || expr.isAST(S.Short, 3)) {
+      // Short only changes how an expression is shown; OutputForm has no page width, so the whole
+      // expression is written, as ToString[Short[expr], OutputForm] is in the Wolfram Language
+      convert(((IAST) expr).arg1(), precedence, caller);
+      return;
+    }
     if (expr.isPlus()) {
       if (Precedence.PLUS < precedence) {
         print(" ( ");
@@ -141,6 +147,11 @@ public class ASCIIPrettyPrinter3 {
       }
       IAST ast = (IAST) expr;
       ISymbol head = (ISymbol) ast.head();
+      if (head == S.Skeleton && ast.isAST1()) {
+        // a run of elements left out
+        print("<<" + ast.arg1().toString() + ">>");
+        return;
+      }
       if (head == S.List) {
         print("{");
       } else {

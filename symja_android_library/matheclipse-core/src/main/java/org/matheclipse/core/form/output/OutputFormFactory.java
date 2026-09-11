@@ -319,6 +319,132 @@ public class OutputFormFactory {
   }
 
   /**
+   * Write <code>Short[expr]</code> or <code>Short[expr, n]</code>.
+   *
+   * <p>
+   * <code>Short</code> only changes how an expression is shown. Where this output has no page width
+   * - {@link #setIgnoreNewLine(boolean) ignoreNewLine}, which is how <code>ToString</code> prints -
+   * the expression is written whole, as <code>ToString[Short[expr], OutputForm]</code> is in the
+   * Wolfram Language. Where it has one, the elements that do not fit into <code>n</code> lines of
+   * {@link Config#MAX_OUTPUT_LINE} characters are replaced by <code>Skeleton[k]</code>.
+   *
+   * @return <code>false</code> if <code>n</code> is not a positive number; the wrapper is then
+   *         written as it stands
+   */
+  private boolean convertShort(final Appendable buf, final IAST shortAST, final int precedence)
+      throws IOException {
+    IExpr shown;
+    if (fIgnoreNewLine) {
+      shown = shortLines(shortAST) > 0.0 ? shortAST.arg1() : F.NIL;
+    } else {
+      shown = shortened(shortAST);
+    }
+    if (shown.isNIL()) {
+      return false;
+    }
+    convert(buf, shown, precedence, false);
+    return true;
+  }
+
+  /**
+   * What <code>Short[expr]</code> or <code>Short[expr, n]</code> shows where the output has a page
+   * width - a console, a notebook cell: <code>expr</code> with the elements that do not fit into
+   * <code>n</code> lines replaced by <code>Skeleton[k]</code>.
+   *
+   * @param shortAST the <code>Short</code> expression
+   * @param relaxedSyntax how the elements are written while they are measured
+   * @return {@link F#NIL} if <code>n</code> is not a positive number
+   */
+  public static IExpr shortForm(IAST shortAST, boolean relaxedSyntax) {
+    return get(relaxedSyntax).shortened(shortAST);
+  }
+
+  private IExpr shortened(IAST shortAST) {
+    double lines = shortLines(shortAST);
+    if (!(lines > 0.0)) {
+      return F.NIL;
+    }
+    int width = (int) Math.max(1L,
+        Math.min(Integer.MAX_VALUE / 2, Math.round(lines * Config.MAX_OUTPUT_LINE)));
+    return elide(shortAST.arg1(), width);
+  }
+
+  /** The <code>n</code> of <code>Short[expr, n]</code>, 1 for <code>Short[expr]</code>, else -1. */
+  private static double shortLines(IAST shortAST) {
+    if (shortAST.isAST1()) {
+      return 1.0;
+    }
+    if (shortAST.isAST2()) {
+      double lines = shortAST.arg2().evalfNaN();
+      return lines > 0.0 ? lines : -1.0;
+    }
+    return -1.0;
+  }
+
+  /**
+   * <code>expr</code> with a run of its elements replaced by <code>Skeleton[k]</code>, keeping as
+   * many from the front and from the back as are written in at most <code>width</code> characters.
+   * An atom has no elements to leave out and is shortened as text, the way messages shorten an
+   * expression.
+   */
+  private IExpr elide(IExpr expr, int width) {
+    boolean mayFit = !expr.isAST() || ((IAST) expr).argSize() <= width;
+    if (mayFit && writtenLength(expr) <= width) {
+      return expr;
+    }
+    if (!expr.isAST() || ((IAST) expr).argSize() == 0) {
+      return F.stringx(org.matheclipse.core.eval.Errors.shorten(expr, width));
+    }
+    IAST ast = (IAST) expr;
+    int n = ast.argSize();
+    int front = 0;
+    int back = 0;
+    IExpr best = withSkeleton(ast, 0, 0);
+    boolean takeFront = true;
+    while (front + back < n - 1) {
+      int f = takeFront ? front + 1 : front;
+      int b = takeFront ? back : back + 1;
+      IExpr candidate = withSkeleton(ast, f, b);
+      if (writtenLength(candidate) > width) {
+        break;
+      }
+      front = f;
+      back = b;
+      best = candidate;
+      takeFront = !takeFront;
+    }
+    return best;
+  }
+
+  /** <code>head[e1, ..., e_front, Skeleton[k], ..., e_n]</code> with <code>k</code> left out. */
+  private static IExpr withSkeleton(IAST ast, int front, int back) {
+    int n = ast.argSize();
+    IASTAppendable result = F.ast(ast.head(), front + back + 1);
+    for (int i = 1; i <= front; i++) {
+      result.append(ast.get(i));
+    }
+    result.append(F.unaryAST1(S.Skeleton, F.ZZ(n - front - back)));
+    for (int i = n - back + 1; i <= n; i++) {
+      result.append(ast.get(i));
+    }
+    return result;
+  }
+
+  /** The number of characters <code>expr</code> is written in on one line by this printer. */
+  private int writtenLength(IExpr expr) {
+    OutputFormFactory measure = new OutputFormFactory(fRelaxedSyntax, fPlusReversed,
+        fComplexReImI, fExponentFigures, fSignificantFigures);
+    measure.setIgnoreNewLine(true);
+    measure.setGraphicsPlaceholder(fGraphicsPlaceholder);
+    StringBuilder text = new StringBuilder();
+    try {
+      return measure.convert(text, expr) ? text.length() : Integer.MAX_VALUE;
+    } catch (RuntimeException rex) {
+      return Integer.MAX_VALUE;
+    }
+  }
+
+  /**
    * Lay out a <code>TableForm</code> wrapper as the plain text table it displays as.
    *
    * <p>
@@ -1607,6 +1733,20 @@ public class OutputFormFactory {
                 // a picture has no text representation - OutputForm shows a placeholder, while
                 // InputForm still writes the whole expression so that it can be read back
                 append(buf, functionID == ID.Graphics3D ? "-Graphics3D-" : "-Graphics-");
+                return;
+              }
+              break;
+            case ID.Skeleton:
+              if (!fInputForm && list.isAST1()) {
+                // a run of elements Short left out, written the Wolfram Language way
+                append(buf, "<<");
+                convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+                append(buf, ">>");
+                return;
+              }
+              break;
+            case ID.Short:
+              if (!fInputForm && convertShort(buf, list, precedence)) {
                 return;
               }
               break;
