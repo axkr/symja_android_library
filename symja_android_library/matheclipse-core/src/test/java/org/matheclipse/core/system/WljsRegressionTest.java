@@ -1517,4 +1517,23 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  /**
+   * <code>Position[expr, pattern, levelspec, n, Heads -> ...]</code>: the options come last, and a
+   * level specification and a count still apply before them. A level specification followed by
+   * <code>Heads -> False</code> drew "Non-negative integer or Infinity expected at position 4".
+   */
+  @Test
+  public void testPositionWithLevelCountAndHeads() {
+    check("Position[{a, {a, f[a]}}, a, {2}, Heads -> False]", //
+        "{{2,1}}");
+    check("Position[{a, {a, f[a]}}, a, Infinity, 2]", //
+        "{{1},{2,1}}");
+    check("Position[{a, a, a}, a, {1}, 2, Heads -> False]", //
+        "{{1},{2}}");
+    check("Position[f[a][b], f, {0, Infinity}, Heads -> True]", //
+        "{{0,0}}");
+    check("Position[f[a][b], f, Heads -> False]", //
+        "{}");
+  }
+
 }

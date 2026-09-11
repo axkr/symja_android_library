@@ -382,12 +382,24 @@ public class IOFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.stringx(Errors.shorten(ast.arg1(), engine.getOutputSizeLimit()));
+      int limit = engine.getOutputSizeLimit();
+      if (ast.isAST2()) {
+        // Short(expr, n): about n lines, a line being what Short(expr) shows
+        if (!ast.arg2().isReal()) {
+          return F.NIL;
+        }
+        double lines = ast.arg2().evalf();
+        if (!(lines > 0.0)) {
+          return F.NIL;
+        }
+        limit = (int) Math.max(1L, Math.min(Integer.MAX_VALUE, Math.round(lines * limit)));
+      }
+      return F.stringx(Errors.shorten(ast.arg1(), limit));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 

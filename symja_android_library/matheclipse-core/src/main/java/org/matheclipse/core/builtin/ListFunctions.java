@@ -5130,8 +5130,24 @@ public final class ListFunctions {
         ast = ast.setAtCopy(1, positionArg1);
       }
 
+      // Position(expr, pattern[, levelspec[, n]], options): the options come last, and the level
+      // specification and the count keep their places whether options follow them or not
+      int end = ast.size();
+      while (end > 3 && ast.get(end - 1).isRuleAST()) {
+        end--;
+      }
+      IExpr heads = F.NIL;
+      if (end < ast.size()) {
+        final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
+        if (options != null) {
+          heads = options.getOption(S.Heads);
+        }
+        if (heads.isPresent() && !heads.isTrue() && !heads.isFalse()) {
+          return F.NIL;
+        }
+      }
       int maxResults = Integer.MAX_VALUE;
-      if (ast.size() >= 5) {
+      if (end >= 5) {
         maxResults = engine.evaluate(ast.arg4()).toIntDefault();
         if (maxResults < 0) {
           if (ast.arg4().isInfinity()) {
@@ -5144,33 +5160,16 @@ public final class ListFunctions {
       }
       final IExpr arg1 = ast.arg1();
       final IExpr arg2 = engine.evalPattern(ast.arg2());
-      if (ast.isAST2()) {
-        final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
-        return position(arg1, arg2, level, Integer.MAX_VALUE, engine);
+      final LevelSpec level;
+      if (end >= 4) {
+        level = new LevelSpecification(engine.evaluate(ast.arg3()),
+            heads.isPresent() ? heads.isTrue() : true);
+      } else if (heads.isPresent()) {
+        level = new LevelSpec(0, Integer.MAX_VALUE, heads.isTrue());
+      } else {
+        level = new LevelSpec(0, Integer.MAX_VALUE);
       }
-      if (ast.size() >= 4) {
-        IExpr option = S.True;
-        final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
-        if (options != null) {
-          option = options.getOption(S.Heads);
-          if (option.isPresent()) {
-            if (option.isTrue()) {
-              final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
-              return position(arg1, arg2, level, Integer.MAX_VALUE, engine);
-            }
-            if (option.isFalse()) {
-              final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
-              return position(arg1, arg2, level, maxResults, engine);
-            }
-            return F.NIL;
-          }
-        }
-
-        final IExpr arg3 = engine.evaluate(ast.arg3());
-        final LevelSpec level = new LevelSpecification(arg3, true);
-        return position(arg1, arg2, level, maxResults, engine);
-      }
-      return F.NIL;
+      return position(arg1, arg2, level, maxResults, engine);
     }
 
     @Override

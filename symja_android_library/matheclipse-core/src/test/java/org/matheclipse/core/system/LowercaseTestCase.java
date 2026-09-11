@@ -24785,6 +24785,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testShort() {
     check("Short(Expand((1 + x + y)^12))", //
         "1+12*x+66*x^2+220*x^3+495*<<SHORT>>10+12*y^\n" + "11+12*x*y^11+y^12");
+    // Short(expr, n) shows about n lines, a line being what Short(expr) shows
+    check("StringLength(Short(Expand((1 + x + y)^12), 2)) > StringLength(Short(Expand((1 + x + y)^12)))", //
+        "True");
+    check("Short(Expand((1 + x + y)^12), 1) === Short(Expand((1 + x + y)^12))", //
+        "True");
+    check("Short(x, 0)", //
+        "Short(x,0)");
   }
 
   @Test
