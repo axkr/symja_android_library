@@ -4,9 +4,9 @@
 Selectable
 ```
 
-> an option of `Graphics` and of boxes (whether the displayed object can be selected).
+> an option for displayed objects, cells and notebooks giving whether their contents can be selected interactively (Wolfram Language 3.0).
 
-Symja recognises `Selectable` as the built-in `System` symbol it is in the Wolfram Language, so a package or a front end that writes it - the WLJS notebook's graphics do - reads the same symbol, but Symja does not act on it.
+Symja recognises `Selectable` as a built-in `System` symbol, so a package or a front end that writes it - the WLJS notebook's graphics code does - refers to that symbol rather than creating one in its own context. Symja does not act on it.
 
 ### Implementation status
 

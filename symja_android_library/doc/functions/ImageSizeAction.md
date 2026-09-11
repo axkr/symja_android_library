@@ -4,9 +4,11 @@
 ImageSizeAction
 ```
 
-> an option of `Graphics` (what happens when the picture does not fit its `ImageSize`).
+> an option for `Pane` and related constructs giving what to do when the `ImageSize` setting does not match the size of the contents (Wolfram Language 6.0).
 
-Symja recognises `ImageSizeAction` as the built-in `System` symbol it is in the Wolfram Language, so a package or a front end that writes it - the WLJS notebook's graphics do - reads the same symbol, but Symja does not act on it.
+Symja recognises `ImageSizeAction` as a built-in `System` symbol, so a package or a front end that writes it - the WLJS notebook's graphics code does - refers to that symbol rather than creating one in its own context. Symja does not act on it.
+
+The WLJS notebook also reads it as an option of `Graphics`.
 
 ### Implementation status
 

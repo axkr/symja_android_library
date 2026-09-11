@@ -4,9 +4,9 @@
 CurrentValue
 ```
 
-> the current value of a front-end or system setting.
+> a function giving the current value of an item of the Wolfram System and its interface (Wolfram Language 6.0).
 
-Symja recognises `CurrentValue` as the built-in `System` symbol it is in the Wolfram Language, so a package or a front end that writes it - the WLJS notebook's graphics do - reads the same symbol, but Symja does not act on it.
+Symja recognises `CurrentValue` as a built-in `System` symbol, so a package or a front end that writes it - the WLJS notebook's graphics code does - refers to that symbol rather than creating one in its own context. Symja does not act on it.
 
 ### Implementation status
 
