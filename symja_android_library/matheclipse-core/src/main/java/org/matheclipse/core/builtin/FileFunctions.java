@@ -1868,14 +1868,14 @@ public class FileFunctions {
       return F.NIL;
     }
     if (!terminator.isString()) {
-      // a pattern which never matches is an error, and the stream stays where it was; the WLJS
-      // notebook tells its older file format from the current one by this message
-      stream.pushBack(rest);
+      // a pattern which never matches is reported, and - as in the Wolfram Language - everything
+      // which is left is still the answer (Mathematica 2026-09-11: the message, then the text;
+      // FailureQ of it is False). The WLJS notebook reader then rejects its older file format at
+      // the header check that follows.
       // Specified terminator not found.
       Errors.printMessage(S.ReadString, "notfound", F.List(), engine);
-      return S.$Failed;
     }
-    // a string terminator which never comes: everything which is left is the answer
+    // a terminator which never comes: everything which is left is the answer
     stream.pushBack("");
     return F.stringx(rest);
   }

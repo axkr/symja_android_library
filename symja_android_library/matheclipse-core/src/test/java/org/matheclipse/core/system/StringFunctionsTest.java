@@ -47,8 +47,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "\"abc\"");
     check("StringPadLeft(\"7\", 3, \"0\") // InputForm", //
         "\"007\"");
+    // the repetitions are lined up with the left end of the finished string (Mathematica)
     check("StringPadRight(\"abc\", 8, \"xy\") // InputForm", //
-        "\"abcxyxyx\"");
+        "\"abcyxyxy\"");
     check("StringPadLeft({\"a\", \"bbb\", \"cc\"}) // InputForm", //
         "{\"  a\",\"bbb\",\" cc\"}");
     check("StringPadRight({\"a\", \"bbb\"}, 4, \".\") // InputForm", //

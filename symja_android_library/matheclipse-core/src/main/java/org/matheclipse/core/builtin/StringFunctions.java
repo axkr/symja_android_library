@@ -1983,11 +1983,18 @@ public final class StringFunctions {
 
   /**
    * <code>StringPadLeft(s, n)</code>, <code>StringPadLeft(s, n, pad)</code>,
-   * <code>StringPadLeft({s1, s2, ...})</code> and the <code>StringPadRight</code> forms - a string
-   * padded to <code>n</code> characters, with spaces or with repetitions of <code>pad</code>, or
-   * cut to <code>n</code> characters. The characters are padded as <code>PadLeft</code> and
-   * <code>PadRight</code> pad a list, so the cyclic padding and the truncation follow those rules;
-   * a list of strings is padded to its longest one.
+   * <code>StringPadLeft({s1, s2, ...})</code>, <code>StringPadLeft({s1, s2, ...}, Automatic, pad)</code>
+   * and the <code>StringPadRight</code> forms - a string padded to <code>n</code> characters, with
+   * spaces or with repetitions of <code>pad</code>, or cut to <code>n</code> characters; a list of
+   * strings is padded to its longest one when no width, or <code>Automatic</code>, is given.
+   *
+   * <p>
+   * The repetitions of <code>pad</code> are lined up with the far end of the finished string - its
+   * right end for <code>StringPadLeft</code>, its left end for <code>StringPadRight</code>.
+   * Mathematica (2026-09-11): <code>StringPadLeft["abc", 9, "xy"]</code> is
+   * <code>"yxyxyxabc"</code>, <code>StringPadRight["abc", 9, "xy"]</code> is
+   * <code>"abcyxyxyx"</code>, and a string longer than <code>n</code> keeps its right end
+   * (<code>StringPadLeft</code>) or its left end (<code>StringPadRight</code>).
    */
   private static class StringPad extends AbstractFunctionEvaluator {
     private final boolean left;
@@ -2006,10 +2013,11 @@ public final class StringFunctions {
         }
         padding = ast.arg3().toString();
       }
+      boolean longest = ast.argSize() == 1 || ast.arg2() == S.Automatic;
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         int n = -1;
-        if (ast.argSize() >= 2) {
+        if (!longest) {
           n = ast.arg2().toIntDefault();
           if (n < 0) {
             return F.NIL;
@@ -2019,17 +2027,13 @@ public final class StringFunctions {
           if (!s.isString()) {
             return F.NIL;
           }
-          if (ast.argSize() == 1) {
+          if (longest) {
             n = Math.max(n, s.toString().length());
           }
         }
         IASTAppendable result = F.ListAlloc(list.argSize());
         for (IExpr s : list) {
-          IExpr padded = pad(s.toString(), Math.max(n, 0), padding, engine);
-          if (padded.isNIL()) {
-            return F.NIL;
-          }
-          result.append(padded);
+          result.append(F.stringx(pad(s.toString(), Math.max(n, 0), padding)));
         }
         return result;
       }
@@ -2037,27 +2041,39 @@ public final class StringFunctions {
         // String expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
       }
-      if (ast.argSize() == 1) {
+      if (longest) {
         return arg1;
       }
       int n = ast.arg2().toIntDefault();
       if (n < 0) {
         return F.NIL;
       }
-      return pad(arg1.toString(), n, padding, engine);
+      return F.stringx(pad(arg1.toString(), n, padding));
     }
 
-    private IExpr pad(String s, int n, String padding, EvalEngine engine) {
-      IExpr characters = F.unaryAST1(S.Characters, F.stringx(s));
-      IExpr with = padding.length() == 1 ? F.stringx(padding)
-          : F.unaryAST1(S.Characters, F.stringx(padding));
-      IExpr padded = engine.evaluate(F.ternaryAST3(left ? S.PadLeft : S.PadRight, characters,
-          F.ZZ(n), with));
-      if (!padded.isList()) {
-        return F.NIL;
+    /** <code>s</code> padded, or cut, to <code>n</code> characters. */
+    private String pad(String s, int n, String padding) {
+      int length = s.length();
+      if (n <= length) {
+        return left ? s.substring(length - n) : s.substring(0, n);
       }
-      IExpr joined = engine.evaluate(F.unaryAST1(S.StringJoin, padded));
-      return joined.isString() ? joined : F.NIL;
+      int m = padding.length();
+      StringBuilder buf = new StringBuilder(n);
+      if (left) {
+        for (int k = 0; k < n - length; k++) {
+          // counted from the right end of the finished string
+          int fromRight = n - 1 - k;
+          buf.append(padding.charAt(m - 1 - (fromRight % m)));
+        }
+        buf.append(s);
+      } else {
+        buf.append(s);
+        for (int k = length; k < n; k++) {
+          // counted from the left end of the finished string
+          buf.append(padding.charAt(k % m));
+        }
+      }
+      return buf.toString();
     }
 
     @Override

@@ -41,9 +41,11 @@ public class StreamTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>ReadString(stream, term)</code>: a string terminator that never comes reads the rest of the
-   * stream, silently; a pattern that never matches is <code>ReadString::notfound</code> and leaves
-   * the stream where it was, as the Wolfram Language answers. The WLJS notebook tells its two file
-   * formats apart by that message - without it every notebook in the older format opened empty.
+   * stream, silently; a pattern that never matches is <code>ReadString::notfound</code>, and the
+   * rest of the stream is still the answer. Mathematica (2026-09-11):
+   * <code>ReadString[StringToStream["&lt;|...|&gt;\n"], "%" ~~ ...]</code> prints the message and
+   * answers the text, and <code>FailureQ</code> of it is <code>False</code>. The WLJS notebook
+   * reader rejects its older file format at the header check that follows.
    */
   @Test
   public void testReadStringTerminatorNotFound() {
@@ -52,8 +54,12 @@ public class StreamTest extends ExprEvaluatorTestCase {
     check("s=StringToStream(\"<|a->1|>\\nmore\"); "
         + "Check(ReadString(s, ___ ~~ \"%Notebook%\" ~~ EndOfLine, TimeConstraint -> 10), \"msg\")", //
         "msg");
-    check("StringLength(ReadString(s))", //
-        "13");
+    check("s=StringToStream(\"<|a->1|>\\nmore\"); "
+        + "{StringLength(Quiet(ReadString(s, \"%\" ~~ Repeated(\"-\", {16, 100}) ~~ \"%\"))), "
+        + "ReadString(s)}", //
+        "{13,EndOfFile}");
+    check("FailureQ(Quiet(ReadString(StringToStream(\"<|a->1|>\"), \"%\" ~~ \"x\")))", //
+        "False");
     check("s=StringToStream(\"head\\n%%\\ntail\"); {ReadString(s, \"\\n\" ~~ \"%%\"), StringLength(ReadString(s))}", //
         "{head,5}");
   }
