@@ -134,13 +134,17 @@ public class GraphicsOptions {
   };
 
   // MatrixPlot color map (Light Yellow -> Orange -> Red)
+  /**
+   * The Wolfram Language's MatrixPlot colours, as its own plots are coloured: blue for the most
+   * negative entries, white for zero, orange for the most positive. The stops are evenly spaced
+   * because they were read off at even steps of rank, which is how MatrixPlot scales.
+   */
   public static final double[][] MATRIX_COLORS = {//
-      {0.98, 0.98, 0.90}, // Pale Yellow/White
-      {1.00, 0.85, 0.40}, // Yellow/Orange
-      {0.95, 0.50, 0.10}, // Orange
-      {0.80, 0.10, 0.05}, // Red
-      {0.40, 0.00, 0.00} // Dark Red/Brown
-  };
+      {0.245, 0.428, 0.870}, {0.346, 0.613, 0.812}, {0.493, 0.716, 0.831},
+      {0.629, 0.793, 0.877}, {0.742, 0.857, 0.915}, {0.854, 0.919, 0.952}, //
+      {1.000, 1.000, 1.000}, // zero
+      {0.947, 0.918, 0.793}, {0.937, 0.880, 0.695}, {0.925, 0.834, 0.575},
+      {0.915, 0.799, 0.484}, {0.903, 0.744, 0.371}, {1.000, 0.420, 0.000}};
 
   /**
    * Interpolates colors using the "Sunset" gradient.
@@ -154,6 +158,21 @@ public class GraphicsOptions {
 
   public static IAST getMatrixColor(double t) {
     return interpolateColor(t, MATRIX_COLORS);
+  }
+
+  /**
+   * The Wolfram Language's default for the plots of a scalar field - ContourPlot, DensityPlot and
+   * their list forms - as its own plots are coloured: dark purple for the lowest values through
+   * magenta, coral and orange to pale yellow for the highest.
+   */
+  private static final double[][] FIELD_COLORS = { //
+      {0.387, 0.071, 0.397}, {0.657, 0.099, 0.379}, {0.832, 0.126, 0.363},
+      {0.914, 0.310, 0.362}, {0.974, 0.463, 0.360}, {1.000, 0.604, 0.377},
+      {1.000, 0.755, 0.513}, {1.000, 0.902, 0.654}};
+
+  /** The default colour of a scalar field's value <code>t</code>, scaled to 0..1. */
+  public static IAST getFieldColor(double t) {
+    return interpolateColor(t, FIELD_COLORS);
   }
 
   private static IAST interpolateColor(double t, double[][] map) {

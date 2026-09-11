@@ -260,28 +260,8 @@ public class DensityPlot extends ListPlot {
   }
 
   protected IExpr getDensityColor(double t) {
-    if (t < 0)
-      t = 0;
-    if (t > 1)
-      t = 1;
-
-    int n = COLOR_MAP.length - 1;
-    double pos = t * n;
-    int idx = (int) pos;
-    if (idx >= n) {
-      double[] c = COLOR_MAP[n];
-      return F.RGBColor(c[0], c[1], c[2]);
-    }
-
-    double frac = pos - idx;
-    double[] c1 = COLOR_MAP[idx];
-    double[] c2 = COLOR_MAP[idx + 1];
-
-    double r = c1[0] + (c2[0] - c1[0]) * frac;
-    double g = c1[1] + (c2[1] - c1[1]) * frac;
-    double b = c1[2] + (c2[2] - c1[2]) * frac;
-
-    return F.RGBColor(r, g, b);
+    // the default scalar field gradient, the one ContourPlot shades with too
+    return GraphicsOptions.getFieldColor(t);
   }
 
   private double[] parseRange(IExpr iter, EvalEngine engine) {

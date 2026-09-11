@@ -157,7 +157,10 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     }
     double factor = longest > 0.0 ? scale * spacing / longest : 0.0;
 
-    IASTAppendable primitives = F.ListAlloc(vectors.size() + 1);
+    IASTAppendable primitives = F.ListAlloc(vectors.size() + 2);
+    if (dimension == 2) {
+      primitives.append(VectorPlot.arrowheads(0.028125));
+    }
     if (!colored) {
       primitives.append(VectorPlot.color(0.0));
     }

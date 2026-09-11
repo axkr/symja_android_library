@@ -283,13 +283,26 @@ public class MatrixPlot extends ListPlot {
    * ramp, and it is monotonic, so the ordering of the cells is still faithful.
    */
   private static double rankFraction(double[] sortedValues, double value) {
-    int n = sortedValues.length;
-    if (n <= 1) {
+    // Each sign is ranked on its own and zero is the middle of the scale, which is white: the
+    // negative entries fill 0..0.5 (the most negative at 0), the positive ones 0.5..1 (the largest
+    // at 1), as the Wolfram Language colours a matrix
+    if (value == 0.0 || sortedValues.length == 0) {
       return 0.5;
     }
-    // number of entries strictly smaller, so the smallest maps to 0 and the largest to 1
+    int negatives = countBelow(sortedValues, 0.0);
+    int firstPositive = sortedValues.length - countAbove(sortedValues, 0.0);
+    int positives = sortedValues.length - firstPositive;
+    int below = countBelow(sortedValues, value);
+    if (value < 0.0) {
+      return negatives <= 1 ? 0.0 : 0.5 * below / negatives;
+    }
+    return positives <= 1 ? 1.0 : 0.5 + 0.5 * (below - firstPositive + 1) / positives;
+  }
+
+  /** The number of entries strictly smaller than <code>value</code>. */
+  private static int countBelow(double[] sortedValues, double value) {
     int low = 0;
-    int high = n;
+    int high = sortedValues.length;
     while (low < high) {
       int mid = (low + high) >>> 1;
       if (sortedValues[mid] < value) {
@@ -298,7 +311,22 @@ public class MatrixPlot extends ListPlot {
         high = mid;
       }
     }
-    return (double) low / (n - 1);
+    return low;
+  }
+
+  /** The number of entries strictly greater than <code>value</code>. */
+  private static int countAbove(double[] sortedValues, double value) {
+    int low = 0;
+    int high = sortedValues.length;
+    while (low < high) {
+      int mid = (low + high) >>> 1;
+      if (sortedValues[mid] <= value) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return sortedValues.length - low;
   }
 
   private List<Double> getNiceTicks(double min, double max, int maxTicks) {

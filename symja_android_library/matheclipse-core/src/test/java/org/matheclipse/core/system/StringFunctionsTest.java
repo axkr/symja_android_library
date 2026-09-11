@@ -20,6 +20,42 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegerString() {
+    check("IntegerString(255, 16) // InputForm", //
+        "\"ff\"");
+    check("IntegerString(-37) // InputForm", //
+        "\"37\"");
+    check("IntegerString(7, 2, 8) // InputForm", //
+        "\"00000111\"");
+    check("IntegerString(12345, 10, 3) // InputForm", //
+        "\"345\"");
+    check("IntegerString({5, 10}, 2) // InputForm", //
+        "{\"101\",\"1010\"}");
+    check("IntegerString(2^70, 36) // InputForm", //
+        "\"6x5kxtvuwilukg\"");
+  }
+
+  @Test
+  public void testStringPadLeftRight() {
+    check("StringPadLeft(\"abc\", 6) // InputForm", //
+        "\"   abc\"");
+    check("StringPadRight(\"abc\", 6) // InputForm", //
+        "\"abc   \"");
+    check("StringPadLeft(\"abcdef\", 3) // InputForm", //
+        "\"def\"");
+    check("StringPadRight(\"abcdef\", 3) // InputForm", //
+        "\"abc\"");
+    check("StringPadLeft(\"7\", 3, \"0\") // InputForm", //
+        "\"007\"");
+    check("StringPadRight(\"abc\", 8, \"xy\") // InputForm", //
+        "\"abcxyxyx\"");
+    check("StringPadLeft({\"a\", \"bbb\", \"cc\"}) // InputForm", //
+        "{\"  a\",\"bbb\",\" cc\"}");
+    check("StringPadRight({\"a\", \"bbb\"}, 4, \".\") // InputForm", //
+        "{\"a...\",\"bbb.\"}");
+  }
+
+  @Test
   public void testEditDistance() {
     check("EditDistance(\"kitten\", \"kitchen\")", //
         "2");

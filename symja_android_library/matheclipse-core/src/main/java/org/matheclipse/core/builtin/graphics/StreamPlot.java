@@ -138,6 +138,7 @@ public class StreamPlot extends AbstractFunctionEvaluator {
     double limit = length * Math.sqrt(2.0) / 2;
 
     IASTAppendable primitives = F.ListAlloc();
+    primitives.append(VectorPlot.arrowheads(0.04));
     if (!colored) {
       primitives.append(VectorPlot.color(0.0));
     }

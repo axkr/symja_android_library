@@ -838,6 +838,9 @@ public final class StringFunctions {
       S.StringInsert.setEvaluator(new StringInsert());
       S.StringJoin.setEvaluator(new StringJoin());
       S.StringLength.setEvaluator(new StringLength());
+      S.IntegerString.setEvaluator(new IntegerString());
+      S.StringPadLeft.setEvaluator(new StringPad(true));
+      S.StringPadRight.setEvaluator(new StringPad(false));
       S.StringMatchQ.setEvaluator(new StringMatchQ());
       S.StringPart.setEvaluator(new StringPart());
       S.StringPosition.setEvaluator(new StringPosition());
@@ -1930,6 +1933,139 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
+  /**
+   * <code>IntegerString(n)</code>, <code>IntegerString(n, b)</code>,
+   * <code>IntegerString(n, b, len)</code> - the digits of <code>Abs(n)</code> in base
+   * <code>b</code> (2 to 36, digits beyond 9 as lower case letters), padded on the left with
+   * <code>0</code> to <code>len</code> digits, or cut to the last <code>len</code> of them.
+   */
+  private static class IntegerString extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      if (!n.isInteger()) {
+        return F.NIL;
+      }
+      int base = 10;
+      if (ast.argSize() >= 2) {
+        base = ast.arg2().toIntDefault();
+        if (base < 2 || base > 36) {
+          return F.NIL;
+        }
+      }
+      String digits = ((org.matheclipse.core.interfaces.IInteger) n).toBigNumerator().abs()
+          .toString(base);
+      if (ast.argSize() >= 3) {
+        int length = ast.arg3().toIntDefault();
+        if (length < 0) {
+          return F.NIL;
+        }
+        if (digits.length() > length) {
+          digits = digits.substring(digits.length() - length);
+        } else if (digits.length() < length) {
+          digits = "0".repeat(length - digits.length()) + digits;
+        }
+      }
+      return F.stringx(digits);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+    }
+  }
+
+  /**
+   * <code>StringPadLeft(s, n)</code>, <code>StringPadLeft(s, n, pad)</code>,
+   * <code>StringPadLeft({s1, s2, ...})</code> and the <code>StringPadRight</code> forms - a string
+   * padded to <code>n</code> characters, with spaces or with repetitions of <code>pad</code>, or
+   * cut to <code>n</code> characters. The characters are padded as <code>PadLeft</code> and
+   * <code>PadRight</code> pad a list, so the cyclic padding and the truncation follow those rules;
+   * a list of strings is padded to its longest one.
+   */
+  private static class StringPad extends AbstractFunctionEvaluator {
+    private final boolean left;
+
+    StringPad(boolean left) {
+      this.left = left;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      String padding = " ";
+      if (ast.argSize() >= 3) {
+        if (!ast.arg3().isString() || ast.arg3().toString().isEmpty()) {
+          return F.NIL;
+        }
+        padding = ast.arg3().toString();
+      }
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        int n = -1;
+        if (ast.argSize() >= 2) {
+          n = ast.arg2().toIntDefault();
+          if (n < 0) {
+            return F.NIL;
+          }
+        }
+        for (IExpr s : list) {
+          if (!s.isString()) {
+            return F.NIL;
+          }
+          if (ast.argSize() == 1) {
+            n = Math.max(n, s.toString().length());
+          }
+        }
+        IASTAppendable result = F.ListAlloc(list.argSize());
+        for (IExpr s : list) {
+          IExpr padded = pad(s.toString(), Math.max(n, 0), padding, engine);
+          if (padded.isNIL()) {
+            return F.NIL;
+          }
+          result.append(padded);
+        }
+        return result;
+      }
+      if (!arg1.isString()) {
+        // String expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
+      }
+      if (ast.argSize() == 1) {
+        return arg1;
+      }
+      int n = ast.arg2().toIntDefault();
+      if (n < 0) {
+        return F.NIL;
+      }
+      return pad(arg1.toString(), n, padding, engine);
+    }
+
+    private IExpr pad(String s, int n, String padding, EvalEngine engine) {
+      IExpr characters = F.unaryAST1(S.Characters, F.stringx(s));
+      IExpr with = padding.length() == 1 ? F.stringx(padding)
+          : F.unaryAST1(S.Characters, F.stringx(padding));
+      IExpr padded = engine.evaluate(F.ternaryAST3(left ? S.PadLeft : S.PadRight, characters,
+          F.ZZ(n), with));
+      if (!padded.isList()) {
+        return F.NIL;
+      }
+      IExpr joined = engine.evaluate(F.unaryAST1(S.StringJoin, padded));
+      return joined.isString() ? joined : F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+  }
+
   private static class StringLength extends AbstractFunctionEvaluator {
 
     @Override

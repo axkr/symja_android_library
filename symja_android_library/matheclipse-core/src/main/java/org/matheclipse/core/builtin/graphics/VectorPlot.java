@@ -136,6 +136,10 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     double factor = longest > 0.0 ? scale * spacing / longest : 0.0;
 
     IASTAppendable primitives = F.ListAlloc();
+    if (dimension == 2) {
+      // the head's size is a share of the plot's width: 0.45 / 16 for the default 15 points
+      primitives.append(arrowheads(0.45 / (points[0] + 1)));
+    }
     if (!colored) {
       primitives.append(color(0.0));
     }
@@ -234,12 +238,35 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     return Math.sqrt(sum);
   }
 
-  /** From blue for the shortest arrow to red for the longest, <code>t</code> in 0..1. */
+  /** Where the stops of {@link #GRADIENT} lie on 0..1. */
+  private static final double[] STOPS = {0.0, 0.25, 0.37, 0.47, 0.54, 0.61, 0.70, 0.78, 1.0};
+
+  /**
+   * The Wolfram Language's default for vector and stream plots, as its own plots are coloured:
+   * blue-purple for the weakest field through magenta and red to orange-yellow for the strongest.
+   */
+  private static final double[][] GRADIENT = { //
+      {0.195, 0.102, 0.670}, {0.569, 0.208, 0.602}, {0.728, 0.264, 0.477},
+      {0.848, 0.322, 0.350}, {0.922, 0.365, 0.252}, {1.000, 0.414, 0.096},
+      {1.000, 0.487, 0.000}, {1.000, 0.565, 0.004}, {1.000, 0.745, 0.044}};
+
+  /** The arrowheads of a two dimensional vector plot, as the Wolfram Language sizes them. */
+  static IAST arrowheads(double size) {
+    return F.unaryAST1(S.Arrowheads, F.list(F.list(F.num(size), F.num(1.0))));
+  }
+
+  /** The colour for the field's strength <code>t</code>, 0 the weakest and 1 the strongest. */
   static IAST color(double t) {
-    double r = 0.18 + 0.72 * t;
-    double g = 0.36 - 0.16 * t;
-    double b = 0.75 - 0.6 * t;
-    return F.RGBColor(F.num(r), F.num(g), F.num(b));
+    t = Double.isNaN(t) ? 0.0 : Math.max(0.0, Math.min(1.0, t));
+    int k = 1;
+    while (k < STOPS.length - 1 && t > STOPS[k]) {
+      k++;
+    }
+    double s = (t - STOPS[k - 1]) / (STOPS[k] - STOPS[k - 1]);
+    double[] a = GRADIENT[k - 1];
+    double[] b = GRADIENT[k];
+    return F.RGBColor(F.num(a[0] + s * (b[0] - a[0])), F.num(a[1] + s * (b[1] - a[1])),
+        F.num(a[2] + s * (b[2] - a[2])));
   }
 
   private static boolean hasOption(IAST options, IExpr key) {

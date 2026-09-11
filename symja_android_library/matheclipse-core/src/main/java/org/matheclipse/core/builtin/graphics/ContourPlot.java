@@ -568,7 +568,7 @@ public class ContourPlot extends ListPlot {
     if (val < 0 || val > 1.0) {
       val = val - Math.floor(val);
     }
-    return F.Hue(F.num(0.66 * (1.0 - val)));
+    return GraphicsOptions.getFieldColor(val);
   }
 
   // --- Marching Squares: Polygons ---
