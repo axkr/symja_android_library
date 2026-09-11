@@ -76,6 +76,12 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
       if (a1.equals(t) && a1.isFree(s)) {
         return F.Power(s, F.CN2);
       }
+      if (t.isSymbol()) {
+        IExpr stepped = laplaceTransformOfSteps(engine, a1, t, s);
+        if (stepped.isPresent()) {
+          return stepped;
+        }
+      }
       if (ast.arg1().isAST()) {
         IAST arg1 = (IAST) ast.arg1();
 
@@ -148,6 +154,199 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The transform of a function which switches on or off at a point: a step, a product with a
+   * step, or a <code>Piecewise</code> in <code>t</code>.
+   *
+   * <p>
+   * These are the forcing terms of the Laplace chapter of every textbook on differential equations,
+   * and the transform of each is elementary by the second shift theorem,
+   * <code>L{f(t)*UnitStep(t-a)} == E^(-a*s)*L{f(t+a)}</code> for <code>a &gt;= 0</code>. A
+   * <code>Piecewise</code> whose pieces hold on intervals of <code>t</code> is the same thing
+   * written differently: a piece <code>v</code> on <code>lo &lt;= t &lt; hi</code> is
+   * <code>v*(UnitStep(t-lo) - UnitStep(t-hi))</code>.
+   *
+   * @return {@link F#NIL} if <code>a1</code> is not of one of those shapes
+   */
+  private static IExpr laplaceTransformOfSteps(EvalEngine engine, IExpr a1, IExpr t, IExpr s) {
+    if (a1.isFree(x -> isStep(x, t) || x.isAST(S.Piecewise), true)) {
+      return F.NIL;
+    }
+    if (a1.isAST(S.Piecewise)) {
+      IExpr steps = piecewiseAsSteps((IAST) a1, t, engine);
+      if (steps.isNIL()) {
+        return F.NIL;
+      }
+      IExpr transformed = engine.evaluate(F.LaplaceTransform(F.Expand(steps), t, s));
+      return transformed.has(S.LaplaceTransform) ? F.NIL : transformed;
+    }
+    IExpr step;
+    IExpr rest;
+    if (isStep(a1, t)) {
+      step = a1;
+      rest = F.C1;
+    } else if (a1.isTimes()) {
+      IAST times = (IAST) a1;
+      int index = times.indexOf(x -> isStep(x, t));
+      if (index <= 0) {
+        return F.NIL;
+      }
+      step = times.get(index);
+      rest = times.removeAtCopy(index).oneIdentity1();
+      if (!rest.isFree(x -> isStep(x, t), true)) {
+        // A product of steps is a step too, but not one this reads off.
+        return F.NIL;
+      }
+    } else {
+      return F.NIL;
+    }
+    // The argument of the step is c*t - b; it switches on at a == b/c when c is positive, and off
+    // there when c is negative.
+    IExpr argument = step.first();
+    IExpr c = engine.evaluate(F.Coefficient(argument, t, F.C1));
+    IExpr b = engine.evaluate(F.Negate(F.Coefficient(argument, t, F.C0)));
+    if (c.isZero() || !c.isFree(t) || !b.isFree(t)
+        || !engine.evaluate(F.Subtract(argument, F.Subtract(F.Times(c, t), b))).isZero()) {
+      return F.NIL;
+    }
+    IExpr a = engine.evaluate(F.Divide(b, c));
+    if (c.isNegative()) {
+      // UnitStep(a - t) is 1 - UnitStep(t - a) everywhere but at a, which the integral does not see.
+      IExpr on = engine.evaluate(F.LaplaceTransform(rest, t, s));
+      IExpr off = engine.evaluate(
+          F.LaplaceTransform(F.Times(rest, F.UnitStep(F.Subtract(t, a))), t, s));
+      if (on.has(S.LaplaceTransform) || off.has(S.LaplaceTransform)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Subtract(on, off));
+    }
+    if (!c.isPositive()) {
+      return F.NIL;
+    }
+    if (engine.evaluate(F.LessEqual(a, F.C0)).isTrue()) {
+      // A step which is already on at t == 0 is 1 on the whole of the transform's range.
+      IExpr transformed = engine.evaluate(F.LaplaceTransform(rest, t, s));
+      return transformed.has(S.LaplaceTransform) ? F.NIL : transformed;
+    }
+    if (!engine.evaluate(F.Greater(a, F.C0)).isTrue()) {
+      // The sign of where it switches on is not known, and the two cases have different answers.
+      return F.NIL;
+    }
+    IExpr shifted = engine.evaluate(F.subst(rest, t, F.Plus(t, a)));
+    IExpr transformed = engine.evaluate(F.LaplaceTransform(shifted, t, s));
+    if (transformed.has(S.LaplaceTransform)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(F.Exp(F.Times(F.CN1, a, s)), transformed));
+  }
+
+  /** Whether <code>expr</code> is a unit step in <code>t</code>. */
+  private static boolean isStep(IExpr expr, IExpr t) {
+    return (expr.isAST(S.UnitStep, 2) || expr.isAST(S.HeavisideTheta, 2)) && !expr.isFree(t);
+  }
+
+  /**
+   * <code>Piecewise</code> rewritten as a sum of steps, for pieces which hold on intervals of
+   * <code>t</code> and a default of zero.
+   *
+   * @return {@link F#NIL} for any other <code>Piecewise</code>
+   */
+  private static IExpr piecewiseAsSteps(IAST piecewise, IExpr t, EvalEngine engine) {
+    if (piecewise.argSize() < 1 || !piecewise.arg1().isList()) {
+      return F.NIL;
+    }
+    IExpr otherwise = piecewise.argSize() >= 2 ? piecewise.arg2() : F.C0;
+    if (!otherwise.isZero()) {
+      return F.NIL;
+    }
+    IAST pieces = (IAST) piecewise.arg1();
+    IASTAppendable sum = F.PlusAlloc(pieces.argSize());
+    IExpr previousHi = F.CNInfinity;
+    for (int i = 1; i <= pieces.argSize(); i++) {
+      IExpr piece = pieces.get(i);
+      if (!piece.isList() || ((IAST) piece).argSize() != 2) {
+        return F.NIL;
+      }
+      IExpr value = ((IAST) piece).arg1();
+      IExpr[] bounds = intervalOf(((IAST) piece).arg2(), t);
+      if (bounds == null) {
+        return F.NIL;
+      }
+      // The first piece whose condition holds is the one which applies, so pieces which overlap
+      // would count twice here. Those are declined: the pieces have to follow one another.
+      if (!engine.evaluate(F.GreaterEqual(bounds[0], previousHi)).isTrue()) {
+        return F.NIL;
+      }
+      previousHi = bounds[1];
+      IExpr on = F.UnitStep(F.Subtract(t, bounds[0]));
+      IExpr window = bounds[1].isInfinity() ? on
+          : F.Subtract(on, F.UnitStep(F.Subtract(t, bounds[1])));
+      sum.append(F.Times(value, window));
+    }
+    return engine.evaluate(sum.oneIdentity0());
+  }
+
+  /**
+   * The interval <code>{lo, hi}</code> a condition on <code>t</code> describes, with
+   * <code>hi</code> possibly <code>Infinity</code>, or <code>null</code>. Whether an end is open
+   * does not matter to an integral.
+   */
+  private static IExpr[] intervalOf(IExpr condition, IExpr t) {
+    IExpr lo = F.CNInfinity;
+    IExpr hi = F.CInfinity;
+    IAST parts;
+    if (condition.isAST(S.And)) {
+      parts = (IAST) condition;
+    } else {
+      parts = F.List(condition);
+    }
+    for (int i = 1; i <= parts.argSize(); i++) {
+      IExpr part = parts.get(i);
+      if (part.isAST(S.Inequality) && ((IAST) part).argSize() == 5
+          && ((IAST) part).arg3().equals(t)) {
+        IAST inequality = (IAST) part;
+        if (!isLess(inequality.arg2()) || !isLess(inequality.get(4))) {
+          return null;
+        }
+        lo = inequality.arg1();
+        hi = inequality.get(5);
+      } else if (part.isAST2() && (isLess(part.head()) || isGreater(part.head()))) {
+        IExpr left = part.first();
+        IExpr right = part.second();
+        boolean less = isLess(part.head());
+        if (left.equals(t) && right.isFree(t)) {
+          if (less) {
+            hi = right;
+          } else {
+            lo = right;
+          }
+        } else if (right.equals(t) && left.isFree(t)) {
+          if (less) {
+            lo = left;
+          } else {
+            hi = left;
+          }
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+    if (!lo.isFree(t) || !hi.isFree(t) || lo.isNegativeInfinity()) {
+      return null;
+    }
+    return new IExpr[] {lo, hi};
+  }
+
+  private static boolean isLess(IExpr head) {
+    return head == S.Less || head == S.LessEqual;
+  }
+
+  private static boolean isGreater(IExpr head) {
+    return head == S.Greater || head == S.GreaterEqual;
   }
 
   private IExpr laplaceTransformTimes(EvalEngine engine, IExpr t, IExpr s, IAST arg1) {

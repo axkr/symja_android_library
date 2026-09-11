@@ -6,6 +6,35 @@ import org.junit.jupiter.api.Test;
 public class LaplaceTransformTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testLaplaceTransformOfSteps() {
+    // The second shift theorem: L{f(t)*UnitStep(t-a)} == E^(-a*s)*L{f(t+a)} for a >= 0.
+    check("LaplaceTransform(UnitStep(t - Pi), t, s)", //
+        "1/(E^(Pi*s)*s)");
+    check("LaplaceTransform(Sin(t)*UnitStep(t - 2*Pi), t, s)", //
+        "1/(E^(2*Pi*s)*(1+s^2))");
+    check("LaplaceTransform(HeavisideTheta(t - 3), t, s)", //
+        "1/(E^(3*s)*s)");
+    check("LaplaceTransform(t*UnitStep(t - 1), t, s)", //
+        "(1/s^2+1/s)/E^s");
+    // a step which is already on at t == 0 is 1 on the whole range of the transform
+    check("LaplaceTransform(UnitStep(t + 2), t, s)", //
+        "1/s");
+    // a step down, UnitStep(a - t), is 1 - UnitStep(t - a)
+    check("LaplaceTransform(UnitStep(2 - t), t, s)", //
+        "1/s-1/(E^(2*s)*s)");
+    // A Piecewise on intervals of t is a sum of steps.
+    check("LaplaceTransform(Piecewise({{1, 0 <= t < Pi}, {0, Pi <= t}}, 0), t, s)", //
+        "1/s-1/(E^(Pi*s)*s)");
+    // a triangle pulse; the transform is written piece by piece, so it is compared by value
+    check("Simplify(LaplaceTransform(Piecewise({{t, 0 <= t < 1}, {2 - t, 1 <= t < 2}}, 0), t, s)"
+        + " - (1/s^2 - 2/(E^s*s^2) + 1/(E^(2*s)*s^2)))", //
+        "0");
+    // where the step switches on is not known, and the two cases differ
+    check("LaplaceTransform(UnitStep(t - a), t, s)", //
+        "LaplaceTransform(UnitStep(-a+t),t,s)");
+  }
+
+  @Test
   public void testInverseLaplaceTransform() {
     // 1. The untouched base fraction
     check("InverseLaplaceTransform(1/(E^(Pi*s)+E^(Pi*s)*s^2), s, t)", //
