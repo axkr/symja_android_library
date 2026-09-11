@@ -1054,4 +1054,32 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{1,2.5,a}");
   }
 
+  /**
+   * <code>ExpressionJSON</code> writes exact numbers as numbers: an integer as a JSON number, a
+   * rational and a complex number as a structure of numbers, as the Wolfram Language does.
+   *
+   * <p>
+   * It is the format the WLJS notebook sends every result to the browser in. Integers used to be
+   * written as strings - <code>["List","1","2"]</code> - which a reader takes for symbols named
+   * <code>1</code> and <code>2</code>; <code>GrayLevel[1]</code> came back holding the symbol.
+   */
+  @Test
+  public void testExpressionJSONWritesNumbersAsNumbers() {
+    check("ExportString[{1, -3, 2^70, 1/2, 1.5, \"s\", x, True, I, 1 + 2 I}, \"ExpressionJSON\"]", //
+        "[\"List\",1,-3,1180591620717411303424,[\"Rational\",1,2],1.5,\"'s'\",\"x\",true,"
+            + "[\"Complex\",0,1],[\"Complex\",1,2]]");
+    check("ExportString[5, \"ExpressionJSON\"]", //
+        "5");
+    check("ExportString[1/2, \"ExpressionJSON\"]", //
+        "[\"Rational\",1,2]");
+    check("ExportString[\"a\", \"ExpressionJSON\"]", //
+        "\"'a'\"");
+    check("e = {1, 2^70, -1/2, 1 + 2 I, 1.5, \"s\", GrayLevel[1], f[x]}; "
+        + "ImportString[ExportString[e, \"ExpressionJSON\"], \"ExpressionJSON\"] === e", //
+        "True");
+    // what an older export wrote still reads back as the numbers it meant
+    check("Head /@ ImportString[\"[\\\"List\\\",\\\"1\\\",\\\"-2\\\"]\", \"ExpressionJSON\"]", //
+        "{Integer,Integer}");
+  }
+
 }

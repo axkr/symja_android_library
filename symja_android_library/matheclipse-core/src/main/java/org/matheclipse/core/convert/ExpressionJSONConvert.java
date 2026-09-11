@@ -1,5 +1,9 @@
 package org.matheclipse.core.convert;
 
+import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
+import java.math.BigInteger;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -79,57 +83,68 @@ public class ExpressionJSONConvert {
    * @throws JsonMappingException
    */
   public static JsonNode exportExpressionJSON(IExpr expr) {
+    // every exact number is a number or a structure of numbers, as the Wolfram Language writes it:
+    // a front end reads ["List",1,2] as two numbers, and read ["List","1","2"] as two symbols
+    if (expr.isTrue()) {
+      return BooleanNode.TRUE;
+    }
+    if (expr.isFalse()) {
+      return BooleanNode.FALSE;
+    }
+    if (expr instanceof IInteger) {
+      BigInteger value = ((IInteger) expr).toBigNumerator();
+      return value.bitLength() < 64 ? LongNode.valueOf(value.longValue())
+          : BigIntegerNode.valueOf(value);
+    }
+    if (expr instanceof IFraction) {
+      IFraction fraction = (IFraction) expr;
+      return structure("Rational", exportExpressionJSON(fraction.numerator()),
+          exportExpressionJSON(fraction.denominator()));
+    }
+    if (expr.isComplexNumeric()) {
+      IComplexNum complexNum = (IComplexNum) expr;
+      return structure("Complex", DoubleNode.valueOf(complexNum.reDoubleValue()),
+          DoubleNode.valueOf(complexNum.imDoubleValue()));
+    }
+    if (expr instanceof IComplex) {
+      IComplex complex = (IComplex) expr;
+      return structure("Complex", exportExpressionJSON(complex.re()),
+          exportExpressionJSON(complex.im()));
+    }
+    if (expr instanceof Num) {
+      return DoubleNode.valueOf(((Num) expr).doubleValue());
+    }
+    if (expr instanceof ApfloatNum) {
+      Apfloat apfloatValue = ((ApfloatNum) expr).apfloatValue();
+      if (apfloatValue.precision() > 20L) {
+        return TextNode.valueOf(apfloatValue.toString());
+      }
+      return DoubleNode.valueOf(apfloatValue.doubleValue());
+    }
+    if (expr.isString()) {
+      return TextNode.valueOf("'" + expr.toString() + "'");
+    }
     if (expr.isASTOrAssociation()) {
       IAST ast = (IAST) expr;
-      ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-      temp.add(ast.head().toString());
+      ArrayNode array = JSON_OBJECT_MAPPER.createArrayNode();
+      IExpr head = ast.head();
+      array.add(head.isSymbol() ? TextNode.valueOf(head.toString()) : exportExpressionJSON(head));
       for (int i = 1; i < ast.size(); i++) {
-        IExpr arg = ast.getRule(i);
-        if (arg.isComplexNumeric()) {
-          IComplexNum complexNum = (IComplexNum) arg;
-          ArrayNode complexJson = JSON_OBJECT_MAPPER.createArrayNode();
-          complexJson.add("Complex");
-          complexJson.add(complexNum.reDoubleValue());
-          complexJson.add(complexNum.imDoubleValue());
-          temp.add(complexJson);
-        } else if (arg instanceof Num) {
-          temp.add(((Num) arg).doubleValue());
-        } else if (arg instanceof ApfloatNum) {
-          Apfloat apfloatValue = ((ApfloatNum) arg).apfloatValue();
-          if (apfloatValue.precision() > 20L) {
-            temp.add(apfloatValue.toString());
-          } else {
-            temp.add(apfloatValue.doubleValue());
-          }
-        } else if (arg.isNumber() || arg.isSymbol()) {
-          if (arg.isTrue()) {
-            temp.add(true);
-          } else if (arg.isFalse()) {
-            temp.add(false);
-          } else {
-            temp.add(arg.toString());
-          }
-        } else if (arg.isString()) {
-          temp.add("'" + arg.toString() + "'");
-        } else {
-          temp.add(exportExpressionJSON(arg));
-        }
+        array.add(exportExpressionJSON(ast.getRule(i)));
       }
-      return temp;
+      return array;
     }
-    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-    if (expr.isSymbol()) {
-      if (expr.isTrue()) {
-        temp.add(true);
-      } else if (expr.isFalse()) {
-        temp.add(false);
-      } else {
-        temp.add(temp.toString());
-      }
-    } else {
-      temp.add(temp.toString());
+    return TextNode.valueOf(expr.toString());
+  }
+
+  /** <code>[head, parts...]</code>: a compound number such as a rational or a complex number. */
+  private static ArrayNode structure(String head, JsonNode... parts) {
+    ArrayNode array = JSON_OBJECT_MAPPER.createArrayNode();
+    array.add(head);
+    for (JsonNode part : parts) {
+      array.add(part);
     }
-    return temp;
+    return array;
   }
 
   // private static JsonNode exportGraphics3DJSON(IExpr data3D) {
@@ -219,6 +234,10 @@ public class ExpressionJSONConvert {
         if (symbolName.length() > 1 && symbolName.charAt(0) == '\''
             && symbolName.charAt(symbolName.length() - 1) == '\'') {
           return F.$str(symbolName.substring(1, symbolName.length() - 1));
+        }
+        if (symbolName.matches("-?[0-9]+")) {
+          // an integer written as a string, which is how this converter used to export one
+          return F.ZZ(new BigInteger(symbolName));
         }
         if (Scanner.isIdentifier(symbolName)) {
           return F.symbol(symbolName);

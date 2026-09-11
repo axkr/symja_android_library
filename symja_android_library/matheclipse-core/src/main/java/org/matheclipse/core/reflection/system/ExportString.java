@@ -48,17 +48,7 @@ public class ExportString extends AbstractEvaluator {
     Extension format = Extension.exportExtension(ast.arg2().toString());
     try (StringBuilderWriter writer = new StringBuilderWriter()) {
       if (format.equals(Extension.EXPRESSIONJSON)) {
-        if (arg1.isNumber() || arg1.isSymbol()) {
-          if (arg1.isTrue()) {
-            return F.stringx("true");
-          }
-          if (arg1.isFalse()) {
-            return F.stringx("false");
-          }
-          return F.stringx(arg1.toString());
-        } else if (arg1.isString()) {
-          return F.stringx("'" + arg1.toString() + "'");
-        }
+        // atoms too: 1/2 is ["Rational",1,2] and a string is a JSON string, not bare text
         return ExpressionJSONConvert.exportExpressionJSONIStringX(arg1);
       }
 
