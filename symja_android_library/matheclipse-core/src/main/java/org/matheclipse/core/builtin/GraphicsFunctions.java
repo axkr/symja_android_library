@@ -994,7 +994,9 @@ public class GraphicsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      // options may follow the points, as for Polygon and Point: Mathematica writes the outline of
+      // a surface as Line[{{i, j}, ...}, VertexColors -> None]
+      return ARGS_1_INFINITY;
     }
 
     @Override

@@ -1595,4 +1595,18 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{True}");
   }
 
+  /**
+   * <code>Line</code> takes options after its points, as Mathematica writes the outline of a
+   * surface - <code>Line[{{i, j}, ...}, VertexColors -> None]</code> drew <code>Line::argx</code>
+   * in the notebook for every Plot3D.
+   */
+  @Test
+  public void testLineTakesOptions() {
+    check("Check[Line[{{1, 2}, {3, 4}}, VertexColors -> None], \"message\"]", //
+        "Line[{{1,2},{3,4}},VertexColors->None]");
+    check("Check[Cases[Plot3D[x + y, {x, 0, 1}, {y, 0, 1}, Mesh -> None], "
+        + "{GrayLevel[0], _Line}, Infinity] // Length, \"message\"]", //
+        "1");
+  }
+
 }
