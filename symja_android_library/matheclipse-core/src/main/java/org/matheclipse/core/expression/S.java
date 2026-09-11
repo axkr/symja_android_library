@@ -11210,6 +11210,16 @@ public class S {
   public final static IBuiltInSymbol Integers = S.initFinalSymbol("Integers", ID.Integers);
 
   /**
+   * IntegerString(x) - TODO describe `IntegerString`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerString.md">IntegerString
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol IntegerString =
+      S.initFinalSymbol("IntegerString", ID.IntegerString);
+
+  /**
    * Integrate(f, x) - integrates `f` with respect to `x`. The result does not contain the additive
    * integration constant.
    * 
@@ -21606,6 +21616,16 @@ public class S {
    */
   public final static IBuiltInSymbol StringPadLeft =
       S.initFinalSymbol("StringPadLeft", ID.StringPadLeft);
+
+  /**
+   * StringPadRight(x) - TODO describe `StringPadRight`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringPadRight.md">StringPadRight
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StringPadRight =
+      S.initFinalSymbol("StringPadRight", ID.StringPadRight);
 
   /**
    * StringPart(str, pos) - return the character at position `pos` from the `str` string expression.
