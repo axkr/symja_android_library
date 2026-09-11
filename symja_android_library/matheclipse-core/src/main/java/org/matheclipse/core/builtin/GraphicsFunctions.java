@@ -667,8 +667,8 @@ public class GraphicsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          new IBuiltInSymbol[] {S.VertexColors, S.VertexNormals}, //
-          new IExpr[] {S.Automatic, S.Automatic});
+          new IBuiltInSymbol[] {S.VertexColors, S.VertexNormals, S.VertexTextureCoordinates}, //
+          new IExpr[] {S.Automatic, S.Automatic, S.Automatic});
     }
 
   }

@@ -1494,4 +1494,16 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{1,True}");
   }
 
+  /**
+   * <code>VertexTextureCoordinates</code> is an option of <code>GraphicsComplex</code>, as in the
+   * Wolfram Language; a textured region drew <code>GraphicsComplex::optx</code> each time the
+   * notebook showed it.
+   */
+  @Test
+  public void testGraphicsComplexTakesTextureCoordinates() {
+    check("Head[Check[GraphicsComplex[{{0, 0}, {1, 0}, {1, 1}}, Polygon[{1, 2, 3}], "
+        + "VertexTextureCoordinates -> {{0, 0}, {1, 0}, {1, 1}}], \"msg\"]]", //
+        "GraphicsComplex");
+  }
+
 }
