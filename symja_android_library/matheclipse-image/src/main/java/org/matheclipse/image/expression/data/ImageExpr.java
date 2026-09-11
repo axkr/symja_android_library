@@ -146,6 +146,45 @@ final public class ImageExpr extends DataExpr<byte[]> {
     return bufferedImage;
   }
 
+  /**
+   * <code>Image[data, "type", options]</code>, the image as the Wolfram Language writes one: the
+   * pixel matrix it was built from, or the pixels read back from the picture, its image type, and
+   * the options that differ from the defaults. Evaluating it builds the same image again.
+   *
+   * <p>
+   * This is what a front end receives: the WLJS notebook reads an <code>Image</code>'s pixels and
+   * type from its arguments, and could not texture a plot with, or show, the summary string an
+   * image otherwise writes itself as.
+   */
+  @Override
+  public IAST normal(boolean nilIfUnevaluated) {
+    String type = matrix == null ? Pixels.BYTE : Pixels.imageTypeOf(matrix);
+    IExpr data = matrix;
+    if (data == null) {
+      BufferedImage image = getBufferedImage();
+      if (image == null) {
+        return nilIfUnevaluated ? F.NIL : F.List();
+      }
+      data = Pixels.toData(image, type, options.interleaved(), false);
+    }
+    org.matheclipse.core.interfaces.IASTAppendable result = F.ast(S.Image);
+    result.append(data);
+    result.append(F.stringx(type));
+    if (!options.interleaved()) {
+      result.append(F.Rule(S.Interleaving, S.False));
+    }
+    if (!options.colorSpace().isAutomatic()) {
+      result.append(F.Rule(S.ColorSpace, options.colorSpace()));
+    }
+    if (!options.imageSize().isAutomatic()) {
+      result.append(F.Rule(S.ImageSize, options.imageSize()));
+    }
+    if (!options.magnification().isAutomatic()) {
+      result.append(F.Rule(S.Magnification, options.magnification()));
+    }
+    return result;
+  }
+
   @Override
   public String toString() {
     BufferedImage buf = getBufferedImage();

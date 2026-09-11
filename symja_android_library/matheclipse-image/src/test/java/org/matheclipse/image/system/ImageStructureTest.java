@@ -77,4 +77,17 @@ public class ImageStructureTest extends AbstractTestCase {
     check("ImageAssemble({{Image({{0.0}}),Image({{1.0},{1.0}})}})", //
         "ImageAssemble({{Image(Dimensions: 1,1 Transparency: 1),Image(Dimensions: 1,2 Transparency: 1)}})");
   }
+
+  /**
+   * An image goes out to a front end as <code>Image(data, "type", options)</code>, whose pixels can
+   * be read: its string form is only a summary, and the WLJS notebook could neither show it nor
+   * texture a plot with it.
+   */
+  @Test
+  public void testImageIsExportedWithItsPixels() {
+    check("json=ExportString(Texture(Image({{0,1},{1,0}},\"Bit\")),\"ExpressionJSON\",\"Compact\"->True);"
+        + "{StringContainsQ(json,\"'Bit'\"),StringContainsQ(json,\"Dimensions\")}", //
+        "{True,False}");
+  }
+
 }

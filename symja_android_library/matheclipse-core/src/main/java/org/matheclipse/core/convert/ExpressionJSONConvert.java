@@ -134,6 +134,14 @@ public class ExpressionJSONConvert {
       }
       return array;
     }
+    if (expr instanceof org.matheclipse.core.interfaces.IDataExpr && expr.head() == S.Image) {
+      // an image object goes out as Image[data, "type", options], whose pixels a front end can
+      // read; its string form is only a summary, and the WLJS notebook drew nothing for it
+      IAST normal = ((org.matheclipse.core.interfaces.IDataExpr<?>) expr).normal(true);
+      if (normal.isPresent() && normal.isAST(S.Image)) {
+        return exportExpressionJSON(normal);
+      }
+    }
     return TextNode.valueOf(expr.toString());
   }
 
