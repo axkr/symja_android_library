@@ -1570,4 +1570,15 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "InterpolatingFunction({{1.0,5.0},{1.0,5.0}},<>)");
   }
 
+  /**
+   * <code>SphericalPlot3D</code> keeps the proportions of what it draws unless
+   * <code>BoxRatios</code> is given, as the Wolfram Language does: a cube squashed the tall
+   * spherical harmonic of the 3D plot demo.
+   */
+  @Test
+  public void testSphericalPlot3DKeepsItsProportions() {
+    check("MemberQ[List @@ SphericalPlot3D[Cos[t]^2, {t, 0, Pi}, {p, 0, 2 Pi}], BoxRatios -> {1, 1, 1}]", //
+        "False");
+  }
+
 }

@@ -69,7 +69,7 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     }
     return Plot3DTools.graphics3D(graphicsList, originalAST, argSize,
         new IExpr[] {F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
-            F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1)), F.Rule(S.Axes, S.True),
+            F.Rule(S.BoxRatios, options[Plot3DTools.X_BOX_RATIOS]), F.Rule(S.Axes, S.True),
             F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
   }
 
