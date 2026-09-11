@@ -1916,20 +1916,38 @@ public class GraphicsOptions {
       }
     }
     IASTAppendable result = F.ListAlloc(rules.size());
-    IExpr scaling = F.NIL;
+    IASTAppendable method = F.ListAlloc();
     for (IExpr rule : rules) {
-      if (rule.isRuleAST() && ((IAST) rule).arg1() == S.$Scaling) {
-        scaling = ((IAST) rule).arg2();
+      if (!rule.isRuleAST()) {
+        result.append(rule);
         continue;
       }
-      if (rule.isRuleAST() && isNeutralPlotOption(((IAST) rule).arg1(), ((IAST) rule).arg2(),
-          hasLegend)) {
+      IExpr key = ((IAST) rule).arg1();
+      IExpr value = ((IAST) rule).arg2();
+      if (key == S.$Scaling) {
+        method.append(F.Rule(F.stringx(METHOD_SCALING), encodeScaling(value)));
+        continue;
+      }
+      if (key == S.JSForm || key == S.Filling || key == S.FillingStyle || key == S.PlotLabels
+          || key == S.ChartLegends || key == S.DataRange) {
+        // options of the plot function, already applied to the primitives it drew; nothing reads
+        // them off the Graphics, and a front end which packs its options knows none of them
+        continue;
+      }
+      if (key == S.PlotLegends || key == S.PlotStyle || key == S.Joined) {
+        if (value.isNone() || (key == S.Joined && !hasLegend)) {
+          continue;
+        }
+        // read by Symja's own renderer (the legend and its swatches), unknown to a front end:
+        // handed on under Method, as a string, which every front end can carry
+        method.append(F.Rule(F.stringx(key.toString()),
+            F.stringx(org.matheclipse.core.expression.WMACompress.compress(value))));
         continue;
       }
       result.append(rule);
     }
-    if (scaling.isPresent()) {
-      addScalingToMethod(result, scaling);
+    if (method.argSize() > 0) {
+      addToMethod(result, method);
     }
     return result;
   }
@@ -1938,27 +1956,50 @@ public class GraphicsOptions {
   private static final String METHOD_SCALING = "Scaling";
 
   /**
-   * Hand the plot's axis scaling on as <code>Method -> {"Scaling" -> ...}</code>.
+   * Hand on under <code>Method -> {...}</code> what a plot's <code>Graphics</code> has to carry for
+   * Symja's own renderer but a front end does not know as an option: the axis scaling, the legend
+   * and the plot style.
    *
    * <p>
    * The scaling is also what tells the SVG renderer that the picture came from a plot (see
-   * {@link org.matheclipse.core.graphics.svg.GraphicsOptions2D#plotGenerated}), so it has to
-   * travel with the <code>Graphics</code>. As the option <code>$Scaling</code> it could not: a front
-   * end which interprets the options of a <code>Graphics</code> knows no symbol of that name, and
-   * the WLJS notebook reported an error under every plot. <code>Method</code> is a
-   * <code>Graphics</code> option everywhere, an unknown key inside it is ignored, and the value is
-   * written with strings only so that nothing in it needs a definition.
+   * {@link org.matheclipse.core.graphics.svg.GraphicsOptions2D#plotGenerated}). As options of their
+   * own - <code>$Scaling</code>, <code>PlotLegends</code>, <code>PlotStyle</code> - they could not
+   * travel: a front end which packs the options of a <code>Graphics</code> knows no such symbols,
+   * and the WLJS notebook reported an error under every such plot. <code>Method</code> is a
+   * <code>Graphics</code> option everywhere, an unknown key inside it is ignored, and the values are
+   * written with strings only so that nothing in them needs a definition.
    */
-  private static void addScalingToMethod(IASTAppendable rules, IExpr scaling) {
-    IAST entry = F.Rule(F.stringx(METHOD_SCALING), encodeScaling(scaling));
+  private static void addToMethod(IASTAppendable rules, IAST entries) {
     for (int i = 1; i < rules.size(); i++) {
       IExpr rule = rules.get(i);
       if (rule.isRuleAST() && rule.first() == S.Method && rule.second().isList()) {
-        rules.set(i, F.Rule(S.Method, ((IAST) rule.second()).appendClone(entry)));
+        IASTAppendable merged = ((IAST) rule.second()).copyAppendable();
+        merged.appendArgs(entries);
+        rules.set(i, F.Rule(S.Method, merged));
         return;
       }
     }
-    rules.append(F.Rule(S.Method, F.list(entry)));
+    rules.append(F.Rule(S.Method, entries));
+  }
+
+  /**
+   * The value a plot handed on under <code>Method</code> for <code>option</code> - one of
+   * <code>PlotLegends</code>, <code>PlotStyle</code> or <code>Joined</code> - or {@link F#NIL}.
+   *
+   * @param method the value of a <code>Method</code> option
+   */
+  public static IExpr plotOptionFromMethod(IExpr method, ISymbol option) {
+    if (method != null && method.isList()) {
+      String name = option.toString();
+      for (IExpr rule : (IAST) method) {
+        if (rule.isRuleAST() && rule.first().isString(name) && rule.second().isString()) {
+          IExpr value = org.matheclipse.core.expression.WMACompress
+              .uncompress(rule.second().toString(), org.matheclipse.core.eval.EvalEngine.get());
+          return value == null ? F.NIL : value;
+        }
+      }
+    }
+    return F.NIL;
   }
 
   private static IExpr encodeScaling(IExpr scaling) {
@@ -1999,25 +2040,6 @@ public class GraphicsOptions {
       }
     }
     return F.NIL;
-  }
-
-  private static boolean isNeutralPlotOption(IExpr key, IExpr value, boolean hasLegend) {
-    if (key == S.JSForm) {
-      // the plot call's request for JavaScript output; the Graphics it built is the answer
-      return true;
-    }
-    if (key == S.Joined) {
-      // Line primitives are joined already; the renderer only asks when it draws a legend swatch
-      return !hasLegend;
-    }
-    if (key == S.PlotLegends || key == S.Filling || key == S.PlotLabels || key == S.ChartLegends
-        || key == S.PlotStyle) {
-      return value.isNone();
-    }
-    if (key == S.FillingStyle || key == S.DataRange) {
-      return value.isAutomatic();
-    }
-    return false;
   }
 
   private static void hasAxesJSON(ObjectNode g, IExpr a1, IExpr a2) {

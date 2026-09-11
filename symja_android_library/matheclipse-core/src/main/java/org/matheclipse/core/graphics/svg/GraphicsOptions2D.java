@@ -283,6 +283,15 @@ public final class GraphicsOptions2D {
         if (scaling.isPresent()) {
           apply(ID.$Scaling, scaling, collector);
         }
+        // and its legend and plot style, which travel under Method for the same reason
+        for (org.matheclipse.core.interfaces.IBuiltInSymbol option : new org.matheclipse.core.interfaces.IBuiltInSymbol[] {
+            S.PlotStyle, S.PlotLegends, S.Joined}) {
+          IExpr carried =
+              org.matheclipse.core.graphics.GraphicsOptions.plotOptionFromMethod(value, option);
+          if (carried.isPresent()) {
+            apply(option.ordinal(), carried, collector);
+          }
+        }
         break;
       }
       case ID.$Scaling:

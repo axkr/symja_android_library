@@ -1007,8 +1007,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // under Method, written with strings only so that a front end needs no definition for it
     check("Method /. Rest[List @@ LogPlot[Exp[x], {x, 0, 1}]]", //
         "{Scaling->{None,Log}}");
+    // Filling is drawn by the plot itself; nothing reads it off the Graphics
     check("MemberQ[First /@ Rest[List @@ Plot[Sin[x], {x, 0, 1}, Filling -> Axis]], Filling]", //
-        "True");
+        "False");
   }
 
   /**
@@ -1224,6 +1225,35 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Hold[ohv]");
     check("Apply[f][{1, 2}]", //
         "f[1,2]");
+  }
+
+  /**
+   * Whatever options a plot is given, its <code>Graphics</code> carries only options a front end
+   * knows as options of a <code>Graphics</code>. The legend and the plot style, which Symja's own
+   * renderer still reads, travel under <code>Method</code> as strings - and the SVG still draws the
+   * legend.
+   *
+   * <p>
+   * The WLJS notebook packs the options of a <code>Graphics</code> for the browser, which reported
+   * "symbol PlotLegends is not defined" (and <code>PlotStyle</code>) under such plots.
+   */
+  @Test
+  public void testAPlotCarriesOnlyGraphicsOptions() {
+    check("Complement[Union @@ (First /@ Rest[List @@ #] & /@ {"
+        + "Plot[{Sin[x], Cos[x]}, {x, 0, 3}, PlotLegends -> Automatic], "
+        + "Plot[Sin[x], {x, 0, 3}, PlotStyle -> Red], "
+        + "ContourPlot[x y, {x, 0, 1}, {y, 0, 1}], DiscretePlot[n^2, {n, 1, 5}], "
+        + "ComplexPlot[z, {z, -1 - I, 1 + I}, PlotLegends -> Automatic]}), "
+        + "{Axes, AxesLabel, PlotLabel, AspectRatio, PlotRange, GridLines, Frame, FrameTicks, "
+        + "Background, Epilog, ImageSize, Ticks, AxesOrigin, AxesStyle, FrameStyle, FrameLabel, "
+        + "GridLinesStyle, ImagePadding, PlotRangePadding, Prolog, PlotRangeClipping, Method}]", //
+        "{}");
+    // Symja's own renderer still draws the legend: the label can only reach the SVG from the
+    // PlotLegends it decoded out of Method, since that is now the only place the legend is kept
+    check("lg = Plot[{Sin[x], Cos[x]}, {x, 0, 3}, PlotLegends -> {\"sine\", \"cosine\"}]; "
+        + "{MemberQ[First /@ Rest[List @@ lg], PlotLegends], "
+        + "StringContainsQ[ExportString[lg, \"SVG\"], \"cosine\"]}", //
+        "{False,True}");
   }
 
 }
