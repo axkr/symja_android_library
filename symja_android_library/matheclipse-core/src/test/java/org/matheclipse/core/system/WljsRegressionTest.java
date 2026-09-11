@@ -1312,4 +1312,21 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "");
   }
 
+  /**
+   * A parametric region is drawn translucent, with mesh lines of constant u and constant v over
+   * it: <code>Mesh -> Automatic</code> (the default for a region) draws about fifteen each way,
+   * <code>Mesh -> n</code> n, and <code>Mesh -> None</code> none. The region used to be opaque and
+   * without a mesh, hiding the axes beneath it.
+   */
+  @Test
+  public void testAParametricRegionHasAMesh() {
+    check("pp = ParametricPlot[With[{z = u + I v}, {Re[z + 1/z], Im[z + 1/z]}], "
+        + "{u, -1/2, 1/2}, {v, -1/2, 1/2}, PlotRange -> 5, Mesh -> Automatic]; "
+        + "{Count[pp, _Line, Infinity] >= 20, MemberQ[pp, _Opacity, Infinity], "
+        + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}, Mesh -> None], _Line, Infinity], "
+        + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}, Mesh -> 3], _Line, Infinity], "
+        + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}], _Line, Infinity] > 0}", //
+        "{True,True,0,6,True}");
+  }
+
 }

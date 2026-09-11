@@ -73,10 +73,15 @@ public class ParametricPlot extends Plot {
       if (isRegion) {
         IAST rangeList2 = (IAST) ast.arg3();
 
-        // Generate GraphicsComplex for the region
+        // Generate GraphicsComplex for the region, and the mesh lines drawn over it. A region's mesh
+        // is on unless it is switched off: lines of constant u and of constant v, mapped through
+        // the parametrisation, are what shows how the region is parametrised
+        IExpr meshOption = GraphicsOptions.optionValue(originalAST, S.Mesh, S.Automatic);
+        IASTAppendable meshLines = F.ListAlloc();
         IExpr graphicsComplex = parametricRegionToGraphicsComplex(function, rangeList1, rangeList2,
             graphicsOptions, engine,
-            GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
+            GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), meshOption,
+            meshLines);
 
         if (graphicsComplex.isNIL()) {
           return F.NIL;
@@ -92,9 +97,22 @@ public class ParametricPlot extends Plot {
           color = GraphicsOptions.getPlotStyle(plotStyle, 0);
         }
 
-        // 2. Construct Graphics Primitive: {Color, EdgeForm[None], GraphicsComplex[...]}
-        // EdgeForm(None) is crucial to suppress the wireframe mesh lines.
-        IAST graphicsPrimitives = F.List(color, F.EdgeForm(S.None), graphicsComplex);
+        // 2. The region, translucent so that what lies under it - the axes, and the mesh drawn on
+        // top - stays visible; EdgeForm(None) keeps the sampling grid itself from being outlined.
+        // Then the mesh, in a group of its own so the region's opacity does not reach it.
+        IASTAppendable graphicsPrimitives = F.ListAlloc();
+        graphicsPrimitives.append(F.List(color, F.unaryAST1(S.Opacity, F.num(0.3)),
+            F.EdgeForm(S.None), graphicsComplex));
+        if (meshLines.argSize() > 0) {
+          IExpr meshStyle = GraphicsOptions.optionValue(originalAST, S.MeshStyle, S.Automatic);
+          IASTAppendable mesh = F.ListAlloc(meshLines.argSize() + 1);
+          mesh.append(meshStyle.isAutomatic()
+              ? F.List(org.matheclipse.core.builtin.graphics3d.Plot3DTools.MESH_STYLE,
+                  F.unaryAST1(S.AbsoluteThickness, F.num(0.5)))
+              : meshStyle);
+          mesh.appendArgs(meshLines);
+          graphicsPrimitives.append(mesh);
+        }
 
         // 3. Return Graphics object
         return createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
@@ -140,7 +158,7 @@ public class ParametricPlot extends Plot {
    */
   private static IExpr parametricRegionToGraphicsComplex(IExpr functionOrListOfFunctions,
       final IAST rangeU, final IAST rangeV, GraphicsOptions graphicsOptions, EvalEngine engine,
-      IExpr regionFunction) {
+      IExpr regionFunction, IExpr meshOption, IASTAppendable meshLines) {
 
     // 1. Validate Ranges
     if (!rangeU.arg1().isSymbol() || !rangeV.arg1().isSymbol()) {
@@ -202,6 +220,19 @@ public class ParametricPlot extends Plot {
       }
     }
 
+    // the mesh: every stride-th line of constant u and of constant v through the samples, spaced
+    // the way the three dimensional plots space theirs, and broken where the region has no point
+    if (org.matheclipse.core.builtin.graphics3d.Plot3DTools.showMesh(meshOption)) {
+      int stride =
+          org.matheclipse.core.builtin.graphics3d.Plot3DTools.meshStride(meshOption, gridWidth);
+      for (int i = stride; i < steps; i += stride) {
+        addIsoline(rawGrid, gridWidth, i, true, meshLines);
+      }
+      for (int j = stride; j < steps; j += stride) {
+        addIsoline(rawGrid, gridWidth, j, false, meshLines);
+      }
+    }
+
     // 4. Compact Vertices and Build Index Mapping
     // GraphicsComplex indices refer to the position in the vertex list (1-based).
     // map[gridIndex] -> validVertexIndex (or 0 if invalid)
@@ -248,6 +279,29 @@ public class ParametricPlot extends Plot {
 
     // Structure: GraphicsComplex[ {pt1, pt2...}, Polygon[ { {id1...}, {id2...} } ] ]
     return F.GraphicsComplex(vertexList, F.Polygon(polyIndices));
+  }
+
+  /**
+   * One mesh line: the samples at a fixed <code>u</code> (or <code>v</code>) index, joined, and
+   * broken into separate lines wherever a sample has no point.
+   */
+  private static void addIsoline(IExpr[] grid, int width, int fixed, boolean fixedU,
+      IASTAppendable out) {
+    IASTAppendable segment = F.ListAlloc();
+    for (int k = 0; k < width; k++) {
+      IExpr point = fixedU ? grid[fixed * width + k] : grid[k * width + fixed];
+      if (point != null && point.isPresent()) {
+        segment.append(point);
+      } else {
+        if (segment.argSize() >= 2) {
+          out.append(F.Line(segment));
+        }
+        segment = F.ListAlloc();
+      }
+    }
+    if (segment.argSize() >= 2) {
+      out.append(F.Line(segment));
+    }
   }
 
   private static IExpr evalPoint(IExpr fx, IExpr fy, ISymbol uSym, ISymbol vSym, double u, double v,
