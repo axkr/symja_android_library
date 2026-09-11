@@ -81,6 +81,23 @@ public class ArchiveFunctions {
         }
       }
 
+      if (fileName.startsWith("!")) {
+        // Import["!command", ...] reads what a shell command prints - the WLJS notebook asks the
+        // shell for the user's PATH that way. Only where the session may run programs at all.
+        String output = ProcessFunctions.shellCommandOutput(fileName.substring(1), engine);
+        if (output == null) {
+          // Cannot open `1`.
+          Errors.printMessage(S.Import, "noopen", F.list(ast.arg1()), engine);
+          return S.$Failed;
+        }
+        if (format == Extension.STRING || format == Extension.TXT || format == Extension.DAT) {
+          // like a text file, without the line end the command finished with
+          return F.stringx(output.replaceAll("[\\r\\n]+$", ""));
+        }
+        return engine.evaluate(F.binaryAST2(S.ImportString, F.stringx(output),
+            F.stringx(formatName(format, fileName))));
+      }
+
       Path file = FileSandbox.resolveReadPath(S.Import, fileName, engine);
       if (file == null) {
         return F.NIL;

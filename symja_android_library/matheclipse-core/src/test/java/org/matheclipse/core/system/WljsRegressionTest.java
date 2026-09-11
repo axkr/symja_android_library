@@ -1103,4 +1103,24 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "<|k3->3|>");
   }
 
+  /**
+   * <code>Import["!command", "Text"]</code> reads what a shell command prints, where the session
+   * may run programs. The WLJS notebook asks the shell for the user's <code>PATH</code> that way
+   * at startup and got <code>Import::noopen</code>.
+   */
+  @Test
+  public void testImportReadsWhatACommandPrints() {
+    boolean fileSystem = org.matheclipse.core.basic.Config.FILESYSTEM_ENABLED;
+    boolean osAccess = org.matheclipse.core.basic.Config.OS_ACCESS_ENABLED;
+    try {
+      org.matheclipse.core.basic.Config.FILESYSTEM_ENABLED = true;
+      org.matheclipse.core.basic.Config.OS_ACCESS_ENABLED = true;
+      check("Import[\"!echo hello\", \"Text\"]", //
+          "hello");
+    } finally {
+      org.matheclipse.core.basic.Config.FILESYSTEM_ENABLED = fileSystem;
+      org.matheclipse.core.basic.Config.OS_ACCESS_ENABLED = osAccess;
+    }
+  }
+
 }

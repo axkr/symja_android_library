@@ -177,6 +177,40 @@ public class ProcessFunctions {
    * The result is an association of its exit code and its two outputs, or one of them when the
    * second argument names one.
    */
+  /**
+   * The standard output of a shell command line, for <code>Import["!command", ...]</code>.
+   *
+   * <p>
+   * The command line is handed to the system's shell (<code>/bin/sh -c</code>, on Windows
+   * <code>cmd /c</code>) because that is what the <code>!</code> form means: pipes, redirection and
+   * <code>source</code> belong to the shell, not to one program.
+   *
+   * @return <code>null</code> when this session may not run programs or the command cannot be
+   *         started
+   */
+  public static String shellCommandOutput(String commandLine, EvalEngine engine) {
+    if (!Config.isOSAccessEnabled(engine)) {
+      return null;
+    }
+    boolean windows = System.getProperty("os.name", "").toLowerCase().startsWith("windows");
+    List<String> command = windows ? java.util.Arrays.asList("cmd", "/c", commandLine)
+        : java.util.Arrays.asList("/bin/sh", "-c", commandLine);
+    try {
+      // the error output is not wanted, and left unread it could fill its pipe and stop the command
+      Process process =
+          new ProcessBuilder(command).redirectError(ProcessBuilder.Redirect.DISCARD).start();
+      process.getOutputStream().close();
+      String out = RunProcess.read(process.getInputStream());
+      process.waitFor();
+      return out;
+    } catch (IOException ioe) {
+      return null;
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
+      return null;
+    }
+  }
+
   private static class RunProcess extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
