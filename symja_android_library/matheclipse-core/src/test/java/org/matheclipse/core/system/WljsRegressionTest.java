@@ -1192,4 +1192,38 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Sum[f[Subscript[k,1]],{Subscript[k,1],1,n}]");
   }
 
+  /**
+   * A compiled function's parameters are variables holding the arguments, not values pasted into
+   * the body. Pasted in, a Table over a list argument walked the whole list at every step: the
+   * WLJS notebook unmasks each WebSocket frame that way, and a large frame hung the server.
+   */
+  @Test
+  public void testCompiledTableOverAListArgumentIsLinear() {
+    check("cc = Compile[{{p, _Integer, 1}}, Table[BitXor[p[[i]], 1], {i, 1, Length[p]}]]; "
+        + "cc[{1, 2, 3}]", //
+        "{0,3,2}");
+    // quadratic in the length before: 10^8 steps (the test engine caps a list at 20000 elements)
+    check("Length[cc[Range[10000]]]", //
+        "10000");
+    // the parameter is a local variable, whatever a global of the same name holds
+    check("p = 99; cc[{1}]", //
+        "{0}");
+  }
+
+  /**
+   * <code>OptionValue[f, opts, name, h]</code> wraps the value in <code>h</code> before it is
+   * evaluated, and the operator form <code>Apply[f]</code> is accepted quietly. WLJS's
+   * <code>LeakyModule</code> uses the first, and both drew messages in the notebook server's log.
+   */
+  @Test
+  public void testOptionValueWrapperAndApplyOperatorForm() {
+    check("Options[og] = {\"Garbage\" :> ogv}; ogv = {1}; OptionValue[og, {}, \"Garbage\", Hold]", //
+        "Hold[ogv]");
+    check("oh[opts : OptionsPattern[{\"k\" :> ohv}]] := "
+        + "OptionValue[Automatic, Automatic, \"k\", Hold]; oh[]", //
+        "Hold[ohv]");
+    check("Apply[f][{1, 2}]", //
+        "f[1,2]");
+  }
+
 }

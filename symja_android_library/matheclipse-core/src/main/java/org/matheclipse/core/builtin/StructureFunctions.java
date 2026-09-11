@@ -190,6 +190,10 @@ public class StructureFunctions {
     }
 
     public static IExpr applyInternal(IAST ast, int argSize, IExpr[] option, EvalEngine engine) {
+      if (argSize == 1) {
+        // the operator form Apply[f] stays as it is until it is given its argument
+        return F.NIL;
+      }
       if (argSize < 2 || argSize > 4) {
         return Errors.printArgMessage(ast, ARGS_2_4, engine);
       }

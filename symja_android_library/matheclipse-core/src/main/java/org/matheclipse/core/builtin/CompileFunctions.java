@@ -64,15 +64,34 @@ public class CompileFunctions {
       if (parameters.argSize() != call.argSize()) {
         return F.NIL;
       }
-      IASTAppendable rules = F.ListAlloc(parameters.argSize());
+      // Each parameter becomes a fresh local variable holding its argument, the way a compiled
+      // function's argument is a variable of the compiled code. Substituting the values instead
+      // put every argument into the body literally, and a Table over a list argument then walked
+      // the whole list again at each of its steps: the WLJS notebook unmasks each WebSocket frame
+      // with Table[BitXor[payload[[i]], ...], {i, Length[payload]}], and a frame of a few hundred
+      // kilobytes kept the server busy for hours.
+      java.util.Map<IExpr, IExpr> locals = new java.util.HashMap<IExpr, IExpr>();
+      ISymbol[] variables = new ISymbol[parameters.argSize()];
       for (int i = 1; i < parameters.size(); i++) {
         ISymbol parameter = parameterName(parameters.get(i));
         if (parameter == null) {
           return F.NIL;
         }
-        rules.append(F.Rule(parameter, engine.evaluate(call.get(i))));
+        ISymbol local = F.Dummy(parameter.getSymbolName() + EvalEngine.uniqueName("$"));
+        local.assignValue(engine.evaluate(call.get(i)), false);
+        variables[i - 1] = local;
+        locals.put(parameter, local);
       }
-      return engine.evaluate(F.subst(compiled.arg2(), rules));
+      try {
+        return engine.evaluate(F.subst(compiled.arg2(), locals));
+      } finally {
+        // the locals are not reachable afterwards; releasing their values lets the arguments go
+        for (ISymbol local : variables) {
+          if (local != null) {
+            local.clearValue(null);
+          }
+        }
+      }
     }
 
     /**

@@ -1524,7 +1524,26 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       if (ast.head() == S.OptionValue) {
-        return IPatternMap.optionValueReplace(ast, false, engine);
+        IAST call = ast;
+        IExpr wrapper = F.NIL;
+        if (call.argSize() == 4) {
+          // OptionValue[f, opts, name, h] gives the value wrapped in h, before it is evaluated:
+          // with Unevaluated, a delayed option such as "Garbage" :> garbage names the symbol
+          // itself rather than its value, which is what WLJS's LeakyModule appends to
+          wrapper = call.arg4();
+          call = call.removeAtCopy(4);
+        }
+        if (call.argSize() == 3 && call.arg1() == S.Automatic && call.arg2() == S.Automatic) {
+          // OptionValue[Automatic, Automatic, name] means the options of the function being
+          // evaluated - which is what OptionValue[name] looks up. Read as options of the symbol
+          // Automatic, it found none and answered the option's name
+          call = F.unaryAST1(S.OptionValue, call.arg3());
+        }
+        IExpr value = IPatternMap.optionValueReplace(call, false, engine);
+        if (wrapper.isPresent()) {
+          return value.isPresent() ? F.unaryAST1(wrapper, value) : F.NIL;
+        }
+        return value;
       }
 
       return F.NIL;
@@ -1532,7 +1551,7 @@ public final class PatternMatching {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
 
     @Override
