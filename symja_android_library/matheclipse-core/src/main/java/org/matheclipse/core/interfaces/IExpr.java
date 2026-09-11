@@ -5340,7 +5340,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the function <code>Subscript[var, &lt;integer-value&gt;]</code>.
+   * Test if this expression is the function <code>Subscript[var, index1, index2, ...]</code> with at
+   * least one index, such as <code>Subscript[x, 1]</code> or <code>Subscript[Y, 4, 0]</code>.
    * <code>var</code> has to be a variable.
    *
    * @return

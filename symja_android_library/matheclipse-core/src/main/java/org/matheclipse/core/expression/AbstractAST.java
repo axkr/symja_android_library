@@ -5382,7 +5382,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isSubscript() {
-    return isSameHead(S.Subscript, 3) && arg1().isVariable();
+    // Subscript[x, i] and Subscript[x, i, j, ...] alike: a subscript may carry several indices
+    return isSameHeadSizeGE(S.Subscript, 3) && arg1().isVariable();
   }
 
   /** {@inheritDoc} */

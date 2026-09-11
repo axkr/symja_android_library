@@ -1152,4 +1152,18 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "8");
   }
 
+  /**
+   * A subscript with several indices is a variable like one with a single index:
+   * <code>Subscript[Y, 4, 0]</code> as well as <code>Subscript[Y, 4]</code>. The notebook writes
+   * a typeset subscript that way.
+   */
+  @Test
+  public void testASubscriptWithSeveralIndicesIsAVariable() {
+    check("D[Subscript[x, 1, 2]^2, Subscript[x, 1, 2]] === 2*Subscript[x, 1, 2]", //
+        "True");
+    // one index still is
+    check("D[Subscript[x, 1]^2, Subscript[x, 1]] === 2*Subscript[x, 1]", //
+        "True");
+  }
+
 }
