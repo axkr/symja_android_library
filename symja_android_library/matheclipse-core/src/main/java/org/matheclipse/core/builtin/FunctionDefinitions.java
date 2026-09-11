@@ -147,6 +147,8 @@ public final class FunctionDefinitions {
       S.InterpolatingPolynomial
           .setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
       S.Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
+      S.ListInterpolation
+          .setEvaluator(new org.matheclipse.core.reflection.system.ListInterpolation());
       S.InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
       S.InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
       S.InverseLaplaceTransform

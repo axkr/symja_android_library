@@ -164,6 +164,77 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     }
   }
 
+  /**
+   * A function of two variables known on a grid - what <code>ListInterpolation</code> of a matrix
+   * and <code>NDSolve</code> of a partial differential equation hand back - interpolated by a
+   * Hipparchus bicubic spline (<code>InterpolationOrder</code> 3, at least 5 points along each
+   * axis) or bilinearly.
+   */
+  private static class GridFunctionExpr
+      extends InterpolatingFunctionExpr<org.hipparchus.analysis.BivariateFunction> {
+    private static final long serialVersionUID = -4418066101223771830L;
+
+    /** The domain of the second variable; the first one's is {@link #min} .. {@link #max}. */
+    private final double yMin;
+    private final double yMax;
+
+    public GridFunctionExpr(final org.hipparchus.analysis.BivariateFunction function,
+        double xMin, double xMax, double yMin, double yMax) {
+      super(function, xMin, xMax);
+      this.yMin = yMin;
+      this.yMax = yMax;
+    }
+
+    /** The value at <code>(x, y)</code>, a point outside the grid taken from its edge. */
+    public IExpr valueAt(double x, double y) {
+      double cx = Math.max(min, Math.min(max, x));
+      double cy = Math.max(yMin, Math.min(yMax, y));
+      return F.num(toData().value(cx, cy));
+    }
+
+    @Override
+    public IExpr copy() {
+      return new GridFunctionExpr(toData(), min, max, yMin, yMax);
+    }
+
+    @Override
+    public String toString() {
+      return "InterpolatingFunction({{" + min + "," + max + "},{" + yMin + "," + yMax + "}},<>)";
+    }
+
+    @Override
+    public String fullFormString() {
+      return toString();
+    }
+
+    @Override
+    public String toHTML() {
+      return toString();
+    }
+  }
+
+  /**
+   * A function of two variables from its values on a grid.
+   *
+   * @param xs the grid's first axis, strictly increasing
+   * @param ys the grid's second axis, strictly increasing
+   * @param values <code>values[i][j]</code> at <code>(xs[i], ys[j])</code>
+   * @param order the interpolation order: 3 or more asks for a bicubic spline where the grid has
+   *        the 5 points along each axis it needs, anything else is bilinear
+   */
+  public static InterpolatingFunctionExpr newGrid(double[] xs, double[] ys, double[][] values,
+      int order) {
+    org.hipparchus.analysis.BivariateFunction function;
+    if (order >= 3 && xs.length >= 5 && ys.length >= 5) {
+      function = new org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator()
+          .interpolate(xs, ys, values);
+    } else {
+      function = new org.hipparchus.analysis.interpolation.BilinearInterpolator().interpolate(xs,
+          ys, values);
+    }
+    return new GridFunctionExpr(function, xs[0], xs[xs.length - 1], ys[0], ys[ys.length - 1]);
+  }
+
   /** */
   private static final long serialVersionUID = -3183236658957651705L;
 
@@ -293,6 +364,15 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
    * @return the evaluated expression or {@link F#NIL} if not applicable
    */
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (ast.head() instanceof GridFunctionExpr && ast.isAST2()) {
+      // f(x, y) of a function of two variables: numbers give its value, anything else stays
+      double x = ast.arg1().evalfNaN();
+      double y = ast.arg2().evalfNaN();
+      if (Double.isNaN(x) || Double.isNaN(y)) {
+        return F.NIL;
+      }
+      return ((GridFunctionExpr) ast.head()).valueAt(x, y);
+    }
     if (ast.head() instanceof InterpolatingFunctionExpr && ast.isAST1()) {
       IExpr arg1 = ast.arg1();
       if (arg1.isComplex() || arg1.isComplexNumeric()) {

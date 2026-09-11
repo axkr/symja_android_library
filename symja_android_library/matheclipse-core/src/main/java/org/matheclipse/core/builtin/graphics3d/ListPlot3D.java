@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -72,6 +73,17 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
           RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
     } else {
       if (isRectangularArray(listData)) {
+        // InterpolationOrder 2 or more: the data is a smooth surface through the samples, drawn
+        // on a finer grid over the same range, as the Wolfram Language draws it
+        IAST refined =
+            refine(listData, options[Plot3DTools.indexOf(Plot3DTools.listPlot(), S.InterpolationOrder)]);
+        if (refined != listData) {
+          if (!dataRangeOpt.isList()) {
+            int cols = ((IAST) listData.arg1()).argSize();
+            dataRangeOpt = F.List(F.List(F.C1, F.ZZ(cols)), F.List(F.C1, F.ZZ(listData.argSize())));
+          }
+          listData = refined;
+        }
         return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt,
             plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
             RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
@@ -82,6 +94,55 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     return F.NIL;
+  }
+
+  /**
+   * A height array refined for <code>InterpolationOrder</code> 2 or more: a bicubic spline through
+   * the samples, evaluated on a grid about ten times as fine (at most 100 points along an axis).
+   * The array is returned as it is where there is nothing to refine - a lower order, fewer than 5
+   * samples along an axis, or a sample that is not a number.
+   */
+  private static IAST refine(IAST data, IExpr orderOption) {
+    int order = orderOption.toIntDefault();
+    if (order < 2) {
+      return data;
+    }
+    int rows = data.argSize();
+    int cols = ((IAST) data.arg1()).argSize();
+    if (rows < 5 || cols < 5) {
+      return data;
+    }
+    double[] ys = new double[rows];
+    double[] xs = new double[cols];
+    double[][] values = new double[rows][cols];
+    for (int i = 0; i < rows; i++) {
+      ys[i] = i + 1;
+      IAST row = (IAST) data.get(i + 1);
+      for (int j = 0; j < cols; j++) {
+        xs[j] = j + 1;
+        double v = row.get(j + 1).evalfNaN();
+        if (!Double.isFinite(v)) {
+          return data;
+        }
+        values[i][j] = v;
+      }
+    }
+    org.hipparchus.analysis.BivariateFunction spline =
+        new org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator()
+            .interpolate(ys, xs, values);
+    int fineRows = Math.min(100, (rows - 1) * 10 + 1);
+    int fineCols = Math.min(100, (cols - 1) * 10 + 1);
+    IASTAppendable fine = F.ListAlloc(fineRows);
+    for (int i = 0; i < fineRows; i++) {
+      double y = Math.min(rows, 1.0 + (rows - 1.0) * i / (fineRows - 1));
+      IASTAppendable row = F.ListAlloc(fineCols);
+      for (int j = 0; j < fineCols; j++) {
+        double x = Math.min(cols, 1.0 + (cols - 1.0) * j / (fineCols - 1));
+        row.append(F.num(spline.value(y, x)));
+      }
+      fine.append(row);
+    }
+    return fine;
   }
 
   /**

@@ -166,6 +166,21 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     applyExclusions(z, xMinD, xStep, yMinD, yStep, nx, ny, xVar, yVar,
         options[Plot3DTools.X_EXCLUSIONS], engine);
 
+    // Exclusions -> Automatic: where neighbouring samples jump the function is discontinuous - a
+    // branch cut, a step - and the surface is left open there rather than stitched across it,
+    // which is where the Wolfram Language draws its exclusion curves
+    boolean[][] cut = null;
+    if (options[Plot3DTools.X_EXCLUSIONS] == S.Automatic) {
+      cut = detectJumps(z, nx, ny);
+      for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+          if (cut[i][j]) {
+            z[i][j] = Double.NaN;
+          }
+        }
+      }
+    }
+
     // The RegionFunction is answered per sample but the values are kept: a cell the edge of the
     // region runs through is cut along that edge rather than dropped, and cutting it interpolates
     // across the cell, so it needs the height at every corner. What the region decides is which
@@ -270,11 +285,123 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     if (Plot3DTools.drawsBoundary(boundaryStyle)) {
       IAST boundary = Plot3DTools.surfaceBoundary(grid);
       if (boundary.argSize() > 0) {
-        decorated.append(boundaryStyle);
+        decorated.append(Plot3DTools.boundaryDirective(boundaryStyle));
         decorated.append(boundary);
       }
     }
+    // ExclusionsStyle -> {surfaces, curves}: the edges the surface was opened along, in the style
+    // the curves are given
+    IExpr exclusionsStyle =
+        options[Plot3DTools.indexOf(Plot3DTools.surfacePlot(), S.ExclusionsStyle)];
+    if (cut != null && exclusionsStyle.isList2() && !exclusionsStyle.second().isNone()) {
+      IAST rim = exclusionRim(grid, cut, nx, ny);
+      if (rim.argSize() > 0) {
+        decorated.append(exclusionsStyle.second());
+        decorated.append(rim);
+      }
+    }
     return decorated.argSize() == 1 ? complex : decorated;
+  }
+
+  /**
+   * The samples on the far side of a jump: neighbouring values that differ by more than 30% of the
+   * spread of the data (from its 5th to its 95th percentile) and by more than four times the
+   * differences next to them along the same line, which is what tells a jump from a steep slope.
+   */
+  private static boolean[][] detectJumps(double[][] z, int nx, int ny) {
+    boolean[][] cut = new boolean[nx][ny];
+    int count = 0;
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (Double.isFinite(z[i][j])) {
+          count++;
+        }
+      }
+    }
+    if (count < 16) {
+      return cut;
+    }
+    double[] finite = new double[count];
+    int k = 0;
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (Double.isFinite(z[i][j])) {
+          finite[k++] = z[i][j];
+        }
+      }
+    }
+    java.util.Arrays.sort(finite);
+    double spread = finite[(int) (0.95 * (count - 1))] - finite[(int) (0.05 * (count - 1))];
+    if (!(spread > 0.0)) {
+      return cut;
+    }
+    double threshold = 0.3 * spread;
+    for (int i = 0; i + 1 < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        double d = difference(z, i, j, i + 1, j, nx, ny);
+        if (d > threshold && d > 4.0 * Math.max(difference(z, i - 1, j, i, j, nx, ny),
+            difference(z, i + 1, j, i + 2, j, nx, ny))) {
+          cut[i + 1][j] = true;
+        }
+      }
+    }
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j + 1 < ny; j++) {
+        double d = difference(z, i, j, i, j + 1, nx, ny);
+        if (d > threshold && d > 4.0 * Math.max(difference(z, i, j - 1, i, j, nx, ny),
+            difference(z, i, j + 1, i, j + 2, nx, ny))) {
+          cut[i][j + 1] = true;
+        }
+      }
+    }
+    return cut;
+  }
+
+  /** The absolute difference of two samples; 0 where either is missing or off the grid. */
+  private static double difference(double[][] z, int i1, int j1, int i2, int j2, int nx, int ny) {
+    if (i1 < 0 || j1 < 0 || i2 < 0 || j2 < 0 || i1 >= nx || i2 >= nx || j1 >= ny || j2 >= ny) {
+      return 0.0;
+    }
+    double d = Math.abs(z[i2][j2] - z[i1][j1]);
+    return Double.isFinite(d) ? d : 0.0;
+  }
+
+  /**
+   * The edges of the grid that border a cell opened by {@link #detectJumps}: the lines the surface
+   * was cut along.
+   */
+  private static IAST exclusionRim(double[][][] grid, boolean[][] cut, int nx, int ny) {
+    IASTAppendable lines = F.ListAlloc();
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (grid[i][j] == null) {
+          continue;
+        }
+        if (i + 1 < nx && grid[i + 1][j] != null
+            && (openedCell(grid, cut, i, j - 1, nx, ny) || openedCell(grid, cut, i, j, nx, ny))) {
+          lines.append(segment(grid[i][j], grid[i + 1][j]));
+        }
+        if (j + 1 < ny && grid[i][j + 1] != null
+            && (openedCell(grid, cut, i - 1, j, nx, ny) || openedCell(grid, cut, i, j, nx, ny))) {
+          lines.append(segment(grid[i][j], grid[i][j + 1]));
+        }
+      }
+    }
+    return lines;
+  }
+
+  /** Whether the cell with lower corner (i, j) is missing a corner that a jump removed. */
+  private static boolean openedCell(double[][][] grid, boolean[][] cut, int i, int j, int nx,
+      int ny) {
+    if (i < 0 || j < 0 || i + 1 >= nx || j + 1 >= ny) {
+      return false;
+    }
+    return cut[i][j] || cut[i + 1][j] || cut[i][j + 1] || cut[i + 1][j + 1];
+  }
+
+  private static IAST segment(double[] p, double[] q) {
+    return F.Line(F.List(F.List(F.num(p[0]), F.num(p[1]), F.num(p[2])),
+        F.List(F.num(q[0]), F.num(q[1]), F.num(q[2]))));
   }
 
   /** An upper bound on refinement, so a large MaxRecursion cannot build a mesh nothing renders. */

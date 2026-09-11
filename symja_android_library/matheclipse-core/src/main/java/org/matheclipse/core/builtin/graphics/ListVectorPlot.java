@@ -158,9 +158,7 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     double factor = longest > 0.0 ? scale * spacing / longest : 0.0;
 
     IASTAppendable primitives = F.ListAlloc(vectors.size() + 2);
-    if (dimension == 2) {
-      primitives.append(VectorPlot.arrowheads(0.028125));
-    }
+    primitives.append(VectorPlot.arrowheads(dimension == 2 ? 0.028125 : VectorPlot.ARROWHEAD_3D));
     if (!colored) {
       primitives.append(VectorPlot.color(0.0));
     }
@@ -179,7 +177,7 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
         min[d] = Math.min(min[d], p[d]);
         max[d] = Math.max(max[d], p[d]);
       }
-      IAST arrow = F.Arrow(F.list(from, to));
+      IAST arrow = VectorPlot.arrow(from, to, dimension);
       primitives.append(
           colored ? F.list(VectorPlot.color(VectorPlot.norm(v) / longest), arrow) : arrow);
     }

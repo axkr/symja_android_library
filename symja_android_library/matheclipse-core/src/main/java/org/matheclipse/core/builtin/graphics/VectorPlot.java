@@ -139,6 +139,8 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     if (dimension == 2) {
       // the head's size is a share of the plot's width: 0.45 / 16 for the default 15 points
       primitives.append(arrowheads(0.45 / (points[0] + 1)));
+    } else {
+      primitives.append(arrowheads(ARROWHEAD_3D));
     }
     if (!colored) {
       primitives.append(color(0.0));
@@ -155,13 +157,15 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         from.append(F.num(p[d] - v[d] * factor / 2));
         to.append(F.num(p[d] + v[d] * factor / 2));
       }
-      IAST arrow = F.Arrow(F.list(from, to));
+      IAST arrow = arrow(from, to, dimension);
       primitives.append(colored ? F.list(color(norm(v) / longest), arrow) : arrow);
     }
 
     IASTAppendable range = F.ListAlloc(dimension);
     for (int d = 0; d < dimension; d++) {
-      range.append(F.list(F.num(min[d]), F.num(max[d])));
+      // in 3D the arrows at the edge reach half a spacing beyond it, and the box is kept that big
+      double pad = dimension == 3 && points[d] > 1 ? (max[d] - min[d]) / (points[d] - 1) / 2 : 0.0;
+      range.append(F.list(F.num(min[d] - pad), F.num(max[d] + pad)));
     }
     IASTAppendable result = dimension == 3 ? F.Graphics3D(primitives) : F.Graphics(primitives);
     result.appendArgs(graphicsOptions);
@@ -172,16 +176,37 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       if (!hasOption(graphicsOptions, S.Frame)) {
         result.append(F.Rule(S.Frame, S.True));
       }
-    } else if (!hasOption(graphicsOptions, S.Axes)) {
-      result.append(F.Rule(S.Axes, S.True));
+    } else {
+      if (!hasOption(graphicsOptions, S.Axes)) {
+        result.append(F.Rule(S.Axes, S.True));
+      }
+      if (!hasOption(graphicsOptions, S.BoxRatios)) {
+        result.append(F.Rule(S.BoxRatios, F.list(F.C1, F.C1, F.C1)));
+      }
     }
     return result;
+  }
+
+  /** The size of a three dimensional arrow's head, as the Wolfram Language draws it. */
+  static final double ARROWHEAD_3D = 0.045;
+
+  /** The radius of a three dimensional arrow's tube, as the Wolfram Language draws it. */
+  static final double TUBE_RADIUS_3D = 0.015;
+
+  /**
+   * One arrow: <code>Arrow[{from, to}]</code> in the plane, <code>Arrow[Tube[{from, to}, r]]</code>
+   * in space, which is how the Wolfram Language draws a three dimensional field.
+   */
+  static IAST arrow(IAST from, IAST to, int dimension) {
+    return dimension == 3
+        ? F.Arrow(F.binaryAST2(S.Tube, F.list(from, to), F.num(TUBE_RADIUS_3D)))
+        : F.Arrow(F.list(from, to));
   }
 
   /** The number of grid points along each axis. */
   private int[] vectorPoints(IAST ast, EvalEngine engine) {
     int[] points = new int[dimension];
-    java.util.Arrays.fill(points, dimension == 3 ? 7 : 15);
+    java.util.Arrays.fill(points, dimension == 3 ? 6 : 15);
     for (int i = dimension + 2; i < ast.size(); i++) {
       IExpr option = ast.get(i);
       if (option.isRuleAST() && option.first() == S.VectorPoints) {

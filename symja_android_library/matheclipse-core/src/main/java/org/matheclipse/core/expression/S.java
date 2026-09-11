@@ -13246,6 +13246,16 @@ public class S {
       S.initFinalSymbol("ListDensityPlot", ID.ListDensityPlot);
 
   /**
+   * ListInterpolation(x) - TODO describe `ListInterpolation`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListInterpolation.md">ListInterpolation
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ListInterpolation =
+      S.initFinalSymbol("ListInterpolation", ID.ListInterpolation);
+
+  /**
    * ListLineIntegralConvolutionPlot(x) - TODO describe `ListLineIntegralConvolutionPlot`.
    * 
    * @see <a href=

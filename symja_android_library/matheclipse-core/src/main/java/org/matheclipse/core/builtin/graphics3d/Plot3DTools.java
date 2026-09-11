@@ -372,6 +372,12 @@ public final class Plot3DTools {
         && !boundaryStyle.isAutomatic() && !boundaryStyle.isNone();
   }
 
+  /** The style of a surface's outline: the reference's dark grey for {@code Automatic}. */
+  public static IExpr boundaryDirective(IExpr boundaryStyle) {
+    return boundaryStyle == S.Automatic || boundaryStyle.isAutomatic() ? F.GrayLevel(F.num(0.3))
+        : boundaryStyle;
+  }
+
   /**
    * The surface with its outline appended, when {@code BoundaryStyle} asks for one.
    *
@@ -393,7 +399,7 @@ public final class Plot3DTools {
     if (boundary.argSize() == 0) {
       return complex;
     }
-    return F.List(complex, boundaryStyle, boundary);
+    return F.List(complex, boundaryDirective(boundaryStyle), boundary);
   }
 
   public static IASTAppendable surfaceBoundary(double[][][] grid) {

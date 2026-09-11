@@ -1391,10 +1391,10 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("p = ListVectorPlot3D[Table[{y, -x, z}, {z, -1, 1}, {y, -1, 1}, {x, -1, 1}]]; "
         + "{Head[p], Count[p, _Arrow, Infinity], Axes /. Rest[List @@ p]}", //
         "{Graphics3D,26,True}");
-    check("Cases[ListVectorPlot3D[{{{{1, 0, 0}, {1, 0, 0}}}}], Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+    check("Cases[ListVectorPlot3D[{{{{1, 0, 0}, {1, 0, 0}}}}], Arrow[Tube[{a_, b_}, _]] :> Round[(a + b)/2], Infinity]", //
         "{{1,1,1},{2,1,1}}");
     check("Cases[ListVectorPlot3D[{{{0, 0, 0}, {1, 0, 0}}, {{2, 2, 2}, {0, 0, 1}}}], "
-        + "Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+        + "Arrow[Tube[{a_, b_}, _]] :> Round[(a + b)/2], Infinity]", //
         "{{0,0,0},{2,2,2}}");
   }
 
@@ -1534,6 +1534,40 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{{0,0}}");
     check("Position[f[a][b], f, Heads -> False]", //
         "{}");
+  }
+
+  /**
+   * <code>NDSolve</code> of the heat equation, by the method of lines. With
+   * <code>u(0, x) = Sin(Pi x)</code> and zero at both ends the solution is
+   * <code>Exp(-Pi^2 t) Sin(Pi x)</code>; the numerical one agrees to better than 10^-3. The notebook's
+   * 3D plot demo solves this kind of problem and drew nothing.
+   */
+  @Test
+  public void testNDSolveHeatEquation() {
+    check("sol = NDSolve[{D[u[t, x], t] == D[u[t, x], x, x], u[0, x] == Sin[Pi x], u[t, 0] == 0, "
+        + "u[t, 1] == 0}, u, {t, 0, 0.5}, {x, 0, 1}]; "
+        + "{Head[u /. First[sol]], Abs[(u[0.1, 0.5] /. First[sol]) - Exp[-Pi^2/10]] < 10^-3}", //
+        "{InterpolatingFunction,True}");
+    check("sol = NDSolve[{D[u[t, x], t] == D[u[t, x], x, x], u[0, x] == 0, u[t, 0] == Sin[t], "
+        + "u[t, 5] == 0}, u, {t, 0, 10}, {x, 0, 5}]; "
+        + "{Abs[(u[10, 0] /. First[sol]) - Sin[10.]] < 10^-6, Abs[u[10, 5] /. First[sol]] < 10^-6}", //
+        "{True,True}");
+  }
+
+  /**
+   * <code>ListInterpolation</code> of a matrix is an <code>InterpolatingFunction</code> of two
+   * variables through the values on an evenly spaced grid; a list is interpolated as
+   * <code>Interpolation</code> interpolates its points.
+   */
+  @Test
+  public void testListInterpolation() {
+    check("f = ListInterpolation[Table[Sin[x] Cos[y], {x, 0, 2, 0.25}, {y, 0, 2, 0.25}], {{0, 2}, {0, 2}}]; "
+        + "{Head[f], Abs[f[1.1, 0.7] - Sin[1.1] Cos[0.7]] < 10^-3, Abs[f[2, 2] - Sin[2] Cos[2]] < 10^-12}", //
+        "{InterpolatingFunction,True,True}");
+    check("g = ListInterpolation[{1, 4, 9, 16, 25, 36}]; {g[2], Abs[g[2.5] - 6.25] < 10^-9}", //
+        "{4.0,True}");
+    check("ToString[ListInterpolation[Table[i + j, {i, 5}, {j, 5}]]]", //
+        "InterpolatingFunction({{1.0,5.0},{1.0,5.0}},<>)");
   }
 
 }

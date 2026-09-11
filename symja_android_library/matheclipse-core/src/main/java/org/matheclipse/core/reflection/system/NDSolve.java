@@ -229,6 +229,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     if (!ast.arg3().isList()) {
       return F.NIL;
     }
+    if (ast.argSize() >= 4 && ast.arg4().isList3()) {
+      // a second range: a partial differential equation in one space variable
+      IExpr solution = NDSolvePDE.solve(ast, engine, ruleForm);
+      if (solution.isPresent()) {
+        return solution;
+      }
+    }
     final IAST tRangeList = (IAST) ast.arg3();
     if (!(tRangeList.isAST2() || tRangeList.isAST3())) {
       return F.NIL;
