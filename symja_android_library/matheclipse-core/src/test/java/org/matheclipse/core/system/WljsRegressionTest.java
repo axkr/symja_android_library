@@ -1579,6 +1579,20 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testSphericalPlot3DKeepsItsProportions() {
     check("MemberQ[List @@ SphericalPlot3D[Cos[t]^2, {t, 0, Pi}, {p, 0, 2 Pi}], BoxRatios -> {1, 1, 1}]", //
         "False");
+    // Automatic goes out as the numbers, because the WLJS renderer draws nothing for the symbol
+    check("Cases[List @@ SphericalPlot3D[Cos[t]^2, {t, 0, Pi}, {p, 0, 2 Pi}], "
+        + "(BoxRatios -> {a_?NumberQ, b_?NumberQ, c_?NumberQ}) :> (c == 1.0 && 0 < a < 0.5 && 0 < b < 0.5)]", //
+        "{True}");
+    check("Cases[List @@ SphericalPlot3D[1, {t, 0, Pi}, {p, 0, 2 Pi}, BoxRatios -> {1, 2, 3}], "
+        + "HoldPattern[BoxRatios -> _]]", //
+        "{BoxRatios->{1,2,3}}");
+    // the same for the other surfaces whose default is Automatic: a cylinder three high
+    check("Cases[List @@ ParametricPlot3D[{Cos[u], Sin[u], 3 v}, {u, 0, 2 Pi}, {v, 0, 1}], "
+        + "(BoxRatios -> {a_?NumberQ, b_?NumberQ, c_?NumberQ}) :> (c == 1.0 && Abs[a - 2/3] < 0.01)]", //
+        "{True}");
+    check("Cases[List @@ RevolutionPlot3D[t, {t, 0, 1}], "
+        + "(BoxRatios -> {_?NumberQ, _?NumberQ, _?NumberQ}) :> True]", //
+        "{True}");
   }
 
 }

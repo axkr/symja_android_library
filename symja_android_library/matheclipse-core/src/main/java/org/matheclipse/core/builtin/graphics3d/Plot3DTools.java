@@ -648,6 +648,63 @@ public final class Plot3DTools {
   }
 
   /**
+   * {@code BoxRatios -> Automatic} written out as numbers: the proportions of what was drawn, the
+   * largest side being {@code 1}. Any other value is returned as it is.
+   *
+   * <p>
+   * The numbers are needed because the WLJS renderer scales the scene by {@code BoxRatios} without
+   * checking that it is a list, and draws nothing at all for {@code Automatic}.
+   *
+   * @param content the primitives; the vertices of every {@code GraphicsComplex} in it are measured
+   */
+  public static IExpr automaticBoxRatios(IExpr boxRatios, IExpr content) {
+    if (boxRatios != S.Automatic) {
+      return boxRatios;
+    }
+    double[] bounds = {Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE,
+        Double.MAX_VALUE, -Double.MAX_VALUE};
+    collectExtent(content, bounds);
+    double dx = bounds[1] - bounds[0];
+    double dy = bounds[3] - bounds[2];
+    double dz = bounds[5] - bounds[4];
+    double max = Math.max(dx, Math.max(dy, dz));
+    if (!Double.isFinite(max) || max <= 0.0) {
+      return F.List(F.C1, F.C1, F.C1);
+    }
+    // a flat side still gets some depth, so the box does not collapse
+    double floor = 1.0e-3;
+    return F.List(F.num(Math.max(dx / max, floor)), F.num(Math.max(dy / max, floor)),
+        F.num(Math.max(dz / max, floor)));
+  }
+
+  private static void collectExtent(IExpr expr, double[] bounds) {
+    if (!expr.isAST()) {
+      return;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isAST(S.GraphicsComplex) && ast.argSize() >= 1 && ast.arg1().isList()) {
+      IAST points = (IAST) ast.arg1();
+      for (int i = 1; i <= points.argSize(); i++) {
+        IExpr p = points.get(i);
+        if (!p.isList3()) {
+          continue;
+        }
+        for (int c = 0; c < 3; c++) {
+          double v = ((IAST) p).get(c + 1).evalfNaN();
+          if (Double.isFinite(v)) {
+            bounds[c * 2] = Math.min(bounds[c * 2], v);
+            bounds[c * 2 + 1] = Math.max(bounds[c * 2 + 1], v);
+          }
+        }
+      }
+      return;
+    }
+    for (int i = 1; i <= ast.argSize(); i++) {
+      collectExtent(ast.get(i), bounds);
+    }
+  }
+
+  /**
    * The {@code ColorFunction} of a surface, or {@code null} when it keeps its own flat colour.
    *
    * <p>
