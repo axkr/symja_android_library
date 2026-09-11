@@ -1382,4 +1382,20 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{{0,0},{2,2},{4,0}}");
   }
 
+  /**
+   * <code>ListVectorPlot3D</code>: an array of 3-vectors puts <code>array[[i, j, k]]</code> at
+   * <code>{k, j, i}</code>; a list of <code>{point, vector}</code> pairs puts each at its point.
+   */
+  @Test
+  public void testListVectorPlot3DDrawsDataAsArrows() {
+    check("p = ListVectorPlot3D[Table[{y, -x, z}, {z, -1, 1}, {y, -1, 1}, {x, -1, 1}]]; "
+        + "{Head[p], Count[p, _Arrow, Infinity], Axes /. Rest[List @@ p]}", //
+        "{Graphics3D,26,True}");
+    check("Cases[ListVectorPlot3D[{{{{1, 0, 0}, {1, 0, 0}}}}], Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+        "{{1,1,1},{2,1,1}}");
+    check("Cases[ListVectorPlot3D[{{{0, 0, 0}, {1, 0, 0}}, {{2, 2, 2}, {0, 0, 1}}}], "
+        + "Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+        "{{0,0,0},{2,2,2}}");
+  }
+
 }

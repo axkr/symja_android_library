@@ -12,34 +12,44 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * <code>ListVectorPlot[array]</code> and <code>ListVectorPlot[{{{x, y}, {vx, vy}}, ...}]</code> - a
- * vector field given as data, drawn as arrows the way {@link VectorPlot} draws a function.
+ * <code>ListVectorPlot[array]</code>, <code>ListVectorPlot[{{{x, y}, {vx, vy}}, ...}]</code> and
+ * their 3D forms <code>ListVectorPlot3D</code> - a vector field given as data, drawn as arrows the
+ * way {@link VectorPlot} draws a function.
  *
  * <p>
- * An array of vectors places <code>array[[i, j]]</code> at <code>{j, i}</code>, as the Wolfram
- * Language does, or spreads the columns and rows over <code>DataRange -> {{xmin, xmax}, {ymin,
- * ymax}}</code>. A list of <code>{point, vector}</code> pairs places each vector at its point.
+ * An array of vectors places <code>array[[i, j]]</code> at <code>{j, i}</code> and
+ * <code>array[[i, j, k]]</code> at <code>{k, j, i}</code>, as the Wolfram Language does, or spreads
+ * each axis over <code>DataRange -> {{xmin, xmax}, {ymin, ymax}[, {zmin, zmax}]}</code>. A list of
+ * <code>{point, vector}</code> pairs places each vector at its point.
  *
  * <p>
  * Each arrow is centred on its point and the longest spans <code>VectorScale</code> of the spacing
  * between points. They are coloured by their length unless <code>VectorColorFunction -> None</code>.
  * Entries that are not numeric vectors, and zero vectors, get no arrow. Any other option is handed on
- * to the <code>Graphics</code>.
+ * to the <code>Graphics</code>/<code>Graphics3D</code>.
  */
 public class ListVectorPlot extends AbstractFunctionEvaluator {
 
   /** How much of the spacing between points the longest arrow spans. */
   private static final double DEFAULT_SCALE = 0.9;
 
+  /** 2 for ListVectorPlot, 3 for ListVectorPlot3D. */
+  private final int dimension;
+
+  public ListVectorPlot(int dimension) {
+    this.dimension = dimension;
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() < 1 || !ast.arg1().isList()) {
       return F.NIL;
     }
-    IAST data = (IAST) engine.evalN(ast.arg1());
-    if (!data.isList() || data.argSize() == 0) {
+    IExpr evaluated = engine.evalN(ast.arg1());
+    if (!evaluated.isList() || evaluated.argSize() == 0) {
       return F.NIL;
     }
+    IAST data = (IAST) evaluated;
 
     double scale = DEFAULT_SCALE;
     boolean colored = true;
@@ -78,46 +88,36 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     double spacing;
     if (isPairList(data)) {
       for (IExpr pair : data) {
-        double[] point = vector(pair.first());
-        double[] v = vector(pair.second());
-        if (point != null && v != null) {
-          tails.add(point);
-          vectors.add(v);
-        }
+        tails.add(vector(pair.first()));
+        vectors.add(vector(pair.second()));
       }
       spacing = pairSpacing(tails);
     } else {
-      int rows = data.argSize();
-      int columns = 0;
-      for (IExpr row : data) {
-        if (!row.isList()) {
-          return F.NIL;
-        }
-        columns = Math.max(columns, row.argSize());
+      // counts[level]: the longest list at that nesting level, level 0 the outermost
+      int[] counts = new int[dimension];
+      if (!measure(data, 0, counts)) {
+        return F.NIL;
       }
-      double x0 = 1.0;
-      double dx = 1.0;
-      double y0 = 1.0;
-      double dy = 1.0;
-      if (dataRange != null) {
-        x0 = dataRange[0][0];
-        dx = columns > 1 ? (dataRange[0][1] - dataRange[0][0]) / (columns - 1) : 1.0;
-        y0 = dataRange[1][0];
-        dy = rows > 1 ? (dataRange[1][1] - dataRange[1][0]) / (rows - 1) : 1.0;
-      }
-      for (int i = 1; i <= rows; i++) {
-        IAST row = (IAST) data.get(i);
-        for (int j = 1; j <= row.argSize(); j++) {
-          double[] v = vector(row.get(j));
-          if (v != null) {
-            tails.add(new double[] {x0 + (j - 1) * dx, y0 + (i - 1) * dy});
-            vectors.add(v);
-          }
+      // coordinate d runs along nesting level dimension-1-d: array[[i, j]] is at {j, i}
+      double[] origin = new double[dimension];
+      double[] step = new double[dimension];
+      for (int d = 0; d < dimension; d++) {
+        int count = counts[dimension - 1 - d];
+        origin[d] = 1.0;
+        step[d] = 1.0;
+        if (dataRange != null) {
+          origin[d] = dataRange[d][0];
+          step[d] = count > 1 ? (dataRange[d][1] - dataRange[d][0]) / (count - 1) : 1.0;
         }
       }
-      spacing = Math.min(columns > 1 ? Math.abs(dx) : Double.MAX_VALUE,
-          rows > 1 ? Math.abs(dy) : Double.MAX_VALUE);
-      if (spacing == Double.MAX_VALUE) {
+      collect(data, 0, new int[dimension], origin, step, tails, vectors);
+      spacing = Double.MAX_VALUE;
+      for (int d = 0; d < dimension; d++) {
+        if (counts[dimension - 1 - d] > 1) {
+          spacing = Math.min(spacing, Math.abs(step[d]));
+        }
+      }
+      if (spacing == Double.MAX_VALUE || spacing == 0.0) {
         spacing = 1.0;
       }
     }
@@ -138,37 +138,90 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     if (!colored) {
       primitives.append(VectorPlot.color(0.0));
     }
-    double[] min = {Double.MAX_VALUE, Double.MAX_VALUE};
-    double[] max = {-Double.MAX_VALUE, -Double.MAX_VALUE};
+    double[] min = new double[dimension];
+    double[] max = new double[dimension];
+    java.util.Arrays.fill(min, Double.MAX_VALUE);
+    java.util.Arrays.fill(max, -Double.MAX_VALUE);
     for (int k = 0; k < vectors.size(); k++) {
       double[] p = tails.get(k);
       double[] v = vectors.get(k);
-      IAST from = F.list(F.num(p[0] - v[0] * factor / 2), F.num(p[1] - v[1] * factor / 2));
-      IAST to = F.list(F.num(p[0] + v[0] * factor / 2), F.num(p[1] + v[1] * factor / 2));
-      IAST arrow = F.Arrow(F.list(from, to));
-      primitives.append(
-          colored ? F.list(VectorPlot.color(VectorPlot.norm(v) / longest), arrow) : arrow);
-      for (int d = 0; d < 2; d++) {
+      IASTAppendable from = F.ListAlloc(dimension);
+      IASTAppendable to = F.ListAlloc(dimension);
+      for (int d = 0; d < dimension; d++) {
+        from.append(F.num(p[d] - v[d] * factor / 2));
+        to.append(F.num(p[d] + v[d] * factor / 2));
         min[d] = Math.min(min[d], p[d]);
         max[d] = Math.max(max[d], p[d]);
       }
+      IAST arrow = F.Arrow(F.list(from, to));
+      primitives.append(
+          colored ? F.list(VectorPlot.color(VectorPlot.norm(v) / longest), arrow) : arrow);
     }
 
-    IASTAppendable result = F.Graphics(primitives);
+    IASTAppendable result = dimension == 3 ? F.Graphics3D(primitives) : F.Graphics(primitives);
     result.appendArgs(graphicsOptions);
     if (!vectors.isEmpty() && !hasOption(graphicsOptions, S.PlotRange)) {
       double pad = spacing / 2;
-      result.append(F.Rule(S.PlotRange, F.list(F.list(F.num(min[0] - pad), F.num(max[0] + pad)),
-          F.list(F.num(min[1] - pad), F.num(max[1] + pad)))));
+      IASTAppendable range = F.ListAlloc(dimension);
+      for (int d = 0; d < dimension; d++) {
+        range.append(F.list(F.num(min[d] - pad), F.num(max[d] + pad)));
+      }
+      result.append(F.Rule(S.PlotRange, range));
     }
-    if (!hasOption(graphicsOptions, S.Frame)) {
-      result.append(F.Rule(S.Frame, S.True));
+    if (dimension == 2) {
+      if (!hasOption(graphicsOptions, S.Frame)) {
+        result.append(F.Rule(S.Frame, S.True));
+      }
+    } else if (!hasOption(graphicsOptions, S.Axes)) {
+      result.append(F.Rule(S.Axes, S.True));
     }
     return result;
   }
 
-  /** <code>{{{x, y}, {vx, vy}}, ...}</code>: every entry a pair of numeric 2-vectors. */
-  private static boolean isPairList(IAST data) {
+  /**
+   * Records the longest list at each nesting level; <code>false</code> if the array is not nested
+   * <code>dimension</code> levels deep.
+   */
+  private boolean measure(IAST list, int level, int[] counts) {
+    counts[level] = Math.max(counts[level], list.argSize());
+    if (level == dimension - 1) {
+      return true;
+    }
+    for (IExpr element : list) {
+      if (!element.isList() || !measure((IAST) element, level + 1, counts)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Walks the array, placing the vector at <code>index</code> (1-based, outermost first). */
+  private void collect(IAST list, int level, int[] index, double[] origin, double[] step,
+      List<double[]> tails, List<double[]> vectors) {
+    for (int i = 1; i < list.size(); i++) {
+      index[level] = i;
+      IExpr element = list.get(i);
+      if (level < dimension - 1) {
+        if (element.isList()) {
+          collect((IAST) element, level + 1, index, origin, step, tails, vectors);
+        }
+        continue;
+      }
+      double[] v = vector(element);
+      if (v == null) {
+        continue;
+      }
+      double[] point = new double[dimension];
+      for (int d = 0; d < dimension; d++) {
+        point[d] = origin[d] + (index[dimension - 1 - d] - 1) * step[d];
+      }
+      tails.add(point);
+      vectors.add(v);
+    }
+  }
+
+  /** <code>{{point, vector}, ...}</code>: every entry a pair of numeric vectors. */
+  private boolean isPairList(IAST data) {
     for (IExpr entry : data) {
       if (!entry.isList2() || vector(entry.first()) == null || vector(entry.second()) == null) {
         return false;
@@ -177,44 +230,67 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     return true;
   }
 
-  /** A numeric 2-vector, or <code>null</code>. */
-  private static double[] vector(IExpr expr) {
-    if (!expr.isList2() || !expr.first().isReal() || !expr.second().isReal()) {
+  /** A numeric vector with <code>dimension</code> components, or <code>null</code>. */
+  private double[] vector(IExpr expr) {
+    if (!expr.isList() || expr.argSize() != dimension) {
       return null;
     }
-    return new double[] {expr.first().evalf(), expr.second().evalf()};
+    double[] result = new double[dimension];
+    for (int d = 0; d < dimension; d++) {
+      IExpr component = expr.getAt(d + 1);
+      if (!component.isReal()) {
+        return null;
+      }
+      result[d] = component.evalf();
+    }
+    return result;
   }
 
-  /** <code>{{xmin, xmax}, {ymin, ymax}}</code>, or <code>null</code>. */
-  private static double[][] dataRange(IExpr value) {
-    if (!value.isList2()) {
+  /** <code>{{xmin, xmax}, {ymin, ymax}[, {zmin, zmax}]}</code>, or <code>null</code>. */
+  private double[][] dataRange(IExpr value) {
+    if (!value.isList() || value.argSize() != dimension) {
       return null;
     }
-    double[] x = vector(value.first());
-    double[] y = vector(value.second());
-    return x == null || y == null ? null : new double[][] {x, y};
+    double[][] range = new double[dimension][];
+    for (int d = 0; d < dimension; d++) {
+      IExpr axis = value.getAt(d + 1);
+      if (!axis.isList2() || !axis.first().isReal() || !axis.second().isReal()) {
+        return null;
+      }
+      range[d] = new double[] {axis.first().evalf(), axis.second().evalf()};
+    }
+    return range;
   }
 
-  /** The typical distance between scattered points: the side of the area each one has. */
-  private static double pairSpacing(List<double[]> points) {
+  /** The typical distance between scattered points: the side of the cell each one has. */
+  private double pairSpacing(List<double[]> points) {
     if (points.size() < 2) {
       return 1.0;
     }
-    double[] min = {Double.MAX_VALUE, Double.MAX_VALUE};
-    double[] max = {-Double.MAX_VALUE, -Double.MAX_VALUE};
-    for (double[] p : points) {
-      for (int d = 0; d < 2; d++) {
-        min[d] = Math.min(min[d], p[d]);
-        max[d] = Math.max(max[d], p[d]);
+    double volume = 1.0;
+    int spread = 0;
+    double widest = 0.0;
+    for (int d = 0; d < dimension; d++) {
+      double lo = Double.MAX_VALUE;
+      double hi = -Double.MAX_VALUE;
+      for (double[] p : points) {
+        lo = Math.min(lo, p[d]);
+        hi = Math.max(hi, p[d]);
+      }
+      double extent = hi - lo;
+      widest = Math.max(widest, extent);
+      if (extent > 0) {
+        volume *= extent;
+        spread++;
       }
     }
-    double width = max[0] - min[0];
-    double height = max[1] - min[1];
     double spacing;
-    if (width > 0 && height > 0) {
-      spacing = Math.sqrt(width * height / points.size());
+    if (spread == dimension) {
+      spacing = Math.pow(volume / points.size(), 1.0 / dimension);
+    } else if (spread > 0) {
+      spacing = widest / (points.size() - 1);
     } else {
-      spacing = Math.max(width, height) / (points.size() - 1);
+      spacing = 1.0;
     }
     return spacing > 0 ? spacing : 1.0;
   }
