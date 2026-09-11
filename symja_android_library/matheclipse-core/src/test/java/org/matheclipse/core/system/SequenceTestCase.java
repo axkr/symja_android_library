@@ -184,10 +184,26 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
         "1000");
     check("Length(SequenceCases(Table(Mod(i, 7), {i, 7000}), {5, x_} :> x))", //
         "1000");
-    // Overlaps -> All stops growing a sequence at the first length that does not match, so today it
-    // only finds a pattern that already matches at length 1; {5, 6} gives {} (Mathematica: 1000 hits)
-    check("Length(SequenceCases(Table(Mod(i, 7), {i, 7000}), {5}, Overlaps -> All))", //
+    check("Length(SequenceCases(Table(Mod(i, 7), {i, 7000}), {5, 6}, Overlaps -> All))", //
         "1000");
+  }
+
+  /**
+   * <code>Overlaps -> All</code> tries every length at every position; it used to stop at the first
+   * length that did not match, so no pattern of two or more elements was ever found.
+   */
+  @Test
+  public void testSequenceCasesOverlapsAll() {
+    check("SequenceCases({a, b, a, b}, {a, b}, Overlaps -> All)", //
+        "{{a,b},{a,b}}");
+    check("SequenceCases({a, b, a, b}, {a, x_} :> x, Overlaps -> All)", //
+        "{b,b}");
+    // no match at lengths 1 and 2, a match at 3
+    check("SequenceCases({1, 2, 3}, {1, _, _}, Overlaps -> All)", //
+        "{{1,2,3}}");
+    // the Wolfram Language documentation: the longest first at each position
+    check("SequenceCases({1, 2, 3}, {__}, Overlaps -> All)", //
+        "{{1,2,3},{1,2},{1},{2,3},{2},{3}}");
   }
 
   @Test

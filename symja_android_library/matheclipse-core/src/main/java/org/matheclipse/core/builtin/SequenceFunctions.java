@@ -148,13 +148,11 @@ public class SequenceFunctions {
         if (overlapsOption == S.All) {
           IASTAppendable allResults = F.ListAlloc();
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
-            // TODO optimize by classifying pattern matchers
-            // use greedy search because of possible pattern sequences
+            // every length is tried: a miss at one length says nothing about a longer one, so
+            // {a, b} still has to be tried after {a} failed
             IASTAppendable subSequence = ast.copyFrom(i, k);
             if (matcher.test(subSequence)) {
               allResults.append(subSequence);
-            } else {
-              break;
             }
           }
           if (allResults.argSize() > 0) {
@@ -202,14 +200,12 @@ public class SequenceFunctions {
         if (overlapsOption == S.All) {
           IASTAppendable allResults = F.ListAlloc();
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
-            // TODO optimize by classifying pattern matchers
-            // use greedy search because of possible pattern sequences
+            // every length is tried: a miss at one length says nothing about a longer one, so
+            // {a, b} still has to be tried after {a} failed
             IASTAppendable subSequence = ast.copyFrom(i, k);
             IExpr temp = function.apply(subSequence);
             if (temp.isPresent()) {
               allResults.append(temp);
-            } else {
-              break;
             }
           }
           if (allResults.argSize() > 0) {
