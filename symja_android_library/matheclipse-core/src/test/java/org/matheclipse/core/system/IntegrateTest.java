@@ -38,6 +38,37 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * one: it reads back as a symbol, which takes an entirely different route through the evaluator.
    */
   @Test
+  public void testIntegrateFermiDirac() {
+    // Integrate(x^(s-1)/(E^(c*x)+z), {x,0,Infinity}) == -Gamma(s)*PolyLog(s,-z)/(z*c^s), for z >= -1.
+    // The general route cannot answer these: the antiderivative of x/(E^x+1) is three terms which
+    // each diverge at infinity while their sum does not.
+    check("Integrate(x/(E^x + 1), {x, 0, Infinity})", //
+        "Pi^2/12");
+    check("Integrate(x^3/(E^x - 1), {x, 0, Infinity})", //
+        "Pi^4/15");
+    check("Integrate(x/(E^(2*x) + 1), {x, 0, Infinity})", //
+        "Pi^2/48");
+    check("Integrate(Sqrt(x)/(E^x + 1), {x, 0, Infinity})", //
+        "1/2*(1-1/Sqrt(2))*Sqrt(Pi)*Zeta(3/2)");
+    // the degenerate Fermi gas, z > 1, where the geometric series behind the formula diverges and
+    // the integral does not
+    check("Integrate(1/(E^x + 2), {x, 0, Infinity})", //
+        "Log(3)/2");
+    check("Integrate(x/(E^x + 2), {x, 0, Infinity})", //
+        "-PolyLog(2,-2)/2");
+    check("Integrate(x^2/(E^x + 3), {x, 0, Infinity})", //
+        "-2/3*PolyLog(3,-3)");
+    check("Integrate(x/(E^x + z), {x, 0, Infinity}, Assumptions -> z > 0)", //
+        "-PolyLog(2,-z)/z");
+    // Below z == -1 the denominator vanishes at x == Log(-z), and the Bose case with s == 1
+    // diverges at the origin: both are left unevaluated rather than given the formula's value.
+    check("Integrate(x/(E^x - 2), {x, 0, Infinity})", //
+        "Integrate(x/(-2+E^x),{x,0,Infinity})");
+    check("Integrate(1/(E^x - 1), {x, 0, Infinity})", //
+        "Integrate(1/(-1+E^x),{x,0,Infinity})");
+  }
+
+  @Test
   public void testIntegrateNonFiniteIntegrand() {
     // Invalid integration variable or limit(s) in 2.
     assertEquals(

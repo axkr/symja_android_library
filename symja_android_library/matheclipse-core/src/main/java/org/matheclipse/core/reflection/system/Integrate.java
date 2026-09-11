@@ -457,6 +457,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (sifted.isPresent()) {
             return sifted;
           }
+          // Integrate(x^(s-1)/(E^(c*x)+z), {x,0,Infinity}) - the Fermi-Dirac and Bose-Einstein
+          // integrals, an exact shape like the one above.
+          IExpr fermiDirac =
+              integrateFermiDirac(arg1, xList.arg1(), xList.arg2(), xList.arg3(), engine);
+          if (fermiDirac.isPresent()) {
+            return fermiDirac;
+          }
           // Integrate(f(x), {x,a,b}) by differentiating under the integral sign. Before the
           // antiderivative is attempted, not after: these are exact shapes, recognized or declined
           // in a millisecond, and none of them has an antiderivative for the Rubi rules to spend
@@ -1274,6 +1281,117 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * <code>Integrate(k*x^(s-1)/(E^(c*x) + z), {x, 0, Infinity})</code>, the Fermi-Dirac and
+   * Bose-Einstein integrals.
+   *
+   * <p>
+   * The value is <code>-k*Gamma(s)*PolyLog(s, -z)/(z*c^s)</code>. The denominator has no zero on
+   * the half line exactly when <code>z &gt;= -1</code>, and then the integral converges at infinity
+   * for every <code>s</code> and at the origin for <code>s &gt; 0</code>, or <code>s &gt; 1</code>
+   * when <code>z == -1</code>, where the denominator vanishes there too; that is the Bose-Einstein
+   * case, and the value is <code>k*Gamma(s)*Zeta(s)/c^s</code>. For <code>z &gt; 1</code>, the
+   * degenerate Fermi gas, the geometric series behind the formula diverges while the integral does
+   * not, and the formula still holds by analytic continuation.
+   *
+   * <p>
+   * The general route cannot answer these: the antiderivative of <code>x/(E^x + 1)</code> is
+   * <code>x^2/2 - x*Log(1 + E^x) - PolyLog(2, -E^x)</code>, three terms which each diverge at
+   * infinity while their sum does not, and the limit there is not one it can take.
+   *
+   * @return {@link F#NIL} if the integrand is not of that shape or a condition cannot be decided
+   */
+  private static IExpr integrateFermiDirac(IExpr integrand, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (!lower.isZero() || !upper.isInfinity() || !x.isSymbol()) {
+      return F.NIL;
+    }
+    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
+    IExpr k = F.C1;
+    IExpr exponent = F.C0;
+    IExpr denominator = F.NIL;
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isFree(x)) {
+        k = F.Times(k, factor);
+      } else if (factor.equals(x)) {
+        exponent = F.Plus(exponent, F.C1);
+      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
+        exponent = F.Plus(exponent, factor.exponent());
+      } else if (factor.isPower() && factor.exponent().isMinusOne() && factor.base().isPlus()
+          && denominator.isNIL()) {
+        denominator = factor.base();
+      } else {
+        return F.NIL;
+      }
+    }
+    if (denominator.isNIL()) {
+      return F.NIL;
+    }
+    // The denominator is a*E^(c*x) + b, with a, b and c free of x.
+    IAST terms = (IAST) denominator;
+    IExpr a = F.NIL;
+    IExpr c = F.NIL;
+    IASTAppendable constant = F.PlusAlloc(terms.argSize());
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      if (term.isFree(x)) {
+        constant.append(term);
+        continue;
+      }
+      if (a.isPresent()) {
+        return F.NIL;
+      }
+      IAST parts = term.isTimes() ? (IAST) term : F.Times(term);
+      IExpr coefficient = F.C1;
+      IExpr power = F.NIL;
+      for (int j = 1; j <= parts.argSize(); j++) {
+        IExpr part = parts.get(j);
+        if (part.isFree(x)) {
+          coefficient = F.Times(coefficient, part);
+        } else if (part.isExp() && power.isNIL()) {
+          power = part.exponent();
+        } else {
+          return F.NIL;
+        }
+      }
+      if (power.isNIL()) {
+        return F.NIL;
+      }
+      IExpr rate = engine.evaluate(F.Coefficient(power, x, F.C1));
+      IExpr offset = engine.evaluate(F.Coefficient(power, x, F.C0));
+      if (!rate.isFree(x) || !engine.evaluate(F.Subtract(power, F.Plus(F.Times(rate, x), offset)))
+          .isZero()) {
+        return F.NIL;
+      }
+      // a*E^(rate*x + offset) is (a*E^offset)*E^(rate*x)
+      a = engine.evaluate(F.Times(coefficient, F.Exp(offset)));
+      c = rate;
+    }
+    if (a.isNIL() || a.isZero()) {
+      return F.NIL;
+    }
+    IExpr z = engine.evaluate(F.Divide(constant.oneIdentity0(), a));
+    IExpr s = engine.evaluate(F.Plus(exponent, F.C1));
+    k = engine.evaluate(F.Divide(k, a));
+    if (z.isZero() || !engine.evaluate(F.Greater(c, F.C0)).isTrue()) {
+      return F.NIL;
+    }
+    boolean bose = engine.evaluate(F.Equal(z, F.CN1)).isTrue();
+    if (bose) {
+      if (!engine.evaluate(F.Greater(s, F.C1)).isTrue()) {
+        return F.NIL;
+      }
+    } else if (!engine.evaluate(F.Greater(z, F.CN1)).isTrue()
+        || !engine.evaluate(F.Greater(s, F.C0)).isTrue()) {
+      // Below -1 the denominator has a zero at x == Log(-z) on the half line and the integral
+      // diverges there; a condition which cannot be decided is not assumed either way.
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(F.CN1, k, F.Gamma(s), F.PolyLog(s, F.Negate(z)),
+        F.Power(F.Times(z, F.Power(c, s)), F.CN1)));
+  }
+
+  /**
    * Sifting property of {@link S#DiracDelta} for a definite integral
    * <code>Integrate(f(x)*DiracDelta(c1*x+c0), {x, lower, upper})</code>.
    *
@@ -1297,6 +1415,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param engine the evaluation engine
    * @return the value of the definite integral or {@link F#NIL} if this shape does not apply
    */
+
   private static IExpr integrateDiracDelta(IExpr integrand, IExpr x, IExpr lower, IExpr upper,
       EvalEngine engine) {
     if (integrand.isFreeAST(S.DiracDelta) || !x.isVariable()) {
