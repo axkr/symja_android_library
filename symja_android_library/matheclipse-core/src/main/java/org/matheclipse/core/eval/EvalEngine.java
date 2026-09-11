@@ -3213,6 +3213,12 @@ public class EvalEngine implements Serializable {
    * @return <code>F.NIL</code> if no evaluation was possible
    */
   private IExpr evalNoAttributes(IAST ast, int attributes) {
+    final boolean argNumericMode = isNumericArg(ast);
+    if (!argNumericMode && ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS)) {
+      // numbers and strings, already evaluated once: evaluating them again changes nothing. A loop
+      // reading a large list through a variable re-evaluated all of it at every step
+      return F.NIL;
+    }
     // SequenceHold is deliberately outside ISymbol#EVAL_ENGINE_ATTRIBUTES, so that a symbol whose
     // only attribute is SequenceHold - S.Rule, one of the hottest heads in the system - keeps this
     // fast path. That means the guard the slow path applies in evalAttributes() has to be repeated
@@ -3224,12 +3230,18 @@ public class EvalEngine implements Serializable {
       }
     }
     final boolean localNumericMode = fNumericMode;
-    final boolean argNumericMode = isNumericArg(ast);
     IASTMutable rlist = F.NIL;
     // memoized in an eval flag: one scan answers every special-argument test of the loop
     final boolean hasSpecialArg = ast.hasSpecialArg();
+    // only the list classes which drop their flags on every change may remember the answer
+    boolean numbersOrStrings = !argNumericMode
+        && (ast instanceof org.matheclipse.core.expression.HMArrayList
+            || ast instanceof org.matheclipse.core.expression.ASTRRBTree);
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
+      if (numbersOrStrings && !arg.isNumber() && !arg.isString()) {
+        numbersOrStrings = false;
+      }
       if (!hasSpecialArg || !arg.isUnevaluated()) {
         // fNumericMode = localNumericMode;
         setNumericMode(localNumericMode);
@@ -3238,6 +3250,9 @@ public class EvalEngine implements Serializable {
     }
     if (rlist.isPresent()) {
       return rlist;
+    }
+    if (numbersOrStrings) {
+      ast.addFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS);
     }
     return ast.extractConditionalExpression(false);
   }

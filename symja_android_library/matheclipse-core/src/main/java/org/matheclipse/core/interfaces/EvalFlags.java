@@ -129,6 +129,8 @@ public final class EvalFlags {
 
     /** @see Flag#OUTPUT_MULTILINE */
     public static final int OUTPUT_MULTILINE = 0x40000000;
+    /** @see Flag#ARGS_ARE_NUMBERS_OR_STRINGS */
+    public static final int ARGS_ARE_NUMBERS_OR_STRINGS = 0x80000000;
     /** @see Flag#TIMES_PARSED_IMPLICIT */
     public static final int TIMES_PARSED_IMPLICIT = 0x00000080;
 
@@ -146,7 +148,8 @@ public final class EvalFlags {
         | IS_NUMERIC_FUNCTION_OR_LIST | IS_NOT_NUMERIC_FUNCTION_OR_LIST | IS_NUMERIC_CONSTANT
         | IS_NOT_NUMERIC_CONSTANT;
     /** @see Group#ARGUMENTS_CHANGED */
-    public static final int ARGUMENTS_CHANGED = IS_LISTABLE_THREADED | CONTAINS_NO_SPECIAL_ARG;
+    public static final int ARGUMENTS_CHANGED =
+        IS_LISTABLE_THREADED | CONTAINS_NO_SPECIAL_ARG | ARGS_ARE_NUMBERS_OR_STRINGS;
     /**
      * The flags which survive an externalization round trip: everything which cannot be
      * recomputed from the tree afterwards. Deliberately the contiguous low block, and
@@ -159,7 +162,10 @@ public final class EvalFlags {
         | CONTAINS_DEFAULT_PATTERN | CONTAINS_ALL_DEFAULT_PATTERN | CONTAINS_NO_PATTERN
         | IS_FLATTENED | IS_SORTED | TIMES_PARSED_IMPLICIT | IS_DECOMPOSED_PARTIAL_FRACTION;
 
-    /** Every bit which is assigned to a {@link Flag}. Bit 31 is the only one still free. */
+    /**
+     * Every bit which is assigned to a {@link Flag}. All 32 are: bit 31, the last free one, went to
+     * {@link Flag#ARGS_ARE_NUMBERS_OR_STRINGS}.
+     */
     public static final int ALL = CONTAINS_PATTERN | CONTAINS_PATTERN_SEQUENCE
         | CONTAINS_DEFAULT_PATTERN | CONTAINS_NO_PATTERN | CONTAINS_ALL_DEFAULT_PATTERN
         | CONTAINS_NO_SPECIAL_ARG | IS_MATRIX | IS_VECTOR | IS_DECOMPOSED_PARTIAL_FRACTION
@@ -168,7 +174,8 @@ public final class EvalFlags {
         | SEQUENCE_FLATTENED | IS_COPIED | CONTAINS_NUMERIC_ARG | IS_NOT_NUMERIC_CONSTANT
         | IS_NUMERIC_FUNCTION | IS_NOT_NUMERIC_FUNCTION | IS_NUMERIC_FUNCTION_OR_LIST
         | IS_NOT_NUMERIC_FUNCTION_OR_LIST | NUMERIC_DOUBLE_EVALED | NUMERIC_ARBITRARY_EVALED
-        | IS_NUMERIC_CONSTANT | OUTPUT_MULTILINE | TIMES_PARSED_IMPLICIT;
+        | IS_NUMERIC_CONSTANT | OUTPUT_MULTILINE | TIMES_PARSED_IMPLICIT
+        | ARGS_ARE_NUMBERS_OR_STRINGS;
   }
 
   /**
@@ -228,6 +235,24 @@ public final class EvalFlags {
      * @see Group#ARGUMENTS_CHANGED
      */
     CONTAINS_NO_SPECIAL_ARG(Mask.CONTAINS_NO_SPECIAL_ARG, Mask.NONE),
+
+    /**
+     * Is set, if the arguments of this list were evaluated without numeric mode, nothing changed,
+     * and every one of them is a number or a string - so evaluating them again in that mode can
+     * change nothing either.
+     * <p>
+     * Reading a variable which holds a large list evaluates the list again, element by element,
+     * and a loop such as <code>Table[data[[i]], {i, Length[data]}]</code> did that at every step:
+     * quadratic in the length. The WLJS notebook unmasks each incoming WebSocket frame with such
+     * a loop, and a frame of a few hundred kilobytes kept its server busy for tens of minutes.
+     * <p>
+     * Only set on the list classes whose every mutation calls {@code AbstractAST#argumentsChanged()},
+     * which drops it again, and only where the head does not evaluate its arguments in numeric
+     * mode (there an integer does change). This is bit 31, the last free bit of the word.
+     *
+     * @see Group#ARGUMENTS_CHANGED
+     */
+    ARGS_ARE_NUMBERS_OR_STRINGS(Mask.ARGS_ARE_NUMBERS_OR_STRINGS, Mask.NONE),
 
     /** This expression represents a matrix. */
     IS_MATRIX(Mask.IS_MATRIX, Mask.NONE),
@@ -431,6 +456,7 @@ public final class EvalFlags {
      *
      * @see Flag#IS_LISTABLE_THREADED
      * @see Flag#CONTAINS_NO_SPECIAL_ARG
+     * @see Flag#ARGS_ARE_NUMBERS_OR_STRINGS
      */
     ARGUMENTS_CHANGED(Mask.ARGUMENTS_CHANGED),
 

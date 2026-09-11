@@ -61,15 +61,43 @@ public class EvalFlagsTest {
   }
 
   /**
-   * The bit budget alarm. There is exactly one bit left; a new flag needs a design conversation,
-   * not a spare bit.
+   * The bit budget alarm. The word is full: bit 31, the last free one, went to
+   * {@link Flag#ARGS_ARE_NUMBERS_OR_STRINGS} after a design conversation. A further flag needs
+   * another such conversation - a second word, a {@link Trait}, or retiring a flag - not a bit.
    */
   @Test
-  public void testAtLeastOneBitIsStillFree() {
+  public void testTheFlagWordIsFull() {
     int free = ~EvalFlags.Mask.ALL;
-    assertNotEquals(0, free, "the evaluation flag word is full");
-    assertTrue((free & 0x80000000) != 0,
-        String.format("expected bit 31 to be free, free bits are 0x%08X", free));
+    assertEquals(0, free,
+        String.format("expected every bit to be assigned, free bits are 0x%08X", free));
+    assertEquals(0x80000000, Flag.ARGS_ARE_NUMBERS_OR_STRINGS.mask());
+  }
+
+  /**
+   * A list of numbers remembers, once evaluated, that evaluating it again changes nothing - and
+   * forgets it as soon as an element is replaced. A list with a symbol in it never remembers it.
+   */
+  @Test
+  public void testAListOfNumbersIsEvaluatedOnce() {
+    org.matheclipse.core.interfaces.IASTAppendable numbers = F.ListAlloc(20);
+    for (int i = 1; i <= 20; i++) {
+      numbers.append(F.ZZ(i));
+    }
+    numbers.append(F.stringx("s"));
+    org.matheclipse.core.eval.EvalEngine.get().evaluate(numbers);
+    assertTrue(numbers.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS), "evaluated once");
+
+    numbers.set(3, F.x);
+    assertFalse(numbers.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS),
+        "a replaced element has to be evaluated again");
+
+    org.matheclipse.core.interfaces.IASTAppendable withSymbol = F.ListAlloc(20);
+    for (int i = 1; i <= 20; i++) {
+      withSymbol.append(i == 7 ? F.y : F.ZZ(i));
+    }
+    org.matheclipse.core.eval.EvalEngine.get().evaluate(withSymbol);
+    assertFalse(withSymbol.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS),
+        "a symbol may have a value next time");
   }
 
   @Test
@@ -111,7 +139,9 @@ public class EvalFlagsTest {
             | Flag.IS_NOT_NUMERIC_FUNCTION_OR_LIST.mask() | Flag.IS_NUMERIC_CONSTANT.mask()
             | Flag.IS_NOT_NUMERIC_CONSTANT.mask(),
         Group.NUMERIC.mask(), "NUMERIC");
-    assertEquals(Flag.IS_LISTABLE_THREADED.mask() | Flag.CONTAINS_NO_SPECIAL_ARG.mask(),
+    assertEquals(
+        Flag.IS_LISTABLE_THREADED.mask() | Flag.CONTAINS_NO_SPECIAL_ARG.mask()
+            | Flag.ARGS_ARE_NUMBERS_OR_STRINGS.mask(),
         Group.ARGUMENTS_CHANGED.mask(), "ARGUMENTS_CHANGED");
 
     for (Group group : Group.values()) {
