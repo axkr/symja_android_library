@@ -192,9 +192,10 @@ public class NumberTest extends ExprEvaluatorTestCase {
           "513");
       check("StringTake(ToString(N(Pi,1001)),12)", //
           "3.1415926535");
-      // head, leading digits, elision and the `512 precision marker in a single readable line
+      // one long number is cut into characters, as Mathematica shows Short[N[Pi, 300]]: about two
+      // thirds from the front and one third from the back, <<k>> for the digits left out
       check("Short(N(Pi,1001))", //
-          "3.141592653589793238462643<<SHORT>>1830119491298336733624`512");
+          "3.141592653589793238462643383279502884<<456>>0119491298336733624");
       // the truncation is silent: Check() would return -1 if N::precgt had been emitted
       check("Precision(Check(N(Pi,1001),-1))", //
           "512");

@@ -1431,9 +1431,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "2.13868*10^-6+I*(-0.0000142187)");
 
     // iteration limit exceeded
+    // one long number: its first two thirds and last third, <<k>> for the digits left out
     check("Pochhammer(3/4,10007) // Short", //
-        "15186567377613065641770402<<SHORT>>048\\\n" //
-            + "475798133248972816384");
+        "15186567377613065641770402422242958712<<48284>>5798133248972816384");
 
     check("Pochhammer(2-b,1)", //
         "2-b");

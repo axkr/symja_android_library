@@ -382,36 +382,59 @@ public class OutputFormFactory {
   }
 
   /**
-   * <code>expr</code> with a run of its elements replaced by <code>Skeleton[k]</code>, keeping as
-   * many from the front and from the back as are written in at most <code>width</code> characters.
-   * An atom has no elements to leave out and is shortened as text, the way messages shorten an
-   * expression.
+   * <code>expr</code> as <code>Short</code> shows it in <code>width</code> characters: whole if it
+   * fits, otherwise in about four fifths of the width, with about twice as much kept from the front
+   * as from the back. That is the shape Mathematica gives it where a page width applies (probed
+   * 2026-09-11 at <code>PageWidth -&gt; 78</code>): <code>Short[Range[100]]</code> is
+   * <code>{1, ..., 10, &lt;&lt;85&gt;&gt;, 96, ..., 100}</code>, <code>Short[Range[100], 2]</code>
+   * keeps 21 and 10, and a 300 character string keeps its first 36 and last 18 characters.
+   *
+   * <p>
+   * The elements left out of an expression become <code>Skeleton[k]</code>; an atom that is too
+   * long - a number, a string - is cut into characters, with <code>&lt;&lt;k&gt;&gt;</code> for the
+   * <code>k</code> characters left out.
    */
   private IExpr elide(IExpr expr, int width) {
     boolean mayFit = !expr.isAST() || ((IAST) expr).argSize() <= width;
     if (mayFit && writtenLength(expr) <= width) {
       return expr;
     }
+    int budget = Math.max(1, (int) Math.round(width * 0.8));
     if (!expr.isAST() || ((IAST) expr).argSize() == 0) {
-      return F.stringx(org.matheclipse.core.eval.Errors.shorten(expr, width));
+      String text = writtenText(expr);
+      if (text == null) {
+        return expr;
+      }
+      // the marker takes about seven characters of the budget
+      int keep = Math.max(3, budget - 7);
+      int front = Math.min(text.length(), keep * 2 / 3);
+      int back = Math.min(text.length() - front, keep - front);
+      int left = text.length() - front - back;
+      if (left <= 0) {
+        return expr;
+      }
+      return F.stringx(text.substring(0, front) + "<<" + left + ">>"
+          + text.substring(text.length() - back));
     }
     IAST ast = (IAST) expr;
     int n = ast.argSize();
     int front = 0;
     int back = 0;
     IExpr best = withSkeleton(ast, 0, 0);
-    boolean takeFront = true;
+    // two from the front for every one from the back
+    int step = 0;
     while (front + back < n - 1) {
-      int f = takeFront ? front + 1 : front;
-      int b = takeFront ? back : back + 1;
+      boolean toFront = step % 3 != 2;
+      int f = toFront ? front + 1 : front;
+      int b = toFront ? back : back + 1;
       IExpr candidate = withSkeleton(ast, f, b);
-      if (writtenLength(candidate) > width) {
+      if (writtenLength(candidate) > budget) {
         break;
       }
       front = f;
       back = b;
       best = candidate;
-      takeFront = !takeFront;
+      step++;
     }
     return best;
   }
@@ -432,15 +455,23 @@ public class OutputFormFactory {
 
   /** The number of characters <code>expr</code> is written in on one line by this printer. */
   private int writtenLength(IExpr expr) {
+    String text = writtenText(expr);
+    return text == null ? Integer.MAX_VALUE : text.length();
+  }
+
+  /**
+   * <code>expr</code> written on one line by this printer, or <code>null</code> if it cannot be.
+   */
+  private String writtenText(IExpr expr) {
     OutputFormFactory measure = new OutputFormFactory(fRelaxedSyntax, fPlusReversed,
         fComplexReImI, fExponentFigures, fSignificantFigures);
     measure.setIgnoreNewLine(true);
     measure.setGraphicsPlaceholder(fGraphicsPlaceholder);
     StringBuilder text = new StringBuilder();
     try {
-      return measure.convert(text, expr) ? text.length() : Integer.MAX_VALUE;
+      return measure.convert(text, expr) ? text.toString() : null;
     } catch (RuntimeException rex) {
-      return Integer.MAX_VALUE;
+      return null;
     }
   }
 

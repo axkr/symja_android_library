@@ -8755,11 +8755,15 @@ public final class ListFunctions {
         result.append(
             padRecursive(origElement, dims, margins, padElements, depth + 1, isLeftArr, head));
       } else {
+        // The cycle of the padding is lined up with the far end: counted from the end of the list
+        // on the left, from its start on the right. Mathematica (2026-09-11):
+        // PadLeft[{a, b, c}, 9, {x, y}] is {y, x, y, x, y, x, a, b, c} and
+        // PadRight[{a, b, c}, 9, {x, y}] is {a, b, c, y, x, y, x, y, x}.
         int cyclicIndex;
         if (origIndex < 0) {
-          cyclicIndex = Math.floorMod(origIndex, padElements.length);
+          cyclicIndex = Math.floorMod(origIndex - origSize, padElements.length);
         } else {
-          cyclicIndex = (origIndex - origSize) % padElements.length;
+          cyclicIndex = Math.floorMod(origIndex, padElements.length);
         }
 
         result.append(buildPadding(dims, padElements, cyclicIndex, depth + 1, head));

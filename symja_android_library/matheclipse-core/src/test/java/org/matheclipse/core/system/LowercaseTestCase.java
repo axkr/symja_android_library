@@ -18036,6 +18036,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x,y,z,x,y,z,a,b,c}");
     check("PadLeft({a, b, c}, 8, {x, y, z})", //
         "{y,z,x,y,z,a,b,c}");
+    // the cycle is counted from the end of the list (Mathematica)
+    check("PadLeft({a, b, c}, 9, {x, y})", //
+        "{y,x,y,x,y,x,a,b,c}");
     check("PadLeft({a, b, c}, 10, 42)", //
         "{42,42,42,42,42,42,42,a,b,c}");
   }
@@ -18089,6 +18092,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,c,x,y,z,x,y,z}");
     check("PadRight({a, b, c}, 8, {x, y, z})", //
         "{a,b,c,x,y,z,x,y}");
+    // the cycle is counted from the start of the list (Mathematica)
+    check("PadRight({a, b, c}, 9, {x, y})", //
+        "{a,b,c,y,x,y,x,y,x}");
     check("PadRight({a, b, c}, 10, 42)", //
         "{a,b,c,42,42,42,42,42,42,42}");
     check("PadRight({{0}},{{1,0},{0,1}})", //
@@ -24806,24 +24812,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   /** A printed result has a page width, so Short leaves out what does not fit, written <<k>>. */
   @Test
   public void testShortElidesAPrintedList() {
-    // 13 from each end fit into one line of 80 characters; the 74 in between are left out
+    // twice as many from the front as from the back, in about four fifths of a line - Mathematica
+    // keeps 10 and 5, writing ", " between the elements (Short[Range[100]] at PageWidth 78)
     check("Short(Range(100))", //
-        "{1,2,3,4,5,6,7,8,9,10,11,12,13,<<74>>,88,89,90,91,92,93,94,95,96,97,98,99,100}");
+        "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,<<79>>,94,95,96,97,98,99,100}");
   }
 
-  /** 91 terms: five from the front, four from the back, and the 82 in between left out. */
+  /** 91 terms: six from the front, two from the back, and the 83 in between left out. */
   @Test
   public void testShortElidesAPrintedSum() {
     check("Short(Expand((1 + x + y)^12))", //
-        "1+12*x+66*x^2+220*x^3+495*x^4+<<82>>+66*x^2*y^10+12*y^11+12*x*y^11+y^12");
+        "1+12*x+66*x^2+220*x^3+495*x^4+792*x^5+<<83>>+12*x*y^11+y^12");
   }
 
   /** <code>Short(expr, n)</code> shows about n lines. */
   @Test
   public void testShortTakesALineCount() {
+    // 28 and 14, as Mathematica keeps 21 and 10 of Short[Range[100], 2]
     check("Short(Range(100), 2)", //
-        "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,<<47>>,\n"
-            + "75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100}");
+        "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,<<58>>,\n"
+            + "87,88,89,90,91,92,93,94,95,96,97,98,99,100}");
   }
 
   /** <code>Skeleton(k)</code> is written as the count of what was left out, but kept as it is. */
