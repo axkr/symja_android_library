@@ -368,6 +368,7 @@ public final class FunctionDefinitions {
       S.VectorPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics.VectorPlot(3));
       S.ListVectorPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListVectorPlot(2));
       S.ListVectorPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics.ListVectorPlot(3));
+      S.StreamPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.StreamPlot());
       S.PieChart.setEvaluator(new org.matheclipse.core.builtin.graphics.PieChart());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
       S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());

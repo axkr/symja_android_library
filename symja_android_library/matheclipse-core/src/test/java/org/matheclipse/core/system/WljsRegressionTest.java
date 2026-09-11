@@ -1412,4 +1412,29 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "0");
   }
 
+  /**
+   * <code>StreamPlot</code> draws the field as streamlines, each an <code>Arrow</code> through the
+   * points of a curve that follows the field, over the plot range the iterators give, as the
+   * Wolfram Language draws it.
+   */
+  @Test
+  public void testStreamPlotDrawsStreamlines() {
+    check("p = StreamPlot[{-1 - x^2 + y, 1 + x - y^2}, {x, -3, 3}, {y, -3, 3}, StreamScale -> Large]; "
+        + "{Head[p], Count[p, _Arrow, Infinity] > 20, Min[Cases[p, Arrow[l_] :> Length[l], Infinity]] >= 2, "
+        + "PlotRange /. Rest[List @@ p]}", //
+        "{Graphics,True,True,{{-3.0,3.0},{-3.0,3.0}}}");
+  }
+
+  /**
+   * <code>ListVectorPlot</code> thins a dense array to at most 15 entries along each axis and plots
+   * the extent of the data, as the Wolfram Language does: 31 x 31 vectors are 15 x 15 arrows over
+   * <code>{{1, 31}, {1, 31}}</code>.
+   */
+  @Test
+  public void testListVectorPlotThinsADenseArray() {
+    check("p = ListVectorPlot[Table[{y, -x}, {x, -3, 3, 0.2}, {y, -3, 3, 0.2}]]; "
+        + "{Count[p, _Arrow, Infinity], PlotRange /. Rest[List @@ p]}", //
+        "{225,{{1.0,31.0},{1.0,31.0}}}");
+  }
+
 }

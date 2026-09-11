@@ -19,8 +19,10 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>
  * An array of vectors places <code>array[[i, j]]</code> at <code>{j, i}</code> and
  * <code>array[[i, j, k]]</code> at <code>{k, j, i}</code>, as the Wolfram Language does, or spreads
- * each axis over <code>DataRange -> {{xmin, xmax}, {ymin, ymax}[, {zmin, zmax}]}</code>. A list of
- * <code>{point, vector}</code> pairs places each vector at its point.
+ * each axis over <code>DataRange -> {{xmin, xmax}, {ymin, ymax}[, {zmin, zmax}]}</code>. A dense
+ * array is thinned to at most 15 (in 3D 7) evenly spaced entries along each axis, so the arrows stay
+ * readable, and its plot range is the extent of the data. A list of <code>{point, vector}</code>
+ * pairs places each vector at its point.
  *
  * <p>
  * Each arrow is centred on its point and the longest spans <code>VectorScale</code> of the spacing
@@ -86,6 +88,8 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     List<double[]> tails = new ArrayList<>();
     List<double[]> vectors = new ArrayList<>();
     double spacing;
+    // for an array: the extent of the data along each coordinate, which is the plot range
+    double[][] extent = null;
     if (isPairList(data)) {
       for (IExpr pair : data) {
         tails.add(vector(pair.first()));
@@ -98,9 +102,24 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       if (!measure(data, 0, counts)) {
         return F.NIL;
       }
+      // a dense array is thinned to at most maxPerAxis evenly spaced entries per level
+      int maxPerAxis = dimension == 3 ? 7 : 15;
+      boolean[][] keep = new boolean[dimension][];
+      int[] kept = new int[dimension];
+      for (int level = 0; level < dimension; level++) {
+        int count = counts[level];
+        int m = Math.min(count, maxPerAxis);
+        kept[level] = m;
+        keep[level] = new boolean[count + 1];
+        for (int k = 0; k < m; k++) {
+          int index = m == 1 ? 1 : 1 + (int) Math.round((double) k * (count - 1) / (m - 1));
+          keep[level][index] = true;
+        }
+      }
       // coordinate d runs along nesting level dimension-1-d: array[[i, j]] is at {j, i}
       double[] origin = new double[dimension];
       double[] step = new double[dimension];
+      extent = new double[dimension][];
       for (int d = 0; d < dimension; d++) {
         int count = counts[dimension - 1 - d];
         origin[d] = 1.0;
@@ -109,12 +128,16 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
           origin[d] = dataRange[d][0];
           step[d] = count > 1 ? (dataRange[d][1] - dataRange[d][0]) / (count - 1) : 1.0;
         }
+        double end = origin[d] + (count - 1) * step[d];
+        extent[d] = new double[] {Math.min(origin[d], end), Math.max(origin[d], end)};
       }
-      collect(data, 0, new int[dimension], origin, step, tails, vectors);
+      collect(data, 0, new int[dimension], origin, step, keep, tails, vectors);
       spacing = Double.MAX_VALUE;
       for (int d = 0; d < dimension; d++) {
-        if (counts[dimension - 1 - d] > 1) {
-          spacing = Math.min(spacing, Math.abs(step[d]));
+        int level = dimension - 1 - d;
+        if (kept[level] > 1) {
+          spacing = Math.min(spacing,
+              Math.abs(step[d]) * (counts[level] - 1) / (kept[level] - 1));
         }
       }
       if (spacing == Double.MAX_VALUE || spacing == 0.0) {
@@ -164,7 +187,12 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       double pad = spacing / 2;
       IASTAppendable range = F.ListAlloc(dimension);
       for (int d = 0; d < dimension; d++) {
-        range.append(F.list(F.num(min[d] - pad), F.num(max[d] + pad)));
+        if (extent != null && extent[d][1] > extent[d][0]) {
+          // an array's plot range is the extent of its data, as the Wolfram Language draws it
+          range.append(F.list(F.num(extent[d][0]), F.num(extent[d][1])));
+        } else {
+          range.append(F.list(F.num(min[d] - pad), F.num(max[d] + pad)));
+        }
       }
       result.append(F.Rule(S.PlotRange, range));
     }
@@ -195,15 +223,21 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     return true;
   }
 
-  /** Walks the array, placing the vector at <code>index</code> (1-based, outermost first). */
+  /**
+   * Walks the array, placing the vector at <code>index</code> (1-based, outermost first); entries
+   * the thinning dropped are skipped.
+   */
   private void collect(IAST list, int level, int[] index, double[] origin, double[] step,
-      List<double[]> tails, List<double[]> vectors) {
+      boolean[][] keep, List<double[]> tails, List<double[]> vectors) {
     for (int i = 1; i < list.size(); i++) {
+      if (!keep[level][i]) {
+        continue;
+      }
       index[level] = i;
       IExpr element = list.get(i);
       if (level < dimension - 1) {
         if (element.isList()) {
-          collect((IAST) element, level + 1, index, origin, step, tails, vectors);
+          collect((IAST) element, level + 1, index, origin, step, keep, tails, vectors);
         }
         continue;
       }
