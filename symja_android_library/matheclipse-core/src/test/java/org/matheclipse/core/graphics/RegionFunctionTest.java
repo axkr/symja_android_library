@@ -238,17 +238,32 @@ public class RegionFunctionTest {
    * Every 3D plot with a sampling grid outlines what it drew, when asked.
    *
    * <p>
-   * Nothing is outlined unless a style is given: a surface is read by its shading, and a rim round
-   * every plot that never asked for one would be noise. So {@code Automatic} and {@code None} must
-   * leave the graphic byte for byte the same as no option at all - which is also what keeps the
-   * shape these plots have always returned.
+   * {@code Plot3D} and {@code ListPlot3D} outline their surface by default, as Mathematica does: its
+   * output carries {@code {GrayLevel[0], Line[...]}} even with {@code Mesh -> None}. For them
+   * {@code None} takes the outline away. The other surfaces draw none until asked, so for them
+   * {@code Automatic} and {@code None} leave the graphic byte for byte the same as no option at
+   * all.
    */
   @Test
   public void theThreeDimensionalSurfacesOutlineWhatTheyDrew() {
+    String[] outlined = { //
+        "ListPlot3D(Table(i*j,{i,1,8},{j,1,8})", "Plot3D(x+y,{x,-2,2},{y,-2,2},PlotPoints->12"};
+    for (String base : outlined) {
+      assertEquals(lines(base + ",BoundaryStyle->None)") + 1, lines(base + ")"),
+          base + " drew no rim by default");
+      assertTrue(
+          evaluator.eval("SameQ(" + base + ")," + base + ",BoundaryStyle->Automatic))").isTrue(),
+          base + " is not outlined the way Automatic outlines it");
+      assertTrue(evaluator.eval("MemberQ(" + base + "),{GrayLevel(0),_Line},Infinity)").isTrue(),
+          base + " did not draw the default rim black");
+      assertTrue(evaluator.eval("MemberQ(" + base + ",BoundaryStyle->Red),Red,Infinity)").isTrue(),
+          base + " did not draw the rim in the style it was given");
+    }
+
     String[] bases = { //
         "ParametricPlot3D({Cos(u)*Cos(v),Sin(u)*Cos(v),Sin(v)},{u,0,6},{v,-1,1},PlotPoints->12",
         "SphericalPlot3D(1,{t,0,3},{p,0,6},PlotPoints->12",
-        "RevolutionPlot3D(Sqrt(t),{t,0,4},PlotPoints->12", "ListPlot3D(Table(i*j,{i,1,8},{j,1,8})"};
+        "RevolutionPlot3D(Sqrt(t),{t,0,4},PlotPoints->12"};
     for (String base : bases) {
       int plain = lines(base + ")");
       assertTrue(lines(base + ",BoundaryStyle->Red)") > plain, base + " drew no rim");
@@ -277,7 +292,7 @@ public class RegionFunctionTest {
             "RegionFunction->Function({x,y,z},x^2+y^2<1)"}};
     for (String[] row : regions) {
       String cut = row[0] + "," + row[1];
-      assertTrue(lines(cut + ")") < lines(cut + ",BoundaryStyle->Red)"),
+      assertTrue(lines(cut + ",BoundaryStyle->None)") < lines(cut + ",BoundaryStyle->Red)"),
           row[0] + " did not outline the edge its region cut");
     }
   }

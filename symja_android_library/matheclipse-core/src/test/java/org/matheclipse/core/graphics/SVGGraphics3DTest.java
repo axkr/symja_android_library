@@ -230,14 +230,23 @@ public class SVGGraphics3DTest {
         .contains("stroke-opacity=\"0.500\""));
   }
 
-  /** A plotted surface asks for a clean skin, and its mesh is drawn as lines of its own. */
+  /**
+   * A plotted surface asks for a clean skin, and its mesh is drawn as lines of its own.
+   *
+   * <p>
+   * The only line round it is the rim Mathematica draws by default: on a 6 by 6 grid that is four
+   * sides of five segments, where an outline round every facet would be well over a hundred.
+   */
   @Test
   public void aPlottedSurfaceIsNotOutlined() {
     String meshed =
         svg("Plot3D[Sin[x y], {x,-1,1}, {y,-1,1}, PlotPoints->6, Boxed->False, Axes->False]");
     String plain = svg("Plot3D[Sin[x y], {x,-1,1}, {y,-1,1}, PlotPoints->6, Mesh->None,"
         + " Boxed->False, Axes->False]");
-    assertEquals(0, count(plain, "polyline"), "no outline around every facet of a surface");
-    assertTrue(count(meshed, "polyline") > 0, "the mesh itself is still drawn");
+    String bare = svg("Plot3D[Sin[x y], {x,-1,1}, {y,-1,1}, PlotPoints->6, Mesh->None,"
+        + " BoundaryStyle->None, Boxed->False, Axes->False]");
+    assertEquals(20, count(plain, "polyline"), "only the rim, not an outline round every facet");
+    assertEquals(0, count(bare, "polyline"), "and without the rim, no line at all");
+    assertTrue(count(meshed, "polyline") > 20, "the mesh itself is still drawn");
   }
 }

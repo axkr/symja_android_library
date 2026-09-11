@@ -86,8 +86,8 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
                 options[Plot3DTools.X_EVALUATION_MONITOR], region);
         if (grid != null) {
           // the rim of the surface, and the rim of every hole a RegionFunction cut in it
-          IExpr complex = Plot3DTools.withBoundary(builder.build(), grid,
-              options[Plot3DTools.X_BOUNDARY_STYLE]);
+          IExpr complex = Plot3DTools.withBoundary(builder, grid,
+              options[Plot3DTools.X_BOUNDARY_STYLE], false);
           if (complex.isPresent()) {
             graphicsList.append(complex);
           }

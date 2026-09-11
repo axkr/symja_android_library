@@ -332,8 +332,12 @@ public class WebGLGraphics3DTest {
     assertTrue(!element(withMesh, "Polygon").get("showMesh").asBoolean(),
         "the surface itself carries no per quad edges");
 
+    // Mesh -> None leaves the outline Mathematica draws round the surface, and nothing else
     JsonNode withoutMesh = scene("Plot3D[x+y,{x,0,1},{y,0,1},PlotPoints->10,Mesh->None]");
-    assertEquals(0, count(withoutMesh, "Line"), "Mesh -> None draws no lines");
+    assertEquals(1, count(withoutMesh, "Line"), "Mesh -> None draws only the outline");
+    JsonNode bare =
+        scene("Plot3D[x+y,{x,0,1},{y,0,1},PlotPoints->10,Mesh->None,BoundaryStyle->None]");
+    assertEquals(0, count(bare, "Line"), "and BoundaryStyle -> None takes that away too");
   }
 
   /**

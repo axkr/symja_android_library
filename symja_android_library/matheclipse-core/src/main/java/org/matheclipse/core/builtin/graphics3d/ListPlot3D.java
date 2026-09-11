@@ -270,13 +270,12 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
     Plot3DTools.addSurface(builder, grid, false, false, colors, true, meshOpt, meshStyleOpt);
 
-    IExpr graphicsComplex = builder.build();
-    if (graphicsComplex.equals(F.NIL)) {
+    // the rim of the surface, and the rim of every hole a RegionFunction or a datum without a
+    // value left in it; Automatic draws it, as Mathematica does
+    IExpr graphicsComplex = Plot3DTools.withBoundary(builder, grid, boundaryStyle, true);
+    if (graphicsComplex.isNIL()) {
       return F.NIL;
     }
-    // the rim of the surface, and the rim of every hole a RegionFunction or a datum without a
-    // value left in it
-    graphicsComplex = Plot3DTools.withBoundary(graphicsComplex, grid, boundaryStyle);
 
     return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
         new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),

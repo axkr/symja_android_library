@@ -264,8 +264,7 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
         options[Plot3DTools.X_MESH], options[Plot3DTools.X_MESH_STYLE], unmasked, insideGrid,
         edge);
     // the rim of the surface, and the rim of every hole a RegionFunction cut in it
-    return Plot3DTools.withBoundary(builder.build(), grid,
-        options[Plot3DTools.X_BOUNDARY_STYLE]);
+    return Plot3DTools.withBoundary(builder, grid, options[Plot3DTools.X_BOUNDARY_STYLE], false);
   }
 
   /**

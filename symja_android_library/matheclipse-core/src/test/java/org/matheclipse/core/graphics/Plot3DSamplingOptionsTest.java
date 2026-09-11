@@ -136,17 +136,27 @@ public class Plot3DSamplingOptionsTest {
         base + ",MeshFunctions->{Function({x,y,z},x)},Mesh->12]"), "Mesh sets the level count");
   }
 
+  /**
+   * {@code Plot3D} outlines its surface by default, as Mathematica does - its output of
+   * {@code Plot3D[..., Mesh -> None]} still carries {@code {GrayLevel[0], Line[...]}}.
+   * {@code None} takes the outline away and a style recolours it.
+   */
   @Test
   public void boundaryStyleOutlinesWhatWasDrawn() {
     String base = "Plot3D[x+y,{x,0,1},{y,0,1},PlotPoints->10";
     int plain = lines(base + "]");
-    assertTrue(lines(base + ",BoundaryStyle->Red]") > plain, "the rim is drawn");
-    assertEquals(plain, lines(base + ",BoundaryStyle->Automatic]"), "no outline unless asked");
-    assertEquals(plain, lines(base + ",BoundaryStyle->None]"));
+    assertEquals(plain - 1, lines(base + ",BoundaryStyle->None]"),
+        "the default outline is one line, and None removes it");
+    assertEquals(plain, lines(base + ",BoundaryStyle->Automatic]"), "Automatic is the default");
+    assertEquals(plain, lines(base + ",BoundaryStyle->Red]"), "a style recolours the same outline");
+    assertTrue(evaluator.eval("MemberQ[" + base + "],{GrayLevel[0],_Line},Infinity]").isTrue(),
+        "the default outline is black, as Mathematica writes it");
+    assertTrue(evaluator.eval("MemberQ[" + base + ",BoundaryStyle->Red],{Red,_Line},Infinity]")
+        .isTrue(), "the outline takes the style it was given");
 
     String region = "Plot3D[x+y,{x,-2,2},{y,-2,2},PlotPoints->20,"
         + "RegionFunction->Function({x,y,z},x^2+y^2<1)";
-    assertTrue(lines(region + ",BoundaryStyle->Red]") > lines(region + "]"),
+    assertEquals(lines(region + ",BoundaryStyle->None]") + 1, lines(region + "]"),
         "the edge of a region is outlined too");
   }
 

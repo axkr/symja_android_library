@@ -360,46 +360,102 @@ public final class Plot3DTools {
    * either of them having to say so.
    */
   /**
-   * Whether {@code BoundaryStyle} asks for an outline at all.
+   * Whether {@code BoundaryStyle} asks for an outline, for a plot that draws none by default.
    *
-   * <p>
-   * {@code Automatic} means no outline: a surface is read by its shading, and a rim drawn round
-   * every plot that never asked for one would be noise. {@code None} says the same thing
-   * explicitly. Anything else is a style to draw the outline in.
+   * @see #drawsBoundary(IExpr, boolean)
    */
   public static boolean drawsBoundary(IExpr boundaryStyle) {
-    return boundaryStyle != null && boundaryStyle.isPresent() && boundaryStyle != S.Automatic
-        && !boundaryStyle.isAutomatic() && !boundaryStyle.isNone();
+    return drawsBoundary(boundaryStyle, false);
   }
 
-  /** The style of a surface's outline: the reference's dark grey for {@code Automatic}. */
+  /**
+   * Whether {@code BoundaryStyle} asks for an outline.
+   *
+   * <p>
+   * {@code None} never draws one and a given style always does. {@code Automatic} draws one where
+   * the Wolfram Language does, which the plot says with {@code outlinedByDefault}: {@code Plot3D}
+   * and {@code ListPlot3D} outline their surface unless told not to - Mathematica's output of
+   * {@code Plot3D[..., Mesh -> None]} still carries {@code {GrayLevel[0], Line[...]}}.
+   */
+  public static boolean drawsBoundary(IExpr boundaryStyle, boolean outlinedByDefault) {
+    if (boundaryStyle == null || boundaryStyle.isNIL() || boundaryStyle.isNone()) {
+      return false;
+    }
+    if (boundaryStyle == S.Automatic || boundaryStyle.isAutomatic()) {
+      return outlinedByDefault;
+    }
+    return true;
+  }
+
+  /**
+   * The style of a surface's outline: for {@code Automatic}, the {@code GrayLevel[0]} Mathematica
+   * writes in front of the outline it draws.
+   */
   public static IExpr boundaryDirective(IExpr boundaryStyle) {
-    return boundaryStyle == S.Automatic || boundaryStyle.isAutomatic() ? F.GrayLevel(F.num(0.3))
+    return boundaryStyle == S.Automatic || boundaryStyle.isAutomatic() ? F.GrayLevel(F.C0)
         : boundaryStyle;
   }
 
   /**
-   * The surface with its outline appended, when {@code BoundaryStyle} asks for one.
+   * The built surface, with its outline inside it when {@code BoundaryStyle} asks for one.
    *
    * <p>
-   * The outline is kept outside the {@code GraphicsComplex} so that it carries its own colour
-   * rather than being shaded along with the surface it lies on. When nothing is to be drawn the
-   * surface is returned exactly as it came in, so a plot that was never given a
-   * {@code BoundaryStyle} keeps the shape its callers already expect.
+   * The outline goes into the same {@code GraphicsComplex} as the surface, in a group of its own,
+   * as Mathematica writes it: {@code {GrayLevel[0], Line[{{i, j}, ...}, VertexColors -> None]}}.
+   * The group scopes the colour to the outline, and {@code VertexColors -> None} keeps a coloured
+   * surface's vertex colours off it. Because the complex stays where it was, a plot keeps the shape
+   * its callers read, outline or not.
    *
-   * @param complex the built surface
+   * @param builder the surface, not yet built
    * @param grid the sampled points the surface was built from, {@code null} where it has none
    * @param boundaryStyle the {@code BoundaryStyle} option value
+   * @param outlinedByDefault whether {@code Automatic} draws the outline for this plot
    */
-  public static IExpr withBoundary(IExpr complex, double[][][] grid, IExpr boundaryStyle) {
-    if (complex.isNIL() || grid == null || !drawsBoundary(boundaryStyle)) {
-      return complex;
+  public static IExpr withBoundary(GraphicsComplexBuilder builder, double[][][] grid,
+      IExpr boundaryStyle, boolean outlinedByDefault) {
+    if (grid != null && drawsBoundary(boundaryStyle, outlinedByDefault)) {
+      IAST segments = boundarySegments(builder, grid);
+      if (segments.argSize() > 0) {
+        builder.addPrimitive(F.List(boundaryDirective(boundaryStyle),
+            F.binaryAST2(S.Line, segments, F.Rule(S.VertexColors, S.None))));
+      }
     }
-    IAST boundary = surfaceBoundary(grid);
-    if (boundary.argSize() == 0) {
-      return complex;
+    return builder.build();
+  }
+
+  /**
+   * The outline of {@link #surfaceBoundary(double[][][])} as pairs of vertex numbers of the builder
+   * that holds the surface. Every point on it is a sample the surface already added, so asking the
+   * builder for it answers the vertex it has and adds nothing.
+   */
+  private static IASTAppendable boundarySegments(GraphicsComplexBuilder builder,
+      double[][][] grid) {
+    int nx = grid.length;
+    int ny = nx > 0 ? grid[0].length : 0;
+    IASTAppendable segments = F.ListAlloc(Math.max(4, nx + ny));
+    if (nx < 2 || ny < 2) {
+      return segments;
     }
-    return F.List(complex, boundaryDirective(boundaryStyle), boundary);
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (grid[i][j] == null) {
+          continue;
+        }
+        if (i + 1 < nx && grid[i + 1][j] != null //
+            && (!cellComplete(grid, i, j - 1) || !cellComplete(grid, i, j))) {
+          segments.append(F.List(vertex(builder, grid[i][j]), vertex(builder, grid[i + 1][j])));
+        }
+        if (j + 1 < ny && grid[i][j + 1] != null //
+            && (!cellComplete(grid, i - 1, j) || !cellComplete(grid, i, j))) {
+          segments.append(F.List(vertex(builder, grid[i][j]), vertex(builder, grid[i][j + 1])));
+        }
+      }
+    }
+    return segments;
+  }
+
+  private static IExpr vertex(GraphicsComplexBuilder builder, double[] p) {
+    return F.ZZ(builder.addVertex(p[0], p[1], p[2], null, null));
   }
 
   public static IASTAppendable surfaceBoundary(double[][][] grid) {

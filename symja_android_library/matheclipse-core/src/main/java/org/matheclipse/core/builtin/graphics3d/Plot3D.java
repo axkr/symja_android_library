@@ -262,7 +262,10 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     Plot3DTools.addSurface(builder, grid, false, false, colors, true, options[X_MESH],
         options[Plot3DTools.X_MESH_STYLE], unmasked, inside,
         regionEdge(unmasked, region, zMin, zMax));
-    IExpr complex = builder.build();
+    // the rim of the surface belongs to the complex, as Mathematica writes it, and Automatic
+    // draws it; the mesh and exclusion lines below stay outside with their own colours
+    IExpr complex = Plot3DTools.withBoundary(builder, grid,
+        options[Plot3DTools.X_BOUNDARY_STYLE], true);
 
     if (complex.isNIL()) {
       return complex;
@@ -281,14 +284,6 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       decorated.append(meshLines);
     }
 
-    IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
-    if (Plot3DTools.drawsBoundary(boundaryStyle)) {
-      IAST boundary = Plot3DTools.surfaceBoundary(grid);
-      if (boundary.argSize() > 0) {
-        decorated.append(Plot3DTools.boundaryDirective(boundaryStyle));
-        decorated.append(boundary);
-      }
-    }
     // ExclusionsStyle -> {surfaces, curves}: the edges the surface was opened along, in the style
     // the curves are given
     IExpr exclusionsStyle =
