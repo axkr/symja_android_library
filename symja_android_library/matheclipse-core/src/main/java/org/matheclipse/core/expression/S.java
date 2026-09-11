@@ -19164,6 +19164,16 @@ public class S {
   public final static IBuiltInSymbol RegionPlot = S.initFinalSymbol("RegionPlot", ID.RegionPlot);
 
   /**
+   * RegionPlot3D(x) - TODO describe `RegionPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionPlot3D.md">RegionPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionPlot3D =
+      S.initFinalSymbol("RegionPlot3D", ID.RegionPlot3D);
+
+  /**
    * RegionProduct(x) - TODO describe `RegionProduct`.
    * 
    * @see <a href=

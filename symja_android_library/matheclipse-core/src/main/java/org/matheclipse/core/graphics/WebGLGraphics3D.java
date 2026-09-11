@@ -209,6 +209,27 @@ public class WebGLGraphics3D {
       }
     }
 
+    // Graphics3D(primitives, {options}): the options gathered in a list, as Mathematica's plots
+    // write them, count as options too
+    boolean optionList = false;
+    for (int i = 2; i <= target.argSize(); i++) {
+      optionList |= target.get(i).isList();
+    }
+    if (optionList) {
+      org.matheclipse.core.interfaces.IASTAppendable flat =
+          F.ast(target.head(), target.argSize() + 8);
+      flat.append(target.arg1());
+      for (int i = 2; i <= target.argSize(); i++) {
+        IExpr arg = target.get(i);
+        if (arg.isList()) {
+          flat.appendArgs((IAST) arg);
+        } else {
+          flat.append(arg);
+        }
+      }
+      target = flat;
+    }
+
     GraphicsOptions3D options = new GraphicsOptions3D();
     options.parse(target);
 

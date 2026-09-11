@@ -380,6 +380,7 @@ public final class FunctionDefinitions {
 
       // Graphics3D
       S.ContourPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ContourPlot3D());
+      S.RegionPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.RegionPlot3D());
       S.ComplexPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ComplexPlot3D());
       S.DiscretePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.DiscretePlot3D());
       S.ListLinePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListLinePlot3D());

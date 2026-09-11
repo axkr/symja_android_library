@@ -512,7 +512,7 @@ public class AST2Expr {
       "RegionCentroid", "RegionDifference", "RegionDimension", "RegionDistance",
       "RegionEmbeddingDimension", "RegionEqual", "RegionFunction", "RegionIntersection",
       "RegionMeasure", "RegionMember", "RegionMemberFunction", "RegionMoment", "RegionNearest",
-      "RegionNearestFunction", "RegionPlot", "RegionProduct", "RegionQ",
+      "RegionNearestFunction", "RegionPlot", "RegionPlot3D", "RegionProduct", "RegionQ",
       "RegionSymmetricDifference", "RegionUnion", "RegionWithin", "RegularExpression",
       "RegularPolygon", "ReIm", "ReleaseHold", "ReliefImage", "ReliefPlot", "Remove",
       "RemoveAlphaChannel", "RemoveBackground", "RemoveDiacritics", "RenameDirectory", "RenameFile",
