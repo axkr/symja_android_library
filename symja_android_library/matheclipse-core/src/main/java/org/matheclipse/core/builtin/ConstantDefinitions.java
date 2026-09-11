@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
+import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.util.SymjaDirectories;
 import org.matheclipse.core.expression.ContextPath;
@@ -79,6 +80,7 @@ public class ConstantDefinitions {
       S.$BaseDirectory.setEvaluator(new $BaseDirectory());
       S.$Context.setEvaluator(new $Context());
       S.$ContextPath.setEvaluator(new $ContextPath());
+      S.$ContextAliases.setEvaluator(new $ContextAliases());
       S.$CreationDate.setEvaluator(new $CreationDate());
       S.$GeoLocation.setEvaluator(new $GeoLocation());
       S.$HistoryLength.setEvaluator(new $HistoryLength());
@@ -189,6 +191,79 @@ public class ConstantDefinitions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set CONSTANT attribute !
+    }
+  }
+
+  /**
+   * <code>$ContextAliases</code> - the short names contexts may be written under, as an association
+   * <code>&lt;|"a`" -&gt; "Actual`", ...|&gt;</code>.
+   *
+   * <p>
+   * <code>$ContextAliases["a`"] = "Actual`"</code> adds one - the way the WLJS notebook declares
+   * <code>Graphics3D`</code>, <code>Offload`</code> and its other short contexts - and
+   * <code>$ContextAliases = &lt;|...|&gt;</code> replaces them all. An alias applies to the names
+   * read after it, so <code>Graphics3D`Materials["Glass"]</code> in a notebook cell is the
+   * <code>CoffeeLiqueur`Extensions`Graphics3D`Tools`Materials</code> the module defines. Without
+   * this evaluator both assignments were stored as rules nothing read back, and such a name stayed a
+   * symbol of its own.
+   */
+  private static class $ContextAliases extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator, ISetEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      IASTAppendable association = F.ast(S.Association);
+      for (java.util.Map.Entry<String, String> alias : ContextPath.contextAliases().entrySet()) {
+        association.append(F.Rule(F.stringx(alias.getKey()), F.stringx(alias.getValue())));
+      }
+      return engine.evaluate(association);
+    }
+
+    /** <code>$ContextAliases["a`"]</code> - the context an alias stands for, as in an association. */
+    @Override
+    public IExpr evaluate(final org.matheclipse.core.interfaces.IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IExpr key = ast.arg1();
+        if (key.isString()) {
+          String context = ContextPath.contextAliases().get(key.toString());
+          return context != null ? F.stringx(context)
+              : F.binaryAST2(S.Missing, F.stringx("KeyAbsent"), key);
+        }
+      }
+      return F.NIL;
+    }
+
+    /** <code>$ContextAliases = &lt;|"a`" -&gt; "Actual`", ...|&gt;</code> or a list of rules. */
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      IExpr rules = engine.evaluate(F.Normal(rightHandSide));
+      if (!rules.isList()) {
+        return rightHandSide;
+      }
+      java.util.Map<String, String> aliases = new java.util.LinkedHashMap<>();
+      for (IExpr rule : (org.matheclipse.core.interfaces.IAST) rules) {
+        if (rule.isRuleAST() && rule.first().isString() && rule.second().isString()) {
+          String alias = rule.first().toString();
+          aliases.put(alias.endsWith("`") ? alias : alias + "`", rule.second().toString());
+        }
+      }
+      ContextPath.setContextAliases(aliases);
+      return rightHandSide;
+    }
+
+    /** <code>$ContextAliases["a`"] = "Actual`"</code> */
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        org.matheclipse.core.interfaces.IBuiltInSymbol builtinSymbol, final EvalEngine engine) {
+      if (leftHandSide.isAST(S.$ContextAliases, 2)) {
+        IExpr alias = engine.evaluate(leftHandSide.first());
+        IExpr context = engine.evaluate(rightHandSide);
+        if (alias.isString() && context.isString()) {
+          ContextPath.setContextAlias(alias.toString(), context.toString());
+          return context;
+        }
+      }
+      return F.NIL;
     }
   }
 

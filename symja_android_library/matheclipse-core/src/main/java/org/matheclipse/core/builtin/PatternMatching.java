@@ -2175,9 +2175,16 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr leftHandSide = ast.arg1();
 
-      IExpr head = engine.evaluate(leftHandSide.head());
-      if (head.topHead() == S.Association) {
-        head = S.Association;
+      IExpr head = leftHandSide.head();
+      // a built-in which takes the assignment itself keeps it, even where the symbol has a value
+      // of its own: $ContextAliases["a`"] = "A`" adds an alias, although $ContextAliases
+      // evaluates to an association
+      if (!(head.isBuiltInSymbol()
+          && ((IBuiltInSymbol) head).getEvaluator() instanceof ISetEvaluator)) {
+        head = engine.evaluate(head);
+        if (head.topHead() == S.Association) {
+          head = S.Association;
+        }
       }
       IExpr rightHandSide = ast.arg2();
       // try {

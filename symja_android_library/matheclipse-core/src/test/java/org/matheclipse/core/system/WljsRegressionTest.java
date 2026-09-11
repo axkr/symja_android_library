@@ -1743,4 +1743,23 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  /**
+   * <code>$ContextAliases["Graphics3D`"] = "..."</code> is how the WLJS modules declare their short
+   * contexts, and the demo "Pathtracing" writes <code>Graphics3D`Materials["Glass"]</code> for the
+   * module's <code>CoffeeLiqueur`Extensions`Graphics3D`Tools`Materials</code>. The assignment was
+   * stored as a rule nothing read back, so the name stayed a symbol of its own and the scene drew
+   * nothing. An alias applies to what is read after it, hence one check per statement.
+   */
+  @Test
+  public void testContextAliases() {
+    check("WljsAliasTest`Tools`Materials[\"Glass\"] = 42", //
+        "42");
+    check("$ContextAliases[\"WljsAlias`\"] = \"WljsAliasTest`Tools`\"", //
+        "WljsAliasTest`Tools`");
+    check("WljsAlias`Materials[\"Glass\"]", //
+        "42");
+    check("$ContextAliases[\"WljsAlias`\"]", //
+        "WljsAliasTest`Tools`");
+  }
+
 }
