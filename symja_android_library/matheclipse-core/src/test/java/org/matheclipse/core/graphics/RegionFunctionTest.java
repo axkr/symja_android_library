@@ -77,9 +77,13 @@ public class RegionFunctionTest {
     return count("Total(Cases(" + plot + ",Polygon(l_):>Length(l),Infinity))");
   }
 
-  /** How many raster cells were left unpainted. */
+  /**
+   * How many raster cells were left unpainted: the cells of fully transparent colour. A raster's
+   * cells are numbers, {r, g, b} or {r, g, b, a}, as in the Wolfram Language.
+   */
   private static int transparentCells(String plot) {
-    return count("Count(Cases(" + plot + ",_RGBColor,Infinity),RGBColor(0,0,0,0))");
+    return count("Count(Flatten(Cases(" + plot + ",Raster(d_,___):>d,Infinity),2),"
+        + "{_,_,_,a_/;a==0})");
   }
 
   // -----------------------------------------------------------------------------------------

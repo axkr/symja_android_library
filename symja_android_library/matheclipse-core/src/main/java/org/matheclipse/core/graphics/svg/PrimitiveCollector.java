@@ -1466,6 +1466,14 @@ public final class PrimitiveCollector {
       IExpr arg = ast.get(i);
       if (arg.isRuleAST() && ((IAST) arg).arg1() == S.InterpolationOrder) {
         smooth = ((IAST) arg).arg2().toIntDefault(0) > 0;
+      } else if (arg.isRuleAST() && ((IAST) arg).arg1() == S.Method
+          && ((IAST) arg).arg2().isList()) {
+        // a plot hands the hint on under Method, where a front end ignores it
+        for (IExpr entry : (IAST) ((IAST) arg).arg2()) {
+          if (entry.isRuleAST() && entry.first().isString("InterpolationOrder")) {
+            smooth = entry.second().toIntDefault(0) > 0;
+          }
+        }
       }
     }
     primitives.add(new Prim2D.RasterPrim(cells, x1, y1, x2, y2, smooth, style.clone()));

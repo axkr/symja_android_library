@@ -408,7 +408,7 @@ public class GraphicsOptions {
       IExpr[] row = rowsTopFirst[r];
       IASTAppendable rowList = F.ListAlloc(row.length);
       for (IExpr cell : row) {
-        rowList.append(cell == null ? TRANSPARENT_CELL : cell);
+        rowList.append(rasterPixel(cell));
       }
       data.append(rowList);
     }
@@ -422,17 +422,49 @@ public class GraphicsOptions {
    * <p>
    * The cells of a domain colouring are the grid the function happened to be evaluated on, not
    * data; drawn crisply, the grid is what the reader sees. {@code InterpolationOrder -> 1} tells
-   * the renderer to smooth between the samples instead.
+   * the renderer to smooth between the samples instead; it travels as
+   * {@code Method -> {"InterpolationOrder" -> 1}}.
    */
   public static IAST smoothRasterTopFirst(IExpr[][] rowsTopFirst, double x0, double y0, double x1,
       double y1) {
     IAST raster = rasterTopFirst(rowsTopFirst, x0, y0, x1, y1);
+    // under Method, where a front end ignores what it does not know: InterpolationOrder is no
+    // option of Raster, and the WLJS notebook reported the symbol as undefined
     return F.ternaryAST3(S.Raster, raster.arg1(), raster.arg2(),
-        F.Rule(S.InterpolationOrder, F.C1));
+        F.Rule(S.Method, F.list(F.Rule(F.stringx("InterpolationOrder"), F.C1))));
   }
 
   /** Fully transparent, used for cells a raster has no value for. */
-  private static final IAST TRANSPARENT_CELL = F.RGBColor(F.C0, F.C0, F.C0, F.C0);
+  private static final IAST TRANSPARENT_CELL = F.List(F.CD0, F.CD0, F.CD0, F.CD0);
+
+  /**
+   * One cell of a raster as the Wolfram Language writes it: <code>{r, g, b}</code>, or
+   * <code>{r, g, b, a}</code> when it is not opaque.
+   *
+   * <p>
+   * A colour object such as <code>RGBColor[...]</code> is not raster data: a front end reads the
+   * cells of a <code>Raster</code> as numbers, and the WLJS notebook could not draw a
+   * <code>ComplexPlot</code>, <code>DensityPlot</code>, <code>MatrixPlot</code> or
+   * <code>ArrayPlot</code> whose cells were ten thousand of them. A cell which is not a colour -
+   * a grey level - is left as it is.
+   */
+  private static IExpr rasterPixel(IExpr cell) {
+    if (cell == null) {
+      return TRANSPARENT_CELL;
+    }
+    if (cell.isList()) {
+      return cell;
+    }
+    RGBColor color = Convert.toAWTColor(cell);
+    if (color == null) {
+      return cell;
+    }
+    float[] rgb = color.getRGBColorComponents(null);
+    int alpha = color.getAlpha();
+    return alpha < 255
+        ? F.List(F.num(rgb[0]), F.num(rgb[1]), F.num(rgb[2]), F.num(alpha / 255.0))
+        : F.List(F.num(rgb[0]), F.num(rgb[1]), F.num(rgb[2]));
+  }
 
   /**
    * The outline of a sampled rectangle: its rim, and the rim of every hole in it.

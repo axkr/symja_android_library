@@ -1261,4 +1261,23 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  /**
+   * A plot's raster is numbers, as in the Wolfram Language: <code>{r, g, b}</code> cells, not
+   * <code>RGBColor</code> objects, and the smoothing hint of a domain colouring under
+   * <code>Method</code>. The WLJS notebook could not draw a <code>ComplexPlot</code> - ten thousand
+   * colour objects - and reported <code>InterpolationOrder</code> as an undefined symbol.
+   */
+  @Test
+  public void testAPlotRasterIsNumbers() {
+    check("cp = ComplexPlot[(z^2 + 1)/(z^2 - 1), {z, -2 - 2 I, 2 + 2 I}]; "
+        + "rs = Cases[cp, _Raster, Infinity]; "
+        + "{Length[rs], FreeQ[rs, InterpolationOrder | _RGBColor], "
+        + "MatchQ[rs[[1, 1, 1, 1]], {_Real, _Real, _Real} | {_Real, _Real, _Real, _Real}], "
+        + "Cases[rs, (Method -> m_) :> m, Infinity], "
+        + "StringLength[ExportString[cp, \"SVG\"]] > 1000}", //
+        "{1,True,True,{{InterpolationOrder->1}},True}");
+    check("FreeQ[Cases[ArrayPlot[{{1, 0}, {0, 1}}], _Raster, Infinity], _RGBColor]", //
+        "True");
+  }
+
 }
