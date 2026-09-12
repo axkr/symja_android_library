@@ -533,9 +533,11 @@ public class ArrayDerivative {
         return F.NIL;
       case ID.Det:
         if (fx.isAST1()) {
-          // Jacobi's formula
-          return F.Times(F.Det(fx.arg1()),
-              F.Tr(F.Dot(F.Inverse(fx.arg1()), F.D(fx.arg1(), x))));
+          // Jacobi's formula with the adjugate, which needs no invertible matrix. Written the way
+          // real Mathematica prints it (2026-09-13):
+          // ArrayDot[Transpose[Adjugate[a[x]]], Derivative[1][a][x], 2]
+          return F.ternaryAST3(S.ArrayDot, F.Transpose(F.unaryAST1(S.Adjugate, fx.arg1())),
+              F.D(fx.arg1(), x), F.C2);
         }
         return F.NIL;
       case ID.TensorProduct: {

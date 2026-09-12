@@ -535,7 +535,7 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
     check("D(Tr(f(x)), x)", //
         "Tr(f'(x))");
     check("D(Det(f(x)), x)", //
-        "Det(f(x))*Tr(Inverse(f(x)).f'(x))");
+        "ArrayDot(Adjugate(f(x)),f'(x),2)");
   }
 
   @Test
@@ -739,6 +739,15 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
     // a[x] . a'[x] + a'[x] . a[x]
     check("D(MatrixSymbol(a,{m,n})[x].MatrixSymbol(a,{m,n})[x],x)", //
         "MatrixSymbol(a,{m,n})[x].Derivative(1)[MatrixSymbol(a,{m,n})][x]+Derivative(1)[MatrixSymbol(a,{m,n})][x].MatrixSymbol(a,{m,n})[x]");
+    // confirmed against real Mathematica (2026-09-13):
+    // ArrayDot[Transpose[Adjugate[a[x]]], Derivative[1][a][x], 2]
+    check("D(Det(MatrixSymbol(a,{m,n})[x]),x)", //
+        "ArrayDot(Adjugate(MatrixSymbol(a,{m,n})[x]),Derivative(1)[MatrixSymbol(a,{m,n})][x],\n" //
+            + "2)");
+    // Jacobi's formula checked on an explicit 2x2 matrix of functions
+    check(
+        "m2 = {{p(x), q(x)}, {r(x), t(x)}}; Simplify(ArrayDot(Transpose(Adjugate(m2)), D(m2, x), 2) - D(Det(m2), x))", //
+        "0");
     check("D(MatrixSymbol(a,{m,n})[x^2],x)", //
         "2*x*Derivative(1)[MatrixSymbol(a,{m,n})][x^2]");
     check("D(Mean(VectorSymbol(v,n)[x]),x)", //
