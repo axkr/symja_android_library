@@ -498,8 +498,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       int iterationLimit = engine.getIterationLimit();
-      if (symbol.hasAssignedSymbolValue()) {
-        IExpr value = symbol.assignedValue();
+      IExpr value = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
+      if (value != null) {
         iterationLimit = value.toIntDefault();
         engine.setIterationLimit(iterationLimit);
       }
@@ -622,8 +622,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       int outputSizeLimit = engine.getOutputSizeLimit();
-      if (symbol.hasAssignedSymbolValue()) {
-        IExpr value = symbol.assignedValue();
+      IExpr value = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
+      if (value != null) {
         outputSizeLimit = value.toIntDefault();
         engine.setOutputSizeLimit(outputSizeLimit);
       }
@@ -701,8 +701,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       int recursionLimit = engine.getRecursionLimit();
-      if (symbol.hasAssignedSymbolValue()) {
-        IExpr value = symbol.assignedValue();
+      IExpr value = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
+      if (value != null) {
         recursionLimit = value.toIntDefault();
         engine.setRecursionLimit(recursionLimit);
       }
@@ -1071,8 +1071,9 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      if (symbol.hasAssignedSymbolValue()) {
-        return symbol.assignedValue();
+      IExpr value = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
+      if (value != null) {
+        return value;
       }
 
       return F.NIL;
@@ -1097,8 +1098,9 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      if (symbol.hasAssignedSymbolValue()) {
-        return symbol.assignedValue();
+      IExpr value = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
+      if (value != null) {
+        return value;
       }
 
       return F.NIL;

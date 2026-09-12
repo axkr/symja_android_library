@@ -554,8 +554,12 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    if (hasAssignedSymbolValue()) {
-      return ISymbol.evalAssignedValue(assignedValue(), engine);
+    // one read of the value, not two: symbols are shared between the threads that evaluate them,
+    // and a Clear[] between hasAssignedSymbolValue() and assignedValue() used to reach
+    // evalAssignedValue() as a null
+    IExpr rightHandSide = hasAssignedSymbolValue() ? assignedValue() : null;
+    if (rightHandSide != null) {
+      return ISymbol.evalAssignedValue(rightHandSide, engine);
     }
     return evalDownRule(engine, this);
   }
@@ -1203,9 +1207,10 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol,
       EvalEngine engine) {
-    if (hasAssignedSymbolValue()) {
+    IExpr assignedValue = hasAssignedSymbolValue() ? fValue : null;
+    if (assignedValue != null) {
       IExpr[] result = new IExpr[2];
-      result[0] = fValue;
+      result[0] = assignedValue;
       if (isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE) && result[0].isAST()) {
         result[0] = ((IAST) result[0]).copy();
       }
@@ -1229,9 +1234,10 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine) {
-    if (hasAssignedSymbolValue()) {
+    IExpr assignedValue = hasAssignedSymbolValue() ? fValue : null;
+    if (assignedValue != null) {
       IExpr[] result = new IExpr[2];
-      result[0] = fValue;
+      result[0] = assignedValue;
       // if (fReferences > 0 && result[0].isAST()) {
       // result[0] = ((IAST) result[0]).copy();
       // }

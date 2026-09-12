@@ -404,8 +404,10 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
         return assignedValue;
       }
     }
-    if (hasAssignedSymbolValue()) {
-      return ISymbol.evalAssignedValue(assignedValue(), engine);
+    // one read of the value: see Symbol#evaluate(EvalEngine)
+    IExpr rightHandSide = hasAssignedSymbolValue() ? assignedValue() : null;
+    if (rightHandSide != null) {
+      return ISymbol.evalAssignedValue(rightHandSide, engine);
     }
     return F.NIL;
   }

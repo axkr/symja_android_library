@@ -4,6 +4,13 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A symbol's value is read once where it used to be read twice. `Symbol#evaluate` asked
+  `hasAssignedSymbolValue()` and then `assignedValue()`, and symbols are global while the engines
+  that evaluate them are not -- so a `Clear` in another thread landed between the two reads and
+  `ISymbol#evalAssignedValue` was handed a `null`. `BuiltInSymbol#evaluate`, both
+  `reassignSymbolValue` overloads and the `$IterationLimit`, `$RecursionLimit` and
+  `$OutputSizeLimit` readers had the same pair.
+
 - A file name the file system cannot spell is a message and not an exception. `Path.of` throws
   `InvalidPathException` on a NUL character -- and on more than that under Windows -- and
   `ExpandFileName`, `DirectoryName` and `ParentDirectory` built the path themselves, so a fuzzed

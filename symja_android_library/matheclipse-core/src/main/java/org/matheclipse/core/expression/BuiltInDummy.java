@@ -1060,9 +1060,10 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol,
       EvalEngine engine) {
-    if (hasAssignedSymbolValue()) {
+    IExpr assignedValue = hasAssignedSymbolValue() ? fValue : null;
+    if (assignedValue != null) {
       IExpr[] result = new IExpr[2];
-      result[0] = fValue;
+      result[0] = assignedValue;
       if (isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE) && result[0].isAST()) {
         result[0] = ((IAST) result[0]).copy();
       }
