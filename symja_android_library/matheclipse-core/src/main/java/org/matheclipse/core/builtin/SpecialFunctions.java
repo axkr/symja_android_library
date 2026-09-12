@@ -58,6 +58,8 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.InverseGammaBetaJS;
+import org.matheclipse.core.numerics.functions.StruveFunctions;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 
 public class SpecialFunctions {
 
@@ -2616,6 +2618,20 @@ public class SpecialFunctions {
   }
 
 
+  /**
+   * Smallest argument answered by the large argument expansions in {@link StruveFunctions}. The
+   * library routine's series in <code>z^2</code> is quick below it and needs a working precision
+   * that grows with <code>|z|</code> above: <code>StruveH(-0.8+1.2*I, 10007)</code> took 396 s at 25
+   * digits. The expansion declines, by its own error estimate, anything it cannot answer for - at
+   * 25 digits that was every order at 15 and several at 30.
+   */
+  private static final double MIN_ASYMPTOTIC_STRUVE_ARGUMENT = 15.0;
+
+  private static boolean isLargeStruveArgument(IInexactNumber z) {
+    double argument = z.isReal() ? z.evalf() : z.evalfc().norm();
+    return Double.isFinite(argument) && argument >= MIN_ASYMPTOTIC_STRUVE_ARGUMENT;
+  }
+
   private static final class StruveH extends AbstractFunctionEvaluator
       implements IFunctionExpand {
 
@@ -2639,6 +2655,13 @@ public class SpecialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (isLargeStruveArgument(z)) {
+          IExpr largeArgument =
+              WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveH);
+          if (largeArgument.isPresent()) {
+            return largeArgument;
+          }
+        }
         return n.struveH(z);
       }
       return F.NIL;
@@ -2747,6 +2770,13 @@ public class SpecialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (isLargeStruveArgument(z)) {
+          IExpr largeArgument =
+              WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveL);
+          if (largeArgument.isPresent()) {
+            return largeArgument;
+          }
+        }
         return n.struveL(z);
       }
       return F.NIL;

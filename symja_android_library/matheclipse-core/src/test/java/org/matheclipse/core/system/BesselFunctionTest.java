@@ -71,6 +71,33 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "2.1213584743348543E-4");
   }
 
+  /**
+   * A large argument, where the library routine's series in <code>z^2</code> needs a working
+   * precision that grows with it and {@link org.matheclipse.core.numerics.functions.StruveFunctions}
+   * takes over. The first of these took 396 seconds at 25 digits; its value is Mathematica's.
+   */
+  @Test
+  public void testStruveLargeArgument() {
+    checkNumeric("StruveH(-8`30*^-1+I*1.2`30,10007)", //
+        "-0.026802958742107957516070512296+I*0.0018515622588921706369258653718");
+    checkNumeric("StruveH(-0.8+I*1.2,10007)", //
+        "-0.02680295874210795+I*0.0018515622588921702");
+    checkNumeric("StruveH(-0.8+I*1.2,1000)", //
+        "0.08437898246281288+I*(-0.01026672013678214)");
+    checkNumeric("StruveH(2.75,45.0)", //
+        "51.64885608333322");
+    checkNumeric("StruveL(2.75,45.0)", //
+        "1.9137241617303232E18");
+    checkNumeric("StruveL(0.5,60.0)", //
+        "5.881706576075187E24");
+    checkNumeric("N(StruveH(1/3,50),30)", //
+        "-0.0543834481034670607933527065378");
+    // an integer order is left to the library routine: the library's BesselY divides by
+    // Sin(nu*Pi) on the way to it
+    checkNumeric("StruveH(1.0,30.0)", //
+        "0.7217503783464835");
+  }
+
   @Test
   public void testAiryAi() {
     checkNumeric("N(AiryAi(2),50)", //

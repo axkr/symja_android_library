@@ -12,21 +12,17 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import java.math.RoundingMode;
-import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -39,6 +35,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.AngerWeber;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.numerics.functions.BesselJS;
 import com.google.common.math.IntMath;
 
@@ -171,27 +168,8 @@ public class BesselFunctions {
       if (!Double.isFinite(order) || Math.abs(order) < MIN_ASYMPTOTIC_ANGERJ_ORDER) {
         return F.NIL;
       }
-      boolean machinePrecision = !(n instanceof ApfloatNum) && !(z instanceof ApcomplexNum)
-          && !(z instanceof ApfloatNum);
-      FixedPrecisionApcomplexHelper h =
-          machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
-      Apcomplex value;
-      try {
-        value = AngerWeber.angerJ(((IReal) n).apfloatValue(), orderModTwo((IReal) n, h),
-            z.apcomplexValue(), h);
-      } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
-        return F.NIL;
-      }
-      if (value == null) {
-        // the expansion could not reach the working precision for this order and argument
-        return F.NIL;
-      }
-      if (n.isReal() && z.isReal()) {
-        return machinePrecision ? F.num(value.real().doubleValue()) : F.num(value.real());
-      }
-      return machinePrecision
-          ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
-          : F.complexNum(value);
+      return WorkingPrecision.evaluate(n, z, true,
+          (nu, argument, h) -> AngerWeber.angerJ(nu.real(), orderModTwo((IReal) n, h), argument, h));
     }
 
     /**

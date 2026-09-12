@@ -35,12 +35,19 @@ public final class AngerWeber {
   private static final int MAX_TERMS = 24;
 
   /**
-   * Largest error estimate accepted, relative to the largest term summed. Measured against the
-   * library routine at <code>nu == 100.25</code>: an estimate of 3.7E-16 came with a true error of
-   * 2.3E-16, and one of 1.9E-5 with a true error of 7.6E-6 - the estimate bounds the error rather
-   * than tracking it, which is the way round this needs to be.
+   * The error estimate bounds the error rather than tracking it, which is the way round this needs
+   * to be. Measured against the library routine at <code>nu == 100.25</code>: an estimate of
+   * 3.7E-16 came with a true error of 2.3E-16, and one of 1.9E-5 with a true error of 7.6E-6.
    */
-  private static final double TOLERANCE = 1.0e-14;
+  /**
+   * Largest error estimate accepted, relative to the largest term summed: three digits short of the
+   * working precision, which at machine precision is 1E-14. A fixed tolerance would let a 30 digit
+   * question be answered with 17 good digits wherever the series happens to stop there.
+   */
+  private static double tolerance(FixedPrecisionApcomplexHelper h) {
+    long digits = Math.min(h.precision(), 300L);
+    return Math.pow(10.0, -(digits - 3));
+  }
 
   private AngerWeber() {}
 
@@ -62,7 +69,7 @@ public final class AngerWeber {
     double[] error = new double[2];
     Apcomplex forward = endpointSum(nu, nuModTwo, z, h, error, 0);
     Apcomplex backward = endpointSum(nu.negate(), nuModTwo.negate(), z.negate(), h, error, 1);
-    if (Math.max(error[0], error[1]) > TOLERANCE) {
+    if (Math.max(error[0], error[1]) > tolerance(h)) {
       return null;
     }
     Apfloat twoPi = ApfloatMath.pi(h.precision()).multiply(new Apfloat(2, h.precision()));

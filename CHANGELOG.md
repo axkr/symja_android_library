@@ -4,6 +4,17 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `StruveH` and `StruveL` for a large argument, where the library routine's series in `z^2` needs a
+  working precision that grows with it: `StruveH(-0.8+1.2*I, 10007)` took 396 seconds at 25 digits
+  and now takes 103 ms, agreeing to every digit. Each is a Bessel function -- which the library has
+  a quick large argument method for -- plus an algebraic series (DLMF 11.6.1, 11.6.2), summed like
+  the `AngerJ` and `HermiteH` expansions to its smallest term. An integer order of `StruveH` stays
+  with the library routine: its `BesselY` divides by `Sin(nu*Pi)` there, and at `1.0` with
+  `z == 30` the rounding it divided by instead cost ten of 25 digits.
+  All three expansions now accept an answer only when its error estimate is three digits short of
+  the working precision, rather than at a fixed 1E-14 -- which had let a 25 digit question be
+  answered with 17 good digits wherever the series happened to stop there.
+
 - `AngerJ` and `HermiteH` answer where the cost of the library routine used to grow without
   bound. Both are reached through hypergeometric functions whose working precision has to cover the
   order or the argument, so `AngerJ(-9223372036854775808/11, -0.8)` and

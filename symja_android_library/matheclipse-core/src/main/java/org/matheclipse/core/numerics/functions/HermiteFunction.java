@@ -32,8 +32,15 @@ public final class HermiteFunction {
   /** Enough to reach the smallest term while |z| is only a little above 1. */
   private static final int MAX_TERMS = 60;
 
-  /** Largest error estimate accepted, relative to the largest term summed. */
-  private static final double TOLERANCE = 1.0e-14;
+  /**
+   * Largest error estimate accepted, relative to the largest term summed: three digits short of the
+   * working precision, which at machine precision is 1E-14. A fixed tolerance would let a 30 digit
+   * question be answered with 17 good digits wherever the series happens to stop there.
+   */
+  private static double tolerance(FixedPrecisionApcomplexHelper h) {
+    long digits = Math.min(h.precision(), 300L);
+    return Math.pow(10.0, -(digits - 3));
+  }
 
   private HermiteFunction() {}
 
@@ -85,7 +92,7 @@ public final class HermiteFunction {
         break;
       }
     }
-    if (smallest / largest > TOLERANCE) {
+    if (smallest / largest > tolerance(h)) {
       return null;
     }
     // (2*z)^nu
