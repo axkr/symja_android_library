@@ -442,7 +442,10 @@ final class DSolveSpecialFunctions {
   /** How long all four exponent pairs together may take. */
   private static final int TOTAL_SECONDS = 6;
 
-  /** Where the two singular points are sampled, as fractions of the way from one to the other. */
+  /**
+   * Where the two singular points are sampled, as fractions of the way from one to the other. Only
+   * for poles which are real: see where this is used.
+   */
   private static final int[][] BETWEEN_POLES =
       new int[][] {{3, 20}, {3, 10}, {9, 20}, {3, 5}, {17, 20}};
 
@@ -512,9 +515,18 @@ final class DSolveSpecialFunctions {
         F.D(yFunction, F.list(xVar, F.C2)), //
         F.Times(p, F.D(yFunction, xVar)), //
         F.Times(q, yFunction))));
-    IASTAppendable samples = F.ListAlloc(BETWEEN_POLES.length);
-    for (int[] fraction : BETWEEN_POLES) {
-      samples.append(F.Plus(x1, F.Times(F.QQ(fraction[0], fraction[1]), width)));
+    // Where the answer is checked. Between the poles is the right place when they are real: the
+    // power of (x-x1)/(x2-x1) the basis carries is real there and leaves the reals as soon as the
+    // point does. A pair of conjugate poles has nothing but imaginary numbers between it, while the
+    // equation and its solutions are honest on the whole real axis, so the real points the verifier
+    // chooses for itself are used instead.
+    IAST samples = F.NIL;
+    if (x1.isRealResult() && x2.isRealResult()) {
+      IASTAppendable between = F.ListAlloc(BETWEEN_POLES.length);
+      for (int[] fraction : BETWEEN_POLES) {
+        between.append(F.Plus(x1, F.Times(F.QQ(fraction[0], fraction[1]), width)));
+      }
+      samples = between;
     }
 
     final IExpr forward = cancel(F.Divide(F.Subtract(xVar, x1), width), engine);

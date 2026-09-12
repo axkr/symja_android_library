@@ -1088,6 +1088,32 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * The same equation with its two singular points a conjugate pair, which used to be declined: the
+   * answer was checked between the poles, and between a conjugate pair there is nothing but
+   * imaginary numbers.
+   */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveFuchsianWithConjugatePoles() {
+    check("Head(DSolve((x^2 + 1)*y''(x) + x*y'(x) + y(x) == 0, y(x), x))", //
+        "List");
+    // checked on the real axis, where the equation is regular everywhere, and on both sides of
+    // the origin
+    checkResidual("(x^2 + 1)*y''(x) + x*y'(x) + y(x) == 0", //
+        "(x^2 + 1)*y''(x) + x*y'(x) + y(x)", "{C(1)->3/7, C(2)->5/11, x->13/10}");
+    checkResidual("(x^2 + 1)*y''(x) + x*y'(x) + y(x) == 0", //
+        "(x^2 + 1)*y''(x) + x*y'(x) + y(x)", "{C(1)->3/7, C(2)->5/11, x->-23/10}");
+    // and the two of them are a basis rather than one solution twice
+    check("With({b=DSolve((x^2 + 1)*y''(x) + x*y'(x) + y(x) == 0, y(x), x)[[1]]},"
+        + " N(Wronskian({y(x) /. b /. {C(1)->1, C(2)->0}, y(x) /. b /. {C(1)->0, C(2)->1}}, x)"
+        + " /. x -> 13/10) != 0)", //
+        "True");
+    // an equation whose poles are real is still checked between them
+    check("DSolve(x*(x - 1)*y''(x) + (3*x - 1)*y'(x) + y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/(1-x)+(C(2)*Log(x))/(1-x)}}");
+  }
+
+  /**
    * An equation which is Airy's or Bessel's only once its first derivative has been taken out of it
    * by <code>y == Exp(-Integrate(p/2))*z</code>.
    */
