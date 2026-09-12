@@ -47,7 +47,14 @@ public class SymbolicArrayUtil {
    * <p>
    * That is the case for the symbolic array objects and the symbolic array constants themselves,
    * for every expression whose head carries the {@link ISymbol#NONTHREADABLE} attribute, and for
-   * the result of applying a {@link ISymbol#LISTABLE} function to such an expression.
+   * the result of applying a {@link ISymbol#LISTABLE} function to such an expression. There is one
+   * further case, confirmed against the
+   * <a href="https://reference.wolfram.com/language/ref/NonThreadable.html">NonThreadable</a>
+   * reference page itself: {@link S#Dot} and {@link S#ArrayDot} do NOT carry the attribute (so
+   * <code>x.y + {1,2}</code> threads for two ordinary symbols), yet
+   * <code>VectorSymbol["u",n].VectorSymbol["v",n] + {1,2}</code> still does not thread, because a
+   * {@link S#Dot} of array-valued arguments is itself non-scalar even though {@link S#Dot} is
+   * neither {@link ISymbol#LISTABLE} nor {@link ISymbol#NONTHREADABLE}.
    * </p>
    *
    * @param expr the expression to test
@@ -69,6 +76,11 @@ public class SymbolicArrayUtil {
       return true;
     }
     IExpr head = ast.head();
+    if (head == S.Dot || head == S.ArrayDot) {
+      // Dot and ArrayDot carry neither NonThreadable nor Listable, but a Dot of array-valued
+      // arguments is itself non-scalar - see the class-level note above
+      return ast.exists(x -> isArrayValued(x, depth + 1));
+    }
     if (head instanceof ISymbol) {
       ISymbol headSymbol = (ISymbol) head;
       if (Attribute.NONTHREADABLE.isAnySetIn(headSymbol.getAttributes())) {

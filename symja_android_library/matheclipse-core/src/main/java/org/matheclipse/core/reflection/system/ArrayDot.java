@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ArrayDot extends AbstractFunctionEvaluator {
@@ -95,5 +96,9 @@ public class ArrayDot extends AbstractFunctionEvaluator {
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {}
+  public void setUp(final ISymbol newSymbol) {
+    // confirmed against real Mathematica (2026-09-12): Attributes[ArrayDot] is
+    // {NHoldAll, Protected, ReadProtected}
+    newSymbol.setAttributes(Attribute.NHOLDALL);
+  }
 }

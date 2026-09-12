@@ -104,7 +104,10 @@ public class MatrixSymbol extends AbstractEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(Attribute.NONTHREADABLE);
+    // confirmed against real Mathematica (2026-09-12): Attributes[MatrixSymbol] is
+    // {NHoldAll,NonThreadable,Protected,ReadProtected}, so the dimension/domain/symmetry
+    // arguments are not evaluated numerically either
+    newSymbol.setAttributes(Attribute.NONTHREADABLE, Attribute.NHOLDALL);
   }
 
   @Override

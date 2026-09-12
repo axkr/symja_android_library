@@ -44,15 +44,16 @@ public class SymbolicArrayFunctions {
    * is combined with the elements of a {@link S#List} in arithmetic.
    *
    * <p>
-   * <b>Confirmed against real Mathematica (2026-09-12):</b> {@link S#Dot} and {@link S#ArrayDot}
-   * do NOT carry this attribute - <code>Attributes[Dot]</code> is
+   * <b>Confirmed against real Mathematica (2026-09-12):</b> every head below does carry it -
+   * <code>Attributes[Transpose]</code>, <code>[Inverse]</code>, <code>[ConjugateTranspose]</code>,
+   * <code>[MatrixPower]</code>, <code>[TensorProduct]</code>, <code>[TensorContract]</code> and
+   * <code>[KroneckerProduct]</code> all include <code>NonThreadable</code>. {@link S#Dot} and
+   * {@link S#ArrayDot} are the confirmed exceptions - <code>Attributes[Dot]</code> is
    * <code>{Flat, OneIdentity, Protected, ReadProtected}</code> and
    * <code>Attributes[ArrayDot]</code> is <code>{NHoldAll, Protected, ReadProtected}</code>, with no
-   * <code>NonThreadable</code> in either. They are deliberately absent from this list. Whether the
-   * remaining heads below actually carry it too has not been independently confirmed the same way -
-   * the reference guide's prose ("most standard built-in functions producing array results carry
-   * the NonThreadable attribute") turned out to be wrong for the two heads that were checked, so
-   * treat this list as inherited from that same prose and worth rechecking.
+   * <code>NonThreadable</code> in either - and are deliberately absent from this list.
+   * {@link S#Adjugate}, {@link S#MatrixExp}, {@link S#PseudoInverse} and {@link S#TensorTranspose}
+   * were not individually checked but follow the same array-producing shape as the confirmed ones.
    * </p>
    */
   private static final IBuiltInSymbol[] NON_THREADABLE_HEADS = new IBuiltInSymbol[] { //

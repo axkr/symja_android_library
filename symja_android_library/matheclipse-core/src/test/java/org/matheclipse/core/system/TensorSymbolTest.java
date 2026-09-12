@@ -209,12 +209,14 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNonThreadableAttribute() {
+    // confirmed against real Mathematica (2026-09-12): NHoldAll is there too, since the
+    // dimension/domain/symmetry arguments are never evaluated numerically
     check("Attributes(MatrixSymbol)", //
-        "{NonThreadable,Protected}");
+        "{NHoldAll,NonThreadable,Protected}");
     check("Attributes(VectorSymbol)", //
-        "{NonThreadable,Protected}");
+        "{NHoldAll,NonThreadable,Protected}");
     check("Attributes(ArraySymbol)", //
-        "{NonThreadable,Protected}");
+        "{NHoldAll,NonThreadable,Protected}");
   }
 
   @Test
@@ -431,6 +433,25 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
         "{4,6}");
     check("Sin({1,2})", //
         "{Sin(1),Sin(2)}");
+  }
+
+  @Test
+  public void testDotThreading() {
+    // confirmed against the NonThreadable reference page itself (2026-09-12): Dot and ArrayDot
+    // carry neither NonThreadable nor Listable, so a Dot of two ORDINARY symbols threads over a
+    // list like any other expression -
+    check("plainx.plainy + {1,2}", //
+        "{1+plainx.plainy,2+plainx.plainy}");
+    // - but a Dot of array-valued arguments is still non-threadable, because its arguments are,
+    // even though Dot itself is not
+    check("u=VectorSymbol(u,n); v=VectorSymbol(v,n); aa=MatrixSymbol(aa,{n,n});", //
+        "");
+    check("u.v + {1,2}", //
+        "VectorSymbol(u,n).VectorSymbol(v,n)+{1,2}");
+    check("aa.v + {1,2}", //
+        "MatrixSymbol(aa,{n,n}).VectorSymbol(v,n)+{1,2}");
+    check("ArrayDot(u,v,1) + {1,2}", //
+        "VectorSymbol(u,n).VectorSymbol(v,n)+{1,2}");
   }
 
   @Test
