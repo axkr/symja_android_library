@@ -43,6 +43,34 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   }
 
+  /**
+   * An order far above the argument, where the library routine's cost grows with the order and
+   * {@link org.matheclipse.core.numerics.functions.AngerWeber} takes over. The first of these never
+   * returned; the value is Mathematica's.
+   */
+  @Test
+  public void testAngerJLargeOrder() {
+    checkNumeric("AngerJ(-9223372036854775808/11,-8`30*^-1)", //
+        "2.86900296375775379300212979386`30*10^-19");
+    checkNumeric("AngerJ(1000000.25, 0.5)", //
+        "2.2507891023009384E-7");
+    checkNumeric("AngerJ(1000.3,-0.8)", //
+        "2.576469310720752E-4");
+    checkNumeric("AngerJ(-1000.3,2.0)", //
+        "2.5795663419602083E-4");
+    checkNumeric("AngerJ(1000.3,0.5+I*0.5)", //
+        "2.573121932402889E-4+I*(-1.28553382172347E-7)");
+
+    // an integer order is a Bessel function, and BesselJ(10^12, 3.0) is far below what a double
+    // can hold
+    checkNumeric("AngerJ(1.0*^12, 3.0)", //
+        "0.0");
+
+    // the argument is too near the order for the expansion, so the library routine answers
+    checkNumeric("AngerJ(1000.5, 500.0)", //
+        "2.1213584743348543E-4");
+  }
+
   @Test
   public void testAiryAi() {
     checkNumeric("N(AiryAi(2),50)", //

@@ -12,6 +12,9 @@ import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -23,11 +26,14 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
+import org.matheclipse.core.numerics.functions.HermiteFunction;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -2013,11 +2019,54 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
+    /**
+     * Smallest argument answered by the large argument expansion. Below it the library routine is
+     * quick, above it its confluent hypergeometric series has to carry <code>E^(z^2)</code> in its
+     * working precision: 350 ms at 10, seconds at 100, and never at 1009. The two overlap, and
+     * {@link HermiteFunction#hermiteH} declines anything its own error estimate cannot answer for.
+     */
+    private static final double MIN_ASYMPTOTIC_HERMITEH_ARGUMENT = 5.0;
+
+    /**
+     * <code>HermiteH(nu, z)</code> for an argument large enough that the series the library routine
+     * uses is not the way to reach it, or {@link F#NIL} to leave it to that routine.
+     */
+    private static IExpr hermiteHLargeArgument(IInexactNumber n, IInexactNumber z) {
+      double argument = z.isReal() ? z.evalf() : z.evalfc().norm();
+      if (!Double.isFinite(argument) || argument < MIN_ASYMPTOTIC_HERMITEH_ARGUMENT) {
+        return F.NIL;
+      }
+      boolean machinePrecision = !(n instanceof ApfloatNum) && !(n instanceof ApcomplexNum)
+          && !(z instanceof ApfloatNum) && !(z instanceof ApcomplexNum);
+      FixedPrecisionApcomplexHelper h =
+          machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
+      Apcomplex value;
+      try {
+        value = HermiteFunction.hermiteH(n.apcomplexValue(), z.apcomplexValue(), h);
+      } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
+        return F.NIL;
+      }
+      if (value == null) {
+        // the expansion could not reach the working precision for this order and argument
+        return F.NIL;
+      }
+      if (n.isReal() && z.isReal()) {
+        return machinePrecision ? F.num(value.real().doubleValue()) : F.num(value.real());
+      }
+      return machinePrecision
+          ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
+          : F.complexNum(value);
+    }
+
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2()) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        IExpr largeArgument = hermiteHLargeArgument(n, z);
+        if (largeArgument.isPresent()) {
+          return largeArgument;
+        }
         return n.hermiteH(z);
         // if (z.isZero()) {
         // IExpr hermiteH = hermiteHZero(n);

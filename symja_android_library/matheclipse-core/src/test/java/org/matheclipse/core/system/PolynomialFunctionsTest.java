@@ -170,9 +170,25 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("HermiteH(1,1)", //
         "2");
 
-    // TODO interrupt long running apfloat calculations
-    // checkNumeric("HermiteH(2.718281828459045,10007)", //
-    // "");
+    // the large argument expansion, where the library routine's confluent hypergeometric series
+    // has to carry E^(z^2) in its working precision and never returned
+    checkNumeric("HermiteH(2.718281828459045,10007)", //
+        "4.9230898390202966E11");
+    checkNumeric("HermiteH(1.5707963267948966,1009)", //
+        "155366.6944380435");
+    checkNumeric("HermiteH(1.5707963267948966,100)", //
+        "4115.662277182665");
+    checkNumeric("HermiteH(1.5707963267948966`30,1009)", //
+        "1.55366694438043487959943750501`30*10^5");
+    checkNumeric("HermiteH(-0.5,8.0)", //
+        "0.2492797098008058");
+    checkNumeric("HermiteH(0.25,40.0)", //
+        "2.990785147623257");
+    // an integer order is a polynomial, and the expansion terminates on it exactly
+    checkNumeric("HermiteH(2.0,5.0)", //
+        "98.0");
+    checkNumeric("HermiteH(7.0,8.0)", //
+        "2.26102144E8");
     // TODO
     checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
         // "{HermiteH(-1,-1009),-1.3103460085601044*10^442134,1,-2018}");

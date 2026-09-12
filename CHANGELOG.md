@@ -4,6 +4,18 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `AngerJ` and `HermiteH` answer where the cost of the library routine used to grow without
+  bound. Both are reached through hypergeometric functions whose working precision has to cover the
+  order or the argument, so `AngerJ(-9223372036854775808/11, -0.8)` and
+  `HermiteH(1.5707963267948966, 1009)` never returned -- values Mathematica gives at once. Each now
+  has the expansion that holds in that regime: for `AngerJ`, integration by parts of
+  `1/Pi*Integral(Cos(nu*t - z*Sin(t)))`, whose cost is the same at any order; for `HermiteH`, the
+  large argument series `(2*z)^nu*Sum(Pochhammer(-nu/2, k)*Pochhammer((1-nu)/2, k)/k!*(-1/z^2)^k)`.
+  Both are asymptotic, so each is summed to its smallest term and that term decides whether the
+  answer is returned at all -- otherwise the library routine still has it. Checked against that
+  routine at 25 digits: 63 points for `AngerJ` and 62 for `HermiteH`, none differing by more than
+  1.5E-24.
+
 - `PolyLog(-n, z)` for a positive integer `n` is the Eulerian numbers over `(1-z)^(n+1)`, and the
   `PolyLogRules.m` rule reached each of those through the explicit double sum -- a power of a big
   integer per term, built as an expression, with a degree-`n` polynomial over a rational left for

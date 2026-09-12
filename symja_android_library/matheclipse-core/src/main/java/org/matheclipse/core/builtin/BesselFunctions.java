@@ -12,15 +12,22 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import java.math.RoundingMode;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
@@ -29,7 +36,9 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.AngerWeber;
 import org.matheclipse.core.numerics.functions.BesselJS;
 import com.google.common.math.IntMath;
 
@@ -123,6 +132,10 @@ public class BesselFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        IExpr largeOrder = angerJLargeOrder(n, z);
+        if (largeOrder.isPresent()) {
+          return largeOrder;
+        }
         if (z.isReal() && Math.abs(z.evalf()) > MAX_ANGERJ_ARGUMENT) {
           // The cost is driven by the second argument, not the order: AngerJ(0.0, -1000) takes
           // under a second, AngerJ(0.0, -5000) does not return, and AngerJ(0.0, -2147483648) -
@@ -136,6 +149,69 @@ public class BesselFunctions {
 
     /** Largest second argument handed to the arbitrary precision routine. */
     private static final int MAX_ANGERJ_ARGUMENT = 1000;
+
+    /**
+     * Smallest order answered by the endpoint expansion. The arbitrary precision routine is still
+     * quick here - 11 ms at 1000, against 156 ms at 100000 and 1.4 s at 1000000 - so the two
+     * overlap rather than meet, and {@link AngerWeber#angerJ} is asked only where its series is
+     * far into its asymptotic regime.
+     */
+    private static final double MIN_ASYMPTOTIC_ANGERJ_ORDER = 1000.0;
+
+    /**
+     * <code>AngerJ(nu, z)</code> for an order far above the argument, where the cost of the
+     * arbitrary precision routine grows with the order and this does not, or {@link F#NIL} to leave
+     * it to that routine.
+     */
+    private static IExpr angerJLargeOrder(IInexactNumber n, IInexactNumber z) {
+      if (!n.isReal()) {
+        return F.NIL;
+      }
+      double order = n.evalf();
+      if (!Double.isFinite(order) || Math.abs(order) < MIN_ASYMPTOTIC_ANGERJ_ORDER) {
+        return F.NIL;
+      }
+      boolean machinePrecision = !(n instanceof ApfloatNum) && !(z instanceof ApcomplexNum)
+          && !(z instanceof ApfloatNum);
+      FixedPrecisionApcomplexHelper h =
+          machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
+      Apcomplex value;
+      try {
+        value = AngerWeber.angerJ(((IReal) n).apfloatValue(), orderModTwo((IReal) n, h),
+            z.apcomplexValue(), h);
+      } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
+        return F.NIL;
+      }
+      if (value == null) {
+        // the expansion could not reach the working precision for this order and argument
+        return F.NIL;
+      }
+      if (n.isReal() && z.isReal()) {
+        return machinePrecision ? F.num(value.real().doubleValue()) : F.num(value.real());
+      }
+      return machinePrecision
+          ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
+          : F.complexNum(value);
+    }
+
+    /**
+     * The order modulo 2, which is all <code>E^(I*Pi*nu)</code> needs and all that survives: an
+     * order of 1.0E18 has no fractional part left once it is a <code>double</code>, so the
+     * reduction is done in the precision the order arrived with.
+     */
+    private static Apfloat orderModTwo(IReal nu, FixedPrecisionApcomplexHelper h) {
+      double order = nu.doubleValue();
+      long magnitude = (long) Math.max(0.0, Math.log10(Math.abs(order))) + 1;
+      // 1000.3 mod 2 is 0.3 with three digits fewer than it started with: the reduction cancels
+      // the integer part away, and the working precision has to be paid for in guard digits
+      // beforehand. A double is an exact binary value and can supply them; an order that arrived
+      // as an Apfloat cannot say more than it was given.
+      long precision = h.precision() + magnitude + 5;
+      Apfloat value = (nu instanceof ApfloatNum) //
+          ? ((ApfloatNum) nu).apfloatValue()
+          : new Apfloat(new java.math.BigDecimal(order), precision);
+      return value.mod(new Apfloat(2, precision)).precision(h.precision());
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
