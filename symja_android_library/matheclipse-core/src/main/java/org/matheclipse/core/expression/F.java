@@ -7988,6 +7988,27 @@ public class F extends S {
     return new AST3(MatrixSymbol, name, dimensions, domain);
   }
 
+  /**
+   * The domain of matrices.
+   *
+   * @param dimension
+   * @return <code>Matrices(dimensions, Complexes, {})</code>.
+   */
+  public static IAST Matrices(final IAST dimension) {
+    return Matrices(dimension, Complexes, List());
+  }
+
+  /**
+   * The domain of matrices.
+   *
+   * @param dimension
+   * @param domain
+   * @return <code>Matrices(dimensions, domain, {})</code>.
+   */
+  public static IAST Matrices(final IAST dimension, ISymbol domain) {
+    return Matrices(dimension, domain, List());
+  }
+
   public static IAST Matrices(final IExpr a0) {
     return new AST1(Matrices, a0);
   }

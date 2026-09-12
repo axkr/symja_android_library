@@ -194,8 +194,16 @@ public class ArrayDerivative {
    * The derivative of a {@link S#Dot} chain with respect to a symbolic vector variable.
    *
    * <p>
-   * A {@link S#Dot} is multilinear, so the derivative is the sum over the occurrences of the
-   * variable, each with the remaining factors of the chain held constant.
+   * A {@link S#Dot} is multilinear, so the derivative is the ordinary product rule: for each
+   * occurrence of the variable, differentiate that one factor and dot the result into the
+   * unchanged remaining factors, then sum over the occurrences. There is deliberately no
+   * transpose insertion, "column form", or other rank-based bookkeeping here: confirmed against
+   * real Mathematica (2026-09-12), <code>D[v.s.v, v]</code> is <code>s.v + v.s</code>, with the
+   * second term left exactly as <code>v.s</code> rather than being rewritten to
+   * <code>Transpose[s].v</code>. Substituting <code>D[x,x] = SymbolicIdentityArray[dims(x)]</code>
+   * for the differentiated occurrence and evaluating the resulting {@link S#Dot} is sufficient:
+   * {@link S#Dot}'s own identity-array absorption (itself confirmed to fire directly, not only
+   * under {@link S#ArraySimplify}) collapses the identity back out of the chain automatically.
    * </p>
    */
   private static IExpr dotD(IAST dot, IArraySymbol x, EvalEngine engine) {
@@ -207,81 +215,20 @@ public class ArrayDerivative {
         return F.NIL;
       }
     }
+    IExpr identity = F.SymbolicIdentityArray(x.getDimensions());
     IASTAppendable sum = F.PlusAlloc(dot.argSize());
     for (int i = 1; i < dot.size(); i++) {
       if (!dot.get(i).equals(x)) {
+        // a factor free of x contributes nothing to the sum
         continue;
       }
-      IExpr left = subDot(dot, 1, i);
-      IExpr right = subDot(dot, i + 1, dot.size());
-      IExpr term = dotDTerm(left, right, engine);
-      if (term.isNIL()) {
-        return F.NIL;
+      IASTAppendable term = F.ast(S.Dot, dot.argSize());
+      for (int j = 1; j < dot.size(); j++) {
+        term.append(j == i ? identity : dot.get(j));
       }
-      sum.append(term);
+      sum.append(engine.evaluate(term));
     }
     return sum.argSize() == 0 ? F.NIL : sum;
-  }
-
-  /**
-   * The contribution of one occurrence of the vector variable in a {@link S#Dot} chain, where
-   * <code>left</code> and <code>right</code> are the products of the factors before and after it.
-   */
-  private static IExpr dotDTerm(IExpr left, IExpr right, EvalEngine engine) {
-    final int leftRank = left.isNIL() ? 0 : SymbolicArrayUtil.rank(left, engine);
-    final int rightRank = right.isNIL() ? 0 : SymbolicArrayUtil.rank(right, engine);
-    if (leftRank < 0 || rightRank < 0) {
-      return F.NIL;
-    }
-    if (left.isNIL()) {
-      if (right.isNIL()) {
-        return F.NIL;
-      }
-      // v.right: the derivative is the right factor, transposed if it is a matrix
-      return rightRank == 1 ? right : (rightRank == 2 ? F.Transpose(right) : F.NIL);
-    }
-    if (right.isNIL()) {
-      // left.v: a vector left factor is written as a column, a matrix left factor stays
-      return leftRank == 1 ? columnForm(left, engine) : (leftRank == 2 ? left : F.NIL);
-    }
-    if (leftRank == 2 && rightRank == 1) {
-      return F.Dot(F.Transpose(left), right);
-    }
-    if (leftRank == 1 && rightRank == 2) {
-      return F.Dot(F.Transpose(right), left);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Write a row vector product <code>w.M1.M2...</code> as the column vector product
-   * <code>Transpose(Mk)...Transpose(M1).w</code>, which is the form the Wolfram Language answers a
-   * vector derivative in.
-   */
-  private static IExpr columnForm(IExpr expr, EvalEngine engine) {
-    if (expr.isAST(S.Dot) && expr.size() > 2) {
-      IAST dot = (IAST) expr;
-      IASTAppendable result = F.ast(S.Dot, dot.argSize());
-      for (int i = dot.argSize(); i >= 2; i--) {
-        result.append(F.Transpose(dot.get(i)));
-      }
-      result.append(dot.arg1());
-      return engine.evaluate(result);
-    }
-    return expr;
-  }
-
-  /** The {@link S#Dot} of the factors <code>from</code> inclusive to <code>to</code> exclusive. */
-  private static IExpr subDot(IAST dot, int from, int to) {
-    if (from >= to) {
-      return F.NIL;
-    }
-    if (to - from == 1) {
-      return dot.get(from);
-    }
-    IASTAppendable result = F.ast(S.Dot, to - from);
-    result.appendAll(dot, from, to);
-    return result;
   }
 
   /** The derivative of an array expression with respect to a symbolic matrix variable. */
@@ -302,12 +249,13 @@ public class ArrayDerivative {
           return F.Times(F.Det(x), F.Transpose(F.Inverse(x)));
         }
         return F.NIL;
-      case ID.Transpose: {
+      case ID.Transpose:
         // the components of D(x, x) are the products of two Kronecker deltas; transposing the
-        // function exchanges the first two slots of that rank four array
-        IAST identity = F.SymbolicIdentityArray(dimensions);
-        return F.Transpose(identity, F.List(F.C2, F.C1, F.C3, F.C4));
-      }
+        // function exchanges the first two of those slots, which for a rank-4 array is exactly
+        // what the default (argument-less) Transpose already does - confirmed against real
+        // Mathematica (2026-09-12), which prints this as plain Transpose[SymbolicIdentityArray[
+        // {m,n}]], not with an explicit permutation list
+        return F.Transpose(F.SymbolicIdentityArray(dimensions));
       default:
         return F.NIL;
     }

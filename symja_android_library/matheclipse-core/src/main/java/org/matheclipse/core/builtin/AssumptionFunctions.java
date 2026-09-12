@@ -71,8 +71,14 @@ public class AssumptionFunctions {
         return Errors.printMessage(S.Matrices, "rankl",
             F.List(dimensions, F.C2, F.stringx("for a matrix")), engine);
       }
+      // Matrices(dims) and Matrices(dims, domain) both canonicalize to the 3-argument form with
+      // an explicit empty symmetry {} - confirmed against real Mathematica (2026-09-12):
+      // Matrices({2,3},Reals) prints back as Matrices({2,3},Reals,{}).
       if (ast.isAST1()) {
-        return F.Matrices(dimensions, S.Complexes);
+        return F.Matrices((IAST) dimensions, S.Complexes);
+      }
+      if (ast.isAST2() && ast.arg2().isSymbol()) {
+        return F.Matrices((IAST) dimensions, (ISymbol) ast.arg2());
       }
       return F.NIL;
     }

@@ -504,7 +504,8 @@ public class Errors {
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions `3` must have length `2`.", //
-      "symss", "`1` is not a valid symmetry specification for `2`.", //
+      "symm", "Invalid symmetry specification `1`.", //
+      "symmcomp", "Symmetry specification `1` is incompatible with expression `2`.", //
       "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
       "realx", "The value `1` is not a real number.", //

@@ -42,9 +42,21 @@ public class SymbolicArrayFunctions {
    * The built-in functions which always produce an array result and therefore carry the
    * {@link ISymbol#NONTHREADABLE} attribute, so that neither they nor an expression headed by them
    * is combined with the elements of a {@link S#List} in arithmetic.
+   *
+   * <p>
+   * <b>Confirmed against real Mathematica (2026-09-12):</b> {@link S#Dot} and {@link S#ArrayDot}
+   * do NOT carry this attribute - <code>Attributes[Dot]</code> is
+   * <code>{Flat, OneIdentity, Protected, ReadProtected}</code> and
+   * <code>Attributes[ArrayDot]</code> is <code>{NHoldAll, Protected, ReadProtected}</code>, with no
+   * <code>NonThreadable</code> in either. They are deliberately absent from this list. Whether the
+   * remaining heads below actually carry it too has not been independently confirmed the same way -
+   * the reference guide's prose ("most standard built-in functions producing array results carry
+   * the NonThreadable attribute") turned out to be wrong for the two heads that were checked, so
+   * treat this list as inherited from that same prose and worth rechecking.
+   * </p>
    */
   private static final IBuiltInSymbol[] NON_THREADABLE_HEADS = new IBuiltInSymbol[] { //
-      S.Adjugate, S.ArrayDot, S.ConjugateTranspose, S.Dot, S.Inverse, S.KroneckerProduct, //
+      S.Adjugate, S.ConjugateTranspose, S.Inverse, S.KroneckerProduct, //
       S.MatrixExp, S.MatrixPower, S.PseudoInverse, S.TensorContract, S.TensorProduct, //
       S.TensorTranspose, S.Transpose};
 
@@ -75,10 +87,11 @@ public class SymbolicArrayFunctions {
    * Rewrite a {@link S#Dot} of two factors of which at least one is a symbolic array.
    *
    * <p>
-   * An identity array is the identity of the matrix product and disappears, a zeros array makes the
-   * whole product a zeros array of the contracted shape, and a contraction whose inner dimensions
-   * disagree is reported through the <code>dotdim</code> message. Every other symbolic product
-   * stays as it is.
+   * An identity array is the identity of the matrix product and disappears, and a zeros array
+   * makes the whole product a zeros array of the contracted shape. A contraction whose inner
+   * dimensions are known to disagree, like every other symbolic product this method does not
+   * otherwise recognise, stays unevaluated without a message - real WMA does not report one either
+   * for two symbolic array objects of incompatible shape.
    * </p>
    *
    * @return {@link F#NIL} if nothing could be rewritten
@@ -91,12 +104,6 @@ public class SymbolicArrayFunctions {
       return F.NIL;
     }
     if (!dimensions1.last().equals(dimensions2.arg1())) {
-      if (dimensions1.last().isInteger() && dimensions2.arg1().isInteger()) {
-        // Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are
-        // incompatible.
-        return Errors.printMessage(S.Dot, "dotdim",
-            F.List(arg1, arg2, dimensions1.last(), dimensions2.arg1()), engine);
-      }
       return F.NIL;
     }
 
@@ -157,11 +164,11 @@ public class SymbolicArrayFunctions {
       }
       return F.NIL;
     }
-    if (arg1.isAST(conjugate ? S.ConjugateTranspose : S.Transpose, 2)
-        && SymbolicArrayUtil.isArrayValued(arg1.first())) {
-      // exchanging the first two levels twice restores the original array
-      return arg1.first();
-    }
+    // Transpose[Transpose[a]] does NOT cancel directly for a general symbolic array object in
+    // WMA - confirmed empirically: it stays as the doubly-transposed expression, and only
+    // ArraySimplify collapses it (see transposeRule below). It is only the symbolic array
+    // CONSTANTS below whose transpose simplifies without ArraySimplify, matching their own
+    // reference doc pages.
     if (arg1.isAST(S.SymbolicZerosArray, 2) || arg1.isAST(S.SymbolicOnesArray, 2)) {
       IAST arrayDimensions = (IAST) arg1.first();
       if (arrayDimensions.argSize() >= 2) {
@@ -241,9 +248,8 @@ public class SymbolicArrayFunctions {
     if (!checkSquareMatrix(S.Inverse, arg1, engine)) {
       return F.NIL;
     }
-    if (arg1.isAST(S.Inverse, 2) && SymbolicArrayUtil.isArrayValued(arg1.first())) {
-      return arg1.first();
-    }
+    // Inverse[Inverse[a]] does NOT cancel directly for a general symbolic array object in WMA -
+    // confirmed empirically; only ArraySimplify collapses it (see inverseRule below).
     if (arg1.isAST(S.SymbolicIdentityArray, 2)) {
       // the identity matrix is its own inverse
       return arg1;
@@ -922,6 +928,11 @@ public class SymbolicArrayFunctions {
     }
     IExpr head = transpose.head();
     IExpr arg1 = transpose.arg1();
+    if (arg1.isAST(head, 2) && SymbolicArrayUtil.isArrayValued(arg1.first())) {
+      // Transpose[Transpose[a]] (or ConjugateTranspose[ConjugateTranspose[a]]) cancels only under
+      // ArraySimplify - confirmed not to happen for a plain Transpose[Transpose[a]] evaluation
+      return arg1.first();
+    }
     if (arg1.isAST(S.Dot) && arg1.size() > 2) {
       // transposing a product reverses it
       IAST dot = (IAST) arg1;
@@ -958,6 +969,10 @@ public class SymbolicArrayFunctions {
       return F.NIL;
     }
     IExpr arg1 = inverse.arg1();
+    if (arg1.isAST(S.Inverse, 2) && SymbolicArrayUtil.isArrayValued(arg1.first())) {
+      // Inverse[Inverse[a]] cancels only under ArraySimplify
+      return arg1.first();
+    }
     if (arg1.isAST(S.Dot) && arg1.size() > 2) {
       // inverting a product reverses it
       IAST dot = (IAST) arg1;
@@ -1092,7 +1107,17 @@ public class SymbolicArrayFunctions {
 
   /**
    * The explicit array of {@link S#Indexed} components of a symbolic array of positive integer
-   * dimensions, honouring a declared symmetry.
+   * dimensions.
+   *
+   * <p>
+   * Confirmed against real Mathematica (2026-09-12): <code>ComponentExpand</code> does NOT fold a
+   * declared symmetry into the components at all - an <code>Antisymmetric</code> matrix still gets
+   * a plain <code>Indexed</code> entry, with no sign flip and no zeroed diagonal, for every index
+   * pair including the ones symmetry would make redundant. The head of every
+   * <code>Indexed(...)</code> call is the complete original array expression - not just its
+   * "name" argument - which is what makes <code>Indexed(g, {1,1})</code> distinguishable from a
+   * same-named component of a differently-shaped or differently-domained array.
+   * </p>
    *
    * @return {@link F#NIL} if a dimension is not a positive integer
    */
@@ -1105,72 +1130,30 @@ public class SymbolicArrayFunctions {
         return F.NIL;
       }
     }
-    IExpr symmetry = arraySymbol.getSymmetry();
-    int[] symmetrySlots = null;
-    boolean antisymmetric = false;
-    if (symmetry.isAST(S.Symmetric, 2) || symmetry.isAST(S.Antisymmetric, 2)) {
-      antisymmetric = symmetry.isAST(S.Antisymmetric, 2);
-      IExpr slots = symmetry.first();
-      if (slots.isList()) {
-        IAST slotList = (IAST) slots;
-        symmetrySlots = new int[slotList.argSize()];
-        for (int i = 0; i < symmetrySlots.length; i++) {
-          symmetrySlots[i] = slotList.get(i + 1).toIntDefault();
-        }
-      }
-    }
-    return componentRecursive(arraySymbol.getName(), dimensionValues, symmetrySlots, antisymmetric,
-        0, new int[dimensionValues.length]);
+    return componentRecursive((IExpr) arraySymbol, dimensionValues, 0,
+        new int[dimensionValues.length]);
   }
 
-  private static IExpr componentRecursive(IExpr name, int[] dimensions, int[] symmetrySlots,
-      boolean antisymmetric, int level, int[] indices) {
+  private static IExpr componentRecursive(IExpr array, int[] dimensions, int level,
+      int[] indices) {
     if (level >= dimensions.length) {
-      return component(name, symmetrySlots, antisymmetric, indices);
+      return component(array, indices);
     }
     IASTAppendable list = F.ListAlloc(dimensions[level]);
     for (int i = 1; i <= dimensions[level]; i++) {
       indices[level] = i;
-      list.append(
-          componentRecursive(name, dimensions, symmetrySlots, antisymmetric, level + 1, indices));
+      list.append(componentRecursive(array, dimensions, level + 1, indices));
     }
     return list;
   }
 
-  /** One <code>Indexed(name, {i1,...,ir})</code> component, reduced by a declared symmetry. */
-  private static IExpr component(IExpr name, int[] symmetrySlots, boolean antisymmetric,
-      int[] indices) {
-    int[] componentIndices = indices.clone();
-    int sign = 1;
-    if (symmetrySlots != null) {
-      // the entries at the symmetric slots may be reordered, so only the sorted component is named
-      int[] values = new int[symmetrySlots.length];
-      for (int i = 0; i < symmetrySlots.length; i++) {
-        values[i] = indices[symmetrySlots[i] - 1];
-      }
-      for (int i = 0; i < values.length; i++) {
-        for (int j = i + 1; j < values.length; j++) {
-          if (values[i] > values[j]) {
-            int swap = values[i];
-            values[i] = values[j];
-            values[j] = swap;
-            sign = -sign;
-          } else if (antisymmetric && values[i] == values[j]) {
-            // an antisymmetric array vanishes wherever two of its symmetric indices agree
-            return F.C0;
-          }
-        }
-      }
-      for (int i = 0; i < symmetrySlots.length; i++) {
-        componentIndices[symmetrySlots[i] - 1] = values[i];
-      }
+  /** One <code>Indexed(array, {i1,...,ir})</code> component. */
+  private static IExpr component(IExpr array, int[] indices) {
+    IASTAppendable indexList = F.ListAlloc(indices.length);
+    for (int i = 0; i < indices.length; i++) {
+      indexList.append(F.ZZ(indices[i]));
     }
-    IASTAppendable indexList = F.ListAlloc(componentIndices.length);
-    for (int i = 0; i < componentIndices.length; i++) {
-      indexList.append(F.ZZ(componentIndices[i]));
-    }
-    IExpr indexed = F.binaryAST2(S.Indexed, name, indexList);
-    return (antisymmetric && sign < 0) ? F.Negate(indexed) : indexed;
+    return F.binaryAST2(S.Indexed, array, indexList);
   }
 
   /**

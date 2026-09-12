@@ -256,12 +256,8 @@ public class SymbolicArrayUtil {
       IExpr last = dimensions.last();
       IExpr first = next.arg1();
       if (!last.equals(first)) {
-        if (last.isInteger() && first.isInteger()) {
-          // Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are
-          // incompatible.
-          Errors.printMessage(S.Dot, "dotdim",
-              F.List(dot.get(i - 1), dot.get(i), last, first), engine);
-        }
+        // a symbolic Dot chain with dimensions which are known not to match stays unevaluated
+        // without a message, same as the Dot evaluator itself
         return F.NIL;
       }
       IASTAppendable result = F.ListAlloc(dimensions.argSize() + next.argSize() - 2);
@@ -399,7 +395,24 @@ public class SymbolicArrayUtil {
    * @param dimensions the dimensions of the array
    * @return <code>true</code> if the symmetry is valid for these dimensions
    */
-  public static boolean isValidSymmetry(IExpr symmetry, IAST dimensions) {
+  /**
+   * Test if <code>symmetry</code> has the SHAPE of a symmetry specification - {@link S#None}, or
+   * <code>Symmetric</code>/<code>Antisymmetric</code>/<code>Hermitian</code>/
+   * <code>Antihermitian</code>/<code>ZeroSymmetric</code> applied to {@link S#All} or to a list -
+   * without checking it against any particular array's dimensions.
+   *
+   * <p>
+   * This is the test the three constructors use to decide, for a 3-argument call whose third
+   * argument didn't match a known domain, whether that argument was meant as a symmetry
+   * specification at all (and should be reported with the <code>symm</code> "invalid symmetry
+   * specification" message) or is simply not a symmetry either (and is reported as an invalid
+   * domain instead).
+   * </p>
+   *
+   * @param symmetry the symmetry specification to test
+   * @return <code>true</code> if <code>symmetry</code> has the shape of a symmetry specification
+   */
+  public static boolean isSymmetryShaped(IExpr symmetry) {
     if (symmetry.isNone()) {
       return true;
     }
@@ -409,6 +422,16 @@ public class SymbolicArrayUtil {
     IExpr head = symmetry.head();
     if (head != S.Symmetric && head != S.Antisymmetric && head != S.Hermitian
         && head != S.Antihermitian && head != S.ZeroSymmetric) {
+      return false;
+    }
+    return symmetry.first() == S.All || symmetry.first().isList();
+  }
+
+  public static boolean isValidSymmetry(IExpr symmetry, IAST dimensions) {
+    if (symmetry.isNone()) {
+      return true;
+    }
+    if (!isSymmetryShaped(symmetry)) {
       return false;
     }
     final int rank = dimensions.argSize();

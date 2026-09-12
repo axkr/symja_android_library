@@ -56,20 +56,40 @@ public class MatrixSymbol extends AbstractEvaluator {
     }
 
     IExpr domain = S.Complexes;
-    if (argSize >= 3) {
+    IExpr symmetry = S.None;
+    if (argSize == 3) {
+      // a lone third argument is ambiguous between domain and symmetry; WMA resolves it by shape,
+      // trying domain first and falling back to symmetry - confirmed by MatrixSymbol("a5",{2,2},
+      // Foo) reporting an invalid SYMMETRY, not an invalid domain, for an argument which matches
+      // neither
+      IExpr arg3 = ast.arg3();
+      if (SymbolicArrayUtil.isValidDomain(arg3)) {
+        domain = arg3;
+      } else if (SymbolicArrayUtil.isSymmetryShaped(arg3)) {
+        if (!SymbolicArrayUtil.isValidSymmetry(arg3, dimensionsList)) {
+          // Symmetry specification `1` is incompatible with expression `2`.
+          return Errors.printMessage(S.MatrixSymbol, "symmcomp", F.List(arg3, dimensionsList),
+              engine);
+        }
+        symmetry = arg3;
+      } else {
+        // Invalid symmetry specification `1`.
+        return Errors.printMessage(S.MatrixSymbol, "symm", F.List(arg3), engine);
+      }
+    } else if (argSize == 4) {
       domain = ast.arg3();
       if (!SymbolicArrayUtil.isValidDomain(domain)) {
         // `1` is not a valid domain specification for `2`.
         return Errors.printMessage(S.MatrixSymbol, "domss", F.List(domain, S.MatrixSymbol), engine);
       }
-    }
-
-    IExpr symmetry = S.None;
-    if (argSize == 4) {
       symmetry = ast.arg4();
+      if (!SymbolicArrayUtil.isSymmetryShaped(symmetry)) {
+        // Invalid symmetry specification `1`.
+        return Errors.printMessage(S.MatrixSymbol, "symm", F.List(symmetry), engine);
+      }
       if (!SymbolicArrayUtil.isValidSymmetry(symmetry, dimensionsList)) {
-        // `1` is not a valid symmetry specification for `2`.
-        return Errors.printMessage(S.MatrixSymbol, "symss", F.List(symmetry, S.MatrixSymbol),
+        // Symmetry specification `1` is incompatible with expression `2`.
+        return Errors.printMessage(S.MatrixSymbol, "symmcomp", F.List(symmetry, dimensionsList),
             engine);
       }
     }
