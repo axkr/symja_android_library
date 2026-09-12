@@ -590,20 +590,38 @@
             return;
         }
         var live = null;
+        // whether this container has a picture in it, live or still. A scene that has never been
+        // near the viewport has nothing to show, and an empty bordered box reads as a graphic that
+        // failed rather than one that has not been drawn yet - which in a gallery, where the page
+        // ends up showing the last cells, is what every 3D result above the fold looks like.
+        var drawn = false;
         var observer = new IntersectionObserver(function (entries) {
             for (var i = 0; i < entries.length; i++) {
                 if (entries[i].isIntersecting) {
                     if (!live) {
                         try {
                             live = buildScene(container, data);
+                            drawn = true;
                         } catch (error) {
                             console.error('symja_webgl: ' + containerId + ': ' + error);
                             observer.disconnect();
                         }
                     }
                 } else if (live) {
+                    // dispose leaves the last frame behind as a still
                     live.dispose();
                     live = null;
+                } else if (!drawn) {
+                    // out of view and never drawn: render it once and hand the context straight
+                    // back, which leaves the still without holding a context for a scene nobody
+                    // is looking at. Scrolling to it builds the live scene over the still.
+                    drawn = true;
+                    try {
+                        buildScene(container, data).dispose();
+                    } catch (error) {
+                        console.error('symja_webgl: ' + containerId + ': ' + error);
+                        observer.disconnect();
+                    }
                 }
             }
         }, { rootMargin: '300px 0px' });
@@ -1221,6 +1239,14 @@
 
         return {
             dispose: function () {
+                if (disposed) {
+                    // idempotent: a second pass would snapshot a context that has been given
+                    // back, get nothing, and clear away the still the first pass left
+                    return;
+                }
+                // taken first, while the scene is still whole: everything below frees the
+                // geometries and the context it would be drawn from
+                var still = snapshot(renderer, scene, camera);
                 disposed = true;
                 cancelAnimationFrame(frame);
                 if (resizeObserver) {
@@ -1243,9 +1269,61 @@
                 // frees the GPU context, which is the whole point of tearing the scene down
                 renderer.dispose();
                 renderer.forceContextLoss();
-                while (container.firstChild) { container.removeChild(container.firstChild); }
+                if (still) {
+                    showStill(container, renderer.domElement, still);
+                } else {
+                    while (container.firstChild) { container.removeChild(container.firstChild); }
+                }
             }
         };
+    }
+
+    /**
+     * A PNG of the scene as it looks right now, or <code>null</code> if one cannot be taken.
+     *
+     * The renderer is deliberately not created with <code>preserveDrawingBuffer</code> - that
+     * costs memory on every frame of every scene - so the drawing buffer only reliably holds a
+     * frame until the browser presents it. Rendering and reading the canvas in the same task is
+     * what makes this dependable without it; doing it a tick later returns a blank image.
+     */
+    function snapshot(renderer, scene, camera) {
+        try {
+            renderer.render(scene, camera);
+            return renderer.domElement.toDataURL('image/png');
+        } catch (error) {
+            // a lost context, or a canvas too large to read back; the caller falls back to
+            // clearing the container, which is what this used to do in every case
+            return null;
+        }
+    }
+
+    /**
+     * Put the still where the canvas was.
+     *
+     * A scene is torn down as soon as it leaves the viewport, because a browser allows only a
+     * handful of WebGL contexts at once and a gallery holds more 3D cells than that. What used to
+     * be left behind was an empty bordered box, which reads as a picture that failed to load - and
+     * in a gallery, where the page ends up showing the last cells, that is what a 3D result looks
+     * like until you happen to scroll back to it. A still image reads as the picture it is, and
+     * scrolling back builds the live scene over it again.
+     *
+     * Only the canvas is replaced. The flat overlay of a Prolog or Epilog picture, and the legend,
+     * are ordinary DOM around it and stay as they are.
+     */
+    function showStill(container, canvas, dataURL) {
+        var image = document.createElement('img');
+        image.className = 'symja-webgl-still';
+        image.alt = '3D graphic';
+        image.src = dataURL;
+        // carries the inset positioning of a canvas that does not fill its container
+        image.style.cssText = canvas.style.cssText;
+        image.style.width = canvas.style.width || (canvas.clientWidth + 'px');
+        image.style.height = canvas.style.height || (canvas.clientHeight + 'px');
+        if (canvas.parentNode) {
+            canvas.parentNode.replaceChild(image, canvas);
+        } else {
+            container.appendChild(image);
+        }
     }
 
     /** Grid lines on the back faces of the bounding box. */
