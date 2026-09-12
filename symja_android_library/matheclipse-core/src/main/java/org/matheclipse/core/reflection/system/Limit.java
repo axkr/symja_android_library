@@ -2546,6 +2546,36 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * @param engine
    * @return <code>F.NIL</code> if no limit was found
    */
+  /**
+   * An exponent above which a power's size in leaves stops being a useful measure of the work it
+   * represents.
+   *
+   * <p>
+   * Ordinary symbolic expressions do not carry powers anywhere near this large, and the tidying
+   * steps guarded by it do nothing useful to a monomial anyway.
+   */
+  private static final int LARGE_INTEGER_EXPONENT = 100;
+
+  /**
+   * Whether {@code expr} carries an integer power large enough that its leaf count understates it.
+   *
+   * <p>
+   * <code>20000*x^19999</code> is five leaves, so every leaf-count gate waves it through - but
+   * simplifying it takes seconds, which is most of what
+   * <code>Limit((x^20000-1)/(x-1), x -&gt; 1)</code> used to spend. Leaf count cannot see an
+   * exponent, so ask about the exponent directly.
+   */
+  private static boolean hasLargeIntegerExponent(IExpr expr) {
+    return expr.has(e -> {
+      if (!e.isPower() || !e.exponent().isInteger()) {
+        return false;
+      }
+      int exponent = e.exponent().toIntDefault();
+      // not representable as an int means far beyond the threshold
+      return F.isNotPresent(exponent) || Math.abs(exponent) > LARGE_INTEGER_EXPONENT;
+    }, true);
+  }
+
   private static IExpr numeratorDenominatorLimit(IExpr numerator, IExpr denominator, LimitData data,
       EvalEngine engine) {
     IExpr numValue;
@@ -4298,7 +4328,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      IExpr plusResult = AlgebraUtil.partsApart(parts.get(), symbol, engine);
+      // Partial fractions on a high-degree rational is enormously expensive and never the right
+      // route to a limit: decomposing (x^20000-1)/(x-1) took four seconds, where differentiating
+      // it once answers immediately. Leave those to the strategies below.
+      IExpr plusResult = hasLargeIntegerExponent(timesAST) //
+          ? F.NIL
+          : AlgebraUtil.partsApart(parts.get(), symbol, engine);
       // Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(),
       // parts,symbol);
       if (plusResult.isPlus()) {

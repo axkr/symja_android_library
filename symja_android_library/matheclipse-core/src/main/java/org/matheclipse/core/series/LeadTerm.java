@@ -2,6 +2,7 @@ package org.matheclipse.core.series;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -78,7 +79,16 @@ public class LeadTerm {
     if (f == null || !f.isPresent()) {
       return null;
     }
-    return dispatch(f, t, logx, engine, 0);
+    try {
+      return dispatch(f, t, logx, engine, 0);
+    } catch (LimitException lex) {
+      // Running out of iterations, recursion or AST elements means this expression is too big for
+      // the structural rules - that is "no leading term from here", not a failure of the whole
+      // limit. Letting it escape aborted every caller: Limit((x^512-1)/(x-1), x->1) reported
+      // nothing at all, though its answer 512 was one series expansion away. Interrupts and
+      // timeouts are NOT LimitExceptions and still propagate.
+      return null;
+    }
   }
 
   /**
@@ -284,7 +294,17 @@ public class LeadTerm {
   private static Lead plusLead(IAST plus, ISymbol t, IExpr logx, EvalEngine engine, int depth) {
     IExpr expanded = plus;
     if (plus.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
-      IExpr e = engine.evalQuiet(F.Expand(plus));
+      IExpr e;
+      try {
+        e = engine.evalQuiet(F.Expand(plus));
+      } catch (LimitException lex) {
+        // A SMALL expression can still expand enormously: (1+t)^512 - 1 is six leaves, but
+        // expanding it asks for binomial coefficients up to 512!, which exhausts the iteration
+        // limit. Leaf count cannot see that coming, so take the refusal as the signal and carry
+        // on with the unexpanded form - the tie analysis reads it just as well, and the series
+        // fallback below handles the cancellation without ever expanding.
+        e = F.NIL;
+      }
       if (e.isPresent() && e.isPlus()) {
         expanded = e;
       } else if (e.isPresent() && !e.equals(plus)) {

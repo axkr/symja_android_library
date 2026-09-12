@@ -1476,4 +1476,33 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  /**
+   * Rational functions carrying a very large exponent. Leaf count says these are tiny - eleven
+   * leaves for the first one - so every size-based gate waves them through, and then the work
+   * explodes: expanding <code>(1+t)^20000</code> wants 20000!, and decomposing the quotient into
+   * partial fractions takes seconds. Both are avoidable; the limit is just the exponent.
+   */
+  @Test
+  public void testLargeExponentRationalLimits() {
+    check("Limit((x^20000-1)/(x-1), x -> 1)", //
+        "20000");
+    check("Limit((x^1000-1)/(x-1), x -> 1)", //
+        "1000");
+    // exactly at the iteration limit that used to abort the whole evaluation
+    check("Limit((x^512-1)/(x-1), x -> 1)", //
+        "512");
+    check("Limit((1-x^5000)/(1-x), x -> 1)", //
+        "5000");
+    // a higher-degree denominator divides the answer
+    check("Limit((x^20000-1)/(x^2-1), x -> 1)", //
+        "10000");
+    check("Limit((x^1000-1)/(x^10-1), x -> 1)", //
+        "100");
+    // the small cases this generalizes must be unchanged
+    check("Limit((x^3-1)/(x-1), x -> 1)", //
+        "3");
+    check("Limit((x^100-1)/(x-1), x -> 1)", //
+        "100");
+  }
+
 }
