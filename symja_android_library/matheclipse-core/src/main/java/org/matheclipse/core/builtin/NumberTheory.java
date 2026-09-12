@@ -52,6 +52,7 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
@@ -108,6 +109,13 @@ import io.github.mangara.diophantine.XYPair;
 import io.github.mangara.diophantine.quadratic.PellsSolver;
 
 public final class NumberTheory {
+
+  /**
+   * How often a long running search checks for interruption. A test on every step would sit in the
+   * innermost loop; every 16384 keeps it off the hot path and still reacts in a fraction of a
+   * second.
+   */
+  private static final int INTERRUPT_CHECK_MASK = 0x3FFF;
 
   private static final long[] BELLB_25 = {1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975, 678570,
       4213597, 27644437, 190899322L, 1382958545L, 10480142147L, 82864869804L, 682076806159L,
@@ -1929,7 +1937,10 @@ public final class NumberTheory {
           if (F.isPresent(nMax)) {
             try {
               IExpr n = arg1;
-              ArrayList<IInteger> eulerE = eulerEList(nMax);
+              // getEulerEEvenOdd() reads index k/2 for k in 0..nMax, so half the table answers
+              // every term of the sum below - and each entry it does not need is an integer with
+              // thousands of digits
+              ArrayList<IInteger> eulerE = eulerEList(nMax / 2);
               // https://functions.wolfram.com/Polynomials/EulerE2/27/01/0001/
               // Sum((Binomial(n,k)*EulerE(k))/(2^k*(-1/2+z)^(k-n)),{k,0,n})
               return F.sum(k -> //
@@ -2016,6 +2027,12 @@ public final class NumberTheory {
      */
     protected static void set(List<IInteger> a, final int n) {
       while (n >= a.size()) {
+        if (Thread.currentThread().isInterrupted()) {
+          // one row is O(n) products of integers with thousands of digits: without this the table
+          // outlives the deadline that asked for it and the thread runs on after the caller has
+          // its $Aborted
+          throw TimeoutException.TIMED_OUT;
+        }
         IInteger val = F.C0;
         boolean sigPos = true;
         int thisn = a.size();
@@ -3443,9 +3460,22 @@ public final class NumberTheory {
           return F.CEmptyList;
         }
         IInteger nHalf = n.div(F.C2);
-        nHalf.toIntDefault();
+        if (maxPairs == Integer.MAX_VALUE && F.isNotPresent(nHalf.toIntDefault())) {
+          // Asked for every pair, the search runs the whole way to n/2 with a primality test per
+          // odd number on the way, and the list it would build is longer than anything that could
+          // hold it. Asked for a few, it stops at the first ones found, which is why the bound is
+          // only checked here - GoldbachList(3325581707333960528, 1) answers at once.
+          // Java int value greater equal `1` expected instead of `2`.
+          return Errors.printMessage(S.GoldbachList, "intjava", F.list(F.C0, nHalf), engine);
+        }
         IASTAppendable list = F.ListAlloc(7);
+        long steps = 0;
         for (IInteger i = F.C3; nHalf.isGE(i); i = i.add(2)) {
+          if ((++steps & INTERRUPT_CHECK_MASK) == 0 && Thread.currentThread().isInterrupted()) {
+            // a search over a billion candidates outlives the deadline that started it, and the
+            // thread would go on running after the caller already has its $Aborted
+            throw TimeoutException.TIMED_OUT;
+          }
           if (i.isProbablePrime()) {
             IInteger j = n.subtract(i);
             if (j.isProbablePrime()) {

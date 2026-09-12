@@ -4,6 +4,15 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- Two searches that outran their own deadline now end with it. `TimeConstrained` and the engine's
+  time limit interrupt the thread they wait on, and every check in `EvalEngine` sits between two
+  evaluation steps -- so a loop inside one built-in never reached one: the caller got its
+  `$Aborted` on time while the thread ran on at full speed. `GoldbachList`'s search and `EulerE`'s
+  table of Euler numbers check for interruption as `VisitorCollectionBoolean` already did.
+  `GoldbachList` also refuses a number whose half does not fit a Java `int` when no pair limit is
+  given -- the guard was written and its result dropped -- and `EulerE(n, z)` built twice the table
+  it reads, each unused entry an integer with thousands of digits.
+
 - A symbol's value is read once where it used to be read twice. `Symbol#evaluate` asked
   `hasAssignedSymbolValue()` and then `assignedValue()`, and symbols are global while the engines
   that evaluate them are not -- so a `Clear` in another thread landed between the two reads and
