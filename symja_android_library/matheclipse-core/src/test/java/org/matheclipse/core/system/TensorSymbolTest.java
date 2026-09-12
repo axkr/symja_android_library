@@ -436,6 +436,30 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNonThreadablePartialThreading() {
+    // WMA ground truth (2026-09-12): a non-threadable argument of Plus or Times is kept apart, and
+    // the remaining arguments are still threaded over the list
+    check("SetAttributes(ntf, NonThreadable);Sin(ntf(1, 2)) + Sin(g(1, 2)) + {1, 2, 3}", //
+        "{1+Sin(g(1,2)),2+Sin(g(1,2)),3+Sin(g(1,2))}+Sin(ntf(1,2))");
+    check("ntf(1)*{1,2,3}*y", //
+        "{y,2*y,3*y}*ntf(1)");
+    check("ntf(1)+{1,2}+{3,4}", //
+        "{4,6}+ntf(1)");
+    check("MatrixSymbol(a,{2,2})+x+{1,2}", //
+        "{1+x,2+x}+MatrixSymbol(a,{2,2})");
+    // lists which cannot be combined with each other stay as they are
+    check("ntf(1)+{1,2}+{1,2,3}", //
+        "{1,2}+{1,2,3}+ntf(1)", //
+        "Thread: Objects of unequal length in {1,2}+{1,2,3} cannot be combined.");
+    // the arguments are only regrouped and reordered for a Flat and Orderless head; any other
+    // Listable head keeps its argument sequence untouched
+    check("SetAttributes(hl, Listable); hl(ntf(1),{1,2},{3,4})", //
+        "hl(ntf(1),{1,2},{3,4})");
+    check("SetAttributes(hlf, {Listable, Flat}); hlf(ntf(1),x,{1,2})", //
+        "hlf(ntf(1),x,{1,2})");
+  }
+
+  @Test
   public void testDotThreading() {
     // confirmed against the NonThreadable reference page itself (2026-09-12): Dot and ArrayDot
     // carry neither NonThreadable nor Listable, so a Dot of two ORDINARY symbols threads over a

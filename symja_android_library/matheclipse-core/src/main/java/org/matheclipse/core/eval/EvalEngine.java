@@ -5613,8 +5613,13 @@ public class EvalEngine implements Serializable {
     if (ast.exists(SymbolicArrayUtil::isArrayValued)) {
       // an argument which stands for a non-scalar quantity - a symbolic vector, matrix or array, or
       // an expression whose head carries the ISymbol#NONTHREADABLE attribute - is never combined
-      // with the elements of a S.List. MatrixSymbol("a", {2,2}) + {1, 2} stays as it is instead of
-      // adding the matrix to each of the two list elements.
+      // with the elements of a S.List. The other arguments still are, though:
+      // Sin(f(1,2)) + Sin(g(1,2)) + {1,2,3} with a NonThreadable f gives
+      // {1+Sin(g(1,2)),2+Sin(g(1,2)),3+Sin(g(1,2))}+Sin(f(1,2)) in WMA.
+      IExpr threaded = threadAroundNonThreadable(ast);
+      if (threaded.isPresent()) {
+        return threaded;
+      }
       ast.addFlag(Flag.IS_LISTABLE_THREADED);
       return F.NIL;
     }
@@ -5723,6 +5728,52 @@ public class EvalEngine implements Serializable {
     // S.Association and never carries the ISymbol#LISTABLE attribute, so the flag would never be
     // read; and threadList() may return F.NIL, whose eval flags are shared globally.
     return EvalAttributes.threadList(ast, listableHead, ast.head(), refArgSize, refAssociation);
+  }
+
+  /**
+   * Thread the threadable arguments of a {@link ISymbol#FLAT} and {@link ISymbol#ORDERLESS}
+   * {@link ISymbol#LISTABLE} expression over its list arguments, keeping the non-threadable
+   * arguments outside as separate arguments.
+   *
+   * <p>
+   * Only a head which is both {@link ISymbol#FLAT} and {@link ISymbol#ORDERLESS} - {@link S#Plus},
+   * {@link S#Times} - may regroup and reorder its arguments like this. For any other head the
+   * position of an argument matters, so an expression with a non-threadable argument isn't threaded
+   * at all.
+   * </p>
+   *
+   * @param ast a {@link ISymbol#LISTABLE} expression which contains a non-threadable argument
+   * @return <code>head(nonThreadable..., head(threadable...))</code> with the inner part already
+   *         threaded, or {@link F#NIL} if there is nothing to combine
+   */
+  private IExpr threadAroundNonThreadable(final IAST ast) {
+    final ISymbol symbol = ast.topHead();
+    if (!ast.head().isSymbol() || !symbol.hasOrderlessFlatAttribute()) {
+      return F.NIL;
+    }
+    IASTAppendable nonThreadable = ast.copyHead(ast.size());
+    IASTAppendable threadable = ast.copyHead(ast.size());
+    boolean hasContainer = false;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr argument = ast.get(i);
+      if (SymbolicArrayUtil.isArrayValued(argument)) {
+        nonThreadable.append(argument);
+      } else {
+        threadable.append(argument);
+        hasContainer |= argument.listableContainerHead() != null;
+      }
+    }
+    if (!hasContainer || threadable.argSize() < 2) {
+      // a single list, or no list at all, has nothing to be combined with
+      return F.NIL;
+    }
+    IExpr threaded = evaluate(threadable);
+    if (threaded.head() == symbol) {
+      // the threadable part couldn't be threaded either, for example lists of unequal length
+      return F.NIL;
+    }
+    nonThreadable.append(threaded);
+    return nonThreadable;
   }
 
   /**
