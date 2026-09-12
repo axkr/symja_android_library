@@ -4,6 +4,12 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `GammaRegularized(a, z)` is zero at every negative integer `a`, where `Gamma(a)` has a pole, and
+  said so only while the integer was still exact. In numeric mode `-2147483648` reaches the rule as
+  `-2.147483648*^9`, the test on the type missed it, and `Gamma(a,z)/Gamma(a)` sent apfloat off for
+  minutes to reach the same zero -- it arrived quickly only while `|a|` was small.
+  `GammaRegularized(-2147483646, 3.0)` answers at once now, as Mathematica does.
+
 - Two searches that outran their own deadline now end with it. `TimeConstrained` and the engine's
   time limit interrupt the thread they wait on, and every check in `EvalEngine` sits between two
   evaluation steps -- so a loop inside one built-in never reached one: the caller got its

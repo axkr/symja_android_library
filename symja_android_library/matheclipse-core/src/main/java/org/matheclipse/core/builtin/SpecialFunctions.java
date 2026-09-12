@@ -1035,7 +1035,11 @@ public class SpecialFunctions {
       } else if (a.isOne()) {
         // E^(-z)
         return F.Power(S.E, F.Negate(z1));
-      } else if (a.isInteger() && a.isNegative()) {
+      } else if (a.isMathematicalIntegerNegative()) {
+        // Gamma(a) has a pole at every negative integer, so the quotient is zero there. Tested on
+        // the value and not on the type because numeric mode has already turned the integer into
+        // -2.147483648*^9 by now, and Gamma(a,z)/Gamma(a) sends apfloat off for minutes to reach
+        // this same zero - it arrives quickly only while |a| is small.
         return F.C0;
       }
 
@@ -1077,7 +1081,8 @@ public class SpecialFunctions {
       if (a.isZero()) {
         return F.C0;
       }
-      if (a.isInteger() && a.isNegative()) {
+      if (a.isMathematicalIntegerNegative()) {
+        // as in the two argument case: a pole of Gamma(a) at either end of the interval
         return F.C0;
       }
       if (engine.isNumericMode()) {
