@@ -640,11 +640,18 @@ public class OutputFormFactory {
 
   private void convertDoubleString(final Appendable buf, final String d, final int precedence,
       final boolean isNegative) throws IOException {
-    if (isNegative && (Precedence.PLUS < precedence)) {
+    // A number rendered in scientific notation ("1.5*10^30", see ApfloatToMMA and DoubleToMMA) is
+    // a Times expression, not an atom, so it needs parentheses under every operator that binds
+    // tighter than Times - Power and Divide. Without them the printed form denotes something else:
+    // Power(2, 1.5*10^30) would print as 2^1.5*10^30, which reads as (2^1.5)*10^30.
+    final boolean isProduct = d.indexOf("*10^") > 0;
+    final boolean parenthesize = (isNegative && (Precedence.PLUS < precedence))
+        || (isProduct && (Precedence.TIMES < precedence));
+    if (parenthesize) {
       append(buf, "(");
     }
     append(buf, d);
-    if (isNegative && (Precedence.PLUS < precedence)) {
+    if (parenthesize) {
       append(buf, ")");
     }
   }
