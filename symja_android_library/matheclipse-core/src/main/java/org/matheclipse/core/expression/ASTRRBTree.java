@@ -83,6 +83,34 @@ public class ASTRRBTree extends AbstractAST
 
   public void ensureCapacity(int size) {}
 
+  /**
+   * Copy a mutable RRB tree in constant time, sharing the immutable spine with <code>list</code>.
+   *
+   * <p>
+   * The obvious <code>list.toMutRrbt()</code> is <b>not</b> what it looks like: neither
+   * {@link MutRrbt} nor {@link ImRrbt} overrides it, so it resolves to the default in
+   * <code>org.organicdesign.fp.xform.Transformable</code>, which folds the whole list into a fresh
+   * tree one <code>append</code> at a time - <code>O(n)</code>, and with a much higher constant
+   * than the <code>System.arraycopy</code> an {@link AST} would have done. That defeated the
+   * structural sharing this class exists for.
+   *
+   * <p>
+   * The round trip through {@link MutRrbt#immutable()} and {@link ImRrbt#mutable()} copies only the
+   * 32 element focus buffer and shares the tree spine, so it is <code>O(32)</code>. Sharing is safe
+   * because the spine is persistent: <code>Leaf</code> holds a <code>final</code> element array and
+   * its <code>replace</code> returns a new <code>Leaf</code>, <code>Relaxed</code> does the same
+   * with its node and size arrays, and {@link MutRrbt#replace} / {@link MutRrbt#append} reassign
+   * <code>root</code> rather than writing into a node. The focus array is the only mutable state,
+   * and both conversions copy it.
+   *
+   * @param list the tree to copy
+   * @return a mutable tree with the same elements, which can be modified independently of
+   *         <code>list</code>
+   */
+  static MutRrbt<IExpr> shallowCopy(MutRrbt<IExpr> list) {
+    return list.immutable().mutable();
+  }
+
   public static ASTRRBTree newInstance(final int initialCapacity, final IExpr head) {
     if (Config.MAX_AST_SIZE < initialCapacity || initialCapacity < 0) {
       ASTElementLimitExceeded.throwIt(initialCapacity);
@@ -102,7 +130,7 @@ public class ASTRRBTree extends AbstractAST
       throw new ASTElementLimitExceeded(ast.size());
     }
     if (ast instanceof ASTRRBTree) {
-      rrbTree = ((ASTRRBTree) ast).rrbTree.toMutRrbt();
+      rrbTree = shallowCopy(((ASTRRBTree) ast).rrbTree);
     } else {
       rrbTree = StaticImports.mutableRrb();
       for (int i = 0; i < ast.size(); i++) {
@@ -117,7 +145,7 @@ public class ASTRRBTree extends AbstractAST
       throw new ASTElementLimitExceeded(list.size());
     }
 
-    this.rrbTree = list.toMutRrbt();
+    this.rrbTree = shallowCopy(list);
   }
 
   public ASTRRBTree(ImRrbt<IExpr> list) throws ASTElementLimitExceeded {
@@ -126,7 +154,7 @@ public class ASTRRBTree extends AbstractAST
       throw new ASTElementLimitExceeded(list.size());
     }
 
-    this.rrbTree = list.toMutRrbt();
+    this.rrbTree = list.mutable();
   }
 
   public ASTRRBTree(IExpr[] array) throws ASTElementLimitExceeded {
@@ -521,7 +549,7 @@ public class ASTRRBTree extends AbstractAST
     // extension of readShort()
     this.fEvalFlags = objectInput.readShort() & EvalFlags.Mask.PERSISTENT;
     // MutRrbt is not serializable
-    this.rrbTree = ((ImRrbt<IExpr>) objectInput.readObject()).toMutRrbt();
+    this.rrbTree = ((ImRrbt<IExpr>) objectInput.readObject()).mutable();
   }
 
   /**

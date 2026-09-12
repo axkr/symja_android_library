@@ -239,8 +239,12 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public ASTAssociation copy() {
     ASTAssociation ast = new ASTAssociation();
-    ast.rrbTree = rrbTree.toMutRrbt();
+    ast.rrbTree = shallowCopy(rrbTree);
     ast.hashValue = 0;
+    // keyToIndexMap is deliberately left as an O(n) rebuild: MutMap is a Clojure style transient
+    // whose immutable() hands over its edit token, so immutable().mutable() would invalidate the
+    // map this association keeps. ASTRRBTree#shallowCopy is safe only because MutRrbt has no such
+    // token - its nodes are final and its immutable() does not touch the source.
     ast.keyToIndexMap = keyToIndexMap.toMutMap(x -> x);
     return ast;
   }
