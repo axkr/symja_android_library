@@ -970,6 +970,25 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * Weber's equation, reached by removing the first derivative from an equation whose coefficients
+   * are a linear and a quadratic polynomial.
+   */
+  @Test
+  public void testDSolveWeber() {
+    check("DSolve(y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/E^x^2+(-x^2*C(1))/E^x^2+(x*C(2)*Hypergeometric1F1(2,3/2,-x^2/2))/E^(x^\n"
+            + "2/2)}}");
+    checkResidual("y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x) == 0", //
+        "y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    // one whose Gaussian is complex, so that both solutions are written with the same one
+    checkResidual("y''(x) + 2*x*y'(x) + (2*x^2 + 3)*y(x) == 0", //
+        "y''(x) + 2*x*y'(x) + (2*x^2 + 3)*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    // the potential without its quadratic part is Airy's equation and still goes there
+    check("DSolve(y''(x) == x*y(x), y(x), x)", //
+        "{{y(x)->AiryAi(x)*C(1)+AiryBi(x)*C(2)}}");
+  }
+
+  /**
    * Whittaker's equation, whose potential has one double pole and a constant term. The Bessel row
    * takes the same potential without the <code>1/x</code> term, so what reaches this is what that
    * one did not want.
@@ -989,10 +1008,26 @@ public class DSolveTest extends ExprEvaluatorTestCase {
             + " Hypergeometric1F1)", //
         "False");
 
-    // twice the order is a whole number here, so the two solutions are one and the second does
-    // not exist; this is left to the methods which can say something about it
-    check("Head(DSolve(y''(x) + (-1/4 + 2/x - 3/(4*x^2))*y(x) == 0, y(x), x))", //
-        "DSolve");
+    // Twice the order is a whole number here, so the two series are one: the second has a lower
+    // parameter of 1-2*m and does not exist. The other confluent function takes its place, and is
+    // a second solution for every order.
+    check("DSolve(y''(x) + (-1/4 + 2/x - 3/(4*x^2))*y(x) == 0, y(x), x)", //
+        "{{y(x)->(x^(3/2)*C(1)*Hypergeometric1F1(-1/2,3,x))/E^(x/2)+(x^(3/2)*C(2)*HypergeometricU(-\n"
+            + "1/2,3,x))/E^(x/2)}}");
+    checkResidual("y''(x) + (-1/4 + 2/x - 3/(4*x^2))*y(x) == 0", //
+        "y''(x) + (-1/4 + 2/x - 3/(4*x^2))*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    // and the two of them are a basis rather than one solution twice
+    check("N(Wronskian({x^(3/2)*Hypergeometric1F1(-1/2,3,x)/E^(x/2),"
+        + " x^(3/2)*HypergeometricU(-1/2,3,x)/E^(x/2)}, x) /. x -> 13/10) != 0", //
+        "True");
+
+    // A potential which is a simple pole and a constant is this equation with the double pole
+    // missing, so the order is 1/2 and the second solution is again the other function.
+    checkResidual("(10 - 2*x)*y''(x) + (x + 1)*y(x) == 0", //
+        "(10 - 2*x)*y''(x) + (x + 1)*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
+    // and one which is a simple pole and a double pole, with no constant part, is Bessel's
+    check("DSolve(4*x^2*y''(x) + (4*x + 1)*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselJ(0,2*Sqrt(x))*C(1)+Sqrt(x)*BesselY(0,2*Sqrt(x))*C(2)}}");
     // a potential with no 1/x term belongs to the Bessel row above and still goes there
     check("DSolve(y''(x) + (1 + (1/4-m^2)/x^2)*y(x) == 0, y(x), x)", //
         "{{y(x)->Sqrt(x)*BesselJ(Sqrt(m^2),x)*C(1)+Sqrt(x)*BesselY(Sqrt(m^2),x)*C(2)}}");

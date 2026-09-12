@@ -356,6 +356,43 @@ final class DSolveSpecialFunctions {
   }
 
   /**
+   * Weber's equation <code>y'' + (a + b*x^2)*y == 0</code> with <code>b</code> not zero, whose
+   * solutions are the parabolic cylinder functions.
+   *
+   * <p>
+   * Multiplying by the Gaussian <code>E^(s*x^2/2)</code> with <code>s^2 == -b</code> takes the
+   * quadratic part of the potential away and leaves Hermite's equation
+   * <code>u'' + 2*s*x*u' + (s + a)*u == 0</code>, so the row above answers it and this one only has
+   * to put the Gaussian back. Either square root of <code>-b</code> does: they give the two
+   * Gaussians, and each of them with its own pair of series spans the same solutions.
+   *
+   * <p>
+   * A potential with a linear term as well is this equation in a shifted variable, and is left to
+   * the methods after this one: none of the equations which asked for this row has one.
+   */
+  private static IExpr[] weber(IExpr p, IExpr q, IExpr xVar, EvalEngine engine) {
+    if (!p.isZero() || !engine.evaluate(F.PolynomialQ(q, xVar)).isTrue()
+        || engine.evaluate(F.Exponent(q, xVar)).toIntDefault() != 2
+        || !engine.evaluate(F.Coefficient(q, xVar, F.C1)).isZero()) {
+      return null;
+    }
+    IExpr b = engine.evaluate(F.Coefficient(q, xVar, F.C2));
+    IExpr a = engine.evaluate(F.Coefficient(q, xVar, F.C0));
+    if (b.isZero()) {
+      return null;
+    }
+    IExpr s = engine.evaluate(F.PowerExpand(F.Sqrt(F.Negate(b))));
+    IExpr[] reduced = hermite(engine.evaluate(F.Times(F.C2, s, xVar)),
+        engine.evaluate(F.Plus(s, a)), xVar, engine);
+    if (reduced == null) {
+      return null;
+    }
+    IExpr gaussian = engine.evaluate(F.Exp(F.Times(F.C1D2, s, F.Sqr(xVar))));
+    return new IExpr[] {engine.evaluate(F.Times(gaussian, reduced[0])),
+        engine.evaluate(F.Times(gaussian, reduced[1]))};
+  }
+
+  /**
    * The hypergeometric equation <code>x*(x-1)*y'' + ((a+b+1)*x - c)*y' + a*b*y == 0</code>.
    */
   private static IExpr[] gauss(IExpr p, IExpr q, IExpr xVar, EvalEngine engine) {
@@ -656,6 +693,12 @@ final class DSolveSpecialFunctions {
       if (reduced == null) {
         reduced = besselNormalForm(F.C0, potential, xVar, engine);
       }
+      if (reduced == null) {
+        reduced = weber(F.C0, potential, xVar, engine);
+      }
+      if (reduced == null) {
+        reduced = whittaker(F.C0, potential, yFunction, xVar, engine);
+      }
     }
     if (reduced == null) {
       return null;
@@ -845,12 +888,13 @@ final class DSolveSpecialFunctions {
     }
     IExpr potential = cancel(q, engine);
     IExpr denominator = engine.evaluate(F.Denominator(potential));
-    if (!engine.evaluate(F.PolynomialQ(denominator, xVar)).isTrue()
-        || engine.evaluate(F.Exponent(denominator, xVar)).toIntDefault() != 2) {
+    int denominatorDegree = engine.evaluate(F.Exponent(denominator, xVar)).toIntDefault();
+    if (!engine.evaluate(F.PolynomialQ(denominator, xVar)).isTrue() || denominatorDegree < 1
+        || denominatorDegree > 2) {
       return null;
     }
     IAST poles = DSolveUtil.polesOf(denominator, xVar, engine);
-    if (poles == null || poles.argSize() != 1 || poles.arg1().second().toIntDefault() != 2) {
+    if (poles == null || poles.argSize() != 1 || poles.arg1().second().toIntDefault() > 2) {
       return null;
     }
     IExpr pole = poles.arg1().first();
@@ -858,10 +902,13 @@ final class DSolveSpecialFunctions {
       return null;
     }
 
+    // The potential is b2 + b1/(x-x0) + b0/(x-x0)^2 exactly when multiplying it by the square is a
+    // quadratic. A pole of the first order only leaves b0 zero, and no constant part leaves b2
+    // zero; both are equations of this family written with one term missing.
     IExpr shifted = F.Subtract(xVar, pole);
     IExpr quadratic = cancel(F.Times(q, F.Sqr(shifted)), engine);
     if (!engine.evaluate(F.PolynomialQ(quadratic, xVar)).isTrue()
-        || engine.evaluate(F.Exponent(quadratic, xVar)).toIntDefault() != 2) {
+        || engine.evaluate(F.Exponent(quadratic, xVar)).toIntDefault() > 2) {
       return null;
     }
     IExpr b0 = engine.evaluate(F.subst(quadratic, xVar, pole));
@@ -871,20 +918,23 @@ final class DSolveSpecialFunctions {
         engine.evaluate(F.subst(engine.evaluate(F.D(quadratic, xVar)), xVar, pole));
     IExpr b2 = engine.evaluate(F.Coefficient(quadratic, xVar, F.C2));
     if (b2.isZero()) {
-      return null;
+      // Without the constant part the equation is Bessel's rather than Whittaker's, and is
+      // answered in a row of its own.
+      return besselSimplePole(b0, b1, shifted, yFunction, q, xVar, engine);
     }
     IExpr order = engine.evaluate(F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.C1D4, b0)))));
     IExpr scale = engine.evaluate(F.Times(F.C2, F.Sqrt(F.Negate(b2))));
     IExpr kappa = cancel(F.Divide(b1, scale), engine);
     IExpr z = engine.evaluate(F.Times(scale, shifted));
-    // Twice the order being a whole number makes the two solutions one: either they coincide, or
-    // the lower parameter of one of them is a non positive integer and it does not exist.
-    if (isProvableInteger(engine.evaluate(F.Times(F.C2, order)), engine)) {
-      return null;
-    }
+    // Twice the order being a whole number makes the two series one: either they coincide, or the
+    // lower parameter of one of them is a non positive integer and it does not exist. The second
+    // solution is then the other confluent function, which exists for every order.
+    boolean degenerate = isProvableInteger(engine.evaluate(F.Times(F.C2, order)), engine);
 
     IExpr first = whittakerBranch(order, kappa, z, engine);
-    IExpr second = whittakerBranch(engine.evaluate(F.Negate(order)), kappa, z, engine);
+    IExpr second = degenerate //
+        ? whittakerSecondBranch(order, kappa, z, engine)
+        : whittakerBranch(engine.evaluate(F.Negate(order)), kappa, z, engine);
 
     // As for the trigonometric potential below: a hypergeometric residual is not something the
     // lenient check the cascade ends with can decide, so it would accept anything, and this row
@@ -900,11 +950,55 @@ final class DSolveSpecialFunctions {
     IAST residuals = F.list(engine.evaluate(F.Plus( //
         F.D(yFunction, F.list(xVar, F.C2)), //
         F.Times(q, yFunction))));
-    if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, first, engine)
-        || !DSolveVerify.acceptODE(residuals, yFunction, xVar, second, engine)) {
+    if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, first, engine)) {
+      return null;
+    }
+    // The second solution written with the other confluent function is not the first one written
+    // differently, so it is asked to show that it solves the equation rather than only that it is
+    // not seen to fail.
+    boolean accepted = degenerate //
+        ? DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, second, engine)
+        : DSolveVerify.acceptODE(residuals, yFunction, xVar, second, engine);
+    if (!accepted) {
       return null;
     }
     return new IExpr[] {first, second};
+  }
+
+  /**
+   * <code>y'' + (b1/(x-x0) + b0/(x-x0)^2)*y == 0</code>: a double pole and the simple pole beside
+   * it, and nothing else. That is Bessel's equation of order <code>Sqrt(1-4*b0)</code> in
+   * <code>2*Sqrt(b1*(x-x0))</code>, with <code>Sqrt(x-x0)</code> in front.
+   *
+   * <p>
+   * {@link #besselNormalForm} is the same statement without the simple pole, and takes the pole at
+   * the origin only; this one is reached from {@link #whittaker}, which has already found where the
+   * pole is.
+   */
+  private static IExpr[] besselSimplePole(IExpr b0, IExpr b1, IExpr shifted, IExpr yFunction,
+      IExpr q, IExpr xVar, EvalEngine engine) {
+    int sign = numericSign(b1, engine);
+    if (sign == 0) {
+      return null;
+    }
+    IExpr nu = engine.evaluate(F.PowerExpand(F.Sqrt(F.Factor(F.Subtract(F.C1, F.Times(F.C4, b0))))));
+    IExpr magnitude = engine.evaluate(sign > 0 ? b1 : F.Negate(b1));
+    IExpr argument = engine.evaluate(F.Times(F.C2, F.Sqrt(F.Times(magnitude, shifted))));
+    IExpr root = F.Sqrt(shifted);
+    IExpr[] basis = sign > 0 //
+        ? new IExpr[] {engine.evaluate(F.Times(root, F.BesselJ(nu, argument))),
+            engine.evaluate(F.Times(root, F.BesselY(nu, argument)))}
+        : new IExpr[] {engine.evaluate(F.Times(root, F.BesselI(nu, argument))),
+            engine.evaluate(F.Times(root, F.BesselK(nu, argument)))};
+    IAST residuals = F.list(engine.evaluate(F.Plus( //
+        F.D(yFunction, F.list(xVar, F.C2)), //
+        F.Times(q, yFunction))));
+    for (IExpr member : basis) {
+      if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, member, engine)) {
+        return null;
+      }
+    }
+    return basis;
   }
 
   /**
@@ -912,6 +1006,22 @@ final class DSolveSpecialFunctions {
    * <code>Exp(-z/2)*z^(1/2+m)*Hypergeometric1F1(1/2+m-k, 1+2*m, z)</code>, which is
    * <code>WhittakerM(k, m, z)</code> written so that it evaluates.
    */
+  /**
+   * The other solution of Whittaker's equation,
+   * <code>Exp(-z/2)*z^(1/2+m)*HypergeometricU(1/2+m-k, 1+2*m, z)</code>, which is
+   * <code>WhittakerW(k, m, z)</code> written so that it evaluates. Independent of the first for
+   * every order, which the series with <code>-m</code> is not when twice the order is a whole
+   * number.
+   */
+  private static IExpr whittakerSecondBranch(IExpr order, IExpr kappa, IExpr z,
+      EvalEngine engine) {
+    IExpr exponent = engine.evaluate(F.Plus(F.C1D2, order));
+    return engine.evaluate(F.Times( //
+        F.Exp(F.Times(F.CN1D2, z)), //
+        F.Power(z, exponent), //
+        F.HypergeometricU(F.Subtract(exponent, kappa), F.Plus(F.C1, F.Times(F.C2, order)), z)));
+  }
+
   private static IExpr whittakerBranch(IExpr order, IExpr kappa, IExpr z, EvalEngine engine) {
     IExpr exponent = engine.evaluate(F.Plus(F.C1D2, order));
     return engine.evaluate(F.Times( //
