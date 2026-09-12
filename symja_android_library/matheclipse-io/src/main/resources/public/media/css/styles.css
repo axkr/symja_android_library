@@ -221,6 +221,89 @@ div.transparent {
   outline: none;
 }
 
+/* --- Tooltips -------------------------------------------------------------
+   The browser's own tooltip, the one a title attribute gets you, waits about a
+   second before it appears and there is no way to ask for less - the delay is
+   the browser's, not the page's. These are the same text drawn by the page, so
+   they show up as soon as the pointer has settled.
+
+   The buttons carry data-tooltip instead of title: leaving title in place would
+   have drawn both, the native one arriving a second after this one. aria-label
+   carries the name for a screen reader, which is what title was doing for it.
+
+   SHOW_DELAY below is the only number worth tuning. It is not zero on purpose -
+   sweeping the pointer across a row of five buttons should not flash five
+   tooltips - but at 100ms it reads as immediate. */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]::after,
+[data-tooltip]::before {
+  /* never in the way of the click the pointer came for */
+  pointer-events: none;
+  opacity: 0;
+  /* fading out is immediate: the pointer has already left */
+  transition: opacity 0.08s ease 0s;
+  z-index: 10;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #3f3f3f;
+  color: #fff;
+  font-family: sans-serif;
+  font-size: 0.75em;
+  font-weight: normal;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-align: center;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+}
+[data-tooltip]::before {
+  /* the little arrow, a bordered triangle pointing back at the button */
+  content: "";
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-width: 0;
+  border-bottom-color: #3f3f3f;
+}
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before,
+[data-tooltip]:focus-visible::after,
+[data-tooltip]:focus-visible::before {
+  opacity: 1;
+  /* SHOW_DELAY */
+  transition-delay: 0.1s;
+}
+/* A tooltip on the last control in the header would hang off the right edge if
+   it were centred, so that one hangs from its right instead. */
+[data-tooltip].tooltip-left::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+[data-tooltip].tooltip-left::before {
+  left: auto;
+  right: 0.35em;
+  transform: none;
+}
+/* A pointer that cannot hover has no use for any of this, and :hover on a touch
+   screen sticks after a tap. */
+@media (hover: none) {
+  [data-tooltip]::after,
+  [data-tooltip]::before {
+    display: none;
+  }
+}
+
 #version {
   color: #aaa;
   font-size: 11px;

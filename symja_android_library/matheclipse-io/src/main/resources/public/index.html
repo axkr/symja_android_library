@@ -98,16 +98,16 @@ import * as THREE_MODULE from 'three';
   <img id="logo" class="load" src="/media/img/logo.png" height="32" alt="Logo" />
  <!--  <img id="logotext" class="load" src="/media/img/logo-text.svg" height="26" alt="Symja" /> -->
   <div class="menu">
-    <a href="javascript:openNotebook()" title="Open notebook (*.ipynb)"><i class="fa fa-folder-open-o"></i></a>
-    <a href="javascript:showSaveNotebook()" title="Save notebook (*.ipynb)"><i class="fa fa-floppy-o"></i></a>
-    <a href="javascript:insertTextCell()" title="Add text cell"><i class="fa fa-paragraph"></i></a>
-    <a href="javascript:uploadFile()" title="Upload a data file for Import"><i class="fa fa-upload"></i></a>
-    <a href="javascript:runAllCells()" class="separate-left" title="Run all cells"><i class="fa fa-play"></i></a>
+    <a href="javascript:openNotebook()" data-tooltip="Open notebook (*.ipynb)" aria-label="Open notebook (*.ipynb)"><i class="fa fa-folder-open-o"></i></a>
+    <a href="javascript:showSaveNotebook()" data-tooltip="Save notebook (*.ipynb)" aria-label="Save notebook (*.ipynb)"><i class="fa fa-floppy-o"></i></a>
+    <a href="javascript:insertTextCell()" data-tooltip="Add text cell" aria-label="Add text cell"><i class="fa fa-paragraph"></i></a>
+    <a href="javascript:uploadFile()" data-tooltip="Upload a data file for Import" aria-label="Upload a data file for Import"><i class="fa fa-upload"></i></a>
+    <a href="javascript:runAllCells()" class="separate-left" data-tooltip="Run all cells" aria-label="Run all cells"><i class="fa fa-play"></i></a>
    </div>
 </div>
 
 <div id="headerright">
-  <input id="search" type="text" /><a id="doclink" href="javascript:toggleDoc()" title="Docs"><i class="fa fa-lg fa-question-circle-o"></i></a>
+  <input id="search" type="text" /><a id="doclink" class="tooltip-left" href="javascript:toggleDoc()" data-tooltip="Docs" aria-label="Docs"><i class="fa fa-lg fa-question-circle-o"></i></a>
 </div>
 </header> 
 
