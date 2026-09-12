@@ -227,7 +227,7 @@ function showGallery() {
 	  'LinearSolve(A, {1, 1, 1}) // MatrixForm',
 	  'Eigenvalues(A)',
 	  '# ^ 2 & /@ Range(10)',
-	  'Integrate(Tan(x) ^ 5, x)'
+	  'Integrate(Tan(x) ^ 5, x) // TraceForm'
 	]);
 }
 

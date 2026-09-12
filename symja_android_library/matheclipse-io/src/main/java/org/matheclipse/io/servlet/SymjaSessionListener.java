@@ -24,7 +24,7 @@ public class SymjaSessionListener implements HttpSessionListener {
     String sessionID = event.getSession().getId();
     LOGGER.debug("Session {} ended, releasing its engine and widgets", sessionID);
     // the widgets are released first: their Deinitialization code still needs the engine
-    ManipulateSession.remove(AJAXQueryServlet.ENGINES.get(sessionID), sessionID);
+    ManipulateSession.remove(AJAXQueryServlet.engineOf(sessionID), sessionID);
     DynamicSession.remove(sessionID);
     AJAXQueryServlet.removeSession(sessionID);
     SessionSandbox.remove(sessionID);

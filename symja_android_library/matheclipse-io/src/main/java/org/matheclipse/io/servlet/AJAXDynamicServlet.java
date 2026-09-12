@@ -79,8 +79,9 @@ public class AJAXDynamicServlet extends HttpServlet {
       return;
     }
 
-    EvalEngine engine = AJAXQueryServlet.ENGINES.get(sessionID);
-    if (engine == null) {
+    // the engine and its lock are taken together; see AJAXQueryServlet#stateOf
+    AJAXQueryServlet.SessionState state = AJAXQueryServlet.stateOf(sessionID);
+    if (state == null) {
       out.println(JSONBuilder
           .createJSONErrorString("This interactive output has expired - evaluate the input again."));
       return;
@@ -111,12 +112,12 @@ public class AJAXDynamicServlet extends HttpServlet {
         PrintStream errors = new PrintStream(werrors);
         ThreadLocalNotifierClosable c = ServletLogging.setLogEventNotifier(outs, errors)) {
 
+      EvalEngine engine = state.engine;
       engine.setOutPrintStream(outs);
       engine.setErrorPrintStream(errors);
 
-      // see AJAXQueryServlet#sessionLock: one evaluation per session at a time, and never on the
-      // engine's own monitor
-      synchronized (AJAXQueryServlet.sessionLock(sessionID)) {
+      // one evaluation per session at a time, and never on the engine's own monitor
+      synchronized (state.lock) {
         out.println(evaluate(engine, sessionID, id, controlIndex, value, actionIndex, poll, refresh,
             outWriter, errorWriter));
       }

@@ -77,11 +77,12 @@ public class AJAXManipulateServlet extends HttpServlet {
 
     // a cell that was deleted releases its widget, which runs its Deinitialization code
     if (req.getParameter("dispose") != null) {
-      EvalEngine disposeEngine = AJAXQueryServlet.ENGINES.get(session.getId());
-      if (disposeEngine == null) {
+      AJAXQueryServlet.SessionState disposeState = AJAXQueryServlet.stateOf(session.getId());
+      if (disposeState == null) {
         ManipulateSession.dispose(null, session.getId(), id);
       } else {
-        synchronized (AJAXQueryServlet.sessionLock(session.getId())) {
+        EvalEngine disposeEngine = disposeState.engine;
+        synchronized (disposeState.lock) {
           try {
             EvalEngine.set(disposeEngine);
             ManipulateSession.dispose(disposeEngine, session.getId(), id);
@@ -131,18 +132,20 @@ public class AJAXManipulateServlet extends HttpServlet {
         PrintStream errors = new PrintStream(werrors);
         ThreadLocalNotifierClosable c = ServletLogging.setLogEventNotifier(outs, errors)) {
 
-      EvalEngine engine = AJAXQueryServlet.ENGINES.get(session.getId());
-      if (engine == null) {
+      // the engine and its lock are taken together; see AJAXQueryServlet#stateOf
+      AJAXQueryServlet.SessionState state = AJAXQueryServlet.stateOf(session.getId());
+      if (state == null) {
         out.println(JSONBuilder.createJSONErrorString(
             "This interactive output has expired - evaluate the input again."));
         return;
       }
+      EvalEngine engine = state.engine;
       engine.setOutPrintStream(outs);
       engine.setErrorPrintStream(errors);
 
-      // see AJAXQueryServlet#sessionLock: one evaluation per session at a time, and never on the
-      // engine's own monitor - a time budgeted evaluation copies the engine from its worker thread
-      synchronized (AJAXQueryServlet.sessionLock(session.getId())) {
+      // one evaluation per session at a time, and never on the engine's own monitor - a time
+      // budgeted evaluation copies the engine from its worker thread
+      synchronized (state.lock) {
         out.println(evaluate(engine, spec, bindings, buttonIndex, bodyButtonIndex, bodyControlIndex,
             bodyControlValue, id, outWriter, errorWriter));
       }

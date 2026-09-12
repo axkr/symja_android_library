@@ -64,39 +64,77 @@ import jakarta.servlet.http.HttpSession;
 public class AJAXQueryServlet extends HttpServlet {
   private static final long serialVersionUID = 6265703737413093134L;
 
-  static final Map<String, EvalEngine> ENGINES =
-      java.util.Collections.synchronizedMap(new HashMap<String, EvalEngine>());
-
   /**
-   * One lock per browser session, held for the whole of an evaluation.
+   * What one browser session holds on this instance: its engine, and the lock that serializes
+   * evaluations against it.
    *
    * <p>
-   * The engine carries the entire session state and a Manipulate widget can post while a query is
-   * still running, so two evaluations must not enter it at once. The lock is deliberately NOT the
-   * engine itself: {@link EvalEngine#copy()} is synchronized, and an evaluation under a time budget
-   * - which is how Integrate runs its Rubi rules - copies the engine from its worker thread. Locking
-   * the engine here would leave that worker waiting for a monitor this thread holds until the
-   * request times out.
+   * The two are one object because they have to be evicted as one. They used to be two maps, and
+   * an eviction from the lock map alone would have handed the next request a fresh lock for an
+   * engine another thread was already inside - two evaluations in one engine, which is exactly
+   * what the lock exists to prevent. Paired, an eviction gives the next request a new engine
+   * <em>and</em> a new lock, and the evaluation still running keeps the pair it started with.
+   *
+   * <p>
+   * The lock is deliberately NOT the engine itself: {@link EvalEngine#copy()} is synchronized, and
+   * an evaluation under a time budget - which is how Integrate runs its Rubi rules - copies the
+   * engine from its worker thread. Locking the engine here would leave that worker waiting for a
+   * monitor this thread holds until the request times out.
    */
-  private static final Map<String, Object> SESSION_LOCKS =
-      java.util.Collections.synchronizedMap(new HashMap<String, Object>());
+  static final class SessionState {
+    final EvalEngine engine;
+    final Object lock = new Object();
+
+    /**
+     * Whatever a deployment needs to remember about this session for as long as this instance
+     * holds its engine, and no longer.
+     *
+     * <p>
+     * It lives here rather than in a map of the deployment's own so that the two cannot fall out
+     * of step: a note about an engine that has been evicted is worse than no note, because the
+     * next request builds a new engine and the stale note describes the old one. Written and read
+     * only while {@link #lock} is held, which every caller of {@link #beforeEvaluation} and
+     * {@link #afterEvaluation} does.
+     */
+    Object attachment;
+
+    SessionState(EvalEngine engine) {
+      this.engine = engine;
+    }
+  }
+
+  /**
+   * The sessions this instance is holding state for, most recently used last, bounded.
+   *
+   * <p>
+   * See {@link SessionRegistry} for why a bound is needed at all rather than relying on
+   * {@link SymjaSessionListener} to prune this.
+   */
+  static final Map<String, SessionState> SESSIONS =
+      java.util.Collections.synchronizedMap(SessionRegistry.bySession("engines"));
 
   /** Release the engine and the evaluation lock of a session that has ended. */
   static void removeSession(String sessionID) {
-    ENGINES.remove(sessionID);
-    SESSION_LOCKS.remove(sessionID);
+    SESSIONS.remove(sessionID);
   }
 
-  /** The evaluation lock of a session, created on first use. */
-  static Object sessionLock(String sessionID) {
-    synchronized (SESSION_LOCKS) {
-      Object lock = SESSION_LOCKS.get(sessionID);
-      if (lock == null) {
-        lock = new Object();
-        SESSION_LOCKS.put(sessionID, lock);
-      }
-      return lock;
-    }
+  /** The engine of a session, or <code>null</code> if this instance is not holding one. */
+  static EvalEngine engineOf(String sessionID) {
+    SessionState state = SESSIONS.get(sessionID);
+    return state == null ? null : state.engine;
+  }
+
+  /**
+   * The engine and evaluation lock of a session, or <code>null</code> if this instance is not
+   * holding them.
+   *
+   * <p>
+   * Callers that both evaluate and lock must take the pair from here once, rather than asking for
+   * the engine and the lock separately: between two lookups the entry can be evicted, and they
+   * would then be locking something that does not guard the engine they hold.
+   */
+  static SessionState stateOf(String sessionID) {
+    return SESSIONS.get(sessionID);
   }
 
   protected static final String VISJS_IFRAME = //
@@ -268,29 +306,49 @@ public class AJAXQueryServlet extends HttpServlet {
         PrintStream errors = new PrintStream(werrors);
         ThreadLocalNotifierClosable c = ServletLogging.setLogEventNotifier(outs, errors);) {
 
-      EvalEngine engine = ENGINES.get(session.getId());
-      if (engine == null) {
-        engine = new EvalEngine(session.getId(), Config.DEFAULT_RECURSION_LIMIT,
-            Config.DEFAULT_ITERATION_LIMIT, outs, errors, isRelaxedSyntax());
-        engine.setOutListDisabled(false, (short) 100);
-        engine.setPackageMode(false);
-        // the file system permission is per session here, not the global Config switch, and it
-        // comes with the directory every user supplied file name is resolved inside
-        Path sandboxRoot = SessionSandbox.rootFor(session.getId());
-        if (sandboxRoot != null) {
-          engine.setFileSandboxRoot(sandboxRoot);
-          engine.setFileSystemEnabled(true);
+      SessionState state;
+      boolean freshEngine = false;
+      synchronized (SESSIONS) {
+        state = SESSIONS.get(session.getId());
+        if (state == null) {
+          freshEngine = true;
+          EvalEngine fresh = new EvalEngine(session.getId(), Config.DEFAULT_RECURSION_LIMIT,
+              Config.DEFAULT_ITERATION_LIMIT, outs, errors, isRelaxedSyntax());
+          fresh.setOutListDisabled(false, (short) 100);
+          fresh.setPackageMode(false);
+          // the file system permission is per session here, not the global Config switch, and it
+          // comes with the directory every user supplied file name is resolved inside
+          Path sandboxRoot = SessionSandbox.rootFor(session.getId());
+          if (sandboxRoot != null) {
+            fresh.setFileSandboxRoot(sandboxRoot);
+            fresh.setFileSystemEnabled(true);
+          }
+          state = new SessionState(fresh);
+          SESSIONS.put(session.getId(), state);
         }
-        ENGINES.put(session.getId(), engine);
-      } else {
-        engine.setOutPrintStream(outs);
-        engine.setErrorPrintStream(errors);
       }
+      EvalEngine engine = state.engine;
+      engine.setOutPrintStream(outs);
+      engine.setErrorPrintStream(errors);
       // One evaluation per session at a time. The engine carries the whole session state, and a
       // Manipulate widget can post while a query is still running; letting two evaluations into it
       // at once corrupts that state.
-      synchronized (sessionLock(session.getId())) {
+      synchronized (state.lock) {
+        // an engine this request built has nothing in it yet, which is the only moment stored
+        // state can be restored into it without overwriting something newer
+        beforeEvaluation(request, engine, freshEngine);
+        // before evaluating, not after: the notice goes into the same response as the result, and
+        // the evaluation the caller just sent runs against a context that is within its limit
+        int dropped = SessionRegistry.enforceDataLimit(engine);
+        if (dropped > 0) {
+          errors.println("This session had " + dropped + " definitions, more than the "
+              + SessionRegistry.MAX_SYMBOLS_PER_SESSION
+              + " a session may keep here, and has been reset.");
+        }
         result = calculateString(engine, expression, numericMode, function, outWriter, errorWriter);
+        if (result != null && result.length > 1) {
+          result[1] = afterEvaluation(request, engine, result[1]);
+        }
       }
     } finally {
       // tear down associated ThreadLocal from EvalEngine
@@ -801,6 +859,68 @@ public class AJAXQueryServlet extends HttpServlet {
       return sbuf.toString();
     }
     return "";
+  }
+
+  /**
+   * The note this deployment last left about the session of <code>request</code>, or
+   * <code>null</code> if there is none.
+   *
+   * <p>
+   * A place for {@link #beforeEvaluation} to leave something that {@link #afterEvaluation} needs,
+   * and that the next request of the same session needs after that - what was last persisted, for
+   * instance. It is discarded at the same moment as the session's engine, so a note can never
+   * outlive and then misdescribe the engine it was about.
+   */
+  protected final Object sessionAttachment(HttpServletRequest request) {
+    SessionState state = stateForRequest(request);
+    return state == null ? null : state.attachment;
+  }
+
+  /** Leave a note about the session of <code>request</code>; see {@link #sessionAttachment}. */
+  protected final void setSessionAttachment(HttpServletRequest request, Object attachment) {
+    SessionState state = stateForRequest(request);
+    if (state != null) {
+      state.attachment = attachment;
+    }
+  }
+
+  private static SessionState stateForRequest(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    return session == null ? null : SESSIONS.get(session.getId());
+  }
+
+  /**
+   * Called with a session's engine immediately before an evaluation, holding that session's
+   * evaluation lock.
+   *
+   * <p>
+   * The engine of a session lives in this instance's memory and nowhere else, which is fine for a
+   * server that sees every request of a session and is not fine behind a load balancer that does
+   * not, or once {@link SessionRegistry} evicts it. A deployment that can store session state
+   * somewhere durable restores it here. Nothing in this module can do that - where "durable" is
+   * depends entirely on where the application runs - so the base implementation does nothing.
+   *
+   * @param freshEngine <code>true</code> when this request built the engine, which is the only
+   *        moment at which restoring into it cannot overwrite newer state
+   */
+  protected void beforeEvaluation(HttpServletRequest request, EvalEngine engine,
+      boolean freshEngine) {
+    // nothing to do; see the javadoc
+  }
+
+  /**
+   * Called after an evaluation, holding the same lock, with the JSON about to be sent.
+   *
+   * <p>
+   * The counterpart of {@link #beforeEvaluation}: a deployment that restores state there persists
+   * it here, and may add a notice to the response saying so.
+   *
+   * @param resultJSON the response as built so far
+   * @return the response to send, which may be <code>resultJSON</code> unchanged
+   */
+  protected String afterEvaluation(HttpServletRequest request, EvalEngine engine,
+      String resultJSON) {
+    return resultJSON;
   }
 
   @Override

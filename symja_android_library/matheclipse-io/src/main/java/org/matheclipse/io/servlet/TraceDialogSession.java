@@ -150,7 +150,7 @@ public class TraceDialogSession {
 
   /** The open dialogs of each session, oldest first so the cache can drop from the front. */
   private static final Map<String, Map<String, Dialog>> SESSIONS =
-      new LinkedHashMap<String, Map<String, Dialog>>();
+      SessionRegistry.bySession("stepped-through evaluations");
 
   /** Counter for the dialog ids; an id only has to be unique inside one session. */
   private static long dialogCounter = 0L;

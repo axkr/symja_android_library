@@ -56,7 +56,7 @@ public class AJAXTraceDialogServlet extends HttpServlet {
       return;
     }
 
-    EvalEngine engine = AJAXQueryServlet.ENGINES.get(sessionID);
+    EvalEngine engine = AJAXQueryServlet.engineOf(sessionID);
     if (engine == null) {
       out.println(JSONBuilder.createJSONErrorString(
           "This derivation has expired - evaluate the input again."));

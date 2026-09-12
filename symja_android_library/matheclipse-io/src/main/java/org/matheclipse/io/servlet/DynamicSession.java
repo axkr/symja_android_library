@@ -87,7 +87,7 @@ public class DynamicSession {
 
   /** The cells of each session, oldest first so the cache can drop from the front. */
   private static final Map<String, Map<String, Cell>> SESSIONS =
-      new LinkedHashMap<String, Map<String, Cell>>();
+      SessionRegistry.bySession("live Dynamic cells");
 
   /**
    * How many writes a session has seen.
@@ -97,7 +97,8 @@ public class DynamicSession {
    * lost - needs to know whether it missed anything. It sends the count it last saw and is told
    * everything that changed since.
    */
-  private static final Map<String, Long> GENERATIONS = new LinkedHashMap<String, Long>();
+  private static final Map<String, Long> GENERATIONS =
+      SessionRegistry.bySession("Dynamic write counters");
 
   /** Counter for the cell ids; an id only has to be unique inside one session. */
   private static long cellCounter = 0L;

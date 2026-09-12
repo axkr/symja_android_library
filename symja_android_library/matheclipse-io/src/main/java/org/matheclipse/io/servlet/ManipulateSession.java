@@ -37,7 +37,7 @@ public class ManipulateSession {
 
   /** Widgets by session id, each an access ordered map of widget id to specification. */
   private static final Map<String, Map<String, ManipulateSpec>> SESSIONS =
-      new LinkedHashMap<String, Map<String, ManipulateSpec>>();
+      SessionRegistry.bySession("Manipulate widgets");
 
   /** Counter for the widget ids; the id only has to be unique inside one session. */
   private static long widgetCounter = 0L;
