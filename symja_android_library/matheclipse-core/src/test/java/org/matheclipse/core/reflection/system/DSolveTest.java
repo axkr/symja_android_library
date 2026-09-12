@@ -564,6 +564,29 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->-1/(4*E^x)+E^x/4+C(1)*Cos(x)+C(2)*Sin(x)}}");
   }
 
+  @Test
+  public void testDSolveConjugateRootsInPolarForm() {
+    // The roots of r^4 + 4 come back from Roots as (-1)^(1/4)*Sqrt(2) and its relatives, which are
+    // 1+I, -1-I, -1+I and 1-I. In that spelling the conjugate of one was not recognizably another,
+    // so the basis was four complex exponentials instead of a real one.
+    check("DSolve(y''''(x) + 4*y(x) == 0, y(x), x)", //
+        "{{y(x)->E^x*C(1)*Cos(x)+(C(3)*Cos(x))/E^x+E^x*C(2)*Sin(x)+(C(4)*Sin(x))/E^x}}");
+    checkResidual("y''''(x) + 4*y(x) == 0", "y''''(x) + 4*y(x)",
+        "{C(1)->3/7, C(2)->5/11, C(3)->2/9, C(4)->7/13, x->13/10}");
+    check("DSolve(y''''(x) + y(x) == 0, y(x), x)", //
+        "{{y(x)->(C(1)*Cos(x/Sqrt(2)))/E^(x/Sqrt(2))+E^(x/Sqrt(2))*C(3)*Cos(x/Sqrt(2))+(C(\n"
+            + "2)*Sin(x/Sqrt(2)))/E^(x/Sqrt(2))+E^(x/Sqrt(2))*C(4)*Sin(x/Sqrt(2))}}");
+    checkResidual("y''''(x) + y(x) == 0", "y''''(x) + y(x)",
+        "{C(1)->3/7, C(2)->5/11, C(3)->2/9, C(4)->7/13, x->-7/10}");
+    // the cube roots of unity, the same spelling one order lower
+    check("DSolve(y'''(x) - y(x) == 0, y(x), x)", //
+        "{{y(x)->E^x*C(1)+(C(2)*Cos(1/2*Sqrt(3)*x))/E^(x/2)+(C(3)*Sin(1/2*Sqrt(3)*x))/E^(x/\n"
+            + "2)}}");
+    // roots already written with their real and imaginary parts apart are unchanged
+    check("DSolve(y''(x) + 2*y'(x) + 5*y(x) == 0, y(x), x)", //
+        "{{y(x)->(C(1)*Cos(2*x))/E^x+(C(2)*Sin(2*x))/E^x}}");
+  }
+
   /** {@link #checkResidual} for an equation in <code>t</code>. */
   private void checkResidualIn(String equation, String residual, String point) {
     check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual

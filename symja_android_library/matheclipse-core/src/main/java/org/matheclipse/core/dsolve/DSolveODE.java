@@ -2364,7 +2364,7 @@ final class DSolveODE {
       if (!root.isFree(S.Root, true) || !root.isFree(r, true)) {
         return null;
       }
-      roots.add(root);
+      roots.add(rectangular(root, engine));
     }
     if (roots.isEmpty()) {
       return null;
@@ -2419,6 +2419,30 @@ final class DSolveODE {
       }
     }
     return basis.toArray(new IExpr[0]);
+  }
+
+  /**
+   * The root written as <code>a + b*I</code> when it was given as a power of <code>-1</code>.
+   *
+   * <p>
+   * The roots of <code>r^4 + 4</code> come back as <code>(-1)^(1/4)*Sqrt(2)</code> and its
+   * relatives. Those are <code>1+I</code>, <code>-1-I</code>, <code>-1+I</code> and <code>1-I</code>,
+   * but the conjugate of one is not recognizably the same number as another in that spelling, so no
+   * pair was found and the basis came out as complex exponentials. A root which is already written
+   * with its real and imaginary parts apart, or which is real, is returned as it is.
+   */
+  private static IExpr rectangular(IExpr root, EvalEngine engine) {
+    if (root.isFree(x -> x.isPower() && x.base().isMinusOne() && x.exponent().isRational(), true)) {
+      return root;
+    }
+    IExpr expanded = engine.evaluate(F.ComplexExpand(root));
+    if (expanded.isPresent() && expanded.isFree(
+        x -> x.isAST(S.Re) || x.isAST(S.Im) || x.isAST(S.Arg) || x.isAST(S.Abs)
+            || x.isAST(S.ComplexExpand) || (x.isPower() && x.base().isMinusOne()),
+        true)) {
+      return expanded;
+    }
+    return root;
   }
 
   /**
