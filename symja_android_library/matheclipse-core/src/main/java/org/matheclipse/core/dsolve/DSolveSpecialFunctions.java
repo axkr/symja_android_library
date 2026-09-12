@@ -620,15 +620,15 @@ final class DSolveSpecialFunctions {
    * <code>Sin(x)/x</code> and <code>Cos(x)/x</code>.
    *
    * <p>
-   * Only for the equation the caller asked about, not for the ones the methods below reach on their
-   * own. An equation arriving here a second time has already been rewritten once, and the powers
-   * the two rewritings leave share a base without being collected, which the verification of the
-   * answer then cannot finish.
+   * Only for an equation nothing has rewritten yet, not for the ones the methods below reach on
+   * their own. An equation arriving here a second time has already been rewritten once, and the
+   * powers the two rewritings leave share a base without being collected, which the verification of
+   * the answer then cannot finish.
    */
   private static IExpr[] normalFormPrePass(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    if (p.isZero() || ctx.depth() > 1) {
+    if (p.isZero() || !ctx.mayRewrite()) {
       return null;
     }
     DSolveNormalForm normalForm = DSolveNormalForm.of(p, q, xVar, MAX_POTENTIAL_LEAF_COUNT, ctx);

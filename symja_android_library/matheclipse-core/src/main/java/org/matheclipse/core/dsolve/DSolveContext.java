@@ -36,6 +36,7 @@ final class DSolveContext {
    */
   private static final class State {
     int depth;
+    int rewritingBase;
     boolean linearizableActive;
     long deadlineNanos;
   }
@@ -87,6 +88,40 @@ final class DSolveContext {
    */
   int depth() {
     return state.depth;
+  }
+
+  /**
+   * Whether the equation the caller is looking at may have its coefficients rewritten before the
+   * solvers are asked about it.
+   *
+   * <p>
+   * Rewriting is worth doing once, on the equation as it was handed over, and doing it a second
+   * time inside a recursion hands the inner method a form it did not ask for. That is normally the
+   * same thing as being at the top of the cascade, which is why this used to be read off
+   * {@link #depth()}. It is not the same thing when a method recurses on an equation it wrote down
+   * itself without rewriting anything -- variation of parameters asking about the homogeneous
+   * equation beside the one it was given -- and such a method says so with
+   * {@link #enterUnrewritten()}.
+   */
+  boolean mayRewrite() {
+    return state.depth <= state.rewritingBase + 1;
+  }
+
+  /**
+   * Says that the sub-solve about to start is being handed an equation which nothing has rewritten,
+   * so that it may rewrite it as the top of the cascade would.
+   *
+   * @return what to hand back to {@link #leaveUnrewritten(int)} afterwards
+   */
+  int enterUnrewritten() {
+    int previous = state.rewritingBase;
+    state.rewritingBase = state.depth;
+    return previous;
+  }
+
+  /** Takes back what {@link #enterUnrewritten()} allowed. */
+  void leaveUnrewritten(int previous) {
+    state.rewritingBase = previous;
   }
 
   /**

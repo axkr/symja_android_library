@@ -1885,7 +1885,7 @@ final class DSolveODE {
         // Clearing denominators and a common factor is worth doing on the equation which was
         // asked about, and only there: inside a recursion it costs time and hands the inner
         // method a form it did not ask for.
-        LinearODEForm normalized = ctx.depth() == 1 ? lf.normalized(xVar, engine) : lf;
+        LinearODEForm normalized = ctx.mayRewrite() ? lf.normalized(xVar, engine) : lf;
 
         IExpr linearSol = solveLinearConstantCoefficients(normalized, xVar, C_1, ctx);
         if (linearSol.isPresent())
@@ -2795,8 +2795,17 @@ final class DSolveODE {
         homogeneous.append(F.Times(lf.a[k], derivative));
       }
     }
-    IAST branches = solveSubODE(F.Equal(engine.evaluate(homogeneous), F.C0), xVar, yFunction, C_1,
-        ctx);
+    // The homogeneous equation is written down here rather than rewritten from anything, so the
+    // methods which rewrite an equation once may treat it as the one they were asked about. Several
+    // of them -- the normal form which removes the first derivative, above all -- solve it and
+    // nothing else does.
+    int rewriting = ctx.enterUnrewritten();
+    IAST branches;
+    try {
+      branches = solveSubODE(F.Equal(engine.evaluate(homogeneous), F.C0), xVar, yFunction, C_1, ctx);
+    } finally {
+      ctx.leaveUnrewritten(rewriting);
+    }
     if (branches.argSize() != 1) {
       return F.NIL;
     }
@@ -2830,7 +2839,6 @@ final class DSolveODE {
   }
 
   /**
-   * A particular solution of an inhomogeneous linear equation by variation of parameters:  /**
    * A particular solution of an inhomogeneous linear equation by variation of parameters:
    * <code>y_p == Sum(y_i*Integrate(W_i/W, x))</code>, where <code>W</code> is the determinant of
    * the fundamental matrix and <code>W_i</code> that determinant with its i-th column replaced by

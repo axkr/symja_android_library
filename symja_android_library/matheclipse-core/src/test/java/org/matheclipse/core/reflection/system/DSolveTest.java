@@ -525,6 +525,26 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "(t^2 - 1)*y''(t) - 2*t*y'(t) + 2*y(t) - (t^2 - 1)", "{C(1)->3/7, C(2)->5/11, t->3/10}");
   }
 
+  @Test
+  public void testDSolveVariationOfParametersRewritesTheHomogeneousEquation() {
+    // The homogeneous equation here is solved by the one method which first rewrites the equation
+    // to remove its first derivative, and that rewriting was allowed only for the equation the
+    // user asked about. Variation of parameters writes the homogeneous equation down itself
+    // without rewriting anything, so it may be rewritten there too -- without which the forced
+    // equation was declined although its homogeneous part was solved a moment before.
+    check("DSolve(y''(x) + 4*x*y'(x) + (4*x^2 + 2)*y(x) == 8*E^(-x*(x + 2)), y(x), x)", //
+        "{{y(x)->2/E^(2*x+x^2)+C(1)/E^x^2+(x*C(2))/E^x^2}}");
+    check("Simplify(D(2*E^(-x*(x + 2)), {x, 2}) + 4*x*D(2*E^(-x*(x + 2)), x)"
+        + " + (4*x^2 + 2)*2*E^(-x*(x + 2)) - 8*E^(-x*(x + 2)))", //
+        "0");
+    // a second equation of the same shape, whose homogeneous basis is (C(1) + C(2)*x)*E^(-x^2/2)
+    check("DSolve(y''(x) + 2*x*y'(x) + (x^2 + 1)*y(x) == E^(-x^2/2 - x), y(x), x)", //
+        "{{y(x)->E^(-x-x^2/2)+C(1)/E^(x^2/2)+(x*C(2))/E^(x^2/2)}}");
+    // the homogeneous equation itself is unchanged
+    check("DSolve(y''(x) + 4*x*y'(x) + (4*x^2 + 2)*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/E^x^2+(x*C(2))/E^x^2}}");
+  }
+
   /** {@link #checkResidual} for an equation in <code>t</code>. */
   private void checkResidualIn(String equation, String residual, String point) {
     check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual
