@@ -9,7 +9,9 @@ PolyLog(2,1-I)=Pi^2/16-I*Catalan-I*Pi*(Log(2)/4),
 PolyLog(2,1+I)=Pi^2/16+I*Catalan+I*Pi*(Log(2)/4),
 PolyLog(3,1/2)=(1/24)*(-2*Pi^2*Log(2)+4*Log(2)^3+21*Zeta(3)),
 
-PolyLog(i_Integer, z_) := Module({n=(-i)}, Sum(Sum((-1)^(k + 1)*Binomial(n+1, k-1)*(m-k+1)^n, {k, 1, m}) * z^m, {m, 1, n}) / (1-z)^(n+1) /; i<0 ),
+(* PolyLog(i_Integer, z_) for i<0 is SpecialFunctions.PolyLog#polyLogNegativeIntegerOrder: the same
+   Eulerian numbers over (1-z)^(n+1), reached by their recurrence rather than by summing the
+   explicit formula for each of them as an expression - which did not finish at i=-128. *)
 
 PolyLog(Undefined, y_):=Undefined,
 PolyLog(x_, Undefined):=Undefined,

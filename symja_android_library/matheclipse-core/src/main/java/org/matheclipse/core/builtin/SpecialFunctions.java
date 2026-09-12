@@ -21,6 +21,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
+import java.math.BigInteger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -2154,6 +2155,15 @@ public class SpecialFunctions {
   private static class PolyLog extends AbstractFunctionEvaluator
       implements IFunctionExpand {
 
+    /**
+     * Beyond this the Eulerian numbers themselves are the cost: the table is <code>n</code> integers
+     * whose sum is <code>n!</code>, built in <code>n^2</code> steps. Measured against
+     * <code>PolyLog(-n, -3/2)</code>: 2 ms at 128, 213 ms at 1000, 1.9 s at 2000. The line is drawn
+     * at the largest order Mathematica was seen to answer; past it <code>PolyLog(-n, z)</code> is
+     * left unevaluated rather than begun.
+     */
+    private static final int MAX_NEGATIVE_POLYLOG_ORDER = 1000;
+
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
@@ -2274,8 +2284,43 @@ public class SpecialFunctions {
           // arg2/(arg2 - 1)^2
           return Times(z, Power(Plus(C1, Negate(z)), -2));
         }
+        if (n.isInteger() && n.isNegative()) {
+          int order = n.negate().toIntDefault();
+          if (order > 1 && order <= MAX_NEGATIVE_POLYLOG_ORDER) {
+            return polyLogNegativeIntegerOrder(order, z);
+          }
+        }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>PolyLog(-n, z)</code> for an integer <code>n > 1</code>: the Eulerian numbers
+     * <code>A(n,k)</code> as the coefficients of a polynomial over <code>(1-z)^(n+1)</code>.
+     *
+     * <p>
+     * The same closed form the <code>PolyLogRules.m</code> rule writes, and the reason it is here:
+     * the rule reaches each Eulerian number through the explicit double sum, which is a power of a
+     * big integer per term built as an expression, and then leaves <code>Together</code> a
+     * polynomial of degree <code>n</code> over a rational to cancel. <code>PolyLog(-128, -3/2)</code>
+     * did not finish. The recurrence below is the same arithmetic without the expressions.
+     */
+    private static IExpr polyLogNegativeIntegerOrder(int order, IExpr z) {
+      BigInteger[] eulerian = new BigInteger[order];
+      java.util.Arrays.fill(eulerian, BigInteger.ZERO);
+      eulerian[0] = BigInteger.ONE;
+      for (int row = 2; row <= order; row++) {
+        // A(n,k) = (k+1)*A(n-1,k) + (n-k)*A(n-1,k-1), downwards so that A(n-1,k-1) is still there
+        for (int k = row - 1; k > 0; k--) {
+          eulerian[k] = BigInteger.valueOf(k + 1L).multiply(eulerian[k])
+              .add(BigInteger.valueOf(row - (long) k).multiply(eulerian[k - 1]));
+        }
+      }
+      IASTAppendable numerator = F.PlusAlloc(order);
+      for (int k = 0; k < order; k++) {
+        numerator.append(F.Times(F.ZZ(eulerian[k]), F.Power(z, F.ZZ(order - k))));
+      }
+      return F.Times(numerator, F.Power(F.Subtract(F.C1, z), F.ZZ(-(order + 1L))));
     }
 
     private IExpr polyLogSymbolic(IExpr n, IExpr p, IExpr z) {

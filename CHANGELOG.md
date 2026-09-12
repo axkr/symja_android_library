@@ -4,6 +4,14 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `PolyLog(-n, z)` for a positive integer `n` is the Eulerian numbers over `(1-z)^(n+1)`, and the
+  `PolyLogRules.m` rule reached each of those through the explicit double sum -- a power of a big
+  integer per term, built as an expression, with a degree-`n` polynomial over a rational left for
+  `Together` to cancel. `PolyLog(-40, -3/2)` took 252 ms and `PolyLog(-128, -3/2)` did not finish.
+  The recurrence, in Java, is the same arithmetic without the expressions: 5 ms and 2 ms, the
+  latter matching Mathematica digit for digit. Orders past 1000 -- 213 ms, and a fraction with
+  thousands of digits -- are left unevaluated rather than begun.
+
 - `GammaRegularized(a, z)` is zero at every negative integer `a`, where `Gamma(a)` has a pole, and
   said so only while the integer was still exact. In numeric mode `-2147483648` reaches the rule as
   `-2.147483648*^9`, the test on the type missed it, and `Gamma(a,z)/Gamma(a)` sent apfloat off for
