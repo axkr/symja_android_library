@@ -109,7 +109,7 @@ public class AJAXDynamicServlet extends HttpServlet {
     WriterOutputStream werrors = new WriterOutputStream(errorWriter);
     try (PrintStream outs = new PrintStream(wouts);
         PrintStream errors = new PrintStream(werrors);
-        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors)) {
+        ThreadLocalNotifierClosable c = ServletLogging.setLogEventNotifier(outs, errors)) {
 
       engine.setOutPrintStream(outs);
       engine.setErrorPrintStream(errors);

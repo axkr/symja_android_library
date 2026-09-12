@@ -19,49 +19,57 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
   }
 
   @Override
-  protected synchronized void initialization() {
-    if (INITIALIZED) {
-      return;
+  protected void initialization() {
+    // the lock is on the class, not the instance: a container is free to build more than one
+    // servlet instance, and two instances synchronizing on themselves do not exclude each other.
+    // INITIALIZED is set at the end for the same reason - it used to be set first, so a second
+    // caller returned at once while F.initSymja() was still running and evaluated against a half
+    // built symbol table. Setting it last also means a failed initialization is retried rather
+    // than remembered as done.
+    synchronized (MMAAJAXQueryServlet.class) {
+      if (INITIALIZED) {
+        return;
+      }
+      ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+      ToggleFeature.COMPILE = true;
+      ToggleFeature.COMPILE_PRINT = true;
+      Config.UNPROTECT_ALLOWED = false;
+      // disable threads for JAS only on google appengine
+      Config.JAS_NO_THREADS = false;
+      Config.BUILTIN_PROTECTED = ISymbol.NOATTRIBUTE;
+      Config.JAVA_UNSAFE = true;
+      Config.SHORTEN_STRING_LENGTH = 1024;
+      // Config.THREAD_FACTORY =
+      // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+      Config.MATHML_TRIG_LOWERCASE = false;
+      // Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
+      // Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
+      // Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
+      // Config.MAX_INPUT_LEAVES = 1000L;
+      // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+      // Config.MAX_POLYNOMIAL_DEGREE = 100;
+      Config.DEFAULT_ITERATION_LIMIT = 10_000;
+      Config.DEFAULT_RECURSION_LIMIT = 1_024;
+
+      EvalEngine engine = new EvalEngine(isRelaxedSyntax());
+      EvalEngine.set(engine);
+      // engine.setPackageMode(true);
+
+      ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+      // on only while IOInit registers the evaluators that gate on it; the permission is per session
+      // from then on - see AJAXQueryServlet#initialization
+      Config.FILESYSTEM_ENABLED = true;
+      F.initSymja();
+      IOInit.init();
+      Config.FILESYSTEM_ENABLED = false;
+      SessionSandbox.sweepOrphans();
+      engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
+      engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
+
+      // Config.JAS_NO_THREADS = true;
+      // MMAAJAXQueryServlet.log.info(servlet + " initialized");
+      INITIALIZED = true;
+      System.out.println("Symja version " + Config.VERSION + " initialized");
     }
-    INITIALIZED = true;
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
-    ToggleFeature.COMPILE = true;
-    ToggleFeature.COMPILE_PRINT = true;
-    Config.UNPROTECT_ALLOWED = false;
-    // disable threads for JAS only on google appengine
-    Config.JAS_NO_THREADS = false;
-    Config.BUILTIN_PROTECTED = ISymbol.NOATTRIBUTE;
-    Config.JAVA_UNSAFE = true;
-    Config.SHORTEN_STRING_LENGTH = 1024;
-    // Config.THREAD_FACTORY =
-    // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
-    Config.MATHML_TRIG_LOWERCASE = false;
-    // Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
-    // Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
-    // Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
-    // Config.MAX_INPUT_LEAVES = 1000L;
-    // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-    // Config.MAX_POLYNOMIAL_DEGREE = 100;
-    Config.DEFAULT_ITERATION_LIMIT = 10_000;
-    Config.DEFAULT_RECURSION_LIMIT = 1_024;
-
-    EvalEngine engine = new EvalEngine(isRelaxedSyntax());
-    EvalEngine.set(engine);
-    // engine.setPackageMode(true);
-
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
-    // on only while IOInit registers the evaluators that gate on it; the permission is per session
-    // from then on - see AJAXQueryServlet#initialization
-    Config.FILESYSTEM_ENABLED = true;
-    F.initSymja();
-    IOInit.init();
-    Config.FILESYSTEM_ENABLED = false;
-    SessionSandbox.sweepOrphans();
-    engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
-    engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
-
-    // Config.JAS_NO_THREADS = true;
-    // MMAAJAXQueryServlet.log.info(servlet + " initialized");
-    System.out.println("Symja version " + Config.VERSION + " initialized");
   }
 }

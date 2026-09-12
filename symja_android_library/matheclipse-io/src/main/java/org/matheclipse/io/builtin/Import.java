@@ -154,9 +154,9 @@ public class Import extends AbstractEvaluator {
         case EXPRESSIONJSON:
           return expressionJSONImport(fileName);
         case FASTA:
-          return org.matheclipse.bio.io.BioSequenceImport.importFASTA(file, false);
+          return importBioSequence(format, file, engine);
         case GENBANK:
-          return org.matheclipse.bio.io.BioSequenceImport.importGenBank(file, false);
+          return importBioSequence(format, file, engine);
         case JSON:
           if (dataFile != null) {
             return jsonImport(dataFile, false);
@@ -287,4 +287,27 @@ public class Import extends AbstractEvaluator {
     return F.stringx(str);
   }
 
+
+  /**
+   * A FASTA or GenBank file, read by matheclipse-bio.
+   *
+   * <p>
+   * matheclipse-bio is optional: it carries biojava, which a deployment that has no use for
+   * sequence data is entitled to leave out - a war served from a shared instance, for one. Calling
+   * into it directly made an absent module a <code>NoClassDefFoundError</code> thrown at whoever
+   * typed the <code>Import</code>. This says so instead, the way the image and dataset formats
+   * above already fall back when their module is missing.
+   */
+  private static IExpr importBioSequence(Extension format, File file, EvalEngine engine) {
+    try {
+      return format == Extension.FASTA
+          ? org.matheclipse.bio.io.BioSequenceImport.importFASTA(file, false)
+          : org.matheclipse.bio.io.BioSequenceImport.importGenBank(file, false);
+    } catch (LinkageError missing) {
+      LOGGER.log(engine.getLogLevel(),
+          "Import: the {} format needs the matheclipse-bio module, which is not on the classpath",
+          format);
+      return F.NIL;
+    }
+  }
 }

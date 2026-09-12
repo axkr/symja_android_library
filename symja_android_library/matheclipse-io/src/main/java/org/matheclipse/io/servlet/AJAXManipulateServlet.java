@@ -129,7 +129,7 @@ public class AJAXManipulateServlet extends HttpServlet {
     WriterOutputStream werrors = new WriterOutputStream(errorWriter);
     try (PrintStream outs = new PrintStream(wouts);
         PrintStream errors = new PrintStream(werrors);
-        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors)) {
+        ThreadLocalNotifierClosable c = ServletLogging.setLogEventNotifier(outs, errors)) {
 
       EvalEngine engine = AJAXQueryServlet.ENGINES.get(session.getId());
       if (engine == null) {

@@ -266,7 +266,7 @@ public class AJAXQueryServlet extends HttpServlet {
     WriterOutputStream werrors = new WriterOutputStream(errorWriter);
     try (PrintStream outs = new PrintStream(wouts);
         PrintStream errors = new PrintStream(werrors);
-        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors);) {
+        ThreadLocalNotifierClosable c = ServletLogging.setLogEventNotifier(outs, errors);) {
 
       EvalEngine engine = ENGINES.get(session.getId());
       if (engine == null) {
@@ -305,6 +305,11 @@ public class AJAXQueryServlet extends HttpServlet {
   private String[] calculateString(EvalEngine engine, final String inputString,
       final String numericMode, final String function, StringBuilderWriter outWriter,
       StringBuilderWriter errorWriter) {
+    // The engine belongs to the session and outlives this request. If the previous request timed
+    // out, its stop flag may still be set - the flag is cleared by the evaluation loop that acts
+    // on it, and an evaluation abandoned on a thread that has already ended never reaches that
+    // loop. Clearing here means a leftover abort cannot take out the next thing the user types.
+    engine.clearStopRequest();
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     Future<String[]> task = executor.submit(() -> {
@@ -326,12 +331,17 @@ public class AJAXQueryServlet extends HttpServlet {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
+      engine.stopRequest();
+      Thread.currentThread().interrupt();
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation interrupted!");
     } catch (ExecutionException | TimeoutException e) {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
-      // engine.setStopRequested(true);
+      // task.cancel(true) below interrupts the worker, but a Symja evaluation does not watch the
+      // thread's interrupt status - it watches this flag. Without it the abandoned evaluation
+      // keeps burning a core on an instance that is still answering everyone else.
+      engine.stopRequest();
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!");
     } finally {
       if (!task.isDone() && !task.cancel(true)) {
@@ -799,46 +809,54 @@ public class AJAXQueryServlet extends HttpServlet {
     initialization();
   }
 
-  protected synchronized void initialization() {
-    if (INITIALIZED) {
-      return;
+  protected void initialization() {
+    // the lock is on the class, not the instance: a container is free to build more than one
+    // servlet instance, and two instances synchronizing on themselves do not exclude each other.
+    // INITIALIZED is set at the end for the same reason - it used to be set first, so a second
+    // caller returned at once while F.initSymja() was still running and evaluated against a half
+    // built symbol table. Setting it last also means a failed initialization is retried rather
+    // than remembered as done.
+    synchronized (AJAXQueryServlet.class) {
+      if (INITIALIZED) {
+        return;
+      }
+      ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+      ToggleFeature.COMPILE = true;
+      ToggleFeature.COMPILE_PRINT = true;
+      Config.UNPROTECT_ALLOWED = false;
+      // disable threads for JAS only on google appengine
+      Config.JAS_NO_THREADS = false;
+      Config.JAVA_UNSAFE = true;
+      // Config.THREAD_FACTORY =
+      // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+      Config.MATHML_TRIG_LOWERCASE = false;
+      // Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
+      // Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
+      // Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
+      // Config.MAX_INPUT_LEAVES = 1000L;
+      // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+      // Config.MAX_POLYNOMIAL_DEGREE = 100;
+      Config.DEFAULT_ITERATION_LIMIT = 10_000;
+      Config.DEFAULT_RECURSION_LIMIT = 1_024;
+
+      EvalEngine engine = new EvalEngine(isRelaxedSyntax());
+      EvalEngine.set(engine);
+      // A few modules decide at registration time whether to install an evaluator at all - Dataset,
+      // SemanticImport and the Swing functions - so the switch has to be on while IOInit runs. It is
+      // turned back off immediately: from here on the permission is per session, granted on the
+      // engine together with that session's sandbox directory.
+      Config.FILESYSTEM_ENABLED = true;
+      F.initSymja();
+      IOInit.init();
+      Config.FILESYSTEM_ENABLED = false;
+      SessionSandbox.sweepOrphans();
+      engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
+      engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
+
+      // Config.JAS_NO_THREADS = true;
+      // AJAXQueryServlet.log.info(servlet + " initialized");
+      INITIALIZED = true;
+      System.out.println("Symja version " + Config.VERSION + " initialized");
     }
-    INITIALIZED = true;
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
-    ToggleFeature.COMPILE = true;
-    ToggleFeature.COMPILE_PRINT = true;
-    Config.UNPROTECT_ALLOWED = false;
-    // disable threads for JAS only on google appengine
-    Config.JAS_NO_THREADS = false;
-    Config.JAVA_UNSAFE = true;
-    // Config.THREAD_FACTORY =
-    // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
-    Config.MATHML_TRIG_LOWERCASE = false;
-    // Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
-    // Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
-    // Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
-    // Config.MAX_INPUT_LEAVES = 1000L;
-    // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-    // Config.MAX_POLYNOMIAL_DEGREE = 100;
-    Config.DEFAULT_ITERATION_LIMIT = 10_000;
-    Config.DEFAULT_RECURSION_LIMIT = 1_024;
-
-    EvalEngine engine = new EvalEngine(isRelaxedSyntax());
-    EvalEngine.set(engine);
-    // A few modules decide at registration time whether to install an evaluator at all - Dataset,
-    // SemanticImport and the Swing functions - so the switch has to be on while IOInit runs. It is
-    // turned back off immediately: from here on the permission is per session, granted on the
-    // engine together with that session's sandbox directory.
-    Config.FILESYSTEM_ENABLED = true;
-    F.initSymja();
-    IOInit.init();
-    Config.FILESYSTEM_ENABLED = false;
-    SessionSandbox.sweepOrphans();
-    engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
-    engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
-
-    // Config.JAS_NO_THREADS = true;
-    // AJAXQueryServlet.log.info(servlet + " initialized");
-    System.out.println("Symja version " + Config.VERSION + " initialized");
   }
 }

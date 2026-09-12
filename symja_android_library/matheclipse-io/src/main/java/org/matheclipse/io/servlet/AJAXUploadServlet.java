@@ -77,7 +77,7 @@ public class AJAXUploadServlet extends HttpServlet {
       out.println("{\"name\": \"" + name + "\", \"size\": " + bytes.length + "}");
     } catch (Exception ex) {
       LOGGER.error("{}.doPost() failed", AJAXUploadServlet.class.getSimpleName(), ex);
-      out.println(JSONBuilder.createJSONErrorString("Upload failed: " + ex.getMessage()));
+      out.println(JSONBuilder.createJSONErrorString(uploadFailureMessage(ex)));
     }
   }
 
@@ -88,5 +88,28 @@ public class AJAXUploadServlet extends HttpServlet {
         : ext.equalsIgnoreCase("tif") ? "TIFF" //
             : ext.equalsIgnoreCase("xls") ? "XLSX" //
                 : ext;
+  }
+
+  /**
+   * What to tell the person who tried to upload.
+   *
+   * <p>
+   * The container refuses a part over its configured <code>maxFileSize</code> by failing the
+   * multipart parse, and what surfaces is its own exception - Jetty says
+   * "org.eclipse.jetty.http.HttpException$IllegalStateException: 400: bad multipart". That is the
+   * single most likely thing to go wrong here, and the reader can do something about it, so it
+   * gets said in words. Everything else keeps the exception text, which is what a report would
+   * need to be any use.
+   */
+  private static String uploadFailureMessage(Exception ex) {
+    for (Throwable t = ex; t != null && t != t.getCause(); t = t.getCause()) {
+      String message = t.getMessage();
+      if (message != null && (message.contains("bad multipart")
+          || message.toLowerCase(java.util.Locale.ROOT).contains("max file size")
+          || message.toLowerCase(java.util.Locale.ROOT).contains("request entity too large"))) {
+        return "The file is too large to upload, or is not a well formed upload.";
+      }
+    }
+    return "Upload failed: " + ex.getMessage();
   }
 }

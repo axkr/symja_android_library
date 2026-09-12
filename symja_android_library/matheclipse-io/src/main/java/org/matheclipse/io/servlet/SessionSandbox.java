@@ -59,14 +59,62 @@ final class SessionSandbox {
     }
   }
 
-  /** The most one session's directory may hold, so that one browser cannot fill the disk. */
-  static final long MAX_TOTAL_BYTES = 32L * 1024 * 1024;
+  /*
+   * The quotas below are settable, because how much a session may keep depends entirely on where
+   * the directory actually is. On a machine running the notebook server for one person it is a
+   * directory on a disk, and these defaults are generous on purpose. On Google App Engine standard
+   * the writable /tmp is *instance RAM* - "All files in this directory are stored in the instance's
+   * RAM" - shared with every other session on that instance, and the defaults below would let a
+   * handful of uploads exhaust a 512MB instance. That deployment lowers them; see the
+   * symja.sandbox.* properties in symja_web's appengine-web.xml.
+   *
+   * They are read once, when this class is initialized. A servlet container that supplies them -
+   * App Engine applies appengine-web.xml's system-properties before the application starts - has
+   * already done so by then.
+   */
 
-  /** The most one uploaded or generated file may be. */
-  static final long MAX_FILE_BYTES = 16L * 1024 * 1024;
+  /** The most one session's directory may hold, so that one browser cannot fill the disk. */
+  static final long MAX_TOTAL_BYTES =
+      longProperty("symja.sandbox.maxTotalBytes", 32L * 1024 * 1024);
 
   /** The most files one session's directory may hold. */
-  static final int MAX_FILES = 64;
+  static final int MAX_FILES = (int) longProperty("symja.sandbox.maxFiles", 64);
+
+  /**
+   * The ceiling the servlet container enforces on one upload, before a byte of it reaches
+   * {@link #store}.
+   *
+   * <p>
+   * This one is a compile time constant and cannot be a property: it is an argument to the
+   * {@link jakarta.servlet.annotation.MultipartConfig} annotation on {@link AJAXUploadServlet}, and
+   * an annotation takes constants only. A deployment that wants a lower ceiling states it where
+   * the container reads it from - a <code>&lt;multipart-config&gt;</code> in <code>web.xml</code>,
+   * or the <code>MultipartConfigElement</code> {@link UndertowLauncher} builds - and lowers
+   * {@link #MAX_STORED_FILE_BYTES} to match.
+   */
+  static final long MAX_FILE_BYTES = 16L * 1024 * 1024;
+
+  /** The most one uploaded or generated file may be, as {@link #store} enforces it. */
+  static final long MAX_STORED_FILE_BYTES =
+      longProperty("symja.sandbox.maxFileBytes", MAX_FILE_BYTES);
+
+  /**
+   * A <code>long</code> system property, or <code>defaultValue</code> if it is absent or is not a
+   * number. A quota that cannot be parsed falls back to the default rather than to no quota.
+   */
+  private static long longProperty(String name, long defaultValue) {
+    String value = System.getProperty(name);
+    if (value == null || value.isBlank()) {
+      return defaultValue;
+    }
+    try {
+      long parsed = Long.parseLong(value.trim());
+      return parsed > 0 ? parsed : defaultValue;
+    } catch (NumberFormatException ex) {
+      LOGGER.warn("{} is not a number: {} - using {}", name, value, defaultValue);
+      return defaultValue;
+    }
+  }
 
   /**
    * A file name safe to put in a path. The servlet container decides what a browser may call an
@@ -100,7 +148,7 @@ final class SessionSandbox {
    */
   static Path store(String sessionID, String name, byte[] bytes) {
     Path root = rootFor(sessionID);
-    if (root == null || bytes == null || bytes.length > MAX_FILE_BYTES) {
+    if (root == null || bytes == null || bytes.length > MAX_STORED_FILE_BYTES) {
       return null;
     }
     try (Stream<Path> children = Files.list(root)) {
