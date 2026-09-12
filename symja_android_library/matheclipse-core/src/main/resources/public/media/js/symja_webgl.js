@@ -572,12 +572,29 @@
      * limit is passed, which leaves earlier graphics blank. So a scene is built when it comes near
      * the viewport and torn down again when it leaves, and a page may then hold any number.
      */
+    /** How long to wait for the three.js module before saying it is not coming. */
+    var WAIT_FOR_THREE_MILLIS = 10000;
+
     function renderSymjaWebGL(containerId, data) {
         if (!global.THREE) {
             // three.js is loaded as a module, which is deferred until the page has been parsed,
             // so a graphic in the page body can arrive first. Wait for the loader to drain us.
             global.SymjaWebGLQueue = global.SymjaWebGLQueue || [];
             global.SymjaWebGLQueue.push([containerId, data]);
+            // ...but it may also never arrive. An ES module is refused outright if the server
+            // gives it the wrong content type, where a classic script would have been accepted,
+            // so this is the one failure that takes out 3D graphics and nothing else on the page.
+            // Waiting quietly for it forever is what made that look like a graphic that simply
+            // does not render.
+            global.setTimeout(function () {
+                if (!global.THREE) {
+                    var box = document.getElementById(containerId);
+                    if (box && !box.firstChild) {
+                        showFailure(box, 'three.js did not load, so there is nothing to draw with.'
+                            + ' The browser console says why it was refused.');
+                    }
+                }
+            }, WAIT_FOR_THREE_MILLIS);
             return;
         }
         var container = document.getElementById(containerId);
@@ -605,6 +622,7 @@
                         } catch (error) {
                             console.error('symja_webgl: ' + containerId + ': ' + error);
                             observer.disconnect();
+                            showFailure(container, failureMessage(error));
                         }
                     }
                 } else if (live) {
@@ -621,6 +639,7 @@
                     } catch (error) {
                         console.error('symja_webgl: ' + containerId + ': ' + error);
                         observer.disconnect();
+                        showFailure(container, failureMessage(error));
                     }
                 }
             }
@@ -1276,6 +1295,51 @@
                 }
             }
         };
+    }
+
+    /**
+     * Whether this browser will give out a WebGL context at all.
+     *
+     * <p>
+     * Asked only when something has already failed, to tell the two cases apart: a browser that
+     * cannot do WebGL, and one that can but could not draw this particular scene.
+     */
+    function hasWebGL() {
+        try {
+            var probe = document.createElement('canvas');
+            return !!(probe.getContext('webgl2') || probe.getContext('webgl'));
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
+     * Say why there is no picture, in the box where the picture would have been.
+     *
+     * Every way this can fail used to leave an empty bordered box and a line in the console, so
+     * all anyone could report was that the graphic "does not show up" - and the causes need
+     * telling apart: no WebGL at all, a scene that would not build, or three.js never arriving.
+     */
+    function showFailure(container, message) {
+        while (container.firstChild) { container.removeChild(container.firstChild); }
+        var note = document.createElement('div');
+        note.className = 'symja-webgl-failed';
+        note.style.cssText = 'display:flex;align-items:center;justify-content:center;'
+            + 'width:100%;height:100%;box-sizing:border-box;padding:10px;'
+            + 'font-family:sans-serif;font-size:0.78em;line-height:1.45;color:#777;'
+            + 'text-align:center;';
+        note.textContent = message;
+        container.appendChild(note);
+    }
+
+    /** What to say about a scene that would not build. */
+    function failureMessage(error) {
+        if (!hasWebGL()) {
+            return 'This browser did not provide WebGL, which 3D graphics need. That is usually '
+                + 'hardware acceleration switched off, or a graphics driver the browser declines '
+                + 'to use.';
+        }
+        return '3D graphics could not be drawn: ' + error;
     }
 
     /**
