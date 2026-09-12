@@ -48,10 +48,20 @@
 					<version>3.5.2</version>
 					<configuration>
 						<from>
-							<image>eclipse-temurin:25_36-jre</image>
+							<image>eclipse-temurin:25.0.4_7-jre</image>
+							<platforms>
+								<platform>
+									<architecture>amd64</architecture>
+									<os>linux</os>
+								</platform>
+								<platform>
+									<architecture>arm64</architecture>
+									<os>linux</os>
+								</platform>
+							</platforms>
 						</from>
 						<to>
-							<image>registry.hub.docker.com/symja/symja-3.1</image>
+							<image>registry.hub.docker.com/symja/symja-3.3</image>
 						</to>
 						<container>
 							<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
