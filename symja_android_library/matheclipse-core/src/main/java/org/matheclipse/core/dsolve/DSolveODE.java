@@ -2493,6 +2493,29 @@ final class DSolveODE {
    * @return <code>false</code> if the term is not a power of the variable times an exponential
    *         times a sine or cosine, in which case there is no ansatz to write
    */
+  /**
+   * The forcing function with <code>Sinh</code> and <code>Cosh</code> of the variable written as
+   * the exponentials they are made of.
+   *
+   * <p>
+   * Undetermined coefficients reads a forcing term as a power of the variable, an exponential and a
+   * cosine or sine. A hyperbolic function is two such terms and not a new kind of one, so
+   * <code>Sinh(x)*Cos(x) - Cosh(x)*Sin(x)</code> is four ordinary terms once it is written out; left
+   * as it was, it made the method decline and handed the equation to variation of parameters, whose
+   * integrals do not close at the fourth order.
+   */
+  private static IExpr hyperbolicAsExponentials(IExpr forcing, IExpr xVar) {
+    IExpr rewritten = forcing.replaceAll(f -> {
+      if (f.isAST1() && (f.isSinh() || f.isCosh()) && !f.first().isFree(xVar, true)) {
+        IExpr up = F.Exp(f.first());
+        IExpr down = F.Exp(F.Negate(f.first()));
+        return F.Times(F.C1D2, f.isSinh() ? F.Subtract(up, down) : F.Plus(up, down));
+      }
+      return F.NIL;
+    });
+    return rewritten.isPresent() ? rewritten : forcing;
+  }
+
   private static boolean readForcingTerm(IExpr term, IExpr xVar, List<ForcingShape> shapes,
       EvalEngine engine) {
     IExpr rate = F.C0;
@@ -2605,7 +2628,7 @@ final class DSolveODE {
    */
   private static IExpr undeterminedCoefficients(LinearODEForm lf, IExpr xVar, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    IExpr g = engine.evaluate(F.ExpandAll(lf.g));
+    IExpr g = engine.evaluate(F.ExpandAll(hyperbolicAsExponentials(lf.g, xVar)));
     if (g.isZero() || !g.isFree(S.Integrate, true)) {
       return F.NIL;
     }

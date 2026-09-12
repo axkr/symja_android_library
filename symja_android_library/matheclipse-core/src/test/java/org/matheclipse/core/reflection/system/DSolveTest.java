@@ -545,6 +545,25 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->C(1)/E^x^2+(x*C(2))/E^x^2}}");
   }
 
+  @Test
+  public void testDSolveHyperbolicForcing() {
+    // A hyperbolic forcing term is two exponential terms, not a new kind of term. Undetermined
+    // coefficients used to decline Sinh and Cosh outright and hand the equation to variation of
+    // parameters, whose integrals do not close at the fourth order. The forcing here is resonant:
+    // E^(+-x)*Cos(x) and E^(+-x)*Sin(x) solve the homogeneous equation, so the particular solution
+    // carries a factor x.
+    checkResidual("y''''(x) + 4*y(x) == Sinh(x)*Cos(x) - Cosh(x)*Sin(x)", //
+        "y''''(x) + 4*y(x) - (Sinh(x)*Cos(x) - Cosh(x)*Sin(x))",
+        "{C(1)->3/7, C(2)->5/11, C(3)->2/9, C(4)->7/13, x->13/10}");
+    // an equation of the same kind not taken from anywhere, resonant at the root 1
+    checkResidual("y'''(x) - y(x) == x*Cosh(x)", //
+        "y'''(x) - y(x) - x*Cosh(x)", "{C(1)->3/7, C(2)->5/11, C(3)->2/9, x->-7/10}");
+    check("DSolve(y''(x) - 4*y(x) == Sinh(2*x), y(x), x)", //
+        "{{y(x)->x/(8*E^(2*x))+1/8*E^(2*x)*x+C(1)/E^(2*x)+E^(2*x)*C(2)}}");
+    check("DSolve(y''(x) + y(x) == Sinh(x), y(x), x)", //
+        "{{y(x)->-1/(4*E^x)+E^x/4+C(1)*Cos(x)+C(2)*Sin(x)}}");
+  }
+
   /** {@link #checkResidual} for an equation in <code>t</code>. */
   private void checkResidualIn(String equation, String residual, String point) {
     check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual
