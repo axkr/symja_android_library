@@ -89,7 +89,12 @@ public class PacletFunctions {
       IAST names = arg1.isList() ? (IAST) arg1 : F.list(arg1);
       for (int i = 1; i < names.size(); i++) {
         if (names.get(i).isString()) {
-          PacletRegistry.unload(Path.of(names.get(i).toString()));
+          // a name the file system cannot spell is not a directory anything was loaded from, so
+          // unloading it is the no-op it already is for a name that was never loaded
+          Path directory = FileSandbox.namePath(names.get(i).toString());
+          if (directory != null) {
+            PacletRegistry.unload(directory);
+          }
         }
       }
       return directoryList(PacletRegistry.directories());

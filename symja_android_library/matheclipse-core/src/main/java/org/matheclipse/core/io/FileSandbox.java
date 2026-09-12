@@ -159,11 +159,26 @@ public final class FileSandbox {
    * about to be opened.
    */
   public static boolean isAbsolutePath(String fileName) {
+    Path path = namePath(fileName);
+    return path != null && (path.isAbsolute() || path.getRoot() != null);
+  }
+
+  /**
+   * The path a name spells, or <code>null</code> when this file system cannot spell it -
+   * {@link Path#of} refuses a NUL character, and a Windows file system refuses more than that.
+   *
+   * <p>
+   * Opens nothing and resolves nothing against the sandbox: this is for the built-ins that only
+   * take a name apart - <code>DirectoryName</code>, <code>ExpandFileName</code> - as
+   * {@link #isAbsolutePath} is. A name that is about to be opened goes through
+   * {@link #resolveReadPath} instead.
+   */
+  public static Path namePath(String fileName) {
     try {
-      Path path = Path.of(fileName);
-      return path.isAbsolute() || path.getRoot() != null;
+      return Path.of(fileName);
     } catch (InvalidPathException ex) {
-      return false;
+      // e.g. a NUL character: not a name any file has, and Path.of throws rather than returning
+      return null;
     }
   }
 
@@ -186,7 +201,10 @@ public final class FileSandbox {
       // No sandbox: the name is used as written, except that a relative one is resolved against
       // Directory[]. A Java process cannot change its own working directory, so without this
       // SetDirectory would be a value nothing acted on.
-      Path path = Path.of(fileName);
+      Path path = namePath(fileName);
+      if (path == null) {
+        return invalidName(symbol, fileName, engine);
+      }
       if (path.isAbsolute() || engine == null) {
         return path;
       }
@@ -197,7 +215,10 @@ public final class FileSandbox {
         // the home directory is not this session's to reach, and Path.of does not expand it anyway
         return refuse(symbol, fileName, engine);
       }
-      Path candidate = Path.of(fileName);
+      Path candidate = namePath(fileName);
+      if (candidate == null) {
+        return invalidName(symbol, fileName, engine);
+      }
       if (candidate.isAbsolute() || candidate.getRoot() != null) {
         return refuse(symbol, fileName, engine);
       }
@@ -222,6 +243,17 @@ public final class FileSandbox {
     } catch (InvalidPathException | IOException | SecurityException ex) {
       return refuse(symbol, fileName, engine);
     }
+  }
+
+  /**
+   * A name the file system cannot spell, reported as such rather than as a sandbox refusal: with no
+   * sandbox set there is nothing to refuse, and the caller still needs the <code>null</code>.
+   */
+  private static Path invalidName(ISymbol symbol, String fileName, EvalEngine engine) {
+    // `1` is not a valid file name.
+    Errors.printMessage(symbol == null ? S.General : symbol, "fname", F.list(F.stringx(fileName)),
+        engine);
+    return null;
   }
 
   private static Path refuse(ISymbol symbol, String fileName, EvalEngine engine) {

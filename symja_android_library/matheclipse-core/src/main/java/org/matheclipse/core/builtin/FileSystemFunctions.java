@@ -78,6 +78,19 @@ public class FileSystemFunctions {
     return FileSandbox.resolveReadPath(symbol, name.toString(), engine);
   }
 
+  /**
+   * The path a name spells, without opening anything, or <code>null</code> - with a message - when
+   * the file system cannot spell it. For the built-ins that only take a name apart.
+   */
+  private static Path namePath(ISymbol symbol, String name, EvalEngine engine) {
+    Path path = FileSandbox.namePath(name);
+    if (path == null) {
+      // `1` is not a valid file name.
+      Errors.printMessage(symbol, "fname", F.list(F.stringx(name)), engine);
+    }
+    return path;
+  }
+
   /** Like {@link #path}, for a name that is about to be written to. */
   private static Path writePath(ISymbol symbol, IExpr name, EvalEngine engine) {
     if (!(name instanceof IStringX)) {
@@ -291,7 +304,10 @@ public class FileSystemFunctions {
           return F.NIL;
         }
       }
-      Path path = Path.of(ast.arg1().toString());
+      Path path = namePath(S.DirectoryName, ast.arg1().toString(), engine);
+      if (path == null) {
+        return F.NIL;
+      }
       for (int i = 0; i < levels; i++) {
         path = path == null ? null : path.getParent();
       }
@@ -392,7 +408,10 @@ public class FileSystemFunctions {
         return F.NIL;
       }
       String name = ast.arg1().toString();
-      Path path = Path.of(name);
+      Path path = namePath(S.ExpandFileName, name, engine);
+      if (path == null) {
+        return F.NIL;
+      }
       if (path.isAbsolute()) {
         return F.stringx(path.normalize().toString());
       }
@@ -658,7 +677,10 @@ public class FileSystemFunctions {
       if (ast.isAST0()) {
         path = engine.getCurrentDirectory();
       } else if (ast.arg1() instanceof IStringX) {
-        path = Path.of(ast.arg1().toString());
+        path = namePath(S.ParentDirectory, ast.arg1().toString(), engine);
+        if (path == null) {
+          return F.NIL;
+        }
         if (ast.isAST2()) {
           levels = ast.arg2().toIntDefault();
           if (levels < 0) {

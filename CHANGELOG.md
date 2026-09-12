@@ -4,6 +4,14 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A file name the file system cannot spell is a message and not an exception. `Path.of` throws
+  `InvalidPathException` on a NUL character -- and on more than that under Windows -- and
+  `ExpandFileName`, `DirectoryName` and `ParentDirectory` built the path themselves, so a fuzzed
+  name came out of the engine as a stack trace. `FileSandbox` refused such a name only inside a
+  sandbox root; without one -- the consoles, the JUnit suites, every embedding -- the throw reached
+  every built-in that opens a file the user named. Both paths now report `General::fname` and
+  return what the built-in returns for a name it cannot use.
+
 - The JUnit suite is split into three tiers, so an ordinary edit/test cycle no longer waits for
   the slow symbolic tests. A test picks its tier with a JUnit 5 `@Tag`.
 

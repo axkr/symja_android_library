@@ -218,6 +218,7 @@ public class Errors {
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
       "filetype", "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
       "fnand", "The function `1` is not analytic or defined at `2`.", //
+      "fname", "`1` is not a valid file name.", //
       "fsandbox", "Cannot open `1`: the path is outside this session's directory.", //
       "cdir", "Cannot set current directory to `1`.", //
       "dtop", "Directory stack is empty.", //
