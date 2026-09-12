@@ -266,6 +266,16 @@ public class Config {
   /** Set to <code>true</code> to collect rule dispatch counters. */
   public static boolean RULE_DISPATCH_STATISTICS = false;
 
+  /**
+   * Set to <code>true</code> to collect the counters in
+   * {@link org.matheclipse.core.expression.AstAllocationStats}: how appendable argument lists are
+   * created, how often they outgrow their initial capacity, and from which call sites. Every
+   * recorded event walks the stack to find its site, so this is slow - for a census run, not for
+   * production.
+   */
+  public static boolean AST_ALLOCATION_STATISTICS =
+      Boolean.getBoolean("symja.astAlloc.stats");
+
   // The wall-clock evaluation budgets are configured with -Dsymja.timeScale=<factor> or
   // -Dsymja.machineProfile=fast|normal|slow|auto, see MachineProfile.
 

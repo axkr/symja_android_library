@@ -108,6 +108,7 @@ public class ASTRRBTree extends AbstractAST
    *         <code>list</code>
    */
   static MutRrbt<IExpr> shallowCopy(MutRrbt<IExpr> list) {
+    AstAllocationStats.copied(list.size(), true, true);
     return list.immutable().mutable();
   }
 
@@ -115,6 +116,7 @@ public class ASTRRBTree extends AbstractAST
     if (Config.MAX_AST_SIZE < initialCapacity || initialCapacity < 0) {
       ASTElementLimitExceeded.throwIt(initialCapacity);
     }
+    AstAllocationStats.created(initialCapacity, true);
     return new ASTRRBTree(StaticImports.mutableRrb(head));
   }
 

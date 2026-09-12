@@ -290,8 +290,10 @@ public class AST extends HMArrayList implements Externalizable {
   @Override
   public IASTAppendable copyAppendable() {
     if (size() > Config.MIN_LIMIT_PERSISTENT_LIST) {
+      AstAllocationStats.copied(size(), true, false);
       return new ASTRRBTree(this);
     }
+    AstAllocationStats.copied(size(), false, false);
     AST ast = new AST();
     // ast.fProperties = null;
     ast.array = array.clone();
@@ -307,8 +309,10 @@ public class AST extends HMArrayList implements Externalizable {
     final int size = size();
     if (size > Config.MIN_LIMIT_PERSISTENT_LIST
         || additionalCapacity > Config.MIN_LIMIT_PERSISTENT_LIST) {
+      AstAllocationStats.copied(size, true, false);
       return new ASTRRBTree(this);
     }
+    AstAllocationStats.copied(size, false, false);
     AST ast = new AST();
     // ast.fProperties = null;
     if (size + additionalCapacity > array.length) {

@@ -2035,6 +2035,7 @@ public class F extends S {
    */
   public static IASTAppendable ast(final IExpr head, final int initialCapacity) {
     if (initialCapacity > Config.MIN_LIMIT_PERSISTENT_LIST) {
+      // note that ASTRRBTree discards the hint - above the limit it cannot be tuned
       return ASTRRBTree.newInstance(initialCapacity, head);
     }
     return AST.newInstance(initialCapacity, head);

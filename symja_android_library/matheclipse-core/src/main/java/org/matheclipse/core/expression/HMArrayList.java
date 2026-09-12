@@ -130,6 +130,8 @@ public abstract class HMArrayList extends AbstractAST
         array[0] = headExpr;
         System.arraycopy(arguments, 0, array, 1, lastIndex - 1);
     }
+    // exact fit with no slack at all, so the first append on the result always reallocates
+    AstAllocationStats.createdExact(lastIndex);
   }
 
   /**
@@ -158,6 +160,9 @@ public abstract class HMArrayList extends AbstractAST
     if (capacity > 0) {
       array = newElementArray(capacity);
     }
+    // the single point every array backed argument list with a capacity passes through, so this
+    // counts the callers which reach AST.newInstance without going through F.ast as well
+    AstAllocationStats.created(capacity, false);
   }
 
   /**
@@ -939,6 +944,8 @@ public abstract class HMArrayList extends AbstractAST
   private void growAtEnd(int required) {
     int size = lastIndex - firstIndex;
     if (firstIndex >= required - (array.length - lastIndex)) {
+      // there is room in front of the used window: slide it left instead of allocating
+      AstAllocationStats.compaction(AstAllocationStats.AT_END);
       int newLast = lastIndex - firstIndex;
       if (size > 0) {
         System.arraycopy(array, firstIndex, array, 0, size);
@@ -948,9 +955,6 @@ public abstract class HMArrayList extends AbstractAST
       firstIndex = 0;
       lastIndex = newLast;
     } else {
-      // if (Config.FUZZ_TESTING) {
-      // throw new NullPointerException();
-      // }
       int increment = size / 2;
       if (required > increment) {
         increment = required;
@@ -958,6 +962,8 @@ public abstract class HMArrayList extends AbstractAST
       if (increment < 12) {
         increment = 12;
       }
+      // the list outgrew its initial capacity - the only growth a better hint could have avoided
+      AstAllocationStats.reallocation(AstAllocationStats.AT_END, size + increment, size);
       IExpr[] newArray = newElementArray(size + increment);
       if (size > 0) {
         System.arraycopy(array, firstIndex, newArray, 0, size);
@@ -971,6 +977,7 @@ public abstract class HMArrayList extends AbstractAST
   private void growAtFront(int required) {
     int size = lastIndex - firstIndex;
     if (array.length - lastIndex + firstIndex >= required) {
+      AstAllocationStats.compaction(AstAllocationStats.AT_FRONT);
       int newFirst = array.length - size;
       if (size > 0) {
         System.arraycopy(array, firstIndex, array, newFirst, size);
@@ -987,6 +994,7 @@ public abstract class HMArrayList extends AbstractAST
       if (increment < 12) {
         increment = 12;
       }
+      AstAllocationStats.reallocation(AstAllocationStats.AT_FRONT, size + increment, size);
       IExpr[] newArray = newElementArray(size + increment);
       if (size > 0) {
         System.arraycopy(array, firstIndex, newArray, newArray.length - size, size);
@@ -1006,6 +1014,8 @@ public abstract class HMArrayList extends AbstractAST
     if (increment < 12) {
       increment = 12;
     }
+    // unlike growAtEnd/growAtFront this path has no compaction branch, it always allocates
+    AstAllocationStats.reallocation(AstAllocationStats.FOR_INSERT, size + increment, size);
     IExpr[] newArray = newElementArray(size + increment);
     int newFirst = increment - required;
     // Copy elements after location to the new array skipping inserted
