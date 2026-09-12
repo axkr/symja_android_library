@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -235,5 +236,36 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     check("Head(TableForm({{a,b},{c,d}}))", "TableForm");
     check("FullForm(TableForm({{a,b},{c,d}}))", "TableForm(List(List(a, b), List(c, d)))");
     check("TableForm({{a,b},{c,d}})", " a  b \n c  d ");
+  }
+
+  /**
+   * A number rendered in scientific notation (<code>1.5*10^30</code>) is a <code>Times</code>
+   * expression, not an atom, so it needs parentheses under every operator that binds tighter than
+   * <code>Times</code>. Printed without them, <code>Power(2.0, 1.5*10^30)</code> came out as
+   * <code>2.0^1.500000000000000*10^30</code>, which reads back as <code>(2.0^1.5)*10^30</code> - a
+   * different, finite value.
+   */
+  @Test
+  public void testScientificNotationIsParenthesizedUnderPower() {
+    ExprEvaluator evaluator = new ExprEvaluator();
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, false);
+
+    // the exponent is a single number, however many operators its printed form takes
+    IExpr exponent = evaluator.eval("2^N(1.5*10^30, 30)");
+    assertEquals(exponent.fullFormString(), "Power(2.0`, 1.5`16*^30)");
+    assertEquals(outputFormFactory.toString(exponent), "2.0^(1.500000000000000*10^30)");
+
+    // and the same in the base, where dropping them would read as 1.5*(10^30^2)
+    IExpr base = F.Power(evaluator.eval("N(1.5*10^30, 30)"), F.C2);
+    assertEquals(outputFormFactory.toString(base), "(1.500000000000000*10^30)^2");
+
+    // Times and Plus bind no tighter than the printed product, and the top level binds nothing,
+    // so none of those gain parentheses
+    assertEquals(outputFormFactory.toString(evaluator.eval("x*N(1.5*10^30, 30)")),
+        "1.500000000000000*10^30*x");
+    assertEquals(outputFormFactory.toString(evaluator.eval("x+N(1.5*10^30, 30)")),
+        "1.500000000000000*10^30+x");
+    assertEquals(outputFormFactory.toString(evaluator.eval("N(1.5*10^30, 30)")),
+        "1.500000000000000*10^30");
   }
 }
