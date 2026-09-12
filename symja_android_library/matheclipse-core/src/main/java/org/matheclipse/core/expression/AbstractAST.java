@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.core.expression.data.AbstractArraySymbolExpr;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -1807,6 +1808,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (rhsExpr.isNumber()) {
       // O-7
       return 1;
+    }
+    if (rhsExpr instanceof AbstractArraySymbolExpr) {
+      // a symbolic array object is ordered as its normal form, see
+      // AbstractArraySymbolExpr#compareTo()
+      return compareTo(((AbstractArraySymbolExpr) rhsExpr).normal(false));
     }
     final int lhsOrdinal = headID();
     int rhsOrdinal = -1;

@@ -721,22 +721,45 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
         "Transpose(SymbolicIdentityArray({m,n,p}),{3,1,2,4,5,6})");
     check("D(Transpose(ArraySymbol(a,{m,n,p}),{2,3,1}),ArraySymbol(a,{m,n,p}))", //
         "Transpose(SymbolicIdentityArray({m,n,p}),{2,3,1,4,5,6})");
+    // confirmed against real Mathematica (2026-09-13), also for a non-square matrix:
+    // -Inverse[a] . Transpose[SymbolicIdentityArray[{m,n}] . Inverse[a], 2]
+    check("D(Inverse(MatrixSymbol(a,{m,n})),MatrixSymbol(a,{m,n}))", //
+        "-Inverse(MatrixSymbol(a,{m,n})).Transpose(SymbolicIdentityArray({m,n}).Inverse(MatrixSymbol(a,{m,n})),\n" //
+            + "2)");
     check("D(Inverse(MatrixSymbol(s,{n,n})),MatrixSymbol(s,{n,n}))", //
-        "-Transpose(Inverse(MatrixSymbol(s,{n,n}))Inverse(MatrixSymbol(s,{n,n})),{1,3,4,\n" //
-            + "2})");
+        "-Inverse(MatrixSymbol(s,{n,n})).Transpose(SymbolicIdentityArray({n,n}).Inverse(MatrixSymbol(s,{n,n})),\n" //
+            + "2)");
     // the same formula checked componentwise on an explicit 2x2 matrix
     check(
-        "inv = Inverse({{p,q},{r,t}}); Simplify(Table(D(inv, {{p,q},{r,t}}[[k,l]]), {k,1,2},{l,1,2}) - Transpose(-Transpose(TensorProduct(inv, inv), {1,3,4,2}), {3,4,1,2}))", //
+        "inv = Inverse({{p,q},{r,t}}); Simplify(-inv.Transpose(Normal(SymbolicIdentityArray({2,2})).inv, 2) - Transpose(Table(D(inv, {{p,q},{r,t}}[[k,l]]), {k,1,2},{l,1,2}), {3,4,1,2}))", //
         "{{{{0,0},{0,0}},{{0,0},{0,0}}},{{{0,0},{0,0}},{{0,0},{0,0}}}}");
     check("D(Norm(MatrixSymbol(a,{m,n},Reals),\"Frobenius\"),MatrixSymbol(a,{m,n},Reals))", //
         "MatrixSymbol(a,{m,n},Reals)/Norm(MatrixSymbol(a,{m,n},Reals),Frobenius)");
+    // confirmed against real Mathematica (2026-09-13), including the order of the two terms:
+    // a[x] . a'[x] + a'[x] . a[x]
     check("D(MatrixSymbol(a,{m,n})[x].MatrixSymbol(a,{m,n})[x],x)", //
-        "Derivative(1)[MatrixSymbol(a,{m,n})][x].MatrixSymbol(a,{m,n})[x]+MatrixSymbol(a,{m,n})[x].Derivative(\n" //
-            + "1)[MatrixSymbol(a,{m,n})][x]");
+        "MatrixSymbol(a,{m,n})[x].Derivative(1)[MatrixSymbol(a,{m,n})][x]+Derivative(1)[MatrixSymbol(a,{m,n})][x].MatrixSymbol(a,{m,n})[x]");
     check("D(MatrixSymbol(a,{m,n})[x^2],x)", //
         "2*x*Derivative(1)[MatrixSymbol(a,{m,n})][x^2]");
     check("D(Mean(VectorSymbol(v,n)[x]),x)", //
         "Mean(Derivative(1)[VectorSymbol(v,n)][x])");
+  }
+
+  @Test
+  public void testTransposeCyclic() {
+    // Transpose(a, k) is Transpose(a, RotateLeft(Range(ArrayDepth(a)), k))
+    check("Transpose({{{1,2},{3,4}},{{5,6},{7,8}}}, 1)", //
+        "{{{1,3},{5,7}},{{2,4},{6,8}}}");
+    check("Transpose(Array(f, {2, 3, 4}), 1) === Transpose(Array(f, {2, 3, 4}), {2, 3, 1})", //
+        "True");
+    check("Dimensions(Transpose(Array(f, {2, 3, 4, 5}), 2))", //
+        "{4,5,2,3}");
+    check("Transpose(Array(f, {2, 3, 4, 5}), -2) === Transpose(Array(f, {2, 3, 4, 5}), 2)", //
+        "True");
+    check("Transpose({1, 2, 3}, 1)", //
+        "{1,2,3}");
+    check("TensorDimensions(Transpose(ArraySymbol(a, {j, k, l, mm}), 3))", //
+        "{k,l,mm,j}");
   }
 
   @Test

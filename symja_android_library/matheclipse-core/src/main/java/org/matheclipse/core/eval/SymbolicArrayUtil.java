@@ -288,6 +288,25 @@ public class SymbolicArrayUtil {
     return dimensions;
   }
 
+  /**
+   * The permutation list of <code>Transpose(a, k)</code> for an integer <code>k</code>, which
+   * cycles the levels of an array of the given rank <code>k</code> positions to the right. It is
+   * <code>RotateLeft(Range(rank), k)</code>, so <code>Transpose(a, 2)</code> of a rank 4 array is
+   * <code>Transpose(a, {3,4,1,2})</code>.
+   *
+   * @param k the number of positions, may be negative or larger than the rank
+   * @param rank the rank of the array, at least <code>1</code>
+   * @return the one-based permutation list
+   */
+  public static int[] cyclicTransposePermutation(int k, int rank) {
+    final int shift = ((k % rank) + rank) % rank;
+    int[] permutation = new int[rank];
+    for (int i = 0; i < rank; i++) {
+      permutation[i] = (i + shift) % rank + 1;
+    }
+    return permutation;
+  }
+
   /** The dimensions of {@link S#Transpose} or {@link S#ConjugateTranspose}. */
   private static IAST transposeDimensions(IAST transpose, EvalEngine engine, int depth) {
     IAST dimensions = tensorDimensions(transpose.arg1(), engine, depth + 1);
@@ -300,6 +319,19 @@ public class SymbolicArrayUtil {
       IASTAppendable result = dimensions.copyAppendable();
       result.set(1, dimensions.arg2());
       result.set(2, dimensions.arg1());
+      return result;
+    }
+    if (transpose.isAST2() && transpose.arg2().isInteger()) {
+      int k = transpose.arg2().toIntDefault();
+      if (k == Integer.MIN_VALUE) {
+        return F.NIL;
+      }
+      int[] permutation = cyclicTransposePermutation(k, rank);
+      IASTAppendable result = dimensions.copyAppendable();
+      for (int i = 1; i <= rank; i++) {
+        // slot i of the argument becomes slot permutation[i] of the result
+        result.set(permutation[i - 1], dimensions.get(i));
+      }
       return result;
     }
     if (transpose.isAST2() && transpose.arg2().isList()) {

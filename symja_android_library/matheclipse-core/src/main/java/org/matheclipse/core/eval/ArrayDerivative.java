@@ -247,10 +247,7 @@ public class ArrayDerivative {
       if (k == Integer.MIN_VALUE) {
         return F.NIL;
       }
-      k = ((k % rank) + rank) % rank;
-      for (int i = 0; i < rank; i++) {
-        permutation[i] = (i + k) % rank + 1;
-      }
+      permutation = SymbolicArrayUtil.cyclicTransposePermutation(k, rank);
     } else if (spec.isList() && spec.argSize() == rank) {
       for (int i = 0; i < rank; i++) {
         permutation[i] = spec.getAt(i + 1).toIntDefault();
@@ -461,12 +458,13 @@ public class ArrayDerivative {
         }
         return F.NIL;
       case ID.Inverse:
-        if (fx.isAST1() && x.isSquareMatrix()) {
-          // component (i,j,k,l) is -Inverse(x)[i,k]*Inverse(x)[l,j]; in the tensor product the
-          // slots are ordered (i,k,l,j), and Transpose moves slot s to position permutation[s]
+        if (fx.isAST1()) {
+          // component (i,j,k,l) is -Inverse(x)[i,k]*Inverse(x)[l,j]. Written the way real
+          // Mathematica prints it (2026-09-13), also for a non-square {m,n}:
+          // -Inverse[a] . Transpose[SymbolicIdentityArray[{m,n}] . Inverse[a], 2]
           IExpr inverse = F.Inverse(x);
-          return F.Times(F.CN1, F.Transpose(F.TensorProduct(inverse, inverse),
-              F.List(F.C1, F.C3, F.C4, F.C2)));
+          return F.Times(F.CN1, F.Dot(inverse,
+              F.Transpose(F.Dot(F.SymbolicIdentityArray(x.getDimensions()), inverse), F.C2)));
         }
         return F.NIL;
       case ID.Norm:

@@ -6740,7 +6740,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
-      final IExpr arg2;
+      IExpr arg2;
       if (ast.isAST2()) {
         arg2 = ast.arg2();
       } else {
@@ -6757,6 +6757,16 @@ public final class LinearAlgebra {
         // Error messages inherits to S.ConjugateTranspose
         // The first two levels of `1` cannot be transposed.
         return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
+      }
+      if (arg2.isInteger()) {
+        // Transpose(a, k) cycles the levels k positions to the right, i.e. it is
+        // Transpose(a, RotateLeft(Range(ArrayDepth(a)), k))
+        int k = arg2.toIntDefault();
+        if (k == Integer.MIN_VALUE) {
+          // Invalid permutation specification found at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "permspec", F.List(F.C2, ast), engine);
+        }
+        arg2 = F.List(SymbolicArrayUtil.cyclicTransposePermutation(k, length));
       }
       if (length == 1 && arg2.isNIL() && arg1.isList() && arg1.argSize() == 0) {
         // Transpose({}) is {}: the empty list is a vector like any other, and had no permutation

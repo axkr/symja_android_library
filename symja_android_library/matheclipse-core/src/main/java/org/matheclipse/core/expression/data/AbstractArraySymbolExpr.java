@@ -92,7 +92,10 @@ public abstract class AbstractArraySymbolExpr extends DataExpr<Object>
     // DataExpr#compareTo() cannot order two data expressions which carry no data object; it would
     // answer -1 in both directions and break the canonical ordering of S.Orderless expressions
     if (expr.isAST()) {
-      return -1 * expr.compareTo(this);
+      // ordered as its normal form MatrixSymbol(a,{m,n}), which is how real Mathematica orders it:
+      // MatrixSymbol("a",{m,n})[x] sorts before Derivative(1)[MatrixSymbol("a",{m,n})][x]
+      // (2026-09-13). AbstractAST#compareTo() does the same for the reverse direction.
+      return normal(false).compareTo(expr);
     }
     return IExpr.compareHierarchy(this, expr);
   }
