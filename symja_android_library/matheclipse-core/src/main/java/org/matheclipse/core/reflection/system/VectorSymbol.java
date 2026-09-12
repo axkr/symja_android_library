@@ -38,6 +38,11 @@ public class VectorSymbol extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     final int argSize = ast.argSize();
+    if (argSize == 1) {
+      // VectorSymbol(v) is a vector of unknown length; it stays as it is, and its head's
+      // NonThreadable attribute already keeps it out of list arithmetic
+      return F.NIL;
+    }
     IExpr name = ast.arg1();
     IExpr dimensions = ast.arg2();
     if (dimensions.isList() && dimensions.argSize() != 1) {
@@ -66,7 +71,7 @@ public class VectorSymbol extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_3;
+    return ARGS_1_3;
   }
 
   @Override

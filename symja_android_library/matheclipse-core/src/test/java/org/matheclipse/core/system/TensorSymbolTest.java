@@ -491,8 +491,10 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
         "VectorSymbol(u,n)");
     check("D(a.v, v)", //
         "MatrixSymbol(a,{m,n})");
+    // component (j,c) of D(v.s, v) is s[c,j]: the result has the dimensions of v.s followed by
+    // those of v, which is the transpose of s
     check("D(v.s, v)", //
-        "MatrixSymbol(s,{n,n})");
+        "MatrixSymbol(s,{n,n})");
     check("D(v.s.v, v)", //
         "MatrixSymbol(s,{n,n}).VectorSymbol(v,n)+VectorSymbol(v,n).MatrixSymbol(s,{n,n})");
     check("D(3*v.v + 1, v)", //
@@ -678,5 +680,121 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
     // symbolic dimensions cannot be written out in components
     check("ComponentExpand(MatrixSymbol(g,{m,n}))", //
         "MatrixSymbol(g,{m,n})");
+  }
+  @Test
+  public void testOneArgumentAndScalarDimensionForms() {
+    // from the MatrixSymbol, VectorSymbol and ArraySymbol reference pages: the one-argument forms
+    // have unknown dimensions, MatrixSymbol(a, m) is square and ArraySymbol(a, m) is a vector
+    check("MatrixSymbol(a)", //
+        "MatrixSymbol(a)");
+    check("TensorRank(MatrixSymbol(a))", //
+        "2");
+    check("TensorRank(VectorSymbol(a))", //
+        "1");
+    check("ArraySymbol(a)+b+{1,2}", //
+        "ArraySymbol(a)+{1+b,2+b}");
+    check("MatrixSymbol(a,m)", //
+        "MatrixSymbol(a,{m,m})");
+    check("TensorDimensions(MatrixSymbol(a,m))", //
+        "{m,m}");
+    check("TensorDimensions(ArraySymbol(a,m))", //
+        "{m}");
+    check("MatrixSymbol(a,0)", //
+        "MatrixSymbol(a,0)");
+    check("SetAttributes(ntx, NonThreadable); ntx+y+{{1,2},{3,4}}", //
+        "ntx+{{1+y,2+y},{3+y,4+y}}");
+  }
+
+  @Test
+  public void testArrayDerivativeReferencePages() {
+    check("D(Tr(MatrixSymbol(a,{m,n})),MatrixSymbol(a,{m,n}))", //
+        "SymbolicDeltaProductArray({m,n},{{1,2}})");
+    check("D(Tr(ArraySymbol(a,{m,n,p})),ArraySymbol(a,{m,n,p}))", //
+        "SymbolicDeltaProductArray({m,n,p},{{1,2,3}})");
+    // Total sums over the first level only
+    check("D(Total(ArraySymbol(a,{m,n,p})),ArraySymbol(a,{m,n,p}))", //
+        "SymbolicDeltaProductArray({n,p,m,n,p},{{1,4},{2,5}})");
+    check("D(Mean(MatrixSymbol(a,{m,n})),MatrixSymbol(a,{m,n}))", //
+        "SymbolicDeltaProductArray({n,m,n},{{1,3}})/m");
+    // Transpose(a, k) cycles the levels, i.e. Transpose(a, RotateLeft(Range(3), 2))
+    check("D(Transpose(ArraySymbol(a,{m,n,p}),2),ArraySymbol(a,{m,n,p}))", //
+        "Transpose(SymbolicIdentityArray({m,n,p}),{3,1,2,4,5,6})");
+    check("D(Transpose(ArraySymbol(a,{m,n,p}),{2,3,1}),ArraySymbol(a,{m,n,p}))", //
+        "Transpose(SymbolicIdentityArray({m,n,p}),{2,3,1,4,5,6})");
+    check("D(Inverse(MatrixSymbol(s,{n,n})),MatrixSymbol(s,{n,n}))", //
+        "-Transpose(Inverse(MatrixSymbol(s,{n,n}))Inverse(MatrixSymbol(s,{n,n})),{1,3,4,\n" //
+            + "2})");
+    // the same formula checked componentwise on an explicit 2x2 matrix
+    check(
+        "inv = Inverse({{p,q},{r,t}}); Simplify(Table(D(inv, {{p,q},{r,t}}[[k,l]]), {k,1,2},{l,1,2}) - Transpose(-Transpose(TensorProduct(inv, inv), {1,3,4,2}), {3,4,1,2}))", //
+        "{{{{0,0},{0,0}},{{0,0},{0,0}}},{{{0,0},{0,0}},{{0,0},{0,0}}}}");
+    check("D(Norm(MatrixSymbol(a,{m,n},Reals),\"Frobenius\"),MatrixSymbol(a,{m,n},Reals))", //
+        "MatrixSymbol(a,{m,n},Reals)/Norm(MatrixSymbol(a,{m,n},Reals),Frobenius)");
+    check("D(MatrixSymbol(a,{m,n})[x].MatrixSymbol(a,{m,n})[x],x)", //
+        "Derivative(1)[MatrixSymbol(a,{m,n})][x].MatrixSymbol(a,{m,n})[x]+MatrixSymbol(a,{m,n})[x].Derivative(\n" //
+            + "1)[MatrixSymbol(a,{m,n})][x]");
+    check("D(MatrixSymbol(a,{m,n})[x^2],x)", //
+        "2*x*Derivative(1)[MatrixSymbol(a,{m,n})][x^2]");
+    check("D(Mean(VectorSymbol(v,n)[x]),x)", //
+        "Mean(Derivative(1)[VectorSymbol(v,n)][x])");
+  }
+
+  @Test
+  public void testArrayDerivativeStatistics() {
+    check("D(Moment(VectorSymbol(v,n),r),VectorSymbol(v,n))", //
+        "r/(n*VectorSymbol(v,n)^(1-r))");
+    check("D(CentralMoment(VectorSymbol(v,n),r),VectorSymbol(v,n))", //
+        "(r*(-Mean((-Mean(VectorSymbol(v,n))+VectorSymbol(v,n))^(-1+r))+(-Mean(VectorSymbol(v,n))+VectorSymbol(v,n))^(-\n" //
+            + "1+r)))/n");
+    check("D(Variance(VectorSymbol(v,n,Reals)),VectorSymbol(v,n,Reals))", //
+        "(2*(-Mean(VectorSymbol(v,n,Reals))+VectorSymbol(v,n,Reals)))/(-1+n)");
+    // Variance and StandardDeviation involve Abs for complex components
+    check("D(Variance(VectorSymbol(v,n)),VectorSymbol(v,n))", //
+        "D(Variance(VectorSymbol(v,n)),VectorSymbol(v,n))");
+    check("D(StandardDeviation(VectorSymbol(v,n,Reals)),VectorSymbol(v,n,Reals))", //
+        "(-Mean(VectorSymbol(v,n,Reals))+VectorSymbol(v,n,Reals))/((-1+n)*StandardDeviation(VectorSymbol(v,n,Reals)))");
+  }
+
+  @Test
+  public void testArrayDerivativeDotChainRule() {
+    check(
+        "D((VectorSymbol(y,n)-MatrixSymbol(x,{n,k}).VectorSymbol(b,k)).(VectorSymbol(y,n)-MatrixSymbol(x,{n,k}).VectorSymbol(b,k)),VectorSymbol(b,k))", //
+        "2*(-MatrixSymbol(x,{n,k}).VectorSymbol(b,k)+VectorSymbol(y,n)).(-MatrixSymbol(x,{n,k}))");
+    check(
+        "D(VectorSymbol(u,n).MatrixSymbol(s,{n,n}).(MatrixSymbol(x,{n,k}).VectorSymbol(b,k)),VectorSymbol(b,k))", //
+        "VectorSymbol(u,n).MatrixSymbol(s,{n,n}).MatrixSymbol(x,{n,k})");
+    check(
+        "D((VectorSymbol(y,n)-MatrixSymbol(x,{n,k}).VectorSymbol(b,k)).MatrixSymbol(s,{n,m}),VectorSymbol(b,k))", //
+        "MatrixSymbol(s,{n,m}).(-MatrixSymbol(x,{n,k}))");
+    // a vector valued chain starting with the variable has the shape {m, n}
+    check("D(VectorSymbol(v,n).MatrixSymbol(s,{n,m}),VectorSymbol(v,n))", //
+        "MatrixSymbol(s,{n,m})");
+    check("D(MatrixSymbol(s,{m,n}).VectorSymbol(v,n),VectorSymbol(v,n))", //
+        "MatrixSymbol(s,{m,n})");
+    // the variable inside the flattened chain x.b.s is not supported
+    check("D((MatrixSymbol(x,{n,k}).VectorSymbol(b,k)).MatrixSymbol(s,{n,n}),VectorSymbol(b,k))", //
+        "D(MatrixSymbol(x,{n,k}).VectorSymbol(b,k).MatrixSymbol(s,{n,n}),VectorSymbol(b,k))");
+  }
+
+  @Test
+  public void testArraySimplifyFactorsDotChains() {
+    check("ArraySimplify(a.b+2*a.c)", //
+        "a.(b+2*c)");
+    check("ArraySimplify(b.a+2*c.a)", //
+        "(b+2*c).a");
+    check("ArraySimplify(a.b+2*c.d)", //
+        "a.b+2*c.d");
+  }
+
+  @Test
+  public void testComponentExpandAssumptions() {
+    check("ComponentExpand(Det(a), Element(a, Matrices({2, 2})))", //
+        "-Indexed(a,{1,2})*Indexed(a,{2,1})+Indexed(a,{1,1})*Indexed(a,{2,2})");
+    check("ComponentExpand(v.v, Element(v, Vectors(3)))", //
+        "Indexed(v,{1})^2+Indexed(v,{2})^2+Indexed(v,{3})^2");
+    check("ComponentExpand(v.v, Assumptions -> Element(v, Vectors(3)))", //
+        "Indexed(v,{1})^2+Indexed(v,{2})^2+Indexed(v,{3})^2");
+    check("ComponentExpand(v.v)", //
+        "v.v");
   }
 }

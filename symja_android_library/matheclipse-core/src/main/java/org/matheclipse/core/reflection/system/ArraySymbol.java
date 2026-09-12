@@ -38,8 +38,20 @@ public class ArraySymbol extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     final int argSize = ast.argSize();
+    if (argSize == 1) {
+      // ArraySymbol(a) is an array of unknown rank and dimensions; it stays as it is, and its
+      // head's NonThreadable attribute already keeps it out of list arithmetic
+      return F.NIL;
+    }
     IExpr name = ast.arg1();
     IExpr dimensions = ast.arg2();
+    if (!dimensions.isList()) {
+      if (!SymbolicArrayUtil.isValidDimension(dimensions)) {
+        return Errors.printMessage(S.ArraySymbol, "dimss", F.List(dimensions, S.ArraySymbol), engine);
+      }
+      // ArraySymbol(a, m) is a vector of length m
+      dimensions = F.list(dimensions);
+    }
 
     if (!dimensions.isList() || dimensions.argSize() < 1) {
       // The list `1` of dimensions `3` must have length `2`.
@@ -99,7 +111,7 @@ public class ArraySymbol extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_4;
+    return ARGS_1_4;
   }
 
   @Override

@@ -1499,6 +1499,14 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a QuantityArray ranks as the array it stands for, not as its two arguments
       IExpr arg1 = QuantityFunctions.normalizeQuantityArray(ast.arg1());
+      if (arg1.isAST(S.MatrixSymbol, 2)) {
+        // MatrixSymbol(a) is a matrix of unknown dimensions
+        return F.C2;
+      }
+      if (arg1.isAST(S.VectorSymbol, 2)) {
+        // VectorSymbol(v) is a vector of unknown length
+        return F.C1;
+      }
 
       IExpr dimensions = dimensionsUnderAssumptions(ast, arg1, engine);
       if (dimensions.isPresent()) {

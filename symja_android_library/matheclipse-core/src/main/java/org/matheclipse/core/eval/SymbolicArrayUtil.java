@@ -68,6 +68,11 @@ public class SymbolicArrayUtil {
     if (expr instanceof IArraySymbol) {
       return true;
     }
+    if (expr.isSymbol()) {
+      // a symbol given the NonThreadable attribute by the user, as in
+      // SetAttributes(x, NonThreadable); x + y + {{1, 2}, {3, 4}}
+      return Attribute.NONTHREADABLE.isAnySetIn(((ISymbol) expr).getAttributes());
+    }
     if (depth >= MAX_DEPTH || !expr.isAST()) {
       return false;
     }
@@ -215,6 +220,9 @@ public class SymbolicArrayUtil {
         // summing or averaging over the outermost level drops the first dimension
         return dimensions.removeAtCopy(1);
       }
+      case ID.UnitVector:
+        // UnitVector(n, k) is a vector of length n
+        return ast.isAST2() ? F.list(ast.arg1()) : F.NIL;
       case ID.Indexed: {
         if (!ast.isAST2() || !ast.arg2().isList()) {
           return F.NIL;

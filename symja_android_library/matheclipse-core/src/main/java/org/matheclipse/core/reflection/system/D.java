@@ -8,6 +8,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.DLeibnitzRule;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.ArrayDerivative;
+import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -444,6 +445,15 @@ public class D extends AbstractFunctionOptionEvaluator {
         // differentiating by a whole vector, matrix or array; an unsupported case has to stay
         // unevaluated rather than fall through to the scalar rules below
         return ArrayDerivative.arrayD(fx, (IArraySymbol) x, engine);
+      }
+      if (fx.isAST1() && fx.head() instanceof IArraySymbol && !fx.isFree(x, true)) {
+        // a vector, matrix or array valued function like MatrixSymbol("a", {m,n})[x]; its
+        // derivative is written with Derivative just as for a function symbol
+        IExpr arg1 = fx.first();
+        if (!SymbolicArrayUtil.isArrayValued(arg1)) {
+          IAST derivative = Derivative.createDerivative(1, fx.head(), arg1);
+          return x.equals(arg1) ? derivative : F.Times(F.D(arg1, x), derivative);
+        }
       }
       if (fx.isAST() && ArrayDerivative.isArrayHead(fx.head()) && !fx.isFree(x, true)) {
         // an array valued function of a scalar; the product rule of a Dot has to keep the order of

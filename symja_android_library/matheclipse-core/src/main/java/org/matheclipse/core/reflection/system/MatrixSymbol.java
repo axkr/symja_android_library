@@ -38,8 +38,20 @@ public class MatrixSymbol extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     final int argSize = ast.argSize();
+    if (argSize == 1) {
+      // MatrixSymbol(a) is a matrix of unknown dimensions; it stays as it is, and its head's
+      // NonThreadable attribute already keeps it out of list arithmetic
+      return F.NIL;
+    }
     IExpr name = ast.arg1();
     IExpr dimensions = ast.arg2();
+    if (!dimensions.isList()) {
+      if (!SymbolicArrayUtil.isValidDimension(dimensions)) {
+        return Errors.printMessage(S.MatrixSymbol, "nodim", F.List(dimensions), engine);
+      }
+      // MatrixSymbol(a, m) is the square m x m matrix
+      dimensions = F.list(dimensions, dimensions);
+    }
 
     if (!dimensions.isList() || dimensions.argSize() != 2) {
       // The list `1` of dimensions `3` must have length `2`.
@@ -99,7 +111,7 @@ public class MatrixSymbol extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_4;
+    return ARGS_1_4;
   }
 
   @Override

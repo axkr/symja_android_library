@@ -827,6 +827,8 @@ public class SymbolicArrayFunctions {
     switch (ast.headID()) {
       case ID.Dot:
         return dotRule(ast, expand, engine);
+      case ID.Plus:
+        return expand ? F.NIL : plusFactorRule(ast);
       case ID.Transpose:
       case ID.ConjugateTranspose:
         return transposeRule(ast, engine);
@@ -839,6 +841,52 @@ public class SymbolicArrayFunctions {
       default:
         return F.NIL;
     }
+  }
+
+  /**
+   * Factor a common first or last factor out of a sum of {@link S#Dot} chains, so that
+   * <code>a.b + 2*a.c</code> becomes <code>a.(b + 2*c)</code>. Only a numeric coefficient is
+   * separated from a chain, because a symbolic factor of a product could itself be an array.
+   *
+   * @return {@link F#NIL} if the summands are not all chains sharing a first or a last factor
+   */
+  private static IExpr plusFactorRule(IAST plus) {
+    final int size = plus.size();
+    IExpr[] coefficients = new IExpr[size];
+    IAST[] chains = new IAST[size];
+    for (int i = 1; i < size; i++) {
+      IExpr term = plus.get(i);
+      IExpr coefficient = F.C1;
+      if (term.isTimes() && term.argSize() == 2 && term.first().isNumber()) {
+        coefficient = term.first();
+        term = term.second();
+      }
+      if (!term.isAST(S.Dot) || term.argSize() < 2) {
+        return F.NIL;
+      }
+      coefficients[i] = coefficient;
+      chains[i] = (IAST) term;
+    }
+    for (boolean left : new boolean[] {true, false}) {
+      IExpr common = left ? chains[1].arg1() : chains[1].last();
+      boolean shared = true;
+      for (int i = 2; i < size; i++) {
+        if (!common.equals(left ? chains[i].arg1() : chains[i].last())) {
+          shared = false;
+          break;
+        }
+      }
+      if (!shared) {
+        continue;
+      }
+      IASTAppendable rests = F.PlusAlloc(size - 1);
+      for (int i = 1; i < size; i++) {
+        IAST rest = left ? chains[i].removeAtCopy(1) : chains[i].removeAtCopy(chains[i].argSize());
+        rests.append(F.Times(coefficients[i], rest.oneIdentity1()));
+      }
+      return left ? F.Dot(common, rests) : F.Dot(rests, common);
+    }
+    return F.NIL;
   }
 
   /** Rewrite rules for a {@link S#Dot} chain. */
@@ -1098,7 +1146,16 @@ public class SymbolicArrayFunctions {
   /** The explicit component array of one symbolic array, or {@link F#NIL}. */
   private static IExpr componentReplacement(IExpr expr, EvalEngine engine) {
     if (expr instanceof IArraySymbol) {
-      return componentArray((IArraySymbol) expr);
+      return componentArray(expr, ((IArraySymbol) expr).getDimensions());
+    }
+    if (expr.isSymbol() && !expr.isBuiltInSymbol()) {
+      // a symbol declared as an array by the assumptions, like v in
+      // ComponentExpand(v.v, Element(v, Vectors(3)))
+      IAST dimensions = SymbolicArrayUtil.tensorDimensions(expr, engine);
+      if (dimensions.isPresent() && dimensions.argSize() > 0) {
+        return componentArray(expr, dimensions);
+      }
+      return F.NIL;
     }
     if (SymbolicArrayUtil.isSymbolicArrayHead(expr)) {
       return normalSymbolicArray((IAST) expr);
@@ -1107,8 +1164,8 @@ public class SymbolicArrayFunctions {
   }
 
   /**
-   * The explicit array of {@link S#Indexed} components of a symbolic array of positive integer
-   * dimensions.
+   * The explicit array of {@link S#Indexed} components of a symbolic array, or of a symbol declared
+   * as an array by the assumptions, of positive integer dimensions.
    *
    * <p>
    * Confirmed against real Mathematica (2026-09-12): <code>ComponentExpand</code> does NOT fold a
@@ -1122,8 +1179,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if a dimension is not a positive integer
    */
-  private static IExpr componentArray(IArraySymbol arraySymbol) {
-    IAST dimensions = arraySymbol.getDimensions();
+  private static IExpr componentArray(IExpr array, IAST dimensions) {
     int[] dimensionValues = new int[dimensions.argSize()];
     for (int i = 0; i < dimensionValues.length; i++) {
       dimensionValues[i] = dimensions.get(i + 1).toIntDefault();
@@ -1131,7 +1187,7 @@ public class SymbolicArrayFunctions {
         return F.NIL;
       }
     }
-    return componentRecursive((IExpr) arraySymbol, dimensionValues, 0,
+    return componentRecursive(array, dimensionValues, 0,
         new int[dimensionValues.length]);
   }
 
