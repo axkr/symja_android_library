@@ -970,6 +970,28 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * A change of variable writes the coefficients in the new variable through the inverse of the
+   * substitution, so the solution can come back with the round trip still in it.
+   */
+  @Test
+  public void testDSolveChangeOfVariableUndoesTheRoundTrip() {
+    // The coefficients here become rational in t == Tan(x), and the solution in t carries
+    // ArcTan(t); putting Tan(x) back left ArcTan(Tan(x)) standing, which is a sawtooth rather than
+    // the x it stands for, and no method after this one could work with it.
+    check("FreeQ(DSolve(Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x) == 0,"
+        + " y(x), x), ArcTan)", //
+        "True");
+    checkResidual("Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x) == 0", //
+        "Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x)",
+        "{C(1)->3/7, C(2)->5/11, x->13/10}");
+    // and with that out of the way variation of parameters can use the basis, which it could not
+    // while the answer was a sawtooth
+    checkResidual("Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x) == E^(-x)", //
+        "Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x) - E^(-x)",
+        "{C(1)->3/7, C(2)->5/11, x->13/10}");
+  }
+
+  /**
    * Weber's equation, reached by removing the first derivative from an equation whose coefficients
    * are a linear and a quadratic polynomial.
    */

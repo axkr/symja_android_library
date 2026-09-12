@@ -119,6 +119,14 @@ final class DSolveChangeOfVariable {
         continue;
       }
       IExpr body = engine.evaluate(F.subst(branches.arg1(), tDummy, substitution));
+      // The coefficients were written in the new variable through the inverse, so the solution can
+      // carry it, and putting the substitution back then leaves the round trip standing:
+      // ArcTan(Tan(x)) where x was meant. It is x wherever the substitution is one, and writing it
+      // out is what makes the answer a function rather than a sawtooth.
+      IExpr roundTrip = engine.evaluate(F.subst(inverse, tDummy, substitution));
+      if (!roundTrip.equals(xVar)) {
+        body = engine.evaluate(F.ReplaceAll(body, F.Rule(roundTrip, xVar)));
+      }
       if (body.isPresent() && body.isFree(tDummy, true)) {
         return body;
       }
