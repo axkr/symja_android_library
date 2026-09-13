@@ -1130,6 +1130,28 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * The same equation with singular points which are irrational, which used to be refused before the
+   * change of variable was even tried.
+   */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveFuchsianWithIrrationalPoles() {
+    // singular at +-I*Sqrt(2)
+    checkResidual("(x^2 + 2)*y''(x) - x*y'(x) + 4*y(x) == 0", //
+        "(x^2 + 2)*y''(x) - x*y'(x) + 4*y(x)", "{C(1)->3/7, C(2)->5/11, x->13/10}");
+    checkResidual("(x^2 + 2)*y''(x) - x*y'(x) + 4*y(x) == 0", //
+        "(x^2 + 2)*y''(x) - x*y'(x) + 4*y(x)", "{C(1)->3/7, C(2)->5/11, x->-23/10}");
+    // singular at +-I/Sqrt(3)
+    checkResidual("(3*x^2 + 1)*y''(x) - 2*x*y'(x) + 4*y(x) == 0", //
+        "(3*x^2 + 1)*y''(x) - 2*x*y'(x) + 4*y(x)", "{C(1)->3/7, C(2)->5/11, x->13/10}");
+    // an initial value problem, with the conditions met
+    check("With({s=DSolve({(x^2 + 2)*y''(x) - x*y'(x) + 4*y(x) == 0, y(0) == -1, y'(0) == 3},"
+        + " y(x), x)}, Abs(N(y(x) /. s[[1]] /. x -> 0) + 1) < 10^-6"
+        + " && Abs(N(D(y(x) /. s[[1]], x) /. x -> 0) - 3) < 10^-6)", //
+        "True");
+  }
+
+  /**
    * The same equation with its two singular points a conjugate pair, which used to be declined: the
    * answer was checked between the poles, and between a conjugate pair there is nothing but
    * imaginary numbers.

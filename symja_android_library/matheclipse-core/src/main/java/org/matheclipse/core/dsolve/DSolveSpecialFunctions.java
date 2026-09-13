@@ -487,11 +487,10 @@ final class DSolveSpecialFunctions {
       // three is Heun's, which is not written with hypergeometric functions at all.
       return null;
     }
+    // The singular points may be irrational: (x^2 + 2)*y'' + ... is singular at +-I*Sqrt(2). The
+    // change of variable is the same for them, and the answer is checked numerically either way.
     IExpr x1 = poles.arg1().first();
     IExpr x2 = poles.arg2().first();
-    if (DSolveUtil.hasRadical(x1) || DSolveUtil.hasRadical(x2)) {
-      return null;
-    }
     IExpr width = engine.evaluate(F.Subtract(x2, x1));
     if (DSolveODE.isVanishing(width, engine)) {
       return null;
