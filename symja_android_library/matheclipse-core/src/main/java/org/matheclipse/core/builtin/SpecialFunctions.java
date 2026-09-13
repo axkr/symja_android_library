@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Zeta;
+import java.math.BigInteger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -21,7 +22,6 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
-import java.math.BigInteger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1425,7 +1425,11 @@ public class SpecialFunctions {
             return engine.isNumericMode() ? F.CD1 : F.C1;
           }
         }
-        return numericInverseBeta(engine, z, a, b);
+        try {
+          return numericInverseBeta(engine, z, a, b);
+        } catch (MathIllegalStateException mise) {
+          return Errors.printMessage(S.InverseBetaRegularized, mise);
+        }
       }
 
       IExpr z1 = ast.arg1();
@@ -1438,7 +1442,11 @@ public class SpecialFunctions {
       if (isExactlyZero(z1)) {
         return F.InverseBetaRegularized(z2, a, b);
       }
-      return numericInverseBeta(engine, z1, z2, a, b);
+      try {
+        return numericInverseBeta(engine, z1, z2, a, b);
+      } catch (MathIllegalStateException mise) {
+        return Errors.printMessage(S.InverseBetaRegularized, mise);
+      }
     }
 
     /** <code>InverseBetaRegularized(z, a, b)</code> for real numbers. */
@@ -1509,8 +1517,7 @@ public class SpecialFunctions {
           return InverseGammaBetaJS.invRegularizedGammaQ(stack[top], stack[top + 1]);
         }
         if (size == 3) {
-          return InverseGammaBetaJS.invRegularizedGamma(stack[top], stack[top + 1],
-              stack[top + 2]);
+          return InverseGammaBetaJS.invRegularizedGamma(stack[top], stack[top + 1], stack[top + 2]);
         }
       } catch (ArgumentTypeException ate) {
         // arguments out of range
@@ -1931,8 +1938,7 @@ public class SpecialFunctions {
 
 
 
-  private static class PolyGamma extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+  private static class PolyGamma extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     public IExpr e1ApfloatArg(Apfloat arg1) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
@@ -2154,12 +2160,11 @@ public class SpecialFunctions {
   }
 
 
-  private static class PolyLog extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+  private static class PolyLog extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     /**
-     * Beyond this the Eulerian numbers themselves are the cost: the table is <code>n</code> integers
-     * whose sum is <code>n!</code>, built in <code>n^2</code> steps. Measured against
+     * Beyond this the Eulerian numbers themselves are the cost: the table is <code>n</code>
+     * integers whose sum is <code>n!</code>, built in <code>n^2</code> steps. Measured against
      * <code>PolyLog(-n, -3/2)</code>: 2 ms at 128, 213 ms at 1000, 1.9 s at 2000. The line is drawn
      * at the largest order Mathematica was seen to answer; past it <code>PolyLog(-n, z)</code> is
      * left unevaluated rather than begun.
@@ -2304,8 +2309,9 @@ public class SpecialFunctions {
      * The same closed form the <code>PolyLogRules.m</code> rule writes, and the reason it is here:
      * the rule reaches each Eulerian number through the explicit double sum, which is a power of a
      * big integer per term built as an expression, and then leaves <code>Together</code> a
-     * polynomial of degree <code>n</code> over a rational to cancel. <code>PolyLog(-128, -3/2)</code>
-     * did not finish. The recurrence below is the same arithmetic without the expressions.
+     * polynomial of degree <code>n</code> over a rational to cancel.
+     * <code>PolyLog(-128, -3/2)</code> did not finish. The recurrence below is the same arithmetic
+     * without the expressions.
      */
     private static IExpr polyLogNegativeIntegerOrder(int order, IExpr z) {
       BigInteger[] eulerian = new BigInteger[order];
@@ -2621,9 +2627,9 @@ public class SpecialFunctions {
   /**
    * Smallest argument answered by the large argument expansions in {@link StruveFunctions}. The
    * library routine's series in <code>z^2</code> is quick below it and needs a working precision
-   * that grows with <code>|z|</code> above: <code>StruveH(-0.8+1.2*I, 10007)</code> took 396 s at 25
-   * digits. The expansion declines, by its own error estimate, anything it cannot answer for - at
-   * 25 digits that was every order at 15 and several at 30.
+   * that grows with <code>|z|</code> above: <code>StruveH(-0.8+1.2*I, 10007)</code> took 396 s at
+   * 25 digits. The expansion declines, by its own error estimate, anything it cannot answer for -
+   * at 25 digits that was every order at 15 and several at 30.
    */
   private static final double MIN_ASYMPTOTIC_STRUVE_ARGUMENT = 15.0;
 
@@ -2632,8 +2638,7 @@ public class SpecialFunctions {
     return Double.isFinite(argument) && argument >= MIN_ASYMPTOTIC_STRUVE_ARGUMENT;
   }
 
-  private static final class StruveH extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+  private static final class StruveH extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -2656,8 +2661,7 @@ public class SpecialFunctions {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
         if (isLargeStruveArgument(z)) {
-          IExpr largeArgument =
-              WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveH);
+          IExpr largeArgument = WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveH);
           if (largeArgument.isPresent()) {
             return largeArgument;
           }
@@ -2747,8 +2751,7 @@ public class SpecialFunctions {
   }
 
 
-  private static final class StruveL extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+  private static final class StruveL extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -2771,8 +2774,7 @@ public class SpecialFunctions {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
         if (isLargeStruveArgument(z)) {
-          IExpr largeArgument =
-              WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveL);
+          IExpr largeArgument = WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveL);
           if (largeArgument.isPresent()) {
             return largeArgument;
           }
