@@ -61,6 +61,35 @@ final class DSolveODE {
   private static final int SOLVE_SEPARATED_SECONDS = 3;
 
   static IExpr odeExact(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
+    IExpr f_xy_real = exactPotential(engine, m, n, x, y);
+    if (f_xy_real.isPresent()) {
+      IExpr equation = F.Equal(f_xy_real, C_1);
+
+      // Attempt to extract explicit y(x) from the implicit equation
+      IExpr ySols = engine.evaluate(F.Solve(equation, F.List(y)));
+      IAST extracted = DSolveUtil.extractSolveResults(ySols);
+      if (extracted.argSize() > 0) {
+        IASTAppendable roots = F.ListAlloc(extracted.argSize());
+        for (int i = 1; i <= extracted.argSize(); i++) {
+          // roots.append(engine.evaluate(F.Simplify(extracted.get(i))));
+          roots.append(extracted.get(i));
+        }
+        if (roots.argSize() == 1) {
+          return roots.arg1();
+        } else if (roots.argSize() > 1) {
+          return roots; // Return all roots as a List
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The potential <code>f(x,y)</code> of an exact equation <code>M + N*y' == 0</code>, whose level
+   * curves <code>f == C</code> are its solutions, or {@link F#NIL} if the equation is not exact or
+   * an integral does not close.
+   */
+  private static IExpr exactPotential(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
     // Substitute y(x) with a dummy variable Y to treat it as an independent variable
     // for partial differentiation and integration without triggering the chain rule.
     IExpr yDummy = F.Dummy("Y");
@@ -103,25 +132,7 @@ final class DSolveODE {
       IExpr f_xy = engine.evaluate(F.Plus(intM, gy));
 
       // Substitute y(x) back
-      IExpr f_xy_real = F.subst(f_xy, yDummy, y);
-
-      IExpr equation = F.Equal(f_xy_real, C_1);
-
-      // Attempt to extract explicit y(x) from the implicit equation
-      IExpr ySols = engine.evaluate(F.Solve(equation, F.List(y)));
-      IAST extracted = DSolveUtil.extractSolveResults(ySols);
-      if (extracted.argSize() > 0) {
-        IASTAppendable roots = F.ListAlloc(extracted.argSize());
-        for (int i = 1; i <= extracted.argSize(); i++) {
-          // roots.append(engine.evaluate(F.Simplify(extracted.get(i))));
-          roots.append(extracted.get(i));
-        }
-        if (roots.argSize() == 1) {
-          return roots.arg1();
-        } else if (roots.argSize() > 1) {
-          return roots; // Return all roots as a List
-        }
-      }
+      return F.subst(f_xy, yDummy, y);
     }
     return F.NIL;
   }
@@ -131,8 +142,43 @@ final class DSolveODE {
    * equation to a separable form.
    */
   static IExpr odeHomogeneous(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
-    // Substitute y -> x * v
     IExpr v = F.Dummy("v");
+    IExpr normalizedM = homogeneousReduction(engine, m, n, x, y, v);
+    if (normalizedM.isNIL()) {
+      return F.NIL;
+    }
+    // Try to solve the transformed equation using the existing separable solver
+    IExpr vSol = odeSeparable(engine, normalizedM, F.C1, x, v, C_1);
+
+    if (vSol.isPresent()) {
+      // odeSeparable has already solved for v, so undoing the substitution y == v*x is a
+      // multiplication. Replacing v by y/x in a result which no longer contains v, and then asking
+      // for y, left this method unable to return anything at all.
+      IAST branches = DSolveUtil.stripConditionalExpression(vSol).makeList();
+      IASTAppendable results = F.ListAlloc(branches.argSize());
+      for (int i = 1; i <= branches.argSize(); i++) {
+        IExpr branch = branches.get(i);
+        if (!branch.isFree(v, true)) {
+          continue;
+        }
+        results.append(engine.evaluate(F.Expand(F.Times(x, branch))));
+      }
+      if (results.argSize() == 1) {
+        return results.arg1();
+      } else if (results.argSize() > 1) {
+        return results;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The equation <code>v' == -normalizedM</code> which the substitution <code>y == v*x</code>
+   * leaves, or {@link F#NIL} if the equation is not homogeneous and the substitution does not
+   * separate it.
+   */
+  private static IExpr homogeneousReduction(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y,
+      IExpr v) {
 
     IExpr mSub = F.subst(m, y, F.Times(x, v));
     IExpr nSub = F.subst(n, y, F.Times(x, v));
@@ -165,30 +211,7 @@ final class DSolveODE {
       // and the equation which is integrated below is written with them collapsed too
       normalizedM = engine.evaluate(F.Divide(scaled, x));
     }
-
-    // Try to solve the transformed equation using the existing separable solver
-    IExpr vSol = odeSeparable(engine, normalizedM, F.C1, x, v, C_1);
-
-    if (vSol.isPresent()) {
-      // odeSeparable has already solved for v, so undoing the substitution y == v*x is a
-      // multiplication. Replacing v by y/x in a result which no longer contains v, and then asking
-      // for y, left this method unable to return anything at all.
-      IAST branches = DSolveUtil.stripConditionalExpression(vSol).makeList();
-      IASTAppendable results = F.ListAlloc(branches.argSize());
-      for (int i = 1; i <= branches.argSize(); i++) {
-        IExpr branch = branches.get(i);
-        if (!branch.isFree(v, true)) {
-          continue;
-        }
-        results.append(engine.evaluate(F.Expand(F.Times(x, branch))));
-      }
-      if (results.argSize() == 1) {
-        return results.arg1();
-      } else if (results.argSize() > 1) {
-        return results;
-      }
-    }
-    return F.NIL;
+    return normalizedM;
   }
 
   /**
@@ -196,6 +219,21 @@ final class DSolveODE {
    */
   static IExpr odeIntegratingFactor(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y,
       IExpr C_1) {
+    IExpr mu = integratingFactor(engine, m, n, x, y);
+    if (mu.isNIL()) {
+      return F.NIL;
+    }
+    IExpr exactM = engine.evaluate(F.Times(mu, m));
+    IExpr exactN = engine.evaluate(F.Times(mu, n));
+    // The equation is now exact, pass it back to our exact solver
+    return odeExact(engine, exactM, exactN, x, y, C_1);
+  }
+
+  /**
+   * An integrating factor of <code>M + N*y' == 0</code> depending on <code>x</code> alone or on
+   * <code>y</code> alone, or {@link F#NIL}.
+   */
+  private static IExpr integratingFactor(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
     // Substitute y(x) with a dummy variable Y for partial derivatives
     IExpr yDummy = F.Dummy("Y");
     IExpr mDummy = F.subst(m, y, yDummy);
@@ -218,12 +256,7 @@ final class DSolveODE {
       if (exponent1.isNIL()) {
         return F.NIL;
       }
-      IExpr mu = engine.evaluate(F.Exp(exponent1));
-      IExpr exactM = engine.evaluate(F.Times(mu, m));
-      IExpr exactN = engine.evaluate(F.Times(mu, n));
-
-      // The equation is now exact, pass it back to our exact solver
-      return odeExact(engine, exactM, exactN, x, y, C_1);
+      return engine.evaluate(F.Exp(exponent1));
     }
 
     // Case 2: Integrating factor depends only on y
@@ -238,12 +271,7 @@ final class DSolveODE {
       IExpr muDummy = engine.evaluate(F.Exp(exponent2));
 
       // Substitute back y(x) into the integrating factor
-      IExpr mu = engine.evaluate(F.subst(muDummy, yDummy, y));
-
-      IExpr exactM = engine.evaluate(F.Times(mu, m));
-      IExpr exactN = engine.evaluate(F.Times(mu, n));
-
-      return odeExact(engine, exactM, exactN, x, y, C_1);
+      return engine.evaluate(F.subst(muDummy, yDummy, y));
     }
 
     return F.NIL;
@@ -280,6 +308,33 @@ final class DSolveODE {
     return new IExpr[] {fxExpr, gyExpr};
   }
 
+  /**
+   * The two factors <code>{f(x), g(y)}</code> of <code>m/n == f(x)*g(y)</code>, or
+   * <code>null</code> if the quotient does not separate.
+   */
+  private static IExpr[] separation(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
+    IExpr quotient = n.isOne() ? m : engine.evaluate(F.Divide(m, n));
+    IExpr[] parts = separateFactors(engine, quotient, x, y);
+    if (parts == null && quotient.leafCount() <= MAX_SEPARABLE_FACTOR_LEAF_COUNT) {
+      // A sum never sorts into an x part and a y part, but the sum of a separable equation
+      // factors into one: x^2*y'(x) == 1 - x^2 + y(x)^2 - x^2*y(x)^2 arrives fully expanded.
+      IExpr factored = engine.evaluate(F.Factor(quotient));
+      if (factored.isPresent() && !factored.equals(quotient)) {
+        parts = separateFactors(engine, factored, x, y);
+      }
+      if (parts == null) {
+        // A root of a product of the two is one factor as it stands and separates only where both
+        // are positive, which is what PowerExpand assumes: y'(x) == 3*Sqrt(x*y(x)) is a separable
+        // equation whose right hand side is a single Power.
+        IExpr expanded = engine.evaluate(F.PowerExpand(quotient));
+        if (expanded.isPresent() && !expanded.equals(quotient)) {
+          parts = separateFactors(engine, expanded, x, y);
+        }
+      }
+    }
+    return parts;
+  }
+
   static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
     return odeSeparable(engine, m, n, x, y, C_1, null);
   }
@@ -301,25 +356,7 @@ final class DSolveODE {
     // y' == -m/n separates whenever the quotient does, so the coefficient of y' is divided out
     // first. Only the pair (m, n) as a whole is exact, which is why the division stays local to
     // this method and the other members of the cascade keep seeing the pair.
-    IExpr quotient = n.isOne() ? m : engine.evaluate(F.Divide(m, n));
-    IExpr[] parts = separateFactors(engine, quotient, x, y);
-    if (parts == null && quotient.leafCount() <= MAX_SEPARABLE_FACTOR_LEAF_COUNT) {
-      // A sum never sorts into an x part and a y part, but the sum of a separable equation
-      // factors into one: x^2*y'(x) == 1 - x^2 + y(x)^2 - x^2*y(x)^2 arrives fully expanded.
-      IExpr factored = engine.evaluate(F.Factor(quotient));
-      if (factored.isPresent() && !factored.equals(quotient)) {
-        parts = separateFactors(engine, factored, x, y);
-      }
-      if (parts == null) {
-        // A root of a product of the two is one factor as it stands and separates only where both
-        // are positive, which is what PowerExpand assumes: y'(x) == 3*Sqrt(x*y(x)) is a separable
-        // equation whose right hand side is a single Power.
-        IExpr expanded = engine.evaluate(F.PowerExpand(quotient));
-        if (expanded.isPresent() && !expanded.equals(quotient)) {
-          parts = separateFactors(engine, expanded, x, y);
-        }
-      }
-    }
+    IExpr[] parts = separation(engine, m, n, x, y);
     if (parts != null) {
       IExpr fxExpr = parts[0];
       IExpr gyExpr = parts[1];
@@ -824,6 +861,153 @@ final class DSolveODE {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The answer to a first order equation whose first integral does not solve for the unknown: the
+   * relation <code>G(x, y(x)) == C(1)</code>, or with the constant named by a condition
+   * <code>y(x0) == y0</code> as <code>G(x, y(x)) == G(x0, y0)</code>. The caller wraps it in
+   * <code>Solve</code>, which is how Mathematica writes an equation it cannot solve for the
+   * unknown.
+   *
+   * <p>
+   * Only a last resort: every method which answers explicitly has declined before this is asked.
+   * The first integral is found by the same separable, exact and homogeneous methods as
+   * {@link #odeSolve}, and is only returned once it is shown to be one -- along a level curve of
+   * <code>G</code> the slope is <code>-G_x/G_y</code>, so <code>M*G_y - N*G_x</code> has to vanish.
+   *
+   * @return {@link F#NIL} if no first integral is found or shown, or if the conditions are not a
+   *         single value of the unknown which names the constant
+   */
+  static IExpr implicitSolution(IExpr equation, IExpr x, IExpr y, IExpr C_1, IAST conditions,
+      EvalEngine engine) {
+    IExpr[] p = odeTransform(engine, equation, x, y);
+    if (p == null) {
+      return F.NIL;
+    }
+    IExpr yVar = F.Dummy("y");
+    IExpr m = engine.evaluate(F.subst(p[0], y, yVar));
+    IExpr n = engine.evaluate(F.subst(p[1], y, yVar));
+    if (!m.isFree(y.head(), true) || !n.isFree(y.head(), true)) {
+      return F.NIL;
+    }
+    IExpr level = firstIntegral(engine, m, n, x, yVar);
+    if (level.isNIL()) {
+      return F.NIL;
+    }
+    // A potential found through an integrating factor keeps the factor's denominator:
+    // (x*Log(y)*y + Sin(x)*y)/y where x*Log(y) + Sin(x) is meant.
+    IExpr cancelled = engine.evaluate(F.Expand(F.Cancel(level)));
+    if (cancelled.isPresent() && cancelled.leafCount() < level.leafCount()) {
+      level = cancelled;
+    }
+    IExpr right = C_1;
+    if (conditions.argSize() > 0) {
+      IExpr[] point = valuePoint(conditions, y.head(), x, engine);
+      if (point == null) {
+        return F.NIL;
+      }
+      right = engine.evaluate(F.subst(F.subst(level, x, point[0]), yVar, point[1]));
+      if (!right.isFree(x, true) || !right.isFree(yVar, true) || right.isIndeterminate()
+          || right.isDirectedInfinity() || !right.isFree(x2 -> x2.isIndeterminate()
+              || x2.isDirectedInfinity(), true)) {
+        return F.NIL;
+      }
+    }
+    return F.Equal(engine.evaluate(F.subst(level, yVar, y)), right);
+  }
+
+  /**
+   * A first integral <code>G(x,y)</code> of <code>M + N*y' == 0</code> with no integral left
+   * unevaluated in it, or {@link F#NIL}.
+   */
+  private static IExpr firstIntegral(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
+    // separable: dy/g(y) == -f(x) dx
+    IExpr[] parts = separation(engine, m, n, x, y);
+    if (parts != null) {
+      IExpr gy = DSolveContext.integrate(parts[1].inverse(), y, engine);
+      IExpr fx = gy.isNIL() ? F.NIL : DSolveContext.integrate(parts[0], x, engine);
+      if (fx.isPresent()) {
+        IExpr level = engine.evaluate(F.Plus(gy, fx));
+        if (isFirstIntegral(level, m, n, x, y, engine)) {
+          return level;
+        }
+      }
+    }
+    IExpr potential = exactPotential(engine, m, n, x, y);
+    if (potential.isPresent() && isFirstIntegral(potential, m, n, x, y, engine)) {
+      return potential;
+    }
+    // Clearing denominators on the way in can leave a pair which is exact only after it is
+    // multiplied back: Cos(x) + Log(y) + (x/y + E^y)*y' == 0 arrives multiplied by y.
+    IExpr mu = integratingFactor(engine, m, n, x, y);
+    if (mu.isPresent()) {
+      potential = exactPotential(engine, engine.evaluate(F.Times(mu, m)),
+          engine.evaluate(F.Times(mu, n)), x, y);
+      if (potential.isPresent() && isFirstIntegral(potential, m, n, x, y, engine)) {
+        return potential;
+      }
+    }
+    IExpr v = F.Dummy("v");
+    IExpr normalizedM = homogeneousReduction(engine, m, n, x, y, v);
+    if (normalizedM.isPresent()) {
+      IExpr[] reduced = separation(engine, normalizedM, F.C1, x, v);
+      if (reduced != null) {
+        IExpr gv = DSolveContext.integrate(reduced[1].inverse(), v, engine);
+        IExpr fx = gv.isNIL() ? F.NIL : DSolveContext.integrate(reduced[0], x, engine);
+        if (fx.isPresent()) {
+          IExpr level = engine.evaluate(F.subst(F.Plus(gv, fx), v, F.Divide(y, x)));
+          if (isFirstIntegral(level, m, n, x, y, engine)) {
+            return level;
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /** How close to zero <code>M*G_y - N*G_x</code> has to come, relative to its terms. */
+  private static final double FIRST_INTEGRAL_TOLERANCE = 1.0e-8;
+
+  /**
+   * Whether <code>level</code> is constant along the solutions of <code>M + N*y' == 0</code>:
+   * <code>M*G_y - N*G_x</code> vanishes at sample points of both variables, and <code>G</code>
+   * does depend on <code>y</code>.
+   */
+  private static boolean isFirstIntegral(IExpr level, IExpr m, IExpr n, IExpr x, IExpr y,
+      EvalEngine engine) {
+    if (level.isNIL() || level.isFree(y, true) || !DSolveContext.isUsable(level)) {
+      return false;
+    }
+    IExpr gy = engine.evaluate(F.D(level, y));
+    IExpr gx = engine.evaluate(F.D(level, x));
+    IExpr defect = F.Subtract(F.Times(m, gy), F.Times(n, gx));
+    IExpr scale = F.Plus(F.Abs(F.Times(m, gy)), F.Abs(F.Times(n, gx)));
+    int[][] samples = {{3, 10, 5, 11}, {7, 10, 2, 9}, {13, 10, 3, 7}, {23, 10, 7, 13}};
+    int zeros = 0;
+    for (int[] sample : samples) {
+      IASTAppendable rules = F.ListAlloc(2);
+      rules.append(F.Rule(x, F.QQ(sample[0], sample[1])));
+      rules.append(F.Rule(y, F.QQ(sample[2], sample[3])));
+      IExpr size;
+      IExpr magnitude;
+      try {
+        magnitude = engine.evalN(F.Abs(F.subst(defect, rules)));
+        size = engine.evalN(F.subst(scale, rules));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        continue;
+      }
+      if (!magnitude.isReal() || !size.isReal()) {
+        continue;
+      }
+      double relative = magnitude.evalf() / (1.0 + size.evalf());
+      if (relative > FIRST_INTEGRAL_TOLERANCE) {
+        return false;
+      }
+      zeros++;
+    }
+    return zeros >= 2;
   }
 
   /** Whether one of the methods of {@link #odeSolve} has answered with the unknown eliminated. */
@@ -2231,6 +2415,15 @@ final class DSolveODE {
           temp = odeSolve(engine, equation, xVar, uFunction1Arg, c_n);
           if (temp.isNIL()) {
             temp = solveRiccatiThroughParticular(equation, xVar, uFunction1Arg, c_n, engine);
+          }
+          if (temp.isNIL()) {
+            // Nothing answers the equation explicitly. Its first integral may still be found, and
+            // the answer is then that relation left for Solve, as Mathematica gives it.
+            IExpr relation =
+                implicitSolution(equation, xVar, uFunction1Arg, c_n, boundaryConditions, engine);
+            if (relation.isPresent()) {
+              return F.Solve(relation, uFunction1Arg);
+            }
           }
         }
 

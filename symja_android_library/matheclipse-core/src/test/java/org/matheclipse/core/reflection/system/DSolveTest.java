@@ -587,6 +587,28 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->(C(1)*Cos(2*x))/E^x+(C(2)*Sin(2*x))/E^x}}");
   }
 
+  @Test
+  public void testDSolveImplicitSolution() {
+    // A first integral which does not solve for y is the answer, left for Solve, which is what
+    // Mathematica returns for these: Solve[E^y[x] + x Log[y[x]] + Sin[x] == C[1], y[x]].
+    check("DSolve(Cos(x) + Log(y(x)) + (x/y(x) + E^y(x))*y'(x) == 0, y(x), x)", //
+        "Solve(E^y(x)+x*Log(y(x))+Sin(x)==C(1),y(x))");
+    // with a condition the constant is named in the relation, as Mathematica does:
+    // Solve[E^y[x] + x*Log[y[x]] + Sin[x] == E + Sin[1], y[x]]
+    check("DSolve({Cos(x) + Log(y(x)) + (x/y(x) + E^y(x))*y'(x) == 0, y(1) == 1}, y(x), x)", //
+        "Solve(E^y(x)+x*Log(y(x))+Sin(x)==E+Sin(1),y(x))");
+    // homogeneous: the relation Mathematica gives, with Log(x) on the other side
+    check("DSolve((x - y(x))*y'(x) == x + y(x), y(x), x)", //
+        "Solve(-ArcTan(y(x)/x)+Log(x)+Log(1+y(x)^2/x^2)/2==C(1),y(x))");
+    // The relation is a first integral: along it y' == -G_x/G_y, which solves the equation.
+    check("With({g=E^Y + x*Log(Y) + Sin(x)}, Simplify((Cos(x) + Log(Y) + (x/Y + E^Y)*"
+        + "(-D(g, x)/D(g, Y)))))", //
+        "0");
+    // an equation which is answered explicitly still is
+    check("DSolve(y'(x) == 2*x*y(x), y(x), x)", //
+        "{{y(x)->E^x^2*C(1)}}");
+  }
+
   /** {@link #checkResidual} for an equation in <code>t</code>. */
   private void checkResidualIn(String equation, String residual, String point) {
     check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual
