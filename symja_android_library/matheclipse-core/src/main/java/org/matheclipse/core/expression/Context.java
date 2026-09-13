@@ -144,6 +144,16 @@ public class Context implements Serializable {
     return contextName.equals(Context.SYSTEM_CONTEXT_NAME);
   }
 
+  /**
+   * Take <code>symbol</code> out of this context, so that the next reference to its name creates a
+   * new symbol, which is what <code>Remove</code> does.
+   *
+   * @return <code>true</code> if the symbol was found
+   */
+  public boolean remove(ISymbol symbol) {
+    return symbolTable.values().remove(symbol);
+  }
+
   public ISymbol put(String key, ISymbol value) {
     return symbolTable.put(key, value);
   }

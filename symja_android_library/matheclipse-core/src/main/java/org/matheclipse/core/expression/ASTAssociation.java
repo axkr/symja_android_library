@@ -979,13 +979,18 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     hashValue = 0;
     // throws IndexOutOfBoundsException
     IExpr result = super.remove(location);
-    MutMap<IExpr, Integer> mutable = keyToIndexMap.toMutMap(x -> x);
-    mutable.without(result.first());
+    IExpr removedKey = result.first();
+    MutMap<IExpr, Integer> mutable = keyToIndexMap.toMutMap(x -> x).without(removedKey);
     UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
     while (iterator.hasNext()) {
       UnEntry<IExpr, Integer> element = iterator.next();
+      // the old map still holds the removed key, at 'location' itself; renumbering it put it back
+      // one place lower, so KeyExistsQ kept answering True for a key the association had dropped
+      if (element.getKey().equals(removedKey)) {
+        continue;
+      }
       int indx = element.getValue();
-      if (indx >= location) {
+      if (indx > location) {
         mutable = mutable.assoc(element.getKey(), indx - 1);
       }
     }
@@ -1085,9 +1090,9 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
       if (rule.isRuleAST()) {
         final IAST oldRule = getRule(location);
         if (oldRule.isPresent()) {
-          keyToIndexMap.without(oldRule.first());
+          keyToIndexMap = keyToIndexMap.without(oldRule.first());
         }
-        keyToIndexMap.assoc(rule.first(), location);
+        keyToIndexMap = keyToIndexMap.assoc(rule.first(), location);
         rrbTree = rrbTree.replace(location, rule);
         return oldRule;
       }

@@ -93,6 +93,7 @@ public final class PatternMatching {
         S.PatternTest.setEvaluator(new PatternTest());
         S.Clear.setEvaluator(new Clear());
         S.ClearAll.setEvaluator(new ClearAll());
+        S.Remove.setEvaluator(new Remove());
         S.Context.setEvaluator(new Context());
         S.Contexts.setEvaluator(new Contexts());
         S.Definition.setEvaluator(new Definition());
@@ -288,6 +289,52 @@ public final class PatternMatching {
    *
    * </blockquote>
    */
+  /**
+   * <code>Remove(symbol1, symbol2, ...)</code> - clear everything the symbols carry and take them
+   * out of their contexts, so that a later reference to the name creates a new symbol.
+   *
+   * <p>
+   * The WLJS notebook deletes its objects with <code>Remove</code>; without an evaluator the call
+   * did nothing, and a deleted cell or transaction kept answering every property it had.
+   */
+  private static final class Remove extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      java.util.List<ISymbol> toRemove = new java.util.ArrayList<>();
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg instanceof IStringX) {
+          toRemove.addAll(getMatchedSymbols(arg.toString(), engine));
+        } else {
+          IExpr x = Validate.checkIdentifierHoldPattern(arg, ast, engine);
+          if (x.isNIL()) {
+            return F.NIL;
+          }
+          toRemove.add((ISymbol) x);
+        }
+      }
+      for (ISymbol x : toRemove) {
+        if (x.isBuiltInSymbol() || x.hasProtectedAttribute()) {
+          // Symbol `1` is Protected.
+          Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
+          continue;
+        }
+        x.clearAll(engine);
+        org.matheclipse.core.expression.Context context = x.getContext();
+        if (context != null) {
+          context.remove(x);
+        }
+      }
+      return S.Null;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
+
   private static final class ClearAll extends AbstractCoreFunctionEvaluator {
 
     @Override

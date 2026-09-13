@@ -1744,6 +1744,25 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * The WLJS notebook drops a cell with <code>HashMap[hash] = .</code> and then deletes its object
+   * with <code>Remove</code>. The unset key stayed a key for <code>KeyExistsQ</code>, and
+   * <code>Remove</code> did nothing, so deleted cells lived on.
+   */
+  @Test
+  public void testUnsetAssociationKeyAndRemove() {
+    check("wh = <|\"u1\" -> 11, \"u2\" -> 22, \"u3\" -> 33|>; wh[\"u1\"] = .; "
+        + "{KeyExistsQ[wh, \"u1\"], wh[\"u2\"], wh[\"u3\"], Keys[wh]}", //
+        "{False,22,33,{u2,u3}}");
+    check("wr = <|\"Data\" -> \"x\"|>; Remove[wr]; ValueQ[wr]", //
+        "False");
+    check("Names[\"Global`wr\"]", //
+        "{}");
+    // a built-in symbol is never removed, not by name and not through a pattern
+    check("Remove[Sin]; Remove[\"System`Cos\"]; {Sin[0], Cos[0], Names[\"System`Sin\"]}", //
+        "{0,1,{Sin}}");
+  }
+
+  /**
    * <code>BubbleChart</code>, from the WLJS demo notebook "Bars and charts": one bubble per triple,
    * and the <em>area</em> of a bubble is what its third number stands for.
    */
