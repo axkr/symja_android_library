@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import org.matheclipse.core.expression.data.AbstractArraySymbolExpr;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -53,6 +52,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.expression.data.AbstractArraySymbolExpr;
 import org.matheclipse.core.expression.data.JavaClassExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntFunction;
@@ -61,11 +61,11 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EdgeListType;
+import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.EvalFlags.Ternary;
 import org.matheclipse.core.interfaces.EvalFlags.Trait;
-import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -88,9 +88,9 @@ import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
 import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.statistics.IDistribution;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.visit.IVisitor;
@@ -98,11 +98,11 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorReplaceAll;
+import org.matheclipse.external.fastutil.ints.IntList;
 import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.matheclipse.external.fastutil.ints.IntList;
 
 public abstract class AbstractAST implements IASTMutable, Cloneable {
 
@@ -5567,11 +5567,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public boolean isZeroTensor() {
-    final IntList dims = LinearAlgebraUtil.dimensions(this, S.List, Integer.MAX_VALUE, true);
-    if (dims == null) {
+    try {
+      final IntList dims = LinearAlgebraUtil.dimensions(this, S.List, Integer.MAX_VALUE, true);
+      if (dims == null) {
+        return false;
+      }
+      return forAllLeaves(x -> x.isZero());
+    } catch (IllegalArgumentException iae) {
       return false;
     }
-    return forAllLeaves(x -> x.isZero());
   }
 
   /**
