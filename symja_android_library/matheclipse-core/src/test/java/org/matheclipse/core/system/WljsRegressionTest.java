@@ -1744,6 +1744,57 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * A large association - tree-backed - set and unset many times, as the WLJS notebook server's
+   * cell registry is. Copies used to share the tree, and a changed copy corrupted it: lookups
+   * answered a neighbouring value and then threw.
+   */
+  @Test
+  public void testLargeAssociationSetAndUnset() {
+    EvalEngine engine = wolframLanguage.getEvalEngine();
+    int iterationLimit = engine.getIterationLimit();
+    engine.setIterationLimit(100000);
+    try {
+    check("SeedRandom[7]; bh = <||>; bref = <||>; bkeys = Table[\"k\" <> ToString[i], {i, 400}]; "
+        + "Do[bh[k] = k; bref[k] = k, {k, bkeys}]; "
+        + "Do[With[{k = RandomChoice[bkeys], op = RandomInteger[{1, 3}]}, "
+        + "Which[op == 1, bh[k] = n; bref[k] = n, "
+        + "op == 2, If[KeyExistsQ[bh, k], bh[k] = .]; bref = KeyDrop[bref, k], "
+        + "True, bh[k] = -n; bref[k] = -n]], {n, 3000}]; "
+        + "{Length[bh] == Length[bref], "
+        + "AllTrue[bkeys, Lookup[bh, #, None] === Lookup[bref, #, None] &]}", //
+        "{True,True}");
+    } finally {
+      engine.setIterationLimit(iterationLimit);
+    }
+  }
+
+  /**
+   * <code>obj["k"] = v</code> with <code>obj = Wrap[s]</code> is an assignment to
+   * <code>Wrap[s]["k"]</code>, which the up-values of <code>Wrap</code> handle - how every WLJS
+   * object sets a property. It was stored as a sub-value of <code>Wrap</code> the object never
+   * saw, and the notebook server's cell list split in two.
+   */
+  @Test
+  public void testAssignmentThroughEvaluatedHead() {
+    check("Wrap /: Set[Wrap[s_][k_String], v_] := (s[k] = v); "
+        + "wobj = Wrap[wstore]; wobj[\"y\"] = 6; wobj[\"y\"] = 7; "
+        + "{wstore[\"y\"], SubValues[Wrap]}", //
+        "{7,{}}");
+    check("Wrap /: SetDelayed[Wrap[s_][k_String], v_] := (s[k] := v); "
+        + "wobj2 = Wrap[wstore2]; wobj2[\"z\"] := 1 + 1; wstore2[\"z\"]", //
+        "2");
+    // a head that evaluates to a symbol still defines that symbol, as before
+    check("wf = wg; wf[1] = 2; {DownValues[wf], wg[1]}", //
+        "{{},2}");
+    // WLJS's up-value on a variable holding the object: keys__ leaves Sequence["k"] in the held
+    // left side, which is spliced so the object's own up-value takes the assignment
+    check("Wrap /: Set[Wrap[s_][k_String], v_] := (s[k] = v); "
+        + "wobj3 = Wrap[wstore3]; wobj3 /: Set[wobj3[keys__], value_] := Wrap[wstore3][keys] = value; "
+        + "wobj3[\"c\"] = 1; wobj3[\"c\"] = 2; {wstore3[\"c\"], SubValues[Wrap]}", //
+        "{2,{}}");
+  }
+
+  /**
    * The WLJS notebook drops a cell with <code>HashMap[hash] = .</code> and then deletes its object
    * with <code>Remove</code>. The unset key stayed a key for <code>KeyExistsQ</code>, and
    * <code>Remove</code> did nothing, so deleted cells lived on.

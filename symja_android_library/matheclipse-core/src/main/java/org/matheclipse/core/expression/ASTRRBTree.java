@@ -109,7 +109,16 @@ public class ASTRRBTree extends AbstractAST
    */
   static MutRrbt<IExpr> shallowCopy(MutRrbt<IExpr> list) {
     AstAllocationStats.copied(list.size(), true, true);
-    return list.immutable().mutable();
+    // A real copy. list.immutable().mutable() shared the spine, and a copy changed afterwards -
+    // without(), replace() - corrupted it: an association of a few hundred keys, set and unset
+    // a few thousand times, answered neighbouring values and then threw
+    // ArrayIndexOutOfBoundsException from RrbTree$Leaf.get. The WLJS notebook server keeps every
+    // cell in such an association, so evaluating a cell ran its neighbour.
+    MutRrbt<IExpr> copy = StaticImports.mutableRrb();
+    for (int i = 0; i < list.size(); i++) {
+      copy = copy.append(list.get(i));
+    }
+    return copy;
   }
 
   public static ASTRRBTree newInstance(final int initialCapacity, final IExpr head) {

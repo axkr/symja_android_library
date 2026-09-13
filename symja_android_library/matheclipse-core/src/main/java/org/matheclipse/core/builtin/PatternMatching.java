@@ -276,19 +276,47 @@ public final class PatternMatching {
   }
 
   /**
-   *
-   *
-   * <pre>
-   * ClearAll(symbol1, symbol2,...)
-   * </pre>
-   *
-   * <blockquote>
+   * <code>obj[Sequence["k"]] = v</code> assigns
+   * <code>obj["k"]</code>. A pattern variable bound to a sequence - the WLJS up-value
+   * <code>nb /: Set[nb[keys__], value_] := object[keys] = value</code> - leaves a
+   * <code>Sequence</code> in the held left side; Mathematica splices it when it evaluates the
+   * arguments of the left side, and the up-values of <code>object</code> then take the assignment.
+   * With the wrapper kept no up-value matched, and a stray sub-value was stored instead.
+   */
+  private static IExpr spliceSequences(IBuiltInSymbol assignment, IExpr leftHandSide,
+      IExpr rightHandSide, EvalEngine engine) {
+    if (leftHandSide.isAST() && !leftHandSide.isAST(S.HoldPattern)) {
+      IExpr flat = F.flattenSequence((IAST) leftHandSide);
+      if (flat.isPresent() && !flat.equals(leftHandSide)) {
+        return engine.evaluate(F.binaryAST2(assignment, flat, rightHandSide));
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * <code>obj["k"] = v</code> where <code>obj</code> evaluates to a compound head such as
+   * <code>Wrap[s]</code>: the assignment is to <code>Wrap[s]["k"]</code>, and it goes through the
+   * evaluator again so the up-values of <code>Wrap</code> decide what it does, as in Mathematica.
    *
    * <p>
-   * clears all values and attributes associated with the given symbols.
+   * Building the rule from the unevaluated <code>obj["k"]</code> instead stored a sub-value of
+   * <code>Wrap</code> that the object never saw. The WLJS object system assigns every property this
+   * way (<code>notebook["Cells"] = ...</code>), so the notebook server kept two diverging copies of
+   * its cell list: outputs landed above their inputs and the wrong cells were evaluated.
    *
-   * </blockquote>
+   * @return the result of the assignment, or {@link F#NIL} when the head needs no second look
    */
+  private static IExpr assignToEvaluatedHead(IBuiltInSymbol assignment, IExpr leftHandSide,
+      IExpr rawHead, IExpr evaluatedHead, IExpr rightHandSide, EvalEngine engine) {
+    if (leftHandSide.isAST() && evaluatedHead.isAST() && !evaluatedHead.isAssociation()
+        && !evaluatedHead.equals(rawHead)) {
+      IAST rewritten = ((IAST) leftHandSide).setAtCopy(0, evaluatedHead);
+      return engine.evaluate(F.binaryAST2(assignment, rewritten, rightHandSide));
+    }
+    return F.NIL;
+  }
+
   /**
    * <code>Remove(symbol1, symbol2, ...)</code> - clear everything the symbols carry and take them
    * out of their contexts, so that a later reference to the name creates a new symbol.
@@ -335,6 +363,20 @@ public final class PatternMatching {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * ClearAll(symbol1, symbol2,...)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * clears all values and attributes associated with the given symbols.
+   *
+   * </blockquote>
+   */
   private static final class ClearAll extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -2221,6 +2263,11 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr leftHandSide = ast.arg1();
+      IExpr spliced =
+          spliceSequences(S.Set, leftHandSide, F.unaryAST1(S.Unevaluated, ast.arg2()), engine);
+      if (spliced.isPresent()) {
+        return spliced;
+      }
 
       IExpr head = leftHandSide.head();
       // a built-in which takes the assignment itself keeps it, even where the symbol has a value
@@ -2228,7 +2275,13 @@ public final class PatternMatching {
       // evaluates to an association
       if (!(head.isBuiltInSymbol()
           && ((IBuiltInSymbol) head).getEvaluator() instanceof ISetEvaluator)) {
+        IExpr rawHead = head;
         head = engine.evaluate(head);
+        IExpr redispatched = assignToEvaluatedHead(S.Set, leftHandSide, rawHead, head,
+            F.unaryAST1(S.Unevaluated, ast.arg2()), engine);
+        if (redispatched.isPresent()) {
+          return redispatched;
+        }
         if (head.topHead() == S.Association) {
           head = S.Association;
         }
@@ -2355,7 +2408,16 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr leftHandSide = ast.arg1();
+      IExpr spliced = spliceSequences(S.SetDelayed, leftHandSide, ast.arg2(), engine);
+      if (spliced.isPresent()) {
+        return spliced;
+      }
       IExpr head = engine.evaluate(leftHandSide.head());
+      IExpr redispatched = assignToEvaluatedHead(S.SetDelayed, leftHandSide, leftHandSide.head(),
+          head, ast.arg2(), engine);
+      if (redispatched.isPresent()) {
+        return redispatched;
+      }
       if (head.isAssociation()) {
         head = S.Association;
       }
