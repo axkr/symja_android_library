@@ -133,7 +133,7 @@ public class ColorData extends AbstractFunctionEvaluator {
    *
    * @return the gradient, or <code>null</code> when no scheme goes by that name
    */
-  private static ColorDataGradients gradientNamed(String name) {
+  public static ColorDataGradients gradientNamed(String name) {
     String search = name.replace(" ", "").replace("_", "").toUpperCase(Locale.US);
     ColorDataGradients found = gradientMatching(search);
     if (found == null && search.endsWith("COLORS")) {

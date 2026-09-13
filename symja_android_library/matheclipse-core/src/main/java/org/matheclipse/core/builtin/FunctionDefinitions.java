@@ -47,6 +47,7 @@ public final class FunctionDefinitions {
       S.Volume.setEvaluator(new org.matheclipse.core.reflection.system.Volume());
       S.BarChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BarChart());
       S.BoxWhiskerChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BoxWhiskerChart());
+      S.BubbleChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BubbleChart());
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BellY.setEvaluator(new org.matheclipse.core.reflection.system.BellY());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
@@ -375,6 +376,7 @@ public final class FunctionDefinitions {
       S.ListVectorPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics.ListVectorPlot(3));
       S.StreamPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.StreamPlot());
       S.PieChart.setEvaluator(new org.matheclipse.core.builtin.graphics.PieChart());
+      S.SectorChart.setEvaluator(new org.matheclipse.core.builtin.graphics.SectorChart());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
       S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());
 

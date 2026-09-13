@@ -117,7 +117,7 @@ public class PolarPlot extends Plot {
    * @param boundingBox the plot extent, as {xMin, xMax, yMin, yMax}
    * @return the primitives, or {@link F#NIL} when neither option asked for anything
    */
-  private static IAST polarScale(IExpr polarAxes, IExpr polarGridLines, double[] boundingBox) {
+  static IAST polarScale(IExpr polarAxes, IExpr polarGridLines, double[] boundingBox) {
     boolean axes = polarAxes.isTrue() || polarAxes.isAutomatic();
     boolean grid = !polarGridLines.isNone() && !polarGridLines.isFalse();
     if (!axes && !grid) {

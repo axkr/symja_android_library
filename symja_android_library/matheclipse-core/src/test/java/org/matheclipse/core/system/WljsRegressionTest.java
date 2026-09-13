@@ -1744,6 +1744,91 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * <code>BubbleChart</code>, from the WLJS demo notebook "Bars and charts": one bubble per triple,
+   * and the <em>area</em> of a bubble is what its third number stands for.
+   */
+  @Test
+  public void testBubbleChart() {
+    check("Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}, {3, 1, 9}}], _Disk, Infinity]]", //
+        "3");
+    // the radii of 1, 4 and 9 grow as their roots do, between a hundredth and a tenth of the width
+    check("Round[100*Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}, {3, 1, 9}}], "
+        + "Disk[_, {rx_, _}] :> rx, Infinity]]", //
+        "{2,12,20}");
+    // several datasets, each in a colour of its own
+    check("Length[Cases[BubbleChart[Table[{i, j, i + j}, {i, 3}, {j, 4}]], _Disk, Infinity]]", //
+        "12");
+    // "NoiseBubble" draws a wobbly rim instead of a disk
+    check("{Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}}, "
+        + "ChartElementFunction -> \"NoiseBubble\"], _Polygon, Infinity]], "
+        + "Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}}, "
+        + "ChartElementFunction -> \"NoiseBubble\"], _Disk, Infinity]]}", //
+        "{2,0}");
+  }
+
+  /**
+   * <code>SectorChart</code>: the angle of a sector follows the first number of its pair, its
+   * radius is the second one.
+   */
+  @Test
+  public void testSectorChart() {
+    check("Cases[SectorChart[{{1, 1}, {1, 2}, {1, 3}}], Disk[_, r_, _] :> r, Infinity]", //
+        "{1.0,2.0,3.0}");
+    // the sectors start at the left and follow one another clockwise, as in Mathematica
+    check("Round[180/Pi*Cases[SectorChart[{{1, 1}, {1, 2}, {1, 3}}], Disk[_, _, a_] :> a, "
+        + "Infinity]]", //
+        "{{60,180},{-60,60},{-180,-60}}");
+    // a hole in the middle turns the sectors into rings
+    check("{Length[Cases[SectorChart[{{1, 1}, {1, 2}}, SectorOrigin -> {Automatic, 1}], _Polygon, "
+        + "Infinity]], Length[Cases[SectorChart[{{1, 1}, {1, 2}}, SectorOrigin -> {Automatic, 1}], "
+        + "_Disk, Infinity]]}", //
+        "{2,0}");
+    // PolarAxes draws the polar scale behind the sectors
+    check("Length[Cases[SectorChart[{{1, 1}, {1, 2}}, PolarAxes -> True, "
+        + "PolarGridLines -> Automatic], _Circle, Infinity]] > 0", //
+        "True");
+  }
+
+  /** Several datasets of a <code>PieChart</code> are drawn as rings around one another. */
+  @Test
+  public void testPieChartRings() {
+    check("{Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}], _Disk, Infinity]], "
+        + "Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}], _Polygon, Infinity]]}", //
+        "{3,3}");
+    // every sector of every ring is named
+    check("Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}, ChartLabels -> {\"a\", \"b\", \"c\"}], "
+        + "_Text, Infinity]]", //
+        "6");
+    // the first sector runs from 144 to 180 degrees, as Mathematica draws it
+    check("Round[180/Pi*First[Cases[PieChart[{1, 2, 3, 4}], Disk[_, _, a_] :> a, Infinity]]]", //
+        "{144,180}");
+  }
+
+  /**
+   * The bins of a <code>Histogram</code> are as wide as a reader counts in and start at a multiple
+   * of that width; <code>ChartElementFunction</code> draws every bar, and a height specification
+   * scales them.
+   */
+  @Test
+  public void testHistogramBinsAndElements() {
+    check("Union[Cases[Histogram[Range[0, 100]], Rectangle[{x_, _}, {y_, _}] :> "
+        + "{Round[Mod[x, 20]], Round[y - x]}, Infinity]]", //
+        "{{0,20}}");
+    // a function that draws a bar also sees it, which is what the demo's sowing bar relies on
+    check("Total[Flatten[Last[Reap[Histogram[{1, 2, 2, 3}, Automatic, \"Count\", "
+        + "ChartElementFunction -> Function[{r, v, p}, (Sow[v]; Rectangle @@ r)]]]]]]", //
+        "4");
+    // "Probability" scales the bars to the share of the data each bin holds
+    check("Max[Cases[Histogram[{1, 2, 2, 3}, Automatic, \"Probability\"], "
+        + "Rectangle[_, {_, y_}] :> y, Infinity]] <= 1", //
+        "True");
+    // a named ChartStyle scheme colours the bars; the name itself never reaches the picture
+    check("{FreeQ[BarChart[{1, 2, 3}, ChartStyle -> \"Pastel\"], \"Pastel\"], "
+        + "Length[Cases[BarChart[{1, 2, 3}, ChartStyle -> \"Pastel\"], _RGBColor, Infinity]] > 0}", //
+        "{True,True}");
+  }
+
+  /**
    * <code>$ContextAliases["Graphics3D`"] = "..."</code> is how the WLJS modules declare their short
    * contexts, and the demo "Pathtracing" writes <code>Graphics3D`Materials["Glass"]</code> for the
    * module's <code>CoffeeLiqueur`Extensions`Graphics3D`Tools`Materials</code>. The assignment was

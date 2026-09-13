@@ -821,6 +821,69 @@ public class GraphicsOptions {
         F.AbsoluteThickness(F.num(absoluteThickness)));
   }
 
+  /**
+   * The colour <code>ChartStyle</code> gives element number <code>index</code>.
+   *
+   * <p>
+   * A list is read round and round, a colour scheme is sampled - <code>ChartStyle -&gt;
+   * "Pastel"</code> named a scheme that used to reach the picture as the string itself, where it
+   * drew nothing at all - and anything else is the colour of every element.
+   */
+  public static IExpr chartStyleColor(IExpr chartStyle, int index) {
+    if (chartStyle == null || !chartStyle.isPresent() || chartStyle.isAutomatic()) {
+      return chartStyleColorExpr(index);
+    }
+    if (chartStyle.isList()) {
+      return getPlotStyle(chartStyle, index);
+    }
+    if (chartStyle.isString()) {
+      IExpr color = namedChartStyleColor(chartStyle.toString(), index);
+      return color.isPresent() ? color : chartStyleColorExpr(index);
+    }
+    return chartStyle;
+  }
+
+  /** How many elements a named colour scheme is spread over before it repeats. */
+  private static final int SCHEME_CYCLE = 6;
+
+  /**
+   * Element number <code>index</code> of a colour scheme named by <code>ChartStyle</code>, or
+   * {@link F#NIL} when no scheme goes by that name.
+   */
+  public static IExpr namedChartStyleColor(String name, int index) {
+    org.matheclipse.core.tensor.img.ColorDataGradients gradient =
+        org.matheclipse.core.reflection.system.ColorData.gradientNamed(name);
+    if (gradient == null) {
+      return F.NIL;
+    }
+    double position = (double) Math.floorMod(index, SCHEME_CYCLE) / (SCHEME_CYCLE - 1);
+    IExpr color = org.matheclipse.core.reflection.system.ColorDataFunction.applyGradient(gradient,
+        F.num(position));
+    return color == null ? F.NIL : color;
+  }
+
+  /**
+   * A sector of an annulus as a polygon: along the arc at <code>rOuter</code> and back along
+   * <code>rInner</code>. Mathematica draws the sectors of a ring that way too, since a
+   * <code>Disk</code> has no hole.
+   */
+  public static IAST annulusSector(double cx, double cy, double rInner, double rOuter, double a1,
+      double a2) {
+    int steps = Math.max(8, (int) Math.ceil(Math.abs(a2 - a1) / (2.0 * Math.PI) * 120.0));
+    IASTAppendable points = F.ListAlloc(2 * steps + 2);
+    for (int i = 0; i <= steps; i++) {
+      double angle = a1 + (a2 - a1) * i / steps;
+      points.append(F.List(F.num(cx + rOuter * Math.cos(angle)),
+          F.num(cy + rOuter * Math.sin(angle))));
+    }
+    for (int i = steps; i >= 0; i--) {
+      double angle = a1 + (a2 - a1) * i / steps;
+      points.append(F.List(F.num(cx + rInner * Math.cos(angle)),
+          F.num(cy + rInner * Math.sin(angle))));
+    }
+    return F.unaryAST1(S.Polygon, points);
+  }
+
   /** The colour a chart element takes from the chart cycle. */
   public static IAST chartStyleColorExpr(int elementNumber) {
     RGBColor color = CHART_COLORS[Math.floorMod(elementNumber, CHART_COLORS.length)];

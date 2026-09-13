@@ -54,6 +54,8 @@ public class Histogram extends ListPlot {
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     IExpr layout = GraphicsOptions.optionValue(originalAST, S.ChartLayout, S.Automatic);
+    IExpr elementFunction =
+        GraphicsOptions.optionValue(originalAST, S.ChartElementFunction, S.Automatic);
 
     if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
       graphicsOptions.setPlotLegends(chartLegends);
@@ -93,18 +95,36 @@ public class Histogram extends ListPlot {
       max = Math.max(max, v);
     }
     double h = binWidth(all, min, max);
-    int numBins = (int) Math.ceil((max + h * 0.001 - min) / h);
+    // the bins start at a multiple of their width, as Mathematica lays them out: standard normal
+    // data binned at 0.5 then has its edges at -3, -2.5, ... rather than at the smallest datum
+    double origin = Math.floor(min / h) * h;
+    int numBins = (int) Math.ceil((max + h * 0.001 - origin) / h);
     numBins = Math.max(1, Math.min(numBins, 1000));
 
     int[][] counts = new int[datasetCount][numBins];
     for (int d = 0; d < datasetCount; d++) {
       for (double v : values[d]) {
-        int bin = (int) ((v - min) / h);
+        int bin = (int) ((v - origin) / h);
         if (bin == numBins) {
           bin = numBins - 1;
         }
         if (bin >= 0 && bin < numBins) {
           counts[d][bin]++;
+        }
+      }
+    }
+
+    // Histogram[data, bins, "Probability"] asks for the share of the data in each bin and "PDF"
+    // for a density; "Count", the default, leaves the bars as the number of values they hold
+    double scale = 1.0;
+    for (int i = 2; i <= argSize; i++) {
+      IExpr spec = ast.get(i);
+      if (spec.isString()) {
+        String name = spec.toString();
+        if (name.equals("Probability") || name.equals("Relative")) {
+          scale = 1.0 / pooled;
+        } else if (name.equals("PDF")) {
+          scale = 1.0 / (pooled * h);
         }
       }
     }
@@ -120,7 +140,7 @@ public class Histogram extends ListPlot {
     double tallest = 0;
     for (int d = 0; d < datasetCount; d++) {
       for (int i = 0; i < numBins; i++) {
-        tallest = Math.max(tallest, counts[d][i]);
+        tallest = Math.max(tallest, counts[d][i] * scale);
       }
     }
     PlotColorFunction barColors = PlotColorFunction
@@ -141,15 +161,16 @@ public class Histogram extends ListPlot {
         if (counts[d][i] <= 0) {
           continue;
         }
-        double x0 = min + i * h;
+        double x0 = origin + i * h;
         double base = stacked ? stackBase[i] : 0.0;
-        double top = base + counts[d][i];
+        double height = counts[d][i] * scale;
+        double top = base + height;
         if (barColors != null) {
           // one directive per bar, which stays in force until the next one
-          group.append(barColors.color(counts[d][i]));
+          group.append(barColors.color(height));
         }
-        IExpr bar =
-            F.Rectangle(F.List(F.num(x0), F.num(base)), F.List(F.num(x0 + h), F.num(top)));
+        IExpr bar = barPrimitive(elementFunction, x0, x0 + h, base, top,
+            scale == 1.0 ? F.ZZ(counts[d][i]) : F.num(height), engine);
         IExpr barLabel = datasetTooltips[d + 1];
         if (barLabel != null && barLabel.isPresent()) {
           // a self labelling wrapper names the bar by what it is worth, which is its count
@@ -169,19 +190,41 @@ public class Histogram extends ListPlot {
     if (chartLabels.isList()) {
       IAST labels = (IAST) chartLabels;
       for (int i = 0; i < numBins && i < labels.argSize(); i++) {
-        double center = min + (i + 0.5) * h;
+        double center = origin + (i + 0.5) * h;
         primitives.append(F.List(S.Black,
             F.Text(labels.get(i + 1), F.List(F.num(center), F.C0), F.List(F.C0, F.C1))));
       }
     }
 
-    graphicsOptions.setBoundingBox(new double[] {min, min + numBins * h, 0, maxY});
+    graphicsOptions.setBoundingBox(new double[] {origin, origin + numBins * h, 0, maxY});
 
     // Explicitly set AxesOrigin to ensure axes (if enabled) start at min-x, 0
     // This reinforces the "left of histogram" look even if user toggles Axes->True
-    graphicsOptions.addOption(F.Rule(S.AxesOrigin, F.List(F.num(min), F.C0)));
+    graphicsOptions.addOption(F.Rule(S.AxesOrigin, F.List(F.num(origin), F.C0)));
 
     return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /**
+   * One bar, through {@code ChartElementFunction} when the caller supplied one.
+   *
+   * <p>
+   * The function is handed the bar's rectangle, what the bar is worth and its position, as
+   * {@code f[{{x0, x1}, {y0, y1}}, height, {}]} - the shape the Wolfram Language passes it, which
+   * is what lets a function that draws a bar also collect it, as {@code Sow} does.
+   */
+  private static IExpr barPrimitive(IExpr elementFunction, double x0, double x1, double y0,
+      double y1, IExpr height, EvalEngine engine) {
+    IAST rectangle = F.Rectangle(F.List(F.num(x0), F.num(y0)), F.List(F.num(x1), F.num(y1)));
+    if (elementFunction != null && elementFunction.isPresent() && !elementFunction.isString()
+        && elementFunction != S.Automatic && !elementFunction.isNone()) {
+      IAST extent = F.List(F.List(F.num(x0), F.num(x1)), F.List(F.num(y0), F.num(y1)));
+      IExpr drawn = engine.evaluate(F.ternaryAST3(elementFunction, extent, height, F.List()));
+      if (drawn.isPresent() && !drawn.isAST(elementFunction.head())) {
+        return drawn;
+      }
+    }
+    return rectangle;
   }
 
   /** The finite numbers of a dataset, in order. */
@@ -210,26 +253,59 @@ public class Histogram extends ListPlot {
     return Arrays.copyOf(values, count);
   }
 
-  /** Bin width by the usual rule of thumb, falling back to a tenth of the range. */
+  /**
+   * The width of a bin: the Freedman-Diaconis rule, rounded to a round number, as Mathematica
+   * chooses it. Two hundred standard normal samples are binned at 0.5 - twelve bins from -3 to 3 -
+   * where the plain rule of thumb this used gave eight wider ones.
+   *
+   * <p>
+   * The spread of the data falls back to its standard deviation when half of it lies on one value,
+   * and to a tenth of the range when every value is the same.
+   */
   private static double binWidth(double[] values, double min, double max) {
-    double sigma = new StandardDeviation().evaluate(values);
-    if (sigma == 0 || Double.isNaN(sigma)) {
-      double h = (max - min) / 10.0;
-      return h == 0 ? 1.0 : h;
+    double h = 0;
+    if (values.length > 1) {
+      double[] sorted = values.clone();
+      Arrays.sort(sorted);
+      double spread = quantile(sorted, 0.75) - quantile(sorted, 0.25);
+      if (spread > 0) {
+        h = 2.0 * spread / Math.cbrt(values.length);
+      } else {
+        double sigma = new StandardDeviation().evaluate(values);
+        if (sigma > 0 && !Double.isNaN(sigma)) {
+          h = 3.5 * sigma / Math.cbrt(values.length);
+        }
+      }
     }
-    return 3.5 * sigma / Math.pow(values.length, 1.0 / 3.0);
+    if (!(h > 0)) {
+      h = (max - min) / 10.0;
+      return h > 0 ? h : 1.0;
+    }
+    return roundNumber(h);
+  }
+
+  /** The quantile of already sorted values, as <code>Quantile</code> reads it. */
+  private static double quantile(double[] sorted, double fraction) {
+    int index = (int) Math.ceil(fraction * sorted.length) - 1;
+    return sorted[Math.max(0, Math.min(sorted.length - 1, index))];
+  }
+
+  /**
+   * The nearest round number - 1, 2 or 5 times a power of ten - a reader can count in.
+   *
+   * <p>
+   * Mathematica counts in those three alone: five hundred standard normal samples, whose rule of
+   * thumb asks for 0.34, are binned at 0.5 rather than at the nearer 0.25.
+   */
+  private static double roundNumber(double value) {
+    double magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+    double scaled = value / magnitude;
+    double rounded = scaled <= 1.5 ? 1.0 : scaled <= 3.0 ? 2.0 : scaled <= 7.0 ? 5.0 : 10.0;
+    return rounded * magnitude;
   }
 
   private IExpr getChartStyle(IExpr styleOption, int index) {
-    if (styleOption.isAutomatic()) {
-      if (index == 0)
-        return GraphicsOptions.chartStyleColorExpr(0);
-      return GraphicsOptions.chartStyleColorExpr(index);
-    }
-    if (styleOption.isList()) {
-      return GraphicsOptions.getPlotStyle(styleOption, index);
-    }
-    return styleOption;
+    return GraphicsOptions.chartStyleColor(styleOption, index);
   }
 
   @Override

@@ -401,13 +401,7 @@ public class BarChart extends ListPlot {
   }
 
   private static IExpr chartColor(IExpr chartStyle, int index) {
-    if (chartStyle.isList()) {
-      return GraphicsOptions.getPlotStyle(chartStyle, index);
-    }
-    if (!chartStyle.isAutomatic()) {
-      return chartStyle;
-    }
-    return GraphicsOptions.chartStyleColorExpr(index);
+    return GraphicsOptions.chartStyleColor(chartStyle, index);
   }
 
   /** The style of a {@code Style[value, style]} datum, or {@link F#NIL}. */

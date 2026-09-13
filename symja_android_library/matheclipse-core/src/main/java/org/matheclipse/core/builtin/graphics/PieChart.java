@@ -20,8 +20,17 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * Example: <code>PieChart[{1, 2, 3}]</code>
  * <code>PieChart[{1, 2, 3}, ChartLabels -> {"A", "B", "C"}]</code>
+ * <p>
+ * Several datasets, <code>PieChart[{{1, 2, 3}, {2, 2, 1}}]</code>, are drawn as rings around one
+ * another, as Mathematica draws them.
  */
 public class PieChart extends ListPlot {
+
+  /** How wide a ring is, in the units the innermost pie has radius 1 in. */
+  private static final double RING_THICKNESS = 1.0;
+
+  /** The gap Mathematica leaves between two rings. */
+  private static final double RING_GAP = 0.25;
 
   public PieChart() {}
 
@@ -53,8 +62,9 @@ public class PieChart extends ListPlot {
     IExpr labelingFunction =
         GraphicsOptions.optionValue(originalAST, S.LabelingFunction, S.Automatic);
 
-    // Default sector origin: {90 degree, "Clockwise"} -> Start at Pi/2, subtract angles
-    double startAngle = Math.PI / 2.0;
+    // The sectors begin at the left and follow one another clockwise, which is where Mathematica
+    // starts them: PieChart[{1, 2, 3, 4}] draws its first sector from 144 to 180 degrees.
+    double startAngle = Math.PI;
     int direction = -1; // -1 for Clockwise
 
     // SectorOrigin accepts a bare angle as well as {angle} and {angle, "Clockwise"}
@@ -95,11 +105,6 @@ public class PieChart extends ListPlot {
     // Handle Legends
     if (!chartLegends.isNone()) {
       if (chartLegends.isAutomatic()) {
-        // Auto-generate labels from data if wrappers exist, or indices?
-        // If ChartLabels is set, use that for legend?
-        // For now, if ChartLegends -> Automatic, we might pass it through
-        // but SVGGraphics needs explicit labels.
-        // We'll leave it to SVGGraphics if it supports it, or set explicit if we have labels.
         if (chartLabels.isList()) {
           graphicsOptions.setPlotLegends(chartLabels);
         }
@@ -108,34 +113,21 @@ public class PieChart extends ListPlot {
       }
     }
 
-    IAST dataList = (IAST) dataArg;
-    // Calculate total for normalization
-    double total = 0.0;
-    int count = 0;
-
-    // First pass: calculate total
-    for (IExpr e : dataList) {
-      double v = getDoubleVal(e);
-      if (!Double.isNaN(v) && v > 0) {
-        total += v;
-        count++;
-      }
-    }
-
-    if (total <= 0)
-      return F.NIL;
-
-    IASTAppendable primitives = F.ListAlloc();
-
-    // Default EdgeForm(White) for sector separators
-    primitives.append(F.EdgeForm(S.White));
+    // several datasets are drawn as rings around one another
+    IAST rings = GraphicsOptions.chartDatasets((IAST) dataArg);
 
     // the largest datum sets the top of the scale, so a gradient runs across the whole pie
     double largest = 0.0;
-    for (int i = 1; i < dataList.size(); i++) {
-      double v = getDoubleVal(dataList.get(i));
-      if (!Double.isNaN(v)) {
-        largest = Math.max(largest, v);
+    for (int d = 1; d < rings.size(); d++) {
+      IExpr ringExpr = rings.get(d);
+      if (ringExpr.isList()) {
+        IAST ring = (IAST) ringExpr;
+        for (int i = 1; i < ring.size(); i++) {
+          double v = getDoubleVal(ring.get(i));
+          if (!Double.isNaN(v)) {
+            largest = Math.max(largest, v);
+          }
+        }
       }
     }
     PlotColorFunction sectorColors = PlotColorFunction
@@ -145,101 +137,122 @@ public class PieChart extends ListPlot {
             engine)
         .range(1, 0, largest).build();
 
-    double currentAngle = startAngle;
-    int index = 0;
+    IASTAppendable primitives = F.ListAlloc();
 
-    for (int i = 1; i < dataList.size(); i++) {
-      IExpr item = dataList.get(i);
-      double val = getDoubleVal(item);
-      // one place knows the wrappers; an unrecognised one used to make the value NaN and the
-      // wedge simply did not appear
-      PlotWrapper wrapper = PlotWrapper.of(item);
-      IExpr label = wrapper.label.isPresent() ? wrapper.label : null;
-      IExpr style = wrapper.style.isPresent() ? wrapper.style : null;
+    // Default EdgeForm(White) for sector separators
+    primitives.append(F.EdgeForm(S.White));
 
-      // Global ChartLabels override
-      if (chartLabels.isList() && i <= ((IAST) chartLabels).size()) {
-        label = ((IAST) chartLabels).get(i);
+    double outerReach = 0.0;
+    boolean drew = false;
+    for (int d = 1; d < rings.size(); d++) {
+      IExpr ringExpr = rings.get(d);
+      if (!ringExpr.isList()) {
+        continue;
+      }
+      IAST dataList = (IAST) ringExpr;
+
+      double total = 0.0;
+      for (IExpr e : dataList) {
+        double v = getDoubleVal(e);
+        if (!Double.isNaN(v) && v > 0) {
+          total += v;
+        }
+      }
+      if (total <= 0) {
+        continue;
       }
 
-      if (!Double.isNaN(val) && val > 0) {
-        // Fraction
-        double fraction = val / total;
-        double sweep = fraction * 2.0 * Math.PI;
+      double ringInner = (d - 1) * (RING_THICKNESS + RING_GAP);
+      double ringOuter = ringInner + RING_THICKNESS;
+      outerReach = Math.max(outerReach, ringOuter);
 
-        double endAngle = currentAngle + (direction * sweep);
+      double currentAngle = startAngle;
+      int index = 0;
+      for (int i = 1; i < dataList.size(); i++) {
+        IExpr item = dataList.get(i);
+        double val = getDoubleVal(item);
+        // one place knows the wrappers; an unrecognised one used to make the value NaN and the
+        // wedge simply did not appear
+        PlotWrapper wrapper = PlotWrapper.of(item);
+        IExpr label = wrapper.label.isPresent() ? wrapper.label : null;
+        IExpr style = wrapper.style.isPresent() ? wrapper.style : null;
 
-        // Define Sector: Disk[{0,0}, 1, {ang1, ang2}]
-        // Mma Disk usually takes {min, max} for counter-clockwise fill from min to max.
-        // To get our specific wedge, we pass {min(start, end), max(start, end)}.
-        double a1 = Math.min(currentAngle, endAngle);
-        double a2 = Math.max(currentAngle, endAngle);
-
-        // Color: a ColorFunction is given the value of the sector and outranks ChartStyle
-        IExpr functionColor = sectorColors == null ? F.NIL : sectorColors.color(val);
-        IExpr color;
-        if (functionColor.isPresent()) {
-          color = functionColor;
-        } else if (style != null) {
-          color = style;
-        } else {
-          color = getChartStyle(chartStyle, index);
-        }
-        boolean colorIsExplicit =
-            functionColor.isPresent() || style != null || !chartStyle.isAutomatic();
-        IExpr elementStyle = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
-
-        double midAngle = (a1 + a2) / 2.0;
-        // an offset sector keeps its shape but sits further out along its own bisector
-        double cx = sectorOffset * Math.cos(midAngle);
-        double cy = sectorOffset * Math.sin(midAngle);
-
-        // Group for sector
-        IASTAppendable group = F.ListAlloc();
-        if (elementStyle.isPresent())
-          group.append(elementStyle);
-
-        // Disk Primitive
-        group.append(
-            F.function(S.Disk, F.List(F.num(cx), F.num(cy)), F.C1, F.List(F.num(a1), F.num(a2))));
-        // a tooltip covers the whole wedge
-        primitives.append(wrapper.hasTooltip()
-            ? F.binaryAST2(S.Tooltip, group, wrapper.tooltip)
-            : group);
-
-        // Label
-        if (label != null) {
-          // Position label at mid-angle, radius 0.7
-          double rLbl = 0.7; // Internal label
-          // For external: rLbl = 1.1;
-
-          double lx = cx + rLbl * Math.cos(midAngle);
-          double ly = cy + rLbl * Math.sin(midAngle);
-
-          // Text Primitive
-          // Text[lbl, {lx, ly}, {0,0}] (Centered)
-          primitives.append(
-              F.List(S.Black, F.Text(label, F.List(F.num(lx), F.num(ly)), F.List(F.C0, F.C0))));
+        // Global ChartLabels override
+        if (chartLabels.isList() && i < ((IAST) chartLabels).size()) {
+          label = ((IAST) chartLabels).get(i);
         }
 
-        // the value written on the sector, which LabelingFunction asks for
-        IExpr valueLabel = GraphicsOptions.labelingText(labelingFunction, datum(item), engine);
-        if (valueLabel.isPresent()) {
-          double radius = labelRadius(GraphicsOptions.labelingPlacement(labelingFunction));
-          double lx = cx + radius * Math.cos(midAngle);
-          double ly = cy + radius * Math.sin(midAngle);
-          primitives.append(F.List(S.Black,
-              F.Text(valueLabel, F.List(F.num(lx), F.num(ly)), F.List(F.C0, F.C0))));
-        }
+        if (!Double.isNaN(val) && val > 0) {
+          double sweep = val / total * 2.0 * Math.PI;
+          double endAngle = currentAngle + (direction * sweep);
+          double a1 = Math.min(currentAngle, endAngle);
+          double a2 = Math.max(currentAngle, endAngle);
 
-        currentAngle = endAngle;
-        index++;
+          // Color: a ColorFunction is given the value of the sector and outranks ChartStyle
+          IExpr functionColor = sectorColors == null ? F.NIL : sectorColors.color(val);
+          IExpr color;
+          if (functionColor.isPresent()) {
+            color = functionColor;
+          } else if (style != null) {
+            color = style;
+          } else {
+            color = GraphicsOptions.chartStyleColor(chartStyle, index);
+          }
+          boolean colorIsExplicit =
+              functionColor.isPresent() || style != null || !chartStyle.isAutomatic();
+          IExpr elementStyle = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
+
+          double midAngle = (a1 + a2) / 2.0;
+          // an offset sector keeps its shape but sits further out along its own bisector
+          double cx = sectorOffset * Math.cos(midAngle);
+          double cy = sectorOffset * Math.sin(midAngle);
+
+          IASTAppendable group = F.ListAlloc();
+          if (elementStyle.isPresent()) {
+            group.append(elementStyle);
+          }
+          // a ring has a hole, and a disk has none
+          group.append(ringInner > 0
+              ? GraphicsOptions.annulusSector(cx, cy, ringInner, ringOuter, a1, a2)
+              : F.function(S.Disk, F.List(F.num(cx), F.num(cy)), F.num(ringOuter),
+                  F.List(F.num(a1), F.num(a2))));
+          // a tooltip covers the whole wedge
+          primitives.append(wrapper.hasTooltip()
+              ? F.binaryAST2(S.Tooltip, group, wrapper.tooltip)
+              : group);
+          drew = true;
+
+          if (label != null) {
+            double rLbl = ringInner > 0 ? (ringInner + ringOuter) / 2.0 : 0.667 * ringOuter;
+            double lx = cx + rLbl * Math.cos(midAngle);
+            double ly = cy + rLbl * Math.sin(midAngle);
+            primitives.append(
+                F.List(S.Black, F.Text(label, F.List(F.num(lx), F.num(ly)), F.List(F.C0, F.C0))));
+          }
+
+          // the value written on the sector, which LabelingFunction asks for
+          IExpr valueLabel = GraphicsOptions.labelingText(labelingFunction, datum(item), engine);
+          if (valueLabel.isPresent()) {
+            double radius = ringInner
+                + labelRadius(GraphicsOptions.labelingPlacement(labelingFunction)) * RING_THICKNESS;
+            double lx = cx + radius * Math.cos(midAngle);
+            double ly = cy + radius * Math.sin(midAngle);
+            primitives.append(F.List(S.Black,
+                F.Text(valueLabel, F.List(F.num(lx), F.num(ly)), F.List(F.C0, F.C0))));
+          }
+
+          currentAngle = endAngle;
+          index++;
+        }
       }
+    }
+    if (!drew) {
+      return F.NIL;
     }
 
     // Bounds for PieChart are fixed -1..1 usually, widened for sectors pushed out from the
     // centre and for labels written outside the rim
-    double reach = 1.2 + sectorOffset;
+    double reach = outerReach * 1.2 + sectorOffset;
     if (GraphicsOptions.labelingPlacement(labelingFunction) == GraphicsOptions.LABELING_ABOVE) {
       reach += 0.15;
     }
@@ -253,7 +266,7 @@ public class PieChart extends ListPlot {
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
-  /** How far out from the centre a value label sits, for each placement. */
+  /** How far out from the centre of its ring a value label sits, for each placement. */
   private static double labelRadius(int placement) {
     switch (placement) {
       case GraphicsOptions.LABELING_ABOVE:
@@ -268,16 +281,6 @@ public class PieChart extends ListPlot {
   /** The datum itself, with every display wrapper taken off. */
   private static IExpr datum(IExpr item) {
     return PlotWrapper.strip(item);
-  }
-
-  private IExpr getChartStyle(IExpr styleOption, int index) {
-    if (styleOption.isAutomatic()) {
-      return GraphicsOptions.chartStyleColorExpr(index);
-    }
-    if (styleOption.isList()) {
-      return GraphicsOptions.getPlotStyle(styleOption, index);
-    }
-    return styleOption;
   }
 
   private double getDoubleVal(IExpr expr) {
@@ -297,9 +300,6 @@ public class PieChart extends ListPlot {
   protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
       IAST plotAST) {
     // PieChart usually has no axes or frame
-    // We override these defaults before creation if not set by user
-    // However, ListPlot.createGraphicsFunction reads options.
-    // We can force them off in setUp or here.
     return super.createGraphicsFunction(primitives, graphicsOptions, plotAST);
   }
 
