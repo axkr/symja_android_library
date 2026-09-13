@@ -311,6 +311,11 @@ public class StatisticalMomentFunctions {
             break;
           }
         }
+        if (arg1.isVector() <= 0 && arg1.isMatrix(false) == null && !arg1.isDistribution()) {
+          // The first argument `1` is expected to be `1`.
+          return Errors.printMessage(S.Cumulant, "arg1",
+              F.List(arg1, F.stringx("a vector, matrix or a distribution")), engine);
+        }
         if (arg1.isList()) {
           IAST data = (IAST) arg1;
           int[] dims = data.isMatrix();
@@ -854,17 +859,6 @@ public class StatisticalMomentFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
-  }
-
-  private static boolean isVectorMatrixOrDistribution(ISymbol head, IAST list,
-      IntArrayList dimensions, EvalEngine engine) {
-    if (dimensions.size() == 0 || dimensions.contains(0)) {
-      // The first argument `1` is expected to be `1`.
-      Errors.printMessage(S.Moment, "arg1",
-          F.List(list, F.stringx("a vector, matrix or a distribution")), engine);
-      return false;
-    }
-    return true;
   }
 
   public static void initialize() {
