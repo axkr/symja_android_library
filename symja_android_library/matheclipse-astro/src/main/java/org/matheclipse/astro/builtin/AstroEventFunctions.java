@@ -9,8 +9,8 @@ import org.matheclipse.astro.convert.AstroObserver;
 import org.matheclipse.astro.convert.ReferenceAltitudes;
 import org.matheclipse.astro.data.AstroDataContext;
 import org.matheclipse.astro.solve.DateRootFinder;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -20,7 +20,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -35,8 +34,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  * which is derived from it.
  *
  * <p>
- * Everything here is a root of a smooth function of the date, found with
- * {@link DateRootFinder} rather than with Orekit's event detectors - see that class for why.
+ * Everything here is a root of a smooth function of the date, found with {@link DateRootFinder}
+ * rather than with Orekit's event detectors - see that class for why.
  */
 public class AstroEventFunctions {
 
@@ -321,8 +320,8 @@ public class AstroEventFunctions {
           IAST events = (IAST) eventSpec;
           IExpr[] results = new IExpr[events.argSize()];
           for (int i = 1; i <= events.argSize(); i++) {
-            IExpr single = riseSetChecked(events.get(i), target, arguments, reference, direction,
-                ast, engine);
+            IExpr single =
+                riseSetChecked(events.get(i), target, arguments, reference, direction, ast, engine);
             if (single.isNIL()) {
               return F.NIL;
             }
@@ -391,8 +390,8 @@ public class AstroEventFunctions {
         return Errors.printMessage(S.DaylightQ, "astrorefalt", F.List(options[0], ast), engine);
       }
       try {
-        AstroObserver observer = new AstroObserver(arguments.point,
-            CelestialBodyFactory.getSun(), AstroBodies.meanRadius(CelestialBodyFactory.SUN));
+        AstroObserver observer = new AstroObserver(arguments.point, CelestialBodyFactory.getSun(),
+            AstroBodies.meanRadius(CelestialBodyFactory.SUN));
         return observer.elevationExcess(arguments.date, reference) > 0.0 ? S.True : S.False;
       } catch (OrekitException oex) {
         return Errors.printMessage(S.DaylightQ, "orekitdata", F.List(F.stringx(oex.getMessage())),
@@ -498,12 +497,12 @@ public class AstroEventFunctions {
       switch (property.toLowerCase(Locale.US)) {
         case "fraction":
         case "illuminationfraction":
-          return F.num(byLongitude ? (1.0 - FastMath.cos(angle)) / 2.0
-              : illuminationFraction(date));
+          return F
+              .num(byLongitude ? (1.0 - FastMath.cos(angle)) / 2.0 : illuminationFraction(date));
         case "signedfraction":
         case "signedilluminationfraction": {
-          double fraction = byLongitude ? (1.0 - FastMath.cos(angle)) / 2.0
-              : illuminationFraction(date);
+          double fraction =
+              byLongitude ? (1.0 - FastMath.cos(angle)) / 2.0 : illuminationFraction(date);
           // negative while the Moon is waning, i.e. in the second half of the lunation
           return F.num(angle > FastMath.PI ? -fraction : fraction);
         }
@@ -595,7 +594,7 @@ public class AstroEventFunctions {
       try {
         AbsoluteDate found = findPhase(arguments.date, target, direction);
         return found == null ? S.Missing : AstroConvert.toDateObject(found);
-      } catch (OrekitException oex) {
+      } catch (ArithmeticException | OrekitException oex) {
         return Errors.printMessage(symbol(), "orekitdata", F.List(F.stringx(oex.getMessage())),
             engine);
       }
@@ -724,8 +723,7 @@ public class AstroEventFunctions {
       try {
         AbsoluteDate epoch =
             new AbsoluteDate(BROWN_LUNATION_1, org.orekit.time.TimeScalesFactory.getUTC());
-        int estimate =
-            (int) FastMath.floor(arguments.date.durationFrom(epoch) / SYNODIC_MONTH) + 1;
+        int estimate = (int) FastMath.floor(arguments.date.durationFrom(epoch) / SYNODIC_MONTH) + 1;
         // the mean month drifts against the true one, so walk to the lunation which really
         // contains the date instead of trusting the estimate
         for (int number = estimate - 2; number <= estimate + 2; number++) {
@@ -764,7 +762,7 @@ public class AstroEventFunctions {
       try {
         AbsoluteDate found = newMoonOfLunation(ast.arg1().toIntDefault());
         return found == null ? S.Missing : AstroConvert.toDateObject(found);
-      } catch (OrekitException oex) {
+      } catch (ArithmeticException | OrekitException oex) {
         return Errors.printMessage(S.FromLunationNumber, "orekitdata",
             F.List(F.stringx(oex.getMessage())), engine);
       }
