@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -181,6 +182,10 @@ public class BoxesFunctions {
         list.append("|>");
         return F.RowBox(list);
       }
+      IExpr shaped = shapedBox(expr, precedence, form, engine);
+      if (shaped.isPresent()) {
+        return shaped;
+      }
       if (expr.isASTOrAssociation()) {
         IAST function = (IAST) expr;
         if (function.size() > 0) {
@@ -233,38 +238,7 @@ public class BoxesFunctions {
       } else if (expr.isSymbol()) {
         return F.$str(expr.toString());
       } else if (expr.isNumber()) {
-        if (expr.isInteger()) {
-          return F.$str(expr.toString());
-        } else if (expr.isRational()) {
-          IRational rational = (IRational) expr;
-          IInteger num = rational.numerator();
-          IInteger den = rational.denominator();
-          return F.FractionBox(F.$str(num.toString()), F.$str(den.toString()));
-        } else if (expr.isComplex()) {
-          IComplex complex = (IComplex) expr;
-          IRational re = complex.re();
-          IRational im = complex.im();
-          if (re.isZero()) {
-            return F.RowBox(F.list(standardFormRecursive(im, precedence, form, engine), F.$str(" "),
-                F.$str("\\[ImaginaryI]")));
-          }
-          return F.RowBox( //
-              F.list(standardFormRecursive(re, precedence, form, engine), F.$str("+"),
-                  F.RowBox(F.list(standardFormRecursive(im, precedence, form, engine), F.$str(" "),
-                      F.$str("\\[ImaginaryI]")))));
-        } else if (expr.isReal()) {
-          return F.$str(expr.toString());
-        } else if (expr.isComplexNumeric()) {
-          IComplexNum complex = (IComplexNum) expr;
-          IReal re = complex.re();
-          IReal im = complex.im();
-          if (re.isZero()) {
-            return F.RowBox(F.list(F.$str(im.toString()), F.$str(" "), F.$str("\\[ImaginaryI]")));
-          }
-          return F.RowBox( //
-              F.list(F.$str(re.toString()), F.$str("+"),
-                  F.RowBox(F.list(F.$str(im.toString()), F.$str(" "), F.$str("\\[ImaginaryI]")))));
-        }
+        return numberBox((INumber) expr, precedence);
       }
       return F.$str(expr.toString());
     }
@@ -303,14 +277,12 @@ public class BoxesFunctions {
     /**
      * The constants a notebook draws as a glyph rather than spells out - <code>\[Pi]</code> for
      * <code>Pi</code>, <code>\[Infinity]</code> for <code>Infinity</code> - or {@link F#NIL} for
-     * any other expression.
+     * any other expression. <code>E</code> and <code>I</code> stay letters: that is how the outputs a
+     * WLJS notebook saves spell them.
      */
     private static IExpr specialSymbolBox(IExpr expr) {
       if (expr == S.Pi) {
         return F.$str("\\[Pi]");
-      }
-      if (expr == S.E) {
-        return F.$str("\\[ExponentialE]");
       }
       if (expr.isAST(S.DirectedInfinity, 2)) {
         if (expr.first().isOne()) {
@@ -324,6 +296,175 @@ public class BoxesFunctions {
         return F.$str("ComplexInfinity");
       }
       return F.NIL;
+    }
+
+    /** The spelling of the imaginary unit in a box, as a saved notebook output spells it. */
+    private static final String IMAGINARY_I = "I";
+
+    /**
+     * A number as the Wolfram Language writes it in a box: a negative one with its sign in front, a
+     * rational as a fraction, an imaginary part followed by <code>I</code> and a machine real with
+     * all of its digits and the <code>`</code> which marks its precision -
+     * <code>0.8459659909775918`</code>, as the notebook's saved outputs show it.
+     */
+    private static IExpr numberBox(INumber number, int precedence) {
+      if (number.isComplex() || number.isComplexNumeric()) {
+        INumber re = number.re();
+        INumber im = number.im();
+        if (re.isZero()) {
+          if (im.isNegative()) {
+            return parenthesize(F.RowBox(F.list(F.$str("-"), imaginaryBox(im.negate()))),
+                Precedence.TIMES, precedence);
+          }
+          return imaginaryBox(im);
+        }
+        IExpr sum = F.RowBox(F.list(numberBox(re, Precedence.PLUS),
+            F.$str(im.isNegative() ? "-" : "+"), imaginaryBox(im.isNegative() ? im.negate() : im)));
+        return parenthesize(sum, Precedence.PLUS, precedence);
+      }
+      if (number.isNegative() && number.isRational() && !number.isInteger()) {
+        IExpr positive = numberBox(number.negate(), Precedence.TIMES);
+        return parenthesize(F.RowBox(F.list(F.$str("-"), positive)), Precedence.TIMES, precedence);
+      }
+      if (number.isRational() && !number.isInteger()) {
+        IRational rational = (IRational) number;
+        return F.FractionBox(F.$str(rational.numerator().toString()),
+            F.$str(rational.denominator().toString()));
+      }
+      IExpr box = number instanceof org.matheclipse.core.expression.Num
+          ? F.$str(machineReal(number.reDoubleValue()))
+          : F.$str(number.toString());
+      return number.isNegative() ? parenthesize(box, Precedence.TIMES, precedence) : box;
+    }
+
+    /** <code>I</code>, <code>2 I</code> or <code>(1/2) I</code> for a positive imaginary part. */
+    private static IExpr imaginaryBox(INumber im) {
+      if (im.isOne()) {
+        return F.$str(IMAGINARY_I);
+      }
+      return F.RowBox(F.list(numberBox(im, Precedence.TIMES), F.$str(" "), F.$str(IMAGINARY_I)));
+    }
+
+    /**
+     * The InputForm digits of a machine real - the shortest ones which read back as the same double
+     * - followed by the precision mark: <code>1.`</code>, <code>0.25`</code>,
+     * <code>1.5`*^-7</code>.
+     */
+    static String machineReal(double value) {
+      if (Double.isNaN(value) || Double.isInfinite(value)) {
+        return Double.toString(value);
+      }
+      java.math.BigDecimal decimal =
+          new java.math.BigDecimal(Double.toString(value)).stripTrailingZeros();
+      String digits = decimal.unscaledValue().abs().toString();
+      // the position of the decimal point relative to the first digit
+      int exponent = digits.length() - decimal.scale() - 1;
+      StringBuilder buf = new StringBuilder();
+      if (value < 0) {
+        buf.append('-');
+      }
+      if (decimal.signum() == 0) {
+        return buf.append("0.`").toString();
+      }
+      if (exponent >= 6 || exponent <= -6) {
+        buf.append(digits.charAt(0)).append('.').append(digits, 1, digits.length()).append('`')
+            .append("*^").append(exponent);
+        return buf.toString();
+      }
+      if (exponent < 0) {
+        buf.append("0.");
+        for (int i = -1; i > exponent; i--) {
+          buf.append('0');
+        }
+        buf.append(digits);
+      } else if (digits.length() <= exponent + 1) {
+        buf.append(digits);
+        for (int i = digits.length(); i <= exponent; i++) {
+          buf.append('0');
+        }
+        buf.append('.');
+      } else {
+        buf.append(digits, 0, exponent + 1).append('.').append(digits, exponent + 1, digits.length());
+      }
+      return buf.append('`').toString();
+    }
+
+    /**
+     * The boxes of the expressions a notebook shows as something other than their text: a colour
+     * as a swatch, a table as a grid and a power series as its terms followed by
+     * <code>O[x]^n</code>. The box heads are the Wolfram Language's own - the notebook turns a
+     * <code>TemplateBox[&lt;|"color" -> c|&gt;, "RGBColorSwatchTemplate"]</code> or a
+     * <code>GridBox</code> into its widget. {@link F#NIL} for any other expression.
+     */
+    private static IExpr shapedBox(IExpr expr, int precedence, IExpr form, EvalEngine engine) {
+      if (expr instanceof ASTSeriesData) {
+        return seriesBox((ASTSeriesData) expr, form, engine);
+      }
+      if (!expr.isAST() || expr.size() < 2) {
+        return F.NIL;
+      }
+      IAST ast = (IAST) expr;
+      String template = null;
+      if (ast.isAST(S.RGBColor, 4, 5)) {
+        template = "RGBColorSwatchTemplate";
+      } else if (ast.isAST(S.GrayLevel, 2, 3)) {
+        template = "GrayLevelColorSwatchTemplate";
+      } else if (ast.isAST(S.Hue, 2, 5)) {
+        template = "HueColorSwatchTemplate";
+      }
+      if (template != null) {
+        if (ast.forAll(x -> x.isReal())) {
+          return F.binaryAST2(S.TemplateBox,
+              F.assoc(F.list(F.Rule(F.$str("color"), ast))), F.$str(template));
+        }
+        return F.NIL;
+      }
+      if (ast.isAST(S.TableForm, 2) || ast.isAST(S.Grid, 2)) {
+        IExpr table = ast.arg1();
+        if (table.isList() && ((IAST) table).argSize() > 0) {
+          IAST rows = (IAST) table;
+          boolean matrix = rows.forAll(x -> x.isList());
+          if (!matrix && ast.isAST(S.Grid)) {
+            return F.NIL;
+          }
+          IASTAppendable gridRows = F.ListAlloc(rows.size());
+          for (int i = 1; i < rows.size(); i++) {
+            IExpr row = rows.get(i);
+            IASTAppendable gridRow = F.ListAlloc(row.size());
+            if (matrix) {
+              for (int j = 1; j < row.size(); j++) {
+                gridRow.append(standardFormRecursive(((IAST) row).get(j), 0, form, engine));
+              }
+            } else {
+              // a flat list is a table of one column
+              gridRow.append(standardFormRecursive(row, 0, form, engine));
+            }
+            gridRows.append(gridRow);
+          }
+          return F.unaryAST1(S.GridBox, gridRows);
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * A power series as the notebook shows it: its terms, then <code>O[x]^n</code>, the whole held
+     * in an <code>InterpretationBox</code> so the output still reads back as the series.
+     */
+    private static IExpr seriesBox(ASTSeriesData series, IExpr form, EvalEngine engine) {
+      IExpr normal = engine.evaluate(F.Normal(series));
+      IExpr variable = series.expansionVariable();
+      IExpr point = series.expansionPoint();
+      IExpr order = F.Divide(F.ZZ(series.truncateOrder()), F.ZZ(series.puiseuxDenominator()));
+      IExpr bigO = F.Power(F.unaryAST1(S.O, point.isZero() ? variable : F.Subtract(variable, point)),
+          engine.evaluate(order));
+      IASTAppendable row = F.ListAlloc(3);
+      if (!normal.isZero()) {
+        row.append(standardFormRecursive(normal, Precedence.PLUS, form, engine));
+        row.append(F.$str("+"));
+      }
+      row.append(standardFormRecursive(bigO, Precedence.PLUS, form, engine));
+      return F.binaryAST2(S.InterpretationBox, F.RowBox(row), series.toSeriesData());
     }
 
     /** Whether {@link #OPERATOR_MAP} has been filled from the parser's operator table yet. */
@@ -421,15 +562,37 @@ public class BoxesFunctions {
     }
 
     private static IExpr timesBox(IAST times, int precedence, IExpr form, EvalEngine engine) {
+      IExpr positive = withoutMinus(times);
+      if (positive.isPresent()) {
+        // -x and -(b/2) carry their sign in front, as a sum writes it between its terms
+        IExpr negated = F.RowBox(F.list(F.$str("-"),
+            standardFormRecursive(positive, Precedence.TIMES, form, engine)));
+        return parenthesize(negated, Precedence.TIMES, precedence);
+      }
       IASTAppendable numerator = F.ListAlloc(times.size());
       IASTAppendable denominator = F.ListAlloc(times.size());
+      IExpr coefficientDenominator = F.NIL;
       for (int i = 1; i < times.size(); i++) {
         IExpr factor = times.get(i);
         if (factor.isPower() && factor.exponent().isNumber() && factor.exponent().isNegative()) {
           denominator.append(factor);
+        } else if (i == 1 && factor.isRational() && !factor.isInteger()) {
+          // a rational coefficient is split over the line: b/2 rather than (1/2) b
+          IRational rational = (IRational) factor;
+          if (!rational.numerator().isOne()) {
+            numerator.append(rational.numerator());
+          }
+          coefficientDenominator = F.$str(rational.denominator().toString());
         } else {
           numerator.append(factor);
         }
+      }
+      if (coefficientDenominator.isPresent() && denominator.isEmpty()) {
+        IExpr above = numerator.isEmpty() //
+            ? F.$str("1")
+            : riffle(boxes(numerator, numerator.argSize() == 1 ? 0 : Precedence.TIMES, form,
+                engine), " ");
+        return F.FractionBox(above, coefficientDenominator);
       }
       if (denominator.isEmpty()) {
         return parenthesize(riffle(boxes(numerator, Precedence.TIMES, form, engine), " "),
@@ -440,7 +603,10 @@ public class BoxesFunctions {
           ? F.$str("1")
           : riffle(boxes(numerator, numerator.argSize() == 1 ? 0 : Precedence.TIMES, form, engine),
               " ");
-      IASTAppendable belowBoxes = F.ListAlloc(denominator.size());
+      IASTAppendable belowBoxes = F.ListAlloc(denominator.size() + 1);
+      if (coefficientDenominator.isPresent()) {
+        belowBoxes.append(coefficientDenominator);
+      }
       for (int i = 1; i < denominator.size(); i++) {
         belowBoxes.append(reciprocalBox((IAST) denominator.get(i), form, engine));
       }
@@ -478,13 +644,13 @@ public class BoxesFunctions {
      * what it must show.
      */
     private static IExpr withoutMinus(IExpr term) {
-      if (term.isNumber() && term.isNegative()) {
+      if (isNegativeNumber(term)) {
         return ((INumber) term).negate();
       }
       if (term.isTimes()) {
         IAST times = (IAST) term;
         IExpr first = times.arg1();
-        if (first.isNumber() && first.isNegative()) {
+        if (isNegativeNumber(first)) {
           IExpr positive = ((INumber) first).negate();
           return positive.isOne() //
               ? (times.size() == 3 ? times.arg2() : times.rest())
@@ -492,6 +658,18 @@ public class BoxesFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /** A negative real number, or an imaginary one with a negative imaginary part. */
+    private static boolean isNegativeNumber(IExpr expr) {
+      if (!expr.isNumber()) {
+        return false;
+      }
+      if (expr.isComplex() || expr.isComplexNumeric()) {
+        INumber number = (INumber) expr;
+        return number.re().isZero() && number.im().isNegative();
+      }
+      return expr.isNegative();
     }
 
     /** The boxes with a separator between them, as one RowBox, or the single box itself. */

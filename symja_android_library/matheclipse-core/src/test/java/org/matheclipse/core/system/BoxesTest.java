@@ -45,8 +45,42 @@ public class BoxesTest extends ExprEvaluatorTestCase {
   public void testConstantsAreWrittenAsTheirGlyphs() {
     check("ToBoxes[4 Pi R^2] // InputForm", //
         "RowBox({\"4\",\" \",\"\\[Pi]\",\" \",SuperscriptBox(\"R\",\"2\")})");
+    // E and I stay letters, as the notebook's saved outputs spell them
     check("Map[ToBoxes, {E, Infinity, -Infinity, ComplexInfinity}] // InputForm", //
-        "{\"\\[ExponentialE]\",\"\\[Infinity]\",RowBox({\"-\",\"\\[Infinity]\"}),\"ComplexInfinity\"}");
+        "{\"E\",\"\\[Infinity]\",RowBox({\"-\",\"\\[Infinity]\"}),\"ComplexInfinity\"}");
+  }
+
+  @Test
+  public void testSignsCoefficientsAndImaginaryNumbers() {
+    // -x was written (-1) x, I as 1 \[ImaginaryI], and (1/2) b instead of b/2
+    check("Map[ToBoxes, {-x, I, -I/2, 1 - 2 I, I Sqrt[2], -1/2, a - b/2}] // InputForm", //
+        "{RowBox({\"-\",\"x\"}),\"I\",RowBox({\"-\",RowBox({FractionBox(\"1\",\"2\"),\" \",\"I\"})}),"
+            + "RowBox({\"1\",\"-\",RowBox({\"2\",\" \",\"I\"})}),RowBox({\"I\",\" \",SqrtBox(\"2\")}),"
+            + "RowBox({\"-\",FractionBox(\"1\",\"2\")}),RowBox({\"a\",\"-\",FractionBox(\"b\",\"2\")})}");
+    check("ToBoxes[(-b - Sqrt[b^2 - 4 a c])/(2 a)] // InputForm", //
+        "FractionBox(RowBox({\"-\",\"b\",\"-\",SqrtBox(RowBox({SuperscriptBox(\"b\",\"2\"),\"-\",RowBox({\"4\",\" \",\"a\",\" \",\"c\"})}))}),RowBox({\"2\",\" \",\"a\"}))");
+  }
+
+  @Test
+  public void testMachineRealsKeepAllTheirDigits() {
+    // a notebook showed 0.0159723 where the saved output has 0.8459659909775918`
+    check("Map[ToBoxes, {0.8459659909775918, 1., -2.5, 123456., 1234567., 0.00001, 1.5*^-7}] // InputForm", //
+        "{\"0.8459659909775918`\",\"1.`\",\"-2.5`\",\"123456.`\",\"1.234567`*^6\",\"0.00001`\",\"1.5`*^-7\"}");
+  }
+
+  @Test
+  public void testColorsTablesAndSeriesAreShapedBoxes() {
+    // the notebook turns these box heads into a colour swatch, a grid and the terms of a series
+    check("ToBoxes[RGBColor[0, 1, 1]] // InputForm", //
+        "TemplateBox(<|\"color\"->RGBColor(0,1,1)|>,\"RGBColorSwatchTemplate\")");
+    check("ToBoxes[RGBColor[a, 1, 1]] // Head", //
+        "RowBox");
+    check("ToBoxes[TableForm[{{1, 2}, {3, 4}}]] // InputForm", //
+        "GridBox({{\"1\",\"2\"},{\"3\",\"4\"}})");
+    check("ToBoxes[TableForm[{a, b}]] // InputForm", //
+        "GridBox({{\"a\"},{\"b\"}})");
+    check("ToBoxes[Series[Sin[x] Exp[-x], {x, 0, 5}]] // InputForm", //
+        "InterpretationBox(RowBox({RowBox({\"x\",\"-\",SuperscriptBox(\"x\",\"2\"),\"+\",FractionBox(SuperscriptBox(\"x\",\"3\"),\"3\"),\"-\",FractionBox(SuperscriptBox(\"x\",\"5\"),\"30\")}),\"+\",SuperscriptBox(RowBox({\"O\",\"[\",RowBox({\"x\"}),\"]\"}),\"6\")}),SeriesData(x,0,{1,-1,1/3,0,-1/30},1,6,1))");
   }
 
   @Test
@@ -117,6 +151,6 @@ public class BoxesTest extends ExprEvaluatorTestCase {
   @Test
   public void testToBoxes001() {
     check("Map[ToBoxes, {123, 1/23, 1.23, 1 + 23 I}] // InputForm", //
-        "{\"123\",FractionBox(\"1\",\"23\"),\"1.23\",RowBox({\"1\",\"+\",RowBox({\"23\",\" \",\"\\[ImaginaryI]\"})})}");
+        "{\"123\",FractionBox(\"1\",\"23\"),\"1.23`\",RowBox({\"1\",\"+\",RowBox({\"23\",\" \",\"I\"})})}");
   }
 }
