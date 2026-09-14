@@ -175,7 +175,7 @@ public class StatisticsContinousDistribution {
         IReal a = dist.arg1().evalReal();
         IReal b = dist.arg2().evalReal();
         if (a != null && b != null) {
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           double[] vector =
               rdg.nextDeviates(new org.hipparchus.distribution.continuous.BetaDistribution(
                   a.doubleValue(), b.doubleValue()), size);
@@ -371,7 +371,8 @@ public class StatisticsContinousDistribution {
       }
       try {
         org.hipparchus.distribution.multivariate.MultivariateNormalDistribution mnd =
-            new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(means,
+            new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(RandomFunctions.hipparchusGenerator(random),
+                means,
                 covariances);
 
         IASTAppendable list = F.ListAlloc(size);
@@ -564,7 +565,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(ad) || Double.isNaN(bd)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.CauchyDistribution(ad, bd), size);
         return new ASTRealVector(vector, false);
@@ -747,7 +748,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(v)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v), size);
         return new ASTRealVector(vector, false);
@@ -1283,7 +1284,7 @@ public class StatisticsContinousDistribution {
         double rate = dist.arg1().evalfNaN();
         if (rate > 0.0) {
           // return F.num(new ExponentialGenerator(rate, random).nextValue());
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           double[] vector = rdg.nextDeviates(
               new org.hipparchus.distribution.continuous.ExponentialDistribution(rate), size);
           return new ASTRealVector(vector, false);
@@ -1622,12 +1623,16 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         if (n.isReal() && m.isReal()) {
-          double reference = random.nextDouble();
-          double uniform =
-              reference >= StatisticsFunctions.NEXTDOWNONE ? StatisticsFunctions.NEXTDOWNONE
-                  : Math.nextUp(reference);
-          uniform = -Math.log(uniform);
-          return m.times(S.Power.funEval(F.num(uniform), n.reciprocal().negate()));
+          IASTAppendable list = F.ListAlloc(size);
+          for (int i = 0; i < size; i++) {
+            double reference = random.nextDouble();
+            double uniform =
+                reference >= StatisticsFunctions.NEXTDOWNONE ? StatisticsFunctions.NEXTDOWNONE
+                    : Math.nextUp(reference);
+            uniform = -Math.log(uniform);
+            list.append(m.times(S.Power.funEval(F.num(uniform), n.reciprocal().negate())));
+          }
+          return list;
         }
       }
       return F.NIL;
@@ -1961,7 +1966,7 @@ public class StatisticsContinousDistribution {
         }
 
         // TODO cache RandomDataGenerator instance
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates( //
             new org.hipparchus.distribution.continuous.GammaDistribution(a, b), //
             size);
@@ -2411,7 +2416,7 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST0()) {
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.GumbelDistribution(0.0, 1.0), size);
         return new ASTRealVector(vector, false);
@@ -2422,7 +2427,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(n) || Double.isNaN(m)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.GumbelDistribution(n, m), size);
         return new ASTRealVector(vector, false);
@@ -3000,7 +3005,7 @@ public class StatisticsContinousDistribution {
           return F.NIL;
         }
         if (sigma > 0) {
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           double[] vector = rdg.nextDeviates(
               new org.hipparchus.distribution.continuous.LogNormalDistribution(mean, sigma), size);
           return new ASTRealVector(vector, false);
@@ -3205,7 +3210,8 @@ public class StatisticsContinousDistribution {
 
         if (meanVector != null && covMatrix != null) {
           org.hipparchus.distribution.multivariate.MultivariateNormalDistribution mnd =
-              new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(
+              new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(RandomFunctions.hipparchusGenerator(random),
+                
                   meanVector, covMatrix);
 
           IASTAppendable list = F.ListAlloc(size);
@@ -3406,7 +3412,7 @@ public class StatisticsContinousDistribution {
         }
 
         // TODO cache RandomDataGenerator instance
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates( //
             new org.hipparchus.distribution.continuous.NakagamiDistribution(n, m), //
             size);
@@ -3838,7 +3844,7 @@ public class StatisticsContinousDistribution {
           // double mean = dist.arg1().evalDouble();
           // double sigma = dist.arg2().evalDouble();
           // return F.num(new GaussianGenerator(mean, sigma, random).nextValue());
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           double[] vector = rdg.nextDeviates(
               new org.hipparchus.distribution.continuous.NormalDistribution(mean, sigma), size);
           return new ASTRealVector(vector, false);
@@ -4528,7 +4534,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(n)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector =
             rdg.nextDeviates(new org.hipparchus.distribution.continuous.TDistribution(n), size);
         return new ASTRealVector(vector, false);
@@ -4539,7 +4545,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(m) || Double.isNaN(s) || Double.isNaN(v)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector =
             rdg.nextDeviates(new org.hipparchus.distribution.continuous.TDistribution(v), size);
         for (int i = 0; i < vector.length; i++) {
@@ -4846,7 +4852,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(min) || Double.isNaN(max)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.UniformRealDistribution(min, max), size);
         return new ASTRealVector(vector, false);
@@ -5396,7 +5402,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(n) || Double.isNaN(m)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.WeibullDistribution(n, m), size);
         return new ASTRealVector(vector, false);
@@ -5407,7 +5413,7 @@ public class StatisticsContinousDistribution {
         if (Double.isNaN(n) || Double.isNaN(scale) || Double.isNaN(loc)) {
           return F.NIL;
         }
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.WeibullDistribution(n, scale), size);
         // Shift values by location
@@ -6352,7 +6358,7 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST0()) {
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.LogisticDistribution(0.0, 1.0), size);
         return new ASTRealVector(vector, false);
@@ -6361,7 +6367,7 @@ public class StatisticsContinousDistribution {
         double a = dist.arg1().evalfNaN();
         double b = dist.arg2().evalfNaN();
         if (!Double.isNaN(a) && !Double.isNaN(b) && b > 0.0) {
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           double[] vector = rdg.nextDeviates(
               new org.hipparchus.distribution.continuous.LogisticDistribution(a, b), size);
           return new ASTRealVector(vector, false);

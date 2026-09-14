@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.Random;
 import org.hipparchus.random.RandomDataGenerator;
+import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -206,7 +207,7 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
 
       if (nu > 0) {
         // Hipparchus decoupled RNG requires RandomDataGenerator for standard deviates
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
 
         // Setup the ChiSquared distribution and generate all Y deviates at once
         org.hipparchus.distribution.continuous.ChiSquaredDistribution chiSq =
@@ -215,7 +216,8 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
 
         // Setup the Multivariate Normal distribution and its Sampler for Z vectors
         org.hipparchus.distribution.multivariate.MultivariateNormalDistribution mnd =
-            new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(
+            new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(RandomFunctions.hipparchusGenerator(random),
+                
                 new double[meanVector.length], covMatrix);
 
         IASTAppendable list = F.ListAlloc(size);

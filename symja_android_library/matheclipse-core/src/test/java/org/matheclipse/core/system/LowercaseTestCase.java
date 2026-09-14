@@ -22048,6 +22048,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
     check("RandomInteger(150,{3,0})", //
         "{{},{},{}}");
+    // RandomInteger(dist) is the legacy form of RandomVariate(dist) for discrete distributions
+    check("IntegerQ(RandomInteger(PoissonDistribution(3)))", //
+        "True");
+    check("Dimensions(RandomInteger(BinomialDistribution(10,0.5), {2,3}))", //
+        "{2,3}");
+    check("Length(RandomInteger(HypergeometricDistribution(10,50,100), 5))", //
+        "5");
+    check("AllTrue(RandomInteger(DiscreteUniformDistribution({3,7}), 20), 3<=#<=7&)", //
+        "True");
+    check("Dimensions(RandomInteger(BernoulliDistribution(0.3), {4}))", //
+        "{4}");
+    check("AllTrue(RandomInteger(GeometricDistribution(0.2), 20), IntegerQ(#)&&#>=0&)", //
+        "True");
+    // continuous distributions and invalid parameters are not delegated
+    check("RandomInteger(NormalDistribution(0,1))", //
+        "RandomInteger(NormalDistribution(0,1))");
+    check("RandomInteger(ZipfDistribution(-1))", //
+        "RandomInteger(ZipfDistribution(-1))");
   }
 
   @Test
@@ -22069,10 +22087,56 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("NonNegative(RandomReal({-Sqrt(2)/2,-1.0})*(-1.0))", //
         "True");
+    // RandomReal(dist) is the legacy form of RandomVariate(dist) for continuous distributions
+    check("Head(RandomReal(NormalDistribution(0,1)))", //
+        "Real");
+    check("Dimensions(RandomReal(ExponentialDistribution(2), {3,2}))", //
+        "{3,2}");
+    check("Length(RandomReal(StudentTDistribution(5), 4))", //
+        "4");
+    check("AllTrue(RandomReal(UniformDistribution({2,3}), 10), 2<=#<=3&)", //
+        "True");
+    check("RandomReal(PoissonDistribution(3))", //
+        "RandomReal(PoissonDistribution(3))");
   }
 
   @Test
   public void testRandomVariate() {
+    // inverse CDF samplers of the discrete distributions
+    check("AllTrue(RandomVariate(GeometricDistribution(1/3), 50), IntegerQ(#)&&#>=0&)", //
+        "True");
+    check("AllTrue(RandomVariate(BenfordDistribution(10), 50), 1<=#<=9&)", //
+        "True");
+    check("AllTrue(RandomVariate(BetaBinomialDistribution(2,3,10), 50), 0<=#<=10&)", //
+        "True");
+    check("AllTrue(RandomVariate(WaringYuleDistribution(2,3), 50), IntegerQ(#)&&#>=0&)", //
+        "True");
+    check("AllTrue(RandomVariate(ZipfDistribution(1.5), 50), IntegerQ(#)&&#>=1&)", //
+        "True");
+    check("AllTrue(RandomVariate(ZipfDistribution(5, 1), 50), 1<=#<=5&)", //
+        "True");
+    check("Dimensions(RandomVariate(WaringYuleDistribution(2), {2,3}))", //
+        "{2,3}");
+    // a quantile beyond 2^62 comes from the tail asymptote
+    check("AllTrue(RandomVariate(ZipfDistribution(0.001), 5), IntegerQ(#)&&#>=1&)", //
+        "True");
+    check("SeedRandom(42); a=RandomVariate(ZipfDistribution(2), 10); " //
+        + "SeedRandom(42); a===RandomVariate(ZipfDistribution(2), 10)", //
+        "True");
+    check("RandomVariate(GeometricDistribution(p))", //
+        "RandomVariate(GeometricDistribution(p))");
+    // samplers built on hipparchus distributions draw from the generator SeedRandom seeds
+    check("Table(SeedRandom(7); RandomVariate(#, 6), {2})& /@ " //
+        + "{PoissonDistribution(3), BinomialDistribution(10,0.3), NormalDistribution(0,1), " //
+        + "GammaDistribution(2,3), MultinormalDistribution({0,0},{{1,0},{0,1}}), " //
+        + "BinormalDistribution({0,0},{1,2},0.5), MultivariateTDistribution({{1,0},{0,1}},3), " //
+        + "MultivariatePoissonDistribution(1,{2,3})} // Map(Apply(SameQ))", //
+        "{True,True,True,True,True,True,True,True}");
+    check("Table(SeedRandom(7, Method->\"MersenneTwister\"); RandomVariate(NormalDistribution(), 6), {2}) " //
+        + "// Apply(SameQ)", //
+        "True");
+    check("Length(RandomVariate(FrechetDistribution(2,1), 5))", //
+        "5");
     // message: RandomVariate: The first argument aa is not a valid distribution.
     check("RandomVariate(aa)", //
         "RandomVariate(aa)");

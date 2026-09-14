@@ -389,6 +389,29 @@ public final class RandomFunctions {
   }
 
   /**
+   * Test if the head of the distribution <code>dist</code> can generate samples, so that
+   * <code>RandomInteger(dist)</code> or <code>RandomReal(dist)</code> can delegate to
+   * <code>RandomVariate(dist)</code>.
+   */
+  private static boolean isRandomVariate(IExpr dist) {
+    return dist.isBuiltInFunction()
+        && ((IBuiltInSymbol) dist.head()).getEvaluator() instanceof IRandomVariate;
+  }
+
+  /**
+   * Evaluate <code>RandomVariate(dist)</code> or <code>RandomVariate(dist, spec)</code> for the
+   * arguments of <code>ast</code>.
+   *
+   * @return {@link F#NIL} if <code>RandomVariate</code> stays unevaluated, for example for invalid
+   *         parameters, so that <code>ast</code> keeps its own head
+   */
+  private static IExpr randomVariate(IAST ast, EvalEngine engine) {
+    IExpr result = engine.evaluate(
+        ast.isAST1() ? F.RandomVariate(ast.arg1()) : F.RandomVariate(ast.arg1(), ast.arg2()));
+    return result.head() == S.RandomVariate ? F.NIL : result;
+  }
+
+  /**
    *
    *
    * <pre>
@@ -416,6 +439,10 @@ public final class RandomFunctions {
       if (ast.isAST0()) {
         Random tlr = engine.getRandom();
         return randomBigInteger(BigInteger.ONE, false, tlr);
+      }
+      if (ast.arg1().isDiscreteDistribution() && isRandomVariate(ast.arg1())) {
+        // RandomInteger(dist) and RandomInteger(dist, spec) are the legacy forms of RandomVariate
+        return randomVariate(ast, engine);
       }
 
       if (ast.arg1().isList2()) {
@@ -668,6 +695,11 @@ public final class RandomFunctions {
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 0 && argSize < ast.size()) {
         ast = ast.copyUntil(argSize + 1);
+      }
+      if (ast.argSize() >= 1 && ast.argSize() <= 2 && ast.arg1().isContinuousDistribution()
+          && isRandomVariate(ast.arg1())) {
+        // RandomReal(dist) and RandomReal(dist, spec) are the legacy forms of RandomVariate
+        return randomVariate(ast, engine);
       }
       if (options[0].isReal()) {
         int workingPrecision = options[0].toIntDefault();
@@ -1151,6 +1183,30 @@ public final class RandomFunctions {
    * <code>Random</code> is defined in terms of it, so the distributions stay the ones
    * <code>Random</code> documents and only the stream of bits changes.
    */
+  /**
+   * The engine's generator as a hipparchus {@link org.hipparchus.random.RandomGenerator}, for
+   * samplers built on hipparchus distributions. Those would otherwise draw from a generator of
+   * their own making, which <code>SeedRandom</code> cannot reach.
+   *
+   * @param random the generator of {@link EvalEngine#getRandom()}
+   */
+  public static org.hipparchus.random.RandomGenerator hipparchusGenerator(Random random) {
+    if (random instanceof GeneratorRandom) {
+      return ((GeneratorRandom) random).generator;
+    }
+    return new org.hipparchus.random.JDKRandomGenerator(random);
+  }
+
+  /**
+   * A hipparchus {@link org.hipparchus.random.RandomDataGenerator} drawing from the engine's
+   * generator, so that <code>SeedRandom</code> makes its deviates reproducible.
+   *
+   * @param random the generator of {@link EvalEngine#getRandom()}
+   */
+  public static org.hipparchus.random.RandomDataGenerator randomDataGenerator(Random random) {
+    return org.hipparchus.random.RandomDataGenerator.of(hipparchusGenerator(random));
+  }
+
   private static final class GeneratorRandom extends Random {
     private static final long serialVersionUID = 1L;
 

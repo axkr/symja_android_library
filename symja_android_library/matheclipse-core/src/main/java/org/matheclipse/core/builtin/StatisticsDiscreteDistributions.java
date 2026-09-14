@@ -1,7 +1,12 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Random;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongToDoubleFunction;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.hipparchus.special.Beta;
+import org.hipparchus.special.Gamma;
 import org.hipparchus.random.RandomDataGenerator;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -105,6 +110,85 @@ public class StatisticsDiscreteDistributions {
       return Math.round(mean);
     }
     return (long) org.hipparchus.util.FastMath.floor(x + 0.5);
+  }
+
+  /** Upper end of the inverse CDF search of {@link #sampleBySurvival} for an unbounded support. */
+  private static final long SAMPLE_SEARCH_LIMIT = 1L << 62;
+
+  /** Largest support which {@link #sampleBySurvival} callers tabulate. */
+  private static final int SAMPLE_TABLE_LIMIT = 1 << 22;
+
+  /** Number of terms of the Zipf zeta sum which are summed explicitly before Euler-Maclaurin. */
+  private static final int ZIPF_TABLE_SIZE = 1024;
+
+  /**
+   * Inverse transform sampling of a discrete distribution: for each draw <code>q</code> uniform in
+   * <code>[0,1)</code> take the smallest <code>k</code> in <code>[lo, hi]</code> with
+   * <code>CDF(k) >= q</code>.
+   *
+   * <p>
+   * The test is made on the survival function as <code>S(k) <= 1 - q</code>, where
+   * <code>1 - q</code> is exact. Computing <code>CDF(k) = 1 - S(k)</code> instead would round every
+   * tail probability below <code>2^-53</code> away, which matters for the heavy tails of
+   * <code>ZipfDistribution</code> and <code>WaringYuleDistribution</code>. {@link #discreteQuantile}
+   * does the search on <code>-S(k) >= q - 1</code>, which is the same condition.
+   * </p>
+   *
+   * @param random the engine's generator, so that <code>SeedRandom</code> reproduces the sample
+   * @param size the number of values
+   * @param lo the lowest value of the support
+   * @param hi the highest value of the support, or {@link #SAMPLE_SEARCH_LIMIT} if unbounded
+   * @param survival <code>P(X > k)</code> for <code>k</code> in <code>[lo, hi]</code>
+   * @param logQuantileAsymptote for an unbounded support, maps <code>1 - q</code> to the logarithm
+   *        of the quantile beyond {@link #SAMPLE_SEARCH_LIMIT}; <code>null</code> for a bounded one
+   * @return {@link F#NIL} if the survival function is not a number
+   */
+  private static IExpr sampleBySurvival(Random random, int size, long lo, long hi,
+      LongToDoubleFunction survival, DoubleUnaryOperator logQuantileAsymptote) {
+    if (Double.isNaN(survival.applyAsDouble(lo))) {
+      return F.NIL;
+    }
+    IASTAppendable list = F.ListAlloc(size);
+    for (int i = 0; i < size; i++) {
+      double q = random.nextDouble();
+      long k = discreteQuantile(q - 1.0, lo, lo, hi, x -> -survival.applyAsDouble(x));
+      if (k == hi && logQuantileAsymptote != null && !(survival.applyAsDouble(hi) <= 1.0 - q)) {
+        // the quantile is beyond the search limit
+        IExpr huge = integerFromLog(logQuantileAsymptote.applyAsDouble(1.0 - q));
+        if (huge.isNIL()) {
+          return F.NIL;
+        }
+        list.append(huge);
+      } else {
+        list.append(F.ZZ(k));
+      }
+    }
+    return list;
+  }
+
+  /** <code>Floor(Exp(logValue))</code> for a value too large for a <code>long</code>. */
+  private static IExpr integerFromLog(double logValue) {
+    if (!Double.isFinite(logValue)) {
+      return F.NIL;
+    }
+    Apfloat value = ApfloatMath.exp(new Apfloat(logValue, 30));
+    return F.ZZ(value.floor().toBigInteger());
+  }
+
+  /**
+   * The tail <code>Sum(j^(-s), {j, x, Infinity}) == HurwitzZeta(s, x)</code> for <code>s > 1</code>
+   * and <code>x >= </code>{@link #ZIPF_TABLE_SIZE} by Euler-Maclaurin summation with the Bernoulli
+   * terms up to <code>B6</code>.
+   */
+  private static double zetaTail(double s, double x) {
+    double xs = Math.pow(x, -s);
+    if (xs == 0.0) {
+      return 0.0;
+    }
+    double ix2 = 1.0 / (x * x);
+    double correction = s / (12.0 * x)
+        * (1.0 - (s + 1.0) * (s + 2.0) * ix2 / 60.0 * (1.0 - (s + 3.0) * (s + 4.0) * ix2 / 42.0));
+    return xs * (x / (s - 1.0) + 0.5 + correction);
   }
 
   /**
@@ -328,7 +412,7 @@ public class StatisticsDiscreteDistributions {
         // see exception handling in RandonmVariate() function
         double p = dist.arg1().evalfNaN();
         if (0 <= p && p <= 1) {
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           int[] vector = rdg.nextDeviates(
               new org.hipparchus.distribution.discrete.BinomialDistribution(1, p), size);
           return F.List(vector);
@@ -618,7 +702,7 @@ public class StatisticsDiscreteDistributions {
           // see exception handling in RandonmVariate() function
           double p = dist.arg2().evalfNaN();
           if (0 <= p && p <= 1) {
-            RandomDataGenerator rdg = new RandomDataGenerator();
+            RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
             int[] vector = rdg.nextDeviates(
                 new org.hipparchus.distribution.discrete.BinomialDistribution(n, p), size);
             return F.List(vector);
@@ -836,7 +920,7 @@ public class StatisticsDiscreteDistributions {
         int min = minMax[0].toIntDefault();
         int max = minMax[1].toIntDefault();
         if (min < max && F.isPresent(min)) {
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           int[] vector = rdg.nextDeviates(
               new org.hipparchus.distribution.discrete.UniformIntegerDistribution(min, max), size);
           return F.List(vector);
@@ -870,7 +954,7 @@ public class StatisticsDiscreteDistributions {
 
 
   private static final class GeometricDistribution extends AbstractEvaluator implements ICDF,
-      IDiscreteDistribution, IPDF, IStatistics, ICentralMoment, IGeneratingFunction { // ,
+      IDiscreteDistribution, IPDF, IStatistics, ICentralMoment, IGeneratingFunction, IRandomVariate {
 
     @Override
     public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
@@ -958,6 +1042,21 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST1()) {
+        double p = dist.arg1().evalfNaN();
+        if (0.0 < p && p <= 1.0) {
+          // P(X > k) = (1-p)^(k+1)
+          double log1mp = Math.log1p(-p);
+          return sampleBySurvival(random, size, 0L, SAMPLE_SEARCH_LIMIT,
+              k -> Math.exp((k + 1.0) * log1mp),
+              oneMinusQ -> Math.log(Math.log(oneMinusQ) / log1mp));
+        }
+      }
       return F.NIL;
     }
 
@@ -1223,7 +1322,7 @@ public class StatisticsDiscreteDistributions {
       if (dist.isAST3()) {
         int param[] = parameters(dist);
         if (param != null) {
-          RandomDataGenerator rdg = new RandomDataGenerator();
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           int[] vector =
               rdg.nextDeviates(new org.hipparchus.distribution.discrete.HypergeometricDistribution(
                   param[2], param[1], param[0]), size);
@@ -1438,7 +1537,7 @@ public class StatisticsDiscreteDistributions {
             double theta = thetaExpr.evalfNaN();
             double[] lambdas = lambdaExpr.toDoubleVector();
             if (lambdas != null && theta > 0) {
-              RandomDataGenerator rdg = new RandomDataGenerator();
+              RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
 
               // Generate the shared component Y_0 ~ Poisson(theta)
               org.hipparchus.distribution.discrete.PoissonDistribution p0 =
@@ -1686,7 +1785,7 @@ public class StatisticsDiscreteDistributions {
           return F.NIL;
         }
         // return F.ZZ(new PoissonGenerator(mean, random).nextValue());
-        RandomDataGenerator rdg = new RandomDataGenerator();
+        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         int[] vector = rdg
             .nextDeviates(new org.hipparchus.distribution.discrete.PoissonDistribution(mean), size);
         return F.List(vector);
@@ -1734,7 +1833,7 @@ public class StatisticsDiscreteDistributions {
    * <code>b</code>.
    */
   private static final class BenfordDistribution extends AbstractEvaluator
-      implements ICDF, IDiscreteDistribution, IPDF, IStatistics {
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public int getSupportLowerBound(IExpr discreteDistribution) {
@@ -1790,6 +1889,23 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST1()) {
+        double b = dist.arg1().evalfNaN();
+        if (b > 1.0 && Double.isFinite(b)) {
+          // P(X > k) = 1 - Log(1 + k)/Log(b) for 1 <= k < b - 1, and 0 from b - 1 on
+          double logB = Math.log(b);
+          double last = Math.ceil(b - 1.0);
+          long hi = last < SAMPLE_SEARCH_LIMIT ? Math.max(1L, (long) last) : SAMPLE_SEARCH_LIMIT;
+          return sampleBySurvival(random, size, 1L, hi,
+              k -> k >= b - 1.0 ? 0.0 : Math.max(0.0, 1.0 - Math.log1p(k) / logB),
+              oneMinusQ -> (1.0 - oneMinusQ) * logB);
+        }
+      }
       return F.NIL;
     }
 
@@ -1851,7 +1967,8 @@ public class StatisticsDiscreteDistributions {
    * probability is beta distributed.
    */
   private static final class BetaBinomialDistribution extends AbstractEvaluator
-      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction {
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction,
+      IRandomVariate {
 
     @Override
     public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
@@ -1919,6 +2036,39 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST3()) {
+        double a = dist.arg1().evalfNaN();
+        double b = dist.arg2().evalfNaN();
+        int n = dist.arg3().toIntDefault();
+        if (a > 0.0 && b > 0.0 && Double.isFinite(a) && Double.isFinite(b) && n >= 0
+            && n <= SAMPLE_TABLE_LIMIT) {
+          // the probabilities from P(0) = Beta(a, b+n)/Beta(a, b) and the recurrence
+          // P(k)/P(k-1) = ((n-k+1)*(a+k-1))/(k*(b+n-k))
+          double[] survival = new double[n + 1];
+          double logP = Beta.logBeta(a, b + n) - Beta.logBeta(a, b);
+          for (int k = 0; k <= n; k++) {
+            if (k > 0) {
+              logP += Math.log((n - k + 1.0) * (a + k - 1.0) / (k * (b + n - k)));
+            }
+            survival[k] = Math.exp(logP);
+          }
+          // survival[k] = P(X > k), summed from the far end
+          double tail = 0.0;
+          for (int k = n; k >= 0; k--) {
+            double probability = survival[k];
+            survival[k] = tail;
+            tail += probability;
+          }
+          // 1 up to rounding
+          final double total = tail;
+          return sampleBySurvival(random, size, 0L, n, k -> survival[(int) k] / total, null);
+        }
+      }
       return F.NIL;
     }
 
@@ -2271,7 +2421,7 @@ public class StatisticsDiscreteDistributions {
    * Waring-Yule distribution.
    */
   private static final class WaringYuleDistribution extends AbstractEvaluator
-      implements ICDF, IDiscreteDistribution, IPDF, IStatistics {
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
 
     /** The two shape parameters; the 1-argument form uses <code>b == 1</code>. */
     private static IExpr[] shapes(IAST dist) {
@@ -2312,6 +2462,25 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      IExpr[] shapes = shapes(dist);
+      if (shapes != null) {
+        double a = shapes[0].evalfNaN();
+        double b = shapes[1].evalfNaN();
+        if (a > 0.0 && b > 0.0 && Double.isFinite(a) && Double.isFinite(b)) {
+          // P(X > k) = Pochhammer(b, k+1)/Pochhammer(a+b, k+1) = Beta(b+k+1, a)/Beta(b, a)
+          double logBeta0 = Beta.logBeta(b, a);
+          // P(X > k) ~ Gamma(a+b)/Gamma(b)*k^(-a) for large k
+          double logConstant = Gamma.logGamma(a + b) - Gamma.logGamma(b);
+          return sampleBySurvival(random, size, 0L, SAMPLE_SEARCH_LIMIT,
+              k -> Math.exp(Beta.logBeta(b + k + 1.0, a) - logBeta0),
+              oneMinusQ -> (logConstant - Math.log(oneMinusQ)) / a);
+        }
+      }
       return F.NIL;
     }
 
@@ -2392,7 +2561,8 @@ public class StatisticsDiscreteDistributions {
    * (finite Zipf distribution).
    */
   private static final class ZipfDistribution extends AbstractEvaluator
-      implements IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction {
+      implements IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction,
+      IRandomVariate {
 
     @Override
     public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
@@ -2429,6 +2599,59 @@ public class StatisticsDiscreteDistributions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      double rho;
+      // 0 for the unbounded zeta distribution
+      int n;
+      if (dist.isAST1()) {
+        rho = dist.arg1().evalfNaN();
+        n = 0;
+      } else if (dist.isAST2()) {
+        n = dist.arg1().toIntDefault();
+        rho = dist.arg2().evalfNaN();
+        if (n < 1) {
+          return F.NIL;
+        }
+      } else {
+        return F.NIL;
+      }
+      if (!(rho > 0.0) || !Double.isFinite(rho)) {
+        return F.NIL;
+      }
+      final double s = 1.0 + rho;
+      if (n > 0 && n <= SAMPLE_TABLE_LIMIT) {
+        // suffix[j] = Sum(i^(-s), {i, j, n}), summed from the smallest term
+        double[] suffix = new double[n + 2];
+        for (int j = n; j >= 1; j--) {
+          suffix[j] = suffix[j + 1] + Math.pow(j, -s);
+        }
+        final double total = suffix[1];
+        return sampleBySurvival(random, size, 1L, n, k -> suffix[(int) k + 1] / total, null);
+      }
+      // suffix[j] = Sum(i^(-s), {i, j, Infinity}) == HurwitzZeta(s, j)
+      double[] suffix = new double[ZIPF_TABLE_SIZE + 2];
+      suffix[ZIPF_TABLE_SIZE + 1] = zetaTail(s, ZIPF_TABLE_SIZE + 1.0);
+      for (int j = ZIPF_TABLE_SIZE; j >= 1; j--) {
+        suffix[j] = suffix[j + 1] + Math.pow(j, -s);
+      }
+      LongToDoubleFunction tail =
+          x -> x <= ZIPF_TABLE_SIZE + 1 ? suffix[(int) x] : zetaTail(s, x);
+      if (n == 0) {
+        // P(X > k) = HurwitzZeta(s, k+1)/Zeta(s) ~ k^(-rho)/(rho*Zeta(s)) for large k
+        final double zeta = suffix[1];
+        final double logConstant = -Math.log(rho * zeta);
+        return sampleBySurvival(random, size, 1L, SAMPLE_SEARCH_LIMIT,
+            k -> tail.applyAsDouble(k + 1) / zeta,
+            oneMinusQ -> (logConstant - Math.log(oneMinusQ)) / rho);
+      }
+      // P(X > k) = (HurwitzZeta(s, k+1) - HurwitzZeta(s, n+1))/HarmonicNumber(n, s)
+      final double end = tail.applyAsDouble(n + 1L);
+      final double total = suffix[1] - end;
+      return sampleBySurvival(random, size, 1L, n,
+          k -> Math.max(0.0, tail.applyAsDouble(k + 1) - end) / total, null);
     }
 
     @Override
