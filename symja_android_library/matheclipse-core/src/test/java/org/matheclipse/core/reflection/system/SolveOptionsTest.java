@@ -128,16 +128,16 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
   public void maxExtraConditionsAddsTheDegenerateCases() {
     // generically the equation is quadratic, so only its two roots are generic solutions
     check("Solve(a*x^2 + b*x + c == 0, x)", //
-        "{{x->-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)},{x->-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)}}");
+        "{{x->(-b-Sqrt(b^2-4*a*c))/(2*a)},{x->(-b+Sqrt(b^2-4*a*c))/(2*a)}}");
     // allowing one equation on a parameter adds the case in which it is linear
     check("Solve(a*x^2 + b*x + c == 0, x, MaxExtraConditions -> 1)", //
-        "{{x->-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)},{x->-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)},{x->ConditionalExpression(-c/b,a==\n"
+        "{{x->(-b-Sqrt(b^2-4*a*c))/(2*a)},{x->(-b+Sqrt(b^2-4*a*c))/(2*a)},{x->ConditionalExpression(-c/b,a==\n"
             + "0&&b!=0)}}");
     check("Solve(a*x^2 + b*x + c == 0, x, MaxExtraConditions -> All)", //
-        "{{x->-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)},{x->-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)},{x->ConditionalExpression(-c/b,a==\n"
+        "{{x->(-b-Sqrt(b^2-4*a*c))/(2*a)},{x->(-b+Sqrt(b^2-4*a*c))/(2*a)},{x->ConditionalExpression(-c/b,a==\n"
             + "0&&b!=0)}}");
     check("SolveValues(a*x^2 + b*x + c == 0, x, MaxExtraConditions -> 1)", //
-        "{-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a),-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a),ConditionalExpression(-c/b,a==\n"
+        "{(-b-Sqrt(b^2-4*a*c))/(2*a),(-b+Sqrt(b^2-4*a*c))/(2*a),ConditionalExpression(-c/b,a==\n"
             + "0&&b!=0)}");
     // a system without parameters has no degenerate case to add
     check("Solve(x^2 == 4, x, MaxExtraConditions -> 2)", //

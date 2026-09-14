@@ -164,13 +164,13 @@ public class RootTest extends ExprEvaluatorTestCase {
     check("Roots(x^2-2*x-3==0,x)", //
         "x==-1||x==3");
     check("Roots(a*x^2+b*x+c==0, x)", //
-        "x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)");
+        "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
     check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
         "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
     check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //
-        "x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)");
+        "x==2/3||x==1/2*(1-I*Sqrt(3))||x==1/2*(1+I*Sqrt(3))");
     check("Roots(x^3 - 5*x + 4==0,x)", //
-        "x==1||x==-1/2-Sqrt(17)/2||x==-1/2+Sqrt(17)/2");
+        "x==1||x==1/2*(-1-Sqrt(17))||x==1/2*(-1+Sqrt(17))");
   }
 
 
