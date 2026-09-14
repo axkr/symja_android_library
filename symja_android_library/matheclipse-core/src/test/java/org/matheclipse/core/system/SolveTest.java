@@ -437,9 +437,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The solution set is enumerated only once every variable is proved to lie in a finite range.
-   * The constraint solver searched a fixed interval instead, so a system whose solutions lay
-   * outside it was reported as having none.
+   * The solution set is enumerated only once every variable is proved to lie in a finite range. The
+   * constraint solver searched a fixed interval instead, so a system whose solutions lay outside it
+   * was reported as having none.
    */
   @Test
   public void testSolveIntegersBoundsAreProved() {
@@ -449,8 +449,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // a disjunction and a disequality are part of the condition, not something to drop
     check("Solve(0 <= x <= 3 && x != 1 && (x == 0 || x >= 2), x, Integers)", //
         "{{x->0},{x->2},{x->3}}");
-    check("Solve(r == 0 && g >= 0 && h >= 0 && h <= 8 && m >= 0 && g + h == 4 && 2*m == g "
-        + "&& Mod(g + 2*h, 4) == 0 && m != 1, {r, g, h, m}, Integers)", //
+    check(
+        "Solve(r == 0 && g >= 0 && h >= 0 && h <= 8 && m >= 0 && g + h == 4 && 2*m == g "
+            + "&& Mod(g + 2*h, 4) == 0 && m != 1, {r, g, h, m}, Integers)", //
         "{{r->0,g->0,h->4,m->0},{r->0,g->4,h->0,m->2}}");
     // a coefficient beyond the range of a machine integer is not rounded
     check("Solve(9007199254740993*x == 9007199254740993 && 0 <= x <= 2, x, Integers)", //
@@ -826,7 +827,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve({x^2+y^2==5, x+y^2==-7, x>0}, {x,y})", //
         "{{x->4,y->-I*Sqrt(11)},{x->4,y->I*Sqrt(11)}}");
     check("Solve({x^2+5x+3==0, x<0}, x)", //
-        "{{x->-5/2-Sqrt(13)/2},{x->-5/2+Sqrt(13)/2}}");
+        "{{x->1/2*(-5-Sqrt(13))},{x->1/2*(-5+Sqrt(13))}}");
     check("Solve({x^2+5x+3==0, x>0}, x)", //
         "{}");
     check("Solve({x^2 == 4, x > 0}, x)", //
@@ -895,8 +896,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-1}}");
     // TODO simplify result
     check("Solve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
-        "{{x->-5/(2*Sqrt(1162))+(-I*1/28*Sqrt(-350+560*Sqrt(83)))/Sqrt(83)},{x->-5/(2*Sqrt(\n"
-            + "1162))+(I*1/28*Sqrt(-350+560*Sqrt(83)))/Sqrt(83)}}");
+        "{{x->(-5*Sqrt(14)-I*Sqrt(-350+560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+I*Sqrt(-\n"
+            + "350+560*Sqrt(83)))/(28*Sqrt(83))}}");
 
     check("Solve(8*x^3-26x^2+3x+9==0,x)", //
         "{{x->-1/2},{x->3/4},{x->3}}");
@@ -1141,7 +1142,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^2-2500.00==0,x)", //
         "{{x->-50.0},{x->50.0}}");
     check("Solve(x^2+a*x+1 == 0, x)", //
-        "{{x->-a/2-Sqrt(-4+a^2)/2},{x->-a/2+Sqrt(-4+a^2)/2}}");
+        "{{x->1/2*(-a-Sqrt(-4+a^2))},{x->1/2*(-a+Sqrt(-4+a^2))}}");
     check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
         "{{x->1},{x->4/3}}");
 
@@ -3169,12 +3170,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // unsolved -- and a fourth order initial value problem was refused because of it.
     check("Solve({C(1)==0, 2*C(2)+C(3)==0, -8*C(2)-12*C(3)==1}, {C(1),C(2),C(3)})", //
         "{{C(1)->0,C(2)->1/16,C(3)->-1/8}}");
-    check("Solve({C(1)==0, 2*C(2)+C(3)==0, -4*C(1)+4*C(4)==0, -8*C(2)-12*C(3)==1}, "
-        + "{C(1),C(2),C(3),C(4)})", //
+    check(
+        "Solve({C(1)==0, 2*C(2)+C(3)==0, -4*C(1)+4*C(4)==0, -8*C(2)-12*C(3)==1}, "
+            + "{C(1),C(2),C(3),C(4)})", //
         "{{C(1)->0,C(2)->1/16,C(3)->-1/8,C(4)->0}}");
     // a three by three remainder, the other size Cramer's rule is used for
-    check("Solve({C(1)==0, C(2)+C(3)+C(4)==1, C(2)-C(3)==0, C(3)+2*C(4)==3}, "
-        + "{C(1),C(2),C(3),C(4)})", //
+    check(
+        "Solve({C(1)==0, C(2)+C(3)+C(4)==1, C(2)-C(3)==0, C(3)+2*C(4)==3}, "
+            + "{C(1),C(2),C(3),C(4)})", //
         "{{C(1)->0,C(2)->-1/3,C(3)->-1/3,C(4)->5/3}}");
     // the same shape in plain symbols, and systems which were always answered in full
     check("Solve({a==2, 2*b+c==0, -8*b-12*c==1}, {a,b,c})", //
