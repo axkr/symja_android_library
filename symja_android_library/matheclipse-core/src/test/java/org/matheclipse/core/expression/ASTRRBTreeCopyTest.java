@@ -150,6 +150,95 @@ class ASTRRBTreeCopyTest {
     assertEquals(F.CN2, second.get(50));
   }
 
+  /**
+   * A removal followed by an append on one and the same tree. Paguro's <code>append</code> put the
+   * new element at position 0 after a <code>without</code>; every append here goes through
+   * <code>insert</code> instead.
+   */
+  @Test
+  void testAppendAfterRemoveOnTheSameTree() {
+    for (int size : new int[] {33, 100, 1000}) {
+      ASTRRBTree tree = rrbList(size);
+      tree.remove(size / 2 + 1);
+      tree.append(F.CN1);
+      tree.append(F.CN2);
+
+      assertEquals(size + 1, tree.argSize());
+      assertEquals(F.C1, tree.get(1), "the first element moved at size " + size);
+      assertEquals(F.ZZ(2), tree.get(2));
+      assertEquals(F.CN1, tree.get(size));
+      assertEquals(F.CN2, tree.get(size + 1));
+    }
+  }
+
+  /** Remove then append on a copy and on its original, each side checked against the other. */
+  @Test
+  void testRemoveThenAppendOnBothSides() {
+    for (int size : new int[] {33, 100, 1000}) {
+      ASTRRBTree original = rrbList(size);
+      IASTAppendable copy = original.copyAppendable();
+
+      copy.remove(1);
+      copy.append(F.CN1);
+      original.remove(size);
+      original.append(F.CN2);
+
+      assertEquals(F.ZZ(2), copy.get(1), "copy lost its front at size " + size);
+      assertEquals(F.CN1, copy.get(size), "copy lost its appended element at size " + size);
+      assertEquals(F.C1, original.get(1), "original lost its front at size " + size);
+      assertEquals(F.ZZ(size - 1), original.get(size - 1));
+      assertEquals(F.CN2, original.get(size), "original lost its appended element at size " + size);
+    }
+  }
+
+  /**
+   * Random removals, replacements and appends, each on a fresh copy of the tree, checked element by
+   * element against a plain list - and the tree copied from checked against its own snapshot, so a
+   * change to the copy that reaches the original is caught as well. This is the shape of what an
+   * association goes through when its entries are set and unset, which is where the corruption
+   * first showed.
+   */
+  @Test
+  void testRandomEditsOfCopiesAgainstAReference() {
+    for (int size : new int[] {33, 100, 1000}) {
+      java.util.Random random = new java.util.Random(7);
+      ASTRRBTree tree = rrbList(size);
+      java.util.List<IExpr> reference = new java.util.ArrayList<>();
+      for (int i = 1; i <= size; i++) {
+        reference.add(F.ZZ(i));
+      }
+      for (int step = 1; step <= 3000; step++) {
+        IASTAppendable previous = tree;
+        java.util.List<IExpr> previousReference = new java.util.ArrayList<>(reference);
+        IASTAppendable copy = tree.copyAppendable();
+        int op = random.nextInt(3);
+        int position = 1 + random.nextInt(reference.size());
+        if (op == 0 && reference.size() > 1) {
+          copy.remove(position);
+          reference.remove(position - 1);
+        } else if (op == 1) {
+          copy.set(position, F.ZZ(-step));
+          reference.set(position - 1, F.ZZ(-step));
+        } else {
+          copy.append(F.ZZ(step));
+          reference.add(F.ZZ(step));
+        }
+        assertElements(reference, copy, "copy after step " + step + " at size " + size);
+        assertElements(previousReference, previous, "original after step " + step + " at size " + size);
+        tree = (ASTRRBTree) copy;
+      }
+    }
+  }
+
+  private static void assertElements(java.util.List<IExpr> expected, IAST actual, String message) {
+    assertEquals(expected.size(), actual.argSize(), message + ": size");
+    for (int i = 0; i < expected.size(); i++) {
+      if (!expected.get(i).equals(actual.get(i + 1))) {
+        assertEquals(expected.get(i), actual.get(i + 1), message + ": element " + (i + 1));
+      }
+    }
+  }
+
   /** The copy must carry the same elements, not merely the same size. */
   @Test
   void testCopyHasTheSameContents() {

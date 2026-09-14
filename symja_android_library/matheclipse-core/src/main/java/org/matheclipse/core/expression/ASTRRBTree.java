@@ -84,24 +84,23 @@ public class ASTRRBTree extends AbstractAST
   public void ensureCapacity(int size) {}
 
   /**
-   * Copy a mutable RRB tree in constant time, sharing the immutable spine with <code>list</code>.
+   * Copy a mutable RRB tree in constant time, sharing the persistent spine with <code>list</code>.
    *
    * <p>
    * The obvious <code>list.toMutRrbt()</code> is <b>not</b> what it looks like: neither
    * {@link MutRrbt} nor {@link ImRrbt} overrides it, so it resolves to the default in
    * <code>org.organicdesign.fp.xform.Transformable</code>, which folds the whole list into a fresh
-   * tree one <code>append</code> at a time - <code>O(n)</code>, and with a much higher constant
-   * than the <code>System.arraycopy</code> an {@link AST} would have done. That defeated the
-   * structural sharing this class exists for.
+   * tree one element at a time - <code>O(n)</code>, and with a much higher constant than the
+   * <code>System.arraycopy</code> an {@link AST} would have done.
    *
    * <p>
    * The round trip through {@link MutRrbt#immutable()} and {@link ImRrbt#mutable()} copies only the
    * 32 element focus buffer and shares the tree spine, so it is <code>O(32)</code>. Sharing is safe
-   * because the spine is persistent: <code>Leaf</code> holds a <code>final</code> element array and
-   * its <code>replace</code> returns a new <code>Leaf</code>, <code>Relaxed</code> does the same
-   * with its node and size arrays, and {@link MutRrbt#replace} / {@link MutRrbt#append} reassign
-   * <code>root</code> rather than writing into a node. The focus array is the only mutable state,
-   * and both conversions copy it.
+   * because the spine is persistent: every array a <code>Leaf</code> or <code>Relaxed</code> node
+   * holds is <code>final</code> and every operation that changes one allocates a new node; the focus
+   * buffer is the only mutable state, and both conversions copy it. The copy was blamed once for
+   * corrupting an association - see {@link #appendLast}: that was Paguro's <code>append</code>, and
+   * a rebuilding copy had only hidden it.
    *
    * @param list the tree to copy
    * @return a mutable tree with the same elements, which can be modified independently of
@@ -109,16 +108,30 @@ public class ASTRRBTree extends AbstractAST
    */
   static MutRrbt<IExpr> shallowCopy(MutRrbt<IExpr> list) {
     AstAllocationStats.copied(list.size(), true, true);
-    // A real copy. list.immutable().mutable() shared the spine, and a copy changed afterwards -
-    // without(), replace() - corrupted it: an association of a few hundred keys, set and unset
-    // a few thousand times, answered neighbouring values and then threw
-    // ArrayIndexOutOfBoundsException from RrbTree$Leaf.get. The WLJS notebook server keeps every
-    // cell in such an association, so evaluating a cell ran its neighbour.
-    MutRrbt<IExpr> copy = StaticImports.mutableRrb();
-    for (int i = 0; i < list.size(); i++) {
-      copy = copy.append(list.get(i));
-    }
-    return copy;
+    return list.immutable().mutable();
+  }
+
+  /**
+   * <code>tree</code> with <code>expr</code> appended - through {@link MutRrbt#insert}, never through
+   * {@link MutRrbt#append}.
+   *
+   * <p>
+   * Paguro 3.10.3's <code>append</code> is wrong after a <code>without</code>. The join that
+   * <code>without</code> ends with leaves the tree with an empty focus buffer whose start index is
+   * 0; <code>append</code> moves that start index only on the branch it takes for a buffer that is
+   * not empty, so the new element goes into the buffer at index 0, and the next append pushes it
+   * into the tree at position 0. Every element then sits one place too high:
+   * <code>t.without(50).append(900).get(0) == 900</code>. (<code>ImRrbt.append</code> has the same
+   * defect; <code>get</code> is one off as well, letting <code>get(size)</code> through to a raw
+   * array read, which is where the association of the WLJS notebook server's cells finally threw.)
+   * <code>insert(size, x)</code> handles the empty buffer and otherwise takes the same fast path as
+   * <code>append</code>, and a tree driven through thousands of random removals, replacements and
+   * such appends stays exact. A copy that rebuilt the tree by reading it back through
+   * <code>get</code> hid the defect for copies, but a removal followed by an append on one and the
+   * same tree showed it all along.
+   */
+  private static MutRrbt<IExpr> appendLast(MutRrbt<IExpr> tree, IExpr expr) {
+    return tree.insert(tree.size(), expr);
   }
 
   public static ASTRRBTree newInstance(final int initialCapacity, final IExpr head) {
@@ -145,7 +158,7 @@ public class ASTRRBTree extends AbstractAST
     } else {
       rrbTree = StaticImports.mutableRrb();
       for (int i = 0; i < ast.size(); i++) {
-        rrbTree.append(ast.getRule(i));
+        rrbTree = appendLast(rrbTree, ast.getRule(i));
       }
     }
   }
@@ -404,15 +417,19 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public IExpr get(int location) {
+    if (location >= rrbTree.size()) {
+      // Paguro's own check lets location == size through to a raw array read
+      throw new IndexOutOfBoundsException("Index: " + location + ", Size: " + rrbTree.size());
+    }
     return rrbTree.get(location);
   }
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {
     MutRrbt<IExpr> mutableRrb = StaticImports.mutableRrb();
-    mutableRrb.append(head());
+    mutableRrb = appendLast(mutableRrb, head());
     for (int i = 0; i < length; i++) {
-      mutableRrb = mutableRrb.append(get(items[i] + offset));
+      mutableRrb = appendLast(mutableRrb, get(items[i] + offset));
     }
     return new ASTRRBTree(mutableRrb);
   }
@@ -641,7 +658,7 @@ public class ASTRRBTree extends AbstractAST
       }
       // else: stay UNKNOWN, the flags are computed in uniformTypeFlags()
     }
-    rrbTree = rrbTree.append(expr);
+    rrbTree = appendLast(rrbTree, expr);
     return true;
   }
 
@@ -665,7 +682,9 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(Collection<? extends IExpr> collection) {
     argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
-    rrbTree.addAll(collection);
+    for (IExpr expr : collection) {
+      rrbTree = appendLast(rrbTree, expr);
+    }
     return true;
   }
 
@@ -674,7 +693,7 @@ public class ASTRRBTree extends AbstractAST
     argumentsChanged();
     uniformTypeFlags = UniformFlags.UNKNOWN;
     for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
-      rrbTree.append(F.Rule(entry.getKey(), entry.getValue()));
+      rrbTree = appendLast(rrbTree, F.Rule(entry.getKey(), entry.getValue()));
     }
     return true;
   }
@@ -691,7 +710,7 @@ public class ASTRRBTree extends AbstractAST
         uniformTypeFlags = UniformFlags.UNKNOWN;
       }
       for (int i = startPosition; i < endPosition; i++) {
-        rrbTree = rrbTree.append(ast.get(i));
+        rrbTree = appendLast(rrbTree, ast.get(i));
       }
       return true;
     }
@@ -713,11 +732,13 @@ public class ASTRRBTree extends AbstractAST
     }
     MutRrbt<IExpr> mutable = StaticImports.mutableRrb();
     for (int i = 0; i < location; i++) {
-      mutable = mutable.append(rrbTree.get(i));
+      mutable = appendLast(mutable, rrbTree.get(i));
     }
-    mutable.addAll(collection);
+    for (IExpr expr : collection) {
+      mutable = appendLast(mutable, expr);
+    }
     for (int i = location; i < rrbTree.size(); i++) {
-      mutable = mutable.append(rrbTree.get(i));
+      mutable = appendLast(mutable, rrbTree.get(i));
     }
     rrbTree = mutable;
     return true;
@@ -729,7 +750,7 @@ public class ASTRRBTree extends AbstractAST
       argumentsChanged();
       uniformTypeFlags = UniformFlags.UNKNOWN;
       for (int i = startPosition; i < endPosition; i++) {
-        rrbTree = rrbTree.append(list.get(i));
+        rrbTree = appendLast(rrbTree, list.get(i));
       }
       return true;
     }
@@ -742,7 +763,7 @@ public class ASTRRBTree extends AbstractAST
       argumentsChanged();
       uniformTypeFlags = UniformFlags.UNKNOWN;
       for (int i = startPosition; i < endPosition; i++) {
-        rrbTree = rrbTree.append(args[i]);
+        rrbTree = appendLast(rrbTree, args[i]);
       }
       return true;
     }
@@ -762,7 +783,7 @@ public class ASTRRBTree extends AbstractAST
       // uniform as well
       mergeUniformTypeFlags(HMArrayList.argumentTypeFlags(ast), size());
       for (int i = 1; i < untilPosition; i++) {
-        rrbTree = rrbTree.append(ast.get(i));
+        rrbTree = appendLast(rrbTree, ast.get(i));
       }
       return true;
     }
@@ -780,7 +801,7 @@ public class ASTRRBTree extends AbstractAST
     for (int i = start; i < end; i++) {
       IExpr temp = function.apply(i);
       if (temp.isPresent()) {
-        rrbTree = rrbTree.append(temp);
+        rrbTree = appendLast(rrbTree, temp);
         continue;
       }
       break;
