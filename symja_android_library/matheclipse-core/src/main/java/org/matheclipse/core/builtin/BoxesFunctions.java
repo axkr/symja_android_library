@@ -40,10 +40,11 @@ public class BoxesFunctions {
   }
 
   private static class MakeBoxes extends AbstractEvaluator {
-    private static StandardFormOperator RULE =
-        new StandardFormOperator(Precedence.RULE, "\\[Rule]");
+    // written as they are typed, as the outputs a WLJS notebook saves show them: the front end draws
+    // the arrow itself
+    private static StandardFormOperator RULE = new StandardFormOperator(Precedence.RULE, "->");
     private static StandardFormOperator RULE_DELAYED =
-        new StandardFormOperator(Precedence.RULEDELAYED, "\\[RuleDelayed]");
+        new StandardFormOperator(Precedence.RULEDELAYED, ":>");
 
     private static Map<ISymbol, StandardFormOperator> OPERATOR_MAP =
         new IdentityHashMap<ISymbol, StandardFormOperator>();
@@ -154,6 +155,32 @@ public class BoxesFunctions {
       if (expr.isAST(S.Skeleton, 2)) {
         return F.$str("<<" + expr.first().toString() + ">>");
       }
+      if (expr.isString()) {
+        return F.$str(quotedString(expr.toString()));
+      }
+      IExpr special = specialSymbolBox(expr);
+      if (special.isPresent()) {
+        return special;
+      }
+      // MakeBoxes holds its argument, so <|a -> b|> may still be the unevaluated Association[a -> b]
+      if (expr.isAssociation()
+          || (expr.isAST(S.Association) && ((IAST) expr).forAll(x -> x.isRuleAST()))) {
+        IAST association = (IAST) expr;
+        IASTAppendable list = F.ListAlloc(3);
+        list.append("<|");
+        if (association.argSize() > 0) {
+          IASTAppendable argsList = F.ListAlloc(association.size());
+          for (int i = 1; i < association.size(); i++) {
+            argsList.append(standardFormRecursive(association.getRule(i), 0, form, engine));
+            if (i < association.argSize()) {
+              argsList.append(",");
+            }
+          }
+          list.append(F.RowBox(argsList));
+        }
+        list.append("|>");
+        return F.RowBox(list);
+      }
       if (expr.isASTOrAssociation()) {
         IAST function = (IAST) expr;
         if (function.size() > 0) {
@@ -240,6 +267,63 @@ public class BoxesFunctions {
         }
       }
       return F.$str(expr.toString());
+    }
+
+    /**
+     * A string as a string box: in quotation marks, with the characters which would end or break
+     * it escaped - <code>ToBoxes["a\"b"]</code> is the box <code>"a\"b"</code>, marks included. The
+     * marks are part of the box, which is how a notebook tells <code>{"123"}</code> from
+     * <code>{123}</code>.
+     */
+    private static String quotedString(String text) {
+      StringBuilder buf = new StringBuilder(text.length() + 2);
+      buf.append('"');
+      for (int i = 0; i < text.length(); i++) {
+        char ch = text.charAt(i);
+        switch (ch) {
+          case '"':
+            buf.append("\\\"");
+            break;
+          case '\\':
+            buf.append("\\\\");
+            break;
+          case '\n':
+            buf.append("\\n");
+            break;
+          case '\t':
+            buf.append("\\t");
+            break;
+          default:
+            buf.append(ch);
+        }
+      }
+      return buf.append('"').toString();
+    }
+
+    /**
+     * The constants a notebook draws as a glyph rather than spells out - <code>\[Pi]</code> for
+     * <code>Pi</code>, <code>\[Infinity]</code> for <code>Infinity</code> - or {@link F#NIL} for
+     * any other expression.
+     */
+    private static IExpr specialSymbolBox(IExpr expr) {
+      if (expr == S.Pi) {
+        return F.$str("\\[Pi]");
+      }
+      if (expr == S.E) {
+        return F.$str("\\[ExponentialE]");
+      }
+      if (expr.isAST(S.DirectedInfinity, 2)) {
+        if (expr.first().isOne()) {
+          return F.$str("\\[Infinity]");
+        }
+        if (expr.first().isMinusOne()) {
+          return F.RowBox(F.list(F.$str("-"), F.$str("\\[Infinity]")));
+        }
+      }
+      if (expr.isAST(S.DirectedInfinity, 1)) {
+        return F.$str("ComplexInfinity");
+      }
+      return F.NIL;
     }
 
     /** Whether {@link #OPERATOR_MAP} has been filled from the parser's operator table yet. */

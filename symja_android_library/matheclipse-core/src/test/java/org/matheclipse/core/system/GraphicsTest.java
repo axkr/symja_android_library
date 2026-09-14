@@ -27,6 +27,20 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSphere() {
+    // the radius stays implied, so the WLJS demo's Sphere -> Cuboid gives a unit cube and not the
+    // malformed Cuboid({0,0,0},1)
+    check("Sphere( )", //
+        "Sphere({0,0,0})");
+    check("Sphere({1,2,3})", //
+        "Sphere({1,2,3})");
+    check("Sphere( ) /. Sphere -> Cuboid", //
+        "Cuboid({0,0,0},{1,1,1})");
+    check("{Area(Sphere({a,b,c})), RegionMeasure(Sphere( ))}", //
+        "{4*Pi,4*Pi}");
+  }
+
+  @Test
   public void testRectangle() {
     check("Rectangle( )", //
         "Rectangle({0,0})");

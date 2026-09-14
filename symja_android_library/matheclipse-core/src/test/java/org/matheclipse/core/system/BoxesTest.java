@@ -18,8 +18,35 @@ public class BoxesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMakeBoxesAssociation() {
+    // written with <| |> and ->, as the outputs a WLJS notebook saves show an association
     check("MakeBoxes[<|a->b, c:>d|>] // InputForm", //
-        "RowBox({\"Association\",\"[\",RowBox({RowBox({\"a\",\"\\[Rule]\",\"b\"}),\",\",RowBox({\"c\",\"\\[RuleDelayed]\",\"d\"})}),\"]\"})");
+        "RowBox({\"<|\",RowBox({RowBox({\"a\",\"->\",\"b\"}),\",\",RowBox({\"c\",\":>\",\"d\"})}),\"|>\"})");
+    check("MakeBoxes[<||>] // InputForm", //
+        "RowBox({\"<|\",\"|>\"})");
+  }
+
+  @Test
+  public void testStringBoxesKeepTheirQuotationMarks() {
+    // the notebook showed {"123"} as {123} and an association of strings as Association[name->Alice]
+    check("ToBoxes[\"Alice\"] === \"\\\"Alice\\\"\"", //
+        "True");
+    check("StringLength[ToBoxes[\"Alice\"]]", //
+        "7");
+    // a quotation mark, a backslash and a new line inside are escaped - compared with ===, because
+    // InputForm does not escape the strings nested in an expression
+    check("ToBoxes[\"a\\\"b\\\\c\\nd\"] === \"\\\"a\\\\\\\"b\\\\\\\\c\\\\nd\\\"\"", //
+        "True");
+    // the text the notebook puts into the cell is the boxes' strings joined
+    check("StringJoin[Cases[ToBoxes[{<|\"name\" -> \"Alice\", \"age\" -> 30|>, {\"123\"}}], _String, Infinity]]", //
+        "{<|\"name\"->\"Alice\",\"age\"->30|>,{\"123\"}}");
+  }
+
+  @Test
+  public void testConstantsAreWrittenAsTheirGlyphs() {
+    check("ToBoxes[4 Pi R^2] // InputForm", //
+        "RowBox({\"4\",\" \",\"\\[Pi]\",\" \",SuperscriptBox(\"R\",\"2\")})");
+    check("Map[ToBoxes, {E, Infinity, -Infinity, ComplexInfinity}] // InputForm", //
+        "{\"\\[ExponentialE]\",\"\\[Infinity]\",RowBox({\"-\",\"\\[Infinity]\"}),\"ComplexInfinity\"}");
   }
 
   @Test

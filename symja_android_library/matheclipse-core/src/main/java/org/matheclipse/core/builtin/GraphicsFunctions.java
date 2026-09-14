@@ -1430,11 +1430,10 @@ public class GraphicsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the radius 1 stays implied, as in Sphere[{0, 0, 0}]: writing it out turns
+      // Sphere[{0,0,0}] /. Sphere -> Cuboid into Cuboid[{0,0,0}, 1], which is no cuboid at all
       if (ast.isAST0()) {
-        return F.Sphere(F.List(0, 0, 0), F.C1);
-      }
-      if (ast.isAST1()) {
-        return F.Sphere(ast.arg1(), F.C1);
+        return F.unaryAST1(S.Sphere, F.List(0, 0, 0));
       }
       return F.NIL;
     }
