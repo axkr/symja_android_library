@@ -20,6 +20,7 @@ import org.matheclipse.core.graphics.svg.LayoutSpec;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
@@ -2455,8 +2456,8 @@ public class TeXFormFactory {
 
   public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
     Context context = sym.getContext();
-    if (context == Context.DUMMY || context == Context.FORMAL) {
-      // a renamed Module variable looks like lf$8335
+    if (context == Context.DUMMY || sym instanceof FormalSymbol) {
+      // a renamed Module variable looks like lf$8335, a formal symbol is its plain letter
       buf.append(escapeTeXSpecials(sym.getSymbolName()));
       return;
     }

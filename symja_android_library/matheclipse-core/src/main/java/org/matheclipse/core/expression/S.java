@@ -24882,110 +24882,99 @@ public class S {
 
   // END_S_SYMBOLS
 
-  /** Used to represent a formal parameter <code>a</code> that will never be assigned a value. */
-  public static final ISymbol a = initFinalHiddenSymbol("a");
-  /** Used to represent a formal parameter <code>b</code> that will never be assigned a value. */
-  public static final ISymbol b = initFinalHiddenSymbol("b");
-  /** Used to represent a formal parameter <code>c</code> that will never be assigned a value. */
-  public static final ISymbol c = initFinalHiddenSymbol("c");
-  /** Used to represent a formal parameter <code>d</code> that will never be assigned a value. */
-  public static final ISymbol d = initFinalHiddenSymbol("d");
-  /** Used to represent a formal parameter <code>e</code> that will never be assigned a value. */
-  public static final ISymbol e = initFinalHiddenSymbol("e");
-  /** Used to represent a formal parameter <code>f</code> that will never be assigned a value. */
-  public static final ISymbol f = initFinalHiddenSymbol("f");
-  /** Used to represent a formal parameter <code>g</code> that will never be assigned a value. */
-  public static final ISymbol g = initFinalHiddenSymbol("g");
-  /** Used to represent a formal parameter <code>h</code> that will never be assigned a value. */
-  public static final ISymbol h = initFinalHiddenSymbol("h");
-  /** Used to represent a formal parameter <code>i</code> that will never be assigned a value. */
-  public static final ISymbol i = initFinalHiddenSymbol("i");
-  /** Used to represent a formal parameter <code>j</code> that will never be assigned a value. */
-  public static final ISymbol j = initFinalHiddenSymbol("j");
-  /** Used to represent a formal parameter <code>k</code> that will never be assigned a value. */
-  public static final ISymbol k = initFinalHiddenSymbol("k");
-  /** Used to represent a formal parameter <code>l</code> that will never be assigned a value. */
-  public static final ISymbol l = initFinalHiddenSymbol("l");
-  /** Used to represent a formal parameter <code>m</code> that will never be assigned a value. */
-  public static final ISymbol m = initFinalHiddenSymbol("m");
-  /** Used to represent a formal parameter <code>n</code> that will never be assigned a value. */
-  public static final ISymbol n = initFinalHiddenSymbol("n");
-  /** Used to represent a formal parameter <code>o</code> that will never be assigned a value. */
-  public static final ISymbol o = initFinalHiddenSymbol("o");
-  /** Used to represent a formal parameter <code>p</code> that will never be assigned a value. */
-  public static final ISymbol p = initFinalHiddenSymbol("p");
-  /** Used to represent a formal parameter <code>q</code> that will never be assigned a value. */
-  public static final ISymbol q = initFinalHiddenSymbol("q");
-  /** Used to represent a formal parameter <code>r</code> that will never be assigned a value. */
-  public static final ISymbol r = initFinalHiddenSymbol("r");
-  /** Used to represent a formal parameter <code>s</code> that will never be assigned a value. */
-  public static final ISymbol s = initFinalHiddenSymbol("s");
-  /** Used to represent a formal parameter <code>t</code> that will never be assigned a value. */
-  public static final ISymbol t = initFinalHiddenSymbol("t");
-  /** Used to represent a formal parameter <code>u</code> that will never be assigned a value. */
-  public static final ISymbol u = initFinalHiddenSymbol("u");
-  /** Used to represent a formal parameter <code>v</code> that will never be assigned a value. */
-  public static final ISymbol v = initFinalHiddenSymbol("v");
-  /** Used to represent a formal parameter <code>w</code> that will never be assigned a value. */
-  public static final ISymbol w = initFinalHiddenSymbol("w");
-  /** Used to represent a formal parameter <code>x</code> that will never be assigned a value. */
-  public static final ISymbol x = initFinalHiddenSymbol("x");
-  /** Used to represent a formal parameter <code>y</code> that will never be assigned a value. */
-  public static final ISymbol y = initFinalHiddenSymbol("y");
-  /** Used to represent a formal parameter <code>z</code> that will never be assigned a value. */
-  public static final ISymbol z = initFinalHiddenSymbol("z");
+  /*
+   * Formal symbols. The built-in rules use them as pattern names and as local variables. They are
+   * Protected FormalSymbol instances which can never hold a value or a rule; see FormalSymbol. The
+   * parser reads \[FormalA] ... \[FormalZ] and \[FormalCapitalA] ... \[FormalCapitalZ] as these
+   * symbols, and they print as their plain letter.
+   */
+  /** The formal symbol <code>\[FormalA]</code>, printed as <code>a</code>. */
+  public static final ISymbol a = initFormalSymbol("a");
+  /** The formal symbol <code>\[FormalB]</code>, printed as <code>b</code>. */
+  public static final ISymbol b = initFormalSymbol("b");
+  /** The formal symbol <code>\[FormalC]</code>, printed as <code>c</code>. */
+  public static final ISymbol c = initFormalSymbol("c");
+  /** The formal symbol <code>\[FormalD]</code>, printed as <code>d</code>. */
+  public static final ISymbol d = initFormalSymbol("d");
+  /** The formal symbol <code>\[FormalE]</code>, printed as <code>e</code>. */
+  public static final ISymbol e = initFormalSymbol("e");
+  /** The formal symbol <code>\[FormalF]</code>, printed as <code>f</code>. */
+  public static final ISymbol f = initFormalSymbol("f");
+  /** The formal symbol <code>\[FormalG]</code>, printed as <code>g</code>. */
+  public static final ISymbol g = initFormalSymbol("g");
+  /** The formal symbol <code>\[FormalH]</code>, printed as <code>h</code>. */
+  public static final ISymbol h = initFormalSymbol("h");
+  /** The formal symbol <code>\[FormalI]</code>, printed as <code>i</code>. */
+  public static final ISymbol i = initFormalSymbol("i");
+  /** The formal symbol <code>\[FormalJ]</code>, printed as <code>j</code>. */
+  public static final ISymbol j = initFormalSymbol("j");
+  /** The formal symbol <code>\[FormalK]</code>, printed as <code>k</code>. */
+  public static final ISymbol k = initFormalSymbol("k");
+  /** The formal symbol <code>\[FormalL]</code>, printed as <code>l</code>. */
+  public static final ISymbol l = initFormalSymbol("l");
+  /** The formal symbol <code>\[FormalM]</code>, printed as <code>m</code>. */
+  public static final ISymbol m = initFormalSymbol("m");
+  /** The formal symbol <code>\[FormalN]</code>, printed as <code>n</code>. */
+  public static final ISymbol n = initFormalSymbol("n");
+  /** The formal symbol <code>\[FormalO]</code>, printed as <code>o</code>. */
+  public static final ISymbol o = initFormalSymbol("o");
+  /** The formal symbol <code>\[FormalP]</code>, printed as <code>p</code>. */
+  public static final ISymbol p = initFormalSymbol("p");
+  /** The formal symbol <code>\[FormalQ]</code>, printed as <code>q</code>. */
+  public static final ISymbol q = initFormalSymbol("q");
+  /** The formal symbol <code>\[FormalR]</code>, printed as <code>r</code>. */
+  public static final ISymbol r = initFormalSymbol("r");
+  /** The formal symbol <code>\[FormalS]</code>, printed as <code>s</code>. */
+  public static final ISymbol s = initFormalSymbol("s");
+  /** The formal symbol <code>\[FormalT]</code>, printed as <code>t</code>. */
+  public static final ISymbol t = initFormalSymbol("t");
+  /** The formal symbol <code>\[FormalU]</code>, printed as <code>u</code>. */
+  public static final ISymbol u = initFormalSymbol("u");
+  /** The formal symbol <code>\[FormalV]</code>, printed as <code>v</code>. */
+  public static final ISymbol v = initFormalSymbol("v");
+  /** The formal symbol <code>\[FormalW]</code>, printed as <code>w</code>. */
+  public static final ISymbol w = initFormalSymbol("w");
+  /** The formal symbol <code>\[FormalX]</code>, printed as <code>x</code>. */
+  public static final ISymbol x = initFormalSymbol("x");
+  /** The formal symbol <code>\[FormalY]</code>, printed as <code>y</code>. */
+  public static final ISymbol y = initFormalSymbol("y");
+  /** The formal symbol <code>\[FormalZ]</code>, printed as <code>z</code>. */
+  public static final ISymbol z = initFormalSymbol("z");
 
-  public static final ISymbol f1 = initFinalHiddenSymbol("f1");
-  public static final ISymbol f2 = initFinalHiddenSymbol("f2");
-  public static final ISymbol f3 = initFinalHiddenSymbol("f3");
-  public static final ISymbol f4 = initFinalHiddenSymbol("f4");
+  /** Internal formal symbol, which can not be entered by the user. */
+  public static final ISymbol f1 = initInternalFormalSymbol("f1");
+  public static final ISymbol f2 = initInternalFormalSymbol("f2");
+  public static final ISymbol f3 = initInternalFormalSymbol("f3");
+  public static final ISymbol f4 = initInternalFormalSymbol("f4");
 
-  public static final ISymbol ASymbol = initFinalHiddenSymbol("A");
-  public static final ISymbol BSymbol = initFinalHiddenSymbol("B");
-  public static final ISymbol CSymbol = initFinalHiddenSymbol("C"); // don't use constant
+  /** The formal symbol <code>\[FormalCapitalA]</code>, printed as <code>A</code>. */
+  public static final ISymbol ASymbol = initFormalSymbol("A");
+  /** The formal symbol <code>\[FormalCapitalB]</code>, printed as <code>B</code>. */
+  public static final ISymbol BSymbol = initFormalSymbol("B");
+  /** The formal symbol <code>\[FormalCapitalC]</code>, printed as <code>C</code>. */
+  public static final ISymbol CSymbol = initFormalSymbol("C"); // don't use constant
                                                                     // BuiltinSymbol 'C' here
-  public static final ISymbol FSymbol = initFinalHiddenSymbol("F");
-  public static final ISymbol GSymbol = initFinalHiddenSymbol("G");
-  public static final ISymbol PSymbol = initFinalHiddenSymbol("P");
-  public static final ISymbol QSymbol = initFinalHiddenSymbol("Q");
+  /** The formal symbol <code>\[FormalCapitalF]</code>, printed as <code>F</code>. */
+  public static final ISymbol FSymbol = initFormalSymbol("F");
+  /** The formal symbol <code>\[FormalCapitalG]</code>, printed as <code>G</code>. */
+  public static final ISymbol GSymbol = initFormalSymbol("G");
+  /** The formal symbol <code>\[FormalCapitalP]</code>, printed as <code>P</code>. */
+  public static final ISymbol PSymbol = initFormalSymbol("P");
+  /** The formal symbol <code>\[FormalCapitalQ]</code>, printed as <code>Q</code>. */
+  public static final ISymbol QSymbol = initFormalSymbol("Q");
 
   /**
-   * Formal symbols with visible Unicode "Combining Dot Below" (\u0323). These render as the letter
-   * with a dot underneath (e.g., Ạ, ạ).
+   * The formal symbols <code>\[FormalCapitalA]</code> ... <code>\[FormalCapitalZ]</code> which
+   * have no field of their own. They exist so that the parser reads every Latin formal symbol as a
+   * formal symbol.
    */
+  private static final ISymbol[] FORMAL_CAPITALS = initFormalCapitals();
 
-  // --- Lowercase Formal Symbols (a-z) ---
-  public static final ISymbol aF = initFinalHiddenSymbol("a\u0323");
-  public static final ISymbol bF = initFinalHiddenSymbol("b\u0323");
-  public static final ISymbol cF = initFinalHiddenSymbol("c\u0323");
-  public static final ISymbol dF = initFinalHiddenSymbol("d\u0323");
-  public static final ISymbol eF = initFinalHiddenSymbol("e\u0323");
-  public static final ISymbol fF = initFinalHiddenSymbol("f\u0323");
-  public static final ISymbol gF = initFinalHiddenSymbol("g\u0323");
-  public static final ISymbol hF = initFinalHiddenSymbol("h\u0323");
-  public static final ISymbol iF = initFinalHiddenSymbol("i\u0323");
-  public static final ISymbol jF = initFinalHiddenSymbol("j\u0323");
-  public static final ISymbol kF = initFinalHiddenSymbol("k\u0323");
-  public static final ISymbol lF = initFinalHiddenSymbol("l\u0323");
-  public static final ISymbol mF = initFinalHiddenSymbol("m\u0323");
-  public static final ISymbol nF = initFinalHiddenSymbol("n\u0323");
-  public static final ISymbol oF = initFinalHiddenSymbol("o\u0323");
-  public static final ISymbol pF = initFinalHiddenSymbol("p\u0323");
-  public static final ISymbol qF = initFinalHiddenSymbol("q\u0323");
-  public static final ISymbol rF = initFinalHiddenSymbol("r\u0323");
-  public static final ISymbol sF = initFinalHiddenSymbol("s\u0323");
-  public static final ISymbol tF = initFinalHiddenSymbol("t\u0323");
-  public static final ISymbol uF = initFinalHiddenSymbol("u\u0323");
-  public static final ISymbol vF = initFinalHiddenSymbol("v\u0323");
-  public static final ISymbol wF = initFinalHiddenSymbol("w\u0323");
-  public static final ISymbol xF = initFinalHiddenSymbol("x\u0323");
-  public static final ISymbol yF = initFinalHiddenSymbol("y\u0323");
-  public static final ISymbol zF = initFinalHiddenSymbol("z\u0323");
   /**
-   * Used to represent a formal parameter <code>LHS_HEAD</code> that will never be assigned a value.
-   * Used for setting the left-hand-side in pattern-matching for <code>OptionValue(...)</code>
+   * An internal formal symbol for setting the left-hand-side in pattern-matching for
+   * <code>OptionValue(...)</code>.
    */
-  public static final ISymbol LHS_HEAD = initFinalHiddenSymbol("LHSHead");
+  public static final ISymbol LHS_HEAD = initInternalFormalSymbol("LHSHead");
 
   /**
    * Convert the symbolName to lower case (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is
@@ -25011,20 +25000,70 @@ public class S {
   }
 
   /**
-   * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is
-   * set) and insert a new Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created
-   * using the given upper case string to use it as associated class name in package
-   * org.matheclipse.core.reflection.system.
+   * Create the formal symbol for a single Latin letter, e.g. <code>\[FormalK]</code> for
+   * <code>"k"</code> or <code>\[FormalCapitalK]</code> for <code>"K"</code>. The symbol is
+   * registered in the <code>System`</code> context under its named character, which is what the
+   * parser produces for <code>\[FormalK]</code>, so a typed <code>k</code> stays a
+   * <code>Global`</code> symbol.
    *
-   * @param symbolName the predefined symbol name in upper-case form
-   * @return
+   * @param letter a single Latin letter
+   * @return the formal symbol
    */
-  public static ISymbol initFinalHiddenSymbol(final String symbolName) {
-    final ISymbol symbol = new Symbol(symbolName, org.matheclipse.core.expression.Context.FORMAL);
-    // TODO make this a real protected symbol
-    // symbol.setAttributes(Attribute.PROTECTED);
+  private static ISymbol initFormalSymbol(final java.lang.String letter) {
+    // java.lang is spelled out: S declares the built-in symbols Character, Characters and String
+    char ch = letter.charAt(0);
+    java.lang.String characterName = java.lang.Character.isUpperCase(ch) ? "FormalCapital" + letter
+        : "Formal" + java.lang.Character.toUpperCase(ch);
+    final FormalSymbol symbol = new FormalSymbol(letter, "\\[" + characterName + "]");
+    HIDDEN_SYMBOLS_MAP.put(letter, symbol);
+    java.lang.String namedCharacter =
+        org.matheclipse.parser.client.Characters.NamedCharactersMap.get(characterName);
+    org.matheclipse.core.expression.Context.SYSTEM.put(namedCharacter, symbol);
+    return symbol;
+  }
+
+  /**
+   * Get or create a formal symbol. A single Latin letter gives the formal symbol of that letter,
+   * e.g. <code>\[FormalCapitalK]</code> for <code>"K"</code>, which the parser also reads; any other
+   * name gives a formal symbol which can not be entered by the user.
+   *
+   * @param symbolName the name of the symbol
+   * @return the formal symbol, which is Protected and can never hold a value or a rule
+   * @see FormalSymbol
+   */
+  public static ISymbol initFinalHiddenSymbol(final java.lang.String symbolName) {
+    ISymbol symbol = HIDDEN_SYMBOLS_MAP.get(symbolName);
+    if (symbol instanceof FormalSymbol) {
+      return symbol;
+    }
+    if (symbolName.length() == 1) {
+      char ch = symbolName.charAt(0);
+      if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z')) {
+        return initFormalSymbol(symbolName);
+      }
+    }
+    return initInternalFormalSymbol(symbolName);
+  }
+
+  /**
+   * Create a formal symbol which can not be entered by the user.
+   *
+   * @param symbolName the name of the symbol
+   * @return the formal symbol
+   */
+  private static ISymbol initInternalFormalSymbol(final java.lang.String symbolName) {
+    final FormalSymbol symbol = new FormalSymbol(symbolName, null);
     HIDDEN_SYMBOLS_MAP.put(symbolName, symbol);
     return symbol;
+  }
+
+  private static ISymbol[] initFormalCapitals() {
+    java.lang.String letters = "DEHIJKLMNORSTUVWXYZ";
+    ISymbol[] result = new ISymbol[letters.length()];
+    for (int i = 0; i < letters.length(); i++) {
+      result[i] = initFormalSymbol(java.lang.String.valueOf(letters.charAt(i)));
+    }
+    return result;
   }
 
   /**

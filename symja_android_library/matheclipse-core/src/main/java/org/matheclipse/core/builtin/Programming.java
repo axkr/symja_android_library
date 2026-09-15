@@ -39,6 +39,7 @@ import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.B1;
 import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
@@ -278,9 +279,52 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IAST blockVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
       if (blockVariablesList.isPresent()) {
+        IExpr localized = evaluateWithLocalizedFormalSymbols(ast, blockVariablesList, engine);
+        if (localized.isPresent()) {
+          return localized;
+        }
         return engine.evalBlock(ast.arg2(), blockVariablesList);
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>Block({\[FormalK] = 3}, \[FormalK])</code>: a formal symbol can never hold a value,
+     * so it is replaced by a fresh symbol in the local variable list and in the body. The
+     * initializers are evaluated outside the block and keep the formal symbol.
+     *
+     * @return {@link F#NIL} if no local variable is a formal symbol
+     */
+    private static IExpr evaluateWithLocalizedFormalSymbols(final IAST ast,
+        final IAST blockVariablesList, EvalEngine engine) {
+      java.util.Map<IExpr, IExpr> forward = null;
+      IASTMutable variables = F.NIL;
+      for (int i = 1; i < blockVariablesList.size(); i++) {
+        IExpr variable = blockVariablesList.get(i);
+        IExpr symbol = variable.isSymbol() ? variable : variable.first();
+        if (symbol instanceof FormalSymbol) {
+          if (forward == null) {
+            forward = new java.util.HashMap<IExpr, IExpr>();
+            variables = blockVariablesList.copy();
+          }
+          IExpr localSymbol = forward.get(symbol);
+          if (localSymbol == null) {
+            localSymbol = Iterator.localVariable((FormalSymbol) symbol);
+            forward.put(symbol, localSymbol);
+          }
+          variables.set(i,
+              variable.isSymbol() ? localSymbol : ((IAST) variable).setAtCopy(1, localSymbol));
+        }
+      }
+      if (forward == null) {
+        return F.NIL;
+      }
+      IAST block = F.Block(variables, F.subst(ast.arg2(), forward));
+      java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+      for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
+        back.put(entry.getValue(), entry.getKey());
+      }
+      return F.subst(engine.evaluate(block), back);
     }
 
     @Override
@@ -797,10 +841,10 @@ public final class Programming {
         // declared `expectedArgSize` has to be enforced here before the arguments are read
         return engine.checkBuiltinArgsSize(ast, this);
       }
-      // Do[..., {Subscript[i, 1], 4}]: a subscript as the iterator variable
-      IExpr subscripted = org.matheclipse.core.eval.util.Iterator.evaluateWithSubscriptVariables(ast, engine);
-      if (subscripted.isPresent()) {
-        return subscripted;
+      // Do[..., {Subscript[i, 1], 4}]: a subscript as the iterator variable, or a formal symbol
+      IExpr localized = org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
+      if (localized != null) {
+        return localized;
       }
       try {
         final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();

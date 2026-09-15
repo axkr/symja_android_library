@@ -1,5 +1,8 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -7,11 +10,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -96,6 +101,52 @@ public class ConcurrencyTest {
     if (thrown != null) {
       throw new AssertionError("evaluating a symbol while it is cleared: " + thrown, thrown);
     }
+  }
+
+  /**
+   * Built-in rules use the formal symbols <code>k</code>, <code>j</code>, ... as the iterator
+   * variables of <code>Sum</code> and <code>Product</code>. There is one of each in the JVM, and the
+   * iterators used to assign their values to it, so concurrent evaluations read each other's
+   * counters and left values behind (issue #1498). They are replaced by fresh symbols now.
+   */
+  @Test
+  public void testFormalIteratorVariablesAreLocal() throws Exception {
+    final String[] inputs = {"Simplify(D(Tan(x),{x,n}) /. n->4)", "LerchPhi(z,s,5)",
+        "Hypergeometric1F1(-4,b,z)", "FunctionExpand(FactorialPower(x,4))"};
+    final String[] expected = new String[inputs.length];
+    ExprEvaluator single = new ExprEvaluator();
+    for (int i = 0; i < inputs.length; i++) {
+      expected[i] = single.eval(inputs[i]).toString();
+    }
+
+    final int threads = 8;
+    ExecutorService threadPool = Executors.newFixedThreadPool(threads);
+    try {
+      List<Callable<String>> tasks = new ArrayList<>();
+      for (int t = 0; t < threads; t++) {
+        final int offset = t;
+        tasks.add(() -> {
+          ExprEvaluator exprEvaluator = new ExprEvaluator();
+          for (int r = 0; r < 50; r++) {
+            int i = (r + offset) % inputs.length;
+            String result = exprEvaluator.eval(inputs[i]).toString();
+            if (!expected[i].equals(result)) {
+              return inputs[i] + " gave " + result;
+            }
+          }
+          return null;
+        });
+      }
+      for (Future<String> future : threadPool.invokeAll(tasks, 120, TimeUnit.SECONDS)) {
+        assertFalse(future.isCancelled(), "timed out");
+        assertNull(future.get());
+      }
+    } finally {
+      threadPool.shutdownNow();
+    }
+    assertNull(S.k.assignedValue());
+    assertNull(S.j.assignedValue());
+    assertEquals(expected[0], new ExprEvaluator().eval(inputs[0]).toString());
   }
 
 }

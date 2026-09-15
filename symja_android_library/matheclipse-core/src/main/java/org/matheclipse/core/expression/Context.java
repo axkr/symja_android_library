@@ -25,8 +25,14 @@ public class Context implements Serializable {
 
   public static final Context DUMMY = new Context(DUMMY_CONTEXT_NAME, null);
 
+  /**
+   * The context of the formal symbols before they became {@link FormalSymbol}s in
+   * <code>System`</code>. No symbol lives here any more; the name is only recognized when an old
+   * serialized expression is read back.
+   */
   public static final String FORMAL_CONTEXT_NAME = "FORMAL`";
 
+  /** See {@link #FORMAL_CONTEXT_NAME}. */
   public static final Context FORMAL = new Context(FORMAL_CONTEXT_NAME, null);
 
   // Global context should not be defined global, but per EvalEngine

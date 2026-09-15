@@ -151,19 +151,22 @@ public class KryoUtil {
       Symbol symbol = null;
       boolean isNew = false;
 
+      if (type == FormalSymbol.class || Context.FORMAL_CONTEXT_NAME.equals(contextName)) {
+        // System` knows a formal symbol only under its named character \[FormalK], not as "k".
+        // The FORMAL` context name was written before the formal symbols moved to System`.
+        ISymbol formalSymbol = F.HIDDEN_SYMBOLS_MAP.get(symbolName);
+        if (formalSymbol instanceof Symbol) {
+          symbol = (Symbol) formalSymbol;
+        }
+      }
+
       // EXACT IDENTITY LOOKUP
-      if (context != null) {
+      if (symbol == null && context != null) {
         ISymbol existing = context.get(symbolName);
         if (existing instanceof Symbol) {
           // Symbol already exists in the system memory pool. Use it!
           symbol = (Symbol) existing;
         } else {
-          if (contextName.equals(Context.FORMAL_CONTEXT_NAME)) {
-            ISymbol formalSymbol = F.HIDDEN_SYMBOLS_MAP.get(symbolName);
-            if (formalSymbol instanceof Symbol) {
-              symbol = (Symbol) formalSymbol;
-            }
-          }
           if (symbol == null) {
             // Symbol does not exist. Create it...
             symbol = new Symbol(symbolName, context);
@@ -173,7 +176,7 @@ public class KryoUtil {
             isNew = true;
           }
         }
-      } else {
+      } else if (symbol == null) {
         symbol = new Symbol(symbolName, null);
         isNew = true;
       }
@@ -670,6 +673,8 @@ public class KryoUtil {
     kryo.register(BuiltInDummy.class, new BuiltInDummySerializer());
 
     UtilityFunctionCtors.registerKryo(kryo);
+    // registered last, so that the registration ids of all the classes above stay the same
+    kryo.register(FormalSymbol.class, new SymbolSerializer());
     return kryo;
   }
 

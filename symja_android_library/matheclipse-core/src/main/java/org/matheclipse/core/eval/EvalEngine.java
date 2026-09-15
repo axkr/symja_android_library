@@ -189,7 +189,7 @@ import jakarta.annotation.Nonnull;
  * <pre>
  * EvalEngine engine = EvalEngine.get();
  * // Define x = 42 globally
- * S.x.assignValue(F.ZZ(42), false);
+ * F.symbol("x").assignValue(F.ZZ(42), false);
  *
  * IExpr res = engine.evaluate("x + 10");
  * System.out.println(res.toString()); // Output: 52

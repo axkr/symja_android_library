@@ -9,7 +9,9 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -1263,7 +1265,7 @@ public class Iterator {
 
           if (list.arg1() instanceof ISymbol) {
             ISymbol sym = (ISymbol) list.arg1();
-            if (!sym.isVariable() || sym.hasProtectedAttribute()) {
+            if (!isIteratorVariable(sym)) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
                   Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
@@ -1308,7 +1310,7 @@ public class Iterator {
 
           if (list.arg1().isSymbol()) {
             ISymbol sym = (ISymbol) list.arg1();
-            if (!sym.isVariable() || sym.hasProtectedAttribute()) {
+            if (!isIteratorVariable(sym)) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
                   Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
@@ -1355,7 +1357,7 @@ public class Iterator {
           checkNonZeroStep(list, step);
           if (list.arg1() instanceof ISymbol) {
             ISymbol sym = (ISymbol) list.arg1();
-            if (!sym.isVariable() || sym.hasProtectedAttribute()) {
+            if (!isIteratorVariable(sym)) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
                   Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
@@ -1439,7 +1441,7 @@ public class Iterator {
     ISymbol variable;
     boolean fNumericMode;
 
-    if (symbol != null && (!symbol.isVariable() || symbol.hasProtectedAttribute())) {
+    if (symbol != null && !isIteratorVariable(symbol)) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
           Errors.getMessage("setraw", F.list(symbol), EvalEngine.get()));
@@ -1488,7 +1490,7 @@ public class Iterator {
           variable = symbol;
           if (upperLimit.isListOrAssociation()) {
             if (variable != null) {
-              if (!variable.isVariable() || variable.hasProtectedAttribute()) {
+              if (!isIteratorVariable(variable)) {
                 // Cannot assign to raw object `1`.
                 throw new ArgumentTypeException(
                     Errors.getMessage("setraw", F.list(variable), EvalEngine.get()));
@@ -1602,6 +1604,17 @@ public class Iterator {
   }
 
   /**
+   * Test if <code>symbol</code> can be the variable of an iterator. A {@link FormalSymbol} is
+   * Protected and still qualifies: the evaluating functions replace it by a fresh symbol first (see
+   * {@link #evaluateWithLocalizedVariables(IAST, EvalEngine)}), and <code>TeXForm</code> or
+   * <code>MathMLForm</code> only read the iterator of a <code>Sum</code> which contains it.
+   */
+  private static boolean isIteratorVariable(ISymbol symbol) {
+    return symbol.isVariable()
+        && (!symbol.hasProtectedAttribute() || symbol instanceof FormalSymbol);
+  }
+
+  /**
    * Reject a step of <code>0</code>, which would make the iterator run forever. The range iterators
    * advance by <code>count += step</code> and stop by comparing against the upper limit, so a step
    * of <code>0</code> never terminates.
@@ -1617,35 +1630,76 @@ public class Iterator {
 
   /**
    * Evaluate a <code>Table</code>, <code>Sum</code>, <code>Product</code> or <code>Do</code> whose
-   * iterator variables include a subscript such as <code>Subscript[a, 1]</code>.
+   * iterator variables include a subscript such as <code>Subscript[a, 1]</code> or a
+   * {@link FormalSymbol} such as <code>\[FormalK]</code>.
    *
    * <p>
-   * An iterator gives its variable a value, which only a symbol can hold. Each subscript used as
-   * an iterator variable is therefore replaced by a fresh symbol throughout the call - in the body
-   * and in the bounds of the other iterators - the call is evaluated, and the subscript is put back
-   * into whatever of the result still mentions it.
+   * An iterator gives its variable a value. A subscript can't hold one, and a formal symbol is
+   * shared by every evaluation on every thread and must never hold one. Each such iterator variable
+   * is therefore replaced by a fresh symbol throughout the call - in the body and in the bounds of
+   * the other iterators - the call is evaluated, and the original variable is put back into
+   * whatever of the result still mentions it.
    *
    * @param ast the call, <code>head[body, iterator1, iterator2, ...]</code>, unevaluated
-   * @return {@link F#NIL} when no iterator variable is a subscript, or when the call does not
-   *         evaluate
+   * @return <code>null</code> when the caller has to evaluate <code>ast</code> itself: no iterator
+   *         variable needs a fresh symbol, or only subscripts did and the call does not evaluate;
+   *         {@link F#NIL} when a formal symbol was replaced and the call does not evaluate - the
+   *         caller must not go on with the formal symbol, which it would have to assign; otherwise
+   *         the result
    */
-  public static IExpr evaluateWithSubscriptVariables(final IAST ast, EvalEngine engine) {
+  public static IExpr evaluateWithLocalizedVariables(final IAST ast, EvalEngine engine) {
+    boolean formalSymbol = false;
     java.util.Map<IExpr, IExpr> forward = null;
     for (int i = 2; i < ast.size(); i++) {
       IExpr iterator = ast.get(i);
-      if (iterator.isList() && iterator.argSize() >= 2 && iterator.first().isSubscript()) {
-        if (forward == null) {
-          forward = new java.util.HashMap<IExpr, IExpr>();
+      // {i, imax}, {i, imin, imax}, ... - in {imax} the first element is a count, not a variable
+      if (iterator.isList() && iterator.argSize() >= 2) {
+        IExpr variable = iterator.first();
+        if (forward != null && forward.containsKey(variable)) {
+          continue;
         }
-        IExpr subscript = iterator.first();
-        if (!forward.containsKey(subscript)) {
-          forward.put(subscript, F.Dummy("Subscript" + EvalEngine.uniqueName("$")));
+        if (variable.isSubscript()) {
+          if (forward == null) {
+            forward = new java.util.HashMap<IExpr, IExpr>();
+          }
+          forward.put(variable, F.Dummy("Subscript" + EvalEngine.uniqueName("$")));
+        } else if (variable instanceof FormalSymbol) {
+          if (forward == null) {
+            forward = new java.util.HashMap<IExpr, IExpr>();
+          }
+          forward.put(variable, localVariable((FormalSymbol) variable));
+          formalSymbol = true;
         }
       }
     }
     if (forward == null) {
-      return F.NIL;
+      return null;
     }
+    IExpr result = evaluateRenamed(ast, forward, engine);
+    return result.isPresent() || formalSymbol ? result : null;
+  }
+
+  /**
+   * A fresh symbol which stands in for the formal symbol <code>variable</code> while a localizing
+   * construct is evaluated, named like the local variables of <code>Module</code>.
+   *
+   * @param variable the formal symbol
+   * @return a new {@link Context#DUMMY} symbol
+   */
+  public static ISymbol localVariable(FormalSymbol variable) {
+    return F.Dummy(variable.getSymbolName() + EvalEngine.uniqueName("$"));
+  }
+
+  /**
+   * Replace the keys of <code>forward</code> by their values throughout <code>ast</code>, evaluate
+   * the result, and put the keys back into it.
+   *
+   * @param ast the unevaluated call
+   * @param forward maps each variable to the fresh symbol which replaces it
+   * @return {@link F#NIL} if the call does not evaluate
+   */
+  public static IExpr evaluateRenamed(final IAST ast, java.util.Map<IExpr, IExpr> forward,
+      EvalEngine engine) {
     java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
     for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
       back.put(entry.getValue(), entry.getKey());

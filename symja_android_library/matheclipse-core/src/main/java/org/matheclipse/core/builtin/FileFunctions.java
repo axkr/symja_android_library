@@ -2023,7 +2023,8 @@ public class FileFunctions {
           symbolsList = Documentation.getSymbolsByPattern(arg2, ignoreCase, ast, engine);
         }
         if (symbolsList.isPresent()) {
-          String str = ISymbol.fullDefinitionListToString(symbolsList);
+          // written to be read back with Get: keep \[FormalK] a formal symbol
+          String str = ISymbol.fullDefinitionListToString(symbolsList, false);
           File outFile = FileSandbox.resolveWrite(S.Save, fileName.toString(), engine);
           if (outFile == null) {
             return F.NIL;

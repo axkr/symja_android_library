@@ -375,9 +375,21 @@ public interface ISymbol extends IExpr {
   }
 
   static String fullDefinitionListToString(IAST list) {
+    return fullDefinitionListToString(list, true);
+  }
+
+  /**
+   * @param list the symbols
+   * @param formalSymbolsAsPlainLetters print a formal symbol as its plain letter <code>k</code>,
+   *        which reads best in a listing of built-in rules, or as <code>\[FormalK]</code>, which
+   *        reads back as the formal symbol
+   * @return the definitions of the symbols in input form
+   */
+  static String fullDefinitionListToString(IAST list, boolean formalSymbolsAsPlainLetters) {
     IAST fullDefinition = fullDefinitionList(list);
     OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
     off.setInputForm(true);
+    off.setFormalSymbolsAsPlainLetters(formalSymbolsAsPlainLetters);
     off.setIgnoreNewLine(true);
     StringBuilder buf = new StringBuilder();
     for (int i = 1; i < fullDefinition.size(); i++) {
@@ -482,7 +494,7 @@ public interface ISymbol extends IExpr {
       if (str != null) {
         return str;
       }
-    } else if (context == Context.DUMMY || context == Context.FORMAL) {
+    } else if (context == Context.DUMMY) {
       return symbolName;
     } else if (context == Context.RUBI) {
       return context.completeContextName() + symbolName;

@@ -3644,7 +3644,6 @@ public final class PatternMatching {
     }
 
     if (context == org.matheclipse.core.expression.Context.DUMMY //
-        || context == org.matheclipse.core.expression.Context.FORMAL //
         || context == org.matheclipse.core.expression.Context.SYSTEM//
         || context == org.matheclipse.core.expression.Context.RUBI) {
       // Predefined contexts do not contain user-defined symbols

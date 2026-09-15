@@ -581,7 +581,19 @@ public class Characters {
    */
   public static boolean isSymjaIdentifierStart(char ch) {
     return (Character.isJavaIdentifierStart(ch) && (ch != '_'))
-        || (ch >= '\uF800' && ch <= '\uF819'); // FormalA <= ch <= FormalZ
+        || isFormalLatinLetter(ch);
+  }
+
+  /**
+   * Test if <code>ch</code> is one of the named characters <code>\[FormalA]</code> ...
+   * <code>\[FormalZ]</code> or <code>\[FormalCapitalA]</code> ... <code>\[FormalCapitalZ]</code>.
+   *
+   * @param ch the character to be tested
+   * @return <code>true</code> if <code>ch</code> is a Latin formal letter
+   */
+  public static boolean isFormalLatinLetter(char ch) {
+    // FormalA <= ch <= FormalCapitalZ
+    return ch >= '\uF800' && ch <= '\uF833';
   }
 
   /**
@@ -600,7 +612,7 @@ public class Characters {
   public static boolean isSymjaIdentifierPart(char ch) {
     return (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`') // context name
                                                                               // separator character
-        || (ch >= '\uF800' && ch <= '\uF819'); // FormalA <= ch <= FormalZ
+        || isFormalLatinLetter(ch);
   }
 
   /**

@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -441,7 +442,7 @@ public abstract class DoubleFormFactory {
       }
     }
     Context context = symbol.getContext();
-    if (context == Context.DUMMY || context == Context.FORMAL) {
+    if (context == Context.DUMMY || symbol instanceof FormalSymbol) {
       append(buf, symbol.getSymbolName());
       return;
     }

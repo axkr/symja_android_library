@@ -1003,7 +1003,10 @@ public class WL {
       ISymbol s = (ISymbol) arg1;
       Context context = s.getContext();
       final char[] str;
-      if (context == Context.SYSTEM) {
+      if (s instanceof FormalSymbol) {
+        // \[FormalK] and not k, which would read back as Global`k
+        str = ((FormalSymbol) s).wolframSymbolName().toCharArray();
+      } else if (context == Context.SYSTEM) {
         str = s.toString().toCharArray();
       } else {
         // completeContextName(), not getContextName(): a context begun with a relative name knows

@@ -71,3 +71,37 @@ It is common to use scoping constructs for function definitions with local varia
 >> 10!
 3628800
 ```
+
+### Formal symbols
+
+The formal symbols `\[FormalA]`, ..., `\[FormalZ]` and `\[FormalCapitalA]`, ..., `\[FormalCapitalZ]` are `Protected` symbols in the `System` context which never hold a value. Symja's built-in rules use them as local variables, so that one evaluation can't see the value of another. They print as their plain letter, and `InputForm` shows the name which reads back as the formal symbol.
+
+Every scoping construct and iterator localizes a formal symbol:
+
+```
+>> Sum(\[FormalK], {\[FormalK], 1, 10})
+55
+
+>> Block({\[FormalK] = 3}, \[FormalK])
+3
+
+>> Function(\[FormalK], \[FormalK]^2)[5]
+25
+```
+
+A global definition is refused:
+
+```
+>> \[FormalK] = 10
+Set: Symbol k is Protected.
+10
+
+>> \[FormalK]
+k
+
+>> {Context(\[FormalK]), \[FormalK] === k}
+{System`,False}
+
+>> InputForm(\[FormalK] + 1)
+1 + \[FormalK]
+```
