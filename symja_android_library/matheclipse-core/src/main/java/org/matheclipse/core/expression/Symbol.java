@@ -221,11 +221,13 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void addAttributes(int attributes) {
-    fAttributes |= attributes;
-    EvalEngine.incEpoch();
+    // refuse before changing anything: a symbol of the System` or Rubi` context is one
+    // JVM-wide instance shared by every EvalEngine, and there is nothing to roll back to
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes |= attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
@@ -301,11 +303,11 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void clearAttributes(int attributes) {
-    fAttributes &= ~attributes;
-    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes &= ~attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
@@ -1288,11 +1290,11 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void setAttributes(int attributes) {
-    fAttributes = attributes;
-    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes = attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
