@@ -171,11 +171,13 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void addAttributes(final int attributes) {
-    fAttributes |= attributes;
-    EvalEngine.incEpoch();
+    // refuse before changing anything: there is nothing to roll back to. A dummy is never
+    // locked, so the guard doesn't fire here today - it is the same order as in Symbol
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes |= attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
@@ -248,11 +250,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void clearAttributes(final int attributes) {
-    fAttributes &= ~attributes;
-    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes &= ~attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
@@ -1129,11 +1131,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void setAttributes(final int attributes) {
-    fAttributes = attributes;
-    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes = attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
