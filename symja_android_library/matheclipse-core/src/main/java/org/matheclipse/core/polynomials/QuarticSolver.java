@@ -29,7 +29,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -774,10 +776,20 @@ public class QuarticSolver {
             result.append(Plus(t2, Times(power, discriminant)));
             result.append(Plus(t2, Times(power, discriminant.negate())));
           } else {
-            result.append(Plus(Times(b.negate(), power), Times(discriminant, power)));
-            result.append(Plus(Times(b.negate(), power), Times(discriminant.negate(), power)));
-            // result.append(Times(Plus(b.negate(), discriminant), power));
-            // result.append(Times(Plus(b.negate(), discriminant.negate()), power));
+            // (-b + Sqrt[d])/(2 a) over one line, as the Wolfram Language answers - with a factor
+            // both terms share moved in front: 1/3 (1 - I Sqrt[11]), not 1/6 (2 - 2 I Sqrt[11])
+            IExpr minusB = b.negate();
+            // the root evaluated, so that Sqrt(-44) shows its factor 2*I*Sqrt(11)
+            IExpr root = F.eval(discriminant);
+            long common = commonIntegerFactor(minusB, root);
+            if (common > 1) {
+              IInteger factor = F.ZZ(common);
+              power = power.times(factor);
+              minusB = minusB.divide(factor);
+              discriminant = root.divide(factor);
+            }
+            result.append(Times(power, Plus(minusB, discriminant)));
+            result.append(Times(power, Plus(minusB, discriminant.negate())));
           }
         }
         if (createSet) {
@@ -794,6 +806,36 @@ public class QuarticSolver {
       return createSet(result);
     }
     return evalAndSort(result, sort);
+  }
+
+  /**
+   * The greatest common divisor of the integer factors in front of two terms - 2 for
+   * <code>2</code> and <code>2*I*Sqrt(11)</code> - or 1 when either has none.
+   */
+  private static long commonIntegerFactor(IExpr term1, IExpr term2) {
+    long factor1 = integerFactor(term1);
+    long factor2 = integerFactor(term2);
+    if (factor1 <= 1 || factor2 <= 1) {
+      return 1;
+    }
+    return java.math.BigInteger.valueOf(factor1).gcd(java.math.BigInteger.valueOf(factor2))
+        .longValue();
+  }
+
+  /** The integer in front of a term, taken positive; 1 when there is none or it is too big. */
+  private static long integerFactor(IExpr term) {
+    IExpr number = term;
+    if (term.isTimes()) {
+      number = term.first();
+    }
+    if (number.isComplex() && ((IComplex) number).re().isZero()) {
+      number = ((IComplex) number).im();
+    }
+    if (number.isInteger()) {
+      long value = Math.abs(((IInteger) number).toLongDefault(1));
+      return value > 0 ? value : 1;
+    }
+    return 1;
   }
 
   private static IExpr quadraticDiscriminant(IExpr a, IExpr b, IExpr c) {

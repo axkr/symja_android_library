@@ -1154,14 +1154,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{1,1,1}");
     // a selected number of eigenvalues is determined symbolically too
     check("Eigenvalues({{1,2},{3,4}},1)", //
-        "{5/2+Sqrt(33)/2}");
+        "{1/2*(5+Sqrt(33))}");
     // ...which is the value (5+Sqrt(33))/2, only kept in expanded form
     check("Simplify(Eigenvalues({{1,2},{3,4}},1) == {(5+Sqrt(33))/2})", //
         "True");
     check("Together(Eigenvalues({{1,2},{3,4}},1))", //
         "{1/2*(5+Sqrt(33))}");
     check("Eigenvalues({{1,2},{3,4}},-1)", //
-        "{5/2-Sqrt(33)/2}");
+        "{1/2*(5-Sqrt(33))}");
     check("Eigenvalues({{2,0,0},{0,3,0},{0,0,1}},2)", //
         "{3,2}");
     check("Eigenvalues({{2,0,0},{0,3,0},{0,0,1}},-1)", //
@@ -1169,7 +1169,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues(DiagonalMatrix({x, y, z}),2)", //
         "{x,y}");
     check("Eigenvalues({{a,b},{c,d}},1)", //
-        "{1/2*(a+d)-Sqrt(a^2+4*b*c-2*a*d+d^2)/2}");
+        "{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2))}");
     check("Eigenvalues({{7}},-1)", //
         "{7}");
     check("Eigenvalues({{-1}},1)", //
@@ -1224,9 +1224,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("m = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}", //
         "{{1,2,3},{4,5,6},{7,8,9}}");
     check("Roots(CharacteristicPolynomial(m,x)==0, x)", //
-        "x==0||x==15/2-3/2*Sqrt(33)||x==15/2+3/2*Sqrt(33)");
+        "x==0||x==3/2*(5-Sqrt(33))||x==3/2*(5+Sqrt(33))");
     check("EigenValues(m)", //
-        "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
+        "{3/2*(5+Sqrt(33)),3/2*(5-Sqrt(33)),0}");
 
     // 4x4
     check("Eigenvalues(SparseArray({{1, 3} -> 2, {2, 2} -> 3, {3, 1} -> 1, {4, 2} -> 5}, {4, 4})) ", //
@@ -1264,9 +1264,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{a, b}, {0, d}})", //
         "{a,d}");
     check("Eigenvalues({{a,b}, {c,d}})", //
-        "{1/2*(a+d)-Sqrt(a^2+4*b*c-2*a*d+d^2)/2,1/2*(a+d)+Sqrt(a^2+4*b*c-2*a*d+d^2)/2}");
+        "{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
     check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
+        "{3/2*(5+Sqrt(33)),3/2*(5-Sqrt(33)),0}");
     check("Eigenvalues({{0.0,1.0,-1.0},{1.0,1.0,0.0},{-1.0,0.0,1.0}})", //
         "{2.0,-1.0,1.0}");
   }
@@ -3321,9 +3321,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("{u,s,v}=SingularValueDecomposition({{3/2, 2}, {5/2, 3}})", //
         "{{{(47+3*Sqrt(205))/(2*Sqrt(3485+243*Sqrt(205))),(47-3*Sqrt(205))/(2*Sqrt(3485-\n"
             + "243*Sqrt(205)))},{(69+5*Sqrt(205))/(2*Sqrt(3485+243*Sqrt(205))),(69-5*Sqrt(205))/(\n"
-            + "2*Sqrt(3485-243*Sqrt(205)))}},{{Sqrt(43/4+3/4*Sqrt(205)),0},{0,Sqrt(43/4-3/4*Sqrt(\n"
-            + "205))}},{{(-3+Sqrt(205))/(14*Sqrt(1+(3-Sqrt(205))^2/196)),(-3-Sqrt(205))/(14*Sqrt(\n"
-            + "1+(3+Sqrt(205))^2/196))},{1/Sqrt(1+(3-Sqrt(205))^2/196),1/Sqrt(1+(3+Sqrt(205))^2/\n"
+            + "2*Sqrt(3485-243*Sqrt(205)))}},{{Sqrt(43+3*Sqrt(205))/2,0},{0,Sqrt(43-3*Sqrt(205))/\n"
+            + "2}},{{(-3+Sqrt(205))/(14*Sqrt(1+(3-Sqrt(205))^2/196)),(-3-Sqrt(205))/(14*Sqrt(1+(\n"
+            + "3+Sqrt(205))^2/196))},{1/Sqrt(1+(3-Sqrt(205))^2/196),1/Sqrt(1+(3+Sqrt(205))^2/\n"
             + "196)}}}");
     check("u.s.ConjugateTranspose(v)//N", //
         "{{1.5,2.0},{2.5,3.0}}");

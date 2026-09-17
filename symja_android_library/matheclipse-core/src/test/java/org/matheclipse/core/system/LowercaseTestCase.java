@@ -17021,12 +17021,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " {3,4}})");
 
     check("Norm({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "Sqrt(285/2+3/2*Sqrt(8881))");
+        "Sqrt(3/2*(95+Sqrt(8881)))");
 
     check("Norm({{1,1},{-1,1}})", //
         "Sqrt(2)");
     check("Norm({{2,3/2},{3,5}})", //
-        "Sqrt(161/8+3/8*Sqrt(2665))");
+        "Sqrt(161+3*Sqrt(2665))/(2*Sqrt(2))");
     check("Sqrt(1/2*(161/4+3/4*Sqrt(2665))) // N", //
         "6.28362");
 

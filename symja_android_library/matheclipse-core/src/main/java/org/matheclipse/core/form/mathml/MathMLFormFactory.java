@@ -29,6 +29,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
@@ -3209,7 +3210,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   @Override
   public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
     Context context = sym.getContext();
-    if (context == Context.DUMMY) {
+    if (context == Context.DUMMY || sym instanceof FormalSymbol) {
+      // a formal symbol is its plain letter: the formal E is not the constant E
       tagStart(buf, "mi");
       buf.append(sym.getSymbolName());
       tagEnd(buf, "mi");

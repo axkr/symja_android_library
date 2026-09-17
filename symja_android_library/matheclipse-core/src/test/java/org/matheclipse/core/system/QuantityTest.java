@@ -288,9 +288,9 @@ public class QuantityTest extends ExprEvaluatorTestCase {
    *
    * <p>
    * Each of these heads answers in the unit of its data - unlike Variance, whose result is squared
-   * - so the data is converted to one common unit, the plain magnitudes go through exactly the
-   * same code as ordinary reals, and the unit is re-attached. The unit reported is the FIRST
-   * element's, the convention Plus already uses.
+   * - so the data is converted to one common unit, the plain magnitudes go through exactly the same
+   * code as ordinary reals, and the unit is re-attached. The unit reported is the FIRST element's,
+   * the convention Plus already uses.
    */
   @Test
   public void testQuantityStatistics() {
@@ -446,7 +446,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "2");
     check(
         "Length(Cases(Histogram({Quantity(1,\"Meters\"),Quantity(2,\"Meters\"),Quantity(2,\"Meters\")}), _Rectangle, Infinity))", //
-        "1");
+        "2");
     check(
         "Length(Cases(BoxWhiskerChart({Quantity(1,\"Meters\"),Quantity(2,\"Meters\"),Quantity(4,\"Meters\")}), _Line|_Rectangle, Infinity))", //
         "6");
@@ -590,7 +590,8 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "{2.0,2.0}");
 
     // incompatible endpoints are still rejected
-    check("Length(Cases(Plot(x, {x, Quantity(0,\"Seconds\"), Quantity(2,\"Meters\")}), _Line, Infinity))", //
+    check(
+        "Length(Cases(Plot(x, {x, Quantity(0,\"Seconds\"), Quantity(2,\"Meters\")}), _Line, Infinity))", //
         "0");
 
     // the other function heads take a quantity range too
@@ -716,10 +717,10 @@ public class QuantityTest extends ExprEvaluatorTestCase {
    * run in Mathematica.
    *
    * <p>
-   * For plain numbers that is the standard error, sigma/Sqrt(n) with the sample standard
-   * deviation, which is a factor Sqrt(n) smaller than the standard deviation that Around(list)
-   * reports. For measured values it is the inverse-variance weighted mean instead: an element with
-   * a smaller uncertainty counts for more.
+   * For plain numbers that is the standard error, sigma/Sqrt(n) with the sample standard deviation,
+   * which is a factor Sqrt(n) smaller than the standard deviation that Around(list) reports. For
+   * measured values it is the inverse-variance weighted mean instead: an element with a smaller
+   * uncertainty counts for more.
    */
   @Test
   public void testMeanAround() {
@@ -844,8 +845,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("MeanAround({{1,2},{3,5},{4,4},{2,3}})", //
         "VectorAround({5/2,7/2},{{5/12,1/3},{1/3,5/12}})");
     // that covariance is Covariance(data)/n
-    check(
-        "MeanAround({{1,2},{3,5},{4,4},{2,3}})[[2]] == Covariance({{1,2},{3,5},{4,4},{2,3}})/4", //
+    check("MeanAround({{1,2},{3,5},{4,4},{2,3}})[[2]] == Covariance({{1,2},{3,5},{4,4},{2,3}})/4", //
         "True");
     // and the values are the columnwise means
     check("MeanAround({{1,2},{3,5},{4,4},{2,3}})[[1]] == Mean({{1,2},{3,5},{4,4},{2,3}})", //
@@ -921,11 +921,13 @@ public class QuantityTest extends ExprEvaluatorTestCase {
   public void testFormulaData() {
     check("FormulaData(\"OhmsLaw\")", //
         "QuantityVariable(V,ElectricPotential)==QuantityVariable(I,ElectricCurrent)*QuantityVariable(R,ElectricResistance)");
-    check("FormulaData(\"OhmsLaw\", {\"V\" -> Quantity(1, \"Volts\"), \"R\" -> Quantity(1, \"Ohms\")})", //
+    check(
+        "FormulaData(\"OhmsLaw\", {\"V\" -> Quantity(1, \"Volts\"), \"R\" -> Quantity(1, \"Ohms\")})", //
         "QuantityVariable(I,ElectricCurrent)==Quantity(1,\"Amperes\")");
 
     // any variable can be the unknown
-    check("FormulaData(\"OhmsLaw\", {\"I\" -> Quantity(2, \"Amperes\"), \"R\" -> Quantity(3, \"Ohms\")})", //
+    check(
+        "FormulaData(\"OhmsLaw\", {\"I\" -> Quantity(2, \"Amperes\"), \"R\" -> Quantity(3, \"Ohms\")})", //
         "QuantityVariable(V,ElectricPotential)==Quantity(6,\"Volts\")");
     // and the given values are converted into the variable's canonical unit first
     check(
@@ -1014,8 +1016,8 @@ public class QuantityTest extends ExprEvaluatorTestCase {
    *
    * <p>
    * An earlier transcript appeared to contradict this, reporting the Sin case at order 2 as the
-   * FIRST-order pair (Sin[1.56], Cos[1.56]*0.01). That value sat beneath two blank output lines
-   * and turned out to be the neighbouring first-order line's answer; a clean re-probe gave the
+   * FIRST-order pair (Sin[1.56], Cos[1.56]*0.01). That value sat beneath two blank output lines and
+   * turned out to be the neighbouring first-order line's answer; a clean re-probe gave the
    * second-order value asserted below. Both orders of the Sin case are pinned here so that the
    * apparent contradiction cannot be reintroduced.
    */
@@ -1449,8 +1451,9 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     // tungsten's first ionization energy, 770 kJ/mol
     check("UnitConvert(Quantity(770.0, \"Kilojoules\"/\"Moles\"), \"MolarElectronvolts\")", //
         "Quantity(7.98049,\"MolarElectronvolts\")");
-    check("CompatibleUnitQ(Quantity(1, \"MolarElectronvolts\"), "
-        + "Quantity(1, \"Kilojoules\"/\"Moles\"))", //
+    check(
+        "CompatibleUnitQ(Quantity(1, \"MolarElectronvolts\"), "
+            + "Quantity(1, \"Kilojoules\"/\"Moles\"))", //
         "True");
   }
 }

@@ -217,6 +217,10 @@ public class WMACompress {
    * <code>System`</code> and <code>Global`</code> are the two a reader puts back by itself.
    */
   private static String fullName(ISymbol symbol) {
+    if (symbol instanceof FormalSymbol) {
+      // \[FormalK] and not k, which would read back as Global`k
+      return ((FormalSymbol) symbol).wolframSymbolName();
+    }
     Context context = symbol.getContext();
     if (context == Context.SYSTEM || context.isGlobal()) {
       return symbol.getSymbolName();

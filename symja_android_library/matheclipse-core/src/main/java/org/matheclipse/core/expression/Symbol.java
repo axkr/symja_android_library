@@ -220,12 +220,14 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void addAttributes(int attributes) {
-    fAttributes |= attributes;
-    EvalEngine.incEpoch();
+  public void addAttributes(int attributes) {
+    // refuse before changing anything: a symbol of the System` or Rubi` context is one
+    // JVM-wide instance shared by every EvalEngine, and there is nothing to roll back to
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes |= attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
@@ -301,11 +303,11 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void clearAttributes(int attributes) {
-    fAttributes &= ~attributes;
-    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes &= ~attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
@@ -409,6 +411,8 @@ public class Symbol implements ISymbol, Serializable {
 
     OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
     off.setInputForm(true);
+    // the formal symbols of a built-in rule are local names: LerchPhi(z_,s_,n_Integer):=...
+    off.setFormalSymbolsAsPlainLetters(true);
     off.setIgnoreNewLine(true);
     IAST list = definition();
     for (int i = 1; i < list.size(); i++) {
@@ -473,7 +477,10 @@ public class Symbol implements ISymbol, Serializable {
       // so its instances are supposed to differ. Without this the check reports every expression
       // that happens to be evaluated while two dummies are compared, which is not a defect and
       // names an expression that has nothing to do with it.
-      if (obj instanceof ISymbol && fContext != Context.DUMMY
+      // A formal symbol shares its name and the System` context with a built-in of the same letter,
+      // e.g. the formal C and the built-in C, and is a different symbol all the same.
+      if (obj instanceof ISymbol && fContext != Context.DUMMY && !(this instanceof FormalSymbol)
+          && !(obj instanceof FormalSymbol)
           && fSymbolName.equals(((ISymbol) obj).getSymbolName())
           && fContext.equals(((ISymbol) obj).getContext()) && this != obj) {
         // named rather than thrown bare: a report of this reads "Message: null" otherwise, and the
@@ -1150,7 +1157,10 @@ public class Symbol implements ISymbol, Serializable {
     fSymbolName = stream.readUTF();
     fAttributes = stream.readInt();
     IExpr value = (IExpr) stream.readObject();
-    assignValue(value, false);
+    if (value != null) {
+      // a FormalSymbol refuses every assignment, and never has a value to restore
+      assignValue(value, false);
+    }
     int contextNumber = stream.readInt();
     switch (contextNumber) {
       case 1:
@@ -1163,6 +1173,7 @@ public class Symbol implements ISymbol, Serializable {
         fContext = Context.DUMMY;
         break;
       case 4:
+        // written before the formal symbols moved to System`; readResolve() finds them by name
         fContext = Context.FORMAL;
         break;
       default:
@@ -1279,11 +1290,11 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void setAttributes(int attributes) {
-    fAttributes = attributes;
-    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
+    fAttributes = attributes;
+    EvalEngine.incEpoch();
     EvalEngine engine = EvalEngine.get();
     engine.addModifiedVariable(this);
   }
@@ -1362,8 +1373,6 @@ public class Symbol implements ISymbol, Serializable {
       stream.writeInt(2);
     } else if (fContext.equals(Context.DUMMY)) {
       stream.writeInt(3);
-    } else if (fContext.equals(Context.FORMAL)) {
-      stream.writeInt(4);
     } else {
       stream.writeInt(0);
       stream.writeUTF(fContext.getContextName());

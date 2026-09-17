@@ -21,7 +21,7 @@ public class SolveValuesTest extends ExprEvaluatorTestCase {
     check("SolveValues(x^2==-1,x)", //
         "{-I,I}");
     check("SolveValues(x^2+a*x+1==0,x)", //
-        "{-a/2-Sqrt(-4+a^2)/2,-a/2+Sqrt(-4+a^2)/2}");
+        "{1/2*(-a-Sqrt(-4+a^2)),1/2*(-a+Sqrt(-4+a^2))}");
   }
 
   @Test

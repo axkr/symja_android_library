@@ -133,8 +133,8 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   @Test
   public void testReduceQuadratic() {
     check("Reduce(a*x^2 + b*x + c == 0, x)", //
-        "(a!=0&&(x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)))||(a==\n"
-            + "0&&b!=0&&x==-c/b)||(a==0&&b==0&&c==0)");
+        "(a!=0&&(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)))||(a==0&&b!=\n"
+            + "0&&x==-c/b)||(a==0&&b==0&&c==0)");
     // parametric quadratic equation with a positivity constraint: the reduction of the equation
     // needs a condition on the parameters which the interval engine can't express, so the equation
     // is kept beside the constraint instead of being dropped
@@ -624,7 +624,7 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x>1&&x<2");
     // cubic inequality reduces over the reals even in the default domain
     check("Reduce(x^3-2*x+1<0,x)", //
-        "x<-1/2-Sqrt(5)/2||(x>-1/2+Sqrt(5)/2&&x<1)");
+        "x<1/2*(-1-Sqrt(5))||(x>1/2*(-1+Sqrt(5))&&x<1)");
   }
 
   @Test
@@ -1054,10 +1054,10 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(a*x^2 == 1, x, Reals)", //
         "a>0&&(x==-1/Sqrt(a)||x==1/Sqrt(a))");
     check("Reduce(x^2 + b*x + c == 0, x, Reals)", //
-        "b^2-4*c>=0&&(x==-b/2-Sqrt(b^2-4*c)/2||x==-b/2+Sqrt(b^2-4*c)/2)");
+        "b^2-4*c>=0&&(x==1/2*(-b-Sqrt(b^2-4*c))||x==1/2*(-b+Sqrt(b^2-4*c)))");
     check("Reduce(a*x^2 + b*x + c == 0, x, Reals)", //
-        "(a!=0&&b^2-4*a*c>=0&&(x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(\n"
-            + "2*a)))||(a==0&&b!=0&&x==-c/b)||(a==0&&b==0&&c==0)");
+        "(a!=0&&b^2-4*a*c>=0&&(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)))||(a==\n"
+            + "0&&b!=0&&x==-c/b)||(a==0&&b==0&&c==0)");
     // a linear equation always has a real root, so only the leading coefficient is analyzed
     check("Reduce(a*x == b, x, Reals)", //
         "(a!=0&&x==b/a)||(a==0&&b==0)");

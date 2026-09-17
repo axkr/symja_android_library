@@ -4,6 +4,7 @@ import java.io.IOException;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.INum;
@@ -22,7 +23,8 @@ public class WolframFormFactory extends OutputFormFactory {
   @Override
   public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
     Context context = symbol.getContext();
-    if (context == Context.DUMMY || context == Context.FORMAL) {
+    if (context == Context.DUMMY || symbol instanceof FormalSymbol) {
+      // toMMA() of an expression built from F.x in Java is expected to read x
       append(buf, symbol.getSymbolName());
       return;
     }

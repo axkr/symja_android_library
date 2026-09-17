@@ -271,10 +271,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     {
-      // Sum[..., {Subscript[k, 1], 1, n}]: a subscript as the iterator variable
-      IExpr subscripted = org.matheclipse.core.eval.util.Iterator.evaluateWithSubscriptVariables(ast, engine);
-      if (subscripted.isPresent()) {
-        return subscripted;
+      // Sum[..., {Subscript[k, 1], 1, n}]: a subscript as the iterator variable, or a formal symbol
+      IExpr localized = org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
+      if (localized != null) {
+        return localized;
       }
     }
     // Optional Method -> "Polynomial" | "Geometric" | "Gosper" as last argument forces one

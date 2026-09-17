@@ -164,6 +164,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
     private static void initializeRules() {
       final EvalEngine engine = EvalEngine.get();
+      // The rules below are attached to symbols of the System` and Rubi` context, which only
+      // package mode allows to change. Config.JAS_NO_THREADS runs this initializer inline, on the
+      // thread which evaluates the first Integrate(), so the engine has to be left as it was.
+      final boolean packageMode = engine.isPackageMode();
+      engine.setPackageMode(true);
+      try {
+        loadRules(engine);
+      } finally {
+        engine.setPackageMode(packageMode);
+      }
+    }
+
+    private static void loadRules(final EvalEngine engine) {
       ContextPath path = engine.getContextPath();
       try {
         engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
@@ -178,7 +191,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       } finally {
         engine.setContextPath(path);
       }
-      engine.setPackageMode(false);
 
       F.ISet(F.$s("§simplifyflag"), S.False);
 

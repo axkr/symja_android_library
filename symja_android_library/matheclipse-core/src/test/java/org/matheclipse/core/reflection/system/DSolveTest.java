@@ -1966,7 +1966,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{u(x,t)->C(1)[-t+x]+C(2)[t+x]}}");
 
     check("DSolve(2*D(u(x,y),{x,2}) + 7*D(u(x,y),x,y) - D(u(x,y),{y,2}) == 0, u, {x, y})", //
-        "{{u->Function({x,y},C(1)[(-7/4-Sqrt(57)/4)*x+y]+C(2)[(-7/4+Sqrt(57)/4)*x+y])}}");
+        "{{u->Function({x,y},C(1)[1/4*(-7-Sqrt(57))*x+y]+C(2)[1/4*(-7+Sqrt(57))*x+y])}}");
 
     // Parabolic: the repeated direction contributes a factor x, as a repeated root of a
     // characteristic polynomial does for an ordinary equation.

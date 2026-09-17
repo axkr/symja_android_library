@@ -23,6 +23,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.eval.steps.StepDescription;
@@ -93,6 +94,13 @@ public class OutputFormFactory {
 
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
   protected boolean fInputForm = false;
+
+  /**
+   * In input form, print a {@link FormalSymbol} as its plain letter <code>k</code> instead of
+   * <code>\[FormalK]</code>. Set by the definition listings, where a formal symbol is only the
+   * local name of a pattern or of a bound variable of a built-in rule.
+   */
+  protected boolean fFormalSymbolsAsPlainLetters = false;
 
   private boolean fEmpty = true;
 
@@ -1177,6 +1185,11 @@ public class OutputFormFactory {
   }
 
   public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
+    if (fInputForm && !fFormalSymbolsAsPlainLetters && symbol instanceof FormalSymbol) {
+      // \[FormalK] reads back as the formal symbol, k as Global`k
+      append(buf, ((FormalSymbol) symbol).inputFormString());
+      return;
+    }
     append(buf, ISymbol.toString(symbol.getContext(), symbol.getSymbolName(), EvalEngine.get()));
     // Context context = symbol.getContext();
     // if (context == Context.DUMMY) {
@@ -1199,7 +1212,16 @@ public class OutputFormFactory {
 
   public void convertPattern(final Appendable buf, final IPatternObject pattern)
       throws IOException {
-    append(buf, pattern.toString());
+    String str = pattern.toString();
+    ISymbol symbol = pattern.getSymbol();
+    if (fInputForm && !fFormalSymbolsAsPlainLetters && symbol instanceof FormalSymbol) {
+      // \[FormalZ]_ and not z_, which would read back as a pattern named Global`z
+      String name = symbol.toString();
+      if (str.startsWith(name)) {
+        str = ((FormalSymbol) symbol).inputFormString() + str.substring(name.length());
+      }
+    }
+    append(buf, str);
   }
 
   public void convertHead(final Appendable buf, final IExpr obj) throws IOException {
@@ -2629,6 +2651,16 @@ public class OutputFormFactory {
    */
   public void setInputForm(final boolean inputForm) {
     fInputForm = inputForm;
+  }
+
+  /**
+   * If <code>true</code> print a {@link FormalSymbol} as its plain letter <code>k</code> in input
+   * form too, instead of <code>\[FormalK]</code>.
+   *
+   * @param plainLetters
+   */
+  public void setFormalSymbolsAsPlainLetters(final boolean plainLetters) {
+    fFormalSymbolsAsPlainLetters = plainLetters;
   }
 
   public void setSignificantFigures(int significantFigures) {
