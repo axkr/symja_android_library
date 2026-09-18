@@ -323,6 +323,11 @@ public class CompilerFunctions {
    * element declares as a bare <code>_Real</code> or <code>_Complex</code> is wrapped in
    * <code>N</code>, since the bytecode reads it as a machine number.
    *
+   * <p>
+   * Mathematica additionally rejects an object whose version tuple its compiler does not accept
+   * with <code>CompiledFunction::cfnv</code> and leaves the call unevaluated. That check is not
+   * reproduced: every serialized form is applied, so a dump from any Mathematica version works.
+   *
    * @return the application of the embedded function, or {@link F#NIL} if there is none
    */
   private static IExpr applySerializedForm(IAST compiledFunction, IAST ast) {

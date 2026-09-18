@@ -1554,6 +1554,13 @@ public class CompilerFunctionsTest extends AbstractTestCase {
    * <code>SaveDefinitions -> True</code>, or its <code>InputForm</code>, writes it - is called
    * through the uncompiled <code>Function</code> it embeds next to the bytecode (Woxi #697). An
    * argument at a <code>_Real</code> position is read as a machine number.
+   *
+   * <p>
+   * Deliberate divergence: Mathematica itself rejects the hand-built <code>{7, 7.0, 42}</code>
+   * objects below with <code>CompiledFunction::cfnv</code> ("CompiledFunction object is invalid and
+   * cannot be used.") and leaves the call unevaluated, because its version tuple is not one its
+   * compiler accepts. Symja cannot reproduce that check and applies the embedded function for any
+   * serialized form, so notebooks saved from any Mathematica version keep working.
    */
   @Test
   public void testCompiledFunctionSerializedForm() {
