@@ -610,6 +610,46 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveLinearFractionalRightSide() {
+    // (t+y+1)/(t-y+3) is homogeneous about the point (-2, 1) where both lines meet: moving the
+    // origin there leaves (T+Y)/(T-Y), and its relation is written back in t and y.
+    check("DSolve(y'(t)==(t+y(t)+1)/(t-y(t)+3), y(t), t)", //
+        "Solve(-ArcTan((-1+y(t))/(2+t))+Log(2+t)+Log(1+(1-y(t))^2/(2+t)^2)/2==C(1),y(t))");
+    check("DSolve(1+t-2*y(t)+(-6+4*t-3*y(t))*y'(t)==0, y(t), t)", //
+        "Solve(Log(-3+t)-Log(1+(2-y(t))/(-3+t))/4+5/4*Log(1/3+(-2+y(t))/(-3+t))==C(1),y(t))");
+    check("DSolve(y'(x)==(2*x+y(x)-4)/(x-3*y(x)+5), y(x), x)", //
+        "Solve(-ArcTan((Sqrt(3/2)*(-2+y(x)))/(-1+x))/Sqrt(6)+Log(-1+x)+Log(2/3+(2-y(x))^2/(\n"
+            + "1-x)^2)/2==C(1),y(x))");
+    // parallel lines have no common point, and were already answered by a substitution
+    check("DSolve(y'(x)==(x+y(x)+1)/(2*x+2*y(x)+3), y(x), x)", //
+        "{{y(x)->-4/3-x+ProductLog(6*E^(8+9*x-9*C(1)))/6}}");
+  }
+
+  @Test
+  public void testDSolveHomogeneousInXOverY() {
+    // The Solve which inverts Log(1+E^(1/v)*v) == c kept taking logarithms of an equation it was
+    // already solving and overflowed the stack; the relation is now the answer.
+    check("DSolve(E^(t/y(t))*(-t+y(t))*y'(t)+y(t)*(1+E^(t/y(t)))==0, y(t), t)", //
+        "Solve(t+E^(t/y(t))*y(t)==C(1),y(t))");
+    check("DSolve(1+2*E^(x/y(x))+2*E^(x/y(x))*(1-x/y(x))*y'(x)==0, y(x), x)", //
+        "{{y(x)->-x/ProductLog(-2/(-1+E^(2*C(1))/x))}}");
+    checkResidual("1+2*E^(x/y(x))+2*E^(x/y(x))*(1-x/y(x))*y'(x)==0", //
+        "1+2*E^(x/y(x))+2*E^(x/y(x))*(1-x/y(x))*y'(x)", "{x->7/2, C(1)->-1/3}");
+  }
+
+  @Test
+  public void testDSolveHomogeneousWithARadical() {
+    // y == v*x turns Sqrt(x*y) into Sqrt(v*x^2); expanded to Sqrt(v)*x the reduced equation is
+    // (-v^(3/2)*x)/(x - Sqrt(v)*x), in which x only drops out once it is cancelled.
+    check("DSolve((t-Sqrt(t*y(t)))*y'(t)==y(t), y(t), t)", //
+        "{{y(t)->t/ProductLog(-1/Sqrt(1/(E^C(1)*t)))^2}}");
+    check("DSolve((x+Sqrt(x*y(x)))*y'(x)==y(x), y(x), x)", //
+        "{{y(x)->x/ProductLog(1/Sqrt(E^C(1)/x))^2}}");
+    checkResidual("(x+Sqrt(x*y(x)))*y'(x)==y(x)", //
+        "(x+Sqrt(x*y(x)))*y'(x)-y(x)", "{x->13/10, C(1)->3/7}");
+  }
+
+  @Test
   public void testDSolveHermiteRegularAtTheOrigin() {
     // The odd solution of y'' + t*y' + y == 0 is a confluent series in -t^2/2, which evaluates to
     // incomplete gamma functions of it over Sqrt(-t^2): no value at t == 0, so the conditions

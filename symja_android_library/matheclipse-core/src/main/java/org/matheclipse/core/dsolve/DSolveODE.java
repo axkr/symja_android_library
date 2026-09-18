@@ -203,7 +203,9 @@ final class DSolveODE {
       // substitution y == v*x is entitled to. Without this the equations whose reduction leaves a
       // radical -- x*y' == y + Sqrt(x^2+y^2) and its relatives -- looked inhomogeneous and were
       // left to methods which do not answer them.
-      IExpr expanded = engine.evaluate(F.PowerExpand(scaled));
+      // Cancel, because what the expansion leaves need not have x cancelled out yet:
+      // (-v^(3/2)*x)/(x - Sqrt(v)*x) from y' == y/(x - Sqrt(x*y)).
+      IExpr expanded = engine.evaluate(F.Cancel(F.PowerExpand(scaled)));
       if (!expanded.isFree(x)) {
         return F.NIL;
       }
@@ -963,7 +965,72 @@ final class DSolveODE {
         }
       }
     }
+    IExpr[] center = intersectionOfLines(engine, m, n, x, y);
+    if (center != null) {
+      // (a1*x + b1*y + c1) + (a2*x + b2*y + c2)*y' == 0 is homogeneous about the point where both
+      // lines meet: moving the origin there removes c1 and c2.
+      IASTAppendable shift = F.ListAlloc(2);
+      shift.append(F.Rule(x, F.Plus(x, center[0])));
+      shift.append(F.Rule(y, F.Plus(y, center[1])));
+      IExpr shiftedM = engine.evaluate(F.Expand(F.subst(m, shift)));
+      IExpr shiftedN = engine.evaluate(F.Expand(F.subst(n, shift)));
+      IExpr shiftedLevel = firstIntegral(engine, shiftedM, shiftedN, x, y);
+      if (shiftedLevel.isPresent()) {
+        IASTAppendable back = F.ListAlloc(2);
+        back.append(F.Rule(x, F.Subtract(x, center[0])));
+        back.append(F.Rule(y, F.Subtract(y, center[1])));
+        IExpr level = engine.evaluate(F.subst(shiftedLevel, back));
+        if (isFirstIntegral(level, m, n, x, y, engine)) {
+          return level;
+        }
+      }
+    }
     return F.NIL;
+  }
+
+  /**
+   * The point <code>{h, k}</code> where the lines <code>M == 0</code> and <code>N == 0</code> meet,
+   * for <code>M</code> and <code>N</code> of the first degree in <code>x</code> and <code>y</code>
+   * with a constant term in at least one of them, or <code>null</code>. Parallel lines, which have
+   * no such point, are <code>null</code> too.
+   */
+  private static IExpr[] intersectionOfLines(EvalEngine engine, IExpr m, IExpr n, IExpr x,
+      IExpr y) {
+    IExpr[] line1 = lineCoefficients(engine, m, x, y);
+    IExpr[] line2 = line1 == null ? null : lineCoefficients(engine, n, x, y);
+    if (line2 == null || (line1[2].isZero() && line2[2].isZero())) {
+      return null;
+    }
+    IExpr determinant = engine.evaluate(
+        F.Subtract(F.Times(line1[0], line2[1]), F.Times(line1[1], line2[0])));
+    if (!determinant.isNumber() || determinant.isZero()) {
+      return null;
+    }
+    // Cramer's rule for a1*h + b1*k == -c1, a2*h + b2*k == -c2
+    IExpr h = engine.evaluate(F.Divide(
+        F.Subtract(F.Times(line1[1], line2[2]), F.Times(line2[1], line1[2])), determinant));
+    IExpr k = engine.evaluate(F.Divide(
+        F.Subtract(F.Times(line2[0], line1[2]), F.Times(line1[0], line2[2])), determinant));
+    return new IExpr[] {h, k};
+  }
+
+  /**
+   * The numeric coefficients <code>{a, b, c}</code> of <code>a*x + b*y + c</code>, or
+   * <code>null</code> if <code>expr</code> is not of that form.
+   */
+  private static IExpr[] lineCoefficients(EvalEngine engine, IExpr expr, IExpr x, IExpr y) {
+    IExpr expanded = engine.evaluate(F.Expand(expr));
+    IExpr a = engine.evaluate(F.D(expanded, x));
+    IExpr b = engine.evaluate(F.D(expanded, y));
+    if (!a.isNumber() || !b.isNumber() || (a.isZero() && b.isZero())) {
+      return null;
+    }
+    IExpr c = engine.evaluate(
+        F.Expand(F.Subtract(expanded, F.Plus(F.Times(a, x), F.Times(b, y)))));
+    if (!c.isNumber()) {
+      return null;
+    }
+    return new IExpr[] {a, b, c};
   }
 
   /** How close to zero <code>M*G_y - N*G_x</code> has to come, relative to its terms. */
