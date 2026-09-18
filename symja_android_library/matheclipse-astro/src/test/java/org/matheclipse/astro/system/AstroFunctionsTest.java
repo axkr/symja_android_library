@@ -729,7 +729,11 @@ public class AstroFunctionsTest extends AbstractTestCase {
   @Test
   public void testPlanetData() {
     check("PlanetData()", //
-        "{Mercury,Venus,Earth,Mars,Jupiter,Saturn,Uranus,Neptune}");
+        "{Entity(Planet,Mercury),Entity(Planet,Venus),Entity(Planet,Earth),Entity(Planet,Mars),"
+            + "Entity(Planet,Jupiter),Entity(Planet,Saturn),Entity(Planet,Uranus),"
+            + "Entity(Planet,Neptune)}");
+    check("PlanetData(\"Mars\")", //
+        "Entity(Planet,Mars)");
     check("QuantityUnit(First(PlanetData(\"Mars\", \"HelioCoordinates\")))", //
         "AstronomicalUnit");
     // the Earth is at perihelion in early January, 0.983 astronomical units from the Sun
@@ -750,6 +754,37 @@ public class AstroFunctionsTest extends AbstractTestCase {
         + " {\"HelioCoordinates\", DateObject({2020,1,1})}))"
         + " - AstronomicalData(\"Mars\", {\"Position\", DateObject({2020,1,1})}), 1)", //
         "{0,0,0}");
+  }
+
+  /**
+   * The astro types join the entity registry, so the generic <code>EntityValue</code> and
+   * <code>EntityList</code> reach them without knowing anything about astronomy.
+   */
+  @Test
+  public void testAstroEntities() {
+    check("EntityList(\"Planet\")[[4]]", //
+        "Entity(Planet,Mars)");
+    check("Length(EntityValue(Entity(\"Planet\", \"Mars\"), \"HelioCoordinates\"))", //
+        "3");
+    // a list is a list of properties to EntityValue, so a date is asked of PlanetData itself
+    check("QuantityUnit(First(EntityValue(Entity(\"Planet\", \"Earth\"),"
+        + " EntityProperty(\"Planet\", \"HelioCoordinates\"))))", //
+        "AstronomicalUnit");
+    check("Round(1000*Norm(QuantityMagnitude(PlanetData(Entity(\"Planet\", \"Earth\"),"
+        + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
+        "983");
+    // a star is a different type, answered by a different function through the same call
+    check("EntityValue(Entity(\"Star\", \"Sirius\"), \"ApparentMagnitude\")", //
+        "-1.44");
+    check("StarData(Entity(\"Star\", \"Sirius\"), \"Constellation\")", //
+        "Canis Major");
+    check("Head(First(StarData()))", //
+        "Entity");
+    check("Take(StarData(\"Properties\"), 2)", //
+        "{EntityProperty(Star,Name),EntityProperty(Star,AlternateNames)}");
+    // an entity of the wrong type is not silently read as a name of the right one
+    check("PlanetData(Entity(\"Element\", \"Iron\"), \"HelioCoordinates\")", //
+        "PlanetData(Entity(Element,Iron),HelioCoordinates)");
   }
 
   @Test

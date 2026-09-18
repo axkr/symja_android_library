@@ -5,6 +5,7 @@ import org.matheclipse.astro.convert.AstroBodies;
 import org.matheclipse.astro.convert.AstroConvert;
 import org.matheclipse.astro.data.AstroDataContext;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -64,6 +65,9 @@ public class SolarSystemDataFunctions {
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
+  /** The entity type the planets belong to. */
+  private static final String PLANET = "Planet";
+
   /** The planets, as <code>PlanetData()</code> counts them: the eight, without Pluto. */
   private static final String[] PLANETS = {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
       "Uranus", "Neptune"};
@@ -73,6 +77,7 @@ public class SolarSystemDataFunctions {
     private static void init() {
       S.AstronomicalData.setEvaluator(new AstronomicalData());
       S.PlanetData.setEvaluator(new PlanetData());
+      Entities.register(PLANET, S.PlanetData);
     }
   }
 
@@ -92,7 +97,7 @@ public class SolarSystemDataFunctions {
             ? F.stringx(MAJOR_BODIES[index - 1])
             : F.NIL;
       }
-      String bodyName = AstroBodies.nameOf(arg1);
+      String bodyName = AstroBodies.nameOf(Entities.nameOf(arg1, PLANET));
       if (bodyName == null) {
         return Errors.printMessage(S.AstronomicalData, "astrobody", F.List(arg1, ast), engine);
       }
@@ -113,6 +118,7 @@ public class SolarSystemDataFunctions {
           dateExpr = spec.arg2();
         }
       }
+      property = Entities.propertyOf(property, PLANET);
       if (!property.isString("Position")) {
         return Errors.printMessage(S.AstronomicalData, "astroprop", F.List(property, ast), engine);
       }
@@ -156,10 +162,10 @@ public class SolarSystemDataFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        // the planets themselves, which Mathematica gives as entities and this as their names
+        // the planets themselves, as the entities standing for them, as in Mathematica
         IASTAppendable planets = F.ListAlloc(PLANETS.length);
         for (String planet : PLANETS) {
-          planets.append(F.stringx(planet));
+          planets.append(Entities.entity(PLANET, F.stringx(planet)));
         }
         return planets;
       }
@@ -168,7 +174,8 @@ public class SolarSystemDataFunctions {
         return Errors.printMessage(S.PlanetData, "astrobody", F.List(ast.arg1(), ast), engine);
       }
       if (ast.isAST1()) {
-        return F.stringx(bodyName);
+        // a lone planet is the entity that stands for it, as ElementData answers for an element
+        return Entities.entity(PLANET, F.stringx(bodyName));
       }
       IExpr property = ast.arg2();
       IExpr dateExpr = F.NIL;
@@ -179,6 +186,7 @@ public class SolarSystemDataFunctions {
           dateExpr = spec.arg2();
         }
       }
+      property = Entities.propertyOf(property, PLANET);
       if (!property.isString("HelioCoordinates")) {
         return Errors.printMessage(S.PlanetData, "astroprop", F.List(property, ast), engine);
       }
@@ -212,7 +220,7 @@ public class SolarSystemDataFunctions {
 
   /** The name of the planet {@code expr} names, or {@code null} when it names something else. */
   private static String planetNamed(IExpr expr) {
-    String name = AstroBodies.nameOf(expr);
+    String name = AstroBodies.nameOf(Entities.nameOf(expr, PLANET));
     if (name != null) {
       for (String planet : PLANETS) {
         if (planet.equals(name)) {
