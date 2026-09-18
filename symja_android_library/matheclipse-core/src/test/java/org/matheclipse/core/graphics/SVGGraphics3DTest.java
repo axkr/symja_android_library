@@ -75,6 +75,15 @@ public class SVGGraphics3DTest {
         svg("Graphics3D[{Sphere[{{1,0,0},{-1,0,0}},{0.25,0.75}]},PlotRange->3]"));
   }
 
+  /**
+   * A {@code Scaled} radius is resolved against the scene diagonal, so the ball still has a size.
+   */
+  @Test
+  public void aScaledSphereIsDrawn() {
+    assertTrue(count(svg("Graphics3D[Sphere[{0,0,0},Scaled[0.2]],PlotRange->2]"), "polygon") > 50,
+        "a scaled sphere is tessellated like any other");
+  }
+
   @Test
   public void everySolidBecomesPolygons() {
     assertTrue(count(svg("Graphics3D[Cuboid[]]"), "polygon") >= 6, "a box has six faces");

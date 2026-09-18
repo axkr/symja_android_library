@@ -690,30 +690,72 @@ public final class PrimitiveCollector3D {
       // Centres sharing a radius stay one element, so a field of equal spheres is still one
       // instanced mesh.
       IAST radii = (IAST) radiusArg;
-      Map<Double, List<double[]>> byRadius = new LinkedHashMap<>();
+      Map<Radius, List<double[]>> byRadius = new LinkedHashMap<>();
       for (int i = 0; i < centers.size(); i++) {
-        byRadius.computeIfAbsent(ColorUtil.dbl(radii.get(i + 1), 1.0), r -> new ArrayList<>())
+        byRadius.computeIfAbsent(Radius.of(radii.get(i + 1)), r -> new ArrayList<>())
             .add(centers.get(i));
       }
-      for (Map.Entry<Double, List<double[]>> entry : byRadius.entrySet()) {
+      for (Map.Entry<Radius, List<double[]>> entry : byRadius.entrySet()) {
         emitSphereElement(entry.getValue(), entry.getKey(), style, transform);
       }
       return;
     }
-    double radius = radiusArg != null ? ColorUtil.dbl(radiusArg, 1.0) : 1.0;
-    emitSphereElement(centers, radius, style, transform);
+    emitSphereElement(centers, Radius.of(radiusArg), style, transform);
   }
 
-  private void emitSphereElement(List<double[]> centers, double radius, Style3D style,
+  /**
+   * How big a sphere is: a length in the data's own units, or - written {@code Scaled[s]} - a
+   * fraction of the scene's diagonal, which is only known once every primitive has been collected
+   * and is therefore resolved by the renderer.
+   */
+  private static final class Radius {
+    final double value;
+    final boolean scaled;
+
+    private Radius(double value, boolean scaled) {
+      this.value = value;
+      this.scaled = scaled;
+    }
+
+    static Radius of(IExpr expr) {
+      if (expr != null && expr.isAST(S.Scaled, 2)) {
+        return new Radius(ColorUtil.dbl(((IAST) expr).arg1(), 0.01), true);
+      }
+      return new Radius(expr == null ? 1.0 : ColorUtil.dbl(expr, 1.0), false);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (!(other instanceof Radius)) {
+        return false;
+      }
+      Radius radius = (Radius) other;
+      return scaled == radius.scaled
+          && Double.doubleToLongBits(value) == Double.doubleToLongBits(radius.value);
+    }
+
+    @Override
+    public int hashCode() {
+      return Double.hashCode(value) * 31 + (scaled ? 1 : 0);
+    }
+  }
+
+  private void emitSphereElement(List<double[]> centers, Radius radius, Style3D style,
       Transform3D transform) {
     ObjectNode node = newElement("Sphere", style, transform);
     node.put("color", rgb(style.effectiveFace()));
     node.put("opacity", style.alphaOf(style.effectiveFace()));
-    node.put("radius", radius);
+    node.put(radius.scaled ? "radiusScaled" : "radius", radius.value);
     ArrayNode array = node.putArray("centers");
     for (double[] c : centers) {
       array.add(c[0]).add(c[1]).add(c[2]);
-      trackBall(c, radius, transform);
+      if (radius.scaled) {
+        // a fraction of the diagonal cannot widen the very extent it is measured against, so only
+        // the centre counts towards it - the same way a PointSize does
+        track(c, transform);
+      } else {
+        trackBall(c, radius.value, transform);
+      }
     }
     writeSurfaceStyle(node, style);
   }

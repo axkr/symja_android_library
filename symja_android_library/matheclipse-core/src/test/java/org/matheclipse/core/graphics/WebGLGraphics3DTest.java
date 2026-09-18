@@ -215,6 +215,34 @@ public class WebGLGraphics3DTest {
     assertEquals(6, element(equal, "Sphere").get("centers").size());
   }
 
+  /**
+   * {@code Sphere[c, Scaled[s]]} is a fraction of the scene diagonal, which only the renderer
+   * knows, so it travels as {@code radiusScaled} and never as a length of its own.
+   */
+  @Test
+  public void sphereAcceptsAScaledRadius() {
+    JsonNode sphere = element(scene("Graphics3D[Sphere[{0,0,0},Scaled[0.1]]]"), "Sphere");
+    assertEquals(0.1, sphere.get("radiusScaled").asDouble(), 1e-9);
+    assertFalse(sphere.has("radius"), "a scaled radius is not also written as a length");
+
+    // a scaled sphere does not widen the extent its own size is measured against
+    JsonNode scaled = scene("Graphics3D[Sphere[{0,0,0},Scaled[0.5]]]");
+    JsonNode plain = scene("Graphics3D[Point[{0,0,0}]]");
+    assertEquals(plain.get("plotRange").toString(), scaled.get("plotRange").toString());
+
+    // mixed with a plain radius, each kind keeps its own element
+    JsonNode mixed = scene("Graphics3D[{Sphere[{1,0,0},Scaled[0.1]], Sphere[{-1,0,0},0.3]}]");
+    assertEquals(2, count(mixed, "Sphere"));
+    assertEquals(0.1, mixed.get("elements").get(0).get("radiusScaled").asDouble(), 1e-9);
+    assertEquals(0.3, mixed.get("elements").get(1).get("radius").asDouble(), 1e-9);
+
+    // and a list of equal scaled radii stays one instanced element
+    JsonNode list = element(
+        scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0}},{Scaled[0.1],Scaled[0.1]}]]"), "Sphere");
+    assertEquals(0.1, list.get("radiusScaled").asDouble(), 1e-9);
+    assertEquals(6, list.get("centers").size());
+  }
+
   /** A radius list that does not match the centres one-for-one draws unit spheres, as in WMA. */
   @Test
   public void sphereWithAMismatchedRadiusListIsUnitSpheres() {

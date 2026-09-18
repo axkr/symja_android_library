@@ -319,12 +319,14 @@
         group.add(mesh);
     }
 
-    function buildSpheres(el, group) {
+    function buildSpheres(el, diagonal, group) {
         var THREE = global.THREE;
         var flat = el.centers || [];
         var count = Math.floor(flat.length / 3);
         if (count === 0) { return; }
-        var geometry = new THREE.SphereGeometry(el.radius, 40, 30);
+        // Sphere[c, Scaled[s]] is s of the scene diagonal, which only the finished scene knows
+        var radius = typeof el.radiusScaled === 'number' ? el.radiusScaled * diagonal : el.radius;
+        var geometry = new THREE.SphereGeometry(radius, 40, 30);
         var material = surfaceMaterial(el);
         if (count === 1) {
             var mesh = new THREE.Mesh(geometry, material);
@@ -850,7 +852,7 @@
                 var group = new THREE.Group();
                 switch (el.type) {
                     case 'Polygon': built = buildPolygon(el); break;
-                    case 'Sphere': buildSpheres(el, group); built = group; break;
+                    case 'Sphere': buildSpheres(el, diagonal, group); built = group; break;
                     case 'Cylinder': built = buildCylinder(el); break;
                     case 'Cone': built = buildCone(el); break;
                     case 'Cuboid': built = buildCuboid(el); break;

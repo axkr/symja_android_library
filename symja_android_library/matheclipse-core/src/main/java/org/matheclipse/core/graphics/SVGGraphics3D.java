@@ -709,12 +709,17 @@ public class SVGGraphics3D {
       case "Polygon":
         polygons(element, color, opacity, matrix, dataScale, view, lights, out);
         break;
-      case "Sphere":
+      case "Sphere": {
+        // Scaled[s] is a fraction of the scene diagonal; the diagonal is in the data's own units,
+        // so the radius that comes out of it is too
+        double sphereRadius = element.has("radiusScaled")
+            ? element.get("radiusScaled").asDouble(0.01) * diagonal
+            : element.get("radius").asDouble(1);
         for (Vector3 centre : points(element.get("centers"))) {
-          sphere(centre, element.get("radius").asDouble(1), color, opacity, matrix, dataScale, view,
-              lights, out);
+          sphere(centre, sphereRadius, color, opacity, matrix, dataScale, view, lights, out);
         }
         break;
+      }
       case "Cylinder":
       case "Cone":
         barrel(vector(element.get("start"), new Vector3(0, 0, -1)),
