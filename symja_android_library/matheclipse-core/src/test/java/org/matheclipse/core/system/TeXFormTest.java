@@ -21,6 +21,24 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testGeneratedConstant() {
+    // the constant C(k) of DSolve, Integrate and Reduce is typeset as a subscripted c
+    check("TeXForm(C(1))", //
+        "c_1");
+    check("TeXForm(C(n))", //
+        "c_n");
+    check("TeXForm(C(12))", //
+        "c_{12}");
+    check("TeXForm(2*C(1)+x*C(2))", //
+        "2 \\cdot c_1 + x \\cdot c_2");
+    check("TeXForm(C(1)^2)", //
+        "{c_1}^{2}");
+    // not the generated constant
+    check("TeXForm(C(1,2))", //
+        "C(1,2)");
+  }
+
+  @Test
   public void testBeta() {
     check("TeXForm(Beta(a,b))", //
         "B(a,b)");

@@ -1132,6 +1132,29 @@ public class TeXFormFactory {
     }
   }
 
+  /**
+   * The constant <code>C(k)</code> which {@code DSolve}, {@code Integrate} and {@code Reduce}
+   * generate, as the subscripted <code>c_k</code> it is typeset as: <code>C(1)</code> is
+   * <code>c_1</code> and <code>C(12)</code> is <code>c_{12}</code>.
+   */
+  private static final class C extends AbstractTeXConverter {
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (!f.isAST1()) {
+        return false;
+      }
+      StringBuilder index = new StringBuilder();
+      fFactory.convertInternal(index, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("c_");
+      if (index.length() == 1) {
+        buffer.append(index);
+      } else {
+        buffer.append('{').append(index).append('}');
+      }
+      return true;
+    }
+  }
+
   private static final class Subscript extends AbstractTeXConverter {
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
@@ -2618,6 +2641,7 @@ public class TeXFormFactory {
     initTeXConverter(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
     initTeXConverter(S.Style, new Style());
     initTeXConverter(S.Subscript, new Subscript());
+    initTeXConverter(S.C, new C());
     initTeXConverter(S.Subsuperscript, new Subsuperscript());
     initTeXConverter(S.Underscript, new Underscript());
     initTeXConverter(S.Overscript, new Overscript());

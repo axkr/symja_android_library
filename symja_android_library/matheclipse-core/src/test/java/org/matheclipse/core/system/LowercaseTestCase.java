@@ -15159,6 +15159,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    * have no row to resolve and stay in function form.
    */
   @Test
+  public void testMathMLFormGeneratedConstant() {
+    check("MathMLForm(C(12))", //
+        "<?xml version=\"1.0\"?>\n" //
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" //
+            + "<math mode=\"display\">\n" //
+            + "<msub><mi>c</mi><mn>12</mn></msub></math>");
+    // a symbolic index is subscripted too, like in TeXForm
+    check("MathMLForm(C(n))", //
+        "<?xml version=\"1.0\"?>\n" //
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" //
+            + "<math mode=\"display\">\n" //
+            + "<msub><mi>c</mi><mi>n</mi></msub></math>");
+  }
+
+  @Test
   public void testMathMLFormOperatorTable() {
     check("MathMLForm(Proportional(a,b))", //
         "<?xml version=\"1.0\"?>\n" //

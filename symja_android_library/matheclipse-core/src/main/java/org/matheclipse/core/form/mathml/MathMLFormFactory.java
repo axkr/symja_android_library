@@ -134,14 +134,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   private static final class C extends AbstractConverter {
 
     /**
-     * Convert C(1) to <code><msub><mi>c</mi><mn>1</mn></msub></code>
+     * Convert C(1) to <code><msub><mi>c</mi><mn>1</mn></msub></code>, and C(n) to
+     * <code><msub><mi>c</mi><mi>n</mi></msub></code> alike
      *
      * @param buf StringBuilder for MathML output
      * @param f The math function which should be converted to MathML
      */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.isAST1() && f.head() == S.C && f.arg1().isInteger()) {
+      if (f.isAST1() && f.head() == S.C) {
         fFactory.tagStart(buf, "msub");
         buf.append("<mi>c</mi>");
         fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
