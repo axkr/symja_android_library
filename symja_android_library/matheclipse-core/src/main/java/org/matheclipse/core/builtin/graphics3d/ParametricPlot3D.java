@@ -71,10 +71,14 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
           PlotColorFunction.Family.PARAMETRIC_3D_UV, options, S.ParametricPlot3D, engine);
 
       for (int i = 0; i < functions.size(); i++) {
+        PlotWrapper each = PlotWrapper.of(functions.get(i));
         GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colorBuilder != null);
         Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(i, plotStyle), meshOption);
+        if (each.hasStyle()) {
+          builder.setStyle(each.style);
+        }
         double[][][] grid =
-            createSurfaceGeometry(functions.get(i), uRange, vRange, samples[0], samples[1], engine,
+            createSurfaceGeometry(each.datum, uRange, vRange, samples[0], samples[1], engine,
                 builder, colorBuilder, meshOption, options[Plot3DTools.X_MESH_STYLE],
                 options[Plot3DTools.X_EVALUATION_MONITOR], region);
         if (grid != null) {
@@ -82,7 +86,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
           IExpr complex = Plot3DTools.withBoundary(builder, grid,
               options[Plot3DTools.X_BOUNDARY_STYLE], false);
           if (complex.isPresent()) {
-            graphicsList.append(complex);
+            graphicsList.append(each.wrapTooltip(complex));
           }
         }
       }
@@ -95,14 +99,21 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(range), engine);
       }
       for (int i = 0; i < functions.size(); i++) {
+        // a curve wrapped in Tooltip or Style is sampled bare: the style goes into the curve and
+        // the tooltip back around the finished primitive, the way Plot3D labels one of several
+        PlotWrapper each = PlotWrapper.of(functions.get(i));
         GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
         // a curve is a line: no mesh, no edge form, and the ordinary plot colours
         builder.setStyle(Plot3DTools.curveStyle(i, plotStyle));
-        createCurveGeometry(functions.get(i), range, samples[0], engine, builder,
+        if (each.hasStyle()) {
+          // the curve's own Style comes after the plot colour, so it is the one that holds
+          builder.setStyle(each.style);
+        }
+        createCurveGeometry(each.datum, range, samples[0], engine, builder,
             options[Plot3DTools.X_EVALUATION_MONITOR], region);
         IExpr complex = builder.build();
         if (complex.isPresent()) {
-          graphicsList.append(complex);
+          graphicsList.append(each.wrapTooltip(complex));
         }
       }
     }

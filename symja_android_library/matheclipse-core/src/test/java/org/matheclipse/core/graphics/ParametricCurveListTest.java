@@ -98,6 +98,36 @@ public class ParametricCurveListTest {
         lineCount(plot("ParametricPlot({Cos(t), Sin(t)}, {t, 0, 2 Pi})", S.Graphics)));
   }
 
+  /**
+   * One curve of several wrapped in {@code Tooltip} or {@code Style} used to be sampled with the
+   * wrapper still on, which never evaluates to a point, so that curve was silently missing.
+   */
+  @Test
+  public void wrappedCurveAmongSeveralIsDrawnWithItsWrapper() throws Exception {
+    IAST graphics = plot("ParametricPlot3D({Tooltip({Cos(t), Sin(t), t}, \"helix\"),"
+        + " Style({t, t, t}, Red)}, {t, 0, 1})", S.Graphics3D);
+    assertEquals(2, lineCount(graphics));
+    JsonNode elements = MAPPER.readTree(WebGLGraphics3D.generateJSON(graphics)).get("elements");
+    assertEquals(2, elements.size());
+    assertEquals("helix", elements.get(0).get("tooltip").asText());
+    assertEquals(0xFF0000, elements.get(1).get("color").asInt(),
+        "the curve's own Style wins over the plot colour");
+
+    assertEquals(2, lineCount(
+        plot("ParametricPlot3D({Tooltip({Cos(t), Sin(t), t}), {t, t, t}}, {t, 0, 1})",
+            S.Graphics3D)));
+  }
+
+  @Test
+  public void wrappedSurfaceAmongSeveralIsDrawn() throws Exception {
+    IAST graphics = plot("ParametricPlot3D({Tooltip({Cos(u), Sin(u), v}, \"s\"), {u, v, 0}},"
+        + " {u, 0, 1}, {v, 0, 1}, PlotPoints -> 4)", S.Graphics3D);
+    String tooltips = MAPPER.readTree(WebGLGraphics3D.generateJSON(graphics)).get("elements")
+        .findValuesAsText("tooltip").toString();
+    assertTrue(tooltips.contains("s"), "the labelled surface keeps its tooltip: " + tooltips);
+    assertEquals(2, graphics.toString().split("GraphicsComplex\\(", -1).length - 1);
+  }
+
   @Test
   public void nestedSurfaceIsDrawn() {
     plot("ParametricPlot3D({{{Cos(u), Sin(u), v}}}, {u, 0, 2 Pi}, {v, 0, 1})", S.Graphics3D);
