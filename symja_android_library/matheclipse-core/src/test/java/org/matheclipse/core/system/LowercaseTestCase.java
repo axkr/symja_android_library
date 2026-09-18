@@ -10783,6 +10783,44 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFromCoefficientRules() {
+    check("FromCoefficientRules({{2,0}->1, {1,1}->3, {0,0}->-5}, {x,y})", //
+        "-5+x^2+3*x*y");
+    check("FromCoefficientRules({{1,0}->a, {0,1}->b}, {x,y})", //
+        "a*x+b*y");
+    // a single variable needs no list of its own
+    check("FromCoefficientRules({{2}->1, {0}->-1}, x)", //
+        "-1+x^2");
+    // the empty list of rules is the zero polynomial, as CoefficientRules(0, ...) answers
+    check("FromCoefficientRules({}, {x,y})", //
+        "0");
+    // it is the inverse of CoefficientRules
+    check("FromCoefficientRules(CoefficientRules(x^3-2*x*y+7, {x,y}), {x,y})", //
+        "7+x^3-2*x*y");
+    check("FromCoefficientRules(CoefficientRules((x+y+z)^4, {x,y,z}), {x,y,z}) == Expand((x+y+z)^4)", //
+        "True");
+    // and inverts it on a list of polynomials as well
+    check("FromCoefficientRules(CoefficientRules({x^2-1, y^3}, {x,y}), {x,y})", //
+        "{-1+x^2,y^3}");
+    // a negative exponent is a rational function, as Mathematica gives it
+    check("FromCoefficientRules({{-1}->1}, {x})", //
+        "1/x");
+    // message FromCoefficientRules: FromCoefficientRules called with 1 argument; 2 arguments are
+    // expected.
+    check("FromCoefficientRules({{2}->1})", //
+        "FromCoefficientRules({{2}->1})");
+    // message FromCoefficientRules: FromCoefficientRules called with 3 arguments; 2 arguments are
+    // expected.
+    check("FromCoefficientRules({{2}->7}, {x}, Modulus->5)", //
+        "FromCoefficientRules({{2}->7},{x},Modulus->5)");
+    // an exponent vector which does not match the variables is no polynomial
+    check("FromCoefficientRules({{2,0}->3}, {x})", //
+        "FromCoefficientRules({{2,0}->3},{x})");
+    check("FromCoefficientRules({{1}->2}, {3})", //
+        "FromCoefficientRules({{1}->2},{3})");
+  }
+
+  @Test
   public void testFromContinuedFraction() {
     // check(
     // "Sqrt(63)/3", //

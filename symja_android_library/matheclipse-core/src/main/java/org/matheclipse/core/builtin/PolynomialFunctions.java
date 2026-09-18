@@ -1574,6 +1574,78 @@ public class PolynomialFunctions {
    *
    *
    * <pre>
+   * <code>FromCoefficientRules(list-of-rules, list-of-variables)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * build the polynomial the rules <code>{exponent-vector -&gt; coefficient, ...}</code> describe,
+   * which is the inverse of {@link S#CoefficientRules}.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; FromCoefficientRules({{2,0}-&gt;1, {1,1}-&gt;3, {0,0}-&gt;-5}, {x,y})
+   * -5+x^2+3*x*y
+   *
+   * &gt;&gt; FromCoefficientRules(CoefficientRules(x^3-2*x*y+7, {x,y}), {x,y})
+   * 7+x^3-2*x*y
+   * </code>
+   * </pre>
+   */
+  private static class FromCoefficientRules extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      if (!ast.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST rules = (IAST) ast.arg1();
+      if (rules.argSize() > 0 && !rules.arg1().isRuleAST()) {
+        // a list of rule lists is the shape CoefficientRules answers a list of polynomials with
+        return rules.mapThread(ast, 1);
+      }
+      IAST variables = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
+      if (variables.argSize() == 0 || !variables.forAll(x -> x.isVariable())) {
+        return F.NIL;
+      }
+
+      IASTAppendable sum = F.PlusAlloc(rules.argSize());
+      for (int i = 1; i <= rules.argSize(); i++) {
+        IExpr rule = rules.get(i);
+        if (!rule.isRuleAST() || !rule.first().isList()
+            || ((IAST) rule.first()).argSize() != variables.argSize()) {
+          // the exponent vectors have one entry for each variable
+          return F.NIL;
+        }
+        IAST exponents = (IAST) rule.first();
+        IASTAppendable monomial = F.TimesAlloc(variables.argSize() + 1);
+        monomial.append(rule.second());
+        for (int v = 1; v <= variables.argSize(); v++) {
+          IExpr exponent = exponents.get(v);
+          if (!exponent.isZero()) {
+            monomial.append(F.Power(variables.get(v), exponent));
+          }
+        }
+        sum.append(monomial.oneIdentity1());
+      }
+      return engine.evaluate(sum.oneIdentity0());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
    * GroebnerBasis({polynomial-list},{variable-list})
    * </pre>
    *
@@ -1915,6 +1987,7 @@ public class PolynomialFunctions {
       S.Cyclotomic.setEvaluator(new Cyclotomic());
       S.Discriminant.setEvaluator(new Discriminant());
       S.Exponent.setEvaluator(new Exponent());
+      S.FromCoefficientRules.setEvaluator(new FromCoefficientRules());
       S.GroebnerBasis.setEvaluator(new GroebnerBasis());
       S.HermiteH.setEvaluator(new HermiteH());
       S.JacobiP.setEvaluator(new JacobiP());

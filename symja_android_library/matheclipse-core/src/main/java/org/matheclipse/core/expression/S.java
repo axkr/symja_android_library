@@ -8744,7 +8744,8 @@ public class S {
       S.initFinalSymbol("FromCharacterCode", ID.FromCharacterCode);
 
   /**
-   * FromCoefficientRules(x) - TODO describe `FromCoefficientRules`.
+   * FromCoefficientRules(list-of-rules, list-of-variables) - build the polynomial the rules
+   * `{exponent-vector -> coefficient, ...}` describe, which is the inverse of `CoefficientRules`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromCoefficientRules.md">FromCoefficientRules
