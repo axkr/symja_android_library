@@ -865,8 +865,11 @@ public class SpecialFunctions {
         return z.first();
       }
       if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
-        // https://functions.wolfram.com/GammaBetaErf/Erf/16/01/01/0002/
-        return F.Times(S.I, F.Erfi(F.Times(F.CNI, z)));
+        // Erfc(z) == 1 - Erf(z) and Erf(z) == I*Erfi(-I*z)
+        // (https://functions.wolfram.com/GammaBetaErf/Erf/16/01/01/0002/), so
+        // Erfc(z) == 1 - I*Erfi(-I*z). This used to return Erf's I*Erfi(-I*z) without the 1 - in
+        // front, which made Gamma(1/2, z) and Hypergeometric1F1(1, 3/2, z) wrong for negative z.
+        return F.Subtract(F.C1, F.Times(S.I, F.Erfi(F.Times(F.CNI, z))));
       }
       // don't transform negative arg:
       // IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);

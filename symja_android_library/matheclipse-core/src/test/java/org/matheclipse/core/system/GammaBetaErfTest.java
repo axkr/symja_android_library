@@ -410,6 +410,19 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testErfc() {
+    // Erfc(z) == 1 - Erf(z), and Erf(I*u) == I*Erfi(u). The rule for an imaginary argument used to
+    // return Erf's I*Erfi(u) without the 1 - in front, which made Gamma(1/2, z) and
+    // Hypergeometric1F1(1, 3/2, z) take the wrong value for every negative z.
+    check("Erfc(I*u)", //
+        "1-I*Erfi(u)");
+    check("Chop(N(Erfc(I/Sqrt(2))) - Erfc(N(I/Sqrt(2))))", //
+        "0");
+    check("Chop(N(Gamma(1/2, -1/2)) - Gamma(0.5, -0.5))", //
+        "0");
+    // the series of Hypergeometric1F1(1, 3/2, -1/2) is real
+    check("Chop(N(Hypergeometric1F1(1, 3/2, -1/2)) - Hypergeometric1F1(1.0, 1.5, -0.5))", //
+        "0");
+
     check("N(Erfc(100000000000000000000000000000000035/2*1/Sqrt(2)),30)", //
         "0");
     checkNumeric("Erfc(1.5-I)", //
