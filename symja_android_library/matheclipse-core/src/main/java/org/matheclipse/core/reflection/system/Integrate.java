@@ -501,7 +501,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           boolean antiderivative = temp.isFreeAST(h -> h == S.Integrate || h == S.Boole) //
               && temp.isSpecialsFree();
           if (antiderivative) {
-            IExpr value = definiteIntegral(temp, xList, holdallAST, engine);
+            IExpr value = definiteIntegral(temp, arg1, xList, holdallAST, engine);
             if (value.isPresent()) {
               return value;
             }
@@ -1555,13 +1555,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * continuous.
    * 
    * @param function a function of <code>x</code>
+   * @param integrand the integrand <code>function</code> is an antiderivative of
    * @param xValueList a list of the form <code>{x, lower, upper}</code> with <code>3</code>
    *        arguments
    * @param engine the evaluation engine
    * @return
    */
-  private static IExpr definiteIntegral(IExpr function, IAST xValueList, IAST originalAST,
-      EvalEngine engine) {
+  private static IExpr definiteIntegral(IExpr function, IExpr integrand, IAST xValueList,
+      IAST originalAST, EvalEngine engine) {
     IExpr x = xValueList.arg1();
     IExpr lower = xValueList.arg2();
     IExpr upper = xValueList.arg3();
@@ -1572,15 +1573,35 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     // trip, which would otherwise run for every simple definite integral.
     IAST potentialSingularityEquations =
         function.isPolynomial(F.list(x)) ? F.NIL : collectBranchPoints(function, x, engine);
+    // Poles of the integrand. The antiderivative's own singularities are not always known:
+    // -ArcTanh(Cos(x)) for 1/Sin(x) and ExpIntegralEi(x) for E^x/x report none, and
+    // Newton-Leibniz across the pole then gives a principal value instead of divergence
+    if (!integrand.isPolynomial(F.list(x))) {
+      IAST integrandEquations = collectBranchPoints(integrand, x, engine);
+      if (integrandEquations.isPresent()) {
+        if (potentialSingularityEquations.isPresent()) {
+          IASTAppendable merged = potentialSingularityEquations.copyAppendable();
+          for (IExpr eq : integrandEquations) {
+            if (!merged.contains(eq)) {
+              merged.append(eq);
+            }
+          }
+          potentialSingularityEquations = merged;
+        } else {
+          potentialSingularityEquations = integrandEquations;
+        }
+      }
+    }
 
     // Solve and Split
     if (potentialSingularityEquations.isPresent()) {
       IASTAppendable singularities = F.ListAlloc();
       // Solve eq for x
       for (IExpr eq : potentialSingularityEquations) {
-        // Solve({eq, x >= lower, x <= upper}, x)
-        IExpr solved = engine
-            .evaluate(F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+        // Solve({eq, x >= lower, x <= upper}, x) - quiet, its messages (InverseFunction::ifun for
+        // Sin(x)==0) are about a search the caller never sees
+        IExpr solved = engine.evalQuiet(
+            F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
         if (solved.isList()) {
           singularities.appendArgs((IAST) solved);
         }
@@ -1603,13 +1624,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               if (engine
                   .evalTrue(F.And(F.Less(lower, singularPoint), F.Less(singularPoint, upper)))) {
                 // Singularity/Branch point found strictly inside. Split.
-                IExpr left = definiteIntegral(function, F.List(x, lower, singularPoint),
-                    originalAST, engine);
+                IExpr left = definiteIntegral(function, integrand,
+                    F.List(x, lower, singularPoint), originalAST, engine);
                 if (left.isNIL()) {
                   return F.NIL;
                 }
-                IExpr right = definiteIntegral(function, F.List(x, singularPoint, upper),
-                    originalAST, engine);
+                IExpr right = definiteIntegral(function, integrand,
+                    F.List(x, singularPoint, upper), originalAST, engine);
                 if (right.isNIL()) {
                   return F.NIL;
                 }

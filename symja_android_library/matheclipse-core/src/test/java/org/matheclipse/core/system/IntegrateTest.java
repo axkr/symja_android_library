@@ -1010,6 +1010,36 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegrateDivergentInteriorPole() {
+    // the antiderivatives -ArcTanh(Cos(x)) and ExpIntegralEi(x) report no singularities, split
+    // at the poles of the integrand - Newton-Leibniz across them gave the principal values 0 and
+    // -ExpIntegralEi(-1)+ExpIntegralEi(1)
+    // message - Integrate: Integral of 1/Sin(x) does not converge on {x,-1,1}.
+    check("Integrate(1/Sin(x),{x,-1,1})", //
+        "Integrate(1/Sin(x),{x,-1,1})");
+    // message - Integrate: Integral of E^x/x does not converge on {x,-1,1}.
+    check("Integrate(Exp(x)/x,{x,-1,1})", //
+        "Integrate(E^x/x,{x,-1,1})");
+    check("Integrate(Cot(x),{x,-1,1})", //
+        "Integrate(Cot(x),{x,-1,1})");
+    // the NIntegrate symbolic fallback no longer returns 0.0 and 2.1145
+    check("NIntegrate(1/Sin(x),{x,-1,1})", //
+        "NIntegrate(1/Sin(x),{x,-1,1})");
+    check("NIntegrate(Exp(x)/x,{x,-1,1})", //
+        "NIntegrate(E^x/x,{x,-1,1})");
+
+    // no pole inside, or a removable one
+    check("Integrate(1/Sin(x),{x,1/2,1})", //
+        "ArcTanh(Cos(1/2))-ArcTanh(Cos(1))");
+    check("Integrate(Exp(x)/x,{x,1,2})", //
+        "-ExpIntegralEi(1)+ExpIntegralEi(2)");
+    check("Integrate(Sin(x)/x,{x,-1,1})", //
+        "2*SinIntegral(1)");
+    check("Integrate(1/(2+Sin(x)),{x,0,2*Pi})", //
+        "(2*Pi)/Sqrt(3)");
+  }
+
+  @Test
   public void testNIntegrateAbsDivergent() {
     // WMA gives NIntegrate::ncvb for these divergent integrals, the fixed-order LegendreGauss
     // rule used to return a finite number
