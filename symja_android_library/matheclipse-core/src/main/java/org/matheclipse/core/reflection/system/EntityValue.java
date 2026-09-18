@@ -28,9 +28,12 @@ import org.matheclipse.core.interfaces.IExpr;
  * asked of the data function itself.
  *
  * <p>
- * A property the data function cannot answer leaves the whole call unevaluated rather than putting
- * a hole in the result, so that the message the data function printed - which names the property it
- * did not recognise - is the explanation the reader gets.
+ * Where the type is registered, its data function is loaded, so anything it cannot answer is
+ * genuinely unknown and says which half was: <code>Missing("UnknownEntity", {type, name})</code>
+ * when it does not know the thing, <code>Missing("UnknownProperty", {type, property})</code> when
+ * it does not know what was asked about it. A type nothing registered is the one case that stays
+ * unevaluated instead - from here a type that does not exist and a module that was not loaded look
+ * the same, and claiming the first would be a guess.
  */
 public class EntityValue extends AbstractFunctionEvaluator {
 
@@ -83,16 +86,37 @@ public class EntityValue extends AbstractFunctionEvaluator {
     for (IExpr name : names) {
       IASTAppendable row = F.ListAlloc(properties.argSize());
       for (IExpr property : properties) {
-        IExpr value = Entities.ask(dataFunction, engine, name, Entities.propertyOf(property, type));
-        if (value.isNIL()) {
-          return F.NIL;
-        }
-        row.append(value);
+        IExpr asked = Entities.propertyOf(property, type);
+        IExpr value = Entities.ask(dataFunction, engine, name, asked);
+        row.append(value.isNIL() ? missing(dataFunction, engine, type, name, asked) : value);
       }
       // one property asked for is one value answered, not a list holding it
       rows.append(severalProperties ? row : row.arg1());
     }
     return severalEntities ? rows : rows.arg1();
+  }
+
+  /**
+   * Which half of the question the data function could not answer.
+   *
+   * <p>
+   * It is asked once more, for the thing alone: a function that does not know the thing cannot know
+   * anything about it either, and one that does knows the thing but not the property. That second
+   * question is put quietly, since the first one has already reported whatever was wrong with it.
+   */
+  private static IExpr missing(IBuiltInSymbol dataFunction, EvalEngine engine, String type,
+      IExpr name, IExpr property) {
+    boolean quiet = engine.isQuietMode();
+    engine.setQuietMode(true);
+    IExpr known;
+    try {
+      known = Entities.ask(dataFunction, engine, name);
+    } finally {
+      engine.setQuietMode(quiet);
+    }
+    return known.isNIL()
+        ? F.Missing(F.stringx("UnknownEntity"), F.List(F.stringx(type), name))
+        : F.Missing(F.stringx("UnknownProperty"), F.List(F.stringx(type), property));
   }
 
   @Override

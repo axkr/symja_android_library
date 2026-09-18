@@ -785,6 +785,11 @@ public class AstroFunctionsTest extends AbstractTestCase {
     // an entity of the wrong type is not silently read as a name of the right one
     check("PlanetData(Entity(\"Element\", \"Iron\"), \"HelioCoordinates\")", //
         "PlanetData(Entity(Element,Iron),HelioCoordinates)");
+    // and what PlanetData cannot answer is reported as the half that was unknown
+    check("EntityValue(Entity(\"Planet\", \"Vulcan\"), \"HelioCoordinates\")", //
+        "Missing(UnknownEntity,{Planet,Vulcan})");
+    check("EntityValue(Entity(\"Planet\", \"Mars\"), \"Nonsense\")", //
+        "Missing(UnknownProperty,{Planet,Nonsense})");
   }
 
   @Test

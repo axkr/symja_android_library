@@ -7413,9 +7413,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Carbon\")},"
         + " {\"AtomicNumber\", \"Period\"})", //
         "{{26,4},{6,2}}");
-    // the property the data function does not know, and the type nothing answers for
+    // a registered type means its data function is loaded, so what it cannot answer is genuinely
+    // unknown - and which half was unknown is said. Measured in Mathematica 2026-09-18, which
+    // gives Missing["UnknownEntity", {"Isotope", "C"}] for an entity it does not have.
     check("EntityValue(Entity(\"Element\", \"Iron\"), \"Nonsense\")", //
-        "EntityValue(Entity(Element,Iron),Nonsense)");
+        "Missing(UnknownProperty,{Element,Nonsense})");
+    check("EntityValue(Entity(\"Element\", \"Kryptonite\"), \"AtomicMass\")", //
+        "Missing(UnknownEntity,{Element,Kryptonite})");
+    check("EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Kryptonite\")},"
+        + " \"AtomicNumber\")", //
+        "{26,Missing(UnknownEntity,{Element,Kryptonite})}");
+    // a type nothing registered is the one case left standing: from here a type which does not
+    // exist and a module which was not loaded look the same
     check("EntityValue(Entity(\"Unicorn\", \"Twilight\"), \"Horn\")", //
         "EntityValue(Entity(Unicorn,Twilight),Horn)");
     // matheclipse-astro is not on this module's classpath, so its types are not registered here

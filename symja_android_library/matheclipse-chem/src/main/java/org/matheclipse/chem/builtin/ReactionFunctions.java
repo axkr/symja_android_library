@@ -39,7 +39,6 @@ public class ReactionFunctions {
       S.MoleculeModify.setEvaluator(new MoleculeModify());
       S.MoleculeGraph.setEvaluator(new MoleculeGraph());
       S.IsotopeData.setEvaluator(new IsotopeData());
-      org.matheclipse.core.data.Entities.register("Isotope", S.IsotopeData);
       S.ReactionBalance.setEvaluator(new ReactionBalance());
       S.ReactionBalancedQ.setEvaluator(new ReactionBalancedQ());
     }
