@@ -626,6 +626,55 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolveParallelLinearCoefficients() {
+    // (a*x + b*y + c1) + (k*(a*x + b*y) + c2)*y' == 0 has no point where its two lines meet, but
+    // u == a*x + b*y separates it. These declined, while the crossing lines were already answered.
+    check("DSolve(x-3*y(x)==(-x+3*y(x)+2)*y'(x), y(x), x)", //
+        "Solve(3/4*x+3/8*Log(1/2-x+3*y(x))+3/4*y(x)==C(1),y(x))");
+    check("DSolve(x-y(x)+1+(-1+x-y(x))*y'(x)==0, y(x), x)", //
+        "Solve(x+1/2*(-x+Log(x-y(x))+y(x))==C(1),y(x))");
+    // no branch of the explicit solution passes through the point, and the relation does
+    check("DSolve({2*x+y(x)+(4*x+2*y(x)+1)*y'(x)==0, y(-1/6)==0}, y(x), x)", //
+        "Solve(-x/3+Log(2/3+2*x+y(x))/9-2/3*y(x)==1/18-Log(3)/9,y(x))");
+    // not in the corpus: the same shape with a condition it can meet explicitly
+    check("DSolve(x+2*y(x)+1+(2*x+4*y(x)+3)*y'(x)==0, y(x), x)", //
+        "{{y(x)->-3/4-x/2-Sqrt(36+16*x+16*C(1))/8},{y(x)->-3/4-x/2+Sqrt(36+16*x+16*C(1))/\n"
+            + "8}}");
+  }
+
+  @Test
+  public void testDSolveIntegratingFactorAPowerOfXAndY() {
+    // x^p*y^q makes these exact; the exponents come from the exactness condition, which is linear
+    // in them. The relation is the answer where its inversion is not one.
+    check("DSolve(y(x)*3+x*y(x)^3+(x+x^2*y(x)^2)*y'(x)==0, y(x), x)", //
+        "Solve((2*(x^(3/2)*y(x)+1/5*x^(5/2)*y(x)^3))/Sqrt(y(x))==C(1),y(x))");
+    check("DSolve(y(x)*(3*x^2+y(x))-x*(x^2-y(x))*y'(x)==0, y(x), x)", //
+        "Solve((4/3*x^(9/4)*y(x)+4*x^(1/4)*y(x)^2)/y(x)^(7/4)==C(1),y(x))");
+    // 1/(x^2*y^2) resp. 1/(x^2*y), whose relations do invert
+    check("DSolve(y(x)+x*y(x)^2+(x-x^2*y(x))*y'(x)==0, y(x), x)", //
+        "{{y(x)->-1/(x*ProductLog(-E^C(1)/x^2))}}");
+    check("DSolve(-y(x)^2+(y(x)*x-x^2)*y'(x)==0, y(x), x)", //
+        "{{y(x)->-x*ProductLog(-1/(E^C(1)*x))}}");
+    // the relation is a first integral: along it y' == -G_x/G_y solves the equation
+    check("With({g=(2*(x^(3/2)*Y+x^(5/2)*Y^3/5))/Sqrt(Y)}, Simplify(Y*3+x*Y^3+(x+x^2*Y^2)*"
+        + "(-D(g,x)/D(g,Y))))", //
+        "0");
+  }
+
+  @Test
+  public void testDSolveSecantForcingWithASymbolicFrequency() {
+    // y'' + a^2*y == Sec(a*x) answered ComplexInfinity: the variation of parameters integral
+    // E^(-I*a*x)*Sec(a*x) was read as the degenerate case of two different frequencies.
+    check("With({s=DSolve(y''(x)+a^2*y(x)==Sec(a*x), y(x), x)}, Head(s)===List && "
+        + "Chop(N(D(y(x) /. s[[1]],{x,2})+a^2*(y(x) /. s[[1]])-Sec(a*x) /. "
+        + "{a->3/7, C(1)->2/5, C(2)->3/11, x->7/10}))===0)", //
+        "True");
+    // the same equation with a number for the frequency was always answered
+    check("DSolve(y''(x)+y(x)==Sec(x), y(x), x)", //
+        "{{y(x)->C(1)*Cos(x)+Cos(x)*Log(Cos(x))+x*Sin(x)+C(2)*Sin(x)}}");
+  }
+
+  @Test
   public void testDSolveHomogeneousInXOverY() {
     // The Solve which inverts Log(1+E^(1/v)*v) == c kept taking logarithms of an equation it was
     // already solving and overflowed the stack; the relation is now the answer.

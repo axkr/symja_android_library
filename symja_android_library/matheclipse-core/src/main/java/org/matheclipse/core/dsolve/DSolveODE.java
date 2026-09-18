@@ -280,6 +280,48 @@ final class DSolveODE {
   }
 
   /**
+   * The integrating factor <code>x^p*y^q</code> which makes <code>M + N*y' == 0</code> exact, or
+   * {@link F#NIL}.
+   *
+   * <p>
+   * Exactness asks <code>M_y + q*M/y == N_x + p*N/x</code>, which is linear in the two exponents
+   * and has to hold for every <code>x</code> and <code>y</code>: cleared of its denominators,
+   * {@link S#SolveAlways} reads the exponents off the coefficients. This is the factor of the
+   * textbook equations whose <code>M</code> and <code>N</code> are monomial sums, for example
+   * <code>y + x*y^2 + (x - x^2*y)*y' == 0</code> with <code>1/(x^2*y^2)</code>.
+   */
+  private static IExpr powerIntegratingFactor(EvalEngine engine, IExpr m, IExpr n, IExpr dMdy,
+      IExpr dNdx, IExpr x, IExpr yDummy, IExpr y) {
+    if (m.isZero() || n.isZero()) {
+      return F.NIL;
+    }
+    IExpr p = F.Dummy("p");
+    IExpr q = F.Dummy("q");
+    // x*y*(M_y - N_x) - p*y*N + q*x*M == 0
+    IExpr equation = F.Equal(F.Plus(
+        F.Times(x, yDummy, F.Subtract(dMdy, dNdx)), //
+        F.Times(F.CN1, p, yDummy, n), //
+        F.Times(q, x, m)), F.C0);
+    IExpr solutions;
+    try {
+      solutions = engine.evaluate(F.binaryAST2(S.SolveAlways, equation, F.list(x, yDummy)));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+    if (!solutions.isListOfLists() || solutions.isEmpty()) {
+      return F.NIL;
+    }
+    IExpr exponents = solutions.first();
+    IExpr pValue = engine.evaluate(F.subst(p, (IAST) exponents));
+    IExpr qValue = engine.evaluate(F.subst(q, (IAST) exponents));
+    if (!pValue.isNumber() || !qValue.isNumber() || (pValue.isZero() && qValue.isZero())) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(F.Power(x, pValue), F.Power(y, qValue)));
+  }
+
+  /**
    * Sorts {@code quotient} into a factor free of {@code y} and one free of {@code x}, which is what
    * separating the variables needs.
    *
@@ -965,6 +1007,19 @@ final class DSolveODE {
         }
       }
     }
+    IExpr powerMu = powerIntegratingFactor(engine, m, n, engine.evaluate(F.D(m, y)),
+        engine.evaluate(F.D(n, x)), x, y, y);
+    if (powerMu.isPresent()) {
+      IExpr powerPotential = exactPotential(engine, engine.evaluate(F.Times(powerMu, m)),
+          engine.evaluate(F.Times(powerMu, n)), x, y);
+      if (powerPotential.isPresent() && isFirstIntegral(powerPotential, m, n, x, y, engine)) {
+        return powerPotential;
+      }
+    }
+    IExpr parallel = parallelLinesLevel(engine, m, n, x, y);
+    if (parallel.isPresent() && isFirstIntegral(parallel, m, n, x, y, engine)) {
+      return parallel;
+    }
     IExpr[] center = intersectionOfLines(engine, m, n, x, y);
     if (center != null) {
       // (a1*x + b1*y + c1) + (a2*x + b2*y + c2)*y' == 0 is homogeneous about the point where both
@@ -986,6 +1041,49 @@ final class DSolveODE {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * A first integral of <code>M + N*y' == 0</code> for <code>M</code> and <code>N</code> of the
+   * first degree in <code>x</code> and <code>y</code> whose lines are <b>parallel</b>, or
+   * {@link F#NIL}.
+   *
+   * <p>
+   * There is no point to move the origin to, but the lines differ only by a constant:
+   * <code>N == k*(a*x + b*y) + c2</code> where <code>M == a*x + b*y + c1</code>. In
+   * <code>u == a*x + b*y</code> the equation is <code>u' == (a*N - b*M)/N</code>, a function of
+   * <code>u</code> alone, and separates - <code>x - Integrate(N/(a*N - b*M), u)</code> is constant
+   * along the solutions.
+   */
+  private static IExpr parallelLinesLevel(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
+    IExpr[] line1 = lineCoefficients(engine, m, x, y);
+    IExpr[] line2 = line1 == null ? null : lineCoefficients(engine, n, x, y);
+    if (line2 == null || line1[1].isZero()) {
+      return F.NIL;
+    }
+    IExpr determinant = engine.evaluate(
+        F.Subtract(F.Times(line1[0], line2[1]), F.Times(line1[1], line2[0])));
+    if (!determinant.isZero()) {
+      return F.NIL;
+    }
+    IExpr a = line1[0];
+    IExpr b = line1[1];
+    IExpr ratio = engine.evaluate(F.Divide(line2[1], b));
+    IExpr u = F.Dummy("u");
+    // M == u + c1 and N == ratio*u + c2 once u == a*x + b*y
+    IExpr mOfU = F.Plus(u, line1[2]);
+    IExpr nOfU = engine.evaluate(F.Plus(F.Times(ratio, u), line2[2]));
+    IExpr slope = engine.evaluate(F.Subtract(F.Times(a, nOfU), F.Times(b, mOfU)));
+    IExpr substitution = F.Plus(F.Times(a, x), F.Times(b, y));
+    if (slope.isZero()) {
+      // a*N == b*M everywhere: u is constant along the solutions
+      return substitution;
+    }
+    IExpr integral = DSolveContext.integrate(F.Divide(nOfU, slope), u, engine);
+    if (integral.isNIL()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Subtract(x, F.subst(integral, u, substitution)));
   }
 
   /**
@@ -2469,6 +2567,54 @@ final class DSolveODE {
     return resultList;
   }
 
+  /**
+   * The relation <code>G(x, y(x)) == C</code> inside an unevaluated <code>Solve</code>, for an
+   * equation whose explicit branches are no answer, or {@link F#NIL}.
+   *
+   * <p>
+   * With conditions, only a relation which <code>Solve</code> cannot invert is offered. One it can
+   * invert comes back as explicit branches, and which of them holds at the point of a condition is
+   * the question the explicit path has just failed to answer: the cubic relation of
+   * <code>y'(x) == (2*x + y)/(3 - x + 3*y^2)</code> with <code>y(0) == 0</code> gave a branch
+   * which does not solve the equation. Without conditions every branch of the relation is a
+   * solution, so the inversion is welcome.
+   */
+  private static IExpr uninvertibleRelation(IASTAppendable listOfEquations, IExpr arg2, IExpr xVar,
+      IAST uFunction1Arg, IExpr c_n, IAST boundaryConditions, EvalEngine engine) {
+    IExpr relation = implicitSolution(listOfEquations.arg1(), xVar, uFunction1Arg, c_n,
+        boundaryConditions, engine);
+    if (relation.isNIL()) {
+      return F.NIL;
+    }
+    IAST solve = F.Solve(relation, uFunction1Arg);
+    if (boundaryConditions.argSize() == 0) {
+      return solve;
+    }
+    IExpr inverted = engine.evaluate(solve);
+    if (!inverted.isList()) {
+      return solve;
+    }
+    // The relation inverts, so the answer can be explicit - but which branch passes through the
+    // point is what the explicit path has just failed to say, so every branch is verified here,
+    // against the equation and against the conditions, exactly as an explicit answer is.
+    IASTAppendable bodies = F.ListAlloc(inverted.size());
+    for (int i = 1; i <= ((IAST) inverted).argSize(); i++) {
+      IExpr branch = ((IAST) inverted).get(i);
+      IAST rules = branch.isList() ? (IAST) branch : F.list(branch);
+      for (int r = 1; r <= rules.argSize(); r++) {
+        if (rules.get(r).isRule() && rules.get(r).first().equals(uFunction1Arg)) {
+          bodies.append(rules.get(r).second());
+        }
+      }
+    }
+    if (bodies.argSize() == 0) {
+      return F.NIL;
+    }
+    IASTAppendable verified = acceptBranches(bodies, listOfEquations, uFunction1Arg, arg2, xVar,
+        boundaryConditions, c_n, true, new boolean[1], engine);
+    return verified.argSize() > 0 ? verified : F.NIL;
+  }
+
   static IExpr unaryODE(IAST uFunction1Arg, IExpr arg2, IExpr xVar, IASTAppendable listOfEquations,
       IAST boundaryConditions, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
@@ -2491,10 +2637,10 @@ final class DSolveODE {
           if (temp.isNIL()) {
             // Nothing answers the equation explicitly. Its first integral may still be found, and
             // the answer is then that relation left for Solve, as Mathematica gives it.
-            IExpr relation =
-                implicitSolution(equation, xVar, uFunction1Arg, c_n, boundaryConditions, engine);
-            if (relation.isPresent()) {
-              return F.Solve(relation, uFunction1Arg);
+            IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg, c_n,
+                boundaryConditions, engine);
+            if (answer.isPresent()) {
+              return answer;
             }
           }
         }
@@ -2526,8 +2672,32 @@ final class DSolveODE {
                 }
               }
             }
+            if (LinearODEForm.highestDerivativeOrder(listOfEquations.arg1(),
+                uFunction1Arg.head(), xVar) == 1) {
+              // No branch of the explicit solution passes through the point - the relation the
+              // branches were inverted from still does. y(-1/6) == 0 on
+              // 2*x + y + (4*x + 2*y + 1)*y' == 0 asks its ProductLog branch for the value -2,
+              // which that function does not take, while the relation is satisfied there.
+              IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg,
+                  c_n, boundaryConditions, engine);
+              if (answer.isPresent()) {
+                return answer;
+              }
+            }
             ctx.addMessage("bvfail", F.CEmptyList);
             return F.NIL;
+          }
+          // Every branch a method offered was refused by the back substitution. The relation those
+          // branches were inverted from can still be the answer, so ask for it rather than
+          // declining here: the equations whose integrating factor is x^p*y^q arrive with an
+          // inversion which does not solve them, and their relation does.
+          if (LinearODEForm.highestDerivativeOrder(listOfEquations.arg1(),
+              uFunction1Arg.head(), xVar) == 1) {
+            IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg,
+                c_n, boundaryConditions, engine);
+            if (answer.isPresent()) {
+              return answer;
+            }
           }
           return F.NIL;
         }
