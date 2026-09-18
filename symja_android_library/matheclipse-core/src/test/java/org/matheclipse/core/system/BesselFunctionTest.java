@@ -229,6 +229,23 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselJ() {
+    // at 0 an order which is not an integer is 0 for a positive real part and infinite for a
+    // negative one; the negative orders used to stay unevaluated, and Limit read
+    // t^(1/4)*BesselJ(-1/4, t) at t == 0 as 0 instead of 2^(1/4)/Gamma(3/4)
+    check("BesselJ(1/4,0)", //
+        "0");
+    check("BesselJ(-1/4,0)", //
+        "ComplexInfinity");
+    check("BesselJ(-3/2,0)", //
+        "ComplexInfinity");
+    check("BesselJ(-1/2+I,0)", //
+        "ComplexInfinity");
+    check("BesselJ(I,0)", //
+        "Indeterminate");
+    check("BesselJ(n,0)", //
+        "BesselJ(n,0)");
+    check("Limit(t^(1/4)*BesselJ(-1/4,t), t->0)", //
+        "Limit(t^(1/4)*BesselJ(-1/4,t),t->0)");
     checkNumeric("BesselJ(2.5,-5)", //
         "I*0.24037720111131736");
 

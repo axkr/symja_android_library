@@ -582,10 +582,11 @@ public class BesselFunctions {
         if (n.isMathematicalIntegerNegative() || n.isMathematicalIntegerNonNegative()) {
           return F.C0;
         }
-        if (F.isNotPresent(n.toIntDefault())) {
-          return F.NIL;
-        }
 
+        // Every integer order has been answered above, so the orders which reach here are not
+        // integers. Returning unevaluated for them - as a test of toIntDefault() used to - hid
+        // BesselJ(-1/4, 0) == ComplexInfinity, and Limit then read t^(1/4)*BesselJ(-1/4, t) at
+        // t == 0 as 0*BesselJ(-1/4, 0) == 0 instead of 2^(1/4)/Gamma(3/4).
         IExpr a = n.re();
         if (a.isPositive()) {
           // Re(arg1) > 0
