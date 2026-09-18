@@ -699,6 +699,36 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSolvePowerPotentialWithSymbolicExponent() {
+    // y'' + A*x^m*y == 0 is Bessel's equation in x^((m+2)/2); the exponent and the coefficient
+    // may be symbols, where the sign is unknown and J/Y is the answer for either one
+    check("DSolve(y''(x) + x^n*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselJ(1/(2+n),(2*x^(1+n/2))/(2+n))*C(1)+Sqrt(x)*BesselY(1/(2+n),(\n"
+            + "2*x^(1+n/2))/(2+n))*C(2)}}");
+    check("With({s=DSolve(y''(x) + a*x^k*y(x) == 0, y, x)}, Head(s)===List && "
+        + "Chop(N((y''(x) + a*x^k*y(x)) /. s[[1]] /. "
+        + "{a->-1, k->3, C(1)->9/10, C(2)->11/10, x->4/5}))===0)", //
+        "True");
+    // a number for the exponent keeps the modified Bessel form where the potential grows
+    check("DSolve(y''(x) - x^4*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselI(1/6,x^3/3)*C(1)+Sqrt(x)*BesselK(1/6,x^3/3)*C(2)}}");
+  }
+
+  @Test
+  public void testDSolveTwoTermPowerPotential() {
+    // y'' + (A*x^(2*m) + B*x^(m-1))*y == 0 is Whittaker's equation in x^(m+1)
+    check("With({s=DSolve(y''(x) + (x^4 + x)*y(x) == 0, y, x)}, Head(s)===List && "
+        + "Chop(N((y''(x) + (x^4 + x)*y(x)) /. s[[1]] /. "
+        + "{C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
+        "True");
+    // with symbols for both coefficients and the exponent
+    check("With({s=DSolve(y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x) == 0, y, x)}, "
+        + "Head(s)===List && Chop(N((y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x)) /. s[[1]] /. "
+        + "{a->-1, b->2, k->3, C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
+        "True");
+  }
+
+  @Test
   public void testDSolveHermiteRegularAtTheOrigin() {
     // The odd solution of y'' + t*y' + y == 0 is a confluent series in -t^2/2, which evaluates to
     // incomplete gamma functions of it over Sqrt(-t^2): no value at t == 0, so the conditions

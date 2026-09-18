@@ -85,6 +85,11 @@ final class DSolveSpecialFunctions {
       basis = poschlTeller(p, q, yFunction, xVar, engine);
     }
     if (basis == null) {
+      // After every row above: the rows which know a potential of two powers as one of their own
+      // equations - Weber's among them - write it with shorter functions than Whittaker's.
+      basis = generalizedPowerPotential(p, q, yFunction, xVar, engine);
+    }
+    if (basis == null) {
       return F.NIL;
     }
     return engine.evaluate(F.Plus(F.Times(c_n, basis[0]), F.Times(ctx.nextConstant(), basis[1])));
@@ -201,6 +206,114 @@ final class DSolveSpecialFunctions {
   }
 
   /**
+   * <code>y'' + (A*x^(2*m) + B*x^(m-1))*y == 0</code>, whose solutions are Whittaker's functions of
+   * <code>x^(m+1)</code>, or <code>null</code>.
+   *
+   * <p>
+   * In <code>t == x^n</code> with <code>n == m + 1</code> the equation is
+   * <code>y_tt + (n-1)/(n*t)*y_t + (A/n^2 + B/(n^2*t))*y == 0</code>, and removing the first
+   * derivative leaves Whittaker's equation in <code>z == 2*Sqrt(-A)*x^n/n</code> with
+   * <code>kappa == B/(2*n*Sqrt(-A))</code> and <code>mu == 1/(2*n)</code>, the solutions carrying
+   * the factor <code>x^((1-n)/2)</code>. The exponents and the coefficients may be symbols: this
+   * is the family the pure power rows answer when the second term is missing.
+   */
+  private static IExpr[] generalizedPowerPotential(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
+      EvalEngine engine) {
+    if (!p.isZero()) {
+      return null;
+    }
+    // The potential arrives over a common denominator, x^(-1)*(b*x^k + a*x^(1+2*k)), where the
+    // two powers it is made of have to be read off separately.
+    IExpr potential = engine.evaluate(F.Expand(q));
+    if (!potential.isPlus() || potential.argSize() != 2) {
+      return null;
+    }
+    IAST terms = (IAST) potential;
+    IExpr[] first = powerTerm(terms.arg1(), xVar, engine);
+    IExpr[] second = powerTerm(terms.arg2(), xVar, engine);
+    if (first == null || second == null) {
+      return null;
+    }
+    // A*x^(2*m) + B*x^(m-1): the two exponents are 2*m and m-1, either way round
+    IExpr[] basis = whittakerOfPowers(first, second, yFunction, xVar, engine);
+    return basis != null ? basis : whittakerOfPowers(second, first, yFunction, xVar, engine);
+  }
+
+  /**
+   * The Whittaker basis for <code>growing[0]*x^growing[1] + falling[0]*x^falling[1]</code> as the
+   * potential of {@link #generalizedPowerPotential}, or <code>null</code> if the two exponents are
+   * not <code>2*m</code> and <code>m-1</code>.
+   */
+  private static IExpr[] whittakerOfPowers(IExpr[] growing, IExpr[] falling, IExpr yFunction,
+      IExpr xVar, EvalEngine engine) {
+    // 2*m == growing exponent and m - 1 == falling exponent
+    IExpr defect = engine.evaluate(
+        F.Subtract(growing[1], F.Plus(F.Times(F.C2, falling[1]), F.C2)));
+    if (!DSolveODE.isVanishing(defect, engine)) {
+      return null;
+    }
+    IExpr n = engine.evaluate(F.Plus(F.Divide(growing[1], F.C2), F.C1));
+    if (n.isZero() || n.isOne() || n.isMinusOne() || n.equals(F.C2)) {
+      // n == 1 is a potential of A*x^0 + B/x, which Whittaker's own row reads directly, and the
+      // two solutions below are dependent where 1/n is a whole number. n == 2 is a potential of
+      // A*x^2 + B, which is Weber's equation: its own row and Kovacic write the answer with
+      // shorter functions, an exponential and Erfi where these are two Whittaker functions.
+      return null;
+    }
+    IExpr rootOfMinusA = engine.evaluate(F.PowerExpand(F.Sqrt(F.Negate(growing[0]))));
+    if (rootOfMinusA.isZero()) {
+      return null;
+    }
+    IExpr argument =
+        engine.evaluate(F.Divide(F.Times(F.C2, rootOfMinusA, F.Power(xVar, n)), n));
+    IExpr kappa = engine.evaluate(F.Divide(falling[0], F.Times(F.C2, n, rootOfMinusA)));
+    IExpr mu = engine.evaluate(F.Divide(F.C1, F.Times(F.C2, n)));
+    IExpr prefactor = F.Power(xVar, engine.evaluate(F.Divide(F.Subtract(F.C1, n), F.C2)));
+    // The pair of Whittaker's M with the two signs of mu, which are independent as long as 2*mu
+    // is not a whole number - it is 1/n here, and n == 1 is refused above. WhittakerW would be
+    // the other classical partner, but it comes back equal to WhittakerM for an imaginary
+    // argument, which is exactly the case of a positive coefficient.
+    IExpr[] basis = new IExpr[] { //
+        engine.evaluate(F.Times(prefactor, F.WhittakerM(kappa, mu, argument))),
+        engine.evaluate(F.Times(prefactor, F.WhittakerM(kappa, F.Negate(mu), argument)))};
+    IAST residuals = F.list(engine.evaluate(F.Plus( //
+        F.D(yFunction, F.list(xVar, F.C2)), //
+        F.Times(F.Plus(F.Times(growing[0], F.Power(xVar, growing[1])),
+            F.Times(falling[0], F.Power(xVar, falling[1]))), yFunction))));
+    for (int i = 0; i < 2; i++) {
+      if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, basis[i], engine)) {
+        return null;
+      }
+    }
+    return basis;
+  }
+
+  /**
+   * <code>{coefficient, exponent}</code> of a term <code>coefficient*x^exponent</code> whose
+   * coefficient and exponent are both free of the variable, or <code>null</code>.
+   */
+  private static IExpr[] powerTerm(IExpr term, IExpr xVar, EvalEngine engine) {
+    IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+    IASTAppendable coefficient = F.TimesAlloc(factors.argSize());
+    IASTAppendable exponent = F.PlusAlloc(2);
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.equals(xVar)) {
+        exponent.append(F.C1);
+      } else if (factor.isPower() && factor.base().equals(xVar)
+          && factor.exponent().isFree(xVar, true)) {
+        exponent.append(factor.exponent());
+      } else if (factor.isFree(xVar, true)) {
+        coefficient.append(factor);
+      } else {
+        return null;
+      }
+    }
+    return new IExpr[] {engine.evaluate(coefficient.oneIdentity1()),
+        engine.evaluate(exponent.oneIdentity0())};
+  }
+
+  /**
    * <code>y'' == A*x^m*y</code>, which is Bessel's equation of order <code>1/(m+2)</code> in the
    * variable <code>x^((m+2)/2)</code>.
    */
@@ -209,7 +322,7 @@ final class DSolveSpecialFunctions {
       return null;
     }
     IExpr exponent = cancel(F.Divide(F.Times(xVar, F.D(q, xVar)), q), engine);
-    if (!exponent.isNumber() || !exponent.isFree(xVar)) {
+    if (!exponent.isFree(xVar)) {
       return null;
     }
     IExpr shifted = engine.evaluate(F.Plus(exponent, F.C2));
@@ -221,14 +334,17 @@ final class DSolveSpecialFunctions {
       return null;
     }
     int sign = numericSign(factor, engine);
-    if (sign == 0) {
-      return null;
-    }
+    // An exponent or a coefficient which is a symbol has no sign and no absolute value to write
+    // the answer with. Bessel's functions of the two signs are each other's continuation, so the
+    // J/Y pair with Sqrt(A) is the answer for either one, and it is verified below like every
+    // other answer this class writes.
+    boolean symbolic = sign == 0 || !exponent.isNumber();
     IExpr magnitude = engine.evaluate(sign > 0 ? factor : F.Negate(factor));
     IExpr half = engine.evaluate(F.Divide(shifted, F.C2));
-    IExpr nu = engine.evaluate(F.Divide(F.C1, F.Abs(shifted)));
+    IExpr nu = engine.evaluate(F.Divide(F.C1, symbolic ? shifted : F.Abs(shifted)));
+    IExpr scale = symbolic ? half : F.Abs(half);
     IExpr argument =
-        engine.evaluate(F.Times(F.Divide(F.Sqrt(magnitude), F.Abs(half)), F.Power(xVar, half)));
+        engine.evaluate(F.Times(F.Divide(F.Sqrt(magnitude), scale), F.Power(xVar, half)));
     IExpr root = F.Sqrt(xVar);
     return sign > 0 //
         ? new IExpr[] {F.Times(root, F.BesselI(nu, argument)),
@@ -779,6 +895,9 @@ final class DSolveSpecialFunctions {
       }
       if (reduced == null) {
         reduced = whittaker(F.C0, potential, yFunction, xVar, engine);
+      }
+      if (reduced == null) {
+        reduced = generalizedPowerPotential(F.C0, potential, yFunction, xVar, engine);
       }
     }
     if (reduced == null) {
