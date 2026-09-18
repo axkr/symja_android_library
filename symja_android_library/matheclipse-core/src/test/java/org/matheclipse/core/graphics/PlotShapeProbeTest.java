@@ -63,6 +63,7 @@ public class PlotShapeProbeTest {
     return output.split(primitive + "\\(", -1).length - 1;
   }
 
+  /** Plot and PolarPlot counts of s2(t) and {s2(t), Sin(t)} measured in Mathematica 2026-09-14. */
   @Test
   public void plotFamilySplitsAListValuedFunction() {
     assertEquals(2, count(plot("Plot(s2(t), {t, 0, 1})", S.Graphics), "Line"));
@@ -92,7 +93,10 @@ public class PlotShapeProbeTest {
         "two scalar components stay one curve");
   }
 
-  /** The Mathematica reading of an entry that never evaluates, carried over to the plane. */
+  /**
+   * An entry that never evaluates draws nothing and keeps the others: Mathematica draws 2 lines for
+   * {@code {q2(t), undefined(t), q2(2 t)}}, measured 2026-09-14.
+   */
   @Test
   public void parametricPlotKeepsTheCurvesBesideAnUndefinedOne() {
     assertEquals(1, count(
