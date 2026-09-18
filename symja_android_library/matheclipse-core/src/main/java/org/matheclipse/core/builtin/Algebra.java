@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.convert.JASQuotient;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
@@ -56,7 +57,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
-import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
@@ -66,16 +66,13 @@ import org.matheclipse.core.visit.VisitorExpr;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
-import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
 import edu.jas.ufd.Quotient;
-import edu.jas.ufd.QuotientRing;
 
 public class Algebra {
   /**
@@ -3522,107 +3519,30 @@ public class Algebra {
     private static Optional<IExpr[]> quotientRemainderRationalFunction(final IExpr arg1,
         final IExpr arg2, final IExpr variable) {
       try {
-        VariablesSet eVar = new VariablesSet();
-        eVar.addVarList(arg1);
-        eVar.addVarList(arg2);
-        IASTAppendable parameters = F.ListAlloc(eVar.size());
-        for (IExpr symbol : eVar.getArrayList()) {
-          if (!symbol.equals(variable)) {
-            parameters.append(symbol);
-          }
-        }
+        IAST variables = F.list(variable);
+        IAST parameters = JASQuotient.parametersOf(F.list(arg1, arg2), variables);
         if (parameters.isEmpty()) {
           // no parameters: the caller already tried the faster BigRational coefficients
           return Optional.empty();
         }
 
-        ExprPolynomialRing ring = new ExprPolynomialRing(F.list(variable));
-        ExprPolynomial poly1 = ring.create(arg1);
-        ExprPolynomial poly2 = ring.create(arg2);
-
-        JASConvert<BigRational> parameterJAS =
-            new JASConvert<BigRational>(parameters, BigRational.ZERO);
-        QuotientRing<BigRational> coefficientRing =
-            new QuotientRing<BigRational>(parameterJAS.getPolynomialRingFactory());
-        GenPolynomialRing<Quotient<BigRational>> polyRing =
-            new GenPolynomialRing<Quotient<BigRational>>(coefficientRing, 1,
-                new String[] {variable.toString()});
-
-        GenPolynomial<Quotient<BigRational>> q1 =
-            expr2QuotientPoly(poly1, parameterJAS, coefficientRing, polyRing);
-        GenPolynomial<Quotient<BigRational>> q2 =
-            expr2QuotientPoly(poly2, parameterJAS, coefficientRing, polyRing);
+        ExprPolynomialRing ring = new ExprPolynomialRing(variables);
+        JASQuotient jas = new JASQuotient(variables, parameters);
+        GenPolynomial<Quotient<BigRational>> q1 = jas.expr2JAS(ring.create(arg1));
+        GenPolynomial<Quotient<BigRational>> q2 = jas.expr2JAS(ring.create(arg2));
         if (q1 == null || q2 == null || q2.isZERO()) {
           return Optional.empty();
         }
 
         GenPolynomial<Quotient<BigRational>>[] divRem = q1.quotientRemainder(q2);
-        return Optional.of(new IExpr[] { //
-            quotientPoly2Expr(divRem[0], parameterJAS, variable), //
-            quotientPoly2Expr(divRem[1], parameterJAS, variable)});
+        return Optional
+            .of(new IExpr[] {jas.quotientPoly2Expr(divRem[0]), jas.quotientPoly2Expr(divRem[1])});
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
       }
       return Optional.empty();
-    }
-
-    /**
-     * Convert a polynomial in one variable with {@link IExpr} coefficients into a polynomial with
-     * rational function coefficients.
-     *
-     * @return <code>null</code> if a coefficient isn't a rational function of the parameters
-     */
-    private static GenPolynomial<Quotient<BigRational>> expr2QuotientPoly(ExprPolynomial poly,
-        JASConvert<BigRational> parameterJAS, QuotientRing<BigRational> coefficientRing,
-        GenPolynomialRing<Quotient<BigRational>> polyRing) {
-      EvalEngine engine = EvalEngine.get();
-      GenPolynomial<Quotient<BigRational>> result = polyRing.getZERO();
-      long degree = poly.degree();
-      for (long i = 0; i <= degree; i++) {
-        IExpr coefficient = poly.coefficient(new ExpVectorLong(1, 0, i));
-        if (coefficient.isZero()) {
-          continue;
-        }
-        IExpr together = engine.evaluate(F.Together(coefficient));
-        GenPolynomial<BigRational> numerator =
-            parameterJAS.expr2JAS(engine.evaluate(F.Numerator(together)), false);
-        GenPolynomial<BigRational> denominator =
-            parameterJAS.expr2JAS(engine.evaluate(F.Denominator(together)), false);
-        if (numerator == null || denominator == null || denominator.isZERO()) {
-          return null;
-        }
-        result = result.sum(new Quotient<BigRational>(coefficientRing, numerator, denominator),
-            ExpVector.create(1, 0, i));
-      }
-      return result;
-    }
-
-    /** Convert a polynomial with rational function coefficients back into an {@link IExpr}. */
-    private static IExpr quotientPoly2Expr(GenPolynomial<Quotient<BigRational>> poly,
-        JASConvert<BigRational> parameterJAS, IExpr variable) {
-      if (poly.isZERO()) {
-        return F.C0;
-      }
-      IASTAppendable sum = F.PlusAlloc(poly.length());
-      for (Monomial<Quotient<BigRational>> monomial : poly) {
-        Quotient<BigRational> coefficient = monomial.coefficient();
-        IExpr coeff = parameterJAS.rationalPoly2Expr(coefficient.num, false);
-        if (!coefficient.den.isONE()) {
-          coeff = F.Divide(coeff, parameterJAS.rationalPoly2Expr(coefficient.den, false));
-          if (coefficient.den.length() == 1) {
-            // A single denominator term divides every summand of the numerator without combining
-            // them, so expanding keeps the shape the IExpr coefficient division produced:
-            // `-1/a^2+b/a` instead of `(-1+a*b)/a^2`. For a denominator with more than one term
-            // expanding would only distribute the same denominator over all summands.
-            coeff = EvalEngine.get().evaluate(F.Expand(coeff));
-          }
-        }
-        long exponent = monomial.exponent().getVal(0);
-        sum.append(exponent == 0L ? coeff : F.Times(coeff, F.Power(variable, F.ZZ(exponent))));
-      }
-      return EvalEngine.get().evaluate(sum);
     }
 
     @Override
