@@ -201,7 +201,13 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
    * list of the same length, so {@code {g(t), m(t)}} keeps {@code g(t)} as written and evaluates
    * only it for its curve; where it is not, the level is reached with {@code Part}.
    *
-   * @return {@code false} when some part of the value is neither a point nor a list of them
+   * <p>
+   * Once one entry of a level is a curve, the level is a list of curves, and an entry that gives
+   * no point at all is still a curve of its own, one that draws nothing: Mathematica draws one line
+   * for {@code {p(t), undefined(t)}} and two for {@code {p(t), undefined(t), p(2 t)}}. An entry
+   * that is a number instead reads as a coordinate, so that level is no list of curves.
+   *
+   * @return {@code false} when the value is neither a point nor a list holding a curve
    */
   private static boolean curvesOfValue(IExpr expr, IExpr value, List<IExpr> out) {
     if (isPoint(value)) {
@@ -213,14 +219,27 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     }
     IAST values = (IAST) value;
     boolean itemwise = expr.isList() && ((IAST) expr).argSize() == values.argSize();
+    List<IExpr> level = new ArrayList<>(values.argSize());
+    boolean anyCurve = false;
     for (int j = 1; j <= values.argSize(); j++) {
       IExpr part = itemwise ? ((IAST) expr).get(j) : F.Part(expr, F.ZZ(j));
-      if (!curvesOfValue(part, values.get(j), out)) {
+      List<IExpr> curves = new ArrayList<>();
+      if (curvesOfValue(part, values.get(j), curves)) {
+        level.addAll(curves);
+        anyCurve = true;
+      } else if (Double.isFinite(values.get(j).evalfNaN())) {
         return false;
+      } else {
+        level.add(part);
       }
     }
+    if (!anyCurve) {
+      return false;
+    }
+    out.addAll(level);
     return true;
   }
+
 
   /** Whether {@code value} is what {@link #evaluatePoint} accepts as a point. */
   private static boolean isPoint(IExpr value) {

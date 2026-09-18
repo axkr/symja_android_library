@@ -165,6 +165,19 @@ public class ParametricCurveListTest {
         "a literal curve among them stays one curve");
   }
 
+  /**
+   * A curve that never evaluates to a point is still a curve of its own, one that draws nothing.
+   * Line counts measured in Mathematica 2026-09-14.
+   */
+  @Test
+  public void unevaluatedCurveInACurveListDrawsNothingButKeepsTheOthers() {
+    evaluator.eval("ClearAll(w,undefinedCurve);w(u_?NumericQ) := {Cos(u), Sin(u), u}");
+    assertEquals(1, lineCount(
+        plot("ParametricPlot3D({w(t), undefinedCurve(t)}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(2, lineCount(plot(
+        "ParametricPlot3D({w(t), undefinedCurve(t), w(2*t)}, {t, 0, 1})", S.Graphics3D)));
+  }
+
   @Test
   public void nestedSurfaceIsDrawn() {
     plot("ParametricPlot3D({{{Cos(u), Sin(u), v}}}, {u, 0, 2 Pi}, {v, 0, 1})", S.Graphics3D);
