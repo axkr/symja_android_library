@@ -364,6 +364,14 @@ public class Config {
    * app it returns the empty list.
    */
   public static IAST SCRIPT_COMMAND_LINE = null;
+
+  /**
+   * The value of <code>$ScriptInputString</code>: the line of standard input the script is running
+   * for under <code>wolframscript -linewise</code>, set by the console for each line. <code>null</code>
+   * when no script is reading its input that way, and <code>$ScriptInputString</code> is then
+   * <code>None</code>, as it is outside wolframscript.
+   */
+  public static IExpr SCRIPT_INPUT_STRING = null;
   /**
    * Used to serialize the internal Rubi rules or the <code>
    * org.matheclipse.core.reflection.system.rules</code> classes to a file.

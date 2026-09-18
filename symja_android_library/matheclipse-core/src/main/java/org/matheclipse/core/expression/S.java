@@ -4,7 +4,6 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -300,6 +299,9 @@ public class S {
   public final static IBuiltInSymbol $ScriptCommandLine =
       S.initFinalSymbol("$ScriptCommandLine", ID.$ScriptCommandLine);
 
+  public final static IBuiltInSymbol $ScriptInputString =
+      S.initFinalSymbol("$ScriptInputString", ID.$ScriptInputString);
+
   /**
    * $StandardOutputStream(x) - TODO describe `$StandardOutputStream`.
    * 
@@ -327,6 +329,15 @@ public class S {
 
   public final static IBuiltInSymbol $TemporaryDirectory =
       S.initFinalSymbol("$TemporaryDirectory", ID.$TemporaryDirectory);
+
+  /**
+   * $TimedOut(x) - TODO describe `$TimedOut`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$TimedOut.md">$TimedOut
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $TimedOut = S.initFinalSymbol("$TimedOut", ID.$TimedOut);
 
   /**
    * $TimeZone(x) - TODO describe `$TimeZone`.
@@ -6543,8 +6554,8 @@ public class S {
   public final static IBuiltInSymbol Dt = S.initFinalSymbol("Dt", ID.Dt);
 
   /**
-   * DualPlanarGraph(graph) - gives the dual of the planar `graph`: one vertex for each face,
-   * and an edge for each pair of faces separated from each other by an edge.
+   * DualPlanarGraph(graph) - gives the dual of the planar `graph`: one vertex for each face, and an
+   * edge for each pair of faces separated from each other by an edge.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DualPlanarGraph.md">DualPlanarGraph
@@ -6650,8 +6661,8 @@ public class S {
   public final static IBuiltInSymbol EdgeCount = S.initFinalSymbol("EdgeCount", ID.EdgeCount);
 
   /**
-   * EdgeChromaticNumber(graph) - gives the smallest number of colors that can be assigned to
-   * the edges of `graph` such that no two edges sharing an endpoint have the same color.
+   * EdgeChromaticNumber(graph) - gives the smallest number of colors that can be assigned to the
+   * edges of `graph` such that no two edges sharing an endpoint have the same color.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeChromaticNumber.md">EdgeChromaticNumber
@@ -6664,8 +6675,8 @@ public class S {
       S.initFinalSymbol("EdgeContract", ID.EdgeContract);
 
   /**
-   * EdgeCoverQ(graph, edges) - yields `True` if the edge list `edges` is an edge cover of
-   * `graph`, and `False` otherwise.
+   * EdgeCoverQ(graph, edges) - yields `True` if the edge list `edges` is an edge cover of `graph`,
+   * and `False` otherwise.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeCoverQ.md">EdgeCoverQ
@@ -7907,8 +7918,8 @@ public class S {
       S.initFinalSymbol("FindAstroEvent", ID.FindAstroEvent);
 
   /**
-   * FindClique(graph) - finds a largest clique of `graph` - a set of vertices every two of
-   * which are joined by an edge.
+   * FindClique(graph) - finds a largest clique of `graph` - a set of vertices every two of which
+   * are joined by an edge.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindClique.md">FindClique
@@ -7949,8 +7960,8 @@ public class S {
 
   /**
    * FindEdgeColoring(graph) - finds a coloring with a minimal number of colors for the edges of
-   * `graph`. The result is a list of integers, one per edge, in the order of `EdgeList(graph)`, with
-   * different values for any two edges that share an endpoint.
+   * `graph`. The result is a list of integers, one per edge, in the order of `EdgeList(graph)`,
+   * with different values for any two edges that share an endpoint.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEdgeColoring.md">FindEdgeColoring
@@ -7960,8 +7971,8 @@ public class S {
       S.initFinalSymbol("FindEdgeColoring", ID.FindEdgeColoring);
 
   /**
-   * FindEdgeCover(graph) - finds an edge cover of `graph` with a minimum number of edges - a set
-   * of edges touching every vertex.
+   * FindEdgeCover(graph) - finds an edge cover of `graph` with a minimum number of edges - a set of
+   * edges touching every vertex.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEdgeCover.md">FindEdgeCover
@@ -8063,9 +8074,9 @@ public class S {
       S.initFinalSymbol("FindInstance", ID.FindInstance);
 
   /**
-   * FindKClan(graph, k) - finds a largest k-clan of `graph` - a k-clique whose induced
-   * subgraph has diameter at most `k`. FindKClan(graph, k, nspec, s) gives up to `s` of them, and
-   * `All` in place of `s` gives every one.
+   * FindKClan(graph, k) - finds a largest k-clan of `graph` - a k-clique whose induced subgraph has
+   * diameter at most `k`. FindKClan(graph, k, nspec, s) gives up to `s` of them, and `All` in place
+   * of `s` gives every one.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClan.md">FindKClan
@@ -8074,9 +8085,9 @@ public class S {
   public final static IBuiltInSymbol FindKClan = S.initFinalSymbol("FindKClan", ID.FindKClan);
 
   /**
-   * FindKClique(graph, k) - finds a largest k-clique of `graph` - a maximal set of vertices
-   * that are at a distance no greater than `k` from each other. FindKClique(graph, k, nspec, s)
-   * gives up to `s` of them, and `All` in place of `s` gives every one.
+   * FindKClique(graph, k) - finds a largest k-clique of `graph` - a maximal set of vertices that
+   * are at a distance no greater than `k` from each other. FindKClique(graph, k, nspec, s) gives up
+   * to `s` of them, and `All` in place of `s` gives every one.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClique.md">FindKClique
@@ -8085,9 +8096,9 @@ public class S {
   public final static IBuiltInSymbol FindKClique = S.initFinalSymbol("FindKClique", ID.FindKClique);
 
   /**
-   * FindKClub(graph, k) - finds a largest k-club of `graph` - a maximal set of vertices
-   * whose induced subgraph has diameter at most `k`. FindKClub(graph, k, nspec, s) gives up to `s`
-   * of them, and `All` in place of `s` gives every one.
+   * FindKClub(graph, k) - finds a largest k-club of `graph` - a maximal set of vertices whose
+   * induced subgraph has diameter at most `k`. FindKClub(graph, k, nspec, s) gives up to `s` of
+   * them, and `All` in place of `s` gives every one.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClub.md">FindKClub
@@ -8096,8 +8107,8 @@ public class S {
   public final static IBuiltInSymbol FindKClub = S.initFinalSymbol("FindKClub", ID.FindKClub);
 
   /**
-   * FindKPlex(graph, k) - finds a largest k-plex of `graph` - a maximal set of vertices in
-   * which every vertex is adjacent to all but `k` of the members.
+   * FindKPlex(graph, k) - finds a largest k-plex of `graph` - a maximal set of vertices in which
+   * every vertex is adjacent to all but `k` of the members.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKPlex.md">FindKPlex
@@ -8172,8 +8183,8 @@ public class S {
       S.initFinalSymbol("FindPermutation", ID.FindPermutation);
 
   /**
-   * FindPlanarColoring(graph) - finds a coloring with a minimal number of colors for the faces
-   * of the planar `graph`, so that two faces sharing an edge get different colors.
+   * FindPlanarColoring(graph) - finds a coloring with a minimal number of colors for the faces of
+   * the planar `graph`, so that two faces sharing an edge get different colors.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindPlanarColoring.md">FindPlanarColoring
@@ -8290,9 +8301,9 @@ public class S {
    *      documentation</a>
    */
   /**
-   * FindVertexColoring(graph) - finds a coloring with a minimal number of colors for the vertices of
-   * `graph`. The result is a list of integers, one per vertex, in the order of `VertexList(graph)`,
-   * with different values for the two endpoints of every edge.
+   * FindVertexColoring(graph) - finds a coloring with a minimal number of colors for the vertices
+   * of `graph`. The result is a list of integers, one per vertex, in the order of
+   * `VertexList(graph)`, with different values for the two endpoints of every edge.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindVertexColoring.md">FindVertexColoring
@@ -10920,8 +10931,8 @@ public class S {
    *      documentation</a>
    */
   /**
-   * IncludeOuterFace - an option for `PlanarFaceList`, specifying whether the unbounded outer
-   * face of a planar graph is part of the result.
+   * IncludeOuterFace - an option for `PlanarFaceList`, specifying whether the unbounded outer face
+   * of a planar graph is part of the result.
    */
   public final static IBuiltInSymbol IncludeOuterFace =
       S.initFinalSymbol("IncludeOuterFace", ID.IncludeOuterFace);
@@ -10939,8 +10950,8 @@ public class S {
   public final static IBuiltInSymbol Increment = S.initFinalSymbol("Increment", ID.Increment);
 
   /**
-   * IndependentEdgeSetQ(graph, edges) - yields `True` if the edge list `edges` is an
-   * independent edge set of `graph`, and `False` otherwise.
+   * IndependentEdgeSetQ(graph, edges) - yields `True` if the edge list `edges` is an independent
+   * edge set of `graph`, and `False` otherwise.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IndependentEdgeSetQ.md">IndependentEdgeSetQ
@@ -12240,8 +12251,8 @@ public class S {
   public final static IBuiltInSymbol LaguerreL = S.initFinalSymbol("LaguerreL", ID.LaguerreL);
 
   /**
-   * LambdaComponents(graph) - gives the lambda components of `graph` - sets of vertices
-   * joined to each other by more edge-independent paths than to any vertex outside the set.
+   * LambdaComponents(graph) - gives the lambda components of `graph` - sets of vertices joined to
+   * each other by more edge-independent paths than to any vertex outside the set.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LambdaComponents.md">LambdaComponents
@@ -13733,9 +13744,8 @@ public class S {
   public final static IBuiltInSymbol LucasL = S.initFinalSymbol("LucasL", ID.LucasL);
 
   /**
-   * LuccioSamiComponents(graph) - gives the Luccio-Sami components of `graph` - sets of
-   * vertices in which every proper subset has more ties to the rest of the set than to
-   * anything outside it.
+   * LuccioSamiComponents(graph) - gives the Luccio-Sami components of `graph` - sets of vertices in
+   * which every proper subset has more ties to the rest of the set than to anything outside it.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LuccioSamiComponents.md">LuccioSamiComponents
@@ -17434,8 +17444,8 @@ public class S {
   public final static IBuiltInSymbol PlanarAngle = S.initFinalSymbol("PlanarAngle", ID.PlanarAngle);
 
   /**
-   * PlanarFaceList(graph) - gives the list of faces of the planar `graph`. Each face is the
-   * list of vertices bounding it, and the outer face is included.
+   * PlanarFaceList(graph) - gives the list of faces of the planar `graph`. Each face is the list of
+   * vertices bounding it, and the outer face is included.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlanarFaceList.md">PlanarFaceList
@@ -23162,8 +23172,7 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TraceDialog.md">TraceDialog
    *      documentation</a>
    */
-  public final static IBuiltInSymbol TraceDialog =
-      S.initFinalSymbol("TraceDialog", ID.TraceDialog);
+  public final static IBuiltInSymbol TraceDialog = S.initFinalSymbol("TraceDialog", ID.TraceDialog);
 
   public final static IBuiltInSymbol TraceForm = S.initFinalSymbol("TraceForm", ID.TraceForm);
 
@@ -24239,8 +24248,8 @@ public class S {
   public final static IBuiltInSymbol VertexCount = S.initFinalSymbol("VertexCount", ID.VertexCount);
 
   /**
-   * VertexCoverQ(graph, vertices) - yields `True` if the vertex list `vertices` is a vertex
-   * cover of `graph`, and `False` otherwise.
+   * VertexCoverQ(graph, vertices) - yields `True` if the vertex list `vertices` is a vertex cover
+   * of `graph`, and `False` otherwise.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexCoverQ.md">VertexCoverQ

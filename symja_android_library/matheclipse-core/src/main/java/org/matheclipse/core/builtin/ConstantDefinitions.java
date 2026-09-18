@@ -104,6 +104,7 @@ public class ConstantDefinitions {
       S.$RecursionLimit.setEvaluator(new $RecursionLimit());
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
+      S.$ScriptInputString.setEvaluator(new $ScriptInputString());
       S.$SystemCharacterEncoding.setEvaluator(new $SystemCharacterEncoding());
       S.$UnitSystem.setEvaluator(new $UnitSystem());
       S.$CharacterEncoding.setEvaluator(new $CharacterEncoding());
@@ -746,6 +747,22 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return Config.SCRIPT_COMMAND_LINE == null ? F.CEmptyList : Config.SCRIPT_COMMAND_LINE;
+    }
+  }
+
+  /**
+   * The line of standard input a <code>-linewise</code> script is running for.
+   *
+   * <p>
+   * The evaluator is also what makes the symbol usable at all: a <code>$</code> built-in without one
+   * keeps an assigned value but never reads it back, so <code>$ScriptInputString = "x"</code> would
+   * leave <code>$ScriptInputString</code> evaluating to itself.
+   */
+  private static class $ScriptInputString extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return Config.SCRIPT_INPUT_STRING == null ? S.None : Config.SCRIPT_INPUT_STRING;
     }
   }
 
