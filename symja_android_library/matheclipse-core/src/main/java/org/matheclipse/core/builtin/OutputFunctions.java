@@ -745,14 +745,12 @@ public final class OutputFunctions {
    *
    * </blockquote>
    */
-  private static class MathMLForm extends AbstractCoreFunctionEvaluator {
+  private static class MathMLForm extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, engine.isRelaxedSyntax());
-      // the argument is evaluated first, as TeXForm does: MathMLForm(D(Sin(x)*Cos(x),x)) is the
-      // MathML of the derivative, not of the unevaluated D(...) call
-      IExpr arg1 = engine.evaluate(ast.arg1());
+      IExpr arg1 = ast.arg1();
       StringBuilderWriter stw = new StringBuilderWriter();
       mathMLUtil.toMathML(arg1, stw);
       return F.stringx(stw.toString(), IStringX.TEXT_MATHML);
@@ -766,11 +764,6 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -1005,14 +998,14 @@ public final class OutputFunctions {
    * "{\cos(x)}^{2}-{\sin(x)}^{2}"
    * </pre>
    */
-  private static class TeXForm extends AbstractCoreFunctionEvaluator {
+  private static class TeXForm extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
-      IExpr arg1 = engine.evaluate(ast.arg1());
+      IExpr arg1 = ast.arg1();
       StringBuilderWriter stw = new StringBuilderWriter();
-      texUtil.toTeX(arg1, stw);
+      texUtil.toTeX(arg1, stw, false);
       return F.$str(stw.toString(), IStringX.TEXT_LATEX);
     }
 
@@ -1024,11 +1017,6 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 

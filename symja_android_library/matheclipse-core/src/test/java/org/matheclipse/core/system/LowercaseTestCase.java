@@ -15241,6 +15241,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
         + "<math mode=\"display\">\n"
         + "<mrow><mo>{</mo><mrow><mrow><mo>{</mo><mrow><mrow><mrow><mi>y</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>-&gt;</mo><mrow><msup><mi>&#x2147;</mi><mi>x</mi></msup><mo>&#0183;</mo><msub><mi>c</mi><mn>1</mn></msub></mrow></mrow></mrow><mo>}</mo></mrow></mrow><mo>}</mo></mrow></math>");
+    // an ordinary function, as in Mathematica: Attributes[MathMLForm] is {Protected}
+    check("Attributes(MathMLForm)", //
+        "{Protected}");
+    check("MathMLForm(Unevaluated(1+1))", "<?xml version=\"1.0\"?>\n"
+        + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+        + "<math mode=\"display\">\n"
+        + "<mrow><mn>1</mn><mo>+</mo><mn>1</mn></mrow></math>");
     // HoldForm still keeps its argument unevaluated
     check("MathMLForm(HoldForm(1+1))", "<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"

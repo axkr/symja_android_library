@@ -47,6 +47,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     // HoldForm still keeps its argument unevaluated
     check("TeXForm(HoldForm(1+1))", //
         "1 + 1");
+    // an ordinary function, as in Mathematica: Attributes[TeXForm] is {Protected}
+    check("Attributes(TeXForm)", //
+        "{Protected}");
+    check("TeXForm(Unevaluated(1+1))", //
+        "1 + 1");
   }
 
   @Test
