@@ -25,6 +25,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>Sin(x)*Cos(x)</code> or <code>Sin(x)*E^x</code> are first linearised into such a sum by
  * <code>TrigReduce</code> or <code>Expand(TrigToExp(f))</code>. A polynomial factor is handled by
  * the Leibniz rule, which has only <code>Exponent(P, x) + 1</code> non-zero terms.
+ *
+ * <p>
+ * Like in Mathematica a product which needed the linearisation or the Leibniz rule is returned as
+ * <code>Piecewise({{closedForm, n &gt;= 1}}, f)</code>, a single term like
+ * <code>Sin(1/2*n*Pi+x)</code> without the wrapper.
  */
 public class DSymbolicOrder {
 
@@ -37,8 +42,15 @@ public class DSymbolicOrder {
   private final IExpr x;
   private final EvalEngine engine;
 
-  private DSymbolicOrder(IExpr x, EvalEngine engine) {
+  /** <code>true</code> if the order is known to be at least <code>1</code>. */
+  private final boolean orderAtLeastOne;
+
+  /** Set when a product was rewritten by the linearisation or the Leibniz rule. */
+  private boolean productRewritten = false;
+
+  private DSymbolicOrder(IExpr x, boolean orderAtLeastOne, EvalEngine engine) {
     this.x = x;
+    this.orderAtLeastOne = orderAtLeastOne;
     this.engine = engine;
   }
 
@@ -55,7 +67,17 @@ public class DSymbolicOrder {
     if (f.leafCount() > MAX_LEAF_COUNT) {
       return F.NIL;
     }
-    return new DSymbolicOrder(x, engine).closedForm(f, n, false);
+    DSymbolicOrder generic = new DSymbolicOrder(x, false, engine);
+    IExpr result = generic.closedForm(f, n, false);
+    if (result.isNIL() || !generic.productRewritten) {
+      return result;
+    }
+    // Piecewise({{closedForm, n >= 1}}, f); for n >= 1 the constant terms vanish
+    IExpr positive = new DSymbolicOrder(x, true, engine).closedForm(f, n, false);
+    if (positive.isNIL()) {
+      return F.NIL;
+    }
+    return F.Piecewise(F.list(F.list(positive, F.GreaterEqual(n, F.C1))), f);
   }
 
   /**
@@ -68,9 +90,13 @@ public class DSymbolicOrder {
   private IExpr closedForm(IExpr f, IExpr n, boolean linearised) {
     if (f.isFree(x, true)) {
       // Piecewise({{f, n == 0}}, 0)
-      return F.Piecewise(F.list(F.list(f, F.Equal(n, F.C0))), F.C0);
+      return orderAtLeastOne && n.isSymbol() ? F.C0
+          : F.Piecewise(F.list(F.list(f, F.Equal(n, F.C0))), F.C0);
     }
     if (f.equals(x)) {
+      if (orderAtLeastOne && n.isSymbol()) {
+        return F.Piecewise(F.list(F.list(F.C1, F.Equal(n, F.C1))), F.C0);
+      }
       return F.Piecewise(F.list(F.list(x, F.Equal(n, F.C0)), F.list(F.C1, F.Equal(n, F.C1))),
           F.C0);
     }
@@ -150,6 +176,7 @@ public class DSymbolicOrder {
           F.subst(rD, arg -> arg.equals(order) ? orderValue : F.NIL)));
       pD = engine.evaluate(F.D(pD, x));
     }
+    productRewritten = true;
     return plus;
   }
 
@@ -270,12 +297,17 @@ public class DSymbolicOrder {
     if (!reduced.equals(f)) {
       IExpr result = closedForm(reduced, n, true);
       if (result.isPresent()) {
+        productRewritten = true;
         return result;
       }
     }
     IExpr exponential = engine.evaluate(F.Expand(F.TrigToExp(f)));
     if (!exponential.equals(f) && !exponential.equals(reduced)) {
-      return closedForm(exponential, n, true);
+      IExpr result = closedForm(exponential, n, true);
+      if (result.isPresent()) {
+        productRewritten = true;
+      }
+      return result;
     }
     return F.NIL;
   }

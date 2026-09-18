@@ -552,25 +552,27 @@ public class DTest extends ExprEvaluatorTestCase {
     check("D(E^(2*x)*x^m,{x,n})", //
         "E^(2*x)*x^(m-n)*Binomial(m,n)*n!*Hypergeometric1F1(-n,1+m-n,-2*x)");
 
-    // linearised by TrigReduce
+    // linearised by TrigReduce; like in Mathematica a rewritten product gets the n>=1 wrapper
     check("D(Sin(x)*Cos(x),{x,n})", //
-        "Sin(1/2*n*Pi+2*x)/2^(1-n)");
+        "Piecewise({{Sin(1/2*n*Pi+2*x)/2^(1-n),n>=1}},Cos(x)*Sin(x))");
     check("D(Sin(x)^3*Cos(2*x),{x,n})", //
-        "-Sin(1/2*n*Pi+x)/2+3/8*3^n*Sin(1/2*n*Pi+3*x)-1/8*5^n*Sin(1/2*n*Pi+5*x)");
+        "Piecewise({{-Sin(1/2*n*Pi+x)/2+3/8*3^n*Sin(1/2*n*Pi+3*x)-1/8*5^n*Sin(1/2*n*Pi+5*x),n>=\n"
+            + "1}},Cos(2*x)*Sin(x)^3)");
+    // the constant term vanishes for n>=1
     check("D(Sin(x)^2,{x,n})", //
-        "1/2*(-2^n*Cos(1/2*n*Pi+2*x)+Piecewise({{1,n==0}},0))");
+        "Piecewise({{-Cos(1/2*n*Pi+2*x)/2^(1-n),n>=1}},Sin(x)^2)");
     check("D(3*Sin(x)*Cos(x)+E^(2*x),{x,n})", //
-        "2^n*E^(2*x)+(3*Sin(1/2*n*Pi+2*x))/2^(1-n)");
-    // linearised by Expand(TrigToExp())
+        "2^n*E^(2*x)+3*Piecewise({{Sin(1/2*n*Pi+2*x)/2^(1-n),n>=1}},Cos(x)*Sin(x))");
+    // linearised by Expand(TrigToExp()), the same form as in Mathematica
     check("D(Sin(x)*E^x,{x,n})", //
-        "I*1/2*(1-I)^n*E^((1-I)*x)-I*1/2*(1+I)^n*E^((1+I)*x)");
+        "Piecewise({{I*1/2*(1-I)^n*E^((1-I)*x)-I*1/2*(1+I)^n*E^((1+I)*x),n>=1}},E^x*Sin(x))");
 
     // Leibniz rule for a polynomial factor
     check("D(x*Sin(x),{x,n})", //
-        "n*Sin(1/2*(-1+n)*Pi+x)+x*Sin(1/2*n*Pi+x)");
+        "Piecewise({{n*Sin(1/2*(-1+n)*Pi+x)+x*Sin(1/2*n*Pi+x),n>=1}},x*Sin(x))");
     check("D(x^2*Cos(2*x),{x,n})", //
-        "((-1+n)*n*Cos(1/2*(-2+n)*Pi+2*x))/2^(2-n)+2^n*n*x*Cos(1/2*(-1+n)*Pi+2*x)+2^n*x^2*Cos(\n"
-            + "1/2*n*Pi+2*x)");
+        "Piecewise({{((-1+n)*n*Cos(1/2*(-2+n)*Pi+2*x))/2^(2-n)+2^n*n*x*Cos(1/2*(-1+n)*Pi+\n"
+            + "2*x)+2^n*x^2*Cos(1/2*n*Pi+2*x),n>=1}},x^2*Cos(2*x))");
 
     // no closed form
     check("D(f(x)*Sin(x),{x,n})", //
