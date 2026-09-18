@@ -609,6 +609,42 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->E^x^2*C(1)}}");
   }
 
+  @Test
+  public void testDSolveHermiteRegularAtTheOrigin() {
+    // The odd solution of y'' + t*y' + y == 0 is a confluent series in -t^2/2, which evaluates to
+    // incomplete gamma functions of it over Sqrt(-t^2): no value at t == 0, so the conditions
+    // there could not be fitted. Written with a positive argument it is Erfi, and real.
+    check("DSolve({y''(t) + t*y'(t) + y(t) == 0, y(0) == 0, y'(0) == 1}, y(t), t)", //
+        "{{y(t)->(Sqrt(Pi)*Erfi(t/Sqrt(2)))/(Sqrt(2)*E^(t^2/2))}}");
+    checkResidualIn("y''(t) + t*y'(t) + y(t) == 0", "y''(t) + t*y'(t) + y(t)",
+        "{C(1)->3/7, C(2)->5/11, t->-7/10}");
+    // a series which terminates is still the polynomial
+    check("DSolve(y''(x) - 2*x*y'(x) + 4*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)-2*x^2*C(1)+x*C(2)*Hypergeometric1F1(-1/2,3/2,x^2)}}");
+  }
+
+  @Test
+  public void testDSolveFirstOrderPiecewiseForcing() {
+    // A step or a piecewise forcing term used to be given to the first order linear method, whose
+    // integral of E^t times it does not close; the failure was returned and the Laplace transform
+    // was never asked. Its closed interval 0 <= t <= 1 is also one the transform did not read.
+    check("DSolve({y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}, {0, 1 < t}}, 0), y(0) == 0},"
+        + " y(t), t)", //
+        "{{y(t)->2-2/E^t-2*HeavisideTheta(-1+t)+2*E^(1-t)*HeavisideTheta(-1+t)}}");
+    // 2*(1 - E^(-t)) up to t == 1 and 2*(E - 1)*E^(-t) after
+    check("With({s=DSolve({y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}, {0, 1 < t}}, 0),"
+        + " y(0) == 0}, y(t), t)}, Chop(N({y(t) /. s[[1]] /. t -> 1/2, y(t) /. s[[1]] /. t -> 3})"
+        + " - N({2*(1 - E^(-1/2)), 2*(E - 1)*E^(-3)})))", //
+        "{0,0}");
+    check("DSolve({y'(t) + y(t) == 2*UnitStep(t) - 2*UnitStep(t - 1), y(0) == 0}, y(t), t)", //
+        "{{y(t)->2-2/E^t-2*HeavisideTheta(-1+t)+2*E^(1-t)*HeavisideTheta(-1+t)}}");
+    check("LaplaceTransform(Piecewise({{3, 1 > t > 0}}, 0), t, s)", //
+        "3/s-3/(E^s*s)");
+    // a continuous forcing term is still the linear method's
+    check("DSolve(y'(t) + y(t) == Sin(t), y(t), t)", //
+        "{{y(t)->C(1)/E^t-Cos(t)/2+Sin(t)/2}}");
+  }
+
   /** {@link #checkResidual} for an equation in <code>t</code>. */
   private void checkResidualIn(String equation, String residual, String point) {
     check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual

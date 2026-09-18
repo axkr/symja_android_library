@@ -2177,8 +2177,13 @@ final class DSolveODE {
               engine.evaluate(F.Expand(F.Subtract(rest, F.Times(coeffY, yFunction))));
 
           if (freeTerm.isFree(head)) {
-            if (!freeTerm.isFree(x -> x.isFunctionID(ID.DiracDelta, ID.HeavisideTheta), false)) {
-              // Defer discontinuous forcing functions to the Laplace Transform solver
+            if (!freeTerm.isFree(
+                x -> x.isFunctionID(ID.DiracDelta, ID.HeavisideTheta, ID.UnitStep, ID.Piecewise),
+                false)) {
+              // Defer discontinuous forcing functions to the Laplace Transform solver. A step or a
+              // piecewise function belongs there as much as an impulse: the integral of E^t times
+              // it does not close here, and this method used to return that failure, which kept
+              // y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}}, 0) from ever reaching the transform.
             } else {
               IExpr p = engine.evaluate(F.Divide(coeffY, coeffDyx));
               IExpr q = engine.evaluate(F.Divide(freeTerm, coeffDyx));

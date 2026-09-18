@@ -312,6 +312,16 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
         }
         lo = inequality.arg1();
         hi = inequality.get(5);
+      } else if (part.isAST3() && (isLess(part.head()) || isGreater(part.head()))
+          && part.second().equals(t)) {
+        // a chain: 0 <= t <= 1 is LessEqual(0, t, 1), and 1 > t > 0 is Greater(1, t, 0)
+        IAST chain = (IAST) part;
+        if (!chain.arg1().isFree(t) || !chain.arg3().isFree(t)) {
+          return null;
+        }
+        boolean less = isLess(chain.head());
+        lo = less ? chain.arg1() : chain.arg3();
+        hi = less ? chain.arg3() : chain.arg1();
       } else if (part.isAST2() && (isLess(part.head()) || isGreater(part.head()))) {
         IExpr left = part.first();
         IExpr right = part.second();
