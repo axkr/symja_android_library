@@ -649,6 +649,22 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGammaDistribution() {
+    // PDF and CDF of the 4 argument form for machine numbers and a large shape, where Gamma(a)
+    // overflows a double (reference values from 20 digit arithmetic)
+    check("{PDF(GammaDistribution(150.0, 1.5, 0.7, 2.0), 1932.5), " //
+        + "PDF(GammaDistribution(1000.0, 1.5, 0.7, 2.0), 28971.3)}", //
+        "{0.00177043,0.000304806}");
+    check("{CDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0), " //
+        + "CDF(GammaDistribution(1000.0, 1.5, 0.7, 2.0), 28971.3)}", //
+        "{0.509403,0.506898}");
+    check("{PDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - PDF(GammaDistribution(200.0, 1.0), 200.0), " //
+        + "CDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - CDF(GammaDistribution(200.0, 1.0), 200.0)} // Chop", //
+        "{0,0}");
+    check("{PDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19), CDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19)}", //
+        "{6.1431*10^-23,0.998432}");
+    check("{PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 5.0), N(PDF(GammaDistribution(9/2, 3/2, 4/5, 2), 5)), " //
+        + "PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0), CDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0)}", //
+        "{0.0487396,0.0487396,0,0}");
     // machine numbers in the 4 argument form: Gamma(a) overflows a double from a > 171 on and the
     // central moments cancel most of their digits (reference values from 80 digit arithmetic)
     check("{Mean(GammaDistribution(1000.0, 1.5, 0.7, 2.0)), Kurtosis(GammaDistribution(1000.0, 1.5, 0.7, 2.0))}", //

@@ -1786,6 +1786,40 @@ public class StatisticsContinousDistribution {
     return Double.isNaN(value) ? S.Indeterminate : F.num(value);
   }
 
+  /**
+   * The parameters <code>{a, b, g, m}</code> of a <code>GammaDistribution</code> or
+   * <code>InverseGammaDistribution</code> as doubles for a machine precision evaluation at
+   * <code>x</code>: all of them numbers, at least one of them inexact, and the shapes and scale
+   * positive.
+   *
+   * @return <code>{a, b, g, m, x}</code> or <code>null</code>
+   */
+  private static double[] generalizedGammaMachineArguments(IExpr[] parameters, IExpr x,
+      EvalEngine engine) {
+    if (engine.isArbitraryMode()) {
+      return null;
+    }
+    boolean inexact = x.isInexactNumber();
+    double[] values = new double[5];
+    for (int i = 0; i < 4; i++) {
+      inexact |= parameters[i].isInexactNumber();
+      values[i] = parameters[i].evalfNaN();
+    }
+    values[4] = x.evalfNaN();
+    if (!inexact) {
+      return null;
+    }
+    for (double value : values) {
+      if (!Double.isFinite(value)) {
+        return null;
+      }
+    }
+    if (!(values[0] > 0.0 && values[1] > 0.0 && values[2] > 0.0)) {
+      return null;
+    }
+    return values;
+  }
+
   private static final class GammaDistribution extends AbstractEvaluator implements ICentralMoment,
       IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF, IGeneratingFunction {
 
@@ -1844,6 +1878,13 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
         IExpr d = dist.arg4();
+        double[] v = generalizedGammaMachineArguments(new IExpr[] {a, b, g, d}, k, engine);
+        if (v != null && v[4] > v[3]) {
+          // GammaRegularized(a, 0, ((x - d)/b)^g), which the symbolic form cannot evaluate for a
+          // large machine shape
+          double z = Math.exp(v[2] * Math.log((v[4] - v[3]) / v[1]));
+          return F.num(z == Double.POSITIVE_INFINITY ? 1.0 : Gamma.regularizedGammaP(v[0], z));
+        }
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(a, 0, ((# - d)/b)^g), # > d}}, 0)&) $]
             F.Function(F.Piecewise(F.list(F.list(
@@ -2042,6 +2083,15 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
         IExpr d = dist.arg4();
+        double[] v = generalizedGammaMachineArguments(new IExpr[] {a, b, g, d}, k, engine);
+        if (v != null && v[4] > v[3]) {
+          // in logarithms, because Gamma(a) overflows a double from a > 171 on:
+          // Log(g) - Log(b) - LogGamma(a) + (a*g - 1)*Log(z) - z^g with z = (x - d)/b
+          double logZ = Math.log((v[4] - v[3]) / v[1]);
+          double logDensity = Math.log(v[2]) - Math.log(v[1]) - Gamma.logGamma(v[0])
+              + (v[0] * v[2] - 1.0) * logZ - Math.exp(v[2] * logZ);
+          return F.num(Math.exp(logDensity));
+        }
         IExpr function =
             // [$ ( Piecewise( {{(((# - d)/b)^(-1 + a*g)*g)/(E^((# - d)/b)^g*(b*Gamma(a))), # > d}},
             // 0) & )
@@ -2639,37 +2689,6 @@ public class StatisticsContinousDistribution {
       return null;
     }
 
-    /**
-     * The parameters as doubles for a machine precision evaluation at <code>x</code>: all of them
-     * numbers, at least one of them inexact, and the shapes and scale positive.
-     *
-     * @return <code>{a, b, g, m, x}</code> or <code>null</code>
-     */
-    private static double[] machineArguments(IExpr[] parameters, IExpr x, EvalEngine engine) {
-      if (engine.isArbitraryMode()) {
-        return null;
-      }
-      boolean inexact = x.isInexactNumber();
-      double[] values = new double[5];
-      for (int i = 0; i < 4; i++) {
-        inexact |= parameters[i].isInexactNumber();
-        values[i] = parameters[i].evalfNaN();
-      }
-      values[4] = x.evalfNaN();
-      if (!inexact) {
-        return null;
-      }
-      for (double value : values) {
-        if (!Double.isFinite(value)) {
-          return null;
-        }
-      }
-      if (!(values[0] > 0.0 && values[1] > 0.0 && values[2] > 0.0)) {
-        return null;
-      }
-      return values;
-    }
-
     /** The machine moments of the 4 argument form, see {@link #generalizedGammaMachineMoments}. */
     private static double[] machineMoments(IAST dist) {
       return dist.isAST(S.InverseGammaDistribution, 5) ? generalizedGammaMachineMoments(dist, -1)
@@ -2692,7 +2711,7 @@ public class StatisticsContinousDistribution {
       if (parameters == null || isInvalid(parameters)) {
         return F.NIL;
       }
-      double[] v = machineArguments(parameters, k, engine);
+      double[] v = generalizedGammaMachineArguments(parameters, k, engine);
       if (v != null) {
         if (!(v[4] > v[3])) {
           return F.CD0;
@@ -2856,7 +2875,7 @@ public class StatisticsContinousDistribution {
       if (parameters == null || isInvalid(parameters)) {
         return F.NIL;
       }
-      double[] v = machineArguments(parameters, k, engine);
+      double[] v = generalizedGammaMachineArguments(parameters, k, engine);
       if (v != null) {
         if (!(v[4] > v[3])) {
           return F.CD0;
